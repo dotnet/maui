@@ -238,14 +238,14 @@ static class SetPropertyHelpers
 		if (isImplicitStyle)
 		{
 			// Get TargetType from Style
-			var targetTypeExpr = GetStyleTargetTypeExpression(node, context);
-			if (targetTypeExpr == null)
+			var targetTypeKey = GetStyleTargetTypeKey(node, context);
+			if (targetTypeKey == null)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), "Implicit style requires a TargetType"));
 				return;
 			}
 
-			resourceKeyExpression = targetTypeExpr;
+			resourceKeyExpression = targetTypeKey;
 		}
 		else
 		{
@@ -305,7 +305,7 @@ static class SetPropertyHelpers
 		}
 		if (factoryName is not null && emitReplacement)
 		{
-			var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
+			var keyExpression = isImplicitStyle && resourceKeyExpression.StartsWith("typeof(", StringComparison.Ordinal) ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
 			// Hot reload: update a live shared style in place so consumers holding it directly refresh;
 			// otherwise replace the factory so future lookups get the new value.
 			if (replacementFactoryName is not null && updateLiveStyle)
@@ -324,6 +324,64 @@ static class SetPropertyHelpers
 				writer.WriteLine("}");
 			}
 		}
+	}
+
+	/// <summary>
+	/// Gets the ResourceDictionary key expression for an implicit Style's TargetType.
+	/// </summary>
+	static string? GetStyleTargetTypeKey(ElementNode node, SourceGenContext context)
+	{
+		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
+			return null;
+
+		INamedTypeSymbol? targetType = null;
+
+		// Case 1: String value - TargetType="Label"
+		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
+		{
+			targetType = typeName.GetTypeSymbol(context, node);
+		}
+
+		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
+		else if (targetTypeNode is ElementNode elementNode &&
+			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
+		{
+			// TypeExtension can have TypeName as property or positional argument
+			if (elementNode.Properties.TryGetValue(new XmlName("", "TypeName"), out var typeNameNode) &&
+				typeNameNode is ValueNode tn)
+			{
+				var typeNameStr = tn.Value as string;
+				targetType = typeNameStr?.GetTypeSymbol(context, node);
+			}
+			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
+			{
+				var typeNameStr = positionalArg.Value as string;
+				targetType = typeNameStr?.GetTypeSymbol(context, node);
+			}
+		}
+
+		if (targetType is null)
+			return null;
+
+		// Type.FullName uses metadata names and '+' between nested types. Constructed generic
+		// types include assembly-qualified type arguments, so retain the Type overload for them.
+		if (!targetType.IsGenericType)
+			return SymbolDisplay.FormatLiteral(GetMetadataFullName(targetType), true);
+
+		return $"typeof({targetType.ToFQDisplayString()})";
+	}
+
+	static string GetMetadataFullName(INamedTypeSymbol type)
+	{
+		var nestedTypeNames = new Stack<string>();
+		for (var current = type; current is not null; current = current.ContainingType)
+			nestedTypeNames.Push(current.MetadataName);
+
+		var namespaceNames = new Stack<string>();
+		for (var current = type.ContainingNamespace; !current.IsGlobalNamespace; current = current.ContainingNamespace)
+			namespaceNames.Push(current.MetadataName);
+
+		return $"{string.Join(".", namespaceNames)}{(namespaceNames.Count > 0 ? "." : string.Empty)}{string.Join("+", nestedTypeNames)}";
 	}
 
 	/// <summary>

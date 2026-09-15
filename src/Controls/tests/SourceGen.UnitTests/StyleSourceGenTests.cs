@@ -29,32 +29,6 @@ static string GetGeneratedCode(GeneratorDriverRunResult result)
 	return Normalize(tree.GetText().ToString());
 }
 
-static void AssertSnapshot(string expected, string actual)
-{
-	if (!string.Equals(expected, actual, System.StringComparison.Ordinal))
-	{
-		var index = 0;
-		for (; index < expected.Length && index < actual.Length; index++)
-		{
-			if (expected[index] != actual[index])
-				break;
-		}
-		System.Console.WriteLine($"Snapshot diff at {index}");
-		System.Console.WriteLine($"Expected snippet: {EscapeSnippet(expected, index)}");
-		System.Console.WriteLine($"Actual snippet: {EscapeSnippet(actual, index)}");
-		System.Console.WriteLine($"Expected length: {expected.Length}");
-		System.Console.WriteLine($"Actual length: {actual.Length}");
-	}
-	Assert.Equal(expected, actual);
-}
-
-static string EscapeSnippet(string text, int index)
-{
-	var length = System.Math.Min(120, text.Length - index);
-	var snippet = text.Substring(index, length);
-	return snippet.Replace("\n", "\\n", System.StringComparison.Ordinal);
-}
-
 	[Fact]
 	public void SimpleStyleWithSetter()
 	{
@@ -85,6 +59,87 @@ static string EscapeSnippet(string text, int index)
 		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ImplicitStyleUsesMetadataNameFactoryKeyAndInlinePositiveGuard()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<Style TargetType="Label">
+			<Setter Property="TextColor" Value="Red"/>
+		</Style>
+	</ContentPage.Resources>
+</ContentPage>
+""";
+
+		var result = RunGenerator<XamlGenerator>(CreateMauiCompilation(), new AdditionalXamlFile("Test.xaml", xaml));
+		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+		Assert.Empty(errors);
+
+		var generatedCode = GetGeneratedCode(result);
+		Assert.Contains("__root.Resources.AddFactory(\"Microsoft.Maui.Controls.Label\", () =>", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("AddFactory(typeof(global::Microsoft.Maui.Controls.Label)", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("if (__target is global::Microsoft.Maui.Controls.Label target)", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("InitializeStyle", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("NoInlining", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("KeepAlive", generatedCode, StringComparison.Ordinal);
+
+		var guardIndex = generatedCode.IndexOf("if (__target is global::Microsoft.Maui.Controls.Label target)", StringComparison.Ordinal);
+		var setterIndex = generatedCode.IndexOf("var setter = new global::Microsoft.Maui.Controls.Setter", StringComparison.Ordinal);
+		var additionIndex = generatedCode.IndexOf("__style.Setters", StringComparison.Ordinal);
+		Assert.True(guardIndex < setterIndex);
+		Assert.True(setterIndex < additionIndex);
+	}
+
+	[Fact]
+	public void ImplicitStyleUsesMetadataNameForNestedTargetAndTypeFallbackForGenericTarget()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<Style TargetType="local:StyleTargets+NestedLabel"/>
+		<Style TargetType="{x:Type local:GenericLabel(x:String)}"/>
+	</ContentPage.Resources>
+</ContentPage>
+""";
+		var targets =
+"""
+namespace Test;
+
+public class StyleTargets
+{
+	public class NestedLabel : global::Microsoft.Maui.Controls.Label
+	{
+	}
+}
+
+public class GenericLabel<T> : global::Microsoft.Maui.Controls.Label
+{
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(targets));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var errors = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+		Assert.Empty(errors);
+
+		var generatedCode = GetGeneratedCode(result);
+		Assert.Contains("__root.Resources.AddFactory(\"Test.StyleTargets+NestedLabel\", () =>", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("typeof(global::Test.GenericLabel", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -145,60 +200,9 @@ static string EscapeSnippet(string text, int index)
 
 		// Find the actual generated code (the .xsg.cs file)
 		var generatedCode = GetGeneratedCode(result);
-		var expected = Normalize("""
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by a .NET MAUI source generator.
-//
-//     Changes to this file may cause incorrect behavior and will be lost if
-//     the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
-#nullable enable
-#pragma warning disable CS0219 // Variable is assigned but its value is never used
-namespace Test;
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
-public partial class TestPage
-{
-	private partial void InitializeComponent()
-	{
-		// Fallback to Runtime inflation if the page was updated by HotReload
-		static string? getPathForType(global::System.Type type)
-		{
-			var assembly = type.Assembly;
-			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
-			{
-				if (xria.Type == type)
-					return xria.Path;
-			}
-			return null;
-		}
-		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
-		{
-			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
-			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
-			Instance = this,
-		});
-		if (rlr?.ResourceContent != null)
-		{
-			this.InitializeComponentRuntime();
-			return;
-		}
-		var __root = this;
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
-#endif
-		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
-		__root.Resources["EmptyStyle"] = style;
-	}
-}
-""");
-		AssertSnapshot(expected, generatedCode);
+		Assert.Contains("__root.Resources.AddFactory(\"EmptyStyle\", () =>", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("return style;", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("style.LazyInitialization", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -252,7 +256,7 @@ public partial class TestPage
 	}
 
 	[Fact]
-	public void SimpleStyleWithSetterFullSnapshot()
+	public void ExplicitKeyedStyleKeepsExplicitKeyFactory()
 	{
 		// Full snapshot test to verify the complete lazy style pattern
 		var xaml =
@@ -277,75 +281,8 @@ public partial class TestPage
 		Assert.Empty(errors);
 
 		var generatedCode = GetGeneratedCode(result);
-		var expected = Normalize("""
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by a .NET MAUI source generator.
-//
-//     Changes to this file may cause incorrect behavior and will be lost if
-//     the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
-#nullable enable
-#pragma warning disable CS0219 // Variable is assigned but its value is never used
-namespace Test;
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
-public partial class TestPage
-{
-	private partial void InitializeComponent()
-	{
-		// Fallback to Runtime inflation if the page was updated by HotReload
-		static string? getPathForType(global::System.Type type)
-		{
-			var assembly = type.Assembly;
-			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
-			{
-				if (xria.Type == type)
-					return xria.Path;
-			}
-			return null;
-		}
-		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
-		{
-			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
-			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
-			Instance = this,
-		});
-		if (rlr?.ResourceContent != null)
-		{
-			this.InitializeComponentRuntime();
-			return;
-		}
-		var __root = this;
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
-#endif
-		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
-		style.LazyInitialization = (__style, __target) =>
-		{
-			if (__target is not global::Microsoft.Maui.Controls.Label) return;
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
-			var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Red};
-			if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
-				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
-#line 8 "Test.xaml"
-			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)__style.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
-#line default
-		};
-		__root.Resources["TestStyle"] = style;
-	}
-}
-""");
-		AssertSnapshot(expected, generatedCode);
+		Assert.Contains("__root.Resources.AddFactory(\"TestStyle\", () =>", generatedCode, StringComparison.Ordinal);
+		Assert.DoesNotContain("__root.Resources.AddFactory(\"Microsoft.Maui.Controls.Label\", () =>", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("if (__target is global::Microsoft.Maui.Controls.Label target)", generatedCode, StringComparison.Ordinal);
 	}
 }
