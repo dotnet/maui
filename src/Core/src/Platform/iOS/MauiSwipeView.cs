@@ -313,6 +313,7 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				UIView swipeItem = item.ToPlatform(Element.Handler.MauiContext);
+
 				swipeItem.Hidden = !GetIsVisible(item);
 				_actionView.AddSubview(swipeItem);
 				_swipeItems.Add(item, swipeItem);
@@ -341,6 +342,23 @@ namespace Microsoft.Maui.Platform
 
 			int i = 0;
 			float previousWidth = 0;
+			double executeModeItemWidth = 0;
+
+			if (items.Mode == SwipeMode.Execute && IsHorizontalSwipe())
+			{
+				foreach (var child in childs)
+				{
+					if (child.Hidden || child is not UIButton button)
+						continue;
+
+					button.Frame = new CGRect(0, 0, SwipeViewExtensions.SwipeItemWidth, _contentView.Frame.Height);
+
+					UpdateSwipeItemInsets(button);
+					UpdateSwipeItemContentAlignment(button);
+				}
+
+				executeModeItemWidth = Element.GetExecuteModeItemWidth(_contentView, _swipeDirection, childs);
+			}
 
 			foreach (var child in childs)
 			{
@@ -352,7 +370,8 @@ namespace Microsoft.Maui.Platform
 				if (!child.Hidden)
 				{
 					var item = items[i];
-					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection);
+
+					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, executeModeItemWidth);
 
 					float swipeItemHeight = (float)swipeItemSize.Height;
 					float swipeItemWidth = (float)swipeItemSize.Width;
@@ -373,17 +392,27 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
-					if (child is UIButton button)
-					{
-						UpdateSwipeItemInsets(button);
-					}
-
 					previousWidth += swipeItemWidth;
 				}
 
 				i++;
 				_swipeItemsRect.Add(child.Frame);
 			}
+
+			if (items.Mode == SwipeMode.Execute && IsHorizontalSwipe())
+			{
+				_actionView.Frame = new CGRect(
+					_actionView.Frame.X,
+					_actionView.Frame.Y,
+					previousWidth,
+					_actionView.Frame.Height);
+			}
+		}
+
+		static void UpdateSwipeItemContentAlignment(UIButton button)
+		{
+			button.HorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+			button.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 		}
 
 		List<UIView> GetNativeSwipeItems()
@@ -397,6 +426,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
+		{
+			UpdateSwipeItemSize(item);
+		}
+
+		internal void UpdateSwipeItemSize(ISwipeItem item)
 		{
 			if (!_isOpen)
 				return;
@@ -946,15 +980,27 @@ namespace Microsoft.Maui.Platform
 			float swipeItemsHeight = 0;
 			float swipeItemsWidth = 0;
 			bool useSwipeItemsSize = false;
+			double executeModeItemWidth = 0;
+
+			if (swipeItems.Mode == SwipeMode.Execute && IsHorizontalSwipe())
+			{
+				executeModeItemWidth = Element.GetExecuteModeItemWidth(
+					_contentView,
+					_swipeDirection,
+					GetNativeSwipeItems());
+			}
 
 			foreach (var swipeItem in swipeItems)
 			{
-				if (swipeItem is ISwipeItemView)
+				if (swipeItem is ISwipeItemView ||
+					(IsHorizontalSwipe() && swipeItem is ISwipeItemMenuItem && swipeItems.Mode == SwipeMode.Execute))
+				{
 					useSwipeItemsSize = true;
+				}
 
 				if (GetIsVisible(swipeItem))
 				{
-					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection);
+					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, executeModeItemWidth);
 					swipeItemsHeight += (float)swipeItemSize.Height;
 					swipeItemsWidth += (float)swipeItemSize.Width;
 				}
@@ -963,19 +1009,11 @@ namespace Microsoft.Maui.Platform
 			if (useSwipeItemsSize)
 			{
 				var isHorizontalSwipe = IsHorizontalSwipe();
-
 				return isHorizontalSwipe ? swipeItemsWidth : swipeItemsHeight;
 			}
-			else
-			{
-				if (_contentView != null)
-				{
-					var contentWidth = _contentView.Frame.Width;
-					var contentWidthSwipeThreshold = contentWidth * 0.8f;
 
-					return contentWidthSwipeThreshold;
-				}
-			}
+			if (_contentView != null)
+				return _contentView.Frame.Width * 0.8f;
 
 			return SwipeViewExtensions.SwipeThreshold;
 		}
