@@ -47,6 +47,38 @@ App Store / Play account. The build script therefore emits two things:
 | **iOS** | unsigned device **`.ipa`** (AltStore/Sideloadly) + Simulator `.app` zip | App Store `.ipa` → TestFlight | ad-hoc `.ipa` *(only if the ad-hoc secret is set — see below)* |
 | **macOS (Mac Catalyst)** | Native **arm64** `.app` zip (Apple Silicon) | Mac App Store `.pkg` → TestFlight | notarized `.app` zip *(only if the Developer ID secrets are set — see below)* |
 
+### Windows sample test installer
+
+Set **`windows_test_msix=true` and `publish=false`** to build only the Windows x64
+sample as a standard MSBuild-generated, self-contained **MSIX**, rather than an
+unpackaged app ZIP. The default eight-app matrix and Windows ZIP remain unchanged.
+Combining this option with store publishing is rejected before any build/upload.
+
+The `template-app-test-msix-*` artifact is one outer GitHub ZIP containing the MSIX,
+a public test-signing certificate, `Install-WindowsTestApp.ps1`, `install.json`,
+`WINDOWS-INSTALL.txt`, provenance and CI validation evidence. Any required framework
+packages (for example VCLibs) are included under `Dependencies`; missing dependencies
+fail packaging. No private key/PFX, password, nested app ZIP or SDK installation is
+required. The ephemeral, non-exportable signing key is deleted after signing.
+
+Extract the artifact once. In **Windows PowerShell as administrator using your own
+account**, change to that folder and run `.\Install-WindowsTestApp.ps1`. The script
+shows the publisher/certificate thumbprint and asks you to type `TRUST` before adding
+the test certificate to **LocalMachine\\TrustedPeople**, never the root CA store.
+It checks signatures and invokes Windows' `Add-AppxPackage`, then the app appears in
+Start. Cancel before approval to leave trust unchanged. New builds may use new test
+certificates. On managed PCs, obtain IT approval; this does not bypass execution
+policy, sideloading policy, elevation requirements or application-control restrictions.
+
+The build never changes a local developer/tester's trust store. A separate CI-only
+step explicitly trusts the public certificate on a disposable GitHub-hosted Windows
+runner, checks signatures with the Windows SDK, installs and activates the packaged
+app, then removes the app and test trust. `validation.json` distinguishes successful
+signature verification, installation and launch. The download can remain available
+when that runner cannot install/activate apps, but the workflow fails and records the
+exact limitation rather than claiming a successful launch. A failed signature never
+exposes an installer artifact.
+
 ### Why the previous artifacts failed to install
 
 - **Android** — only an `.aab` was produced. An `.aab` can *only* be consumed by Google Play,

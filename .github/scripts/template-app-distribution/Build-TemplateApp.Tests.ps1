@@ -79,6 +79,7 @@ BeforeAll {
     $script:rubyPath = (Get-Command ruby -ErrorAction SilentlyContinue).Source
     $script:originalPath = $env:PATH
     . $script:sourcePackagesScriptPath
+    . (Join-Path $PSScriptRoot 'Windows-Msix.ps1')
     $script:fixtureSourceSha = '0123456789abcdef0123456789abcdef01234567'
     $script:fixtureSourceVersion = '11.0.0-preview.1.25080.1'
     $script:requiredSourcePackageIds = @(
@@ -375,6 +376,26 @@ namespace MauiFixture_$namespaceSuffix {
             $depsJson = [ordered]@{ libraries = $depsLibraries } | ConvertTo-Json -Depth 10
             $depsPath = if ([string]::IsNullOrWhiteSpace($prefix)) { 'TestApp.deps.json' } else { "$prefix/TestApp.deps.json" }
             Add-ZipEntryFromText -Archive $archive -EntryPath $depsPath -Content $depsJson
+            if ([IO.Path]::GetExtension($Path) -eq '.msix') {
+                Add-ZipEntryFromText $archive 'AppxManifest.xml' @'
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">
+  <Identity Name="test.sample" Publisher="CN=MAUI Template Test" Version="1.0.1.1" ProcessorArchitecture="x64" />
+  <Properties><Framework>false</Framework></Properties>
+  <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.19041.0" /></Dependencies>
+  <Applications><Application Id="App" Executable="TestApp.exe" /></Applications>
+</Package>
+'@
+                foreach ($name in @('coreclr.dll', 'hostfxr.dll', 'Microsoft.UI.Xaml.dll', 'TestApp.exe')) {
+                    Add-ZipEntryFromText $archive $name 'fixture-native-payload'
+                }
+                Add-ZipEntryFromText $archive 'TestApp.runtimeconfig.json' '{"runtimeOptions":{"includedFrameworks":[{"name":"Microsoft.NETCore.App","version":"10.0.11"}]}}'
+                $templateProof = @{
+                    sourceSha = $SourceSha
+                    frameworkVersion = $Manifest.version
+                    template = @($Manifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*')[0]
+                }
+                Add-ZipEntryFromText $archive 'source-provenance.json' ($templateProof | ConvertTo-Json -Depth 10)
+            }
         }
         finally {
             $archive.Dispose()
@@ -891,6 +912,7 @@ end
         [string]$TargetFramework,
         [string]$RuntimeIdentifier,
         [switch]$Publish,
+        [switch]$WindowsTestMsix,
         [switch]$CreateBinlog
     ) {
         $arguments = @(
@@ -910,6 +932,7 @@ end
         if ($CreateBinlog) {
             $arguments += '-CreateBinlog'
         }
+        if ($WindowsTestMsix) { $arguments += '-WindowsTestMsix' }
 
         $env:FAKE_SOURCE_MANIFEST_PATH = $TestCase.SourceManifestPath
         $env:FAKE_SOURCE_SHA = $TestCase.SourceSha
@@ -948,12 +971,15 @@ end
         )
     }
 
-    function Invoke-PrepareMatrix([string]$Variants, [string]$Platforms) {
-        return Invoke-ExternalPowerShell $script:prepareMatrixScriptPath @(
+    function Invoke-PrepareMatrix([string]$Variants, [string]$Platforms, [switch]$WindowsTestMsix, [switch]$Publish) {
+        $arguments = @(
             '-Variants', $Variants,
             '-Platforms', $Platforms,
             '-DotNetTfm', 'net11.0'
         )
+        if ($WindowsTestMsix) { $arguments += '-WindowsTestMsix' }
+        if ($Publish) { $arguments += '-Publish' }
+        return Invoke-ExternalPowerShell $script:prepareMatrixScriptPath $arguments
     }
 
     function New-SourceRefTestRepository(
@@ -2145,6 +2171,140 @@ Describe 'packaged payload provenance' {
         {
             Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha -Manifest $fixture.Manifest
         } | Should -Throw '*not from*'
+    }
+}
+
+Describe 'Windows test MSIX' {
+    BeforeEach { Reset-BuildTestEnvironment }
+
+    It 'leaves the default eight-app matrix unchanged' {
+        $result = Invoke-PrepareMatrix -Variants all -Platforms all
+        $result.ExitCode | Should -Be 0
+        $matrix = ($result.Output -replace '(?s)^.*?Matrix: ', '').Trim() | ConvertFrom-Json
+        $matrix.include.Count | Should -Be 8
+    }
+
+    It 'selects only the Windows x64 sample when explicitly requested' {
+        $result = Invoke-PrepareMatrix -Variants all -Platforms all -WindowsTestMsix
+        $result.ExitCode | Should -Be 0
+        $matrix = ($result.Output -replace '(?s)^.*?Matrix: ', '').Trim() | ConvertFrom-Json
+        $matrix.include.Count | Should -Be 1
+        $matrix.include[0].platform | Should -Be windows
+        $matrix.include[0].variant | Should -Be sample
+        $matrix.include[0].runtimeIdentifier | Should -Be win-x64
+    }
+
+    It 'rejects store publishing in the opt-in matrix path' {
+        $result = Invoke-PrepareMatrix -Variants all -Platforms all -WindowsTestMsix -Publish
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'cannot be combined with store publishing'
+    }
+
+    It 'rejects test MSIX with publish or a non-Windows platform in the real build entry point' -ForEach @(
+        @{ Platform = 'android'; Publish = $false },
+        @{ Platform = 'windows'; Publish = $true }
+    ) {
+        $case = New-BuildTestCase
+        $result = Invoke-BuildTemplateApp $case -Platform $Platform -TargetFramework net10.0-windows10.0.19041.0 `
+            -RuntimeIdentifier win-x64 -Publish:$Publish -WindowsTestMsix
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'Windows x64 dry run without store'
+    }
+
+    It 'reads the actual MSIX identity and verifies contained source DLLs, deps and template hashes' {
+        $fixture = New-SourcePackageFixture
+        $archive = New-FakePayloadArchive -Path (Join-Path $fixture.Root 'sample.msix') -Manifest $fixture.Manifest
+        $info = Get-WindowsPackageInfo $archive.FullName
+        $info.Publisher | Should -BeExactly 'CN=MAUI Template Test'
+        $info.Architecture | Should -Be x64
+        $info.Dependencies.Count | Should -Be 0
+        $proof = Get-AppPayloadProof $archive.FullName $fixture.SourceSha $fixture.Manifest
+        $proof.assemblies.Count | Should -Be 3
+        $proof.dependencies | Should -Contain "Microsoft.Maui.Controls/$($fixture.Version)"
+    }
+
+    It 'rejects an MSIX missing <Entry>' -ForEach @(
+        @{ Entry = 'coreclr.dll'; Error = '*Self-contained MSIX*' },
+        @{ Entry = 'Microsoft.Maui.Graphics.dll'; Error = '*Required MAUI assembly*' },
+        @{ Entry = 'source-provenance.json'; Error = '*template source provenance*' },
+        @{ Entry = 'TestApp.deps.json'; Error = '*dependency manifest*' },
+        @{ Entry = 'TestApp.runtimeconfig.json'; Error = '*runtime configuration*' }
+    ) {
+        $fixture = New-SourcePackageFixture
+        $archive = New-FakePayloadArchive -Path (Join-Path $fixture.Root 'incomplete.msix') -Manifest $fixture.Manifest
+        $zip = [IO.Compression.ZipFile]::Open($archive.FullName, [IO.Compression.ZipArchiveMode]::Update)
+        try { $zip.GetEntry($Entry).Delete() } finally { $zip.Dispose() }
+        { Get-AppPayloadProof $archive.FullName $fixture.SourceSha $fixture.Manifest } | Should -Throw $Error
+    }
+
+    It 'rejects a stale template hash inside an otherwise source-built MSIX' {
+        $fixture = New-SourcePackageFixture
+        $archive = New-FakePayloadArchive -Path (Join-Path $fixture.Root 'wrong-template.msix') -Manifest $fixture.Manifest
+        $zip = [IO.Compression.ZipFile]::Open($archive.FullName, [IO.Compression.ZipArchiveMode]::Update)
+        try {
+            $zip.GetEntry('source-provenance.json').Delete()
+            Add-ZipEntryFromText $zip 'source-provenance.json' '{"sourceSha":"old","template":{"sha512":"wrong"}}'
+        } finally { $zip.Dispose() }
+        { Get-AppPayloadProof $archive.FullName $fixture.SourceSha $fixture.Manifest } | Should -Throw '*embedded template provenance*'
+    }
+
+    It 'refuses unsupported bundles instead of skipping their nested payloads' {
+        { Get-AppPayloadProof 'sample.msixbundle' $script:fixtureSourceSha @{} } | Should -Throw '*single x64 MSIX*'
+    }
+
+    It 'rejects <Status> signatures' -ForEach @(
+        @{ Status = 'NotSigned' }, @{ Status = 'HashMismatch' }, @{ Status = 'NotTrusted' }, @{ Status = 'UnknownError' }
+    ) {
+        { Assert-WindowsPackageSignature ([pscustomobject]@{ Status = $Status; SignerCertificate = $null }) 'expected' } |
+            Should -Throw '*signature is invalid*'
+    }
+
+    It 'rejects a valid signature by a different certificate' {
+        { Assert-WindowsPackageSignature ([pscustomobject]@{ Status = 'Valid'; SignerCertificate = @{ Thumbprint = 'different' } }) 'expected' } |
+            Should -Throw '*does not match*'
+    }
+
+    It 'accepts only a valid signature matching the exported public certificate' {
+        { Assert-WindowsPackageSignature ([pscustomobject]@{ Status = 'Valid'; SignerCertificate = @{ Thumbprint = 'expected' } }) 'expected' } |
+            Should -Not -Throw
+    }
+
+    It 'accepts a public-only leaf code-signing certificate and rejects a publisher mismatch or CA certificate' {
+        $key = [Security.Cryptography.RSA]::Create(2048)
+        $request = [Security.Cryptography.X509Certificates.CertificateRequest]::new(
+            'CN=MAUI Template Test', $key, [Security.Cryptography.HashAlgorithmName]::SHA256,
+            [Security.Cryptography.RSASignaturePadding]::Pkcs1)
+        $oids = [Security.Cryptography.OidCollection]::new()
+        $oids.Add([Security.Cryptography.Oid]::new('1.3.6.1.5.5.7.3.3')) | Out-Null
+        $request.CertificateExtensions.Add([Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]::new($oids, $true))
+        $request.CertificateExtensions.Add([Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($false, $false, 0, $true))
+        $private = $request.CreateSelfSigned([DateTimeOffset]::Now.AddMinutes(-1), [DateTimeOffset]::Now.AddDays(1))
+        $public = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            $private.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+        try {
+            $public.HasPrivateKey | Should -BeFalse
+            { Assert-WindowsTestCertificate $public 'CN=MAUI Template Test' } | Should -Not -Throw
+            { Assert-WindowsTestCertificate $public 'CN=Different Publisher' } | Should -Throw '*Invalid or expired*'
+            $request.CertificateExtensions.RemoveAt(1)
+            $request.CertificateExtensions.Add([Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($true, $false, 0, $true))
+            $ca = $request.CreateSelfSigned([DateTimeOffset]::Now.AddMinutes(-1), [DateTimeOffset]::Now.AddDays(1))
+            try { { Assert-WindowsTestCertificate $ca 'CN=MAUI Template Test' } | Should -Throw '*non-CA*' } finally { $ca.Dispose() }
+        } finally { $public.Dispose(); $private.Dispose(); $key.Dispose() }
+    }
+
+    It 'keeps test-certificate consent explicit and never uses the root CA store or exports private keys' {
+        $installer = Get-Content (Join-Path $PSScriptRoot 'Install-WindowsTestApp.ps1') -Raw
+        $signer = Get-Content (Join-Path $PSScriptRoot 'Windows-Msix.ps1') -Raw
+        $validator = Get-Content (Join-Path $PSScriptRoot 'Test-WindowsTestApp.ps1') -Raw
+        $installer | Should -Match 'Read-Host'
+        $installer | Should -Match "consent -cne 'TRUST'"
+        $installer | Should -Match ([regex]::Escape('Cert:\LocalMachine\TrustedPeople'))
+        "$installer$signer$validator" | Should -Not -Match 'Cert:\\(?:LocalMachine|CurrentUser)\\Root|Export-PfxCertificate|ExecutionPolicy'
+        $signer | Should -Match 'KeyExportPolicy NonExportable'
+        $signer | Should -Match 'Export-Certificate'
+        $validator | Should -Match 'AllowDisposableRunnerTrust'
+        $validator | Should -Match "RUNNER_ENVIRONMENT -ne 'github-hosted'"
+        $script:workflowText | Should -Match "signature_verified == 'true'"
     }
 }
 
