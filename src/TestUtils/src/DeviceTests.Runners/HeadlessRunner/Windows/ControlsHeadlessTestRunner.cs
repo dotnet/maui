@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
 using Xunit;
@@ -14,7 +15,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 	public class ControlsHeadlessTestRunner : AndroidApplicationEntryPoint
 	{
 		const string CategoriesFileName = "devicetestcategories.txt";
+		const string PerformanceCategoryPrefix = "Performance";
+		const string IncludePerformanceTestsEnvironmentVariable = "MAUI_INCLUDE_PERFORMANCE_TESTS";
 		readonly string _categoriesFilePath;
+		readonly string _completionFilePath;
+		readonly string? _performanceRunId = Environment.GetEnvironmentVariable("MAUI_PERF_RUN_ID");
+
+		internal bool IsPerformanceRun => !string.IsNullOrEmpty(_performanceRunId);
+		internal int PerformanceExitCode { get; private set; } = 1;
 
 		public static string? TestResultsFile;
 		public static int? LoopCount;
@@ -32,6 +40,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_options = options;
 			_resultsPath = TestResultsFile;
 			_categoriesFilePath = Path.Combine(Path.GetDirectoryName(_resultsPath) ?? string.Empty, CategoriesFileName);
+			_completionFilePath = _resultsPath + ".completed";
 			_loopCount = LoopCount ?? 0;
 			_logger = new();
 			_categoriesToSkip = new List<string>();
@@ -54,7 +63,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		protected override void TerminateWithSuccess()
 		{
-			UI.Xaml.Application.Current.Exit();
+			// The performance host exits only after RunAsync has closed the result writer.
+			if (!IsPerformanceRun)
+				UI.Xaml.Application.Current.Exit();
 		}
 
 		protected override TestRunner GetTestRunner(LogWriter logWriter)
@@ -68,6 +79,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public async Task<string?> RunTestsAsync()
 		{
+			bool testsPassed = false;
 			TestsCompleted += OnTestsCompleted;
 
 			try
@@ -75,8 +87,12 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				// Got called with -1 parameter, just discover the tests to run
 				if (_loopCount == -1)
 				{
-					var categories = DiscoverTestsInAssemblies();
-					File.WriteAllLines(_categoriesFilePath, categories.ToArray());
+					var categories = DiscoverTestsInAssemblies().ToArray();
+					if (IsPerformanceRun && categories.Length == 0)
+						throw new InvalidOperationException("No Windows test categories were discovered.");
+
+					File.WriteAllLines(_categoriesFilePath, categories);
+					CompletePerformanceRun();
 
 					TerminateWithSuccess();
 					return null;
@@ -97,24 +113,49 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				}
 
 				var currentCategory = categoriesToRun[0];
-				var resultPath = _resultsPath?.Split(".xml") ?? new[] { "" };
-				_resultsPath = $"{resultPath[0]}_{currentCategory}.xml";
+				if (IsPerformanceRun && !currentCategory.StartsWith(PerformanceCategoryPrefix, StringComparison.Ordinal))
+					throw new InvalidOperationException($"'{currentCategory}' is not a Windows performance test category.");
+
+				_resultsPath = $"{Path.ChangeExtension(_resultsPath, null)}_{currentCategory}.xml";
 
 				await RunAsync();
+
+				if (IsPerformanceRun)
+				{
+					if (!testsPassed)
+						throw new InvalidOperationException("Windows performance tests did not complete successfully.");
+
+					XDocument.Load(TestsResultsFinalPath);
+					CompletePerformanceRun();
+				}
 			}
 			catch (Exception ex)
 			{
 				_logger.WriteLine(ex.ToString());
 			}
-			TestsCompleted -= OnTestsCompleted;
+			finally
+			{
+				TestsCompleted -= OnTestsCompleted;
+			}
 
 			if (File.Exists(TestsResultsFinalPath))
 				return TestsResultsFinalPath;
 
 			return null;
 
+			void CompletePerformanceRun()
+			{
+				if (IsPerformanceRun)
+				{
+					File.WriteAllText(_completionFilePath, _performanceRunId);
+					PerformanceExitCode = 0;
+				}
+			}
+
 			void OnTestsCompleted(object? sender, TestRunResult results)
 			{
+				testsPassed = results.ExecutedTests > 0 && results.PassedTests > 0 &&
+					results.FailedTests == 0 && results.InconclusiveTests == 0;
 				var message =
 					$"Tests run: {results.ExecutedTests} " +
 					$"Passed: {results.PassedTests} " +
@@ -148,16 +189,26 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 							framework.Find(false, sink, discoveryOptions);
 							sink.Finished.WaitOne();
 
-							result.AddRange(sink.TestCases.SelectMany(tc => tc.Traits["Category"]).Distinct());
+							var categories = sink.TestCases.SelectMany(tc => tc.Traits["Category"]).Distinct();
+							if (!string.Equals(
+								Environment.GetEnvironmentVariable(IncludePerformanceTestsEnvironmentVariable),
+								"1",
+								StringComparison.Ordinal))
+							{
+								categories = categories.Where(category =>
+									!category.StartsWith(PerformanceCategoryPrefix, StringComparison.Ordinal));
+							}
+
+							result.AddRange(categories);
 						}
 					}
-					catch (Exception e)
+					catch (Exception e) when (!IsPerformanceRun)
 					{
 						Debug.WriteLine(e);
 					}
 				}
 			}
-			catch (Exception e)
+			catch (Exception e) when (!IsPerformanceRun)
 			{
 				Debug.WriteLine(e);
 			}
