@@ -2,6 +2,10 @@
 using System;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
+#if IOS || MACCATALYST
+using Microsoft.Maui.Controls.Platform;
+using UIKit;
+#endif
 
 namespace Microsoft.Maui.Controls
 {
@@ -64,7 +68,33 @@ namespace Microsoft.Maui.Controls
 		{
 			UpdateSemantics();
 			Handler?.UpdateValue(nameof(IView.Semantics));
+
+#if IOS || MACCATALYST
+			UpdateCollectionViewAccessibilityTraits();
+#endif
 		}
+
+#if IOS || MACCATALYST
+		void UpdateCollectionViewAccessibilityTraits()
+		{
+			if (this.FindParentOfType<CollectionView>() is not CollectionView collectionView ||
+				Handler?.PlatformView is not UIView platformView)
+			{
+				return;
+			}
+
+			UIView current = platformView;
+			while (current is not null && current is not UICollectionViewCell)
+			{
+				current = current.Superview;
+			}
+
+			if (current is UICollectionViewCell cell)
+			{
+				cell.UpdateAccessibilityTraits(collectionView, invalidateAccessibilityTarget: true);
+			}
+		}
+#endif
 
 		static void MapContainerView(IViewHandler handler, VisualElement element) =>
 			element._platformContainerViewChanged?.Invoke(element, EventArgs.Empty);
