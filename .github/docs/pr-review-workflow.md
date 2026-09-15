@@ -30,6 +30,11 @@ Use `/review tests` when the question is specifically about CI/test failures, fo
 
 Do not use `/review tests` as a substitute for a code review. It does not approve, request changes, apply labels, trigger reruns, or change the PR. It only posts evidence-based failure classification.
 
+For a separate, explicitly manual local UI trial in Copilot, use
+`check-pr-ui-evidence` for deterministic measurements and optionally `ui-evidence`
+to interpret existing captures. These are [local skills](ui-evidence.md), not
+automated PR commands; they do not require a new pipeline or post PR comments.
+
 ## `/review`: full PR review
 
 ### Trigger
