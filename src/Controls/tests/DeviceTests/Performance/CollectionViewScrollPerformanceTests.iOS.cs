@@ -133,7 +133,8 @@ namespace Microsoft.Maui.DeviceTests
 				result.Counters["positionsOutsideTolerance"] = measuredTargetPositions.Count(
 					position => Math.Abs(position - baselinePosition) > PositionTolerance);
 
-				DevicePerformanceReporter.Write(result);
+				DevicePerformanceReporter.Write(result,
+					result.Counters["positionsOutsideTolerance"] == 0);
 			}, MauiContext, TimeSpan.FromMinutes(2));
 		}
 

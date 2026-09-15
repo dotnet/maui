@@ -21,16 +21,15 @@ param(
     [string]$Repository,
 
     [Parameter(Mandatory = $true)]
+    [ValidateRange(1, [int]::MaxValue)]
     [int]$PullRequestNumber,
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z')]
+    [string]$PullRequestAuthor = "",
 
     [Parameter(Mandatory = $true)]
     [string]$HarnessSha,
-
-    [Parameter(Mandatory = $true)]
-    [string]$AzdoBuildId,
-
-    [Parameter(Mandatory = $true)]
-    [string]$AzdoBuildUrl,
 
     [Parameter(Mandatory = $true)]
     [string]$BaseRuntimeVariant,
@@ -71,16 +70,15 @@ $category = switch ($ExpectedScenario) {
 $parser = Join-Path $PSScriptRoot "Parse-DevicePerformanceResults.ps1"
 $comparator = Join-Path $PSScriptRoot "Compare-DevicePerformanceResults.ps1"
 
-function Get-EnvironmentValue([string]$name, [string]$defaultValue) {
-    $value = [Environment]::GetEnvironmentVariable($name)
-    return $(if ([string]::IsNullOrWhiteSpace($value)) { $defaultValue } else { $value })
-}
-
 function Wait-ForSuccessfulProcess(
     [Diagnostics.Process]$process,
     [int]$timeoutSeconds,
-    [string]$description
+    [string]$description,
+    [string]$completionFile,
+    [string]$runId
 ) {
+    # Windows PowerShell needs the handle retained to read redirected processes' exit codes.
+    $null = $process.Handle
     if (-not $process.WaitForExit($timeoutSeconds * 1000)) {
         Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         [void]$process.WaitForExit(30000)
@@ -93,6 +91,22 @@ function Wait-ForSuccessfulProcess(
     if ($process.ExitCode -ne 0) {
         throw "$description exited with code $($process.ExitCode)."
     }
+
+    if (-not (Test-Path -LiteralPath $completionFile -PathType Leaf) -or
+        (Get-Content -LiteralPath $completionFile -Raw) -cne $runId) {
+        throw "$description did not report successful completion for this invocation: $completionFile. Both apps must use the current Windows performance runner."
+    }
+}
+
+function Remove-PreviousOutput([string[]]$paths) {
+    foreach ($path in $paths) {
+        if (Test-Path -LiteralPath $path) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                throw "Expected a Windows performance output file: $path"
+            }
+            Remove-Item -LiteralPath $path -Force
+        }
+    }
 }
 
 function Get-CategoryIndex([string]$app, [string]$variant) {
@@ -100,26 +114,31 @@ function Get-CategoryIndex([string]$app, [string]$variant) {
     New-Item -ItemType Directory -Force -Path $discoveryDirectory | Out-Null
     $resultsFile = Join-Path $discoveryDirectory "TestResults.xml"
     $categoryFile = Join-Path $discoveryDirectory "devicetestcategories.txt"
-    Remove-Item -LiteralPath $resultsFile, $categoryFile -Force -ErrorAction SilentlyContinue
+    $completionFile = "$resultsFile.completed"
+    $runId = [Guid]::NewGuid().ToString("N")
+    Remove-PreviousOutput @($resultsFile, $categoryFile, $completionFile)
 
     $savedInclude = $env:MAUI_INCLUDE_PERFORMANCE_TESTS
+    $savedRunId = $env:MAUI_PERF_RUN_ID
     $env:MAUI_INCLUDE_PERFORMANCE_TESTS = "1"
+    $env:MAUI_PERF_RUN_ID = $runId
     try {
         $process = Start-Process `
             -FilePath $app `
             -ArgumentList "`"$resultsFile`"", "-1" `
             -WorkingDirectory (Split-Path -Parent $app) `
             -PassThru
-        Wait-ForSuccessfulProcess $process $DiscoveryTimeoutSeconds "$variant category discovery"
-        if (-not (Test-Path $categoryFile)) {
+        Wait-ForSuccessfulProcess $process $DiscoveryTimeoutSeconds "$variant category discovery" $completionFile $runId
+        if (-not (Test-Path -LiteralPath $categoryFile -PathType Leaf)) {
             throw "Windows performance category discovery failed for $variant."
         }
     }
     finally {
         $env:MAUI_INCLUDE_PERFORMANCE_TESTS = $savedInclude
+        $env:MAUI_PERF_RUN_ID = $savedRunId
     }
 
-    $categories = @(Get-Content $categoryFile)
+    $categories = @(Get-Content -LiteralPath $categoryFile)
     $index = [Array]::IndexOf($categories, $category)
     if ($index -lt 0) {
         throw "Windows performance category '$category' was not discovered for $variant."
@@ -128,8 +147,12 @@ function Get-CategoryIndex([string]$app, [string]$variant) {
     return $index
 }
 
+$BaseApp = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($BaseApp)
+$HeadApp = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($HeadApp)
+$OutputDirectory = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputDirectory)
+
 foreach ($app in @($BaseApp, $HeadApp)) {
-    if (-not (Test-Path $app)) {
+    if (-not (Test-Path -LiteralPath $app -PathType Leaf)) {
         throw "Windows performance app does not exist: $app"
     }
 }
@@ -178,19 +201,23 @@ if ($DryRun) {
     exit 0
 }
 
+$resultFiles = New-Object System.Collections.Generic.List[string]
 foreach ($run in $runs) {
     $runDirectory = Join-Path $OutputDirectory "$($run.Variant)-run$($run.Number)"
     New-Item -ItemType Directory -Force -Path $runDirectory | Out-Null
     $testResults = Join-Path $runDirectory "TestResults.xml"
+    $categoryResults = Join-Path $runDirectory "TestResults_$category.xml"
+    $completionFile = "$testResults.completed"
     $resultFile = Join-Path $runDirectory "maui-perf-result.log"
     $consoleLog = Join-Path $runDirectory "windows-console.log"
     $errorLog = Join-Path $runDirectory "windows-error.log"
-    Remove-Item -LiteralPath $testResults, $resultFile, $consoleLog, $errorLog -Force -ErrorAction SilentlyContinue
-    Copy-Item $run.CategoryFile (Join-Path $runDirectory "devicetestcategories.txt") -Force
+    Remove-PreviousOutput @($testResults, $categoryResults, $completionFile, $resultFile, $consoleLog, $errorLog)
+    Copy-Item -LiteralPath $run.CategoryFile -Destination (Join-Path $runDirectory "devicetestcategories.txt") -Force
     $runtimeVariant = if ($run.Variant -eq "base") { $BaseRuntimeVariant } else { $HeadRuntimeVariant }
     $sdkVersion = if ($run.Variant -eq "base") { $BaseSdkVersion } else { $HeadSdkVersion }
     $environment = [ordered]@{
         MAUI_INCLUDE_PERFORMANCE_TESTS = "1"
+        MAUI_PERF_RUN_ID = [Guid]::NewGuid().ToString("N")
         MAUI_PERF_RESULT_FILE = $resultFile
         MAUI_PERF_VARIANT = $run.Variant
         MAUI_PERF_COMMIT_SHA = $run.CommitSha
@@ -199,10 +226,6 @@ foreach ($run in $runs) {
         MAUI_PERF_HARNESS_SHA = $HarnessSha
         MAUI_PERF_RUN_ORDINAL = $run.Number
         MAUI_PERF_EXPECTED_VARIANT_RUNS = $ExpectedVariantRuns
-        MAUI_PERF_AZDO_BUILD_ID = $AzdoBuildId
-        MAUI_PERF_AZDO_BUILD_URL = $AzdoBuildUrl
-        MAUI_PERF_HELIX_JOB_ID = Get-EnvironmentValue "HELIX_CORRELATION_ID" "local"
-        MAUI_PERF_HELIX_WORK_ITEM = Get-EnvironmentValue "HELIX_WORKITEM_FRIENDLYNAME" "local"
         MAUI_PERF_RUNTIME_VARIANT = $runtimeVariant
         MAUI_PERF_SDK_VERSION = $sdkVersion
     }
@@ -220,10 +243,24 @@ foreach ($run in $runs) {
             -RedirectStandardOutput $consoleLog `
             -RedirectStandardError $errorLog `
             -PassThru
-        Wait-ForSuccessfulProcess $process $RunTimeoutSeconds "$($run.Variant) run $($run.Number)"
-        if (-not (Test-Path $resultFile)) {
-            throw "Windows performance result was not created: $resultFile"
+        Wait-ForSuccessfulProcess $process $RunTimeoutSeconds "$($run.Variant) run $($run.Number)" $completionFile $environment.MAUI_PERF_RUN_ID
+        if (-not (Test-Path -LiteralPath $resultFile -PathType Leaf) -or
+            (Get-Item -LiteralPath $resultFile).Length -eq 0) {
+            throw "Windows performance result was not created or is empty: $resultFile"
         }
+        if (-not (Test-Path -LiteralPath $categoryResults -PathType Leaf)) {
+            throw "Windows test results were not created: $categoryResults"
+        }
+        try {
+            $xml = [xml](Get-Content -LiteralPath $categoryResults -Raw)
+            if ($null -eq $xml.DocumentElement) {
+                throw "The test results document is empty."
+            }
+        }
+        catch {
+            throw "Invalid Windows test results in '$categoryResults': $($_.Exception.Message)"
+        }
+        $resultFiles.Add($resultFile)
     }
     finally {
         foreach ($entry in $savedEnvironment.GetEnumerator()) {
@@ -235,7 +272,7 @@ foreach ($run in $runs) {
 $resultsPath = Join-Path $OutputDirectory "results.json"
 $summaryJson = Join-Path $OutputDirectory "comparison-summary.json"
 $summaryMarkdown = Join-Path $OutputDirectory "comparison-summary.md"
-& $parser -InputPath $OutputDirectory -OutputPath $resultsPath
+& $parser -InputPath $resultFiles.ToArray() -OutputPath $resultsPath
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
@@ -246,6 +283,7 @@ if ($LASTEXITCODE -ne 0) {
     -MarkdownOut $summaryMarkdown `
     -ExpectedRepository $Repository `
     -ExpectedPullRequestNumber $PullRequestNumber `
+    -PullRequestAuthor $PullRequestAuthor `
     -ExpectedBaseCommitSha $BaseCommitSha `
     -ExpectedHeadCommitSha $HeadCommitSha `
     -ExpectedHarnessSha $HarnessSha `

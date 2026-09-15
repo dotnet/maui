@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Platform;
 #if ANDROID
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 #endif
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public sealed class DevicePerformanceResult
 	{
-		public const int CurrentSchemaVersion = 2;
+		public const int CurrentSchemaVersion = 3;
 
 		public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 		public string Repository { get; init; } = DevicePerformanceEnvironment.GetValue("MAUI_PERF_REPOSITORY") ?? "unknown";
@@ -29,32 +30,14 @@ namespace Microsoft.Maui.DeviceTests
 		public string HarnessSha { get; init; } = DevicePerformanceEnvironment.GetValue("MAUI_PERF_HARNESS_SHA") ?? "unknown";
 		public int RunOrdinal { get; init; } = DevicePerformanceEnvironment.GetInt32("MAUI_PERF_RUN_ORDINAL");
 		public int ExpectedVariantRuns { get; init; } = DevicePerformanceEnvironment.GetInt32("MAUI_PERF_EXPECTED_VARIANT_RUNS");
-		public DevicePerformanceBuildIdentity Build { get; init; } = DevicePerformanceBuildIdentity.Create();
 		public DevicePerformanceEnvironmentInfo Environment { get; init; } = DevicePerformanceEnvironmentInfo.Create();
-		public DevicePerformanceCorrectness Correctness { get; init; } = new();
+		public DevicePerformanceCorrectness Correctness { get; internal set; } = new();
 		public DateTimeOffset TimestampUtc { get; init; } = DateTimeOffset.UtcNow;
 		public int WarmupCount { get; init; }
 		public double[] MeasurementsMilliseconds { get; init; } = [];
 		public DevicePerformanceStatistics Statistics { get; init; } = new();
 		public Dictionary<string, double> Counters { get; init; } =
 			new Dictionary<string, double>(StringComparer.Ordinal);
-	}
-
-	public sealed class DevicePerformanceBuildIdentity
-	{
-		public string AzdoBuildId { get; init; } = string.Empty;
-		public string AzdoBuildUrl { get; init; } = string.Empty;
-		public string HelixJobId { get; init; } = string.Empty;
-		public string HelixWorkItem { get; init; } = string.Empty;
-
-		internal static DevicePerformanceBuildIdentity Create() =>
-			new()
-			{
-				AzdoBuildId = DevicePerformanceEnvironment.GetValue("MAUI_PERF_AZDO_BUILD_ID") ?? "unknown",
-				AzdoBuildUrl = DevicePerformanceEnvironment.GetValue("MAUI_PERF_AZDO_BUILD_URL") ?? "unknown",
-				HelixJobId = DevicePerformanceEnvironment.GetValue("MAUI_PERF_HELIX_JOB_ID") ?? "local",
-				HelixWorkItem = DevicePerformanceEnvironment.GetValue("MAUI_PERF_HELIX_WORK_ITEM") ?? "local"
-			};
 	}
 
 	public sealed class DevicePerformanceEnvironmentInfo
@@ -99,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 
 	public sealed class DevicePerformanceCorrectness
 	{
-		public bool Passed { get; init; } = true;
+		public bool Passed { get; init; }
 		public string AccessibilityStatus { get; init; } = "not-assessed";
 	}
 
@@ -189,12 +172,19 @@ namespace Microsoft.Maui.DeviceTests
 		public const string ResultPrefix = "MAUI_PERF_RESULT:";
 		public const string ChunkPrefix = "MAUI_PERF_CHUNK:";
 
-		public static void Write(DevicePerformanceResult result)
+		public static void Write(DevicePerformanceResult result, bool correctnessPassed)
 		{
 			ArgumentNullException.ThrowIfNull(result);
+			ArgumentNullException.ThrowIfNull(result.Correctness);
 
 			if (result.SchemaVersion != DevicePerformanceResult.CurrentSchemaVersion)
 				throw new ArgumentException($"Unsupported schema version: {result.SchemaVersion}", nameof(result));
+
+			result.Correctness = new DevicePerformanceCorrectness
+			{
+				Passed = correctnessPassed,
+				AccessibilityStatus = result.Correctness.AccessibilityStatus
+			};
 
 			string serializedResult =
 				$"{ResultPrefix}{JsonSerializer.Serialize(result, DevicePerformanceJsonContext.Default.DevicePerformanceResult)}";
@@ -229,12 +219,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 
+	public static class DevicePerformanceVerification
+	{
+		public static bool PickerTextMatches(
+			DateTime? date,
+			string dateFormat,
+			TimeSpan? time,
+			string timeFormat,
+			string? nativeDateText,
+			string? nativeTimeText) =>
+			nativeDateText == (date?.ToString(dateFormat) ?? string.Empty) &&
+			nativeTimeText == (time?.ToFormattedString(timeFormat) ?? string.Empty);
+	}
+
 	[JsonSourceGenerationOptions(
 			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
 			PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
 			WriteIndented = false)]
 	[JsonSerializable(typeof(DevicePerformanceResult))]
-	[JsonSerializable(typeof(DevicePerformanceBuildIdentity))]
 	[JsonSerializable(typeof(DevicePerformanceEnvironmentInfo))]
 	[JsonSerializable(typeof(DevicePerformanceCorrectness))]
 	[JsonSerializable(typeof(DevicePerformanceStatistics))]

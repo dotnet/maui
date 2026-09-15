@@ -87,7 +87,9 @@ namespace Microsoft.Maui.DeviceTests
 						counters["completedUpdateBatches"]++;
 					});
 
-				DevicePerformanceReporter.Write(result);
+				DevicePerformanceReporter.Write(result,
+					result.Counters["nativeValueMismatchCount"] == 0 &&
+					result.Counters["completedUpdateBatches"] == WarmupCount + IterationCount);
 			}, MauiContext, TimeSpan.FromMinutes(2));
 		}
 
@@ -110,8 +112,9 @@ namespace Microsoft.Maui.DeviceTests
 				&& nativeButton.Enabled == button.IsEnabled
 				&& nativeEntry.Text == entry.Text
 				&& nativePicker.Text == picker.SelectedItem?.ToString()
-				&& !string.IsNullOrWhiteSpace(nativeDatePicker.Text)
-				&& !string.IsNullOrWhiteSpace(nativeTimePicker.Text);
+				&& DevicePerformanceVerification.PickerTextMatches(
+					datePicker.Date, datePicker.Format, timePicker.Time, timePicker.Format,
+					nativeDatePicker.Text, nativeTimePicker.Text);
 #elif WINDOWS
 			return label.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.TextBlock nativeLabel
 				&& button.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.Button nativeButton

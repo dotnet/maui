@@ -117,7 +117,10 @@ namespace Microsoft.Maui.DeviceTests
 					},
 					counters);
 
-				DevicePerformanceReporter.Write(result);
+				DevicePerformanceReporter.Write(result,
+					result.Counters["maximumCenterError"] <= CenterTolerance &&
+					result.Counters["positionsOutsideTolerance"] == 0 &&
+					result.Counters["positionMismatchCount"] == 0);
 			}, MauiContext, TimeSpan.FromMinutes(2));
 		}
 

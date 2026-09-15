@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Extracts MAUI device-performance JSON records from XHarness, Helix, or test logs.
+    Extracts MAUI device-performance JSON records from local XHarness or test logs.
 #>
 
 param(
@@ -75,15 +75,15 @@ function Add-PerformanceResult([string]$json, [string]$source) {
     Assert-RequiredProperty $result "harnessSha" $source
     Assert-RequiredProperty $result "runOrdinal" $source
     Assert-RequiredProperty $result "expectedVariantRuns" $source
-    Assert-RequiredProperty $result "build" $source
     Assert-RequiredProperty $result "environment" $source
     Assert-RequiredProperty $result "correctness" $source
     Assert-RequiredProperty $result "timestampUtc" $source
+    Assert-RequiredProperty $result "warmupCount" $source
     Assert-RequiredProperty $result "measurementsMilliseconds" $source
     Assert-RequiredProperty $result "statistics" $source
     Assert-RequiredProperty $result "counters" $source
 
-    if ([int]$result.schemaVersion -ne 2)
+    if ([int]$result.schemaVersion -ne 3)
     {
         throw "Unsupported performance result schema '$($result.schemaVersion)' in '$source'."
     }
@@ -96,15 +96,16 @@ function Add-PerformanceResult([string]$json, [string]$source) {
         throw "Performance result in '$source' has invalid PR/run provenance."
     }
 
+    if (($result.warmupCount -isnot [int] -and $result.warmupCount -isnot [long]) -or
+        $result.warmupCount -lt 0 -or $result.warmupCount -gt [int]::MaxValue)
+    {
+        throw "Performance result in '$source' must have a non-negative integer warmupCount."
+    }
+
     if ($result.variant -notin @("base", "head") -or
         $result.platform -notin @("android", "ios", "maccatalyst", "windows"))
     {
         throw "Performance result in '$source' has an unsupported variant or platform."
-    }
-
-    foreach ($field in @("azdoBuildId", "azdoBuildUrl", "helixJobId", "helixWorkItem"))
-    {
-        Assert-RequiredProperty $result.build $field $source
     }
 
     foreach ($field in @("executionKind", "deviceModel", "osVersion", "runtimeFramework", "processArchitecture", "runtimeVariant", "sdkVersion"))
