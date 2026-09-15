@@ -43,14 +43,26 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			var errors = new List<string>();
-			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			try
 			{
-				if (record.Args is BuildErrorEventArgs error)
+				foreach (var args in ReadBuildEvents(binLogFilePath))
 				{
-					var file = NormalizeFilePath(error.File ?? "");
-					var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
-					errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
+					if (args is BuildErrorEventArgs error)
+					{
+						var file = NormalizeFilePath(error.File ?? "");
+						var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
+						errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
+					}
 				}
+			}
+			catch (Exception ex) when (ex is IOException or InvalidDataException)
+			{
+				// A timed-out build can leave a truncated binlog. Keep the original build failure visible.
+				var message = $"[BuildWarningsUtilities] Could not completely read binlog '{binLogFilePath}': {ex.Message}";
+				if (output is null)
+					Console.WriteLine(message);
+				else
+					output.WriteLine(message);
 			}
 
 			if (errors.Count > 0)
@@ -74,15 +86,33 @@ namespace Microsoft.Maui.IntegrationTests
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
 			var actualWarnings = new List<WarningsPerFile>();
-			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			foreach (var args in ReadBuildEvents(binLogFilePath))
 			{
-				if (record.Args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
+				if (args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
 				{
 					// We normalize all warnings file paths for easier comparison
 					actualWarnings.AddActualWarning(NormalizeFilePath(warning.File), warning.Code, warning.Message);
 				}
 			}
 			return actualWarnings;
+		}
+
+		static IEnumerable<BuildEventArgs> ReadBuildEvents(string binLogFilePath)
+		{
+			using var stream = File.OpenRead(binLogFilePath);
+			bool buildFinished = false;
+			foreach (var record in new BinLogReader().ReadRecords(stream))
+			{
+				if (record.Args is BuildEventArgs args)
+				{
+					buildFinished |= args is BuildFinishedEventArgs;
+					yield return args;
+				}
+			}
+
+			// Some truncated logs end at a record boundary without throwing in the reader.
+			if (!buildFinished)
+				throw new InvalidDataException("The binlog is incomplete: no BuildFinished event was recorded.");
 		}
 
 		private static void AddActualWarning(this List<WarningsPerFile> warnings, string file, string code, string message)

@@ -9,20 +9,24 @@ namespace Microsoft.Maui.IntegrationTests
 		public static string Run(string tool, string args, out int exitCode,
 			string workingDirectory = "",
 			int timeoutInSeconds = 600,
-			ITestOutputHelper? output = null)
+			ITestOutputHelper? output = null,
+			bool killOnTimeout = true)
 		{
 			var info = new ProcessStartInfo(tool, args);
 
 			if (Directory.Exists(workingDirectory))
 				info.WorkingDirectory = workingDirectory;
 
-			return Run(info, out exitCode, timeoutInSeconds, output: output);
+			return Run(info, out exitCode, timeoutInSeconds, output: output, killOnTimeout: killOnTimeout);
 		}
 
 		public static string Run(ProcessStartInfo info, out int exitCode,
-			int timeoutInSeconds = 600, Action<Process>? inputAction = null, ITestOutputHelper? output = null)
+			int timeoutInSeconds = 600, Action<Process>? inputAction = null, ITestOutputHelper? output = null,
+			bool killOnTimeout = true)
 		{
 			var procOutput = new StringBuilder();
+			var stdoutClosed = new TaskCompletionSource();
+			var stderrClosed = new TaskCompletionSource();
 			using (var p = new Process())
 			{
 				p.StartInfo = info;
@@ -37,7 +41,9 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 				p.OutputDataReceived += (sender, o) =>
 				{
-					if (!string.IsNullOrEmpty(o?.Data))
+					if (o.Data is null)
+						stdoutClosed.TrySetResult();
+					else if (o.Data.Length > 0)
 					{
 						lock (procOutput)
 							procOutput.AppendLine(o.Data);
@@ -45,7 +51,9 @@ namespace Microsoft.Maui.IntegrationTests
 				};
 				p.ErrorDataReceived += (sender, e) =>
 				{
-					if (!string.IsNullOrEmpty(e?.Data))
+					if (e.Data is null)
+						stderrClosed.TrySetResult();
+					else if (e.Data.Length > 0)
 					{
 						lock (procOutput)
 							procOutput.AppendLine(e.Data);
@@ -61,7 +69,8 @@ namespace Microsoft.Maui.IntegrationTests
 					inputAction(p);
 				}
 
-				if (p.WaitForExit(timeoutInSeconds * 1000))
+				bool exited = p.WaitForExit(timeoutInSeconds * 1000);
+				if (exited)
 				{
 					exitCode = p.ExitCode;
 					output?.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' exited with code: {exitCode}");
@@ -69,10 +78,36 @@ namespace Microsoft.Maui.IntegrationTests
 				else
 				{
 					exitCode = -1;
+					output?.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' (PID {p.Id}) timed out after {timeoutInSeconds} seconds.");
+					if (killOnTimeout)
+					{
+						try
+						{
+							p.Kill(entireProcessTree: true);
+						}
+						catch (InvalidOperationException) when (p.HasExited)
+						{
+							// The process exited between the timeout and termination.
+						}
+						exited = p.WaitForExit(10000);
+						if (!exited)
+							throw new TimeoutException($"Process '{p.StartInfo.FileName}' (PID {p.Id}) did not exit after termination.");
+					}
 				}
-			}
 
-			return procOutput.ToString();
+				// Descendants may retain redirected pipes after the parent exits.
+				if (exited && !Task.WhenAll(stdoutClosed.Task, stderrClosed.Task).Wait(TimeSpan.FromSeconds(10)))
+				{
+					var message = $"[ToolRunner] Output capture for process '{p.StartInfo.FileName}' (PID {p.Id}) did not finish within 10 seconds.";
+					if (output is null)
+						Console.WriteLine(message);
+					else
+						output.WriteLine(message);
+				}
+
+				lock (procOutput)
+					return procOutput.ToString();
+			}
 		}
 
 	}
