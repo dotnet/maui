@@ -42,6 +42,48 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
+## Six-hour branch health monitor
+
+The regular GitHub Actions workflow `maui-pr-branch-monitor.yml` checks `maui-pr`
+every six hours (00:17, 06:17, 12:17, and 18:17 UTC). It monitors `inflight/current`,
+`inflight/candidate`, `main`, `net11.0`, and `net12.0`. Any configured branch that
+does not exist is explicitly reported as skipped and automatically included once
+created; its existing issues are left unchanged.
+
+A failed or partially successful build creates one `ci-branch-health` issue per
+branch outage and pings `@kubaflo`. Subsequent failed builds are added as comments,
+without repeated pings or edits to the issue body. The same build/result is not
+reported again, including after manual closure. A later failure can create a new
+issue after closure. A successful newer build (or successful retry of the same
+build) closes the monitor-owned issue. Human-authored issues and the separate
+`ci-scan` / `ci-scan-net11` root-cause trackers are never changed.
+
+The observation is the most recently **queued**, completed, non-canceled branch
+build, not the most recently finished build and not necessarily the current branch
+HEAD. Running and canceled builds do not erase the previous result. Missing build
+history, API errors, or ambiguous issue state fail the workflow visibly instead of
+being interpreted as green; unaffected branches are still checked. This monitor
+does not diagnose failures, run builds, or generate fixes, and uses no AI model.
+
+Manual dispatch defaults to `dry_run: true`, which previews actions in the run's
+step summary without writing to GitHub. Set it to `false` to publish. Pester tests
+run against the repository default branch even when dispatch names another ref;
+publication uses that exact tested commit. The AzDO reads are anonymous and only the monitor
+step receives `GITHUB_TOKEN` (as `GH_TOKEN`), with `contents: read` and
+`issues: write` job permissions. No additional secrets are needed. Set repository
+variable `MAUI_PR_BRANCH_MONITOR_DISABLED=true` to stop monitoring writes and reads
+(the regression-test job still runs).
+
+For a local read-only preview:
+
+```powershell
+pwsh -File .github/scripts/Watch-MauiPrBranches.ps1
+```
+
+Use an authenticated `gh` CLI for GitHub reads. Local regression coverage is
+`Invoke-Pester .github/scripts/Watch-MauiPrBranches.Tests.ps1`; the repository's
+PowerShell Script Tests workflow also runs it on relevant pull requests.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,
