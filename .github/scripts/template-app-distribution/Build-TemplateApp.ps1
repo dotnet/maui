@@ -35,11 +35,18 @@ param(
 
     [switch]$Publish,
 
+    [switch]$WindowsTestMsix,
+
     [switch]$CreateBinlog
 )
 
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot/Source-Packages.ps1"
+. "$PSScriptRoot/Windows-Msix.ps1"
+
+if ($WindowsTestMsix -and ($Publish -or $Platform -ne 'windows' -or $RuntimeIdentifier -ne 'win-x64')) {
+    throw "Windows test MSIX requires a Windows x64 dry run without store publishing."
+}
 
 function Assert-EnvironmentValue([string]$Name) {
     $value = [Environment]::GetEnvironmentVariable($Name)
@@ -911,6 +918,12 @@ switch ($Platform) {
     }
 
     "windows" {
+        if ($WindowsTestMsix) {
+            $package = New-WindowsTestMsix -ProjectFile $projectFile -TargetFramework $TargetFramework `
+                -Configuration $Configuration -OutputPath $OutputPath -AppBuildNumber $AppBuildNumber `
+                -BinlogArguments $binlogArguments
+            break
+        }
         $publishOutputPath = Join-Path $OutputPath "publish"
         Remove-Item -Path $publishOutputPath -Recurse -Force -ErrorAction SilentlyContinue
         New-Item -ItemType Directory -Path $publishOutputPath -Force | Out-Null
@@ -959,6 +972,11 @@ if (-not $Publish) {
 }
 $provenancePath = Join-Path $OutputPath 'provenance.json'
 $provenance | ConvertTo-Json -Depth 30 | Set-Content $provenancePath -Encoding utf8
+if ($WindowsTestMsix) {
+    $installablePath = $package.DirectoryName
+    Copy-Item $provenancePath (Join-Path $installablePath 'provenance.json')
+    if ($env:GITHUB_OUTPUT) { "installable_path=$installablePath" >> $env:GITHUB_OUTPUT }
+}
 
 Write-Host "Package artifact: $($package.FullName)"
 $sideloadResolved = if ($sideloadPackage) { $sideloadPackage.FullName } else { $package.FullName }

@@ -8,10 +8,20 @@ param(
     [string]$Platforms,
 
     [Parameter(Mandatory)]
-    [string]$DotNetTfm
+    [string]$DotNetTfm,
+
+    [switch]$WindowsTestMsix,
+
+    [switch]$Publish
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($WindowsTestMsix) {
+    if ($Publish) { throw "Windows test MSIX cannot be combined with store publishing." }
+    $Variants = 'sample'
+    $Platforms = 'windows'
+}
 
 function Split-InputList([string]$Value) {
     return @($Value.Split(',', [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim().ToLowerInvariant() })

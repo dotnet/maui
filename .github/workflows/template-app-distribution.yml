@@ -65,6 +65,11 @@ on:
         required: true
         default: false
         type: boolean
+      windows_test_msix:
+        description: Build only the Windows x64 sample as a self-signed test MSIX (publish must be false).
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -206,10 +211,14 @@ jobs:
           TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID }}
           TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID }}
           DOTNET_TFM: ${{ steps.sdk.outputs.dotnet_tfm }}
+          WINDOWS_TEST_MSIX: ${{ inputs.windows_test_msix || false }}
+          PUBLISH: ${{ inputs.publish }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Prepare-Matrix.ps1" `
             -Variants "all" `
             -Platforms "all" `
+            -WindowsTestMsix:([bool]::Parse($env:WINDOWS_TEST_MSIX)) `
+            -Publish:([bool]::Parse($env:PUBLISH)) `
             -DotNetTfm "$env:DOTNET_TFM"
 
   dry-run-build:
@@ -411,6 +420,7 @@ jobs:
           MATRIX_TARGET_FRAMEWORK: ${{ matrix.targetFramework }}
           MATRIX_RUNTIME_IDENTIFIER: ${{ matrix.runtimeIdentifier }}
           PROJECT_PATH: ${{ steps.app.outputs.project_path }}
+          WINDOWS_TEST_MSIX: ${{ inputs.windows_test_msix || false }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
             -ProjectPath "$env:PROJECT_PATH" `
@@ -422,10 +432,31 @@ jobs:
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
             -SourceManifestPath "${{ steps.pack.outputs.source_manifest_path }}" `
             -SourceSha "$env:SOURCE_SHA" `
+            -WindowsTestMsix:([bool]::Parse($env:WINDOWS_TEST_MSIX)) `
             -CreateBinlog
 
+      - name: Verify Windows test MSIX installation and launch
+        if: ${{ inputs.windows_test_msix && matrix.platform == 'windows' }}
+        id: msix_validation
+        shell: powershell
+        env:
+          INSTALLABLE_PATH: ${{ steps.build.outputs.installable_path }}
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Test-WindowsTestApp.ps1" `
+            -Path "$env:INSTALLABLE_PATH" `
+            -AllowDisposableRunnerTrust
+
+      - name: Upload Windows test installer
+        if: ${{ always() && inputs.windows_test_msix && steps.msix_validation.outputs.signature_verified == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-app-test-msix-sample-windows-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
+          path: ${{ steps.build.outputs.installable_path }}
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Upload dry-run artifact
-        if: ${{ always() }}
+        if: ${{ always() && !inputs.windows_test_msix }}
         uses: actions/upload-artifact@v4
         with:
           name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
@@ -436,8 +467,16 @@ jobs:
             ${{ steps.build.outputs.provenance_path }}
           retention-days: 14
 
+      - name: Upload Windows installer diagnostics
+        if: ${{ always() && inputs.windows_test_msix }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-app-msix-diagnostics-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
+          path: ${{ steps.build.outputs.binlog_path }}
+          retention-days: 14
+
       - name: Upload source-built package evidence
-        if: ${{ success() }}
+        if: ${{ always() && steps.build.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: source-packages-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}

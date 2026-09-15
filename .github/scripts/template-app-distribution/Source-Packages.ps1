@@ -209,10 +209,38 @@ function Expand-AndroidAssemblyPayload {
 function Get-AppPayloadProof {
     param([string]$Path, [string]$SourceSha, $Manifest)
 
+    $isMsix = [IO.Path]::GetExtension($Path) -in @('.msix', '.appx')
+    if ([IO.Path]::GetExtension($Path) -in @('.msixbundle', '.appxbundle')) {
+        throw "Bundle provenance is not supported; build a single x64 MSIX so no payload can be skipped."
+    }
     $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
     $assemblies = @()
     $dependencies = @()
     try {
+        if ($isMsix) {
+            if (-not $Manifest) { throw 'MSIX verification requires the source package manifest.' }
+            if (-not $archive.GetEntry('AppxManifest.xml')) { throw 'MSIX AppxManifest.xml is missing.' }
+            foreach ($name in @('coreclr.dll', 'hostfxr.dll', 'Microsoft.UI.Xaml.dll')) {
+                if ($name -notin $archive.Entries.Name) { throw "Self-contained MSIX is missing '$name'." }
+            }
+            $resources = @($archive.Entries | Where-Object Name -CEQ 'source-provenance.json')
+            if ($resources.Count -ne 1) { throw 'MSIX template source provenance is missing or ambiguous.' }
+            $reader = [IO.StreamReader]::new($resources[0].Open())
+            try { $templateProof = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+            $template = @($Manifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*')
+            if ($template.Count -ne 1 -or $templateProof.sourceSha -ne $SourceSha -or
+                $templateProof.frameworkVersion -ne $Manifest.version -or
+                $templateProof.template.sha512 -cne $template[0].sha512) {
+                throw 'MSIX embedded template provenance does not match the source-built package.'
+            }
+            $runtimeFiles = @($archive.Entries | Where-Object Name -Like '*.runtimeconfig.json')
+            if ($runtimeFiles.Count -ne 1) { throw 'MSIX self-contained runtime configuration is missing or ambiguous.' }
+            $reader = [IO.StreamReader]::new($runtimeFiles[0].Open())
+            try { $runtime = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+            if ('Microsoft.NETCore.App' -notin @($runtime.runtimeOptions.includedFrameworks.name)) {
+                throw 'MSIX does not include its .NET runtime.'
+            }
+        }
         foreach ($entry in $archive.Entries) {
             $wrapped = $entry.Name -match '^(?:lib)?_(Microsoft\.Maui.*\.dll)\.so$'
             $assemblyName = if ($wrapped) { $Matches[1] } else { $entry.Name }
@@ -252,6 +280,12 @@ function Get-AppPayloadProof {
         foreach ($name in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
             if ($name -notin $assemblies.name) {
                 throw "Required MAUI assembly '$name' is missing from '$Path'."
+            }
+        }
+        if ($isMsix) {
+            foreach ($id in @('Microsoft.Maui.Controls', 'Microsoft.Maui.Controls.Core', 'Microsoft.Maui.Controls.Xaml',
+                'Microsoft.Maui.Core', 'Microsoft.Maui.Essentials', 'Microsoft.Maui.Graphics')) {
+                if ("$id/$($Manifest.version)" -notin $dependencies) { throw "MSIX dependency manifest is missing '$id'." }
             }
         }
     }
