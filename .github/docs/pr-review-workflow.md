@@ -63,6 +63,8 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 
 The workflow intentionally does not handle `/review tests`; that subcommand is reserved for the test-failure review workflow.
 
+GitHub Actions webhook deliveries can occasionally be delayed or dropped during an Actions incident. A deterministic scheduled fallback (`.github/workflows/review-trigger-recovery.yml`) polls recent commands, waits 25 minutes so both bounded trigger jobs have time to finish, rechecks the commenter's current repository permission, and dispatches the same trusted review workflow. The default-branch commit used by the first scheduled run is a permanent lower bound, preventing already-handled commands from being replayed when the fallback is introduced. Processed commands are marked so a delayed webhook cannot trigger a duplicate review.
+
 **Note**: Command comments are minimized (collapsed as "Resolved") after authorization to reduce conversation clutter while preserving the comment history. Unauthorized or malformed command comments remain fully visible.
 
 ### Platform inference
@@ -262,7 +264,7 @@ Important safeguards:
 
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
-| `/review` does nothing | The commenter does not have write/maintain/admin access, or the comment is not on a PR. | Ask a maintainer to run the command on the PR. |
+| `/review` does nothing | The commenter does not have write/maintain/admin access, the comment is not on a PR, or GitHub Actions delayed the webhook. | Authorized commands should be recovered automatically within about 35 minutes. Check GitHub Status if Actions is degraded. |
 | `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
 | The AI Summary looks stale | New commits or author comments landed after the last review. | Wait for the automatic rerun queue, or ask a maintainer to run `/review` for an immediate review. |
@@ -272,6 +274,8 @@ Important safeguards:
 ## Related files
 
 - `.github/workflows/review-trigger.yml` — GitHub comment trigger for `/review`.
+- `.github/workflows/review-trigger-recovery.yml` — scheduled fallback for missed `/review` webhooks.
+- `.github/scripts/Recover-MissedReviewCommands.ps1` — deterministic recovery and duplicate-prevention logic.
 - `eng/pipelines/ci-copilot.yml` — Azure DevOps PR review pipeline.
 - `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
