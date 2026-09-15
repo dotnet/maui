@@ -165,6 +165,33 @@ class TestSkillWorkflowModes < Minitest::Test
     assert_includes @soak, "title = 'Live evaluation unexpectedly skipped'"
   end
 
+  def test_unsuccessful_manual_evaluation_fails_after_artifact_uploads
+    evaluate = job_block(@validation, "evaluate")
+    results_upload = evaluate.index("- name: Upload results")
+    baseline_upload = evaluate.index("- name: Upload baseline results")
+    failure_step = evaluate.index("- name: Fail unsuccessful manual evaluation")
+
+    refute_nil results_upload
+    refute_nil baseline_upload
+    refute_nil failure_step
+    assert_operator failure_step, :>, results_upload
+    assert_operator failure_step, :>, baseline_upload
+    assert_includes evaluate, "github.event_name == 'workflow_dispatch'"
+    assert_includes evaluate, "steps.eval-run.outputs.eval_exit_code != '0'"
+
+    outcome = final_outcome(
+      static_only: false,
+      static_result: "success",
+      discover_result: "success",
+      has_entries: true,
+      evaluation_result: "failure",
+      evaluation_passed: "na"
+    )
+    assert_equal "failure", outcome.fetch(:conclusion)
+    assert_equal "Skill evaluation failed", outcome.fetch(:label)
+    assert_includes job_block(@validation, "manual-result"), "title = 'Skill evaluation failed'"
+  end
+
   def test_rollback_drill
     skills = discover_evaluatable_skills(@rollback.fetch("changed_files"))
     assert_equal [@rollback.fetch("skill")], skills
@@ -237,6 +264,7 @@ class TestSkillWorkflowModes < Minitest::Test
     return { conclusion: "success", label: "Skill validation passed (static only)" } unless has_entries
     return { conclusion: "success", label: "Skill validation passed" } if evaluation_passed == "true"
     return { conclusion: "failure", label: "LLM evaluation failed" } if evaluation_passed == "false"
+    return { conclusion: "failure", label: "Skill evaluation failed" } if evaluation_result == "failure"
     return { conclusion: "failure", label: "Evaluation unexpectedly skipped" } if evaluation_result == "skipped"
 
     { conclusion: "failure", label: "Evaluation incomplete" }

@@ -1017,6 +1017,12 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
+      - name: Fail unsuccessful manual evaluation
+        if: always() && github.event_name == 'workflow_dispatch' && steps.eval-run.outputs.eval_exit_code != '0'
+        run: |
+          echo "::error::Skill evaluation did not complete successfully."
+          exit 1
+
   # ==========================================================================
   # HERMETICITY GATE (positive assertion)
   # Runs hermeticity.vally.yaml — a single stimulus that passes only when
@@ -2372,6 +2378,8 @@ jobs:
             } else if (evalResult === 'success') {
               conclusion = 'success';
               title = 'Skill evaluation completed';
+            } else if (evalResult === 'failure') {
+              title = 'Skill evaluation failed';
             } else if (evalResult === 'skipped') {
               title = 'Evaluation unexpectedly skipped';
             } else {
