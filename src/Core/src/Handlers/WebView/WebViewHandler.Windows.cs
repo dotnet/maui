@@ -333,6 +333,9 @@ namespace Microsoft.Maui.Handlers
 			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
 		}
 
+		internal void ProcessCoreWebView2Initialized(WebView2 sender, Exception? exception) =>
+			_proxy.ProcessCoreWebView2Initialized(sender, exception);
+
 		class WebView2Proxy
 		{
 			WeakReference<Window>? _window;
@@ -385,9 +388,14 @@ namespace Microsoft.Maui.Handlers
 
 			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 			{
-				if (args.Exception is not null || sender.CoreWebView2 is not CoreWebView2 webView2)
+				ProcessCoreWebView2Initialized(sender, args.Exception);
+			}
+
+			public void ProcessCoreWebView2Initialized(WebView2 sender, Exception? exception)
+			{
+				if (exception is not null || sender.CoreWebView2 is not CoreWebView2 webView2)
 				{
-					Handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogError(args.Exception, "Failed to initialize WebView2.");
+					Handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogError(exception, "Failed to initialize WebView2.");
 					return;
 				}
 
