@@ -32,12 +32,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		private void RectangleSelectionCheckBox_CheckedChanged(object sender, Microsoft.Maui.Controls.CheckedChangedEventArgs e)
+		private void RectangleSelectionCheckBox_CheckedChanged(object? sender, Microsoft.Maui.Controls.CheckedChangedEventArgs e)
 		{
 			_state = RectangleSelectionCheckBox.IsChecked ? State.RectangleSelectionPickFirst : State.SingleSelection;
 		}
 
-		private void ContentPage_Loaded(object sender, EventArgs e)
+		private void ContentPage_Loaded(object? sender, EventArgs e)
 		{
 			_window = this.GetParentWindow();
 			_overlay = new WindowOverlay(_window);
@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample.Pages
 
 
 
-		private void ContentPage_Unloaded(object sender, EventArgs e)
+		private void ContentPage_Unloaded(object? sender, EventArgs e)
 		{
 			_overlay!.RemoveWindowElement(this);
 			_window!.RemoveOverlay(_overlay);

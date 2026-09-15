@@ -34,8 +34,12 @@ public class Issue33287MainPage : ContentPage
 					Text = "Navigate to Second Page",
 					AutomationId = "NavigateButton",
 					Command = new Command(async () =>
-						await Navigation.PushAsync(new Issue33287SecondPage(status =>
-							statusLabel.Text = status)))
+					{
+						var secondPage = new Issue33287SecondPage(status =>
+							statusLabel.Text = status);
+						await Navigation.PushAsync(secondPage);
+						secondPage.ExposeBackButtonToAutomation();
+					})
 				},
 				new Label
 				{
@@ -50,10 +54,18 @@ public class Issue33287MainPage : ContentPage
 
 public class Issue33287SecondPage : ContentPage
 {
+	readonly Button _goBackButton;
+
 	public Issue33287SecondPage(Action<string> updateStatus)
 	{
 		Title = "Second Page";
 		PropertyChanged += OnPropertyChanged;
+
+		_goBackButton = new Button
+		{
+			Text = "Go Back",
+			Command = new Command(async () => await Navigation.PopAsync())
+		};
 
 		Content = new VerticalStackLayout
 		{
@@ -83,4 +95,7 @@ public class Issue33287SecondPage : ContentPage
 			updateStatus("Alert request returned");
 		}
 	}
+
+	internal void ExposeBackButtonToAutomation() =>
+		_goBackButton.AutomationId = "GoBackButton";
 }

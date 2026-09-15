@@ -16,6 +16,14 @@ internal static class SafeAreaExtensions
 			_ => null
 		};
 
+	internal static ISafeAreaElement? GetSafeAreaElement(object? layout) =>
+		layout switch
+		{
+			ISafeAreaElement safeAreaElement => safeAreaElement,
+			IElementHandler { VirtualView: ISafeAreaElement virtualSafeAreaElement } => virtualSafeAreaElement,
+			_ => null
+		};
+
 	internal static ISafeAreaView? GetSafeAreaView(object? layout) =>
 		layout switch
 		{
@@ -35,6 +43,12 @@ internal static class SafeAreaExtensions
 			return safeAreaView2.GetSafeAreaRegionsForEdge(edge);
 		}
 
+		var safeAreaElement = GetSafeAreaElement(layout);
+		if (safeAreaElement is not null)
+		{
+			return safeAreaElement.SafeAreaEdges.GetEdge(edge);
+		}
+
 		var safeAreaView = GetSafeAreaView(layout);
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
 	}
@@ -52,9 +66,10 @@ internal static class SafeAreaExtensions
 
 		var layout = crossPlatformLayout;
 		var safeAreaView2 = GetSafeAreaView2(layout);
-		var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
+		var safeAreaElement = GetSafeAreaElement(layout);
+		var margins = (safeAreaView2 as IView)?.Margin ?? (safeAreaElement as IView)?.Margin ?? Thickness.Zero;
 
-		if (safeAreaView2 is not null)
+		if (safeAreaView2 is not null || safeAreaElement is not null)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);

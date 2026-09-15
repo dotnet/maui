@@ -14,7 +14,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
-			(handler.PlatformView)?.UpdateTextColor(view);
+			if (handler.PlatformView is not Button button)
+				return;
+
+			var textColor = view is ISwipeItemMenuItem swipeItem
+				? swipeItem.GetTextColor()
+				: view.TextColor;
+			button.TextColor = textColor?.ToPlatform() ?? TColor.Default;
+
+			if (view is ISwipeItemMenuItem swipeItemMenuItem)
+				UpdateTextColorIconDependency(handler, swipeItemMenuItem);
 		}
 
 		[MissingMapper]
@@ -33,12 +42,8 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null)
 				return;
 
-			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
-			var textColor = handler.VirtualView.GetTextColor()?.ToPlatform() ?? TColor.Default;
-			if (textColor != TColor.Default)
-			{
-				handler.PlatformView.TextColor = textColor;
-			}
+			handler.PlatformView.UpdateBackground(view.Background);
+			UpdateBackgroundColorDependencies(handler);
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -54,6 +59,16 @@ namespace Microsoft.Maui.Handlers
 
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 			swipeView?.UpdateIsVisibleSwipeItem(view);
+		}
+
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			// SwipeItemMenuItemImageSourcePartSetter.SetImageSource only assigns ResourceUrl and
+			// does not apply GetIconTintColor(); update both paths together if Tizen adds tinting.
+			handled = true;
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter

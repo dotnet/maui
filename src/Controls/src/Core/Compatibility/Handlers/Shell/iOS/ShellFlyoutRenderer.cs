@@ -49,6 +49,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override bool PrefersStatusBarHidden() => Detail.PrefersStatusBarHidden();
 
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() => Detail;
+#endif
+
 		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation => Detail.PreferredStatusBarUpdateAnimation;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "AttachFlyout subscriptions are torn down in Dispose: Shell.PropertyChanged is unsubscribed and the pan gesture recognizer is removed and disposed.")]

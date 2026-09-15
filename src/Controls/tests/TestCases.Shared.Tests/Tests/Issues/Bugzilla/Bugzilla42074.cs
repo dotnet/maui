@@ -11,7 +11,7 @@ public class Bugzilla42074 : _IssuesUITest
 #if ANDROID // Action button on TimePicker dialog is vary on different platforms
 	const string TimePickerActionButton = "Cancel";
 #elif IOS
-	const string TimePickerActionButton = "Done";
+	string TimePickerActionButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 #elif WINDOWS
 	const string TimePickerActionButton = "Accept";
 #endif

@@ -11,7 +11,7 @@ public class Issue1614 : _IssuesUITest
 #if ANDROID
 	const string Done = "Cancel";
 #else
-	const string Done = "Done";
+	string Done => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 #endif
 
 	public Issue1614(TestDevice testDevice) : base(testDevice)

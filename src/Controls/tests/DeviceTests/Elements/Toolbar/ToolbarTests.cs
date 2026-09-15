@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.DeviceTests.TestCases;
 using Microsoft.Maui.Handlers;
@@ -17,17 +18,26 @@ using Xunit.Sdk;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 using TabbedRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Toolbar)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// ToolbarTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// ToolbarTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -35,19 +45,49 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					RegisterFlyoutPageHandler(handlers);
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-#else
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-#endif
+					RegisterTabbedPageHandler(handlers);
 
 					SetupShellHandlers(handlers);
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every ToolbarTests test run against both the NavigationPage renderer and handler.
+		// See ToolbarNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// ToolbarTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
+		}
+
+		// The base class exercises TabbedRenderer on iOS/MacCatalyst; ToolbarTests_TabbedViewHandler
+		// overrides this to exercise TabbedViewHandler instead.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#endif
 		}
 
 

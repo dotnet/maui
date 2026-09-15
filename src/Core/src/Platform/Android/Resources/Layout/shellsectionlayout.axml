@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shell Section Layout - Used by ShellSectionHandler (ShellSectionWrapperFragment)
+    
+    Structure:
+      LinearLayout (root - vertical)
+        └── ViewPager2 (fills remaining space - hosts ShellContent fragments)
+    
+    NOTE: Toolbar is NOT in this layout. It lives in navigationlayout_appbar
+    (the outer AppBarLayout from navigationlayout.axml).
+    NOTE: TabLayout is NOT in this layout. It is created programmatically and placed into
+    navigationlayout_toptabs via PlaceTopTabs().
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/shellsection_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/shellsection_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never" />
+
+</LinearLayout>

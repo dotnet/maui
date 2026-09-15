@@ -208,6 +208,14 @@ git commit -m "Fix: Description of the change"
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
 
+### Code Comments
+- **Do NOT emit "fake region" banner/separator comments** — e.g. lines like
+  `// -----------------------------`, or a three-line block of dashes wrapping a section
+  label (`// ----` / `// Helpers` / `// ----`). These are `#region`/`#endregion` in disguise,
+  add noise, and are not wanted. Let the code structure speak for itself; use a plain one-line
+  `//` comment only where a specific piece of logic genuinely needs clarification.
+- Prefer XML doc comments (`///`) for public/internal members over banner comments.
+
 ### Opening PRs
 
 All PRs are required to have this at the top of the description:

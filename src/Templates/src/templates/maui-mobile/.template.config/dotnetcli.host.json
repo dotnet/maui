@@ -7,9 +7,23 @@
     "Framework": {
       "longName": "framework"
     },
+    "UI": {
+      "longName": "ui",
+      "shortName": ""
+    },
     "IncludeSampleContent": {
       "longName": "sample-content",
       "shortName": "sc"
+    },
+    "IncludeSampleContentIde": {
+      "isHidden": true
+    },
+    "WithAvalonia": {
+      "longName": "with-avalonia",
+      "shortName": ""
+    },
+    "avaloniaControlsMauiVersion": {
+      "isHidden": true
     },
     "skipRestore": {
       "longName": "no-restore",
@@ -17,6 +31,7 @@
     }
   },
   "usageExamples": [
-    "--framework DOTNET_TFM_VALUE"
+    "--framework DOTNET_TFM_VALUE",
+    "--framework DOTNET_TFM_VALUE --ui csharp"
   ]
 }
