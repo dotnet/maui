@@ -27,5 +27,11 @@
                 HorizontalOptions="Center"
                 AutomationId="ContentViewSafeAreaButton"
                 WidthRequest="400"/>
+
+        <Button Text="ScrollView SafeArea"
+                Clicked="OnScrollViewSafeAreaButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ScrollViewSafeAreaButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>

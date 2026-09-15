@@ -1663,6 +1663,21 @@ namespace Microsoft.Maui.Controls
 			_structureChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		bool _backButtonPressedFromGesture;
+
+		internal bool SendBackButtonPressedFromGesture()
+		{
+			_backButtonPressedFromGesture = true;
+			try
+			{
+				return SendBackButtonPressed();
+			}
+			finally
+			{
+				_backButtonPressedFromGesture = false;
+			}
+		}
+
 		protected override bool OnBackButtonPressed()
 		{
 #if WINDOWS || !PLATFORM
@@ -1682,6 +1697,11 @@ namespace Microsoft.Maui.Controls
 
 			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
 				return true;
+
+			if (_backButtonPressedFromGesture)
+			{
+				return false;
+			}
 
 			var currentContent = CurrentItem?.CurrentItem;
 			if (currentContent != null && currentContent.Stack.Count > 1)
