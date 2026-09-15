@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -204,14 +205,13 @@ static class SetPropertyHelpers
 		if (isImplicitStyle)
 		{
 			// Get TargetType from Style
-			var targetTypeExpr = GetStyleTargetTypeExpression(node, context);
-			if (targetTypeExpr == null)
+			var targetTypeKey = GetStyleTargetTypeKey(node, context);
+			if (targetTypeKey == null)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), "Implicit style requires a TargetType"));
 				return;
 			}
-
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({targetTypeExpr}, () =>");
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({targetTypeKey}, () =>");
 		}
 		else
 		{
@@ -263,24 +263,23 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// Gets the TargetType expression for a Style node.
+	/// Gets the ResourceDictionary key expression for an implicit Style's TargetType.
 	/// </summary>
-	static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	static string? GetStyleTargetTypeKey(ElementNode node, SourceGenContext context)
 	{
 		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
 			return null;
 
+		INamedTypeSymbol? targetType = null;
+
 		// Case 1: String value - TargetType="Label"
 		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
 		{
-			var typeSymbol = typeName.GetTypeSymbol(context, node);
-			if (typeSymbol != null)
-				return $"typeof({typeSymbol.ToFQDisplayString()})";
-			return null;
+			targetType = typeName.GetTypeSymbol(context, node);
 		}
 
 		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
-		if (targetTypeNode is ElementNode elementNode &&
+		else if (targetTypeNode is ElementNode elementNode &&
 			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
 		{
 			// TypeExtension can have TypeName as property or positional argument
@@ -288,20 +287,37 @@ static class SetPropertyHelpers
 				typeNameNode is ValueNode tn)
 			{
 				var typeNameStr = tn.Value as string;
-				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
-				if (typeSymbol != null)
-					return $"typeof({typeSymbol.ToFQDisplayString()})";
+				targetType = typeNameStr?.GetTypeSymbol(context, node);
 			}
 			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
 			{
 				var typeNameStr = positionalArg.Value as string;
-				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
-				if (typeSymbol != null)
-					return $"typeof({typeSymbol.ToFQDisplayString()})";
+				targetType = typeNameStr?.GetTypeSymbol(context, node);
 			}
 		}
 
-		return null;
+		if (targetType is null)
+			return null;
+
+		// Type.FullName uses metadata names and '+' between nested types. Constructed generic
+		// types include assembly-qualified type arguments, so retain the Type overload for them.
+		if (!targetType.IsGenericType)
+			return SymbolDisplay.FormatLiteral(GetMetadataFullName(targetType), true);
+
+		return $"typeof({targetType.ToFQDisplayString()})";
+	}
+
+	static string GetMetadataFullName(INamedTypeSymbol type)
+	{
+		var nestedTypeNames = new Stack<string>();
+		for (var current = type; current is not null; current = current.ContainingType)
+			nestedTypeNames.Push(current.MetadataName);
+
+		var namespaceNames = new Stack<string>();
+		for (var current = type.ContainingNamespace; !current.IsGlobalNamespace; current = current.ContainingNamespace)
+			namespaceNames.Push(current.MetadataName);
+
+		return $"{string.Join(".", namespaceNames)}{(namespaceNames.Count > 0 ? "." : string.Empty)}{string.Join("+", nestedTypeNames)}";
 	}
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
