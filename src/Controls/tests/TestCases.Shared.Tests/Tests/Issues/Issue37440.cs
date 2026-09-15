@@ -11,10 +11,10 @@ public class Issue37440 : _IssuesUITest
     public override string Issue => "Editor auto expands wrongly to MaximumHeightRequest";
 
     [Test]
-    [Category(UITestCategories.Editor)]
+    [Category(UITestCategories.Material3)]
     public void Issue37440EmptyAutoSizeEditorDoesNotSnapToMaximumHeight()
     {
-        App.WaitForElement("WaitForLabel");
+        App.WaitForElement("Issue37440Editor");
         VerifyScreenshot();
     }
 }
