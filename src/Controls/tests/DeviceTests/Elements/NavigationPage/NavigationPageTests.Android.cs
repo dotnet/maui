@@ -148,6 +148,36 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
+		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || !RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+				Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+				AssertAppBarBackgroundColor(appBar, firstColor);
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => appBar.Background is MaterialShapeDrawable && GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android status bar on initial load")]
 		public async Task BarBackgroundColorUpdatesAndroidStatusBarOnInitialLoad()
 		{
