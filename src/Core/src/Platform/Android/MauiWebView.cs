@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		readonly WebViewHandler _handler;
 		readonly Rect _clipRect;
 		bool _hasSwipeViewParent;
+		float _lastTouchY;
 		volatile bool _detachPending;
 
 		// True after the first layout pass where exactly one dimension is positive and the other is zero.
@@ -148,19 +149,36 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
-			if (e == null)
+			if (e is null)
+			{
 				return false;
+			}
 
 			switch (e.Action)
 			{
 				case MotionEventActions.Down:
+					_lastTouchY = e.GetY();
+					if (!_hasSwipeViewParent)
+					{
+						Parent?.RequestDisallowInterceptTouchEvent(CanScrollVertically(-1) || CanScrollVertically(1));
+					}
+					break;
+
 				case MotionEventActions.Move:
 					// Do not request disallow intercept when inside a SwipeView — that would set
 					// FLAG_DISALLOW_INTERCEPT on the SwipeView and prevent it from detecting
 					// swipe gestures
 					if (!_hasSwipeViewParent)
 					{
-						Parent?.RequestDisallowInterceptTouchEvent(true);
+						float currentTouchY = e.GetY();
+						float deltaY = currentTouchY - _lastTouchY;
+						_lastTouchY = currentTouchY;
+
+						if (deltaY != 0)
+						{
+							int scrollDirection = deltaY < 0 ? 1 : -1;
+							Parent?.RequestDisallowInterceptTouchEvent(CanScrollVertically(scrollDirection));
+						}
 					}
 					break;
 
