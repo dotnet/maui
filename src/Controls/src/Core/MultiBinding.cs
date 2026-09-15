@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		object _converterParameter;
 		IList<BindingBase> _bindings;
 		BindableProperty _targetProperty;
-		BindableObject _targetObject;
+		WeakReference<BindableObject> _weakTarget;
 		BindableObject _proxyObject;
 		BindableProperty[] _bpProxies;
 		bool _applying;
@@ -102,6 +102,9 @@ namespace Microsoft.Maui.Controls
 			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
 
+			if (_weakTarget is null || !_weakTarget.TryGetTarget(out var targetObject))
+				return;
+
 			if (!fromTarget)
 			{
 				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
@@ -110,11 +113,11 @@ namespace Microsoft.Maui.Controls
 					_applying = true;
 					if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 					{
-						BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+						BindingDiagnostics.SendBindingFailure(this, null, targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 						return;
 					}
 					// ManualValueSetter specificity ensures TwoWay bindings continue updating after ConvertBack.
-					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: SetterSpecificity.ManualValueSetter);
+					targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: SetterSpecificity.ManualValueSetter);
 					_applying = false;
 				}
 			}
@@ -125,7 +128,7 @@ namespace Microsoft.Maui.Controls
 					_applying = true;
 
 					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
-					if (!(GetTargetValue(_targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
+					if (!(GetTargetValue(targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
 						return;
 					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
 					{
@@ -152,9 +155,12 @@ namespace Microsoft.Maui.Controls
 
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged, specificity);
 
-			if (!ReferenceEquals(_targetObject, targetObject))
+			BindableObject currentTarget = null;
+			if (_weakTarget != null)
+				_weakTarget.TryGetTarget(out currentTarget);
+			if (!ReferenceEquals(currentTarget, targetObject))
 			{
-				_targetObject = targetObject;
+				_weakTarget = new WeakReference<BindableObject>(targetObject);
 				_proxyObject = new ProxyElement() { Parent = targetObject as Element };
 				_targetProperty = targetProperty;
 
@@ -184,10 +190,10 @@ namespace Microsoft.Maui.Controls
 				_applying = true;
 				if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 				{
-					BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+					BindingDiagnostics.SendBindingFailure(this, context, targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 					return;
 				}
-				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+				targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
 				_applying = false;
 			}
 		}
@@ -249,7 +255,7 @@ namespace Microsoft.Maui.Controls
 
 				_bpProxies = null;
 				_proxyObject = null;
-				_targetObject = null;
+				_weakTarget = null;
 			}
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
