@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BackgroundKeyIsMappedBeforeControlsBackgroundColorAndImageSourceKeys()
 		{
+			new VisualElement().RemapForControls();
 			var keys = ViewHandler.ViewMapper.GetKeys().ToList();
 
 			var backgroundIndex = keys.IndexOf(nameof(IView.Background));
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SemanticsKeyIsMappedBeforeControlsSemanticPropertiesKeys()
 		{
+			new VisualElement().RemapForControls();
 			var keys = ViewHandler.ViewMapper.GetKeys().ToList();
 
 			var semanticsIndex = keys.IndexOf(nameof(IView.Semantics));
@@ -148,24 +150,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Submit order", capturedSemantics?.Description);
 		}
 
-		[Fact]
-		public void Connect_UserAppendedBackgroundColorMapping_StillRunsDuringConnect()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Connect_UserAppendedBackgroundColorMapping_StillRunsDuringConnect(bool customizeBeforeRemap)
 		{
-			bool appendCalled = false;
+			int appendCalls = 0;
+			int backgroundCalls = 0;
 
-			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper);
-			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>();
+
+			if (customizeBeforeRemap)
+				mapper.AppendToMapping<IView, IViewHandler>(nameof(VisualElement.BackgroundColor), (h, v) => appendCalls++);
+
 			VisualElement.RemapForControls(mapper, commandMapper);
 
-			// Simulate a consumer customization registered on top of the canonical BackgroundColor mapping.
-			mapper.AppendToMapping<IView, IViewHandler>(nameof(VisualElement.BackgroundColor), (h, v) => appendCalled = true);
+			if (!customizeBeforeRemap)
+				mapper.AppendToMapping<IView, IViewHandler>(nameof(VisualElement.BackgroundColor), (h, v) => appendCalls++);
 
 			var handlerStub = new HandlerStub(mapper, commandMapper);
 			var button = new Button { BackgroundColor = Colors.Blue };
 
 			handlerStub.SetVirtualView(button);
 
-			Assert.True(appendCalled);
+			Assert.Equal(1, appendCalls);
+			Assert.Equal(1, backgroundCalls);
+
+			handlerStub.UpdateValue(nameof(VisualElement.BackgroundColor));
+
+			Assert.Equal(2, appendCalls);
+			Assert.Equal(2, backgroundCalls);
 		}
 
 		[Fact]
@@ -637,6 +655,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void RealDerivedHandlerMappers_MapCanonicalKeysBeforeTheControlsRedirectKeys()
 		{
+			new VisualElement().RemapForControls();
 			var mappers = new (string Name, IPropertyMapper Mapper)[]
 			{
 				(nameof(ButtonHandler), ButtonHandler.Mapper),

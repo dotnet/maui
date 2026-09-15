@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IShapeView.StrokeLineCap)] = MapStrokeLineCap,
 			[nameof(IShapeView.StrokeLineJoin)] = MapStrokeLineJoin,
 			[nameof(IShapeView.StrokeMiterLimit)] = MapStrokeMiterLimit
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IShapeView, IShapeViewHandler> CommandMapper = new(ViewCommandMapper)
 		{

@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		BackButton,
 	}
 
+#if WINDOWS || ANDROID || TIZEN
+	[ElementHandler(typeof(ToolbarHandler))]
+#endif
 	public partial class Toolbar : Maui.IToolbar, Maui.IToolbarDrawerToggleVisible, INotifyPropertyChanged
 	{
 		VisualElement _titleView;

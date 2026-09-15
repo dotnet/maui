@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IRefreshView.IsRefreshEnabled)] = MapIsRefreshEnabled,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IRefreshView, IRefreshViewHandler> CommandMapper = new(ViewCommandMapper)
 		{

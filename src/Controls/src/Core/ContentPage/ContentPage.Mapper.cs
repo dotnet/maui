@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -9,12 +8,19 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ContentPage
 	{
-		internal new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
 		{
-			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(nameof(ContentPage.HideSoftInputOnTapped), MapHideSoftInputOnTapped);
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
+		{
+			PageHandler.Mapper.ReplaceMappingForControls<ContentPage, IPageHandler>(nameof(ContentPage.HideSoftInputOnTapped), MapHideSoftInputOnTapped);
 #if IOS
-			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
-			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersStatusBarHidden);
+			PageHandler.Mapper.ReplaceMappingForControls<ContentPage, IPageHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
+			PageHandler.Mapper.ReplaceMappingForControls<ContentPage, IPageHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersStatusBarHidden);
 #endif
 		}
 

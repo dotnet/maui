@@ -36,12 +36,17 @@ public static partial class AppHostBuilderExtensions
 	}
 
 	/// <summary>
-	/// Registers the .NET MAUI Controls handlers with the handlers collection.
+	/// Returns the handlers collection unchanged. Built-in .NET MAUI Controls handlers are resolved automatically.
 	/// </summary>
-	/// <param name="handlersCollection">The handlers collection to register handlers with.</param>
+	/// <remarks>
+	/// This method is retained for compatibility and can be left in existing registration code.
+	/// It does not enable the Controls defaults policy; that policy is configured by <c>UseMauiApp</c>.
+	/// Use <c>AddHandler</c> to override a built-in handler or register a custom handler.
+	/// </remarks>
+	/// <param name="handlersCollection">The handlers collection to return.</param>
 	/// <returns>The handlers collection for chaining.</returns>
 	public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection) =>
-		handlersCollection.AddControlsHandlers();
+		handlersCollection;
 
 	static MauiAppBuilder SetupXamlDefaults(this MauiAppBuilder builder)
 	{
