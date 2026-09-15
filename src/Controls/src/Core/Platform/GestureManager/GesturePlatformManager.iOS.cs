@@ -893,7 +893,21 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.Is(TapGestureRecognizer.ButtonsProperty))
+			{
 				LoadRecognizers();
+			}
+			else if (e.Is(TapGestureRecognizer.NumberOfTapsRequiredProperty) &&
+				sender is TapGestureRecognizer tapGesture &&
+				_gestureRecognizers.TryGetValue(tapGesture, out var uiRecognizers))
+			{
+				foreach (var uiRecognizer in uiRecognizers)
+				{
+					if (uiRecognizer is UITapGestureRecognizer uiTapGestureRecognizer)
+					{
+						uiTapGestureRecognizer.NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired;
+					}
+				}
+			}
 		}
 
 		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
