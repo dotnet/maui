@@ -72,7 +72,12 @@ public class Issue33287SecondPage : ContentPage
 			Padding = 20,
 			Children =
 			{
-				_goBackButton
+				new Button
+				{
+					Text = "Go Back",
+					AutomationId = "GoBackButton",
+					Command = new Command(async () => await Navigation.PopAsync())
+				}
 			}
 		};
 
