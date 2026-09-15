@@ -319,7 +319,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
 			{
-				if (_webViewHandler is IViewHandler viewHandler && viewHandler.VirtualView is null || _webViewHandler._webviewManager is null)
+				// The typed VirtualView property throws when disconnected; use the nullable interface property.
+				if (((IViewHandler)_webViewHandler).VirtualView is null || _webViewHandler._webviewManager is null)
 				{
 					statusCode = 404;
 					contentType = string.Empty;
