@@ -760,6 +760,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(VisualStateManager.CommonStates.Normal, groups[0].CurrentState.Name);
 		}
 
+		[Theory]
+		[InlineData(StateTriggerRemovalOperation.Clear)]
+		[InlineData(StateTriggerRemovalOperation.Remove)]
+		[InlineData(StateTriggerRemovalOperation.RemoveAt)]
+		[InlineData(StateTriggerRemovalOperation.Replace)]
+		public void RemovingStateTriggerDetachesIt(StateTriggerRemovalOperation operation)
+		{
+			var trigger = new LifecycleStateTrigger();
+			var state = new VisualState { Name = "Active", StateTriggers = { trigger } };
+			var label = new Label();
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup { States = { state } }
+			});
+
+			var page = new ContentPage { Content = label };
+			_ = new Window { Page = page };
+			Assert.True(trigger.IsAttached);
+
+			switch (operation)
+			{
+				case StateTriggerRemovalOperation.Clear:
+					state.StateTriggers.Clear();
+					break;
+				case StateTriggerRemovalOperation.Remove:
+					state.StateTriggers.Remove(trigger);
+					break;
+				case StateTriggerRemovalOperation.RemoveAt:
+					state.StateTriggers.RemoveAt(0);
+					break;
+				case StateTriggerRemovalOperation.Replace:
+					state.StateTriggers[0] = new LifecycleStateTrigger();
+					break;
+			}
+
+			Assert.False(trigger.IsAttached);
+			Assert.Equal(1, trigger.DetachCount);
+			Assert.Null(trigger.VisualState);
+		}
+
 		static VisualStateGroupList CreateStateGroupsWithSelectedAndPointerOver()
 		{
 			return new VisualStateGroupList
@@ -782,6 +823,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var field = typeof(VisualElement).GetField("_isPointerOver", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 			field!.SetValue(element, value);
+		}
+
+		public enum StateTriggerRemovalOperation
+		{
+			Clear,
+			Remove,
+			RemoveAt,
+			Replace,
+		}
+
+		sealed class LifecycleStateTrigger : StateTriggerBase
+		{
+			public int DetachCount { get; private set; }
+
+			protected override void OnDetached()
+			{
+				DetachCount++;
+			}
 		}
 	}
 }

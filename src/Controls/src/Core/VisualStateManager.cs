@@ -715,7 +715,7 @@ namespace Microsoft.Maui.Controls
 		public VisualState()
 		{
 			Setters = new ObservableCollection<Setter>();
-			StateTriggers = new WatchAddList<StateTriggerBase>(OnStateTriggersChanged);
+			StateTriggers = new WatchAddList<StateTriggerBase>(OnStateTriggersChanged, OnStateTriggersRemoved);
 		}
 
 		/// <summary>
@@ -765,6 +765,17 @@ namespace Microsoft.Maui.Controls
 			foreach (var stateTrigger in stateTriggers)
 			{
 				stateTrigger.VisualState = this;
+			}
+
+			VisualStateGroup?.UpdateStateTriggers();
+		}
+
+		void OnStateTriggersRemoved(IList<StateTriggerBase> stateTriggers)
+		{
+			foreach (var stateTrigger in stateTriggers)
+			{
+				stateTrigger.SendDetached();
+				stateTrigger.VisualState = null;
 			}
 
 			VisualStateGroup?.UpdateStateTriggers();
@@ -858,11 +869,13 @@ namespace Microsoft.Maui.Controls
 	internal class WatchAddList<T> : IList<T>
 	{
 		readonly Action<List<T>> _onAdd;
+		readonly Action<List<T>> _onRemove;
 		readonly List<T> _internalList;
 
-		public WatchAddList(Action<List<T>> onAdd)
+		public WatchAddList(Action<List<T>> onAdd, Action<List<T>> onRemove = null)
 		{
 			_onAdd = onAdd;
+			_onRemove = onRemove;
 			_internalList = new List<T>();
 		}
 
@@ -884,7 +897,12 @@ namespace Microsoft.Maui.Controls
 
 		public void Clear()
 		{
+			if (_internalList.Count == 0)
+				return;
+
+			var removedItems = new List<T>(_internalList);
 			_internalList.Clear();
+			_onRemove?.Invoke(removedItems);
 		}
 
 		public bool Contains(T item)
@@ -899,7 +917,14 @@ namespace Microsoft.Maui.Controls
 
 		public bool Remove(T item)
 		{
-			return _internalList.Remove(item);
+			var index = _internalList.IndexOf(item);
+			if (index < 0)
+				return false;
+
+			var removedItem = _internalList[index];
+			_internalList.RemoveAt(index);
+			_onRemove?.Invoke(new List<T> { removedItem });
+			return true;
 		}
 
 		public int Count => _internalList.Count;
@@ -919,13 +944,24 @@ namespace Microsoft.Maui.Controls
 
 		public void RemoveAt(int index)
 		{
+			var removedItem = _internalList[index];
 			_internalList.RemoveAt(index);
+			_onRemove?.Invoke(new List<T> { removedItem });
 		}
 
 		public T this[int index]
 		{
 			get => _internalList[index];
-			set => _internalList[index] = value;
+			set
+			{
+				var removedItem = _internalList[index];
+				if (ReferenceEquals(removedItem, value))
+					return;
+
+				_internalList[index] = value;
+				_onRemove?.Invoke(new List<T> { removedItem });
+				_onAdd(_internalList);
+			}
 		}
 	}
 }
