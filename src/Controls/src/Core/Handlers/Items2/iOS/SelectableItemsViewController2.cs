@@ -70,6 +70,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		private protected override void AttachingToWindow()
+		{
+			base.AttachingToWindow();
+			CollectionView.LayoutIfNeeded();
+		}
+
 		private void ValidateAndSelectItem(object selectedItem, object originalSource)
 		{
 			// Ensure ItemsSource hasn't been disposed
