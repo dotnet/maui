@@ -13,7 +13,7 @@ public class Issue35889 : _IssuesUITest
 	public override string Issue => "Empty CollectionView (CV2) expands to fill available space on iOS instead of collapsing to zero height";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void EmptyCollectionViewCollapsesAndExpandsWithItems()
 	{
 		App.WaitForElement("BeforeCVLabel");
