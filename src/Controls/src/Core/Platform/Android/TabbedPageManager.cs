@@ -120,6 +120,7 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
+			Application.Current!.RequestedThemeChanged -= OnRequestedThemeChanged;
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
@@ -160,6 +161,8 @@ public class TabbedPageManager
 						Gravity = (int)GravityFlags.Bottom
 					}
 				};
+
+				BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 			}
 			else
 			{
@@ -182,9 +185,15 @@ public class TabbedPageManager
 			previousPage = tabbedPage.CurrentPage;
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+			Application.Current!.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			SetTabLayout();
 		}
+	}
+
+	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+	{
+		BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
