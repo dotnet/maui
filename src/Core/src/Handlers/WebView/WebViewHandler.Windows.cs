@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -384,10 +385,16 @@ namespace Microsoft.Maui.Handlers
 
 			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 			{
-				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
-				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
-				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
+				if (args.Exception is not null || sender.CoreWebView2 is not CoreWebView2 webView2)
+				{
+					Handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogError(args.Exception, "Failed to initialize WebView2.");
+					return;
+				}
+
+				webView2.HistoryChanged += OnHistoryChanged;
+				webView2.NavigationStarting += OnNavigationStarting;
+				webView2.NavigationCompleted += OnNavigationCompleted;
+				webView2.ProcessFailed += OnProcessFailed;
 
 				if (Handler is WebViewHandler handler)
 				{
