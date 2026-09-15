@@ -269,22 +269,44 @@ namespace Microsoft.Maui.Media
 			if (results == null || results.Length == 0)
 				return [];
 
-			var fileResults = new List<FileResult>(results.Length);
-			PHPickerFileResult fileResult = null;
+			// PHPickerResult.ItemProvider is a UIKit call and must be read on the main thread.
+			// This method is invoked from the picker delegate, so we are on the main thread here,
+			// but awaiting below resumes on the thread pool. Read every ItemProvider up front,
+			// before the first await, so no read is left straddling a continuation.
+			var pickerResults = new List<PHPickerFileResult>(results.Length);
 			try
 			{
 				foreach (var file in results)
 				{
-					fileResult = new PHPickerFileResult(file.ItemProvider);
-					await fileResult.LoadFileRepresentationAsync().ConfigureAwait(false);
-					fileResults.Add(fileResult);
-					fileResult = null;
+					pickerResults.Add(new PHPickerFileResult(file.ItemProvider));
 				}
 			}
 			catch
 			{
-				fileResult?.Dispose();
+				foreach (var pickerResult in pickerResults)
+				{
+					pickerResult.Dispose();
+				}
+				throw;
+			}
+
+			var fileResults = new List<FileResult>(pickerResults.Count);
+			try
+			{
+				foreach (var pickerResult in pickerResults)
+				{
+					await pickerResult.LoadFileRepresentationAsync().ConfigureAwait(false);
+					fileResults.Add(pickerResult);
+				}
+			}
+			catch
+			{
+				// Dispose the loaded results, then the ones left unloaded by the failure.
 				DisposeFileResults(fileResults);
+				for (var i = fileResults.Count; i < pickerResults.Count; i++)
+				{
+					pickerResults[i].Dispose();
+				}
 				throw;
 			}
 

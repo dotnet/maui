@@ -257,7 +257,7 @@ internal static class ExpressionAnalyzer
 	/// <param name="dataType">Optional DataType symbol to filter handlers (only include members on this type)</param>
 	/// <param name="rootType">Optional root type (page/view) to identify local members that need capturing</param>
 	/// <returns>Analysis result with handlers, captures, and transformed expression</returns>
-	public static ExpressionAnalysisResult Analyze(string expression, string sourceParameterName = "__source", ITypeSymbol? dataType = null, ITypeSymbol? rootType = null)
+	public static ExpressionAnalysisResult Analyze(string expression, string sourceParameterName = "__source", ITypeSymbol? dataType = null, ITypeSymbol? rootType = null, Compilation? compilation = null)
 	{
 		var captures = new List<LocalCapture>();
 		var transformedExpression = expression;
@@ -332,11 +332,12 @@ internal static class ExpressionAnalyzer
 		// Also exclude handlers whose parent is a capture variable (__capture_*) - those are local, not bindings
 		if (dataType != null)
 		{
-			handlers = handlers.Where(h => 
-				h.PropertyName == "." || 
+			handlers = handlers.Where(h =>
+				!IsStaticTypeHandler(h, sourceParameterName, dataType, rootType, compilation) &&
+				(h.PropertyName == "." ||
 				(h.ParentExpression != sourceParameterName &&  // Keep nested handlers...
 				 !h.ParentExpression.Contains("__capture_")) ||  // ...unless parent is a capture variable
-				HasProperty(dataType, h.PropertyName)  // Top-level must exist on DataType
+				HasProperty(dataType, h.PropertyName))  // Top-level must exist on DataType
 			).ToList();
 		}
 
@@ -351,6 +352,46 @@ internal static class ExpressionAnalyzer
 		var isSettable = captures.Count == 0 && IsSimplePropertyChain(expression);
 
 		return new ExpressionAnalysisResult(handlers, captures, transformedExpression, isSettable);
+	}
+
+	private static bool IsStaticTypeHandler(BindingHandler handler, string sourceParameterName, ITypeSymbol dataType, ITypeSymbol? rootType, Compilation? compilation)
+	{
+		if (compilation == null)
+			return false;
+
+		var chain = GetHandlerChain(handler, sourceParameterName);
+		if (chain.Count == 0)
+			return false;
+
+		var rootIdentifier = chain[0];
+		if (HasProperty(dataType, rootIdentifier))
+			return false;
+
+		for (var i = chain.Count; i >= 1; i--)
+		{
+			if (MemberResolver.ResolvesToType(compilation, string.Join(".", chain.Take(i)), MemberResolver.GetContainingNamespace(rootType)))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static List<string> GetHandlerChain(BindingHandler handler, string sourceParameterName)
+	{
+		var chain = new List<string>();
+		if (handler.ParentExpression == sourceParameterName)
+		{
+			chain.Add(handler.PropertyName);
+			return chain;
+		}
+
+		var sourcePrefix = sourceParameterName + ".";
+		if (!handler.ParentExpression.StartsWith(sourcePrefix, StringComparison.Ordinal))
+			return chain;
+
+		chain.AddRange(handler.ParentExpression.Substring(sourcePrefix.Length).Split('.'));
+		chain.Add(handler.PropertyName);
+		return chain;
 	}
 
 	/// <summary>

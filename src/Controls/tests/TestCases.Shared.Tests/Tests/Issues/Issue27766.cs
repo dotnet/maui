@@ -13,7 +13,7 @@ public class Issue27766 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ShouldIgnoreBottomContentInsetForCollectionViewItems()
 	{
 		App.WaitForElement("Test 3");

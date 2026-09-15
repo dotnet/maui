@@ -47,9 +47,16 @@ namespace Microsoft.Maui.Controls.Platform
 					FillRule = ConvertFillRule(geometryGroup.FillRule)
 				};
 
-				foreach (Geometry children in geometryGroup.Children)
+				var children = geometryGroup.Children;
+				if (children is null)
+					return wGeometry;
+
+				foreach (Geometry child in children)
 				{
-					WMedia.Geometry winChild = children.ToPlatform();
+					if (child is null)
+						continue;
+
+					WMedia.Geometry winChild = child.ToPlatform();
 					(wGeometry as WMedia.GeometryGroup).Children.Add(winChild);
 				}
 			}
