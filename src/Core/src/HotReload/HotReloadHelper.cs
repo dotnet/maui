@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -117,6 +118,12 @@ namespace Microsoft.Maui.HotReload
 		static Dictionary<string, Type> replacedViews = new(StringComparer.Ordinal);
 		static Dictionary<IHotReloadableView, object[]> currentViews = new Dictionary<IHotReloadableView, object[]>();
 		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
+		static ConcurrentDictionary<ServiceDescriptor, Type> activatedHandlerTypes = new();
+
+		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
+		{
+			activatedHandlerTypes[descriptor] = handlerType;
+		}
 
 		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
 #if !NETSTANDARD
@@ -164,15 +171,24 @@ namespace Microsoft.Maui.HotReload
 				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				var t = assemblies.Select(x => x.GetType(oldViewType)).FirstOrDefault(x => x != null);
 
-				var views = HandlerService!.Where(x => x.ImplementationType == t).Select(x => new KeyValuePair<Type, Type>(x.ServiceType, x.ImplementationType!)).ToList();
+				var views = HandlerService!
+					.Select(x => new KeyValuePair<Type, Type?>(x.ServiceType, GetRegisteredHandlerType(x)))
+					.Where(x => x.Value == t)
+					.Select(x => new KeyValuePair<Type, Type>(x.Key, x.Value!))
+					.ToList();
 
 
-				replacedHandlers[oldViewType] = views.ToList();
+				if (views.Count > 0)
+					replacedHandlers[oldViewType] = views.ToList();
 				foreach (var h in views)
 				{
 					RegisterHandler(h, newViewType);
 				}
 			}
+
+			static Type? GetRegisteredHandlerType(ServiceDescriptor descriptor) =>
+				descriptor.ImplementationType
+					?? (activatedHandlerTypes.TryGetValue(descriptor, out var handlerType) ? handlerType : null);
 
 			static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
 			{

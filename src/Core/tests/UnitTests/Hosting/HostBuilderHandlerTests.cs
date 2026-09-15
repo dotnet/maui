@@ -66,6 +66,23 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void HandlerCollectionFactoriesReceiveTheCurrentMauiContext()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddTransient(services => new ContextAwareService(services.GetRequiredService<IMauiContext>()));
+					handlers.AddHandler<IViewStub>(services => new ContextAwareHandlerStub(services.GetRequiredService<ContextAwareService>()));
+				})
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var handler = Assert.IsType<ContextAwareHandlerStub>(new ViewStub().ToHandler(mauiContext));
+
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
+		}
+
+		[Fact]
 		public void HostBuilderResolvesLastRegisteredHandlerServiceForServiceType()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
@@ -309,6 +326,26 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		class AlternateViewHandlerStub : ViewHandlerStub
 		{
+		}
+
+		class ContextAwareHandlerStub : ViewHandlerStub
+		{
+			public ContextAwareHandlerStub(ContextAwareService contextAwareService)
+			{
+				ContextAwareService = contextAwareService;
+			}
+
+			public ContextAwareService ContextAwareService { get; }
+		}
+
+		class ContextAwareService
+		{
+			public ContextAwareService(IMauiContext mauiContext)
+			{
+				MauiContext = mauiContext;
+			}
+
+			public IMauiContext MauiContext { get; }
 		}
 	}
 }
