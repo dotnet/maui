@@ -399,38 +399,34 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		Writer.WriteLine($"{styleVariable.ValueAccessor}.LazyInitialization = (__style, __target) =>");
 		using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 		{
-			// Add target type guard to enable trimming - if no code creates this type, the trimmer can remove this code path
-			Writer.WriteLine($"if (__target is not {targetType.ToFQDisplayString()}) return;");
-
-			var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem)
+			Writer.WriteLine($"if (__target is {targetType.ToFQDisplayString()} target)");
+			using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
 			{
-				ParentContext = Context,
-			};
+				var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem)
+				{
+					ParentContext = Context,
+				};
 
-			// Register __style as the Style variable in this context
-			var styleType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");
-			styleContext.Variables[styleNode] = new LocalVariable(styleType!, "__style");
+				// Register __style as the Style variable in this context
+				var styleType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");
+				styleContext.Variables[styleNode] = new LocalVariable(styleType!, "__style");
 
-			// Visit Style's content nodes (Setters, Behaviors, Triggers, CollectionItems)
-			// We need to process:
-			// 1. Explicit Setters/Behaviors/Triggers properties
-			// 2. Implicit CollectionItems (which are Setters)
-			
-			// Remove the marker property so normal visitors don't try to process it
-			styleNode.Properties.Remove(XmlName._StyleContent);
-			
-			// Clear SkipProperties so the content properties are processed
-			var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
-			foreach (var propName in styleNode.SkipProperties.Where(p => contentPropertyNames.Contains(p.LocalName)).ToList())
-			{
-				styleNode.SkipProperties.Remove(propName);
+				// Remove the marker property so normal visitors don't try to process it
+				styleNode.Properties.Remove(XmlName._StyleContent);
+
+				// Clear SkipProperties so the content properties are processed
+				var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
+				foreach (var propName in styleNode.SkipProperties.Where(p => contentPropertyNames.Contains(p.LocalName)).ToList())
+				{
+					styleNode.SkipProperties.Remove(propName);
+				}
+
+				// Run the same visitor sequence as _CreateContent, but allow Style children to be visited.
+				styleNode.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), null);
+				styleNode.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), null);
+				styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
+				styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
 			}
-
-			// Run the same visitor sequence as _CreateContent, but allow Style children to be visited.
-			styleNode.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), null);
-			styleNode.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), null);
-			styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
-			styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
 		}
 	}
 
