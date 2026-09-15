@@ -214,6 +214,14 @@ These tests can be run using the Test Explorer in VS, or from the command line w
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
 
+Integration test commands terminate their process tree on timeout and report the command's PID and timeout duration. Emulator startup explicitly leaves the emulator running for the collection fixture to manage. A truncated binlog is reported as incomplete without replacing the original build failure; warning validation rejects incomplete logs.
+
+The harness regression tests do not require MAUI workloads or an emulator:
+
+```bash
+dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --filter "FullyQualifiedName~ToolRunnerTests|FullyQualifiedName~BuildWarningsUtilitiesTests"
+```
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
