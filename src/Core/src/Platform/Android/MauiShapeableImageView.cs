@@ -5,24 +5,70 @@ using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Platform
 {
+	/// <summary>
+	/// A <see cref="ShapeableImageView"/> that normalizes padding during measurement.
+	/// </summary>
 	public class MauiShapeableImageView : ShapeableImageView
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
 		public MauiShapeableImageView(Context? context) : base(context)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="attrs">The attributes for the view.</param>
 		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(context, attrs)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="attrs">The attributes for the view.</param>
+		/// <param name="defStyle">The default style attribute for the view.</param>
 		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(context, attrs, defStyle)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class,
+		/// optionally applying the .NET MAUI Material 3 theme to the context.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="useMaterial3">
+		/// <see langword="true"/> to use the .NET MAUI Material 3 theme; otherwise, to use the Material 2 theme
+		/// when <paramref name="context"/> is already wrapped in a .NET MAUI Material theme.
+		/// </param>
+		public MauiShapeableImageView(Context? context, bool useMaterial3)
+			: base(GetThemedContext(context, useMaterial3))
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class from a JNI reference.
+		/// </summary>
+		/// <param name="javaReference">The JNI reference.</param>
+		/// <param name="transfer">The ownership transfer behavior for the JNI reference.</param>
 		protected MauiShapeableImageView(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}
 
+		static Context? GetThemedContext(Context? context, bool useMaterial3)
+		{
+			if (context is null || (!useMaterial3 && context is not MauiMaterialContextThemeWrapper))
+				return context;
+
+			return MauiMaterialContextThemeWrapper.Create(context, useMaterial3);
+		}
+
+		/// <inheritdoc />
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			// The padding has a few issues. This is a workaround for the following issue:

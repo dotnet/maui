@@ -133,6 +133,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ImageSourceChangeDoesNotTriggerResizeWhenWidthAndHeightExplicit()
+		{
+			var button = new Button
+			{
+				ImageSource = "File0.png",
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+
+			int preferredSizeChanged = 0;
+			button.MeasureInvalidated += (sender, args) => preferredSizeChanged++;
+
+			button.ImageSource = "File1.png";
+
+			Assert.Equal("File1.png", ((FileImageSource)button.ImageSource).File);
+			Assert.Equal(0, preferredSizeChanged);
+		}
+
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public void ImageSourceChangeTriggersResizeWhenExplicitButLayoutAlignmentIsNotFill(bool setHorizontalCenter, bool setVerticalCenter)
+		{
+			var button = new Button
+			{
+				ImageSource = "File0.png",
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+
+			if (setHorizontalCenter)
+				button.HorizontalOptions = LayoutOptions.Center;
+
+			if (setVerticalCenter)
+				button.VerticalOptions = LayoutOptions.Center;
+
+			int preferredSizeChanged = 0;
+			button.MeasureInvalidated += (sender, args) => preferredSizeChanged++;
+
+			button.ImageSource = "File1.png";
+
+			Assert.Equal("File1.png", ((FileImageSource)button.ImageSource).File);
+			Assert.Equal(1, preferredSizeChanged);
+		}
+
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public void ImageSourceChangeTriggersResizeWhenWidthOrHeightIsImplicit(bool setWidth, bool setHeight)
+		{
+			var button = new Button { ImageSource = "File0.png" };
+
+			if (setWidth)
+				button.WidthRequest = 20;
+
+			if (setHeight)
+				button.HeightRequest = 20;
+
+			int preferredSizeChanged = 0;
+			button.MeasureInvalidated += (sender, args) => preferredSizeChanged++;
+
+			button.ImageSource = "File1.png";
+
+			Assert.Equal("File1.png", ((FileImageSource)button.ImageSource).File);
+			Assert.Equal(1, preferredSizeChanged);
+		}
+
+		[Fact]
+		public void FileImageSourcePropertiesChangedDoesNotTriggerResizeWhenWidthAndHeightExplicit()
+		{
+			var source = new FileImageSource();
+			var button = new Button
+			{
+				ImageSource = source,
+				WidthRequest = 20,
+				HeightRequest = 20
+			};
+			bool fired = false;
+			button.MeasureInvalidated += (sender, e) => fired = true;
+
+			Assert.Null(source.File);
+			source.File = "foo.png";
+
+			Assert.NotNull(source.File);
+			Assert.False(fired);
+		}
+
+		[Fact]
 		public void AssignToFontFamilyUpdatesFont()
 		{
 			var button = new Button();

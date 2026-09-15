@@ -5,12 +5,14 @@
              x:Class="Maui.Controls.Sample.Pages.MapsGalleries.CustomPinIconGallery"
              Title="Custom Pin Icons">
     <Grid RowDefinitions="Auto,*">
-        <StackLayout Orientation="Horizontal" Padding="10" Spacing="10">
-            <Button Text="Add Custom Pins" Clicked="OnAddCustomPinsClicked"/>
-            <Button Text="Add Default Pin" Clicked="OnAddDefaultPinClicked"/>
-            <Button Text="Clear" Clicked="OnClearClicked"/>
-        </StackLayout>
-        
+        <FlexLayout Wrap="Wrap" Padding="10" AlignItems="Center">
+            <Button Text="Add Custom Pins" Clicked="OnAddCustomPinsClicked" Margin="5"/>
+            <Button Text="Add Default Pin" Clicked="OnAddDefaultPinClicked" Margin="5"/>
+            <Button Text="Toggle Icon" Clicked="OnToggleIconClicked" Margin="5"/>
+            <Button Text="Move &amp; Rename" Clicked="OnMoveRenameClicked" Margin="5"/>
+            <Button Text="Clear" Clicked="OnClearClicked" Margin="5"/>
+        </FlexLayout>
+
         <maps:Map x:Name="CustomPinMap" Grid.Row="1"/>
     </Grid>
 </ContentPage>

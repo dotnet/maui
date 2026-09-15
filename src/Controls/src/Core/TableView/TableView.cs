@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(TableView), -1);
 
 		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
-		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(TableView), false);
+		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(TableView), BooleanBoxes.FalseBox);
 
 		readonly Lazy<PlatformConfigurationRegistry<TableView>> _platformConfigurationRegistry;
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
-			set { SetValue(HasUnevenRowsProperty, value); }
+			set { SetValue(HasUnevenRowsProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -87,8 +87,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_tableModel.Root != null)
 				{
-					_tableModel.Root.SectionCollectionChanged -= OnSectionCollectionChanged;
-					_tableModel.Root.PropertyChanged -= OnTableModelRootPropertyChanged;
 					VisualDiagnostics.OnChildRemoved(this, _tableModel.Root, 0);
 				}
 				_tableModel.Root = value ?? new TableRoot();
@@ -96,8 +94,6 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(_tableModel.Root, BindingContext);
 
 				Root.SelectMany(r => r).ForEach(cell => cell.Parent = this);
-				_tableModel.Root.SectionCollectionChanged += OnSectionCollectionChanged;
-				_tableModel.Root.PropertyChanged += OnTableModelRootPropertyChanged;
 				OnModelChanged();
 			}
 		}
@@ -263,8 +259,9 @@ namespace Microsoft.Maui.Controls
 
 			void ApplyEvents(TableRoot tableRoot)
 			{
-				tableRoot.CollectionChanged += _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				tableRoot.WeakCollectionChanged += _parent.CollectionChanged;
+				tableRoot.WeakSectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				tableRoot.WeakPropertyChanged += _parent.OnTableModelRootPropertyChanged;
 			}
 
 			void RemoveEvents(TableRoot tableRoot)
@@ -272,8 +269,9 @@ namespace Microsoft.Maui.Controls
 				if (tableRoot == null)
 					return;
 
-				tableRoot.CollectionChanged -= _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				tableRoot.WeakCollectionChanged -= _parent.CollectionChanged;
+				tableRoot.WeakSectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				tableRoot.WeakPropertyChanged -= _parent.OnTableModelRootPropertyChanged;
 			}
 
 			static void SetPath(Cell item, Tuple<int, int> index)

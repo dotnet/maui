@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 instead.")]
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
 		ItemsViewLayout _layout;
@@ -33,6 +34,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				base.ScrollToRequested(sender, args);
 			}
+		}
+
+		public static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
+
+			// Also updates the outer Controller.View, which gates touch delivery
+			// but is otherwise left stale by the CollectionView-only update above.
+			ViewHandler.MapIsEnabled(handler, carouselView);
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)

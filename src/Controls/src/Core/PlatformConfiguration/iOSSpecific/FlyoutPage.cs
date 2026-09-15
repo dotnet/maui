@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.FlyoutPage;
 
 	/// <summary>Provides iOS-specific configuration for FlyoutPage shadow effects.</summary>
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to apply shadow; otherwise, <see langword="false"/>.</param>
 		public static void SetApplyShadow(BindableObject element, bool value)
 		{
-			element.SetValue(ApplyShadowProperty, value);
+			element.SetValue(ApplyShadowProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether a drop shadow is applied to the detail page when the flyout is revealed on iOS.</summary>

@@ -180,5 +180,90 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, linearGradientBrush.GradientStops.Count);
 		}
+
+		[Fact]
+		public void TestHasTransparencyLinearGradientBrush()
+		{
+			LinearGradientBrush nullLinearGradientBrush = null;
+			Assert.False(Brush.HasTransparency(nullLinearGradientBrush));
+
+			LinearGradientBrush emptyLinearGradientBrush = new LinearGradientBrush();
+			Assert.False(Brush.HasTransparency(emptyLinearGradientBrush));
+
+			LinearGradientBrush brushWithNullStops = new LinearGradientBrush
+			{
+				GradientStops = null
+			};
+			Assert.False(Brush.HasTransparency(brushWithNullStops));
+
+			LinearGradientBrush opaqueBrush = new LinearGradientBrush
+			{
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Red, Offset = 0.0f },
+					new GradientStop { Color = Colors.Blue, Offset = 1.0f }
+				}
+			};
+			Assert.False(Brush.HasTransparency(opaqueBrush));
+
+			LinearGradientBrush transparentBrush = new LinearGradientBrush
+			{
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Transparent, Offset = 0.0f },
+					new GradientStop { Color = Colors.Blue, Offset = 1.0f }
+				}
+			};
+			Assert.True(Brush.HasTransparency(transparentBrush));
+
+			LinearGradientBrush mixedBrush = new LinearGradientBrush
+			{
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Red, Offset = 0.0f },
+					new GradientStop { Color = Color.FromRgba(0, 255, 0, 0.5), Offset = 0.5f },
+					new GradientStop { Color = Colors.Blue, Offset = 1.0f }
+				}
+			};
+			Assert.True(Brush.HasTransparency(mixedBrush));
+
+			LinearGradientBrush allSemiTransparentBrush = new LinearGradientBrush
+			{
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Color.FromRgba(255, 0, 0, 0.3), Offset = 0.0f },
+					new GradientStop { Color = Color.FromRgba(0, 0, 255, 0.7), Offset = 1.0f }
+				}
+			};
+			Assert.True(Brush.HasTransparency(allSemiTransparentBrush));
+		}
+
+		[Fact]
+		public void ClearUnsubscribesPreviousGradientStopsFromPropertyChanged()
+		{
+			var brush = new LinearGradientBrush();
+			var oldStop = new GradientStop { Color = Colors.Red, Offset = 0.0f };
+			var newStop = new GradientStop { Color = Colors.Blue, Offset = 1.0f };
+			var invalidations = 0;
+
+			brush.InvalidateGradientBrushRequested += (_, _) => invalidations++;
+
+			brush.GradientStops.Add(oldStop);
+			invalidations = 0;
+
+			brush.GradientStops.Clear();
+			invalidations = 0;
+
+			// If Reset handling does not unsubscribe old stops, mutating oldStop
+			// would incorrectly invalidate the brush.
+			oldStop.Color = Colors.Green;
+			Assert.Equal(0, invalidations);
+
+			brush.GradientStops.Add(newStop);
+			invalidations = 0;
+
+			newStop.Color = Colors.Purple;
+			Assert.Equal(1, invalidations);
+		}
 	}
 }

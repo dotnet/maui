@@ -74,8 +74,25 @@ namespace Microsoft.Maui.ApplicationModel
 			static extern long GetWindowLongPtr64(IntPtr hWnd, WindowLongFlags nIndex);
 		}
 
+		internal static bool TryGetExtendedFrameBounds(IntPtr hWnd, out RECT bounds)
+		{
+			bounds = default;
+			if (hWnd == IntPtr.Zero)
+			{
+				return false;
+			}
+
+			int hr = DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS,
+				out bounds, Marshal.SizeOf<RECT>());
+			return hr == 0 && (bounds.Right - bounds.Left) > 0 && (bounds.Bottom - bounds.Top) > 0;
+		}
+
 		[DllImport("user32.dll")]
 		public static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetForegroundWindow(IntPtr hWnd);
 
 		[DllImport("user32.dll")]
 		public static extern bool SetWindowPos(IntPtr hWnd, SpecialWindowHandles hWndInsertAfter, int x, int y, int width, int height, SetWindowPosFlags uFlags);

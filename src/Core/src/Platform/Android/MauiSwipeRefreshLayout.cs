@@ -19,6 +19,10 @@ namespace Microsoft.Maui.Platform
 		readonly Context _context;
 		AView? _contentView;
 		bool _refreshEnabled = true;
+		AWebView? _activeTouchWebView;
+		RefreshViewWebViewScrollCapture.ScrollCaptureState? _activeTouchScrollState;
+		bool _webViewOwnsGesture;
+		bool _touchStartedInWebView;
 
 		public MauiSwipeRefreshLayout(Context context) : base(context)
 		{
@@ -39,6 +43,9 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			// Always call base.OnMeasure — unlike ContentViewGroup/LayoutViewGroup,
+			// SwipeRefreshLayout.onMeasure internally measures its spinner indicator
+			// (mCircleView). Skipping this leaves the spinner at 0x0, making it invisible.
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 
 			if (CrossPlatformLayout is null)
@@ -49,11 +56,33 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
-			CrossPlatformLayout?.CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+
+			var measure = CrossPlatformLayout.CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+
+			// Unlike ContentViewGroup/LayoutViewGroup, SwipeRefreshLayout internally positions
+			// its spinner at getMeasuredWidth()/2. We must use the full spec size for both
+			// Exactly and AtMost modes (matching View.getDefaultSize behavior) so the spinner
+			// is centered correctly. Only for Unspecified do we use the cross-platform measure.
+			var width = widthMode == MeasureSpecMode.Unspecified ? measure.Width : deviceIndependentWidth;
+			var height = heightMode == MeasureSpecMode.Unspecified ? measure.Height : deviceIndependentHeight;
+
+			var platformWidth = _context.ToPixels(width);
+			var platformHeight = _context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
+			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
+			// Always call base.OnLayout — SwipeRefreshLayout.onLayout positions the
+			// spinner indicator (mCircleView) centered horizontally. Without this,
+			// the spinner won't appear or will be mispositioned.
 			base.OnLayout(changed, left, top, right, bottom);
 			if (CrossPlatformLayout is null)
 			{
@@ -110,6 +139,69 @@ namespace Microsoft.Maui.Platform
 			return CanScrollUp(_contentView);
 		}
 
+		public override bool OnInterceptTouchEvent(MotionEvent? ev)
+		{
+			if (ev is null)
+				return false;
+
+			switch (ev.ActionMasked)
+			{
+				case MotionEventActions.Down:
+					_activeTouchWebView = FindWebView(_contentView, ev.GetX(), ev.GetY());
+					_touchStartedInWebView = _activeTouchWebView is not null;
+					// ACTION_DOWN — caches ScrollCaptureState via GetAttachedState().
+					_activeTouchScrollState = RefreshViewWebViewScrollCapture.GetAttachedState(_activeTouchWebView);
+					_webViewOwnsGesture = _touchStartedInWebView &&
+						RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canScrollUpAtStart) &&
+						canScrollUpAtStart;
+					if (_webViewOwnsGesture)
+					{
+						// Forward to base so SwipeRefreshLayout records the initial pointer ID
+						// and Y position – required for correct mid-gesture intercept if the
+						// web content scrolls to the top during the same drag.
+						base.OnInterceptTouchEvent(ev);
+						return false;
+					}
+					break;
+				case MotionEventActions.PointerDown:
+					// Reset WebView gesture ownership when a second finger is placed –
+					// multi-touch cancels the pending single-finger pull-to-refresh guard.
+					_activeTouchWebView = null;
+					_activeTouchScrollState = null;
+					_touchStartedInWebView = false;
+					_webViewOwnsGesture = false;
+					break;
+				case MotionEventActions.Move:
+					if (_touchStartedInWebView && _webViewOwnsGesture)
+					{
+						var shouldRetainOwnership = _activeTouchScrollState is { HasReportedState: true }
+							? _activeTouchScrollState.CanScrollUp
+							: RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canScrollUpFallback) && canScrollUpFallback;
+
+						if (!shouldRetainOwnership)
+						{
+							_webViewOwnsGesture = false;
+						}
+
+						if (_webViewOwnsGesture)
+						{
+							return false;
+						}
+					}
+					break;
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					// ACTION_UP/CANCEL — clears cached state.
+					_activeTouchWebView = null;
+					_activeTouchScrollState = null;
+					_touchStartedInWebView = false;
+					_webViewOwnsGesture = false;
+					break;
+			}
+
+			return base.OnInterceptTouchEvent(ev);
+		}
+
 		bool CanScrollUp(AView? view)
 		{
 			if (!(view is ViewGroup viewGroup))
@@ -157,9 +249,44 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore XAOBS001 // Obsolete
 
 			if (view is AWebView webView)
-				return webView.ScrollY > 0;
+				return RefreshViewWebViewScrollCapture.TryGetCanScrollUp(webView, out var canScrollUp) && canScrollUp;
 
 			return true;
 		}
+
+		// Recursively hit-tests the view tree to find a WebView at the given
+		// coordinates (in the parent's coordinate space).
+		// ScrollX/ScrollY are added when converting to a child's local coordinate
+		// space so that scrolled containers (HorizontalScrollView, NestedScrollView,
+		// etc.) are handled correctly. Without this adjustment, any ViewGroup that
+		// has been scrolled would cause the hit-test to miss the WebView or match
+		// the wrong region.
+		static AWebView? FindWebView(AView? view, float x, float y)
+		{
+			if (view is null || view.Visibility != ViewStates.Visible)
+				return null;
+
+			if (x < view.Left || x > view.Right || y < view.Top || y > view.Bottom)
+				return null;
+
+			if (view is AWebView)
+				return (AWebView)view;
+
+			if (view is not ViewGroup viewGroup)
+				return null;
+
+			var localX = x - view.Left + view.ScrollX;
+			var localY = y - view.Top  + view.ScrollY;
+
+			for (int i = viewGroup.ChildCount - 1; i >= 0; i--)
+			{
+				var webView = FindWebView(viewGroup.GetChildAt(i), localX, localY);
+				if (webView is not null)
+					return webView;
+			}
+
+			return null;
+		}
+
 	}
 }

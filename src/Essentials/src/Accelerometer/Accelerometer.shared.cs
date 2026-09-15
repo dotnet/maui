@@ -97,10 +97,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IAccelerometer Default =>
-			defaultImplementation ??= new AccelerometerImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new AccelerometerImplementation());
 
 		internal static void SetDefault(IAccelerometer? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -37,8 +38,32 @@ public class ShellViewModel : INotifyPropertyChanged
     private Color _tabBarTitleColor;
     private Color _tabBarUnselectedColor;
     private bool _tabBarIsVisible = true;
+    private string _textOverride = string.Empty;
+    private string _iconOverride = string.Empty;
     private bool _isEnabled = true;
     private bool _isVisible = true;
+    private string _commandParameter = string.Empty;
+    private string _commandExecuted = string.Empty;
+    private string _currentState = "Not Set";
+    private string _currentPage = "Not Set";
+    private string _currentItem = "Not Set";
+    private string _shellCurrent = "Not Set";
+    private string _navigatingCurrent = string.Empty;
+    private string _navigatingSource = string.Empty;
+    private string _navigatingTarget = string.Empty;
+    private string _navigatingCanCancel = string.Empty;
+    private string _navigatingCancelled = string.Empty;
+    private string _navigatedCurrent = string.Empty;
+    private string _navigatedPrevious = string.Empty;
+    private string _navigatedSource = string.Empty;
+    private string _routeStatus = string.Empty;
+    private bool _cancelNavigation;
+    private bool _enableDeferral;
+    private string _deferralStatus = string.Empty;
+    private string _overrideNavigatingStatus = string.Empty;
+    private string _overrideNavigatedStatus = string.Empty;
+    private string _tabStackInfo = string.Empty;
+    readonly Command<object> _command;
     private Color _backgroundColor;
     private Color _foregroundColor;
     private Color _titleColor;
@@ -48,6 +73,31 @@ public class ShellViewModel : INotifyPropertyChanged
     private bool _navBarHasShadow = true;
     private bool _navBarVisibilityAnimationEnabled = true;
     private PresentationMode _presentationMode = PresentationMode.Animated;
+    private Color _cancelButtonColor;
+    private Color _textColor;
+    private Color _placeholderColor;
+    private double _characterSpacing = 0d;
+    private FontAttributes _fontAttributes = FontAttributes.None;
+    private bool _fontAutoScalingEnabled = true;
+    private string _fontFamily;
+    private double _fontSize = 16d;
+    private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
+    private TextAlignment _verticalTextAlignment = TextAlignment.Center;
+    private TextTransform _textTransform = TextTransform.Default;
+    private Keyboard _keyboard = Keyboard.Default;
+    private string _placeholder = "Search fruits or birds";
+    private bool _isSearchEnabled = true;
+    private bool _showsResults = false;
+    private SearchBoxVisibility _searchBoxVisibility = SearchBoxVisibility.Expanded;
+    private string _query = string.Empty;
+    private object _selectedItem;
+    private string _itemsSourceMode = "Query";
+    private ImageSource _clearIcon;
+    private ImageSource _queryIcon;
+    private bool _clearPlaceholderEnabled = false;
+    private ImageSource _clearPlaceholderIcon;
+    private string _clearPlaceholderCommandParameter = string.Empty;
+    private DataTemplate _searchItemTemplate;
 
     public FlyoutDisplayOptions FlyoutDisplayOptions
     {
@@ -252,6 +302,17 @@ public class ShellViewModel : INotifyPropertyChanged
             }
         }
     }
+    public ICommand Command => _command;
+    public string TextOverride
+    {
+        get => _textOverride;
+        set { if (_textOverride != value) { _textOverride = value; OnPropertyChanged(); } }
+    }
+    public string IconOverride
+    {
+        get => _iconOverride;
+        set { if (_iconOverride != value) { _iconOverride = value; OnPropertyChanged(); } }
+    }
     public bool IsEnabled
     {
         get => _isEnabled;
@@ -261,44 +322,126 @@ public class ShellViewModel : INotifyPropertyChanged
             {
                 _isEnabled = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsEnabledText));
+                _command.ChangeCanExecute();
             }
         }
     }
+    public string IsEnabledText => $"IsEnabled: {_isEnabled}";
     public bool IsVisible
     {
         get => _isVisible;
-        set
-        {
-            if (_isVisible != value)
-            {
-                _isVisible = value;
-                OnPropertyChanged();
-            }
-        }
+        set { if (_isVisible != value) { _isVisible = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsVisibleText)); } }
     }
-    public ShellViewModel()
+    public string IsVisibleText => $"IsVisible: {_isVisible}";
+    public string CommandParameter
     {
-        ItemTemplate = new DataTemplate(() =>
-        {
-            var label = new Label
-            {
-                Padding = new Thickness(10),
-            };
-            label.SetBinding(Label.TextProperty, "Title");
-            return label;
-        });
-
-        MenuItemTemplate = new DataTemplate(() =>
-        {
-            var label = new Label
-            {
-                Padding = new Thickness(10),
-            };
-            label.SetBinding(Label.TextProperty, "Text");
-            return label;
-        });
+        get => _commandParameter;
+        set { if (_commandParameter != value) { _commandParameter = value; OnPropertyChanged(); } }
     }
-    
+    public string CommandExecuted
+    {
+        get => _commandExecuted;
+        set { if (_commandExecuted != value) { _commandExecuted = value; OnPropertyChanged(); } }
+    }
+    public string CurrentState
+    {
+        get => _currentState;
+        set { if (_currentState != value) { _currentState = value; OnPropertyChanged(); } }
+    }
+    public string CurrentPage
+    {
+        get => _currentPage;
+        set { if (_currentPage != value) { _currentPage = value; OnPropertyChanged(); } }
+    }
+    public string CurrentItem
+    {
+        get => _currentItem;
+        set { if (_currentItem != value) { _currentItem = value; OnPropertyChanged(); } }
+    }
+    public string ShellCurrent
+    {
+        get => _shellCurrent;
+        set { if (_shellCurrent != value) { _shellCurrent = value; OnPropertyChanged(); } }
+    }
+    public string NavigatingCurrent
+    {
+        get => _navigatingCurrent;
+        set { if (_navigatingCurrent != value) { _navigatingCurrent = value; OnPropertyChanged(); } }
+    }
+    public string NavigatingSource
+    {
+        get => _navigatingSource;
+        set { if (_navigatingSource != value) { _navigatingSource = value; OnPropertyChanged(); } }
+    }
+    public string NavigatingTarget
+    {
+        get => _navigatingTarget;
+        set { if (_navigatingTarget != value) { _navigatingTarget = value; OnPropertyChanged(); } }
+    }
+    public string NavigatingCanCancel
+    {
+        get => _navigatingCanCancel;
+        set { if (_navigatingCanCancel != value) { _navigatingCanCancel = value; OnPropertyChanged(); } }
+    }
+    public string NavigatingCancelled
+    {
+        get => _navigatingCancelled;
+        set { if (_navigatingCancelled != value) { _navigatingCancelled = value; OnPropertyChanged(); } }
+    }
+    public string NavigatedCurrent
+    {
+        get => _navigatedCurrent;
+        set { if (_navigatedCurrent != value) { _navigatedCurrent = value; OnPropertyChanged(); } }
+    }
+    public string NavigatedPrevious
+    {
+        get => _navigatedPrevious;
+        set { if (_navigatedPrevious != value) { _navigatedPrevious = value; OnPropertyChanged(); } }
+    }
+    public string NavigatedSource
+    {
+        get => _navigatedSource;
+        set { if (_navigatedSource != value) { _navigatedSource = value; OnPropertyChanged(); } }
+    }
+    public string RouteStatus
+    {
+        get => _routeStatus;
+        set { if (_routeStatus != value) { _routeStatus = value; OnPropertyChanged(); } }
+    }
+    public bool CancelNavigation
+    {
+        get => _cancelNavigation;
+        set { if (_cancelNavigation != value) { _cancelNavigation = value; OnPropertyChanged(); OnPropertyChanged(nameof(CancelNavigationText)); } }
+    }
+    public string CancelNavigationText => $"CancelNav: {_cancelNavigation}";
+    public bool EnableDeferral
+    {
+        get => _enableDeferral;
+        set { if (_enableDeferral != value) { _enableDeferral = value; OnPropertyChanged(); OnPropertyChanged(nameof(EnableDeferralText)); } }
+    }
+    public string EnableDeferralText => $"Deferral: {_enableDeferral}";
+    public string DeferralStatus
+    {
+        get => _deferralStatus;
+        set { if (_deferralStatus != value) { _deferralStatus = value; OnPropertyChanged(); } }
+    }
+    public string OverrideNavigatingStatus
+    {
+        get => _overrideNavigatingStatus;
+        set { if (_overrideNavigatingStatus != value) { _overrideNavigatingStatus = value; OnPropertyChanged(); } }
+    }
+    public string OverrideNavigatedStatus
+    {
+        get => _overrideNavigatedStatus;
+        set { if (_overrideNavigatedStatus != value) { _overrideNavigatedStatus = value; OnPropertyChanged(); } }
+    }
+    public string TabStackInfo
+    {
+        get => _tabStackInfo;
+        set { if (_tabStackInfo != value) { _tabStackInfo = value; OnPropertyChanged(); } }
+    }
+
     public Color BackgroundColor
     {
         get => _backgroundColor;
@@ -351,6 +494,314 @@ public class ShellViewModel : INotifyPropertyChanged
     {
         get => _presentationMode;
         set { _presentationMode = value; OnPropertyChanged(); }
+    }
+
+    public void Reset()
+    {
+        BackgroundColor = null;
+        CancelButtonColor = null;
+        TextColor = null;
+        PlaceholderColor = null;
+        CharacterSpacing = 0d;
+        FontAttributes = FontAttributes.None;
+        FontAutoScalingEnabled = true;
+        FontFamily = null;
+        FontSize = 16d;
+        HorizontalTextAlignment = TextAlignment.Start;
+        VerticalTextAlignment = TextAlignment.Center;
+        TextTransform = TextTransform.Default;
+        Keyboard = Keyboard.Default;
+        Placeholder = "Search fruits or birds";
+        IsSearchEnabled = true;
+        ShowsResults = false;
+        SearchBoxVisibility = SearchBoxVisibility.Expanded;
+        Query = string.Empty;
+        SelectedItem = null;
+        ItemTemplate = BuildSimpleTemplate();
+        SearchItemTemplate = BuildSimpleTemplate();
+        ItemsSourceMode = "Query";
+        ClearIcon = null;
+        QueryIcon = null;
+        ClearPlaceholderEnabled = false;
+        ClearPlaceholderIcon = null;
+        ClearPlaceholderCommandParameter = string.Empty;
+        CommandParameter = string.Empty;
+        QueryChangedLog = string.Empty;
+        FocusStatus = string.Empty;
+        IsFocused = false;
+        CommandFired = string.Empty;
+        ClearPlaceholderCommandFired = string.Empty;
+    }
+    public Color CancelButtonColor
+    {
+        get => _cancelButtonColor;
+        set { _cancelButtonColor = value; OnPropertyChanged(); }
+    }
+    public Color TextColor
+    {
+        get => _textColor;
+        set { _textColor = value; OnPropertyChanged(); }
+    }
+    public Color PlaceholderColor
+    {
+        get => _placeholderColor;
+        set { _placeholderColor = value; OnPropertyChanged(); }
+    }
+    public double CharacterSpacing
+    {
+        get => _characterSpacing;
+        set { _characterSpacing = value; OnPropertyChanged(); }
+    }
+    public FontAttributes FontAttributes
+    {
+        get => _fontAttributes;
+        set { _fontAttributes = value; OnPropertyChanged(); }
+    }
+    public bool FontAutoScalingEnabled
+    {
+        get => _fontAutoScalingEnabled;
+        set { _fontAutoScalingEnabled = value; OnPropertyChanged(); }
+    }
+    public string FontFamily
+    {
+        get => _fontFamily;
+        set { _fontFamily = value; OnPropertyChanged(); }
+    }
+    public double FontSize
+    {
+        get => _fontSize;
+        set { _fontSize = value; OnPropertyChanged(); }
+    }
+    public TextAlignment HorizontalTextAlignment
+    {
+        get => _horizontalTextAlignment;
+        set { _horizontalTextAlignment = value; OnPropertyChanged(); }
+    }
+    public TextAlignment VerticalTextAlignment
+    {
+        get => _verticalTextAlignment;
+        set { _verticalTextAlignment = value; OnPropertyChanged(); }
+    }
+    public TextTransform TextTransform
+    {
+        get => _textTransform;
+        set { _textTransform = value; OnPropertyChanged(); }
+    }
+
+    public Keyboard Keyboard
+    {
+        get => _keyboard;
+        set { _keyboard = value; OnPropertyChanged(); }
+    }
+    public string Placeholder
+    {
+        get => _placeholder;
+        set { _placeholder = value; OnPropertyChanged(); }
+    }
+
+    public bool IsSearchEnabled
+    {
+        get => _isSearchEnabled;
+        set
+        {
+            _isSearchEnabled = value;
+            OnPropertyChanged();
+            (SearchCommand as Command)?.ChangeCanExecute();
+        }
+    }
+    public bool ShowsResults
+    {
+        get => _showsResults;
+        set { _showsResults = value; OnPropertyChanged(); }
+    }
+    public SearchBoxVisibility SearchBoxVisibility
+    {
+        get => _searchBoxVisibility;
+        set { _searchBoxVisibility = value; OnPropertyChanged(); }
+    }
+    public string Query
+    {
+        get => _query;
+        set { _query = value; OnPropertyChanged(); }
+    }
+    public object SelectedItem
+    {
+        get => _selectedItem;
+        set { _selectedItem = value; OnPropertyChanged(); }
+    }
+
+    public string ItemsSourceMode
+    {
+        get => _itemsSourceMode;
+        set { _itemsSourceMode = value; OnPropertyChanged(); }
+    }
+
+    public static DataTemplate BuildSimpleTemplate()
+    {
+        return new DataTemplate(() =>
+        {
+            var label = new Label
+            {
+                AutomationId = "SearchResultName",
+                VerticalOptions = LayoutOptions.Center,
+                Margin = new Thickness(10, 5),
+                FontSize = 20,
+            };
+            label.SetBinding(Label.TextProperty, static (string s) => s);
+            return label;
+        });
+    }
+
+    public static DataTemplate BuildCustomTemplate()
+    {
+        return new DataTemplate(() =>
+        {
+            var image = new Image
+            {
+                Source = ImageSource.FromFile("dotnet_bot.png"),
+                WidthRequest = 24,
+                HeightRequest = 24,
+                VerticalOptions = LayoutOptions.Center,
+            };
+
+            var label = new Label
+            {
+                AutomationId = "SearchResultName",
+                VerticalOptions = LayoutOptions.Center,
+                TextColor = Colors.MediumVioletRed,
+                FontAttributes = FontAttributes.Bold,
+            };
+            label.SetBinding(Label.TextProperty, static (string s) => s);
+
+            return new HorizontalStackLayout
+            {
+                Spacing = 10,
+                Padding = new Thickness(10, 5),
+                Children =
+                {
+                    image,
+                    label
+                }
+            };
+        });
+    }
+
+    public ImageSource ClearIcon
+    {
+        get => _clearIcon;
+        set { _clearIcon = value; OnPropertyChanged(); }
+    }
+
+    public ImageSource QueryIcon
+    {
+        get => _queryIcon;
+        set { _queryIcon = value; OnPropertyChanged(); }
+    }
+
+    public bool ClearPlaceholderEnabled
+    {
+        get => _clearPlaceholderEnabled;
+        set
+        {
+            _clearPlaceholderEnabled = value;
+            OnPropertyChanged();
+            ((Command<object>)ClearPlaceholderCommand)?.ChangeCanExecute();
+        }
+    }
+    public ImageSource ClearPlaceholderIcon
+    {
+        get => _clearPlaceholderIcon;
+        set { _clearPlaceholderIcon = value; OnPropertyChanged(); }
+    }
+    public string ClearPlaceholderCommandParameter
+    {
+        get => _clearPlaceholderCommandParameter;
+        set { _clearPlaceholderCommandParameter = value; OnPropertyChanged(); }
+    }
+    public ICommand SearchCommand { get; }
+    public ICommand ClearPlaceholderCommand { get; }
+    private string _commandFired = string.Empty;
+    public string CommandFired
+    {
+        get => _commandFired;
+        set { _commandFired = value; OnPropertyChanged(); }
+    }
+    private string _clearPlaceholderCommandFired = string.Empty;
+    public string ClearPlaceholderCommandFired
+    {
+        get => _clearPlaceholderCommandFired;
+        set { _clearPlaceholderCommandFired = value; OnPropertyChanged(); }
+    }
+    private string _queryChangedLog = string.Empty;
+    public string QueryChangedLog
+    {
+        get => _queryChangedLog;
+        set { _queryChangedLog = value; OnPropertyChanged(); }
+    }
+    private string _focusStatus = string.Empty;
+    public string FocusStatus
+    {
+        get => _focusStatus;
+        set { _focusStatus = value; OnPropertyChanged(); }
+    }
+    private bool _isFocused;
+    public bool IsFocused
+    {
+        get => _isFocused;
+        set { _isFocused = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate SearchItemTemplate
+    {
+        get => _searchItemTemplate;
+        set { _searchItemTemplate = value; OnPropertyChanged(); }
+    }
+
+    public ShellViewModel()
+    {
+        ItemTemplate = new DataTemplate(() =>
+        {
+            var label = new Label
+            {
+                Padding = new Thickness(10),
+            };
+            label.SetBinding(Label.TextProperty, "Title");
+            return label;
+        });
+
+        MenuItemTemplate = new DataTemplate(() =>
+        {
+            var label = new Label
+            {
+                Padding = new Thickness(10),
+            };
+            label.SetBinding(Label.TextProperty, "Text");
+            return label;
+        });
+
+        _command = new Command<object>(
+            execute: param =>
+            {
+                CommandExecuted = param is string s && !string.IsNullOrEmpty(s)
+                    ? $"Executed: {s}"
+                    : "Executed";
+                Shell.Current?.GoToAsync("..");
+            },
+            canExecute: _ => _isEnabled);
+
+        SearchItemTemplate = BuildSimpleTemplate();
+
+        SearchCommand = new Command<object>(p =>
+        {
+            CommandFired = $"QueryConfirmed:{_query}|Param:{p}";
+        },
+        _ => IsSearchEnabled);
+
+        ClearPlaceholderCommand = new Command<object>(p =>
+        {
+            ClearPlaceholderCommandFired = $"ClearPlaceholder:{p}";
+        },
+        _ => ClearPlaceholderEnabled);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

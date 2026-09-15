@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using NSubstitute;
 using Xunit;
 using Xunit.Sdk;
 
@@ -415,6 +419,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SwipeItemViewCommandCanExecuteUpdatesIsEnabled()
+		{
+			var expectedParameter = new object();
+			var canExecute = false;
+			var command = new Command(
+				_ => { },
+				parameter => canExecute && ReferenceEquals(parameter, expectedParameter));
+			var swipeItemView = new SwipeItemView
+			{
+				CommandParameter = expectedParameter,
+				Command = command
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			canExecute = true;
+			command.ChangeCanExecute();
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = new object();
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = expectedParameter;
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.IsEnabled = false;
+			command.ChangeCanExecute();
+
+			Assert.False(swipeItemView.IsEnabled);
+		}
+
+		[Fact]
 		public void SwipeItemsRemainInLogicalTreeWhenContentIsSet()
 		{
 			var swipeView = new SwipeView();
@@ -485,6 +524,563 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		class TestViewModel
 		{
 			public Command TestCommand { get; set; }
+		}
+
+		static object GetPrivateField(object obj, string fieldName)
+		{
+			var field = obj.GetType().GetField(fieldName,
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			return field?.GetValue(obj);
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentDirectlyWhenTreeIsConnected()
+		{
+			// Non-DataTemplate scenario: SwipeView added to an already-connected ScrollView
+			var scrollView = new ScrollView();
+			var contentView = new ContentView();
+			scrollView.Content = contentView;
+
+			var swipeView = new SwipeView();
+			contentView.Content = swipeView;
+
+			// SwipeView should find the ScrollView via direct parent walk
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentAfterTemplateParentConnected()
+		{
+			// DataTemplate scenario: SwipeView inside ContentView (template root with no parent)
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			// At this point contentView.Parent is null, simulating an unattached template root.
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Connect the template root to a ScrollView (simulating CollectionView adding the item)
+			var scrollView = new ScrollView { Content = contentView };
+
+			// SwipeView should now have discovered the ScrollView via deferred discovery
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewResubscribesToScrollParentAfterRemovalAndReaddition()
+		{
+			var swipeView = new SwipeView();
+			var contentView1 = new ContentView { Content = swipeView };
+			var scrollView1 = new ScrollView { Content = contentView1 };
+
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Remove SwipeView from the tree entirely
+			contentView1.Content = null;
+
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Re-add SwipeView to a different tree with a different ScrollView
+			var contentView2 = new ContentView { Content = swipeView };
+			var scrollView2 = new ScrollView { Content = contentView2 };
+
+			// SwipeView should discover the new ScrollView, not remain stuck on the old one
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewRediscoversScrollParentWhenTemplateRootIsReparented()
+		{
+			// Simulate virtualization: template root is detached then reattached
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			var scrollView1 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Detach the template root (virtualization removal)
+			scrollView1.Content = null;
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Reattach to a different ScrollView (virtualization re-use)
+			var scrollView2 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35481
+		// A SwipeItems instance that is cached (e.g. in a static dictionary) and shared
+		// across multiple SwipeViews must not keep prior SwipeView instances alive.
+		[Fact]
+		public void CachedSwipeItemsDoesNotKeepSwipeViewAlive()
+		{
+			// Simulate the repro: one long-lived SwipeItems cache shared across many SwipeViews.
+			var cachedSwipeItems = new SwipeItems { new SwipeItem { Text = "Delete" } };
+
+			// Allocate the SwipeViews in a non-inlined helper so the locals do not remain
+			// rooted on the test method's stack frame in Debug builds.
+			var swipeViewRefs = CreateSwipeViewsSharingCachedItems(cachedSwipeItems, 20);
+
+			// Mutate the cached SwipeItems after the SwipeViews are no longer referenced.
+			// Before the fix, the CollectionChanged/PropertyChanged subscriptions on
+			// SwipeItems held a strong reference back to every SwipeView that had ever
+			// used this cache, so this mutation would keep them all alive.
+			cachedSwipeItems.Add(new SwipeItem { Text = "Archive" });
+
+			ForceFullGC();
+
+			GC.KeepAlive(cachedSwipeItems);
+
+			Assert.All(swipeViewRefs, r => Assert.False(r.IsAlive,
+				"SwipeView was kept alive by the cached SwipeItems — issue #35481 regression."));
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateSwipeViewsSharingCachedItems(SwipeItems shared, int count)
+		{
+			var refs = new List<WeakReference>(count);
+			for (int i = 0; i < count; i++)
+			{
+				var sv = new SwipeView { RightItems = shared };
+				// Simulate a CollectionView recycling the row: the SwipeView reassigns its
+				// RightItems before going out of scope, releasing the Parent back-reference
+				// from the cached SwipeItems. Before the fix, the closure-based
+				// CollectionChanged/PropertyChanged subscriptions on the cached SwipeItems
+				// still held this SwipeView alive even after this reassignment.
+				sv.RightItems = new SwipeItems();
+				refs.Add(new WeakReference(sv));
+			}
+			return refs;
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35481
+		// Replacing RightItems with a new SwipeItems instance must release any back-reference
+		// from the previous (cached) SwipeItems to the SwipeView. Without the fix, the cached
+		// SwipeItems' CollectionChanged/PropertyChanged delegates kept the SwipeView alive
+		// even after it was logically unhooked.
+		[Fact]
+		public void ReplacingCachedSwipeItemsReleasesPreviousOwnerReference()
+		{
+			// Cache: held by external code (the user's static dictionary in the repro).
+			var cachedRightItems = new SwipeItems { new SwipeItem { Text = "Done" } };
+
+			var swipeViewRef = CreateSwipeViewAssignThenReplace(cachedRightItems);
+
+			// Mutate the cached SwipeItems after the SwipeView is unhooked, just like the repro.
+			cachedRightItems.Add(new SwipeItem { Text = "Archive" });
+
+			ForceFullGC();
+
+			GC.KeepAlive(cachedRightItems);
+
+			Assert.False(swipeViewRef.IsAlive,
+				"Replaced SwipeView was kept alive by its previously-assigned cached SwipeItems — issue #35481 regression.");
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeViewAssignThenReplace(SwipeItems cachedRightItems)
+		{
+			var sv = new SwipeView { RightItems = cachedRightItems };
+			// Replace the assignment — the previous (cached) SwipeItems is now logically
+			// unhooked but kept alive by the caller. It must not retain the SwipeView.
+			sv.RightItems = new SwipeItems { new SwipeItem { Text = "Replaced" } };
+			return new WeakReference(sv);
+		}
+
+		[Fact]
+		public void SwipeItemIconColorDefaultsToNull()
+		{
+			Assert.Null(new SwipeItem().IconColor);
+		}
+
+		[Fact]
+		public void ImageIconKeepsItsOwnColorsWhenIconColorIsNotSet()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = "icon.png"
+			};
+
+			Assert.Null(((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void ImageIconIsTintedWhenIconColorIsSet()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = "icon.png",
+				IconColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void FontIconUsesItsOwnColorWhenIconColorIsNotSet()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
+			};
+
+			Assert.Equal(Colors.Green, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Theory]
+		// A dark background needs a light glyph, a light background needs a dark one.
+		[InlineData(false, "#000000")]
+		[InlineData(true, "#FFFFFF")]
+		public void ColorlessFontIconContrastsWithTheBackground(bool darkBackground, string expected)
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = darkBackground ? Colors.Black : Colors.White,
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+
+			Assert.Equal(Color.FromArgb(expected), ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void IconColorOverridesTheFontImageSourceColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green },
+				IconColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void SwipeItemTextColorDefaultsToNull()
+		{
+			Assert.Null(new SwipeItem().TextColor);
+		}
+
+		[Fact]
+		public void TextColorFallsBackToNullWhenBackgroundIsUnset()
+		{
+			var swipeItem = new SwipeItem
+			{
+				Text = "Delete"
+			};
+
+			Assert.Null(((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Fact]
+		public void ExplicitTextColorIsRespected()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				Text = "Delete",
+				TextColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+			Assert.Equal(Colors.Red, ((ITextStyle)swipeItem).TextColor);
+		}
+
+		[Fact]
+		public void TextColorIsNullWhenFontImageSourceHasItsOwnColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				Text = "Delete",
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
+			};
+
+			Assert.Null(((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Theory]
+		// A dark background needs light text, a light background needs dark text.
+		[InlineData(false, "#000000")]
+		[InlineData(true, "#FFFFFF")]
+		public void TextColorContrastsWithTheBackground(bool darkBackground, string expected)
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = darkBackground ? Colors.Black : Colors.White,
+				Text = "Delete"
+			};
+
+			Assert.Equal(Color.FromArgb(expected), ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Fact]
+		public void ExplicitTextColorOverridesFontImageSourceColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				Text = "Delete",
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green },
+				TextColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		// A colorless font icon derives its tint from TextColor, so the TextColor mapper must
+		// route through the IconColor mapper chain after initial mapping has completed.
+		[Fact]
+		public void ChangingTextColorRefreshesIconForColorlessFontIcon()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		// Discriminating test for the IFontImageSource (interface, not concrete FontImageSource) guard:
+		// a custom ImageSource implementing IFontImageSource with a null Color must still trigger the
+		// cross-key icon refresh. This fails if the guard regresses to the concrete-type check.
+		[Fact]
+		public void ChangingTextColorRefreshesIconForCustomColorlessFontImageSource()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new CustomFontImageSource()
+			};
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void ChangingTextColorDoesNotRefreshIconWhenIconColorIsExplicit()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconColor = Colors.Blue,
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void ChangingTextColorDoesNotRefreshIconWhenFontIconHasItsOwnColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
+			};
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void ChangingTextColorDoesNotRefreshIconForNonFontIcon()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = "icon.png"
+			};
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		// Element.OnBindablePropertySet fires the same-key mapper update automatically, so the
+		// property callbacks must not invoke it again (which would reload the icon twice).
+		[Fact]
+		public void SettingIconColorInvokesIconMapperOnce()
+		{
+			var swipeItem = new SwipeItem();
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.IconColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+		}
+
+		[Fact]
+		public void SettingBackgroundColorInvokesBackgroundMapperOnce()
+		{
+			var swipeItem = new SwipeItem();
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.BackgroundColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.Background));
+		}
+
+		[Fact]
+		public void BackgroundMapperRefreshesTextColorDependency()
+		{
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+
+			SwipeItemMenuItemHandler.UpdateBackgroundColorDependencies(handler);
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void InitialIconColorMappingDoesNotReloadSource()
+		{
+			var swipeItem = new SwipeItem { IconImageSource = "icon.png" };
+			var handler = new TestSwipeItemMenuItemHandler(
+				(ISwipeItemMenuItem)swipeItem,
+				ElementHandlerState.MappingProperties);
+
+			SwipeItemMenuItemHandler.MapIconColor(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Empty(handler.UpdatedProperties);
+
+			handler.State = ElementHandlerState.Connected;
+			SwipeItemMenuItemHandler.MapIconColor(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Equal(new[] { nameof(IMenuElement.Source) }, handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void InitialTextColorMappingDoesNotReloadSource()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+			var handler = new TestSwipeItemMenuItemHandler(
+				(ISwipeItemMenuItem)swipeItem,
+				ElementHandlerState.MappingProperties);
+
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Empty(handler.UpdatedProperties);
+
+			handler.State = ElementHandlerState.Connected;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Equal(new[] { nameof(ISwipeItemMenuItemIconColor.IconColor) }, handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void SettingTextColorInvokesTextColorMapperOnce()
+		{
+			var swipeItem = new SwipeItem();
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+		}
+
+		static void ForceFullGC()
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+				GC.WaitForPendingFinalizers();
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+			}
+		}
+
+		// A custom ImageSource that implements IFontImageSource without being the concrete
+		// FontImageSource, used to verify the icon-tint guard keys off the interface, not the type.
+		sealed class CustomFontImageSource : ImageSource, IFontImageSource
+		{
+			Color IFontImageSource.Color => null;
+			Font IFontImageSource.Font => Font.Default;
+			string IFontImageSource.Glyph => "A";
+		}
+
+		sealed class TestSwipeItemMenuItemHandler : ISwipeItemMenuItemHandler, IElementHandlerStateExhibitor
+		{
+			public TestSwipeItemMenuItemHandler(ISwipeItemMenuItem virtualView, ElementHandlerState state)
+			{
+				VirtualView = virtualView;
+				State = state;
+			}
+
+			public IMauiContext MauiContext => null;
+
+			public object PlatformView { get; } = new();
+
+			public ImageSourcePartLoader SourceLoader => null;
+
+			public ElementHandlerState State { get; set; }
+
+			public List<string> UpdatedProperties { get; } = new();
+
+			public ISwipeItemMenuItem VirtualView { get; private set; }
+
+			IElement IElementHandler.VirtualView => VirtualView;
+
+			public void DisconnectHandler()
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+			}
+
+			public void SetVirtualView(IElement view)
+			{
+				VirtualView = (ISwipeItemMenuItem)view;
+			}
+
+			public void UpdateValue(string property)
+			{
+				UpdatedProperties.Add(property);
+			}
 		}
 	}
 }

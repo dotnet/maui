@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
+		// Cached once to avoid repeated JNI/type lookups on every accessibility traversal.
+		static readonly string s_radioButtonClassName = Java.Lang.Class.FromType(typeof(global::Android.Widget.RadioButton)).Name;
 		public static void UpdateSemanticNodeInfo(this View platformView, IView virtualView, AccessibilityNodeInfoCompat? info)
 		{
 			if (info == null || virtualView == null)
@@ -22,6 +24,8 @@ namespace Microsoft.Maui.Platform
 
 			if (!string.IsNullOrEmpty(desc))
 			{
+				newContentDescription = desc;
+
 				// Edit Text fields won't read anything for the content description
 				if (platformView is EditText et)
 				{
@@ -30,8 +34,6 @@ namespace Microsoft.Maui.Platform
 					else
 						newText = $"{desc}";
 				}
-				else
-					newContentDescription = desc;
 			}
 
 			if (!string.IsNullOrEmpty(hint))
@@ -89,6 +91,13 @@ namespace Microsoft.Maui.Platform
 
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
+
+			if (virtualView is IRadioButton radioButton)
+			{
+				info.ClassName = s_radioButtonClassName;
+				info.Checkable = true;
+				info.Checked = radioButton.IsChecked ? 1 : 0;
+			}
 
 			if (!string.IsNullOrWhiteSpace(virtualView.AutomationId) &&
 				platformView?.Context != null)

@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.OnEditingStarted += OnEditingStarted;
 			_uiSearchBar.OnEditingStopped += OnEditingEnded;
 			_uiSearchBar.TextChanged += OnTextChanged;
-			_uiSearchBar.ShowsCancelButton = false;
 			GetDefaultSearchBarColors(_uiSearchBar);
 			var uiTextField = searchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarColors();
@@ -123,8 +122,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_defaultTintColor = searchBar.BarTintColor;
 
+			var textField = searchBar.FindDescendantView<UITextField>();
+			if (textField is not null)
+			{
+				// On iOS 13+, UISearchTextField.BackgroundColor is typically nil;
+				// the visual chrome comes from internal layers. Resetting to nil restores native appearance.
+				_defaultBackgroundColor = textField.BackgroundColor;
+			}
+
 			var cancelButton = searchBar.FindDescendantView<UIButton>();
-			if (cancelButton != null)
+			if (cancelButton is not null)
 			{
 				_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
 				_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
@@ -151,25 +158,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!_hasCustomBackground && backGroundColor == null)
 				return;
 
-			var backgroundView = textField.Subviews[0];
-
 			if (backGroundColor == null)
 			{
-				backgroundView.Layer.CornerRadius = 0;
-				backgroundView.ClipsToBounds = false;
-				backgroundView.BackgroundColor = _defaultBackgroundColor;
+				// Reset to defaults
+				textField.Layer.CornerRadius = 0;
+				textField.ClipsToBounds = false;
+				textField.BackgroundColor = _defaultBackgroundColor;
+				_hasCustomBackground = false;
 			}
-
-			_hasCustomBackground = true;
-
-			backgroundView.Layer.CornerRadius = 10;
-			backgroundView.ClipsToBounds = true;
-			if (_defaultBackgroundColor == null)
-				_defaultBackgroundColor = backgroundView.BackgroundColor;
-
-			UIColor backgroundColor = backGroundColor.ToPlatform();
-			backgroundView.BackgroundColor = backgroundColor;
-			textField.BackgroundColor = backgroundColor;
+			else
+			{
+				_hasCustomBackground = true;
+				textField.Layer.CornerRadius = 10;
+				textField.ClipsToBounds = true;
+				textField.BackgroundColor = backGroundColor.ToPlatform();
+			}
 		}
 
 		void UpdateCancelButtonColor(UIButton cancelButton)

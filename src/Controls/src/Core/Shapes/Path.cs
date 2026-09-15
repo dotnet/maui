@@ -11,11 +11,22 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// </summary>
 	public sealed partial class Path : Shape, IShape
 	{
+		WeakGeometryChangedProxy _dataProxy;
+		EventHandler _dataChanged;
+		WeakNotifyPropertyChangedProxy _transformProxy;
+		PropertyChangedEventHandler _transformChanged;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Path"/> class.
 		/// </summary>
 		public Path() : base()
 		{
+		}
+
+		~Path()
+		{
+			_dataProxy?.Unsubscribe();
+			_transformProxy?.Unsubscribe();
 		}
 
 		public Path(Geometry data) : this()
@@ -26,12 +37,30 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <summary>Bindable property for <see cref="Data"/>.</summary>
 		public static readonly BindableProperty DataProperty =
 			 BindableProperty.Create(nameof(Data), typeof(Geometry), typeof(Path), null,
-				 propertyChanged: OnGeometryPropertyChanged);
+				 propertyChanging: (bindable, oldValue, newValue) =>
+				 {
+					 if (oldValue != null)
+						 (bindable as Path)?.StopNotifyingDataChanges();
+				 },
+				 propertyChanged: (bindable, oldValue, newValue) =>
+				 {
+					 if (newValue != null)
+						 (bindable as Path)?.NotifyDataChanges();
+				 });
 
 		/// <summary>Bindable property for <see cref="RenderTransform"/>.</summary>
 		public static readonly BindableProperty RenderTransformProperty =
 			BindableProperty.Create(nameof(RenderTransform), typeof(Transform), typeof(Path), null,
-				propertyChanged: OnTransformPropertyChanged);
+				propertyChanging: (bindable, oldValue, newValue) =>
+				{
+					if (oldValue != null)
+						(bindable as Path)?.StopNotifyingTransformChanges();
+				},
+				propertyChanged: (bindable, oldValue, newValue) =>
+				{
+					if (newValue != null)
+						(bindable as Path)?.NotifyTransformChanges();
+				});
 
 		/// <summary>
 		/// Gets or sets the <see cref="Geometry"/> that specifies the shape to be drawn. This is a bindable property.
@@ -52,46 +81,38 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Transform)GetValue(RenderTransformProperty); }
 		}
 
-		static void OnGeometryPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		void NotifyDataChanges()
 		{
-			if (oldValue != null)
+			var data = Data;
+
+			if (data != null)
 			{
-				(oldValue as Geometry).PropertyChanged -= (bindable as Path).OnGeometryPropertyChanged;
-
-				if (oldValue is PathGeometry pathGeometry)
-					pathGeometry.InvalidatePathGeometryRequested -= (bindable as Path).OnInvalidatePathGeometryRequested;
-			}
-
-			if (newValue != null)
-			{
-				(newValue as Geometry).PropertyChanged += (bindable as Path).OnGeometryPropertyChanged;
-
-				if (newValue is PathGeometry pathGeometry)
-					pathGeometry.InvalidatePathGeometryRequested += (bindable as Path).OnInvalidatePathGeometryRequested;
+				_dataChanged ??= (sender, e) => OnPropertyChanged(nameof(Data));
+				_dataProxy ??= new WeakGeometryChangedProxy();
+				_dataProxy.Subscribe(data, _dataChanged);
 			}
 		}
 
-		static void OnTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		void StopNotifyingDataChanges()
 		{
-			if (oldValue != null)
-			{
-				(oldValue as Transform).PropertyChanged -= (bindable as Path).OnTransformPropertyChanged;
-			}
+			_dataProxy?.Unsubscribe();
+		}
 
-			if (newValue != null)
+		void NotifyTransformChanges()
+		{
+			var renderTransform = RenderTransform;
+
+			if (renderTransform != null)
 			{
-				(newValue as Transform).PropertyChanged += (bindable as Path).OnTransformPropertyChanged;
+				_transformChanged ??= OnTransformPropertyChanged;
+				_transformProxy ??= new WeakNotifyPropertyChangedProxy();
+				_transformProxy.Subscribe(renderTransform, _transformChanged);
 			}
 		}
 
-		void OnGeometryPropertyChanged(object sender, PropertyChangedEventArgs args)
+		void StopNotifyingTransformChanges()
 		{
-			OnPropertyChanged(nameof(Data));
-		}
-
-		void OnInvalidatePathGeometryRequested(object sender, EventArgs e)
-		{
-			OnPropertyChanged(nameof(Data));
+			_transformProxy?.Unsubscribe();
 		}
 
 		void OnTransformPropertyChanged(object sender, PropertyChangedEventArgs args)

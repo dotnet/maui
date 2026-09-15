@@ -1,0 +1,40 @@
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.TestCases.Tests.Issues
+{
+	public class Issue2708 : _IssuesUITest
+	{
+		public Issue2708(TestDevice device) : base(device)
+		{
+		}
+
+		public override string Issue => "Prevent tabs from being removed during modal navigation";
+
+		[Test]
+		[Category(UITestCategories.TabbedPage)]
+		public void TabsShouldRemainVisibleDuringModalNavigation()
+		{
+			// Verify we're on the TabbedPage and can see Tab 1 content
+			App.WaitForElement("OpenModalButton");
+
+			// Open modal page
+			App.Tap("OpenModalButton");
+			App.WaitForElement("CloseModalButton");
+
+			// Take screenshot while modal is open to verify tabs visible behind
+			App.Screenshot("ModalOpenWithTabsVisible");
+
+			// Close the modal
+			App.Tap("CloseModalButton");
+
+			// Verify tabs still work after modal dismiss
+			App.WaitForElement("StatusLabel");
+			App.TapTab("Tab 2");
+			App.WaitForElement("Tab2Label");
+			App.TapTab("Tab 1");
+			App.WaitForElement("OpenModalButton");
+		}
+	}
+}

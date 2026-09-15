@@ -26,7 +26,7 @@ namespace UITest.Appium
 
 		protected override CommandResponse PressEnter(IDictionary<string, object> parameters)
 		{
-			if (_app.Driver is AndroidDriver android)
+			if (_app.Driver is AndroidDriver android && _app.Driver.IsKeyboardShown())
 			{
 				// 66 - KEYCODE_ENTER
 				// More information: https://developer.android.com/reference/android/view/KeyEvent.html

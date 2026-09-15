@@ -191,6 +191,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal bool HasMenuBarContent => _menuBar is not null && _menuBar.Items.Count > 0;
+
 		internal void SetMenuBar(MenuBar? menuBar)
 		{
 			_menuBar = menuBar;

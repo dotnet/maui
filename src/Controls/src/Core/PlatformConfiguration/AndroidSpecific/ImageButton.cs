@@ -1,6 +1,7 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using Microsoft.Maui.Graphics;
 	using FormsImageButton = Maui.Controls.ImageButton;
 
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to enable shadow; otherwise, <see langword="false"/>.</param>
 		public static void SetIsShadowEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsShadowEnabledProperty, value);
+			element.SetValue(IsShadowEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether the shadow effect is enabled on Android.</summary>

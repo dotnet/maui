@@ -29,6 +29,12 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		/// <param name="actions">A collection of <see cref="AppAction"/> that is to be set for this app.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		/// <remarks>
+		/// Implementations must complete the returned task when the platform write finishes.
+		/// App-action publications configured through <c>ConfigureEssentials</c> are serialized,
+		/// and this contract has no cancellation token, so a task that never completes prevents
+		/// later configured publications from starting.
+		/// </remarks>
 		Task SetAsync(IEnumerable<AppAction> actions);
 
 		/// <summary>
@@ -121,10 +127,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IAppActions Current =>
-			currentImplementation ??= new AppActionsImplementation();
+			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new AppActionsImplementation());
 
 		internal static void SetCurrent(IAppActions? implementation) =>
-			currentImplementation = implementation;
+			EssentialsImplementation.Set(ref currentImplementation, implementation);
 	}
 
 	/// <summary>

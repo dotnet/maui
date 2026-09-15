@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Android.Views;
 using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
@@ -18,6 +19,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal string? UrlCanceled { get; set; }
 
+		MauiWebViewClient? _webViewClient;
+		MauiWebChromeClient? _webChromeClient;
+
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiWebView(this, Context!)
@@ -33,6 +37,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				platformView.SetLayerType(global::Android.Views.LayerType.Software, null);
 			}
+
+			// Create web clients once and store references
+			_webViewClient = new MauiWebViewClient(this);
+			platformView.SetWebViewClient(_webViewClient);
+
+			_webChromeClient = new MauiWebChromeClient(this);
+			platformView.SetWebChromeClient(_webChromeClient);
 
 			return platformView;
 		}
@@ -54,21 +65,67 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			// WebView.WebViewClient / WebView.WebChromeClient getters are only available on API 26+.
+			// On older API levels we fall back to the cached references we set in CreatePlatformView.
+			global::Android.Webkit.WebViewClient? currentWebViewClient = null;
+			WebChromeClient? currentWebChromeClient = null;
+
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				if (platformView.WebViewClient is MauiWebViewClient webViewClient)
-					webViewClient.Disconnect();
+				currentWebViewClient = platformView.WebViewClient;
+				currentWebChromeClient = platformView.WebChromeClient;
+			}
 
-				if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
-					webChromeClient.Disconnect();
+			// Reset layout flag so a stale true value does not trigger ClearHistory()
+			// if this handler is re-connected (e.g., Shell tab switch). (#35788)
+			if (platformView is MauiWebView mauiWebView)
+			{
+				mauiWebView.IsLoadingForLayout = false;
 			}
 
 			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
-
 			platformView.StopLoading();
+			if (platformView.Parent is ViewGroup parent)
+				parent.RemoveView(platformView);
+			platformView.RemoveAllViews();
+
+			// Disconnect/dispose the clients that were actually active
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				(currentWebViewClient as MauiWebViewClient)?.Disconnect();
+				(currentWebChromeClient as MauiWebChromeClient)?.Disconnect();
+			}
+
+			// Also clean up originals if they were replaced by a custom handler
+			if (!ReferenceEquals(currentWebViewClient, _webViewClient))
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					_webViewClient?.Disconnect();
+				}
+
+				_webViewClient?.Dispose();
+			}
+
+			if (!ReferenceEquals(currentWebChromeClient, _webChromeClient))
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					_webChromeClient?.Disconnect();
+				}
+
+				_webChromeClient?.Dispose();
+			}
+
+			(currentWebViewClient as IDisposable)?.Dispose();
+			(currentWebChromeClient as IDisposable)?.Dispose();
+
+			_webViewClient = null;
+			_webChromeClient = null;
 
 			base.DisconnectHandler(platformView);
+			platformView.Destroy();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
@@ -79,18 +136,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
 		{
 			handler.PlatformView.UpdateUserAgent(webView);
-		}
-
-		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
-		{
-			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebViewClient(new MauiWebViewClient(platformHandler));
-		}
-
-		public static void MapWebChromeClient(IWebViewHandler handler, IWebView webView)
-		{
-			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebChromeClient(new MauiWebChromeClient(platformHandler));
 		}
 
 		public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
@@ -167,8 +212,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void ProcessSourceWhenReady(IWebViewHandler handler, IWebView webView)
 		{
-			//We want to load the source after making sure the mapper for webclients
-			//and settings were called already
+			//We want to load the source after making sure the mapper for settings was called already
 			var platformHandler = handler as WebViewHandler;
 			if (platformHandler == null || platformHandler._firstRun)
 				return;

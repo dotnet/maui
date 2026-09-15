@@ -217,12 +217,19 @@ Task("uitests-apphost")
             properties.Add("_UseNativeAot", "true");
             properties.Add("RuntimeIdentifier", "iossimulator-x64");
         }
-        
+
         var useMaterial3 = Argument("usematerial3", false);
         if (useMaterial3)
         {
             Information("Building with Material3 enabled");
             properties.Add("UseMaterial3", "true");
+        }
+
+        var useWindowsCV1 = Argument("usewindowscv1", false);
+        if (useWindowsCV1)
+        {
+            Information("Building with UseWindowsCollectionView2Handler=false (CV1)");
+            properties.Add("UseWindowsCollectionView2Handler", "false");
         }
 
         if (useNuget)
@@ -269,17 +276,17 @@ Task("dotnet-test")
             "**/Controls.BindingSourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
-            "**/Essentials.AI.UnitTests.csproj",
+            "**/Essentials.ExternalBackend.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
-            "**/Compatibility.Core.UnitTests.csproj",
+            "**/MauiBlazorWebView.UnitTests.csproj",
         };
 
         var success = true;
 
         foreach (var test in tests)
         {
-            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests")))
+            if (!IsRunningOnWindows() && test.Contains("Controls.Core.Design.UnitTests"))
             {
                 continue;
             }

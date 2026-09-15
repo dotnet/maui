@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The new layout compression value. <see langword="true" /> to enable layout compression</param>
 		[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 		public static void SetIsHeadless(BindableObject bindable, bool value)
-			=> bindable.SetValue(IsHeadlessProperty, value);
+			=> bindable.SetValue(IsHeadlessProperty, BooleanBoxes.Box(value));
 
 		static void OnIsHeadlessPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{

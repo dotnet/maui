@@ -122,14 +122,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// Set ForegroundColor
 				var foreground = appearance.ForegroundColor;
 
-				if (foreground != null)
+				if (foreground is not null)
+				{
 					navBar.TintColor = foreground.ToPlatform();
+				}
+				else if (_defaultTint is not null) // Reset to default if user set ForegroundColor to null
+				{
+					navBar.TintColor = _defaultTint;
+				}
 
-				// Set BackgroundColor
-				var background = appearance.BackgroundColor;
-
-				if (background != null)
-					navigationBarAppearance.BackgroundColor = background.ToPlatform();
+				// Set Background (prefer Brush over Color for gradient support)
+				if (!Brush.IsNullOrEmpty(appearance.Background))
+				{
+					if (appearance.Background is SolidColorBrush solidBrush && solidBrush.Color is not null)
+					{
+						navigationBarAppearance.BackgroundColor = solidBrush.Color.ToPlatform();
+					}
+					else
+					{
+						var backgroundImage = navBar.GetBackgroundImage(appearance.Background);
+						if (backgroundImage is not null)
+						{
+							navigationBarAppearance.BackgroundImage = backgroundImage;
+						}
+					}
+				}
+				else if (appearance.BackgroundColor is not null)
+				{
+					navigationBarAppearance.BackgroundColor = appearance.BackgroundColor.ToPlatform();
+				}
 
 				// Set TitleColor
 				var titleColor = appearance.TitleColor;

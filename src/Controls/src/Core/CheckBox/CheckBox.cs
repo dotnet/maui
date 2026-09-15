@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="IsChecked"/> property to determine or set the state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<CheckBoxHandler>]
 	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
@@ -29,7 +28,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty =
-			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
+			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), BooleanBoxes.FalseBox,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
 					if (bindable is not CheckBox checkBox)
@@ -98,7 +97,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get => (bool)GetValue(IsCheckedProperty);
-			set => SetValue(IsCheckedProperty, value);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value));
 		}
 
 		protected internal override void ChangeVisualState()
@@ -175,7 +174,7 @@ namespace Microsoft.Maui.Controls
 		bool ICheckBox.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		ICommand ICommandElement.Command => Command;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Android.Content;
 using Android.Graphics;
@@ -83,12 +84,12 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.LineHeight >= 0)
 					spannable.SetSpan(new PlatformLineHeightSpan(context, (float)span.LineHeight, (float)defaultFontSize), start, end, SpanTypes.InclusiveExclusive);
 
-				// CharacterSpacing
-				var characterSpacing = span.CharacterSpacing >= 0
+				// CharacterSpacing with validation
+				var characterSpacing = span.IsSet(Span.CharacterSpacingProperty)
 					? span.CharacterSpacing
 					: defaultCharacterSpacing;
-				if (characterSpacing >= 0)
-					spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+				characterSpacing = Math.Max(0, characterSpacing);
+				spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 
 				var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 				if (!font.IsDefault)
@@ -124,6 +125,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var layout = textView.Layout;
 			if (layout == null)
 				return;
+
+			// Fix for https://github.com/dotnet/maui/issues/35755: skip spans in the
+			// ellipsized tail to avoid IndexOutOfBoundsException.
+			var lastLayoutLine = layout.LineCount - 1;
+			if (lastLayoutLine < 0)
+				return;
+			var layoutEndOffset = layout.GetLineEnd(lastLayoutLine);
 
 			int next = 0;
 			int count = 0;
@@ -162,8 +170,16 @@ namespace Microsoft.Maui.Controls.Platform
 				var spanStartOffset = spannableString.GetSpanStart(startSpan);
 				var spanEndOffset = spannableString.GetSpanEnd(endSpan);
 
+				// Safe for TailTruncation only: both offsets share the same string prefix.
+				if (spanStartOffset >= layoutEndOffset)
+					continue;
+
 				var spanStartLine = layout.GetLineForOffset(spanStartOffset);
-				var spanEndLine = layout.GetLineForOffset(spanEndOffset);
+				var spanEndLine = layout.GetLineForOffset(System.Math.Min(spanEndOffset, layoutEndOffset - 1));
+
+				// OEM guard: some Layout subclasses don't cap GetLineForOffset at lineCount-1.
+				// Not dead code — see https://github.com/dotnet/maui/issues/35755
+				spanEndLine = System.Math.Min(spanEndLine, lastLayoutLine);
 
 				// Go through all lines that are affected by the span and calculate a rectangle for each
 				List<Graphics.Rect> spanRectangles = new List<Graphics.Rect>();

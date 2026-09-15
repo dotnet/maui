@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		IShellSectionController SectionController => (IShellSectionController)ShellSection;
 		IMauiContext MauiContext => ShellContext.Shell.Handler.MauiContext;
+		Toolbar _shellToolbar;
 
 		public ShellSectionRenderer(IShellContext shellContext)
 		{
@@ -108,9 +109,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			int actionBarHeight = context.GetActionBarHeight();
 
-			var shellToolbar = new Toolbar(shellSection);
-			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, shellToolbar);
-			_toolbar = (AToolbar)shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
+			_shellToolbar = new Toolbar(shellSection);
+			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, _shellToolbar);
+			_toolbar = (AToolbar)_shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
 			appbar.AddView(_toolbar);
 			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
@@ -135,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
-			_toolbarTracker.SetToolbar(shellToolbar);
+			_toolbarTracker.SetToolbar(_shellToolbar);
 			_toolbarTracker.Page = currentPage;
 
 			_viewPager.CurrentItem = currentIndex;
@@ -160,6 +161,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.PropertyName == ShellContent.TitleProperty.PropertyName && sender is ShellContent shellContent)
 			{
 				UpdateTabTitle(shellContent);
+			}
+			else if (e.PropertyName == ShellContent.ContentProperty.PropertyName && sender is ShellContent changedContent)
+			{
+				// The page inside this ShellContent changed — force ViewPager2 to recreate the
+				// fragment so it picks up the new content.
+				if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+				{
+					adapter.InvalidateShellContent(changedContent);
+					SafeNotifyDataSetChanged();
+
+					// Keep toolbar state in sync when the active tab's content page is replaced.
+					if (ShellSection?.CurrentItem == changedContent && _toolbarTracker is not null)
+					{
+						var page = ((IShellContentController)changedContent).GetOrCreateContent();
+						if (page is not null)
+						{
+							_toolbarTracker.Page = page;
+						}
+					}
+				}
 			}
 		}
 
@@ -228,6 +249,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarTracker = null;
 			_tablayout = null;
 			_toolbar = null;
+			_shellToolbar = null;
 			_viewPager = null;
 			_rootView = null;
 
@@ -240,6 +262,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Destroy();
 			base.OnDestroy();
 		}
+		
+		public override void OnHiddenChanged(bool hidden)
+		{
+			base.OnHiddenChanged(hidden);
+			
+			if (!hidden && _shellToolbar?.Handler != null)
+			{
+				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

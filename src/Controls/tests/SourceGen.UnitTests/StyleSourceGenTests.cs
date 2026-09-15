@@ -236,17 +236,17 @@ public class GenericLabel<T> : global::Microsoft.Maui.Controls.Label
 		Assert.Empty(errors);
 
 		var generatedCode = GetGeneratedCode(result);
-		
+
 		// Verify key elements exist
 		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, style)", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
-		
+
 		// CRITICAL: Verify the ORDER - Initializer must be set BEFORE SetValue(StyleProperty)
 		var initializerSetIndex = generatedCode.IndexOf("style.LazyInitialization = (__style, __target) =>", StringComparison.Ordinal);
 		var setValueIndex = generatedCode.IndexOf("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, style)", StringComparison.Ordinal);
-		
+
 		Assert.True(initializerSetIndex >= 0, "style.LazyInitialization assignment not found in generated code");
 		Assert.True(setValueIndex >= 0, "label.SetValue(StyleProperty) not found in generated code");
 		Assert.True(initializerSetIndex < setValueIndex,

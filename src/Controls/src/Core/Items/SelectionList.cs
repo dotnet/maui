@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls
 		static readonly IList<object> s_empty = new List<object>(0);
 		readonly SelectableItemsView _selectableItemsView;
 		readonly IList<object> _internal;
+		readonly WeakNotifyCollectionChangedProxy _proxy;
+		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		IList<object> _shadow;
 		bool _externalChange;
 
@@ -21,10 +23,19 @@ namespace Microsoft.Maui.Controls
 			_internal = items ?? new List<object>();
 			_shadow = Copy();
 
+			// Subscribe via a weak proxy so a long-lived user collection (e.g. an ObservableCollection
+			// stored in a ViewModel) does not keep this SelectionList - and through it the
+			// SelectableItemsView/page - rooted in memory. See issue #35497.
 			if (items is INotifyCollectionChanged incc)
 			{
-				incc.CollectionChanged += OnCollectionChanged;
+				_collectionChangedHandler = OnCollectionChanged;
+				_proxy = new WeakNotifyCollectionChangedProxy(incc, _collectionChangedHandler);
 			}
+		}
+
+		~SelectionList()
+		{
+			_proxy?.Unsubscribe();
 		}
 
 		public object this[int index] { get => _internal[index]; set => _internal[index] = value; }

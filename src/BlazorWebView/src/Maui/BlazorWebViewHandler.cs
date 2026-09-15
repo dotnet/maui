@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 #if ANDROID
-	[SupportedOSPlatform("android23.0")]
+	[SupportedOSPlatform(BlazorWebView.AndroidSupportedOSPlatformVersion)]
+#elif IOS
+	[SupportedOSPlatform(BlazorWebView.iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+	[SupportedOSPlatform(BlazorWebView.MacCatalystSupportedOSPlatformVersion)]
 #endif
-	public partial class BlazorWebViewHandler
+	public partial class BlazorWebViewHandler : IBlazorWebViewHandler
 	{
 		private const string UseBlockingDisposalSwitch = "BlazorWebView.UseBlockingDisposal";
 
@@ -45,6 +51,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
 		{
 		}
+
+		IFileProvider IBlazorWebViewHandler.CreateFileProvider(string contentRootDir) =>
+			CreateFileProvider(contentRootDir);
+
+		Task<bool> IBlazorWebViewHandler.TryDispatchAsync(Action<IServiceProvider> workItem) =>
+			TryDispatchAsync(workItem);
 
 		internal BlazorWebViewDeveloperTools DeveloperTools => MauiContext!.Services.GetRequiredService<BlazorWebViewDeveloperTools>();
 

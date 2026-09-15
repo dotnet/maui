@@ -17,6 +17,15 @@ public partial class Issue7993 : TestContentPage
 		Label1.Text = "VerticalOffset: " + e.VerticalOffset;
 	}
 
+	void ScrollToEndClicked(object sender, EventArgs e)
+	{
+		var vm = BindingContext as ViewModel7993;
+		if (vm?.Items.Count > 0)
+		{
+			CollectionView7993.ScrollTo(vm.Items[vm.Items.Count - 1]);
+		}
+	}
+
 	void NewItemsSourceClicked(object sender, EventArgs e)
 	{
 		BindingContext = new ViewModel7993();

@@ -6,52 +6,64 @@ namespace Microsoft.Maui.Platform
 {
 	public static class KeyboardExtensions
 	{
+		// Canonical mapping from built-in Keyboard types to their InputScopeNameValue entries.
+		// Returns multiple values for Date/Time so ToInputScope can emit a richer InputScope
+		// without using invalid bitwise-OR combinations on a non-[Flags] enum.
+		// Returns null for CustomKeyboard (callers handle those separately).
+		static InputScopeNameValue[]? GetInputScopeNameValues(Keyboard keyboard)
+		{
+			if (keyboard == Keyboard.Default || keyboard == Keyboard.Text)
+			{
+				return new[] { InputScopeNameValue.Default };
+			}
+			else if (keyboard == Keyboard.Chat)
+			{
+				return new[] { InputScopeNameValue.Chat };
+			}
+			else if (keyboard == Keyboard.Email)
+			{
+				return new[] { InputScopeNameValue.EmailSmtpAddress };
+			}
+			else if (keyboard == Keyboard.Numeric)
+			{
+				return new[] { InputScopeNameValue.Number };
+			}
+			else if (keyboard == Keyboard.Telephone)
+			{
+				return new[] { InputScopeNameValue.TelephoneNumber };
+			}
+			else if (keyboard == Keyboard.Url)
+			{
+				return new[] { InputScopeNameValue.Url };
+			}
+			else if (keyboard == Keyboard.Password)
+			{
+				return new[] { InputScopeNameValue.Password };
+			}
+			else if (keyboard == Keyboard.Date)
+			{
+				return new[] { InputScopeNameValue.DateDayNumber, InputScopeNameValue.DateMonthNumber, InputScopeNameValue.DateYear };
+			}
+			else if (keyboard == Keyboard.Time)
+			{
+				return new[] { InputScopeNameValue.TimeHour, InputScopeNameValue.TimeMinutesOrSeconds };
+			}
+
+			return null;
+		}
+
 		public static InputScopeName ToInputScopeName(this Keyboard self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			var name = new InputScopeName();
-
-			if (self == Keyboard.Default)
+			var values = GetInputScopeNameValues(self);
+			if (values is not null)
 			{
-				name.NameValue = InputScopeNameValue.Default;
-			}
-			else if (self == Keyboard.Chat)
-			{
-				name.NameValue = InputScopeNameValue.Chat;
-			}
-			else if (self == Keyboard.Email)
-			{
-				name.NameValue = InputScopeNameValue.EmailSmtpAddress;
-			}
-			else if (self == Keyboard.Numeric)
-			{
-				name.NameValue = InputScopeNameValue.Number;
-			}
-			else if (self == Keyboard.Telephone)
-			{
-				name.NameValue = InputScopeNameValue.TelephoneNumber;
-			}
-			else if (self == Keyboard.Text)
-			{
-				name.NameValue = InputScopeNameValue.Default;
-			}
-			else if (self == Keyboard.Url)
-			{
-				name.NameValue = InputScopeNameValue.Url;
-			}
-			else if (self == Keyboard.Password)
-			{
-				name.NameValue = InputScopeNameValue.Password;
-			}
-			else if (self == Keyboard.Date)
-			{
-				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
-			}
-			else if (self == Keyboard.Time)
-			{
-				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
+				name.NameValue = values[0];
 			}
 			else
 			{
@@ -96,52 +108,22 @@ namespace Microsoft.Maui.Platform
 		public static InputScope ToInputScope(this Keyboard self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			var result = new InputScope();
-			var name = new InputScopeName();
-			if (self == Keyboard.Default)
+			var values = GetInputScopeNameValues(self);
+			if (values is not null)
 			{
-				name.NameValue = InputScopeNameValue.Default;
-			}
-			else if (self == Keyboard.Chat)
-			{
-				name.NameValue = InputScopeNameValue.Chat;
-			}
-			else if (self == Keyboard.Email)
-			{
-				name.NameValue = InputScopeNameValue.EmailSmtpAddress;
-			}
-			else if (self == Keyboard.Numeric)
-			{
-				name.NameValue = InputScopeNameValue.Number;
-			}
-			else if (self == Keyboard.Telephone)
-			{
-				name.NameValue = InputScopeNameValue.TelephoneNumber;
-			}
-			else if (self == Keyboard.Text)
-			{
-				name.NameValue = InputScopeNameValue.Default;
-			}
-			else if (self == Keyboard.Url)
-			{
-				name.NameValue = InputScopeNameValue.Url;
-			}
-			else if (self == Keyboard.Password)
-			{
-				name.NameValue = InputScopeNameValue.Password;
-			}
-			else if (self == Keyboard.Date)
-			{
-				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
-			}
-			else if (self == Keyboard.Time)
-			{
-				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
+				foreach (var value in values)
+				{
+					result.Names.Add(new InputScopeName { NameValue = value });
+				}
 			}
 			else
 			{
+				var name = new InputScopeName();
 				var custom = (CustomKeyboard)self;
 				var capitalizedSentenceEnabled = (custom.Flags & KeyboardFlags.CapitalizeSentence) == KeyboardFlags.CapitalizeSentence;
 				var capitalizedWordsEnabled = (custom.Flags & KeyboardFlags.CapitalizeWord) == KeyboardFlags.CapitalizeWord;
@@ -175,9 +157,9 @@ namespace Microsoft.Maui.Platform
 				}
 
 				name.NameValue = nameValue;
+				result.Names.Add(name);
 			}
 
-			result.Names.Add(name);
 			return result;
 		}
 	}

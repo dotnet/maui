@@ -53,19 +53,9 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
-				var taskCollect = reference.WaitForCollect();
-				try
-				{
-					await AssertEventuallyAsync(async () => await taskCollect);
-				}
-				catch (XunitException)
-				{
-					var isAlive = await taskCollect;
-					if (isAlive)
-					{
-						allCollected = false;
-					}
-				}
+				var isAlive = await reference.WaitForCollect();
+				if (isAlive)
+					allCollected = false;
 			}
 			return allCollected; // Only true if all references are collected
 		}

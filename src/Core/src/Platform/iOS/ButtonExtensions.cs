@@ -1,4 +1,6 @@
 using System;
+using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -31,15 +33,76 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
 			if (button.TextColor is null)
+			{
+				// Only clear explicit overrides when attached to a window.
+				// Skipping during initial render prevents clearing Appearance-proxy colors.
+				if (platformButton.Window is UIWindow window)
+				{
+					platformButton.SetTitleColor(null, UIControlState.Normal);
+					platformButton.SetTitleColor(null, UIControlState.Highlighted);
+					platformButton.SetTitleColor(null, UIControlState.Disabled);
+					platformButton.TintColor = window.TintColor;
+				}
+
+				UpdateAttributedTitleColor(platformButton, null);
 				return;
+			}
 
 			var color = button.TextColor.ToPlatform();
 
 			platformButton.SetTitleColor(color, UIControlState.Normal);
 			platformButton.SetTitleColor(color, UIControlState.Highlighted);
 			platformButton.SetTitleColor(color, UIControlState.Disabled);
-
 			platformButton.TintColor = color;
+
+			UpdateAttributedTitleColor(platformButton, color);
+		}
+
+		static void UpdateAttributedTitleColor(UIButton platformButton, UIKit.UIColor? color)
+		{
+			var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
+			if (attributedTitle is null || attributedTitle.Length == 0)
+				return;
+
+			var mutable = new NSMutableAttributedString(attributedTitle);
+
+			if (color is null)
+			{
+				mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
+			}
+			else
+			{
+				mutable.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, mutable.Length));
+			}
+
+			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
+		}
+
+		public static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+		{
+			// Remove previous background gradient layer if any.
+			// Safe to call unconditionally even when Window is null (initial-render path): at that
+			// point MAUI has not yet inserted a named gradient layer, so this is a no-op.
+			// Running it before the Window/paint guard ensures any previously-applied gradient is
+			// cleaned up regardless of the new paint value.
+			platformButton.RemoveBackgroundLayer();
+
+			if (paint.IsNullOrEmpty())
+			{
+				// Only reset to UIColor.Clear when the button is already attached to a window.
+				// During initial property mapping (ConnectHandler), Window is null because the view
+				// hasn't been added to the hierarchy yet — skipping here preserves native BackgroundColor
+				// set by custom UIButton subclasses. Once live on screen, null means a VisualState
+				// transition back to Normal, so we do reset. Mirrors the same guard in UpdateTextColor.
+				if (platformButton.Window is not null)
+				{
+					platformButton.BackgroundColor = UIColor.Clear;
+				}
+				return;
+			}
+
+			// Delegate to the standard view background update
+			ViewExtensions.UpdateBackground(platformButton, paint);
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)

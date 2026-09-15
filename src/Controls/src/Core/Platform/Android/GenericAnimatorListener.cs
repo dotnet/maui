@@ -33,10 +33,13 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnAnimationRepeat(animation);
 		}
 
-		protected override void JavaFinalize()
+		protected override void Dispose(bool disposing)
 		{
-			OnCancel = OnRepeat = OnEnd = null;
-			base.JavaFinalize();
+			if (disposing)
+			{
+				OnCancel = OnRepeat = OnEnd = null;
+			}
+			base.Dispose(disposing);
 		}
 	}
 }

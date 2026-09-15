@@ -1,23 +1,24 @@
 #nullable disable
 using System;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Customizes the appearance and behavior of the back button in a <see cref="Shell"/> application.
 	/// </summary>
-	public class BackButtonBehavior : BindableObject
+	public class BackButtonBehavior : BindableObject, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty =
 			BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(BackButtonBehavior), null, BindingMode.OneTime,
-				propertyChanged: OnCommandParameterChanged);
+				propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
 			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(BackButtonBehavior), null, BindingMode.OneTime,
-				propertyChanged: OnCommandChanged);
+				propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>Bindable property for <see cref="IconOverride"/>.</summary>
 		public static readonly BindableProperty IconOverrideProperty =
@@ -25,15 +26,19 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
-			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
-			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="TextOverride"/>.</summary>
 		public static readonly BindableProperty TextOverrideProperty =
 			BindableProperty.Create(nameof(TextOverride), typeof(string), typeof(BackButtonBehavior), null, BindingMode.OneTime);
+
+		/// <summary>Bindable property for <see cref="AccessibilityLabel"/>.</summary>
+		public static readonly BindableProperty AccessibilityLabelProperty =
+			BindableProperty.Create(nameof(AccessibilityLabel), typeof(string), typeof(BackButtonBehavior), null, BindingMode.OneWay);
 
 		/// <summary>
 		/// Gets or sets the command to execute when the back button is pressed. This is a bindable property.
@@ -62,13 +67,22 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IconOverrideProperty, value); }
 		}
 
+		// Tracks the value explicitly set by the user (default matches IsEnabledProperty default of true).
+		bool _userDefinedIsEnabled = true;
+		// Tracks the enabled state derived from the command's CanExecute result.
+		bool _commandEnabled = true;
+
 		/// <summary>
 		/// Gets or sets a value indicating whether the back button is enabled. This is a bindable property.
 		/// </summary>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set
+			{
+				_userDefinedIsEnabled = value;
+				SetValue(IsEnabledProperty, _userDefinedIsEnabled && _commandEnabled);
+			}
 		}
 
 		/// <summary>
@@ -77,7 +91,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -89,48 +103,30 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextOverrideProperty, value); }
 		}
 
-		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value); }
-
-		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
+		/// <summary>
+		/// Gets or sets the accessibility label announced by the screen reader for the back button,
+		/// independent of the visible text (<see cref="TextOverride"/>). This is a bindable property.
+		/// </summary>
+		public string AccessibilityLabel
 		{
-			var self = (BackButtonBehavior)bindable;
-			var oldCommand = (ICommand)oldValue;
-			var newCommand = (ICommand)newValue;
-			self.OnCommandChanged(oldCommand, newCommand);
+			get { return (string)GetValue(AccessibilityLabelProperty); }
+			set { SetValue(AccessibilityLabelProperty, value); }
 		}
 
-		static void OnCommandParameterChanged(BindableObject bindable, object oldValue, object newValue)
+		bool IsEnabledCore
 		{
-			((BackButtonBehavior)bindable).OnCommandParameterChanged();
-		}
-
-		void CanExecuteChanged(object sender, EventArgs e)
-		{
-			IsEnabledCore = Command.CanExecute(CommandParameter);
-		}
-
-		void OnCommandChanged(ICommand oldCommand, ICommand newCommand)
-		{
-			if (oldCommand != null)
+			set
 			{
-				oldCommand.CanExecuteChanged -= CanExecuteChanged;
-			}
-
-			if (newCommand != null)
-			{
-				newCommand.CanExecuteChanged += CanExecuteChanged;
-				IsEnabledCore = Command.CanExecute(CommandParameter);
-			}
-			else
-			{
-				IsEnabledCore = true;
+				_commandEnabled = value;
+				SetValue(IsEnabledProperty, _userDefinedIsEnabled && value);
 			}
 		}
 
-		void OnCommandParameterChanged()
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
-			if (Command != null)
-				IsEnabledCore = Command.CanExecute(CommandParameter);
+			IsEnabledCore = CommandElement.GetCanExecute(this);
 		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
 	}
 }

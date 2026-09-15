@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
-			nameof(IsChecked), typeof(bool), typeof(RadioButton), false,
+			nameof(IsChecked), typeof(bool), typeof(RadioButton), BooleanBoxes.FalseBox,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnIsCheckedPropertyChanged((bool)n),
 			defaultBindingMode: BindingMode.TwoWay);
 
@@ -164,7 +165,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get { return (bool)GetValue(IsCheckedProperty); }
-			set { SetValue(IsCheckedProperty, value); }
+			set { SetValue(IsCheckedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -253,7 +254,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -371,6 +372,19 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == BorderColorProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
+			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
+		}
+
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
@@ -458,7 +472,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (IsEnabled)
 			{
-				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+				SetValue(IsCheckedProperty, BooleanBoxes.TrueBox, specificity: SetterSpecificity.FromHandler);
 			}
 		}
 
@@ -512,6 +526,8 @@ namespace Microsoft.Maui.Controls
 			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
 			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundProperty, static (RadioButton rb) => rb.Background, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
@@ -611,7 +627,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			contentPresenter.SetBinding(MarginProperty, static (RadioButton radio) => radio.Padding, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
-			contentPresenter.SetBinding(BackgroundColorProperty, static (RadioButton radio) => radio.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			grid.Add(normalEllipse);
 			grid.Add(checkMark);
@@ -714,7 +729,7 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 #if ANDROID
-		object IContentView.Content 
+		object IContentView.Content
 		{
 			get
 			{
@@ -737,7 +752,7 @@ namespace Microsoft.Maui.Controls
 		bool IRadioButton.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		private protected override string GetDebuggerDisplay()

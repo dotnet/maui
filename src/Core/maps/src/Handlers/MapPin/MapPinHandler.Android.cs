@@ -1,4 +1,4 @@
-﻿using Android.Gms.Maps.Model;
+using Android.Gms.Maps.Model;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -9,8 +9,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
-			if (mapPin.Location != null)
+			if (mapPin.Location is not null)
+			{
 				handler.PlatformView.SetPosition(new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude));
+			}
 		}
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin)

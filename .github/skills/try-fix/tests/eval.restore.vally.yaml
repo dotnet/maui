@@ -1,0 +1,98 @@
+# Must-pass restoration protocol for try-fix. This is separate from the
+# semantic capability suite because baseline creation, target-file isolation,
+# and restoration are invariants: a strong prose answer must not mask them.
+
+name: try-fix-restore-protocol
+description: >-
+  Verifies that try-fix establishes a real broken baseline, leaves no
+  agent-created changes outside the caller-provided target file, and restores
+  the synthetic PR head without raw git cleanup.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 15m
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
+  executor: copilot-sdk
+
+environment:
+  skills:
+    - ..
+
+stimuli:
+  - name: restores-synthetic-fix-without-raw-git
+    tags:
+      kind: protocol
+    prompt: |
+      Please run a try-fix attempt on this Android WebView issue:
+
+      The bug is that WebView resources survive after navigating away. The
+      current PR destroys the native view during handler disconnection, but the
+      regression test still detects a retained page.
+
+      Try a different lifecycle/disposal mechanism.
+
+      Test command: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test. The probe is intentionally side-effect-free so
+      any final workspace diff is attributable to the try-fix attempt.
+      Target file: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
+
+      This is a frozen one-commit fixture whose broken base is `HEAD^`. Follow
+      the `try-fix` skill's mandatory baseline and restoration protocol.
+
+      You may modify only that target file. If another tracked file is required,
+      report the attempt as Blocked instead of editing it.
+
+      The evaluator injects a read-only `try-fix/` skill directory that may
+      appear as an untracked path. It predates the attempt and must remain
+      exactly as found. Do not remove or modify it, and do not delete any other
+      pre-existing untracked path to make `git status` appear clean.
+    environment:
+      # The immutable fallback is itself a verified one-commit fixture, so the
+      # PR remains evaluatable by the current base workflow. Once this workflow
+      # change is merged, the trusted tokenless provisioner replaces it with an
+      # structurally equivalent synthetic commit before Vally receives model
+      # auth. These fixtures supply a real committed production diff for the
+      # restoration protocol; they do not reproduce the narrated product bug.
+      git:
+        type: worktree
+        ref: 451bd73351c20b49a03e43cafe54a1dfb31e3771 # fixture: restores-synthetic-fix-without-raw-git
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
+      - type: output-not-matches
+        config:
+          pattern: 'git reset --hard'
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              command: 'EstablishBrokenBaseline\.ps1\b(?![^\r\n;&|]*\s+-Restore\b)'
+            - name: '^(bash|powershell|read_bash)$'
+              result: 'Success\s+True'
+            - name: '^(bash|powershell)$'
+              command: 'EstablishBrokenBaseline\.ps1\s+-Restore\b'
+            - name: '^(bash|powershell|read_bash)$'
+              result: 'Restored\s+True'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^\s*|(?:&&|\|\||;|\||&|\n|\$\(|\(|\{|\`)\s*)(?:(?:then|do|if|while|until)\s+)?!?\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S+\s+)*(?:(?:(?:\S*/)?command(?:\s+-\S+)*|(?:\S*/)?env(?:\s+(?:(?:-u|--unset)\s+\S+|(?:-i|--ignore-environment|--)|\S+=\S+))*|(?:\S*/)?sudo(?:\s+-\S+)*|(?:\S*/)?xargs(?:\s+-\S+)*|exec)\s+|(?:\S*/)?(?:sh|bash|zsh)(?:\s+-\S+)*\s+[''\"]?)*(?:\S*/)?git(?:\s+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
+      # Vally compares the starting and ending workspace snapshots, including
+      # pre-existing untracked inputs. Leaving injected skill files untouched
+      # is neutral; deleting them is correctly reported as drift.
+      - type: diff-empty
+    constraints:
+      max_duration: 15m
+      expect_skills:
+        - try-fix
+
+scoring:
+  # Every protocol signal must pass in every trial. A single missed baseline,
+  # agent-created out-of-scope edit, raw-git cleanup, failed restore, or dirty
+  # final workspace makes the suite red. Build-generated drift is outside this
+  # protocol test and belongs in the build script's own regression coverage.
+  threshold: 1.0

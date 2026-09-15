@@ -68,8 +68,11 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Binding is Binding { Source: var source, DataType: Type dataType })
 			{
-				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disabled
-				bool skipTypeMismatchCheck = source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
+				// Skip the type-mismatch check when an explicit concrete Source is provided (e.g. Source={x:Reference}).
+  				// In a DataTemplate, x:DataType describes the item context - not the type of the referenced element.
+   				// RelativeBindingSource is excluded: a mismatch against its source type must still be reported.
+				bool skipTypeMismatchCheck = (source is not null && source is not RelativeBindingSource)
+					|| !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
 				if (!skipTypeMismatchCheck)
 				{
 					if (sourceObject != null && !dataType.IsAssignableFrom(sourceObject.GetType()))

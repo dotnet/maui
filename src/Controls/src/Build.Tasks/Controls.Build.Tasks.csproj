@@ -27,8 +27,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.11.5" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="System.CodeDom" Version="7.0.0" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.6" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="System.CodeDom" PrivateAssets="all" GeneratePathProperty="true" />
 		<PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" />
 	</ItemGroup>
@@ -38,6 +38,7 @@
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\..\..\Core\src\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -54,6 +55,8 @@
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Core.HybridWebViewSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Core.HybridWebViewSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Core.HybridWebViewSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Core.HybridWebViewSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
 	</ItemGroup>
@@ -70,7 +73,7 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
-	<Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
+	<Target Name="_CopyToBuildTasksDir" AfterTargets="Build" Condition="'$(BuildTaskOnlyBuild)' == 'true' or '$(TF_BUILD)' != 'true'">
 		<ItemGroup>
 			<_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\buildTransitive\*;nuget\buildTransitive\netstandard2.0\**" />
 			<_CopyItems Include="nuget\buildTransitive\netstandard2.0\**" />

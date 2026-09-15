@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue13801">
+
+      <StackLayout VerticalOptions="Start">
+            <Label AutomationId="PathLabel"
+                   Text="Path with Margin"/>
+            <Path Stroke="Red"
+                  StrokeThickness="5"
+                  Data="M 0 0 L 100 0 L 100 100 L 0 100 Z"
+                  Margin="20"/>
+            <Path Stroke="Blue"
+                  StrokeThickness="5"
+                  Data="M 0 0 L 100 0 L 100 100 L 0 100 Z"
+                  Margin="-10"/>
+            <Label Text="Polyline with Margin"
+                   Margin="0,15,0,0"/>
+            <Polyline Stroke="Purple"
+                      StrokeThickness="5"
+                      Points="10,10 40,25 70,10 70,40 40,55 10,40 10,10"
+                      Margin="20"
+                      HorizontalOptions="Start"/>
+            <Polyline Stroke="Pink"
+                      StrokeThickness="5"
+                      Points="10,10 40,25 70,10 70,40 40,55 10,40 10,10"
+                      Margin="-10"
+                      HorizontalOptions="Start"/>
+            <Label Text="Line with Margin"
+                   Margin="0,15,0,0"/>
+            <Line Stroke="Green"
+                  StrokeThickness="5"
+                  X1="0"
+                  Y1="0"
+                  X2="100"
+                  Y2="50"
+                  Margin="20"/>
+            <Line Stroke="Orange"
+                  StrokeThickness="5"
+                  X1="0"
+                  Y1="0"
+                  X2="100"
+                  Y2="50"
+                  Margin="-10"/>
+      </StackLayout>
+</ContentPage>

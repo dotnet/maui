@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -11,7 +12,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellTableViewSource : UITableViewSource
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Shell context is required while the table source is owned by ShellTableViewController.")]
 		readonly IShellContext _context;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Selection callback is owned by ShellTableViewController for the table source lifetime.")]
 		readonly Action<Element> _onElementSelected;
 		List<List<Element>> _groups;
 		Dictionary<Element, UIContainerCell> _cells;
@@ -23,7 +26,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_onElementSelected = onElementSelected;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "All event subscribers are cleared by Disconnect when ShellTableViewController is disposed.")]
 		public event EventHandler<UIScrollView> ScrolledEvent;
+
+		internal void Disconnect()
+		{
+			ScrolledEvent = null;
+		}
 
 		public List<List<Element>> Groups
 		{
@@ -175,6 +184,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			cell.SetAccessibilityProperties(context);
 
+			// Resolve MatchParent to the Shell's concrete FlowDirection. Shell menu item cells have a
+			// disconnected MAUI visual tree, so MatchParent cannot traverse up automatically. This is a
+			// one-way mutation consistent with existing codebase patterns.
+			if (cell.View.FlowDirection == FlowDirection.MatchParent)
+			{
+				cell.View.FlowDirection = _context.Shell.FlowDirection;
+			}
+
+			// Apply the resolved flow direction to the cell's native UIView. Even if Shell.FlowDirection
+			// changes later, UpdateFlowDirection() re-applies it using the Shell as context.
+			if (cell.View.Handler?.PlatformView is UIView platformView)
+			{
+				platformView.UpdateFlowDirection(cell.View);
+			}
+
 			_cells[context] = cell;
 			cell.TableView = tableView;
 			cell.IndexPath = indexPath;
@@ -183,7 +207,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return cell;
 		}
 
-		void OnViewMeasureInvalidated(UIContainerCell cell)
+		static void OnViewMeasureInvalidated(UIContainerCell cell)
 		{
 			cell.ReloadRow();
 		}
@@ -232,6 +256,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		class SeparatorView : UIView
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Separator line is owned as a UIKit subview for the separator view lifetime.")]
 			UIView _line;
 
 			public SeparatorView()

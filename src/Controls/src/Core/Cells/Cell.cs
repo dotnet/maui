@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>The default height of cells.</summary>
 		public const int DefaultCellHeight = 40;
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
+		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(Cell), BooleanBoxes.TrueBox, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
 		List<MenuItem> _currentContextActions;
@@ -28,6 +29,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Initializes a new instance of the Cell class.</summary>
 		/// <remarks>Cell class is abstract, this constructor is never invoked directly.</remarks>
+#pragma warning disable CS0618 // Type or member is obsolete
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TextCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(EntryCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ImageCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(SwitchCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ViewCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
 		public Cell()
 		{
 			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
@@ -130,7 +138,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets the height of the rendered cell on the device.</summary>

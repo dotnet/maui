@@ -10,12 +10,12 @@ public enum TextType
 	/// </summary>
 	Text,
 
+	// Empty remarks clear legacy field remarks when mdoc imports the compiler XML.
 	/// <summary>
 	/// HTML-formatted text content that may include markup.
-	/// </summary>
-	/// <remarks>
 	/// The subset of supported HTML tags varies by platform. Each platform's native text rendering engine
 	/// determines which HTML tags and attributes are supported.
-	/// </remarks>
+	/// </summary>
+	/// <remarks />
 	Html
 }

@@ -130,5 +130,38 @@ public class Issue28986_ContentPage : _IssuesUITest
 			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		});
 	}
+
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaNoWhiteSpaceAfterKeyboardDismissAndEdgeToggle()
+	{
+		App.WaitForElement("ContentGrid");
+
+		App.Tap("GridResetAllButton");
+		var baselinePosition = App.WaitForElement("ContentGrid").GetRect();
+
+		App.Tap("SoftInputTestEntry");
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, "Keyboard should be visible before validating the resized safe area");
+		App.RetryAssert(() =>
+		{
+			var withKeyboard = App.WaitForElement("ContentGrid").GetRect();
+			Assert.That(withKeyboard.Height, Is.LessThan(baselinePosition.Height),
+				"ContentGrid should shrink when keyboard is showing with SafeAreaEdges=All");
+		});
+
+		App.Tap("GridSetContainerButton");
+		App.DismissKeyboard();
+		Assert.That(App.WaitForKeyboardToHide(), Is.True, "Keyboard should be hidden before restoring all safe-area edges");
+		App.Tap("GridResetAllButton");
+
+		App.RetryAssert(() =>
+		{
+			var finalPosition = App.WaitForElement("ContentGrid").GetRect();
+			Assert.That(finalPosition.Height, Is.EqualTo(baselinePosition.Height).Within(1),
+				"ContentGrid height should match baseline after toggling edges with keyboard dismiss — no white space (#34846)");
+			Assert.That(finalPosition.Y, Is.EqualTo(baselinePosition.Y).Within(1),
+				"ContentGrid Y should match baseline after toggling edges with keyboard dismiss");
+		});
+	}
 }
 #endif

@@ -1,20 +1,96 @@
-﻿using Microsoft.UI.Xaml.Media;
+﻿using System;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
+using ViewManagement = Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Animations
 {
 	/// <inheritdoc/>
-	public class PlatformTicker : Ticker
+	public class PlatformTicker : Ticker, IDisposable
 	{
+		bool _isRunning;
+		readonly ViewManagement.UISettings _uiSettings = new();
+		readonly DispatcherQueue? _dispatcherQueue;
+		bool _disposed;
+
+		/// <inheritdoc/>
+		public override bool IsRunning => _isRunning;
+
+		/// <summary>
+		/// Creates a new Windows <see cref="PlatformTicker"/> that respects the "Show animations in Windows" accessibility setting.
+		/// </summary>
+		public PlatformTicker()
+		{
+			_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+			SystemEnabled = _uiSettings.AnimationsEnabled;
+			_uiSettings.AnimationsEnabledChanged += OnAnimationsEnabledChanged;
+		}
+
 		/// <inheritdoc/>
 		public override void Start()
 		{
+			if (_isRunning || _disposed)
+			{
+				return;
+			}
+
+			_isRunning = true;
 			CompositionTarget.Rendering += RenderingFrameEventHandler;
 		}
 
 		/// <inheritdoc/>
 		public override void Stop()
 		{
+			if (!_isRunning)
+			{
+				return;
+			}
+
+			_isRunning = false;
 			CompositionTarget.Rendering -= RenderingFrameEventHandler;
+		}
+
+		/// <inheritdoc/>
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				Stop();
+				_uiSettings.AnimationsEnabledChanged -= OnAnimationsEnabledChanged;
+			}
+		}
+
+		/// <inheritdoc/>
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		void OnAnimationsEnabledChanged(ViewManagement.UISettings sender, ViewManagement.UISettingsAnimationsEnabledChangedEventArgs args)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (_dispatcherQueue is not null)
+			{
+				_dispatcherQueue.TryEnqueue(() =>
+				{
+					if (!_disposed)
+					{
+						SystemEnabled = _uiSettings.AnimationsEnabled;
+					}
+				});
+			}
 		}
 
 		void RenderingFrameEventHandler(object? sender, object? args)

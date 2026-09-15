@@ -8,22 +8,25 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			float originalWidth = (float)target.Size.Width;
-			float originalHeight = (float)target.Size.Height;
-
-			float scale = originalWidth / maxWidth;
-
-			float targetWidth = originalWidth / scale;
-			float targetHeight = originalHeight / scale;
-
-			if (targetHeight > maxHeight)
+			if (maxWidth <= 0 || maxHeight <= 0)
 			{
-				scale = targetHeight / maxHeight;
-				targetHeight = targetHeight / scale;
-				targetWidth = targetWidth / scale;
+				return target;
 			}
 
-			return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
+			if (target.Size.Width > maxWidth || target.Size.Height > maxHeight)
+			{
+				float factorX = maxWidth / (float)target.Size.Width;
+				float factorY = maxHeight / (float)target.Size.Height;
+
+				float factor = Math.Min(factorX, factorY);
+
+				float targetWidth = factor * (float)target.Size.Width;
+				float targetHeight = factor * (float)target.Size.Height;
+
+				return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
+			}
+
+			return target;
 		}
 
 		internal static UIImage ResizeImageSource(this UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
@@ -53,10 +56,40 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			UIGraphics.BeginImageContext(size);
-			target.Draw(new CGRect(CGPoint.Empty, size));
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			if (!(size.Width > 0) || !(size.Height > 0) ||
+				double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
+			{
+				return target;
+			}
+
+			var width = checked((int)Math.Ceiling(size.Width));
+			var height = checked((int)Math.Ceiling(size.Height));
+
+			using var colorSpace = CGColorSpace.CreateDeviceRGB();
+			using var context = new CGBitmapContext(
+				IntPtr.Zero,
+				width,
+				height,
+				8,
+				checked(4 * width),
+				colorSpace,
+				CGBitmapFlags.ByteOrder32Little | CGBitmapFlags.PremultipliedFirst);
+
+			context.TranslateCTM(0, height);
+			context.ScaleCTM(1, -1);
+
+			UIGraphics.PushContext(context);
+			try
+			{
+				target.Draw(new CGRect(CGPoint.Empty, size));
+			}
+			finally
+			{
+				UIGraphics.PopContext();
+			}
+
+			using var cgImage = context.ToImage();
+			var image = UIImage.FromImage(cgImage, 1, UIImageOrientation.Up);
 
 			if (disposeOriginal)
 			{

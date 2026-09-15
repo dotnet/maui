@@ -2,6 +2,13 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <PropertyGroup>
+    <!-- Don't ship .NET Standard packages by default, EXCEPT when a project explicitly opts in via
+         <IsPackable>true</IsPackable> (e.g. the workload manifest and SDK packs, which are netstandard-only
+         but must ship). The '$(IsPackable)' == '' guard preserves that explicit opt-in. -->
+    <IsPackable Condition="$(TargetFramework.Contains('netstandard')) and '$(IsPackable)' == ''">false</IsPackable>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
     <!-- <PackageReference Include="NETStandard.Library"
@@ -49,8 +56,8 @@
     <TargetPlatformMinVersion>12.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
-    <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>23.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>24.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
     <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>

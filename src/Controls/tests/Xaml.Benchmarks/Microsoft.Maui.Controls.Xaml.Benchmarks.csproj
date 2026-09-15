@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <Configuration>Release</Configuration>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.Benchmarks</AssemblyName>
     <Nullable>enable</Nullable>
     <EnablePreviewFeatures>True</EnablePreviewFeatures>

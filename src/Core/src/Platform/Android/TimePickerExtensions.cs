@@ -1,6 +1,7 @@
 using System;
 using Android.Content.Res;
 using AndroidX.AppCompat.Widget;
+using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.Platform;
 
@@ -9,28 +10,25 @@ public static class TimePickerExtensions
 	public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
-	// TODO: Material3: Make it public in .NET 11
-	internal static void UpdateFormat(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
+	public static void UpdateFormat(this MauiMaterialEditText mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
 	public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
-	// TODO: Material3: Make it public in .NET 11
-	internal static void UpdateTime(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
+	public static void UpdateTime(this MauiMaterialEditText mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
 	internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
-	internal static void SetTime(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
+	internal static void SetTime(this MauiMaterialEditText mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
 	public static void UpdateTextColor(this MauiTimePicker platformTimePicker, ITimePicker timePicker)
 		=> UpdateTextColorImpl(platformTimePicker, timePicker);
 
-	// TODO: Material3: Make it public in .NET 11
-	internal static void UpdateTextColor(this MauiMaterialTimePicker platformTimePicker, ITimePicker timePicker)
+	public static void UpdateTextColor(this MauiMaterialEditText platformTimePicker, ITimePicker timePicker)
 		=> UpdateTextColorImpl(platformTimePicker, timePicker);
 
 	static void SetTimeImpl(AppCompatEditText editText, ITimePicker timePicker)
@@ -58,5 +56,12 @@ public static class TimePickerExtensions
 				platformTimePicker.SetTextColor(cs);
 			}
 		}
+	}
+
+	public static void UpdateTextAlignment(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	{
+		mauiTimePicker.TextAlignment = timePicker.FlowDirection == FlowDirection.RightToLeft
+				? ATextAlignment.TextEnd
+				: ATextAlignment.TextStart;
 	}
 }

@@ -1,0 +1,164 @@
+#nullable enable
+using System;
+using Xunit;
+
+namespace Tests
+{
+	public class WebUtils_Tests
+	{
+		// ============================================================
+		// ResolveRelativePath — valid cases
+		// ============================================================
+
+		[Fact]
+		public void ResolveRelativePath_ValidRelative_ReturnsPath()
+		{
+			var origin = new Uri("https://0.0.0.0/");
+			var request = new Uri("https://0.0.0.0/index.html");
+
+			var result = Microsoft.Maui.WebUtils.ResolveRelativePath(origin, request);
+
+			Assert.NotNull(result);
+			Assert.Equal("index.html", result);
+		}
+
+		[Fact]
+		public void ResolveRelativePath_SubPath_ReturnsPath()
+		{
+			var origin = new Uri("https://0.0.0.0/");
+			var request = new Uri("https://0.0.0.0/sub/file.txt");
+
+			var result = Microsoft.Maui.WebUtils.ResolveRelativePath(origin, request);
+
+			Assert.NotNull(result);
+			Assert.Equal("sub/file.txt", result);
+		}
+
+		[Fact]
+		public void ResolveRelativePath_RootRequest_ReturnsEmpty()
+		{
+			var origin = new Uri("https://0.0.0.0/");
+			var request = new Uri("https://0.0.0.0/");
+
+			var result = Microsoft.Maui.WebUtils.ResolveRelativePath(origin, request);
+
+			Assert.NotNull(result);
+			Assert.Equal(string.Empty, result);
+		}
+
+		// ============================================================
+		// ResolveRelativePath — invalid cases
+		// ============================================================
+
+		[Fact]
+		public void ResolveRelativePath_DifferentOrigin_ReturnsNull()
+		{
+			var origin = new Uri("https://0.0.0.0/");
+			var request = new Uri("https://other.example.com/file.txt");
+
+			var result = Microsoft.Maui.WebUtils.ResolveRelativePath(origin, request);
+
+			Assert.Null(result);
+		}
+
+		[Fact]
+		public void ResolveRelativePath_DoubleSlash_MakeRelativeUri_ProducesRooted_ReturnsNull()
+		{
+			// When the request has a double-slash path like //images/logo.png,
+			// MakeRelativeUri can produce a path that starts with a separator,
+			// which should be rejected as rooted.
+			var origin = new Uri("https://0.0.0.0/");
+			var request = new Uri("https://0.0.0.0//images/logo.png");
+
+			var result = Microsoft.Maui.WebUtils.ResolveRelativePath(origin, request);
+
+			// Either null (rejected) or a valid non-rooted path — never a rooted path
+			if (result is not null)
+			{
+				Assert.False(System.IO.Path.IsPathRooted(result),
+					$"ResolveRelativePath should not return a rooted path, got: '{result}'");
+			}
+		}
+
+		// ============================================================
+		// ResolveRelativePath — encoded paths
+		// ============================================================
+
+		[Fact]
+		public void ResolveRelativePath_EncodedDotDot_HandledCorrectly()
+		{
+			var origin = new Uri("https://0.0.0.0/");
+			// %2e%2e is URL-encoded ".." — Uri class may decode this
+			var request = new Uri("https://0.0.0.0/%2e%2e/secret.txt");
+
+			var result = Microsoft.Maui.WebUtils.ResolveRelativePath(origin, request);
+
+			// Should be null (invalid) or if Uri decoded it, the result should be valid
+			if (result is not null)
+			{
+				Assert.DoesNotContain("..", result, StringComparison.Ordinal);
+			}
+		}
+
+		// ============================================================
+		// RemovePossibleQueryString
+		// ============================================================
+
+		[Theory]
+		[InlineData(null, "")]
+		[InlineData("", "")]
+		[InlineData("https://example.com", "https://example.com")]
+		[InlineData("https://example.com?foo=bar", "https://example.com")]
+		[InlineData("https://example.com/path?query=1&other=2", "https://example.com/path")]
+		[InlineData("https://example.com/index.html#code=abc", "https://example.com/index.html")]
+		[InlineData("https://example.com/path?query=1#frag", "https://example.com/path")]
+		[InlineData("https://example.com/path#frag?notquery", "https://example.com/path")]
+		[InlineData("https://0.0.0.1/index.html#code=1234asdf", "https://0.0.0.1/index.html")]
+		public void RemovePossibleQueryString_ReturnsExpected(string? input, string expected)
+		{
+			var result = Microsoft.Maui.WebUtils.RemovePossibleQueryString(input);
+			Assert.Equal(expected, result);
+		}
+
+		// ============================================================
+		// CanHandleCallback
+		// ============================================================
+
+		[Theory]
+		[InlineData("maui-auth://", "maui-auth://callback?code=123", true)]
+		[InlineData("MAUI-AUTH://", "maui-auth://callback?code=123", true)]
+		[InlineData("maui-auth://callback", "MAUI-AUTH://CALLBACK?code=123", true)]
+		[InlineData("maui-auth://callback", "maui-auth://other?code=123", false)]
+		[InlineData("maui-auth://callback", "other-auth://callback?code=123", false)]
+		[InlineData("https://Example.COM/callback", "HTTPS://example.com/callback?code=123#state=abc", true)]
+		[InlineData("https://example.com/callback", "https://example.com/Callback", false)]
+		[InlineData("https://example.com/callback", "https://example.com/callback/child", false)]
+		[InlineData("https://example.com/callback", "https://example.com:443/callback", true)]
+		[InlineData("https://example.com:8443/callback", "https://example.com:8443/callback", true)]
+		[InlineData("https://example.com:8443/callback", "https://example.com:9443/callback", false)]
+		[InlineData("maui-auth://host", "maui-auth://host:0", false)]
+		[InlineData("https://example.com/callback", "https://example.com/callback/", false)]
+		[InlineData("https://example.com/", "https://example.com/another/path", true)]
+		[InlineData("maui-auth:/callback", "maui-auth:/callback?code=123", true)]
+		[InlineData("maui-auth:/callback", "maui-auth:/Callback?code=123", false)]
+		[InlineData("maui-auth:/callback%20complete", "maui-auth:/callback%20complete?code=123", true)]
+		[InlineData("maui-auth:/callback%20complete", "maui-auth:/callback complete?code=123", true)]
+		public void CanHandleCallback_ReturnsExpected(string expectedUrl, string callbackUrl, bool expected)
+		{
+			var result = Microsoft.Maui.WebUtils.CanHandleCallback(new Uri(expectedUrl), new Uri(callbackUrl));
+
+			Assert.Equal(expected, result);
+		}
+
+		[Fact]
+		public void CanHandleCallback_RejectsRelativeUris()
+		{
+			Assert.False(Microsoft.Maui.WebUtils.CanHandleCallback(
+				new Uri("callback", UriKind.Relative),
+				new Uri("maui-auth:/callback")));
+			Assert.False(Microsoft.Maui.WebUtils.CanHandleCallback(
+				new Uri("maui-auth:/callback"),
+				new Uri("callback", UriKind.Relative)));
+		}
+	}
+}

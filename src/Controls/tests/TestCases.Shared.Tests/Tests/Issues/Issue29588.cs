@@ -2,7 +2,7 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Tests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 internal class Issue29588 : _IssuesUITest
 {
@@ -13,7 +13,7 @@ internal class Issue29588 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void RemainingItemsThresholdReachedEventShouldTrigger()
 	{
 		App.WaitForElement("29588CollectionView");

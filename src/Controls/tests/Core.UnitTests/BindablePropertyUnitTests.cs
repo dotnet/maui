@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -189,6 +190,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bindable.SetValue(prop, propStruct);
 			Assert.Equal(1, ((TestStruct)bindable.GetValue(prop)).IntValue);
+		}
+
+		[Theory]
+		[InlineData("iOS", "iOS Header")]
+		[InlineData("Android", "Android Header")]
+		[InlineData("WinUI", "WinUI Header")]
+		public void CollectionViewHeaderUnwrapsOnPlatformView(string platformName, string expectedText)
+		{
+			var platform = platformName switch
+			{
+				"iOS" => DevicePlatform.iOS,
+				"Android" => DevicePlatform.Android,
+				"WinUI" => DevicePlatform.WinUI,
+				_ => throw new ArgumentOutOfRangeException(nameof(platformName))
+			};
+
+			DeviceInfo.SetCurrent(new MockDeviceInfo { Platform = platform });
+
+			var header = new OnPlatform<View>();
+			header.Platforms.Add(new On { Platform = new[] { "iOS" }, Value = new Label { Text = "iOS Header" } });
+			header.Platforms.Add(new On { Platform = new[] { "Android" }, Value = new Label { Text = "Android Header" } });
+			header.Platforms.Add(new On { Platform = new[] { "WinUI" }, Value = new Label { Text = "WinUI Header" } });
+
+			var collectionView = new CollectionView
+			{
+				Header = header
+			};
+
+			var resolvedHeader = Assert.IsType<Label>(collectionView.Header);
+			Assert.Equal(expectedText, resolvedHeader.Text);
 		}
 
 	}

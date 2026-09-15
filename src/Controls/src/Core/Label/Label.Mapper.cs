@@ -41,6 +41,15 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
 #endif
 
+#if IOS || MACCATALYST
+			// On iOS/MacCatalyst the effective flow direction is baked into the attributed
+			// string's paragraph style (BaseWritingDirection / Start-End alignment). The core
+			// FlowDirection mapper only updates the native semantic direction and
+			// HorizontalTextAlignment, so a later FlowDirection change would leave a formatted
+			// label carrying its stale paragraph style. Rebuild FormattedText for spanned labels.
+			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(IView.FlowDirection), MapFlowDirection);
+#endif
+
 			// platform-specifics
 #if WINDOWS
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
@@ -115,7 +124,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapLineHeight(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (!IsPlainText(label))
+			if (label.HasFormattedTextSpans)
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -123,7 +132,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapTextDecorations(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (!IsPlainText(label))
+			if (label.HasFormattedTextSpans)
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -131,7 +140,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapCharacterSpacing(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (!IsPlainText(label))
+			if (label.HasFormattedTextSpans)
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -144,8 +153,14 @@ namespace Microsoft.Maui.Controls
 			if (label.HasFormattedTextSpans)
 			{
 				// if there is formatted text,
-				// then we re-apply the whole formatted text
-				handler.UpdateValue(nameof(FormattedText));
+				// then we re-apply the whole formatted text.
+				// During connection, MapText already set the correct AttributedText
+				// with font info embedded. We must not call baseMethod here as
+				// setting UILabel.Font replaces the AttributedText on iOS.
+				if (!handler.IsConnectingHandler())
+				{
+					handler.UpdateValue(nameof(FormattedText));
+				}
 			}
 			else if (label.TextType == TextType.Text || !IsDefaultFont(label))
 			{
@@ -171,6 +186,25 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#endif
+
+#if IOS || MACCATALYST
+		// The effective flow direction is baked into the attributed string's paragraph style
+		// (BaseWritingDirection / Start-End alignment) when there are spans. The core FlowDirection
+		// mapper only updates the native semantic direction and HorizontalTextAlignment, so we need
+		// to rebuild the formatted text here to refresh the stale paragraph style.
+		static void MapFlowDirection(ILabelHandler handler, Label label)
+		{
+			if (label.IsConnectingHandler())
+			{
+				return;
+			}
+
+			if (label.HasFormattedTextSpans)
+			{
+				handler.UpdateValue(nameof(FormattedText));
+			}
+		}
 #endif
 
 		static bool IsPlainText(Label label)

@@ -29,7 +29,8 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.CharacterSpacing);
 
 		public static void UpdateInlines(
 			this TextBlock textBlock,
@@ -40,9 +41,23 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> UpdateInlines(textBlock, fontManager, formattedString, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		public static void UpdateInlines(
+			this TextBlock textBlock,
+			IFontManager fontManager,
+			FormattedString formattedString,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var textBlockInlines = textBlock.Inlines;
 			textBlockInlines.Clear();
+			var textHighlighters = textBlock.TextHighlighters;
+			textHighlighters.Clear();
 
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
@@ -53,7 +68,8 @@ namespace Microsoft.Maui.Controls.Platform
 				defaultHorizontalAlignment,
 				defaultFont,
 				defaultColor,
-				defaultTextTransform).ToArray();
+				defaultTextTransform,
+				defaultCharacterSpacing).ToArray();
 
 			var lineHeights = new List<double>(runs.Length);
 			foreach (var (run, _, _) in runs)
@@ -81,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform
 					};
 
 					run.Foreground = textColor?.ToPlatform();
-					textBlock.TextHighlighters.Add(textHighlighter);
+					textHighlighters.Add(textHighlighter);
 				}
 
 				currentTextIndex += runTextLength;
@@ -96,6 +112,17 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> ToRunAndColorsTuples(formattedString, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var runs = new List<Tuple<Run, Color, Color>>();
 
@@ -104,7 +131,7 @@ namespace Microsoft.Maui.Controls.Platform
 				for (var i = 0; i < formattedString.Spans.Count; i++)
 				{
 					var span = formattedString.Spans[i];
-					var run = span.ToRunAndColorsTuple(fontManager, defaultFont, defaultColor, defaultTextTransform);
+					var run = span.ToRunAndColorsTuple(fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing);
 					runs.Add(run);
 				}
 			}
@@ -118,6 +145,15 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> ToRunAndColorsTuple(span, fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		public static Tuple<Run, Color, Color> ToRunAndColorsTuple(
+			this Span span,
+			IFontManager fontManager,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -137,7 +173,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (span.IsSet(Span.TextDecorationsProperty))
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
 
-			run.CharacterSpacing = span.CharacterSpacing.ToEm();
+			// CharacterSpacing with inheritance and validation
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
+				? span.CharacterSpacing 
+				: defaultCharacterSpacing;
+			characterSpacing = Math.Max(0, characterSpacing);
+			run.CharacterSpacing = characterSpacing.ToEm();
 
 			return Tuple.Create(run, span.TextColor, span.BackgroundColor);
 		}
@@ -184,6 +225,15 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						// Bottom Line
 						lineHeight = endRect.Bottom - endRect.Top;
+					}
+
+					// Guard against a zero (or negative) line height. This can happen when the
+					// TextBlock was measured while collapsed/hidden, which caches a
+					// MeasuredLineHeight of 0. Without this check, causing an infinite loop and an eventual
+					// OutOfMemoryException as lineHeights grows without bound.
+					if (lineHeight <= 0)
+					{
+						break;
 					}
 
 					lineHeights.Add(lineHeight);

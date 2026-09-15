@@ -16,6 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Cells = "Cells";
 		public const string CheckBox = "CheckBox";
 		public const string CollectionView = "CollectionView";
+		public const string CollectionView1 = "CollectionView1";
+		public const string CollectionView2 = "CollectionView2";
+		public const string CollectionView3 = "CollectionView3";
+		public const string CollectionView4 = "CollectionView4";
+		public const string CollectionView5 = "CollectionView5";
+		public const string CollectionView6 = "CollectionView6";
+		public const string CollectionView7 = "CollectionView7";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
 		public const string Dispatcher = "Dispatcher";
@@ -28,7 +35,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string ImageButton = "ImageButton";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
-		public const string ListView = "ListView";
 		public const string LifeCycle = "Lifecycle";
 		public const string Flaky = "Flaky";
 		public const string FlyoutPage = "FlyoutPage";
@@ -75,6 +81,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string GraphicsView = "GraphicsView";
 		public const string Fonts = "Fonts";
 		public const string SafeAreaEdges = "SafeAreaEdges";
+		public const string Essentials = "Essentials";
 		public const string Material3 = "Material3";
     public const string Triggers = "Triggers";
 		public const string VisualStateManager = "VisualStateManager";

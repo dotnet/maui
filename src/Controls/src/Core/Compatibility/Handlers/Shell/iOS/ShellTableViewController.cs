@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using ObjCRuntime;
@@ -11,9 +12,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellTableViewController : UITableViewController
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Shell context is required for the table controller lifetime and event subscriptions are removed in Dispose(bool).")]
 		readonly IShellContext _context;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Table source is owned by the controller and detached from events in Dispose(bool).")]
 		readonly ShellTableViewSource _source;
 		bool _isDisposed;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Selection callback is cleared in Dispose(bool) when the controller is released.")]
 		Action<Element> _onElementSelected;
 		IShellController ShellController => _context.Shell;
 
@@ -23,6 +27,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			HeaderView = headerView;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "FlyoutItemsChanged and ScrolledEvent subscriptions are removed in Dispose(bool).")]
 		public ShellTableViewController(IShellContext context, Action<Element> onElementSelected)
 		{
 			ShellFlyoutContentManager = ShellFlyoutContentManager ?? new ShellFlyoutLayoutManager(context);
@@ -109,6 +114,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			public AccessibilityNeutralTableView()
 			{
 				this.SetAccessibilityContainerType(UIAccessibilityContainerType.None);
+				ScrollsToTop = false;
 			}
 		}
 
@@ -131,7 +137,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ShellController.FlyoutItemsChanged -= OnFlyoutItemsChanged;
 
 				if (_source != null)
+				{
 					_source.ScrolledEvent -= OnScrolled;
+					_source.Disconnect();
+				}
 
 				ShellFlyoutContentManager.TearDown();
 				_onElementSelected = null;

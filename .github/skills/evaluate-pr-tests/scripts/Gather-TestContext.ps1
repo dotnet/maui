@@ -12,6 +12,12 @@
     - Find existing similar tests
     - Assess platform scope
 
+.PARAMETER PrNumber
+    Explicit PR number to evaluate. When provided, the script uses
+    `gh pr view <number>` to detect the base branch and `gh pr diff <number>`
+    to get the changed files. This avoids relying on the currently checked-out
+    branch, which is critical for workflow_dispatch triggers.
+
 .PARAMETER BaseBranch
     Base branch to diff against. Auto-detected from PR if not specified.
 
@@ -19,13 +25,16 @@
     Directory to write the context report to.
 
 .EXAMPLE
-    ./Gather-TestContext.ps1
+    ./Gather-TestContext.ps1 -PrNumber 31244
 
 .EXAMPLE
     ./Gather-TestContext.ps1 -BaseBranch "origin/main"
 #>
 
 param(
+    [Parameter(Mandatory = $false)]
+    [int]$PrNumber,
+
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch,
 
@@ -42,7 +51,22 @@ New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $reportPath = Join-Path $OutputDir "context.md"
 
 # --- 1. Detect base branch ---
-if (-not $BaseBranch) {
+$usePrDiff = $false
+if ($PrNumber -gt 0) {
+    # Explicit PR number — use gh pr view/diff so we don't depend on local branch
+    Write-Host "📋 Evaluating PR #$PrNumber (explicit)"
+    if (-not $BaseBranch) {
+        try {
+            $prJson = gh pr view $PrNumber --json baseRefName 2>$null
+            if ($prJson) {
+                $prInfo = $prJson | ConvertFrom-Json
+                $BaseBranch = "origin/$($prInfo.baseRefName)"
+            }
+        } catch { }
+        if (-not $BaseBranch) { $BaseBranch = "origin/main" }
+    }
+    $usePrDiff = $true
+} elseif (-not $BaseBranch) {
     try {
         $prJson = gh pr view --json baseRefName 2>$null
         if ($prJson) {
@@ -61,13 +85,67 @@ git fetch origin --quiet 2>$null
 
 # --- 2. Get changed files ---
 $changedFiles = @()
-$diffOutput = git diff --name-only "$BaseBranch...HEAD" 2>$null
-if ($diffOutput) {
-    $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-} else {
-    $diffOutput = git diff --name-only "$BaseBranch" 2>$null
+
+if ($changedFiles.Count -eq 0 -and $usePrDiff) {
+    # Use gh pr diff to get file list directly from GitHub API — works regardless of local checkout
+    $diffOutput = gh pr diff $PrNumber --name-only 2>$null
     if ($diffOutput) {
         $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+    }
+}
+if ($changedFiles.Count -eq 0) {
+    $diffOutput = git diff --name-only "$BaseBranch...HEAD" 2>$null
+    if ($diffOutput) {
+        $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+    } else {
+        $diffOutput = git diff --name-only "$BaseBranch" 2>$null
+        if ($diffOutput) {
+            $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+        }
+    }
+}
+
+# --- 2b. Download missing files via GitHub API (needed when PR isn't checked out locally) ---
+if ($usePrDiff -and $changedFiles.Count -gt 0) {
+    $headSha = $null
+    try {
+        $headSha = gh pr view $PrNumber --json headRefOid --jq '.headRefOid' 2>$null
+    } catch { }
+
+    if ($headSha) {
+        $downloadCount = 0
+        $repoRootFull = [System.IO.Path]::GetFullPath($RepoRoot)
+        $owner, $repo = ($env:GITHUB_REPOSITORY ?? "dotnet/maui") -split '/', 2
+        foreach ($file in $changedFiles) {
+            # Path traversal guard: ensure resolved path stays within repo root
+            $targetPath = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $file))
+            if (-not $targetPath.StartsWith($repoRootFull + [System.IO.Path]::DirectorySeparatorChar)) {
+                Write-Warning "Skipping out-of-root path: $file"
+                continue
+            }
+
+            if (-not (Test-Path $targetPath)) {
+                try {
+                    $dir = [System.IO.Path]::GetDirectoryName($targetPath)
+                    if ($dir -and -not (Test-Path $dir)) {
+                        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+                    }
+                    $encodedFile = [Uri]::EscapeDataString($file) -replace '%2F', '/'
+                    $apiPath = "repos/$owner/$repo/contents/$($encodedFile)?ref=$headSha"
+                    $b64 = gh api $apiPath --jq '.content' 2>$null
+                    if ($b64) {
+                        $bytes = [System.Convert]::FromBase64String(($b64 -replace '\s', ''))
+                        [System.IO.File]::WriteAllBytes($targetPath, $bytes)
+                        $downloadCount++
+                    }
+                } catch {
+                    Write-Host "⚠️ Could not download $file via API: $_"
+                }
+            }
+        }
+        if ($downloadCount -gt 0) {
+            Write-Host "📥 Downloaded $downloadCount file(s) from PR #$PrNumber head ($($headSha.Substring(0,7)))"
+        }
     }
 }
 
@@ -128,7 +206,8 @@ function Test-UITestConventions {
     # --- Naming (only flag files in Issues/ directory that look like issue tests) ---
     $fileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
     if ($TestFile -match "Issues/" -and $fileName -match "^Issue" -and $fileName -notmatch "^Issue\d+$") {
-        $issues += "Issue test file name ``$fileName`` should follow ``IssueXXXXX`` pattern"
+        $safeName = Escape-ForCodeSpan $fileName
+        $issues += "Issue test file name ``$safeName`` should follow ``IssueXXXXX`` pattern"
     }
 
     # --- Inheritance ---
@@ -225,7 +304,8 @@ function Test-UITestConventions {
         # For .xaml files, skip C# attribute checks (they live in code-behind)
         if ($hostFile -notmatch "\.xaml$") {
             if ($hostContent -notmatch "\[Issue\(") {
-                $issues += "HostApp page ``$([System.IO.Path]::GetFileName($hostFile))`` missing ``[Issue()]`` attribute"
+                $safeHost = Escape-ForCodeSpan ([System.IO.Path]::GetFileName($hostFile))
+                $issues += "HostApp page ``$safeHost`` missing ``[Issue()]`` attribute"
             }
         }
         if ($hostContent -match "new\s+Frame\b") {
@@ -334,7 +414,8 @@ function Test-XamlTestConventions {
     # File naming for issues
     $fileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
     if ($TestFile -match "Issues/" -and $fileName -notmatch "^Maui\d+$") {
-        $issues += "Issue test file name ``$fileName`` doesn't follow ``MauiXXXXX`` pattern"
+        $safeName = Escape-ForCodeSpan $fileName
+        $issues += "Issue test file name ``$safeName`` doesn't follow ``MauiXXXXX`` pattern"
     }
 
     return @{ Issues = $issues; Info = $info }
@@ -353,7 +434,25 @@ $report += ""
 $report += "| Category | Count | Files |"
 $report += "|----------|-------|-------|"
 
-function Format-FileList { param([string[]]$files) if ($files.Count -eq 0) { return "_none_" } return ($files | ForEach-Object { "``$_``" }) -join ", " }
+function Escape-ForCodeSpan {
+    param([string]$Text)
+    # Neutralise characters that break markdown code spans or line structure.
+    # Backticks are replaced with a visually similar RIGHT SINGLE QUOTATION MARK (U+2019)
+    # so the surrounding `` delimiters stay balanced.  Newlines / carriage-returns are
+    # stripped because they would break table rows or heading lines.
+    return ($Text -replace '`', [char]0x2019 -replace '[\r\n]', '')
+}
+
+function Format-FileList {
+    param([string[]]$files)
+    if ($files.Count -eq 0) { return "_none_" }
+    return ($files | ForEach-Object {
+        # Escape markdown metacharacters to prevent injection via crafted filenames.
+        # Use double-backtick code spans (`` ... ``) so literal backticks render correctly.
+        $escaped = (Escape-ForCodeSpan $_) -replace '\|', '\|' -replace '<', '&lt;' -replace '>', '&gt;'
+        "````$escaped````"
+    }) -join ", "
+}
 
 $report += "| **Fix files** | $($fixFiles.Count) | $(Format-FileList $fixFiles) |"
 $report += "| **UI Tests (NUnit)** | $($uiTestFiles.Count) | $(Format-FileList $uiTestFiles) |"
@@ -396,7 +495,8 @@ if ($uiTestFiles.Count -gt 0) {
             $hostName -eq $baseName
         }
         $result = Test-UITestConventions -TestFile $testFile -HostAppFiles $matchingHostFiles
-        $report += "### ``$baseName``"
+        $safeBase = Escape-ForCodeSpan $baseName
+        $report += "### ``$safeBase``"
         if ($result.Info.Count -gt 0) {
             foreach ($i in $result.Info) { $report += "- ℹ️ $i" }
         }
@@ -419,7 +519,8 @@ if ($unitTestFiles.Count -gt 0) {
     foreach ($testFile in $unitTestFiles) {
         $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testFile)
         $result = Test-UnitTestConventions -TestFile $testFile
-        $report += "### ``$baseName``"
+        $safeBase = Escape-ForCodeSpan $baseName
+        $report += "### ``$safeBase``"
         if ($result.Info.Count -gt 0) {
             foreach ($i in $result.Info) { $report += "- ℹ️ $i" }
         }
@@ -442,7 +543,8 @@ if ($xamlTestFiles.Count -gt 0) {
     foreach ($testFile in ($xamlTestFiles | Where-Object { $_ -match "\.cs$" })) {
         $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testFile)
         $result = Test-XamlTestConventions -TestFile $testFile
-        $report += "### ``$baseName``"
+        $safeBase = Escape-ForCodeSpan $baseName
+        $report += "### ``$safeBase``"
         if ($result.Info.Count -gt 0) {
             foreach ($i in $result.Info) { $report += "- ℹ️ $i" }
         }

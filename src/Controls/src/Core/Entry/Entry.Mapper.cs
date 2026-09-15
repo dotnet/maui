@@ -20,6 +20,19 @@ namespace Microsoft.Maui.Controls
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(Text), MapText);
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapText);
 
+			// Material3 Entry Handler mappings
+#if ANDROID
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
+				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(Text), MapText);
+				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(TextTransform), MapText);
+				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
+				EntryHandler2.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
+			}
+#endif
+
 #if IOS || ANDROID
 			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
 			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);

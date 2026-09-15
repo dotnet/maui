@@ -7,8 +7,7 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers;
 
-// TODO: Material3 - make it public in .net 11
-internal class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
+public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 {
 	bool _set;
 
@@ -45,7 +44,7 @@ internal class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 
 	protected override MauiMaterialEditText CreatePlatformView()
 	{
-		var editText = new MauiMaterialEditText(Context)
+		var editText = new MauiMaterialEditText(MauiMaterialContextThemeWrapper.Create(Context))
 		{
 			ImeOptions = ImeAction.Done,
 			Gravity = GravityFlags.Top,

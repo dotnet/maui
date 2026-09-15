@@ -19,14 +19,19 @@ namespace Microsoft.Maui.Platform
 
 		public PlatformTouchGraphicsView(Context context) : base(context)
 		{
-			_scale = (context ?? global::Android.App.Application.Context)?.Resources?.DisplayMetrics?.Density ?? 1;
 		}
+
+		// Override to use MAUI's cached density (Context.GetDisplayDensity) so that
+		// dirtyRect, touch coords and _bounds stay consistent with GraphicsView.Width/Height.
+		internal override float GetDisplayDensity() => Context!.GetDisplayDensity();
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			base.OnLayout(changed, left, top, right, bottom);
 			if (changed)
 			{
+				// Cache density once per layout; reused by touch/hover events until next layout.
+				_scale = GetDisplayDensity();
 				var width = right - left;
 				var height = bottom - top;
 				_bounds = new RectF(0, 0, width / _scale, height / _scale);

@@ -72,7 +72,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{
 			//we might want to move this to a separate method
-			var visitor = new SetPropertiesVisitor(Context);
+			var visitor = new SetPropertiesVisitor(Context, valuePrecomputePass: true);
 			// var children = node.Properties.Values.ToList();
 			// children.AddRange(node.CollectionItems);
 			foreach (var cn in node.CollectionItems)
@@ -238,7 +238,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 				var pType = req is IPropertySymbol prop ? prop.Type : ((IFieldSymbol)req).Type;
 				var pConverter = req.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol;
 
-				var visitor = new SetPropertiesVisitor(Context);
+				var visitor = new SetPropertiesVisitor(Context, valuePrecomputePass: true);
 				var children = node.Properties.Values.ToList();
 				children.AddRange(node.CollectionItems);
 				foreach (var cn in children)
@@ -307,12 +307,12 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 				// This element can be fully inlined without property assignments or variable creation.
 				// Skip setting all simple value properties since they'll be handled
 				// by inline initialization in TryProvideValue.
-				// 
+				//
 				// This eliminates the dead code that creates:
 				// 1. Empty variable instantiation (var setter = new Setter();)
-				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider, 
+				// 2. Service providers (XamlServiceProvider, SimpleValueTargetProvider,
 				//    XmlNamespaceResolver, XamlTypeResolver) for property assignments
-				// 
+				//
 				// These are not AOT-compatible and were completely dead code.
 				//
 				// Register a placeholder variable entry so TryProvideValue can replace it
@@ -328,7 +328,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 				//   <Setter Property="...">10,10,20,20</Setter>
 				// where the value is a collection item instead of a property.
 				// Without skipping this, SetPropertiesVisitor would try to process the
-				// collection item and generate invalid code like ".Value = ..." 
+				// collection item and generate invalid code like ".Value = ..."
 				// (with an empty variable name).
 				if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
 				{
@@ -448,7 +448,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 		var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
 		var hasExplicitContent = node.Properties.Keys.Any(p => contentPropertyNames.Contains(p.LocalName));
 		var hasImplicitContent = node.CollectionItems.Count > 0;
-		
+
 		if (hasExplicitContent || hasImplicitContent)
 		{
 			// Mark content properties to be processed in the initializer (skip during normal traversal)
@@ -457,7 +457,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 				if (!node.SkipProperties.Contains(propName))
 					node.SkipProperties.Add(propName);
 			}
-			
+
 			// Mark that this Style needs an initializer
 			node.Properties[XmlName._StyleContent] = new ValueNode("true", node.NamespaceResolver);
 		}

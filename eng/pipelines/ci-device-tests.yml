@@ -1,4 +1,5 @@
 trigger:
+  batch: true
   branches:
     include:
     - main
@@ -91,14 +92,14 @@ parameters:
   default:
     name: AcesShared
     demands:
-      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      - ImageOverride -equals $(AcesMacImageOverride)
 
 - name: macOSPoolPublic
   type: object
   default:
     name: AcesShared
     demands:
-      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      - ImageOverride -equals $(AcesMacImageOverride)
 
 - name: targetFrameworkVersions
   type: object
@@ -141,4 +142,3 @@ stages:
           skipProvisioning: true
           skipXcode: false
           skipSimulatorSetup: false
-

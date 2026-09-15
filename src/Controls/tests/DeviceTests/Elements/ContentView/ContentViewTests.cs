@@ -18,8 +18,13 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<IContentView, ContentViewHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+#if IOS || MACCATALYST
+					handlers.AddHandler<FocusableContentView, FocusableContentViewHandler>();
+#endif
 				});
 			});
 		}

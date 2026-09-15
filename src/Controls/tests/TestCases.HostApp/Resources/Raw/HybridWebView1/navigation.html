@@ -193,9 +193,6 @@
                     } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
                         window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
                         return true;
-                    } else if (window.hybridWebViewHost) {
-                        window.hybridWebViewHost.sendMessage("__RawMessage|" + msg);
-                        return true;
                     }
                     return false;
                 } catch (error) {

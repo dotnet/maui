@@ -18,9 +18,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ITimePicker, ITimePickerHandler> Mapper = new PropertyMapper<ITimePicker, ITimePickerHandler>(ViewHandler.ViewMapper)
 		{
-#if ANDROID || WINDOWS
+#if IOS || ANDROID || WINDOWS
 			[nameof(ITimePicker.Background)] = MapBackground,
-#elif IOS
+#endif
+#if IOS || ANDROID
 			[nameof(ITimePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing,

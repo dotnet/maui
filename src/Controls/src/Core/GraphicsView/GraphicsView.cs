@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Drawable"/>.</summary>
 		public static readonly BindableProperty DrawableProperty =
-			BindableProperty.Create(nameof(Drawable), typeof(IDrawable), typeof(GraphicsView), null);
+			BindableProperty.Create(nameof(Drawable), typeof(IDrawable), typeof(GraphicsView), null, propertyChanged: OnDrawablePropertyChanged);
 
 		public IDrawable Drawable
 		{
@@ -42,6 +42,28 @@ namespace Microsoft.Maui.Controls
 		void IGraphicsView.MoveHoverInteraction(PointF[] points) => MoveHoverInteraction?.Invoke(this, new TouchEventArgs(points, true));
 
 		void IGraphicsView.StartInteraction(PointF[] points) => StartInteraction?.Invoke(this, new TouchEventArgs(points, true));
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			if (Drawable is BindableObject bindable)
+			{
+				SetInheritedBindingContext(bindable, BindingContext);
+			}
+		}
+
+		static void OnDrawablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is BindableObject oldDrawable)
+			{
+				SetInheritedBindingContext(oldDrawable, null);
+			}
+
+			if (newValue is BindableObject newDrawable)
+			{
+				SetInheritedBindingContext(newDrawable, bindable.BindingContext);
+			}
+		}
 	}
 	public class TouchEventArgs : EventArgs
 	{

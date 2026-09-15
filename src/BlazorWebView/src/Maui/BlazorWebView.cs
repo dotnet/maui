@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
@@ -10,8 +11,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A <see cref="View"/> that can render Blazor content.
 	/// </summary>
+#if ANDROID
+	[SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
+#elif IOS
+	[SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+	[SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
+#endif
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
+		// NOTE: keep these in *reasonably* in sync with:
+		// * src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj
+		// * src\Templates\src\templates\maui-blazor\MauiApp.1.csproj
+		// * src\Templates\src\templates\maui-blazor-solution\MauiApp.1\MauiApp.1.csproj
+		// * https://learn.microsoft.com/dotnet/maui/supported-platforms
+		internal const string AndroidSupportedOSPlatformVersion = "android24.0";
+		internal const string iOSSupportedOSPlatformVersion = "ios15.0";
+		internal const string MacCatalystSupportedOSPlatformVersion = "maccatalyst15.0";
+
 		internal static string AppHostAddress { get; } = HostAddressHelper.GetAppHostAddress();
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
@@ -51,6 +68,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <summary>
+		/// Gets or sets a callback that determines the <c>Cache-Control</c> header value used for static content
+		/// (such as images, fonts, or stylesheets) served from the app's content root.
+		/// <para>
+		/// By default no callback is set and all served content uses <c>no-cache, max-age=0, must-revalidate,
+		/// no-store</c>, which disables WebView caching. Provide a callback to opt specific resources into caching,
+		/// which can avoid repeated file reads and reduce image reload flicker when navigating between pages.
+		/// Return <see langword="null"/> or an empty string from the callback to keep the default behavior for a
+		/// given request. Cache entries remain subject to platform limits, expiration, and eviction.
+		/// </para>
+		/// <para>
+		/// The callback is invoked from the platform's request handling, which may run on a background thread, so it
+		/// must not access UI state directly. If the callback throws, the exception is logged and the request falls
+		/// back to the default header.
+		/// </para>
+		/// </summary>
+		public Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider { get; set; }
+
+		/// <summary>
 		/// Allows customizing how links are opened.
 		/// By default, opens internal links in the webview and external links in an external app.
 		/// </summary>
@@ -80,14 +115,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		/// <inheritdoc />
 #if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
 #elif IOS
-		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+		[System.Runtime.Versioning.SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
 #endif
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
-			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+			return GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
 		}
 
 		/// <summary>
@@ -97,18 +134,40 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
 #if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
+#elif IOS
+		[System.Runtime.Versioning.SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+		[System.Runtime.Versioning.SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
 #endif
 		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
 		{
 			ArgumentNullException.ThrowIfNull(workItem);
-			if (Handler is null)
+			var handler = Handler;
+			if (handler is null)
 			{
 				return false;
 			}
 
-			return await ((BlazorWebViewHandler)(Handler!)).TryDispatchAsync(workItem);
+			return await GetBlazorWebViewHandler(handler).TryDispatchAsync(workItem);
 		}
+
+		private IBlazorWebViewHandler GetBlazorWebViewHandler()
+		{
+			var handler = Handler;
+			if (handler is null)
+			{
+				throw new InvalidOperationException(
+					$"{nameof(BlazorWebView)} must be connected to a handler before this operation can be performed.");
+			}
+
+			return GetBlazorWebViewHandler(handler);
+		}
+
+		private static IBlazorWebViewHandler GetBlazorWebViewHandler(IViewHandler handler) =>
+			handler as IBlazorWebViewHandler ??
+				throw new InvalidOperationException(
+					$"The handler type '{handler.GetType().FullName}' must implement {nameof(IBlazorWebViewHandler)}.");
 
 		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>
