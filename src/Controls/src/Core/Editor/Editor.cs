@@ -151,6 +151,18 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rect bounds)
 		{
+			// When AutoSize is TextChanges, the Editor's height must be driven by its content
+			// (bounded by Minimum/MaximumHeightRequest). Fill layout would otherwise stretch it
+			// to the parent's height (see LayoutExtensions.ComputeFrame), making an empty Editor
+			// snap to MaximumHeightRequest.
+			if (AutoSize == EditorAutoSizeOption.TextChanges
+				&& !IsExplicitSet(((IView)this).Height)
+				&& DesiredSize.Height > 0
+				&& DesiredSize.Height < bounds.Height)
+			{
+				bounds = new Rect(bounds.X, bounds.Y, bounds.Width, DesiredSize.Height);
+			}
+
 			_previousBounds = bounds;
 			return base.ArrangeOverride(bounds);
 		}
