@@ -1,0 +1,148 @@
+parameters:
+- name: sourceBuildId
+  type: number
+- name: commitHash
+  type: string
+- name: ghOwner
+  type: string
+- name: ghRepo
+  type: string
+- name: pushWorkloadSet
+  type: boolean
+- name: pushNugetOrg
+  type: boolean
+- name: pushPackages
+  type: boolean
+- name: includeFilters
+  type: string
+- name: excludeFilters
+  type: string
+- name: packSkipFilters
+  type: string
+- name: manifestSkipFilters
+  type: string
+
+stages:
+- stage: prepare_manifest_recovery
+  displayName: Validate retained manifest release
+  dependsOn: []
+  jobs:
+  - job: prepare_manifest_recovery
+    displayName: Validate source artifacts and existing packs
+    timeoutInMinutes: 60
+    workspace:
+      clean: all
+    templateContext:
+      outputs:
+      - output: pipelineArtifact
+        displayName: Publish manifest recovery audit and helper
+        targetPath: '$(Build.ArtifactStagingDirectory)\ManifestRecoveryTools'
+        artifactName: ManifestRecoveryTools
+    steps:
+    - checkout: self
+      clean: true
+      persistCredentials: false
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download original pack inventory (read-only)
+      inputs:
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(System.DefinitionId)
+        buildVersionToDownload: specific
+        pipelineId: ${{ parameters.sourceBuildId }}
+        allowPartiallySucceededBuilds: true
+        allowFailedBuilds: true
+        artifactName: MauiPacksForNuGet
+        itemPattern: expected-packages.json
+        targetPath: '$(Pipeline.Workspace)\OriginalPackInventory'
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download original manifests for validation
+      inputs:
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(System.DefinitionId)
+        buildVersionToDownload: specific
+        pipelineId: ${{ parameters.sourceBuildId }}
+        allowPartiallySucceededBuilds: true
+        allowFailedBuilds: true
+        artifactName: MauiManifestsForNuGet
+        targetPath: '$(Pipeline.Workspace)\OriginalManifests'
+
+    - pwsh: |
+        & '$(Build.SourcesDirectory)\eng\scripts\prepare_manifest_recovery.ps1' `
+          -SourceBuildId $env:SOURCE_BUILD_ID `
+          -CommitHash $env:RELEASE_COMMIT `
+          -GhOwner $env:GH_OWNER `
+          -GhRepo $env:GH_REPO `
+          -PushWorkloadSet ([bool]::Parse($env:PUSH_WORKLOAD_SET)) `
+          -PushNugetOrg ([bool]::Parse($env:PUSH_NUGET_ORG)) `
+          -IncludeFilters $env:INCLUDE_FILTERS `
+          -ExcludeFilters $env:EXCLUDE_FILTERS `
+          -PackSkipFilters $env:PACK_SKIP_FILTERS `
+          -PacksPath '$(Pipeline.Workspace)\OriginalPackInventory' `
+          -ManifestsPath '$(Pipeline.Workspace)\OriginalManifests' `
+          -OutputPath '$(Build.ArtifactStagingDirectory)\ManifestRecoveryTools'
+      name: prepareRecovery
+      displayName: Validate retained release and verify existing packs
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        SOURCE_BUILD_ID: ${{ parameters.sourceBuildId }}
+        RELEASE_COMMIT: ${{ parameters.commitHash }}
+        GH_OWNER: ${{ parameters.ghOwner }}
+        GH_REPO: ${{ parameters.ghRepo }}
+        PUSH_WORKLOAD_SET: ${{ parameters.pushWorkloadSet }}
+        PUSH_NUGET_ORG: ${{ parameters.pushNugetOrg }}
+        INCLUDE_FILTERS: ${{ parameters.includeFilters }}
+        EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
+        PACK_SKIP_FILTERS: ${{ parameters.packSkipFilters }}
+
+- ${{ if eq(parameters.pushPackages, true) }}:
+  - stage: stage_push_manifests
+    displayName: Release retained manifests
+    dependsOn: prepare_manifest_recovery
+    condition: succeeded()
+    jobs:
+    - job: push_manifests_approval
+      displayName: Wait to push retained manifests
+      timeoutInMinutes: 240
+      pool: server
+      steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 120
+        inputs:
+          instructions: 'Review ManifestRecoveryTools/recovery-audit.json. Existing packs are verified; this run cannot publish packs. Resume to publish only missing manifests from release run ${{ parameters.sourceBuildId }}.'
+          onTimeout: reject
+
+    - job: push_manifests
+      displayName: Push retained manifests to NuGet.org
+      timeoutInMinutes: 90
+      dependsOn: push_manifests_approval
+      condition: eq(dependencies.push_manifests_approval.result, 'Succeeded')
+      variables:
+        PackageStatusScriptHash: $[ stageDependencies.prepare_manifest_recovery.prepare_manifest_recovery.outputs['prepareRecovery.PackageStatusScriptHash'] ]
+      templateContext:
+        type: releaseJob
+        isProduction: true
+        inputs:
+        - input: pipelineArtifact
+          artifactName: MauiManifestsForNuGet
+          buildType: specific
+          project: $(System.TeamProjectId)
+          definition: $(System.DefinitionId)
+          buildVersionToDownload: specific
+          pipelineId: ${{ parameters.sourceBuildId }}
+          allowPartiallySucceededBuilds: true
+          allowFailedBuilds: true
+          targetPath: '$(Pipeline.Workspace)\MauiManifestsForNuGet'
+        - input: pipelineArtifact
+          artifactName: ManifestRecoveryTools
+          targetPath: '$(Pipeline.Workspace)\ManifestRecoveryTools'
+      steps:
+      - checkout: none
+      - template: /eng/pipelines/common/publish-workload-manifests-steps.yml@self
+        parameters:
+          helperDirectory: '$(Pipeline.Workspace)\ManifestRecoveryTools'
+          skipFilters: ${{ parameters.manifestSkipFilters }}
+          validateIdentities: true

@@ -1,12 +1,14 @@
 param (
   [Parameter(Mandatory)]
-  [ValidateSet('FilterExisting', 'Verify')]
+  [ValidateSet('FilterExisting', 'Verify', 'ValidateManifests')]
   [string] $Action,
 
   [Parameter(Mandatory)]
   [string] $PackagesPath,
 
   [string] $SkipFilters = 'skip',
+
+  [string] $RecoveryAuditPath,
 
   [ValidateRange(1, 1000)]
   [int] $MaxAttempts = 1,
@@ -139,6 +141,71 @@ function Get-NuGetPackageStatus {
 }
 
 $expected = @(Get-ExpectedPackages)
+
+if ($Action -eq 'ValidateManifests') {
+  $audit = if ($RecoveryAuditPath) {
+    Get-Content -LiteralPath $RecoveryAuditPath -Raw | ConvertFrom-Json
+  }
+  if ($RecoveryAuditPath -and @($audit.manifests).Count -ne $expected.Count) {
+    throw 'The retained manifests do not match the approved recovery audit.'
+  }
+  foreach ($package in $expected) {
+    if ($package.id -notmatch '^Microsoft\.NET\.Sdk\.Maui\.Manifest-[0-9]+\.[0-9]+\.[0-9]+(?:\.Msi\.(?:arm64|x64|x86))?$' -or
+        $package.fileName -ine "$($package.id).$($package.normalizedVersion).nupkg") {
+      throw "Package '$($package.fileName)' is not an expected MAUI workload manifest."
+    }
+
+    $packagePath = Join-Path $PackagesPath $package.fileName
+    if ($RecoveryAuditPath) {
+      $approved = @($audit.manifests | Where-Object {
+        $_.fileName -ieq $package.fileName -and $_.id -ieq $package.id -and $_.version -ceq $package.version
+      })
+      if ($approved.Count -ne 1 -or
+          (Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash -ine $approved[0].sha256) {
+        throw "Package '$packagePath' does not match the approved recovery audit."
+      }
+    }
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($packagePath)
+    try {
+      $nuspec = @($archive.Entries | Where-Object {
+        $_.Name -like '*.nuspec' -and $_.FullName -eq $_.Name
+      })
+      if ($nuspec.Count -ne 1) {
+        throw "Expected one root nuspec in '$packagePath'."
+      }
+
+      $settings = [System.Xml.XmlReaderSettings]::new()
+      $settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+      $settings.XmlResolver = $null
+      $stream = $nuspec[0].Open()
+      try {
+        $reader = [System.Xml.XmlReader]::Create($stream, $settings)
+        try {
+          $document = [System.Xml.XmlDocument]::new()
+          $document.XmlResolver = $null
+          $document.Load($reader)
+          $ids = $document.SelectNodes("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='id']")
+          $versions = $document.SelectNodes("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='version']")
+          if ($ids.Count -ne 1 -or $versions.Count -ne 1 -or $ids[0].InnerText.Trim() -ine $package.id -or
+              $versions[0].InnerText.Trim() -cne $package.version) {
+            throw "Package '$packagePath' does not match its expected ID and version."
+          }
+        }
+        finally {
+          $reader.Dispose()
+        }
+      }
+      finally {
+        $stream.Dispose()
+      }
+    }
+    finally {
+      $archive.Dispose()
+    }
+  }
+  Write-Host "Validated all $($expected.Count) MAUI workload manifest identities."
+  return
+}
 
 if ($Action -eq 'FilterExisting') {
   $skipPatterns = @(Get-Filters -Value $SkipFilters)
