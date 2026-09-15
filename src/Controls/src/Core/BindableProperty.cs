@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Threading;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
@@ -195,7 +196,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(returnType));
 			if (declaringType is null)
 				throw new ArgumentNullException(nameof(declaringType));
-			
+
 			InternalId = Interlocked.Increment(ref _nextInternalId);
 
 			// don't use Enum.IsDefined as its redonkulously expensive for what it does
@@ -257,6 +258,39 @@ namespace Microsoft.Maui.Controls
 		internal BindingPropertyChangingDelegate PropertyChanging { get; private set; }
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
+
+		private PropertyChangedEventArgs _changedEventArgs;
+		private PropertyChangingEventArgs _changingEventArgs;
+
+		/// <summary>The <see cref="PropertyChangedEventArgs"/> to raise for this property.</summary>
+		/// <remarks>
+		/// A <see cref="BindableProperty"/> is registered once and lives for the life of the process, so it is the
+		/// natural owner of the args for its own name: one pair per property, created on first use, and bounded by
+		/// how many properties exist rather than by any cache policy. Two threads racing to initialize this produce
+		/// interchangeable instances and publish them with a single reference store, so the race is harmless.
+		/// </remarks>
+		internal PropertyChangedEventArgs ChangedEventArgs
+			=> _changedEventArgs ??= new PropertyChangedEventArgs(PropertyName);
+
+		/// <summary>The <see cref="PropertyChangingEventArgs"/> to raise for this property.</summary>
+		/// <remarks>See <see cref="ChangedEventArgs"/>.</remarks>
+		internal PropertyChangingEventArgs ChangingEventArgs
+			=> _changingEventArgs ??= new PropertyChangingEventArgs(PropertyName);
+
+		// Not every notification comes from a BindableProperty: a plain CLR property raising OnPropertyChanged(nameof(X))
+		// has no property object to hang its args off, and neither does anything in user code. Those names fall back
+		// here, to a cache that is bounded so that generated names cannot grow it for the life of the process.
+		private static readonly PropertyChangeEventArgsCache<PropertyChangedEventArgs> s_changedArgsCache
+			= new(static name => new PropertyChangedEventArgs(name));
+
+		private static readonly PropertyChangeEventArgsCache<PropertyChangingEventArgs> s_changingArgsCache
+			= new(static name => new PropertyChangingEventArgs(name));
+
+		internal static PropertyChangedEventArgs GetCachedPropertyChangedEventArgs(string propertyName)
+			=> s_changedArgsCache.Get(propertyName);
+
+		internal static PropertyChangingEventArgs GetCachedPropertyChangingEventArgs(string propertyName)
+			=> s_changingArgsCache.Get(propertyName);
 
 		// Properties that this property depends on - when getting this property's value,
 		// if the dependency has a pending binding, return the default value instead.
