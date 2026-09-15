@@ -72,6 +72,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SourceDictionaryForwardsValueChanges()
+		{
+			var source = new ResourceDictionary
+			{
+				["foo"] = "FOO",
+			};
+			var dictionary = new ResourceDictionary();
+			dictionary.SetSource(new Uri("Source.xaml", UriKind.Relative), source);
+
+			ResourcesChangedEventArgs changed = null;
+			((IResourceDictionary)dictionary).ValuesChanged += (sender, e) => changed = e;
+
+			source["foo"] = "BAR";
+
+			Assert.NotNull(changed);
+			Assert.Equal(["foo"], changed.Keys);
+			Assert.Equal("BAR", changed.Values.Single().Value);
+		}
+
+		[Fact]
 		public void ResourceDictionaryCtor()
 		{
 			var rd = new ResourceDictionary();

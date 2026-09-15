@@ -82,21 +82,32 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 	public string XamlPath { get; }
 
 	public XamlHotReloadGeneration Generate(params string[] xamlVersions)
-		=> Generate(CreateMainPageSnapshots(xamlVersions), allowDiagnostics: false);
+		=> Generate(CreateMainPageSnapshots(xamlVersions), pageSources: null, allowDiagnostics: false);
 
 	public XamlHotReloadGeneration GenerateAllowingDiagnostics(params string[] xamlVersions)
-		=> Generate(CreateMainPageSnapshots(xamlVersions), allowDiagnostics: true);
+		=> Generate(CreateMainPageSnapshots(xamlVersions), pageSources: null, allowDiagnostics: true);
+
+	public XamlHotReloadGeneration GenerateWithPageSources(params XamlHotReloadSourceVersion[] versions)
+	{
+		ArgumentNullException.ThrowIfNull(versions);
+
+		return Generate(
+			CreateMainPageSnapshots([.. versions.Select(static version => version.Xaml)]),
+			[.. versions.Select(static version => version.PageSource)],
+			allowDiagnostics: false);
+	}
 
 	public XamlHotReloadGeneration GenerateDocuments(
 		params IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions)
-		=> Generate(documentVersions, allowDiagnostics: false);
+		=> Generate(documentVersions, pageSources: null, allowDiagnostics: false);
 
 	public XamlHotReloadGeneration GenerateDocumentsAllowingDiagnostics(
 		params IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions)
-		=> Generate(documentVersions, allowDiagnostics: true);
+		=> Generate(documentVersions, pageSources: null, allowDiagnostics: true);
 
 	XamlHotReloadGeneration Generate(
 		IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions,
+		IReadOnlyList<string>? pageSources,
 		bool allowDiagnostics)
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
@@ -106,10 +117,13 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 			throw new InvalidOperationException("A hot reload harness can generate only one scenario.");
 		if (documentVersions.Length == 0)
 			throw new ArgumentException("At least one document version is required.", nameof(documentVersions));
+		if (pageSources is not null && pageSources.Count != documentVersions.Length)
+			throw new ArgumentException("Each document version must have a corresponding page source.", nameof(pageSources));
 
 		_generated = true;
 
-		var compilation = CreateCompilation(includeGeneratedSources: false);
+		var currentPageSource = pageSources?[0] ?? _pageSource;
+		var compilation = CreateCompilation(includeGeneratedSources: false, pageSource: currentPageSource);
 		var driverOptions = new GeneratorDriverOptions(
 			disabledOutputs: IncrementalGeneratorOutputKind.None,
 			trackIncrementalGeneratorSteps: true);
@@ -122,7 +136,16 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 
 		for (var index = 0; index < documentVersions.Length; index++)
 		{
-			var files = CreateAdditionalFiles(documentVersions[index]);
+			var pageSource = pageSources?[index] ?? _pageSource;
+			if (!string.Equals(pageSource, currentPageSource, StringComparison.Ordinal))
+			{
+				var pageTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath == "Page.cs");
+				compilation = compilation.ReplaceSyntaxTree(pageTree, ParseSource(pageSource, "Page.cs"));
+				currentPageSource = pageSource;
+			}
+			var files = RetainUnchangedAdditionalTexts(
+				previousFiles,
+				CreateAdditionalFiles(documentVersions[index]));
 			driver = UpdateAdditionalTexts(driver, previousFiles, files);
 			driver = driver
 				.WithUpdatedAnalyzerConfigOptions(SourceGeneratorDriver.CreateAnalyzerConfigOptionsProvider(
@@ -131,6 +154,7 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 
 			var result = driver.GetRunResult();
 			var generatedRoots = FindGeneratedRoots(result);
+			var codeBehindSources = FindCodeBehindSources(result);
 			var initializeComponentSource = generatedRoots
 				.FirstOrDefault(root => string.Equals(root.TypeName, PageClass, StringComparison.Ordinal))
 				?.InitializeComponentSource;
@@ -147,9 +171,11 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 					?.UpdateComponentSource,
 				result,
 				generatedRoots,
+				codeBehindSources,
 				files.ToImmutableDictionary(
 					static pair => pair.Key,
-					static pair => pair.Value.Document)));
+					static pair => pair.Value.Document),
+				pageSource));
 			previousFiles = files;
 		}
 
@@ -219,11 +245,12 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 
 	CSharpCompilation CreateCompilation(
 		bool includeGeneratedSources,
-		XamlHotReloadGeneratedVersion? generatedVersion = null)
+		XamlHotReloadGeneratedVersion? generatedVersion = null,
+		string? pageSource = null)
 	{
 		var compilation = (CSharpCompilation)SourceGeneratorDriver.CreateMauiCompilation(AssemblyName);
 		var trees = ImmutableArray.CreateBuilder<SyntaxTree>();
-		trees.Add(ParseSource(_pageSource, "Page.cs"));
+		trees.Add(ParseSource(pageSource ?? generatedVersion?.PageSource ?? _pageSource, "Page.cs"));
 
 		for (var index = 0; index < _additionalSources.Length; index++)
 			trees.Add(ParseSource(_additionalSources[index], $"Additional{index}.cs"));
@@ -232,6 +259,26 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 		{
 			ArgumentNullException.ThrowIfNull(generatedVersion);
 			var sourceCompilation = compilation.AddSyntaxTrees(trees);
+
+			foreach (var source in generatedVersion.CodeBehindSources)
+			{
+				var sourceTree = ParseSource(source.Source, source.HintName);
+				var typeName = FindGeneratedRootTypeName(source.Source);
+				if (typeName is null
+					|| !generatedVersion.GeneratedRoots.Any(root => string.Equals(root.TypeName, typeName, StringComparison.Ordinal)))
+				{
+					continue;
+				}
+
+				if (sourceCompilation.GetTypeByMetadataName(typeName) is { } existingType
+					&& existingType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().Any())
+				{
+					continue;
+				}
+
+				trees.Add(sourceTree);
+				sourceCompilation = sourceCompilation.AddSyntaxTrees(sourceTree);
+			}
 
 			foreach (var root in generatedVersion.GeneratedRoots)
 			{
@@ -293,6 +340,22 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 		}
 
 		return files.ToImmutable();
+	}
+
+	static ImmutableDictionary<string, XamlHotReloadAdditionalFile> RetainUnchangedAdditionalTexts(
+		ImmutableDictionary<string, XamlHotReloadAdditionalFile> previousFiles,
+		ImmutableDictionary<string, XamlHotReloadAdditionalFile> currentFiles)
+	{
+		foreach (var currentFile in currentFiles)
+		{
+			if (previousFiles.TryGetValue(currentFile.Key, out var previousFile)
+				&& previousFile.Document == currentFile.Value.Document)
+			{
+				currentFiles = currentFiles.SetItem(currentFile.Key, previousFile);
+			}
+		}
+
+		return currentFiles;
 	}
 
 	static GeneratorDriver UpdateAdditionalTexts(
@@ -357,6 +420,28 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				root.UpdateComponentSource))];
 	}
 
+	static ImmutableArray<XamlHotReloadGeneratedSource> FindCodeBehindSources(GeneratorDriverRunResult result)
+	{
+		var sources = ImmutableArray.CreateBuilder<XamlHotReloadGeneratedSource>();
+		foreach (var generatorResult in result.Results)
+		{
+			foreach (var source in generatorResult.GeneratedSources)
+			{
+				if (!source.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)
+					|| source.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+
+				sources.Add(new XamlHotReloadGeneratedSource(
+					source.HintName,
+					source.SourceText.ToString()));
+			}
+		}
+
+		return sources.ToImmutable();
+	}
+
 	static string? FindGeneratedRootTypeName(string source)
 	{
 		var root = CSharpSyntaxTree.ParseText(source).GetRoot();
@@ -417,6 +502,10 @@ internal sealed record XamlHotReloadDocument(
 	string? TargetFramework = "net11.0",
 	string? NoWarn = null);
 
+internal sealed record XamlHotReloadSourceVersion(
+	string Xaml,
+	string PageSource);
+
 internal sealed record XamlHotReloadGeneratedVersion(
 	string ScenarioIdentity,
 	int Index,
@@ -425,12 +514,16 @@ internal sealed record XamlHotReloadGeneratedVersion(
 	string? UpdateComponentSource,
 	GeneratorDriverRunResult GeneratorResult,
 	ImmutableArray<XamlHotReloadGeneratedRoot> GeneratedRoots,
-	ImmutableDictionary<string, XamlHotReloadDocument> Documents);
+	ImmutableArray<XamlHotReloadGeneratedSource> CodeBehindSources,
+	ImmutableDictionary<string, XamlHotReloadDocument> Documents,
+	string PageSource);
 
 internal sealed record XamlHotReloadGeneratedRoot(
 	string TypeName,
 	string? InitializeComponentSource,
 	string? UpdateComponentSource);
+
+internal sealed record XamlHotReloadGeneratedSource(string HintName, string Source);
 
 internal sealed record XamlHotReloadCompiledVersion(
 	XamlHotReloadGeneratedVersion GeneratedVersion,
@@ -500,11 +593,11 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 	public T CreateInstance<T>() where T : class =>
 		Assert.IsAssignableFrom<T>(CreateInstance());
 
-	public T ApplyUpdate<T>(int versionIndex) where T : class
+	public T ApplyUpdate<T>(int versionIndex, params string[] changedMethodNames) where T : class
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
 
-		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex);
+		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex, changedMethodNames);
 
 		_harness.ApplicationHost?.Dispatch(() => ApplyUpdate(nextVersion, semanticEdits));
 		if (_harness.ApplicationHost is null)
@@ -517,9 +610,14 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
 
-		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex);
+		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex, []);
 		ApplyMetadataUpdate(nextVersion, semanticEdits);
-		global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.UpdateApplication([_pageType!]);
+		var affectedTypes = semanticEdits.AffectedTypes
+			.Select(typeName => _assembly!.GetType(typeName))
+			.Where(static type => type is not null)
+			.Cast<Type>()
+			.ToArray();
+		global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.UpdateApplication(affectedTypes);
 
 		return Assert.IsAssignableFrom<T>(Instance);
 	}
@@ -580,7 +678,9 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 		}
 	}
 
-	(XamlHotReloadCompiledVersion NextVersion, XamlHotReloadSemanticEdits SemanticEdits) PrepareUpdate(int versionIndex)
+	(XamlHotReloadCompiledVersion NextVersion, XamlHotReloadSemanticEdits SemanticEdits) PrepareUpdate(
+		int versionIndex,
+		IReadOnlyList<string> changedMethodNames)
 	{
 		if (versionIndex != _versionIndex + 1)
 			throw new ArgumentOutOfRangeException(nameof(versionIndex), "Updates must be applied sequentially.");
@@ -590,7 +690,9 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			_compiledVersion!.Compilation,
 			nextVersion.Compilation,
 			_compiledVersion.GeneratedVersion,
-			nextVersion.GeneratedVersion);
+			nextVersion.GeneratedVersion,
+			_harness.PageClass,
+			changedMethodNames);
 		return (nextVersion, semanticEdits);
 	}
 
@@ -630,7 +732,9 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 		CSharpCompilation previousCompilation,
 		CSharpCompilation nextCompilation,
 		XamlHotReloadGeneratedVersion previousVersion,
-		XamlHotReloadGeneratedVersion nextVersion)
+		XamlHotReloadGeneratedVersion nextVersion,
+		string pageClass,
+		IReadOnlyList<string> changedMethodNames)
 	{
 		var edits = ImmutableArray.CreateBuilder<SemanticEdit>();
 		var insertedSymbols = ImmutableArray.CreateBuilder<ISymbol>();
@@ -672,6 +776,27 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			}
 
 			affectedTypes.Add(nextRoot.TypeName);
+		}
+
+		if (changedMethodNames.Count > 0)
+		{
+			var previousPageType = previousCompilation.GetTypeByMetadataName(pageClass);
+			var nextPageType = nextCompilation.GetTypeByMetadataName(pageClass);
+			Assert.NotNull(previousPageType);
+			Assert.NotNull(nextPageType);
+
+			foreach (var methodName in changedMethodNames)
+			{
+				var previousMethod = previousPageType!
+					.GetMembers(methodName)
+					.OfType<IMethodSymbol>()
+					.Single();
+				var nextMethod = nextPageType!
+					.GetMembers(methodName)
+					.OfType<IMethodSymbol>()
+					.Single();
+				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousMethod, nextMethod));
+			}
 		}
 
 		return new XamlHotReloadSemanticEdits(

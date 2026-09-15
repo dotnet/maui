@@ -44,9 +44,17 @@ public partial class TimePickerOptionsPage : ContentPage
 
 	public void SetFormatButton_Clicked(object sender, EventArgs e)
 	{
-		if (!string.IsNullOrEmpty(Format.Text))
+		if (!string.IsNullOrEmpty(FormatEntry.Text))
 		{
-			_viewModel.Format = Format.Text;
+			_viewModel.Format = FormatEntry.Text;
+		}
+	}
+
+	private void OnFontAutoScalingRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value && sender is RadioButton radioButton)
+		{
+			_viewModel.FontAutoScalingEnabled = radioButton.Content.ToString() == "True";
 		}
 	}
 
@@ -79,10 +87,15 @@ public partial class TimePickerOptionsPage : ContentPage
 
 	public void SetTimeButton_Clicked(object sender, EventArgs e)
 	{
-		if (TimeSpan.TryParse(Time.Text, out TimeSpan time))
+		if (TimeSpan.TryParse(TimeEntry.Text, out TimeSpan time))
 		{
 			_viewModel.Time = time;
 		}
+	}
+
+	private void ClearTimeButton_Clicked(object sender, EventArgs e)
+	{
+		_viewModel.Time = null;
 	}
 
 	private void OnTextColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)

@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View.Accessibility;
 using global::Android.Text;
 using global::Android.Text.Method;
 using global::Android.Views.InputMethods;
@@ -8,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
 
@@ -15,6 +18,75 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Fact(DisplayName = "Numeric keyboard accepts Polish decimal separator")]
+		public async Task NumericKeyboardAcceptsPolishDecimalSeparator()
+		{
+			var entry = new EntryStub
+			{
+				IsPassword = false,
+				Keyboard = Keyboard.Numeric
+			};
+
+			var values = await GetValueAsync(entry, handler =>
+			{
+				var previousCulture = CultureInfo.CurrentCulture;
+
+				try
+				{
+					CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("pl-PL");
+					handler.PlatformView.SetInputType(entry);
+
+					using var editorInfo = new EditorInfo();
+					var inputConnection = handler.PlatformView.OnCreateInputConnection(editorInfo);
+
+					Assert.NotNull(inputConnection);
+					Assert.True(inputConnection.CommitText(new Java.Lang.String("1,5"), 1));
+
+					return new
+					{
+						handler.PlatformView.Text,
+						IsLocalizedDigitsKeyListener = handler.PlatformView.KeyListener is LocalizedDigitsKeyListener,
+						handler.PlatformView.InputType
+					};
+				}
+				finally
+				{
+					CultureInfo.CurrentCulture = previousCulture;
+				}
+			});
+
+			Assert.Equal("1,5", values.Text);
+			Assert.True(values.IsLocalizedDigitsKeyListener);
+			Assert.True(values.InputType.HasFlag(InputTypes.ClassNumber));
+			Assert.True(values.InputType.HasFlag(InputTypes.NumberFlagDecimal));
+			Assert.True(values.InputType.HasFlag(InputTypes.NumberFlagSigned));
+			Assert.False(values.InputType.HasFlag(InputTypes.NumberVariationPassword));
+		}
+
+		[Fact(DisplayName = "Semantic description initializes accessibility content description")]
+		public async Task SemanticDescriptionInitializesAccessibilityContentDescription()
+		{
+			const string description = "Entry description";
+			const string text = "Entry text";
+			var entry = new EntryStub { Text = text };
+			entry.Semantics.Description = description;
+
+			var values = await GetValueAsync(entry, handler =>
+			{
+				using var info = AccessibilityNodeInfoCompat.Obtain();
+				handler.PlatformView.UpdateSemanticNodeInfo(entry, info);
+
+				return new
+				{
+					info.ContentDescription,
+					info.Text
+				};
+			});
+
+			Assert.Equal(description, values.ContentDescription);
+			Assert.Equal($"{description}, {text}", values.Text);
+		}
+
 		[Theory(DisplayName = "Validates Keyboard updates correctly using IsPassword")]
 		[InlineData(nameof(Keyboard.Text), false)]
 		[InlineData(nameof(Keyboard.Numeric), true)]

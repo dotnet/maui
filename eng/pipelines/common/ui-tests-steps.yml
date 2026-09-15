@@ -11,7 +11,7 @@ parameters:
   runtimeVariant: "CoreCLR"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler test configuration
-  testFilter: ''
+  testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true

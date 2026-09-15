@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
@@ -31,6 +32,87 @@ public class Maui37888Tests
 				VerifyMergedDictionaryUpdate();
 			else
 				VerifyInlineApplicationResourceUpdate();
+		}
+		finally
+		{
+			Application.Current = previousApplication;
+			AppContext.SetSwitch(IncrementalHotReloadSwitch, previousSwitch);
+			ClearMainThreadImplementation();
+		}
+	}
+
+	[MetadataUpdateFact]
+	public void ClasslessSourceDictionaryUpdate_ReachesApplicationConsumers()
+	{
+		const string rootClass = "TestMaui37888.App";
+		const string codeBehind = """
+			namespace TestMaui37888;
+
+			public partial class App
+			{
+				public App() => InitializeComponent();
+			}
+			""";
+		const string appXaml = """
+			<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestMaui37888.App">
+			  <Application.Resources>
+			    <ResourceDictionary>
+			      <ResourceDictionary.MergedDictionaries>
+			        <ResourceDictionary Source="AppResources.xaml" />
+			      </ResourceDictionary.MergedDictionaries>
+			    </ResourceDictionary>
+			  </Application.Resources>
+			</Application>
+			""";
+
+		static string ResourcesXaml(string value) => $$"""
+			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+			  <x:String x:Key="{{ResourceKey}}">{{value}}</x:String>
+			</ResourceDictionary>
+			""";
+
+		static IReadOnlyDictionary<string, XamlHotReloadDocument> Snapshot(string value) =>
+			new Dictionary<string, XamlHotReloadDocument>(StringComparer.Ordinal)
+			{
+				["MainPage.xaml"] = new XamlHotReloadDocument(
+					appXaml,
+					ManifestResourceName: "TestMaui37888.App.xaml"),
+				["AppResources.xaml"] = new XamlHotReloadDocument(
+					ResourcesXaml(value),
+					ManifestResourceName: "TestMaui37888.AppResources.xaml"),
+			};
+
+		AppContext.TryGetSwitch(IncrementalHotReloadSwitch, out var previousSwitch);
+		var previousApplication = Application.Current;
+		AppContext.SetSwitch(IncrementalHotReloadSwitch, true);
+		SetMainThreadImplementation();
+
+		try
+		{
+			using var harness = new XamlHotReloadTestHarness(
+				nameof(ClasslessSourceDictionaryUpdate_ReachesApplicationConsumers),
+				rootClass,
+				codeBehind);
+			var generation = harness.GenerateDocuments(
+				Snapshot("App resource V0"),
+				Snapshot("App resource V1"));
+
+			Assert.Contains("SetAndCreateSource<global::__XamlGeneratedCode__.__Type", generation[0].InitializeComponentSource, StringComparison.Ordinal);
+			var dictionaryUpdate = Assert.Single(
+				generation[1].GeneratedRoots,
+				static root => root.TypeName.StartsWith("__XamlGeneratedCode__.__Type", StringComparison.Ordinal));
+			Assert.Contains("App resource V1", dictionaryUpdate.UpdateComponentSource, StringComparison.Ordinal);
+			Assert.Contains($"this[\"{ResourceKey}\"]", dictionaryUpdate.UpdateComponentSource, StringComparison.Ordinal);
+
+			harness.RunLive(generation, live =>
+			{
+				var application = live.GetInstance<Application>();
+				Application.Current = application;
+				VerifyConsumers(application, () => live.ApplyUpdateThroughRuntimeHandler<Application>(1));
+			});
 		}
 		finally
 		{

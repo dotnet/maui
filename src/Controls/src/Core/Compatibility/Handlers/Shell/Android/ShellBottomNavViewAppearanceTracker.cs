@@ -100,13 +100,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (lastColor != newColor || colorDrawable == null)
 				{
 					// taken from android source code
-					var backgroundColor = new MaterialShapeDrawable();
-					backgroundColor.FillColor = ColorStateList.ValueOf(newColor);
+					var backgroundColor = new MaterialShapeDrawable
+					{
+						FillColor = ColorStateList.ValueOf(newColor)
+					};
 					backgroundColor.InitializeElevationOverlay(bottomView.Context);
-
-#pragma warning disable CS0618 // Obsolete
-					ViewCompat.SetBackground(bottomView, backgroundColor);
-#pragma warning restore CS0618 // Obsolete
+					bottomView.SetBackground(backgroundColor);
 				}
 			}
 			else
@@ -123,10 +122,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
-
-#pragma warning disable CS0618 // Obsolete
-				ViewCompat.SetBackground(bottomView, new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
-#pragma warning restore CS0618 // Obsolete
+				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
 			}
 		}
 

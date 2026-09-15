@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
+		WeakValuesChangedProxy _mergedInstanceChangedProxy;
+		EventHandler<ResourcesChangedEventArgs> _mergedInstanceChanged;
 		Uri _source;
 
 		// This action is instantiated in a module initializer in ResourceDictionaryHotReloadHelper
@@ -102,7 +104,38 @@ namespace Microsoft.Maui.Controls
 		{
 			_source = source;
 			_mergedInstance = sourceInstance;
+			_mergedInstanceChangedProxy ??= new WeakValuesChangedProxy();
+			_mergedInstanceChanged ??= Item_ValuesChanged;
+			_mergedInstanceChangedProxy.Subscribe(sourceInstance, _mergedInstanceChanged);
 			OnKeysChanged(_mergedInstance.MergedResourcesKeys);
+		}
+
+		sealed class WeakValuesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var previousSource))
+					previousSource.ValuesChanged -= OnValuesChanged;
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+					source.ValuesChanged -= OnValuesChanged;
+
+				base.Unsubscribe();
+			}
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;

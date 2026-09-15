@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
@@ -984,6 +985,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateSearchVisibility(_searchController);
 			else if (e.PropertyName == SearchHandler.IsSearchEnabledProperty.PropertyName)
 				UpdateSearchIsEnabled(_searchController);
+			else if (e.PropertyName == SearchHandler.ShowsResultsProperty.PropertyName)
+				RecreateSearchController();
 			else if (e.Is(SearchHandler.AutomationIdProperty))
 			{
 				UpdateAutomationId();
@@ -1000,6 +1003,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearPlaceholderIcon, UISearchBarIcon.Bookmark);
 			}
+		}
+
+		void RecreateSearchController()
+		{
+			if (_searchHandler is null || NavigationItem is null)
+				return;
+
+			var query = _searchController?.SearchBar.Text;
+			var oldSearchController = _searchController;
+
+			DettachSearchController();
+			DisposeResultsRenderer();
+			oldSearchController?.Dispose();
+
+			AttachSearchController();
+
+			if (_searchController is not null && query is not null)
+				_searchController.SearchBar.Text = query;
+		}
+
+		void DisposeResultsRenderer()
+		{
+			if (_resultsRenderer is null)
+				return;
+
+			_resultsRenderer.ItemSelected -= OnSearchItemSelected;
+			_resultsRenderer.Dispose();
+			_resultsRenderer = null;
 		}
 
 		void UpdateAutomationId()
@@ -1100,6 +1131,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController = new UISearchController(_resultsRenderer?.ViewController);
+
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{
@@ -1195,12 +1227,63 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnSearchItemSelected(object? sender, object e)
 		{
 			if (_searchController is null)
-			{
 				return;
+
+			var searchController = _searchController;
+			var handlerController = SearchHandler as ISearchHandlerController;
+
+			// Dismiss the search controller first, then navigate after it is fully gone.
+			// UIKit rejects PushViewController calls while a modal presentation is occurring
+			// (including an active UISearchController). Using DidDismissSearchController ensures
+			// the push is not attempted until the dismissal animation is complete.
+			if (searchController.Active)
+			{
+				var previousDelegate = searchController.Delegate;
+				searchController.Delegate = new SearchItemSelectedDelegate(() =>
+				{
+					handlerController?.ItemSelected(e);
+				}, previousDelegate);
+				searchController.Active = false;
+			}
+			else
+			{
+				// Already dismissed — fire ItemSelected directly.
+				handlerController?.ItemSelected(e);
+			}
+		}
+
+		// One-shot UISearchControllerDelegate that fires ItemSelected after dismissal completes,
+		// then restores whatever delegate (if any) was previously installed on the search
+		// controller, so this temporary hookup doesn't permanently clobber other delegate behavior.
+		sealed class SearchItemSelectedDelegate : UISearchControllerDelegate
+		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The callback is retained only until the one-shot delegate handles search dismissal.")]
+			readonly Action _onDismissed;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The previous delegate is retained only until it is restored after search dismissal.")]
+			readonly IUISearchControllerDelegate? _previousDelegate;
+			bool _fired;
+
+			internal SearchItemSelectedDelegate(Action onDismissed, IUISearchControllerDelegate? previousDelegate)
+			{
+				_onDismissed = onDismissed;
+				_previousDelegate = previousDelegate;
 			}
 
-			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
-			_searchController.Active = false;
+			public override void DidDismissSearchController(UISearchController searchController)
+			{
+				if (_fired)
+				{
+					return;
+				}
+				_fired = true;
+
+				if (searchController.Delegate == this)
+				{
+					searchController.Delegate = _previousDelegate!;
+				}
+
+				_onDismissed();
+			}
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)
