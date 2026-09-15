@@ -16,7 +16,7 @@ public class Issue37427 : _IssuesUITest
 	public override string Issue => "CollectionView item content renders with zero width on iOS";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void DynamicallyAddedContentRendersAfterCellRealization()
 	{
 		var collection = App.WaitForElement("37427CollectionView").GetRect();
