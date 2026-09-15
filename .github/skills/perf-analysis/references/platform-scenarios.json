@@ -13,10 +13,10 @@
         "Android"
       ],
       "runner": "dedicated-device-or-emulator",
-      "automationStatus": "manual-device-ci-ready",
+      "automationStatus": "manual-local-ready",
       "resultScenario": "collectionview-keepitemsinview-update",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
         "platforms": [
           "android"
         ]
@@ -51,10 +51,10 @@
         "MacCatalyst"
       ],
       "runner": "dedicated-simulator-or-device",
-      "automationStatus": "manual-device-ci-ready",
+      "automationStatus": "manual-local-ready",
       "resultScenario": "collectionview-keepitemsinview-update",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
         "platforms": [
           "ios",
           "maccatalyst"
@@ -92,10 +92,10 @@
         "MacCatalyst"
       ],
       "runner": "dedicated-simulator-or-device",
-      "automationStatus": "manual-device-ci-ready",
+      "automationStatus": "manual-local-ready",
       "resultScenario": "collectionview-grouped-scrollto-makevisible",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
         "platforms": [
           "ios",
           "maccatalyst"
@@ -140,10 +140,10 @@
         "MacCatalyst"
       ],
       "runner": "platform-matched-device",
-      "automationStatus": "manual-device-ci-ready",
+      "automationStatus": "manual-local-ready",
       "resultScenario": "carouselview-swipe-disabled",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
         "platforms": [
           "android",
           "ios",
@@ -177,11 +177,11 @@
       "platforms": [
         "Windows"
       ],
-      "runner": "helix-windows-vm",
-      "automationStatus": "manual-device-ci-ready",
+      "runner": "dedicated-windows-host",
+      "automationStatus": "manual-local-ready",
       "resultScenario": "carouselview-wheel-snap-windows",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-WindowsDevicePerformanceComparison.ps1",
         "platforms": [
           "windows"
         ]
@@ -246,11 +246,11 @@
         "Android"
       ],
       "runner": "platform-matched-device",
-      "automationStatus": "manual-device-ci-ready",
+      "automationStatus": "manual-local-ready",
       "coverageMode": "sampled",
       "resultScenario": "handler-property-update-batch",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
         "platforms": [
           "android"
         ]
@@ -282,11 +282,11 @@
         "Windows"
       ],
       "runner": "platform-matched-device",
-      "automationStatus": "manual-device-ci-ready",
+      "automationStatus": "manual-local-ready",
       "coverageMode": "sampled",
       "resultScenario": "handler-property-update-batch",
-      "pipeline": {
-        "path": "eng/pipelines/ci-device-performance.yml",
+      "localRun": {
+        "driver": "eng/scripts/Run-WindowsDevicePerformanceComparison.ps1",
         "platforms": [
           "windows"
         ]

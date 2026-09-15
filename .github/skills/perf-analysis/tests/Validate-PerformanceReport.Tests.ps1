@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "DevicePerformance.Fixtures.ps1")
 $skillRoot = Split-Path -Parent $PSScriptRoot
 $validator = [IO.Path]::Combine($skillRoot, "scripts", "Validate-PerformanceReport.ps1")
 $policy = [IO.Path]::Combine($skillRoot, "references", "recommendation-policy.json")
@@ -24,10 +25,11 @@ function New-Selection(
 ) {
     $deviceScenarios = @()
     if ($deviceStatus) {
-        $deviceScenarios = @([PSCustomObject]@{
-            id = "scenario"
-            automationStatus = $deviceStatus
-        })
+        $deviceScenarios = if ($deviceStatus -eq "manual-local-ready") {
+            (New-DeviceSelectionFixture).deviceScenarios
+        } else {
+            @([PSCustomObject]@{ id = "unsupported"; automationStatus = $deviceStatus })
+        }
     }
 
     return [PSCustomObject]@{
@@ -246,28 +248,28 @@ try {
     $partialNoConcerns = Invoke-Validation `
         "partial-no-concerns" `
         (New-Decision "not-applicable" "no_concerns" "no-blocker-incomplete") `
-        (New-Selection $false "manual-device-ci-ready") `
+        (New-Selection $false "manual-local-ready") `
         (New-Summary "inconclusive" $false $false)
     Assert-Equal 2 $partialNoConcerns.ExitCode "Partial coverage must not report no concerns"
 
     $confirmedRegression = Invoke-Validation `
         "confirmed-regression" `
         (New-Decision "not-applicable" "optimize_before_merge" "blocker" "accidental") `
-        (New-Selection $false "manual-device-ci-ready") `
+        (New-Selection $false "manual-local-ready") `
         (New-Summary "alloc-regression" $true $false $true)
     Assert-Equal 0 $confirmedRegression.ExitCode "Confirmed regression should override coverage gap"
 
     $confirmedRegressionDeferred = Invoke-Validation `
         "confirmed-regression-deferred" `
         (New-Decision "unclear" "run_more_measurements" "blocker" "accidental") `
-        (New-Selection $false "manual-device-ci-ready") `
+        (New-Selection $false "manual-local-ready") `
         (New-Summary "alloc-regression" $true $false $true)
     Assert-Equal 2 $confirmedRegressionDeferred.ExitCode "Confirmed accidental regression must not be deferred"
 
     $supportedMissing = Invoke-Validation `
         "supported-missing" `
         (New-Decision "unclear" "run_more_measurements" "device-required") `
-        (New-Selection $false "manual-device-ci-ready") `
+        (New-Selection $false "manual-local-ready") `
         (New-Summary "inconclusive" $false $false)
     Assert-Equal 0 $supportedMissing.ExitCode "Supported missing evidence should request measurement"
 
@@ -285,33 +287,8 @@ try {
         (New-Summary "alloc-regression" $true $false $true)
     Assert-Equal 2 $unsupportedValidatedWorkaround.ExitCode "Unsupported validated workaround decisions must fail"
 
-    $deviceOnlySelection = [PSCustomObject]@{
-        coverage = [PSCustomObject]@{
-            productFileCount = 1
-            managedMeasuredFileCount = 0
-            managedSampledFileCount = 0
-            deviceRequiredFileCount = 1
-            staticOnlyFileCount = 0
-            canClaimWholePrClean = $false
-        }
-        deviceScenarios = @([PSCustomObject]@{
-            id = "scenario"
-            resultScenario = "scenario-result"
-            automationStatus = "manual-device-ci-ready"
-        })
-        sampledProductFiles = @()
-        staticOnlyProductFiles = @()
-    }
-    $completeDeviceEvidence = [PSCustomObject]@{
-        sealed = $true
-        deviceEvidenceComplete = $true
-        correctnessPassed = $true
-        allAffectedPlatformsCovered = $true
-        acceptedMeasurements = @([PSCustomObject]@{
-            resultScenario = "scenario-result"
-            verdict = "time-regression-advisory"
-        })
-    }
+    $deviceOnlySelection = New-DeviceSelectionFixture
+    $completeDeviceEvidence = New-DeviceValidationFixture $deviceOnlySelection "time-regression-advisory"
     $deviceAdvisoryDiscussion = Invoke-Validation `
         "device-advisory-discussion" `
         (New-Decision "unclear" "needs_human_discussion" "advisory" "deliberate") `
@@ -349,16 +326,7 @@ try {
         $completeDeviceEvidence
     Assert-Equal 2 $deviceAdvisoryNoConcerns.ExitCode "Device advisory evidence must block no_concerns"
 
-    $cleanDeviceEvidence = [PSCustomObject]@{
-        sealed = $true
-        deviceEvidenceComplete = $true
-        correctnessPassed = $true
-        allAffectedPlatformsCovered = $true
-        acceptedMeasurements = @([PSCustomObject]@{
-            resultScenario = "scenario-result"
-            verdict = "neutral"
-        })
-    }
+    $cleanDeviceEvidence = New-DeviceValidationFixture $deviceOnlySelection
     $deviceOnlyNoConcerns = Invoke-Validation `
         "device-only-no-concerns" `
         (New-Decision "not-applicable" "no_concerns" "clean") `
@@ -366,6 +334,17 @@ try {
         (New-Summary "inconclusive" $false $false) `
         $cleanDeviceEvidence
     Assert-Equal 0 $deviceOnlyNoConcerns.ExitCode "Clean device-only evidence should allow no_concerns"
+
+    $baselineContext = Invoke-Validation `
+        "baseline-context" `
+        (New-Decision "unclear" "needs_human_discussion" "advisory") `
+        $deviceOnlySelection $null (New-DeviceValidationFixture $deviceOnlySelection "neutral" $false)
+    Assert-Equal 0 $baselineContext.ExitCode "Valid HEAD with a failed baseline is advisory context"
+    $baselineClearance = Invoke-Validation `
+        "baseline-false-clearance" `
+        (New-Decision "not-applicable" "no_concerns" "clean") `
+        $deviceOnlySelection $null (New-DeviceValidationFixture $deviceOnlySelection "neutral" $false)
+    Assert-Equal 2 $baselineClearance.ExitCode "Failed baseline context cannot become equivalent-behavior clearance"
 
     $staticOnlyConcise = Invoke-Validation `
         "static-only-concise" `

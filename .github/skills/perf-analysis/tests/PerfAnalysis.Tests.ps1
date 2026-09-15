@@ -277,6 +277,15 @@ try {
     $skillSource = Get-Content (Join-Path $skillRoot "SKILL.md") -Raw
     Assert-True ($skillSource -match '(?m)^name: perf-analysis\r?$') "Reusable skill discovery metadata missing"
     Assert-True ($skillSource -notmatch 'post_perf_report|run_device_performance|MAUI_DEVICE_PERFORMANCE_PIPELINE_ID') "Skill must not depend on removed workflow actions"
+    Assert-True ($skillSource -match 'Manual invocation in Copilot') "Manual Copilot discoverability missing"
+    Assert-True ($skillSource -match 'check-pr-performance') "Manual device prerequisite missing"
+    Assert-True ($skillSource -notmatch 'manual-device-ci-ready|\.pipeline|ci-device-performance\.yml') "Skill must not retain the removed native pipeline contract"
+    foreach ($scriptFile in Get-ChildItem -LiteralPath (Join-Path $skillRoot "scripts") -Filter "*.ps1" -File) {
+        $source = Get-Content -LiteralPath $scriptFile.FullName -Raw
+        Assert-True ($source -notmatch '(?im)\bgit\s+push\b|\bgh\s+(pr|issue)\s+(create|edit|comment|review|merge|close)\b|\bgh\s+workflow\s+run\b|\baz\s+pipelines\s+run\b') "Remote write/dispatch command found in $($scriptFile.Name)"
+        Assert-True ($source -notmatch '(?im)\bInvoke-(RestMethod|WebRequest)\b[^\r\n]*-Method\s+(Post|Put|Patch|Delete)\b') "Remote HTTP write found in $($scriptFile.Name)"
+        Assert-True ($source -notmatch 'BuildManifestPath|azdoBuildId|ci-device-performance\.yml|manual-device-ci-ready') "Stale device contract in $($scriptFile.Name)"
+    }
 
     $layoutExtensions = Invoke-SelectorFixture "layout-extensions" @(
         "src/Core/src/Layouts/LayoutExtensions.cs"
@@ -311,19 +320,19 @@ try {
     Assert-True ($scenarioIds -contains "collectionview-items-update-android") "Android CollectionView scenario missing"
     Assert-True ($scenarioIds -contains "collectionview-scroll-ios") "iOS CollectionView scenario missing"
     $androidScenario = $platform.deviceScenarios | Where-Object { $_.id -eq "collectionview-items-update-android" }
-    Assert-Equal "manual-device-ci-ready" $androidScenario.automationStatus "Android pipeline status"
-    Assert-Equal "eng/pipelines/ci-device-performance.yml" $androidScenario.pipeline.path "Android pipeline path"
-    Assert-Equal "android" $androidScenario.pipeline.platforms[0] "Android canonical pipeline platform"
+    Assert-Equal "manual-local-ready" $androidScenario.automationStatus "Android local status"
+    Assert-Equal "eng/scripts/Run-DevicePerformanceComparison.ps1" $androidScenario.localRun.driver "Android local driver"
+    Assert-Equal "android" $androidScenario.localRun.platforms[0] "Android canonical local platform"
     $iosScenario = $platform.deviceScenarios | Where-Object { $_.id -eq "collectionview-scroll-ios" }
-    Assert-Equal 2 (@($iosScenario.pipeline.platforms).Count) "Apple pipeline platform count"
-    Assert-Equal "ios" $iosScenario.pipeline.platforms[0] "iOS canonical pipeline platform"
-    Assert-Equal "maccatalyst" $iosScenario.pipeline.platforms[1] "MacCatalyst canonical pipeline platform"
+    Assert-Equal 2 (@($iosScenario.localRun.platforms).Count) "Apple local platform count"
+    Assert-Equal "ios" $iosScenario.localRun.platforms[0] "iOS canonical local platform"
+    Assert-Equal "maccatalyst" $iosScenario.localRun.platforms[1] "MacCatalyst canonical local platform"
 
     $uncoveredItemsViewLayout = Invoke-SelectorFixture "items-view-layout" @(
         "src/Controls/src/Core/Handlers/Items/iOS/ItemsViewLayout.cs"
     )
     Assert-Equal "collectionview-items-update-ios" $uncoveredItemsViewLayout.deviceScenarios[0].id "ItemsViewLayout should use its dedicated update scenario"
-    Assert-Equal "manual-device-ci-ready" $uncoveredItemsViewLayout.deviceScenarios[0].automationStatus "ItemsViewLayout update scenario status"
+    Assert-Equal "manual-local-ready" $uncoveredItemsViewLayout.deviceScenarios[0].automationStatus "ItemsViewLayout update scenario status"
     Assert-Equal "collectionview-keepitemsinview-update" $uncoveredItemsViewLayout.deviceScenarios[0].resultScenario "ItemsViewLayout result scenario"
 
     $windowsPlatform = Invoke-SelectorFixture "windows-platform" @(
@@ -331,7 +340,7 @@ try {
     )
     $windowsScenario = $windowsPlatform.deviceScenarios[0]
     Assert-Equal "required-not-yet-automated" $windowsScenario.automationStatus "Windows scenario remains unsupported"
-    Assert-True ($null -eq $windowsScenario.pipeline) "Unsupported scenarios must not expose a pipeline handoff"
+    Assert-True ($null -eq $windowsScenario.localRun) "Unsupported scenarios must not expose a local handoff"
 
     $windowsCarousel = Invoke-SelectorFixture "windows-carousel" @(
         "src/Controls/src/Core/Handlers/Items/CarouselViewHandler.Windows.cs",
@@ -339,8 +348,9 @@ try {
     )
     Assert-Equal 1 @($windowsCarousel.deviceScenarios).Count "Windows CarouselView should select one dedicated scenario"
     Assert-Equal "carouselview-wheel-snap-windows" $windowsCarousel.deviceScenarios[0].id "Windows CarouselView scenario"
-    Assert-Equal "manual-device-ci-ready" $windowsCarousel.deviceScenarios[0].automationStatus "Windows CarouselView automation status"
-    Assert-Equal "windows" $windowsCarousel.deviceScenarios[0].pipeline.platforms[0] "Windows pipeline platform"
+    Assert-Equal "manual-local-ready" $windowsCarousel.deviceScenarios[0].automationStatus "Windows CarouselView automation status"
+    Assert-Equal "windows" $windowsCarousel.deviceScenarios[0].localRun.platforms[0] "Windows local platform"
+    Assert-Equal "eng/scripts/Run-WindowsDevicePerformanceComparison.ps1" $windowsCarousel.deviceScenarios[0].localRun.driver "Windows local driver"
 
     $carouselPlatform = Invoke-SelectorFixture "carousel-platform" @(
         "src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs",
@@ -351,8 +361,8 @@ try {
     $carouselScenarioIds = @($carouselPlatform.deviceScenarios | ForEach-Object { $_.id })
     Assert-Equal 1 $carouselScenarioIds.Count "CarouselView should select only its dedicated scenario"
     Assert-Equal "carouselview-swipe-disabled" $carouselScenarioIds[0] "CarouselView scenario selection"
-    Assert-Equal "manual-device-ci-ready" $carouselPlatform.deviceScenarios[0].automationStatus "CarouselView pipeline status"
-    Assert-Equal 3 @($carouselPlatform.deviceScenarios[0].pipeline.platforms).Count "CarouselView platform count"
+    Assert-Equal "manual-local-ready" $carouselPlatform.deviceScenarios[0].automationStatus "CarouselView local status"
+    Assert-Equal 3 @($carouselPlatform.deviceScenarios[0].localRun.platforms).Count "CarouselView platform count"
     Assert-Equal "carouselview-swipe-disabled" $carouselPlatform.deviceScenarios[0].resultScenario "CarouselView result scenario"
     Assert-Equal 0 $carouselPlatform.coverage.staticOnlyFileCount "PublicAPI files must not create performance coverage gaps"
     Assert-Equal 3 $carouselPlatform.coverage.deviceRequiredFileCount "CarouselView device file count"
@@ -379,7 +389,7 @@ try {
         "src/Core/src/Handlers/Label/LabelHandler.Android.cs"
     )
     Assert-Equal "handler-property-update-android" $handlerPropertyUpdate.deviceScenarios[0].id "Common Android handler family scenario"
-    Assert-Equal "manual-device-ci-ready" $handlerPropertyUpdate.deviceScenarios[0].automationStatus "Common handler scenario automation"
+    Assert-Equal "manual-local-ready" $handlerPropertyUpdate.deviceScenarios[0].automationStatus "Common handler scenario automation"
     Assert-Equal "static-only" $handlerPropertyUpdate.coverage.status "Sampled device family must not claim direct coverage"
 
     $controlHandler = Invoke-SelectorFixture "control-handler" @(

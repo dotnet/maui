@@ -30,6 +30,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "DevicePerformance.Local.ps1")
 
 function Get-PropertyValue($object, [string]$name, $defaultValue = $null) {
     if ($null -eq $object) {
@@ -81,11 +82,11 @@ $policy = Get-Content $PolicyPath -Raw | ConvertFrom-Json
 $baseline = Get-Content $DecisionBaselinePath -Raw | ConvertFrom-Json
 $narrative = Get-Content $NarrativePath -Raw | ConvertFrom-Json
 $summary = Read-OptionalJson $SummaryPath
-$deviceValidation = Read-OptionalJson $DeviceValidationPath
-$hasEmpiricalEvidence = $null -ne $summary -or (
-    $null -ne $deviceValidation -and
-    [bool](Get-PropertyValue $deviceValidation "sealed" $false)
-)
+$deviceValidation = if ($DeviceValidationPath) {
+    Get-Content -LiteralPath $DeviceValidationPath -Raw -ErrorAction Stop | ConvertFrom-Json
+} else { $null }
+$deviceState = Get-LocalDeviceEvidenceState $selection $deviceValidation
+$hasEmpiricalEvidence = $null -ne $summary -or $deviceState.hasEvidence
 $fullProfile = if ($Profile -eq "Auto") { $hasEmpiricalEvidence } else { $Profile -eq "Full" }
 
 $staticSeverity = [string](Get-PropertyValue $narrative "staticFindingSeverity" "none")
@@ -241,10 +242,27 @@ else {
 }
 
 $deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
-if ($deviceScenarios.Count -gt 0 -and (
-    $null -eq $deviceValidation -or
-    -not [bool](Get-PropertyValue $deviceValidation "deviceEvidenceComplete" $false)
-)) {
+if ($deviceState.hasEvidence) {
+    $lines.Add("")
+    $lines.Add("### Local device evidence")
+    $lines.Add("")
+    $lines.Add("| Scenario | Platform | Base median (ms) | HEAD median (ms) | Timing | HEAD correctness | Baseline correctness |")
+    $lines.Add("|---|---|---:|---:|---|---|---|")
+    foreach ($measurement in @($deviceValidation.acceptedMeasurements)) {
+        $baseMedian = ([double]$measurement.base.Median).ToString("G", [Globalization.CultureInfo]::InvariantCulture)
+        $headMedian = ([double]$measurement.head.Median).ToString("G", [Globalization.CultureInfo]::InvariantCulture)
+        $baseCorrectness = if ($measurement.baseCorrectnessPassed) { "passed" } else { "failed (context)" }
+        $lines.Add("| ``$($measurement.resultScenario)`` | $($measurement.platform) | $baseMedian | $headMedian | $($measurement.verdict) | passed | $baseCorrectness |")
+    }
+    foreach ($measurement in @($deviceValidation.acceptedMeasurements)) {
+        $evidencePath = [Net.WebUtility]::HtmlEncode([string]$measurement.summaryPath)
+        $lines.Add("")
+        $lines.Add("Local evidence: <code>$evidencePath</code>; request ``$($measurement.requestKey)``.")
+        $lines.Add("")
+    }
+    $lines.Add("Native timing is advisory. A failed baseline is correctness context, not equivalent-behavior performance clearance. Accessibility: ``$($deviceValidation.accessibilityStatus)``.")
+}
+if ($deviceScenarios.Count -gt 0 -and -not $deviceState.complete) {
     $lines.Add("")
     $lines.Add("> Device measurement required: the supplied evidence does not cover the changed native handler path, so the whole PR cannot receive a clean performance verdict.")
     foreach ($scenario in $deviceScenarios) {
@@ -253,6 +271,19 @@ if ($deviceScenarios.Count -gt 0 -and (
         $lines.Add("- ``$([string]$scenario.id)`` on $(@($scenario.platforms) -join ", "): $coverageMode coverage; ``$([string]$scenario.automationStatus)``.")
         $lines.Add("  Operation: $(@($scenario.operations) -join " ")")
         $lines.Add("  Correctness: $([string](Get-PropertyValue $scenario "rationale" "Scenario-specific correctness validation is required."))")
+        if ($scenario.automationStatus -eq "manual-local-ready") {
+            $lines.Add("  Manual path: ``check-pr-performance`` with ``$($scenario.localRun.driver)``; review a local request before execution.")
+        }
+    }
+}
+if ($null -ne $deviceValidation) {
+    foreach ($validationError in @($deviceValidation.errors)) {
+        $lines.Add("")
+        $lines.Add("Device evidence error: $(ConvertTo-SafeNarrativeText $validationError)")
+    }
+    foreach ($missing in @($deviceValidation.missingMeasurements)) {
+        $lines.Add("")
+        $lines.Add("Missing local measurement: ``$(@($missing.scenarioIds) -join ',')`` / ``$($missing.platform)``. $(ConvertTo-SafeNarrativeText $missing.reason)")
     }
 }
 

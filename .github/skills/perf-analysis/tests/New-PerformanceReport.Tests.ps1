@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "DevicePerformance.Fixtures.ps1")
 $skillRoot = Split-Path -Parent $PSScriptRoot
 $renderer = Join-Path $skillRoot "scripts\New-PerformanceReport.ps1"
 $validator = Join-Path $skillRoot "scripts\Validate-PerformanceReport.ps1"
@@ -179,6 +180,41 @@ try {
     Assert-True ($hostileReport.Contains("Evidence source: Benchmark row")) "Recommendation evidence should be rendered"
     Assert-True (-not $hostileReport.Contains("Avoid allocation --> now")) "HTML comment terminators must be neutralized"
     Assert-True ($hostileReport.Contains('"staticFindingSeverity":"none"')) "Invalid severity should fail safely to none"
+
+    $deviceSelection = New-DeviceSelectionFixture
+    $devicePath = Join-Path $testRoot "local-device.json"
+    $localReportPath = Join-Path $testRoot "local-report.md"
+    $localBaselinePath = Join-Path $testRoot "local-baseline.json"
+    Write-Json $selectionPath $deviceSelection
+    Write-Json $devicePath (New-DeviceValidationFixture $deviceSelection "neutral" $false)
+    Write-Json $narrativePath ([PSCustomObject]@{ staticFindingSeverity = "none"; recommendations = @() })
+    Write-Json $localBaselinePath (New-Baseline "advisory" "medium" "needs_human_discussion")
+    & $renderer -SelectionPath $selectionPath -PolicyPath $policyPath `
+        -DecisionBaselinePath $localBaselinePath -NarrativePath $narrativePath `
+        -DeviceValidationPath $devicePath -OutputPath $localReportPath
+    $localReport = Get-Content -LiteralPath $localReportPath -Raw
+    Assert-True ($localReport.Contains("### Local device evidence")) "Local evidence section missing"
+    Assert-True ($localReport.Contains("failed (context)")) "Failed baseline context missing"
+    Assert-True ($localReport.Contains("comparison-summary.json")) "Local summary identity missing"
+    Assert-True ($localReport.Contains("maui-perf-")) "Exact request key missing"
+    Assert-True (-not $localReport.Contains("Device measurement required:")) "Valid HEAD must not be reported as missing"
+    Assert-True ($localReport -notmatch 'AzDO|Helix|buildId|queue') "Local report must not invent remote build metadata"
+    & $validator -ReportPath $localReportPath -PolicyPath $policyPath `
+        -SelectionPath $selectionPath -DecisionBaselinePath $localBaselinePath -DeviceValidationPath $devicePath
+    Assert-Equal 0 $LASTEXITCODE "Local rendered report validation"
+
+    $unsealed = New-DeviceValidationFixture $deviceSelection
+    $unsealed.sealed = $false
+    $unsealed.errors = @("Local HEAD correctness failed.")
+    Write-Json $devicePath $unsealed
+    Write-Json $localBaselinePath (New-Baseline "device-required" "low" "run_more_measurements")
+    & $renderer -SelectionPath $selectionPath -PolicyPath $policyPath `
+        -DecisionBaselinePath $localBaselinePath -NarrativePath $narrativePath `
+        -DeviceValidationPath $devicePath -OutputPath $localReportPath
+    $unsealedReport = Get-Content -LiteralPath $localReportPath -Raw
+    Assert-True ($unsealedReport.Contains("Device measurement required:")) "Unsealed evidence must retain the coverage gap"
+    Assert-True ($unsealedReport.Contains("Local HEAD correctness failed.")) "Validation error must be surfaced"
+    Assert-True (-not $unsealedReport.Contains("### Local device evidence")) "Unsealed numbers must not be rendered"
 
     Write-Host "All performance report renderer tests passed."
 }

@@ -1,6 +1,6 @@
 ---
 name: perf-analysis
-description: Interprets trusted managed and device performance evidence for a MAUI PR and produces a coverage-aware report. Invoked by an existing authorized caller; does not trigger workflows, queue builds, or post comments.
+description: Manually interpret local managed and native performance evidence for a selected MAUI PR in Copilot. Produces a coverage-aware local report; never triggers workflows, runs device follow-ups automatically, or publishes.
 ---
 
 # Perf Analysis
@@ -12,14 +12,35 @@ Review one manually selected, performance-suspicious PR and answer:
 - Which changed paths still require a platform/device scenario?
 
 This is a **reviewer**, not a fixer or trigger. Never edit product code, push, open a PR,
-post comments, or queue builds. Invocation and publication belong to the repository's
-existing agentic trigger workflow.
+post comments, or queue builds. The maintainer manually selects the PR and invokes the
+skill in Copilot; there is no calling workflow or registration prerequisite.
+
+## Manual invocation in Copilot
+
+Ask Copilot to **use the perf-analysis skill** (or select `/perf-analysis` when the client
+exposes repository skills), naming the PR, exact revisions, read-only evidence directory,
+and separate local output directory. For example:
+
+> Use perf-analysis for dotnet/maui PR 12345. Interpret the pinned evidence in
+> C:\perf-trials\trial-01\evidence and write the narrative to
+> C:\perf-trials\trial-01\report\narrative.json. Do not execute measurements or publish.
+
+For native evidence that has not been acquired, the prerequisite is the manually invoked
+[`check-pr-performance`](../check-pr-performance/SKILL.md) skill and its
+[`references/local-workflow.md`](../check-pr-performance/references/local-workflow.md)
+recipe. Ask Copilot to use that skill separately with the explicitly authorized PR,
+reviewed harness, host/device, and local trial paths. It prepares isolated base/head
+snapshots and uses the trusted local drivers. Returning `run_more_measurements` here is a
+recommendation to the maintainer, **not** permission to invoke that skill or rerun an app.
+
+See [Local evidence contract](references/local-evidence.md) for exact entrypoints, request
+keys, native schemas, and the acquisition-to-interpretation handoff.
 
 ## Trust boundary
 
-The calling workflow or local maintainer owns authorization, PR selection, execution, and
-artifact publication. This skill adds no slash command, dispatch workflow, OIDC exchange,
-automatic device follow-up, or history-branch writer.
+The local maintainer owns authorization, PR selection, execution, and evidence storage.
+This skill adds no workflow, pipeline registration, OIDC exchange, automatic device
+follow-up, history-branch writer, or remote publication step.
 
 Before asking the agent to interpret results, the caller must:
 
@@ -30,9 +51,9 @@ Before asking the agent to interpret results, the caller must:
 5. store the evidence and deterministic decision baseline outside the PR-controlled checkout;
 6. provide the agent a read-only evidence directory and a separate output directory.
 
-Use `Invoke-PerfBenchmarks.ps1 -IsolationMode LinuxUsers` for isolated Linux CI execution.
+Use `Invoke-PerfBenchmarks.ps1 -IsolationMode LinuxUsers` for an isolated Linux test host.
 `-IsolationMode None` is for explicitly authorized local reproduction in a dedicated test
-environment; it is not a substitute for CI isolation. The runner sanitizes Git credentials
+environment; it is not a substitute for isolation. The runner sanitizes Git credentials
 and remote configuration, so do not run it in a shared developer checkout.
 
 During report interpretation, do not rebuild, rerun, or modify the evidence bundle. A
@@ -101,7 +122,8 @@ Read these files from that directory:
 | `decision-baseline.json` | Deterministic output from `Resolve-PerfDecision.ps1` |
 | `run/run-manifest.json` | Managed execution status and exact SHAs, when a runner was invoked |
 | `summary.json` and `table.md` | Managed comparison output, when available |
-| `device-validation.json` | Device validation output, when available |
+| `device-requests.json` | Reviewed local request identities and caller-owned result directories, when native evidence is requested |
+| `device-validation.json` | Local schema-3 device admission/coverage output, when available |
 
 Read `references/recommendation-policy.json` from the trusted skill directory.
 Missing required metadata, unknown evidence provenance, execution failures, or mismatched
@@ -155,20 +177,20 @@ changed path.
 For PRs like dotnet/maui#27153 and dotnet/maui#35668, the correct result is device-required, not a fabricated
 managed clean result.
 
-Only when a device scenario has `automationStatus: manual-device-ci-ready`, include its
+Only when a device scenario has `automationStatus: manual-local-ready`, include its
 supported measurement path in the report:
 
-- use `.pipeline.path` from the trusted selection data;
-- identify each required value in `.pipeline.platforms`;
+- use `.localRun.driver` from the trusted scenario catalog;
+- identify each required value in `.localRun.platforms`;
 - use those lowercase platform values verbatim;
 - carry forward the exact PR/base/head/harness identities;
 - let the caller use `New-DevicePerformanceRequests.ps1` to produce deduplicated request
-  data; that script does not queue anything;
-- leave pipeline registration, authorization, submission, waiting, and result retrieval to
-  the existing trigger workflow or an explicitly authorized maintainer.
+  data and bind each request to its directory under the caller's `ResultsRoot`;
+- leave review, host preparation, and explicit execution to the maintainer and the
+  `check-pr-performance` prerequisite skill. The request script executes nothing.
 
 For `required-not-yet-automated` scenarios, report the missing device coverage without
-suggesting an unsupported pipeline invocation.
+creating a request or suggesting an unsupported driver/scenario/platform combination.
 
 ---
 
@@ -194,7 +216,7 @@ become a clean whole-PR verdict when device/static files remain.
 The manifest records:
 
 - merge-base and head SHAs;
-- the actual `isolationMode` (`LinuxUsers` for isolated CI, `None` for local reproduction);
+- the actual `isolationMode` (`LinuxUsers` for an isolated Linux host, `None` for local reproduction);
 - builds for both sides;
 - ABBA run order;
 - report and benchmark counts;
@@ -268,12 +290,27 @@ When `device-validation.json` exists:
 - require trusted provenance and `.sealed` to be true before interpreting device numbers;
 - require `.deviceEvidenceComplete`, `.correctnessPassed`, and
   `.allAffectedPlatformsCovered` before treating all requested native paths as measured;
-- match every accepted result to its exact scenario, platform, PR/base/head/harness SHAs,
-  ABBA run count, AzDO build, Helix work item, and environment;
+- match every accepted result to its exact request key, caller-owned directory, scenario,
+  platform, repository/PR/base/head/harness identities, ABBA run ordinals, and environment;
+- require native raw results and comparison summaries to use schema 3. The local validator
+  checks `run-plan.json`, `results.json`, `comparison-summary.json`, and
+  `comparison-summary.md`, and recomputes comparisons using the trusted core comparator;
 - treat `time-regression-advisory` and `time-improvement-advisory` as advisory even on
   dedicated devices; do not upgrade them to confirmed regressions or improvements;
 - report missing platforms and every `.errors[]` item as incomplete evidence;
 - state accessibility as `not-assessed` unless the sealed status says otherwise.
+
+The validator never follows an executable or argument list found in `run-plan.json`.
+Only explicitly supplied summary paths are considered; omitted requests remain missing
+even if files happen to exist. An invalid submitted bundle is an error, not an accepted
+measurement. No remote build, queue status, package, or artifact identity is needed.
+
+`correctnessPassed` means **HEAD** correctness. A baseline failure may be accepted as
+context only when both sides still have valid schema, identities, environment, measurements,
+statistics, and complete counters. Preserve `baseCorrectnessFailureCount` and each
+`baseCorrectnessPassed` value. Do not convert failed/missing baseline metadata into a
+correctness benefit. The native empirical verdict remains unchanged; a direct scenario
+with non-equivalent baseline correctness requires advisory discussion, not clean clearance.
 
 For CollectionView layout/ScrollTo work, prefer:
 
@@ -459,29 +496,29 @@ Use only policy values. Omit unsupported claims instead of inventing them. Do no
 Markdown headings, verdict labels, coverage counts, attribution text, recommendation
 sentinels, or `perf-analysis-decision` metadata; the trusted renderer owns those fields.
 
-This skill does not post the report. The existing caller must recheck the PR head before
-publishing and must not publish a recommendation whose validation failed or whose evidence
-is stale. Neither writing a report file nor rendering it authorizes a GitHub mutation.
+This skill does not post the report. Keep the result local for the Copilot trial. If a
+maintainer later requests publication separately, recheck the PR head and require successful
+report validation first. Neither writing a report file nor rendering it authorizes a
+GitHub mutation.
 
 If execution was incomplete, name the failed suite/build/run from the structured manifest.
 Do not paste raw logs.
 
-## Caller integration and local reproduction
+## Local entrypoints
 
-No new trigger is registered here. The repository's existing agentic workflow may call
-these scripts after its own authorization step; adding a new command to that workflow is
-outside this skill.
+Everything below is manually invoked by the local maintainer. No workflow, pipeline,
+registration, remote service, or automatic follow-up is part of this contract.
 
 | Script | Inputs and outputs |
 |---|---|
 | `Select-Benchmarks.ps1` | Approved changed-files list -> `selection.json`; exit 3 means no product changes |
 | `Invoke-PerfBenchmarks.ps1` | PR number, selection, pinned metadata, output root, isolation mode -> manifest and base/head reports |
 | `Compare-BenchmarkResults.ps1` | Base/head reports and manifest -> `summary.json` and `table.md` |
-| `New-DevicePerformanceRequests.ps1` | Selection, pinned metadata, current head -> inert device request JSON |
-| `Validate-DevicePerformanceEvidence.ps1` | Downloaded summaries, build manifest, expected identities/current head -> `device-validation.json` |
+| `New-DevicePerformanceRequests.ps1` | Selection, pinned metadata, current head, local `ResultsRoot` -> reviewed inert device request JSON |
+| `Validate-DevicePerformanceEvidence.ps1` | `RequestPath`, explicit local `SummaryPath` values, `ResultsRoot`, selection, expected identities/current head -> `device-validation.json` |
 | `Resolve-PerfDecision.ps1` | Selection, policy, optional comparison/device evidence -> `decision-baseline.json` |
 | `New-PerformanceReport.ps1` | Trusted baseline/evidence and agent narrative -> Markdown report |
-| `Validate-PerformanceReport.ps1` | Report plus trusted baseline/evidence -> validation result; nonzero means do not publish |
+| `Validate-PerformanceReport.ps1` | Report plus trusted baseline/evidence -> validation result; nonzero means do not accept the report |
 | `Update-PerformanceHistory.ps1` | Complete run summary/manifest or point, optional previous history -> local JSON history |
 
 For local reproduction, use trusted script paths and a dedicated test environment. Supply
@@ -491,12 +528,16 @@ Keep the evidence output outside the analyzed checkout. The runner can instead r
 metadata through GitHub when that optional path is omitted, but the caller must still
 capture the identities used for downstream device requests.
 
-For native runs, register `eng/pipelines/ci-device-performance.yml` through the existing
-authorized pipeline mechanism, or invoke the `eng/scripts/Run-*DevicePerformanceComparison.ps1`
-drivers explicitly on an appropriate test host. Both variants must use the same trusted
-harness and comparable SDK/runtime settings. Use `Validate-DevicePerformanceEvidence.ps1`
-with the queued build manifest before accepting results.
+For native runs, follow `check-pr-performance` and its local preparation recipe. Invoke
+`eng/scripts/Run-DevicePerformanceComparison.ps1` for Android/iOS/MacCatalyst or
+`eng/scripts/Run-WindowsDevicePerformanceComparison.ps1` on Windows. Both variants must
+use the same trusted harness and comparable SDK/runtime settings. Preserve their four
+standard output files in the exact request directory. Use the local validator before
+accepting results; do not fabricate compatibility metadata if the trusted core is too old.
+The schema-3 core comparator must include `BaseCorrectnessPassed` and
+`baseCorrectnessFailureCount`.
 
 Only request metrics that the selected scenario actually emits. Latency and correctness
 counters do not imply jank, native allocation, or accessibility coverage. Local results
-remain machine-specific, and a caller dry-run must never publish or queue measurements.
+remain machine-specific. A dry-run is a plan, not evidence, and interpretation must never
+execute or publish anything.

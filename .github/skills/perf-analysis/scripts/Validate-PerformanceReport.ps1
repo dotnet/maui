@@ -33,6 +33,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "DevicePerformance.Local.ps1")
 $errors = New-Object System.Collections.Generic.List[string]
 
 function Add-ValidationError([string]$message) {
@@ -78,8 +79,8 @@ $summary = if ($SummaryPath -and (Test-Path $SummaryPath)) {
 } else {
     $null
 }
-$deviceValidation = if ($DeviceValidationPath -and (Test-Path $DeviceValidationPath)) {
-    Get-Content $DeviceValidationPath -Raw | ConvertFrom-Json
+$deviceValidation = if ($DeviceValidationPath) {
+    Get-Content -LiteralPath $DeviceValidationPath -Raw -ErrorAction Stop | ConvertFrom-Json
 } else {
     $null
 }
@@ -89,10 +90,8 @@ $decisionBaseline = if ($DecisionBaselinePath -and (Test-Path $DecisionBaselineP
     $null
 }
 
-$hasEmpiricalEvidence = $null -ne $summary -or (
-    $null -ne $deviceValidation -and
-    [bool](Get-PropertyValue $deviceValidation "sealed")
-)
+$deviceState = Get-LocalDeviceEvidenceState $selection $deviceValidation
+$hasEmpiricalEvidence = $null -ne $summary -or $deviceState.hasEvidence
 
 $requiredHeadings = @(
     "## Performance analysis",
@@ -246,19 +245,12 @@ if ($null -ne $decision) {
     $deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
     $sampledProductFiles = @($selection.sampledProductFiles | Where-Object { $null -ne $_ })
     $staticOnlyProductFiles = @($selection.staticOnlyProductFiles | Where-Object { $null -ne $_ })
-    $unsupportedDevicePath = @(
-        $deviceScenarios | Where-Object { $_.automationStatus -eq "required-not-yet-automated" }
-    ).Count -gt 0
+    $unsupportedDevicePath = $deviceState.unsupportedPath
     $summaryComplete = $null -ne $summary `
         -and [bool](Get-PropertyValue $summary "coverageComplete") `
         -and [bool](Get-PropertyValue $summary "executionComplete") `
         -and [bool](Get-PropertyValue $summary "benchmarkDataComplete")
-    $deviceEvidenceComplete = $null -ne $deviceValidation `
-        -and [bool](Get-PropertyValue $deviceValidation "sealed") `
-        -and [bool](Get-PropertyValue $deviceValidation "deviceEvidenceComplete") `
-        -and [bool](Get-PropertyValue $deviceValidation "correctnessPassed") `
-        -and [bool](Get-PropertyValue $deviceValidation "allAffectedPlatformsCovered") `
-        -and -not $unsupportedDevicePath
+    $deviceEvidenceComplete = $deviceState.complete
     $managedCount = $null
     $deviceCount = $null
     $productFileCount = Get-PropertyValue $coverage "productFileCount"
@@ -279,19 +271,7 @@ if ($null -ne $decision) {
         $wholePrEvidenceComplete =
             [bool](Get-PropertyValue $coverage "canClaimWholePrClean") -and $summaryComplete
     }
-    $directDeviceScenarioIds = @(
-        $deviceScenarios |
-            Where-Object { [string]$_.coverageMode -ne "sampled" } |
-            ForEach-Object { [string]$_.resultScenario } |
-            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-    )
-    $deviceAdvisory = $deviceEvidenceComplete -and @(
-        $deviceValidation.acceptedMeasurements |
-            Where-Object {
-                $_.verdict -in @("time-regression-advisory", "time-improvement-advisory") -and
-                $_.resultScenario -in $directDeviceScenarioIds
-            }
-    ).Count -gt 0
+    $deviceAdvisory = $deviceEvidenceComplete -and $deviceState.advisory
     $directManagedFilters = @(
         $selection.suites | Where-Object {
             @($_.directlyCoveredFiles | Where-Object { $null -ne $_ }).Count -gt 0
@@ -327,17 +307,10 @@ if ($null -ne $decision) {
     ).Count -gt 0
     $confirmedBlockingRegression = $confirmedAllocationRegression -or $staticFindingSeverity -eq "error"
     $confirmedMeasuredCost = $confirmedAllocationRegression
-    $hasMeasuredImprovement = $wholePrEvidenceComplete -and (
-        ($null -ne $summary -and [string]$summary.verdict -eq "improvement") -or
-        ($deviceEvidenceComplete -and @(
-            $deviceValidation.acceptedMeasurements |
-                Where-Object { $_.verdict -eq "improvement" }
-        ).Count -gt 0)
-    )
+    $hasMeasuredImprovement = $wholePrEvidenceComplete -and -not $deviceAdvisory -and
+        $null -ne $summary -and [string]$summary.verdict -eq "improvement"
 
-    $supportedMeasurementPath = @(
-        $deviceScenarios | Where-Object { $_.automationStatus -eq "manual-device-ci-ready" }
-    ).Count -gt 0
+    $supportedMeasurementPath = $deviceState.supportedPath
     $hasCoverageGap = -not $wholePrEvidenceComplete `
         -or [bool](Get-PropertyValue $coverage "benchmarkInputsChanged") `
         -or $sampledProductFiles.Count -gt 0 `
