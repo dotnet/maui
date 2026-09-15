@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				&& GetService(serviceType, implementationFactoryServiceProvider) is IElementHandler handler)
 			{
 				_handlerTypeCache[serviceDescriptor] = handler.GetType();
+				HotReload.MauiHotReloadHelper.RegisterHandlerType(serviceDescriptor, handler.GetType());
 				return handler;
 			}
 
@@ -84,12 +85,15 @@ namespace Microsoft.Maui.Hosting.Internal
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
 
+		object? GetService(Type serviceType, HandlerActivationServiceProvider implementationFactoryServiceProvider)
+			=> base.GetService(serviceType, implementationFactoryServiceProvider);
+
 		sealed class HandlerActivationServiceProvider : IServiceProvider
 		{
-			readonly IServiceProvider _handlerServices;
+			readonly MauiHandlersFactory _handlerServices;
 			readonly IMauiContext _mauiContext;
 
-			public HandlerActivationServiceProvider(IServiceProvider handlerServices, IMauiContext mauiContext)
+			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext)
 			{
 				_handlerServices = handlerServices;
 				_mauiContext = mauiContext;
@@ -105,7 +109,7 @@ namespace Microsoft.Maui.Hosting.Internal
 					return _mauiContext.Context;
 #endif
 
-				return _handlerServices.GetService(serviceType)
+				return _handlerServices.GetService(serviceType, this)
 					?? _mauiContext.Services.GetService(serviceType);
 			}
 		}
