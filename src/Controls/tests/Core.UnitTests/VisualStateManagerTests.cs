@@ -315,6 +315,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RemovingCurrentStateClearsStateAndUnappliesSetters()
+		{
+			var label = new Label();
+			var state = new VisualState
+			{
+				Name = NormalStateName,
+				Setters =
+				{
+					new Setter { Property = Label.TextProperty, Value = "Active" }
+				}
+			};
+			var group = new VisualStateGroup { States = { state } };
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+
+			Assert.Same(state, group.CurrentState);
+			Assert.Equal("Active", label.Text);
+
+			group.States.Remove(state);
+
+			Assert.Null(group.CurrentState);
+			Assert.Null(label.Text);
+		}
+
+		[Fact]
 		public void CanRemoveAGroupAndAddANewGroupWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
