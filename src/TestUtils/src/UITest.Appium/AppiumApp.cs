@@ -42,6 +42,7 @@ namespace UITest.Appium
 
 		public FileInfo Screenshot(string fileName)
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("screenshot", fileName);
 			Screenshot screenshot = _driver.GetScreenshot();
 			screenshot.SaveAsFile(fileName);
 			var file = new FileInfo(fileName);
@@ -50,6 +51,7 @@ namespace UITest.Appium
 
 		public byte[] Screenshot()
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("screenshot");
 			Screenshot screenshot = _driver.GetScreenshot();
 			return screenshot.AsByteArray;
 		}
