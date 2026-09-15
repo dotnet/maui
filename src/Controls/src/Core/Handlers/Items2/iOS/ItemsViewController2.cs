@@ -208,6 +208,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
+		}
+
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+
+			// Compositional layout can resolve estimated, self-sizing cells during layout.
+			// Check the updated content size after layout completes.
 			InvalidateMeasureIfContentSizeChanged();
 		}
 
