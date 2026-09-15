@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
 		readonly List<PathSegment> _subscribedSegments = new();
+		readonly WeakNotifyCollectionChangedProxy _segmentsCollectionChangedProxy = new();
+		NotifyCollectionChangedEventHandler _segmentsCollectionChanged;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathFigure"/> class.
@@ -23,6 +25,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			Segments = new PathSegmentCollection();
 		}
+
+		~PathFigure() => _segmentsCollectionChangedProxy.Unsubscribe();
 
 		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
 		public static readonly BindableProperty SegmentsProperty =
@@ -98,14 +102,16 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
 		{
-			oldCollection?.CollectionChanged -= OnPathSegmentCollectionChanged;
+			if (oldCollection != null)
+				_segmentsCollectionChangedProxy.Unsubscribe();
 
 			UnsubscribeFromAllPathSegmentPropertyChanged();
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnPathSegmentCollectionChanged;
+			_segmentsCollectionChanged ??= OnPathSegmentCollectionChanged;
+			_segmentsCollectionChangedProxy.Subscribe(newCollection, _segmentsCollectionChanged);
 
 			foreach (var newPathSegment in newCollection)
 			{
