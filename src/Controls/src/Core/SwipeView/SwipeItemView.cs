@@ -55,6 +55,11 @@ namespace Microsoft.Maui.Controls
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs eventArgs)
 		{
+			if (Command is null)
+			{
+				return;
+			}
+
 			IsEnabled = CommandElement.GetCanExecute(this);
 		}
 
