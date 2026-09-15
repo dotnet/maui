@@ -4,10 +4,12 @@
 #   1. Static checks  — run automatically on every PR that touches skills.
 #   2. LLM evaluation — runs automatically for contributor PRs, or can be
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
-#      Requires the COPILOT_PAT_* secret pool in the `copilot-pat-pool`
+#      Set the repository variable SKILL_VALIDATION_STATIC_ONLY to exactly
+#      "true" to keep static validation and reporting active without live jobs.
+#      Requires the COPILOT_PAT_* secret pool in the `skill-evaluation-pat-pool`
 #      environment (Copilot API access). Jobs that need model auth declare
-#      `environment: copilot-pat-pool` and rotate across populated PATs.
-#      NOTE: keep `copilot-pat-pool` free of required-reviewer / wait-timer
+#      `environment: skill-evaluation-pat-pool` and rotate across populated PATs.
+#      NOTE: keep `skill-evaluation-pat-pool` free of required-reviewer / wait-timer
 #      protection rules. These jobs run on `pull_request_target`, so such a
 #      rule would pause every auto-eval pending manual approval and hang the
 #      whole workflow (the `comment` / `report-status` jobs `needs:` them).
@@ -54,7 +56,10 @@ on:
       - '.github/scripts/PrepareVallyEvaluation.rb'
       - '.github/scripts/SelectVallyToken.sh'
       - '.github/scripts/TestPrepareVallyEvaluation.rb'
+      - '.github/scripts/TestSkillWorkflowModes.rb'
+      - '.github/scripts/fixtures/skill-workflow-policy/**'
       - '.github/scripts/SetupVallyRuntime.sh'
+      - '.github/workflows/skill-evaluation-soak.yml'
       - '.github/workflows/skill-validation.yml'
 
   issue_comment:
@@ -99,6 +104,66 @@ env:
   NODE_VERSION: "22"
 
 jobs:
+  execution-mode:
+    name: Resolve execution mode
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      manual_source_valid: ${{ steps.mode.outputs.manual_source_valid }}
+      static_only: ${{ steps.mode.outputs.static_only }}
+      trusted_default_sha: ${{ steps.mode.outputs.trusted_default_sha }}
+    steps:
+      - name: Resolve workflow source and operating mode
+        id: mode
+        uses: actions/github-script@v7
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REF: ${{ github.ref }}
+          EVENT_REF_TYPE: ${{ github.ref_type }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          STATIC_ONLY_SETTING: ${{ vars.SKILL_VALIDATION_STATIC_ONLY }}
+        with:
+          script: |
+            const eventName = process.env.EVENT_NAME || '';
+            const eventRef = process.env.EVENT_REF || '';
+            const eventRefType = process.env.EVENT_REF_TYPE || '';
+            const defaultBranch = process.env.DEFAULT_BRANCH || '';
+            const workflowSha = process.env.WORKFLOW_SHA || '';
+            const staticOnly = process.env.STATIC_ONLY_SETTING === 'true';
+
+            let trustedDefaultSha = '';
+            if (defaultBranch) {
+              try {
+                const response = await github.rest.repos.getCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: defaultBranch,
+                });
+                trustedDefaultSha = response.data.sha || '';
+              } catch (error) {
+                core.warning(`Could not resolve the current default-branch commit: ${error.message}`);
+              }
+            }
+
+            const expectedRef = defaultBranch ? `refs/heads/${defaultBranch}` : '';
+            const manualSourceValid = eventName !== 'workflow_dispatch' || (
+              eventRefType === 'branch' &&
+              eventRef === expectedRef &&
+              Boolean(workflowSha) &&
+              Boolean(trustedDefaultSha) &&
+              workflowSha === trustedDefaultSha
+            );
+
+            core.setOutput('manual_source_valid', String(manualSourceValid));
+            core.setOutput('static_only', String(staticOnly));
+            core.setOutput('trusted_default_sha', trustedDefaultSha);
+
+            if (eventName === 'workflow_dispatch' && !manualSourceValid) {
+              core.warning('Manual execution requires the current default branch and matching workflow source.');
+            }
+
   # ==========================================================================
   # PR GATE (pull_request_target)
   # Determine PR source, author permissions, and changed files.
@@ -234,7 +299,7 @@ jobs:
   # ==========================================================================
   static-check:
     name: Static validation
-    needs: [pr-gate, slash-gate]
+    needs: [execution-mode, pr-gate, slash-gate]
     if: >-
       always() && !cancelled() && (
         needs.pr-gate.result == 'success' ||
@@ -251,7 +316,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/agents
@@ -278,18 +343,25 @@ jobs:
           PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
           TOKEN_SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
           SETUP_RUNTIME="$RUNNER_TEMP/SetupVallyRuntime.sh"
+          WORKFLOW_MODE_TESTS="$RUNNER_TEMP/TestSkillWorkflowModes.rb"
           SKILL_VALIDATION_WORKFLOW="$RUNNER_TEMP/skill-validation.yml"
+          SKILL_EVALUATION_SOAK_WORKFLOW="$RUNNER_TEMP/skill-evaluation-soak.yml"
+          ROLLBACK_FIXTURE="$RUNNER_TEMP/rollback-drill.json"
           RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
           VERIFICATION_SPEC="$RUNNER_TEMP/eval.protocol.vally.yaml"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$TOKEN_SELECTOR"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP_RUNTIME"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestSkillWorkflowModes.rb" > "$WORKFLOW_MODE_TESTS"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/workflows/skill-validation.yml" > "$SKILL_VALIDATION_WORKFLOW"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/workflows/skill-evaluation-soak.yml" > "$SKILL_EVALUATION_SOAK_WORKFLOW"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json" > "$ROLLBACK_FIXTURE"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
           chmod 700 "$TOKEN_SELECTOR"
           ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC" "$SETUP_RUNTIME" "$TOKEN_SELECTOR" "$SKILL_VALIDATION_WORKFLOW"
+          ruby "$WORKFLOW_MODE_TESTS" "$SKILL_VALIDATION_WORKFLOW" "$SKILL_EVALUATION_SOAK_WORKFLOW" "$ROLLBACK_FIXTURE"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" --validate-mandatory-layout
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
@@ -379,7 +451,7 @@ jobs:
   # ==========================================================================
   discover-eval:
     name: Discover skills to evaluate
-    needs: [pr-gate, slash-gate]
+    needs: [execution-mode, pr-gate, slash-gate]
     if: >-
       always() && !cancelled() && (
         (needs.pr-gate.result == 'success' && needs.pr-gate.outputs.is_contributor == 'true') ||
@@ -397,7 +469,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/plugin.json
@@ -501,13 +573,26 @@ jobs:
   # ==========================================================================
   evaluate:
     name: evaluate (${{ matrix.entry.name }})
-    needs: [pr-gate, slash-gate, discover-eval]
+    needs: [execution-mode, pr-gate, slash-gate, discover-eval]
     if: >-
       always() && !cancelled() &&
+      needs.execution-mode.result == 'success' &&
+      needs.execution-mode.outputs.static_only != 'true' &&
+      needs.execution-mode.outputs.manual_source_valid == 'true' &&
+      (
+        github.event_name != 'workflow_dispatch' || (
+          github.ref_type == 'branch' &&
+          github.event.repository.default_branch != '' &&
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          github.workflow_sha != '' &&
+          needs.execution-mode.outputs.trusted_default_sha != '' &&
+          github.workflow_sha == needs.execution-mode.outputs.trusted_default_sha
+        )
+      ) &&
       needs.discover-eval.result == 'success' &&
       needs.discover-eval.outputs.has_entries == 'true'
     runs-on: ubuntu-latest
-    environment: copilot-pat-pool
+    environment: skill-evaluation-pat-pool
     permissions:
       contents: read
     timeout-minutes: 120
@@ -587,7 +672,7 @@ jobs:
           chmod 700 "$SETUP"
           "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
 
-      # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
+      # ── Select Copilot token ─────────────────────────────────────
       - name: Select Copilot token
         id: select-token
         env:
@@ -943,13 +1028,26 @@ jobs:
   # ==========================================================================
   hermeticity-gate:
     name: Harness hermeticity gate
-    needs: [pr-gate, slash-gate, discover-eval]
+    needs: [execution-mode, pr-gate, slash-gate, discover-eval]
     if: >-
       always() && !cancelled() &&
+      needs.execution-mode.result == 'success' &&
+      needs.execution-mode.outputs.static_only != 'true' &&
+      needs.execution-mode.outputs.manual_source_valid == 'true' &&
+      (
+        github.event_name != 'workflow_dispatch' || (
+          github.ref_type == 'branch' &&
+          github.event.repository.default_branch != '' &&
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          github.workflow_sha != '' &&
+          needs.execution-mode.outputs.trusted_default_sha != '' &&
+          github.workflow_sha == needs.execution-mode.outputs.trusted_default_sha
+        )
+      ) &&
       needs.discover-eval.result == 'success' &&
       needs.discover-eval.outputs.has_entries == 'true'
     runs-on: ubuntu-latest
-    environment: copilot-pat-pool
+    environment: skill-evaluation-pat-pool
     permissions:
       contents: read
     timeout-minutes: 30
@@ -1130,7 +1228,7 @@ jobs:
   # ==========================================================================
   comment:
     name: Post results comment
-    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, hermeticity-gate]
+    needs: [execution-mode, pr-gate, slash-gate, static-check, discover-eval, evaluate, hermeticity-gate]
     if: >-
       always() && !cancelled() && (
         needs.pr-gate.result == 'success' ||
@@ -1188,6 +1286,7 @@ jobs:
           DISCOVER_RESULT: ${{ needs.discover-eval.result }}
           IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
           HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          STATIC_ONLY: ${{ needs.execution-mode.outputs.static_only }}
         with:
           retries: 3
           script: |
@@ -1245,6 +1344,7 @@ jobs:
             const discoverResult = process.env.DISCOVER_RESULT;
             const isContributor = process.env.IS_CONTRIBUTOR === 'true';
             const evalRan = discoverResult === 'success';
+            const staticOnly = process.env.STATIC_ONLY === 'true';
 
             const lines = [];
 
@@ -1709,7 +1809,12 @@ jobs:
               (evalResult === 'success' && hasResults && reconciliation.complete);
 
             // ── LLM evaluation section ────────────────────────────
-            if (!evalRan && !isContributor) {
+            if (staticOnly) {
+              lines.push('### ⏭️ LLM Evaluation: Static validation only');
+              lines.push('');
+              lines.push('_Repository configuration kept live evaluation out of this run._');
+              lines.push('');
+            } else if (!evalRan && !isContributor) {
               lines.push('### ⏭️ LLM Evaluation: Skipped');
               lines.push('');
               lines.push('> 💡 LLM evaluation was not run for this external PR.');
@@ -1908,7 +2013,9 @@ jobs:
                 ? 'Failed'
                 : (staticResult || 'Unknown');
             let evalStatus;
-            if (!evalRan && !isContributor) {
+            if (staticOnly) {
+              evalStatus = 'Skipped';
+            } else if (!evalRan && !isContributor) {
               evalStatus = 'Skipped';
             } else if (discoverResult !== 'success') {
               evalStatus = 'Needs attention';  // discovery job failed → can't tell if eval was needed; don't mask as Skipped/Passed
@@ -1927,11 +2034,13 @@ jobs:
             } else {
               evalStatus = evalResult || 'Unknown';
             }
-            const overallStatus = staticStatus === 'Failed' || evalStatus === 'Failed'
-              ? 'Failed'
-              : (staticStatus === 'Passed' && (evalStatus === 'Passed' || evalStatus === 'Skipped'))
-                ? 'Passed'
-                : 'Needs attention';
+            const overallStatus = staticOnly
+              ? (staticStatus === 'Passed' ? 'Passed' : staticStatus === 'Failed' ? 'Failed' : 'Needs attention')
+              : staticStatus === 'Failed' || evalStatus === 'Failed'
+                ? 'Failed'
+                : (staticStatus === 'Passed' && (evalStatus === 'Passed' || evalStatus === 'Skipped'))
+                  ? 'Passed'
+                  : 'Needs attention';
             const overallIcon = overallStatus === 'Passed' ? '✅' : overallStatus === 'Failed' ? '❌' : '⚠️';
             // Wrap badge + body construction so a future undefined variable or formatting
             // error can never sink the whole job: on failure we log loudly and fall back to a
@@ -2057,7 +2166,7 @@ jobs:
   # ==========================================================================
   report-status:
     name: Report status
-    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, comment]
+    needs: [execution-mode, pr-gate, slash-gate, static-check, discover-eval, evaluate, comment]
     if: >-
       always() && !cancelled() && (
         needs.pr-gate.result == 'success' ||
@@ -2084,9 +2193,20 @@ jobs:
           DISCOVER="${{ needs.discover-eval.result }}"
           HAS_ENTRIES="${{ needs.discover-eval.outputs.has_entries }}"
           EVAL_PASSED="${{ needs.comment.outputs.eval_passed }}"
+          STATIC_ONLY="${{ needs.execution-mode.outputs.static_only }}"
+          IS_CONTRIBUTOR="${{ needs.pr-gate.outputs.is_contributor || 'true' }}"
 
           if [[ "$STATIC" == "success" ]]; then
-            if [[ "$DISCOVER" != "success" || "$HAS_ENTRIES" != "true" ]]; then
+            if [[ "$STATIC_ONLY" == "true" ]]; then
+              STATE="success"
+              DESC="passed (static only)"
+            elif [[ "${{ github.event_name }}" == "pull_request_target" && "$IS_CONTRIBUTOR" != "true" && "$DISCOVER" == "skipped" ]]; then
+              STATE="success"
+              DESC="Skill validation passed (static only)"
+            elif [[ "$DISCOVER" != "success" ]]; then
+              STATE="error"
+              DESC="Evaluation discovery failed"
+            elif [[ "$HAS_ENTRIES" != "true" ]]; then
               STATE="success"
               DESC="Skill validation passed (static only)"
             elif [[ "$EVAL_PASSED" == "true" ]]; then
@@ -2098,6 +2218,9 @@ jobs:
             elif [[ "$EVAL" == "failure" ]]; then
               STATE="error"
               DESC="Evaluation infrastructure failed"
+            elif [[ "$EVAL" == "skipped" ]]; then
+              STATE="error"
+              DESC="Evaluation unexpectedly skipped"
             else
               STATE="error"
               DESC="Evaluation incomplete ($EVAL)"
@@ -2132,11 +2255,25 @@ jobs:
             const evalPassed = '${{ needs.comment.outputs.eval_passed }}';
             const evalResult = '${{ needs.evaluate.result }}';
             const hasEntries = '${{ needs.discover-eval.outputs.has_entries }}' === 'true';
+            const discoverResult = '${{ needs.discover-eval.result }}';
+            const staticOnly = '${{ needs.execution-mode.outputs.static_only }}' === 'true';
+            const isExternalPullRequest =
+              '${{ github.event_name }}' === 'pull_request_target' &&
+              '${{ needs.pr-gate.outputs.is_contributor }}' !== 'true';
 
             let conclusion, title;
             if (staticResult !== 'success') {
               conclusion = 'failure';
               title = 'Static validation failed';
+            } else if (staticOnly) {
+              conclusion = 'success';
+              title = 'passed (static only)';
+            } else if (isExternalPullRequest && discoverResult === 'skipped') {
+              conclusion = 'success';
+              title = 'Skill validation passed (static only)';
+            } else if (discoverResult !== 'success') {
+              conclusion = 'failure';
+              title = 'Evaluation discovery failed';
             } else if (!hasEntries) {
               conclusion = 'success';
               title = 'Skill validation passed (static only)';
@@ -2149,6 +2286,9 @@ jobs:
             } else if (evalResult === 'failure') {
               conclusion = 'failure';
               title = 'Evaluation infrastructure failed';
+            } else if (evalResult === 'skipped') {
+              conclusion = 'failure';
+              title = 'Evaluation unexpectedly skipped';
             } else {
               conclusion = 'failure';
               title = `Evaluation incomplete: ${evalResult}`;
@@ -2183,3 +2323,90 @@ jobs:
             gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions/${REACTION_ID}" \
               -X DELETE || true
           fi
+
+  manual-result:
+    name: Report manual result
+    needs: [execution-mode, static-check, discover-eval, evaluate]
+    if: always() && !cancelled() && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      statuses: write
+    steps:
+      - name: Publish manual workflow result
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ needs.execution-mode.outputs.manual_source_valid == 'true' && needs.execution-mode.outputs.trusted_default_sha || github.sha || github.workflow_sha }}
+          MANUAL_SOURCE_VALID: ${{ needs.execution-mode.outputs.manual_source_valid }}
+          STATIC_ONLY: ${{ needs.execution-mode.outputs.static_only }}
+          STATIC_RESULT: ${{ needs.static-check.result }}
+          DISCOVER_RESULT: ${{ needs.discover-eval.result }}
+          HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
+          EVAL_RESULT: ${{ needs.evaluate.result }}
+        with:
+          script: |
+            const headSha = process.env.HEAD_SHA || '';
+            const manualSourceValid = process.env.MANUAL_SOURCE_VALID === 'true';
+            const staticOnly = process.env.STATIC_ONLY === 'true';
+            const staticResult = process.env.STATIC_RESULT || '';
+            const discoverResult = process.env.DISCOVER_RESULT || '';
+            const hasEntries = process.env.HAS_ENTRIES === 'true';
+            const evalResult = process.env.EVAL_RESULT || '';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let conclusion = 'failure';
+            let title = 'Validation incomplete';
+            if (!manualSourceValid) {
+              title = 'Manual execution source is not supported';
+            } else if (staticResult !== 'success') {
+              title = 'Static validation failed';
+            } else if (staticOnly) {
+              conclusion = 'success';
+              title = 'passed (static only)';
+            } else if (discoverResult !== 'success') {
+              title = 'Evaluation discovery failed';
+            } else if (!hasEntries) {
+              conclusion = 'success';
+              title = 'Skill validation passed (static only)';
+            } else if (evalResult === 'success') {
+              conclusion = 'success';
+              title = 'Skill evaluation completed';
+            } else if (evalResult === 'skipped') {
+              title = 'Evaluation unexpectedly skipped';
+            } else {
+              title = `Evaluation incomplete: ${evalResult || 'unknown'}`;
+            }
+
+            if (!headSha) {
+              core.setFailed('No commit is available for the workflow result.');
+              return;
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: headSha,
+              state: conclusion === 'success' ? 'success' : 'failure',
+              context: 'skill-validation',
+              description: title,
+              target_url: runUrl,
+            });
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Skill Validation',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title,
+                summary: `[View full results](${runUrl})`,
+              },
+              details_url: runUrl,
+            });
+
+            if (conclusion !== 'success') {
+              core.setFailed(title);
+            }
