@@ -92,13 +92,19 @@ $scriptDirectory = $PSScriptRoot
 $parser = Join-Path $scriptDirectory "Parse-DevicePerformanceResults.ps1"
 $comparator = Join-Path $scriptDirectory "Compare-DevicePerformanceResults.ps1"
 $resultFileRunId = "maui-perf-$PID-$([Guid]::NewGuid().ToString("N"))"
-$effectiveTestFilter = switch ($ExpectedScenario) {
-    "carouselview-swipe-disabled" { "Category=PerformanceCarouselViewSwipe" }
-    "collectionview-keepitemsinview-update" { "Category=PerformanceCollectionViewItemsUpdate" }
-    "collectionview-grouped-scrollto-makevisible" { "Category=PerformanceCollectionViewScroll" }
-    "handler-property-update-batch" { "Category=PerformanceHandlerPropertyUpdate" }
-    default { throw "No trusted test filter is registered for scenario '$ExpectedScenario'." }
+$scenarios = @{
+    "carouselview-swipe-disabled" = @{ Filter = "Category=PerformanceCarouselViewSwipe"; Platforms = @("android", "ios", "maccatalyst") }
+    "collectionview-keepitemsinview-update" = @{ Filter = "Category=PerformanceCollectionViewItemsUpdate"; Platforms = @("android", "ios", "maccatalyst") }
+    "collectionview-grouped-scrollto-makevisible" = @{ Filter = "Category=PerformanceCollectionViewScroll"; Platforms = @("ios", "maccatalyst") }
+    "handler-property-update-batch" = @{ Filter = "Category=PerformanceHandlerPropertyUpdate"; Platforms = @("android") }
 }
+if (-not $scenarios.ContainsKey($ExpectedScenario)) {
+    throw "No trusted test filter is registered for scenario '$ExpectedScenario'."
+}
+if ($Platform -notin $scenarios[$ExpectedScenario].Platforms) {
+    throw "Scenario '$ExpectedScenario' is not supported on platform '$Platform'."
+}
+$effectiveTestFilter = $scenarios[$ExpectedScenario].Filter
 
 function Assert-AppExists([string]$path, [string]$name) {
     if (-not (Test-Path $path))

@@ -85,7 +85,9 @@ namespace Microsoft.Maui.DeviceTests
 				result.Counters["embeddedScrollViewCount"] = counters["embeddedScrollViewCount"];
 				result.Counters["stateReapplicationFailures"] = counters["stateReapplicationFailures"];
 
-				DevicePerformanceReporter.Write(result);
+				DevicePerformanceReporter.Write(result,
+					result.Counters["embeddedScrollViewCount"] > 0 &&
+					result.Counters["stateReapplicationFailures"] == 0);
 			}, MauiContext, TimeSpan.FromMinutes(2));
 		}
 

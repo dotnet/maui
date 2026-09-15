@@ -86,7 +86,9 @@ namespace Microsoft.Maui.DeviceTests
 				result.Counters["interceptedTouchEventCount"] = counters["interceptedTouchEventCount"];
 				result.Counters["finalPosition"] = counters["finalPosition"];
 
-				DevicePerformanceReporter.Write(result);
+				DevicePerformanceReporter.Write(result,
+					result.Counters["interceptedTouchEventCount"] == 0 &&
+					result.Counters["finalPosition"] == 0);
 			}, MauiContext, TimeSpan.FromMinutes(2));
 		}
 

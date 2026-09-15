@@ -45,6 +45,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 				{
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<ControlsHeadlessTestRunner>();
 					await headlessRunner.RunTestsAsync();
+					if (headlessRunner.IsPerformanceRun)
+					{
+						Environment.Exit(headlessRunner.PerformanceExitCode);
+						return;
+					}
 				}
 				else
 				{

@@ -78,6 +78,7 @@ function Add-PerformanceResult([string]$json, [string]$source) {
     Assert-RequiredProperty $result "environment" $source
     Assert-RequiredProperty $result "correctness" $source
     Assert-RequiredProperty $result "timestampUtc" $source
+    Assert-RequiredProperty $result "warmupCount" $source
     Assert-RequiredProperty $result "measurementsMilliseconds" $source
     Assert-RequiredProperty $result "statistics" $source
     Assert-RequiredProperty $result "counters" $source
@@ -93,6 +94,12 @@ function Add-PerformanceResult([string]$json, [string]$source) {
         [int]$result.runOrdinal -gt [int]$result.expectedVariantRuns)
     {
         throw "Performance result in '$source' has invalid PR/run provenance."
+    }
+
+    if (($result.warmupCount -isnot [int] -and $result.warmupCount -isnot [long]) -or
+        $result.warmupCount -lt 0 -or $result.warmupCount -gt [int]::MaxValue)
+    {
+        throw "Performance result in '$source' must have a non-negative integer warmupCount."
     }
 
     if ($result.variant -notin @("base", "head") -or

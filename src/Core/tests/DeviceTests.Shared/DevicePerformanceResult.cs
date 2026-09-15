@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Platform;
 #if ANDROID
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 #endif
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 		public int RunOrdinal { get; init; } = DevicePerformanceEnvironment.GetInt32("MAUI_PERF_RUN_ORDINAL");
 		public int ExpectedVariantRuns { get; init; } = DevicePerformanceEnvironment.GetInt32("MAUI_PERF_EXPECTED_VARIANT_RUNS");
 		public DevicePerformanceEnvironmentInfo Environment { get; init; } = DevicePerformanceEnvironmentInfo.Create();
-		public DevicePerformanceCorrectness Correctness { get; init; } = new();
+		public DevicePerformanceCorrectness Correctness { get; internal set; } = new();
 		public DateTimeOffset TimestampUtc { get; init; } = DateTimeOffset.UtcNow;
 		public int WarmupCount { get; init; }
 		public double[] MeasurementsMilliseconds { get; init; } = [];
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 
 	public sealed class DevicePerformanceCorrectness
 	{
-		public bool Passed { get; init; } = true;
+		public bool Passed { get; init; }
 		public string AccessibilityStatus { get; init; } = "not-assessed";
 	}
 
@@ -171,12 +172,19 @@ namespace Microsoft.Maui.DeviceTests
 		public const string ResultPrefix = "MAUI_PERF_RESULT:";
 		public const string ChunkPrefix = "MAUI_PERF_CHUNK:";
 
-		public static void Write(DevicePerformanceResult result)
+		public static void Write(DevicePerformanceResult result, bool correctnessPassed)
 		{
 			ArgumentNullException.ThrowIfNull(result);
+			ArgumentNullException.ThrowIfNull(result.Correctness);
 
 			if (result.SchemaVersion != DevicePerformanceResult.CurrentSchemaVersion)
 				throw new ArgumentException($"Unsupported schema version: {result.SchemaVersion}", nameof(result));
+
+			result.Correctness = new DevicePerformanceCorrectness
+			{
+				Passed = correctnessPassed,
+				AccessibilityStatus = result.Correctness.AccessibilityStatus
+			};
 
 			string serializedResult =
 				$"{ResultPrefix}{JsonSerializer.Serialize(result, DevicePerformanceJsonContext.Default.DevicePerformanceResult)}";
@@ -209,6 +217,19 @@ namespace Microsoft.Maui.DeviceTests
 			if (!string.IsNullOrWhiteSpace(resultFile))
 				File.WriteAllText(resultFile, serializedResult);
 		}
+	}
+
+	public static class DevicePerformanceVerification
+	{
+		public static bool PickerTextMatches(
+			DateTime? date,
+			string dateFormat,
+			TimeSpan? time,
+			string timeFormat,
+			string? nativeDateText,
+			string? nativeTimeText) =>
+			nativeDateText == (date?.ToString(dateFormat) ?? string.Empty) &&
+			nativeTimeText == (time?.ToFormattedString(timeFormat) ?? string.Empty);
 	}
 
 	[JsonSourceGenerationOptions(

@@ -178,9 +178,22 @@ foreach ($group in $grouped)
         }
     }
 
-    if (@($allResults | Where-Object { $_.correctness.passed -ne $true }).Count -gt 0) {
-        $correctnessErrors.Add("One or more device results failed operation-level correctness validation.")
+    $warmupCountsValid = @($allResults | Where-Object {
+        ($_.warmupCount -isnot [int] -and $_.warmupCount -isnot [long]) -or
+        $_.warmupCount -lt 0 -or $_.warmupCount -gt [int]::MaxValue
+    }).Count -eq 0
+    if (-not $warmupCountsValid) {
+        $provenanceErrors.Add("All results must include a non-negative integer warmupCount.")
     }
+
+    if (@($allResults | Where-Object { $_.correctness.passed -isnot [bool] }).Count -gt 0) {
+        $correctnessErrors.Add("All results must include boolean operation-level correctness metadata.")
+    }
+    if (@($headResults | Where-Object { $_.correctness.passed -ne $true }).Count -gt 0) {
+        $correctnessErrors.Add("One or more head results failed operation-level correctness validation.")
+    }
+    $baseCorrectnessPassed = $baseResults.Count -eq $ExpectedVariantRuns -and
+        @($baseResults | Where-Object { $_.correctness.passed -isnot [bool] -or $_.correctness.passed -ne $true }).Count -eq 0
 
     if ($parts[0] -eq "collectionview-grouped-scrollto-makevisible") {
         $positionCountersComplete = @(
@@ -212,7 +225,7 @@ foreach ($group in $grouped)
 
         if (-not $itemUpdateCountersComplete) {
             $correctnessErrors.Add("KeepItemsInView results are missing final-position counters.")
-        } elseif (@(
+        } elseif ($warmupCountsValid -and @(
             $headResults | Where-Object {
                 [double]$_.counters.lastFirstVisiblePosition -ne
                     [double]$_.counters.lastExpectedFirstVisiblePosition -or
@@ -296,7 +309,7 @@ foreach ($group in $grouped)
 
         if (-not $handlerCountersComplete) {
             $correctnessErrors.Add("Handler property-update results are missing correctness counters.")
-        } elseif (@(
+        } elseif ($warmupCountsValid -and @(
             $headResults | Where-Object {
                 [double]$_.counters.nativeValueMismatchCount -ne 0 -or
                 [double]$_.counters.completedUpdateBatches -ne
@@ -334,6 +347,7 @@ foreach ($group in $grouped)
             Complete = $false
             ProvenanceValidated = $provenanceErrors.Count -eq 0
             CorrectnessPassed = $correctnessErrors.Count -eq 0
+            BaseCorrectnessPassed = $baseCorrectnessPassed
             Flag = "inconclusive"
             Reason = $allErrors -join " "
         })
@@ -402,6 +416,7 @@ foreach ($group in $grouped)
         Complete = $true
         ProvenanceValidated = $true
         CorrectnessPassed = $true
+        BaseCorrectnessPassed = $baseCorrectnessPassed
         BaseCommit = $baseCommits[0]
         HeadCommit = $headCommits[0]
         BaseResultCount = $baseResults.Count
@@ -433,6 +448,9 @@ $verdict = if ($results.Count -eq 0 -or $incomplete.Count -gt 0) {
 
 $provenanceValidated = $results.Count -gt 0 -and @($comparisons | Where-Object { -not $_.ProvenanceValidated }).Count -eq 0
 $correctnessPassed = $results.Count -gt 0 -and @($comparisons | Where-Object { -not $_.CorrectnessPassed }).Count -eq 0
+$baseCorrectnessFailureCount = @($results | Where-Object {
+    $_.variant -eq "base" -and $_.correctness.passed -is [bool] -and $_.correctness.passed -eq $false
+}).Count
 $timingLabels = @{
     "neutral" = "Neutral"
     "time-regression-advisory" = "Regression advisory"
@@ -532,6 +550,10 @@ if ($results.Count -eq 0) {
 } else {
     [void]$builder.AppendLine("No timing regression was demonstrated in the measured scenario.")
 }
+if ($baseCorrectnessFailureCount -gt 0) {
+    [void]$builder.AppendLine("")
+    [void]$builder.AppendLine("Baseline operation-level correctness failed in $baseCorrectnessFailureCount run(s). Timing against a failing baseline is context only; the correctness gate applies to the head.")
+}
 [void]$builder.AppendLine("")
 [void]$builder.AppendLine("These results are not whole-PR merge clearance. Full ranges, counters, and provenance remain in <code>comparison-summary.json</code>.")
 [void]$builder.AppendLine("")
@@ -568,6 +590,7 @@ $summary = [PSCustomObject]@{
     }
     provenanceValidated = $provenanceValidated
     correctnessPassed = $correctnessPassed
+    baseCorrectnessFailureCount = $baseCorrectnessFailureCount
     accessibilityStatuses = @($results.correctness.accessibilityStatus | Sort-Object -Unique)
     comparisons = @($comparisons | ForEach-Object { $_ })
 }

@@ -88,10 +88,26 @@ test host; local results are machine-specific.
 | `comparison-summary.json` | Expected identities, provenance/correctness status, comparisons, and result classification |
 | `comparison-summary.md` | Compact, comment-ready results with collapsed findings and follow-up |
 
+The Windows driver resolves output paths from the caller's PowerShell directory before
+launching a child in the app directory, and rejects nonpositive PR numbers before
+discovery. Rebuild both Windows apps with the updated runner: each invocation receives
+a unique `MAUI_PERF_RUN_ID` and must finish with exit zero plus its matching
+`TestResults.xml.completed` sidecar and fresh, valid output. The opted-in performance
+runner exits explicitly after discovery or completed tests; ordinary device runs retain
+their existing shutdown behavior. A killed process, crash, timeout, or stale/missing
+artifact is not accepted merely because another result file exists.
+
 The parser also reassembles chunked Android log records. Comparisons require two complete
 runs per side, matching identities and environment metadata, and the required correctness
 counters. A buggy baseline can provide context, but required head-side correctness must
 pass.
+
+`correctness.passed` is not inferred from a completed timing loop. Each scenario supplies
+its observed outcome to `DevicePerformanceReporter.Write` after finalizing all native
+checks and counters; an unverified result does not default to success. The comparator
+requires valid correctness metadata on both sides, gates on head outcomes, and retains
+failed baseline outcomes in `baseCorrectnessFailureCount` and each comparison's
+`baseCorrectnessPassed`. Timing against a failing baseline remains context only.
 
 Result records and comparison summaries use schema version 3. Rebuild both apps with
 the same current harness before running these scripts; older records are rejected rather
@@ -104,6 +120,13 @@ results rather than requiring a failing test before the change. Warmups are excl
 timing samples but still execute the scenario operation. For example,
 `updatesPreservingFirstVisibleItem` includes both warmups and measured updates, so a correct
 run with two warmups and ten measurements reports 12.
+Every record must explicitly carry a non-negative integer `warmupCount`; missing,
+negative, fractional, string, or boolean values are rejected. Unsupported
+platform/scenario pairs are rejected before the local driver plans or launches a run.
+
+The helper/reporter and Android picker-text verification are also covered by
+`DevicePerformanceTests` in `Controls.Core.UnitTests`; these tests execute the shared
+C# emitter and check stale non-empty values, rather than relying on source-text checks.
 
 Timing changes remain advisory: the comparator flags non-overlapping repeated ranges with
 at least a 15% median change by default. Its classifications are `neutral`,

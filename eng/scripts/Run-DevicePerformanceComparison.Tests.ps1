@@ -137,6 +137,38 @@ try
         Assert-Equal $true ($androidPlan[0].arguments -contains "MAUI_PERF_RUNTIME_VARIANT=mono") "Android runtime provenance"
     }
 
+    foreach ($platform in @("ios", "maccatalyst")) {
+        foreach ($scenario in @("carouselview-swipe-disabled", "collectionview-keepitemsinview-update")) {
+            $supported = $runArguments.Clone()
+            $supported.Platform = $platform
+            $supported.ExpectedScenario = $scenario
+            $supported.OutputDirectory = Join-Path $testRoot "$platform-$scenario"
+            & $script @supported 6>$null
+            Assert-Equal 0 $LASTEXITCODE "Supported $platform/$scenario pair"
+            Assert-Equal $true (Test-Path (Join-Path $supported.OutputDirectory "run-plan.json")) "Supported pair produces a plan"
+        }
+    }
+    foreach ($pair in @(
+        @{ Platform = "android"; Scenario = "collectionview-grouped-scrollto-makevisible" },
+        @{ Platform = "ios"; Scenario = "handler-property-update-batch" },
+        @{ Platform = "maccatalyst"; Scenario = "handler-property-update-batch" }
+    )) {
+        $unsupported = $runArguments.Clone()
+        $unsupported.Platform = $pair.Platform
+        $unsupported.ExpectedScenario = $pair.Scenario
+        $unsupported.BaseApp = Join-Path $testRoot "missing-base"
+        $unsupported.HeadApp = Join-Path $testRoot "missing-head"
+        $unsupported.OutputDirectory = Join-Path $testRoot "unsupported-$($pair.Platform)"
+        $rejected = $false
+        try {
+            & $script @unsupported 6>$null
+        } catch {
+            $rejected = $_.Exception.Message -like "*not supported on platform*"
+        }
+        Assert-Equal $true $rejected "Unsupported pair must fail before app discovery"
+        Assert-Equal $false (Test-Path $unsupported.OutputDirectory) "Unsupported pair must not create an execution plan"
+    }
+
     Write-Host "All device performance driver tests passed."
 }
 finally

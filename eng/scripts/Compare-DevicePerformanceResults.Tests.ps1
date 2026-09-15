@@ -210,6 +210,65 @@ try
     Assert-Equal $true $markdown.Contains("Correctness-Failed-") "Correctness failure badge"
     Assert-Equal $true $markdown.Contains("failed operation-level correctness") "Correctness diagnostics remain available"
 
+    Write-Results $resultsPath @(
+        (New-Result "base" @(100, 110) 1 "harness123" $false),
+        (New-Result "base" @(101, 111) 2 "harness123" $false),
+        (New-Result "head" @(105, 115) 1),
+        (New-Result "head" @(106, 116) 2)
+    )
+    & $script @comparisonArguments
+    $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
+    Assert-Equal "neutral" $summary.verdict "A failing baseline must not reject a correct head"
+    Assert-Equal $true $summary.correctnessPassed "Required correctness applies to the head"
+    Assert-Equal $false $summary.comparisons[0].baseCorrectnessPassed "Baseline correctness remains explicit"
+    Assert-Equal 2 $summary.baseCorrectnessFailureCount "Baseline failure count remains visible"
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Baseline operation-level correctness failed in 2 run(s)") "Baseline failures must be reported"
+    Assert-Equal $true $markdown.Contains("context only") "Buggy-baseline timing limitation must be explicit"
+
+    foreach ($invalid in @($null, "true", 1)) {
+        $badMetadata = @(
+            (New-Result "base" @(100, 110) 1),
+            (New-Result "base" @(101, 111) 2),
+            (New-Result "head" @(105, 115) 1),
+            (New-Result "head" @(106, 116) 2)
+        )
+        $badMetadata[0].correctness.passed = $invalid
+        Write-Results $resultsPath $badMetadata
+        & $script @comparisonArguments
+        $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
+        Assert-Equal "inconclusive" $summary.verdict "Malformed baseline correctness is not a valid failing baseline"
+        Assert-Equal $true $summary.comparisons[0].reason.Contains("boolean operation-level correctness") "Missing or mistyped correctness diagnostic"
+    }
+
+    foreach ($invalidWarmup in @($null, -1, 1.5, "oops", $true, [long]2147483648)) {
+        foreach ($index in @(0, 2)) {
+            $badWarmups = @(
+                (New-Result "base" @(100, 110) 1),
+                (New-Result "base" @(101, 111) 2),
+                (New-Result "head" @(105, 115) 1),
+                (New-Result "head" @(106, 116) 2)
+            )
+            foreach ($item in $badWarmups) {
+                $item.scenario = "handler-property-update-batch"
+                $item.counters = [pscustomobject]@{ completedUpdateBatches = 4; nativeValueMismatchCount = 0 }
+            }
+            if ($null -eq $invalidWarmup) {
+                $badWarmups[$index].PSObject.Properties.Remove("warmupCount")
+            } else {
+                $badWarmups[$index].warmupCount = $invalidWarmup
+            }
+            Write-Results $resultsPath $badWarmups
+            $warmupArguments = $comparisonArguments.Clone()
+            $warmupArguments.ExpectedScenario = "handler-property-update-batch"
+            & $script @warmupArguments
+            $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
+            Assert-Equal "inconclusive" $summary.verdict "Invalid base/head warmup count must be rejected without coercion"
+            Assert-Equal $false $summary.provenanceValidated "Warmup metadata is required on both variants"
+            Assert-Equal $true $summary.comparisons[0].reason.Contains("non-negative integer warmupCount") "Warmup diagnostic"
+        }
+    }
+
     $wrongCommitResults = @(
         (New-Result "base" @(100, 110) 1),
         (New-Result "base" @(101, 111) 2),

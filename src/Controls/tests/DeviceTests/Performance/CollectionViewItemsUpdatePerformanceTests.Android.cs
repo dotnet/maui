@@ -93,7 +93,9 @@ namespace Microsoft.Maui.DeviceTests
 					},
 					counters);
 
-				DevicePerformanceReporter.Write(result);
+				DevicePerformanceReporter.Write(result,
+					result.Counters["lastFirstVisiblePosition"] == result.Counters["lastExpectedFirstVisiblePosition"] &&
+					result.Counters["updatesPreservingFirstVisibleItem"] == WarmupCount + IterationCount);
 			}, MauiContext, TimeSpan.FromMinutes(2));
 		}
 
