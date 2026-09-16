@@ -13,7 +13,7 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
-    <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
+  <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
     <UseMaterial3>false</UseMaterial3>
   </PropertyGroup>
@@ -85,6 +85,6 @@
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
   <ItemGroup>
-    <MauiXaml Update="**\*.xaml" Inflator="SourceGen" NoWarn="0612"/>
+    <MauiXaml Update="**\*.xaml" Inflator="SourceGen"  NoWarn="0612"/>
   </ItemGroup>
 </Project>
