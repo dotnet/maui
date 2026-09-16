@@ -321,6 +321,8 @@ jobs:
             .github/skills
             .github/agents
             .github/plugin.json
+            .github/scripts/fixtures/skill-workflow-policy
+            .github/workflows
           persist-credentials: false
 
       - name: Setup Node
@@ -344,9 +346,9 @@ jobs:
           TOKEN_SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
           SETUP_RUNTIME="$RUNNER_TEMP/SetupVallyRuntime.sh"
           WORKFLOW_MODE_TESTS="$RUNNER_TEMP/TestSkillWorkflowModes.rb"
-          SKILL_VALIDATION_WORKFLOW="$RUNNER_TEMP/skill-validation.yml"
-          SKILL_EVALUATION_SOAK_WORKFLOW="$RUNNER_TEMP/skill-evaluation-soak.yml"
-          ROLLBACK_FIXTURE="$RUNNER_TEMP/rollback-drill.json"
+          SKILL_VALIDATION_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-validation.yml"
+          SKILL_EVALUATION_SOAK_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-evaluation-soak.yml"
+          ROLLBACK_FIXTURE="$GITHUB_WORKSPACE/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"
           RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
           VERIFICATION_SPEC="$RUNNER_TEMP/eval.protocol.vally.yaml"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
@@ -354,9 +356,6 @@ jobs:
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$TOKEN_SELECTOR"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP_RUNTIME"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestSkillWorkflowModes.rb" > "$WORKFLOW_MODE_TESTS"
-          git --no-replace-objects show "${TRUSTED_SHA}:.github/workflows/skill-validation.yml" > "$SKILL_VALIDATION_WORKFLOW"
-          git --no-replace-objects show "${TRUSTED_SHA}:.github/workflows/skill-evaluation-soak.yml" > "$SKILL_EVALUATION_SOAK_WORKFLOW"
-          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json" > "$ROLLBACK_FIXTURE"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
           chmod 700 "$TOKEN_SELECTOR"
@@ -693,6 +692,7 @@ jobs:
           TRUSTED_SHA: ${{ github.workflow_sha }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           TOKEN_START_OFFSET: ${{ strategy.job-index }}
+          COPILOT_PAT_POOL_NAME: skill-evaluation-pat-pool
         run: |
           set -euo pipefail
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
@@ -940,8 +940,9 @@ jobs:
           done
           if [ ${#SPECS[@]} -eq 0 ]; then
             echo "No eval*.vally.yaml specs found under $TESTS_PATH"
-            echo "eval_passed=true" >> "$GITHUB_OUTPUT"
             echo "eval_exit_code=0" >> "$GITHUB_OUTPUT"
+            echo "report_valid=false" >> "$GITHUB_OUTPUT"
+            echo "eval_passed=na" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -986,18 +987,38 @@ jobs:
           # immediate diagnostic; individual trials may fail while Vally's
           # aggregate suite verdict still passes.
           JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          REPORT_VALID=false
+          EVAL_PASSED=na
           if [ -n "$JUNIT" ]; then
-            ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
-            if [ -n "$ROOT" ]; then
+            REPORT_STATUS=$(
+              ruby -r rexml/document -e '
+                document = REXML::Document.new(File.read(ARGV.fetch(0)))
+                suites = REXML::XPath.match(document, "//testsuite")
+                abort "missing testsuite" if suites.empty?
+                verdicts = suites.map do |suite|
+                  property = REXML::XPath.first(suite, "./properties/property[@name=\"passed\"]")
+                  value = property&.attributes&.[]("value")
+                  abort "invalid suite verdict" unless %w[true false].include?(value)
+                  value
+                end
+                puts(verdicts.all? { |value| value == "true" } ? "true" : "false")
+              ' "$JUNIT" 2>/dev/null || true
+            )
+            if [ "$REPORT_STATUS" = "true" ] || [ "$REPORT_STATUS" = "false" ]; then
+              REPORT_VALID=true
+              EVAL_PASSED=$REPORT_STATUS
+              ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
               FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
               ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
               echo "JUnit trial diagnostics: failures=$FAILS errors=$ERRS"
             else
-              echo "::warning::JUnit file contains no <testsuites> root"
+              echo "::warning::JUnit report is missing valid suite verdicts"
             fi
           else
             echo "::warning::No JUnit report under $RESULTS_PATH"
           fi
+          echo "report_valid=$REPORT_VALID" >> "$GITHUB_OUTPUT"
+          echo "eval_passed=$EVAL_PASSED" >> "$GITHUB_OUTPUT"
 
       - name: Upload results
         if: always()
@@ -1018,9 +1039,16 @@ jobs:
           retention-days: 14
 
       - name: Fail unsuccessful manual evaluation
-        if: always() && github.event_name == 'workflow_dispatch' && steps.eval-run.outputs.eval_exit_code != '0'
+        if: >-
+          always() &&
+          github.event_name == 'workflow_dispatch' &&
+          (
+            steps.eval-run.outputs.eval_exit_code != '0' ||
+            steps.eval-run.outputs.report_valid != 'true' ||
+            steps.eval-run.outputs.eval_passed != 'true'
+          )
         run: |
-          echo "::error::Skill evaluation did not complete successfully."
+          echo "::error::Skill evaluation did not produce a successful valid result."
           exit 1
 
   # ==========================================================================
@@ -1124,6 +1152,7 @@ jobs:
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          COPILOT_PAT_POOL_NAME: skill-evaluation-pat-pool
         run: |
           set -euo pipefail
           SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"

@@ -93,6 +93,22 @@ class TestSkillWorkflowModes < Minitest::Test
     end
     assert_equal 2, @validation.lines.count { |line| line.match?(/^\s+environment:\s+skill-evaluation-pat-pool\s*$/) }
     assert_equal 1, @soak.lines.count { |line| line.match?(/^\s+environment:\s+skill-evaluation-pat-pool\s*$/) }
+    assert_equal 2, @validation.lines.count { |line| line.match?(/^\s+COPILOT_PAT_POOL_NAME:\s+skill-evaluation-pat-pool\s*$/) }
+    assert_equal 1, @soak.lines.count { |line| line.match?(/^\s+COPILOT_PAT_POOL_NAME:\s+skill-evaluation-pat-pool\s*$/) }
+  end
+
+  def test_trusted_policy_tests_receive_candidate_workflows_and_fixture
+    static_check = job_block(@validation, "static-check")
+
+    assert_includes static_check, ".github/scripts/fixtures/skill-workflow-policy"
+    assert_includes static_check, ".github/workflows"
+    assert_includes static_check, 'git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestSkillWorkflowModes.rb" > "$WORKFLOW_MODE_TESTS"'
+    assert_includes static_check, 'SKILL_VALIDATION_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-validation.yml"'
+    assert_includes static_check, 'SKILL_EVALUATION_SOAK_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-evaluation-soak.yml"'
+    assert_includes static_check, 'ROLLBACK_FIXTURE="$GITHUB_WORKSPACE/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"'
+    refute_includes static_check, '${TRUSTED_SHA}:.github/workflows/skill-validation.yml'
+    refute_includes static_check, '${TRUSTED_SHA}:.github/workflows/skill-evaluation-soak.yml'
+    refute_includes static_check, '${TRUSTED_SHA}:.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json'
   end
 
   def test_static_only_mode_gates_every_live_job
@@ -178,6 +194,12 @@ class TestSkillWorkflowModes < Minitest::Test
     assert_operator failure_step, :>, baseline_upload
     assert_includes evaluate, "github.event_name == 'workflow_dispatch'"
     assert_includes evaluate, "steps.eval-run.outputs.eval_exit_code != '0'"
+    assert_includes evaluate, "steps.eval-run.outputs.report_valid != 'true'"
+    assert_includes evaluate, "steps.eval-run.outputs.eval_passed != 'true'"
+    assert manual_evaluation_success?(exit_code: "0", report_valid: true, eval_passed: true)
+    refute manual_evaluation_success?(exit_code: "1", report_valid: true, eval_passed: true)
+    refute manual_evaluation_success?(exit_code: "0", report_valid: false, eval_passed: true)
+    refute manual_evaluation_success?(exit_code: "0", report_valid: true, eval_passed: false)
 
     outcome = final_outcome(
       static_only: false,
@@ -190,6 +212,32 @@ class TestSkillWorkflowModes < Minitest::Test
     assert_equal "failure", outcome.fetch(:conclusion)
     assert_equal "Skill evaluation failed", outcome.fetch(:label)
     assert_includes job_block(@validation, "manual-result"), "title = 'Skill evaluation failed'"
+  end
+
+  def test_soak_status_requires_successful_valid_result_evidence
+    live_job = job_block(@soak, "code-review")
+    reporter = job_block(@soak, "report-status")
+
+    assert_includes live_job, "eval_exit_code: ${{ steps.soak.outputs.exit_code }}"
+    assert_includes live_job, "junit_present: ${{ steps.soak.outputs.junit_present }}"
+    assert_includes live_job, "report_valid: ${{ steps.soak.outputs.report_valid }}"
+    assert_includes live_job, "eval_passed: ${{ steps.soak.outputs.eval_passed }}"
+    assert_includes reporter, "LIVE_EXIT_CODE: ${{ needs.code-review.outputs.eval_exit_code }}"
+    assert_includes reporter, "LIVE_JUNIT_PRESENT: ${{ needs.code-review.outputs.junit_present }}"
+    assert_includes reporter, "LIVE_REPORT_VALID: ${{ needs.code-review.outputs.report_valid }}"
+    assert_includes reporter, "LIVE_EVAL_PASSED: ${{ needs.code-review.outputs.eval_passed }}"
+
+    assert_equal(
+      { conclusion: "success", label: "Live skill evaluation completed" },
+      soak_outcome(job_result: "success", exit_code: "0", junit_present: true, report_valid: true, eval_passed: true)
+    )
+    [
+      { job_result: "success", exit_code: "1", junit_present: true, report_valid: true, eval_passed: false },
+      { job_result: "success", exit_code: "0", junit_present: false, report_valid: false, eval_passed: false },
+      { job_result: "success", exit_code: "0", junit_present: true, report_valid: false, eval_passed: false }
+    ].each do |evidence|
+      assert_equal "failure", soak_outcome(**evidence).fetch(:conclusion)
+    end
   end
 
   def test_rollback_drill
@@ -255,6 +303,22 @@ class TestSkillWorkflowModes < Minitest::Test
       hermeticity: base && has_entries,
       soak: base
     }
+  end
+
+  def manual_evaluation_success?(exit_code:, report_valid:, eval_passed:)
+    exit_code == "0" && report_valid && eval_passed
+  end
+
+  def soak_outcome(job_result:, exit_code:, junit_present:, report_valid:, eval_passed:)
+    if job_result == "success" && exit_code == "0" && junit_present && report_valid && eval_passed
+      { conclusion: "success", label: "Live skill evaluation completed" }
+    elsif job_result == "success" && !junit_present
+      { conclusion: "failure", label: "Live evaluation incomplete: no JUnit report" }
+    elsif job_result == "success" && !report_valid
+      { conclusion: "failure", label: "Live evaluation incomplete: invalid JUnit report" }
+    else
+      { conclusion: "failure", label: "Live skill evaluation failed" }
+    end
   end
 
   def final_outcome(static_only:, static_result:, discover_result:, has_entries:, evaluation_result:, evaluation_passed:)

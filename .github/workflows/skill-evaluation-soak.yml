@@ -139,6 +139,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: skill-evaluation-pat-pool
     timeout-minutes: 90
+    outputs:
+      eval_exit_code: ${{ steps.soak.outputs.exit_code }}
+      junit_present: ${{ steps.soak.outputs.junit_present }}
+      report_valid: ${{ steps.soak.outputs.report_valid }}
+      eval_passed: ${{ steps.soak.outputs.eval_passed }}
     steps:
       - name: Checkout trusted default branch
         uses: actions/checkout@v4
@@ -173,6 +178,7 @@ jobs:
           COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
           COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
           COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_POOL_NAME: skill-evaluation-pat-pool
         run: |
           set -euo pipefail
           .github/scripts/SelectVallyToken.sh \
@@ -220,6 +226,34 @@ jobs:
           printf '%s\n' "$rc" > "$RESULTS_PATH/eval-exit-code.txt"
 
           junit=$(find "$RESULTS_PATH" -name eval-results.junit.xml -type f | head -1 || true)
+          junit_present=false
+          report_valid=false
+          eval_passed=na
+          if [ -n "$junit" ]; then
+            junit_present=true
+            report_status=$(
+              ruby -r rexml/document -e '
+                document = REXML::Document.new(File.read(ARGV.fetch(0)))
+                suites = REXML::XPath.match(document, "//testsuite")
+                abort "missing testsuite" if suites.empty?
+                verdicts = suites.map do |suite|
+                  property = REXML::XPath.first(suite, "./properties/property[@name=\"passed\"]")
+                  value = property&.attributes&.[]("value")
+                  abort "invalid suite verdict" unless %w[true false].include?(value)
+                  value
+                end
+                puts(verdicts.all? { |value| value == "true" } ? "true" : "false")
+              ' "$junit" 2>/dev/null || true
+            )
+            if [ "$report_status" = "true" ] || [ "$report_status" = "false" ]; then
+              report_valid=true
+              eval_passed=$report_status
+            fi
+          fi
+          echo "junit_present=$junit_present" >> "$GITHUB_OUTPUT"
+          echo "report_valid=$report_valid" >> "$GITHUB_OUTPUT"
+          echo "eval_passed=$eval_passed" >> "$GITHUB_OUTPUT"
+
           {
             echo "## Code-review live soak"
             echo
@@ -227,7 +261,7 @@ jobs:
             echo
             echo "- Vally exit code: \`$rc\`"
             echo "- Trials per stimulus: \`$RUNS\`"
-            if [ -n "$junit" ]; then
+            if [ "$report_valid" = "true" ]; then
               score=$(sed -nE 's/.*name="overallScore" value="([^"]+)".*/\1/p' "$junit" | head -1)
               passed=$(sed -nE 's/.*name="passed" value="([^"]+)".*/\1/p' "$junit" | head -1)
               root=$(grep -m1 '<testsuites' "$junit" || true)
@@ -236,9 +270,12 @@ jobs:
               echo "- Suite score: \`${score:-unavailable}\`"
               echo "- Suite verdict: \`${passed:-unavailable}\`"
               echo "- Trial failures/errors: \`${failures:-0}/${errors:-0}\`"
-            else
+            elif [ "$junit_present" != "true" ]; then
               echo "::warning::Live soak produced no JUnit report under $RESULTS_PATH"
               echo "- Suite result: \`incomplete (no JUnit report)\`"
+            else
+              echo "::warning::Live soak produced an invalid JUnit report under $RESULTS_PATH"
+              echo "- Suite result: \`incomplete (invalid JUnit report)\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -273,6 +310,10 @@ jobs:
           STATIC_ONLY: ${{ needs.execution-mode.outputs.static_only }}
           STATIC_RESULT: ${{ needs.static-check.result }}
           LIVE_RESULT: ${{ needs.code-review.result }}
+          LIVE_EXIT_CODE: ${{ needs.code-review.outputs.eval_exit_code }}
+          LIVE_JUNIT_PRESENT: ${{ needs.code-review.outputs.junit_present }}
+          LIVE_REPORT_VALID: ${{ needs.code-review.outputs.report_valid }}
+          LIVE_EVAL_PASSED: ${{ needs.code-review.outputs.eval_passed }}
         with:
           script: |
             const headSha = process.env.HEAD_SHA || '';
@@ -280,6 +321,10 @@ jobs:
             const staticOnly = process.env.STATIC_ONLY === 'true';
             const staticResult = process.env.STATIC_RESULT || '';
             const liveResult = process.env.LIVE_RESULT || '';
+            const liveExitCode = process.env.LIVE_EXIT_CODE || '';
+            const liveJunitPresent = process.env.LIVE_JUNIT_PRESENT === 'true';
+            const liveReportValid = process.env.LIVE_REPORT_VALID === 'true';
+            const liveEvalPassed = process.env.LIVE_EVAL_PASSED === 'true';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             let conclusion = 'failure';
@@ -291,9 +336,21 @@ jobs:
             } else if (staticOnly) {
               conclusion = 'success';
               title = 'passed (static only)';
-            } else if (liveResult === 'success') {
+            } else if (
+              liveResult === 'success' &&
+              liveExitCode === '0' &&
+              liveJunitPresent &&
+              liveReportValid &&
+              liveEvalPassed
+            ) {
               conclusion = 'success';
               title = 'Live skill evaluation completed';
+            } else if (liveResult === 'success' && !liveJunitPresent) {
+              title = 'Live evaluation incomplete: no JUnit report';
+            } else if (liveResult === 'success' && !liveReportValid) {
+              title = 'Live evaluation incomplete: invalid JUnit report';
+            } else if (liveResult === 'success' && (liveExitCode !== '0' || !liveEvalPassed)) {
+              title = 'Live skill evaluation failed';
             } else if (liveResult === 'skipped') {
               title = 'Live evaluation unexpectedly skipped';
             } else {
