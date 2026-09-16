@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CoreFoundation;
 using Foundation;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				if (!CollectionView.IsLoaded())
 				{
-					CollectionView.PerformBatchUpdates(null, _ =>
+					DispatchQueue.MainQueue.DispatchAsync(() =>
 					{
 						ValidateAndSelectItem(selectedItem, originalSource);
 					});
@@ -67,16 +68,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					ValidateAndSelectItem(selectedItem, originalSource);
 				}
-			}
-		}
-
-		private protected override void AttachingToWindow()
-		{
-			base.AttachingToWindow();
-
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsIOSVersionAtLeast(18))
-			{
-				CollectionView.LayoutIfNeeded();
 			}
 		}
 
