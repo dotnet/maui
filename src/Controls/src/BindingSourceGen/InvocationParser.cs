@@ -20,8 +20,7 @@ internal class InvocationParser
 
 	internal Result<InterceptedMethodType> ParseInvocation(InvocationExpressionSyntax invocationSyntax, CancellationToken t)
 	{
-		var methodName = BindingSourceGenerator.GetInvokedMethodName(invocationSyntax.Expression)?.Identifier.Text
-			?? throw new NotSupportedException();
+		var methodName = BindingSourceGenerator.GetInvokedMethodName(invocationSyntax.Expression)?.Identifier.Text;
 
 		return methodName switch
 		{

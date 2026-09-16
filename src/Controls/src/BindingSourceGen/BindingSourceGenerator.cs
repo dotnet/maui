@@ -119,7 +119,11 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var enabledNullable = IsNullableContextEnabled(context);
 
 		var invocation = (InvocationExpressionSyntax)context.Node;
-		var methodName = GetInvokedMethodName(invocation.Expression) ?? throw new NotSupportedException();
+		var methodName = GetInvokedMethodName(invocation.Expression);
+		if (methodName is null)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
+		}
 
 		var invocationParser = new InvocationParser(context);
 		var interceptedMethodTypeResult = invocationParser.ParseInvocation(invocation, t);
