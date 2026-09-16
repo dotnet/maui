@@ -14,7 +14,7 @@ public class Issue38275 : _IssuesUITest
     public override string Issue => "CollectionView Label renders truncated after ItemsSource is swapped with MeasureFirstItem";
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void LabelsShouldNotBeTruncatedAfterItemsSourceIsReplaced()
     {
         App.WaitForElement("Issue38275Date0");
