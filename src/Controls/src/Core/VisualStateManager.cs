@@ -377,6 +377,11 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var index = _internalList.IndexOf(item);
+			if (index < 0)
+			{
+				return false;
+			}
+
 			RemoveAt(index);
 			return true;
 		}

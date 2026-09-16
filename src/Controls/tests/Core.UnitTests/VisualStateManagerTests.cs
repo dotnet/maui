@@ -357,6 +357,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RemoveNonMemberReturnsFalse()
+		{
+			var group = new VisualStateGroup { Name = CommonStatesGroupName };
+			var groups = new VisualStateGroupList { group };
+
+			var removed = groups.Remove(new VisualStateGroup { Name = "Missing" });
+
+			Assert.False(removed);
+			Assert.Single(groups);
+			Assert.Same(group, groups[0]);
+		}
+
+		[Fact]
 		public void RemoveAtDetachesStateTriggers()
 		{
 			var (groups, trigger) = CreateAttachedStateTriggerGroup();
