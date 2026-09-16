@@ -3,12 +3,13 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
 sealed class ItemsViewAccessibilityHelper
 {
     readonly MauiItemsView _itemsView;
-    private bool _redirectingFocus;
+    bool _redirectingFocus;
 
     public ItemsViewAccessibilityHelper(MauiItemsView itemsView)
     {
@@ -19,7 +20,6 @@ sealed class ItemsViewAccessibilityHelper
 
     void OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
     {
-
         if (_redirectingFocus || args.InputDevice != FocusInputDeviceKind.Keyboard)
             return;
 
@@ -29,7 +29,6 @@ sealed class ItemsViewAccessibilityHelper
             return;
         }
 
-        // Guard against calling into the repeater before it has a Layout / realized containers.
         if (repeater.Layout is null || !_itemsView.IsLoaded)
         {
             args.Cancel = true;
@@ -40,27 +39,28 @@ sealed class ItemsViewAccessibilityHelper
             return;
 
         var targetIndex = FindSelectedIndex(repeater, _itemsView.SelectedItem);
-
         if (targetIndex < 0)
             targetIndex = FindFirstItemIndex(repeater);
 
         if (targetIndex < 0)
             return;
 
-        UIElement? container;
+        // Never use TrySetNewFocusedElement — it requires the element to already be
+        // registered in FocusManager's per-frame candidate snapshot, which is not
+        // guaranteed even when IsLoaded is true for a container realized this frame.
+        // Always cancel and drive focus ourselves via container.Focus() on a later tick.
+        args.Cancel = true;
 
-        try
+        if (_itemsView.SelectionMode == ItemsViewSelectionMode.Single)
         {
-            container = repeater.GetOrCreateElement(targetIndex) as ItemContainer;
+            _itemsView.Select(targetIndex);
         }
-        catch (Exception)
+
+        if (repeater.TryGetElement(targetIndex) is ItemContainer existingContainer)
         {
-            // Repeater wasn't actually ready despite passing the checks above — bail safely.
+            QueueFocus(existingContainer);
             return;
         }
-
-        if (container is null || ReferenceEquals(args.NewFocusedElement, container))
-            return;
 
         _itemsView.StartBringItemIntoView(targetIndex, new BringIntoViewOptions
         {
@@ -69,18 +69,48 @@ sealed class ItemsViewAccessibilityHelper
             HorizontalAlignmentRatio = 0,
         });
 
-        _redirectingFocus = true;
-
-        try
+        void OnContainerPrepared(int preparedIndex)
         {
-            args.TrySetNewFocusedElement(container);
+            if (preparedIndex != targetIndex)
+                return;
+
+            _itemsView.ContainerPrepared -= OnContainerPrepared;
+
+            if (repeater.TryGetElement(targetIndex) is ItemContainer readyContainer)
+            {
+                QueueFocus(readyContainer);
+            }
         }
 
-        finally
+        _itemsView.ContainerPrepared += OnContainerPrepared;
+    }
+
+    void QueueFocus(ItemContainer container)
+    {
+        _itemsView.DispatcherQueue.TryEnqueue(() => FocusContainer(container));
+    }
+
+    void FocusContainer(ItemContainer container)
+    {
+        if (container.IsLoaded)
         {
-            _redirectingFocus = false;
+            _redirectingFocus = true;
+            try
+            { container.Focus(FocusState.Keyboard); }
+            finally { _redirectingFocus = false; }
+            return;
         }
 
+        void OnLoaded(object s, RoutedEventArgs e)
+        {
+            container.Loaded -= OnLoaded;
+            _redirectingFocus = true;
+            try
+            { container.Focus(FocusState.Keyboard); }
+            finally { _redirectingFocus = false; }
+        }
+
+        container.Loaded += OnLoaded;
     }
 
 
