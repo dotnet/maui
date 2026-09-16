@@ -23,7 +23,14 @@ namespace Microsoft.Maui
 				{
 					byte[] bytes;
 					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken))
+					{
+						if (stream is null)
+						{
+							throw new InvalidOperationException("Unable to load image stream.");
+						}
+
 						bytes = await GetStreamBytesAsync(stream, cancellationToken);
+					}
 
 					var callback = new ImageLoaderCallback();
 
@@ -51,7 +58,14 @@ namespace Microsoft.Maui
 				{
 					byte[] bytes;
 					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false))
+					{
+						if (stream is null)
+						{
+							throw new InvalidOperationException("Unable to load image stream.");
+						}
+
 						bytes = await GetStreamBytesAsync(stream, cancellationToken).ConfigureAwait(false);
+					}
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
