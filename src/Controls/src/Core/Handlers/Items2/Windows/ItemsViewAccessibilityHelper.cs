@@ -25,32 +25,33 @@ sealed class ItemsViewAccessibilityHelper
 
         if (!_itemsView.IsTabStop || _itemsView.ItemsRepeaterControl is not ItemsRepeater repeater)
         {
-            args.Cancel = true;
+            TryCancel(args);
             return;
         }
 
         if (repeater.Layout is null || !_itemsView.IsLoaded)
         {
-            args.Cancel = true;
+            TryCancel(args);
             return;
         }
 
         if (args.OldFocusedElement is DependencyObject oldElement && IsDescendantOf(oldElement, _itemsView))
             return;
 
-        // Track whether this came from a genuine preselection, separately from the fallback.
         var selectedIndex = FindSelectedIndex(repeater, _itemsView.SelectedItem);
         var targetIndex = selectedIndex >= 0 ? selectedIndex : FindFirstItemIndex(repeater);
 
         if (targetIndex < 0)
             return;
 
-        args.Cancel = true;
+        if (!TryCancel(args))
+        {
+            // This GettingFocus event is part of window/page reactivation and cannot
+            // be canceled (WinUI restriction). Let the default focus target stand —
+            // don't attempt our own redirect on top of an event we couldn't intercept.
+            return;
+        }
 
-        // Only re-assert selection when there was already a real preselection.
-        // Do NOT call Select() when targetIndex came from the FindFirstItemIndex
-        // fallback — tabbing into a list with nothing selected should only move
-        // focus, not force-select item 0 as a side effect.
         if (selectedIndex >= 0 && _itemsView.SelectionMode == ItemsViewSelectionMode.Single)
         {
             _itemsView.Select(targetIndex);
@@ -83,6 +84,25 @@ sealed class ItemsViewAccessibilityHelper
         }
 
         _itemsView.ContainerPrepared += OnContainerPrepared;
+    }
+
+    /// <summary>
+    /// Attempts to cancel the GettingFocus event. Returns false (without throwing) if the
+    /// event is not cancelable — which happens when the focus change is the result of
+    /// window/page reactivation (e.g. navigating back to this page). WinUI does not expose
+    /// a public way to detect this ahead of time, so we must attempt and catch.
+    /// </summary>
+    static bool TryCancel(GettingFocusEventArgs args)
+    {
+        try
+        {
+            args.Cancel = true;
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     void QueueFocus(ItemContainer container)
