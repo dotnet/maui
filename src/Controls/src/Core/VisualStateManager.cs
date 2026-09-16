@@ -327,8 +327,6 @@ namespace Microsoft.Maui.Controls
 
 		void OnGroupRemoving(VisualStateGroup group)
 		{
-			group.StatesChanged -= ValidateAndNotify;
-
 			if (group.CurrentState is { } currentState)
 			{
 				if (group.VisualElement is { } visualElement)
@@ -347,6 +345,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			group.StatesChanged -= ValidateAndNotify;
 			group.VisualElement = null;
 		}
 
@@ -737,7 +736,8 @@ namespace Microsoft.Maui.Controls
 			if (CurrentState == state)
 			{
 				if (VisualElement is { } visualElement &&
-					VisualStateManager.GetVisualStateGroups(visualElement) is VisualStateGroupList groups)
+					VisualStateManager.GetVisualStateGroups(visualElement) is VisualStateGroupList groups &&
+					groups.Any(group => ReferenceEquals(group, this)))
 				{
 					VisualStateManager.UnapplyState(visualElement, state, groups.Specificity);
 				}
