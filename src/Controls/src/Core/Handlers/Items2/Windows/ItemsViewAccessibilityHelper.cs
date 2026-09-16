@@ -11,6 +11,10 @@ sealed class ItemsViewAccessibilityHelper
     readonly MauiItemsView _itemsView;
     bool _redirectingFocus;
 
+    // Tracks the pending ContainerPrepared callback so stale callbacks
+    // can be removed when another focus request supersedes it.
+    Action<int>? _pendingContainerPrepared;
+
     public ItemsViewAccessibilityHelper(MauiItemsView itemsView)
     {
         _itemsView = itemsView;
@@ -38,6 +42,22 @@ sealed class ItemsViewAccessibilityHelper
         if (args.OldFocusedElement is DependencyObject oldElement && IsDescendantOf(oldElement, _itemsView))
             return;
 
+        // WinUI may have already resolved a legitimate focus target inside the CollectionView —
+        // e.g. an interactive Button/Entry inside a Header, Footer, GroupHeaderTemplate, or
+        // EmptyView. Those live INSIDE an ItemContainer wrapper but are never an ItemContainer
+        // themselves, so "not an ItemContainer, but still a descendant" is what distinguishes
+        // a real interactive control from WinUI's default data-item target. Only skip our
+        // redirect for that case — a plain data ItemContainer still goes through the redirect
+        // below, preserving the original selected/first-item behavior.
+        if (args.NewFocusedElement is DependencyObject newElement &&
+            newElement is not ItemContainer &&
+            !ReferenceEquals(newElement, _itemsView) &&
+            !ReferenceEquals(newElement, repeater) &&
+            IsDescendantOf(newElement, _itemsView))
+        {
+            return;
+        }
+
         var selectedIndex = FindSelectedIndex(repeater, _itemsView.SelectedItem);
         var targetIndex = selectedIndex >= 0 ? selectedIndex : FindFirstItemIndex(repeater);
 
@@ -45,12 +65,7 @@ sealed class ItemsViewAccessibilityHelper
             return;
 
         if (!TryCancel(args))
-        {
-            // This GettingFocus event is part of window/page reactivation and cannot
-            // be canceled (WinUI restriction). Let the default focus target stand —
-            // don't attempt our own redirect on top of an event we couldn't intercept.
             return;
-        }
 
         if (selectedIndex >= 0 && _itemsView.SelectionMode == ItemsViewSelectionMode.Single)
         {
@@ -70,12 +85,16 @@ sealed class ItemsViewAccessibilityHelper
             HorizontalAlignmentRatio = 0,
         });
 
+        // Cancel any previous pending callback before registering a new one.
+        CancelPendingContainerPrepared();
+
         void OnContainerPrepared(int preparedIndex)
         {
             if (preparedIndex != targetIndex)
                 return;
 
             _itemsView.ContainerPrepared -= OnContainerPrepared;
+            _pendingContainerPrepared = null;
 
             if (repeater.TryGetElement(targetIndex) is ItemContainer readyContainer)
             {
@@ -83,7 +102,17 @@ sealed class ItemsViewAccessibilityHelper
             }
         }
 
+        _pendingContainerPrepared = OnContainerPrepared;
         _itemsView.ContainerPrepared += OnContainerPrepared;
+    }
+
+    void CancelPendingContainerPrepared()
+    {
+        if (_pendingContainerPrepared is not null)
+        {
+            _itemsView.ContainerPrepared -= _pendingContainerPrepared;
+            _pendingContainerPrepared = null;
+        }
     }
 
     /// <summary>
@@ -116,23 +145,34 @@ sealed class ItemsViewAccessibilityHelper
         {
             _redirectingFocus = true;
             try
-            { container.Focus(FocusState.Keyboard); }
-            finally { _redirectingFocus = false; }
+            {
+                container.Focus(FocusState.Keyboard);
+            }
+            finally
+            {
+                _redirectingFocus = false;
+            }
+
             return;
         }
 
         void OnLoaded(object s, RoutedEventArgs e)
         {
             container.Loaded -= OnLoaded;
+
             _redirectingFocus = true;
             try
-            { container.Focus(FocusState.Keyboard); }
-            finally { _redirectingFocus = false; }
+            {
+                container.Focus(FocusState.Keyboard);
+            }
+            finally
+            {
+                _redirectingFocus = false;
+            }
         }
 
         container.Loaded += OnLoaded;
     }
-
 
     static int FindSelectedIndex(ItemsRepeater repeater, object? selectedItem)
     {
@@ -142,10 +182,14 @@ sealed class ItemsViewAccessibilityHelper
         }
 
         var itemsSourceView = repeater.ItemsSourceView;
+
         for (var index = 0; index < itemsSourceView.Count; index++)
         {
             var candidate = itemsSourceView.GetAt(index);
-            var actualItem = candidate is ItemTemplateContext2 itc ? itc.Item : candidate;
+            var actualItem = candidate is ItemTemplateContext2 itc
+                ? itc.Item
+                : candidate;
+
             if (Equals(actualItem, selectedItem))
             {
                 return index;
@@ -180,5 +224,10 @@ sealed class ItemsViewAccessibilityHelper
         }
 
         return false;
+    }
+    public void CleanUp()
+    {
+        CancelPendingContainerPrepared();
+        _itemsView.GettingFocus -= OnGettingFocus;
     }
 }
