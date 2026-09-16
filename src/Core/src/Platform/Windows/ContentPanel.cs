@@ -273,7 +273,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				clipPath = clipGeometry.PathForBounds(pathSize);
+				clipPath = clipGeometry is IShapeWithStroke shapeWithStroke
+				? shapeWithStroke.PathForBounds(pathSize, includeStroke: true)
+				: clipGeometry.PathForBounds(pathSize);
 				IsInnerPath = false;
 			}
 
