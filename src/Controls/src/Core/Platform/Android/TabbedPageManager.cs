@@ -120,8 +120,6 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
-			Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
-
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
@@ -186,19 +184,8 @@ public class TabbedPageManager
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
 
 			SetTabLayout();
-
-			Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
 		}
 	}
-
-	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-	{
-		UpdateBarBackgroundColor(e.RequestedTheme);
-		_tabItemStyleLoaded = false;
-		UpdateStyleForTabItem();
-	}
-
-	static Color ResolveThemeColor(AppTheme appTheme, Color light, Color dark) => appTheme == AppTheme.Dark ? dark : light;
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
 	{
@@ -612,11 +599,6 @@ public class TabbedPageManager
 
 	public virtual void UpdateBarBackgroundColor()
 	{
-		UpdateBarBackgroundColor(Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme);
-	}
-
-	void UpdateBarBackgroundColor(AppTheme appTheme)
-	{
 		if (Element.BarBackground != null)
 			return;
 
@@ -624,14 +606,8 @@ public class TabbedPageManager
 		{
 			Color tintColor = Element.BarBackgroundColor;
 
-			if (tintColor is null)
-			{
-				tintColor = ResolveThemeColor(
-					appTheme,
-					RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#F3EDF7") : Colors.White,
-					RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black);
-				_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
-			}
+			if (tintColor == null)
+				_bottomNavigationView.SetBackground(null);
 			else if (tintColor != null)
 				_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
 		}
@@ -639,15 +615,8 @@ public class TabbedPageManager
 		{
 			Color tintColor = Element.BarBackgroundColor;
 
-			if (tintColor is null)
-			{
-				tintColor = ResolveThemeColor(
-									appTheme,
-									Colors.White,
-									RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black);
-				_tabLayout.SetBackgroundColor(tintColor.ToPlatform());
+			if (tintColor == null)
 				_tabLayout.BackgroundTintMode = null;
-			}
 			else
 			{
 				_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
