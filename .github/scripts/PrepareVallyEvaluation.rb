@@ -13,6 +13,16 @@ FIXTURE_COMMIT_ENV = {
 }.freeze
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
+FORBIDDEN_EXECUTION_KEYS = %w[
+  judge_provider
+  provider
+  apiKeyEnv
+  bearerTokenEnv
+  grader_plugins
+  executor_plugins
+  eval_plugin
+].freeze
+WORKFLOW_EXECUTOR = "copilot-sdk"
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn .mock-executor].freeze
 APPROVED_FILE_DESTINATION_PREFIXES = [
   %w[review-input],
@@ -232,6 +242,30 @@ def validate_no_duplicate_mapping_keys!(node, relative_spec_path, scalar_visitor
   elsif node.respond_to?(:children)
     Array(node.children).each do |child|
       validate_no_duplicate_mapping_keys!(child, relative_spec_path, scalar_visitor)
+    end
+  end
+end
+
+def validate_supported_execution_keys!(node, relative_spec_path, scalar_visitor)
+  if node.is_a?(Psych::Nodes::Mapping)
+    node.children.each_slice(2) do |key_node, value_node|
+      if key_node.is_a?(Psych::Nodes::Scalar)
+        key = scalar_visitor.accept(key_node)
+        if FORBIDDEN_EXECUTION_KEYS.include?(key)
+          fail!(
+            "#{relative_spec_path} uses unsupported execution key #{key.inspect} at line " \
+            "#{key_node.start_line + 1}"
+          )
+        end
+      else
+        validate_supported_execution_keys!(key_node, relative_spec_path, scalar_visitor)
+      end
+
+      validate_supported_execution_keys!(value_node, relative_spec_path, scalar_visitor)
+    end
+  elsif node.respond_to?(:children)
+    Array(node.children).each do |child|
+      validate_supported_execution_keys!(child, relative_spec_path, scalar_visitor)
     end
   end
 end
@@ -515,6 +549,7 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
   syntax_tree = Psych.parse_file(spec_path)
   scalar_visitor = Psych::Visitors::NoAliasRuby.create(symbolize_names: false, freeze: false)
   validate_no_duplicate_mapping_keys!(syntax_tree, relative_spec_path, scalar_visitor)
+  validate_supported_execution_keys!(syntax_tree, relative_spec_path, scalar_visitor)
 
   begin
     document = YAML.safe_load_file(spec_path, permitted_classes: [], permitted_symbols: [], aliases: false)
@@ -522,10 +557,16 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
     fail!("#{spec_path} uses YAML aliases; trusted validation requires alias-free specs")
   end
   fail!("#{spec_path} must contain a mapping") unless document.is_a?(Hash)
+  if document.key?("defaults") && document.key?("config")
+    fail!("#{relative_spec_path} must not combine legacy config with defaults")
+  end
   %w[defaults config].each do |scope_name|
     scope = document[scope_name]
-    if scope.is_a?(Hash) && scope.key?("executor") && scope["executor"] != "copilot-sdk"
-      fail!("#{relative_spec_path} must not override the trusted copilot-sdk executor")
+    if scope.is_a?(Hash) && scope.key?("executor")
+      executor = scope["executor"]
+      unless executor.is_a?(String) && executor == WORKFLOW_EXECUTOR
+        fail!("#{relative_spec_path} #{scope_name}.executor must be the exact string #{WORKFLOW_EXECUTOR.inspect}")
+      end
     end
   end
   if document.key?("graders")
