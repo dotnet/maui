@@ -37,3 +37,27 @@ Find sample usages of the different parameters below, of course these can be mix
 * Set a custom version number for the template: `.\build.ps1 -templateVersion 1.2.3`
 * Build another template project: `.\build.ps1 -templatesProjectPath src\Microsoft.Maui.Templates-new.csproj`
 * Don't start VS after creating the new project using the latest template changes: `.\build.ps1 -startVsAfterBuild $false`
+
+## iOS and Mac Catalyst scene lifecycle
+
+All app templates use UIKit's scene-based lifecycle on iOS and Mac Catalyst, as [required for apps built with the 27 SDKs](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle). Each Apple app head includes a `UIApplicationSceneManifest` in `Info.plist` and a registered `SceneDelegate` derived from `MauiUISceneDelegate`.
+
+Keep the configuration name `__MAUI_DEFAULT_SCENE_CONFIGURATION__` unchanged: it must match MAUI's framework configuration. The delegate's `[Register]` name must match `UISceneDelegateClassName` (`SceneDelegate` in these templates). MAUI creates the scene's window programmatically, so do not add `UISceneStoryboardFile` or change the existing `MauiSplashScreen` / `UILaunchStoryboardName` configuration.
+
+`UIApplicationSupportsMultipleScenes` is set to `false` to preserve single-window behavior. To enable multiple windows, change this existing value to `true` rather than adding another manifest or `SceneDelegate` class. On Mac Catalyst, enabling multiple scenes also enables automatic window tabbing by default.
+
+Existing apps need both the manifest and delegate in each Apple app head. MAUI already forwards scene events to the cross-platform `Window` lifecycle events; do not add duplicate forwarding to `SceneDelegate`. Custom platform lifecycle handlers must use the corresponding scene callbacks for activation and backgrounding. Launch options are no longer passed to `FinishedLaunching`; read activation data from the scene connection options instead. See [Apple's migration guidance](https://developer.apple.com/documentation/technotes/tn3187-migrating-to-the-uikit-scene-based-life-cycle).
+
+AppActions shortcut delivery also needs scene-aware handling in Core/Essentials. Adding the template manifest and delegate does not migrate the legacy shortcut callbacks.
+
+## Mac Catalyst deployment target
+
+Mac Catalyst app templates explicitly target `SupportedOSPlatformVersion` 17.0 (macOS 14), the minimum accepted by the .NET Mac Catalyst 27.x SDK. This SDK requirement is separate from scene adoption and applies when using that Apple SDK band with .NET 10 as well. The iOS app minimum remains 15.0.
+
+The new app-template default is 17.0 even with older SDKs. Apps that need Mac Catalyst 15.0/16.0 must use a compatible 26.x SDK and explicitly lower their deployment target. The class-library template retains its 15.0 minimum; it does not create an app bundle.
+
+## Generated-template regression tests
+
+`AppleTemplateManifestTests` in `Microsoft.Maui.IntegrationTests` verifies the generated Apple manifests, registered delegates, platform exclusions, and Mac Catalyst app deployment targets. Each case installs the selected package into a fresh, isolated template hive.
+
+CI selects `artifacts/Microsoft.Maui.Templates.net10.$MAUI_PACKAGE_VERSION.nupkg`. For a local package, set `MAUI_TEMPLATE_TEST_PACKAGE` to its full path and run the integration tests with `--filter FullyQualifiedName~AppleTemplateManifestTests`. These tests do not modify the global template cache.
