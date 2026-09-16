@@ -900,9 +900,9 @@ namespace Microsoft.Maui.Controls
 			if (_internalList.Count == 0)
 				return;
 
-			var removedItems = new List<T>(_internalList);
+			_onRemove?.Invoke(_internalList);
 			_internalList.Clear();
-			_onRemove?.Invoke(removedItems);
+
 		}
 
 		public bool Contains(T item)
@@ -917,13 +917,11 @@ namespace Microsoft.Maui.Controls
 
 		public bool Remove(T item)
 		{
-			var index = _internalList.IndexOf(item);
-			if (index < 0)
+			if (!_internalList.Contains(item))
 				return false;
 
-			var removedItem = _internalList[index];
-			_internalList.RemoveAt(index);
-			_onRemove?.Invoke(new List<T> { removedItem });
+			_internalList.Remove(item);
+			_onRemove?.Invoke(new List<T> { item });
 			return true;
 		}
 
@@ -952,16 +950,7 @@ namespace Microsoft.Maui.Controls
 		public T this[int index]
 		{
 			get => _internalList[index];
-			set
-			{
-				var removedItem = _internalList[index];
-				if (ReferenceEquals(removedItem, value))
-					return;
-
-				_internalList[index] = value;
-				_onRemove?.Invoke(new List<T> { removedItem });
-				_onAdd(_internalList);
-			}
+			set => _internalList[index] = value;
 		}
 	}
 }
