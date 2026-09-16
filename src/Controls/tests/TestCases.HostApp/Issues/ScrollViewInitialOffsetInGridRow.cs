@@ -255,7 +255,10 @@ public class ScrollViewInitialOffsetInGridRow : NavigationPage
 
 			return restsAtTop ? $"Success: {diag}" : $"Fail: {diag}";
 #else
-			return FormattableString.Invariant(Math.Abs(_scrollView.ScrollY) < 0.5 ? $"Success: scrollY={_scrollView.ScrollY:F1}" : $"Fail: scrollY={_scrollView.ScrollY:F1}");
+			// A conditional between two interpolated strings has type string, so the verdict is
+			// interpolated into a single FormattableString instead
+			var verdict = Math.Abs(_scrollView.ScrollY) < 0.5 ? "Success" : "Fail";
+			return FormattableString.Invariant($"{verdict}: scrollY={_scrollView.ScrollY:F1} gridFrame=({_grid.Y:F1},{_grid.Height:F1}) pageH={Height:F1}");
 #endif
 		}
 	}
