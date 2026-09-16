@@ -38,20 +38,20 @@ sealed class ItemsViewAccessibilityHelper
         if (args.OldFocusedElement is DependencyObject oldElement && IsDescendantOf(oldElement, _itemsView))
             return;
 
-        var targetIndex = FindSelectedIndex(repeater, _itemsView.SelectedItem);
-        if (targetIndex < 0)
-            targetIndex = FindFirstItemIndex(repeater);
+        // Track whether this came from a genuine preselection, separately from the fallback.
+        var selectedIndex = FindSelectedIndex(repeater, _itemsView.SelectedItem);
+        var targetIndex = selectedIndex >= 0 ? selectedIndex : FindFirstItemIndex(repeater);
 
         if (targetIndex < 0)
             return;
 
-        // Never use TrySetNewFocusedElement — it requires the element to already be
-        // registered in FocusManager's per-frame candidate snapshot, which is not
-        // guaranteed even when IsLoaded is true for a container realized this frame.
-        // Always cancel and drive focus ourselves via container.Focus() on a later tick.
         args.Cancel = true;
 
-        if (_itemsView.SelectionMode == ItemsViewSelectionMode.Single)
+        // Only re-assert selection when there was already a real preselection.
+        // Do NOT call Select() when targetIndex came from the FindFirstItemIndex
+        // fallback — tabbing into a list with nothing selected should only move
+        // focus, not force-select item 0 as a side effect.
+        if (selectedIndex >= 0 && _itemsView.SelectionMode == ItemsViewSelectionMode.Single)
         {
             _itemsView.Select(targetIndex);
         }
