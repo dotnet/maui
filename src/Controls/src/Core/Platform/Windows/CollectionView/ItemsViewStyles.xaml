@@ -368,7 +368,7 @@
                                                                 ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
                                                                 HorizontalCacheLength="2"
                                                                 VerticalCacheLength="2"
-                                                                TabFocusNavigation="Local"
+                                                                TabFocusNavigation="Once"
                                                                 ItemsSource="{TemplateBinding ItemsSource}"
                                                                 ItemTemplate="{TemplateBinding ItemTemplate}"
                                                                 Layout="{TemplateBinding Layout}"
