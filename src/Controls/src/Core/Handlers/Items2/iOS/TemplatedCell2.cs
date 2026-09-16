@@ -413,7 +413,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-
 		bool IsUsingVSMForSelectionColor(View view)
 		{
 			var groups = VisualStateManager.GetVisualStateGroups(view);
