@@ -97,11 +97,20 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2, 3)]
 		[InlineData(3, 1)]
 		[InlineData(1, 3)]
-		public async Task ChangingNumberOfTapsRequiredUpdatesNativeGestureRecognizer(int initialTaps, int updatedTaps)
+		public async Task ChangingNumberOfTapsRequiredUpdatesNativeGestureRecognizerForSpan(int initialTaps, int updatedTaps)
 		{
-			var label = new Label();
 			var tapGestureRecognizer = new TapGestureRecognizer { NumberOfTapsRequired = initialTaps };
-			label.GestureRecognizers.Add(tapGestureRecognizer);
+
+			var span = new Span { Text = "Tap me" };
+			span.GestureRecognizers.Add(tapGestureRecognizer);
+
+			var label = new Label
+			{
+				FormattedText = new FormattedString
+				{
+					Spans = { span }
+				}
+			};
 
 			await InvokeOnMainThreadAsync(() =>
 			{

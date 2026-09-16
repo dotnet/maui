@@ -893,15 +893,26 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				LoadRecognizers();
 			}
-			else if (e.Is(TapGestureRecognizer.NumberOfTapsRequiredProperty) &&
-				sender is TapGestureRecognizer tapGesture &&
-				_gestureRecognizers.TryGetValue(tapGesture, out var uiRecognizers))
+			else if (e.Is(TapGestureRecognizer.NumberOfTapsRequiredProperty) && sender is TapGestureRecognizer tapGesture)
 			{
-				foreach (var uiRecognizer in uiRecognizers)
+				foreach (var kvp in _gestureRecognizers)
 				{
-					if (uiRecognizer is UITapGestureRecognizer uiTapGestureRecognizer)
+					var key = kvp.Key;
+
+					// Direct case: key IS the TapGestureRecognizer
+					// Span case: key is a ChildGestureRecognizer wrapping it
+					var resolvedGesture = key as TapGestureRecognizer
+						?? (key as ChildGestureRecognizer)?.GestureRecognizer as TapGestureRecognizer;
+
+					if (resolvedGesture != tapGesture)
+						continue;
+
+					foreach (var uiRecognizer in kvp.Value)
 					{
-						uiTapGestureRecognizer.NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired;
+						if (uiRecognizer is UITapGestureRecognizer uiTapGestureRecognizer)
+						{
+							uiTapGestureRecognizer.NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired;
+						}
 					}
 				}
 			}
