@@ -380,7 +380,7 @@ Describe 'Branch monitor workflow contract' {
         $workflow | Should -Match 'source_sha: \$\{\{ steps.tests.outputs.source_sha \}\}'
         $workflow | Should -Match '"source_sha=\$sha" >> \$env:GITHUB_OUTPUT'
         ([regex]::Matches($workflow, 'persist-credentials: false')).Count | Should -Be 2
-        ([regex]::Matches($workflow, 'GH_TOKEN:')).Count | Should -Be 1
+        ([regex]::Matches($workflow, 'GH_TOKEN:')).Count | Should -Be 2
         $gate = Get-Content (Join-Path $PSScriptRoot '../workflows/powershell-script-tests.yml') -Raw
         $gate | Should -Match 'maui-pr-branch-monitor.yml'
     }

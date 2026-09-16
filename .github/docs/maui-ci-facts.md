@@ -44,7 +44,8 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## Six-hour branch health monitor
 
-The regular GitHub Actions workflow `maui-pr-branch-monitor.yml` checks `maui-pr`
+The regular GitHub Actions workflow `maui-pr-branch-monitor.yml` (display name
+**MAUI branch and nightly monitor**) checks `maui-pr`
 every six hours (00:17, 06:17, 12:17, and 18:17 UTC). It monitors `inflight/current`,
 `inflight/candidate`, `main`, `net11.0`, and `net12.0`. Any configured branch that
 does not exist is explicitly reported as skipped and automatically included once
@@ -65,11 +66,41 @@ history, API errors, or ambiguous issue state fail the workflow visibly instead 
 being interpreted as green; unaffected branches are still checked. This monitor
 does not diagnose failures, run builds, or generate fixes, and uses no AI model.
 
+The same workflow also checks **daily nightly delivery** for `inflight/current`,
+`main`, `net11.0`, and `net12.0`. These are the active branches from the official
+nightly schedule in `eng/pipelines/ci-official.yml`; `inflight/candidate` is not a
+scheduled nightly lane. Absent branches are skipped.
+
+Nightly delivery is overdue at **30 hours** without a new matching published
+version of **both `Microsoft.Maui.Controls` and `Microsoft.Maui.Sdk`** (24 hours
+plus six hours of grace). Public NuGet registration timestamps, not build status
+or version ordering, are the evidence. The clock starts when the second package
+of the pair is published. A partial newer publish does not reset the clock for
+the previous complete pair.
+
+The monitor reads each branch's `eng/Versions.props` as data at its current SHA
+to select `dotnet<MajorVersion>` and the prerelease family/iteration. It does not
+execute MSBuild. Inflight uses its explicit `ci.inflight` override, never
+`ci.main`, so fresh main packages cannot hide stalled inflight delivery. Preview
+iterations are scoped separately. This is **package-stream freshness**, not proof
+that every workload pack was published, a workload installation succeeds, or a
+specific pipeline run produced the packages: branches that publish the same
+version family share the same feed evidence.
+
+An overdue or definitively missing package pair creates a separate
+`[nightly-delivery]` issue with the `ci-branch-health` label and pings `@kubaflo`.
+It uses the same deduplication and recovery rules as branch-build monitoring:
+unchanged outages do not repeatedly comment or ping; fresh delivery closes the
+nightly issue; another missed delivery can open a new outage even when the last
+published version is unchanged. API errors, incomplete registration pages, and
+invalid timestamps remain **unknown**, fail the workflow, and never close an
+issue. The nightly step still runs if the independent `maui-pr` step fails.
+
 Manual dispatch defaults to `dry_run: true`, which previews actions in the run's
 step summary without writing to GitHub. Set it to `false` to publish. Pester tests
 run against the repository default branch even when dispatch names another ref;
-publication uses that exact tested commit. The AzDO reads are anonymous and only the monitor
-step receives `GITHUB_TOKEN` (as `GH_TOKEN`), with `contents: read` and
+publication uses that exact tested commit. AzDO build and NuGet reads are anonymous;
+only the two monitor steps receive `GITHUB_TOKEN` (as `GH_TOKEN`), with `contents: read` and
 `issues: write` job permissions. No additional secrets are needed. Set repository
 variable `MAUI_PR_BRANCH_MONITOR_DISABLED=true` to stop monitoring writes and reads
 (the regression-test job still runs).
@@ -78,10 +109,11 @@ For a local read-only preview:
 
 ```powershell
 pwsh -File .github/scripts/Watch-MauiPrBranches.ps1
+pwsh -File .github/scripts/Watch-MauiNightlyDelivery.ps1
 ```
 
 Use an authenticated `gh` CLI for GitHub reads. Local regression coverage is
-`Invoke-Pester .github/scripts/Watch-MauiPrBranches.Tests.ps1`; the repository's
+`Invoke-Pester -Path .github/scripts/Watch-MauiPrBranches.Tests.ps1,.github/scripts/Watch-MauiNightlyDelivery.Tests.ps1`; the repository's
 PowerShell Script Tests workflow also runs it on relevant pull requests.
 
 ## AzDO data sources

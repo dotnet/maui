@@ -1,4 +1,4 @@
-name: maui-pr branch monitor
+name: MAUI branch and nightly monitor
 
 on:
   schedule:
@@ -37,9 +37,13 @@ jobs:
           $ErrorActionPreference = 'Stop'
           Install-Module Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
           Import-Module Pester -RequiredVersion 5.9.0
-          $result = Invoke-Pester ./.github/scripts/Watch-MauiPrBranches.Tests.ps1 -PassThru -Output Detailed
+          $paths = @(
+            './.github/scripts/Watch-MauiPrBranches.Tests.ps1'
+            './.github/scripts/Watch-MauiNightlyDelivery.Tests.ps1'
+          )
+          $result = Invoke-Pester -Path $paths -PassThru -Output Detailed
           if ($result.TotalCount -eq 0 -or $result.FailedCount -gt 0 -or
-              $result.Containers.Count -ne 1 -or @($result.Containers | Where-Object { -not $_.Passed }).Count -gt 0) {
+              $result.Containers.Count -ne $paths.Count -or @($result.Containers | Where-Object { -not $_.Passed }).Count -gt 0) {
             throw 'Branch monitor regression tests failed or did not load.'
           }
           $sha = git rev-parse HEAD
@@ -60,9 +64,18 @@ jobs:
           ref: ${{ needs.test.outputs.source_sha }}
           persist-credentials: false
       - name: Check maui-pr branch builds
+        id: branch_builds
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           MONITOR_APPLY: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
         run: |
           ./.github/scripts/Watch-MauiPrBranches.ps1 -Apply:($env:MONITOR_APPLY -ceq 'true')
+      - name: Check daily nightly delivery
+        if: ${{ success() || (failure() && steps.branch_builds.outcome == 'failure') }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MONITOR_APPLY: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
+        run: |
+          ./.github/scripts/Watch-MauiNightlyDelivery.ps1 -Apply:($env:MONITOR_APPLY -ceq 'true')

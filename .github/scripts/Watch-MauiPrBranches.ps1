@@ -89,7 +89,7 @@ function Get-BranchCiObservation {
     param([AllowNull()][string]$Body)
 
     if ($Body -match '(?m)^<!-- maui-pr-branch-build:([1-9][0-9]*);result:(failed|partiallySucceeded|succeeded) -->\r?$') {
-        return @{ BuildId = [long]$Matches[1]; Result = $Matches[2] }
+        return @{ Sequence = [long]$Matches[1]; Key = $Matches[1]; Result = $Matches[2] }
     }
     return $null
 }
@@ -121,16 +121,16 @@ function Format-BranchCiObservation {
 }
 
 function Get-BranchCiHistory {
-    param([hashtable]$Issue, [string]$Branch)
+    param([hashtable]$Issue, [string]$Marker, [scriptblock]$Parser)
 
-    $initial = Get-BranchCiObservation $Issue.body
+    $initial = & $Parser $Issue.body
     if ($null -eq $initial) { throw "Monitor issue #$($Issue.number) has no valid build marker." }
     $observations = @($initial)
     $comments = @(Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($Issue.number)/comments?per_page=100" -Paginate)
     foreach ($comment in ($comments | Sort-Object { $_.id })) {
         if ($null -eq $comment.user -or $comment.user.login -cne 'github-actions[bot]') { continue }
-        if (([string]$comment.body -split '\r?\n') -cnotcontains (Get-BranchCiMarker $Branch)) { continue }
-        $observation = Get-BranchCiObservation $comment.body
+        if (([string]$comment.body -split '\r?\n') -cnotcontains $Marker) { continue }
+        $observation = & $Parser $comment.body
         if ($null -eq $observation) { throw "Monitor comment on #$($Issue.number) has no valid build marker." }
         $observations += $observation
     }
@@ -143,22 +143,86 @@ function Initialize-BranchCiLabel {
         $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/labels" -Method POST -Body @{
             name = $script:BranchCiLabel
             color = 'B60205'
-            description = 'maui-pr branch outage tracked by the six-hour branch monitor'
+            description = 'Branch build and nightly delivery outages tracked every six hours'
         }
     }
+}
+
+function Get-BranchCiIssues {
+    # Use the paginated issues API, not search: search indexing can lag issue creation.
+    Invoke-BranchCiGitHub -Endpoint (
+        "repos/$script:BranchCiRepo/issues?state=all&labels=$script:BranchCiLabel" +
+        '&creator=github-actions%5Bbot%5D&per_page=100&sort=created&direction=desc'
+    ) -Paginate
+}
+
+function Sync-BranchCiIssue {
+    param(
+        [array]$Issues, [string]$Marker, [hashtable]$Observation,
+        [scriptblock]$Parser, [bool]$Healthy, [string]$Title,
+        [string]$Body, [string]$NewIssueBody, [switch]$Apply
+    )
+
+    $owned = @($Issues | Where-Object {
+        -not $_.ContainsKey('pull_request') -and
+        $null -ne $_.user -and $_.user.login -ceq 'github-actions[bot]' -and
+        $script:BranchCiLabel -cin @($_.labels | ForEach-Object { $_.name }) -and
+        (([string]$_.body -split '\r?\n') -ccontains $Marker)
+    } | Sort-Object { $_.number } -Descending)
+    $open = @($owned | Where-Object { $_.state -ceq 'open' })
+    if ($open.Count -gt 1) { throw 'Multiple open monitor issues; refusing ambiguous writes.' }
+    $issue = if ($open.Count -eq 1) { $open[0] } elseif ($owned.Count -gt 0) { $owned[0] } else { $null }
+    $last = $null
+    if ($null -ne $issue) {
+        $history = @(Get-BranchCiHistory -Issue $issue -Marker $Marker -Parser $Parser)
+        $last = $history[-1]
+        $sequences = @($history | Where-Object { $null -ne $_.Sequence })
+        if ($null -ne $Observation.Sequence -and $sequences.Count -gt 0 -and
+            $Observation.Sequence -lt ($sequences | Measure-Object -Property Sequence -Maximum).Maximum) {
+            throw "Latest available observation predates the history on #$($issue.number); health is unknown."
+        }
+    }
+    $same = $null -ne $last -and $last.Key -ceq $Observation.Key -and $last.Result -ceq $Observation.Result
+    $action = 'No change'
+    if ($Healthy) {
+        if ($open.Count -eq 1) {
+            $action = "Close #$($issue.number) after recovery"
+            if ($Apply) {
+                if (-not $same) {
+                    $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($issue.number)/comments" -Method POST -Body @{ body = $Body }
+                }
+                $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($issue.number)" -Method PATCH -Body @{
+                    state = 'closed'; state_reason = 'completed'
+                }
+            }
+        }
+    } elseif (-not $same) {
+        if ($open.Count -eq 1) {
+            $action = "Report new failure on #$($issue.number)"
+            if ($Apply) {
+                $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($issue.number)/comments" -Method POST -Body @{ body = $Body }
+            }
+        } else {
+            $action = 'Create outage issue and notify @kubaflo'
+            if ($Apply) {
+                Initialize-BranchCiLabel
+                $created = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues" -Method POST -Body @{
+                    title = $Title; body = $NewIssueBody; labels = @($script:BranchCiLabel)
+                }
+                $action = "Created #$($created.number); notified @kubaflo"
+            }
+        }
+    }
+    if (-not $Apply) { $action = "Dry run: $action" }
+    return $action
 }
 
 function Invoke-BranchCiMonitor {
     param([switch]$Apply)
 
-    # Use the paginated issues API, not search: search indexing can lag issue creation.
-    $issues = @(Invoke-BranchCiGitHub -Endpoint (
-        "repos/$script:BranchCiRepo/issues?state=all&labels=$script:BranchCiLabel" +
-        '&creator=github-actions%5Bbot%5D&per_page=100&sort=created&direction=desc'
-    ) -Paginate)
+    $issues = @(Get-BranchCiIssues)
     $rows = @('| Branch | Observation | Action |', '| --- | --- | --- |')
     $errors = @()
-    $labelReady = $false
 
     foreach ($branch in $script:BranchCiBranches) {
         try {
@@ -171,63 +235,11 @@ function Invoke-BranchCiMonitor {
 
             $build = Get-BranchCiLatestBuild $branch
             $marker = Get-BranchCiMarker $branch
-            $owned = @($issues | Where-Object {
-                -not $_.ContainsKey('pull_request') -and
-                $null -ne $_.user -and $_.user.login -ceq 'github-actions[bot]' -and
-                $script:BranchCiLabel -cin @($_.labels | ForEach-Object { $_.name }) -and
-                (([string]$_.body -split '\r?\n') -ccontains $marker)
-            } | Sort-Object { $_.number } -Descending)
-            $open = @($owned | Where-Object { $_.state -ceq 'open' })
-            if ($open.Count -gt 1) { throw "Multiple open monitor issues for $branch; refusing ambiguous writes." }
-            $issue = if ($open.Count -eq 1) { $open[0] } elseif ($owned.Count -gt 0) { $owned[0] } else { $null }
-            $last = $null
-            if ($null -ne $issue) {
-                $history = @(Get-BranchCiHistory -Issue $issue -Branch $branch)
-                $last = $history[-1]
-                $maxBuildId = ($history | Measure-Object -Property BuildId -Maximum).Maximum
-                if ($build.id -lt $maxBuildId) {
-                    throw "Latest available build predates the history on #$($issue.number); CI health is unknown."
-                }
-            }
-            $same = $null -ne $last -and $last.BuildId -eq $build.id -and $last.Result -ceq $build.result
             $body = Format-BranchCiObservation -Branch $branch -Build $build
-            $action = 'No change'
-
-            if ($build.result -ceq 'succeeded') {
-                if ($open.Count -eq 1) {
-                    $action = "Close #$($issue.number) after recovery"
-                    if ($Apply) {
-                        if (-not $same) {
-                            $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($issue.number)/comments" -Method POST -Body @{ body = $body }
-                        }
-                        $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($issue.number)" -Method PATCH -Body @{
-                            state = 'closed'; state_reason = 'completed'
-                        }
-                    }
-                }
-            } elseif (-not $same) {
-                if ($open.Count -eq 1) {
-                    $action = "Report new failure on #$($issue.number)"
-                    if ($Apply) {
-                        $null = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues/$($issue.number)/comments" -Method POST -Body @{ body = $body }
-                    }
-                } else {
-                    $action = 'Create outage issue and notify @kubaflo'
-                    if ($Apply) {
-                        if (-not $labelReady) {
-                            Initialize-BranchCiLabel
-                            $labelReady = $true
-                        }
-                        $created = Invoke-BranchCiGitHub -Endpoint "repos/$script:BranchCiRepo/issues" -Method POST -Body @{
-                            title = "[maui-pr] $branch is failing"
-                            body = Format-BranchCiObservation -Branch $branch -Build $build -NewIssue
-                            labels = @($script:BranchCiLabel)
-                        }
-                        $action = "Created #$($created.number); notified @kubaflo"
-                    }
-                }
-            }
-            if (-not $Apply) { $action = "Dry run: $action" }
+            $action = Sync-BranchCiIssue -Issues $issues -Marker $marker `
+                -Observation (Get-BranchCiObservation $body) -Parser { param($text) Get-BranchCiObservation $text } `
+                -Healthy ($build.result -ceq 'succeeded') -Title "[maui-pr] $branch is failing" `
+                -Body $body -NewIssueBody (Format-BranchCiObservation -Branch $branch -Build $build -NewIssue) -Apply:$Apply
             $rows += "| $branch | Build $($build.id): $($build.result) | $action |"
         } catch {
             $errors += "${branch}: $($_.Exception.Message)"

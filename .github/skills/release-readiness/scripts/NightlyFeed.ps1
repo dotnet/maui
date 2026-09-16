@@ -72,7 +72,15 @@ function ConvertTo-NightlyFeedUtc {
         Parse a feed catalog timestamp into a UTC [datetime], or $null if unparseable /
         an unlisted-package sentinel (year 1900).
     #>
-    param([string]$Value)
+    param($Value)
+    if ($Value -is [datetimeoffset]) { $Value = $Value.UtcDateTime }
+    if ($Value -is [datetime]) {
+        if ($Value.Year -lt 2000) { return $null }
+        if ($Value.Kind -eq [DateTimeKind]::Unspecified) {
+            return [datetime]::SpecifyKind($Value, [DateTimeKind]::Utc)
+        }
+        return $Value.ToUniversalTime()
+    }
     if ([string]::IsNullOrWhiteSpace($Value)) { return $null }
     $dt = [datetime]::MinValue
     $styles = [System.Globalization.DateTimeStyles]::AdjustToUniversal -bor `
@@ -96,13 +104,17 @@ function Get-NightlyFeedFreshness {
     .PARAMETER Fetcher
         Optional scriptblock { param($Url) ... } returning parsed JSON. Lets tests inject
         canned registration responses; defaults to Invoke-RestMethod.
+    .PARAMETER IncludeVersions
+        Also return all matching publications, for callers checking coordinated
+        delivery of multiple packages. The default result shape is unchanged.
     #>
     param(
         [Parameter(Mandatory)][string]$Feed,
         [string]$Package = 'Microsoft.Maui.Controls',
         [string]$VersionPrefixRegex,
         [int]$TimeoutSec = 20,
-        [scriptblock]$Fetcher
+        [scriptblock]$Fetcher,
+        [switch]$IncludeVersions
     )
 
     $get = if ($Fetcher) {
@@ -137,6 +149,7 @@ function Get-NightlyFeedFreshness {
 
         $bestVersion = $null
         $bestPublished = $null
+        $versions = [System.Collections.Generic.List[object]]::new()
         foreach ($page in $pages) {
             $leaves = Get-NightlyFeedProp $page 'items'
             if (-not $leaves) {
@@ -148,11 +161,13 @@ function Get-NightlyFeedFreshness {
             foreach ($leaf in $leaves) {
                 $ce = Get-NightlyFeedProp $leaf 'catalogEntry'
                 if (-not $ce) { continue }
+                if ((Get-NightlyFeedProp $ce 'listed') -eq $false) { continue }
                 $ver = [string](Get-NightlyFeedProp $ce 'version')
                 if ([string]::IsNullOrWhiteSpace($ver)) { continue }
                 if ($VersionPrefixRegex -and ($ver -notmatch $VersionPrefixRegex)) { continue }
-                $pub = ConvertTo-NightlyFeedUtc ([string](Get-NightlyFeedProp $ce 'published'))
+                $pub = ConvertTo-NightlyFeedUtc (Get-NightlyFeedProp $ce 'published')
                 if (-not $pub) { continue }
+                if ($IncludeVersions) { $versions.Add(@{ version = $ver; published = $pub }) }
                 if ($null -eq $bestPublished -or $pub -gt $bestPublished) {
                     $bestPublished = $pub
                     $bestVersion = $ver
@@ -161,15 +176,19 @@ function Get-NightlyFeedFreshness {
         }
 
         if (-not $bestVersion) {
-            return @{ feed = $Feed; package = $Package; matched = $false }
+            $result = @{ feed = $Feed; package = $Package; matched = $false }
+            if ($IncludeVersions) { $result['versions'] = @() }
+            return $result
         }
-        return @{
+        $result = @{
             feed      = $Feed
             package   = $Package
             version   = $bestVersion
             published = $bestPublished
             matched   = $true
         }
+        if ($IncludeVersions) { $result['versions'] = $versions.ToArray() }
+        return $result
     } catch {
         # Fail-open: a network/parse error yields $null so the caller renders a muted
         # "unknown" banner rather than crashing the unattended job. Surface the reason to
@@ -482,4 +501,3 @@ function Format-ReportFreshnessBanner {
     }
     return "> 🕐 _Report generated $agePhrase._"
 }
-
