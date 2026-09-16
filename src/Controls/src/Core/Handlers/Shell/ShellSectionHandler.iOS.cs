@@ -875,9 +875,10 @@ namespace Microsoft.Maui.Controls.Handlers
             var animated = e.Animated;
 
             Task<bool> popTask;
-            if (_isInMoreTab && _navigationController.ParentViewController is UITabBarController tabBarController)
+            var navigationController = ActiveNavigationController();
+            if (!ReferenceEquals(navigationController, _navigationController))
             {
-                _ = tabBarController.MoreNavigationController.PopViewController(animated);
+                _ = navigationController.PopViewController(animated);
                 CompletePopImmediately();
                 popTask = Task.FromResult(true);
             }
@@ -897,14 +898,20 @@ namespace Microsoft.Maui.Controls.Handlers
             var pages = VirtualView.Stack.ToList();
 
             Task<bool> task;
-            if (_rootViewController is not null)
+            var navigationController = ActiveNavigationController();
+            if (_rootViewController is not null && !ReferenceEquals(navigationController, _navigationController))
+            {
+                navigationController.PopToViewController(_rootViewController, animated);
+                task = Task.FromResult(true);
+            }
+            else if (_rootViewController is not null)
             {
                 // Avoid sending UINavigationController a duplicate pop-to-root request.
                 task = PopToRootViewController(_rootViewController, animated);
             }
             else
             {
-                _navigationController.PopToRootViewController(animated);
+                navigationController.PopToRootViewController(animated);
                 task = Task.FromResult(true);
             }
 
@@ -950,10 +957,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (viewController is not null)
             {
-                if (viewController == _navigationController.TopViewController)
+                if (viewController == ActiveNavigationController().TopViewController)
                 {
                     e.Animated = false;
                     OnPopRequested(e);
+                    return;
                 }
 
                 RemoveViewController(viewController);
@@ -1014,7 +1022,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal bool SendPop(UIViewController? topViewController = null)
         {
-            if (ActiveViewControllers().Length < _navigationController.NavigationBar.Items!.Length)
+            var navigationController = ActiveNavigationController();
+            var navigationBar = navigationController.NavigationBar;
+
+            if (ActiveViewControllers().Length < navigationBar.Items!.Length)
             {
                 return true;
             }
@@ -1030,7 +1041,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _sendPopPending = true;
             }
 
-            topViewController ??= _navigationController.TopViewController;
+            topViewController ??= navigationController.TopViewController;
             foreach (var tracker in _trackers)
             {
                 if (tracker.Value.ViewController == topViewController)
@@ -1075,7 +1086,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     return;
                 }
 
-                var navItemsCount = _navigationController.NavigationBar.Items!.Length;
+                var navItemsCount = navigationBar.Items!.Length;
 
                 try
                 {
@@ -1086,11 +1097,11 @@ namespace Microsoft.Maui.Controls.Handlers
                     _sendPopPending = false;
                 }
 
-                if (_navigationController.NavigationBar.Items!.Length == navItemsCount)
+                if (navigationBar.Items!.Length == navItemsCount)
                 {
-                    for (int i = 0; i < _navigationController.NavigationBar.Subviews.Length; i++)
+                    for (int i = 0; i < navigationBar.Subviews.Length; i++)
                     {
-                        var child = _navigationController.NavigationBar.Subviews[i];
+                        var child = navigationBar.Subviews[i];
                         if (child.Alpha != 1)
                         {
                             UIView.Animate(.2f, () => child.Alpha = 1);
@@ -1685,16 +1696,59 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void InsertViewController(int index, UIViewController viewController)
         {
-            _navManager?.InsertViewController(index, viewController);
+            var navigationController = ActiveNavigationController();
+            if (ReferenceEquals(navigationController, _navigationController))
+            {
+                _navManager?.InsertViewController(index, viewController);
+                return;
+            }
+
+            var viewControllers = navigationController.ViewControllers ?? Array.Empty<UIViewController>();
+            var sectionIndex = Array.IndexOf(viewControllers, _rootViewController);
+            navigationController.ViewControllers = viewControllers.Insert(sectionIndex + index, viewController);
         }
 
         void RemoveViewController(UIViewController viewController)
         {
-            _navManager?.RemoveViewController(viewController);
+            var navigationController = ActiveNavigationController();
+            if (ReferenceEquals(navigationController, _navigationController))
+            {
+                _navManager?.RemoveViewController(viewController);
+                return;
+            }
+
+            var viewControllers = navigationController.ViewControllers ?? Array.Empty<UIViewController>();
+            if (viewControllers.Contains(viewController))
+            {
+                navigationController.ViewControllers = viewControllers.Remove(viewController);
+            }
+        }
+
+        UINavigationController ActiveNavigationController()
+        {
+            if (_isInMoreTab &&
+                _navigationController.ParentViewController is UITabBarController tabBarController)
+            {
+                return tabBarController.MoreNavigationController;
+            }
+
+            return _navigationController;
         }
 
         UIViewController[] ActiveViewControllers()
-            => _navManager?.ActiveViewControllers() ?? Array.Empty<UIViewController>();
+        {
+            var navigationController = ActiveNavigationController();
+            if (ReferenceEquals(navigationController, _navigationController))
+            {
+                return _navManager?.ActiveViewControllers() ?? Array.Empty<UIViewController>();
+            }
+
+            var viewControllers = navigationController.ViewControllers ?? Array.Empty<UIViewController>();
+            var sectionIndex = Array.IndexOf(viewControllers, _rootViewController);
+            return sectionIndex >= 0
+                ? viewControllers.Skip(sectionIndex).ToArray()
+                : _navManager?.ActiveViewControllers() ?? Array.Empty<UIViewController>();
+        }
 
         void ClearPendingViewControllers()
             => _navManager?.ClearPendingViewControllers();

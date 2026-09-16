@@ -143,11 +143,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
+			var navigationBar = ActiveNavigationController().NavigationBar;
+			if (_shellSection?.Stack is null || navigationBar?.Items is null)
 				return true;
 
 			// If stacks are in sync, nothing to do
-			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
+			if (_shellSection.Stack.Count == navigationBar.Items.Length)
 				return true;
 
 			// Stacks out of sync: treat as user-initiated back (e.g., swipe-back).
@@ -158,8 +159,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal bool SendPop(UIViewController topViewController = null)
 		{
+			var navigationController = ActiveNavigationController();
+			var navigationBar = navigationController.NavigationBar;
+
 			// this means the pop is already done, nothing we can do
-			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
+			if (ActiveViewControllers().Length < navigationBar.Items.Length)
 				return true;
 
 			// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
@@ -174,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_sendPopPending = true;
 			}
 
-			topViewController ??= TopViewController;
+			topViewController ??= navigationController.TopViewController;
 			foreach (var tracker in _trackers)
 			{
 				if (tracker.Value.ViewController == topViewController)
@@ -219,7 +223,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// we now route this through "GoToAsync"
 			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(async () =>
 			{
-				var navItemsCount = NavigationBar.Items.Length;
+				var navItemsCount = navigationBar.Items.Length;
 
 				try
 				{
@@ -231,11 +235,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				// This means the navigation was cancelled
-				if (NavigationBar.Items.Length == navItemsCount)
+				if (navigationBar.Items.Length == navItemsCount)
 				{
-					for (int i = 0; i < NavigationBar.Subviews.Length; i++)
+					for (int i = 0; i < navigationBar.Subviews.Length; i++)
 					{
-						var child = NavigationBar.Subviews[i];
+						var child = navigationBar.Subviews[i];
 						if (child.Alpha != 1)
 							UIView.Animate(.2f, () => child.Alpha = 1);
 					}
@@ -590,7 +594,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_ignorePopCall = true;
 				_completionTasks[_renderer.ViewController] = task;
 				e.Task = task.Task;
-				PopToRootViewController(animated);
+				var navigationController = ActiveNavigationController();
+				if (ReferenceEquals(navigationController, this))
+				{
+					PopToRootViewController(animated);
+				}
+				else
+				{
+					navigationController.PopToViewController(_renderer.ViewController, animated);
+					HandleMoreNavigationCompletionTasks(_renderer.ViewController);
+				}
 			}
 			finally
 			{
@@ -629,10 +642,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (viewController != null)
 			{
-				if (viewController == TopViewController)
+				if (viewController == ActiveNavigationController().TopViewController)
 				{
 					e.Animated = false;
 					OnPopRequested(e);
+					return;
 				}
 
 				RemoveViewController(viewController);
@@ -784,11 +798,42 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		UIViewController[] ActiveViewControllers() =>
-			_pendingViewControllers ?? base.ViewControllers;
+		UINavigationController ActiveNavigationController()
+		{
+			if (IsInMoreTab && MoreNavigationController is UINavigationController moreNavigationController)
+			{
+				return moreNavigationController;
+			}
+
+			return this;
+		}
+
+		UIViewController[] ActiveViewControllers()
+		{
+			var navigationController = ActiveNavigationController();
+			if (ReferenceEquals(navigationController, this))
+			{
+				return _pendingViewControllers ?? base.ViewControllers;
+			}
+
+			var viewControllers = navigationController.ViewControllers;
+			var sectionIndex = Array.IndexOf(viewControllers, _renderer.ViewController);
+			return sectionIndex >= 0 ? viewControllers.Skip(sectionIndex).ToArray() : base.ViewControllers;
+		}
 
 		void RemoveViewController(UIViewController viewController)
 		{
+			var navigationController = ActiveNavigationController();
+			if (!ReferenceEquals(navigationController, this))
+			{
+				var viewControllers = navigationController.ViewControllers;
+				if (viewControllers.Contains(viewController))
+				{
+					navigationController.ViewControllers = viewControllers.Remove(viewController);
+				}
+				return;
+			}
+
 			_pendingViewControllers = _pendingViewControllers ?? base.ViewControllers;
 			if (_pendingViewControllers.Contains(viewController))
 				_pendingViewControllers = _pendingViewControllers.Remove(viewController);
@@ -798,6 +843,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void InsertViewController(int index, UIViewController viewController)
 		{
+			var navigationController = ActiveNavigationController();
+			if (!ReferenceEquals(navigationController, this))
+			{
+				var viewControllers = navigationController.ViewControllers;
+				var sectionIndex = Array.IndexOf(viewControllers, _renderer.ViewController);
+				navigationController.ViewControllers = viewControllers.Insert(sectionIndex + index, viewController);
+				return;
+			}
+
 			_pendingViewControllers = _pendingViewControllers ?? base.ViewControllers;
 			_pendingViewControllers = _pendingViewControllers.Insert(index, viewController);
 			ViewControllers = _pendingViewControllers;
