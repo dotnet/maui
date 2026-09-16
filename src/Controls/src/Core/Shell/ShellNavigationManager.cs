@@ -52,8 +52,14 @@ namespace Microsoft.Maui.Controls
 			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
 				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
 
-			if (shellNavigationParameters.PagePushing != null && navigationRequest == null)
-				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
+			bool registeredPagePushingRoute = shellNavigationParameters.PagePushing is not null && navigationRequest is null;
+			string pagePushingRoute = null;
+			Page previousPagePushingRoute = null;
+			if (registeredPagePushingRoute)
+			{
+				pagePushingRoute = Routing.GetRoute(shellNavigationParameters.PagePushing);
+				previousPagePushingRoute = Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
+			}
 
 			var state = shellNavigationParameters.TargetState ?? new ShellNavigationState(Routing.GetRoute(shellNavigationParameters.PagePushing), false);
 			bool? animate = shellNavigationParameters.Animated;
@@ -82,7 +88,14 @@ namespace Microsoft.Maui.Controls
 						accept = await navigatingArgs.DeferredTask;
 
 					if (!accept)
+					{
+						if (registeredPagePushingRoute)
+						{
+							Routing.UnregisterImplicitPageRoute(shellNavigationParameters.PagePushing, pagePushingRoute, previousPagePushingRoute);
+						}
+
 						return;
+					}
 				}
 			}
 
