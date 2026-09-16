@@ -394,6 +394,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_automationSetUpdateQueued = false;
 		_automationDataItemCount = -1;
 		_automationExcludedIndexes = null;
+		_accessibilityHelper?.CleanUp();
 	}
 
 	static bool IsAutomationDataItem(object? item) =>

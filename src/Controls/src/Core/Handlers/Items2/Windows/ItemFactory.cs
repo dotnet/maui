@@ -151,7 +151,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			if (wrapper is not null)
 			{
 				var isHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-				container.IsTabStop = !isHeaderOrFooter;
+				container.IsTabStop = true;
 
 				if (wrapper.VirtualView is View semanticView)
 				{

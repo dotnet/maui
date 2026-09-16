@@ -200,7 +200,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 				_containerPreparedHandler = null;
 			}
 
-			platformView.IsTabStop = true;
+
 			if (_selectionDirty)
 			{
 				_selectionDirty = false;
@@ -239,6 +239,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		{
 			ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		}
+
 
 		base.DisconnectHandler(platformView);
 	}
