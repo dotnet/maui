@@ -410,56 +410,59 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (PlatformView is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
 				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
-				void ResetCachedConstraintsIfItemsSourceChanged(object itemsSource)
-				{
-					if (itemsSource is null)
-					{
-						if (_itemsSource is not null)
-						{
-							_itemsSource = null;
-							_cachedConstraints = default;
-						}
+			}
+		}
 
-						return;
+
+		bool IsUsingVSMForSelectionColor(View view)
+		{
+			var groups = VisualStateManager.GetVisualStateGroups(view);
+			for (var groupIndex = 0; groupIndex < groups.Count; groupIndex++)
+			{
+				var group = groups[groupIndex];
+				for (var stateIndex = 0; stateIndex < group.States.Count; stateIndex++)
+				{
+					var state = group.States[stateIndex];
+					if (state.Name != VisualStateManager.CommonStates.Selected)
+					{
+						continue;
 					}
 
-					if (_itemsSource is null ||
-						!_itemsSource.TryGetTarget(out var previousItemsSource) ||
-						!ReferenceEquals(previousItemsSource, itemsSource))
+					for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
 					{
-						_itemsSource = new(itemsSource);
-						_cachedConstraints = default;
-					}
-				}
-
-				bool IsUsingVSMForSelectionColor(View view)
-				{
-					var groups = VisualStateManager.GetVisualStateGroups(view);
-					for (var groupIndex = 0; groupIndex < groups.Count; groupIndex++)
-					{
-						var group = groups[groupIndex];
-						for (var stateIndex = 0; stateIndex < group.States.Count; stateIndex++)
+						var setter = state.Setters[setterIndex];
+						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+							setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 						{
-							var state = group.States[stateIndex];
-							if (state.Name != VisualStateManager.CommonStates.Selected)
-							{
-								continue;
-							}
-
-							for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
-							{
-								var setter = state.Setters[setterIndex];
-								if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-									setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
-								{
-									return true;
-								}
-							}
+							return true;
 						}
 					}
-
-					return false;
 				}
+			}
+
+			return false;
+		}
+		void ResetCachedConstraintsIfItemsSourceChanged(object itemsSource)
+		{
+			if (itemsSource is null)
+			{
+				if (_itemsSource is not null)
+				{
+					_itemsSource = null;
+					_cachedConstraints = default;
+				}
+
+				return;
+			}
+
+			if (_itemsSource is null ||
+				!_itemsSource.TryGetTarget(out var previousItemsSource) ||
+				!ReferenceEquals(previousItemsSource, itemsSource))
+			{
+				_itemsSource = new(itemsSource);
+				_cachedConstraints = default;
+			}
+		}
 
 		public override bool Selected
 		{
