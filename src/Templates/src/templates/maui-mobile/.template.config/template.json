@@ -121,6 +121,7 @@
             "Converter/**",
             "Data/**",
             "GlobalUsings.cs",
+            "GlobalXmlns.cs",
             "Messages/**",
             "Models/**",
             "PageModels/**",

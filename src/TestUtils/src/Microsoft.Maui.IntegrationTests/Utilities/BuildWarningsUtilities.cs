@@ -1,3 +1,4 @@
+using System.Collections;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -96,6 +97,45 @@ namespace Microsoft.Maui.IntegrationTests
 			return actualWarnings;
 		}
 
+		public static void AssertProjectProperties(string binlog, string projectFile, string framework, params (string name, string value)[] expected)
+		{
+			Assert.True(System.IO.File.Exists(binlog), $"Binlog not found: {binlog}");
+			var evaluations = new List<Dictionary<string, string>>();
+			foreach (var record in new BinLogReader().ReadRecords(binlog))
+			{
+				if (record.Args is not ProjectStartedEventArgs project ||
+					!SameProject(project.ProjectFile, projectFile) || project.Properties is null)
+					continue;
+
+				var properties = project.Properties.Cast<DictionaryEntry>().ToDictionary(
+					entry => (string)entry.Key, entry => entry.Value?.ToString() ?? "", StringComparer.OrdinalIgnoreCase);
+				if (properties.TryGetValue("TargetFramework", out var targetFramework) && targetFramework == framework)
+					evaluations.Add(properties);
+			}
+
+			Assert.True(evaluations.Any(properties => expected.All(property =>
+				properties.TryGetValue(property.name, out var value) && string.Equals(value, property.value, StringComparison.OrdinalIgnoreCase))),
+				$"No project instance for '{projectFile}' ({framework}) had {string.Join(", ", expected.Select(p => $"{p.name}={p.value}"))}. " +
+				$"Observed: {string.Join("; ", evaluations.Select(properties => string.Join(", ", expected.Select(p => $"{p.name}={properties.GetValueOrDefault(p.name, "<missing>")}"))))}. See {binlog}.");
+		}
+
+		public static void AssertTaskSucceeded(string binlog, string projectFile, string taskName)
+		{
+			Assert.True(new BinLogReader().ReadRecords(binlog).Any(record =>
+				record.Args is TaskFinishedEventArgs task && task.Succeeded && task.TaskName == taskName && SameProject(task.ProjectFile, projectFile)),
+				$"Expected task '{taskName}' to execute successfully for '{projectFile}'. See {binlog}.");
+		}
+
+		public static void AssertTargetSucceeded(string binlog, string projectFile, string targetName)
+		{
+			Assert.True(new BinLogReader().ReadRecords(binlog).Any(record =>
+				record.Args is TargetFinishedEventArgs target && target.Succeeded && target.TargetName == targetName && SameProject(target.ProjectFile, projectFile)),
+				$"Expected target '{targetName}' to finish successfully for '{projectFile}'. See {binlog}.");
+		}
+
+		static bool SameProject(string? actual, string expected) =>
+			!string.IsNullOrEmpty(actual) && string.Equals(Path.GetFullPath(actual), Path.GetFullPath(expected), StringComparison.OrdinalIgnoreCase);
+
 		private static void AddActualWarning(this List<WarningsPerFile> warnings, string file, string code, string message)
 		{
 			var warningsPerFile = warnings.FirstOrDefault(w => w.File == file);
@@ -145,12 +185,14 @@ namespace Microsoft.Maui.IntegrationTests
 			foreach (var expectedWarningsPerFile in expectedWarnings)
 			{
 				var actualWarningsPerFile = actualWarnings.FirstOrDefault(actualWarning => actualWarning.File.CompareWarningsFilePaths(expectedWarningsPerFile.File));
-				if (actualWarningsPerFile is null) Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
+				if (actualWarningsPerFile is null)
+					Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
 
 				foreach (var expectedWarningsPerCode in expectedWarningsPerFile.WarningsPerCode)
 				{
 					var actualWarningsPerCode = actualWarningsPerFile!.WarningsPerCode.FirstOrDefault(x => x.Code == expectedWarningsPerCode.Code);
-					if (actualWarningsPerCode is null) Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
+					if (actualWarningsPerCode is null)
+						Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
 
 					foreach (var expectedWarningsMessage in expectedWarningsPerCode.Messages)
 					{

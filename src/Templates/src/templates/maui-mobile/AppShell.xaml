@@ -2,7 +2,6 @@
     x:Class="MauiApp._1.AppShell"
 <!--#if (UseSampleContent) -->
     xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit"
-    xmlns:pages="clr-namespace:MauiApp._1.Pages"
 <!--#endif -->
 <!--#if (!UseSampleContent) -->
     xmlns:local="clr-namespace:MauiApp._1"
@@ -22,7 +21,7 @@
     <ShellContent
         Title="Dashboard"
         Icon="{StaticResource IconDashboard}"
-        ContentTemplate="{DataTemplate pages:MainPage}"
+        ContentTemplate="{DataTemplate MainPage}"
         Route="main"
         SemanticProperties.Description="Dashboard"
         SemanticProperties.Hint="Navigate to dashboard"/>
@@ -30,7 +29,7 @@
     <ShellContent
         Title="Projects"
         Icon="{StaticResource IconProjects}"
-        ContentTemplate="{DataTemplate pages:ProjectListPage}"
+        ContentTemplate="{DataTemplate ProjectListPage}"
         Route="projects"
         SemanticProperties.Description="Projects"
         SemanticProperties.Hint="Navigate to projects"/>
@@ -38,14 +37,15 @@
     <ShellContent
         Title="Manage Meta"
         Icon="{StaticResource IconMeta}"
-        ContentTemplate="{DataTemplate pages:ManageMetaPage}"
+        ContentTemplate="{DataTemplate ManageMetaPage}"
         Route="manage"
         SemanticProperties.Description="Manage Meta"
         SemanticProperties.Hint="Navigate to manage meta"/>
 
     <Shell.FlyoutFooter>
         <Grid Padding="15">
-            <sf:SfSegmentedControl x:Name="ThemeSegmentedControl" 
+            <sf:SfSegmentedControl x:Name="ThemeSegmentedControl"
+                AutomationId="ThemeSelector"
                 VerticalOptions="Center" HorizontalOptions="Center" SelectionChanged="SfSegmentedControl_SelectionChanged"
                 SegmentWidth="40" SegmentHeight="40">
                 <sf:SfSegmentedControl.ItemsSource>

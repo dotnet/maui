@@ -1,6 +1,5 @@
 ﻿<?xaml-comp compile="true" ?>
 <ResourceDictionary 
-    xmlns:f="clr-namespace:Fonts"
     xmlns:pullToRefresh="clr-namespace:Syncfusion.Maui.Toolkit.PullToRefresh;assembly=Syncfusion.Maui.Toolkit"
     xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit">
 
@@ -48,55 +47,55 @@
     </OnIdiom>
 
     <FontImageSource x:Key="IconDashboard"
-                     Glyph="{x:Static f:FluentUI.diagram_24_regular}"
-                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Glyph="{x:Static FluentUI.diagram_24_regular}"
+                     FontFamily="{x:Static FluentUI.FontFamily}"
                      Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                      Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconProjects"
-                     Glyph="{x:Static f:FluentUI.list_24_regular}"
-                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Glyph="{x:Static FluentUI.list_24_regular}"
+                     FontFamily="{x:Static FluentUI.FontFamily}"
                      Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                      Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconMeta"
-                     Glyph="{x:Static f:FluentUI.info_24_regular}"
-                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Glyph="{x:Static FluentUI.info_24_regular}"
+                     FontFamily="{x:Static FluentUI.FontFamily}"
                      Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                      Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconRibbon"
-                     Glyph="{x:Static f:FluentUI.ribbon_20_regular}"
-                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Glyph="{x:Static FluentUI.ribbon_20_regular}"
+                     FontFamily="{x:Static FluentUI.FontFamily}"
                      Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                      Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconAdd"
-                Glyph="{x:Static f:FluentUI.add_32_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
+                Glyph="{x:Static FluentUI.add_32_regular}"
+                FontFamily="{x:Static FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource IconSize}" />
 
     <FontImageSource x:Key="IconDelete"
-                Glyph="{x:Static f:FluentUI.delete_32_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
+                Glyph="{x:Static FluentUI.delete_32_regular}"
+                FontFamily="{x:Static FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource IconSize}" />
 
         <FontImageSource x:Key="IconClean"
-                Glyph="{x:Static f:FluentUI.broom_32_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
+                Glyph="{x:Static FluentUI.broom_32_regular}"
+                FontFamily="{x:Static FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource size240}" />
 
         <FontImageSource x:Key="IconLight"
-                Glyph="{x:Static f:FluentUI.weather_sunny_28_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
+                Glyph="{x:Static FluentUI.weather_sunny_28_regular}"
+                FontFamily="{x:Static FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource size240}" />
         <FontImageSource x:Key="IconDark"
-                Glyph="{x:Static f:FluentUI.weather_moon_28_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
+                Glyph="{x:Static FluentUI.weather_moon_28_regular}"
+                FontFamily="{x:Static FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource size240}" />
 
@@ -250,18 +249,34 @@
     <Style TargetType="Border">
         <Setter Property="StrokeShape" Value="RoundRectangle 20"/>
         <Setter Property="StrokeThickness" Value="0"/>
-        <Setter Property="Padding" Value="{OnIdiom 15, Desktop=20}"/>
+        <Setter Property="Padding">
+            <Setter.Value>
+                <OnIdiom x:TypeArguments="Thickness" Default="15" Desktop="20" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style TargetType="Border" x:Key="CardStyle">
         <Setter Property="StrokeShape" Value="RoundRectangle 20"/>
         <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"/>
         <Setter Property="StrokeThickness" Value="0"/>
-        <Setter Property="Padding" Value="{OnIdiom 15, Desktop=20}"/>
+        <Setter Property="Padding">
+            <Setter.Value>
+                <OnIdiom x:TypeArguments="Thickness" Default="15" Desktop="20" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
-    <sf:LabelStyle x:Key="lightThemeLabelStyle" TextColor="{StaticResource DarkOnLightBackground}" FontSize="{OnIdiom 18, Desktop=24}"/> 
-    <sf:LabelStyle x:Key="darkThemeLabelStyle" TextColor="{StaticResource LightOnDarkBackground}" FontSize="{OnIdiom 18, Desktop=24}"/>
+    <sf:LabelStyle x:Key="lightThemeLabelStyle" TextColor="{StaticResource DarkOnLightBackground}">
+        <sf:LabelStyle.FontSize>
+            <OnIdiom x:TypeArguments="x:Double" Default="18" Desktop="24" />
+        </sf:LabelStyle.FontSize>
+    </sf:LabelStyle>
+    <sf:LabelStyle x:Key="darkThemeLabelStyle" TextColor="{StaticResource LightOnDarkBackground}">
+        <sf:LabelStyle.FontSize>
+            <OnIdiom x:TypeArguments="x:Double" Default="18" Desktop="24" />
+        </sf:LabelStyle.FontSize>
+    </sf:LabelStyle>
     <Style TargetType="sf:SfTextInputLayout"> 
         <Setter Property="ContainerType" Value="Outlined"/> 
         <Setter Property="ContainerBackground" Value="Transparent"/> 

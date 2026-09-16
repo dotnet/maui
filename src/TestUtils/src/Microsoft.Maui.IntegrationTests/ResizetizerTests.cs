@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -15,6 +16,47 @@ public class ResizetizerTests : BaseBuildTest
 			<rect x="0" y="0" width="456" height="456" fill="#512BD4" />
 		</svg>
 		""";
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("--ui csharp")]
+	public void DefaultBotProducesAndroidDensityImages(string options)
+	{
+		SetTestIdentifier(options);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var framework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, $"{options} --no-restore", output: _output),
+			$"Unable to generate the default template with '{options}'.");
+		var buildProps = BuildProps;
+		buildProps.Add($"TargetFrameworks={framework}");
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", framework: framework,
+			properties: buildProps, output: _output), "Unable to generate the bot density resources.");
+
+		var images = Directory.GetFiles(Path.Combine(projectDir, "obj", "Debug", framework), "dotnet_bot*.png", SearchOption.AllDirectories);
+		// BaseSize bounds preserve the master's 1108:1080 aspect ratio; widths do not simply equal 190 * density.
+		var expected = new (string density, int width, int height)[]
+		{
+			("drawable-mdpi", 190, 185),
+			("drawable-hdpi", 285, 278),
+			("drawable-xhdpi", 380, 370),
+			("drawable-xxhdpi", 569, 555),
+			("drawable-xxxhdpi", 759, 740),
+		};
+		Assert.Equal(expected.Length, images.Length);
+		foreach (var (density, width, height) in expected)
+		{
+			var image = Assert.Single(images, path => Path.GetFileName(Path.GetDirectoryName(path)) == density);
+			Assert.Equal("dotnet_bot.png", Path.GetFileName(image));
+			var header = new byte[26];
+			using var stream = File.OpenRead(image);
+			stream.ReadExactly(header);
+			Assert.Equal(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, header[..8]);
+			Assert.Equal(width, BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(16, 4)));
+			Assert.Equal(height, BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(20, 4)));
+			Assert.True(header[25] is 4 or 6, $"Expected an alpha channel in {image}.");
+		}
+	}
 
 	[Theory]
 	// windows unpackaged/exe

@@ -27,6 +27,8 @@
     <None Include="testdata\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="imageresults\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\nuget\buildTransitive\Microsoft.Maui.Resizetizer.After.targets" Link="Microsoft.Maui.Resizetizer.After.targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\..\Templates\src\templates\maui-mobile\Resources\Images\dotnet_bot.png" Link="templates\dotnet_bot.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\..\Templates\src\templates\maui-mobile\MauiApp.1.csproj" Link="templates\MauiApp.1.csproj" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

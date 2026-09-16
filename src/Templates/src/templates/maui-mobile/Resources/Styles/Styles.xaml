@@ -136,7 +136,11 @@
         <Setter Property="FontSize" Value="14" />
 <!--#endif -->
 <!--#if (UseSampleContent) -->
-        <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=24}" />
+        <Setter Property="FontSize">
+            <Setter.Value>
+                <OnIdiom x:TypeArguments="x:Double" Default="18" Desktop="24" />
+            </Setter.Value>
+        </Setter>
 <!--#endif -->
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
@@ -222,7 +226,11 @@
         <Setter Property="FontSize" Value="14" />
 <!--#endif -->
 <!--#if (UseSampleContent) -->
-        <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=24}" />
+        <Setter Property="FontSize">
+            <Setter.Value>
+                <OnIdiom x:TypeArguments="x:Double" Default="18" Desktop="24" />
+            </Setter.Value>
+        </Setter>
 <!--#endif -->
         <Setter Property="MinimumHeightRequest" Value="44"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
