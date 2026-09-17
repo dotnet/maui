@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var platformColor = solidColorBrush.Color.ToPlatform();
 					materialShapeDrawable.FillColor = ColorStateList.ValueOf(platformColor);
 					appBarLayout.SetLiftOnScrollColor(
-						ColorStateList.ValueOf(LightenColor(solidColorBrush.Color, 0.3f).ToPlatform()));
+						ColorStateList.ValueOf(GetLiftOnScrollColor(solidColorBrush.Color).ToPlatform()));
 				}
 				else
 				{
@@ -256,16 +256,42 @@ namespace Microsoft.Maui.Controls.Platform
 			appBarLayout.UpdateBackground(background);
 		}
 
-		static Color LightenColor(Color color, float factor)
+		static Color GetLiftOnScrollColor(Color color)
 		{
-			factor = Math.Clamp(factor, 0f, 1f);
+			float luminance = GetLuminance(color);
 
+			float factor = luminance switch
+			{
+				> 0.9f => 0.04f,
+				> 0.7f => 0.08f,
+				_ => 0.30f
+			};
+
+			if (luminance > 0.5f)
+			{
+				// Light color -> darken
+				float multiplier = 1f - factor;
+
+				return new Color(
+					color.Red * multiplier,
+					color.Green * multiplier,
+					color.Blue * multiplier,
+					color.Alpha);
+			}
+
+			// Dark color -> lighten
 			return new Color(
 				color.Red + ((1f - color.Red) * factor),
 				color.Green + ((1f - color.Green) * factor),
 				color.Blue + ((1f - color.Blue) * factor),
-				color.Alpha
-			);
+				color.Alpha);
+		}
+
+		static float GetLuminance(Color color)
+		{
+			return (0.2126f * color.Red) +
+				   (0.7152f * color.Green) +
+				   (0.0722f * color.Blue);
 		}
 
 		static Color? GetChromeColor(Brush? background, ChromeEdge edge)
