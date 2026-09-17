@@ -60,8 +60,8 @@ namespace Microsoft.Maui.Controls
 				if (partCount == 3) // <color> | <float> | <float> e.g. #000000 4 4
 				{
 					var brush = ParseBrush(GetPartString(strValue, parts, 0));
-					var offsetX = ParseFloat(GetPartSpan(strValue, parts, 1));
-					var offsetY = ParseFloat(GetPartSpan(strValue, parts, 2));
+					var offsetX = float.Parse(GetPartString(strValue, parts, 1), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(GetPartString(strValue, parts, 2), CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -71,9 +71,9 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (partCount == 4) // <float> | <float> | <float> | <color> e.g. 4 4 16 #000000
 				{
-					var offsetX = ParseFloat(GetPartSpan(strValue, parts, 0));
-					var offsetY = ParseFloat(GetPartSpan(strValue, parts, 1));
-					var radius = ParseFloat(GetPartSpan(strValue, parts, 2));
+					var offsetX = float.Parse(GetPartString(strValue, parts, 0), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(GetPartString(strValue, parts, 1), CultureInfo.InvariantCulture);
+					var radius = float.Parse(GetPartString(strValue, parts, 2), CultureInfo.InvariantCulture);
 					var brush = ParseBrush(GetPartString(strValue, parts, 3));
 
 					return new Shadow
@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (partCount == 5) // <float> | <float> | <float> | <color> | <float> e.g. 4 4 16 #000000 0.5
 				{
-					var offsetX = ParseFloat(GetPartSpan(strValue, parts, 0));
-					var offsetY = ParseFloat(GetPartSpan(strValue, parts, 1));
-					var radius = ParseFloat(GetPartSpan(strValue, parts, 2));
+					var offsetX = float.Parse(GetPartString(strValue, parts, 0), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(GetPartString(strValue, parts, 1), CultureInfo.InvariantCulture);
+					var radius = float.Parse(GetPartString(strValue, parts, 2), CultureInfo.InvariantCulture);
 					var brush = ParseBrush(GetPartString(strValue, parts, 3));
-					var opacity = ParseFloat(GetPartSpan(strValue, parts, 4));
+					var opacity = float.Parse(GetPartString(strValue, parts, 4), CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -114,22 +114,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(IShadow)}.");
-		}
-
-		static float ParseFloat(ReadOnlySpan<char> value)
-			=> float.Parse(
-#if NETSTANDARD2_0
-				value.ToString(),
-#else
-				value,
-#endif
-				NumberStyles.Float | NumberStyles.AllowThousands,
-				CultureInfo.InvariantCulture);
-
-		static ReadOnlySpan<char> GetPartSpan(string value, ReadOnlySpan<int> parts, int partIndex)
-		{
-			var offset = partIndex * ValuesPerPart;
-			return value.AsSpan(parts[offset], parts[offset + 1]);
 		}
 
 		static string GetPartString(string value, ReadOnlySpan<int> parts, int partIndex)
