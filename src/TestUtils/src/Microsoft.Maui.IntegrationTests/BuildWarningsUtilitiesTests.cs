@@ -1,5 +1,9 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Text;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
+using Record = Microsoft.Build.Logging.Record;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -39,6 +43,48 @@ public class BuildWarningsUtilitiesTests : IDisposable
 		Assert.Contains("Could not completely read binlog", output.Text, StringComparison.Ordinal);
 		Assert.Contains(binlog, output.Text, StringComparison.Ordinal);
 		Assert.ThrowsAny<Exception>(() => BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog));
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void RejectsTruncationAfterBuildFinished(bool completeImportArchive)
+	{
+		var binlog = CreateBinlog();
+		List<Record> records;
+		using (var stream = File.OpenRead(binlog))
+			records = new BinLogReader().ReadRecords(stream).ToList();
+
+		var finished = Assert.Single(records, record => record.Args is BuildFinishedEventArgs);
+		var archive = Assert.Single(records, record => record.Kind == BinaryLogRecordKind.ProjectImportArchive);
+		Assert.True(archive.Start >= finished.Start + finished.Length, "Imports must be written after BuildFinished.");
+		Assert.True(archive.Length > 0, "The fixture must contain embedded imports.");
+
+		using var decompressed = new MemoryStream();
+		using (var stream = File.OpenRead(binlog))
+		using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
+			gzip.CopyTo(decompressed);
+
+		var archiveStart = decompressed.GetBuffer().AsSpan(0, checked((int)decompressed.Length)).IndexOf(archive.Bytes);
+		Assert.True(archiveStart >= 0, "The decompressed log must contain the import archive.");
+		Assert.Equal(decompressed.Length - 1, archiveStart + archive.Length);
+
+		// Keep all build events, but cut during the import archive or just before the end marker.
+		decompressed.SetLength(archiveStart + (completeImportArchive ? archive.Length : archive.Length / 2));
+		decompressed.Position = 0;
+		using (var stream = File.Create(binlog))
+		using (var gzip = new GZipStream(stream, CompressionMode.Compress))
+			decompressed.CopyTo(gzip);
+
+		using (var stream = File.OpenRead(binlog))
+			Assert.Contains(new BinLogReader().ReadRecords(stream), record => record.Args is BuildFinishedEventArgs);
+
+		var output = new RecordingOutput();
+		BuildWarningsUtilities.OutputBuildErrorsFromBinLog(binlog, output: output);
+
+		Assert.Contains("Could not completely read binlog", output.Text, StringComparison.Ordinal);
+		Assert.Contains("TEST0002: test build error", output.Text, StringComparison.Ordinal);
+		Assert.Throws<InvalidDataException>(() => BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog));
 	}
 
 	string CreateBinlog()

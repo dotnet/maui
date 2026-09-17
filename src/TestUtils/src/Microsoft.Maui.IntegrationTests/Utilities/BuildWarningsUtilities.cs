@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Xunit.Abstractions;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var errors = new List<string>();
 			try
 			{
-				foreach (var args in ReadBuildEvents(binLogFilePath))
+				ReadBuildEvents(binLogFilePath, args =>
 				{
 					if (args is BuildErrorEventArgs error)
 					{
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.IntegrationTests
 						var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
 						errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
 					}
-				}
+				});
 			}
 			catch (Exception ex) when (ex is IOException or InvalidDataException)
 			{
@@ -86,31 +87,36 @@ namespace Microsoft.Maui.IntegrationTests
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
 			var actualWarnings = new List<WarningsPerFile>();
-			foreach (var args in ReadBuildEvents(binLogFilePath))
+			ReadBuildEvents(binLogFilePath, args =>
 			{
 				if (args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
 				{
 					// We normalize all warnings file paths for easier comparison
 					actualWarnings.AddActualWarning(NormalizeFilePath(warning.File), warning.Code, warning.Message);
 				}
-			}
+			});
 			return actualWarnings;
 		}
 
-		static IEnumerable<BuildEventArgs> ReadBuildEvents(string binLogFilePath)
+		static void ReadBuildEvents(string binLogFilePath, Action<BuildEventArgs> processEvent)
 		{
 			using var stream = File.OpenRead(binLogFilePath);
+			// Unlike ReadRecords, Replay does not initialize message resources in a fresh process.
+			Strings.Initialize();
+			var reader = new BinLogReader();
 			bool buildFinished = false;
-			foreach (var record in new BinLogReader().ReadRecords(stream))
+			reader.AnyEventRaised += (_, args) =>
 			{
-				if (record.Args is BuildEventArgs args)
-				{
-					buildFinished |= args is BuildFinishedEventArgs;
-					yield return args;
-				}
-			}
+				buildFinished |= args is BuildFinishedEventArgs;
+				processEvent(args);
+			};
+			// Replay otherwise reports read exceptions only through this event.
+			reader.OnException += exception => ExceptionDispatchInfo.Capture(exception).Throw();
+			reader.Replay(stream);
 
-			// Some truncated logs end at a record boundary without throwing in the reader.
+			// BuildFinished precedes the embedded imports and final end-of-file marker.
+			if (reader.HasEncounteredTruncation)
+				throw new InvalidDataException("The binlog is incomplete: the end-of-file marker was not recorded.");
 			if (!buildFinished)
 				throw new InvalidDataException("The binlog is incomplete: no BuildFinished event was recorded.");
 		}

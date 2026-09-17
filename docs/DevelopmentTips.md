@@ -214,7 +214,9 @@ These tests can be run using the Test Explorer in VS, or from the command line w
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
 
-Integration test commands terminate their process tree on timeout and report the command's PID and timeout duration. Emulator startup explicitly leaves the emulator running for the collection fixture to manage. A truncated binlog is reported as incomplete without replacing the original build failure; warning validation rejects incomplete logs.
+Integration test commands terminate their process tree on timeout and report the command's PID and timeout duration, using the console when no test output helper is supplied. Emulator startup explicitly leaves the emulator running for the collection fixture to manage. Output draining waits at most 10 seconds after the parent exits, then reports if a descendant still holds the redirected pipes open.
+
+A truncated binlog is reported as incomplete without replacing the original build failure; warning validation rejects incomplete logs. This includes truncation after `BuildFinished`, while the logger is still writing embedded imports or its end-of-file marker.
 
 The harness regression tests do not require MAUI workloads or an emulator:
 

@@ -78,7 +78,7 @@ namespace Microsoft.Maui.IntegrationTests
 				else
 				{
 					exitCode = -1;
-					output?.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' (PID {p.Id}) timed out after {timeoutInSeconds} seconds.");
+					WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' (PID {p.Id}) timed out after {timeoutInSeconds} seconds.", output);
 					if (killOnTimeout)
 					{
 						try
@@ -98,11 +98,7 @@ namespace Microsoft.Maui.IntegrationTests
 				// Descendants may retain redirected pipes after the parent exits.
 				if (exited && !Task.WhenAll(stdoutClosed.Task, stderrClosed.Task).Wait(TimeSpan.FromSeconds(10)))
 				{
-					var message = $"[ToolRunner] Output capture for process '{p.StartInfo.FileName}' (PID {p.Id}) did not finish within 10 seconds.";
-					if (output is null)
-						Console.WriteLine(message);
-					else
-						output.WriteLine(message);
+					WriteLine($"[ToolRunner] Output capture for process '{p.StartInfo.FileName}' (PID {p.Id}) did not finish within 10 seconds.", output);
 				}
 
 				lock (procOutput)
@@ -110,5 +106,12 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		static void WriteLine(string message, ITestOutputHelper? output)
+		{
+			if (output is null)
+				Console.WriteLine(message);
+			else
+				output.WriteLine(message);
+		}
 	}
 }
