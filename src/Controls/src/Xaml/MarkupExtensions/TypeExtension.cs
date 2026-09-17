@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// </summary>
 	[ContentProperty(nameof(TypeName))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.TypeExtension")]
-	[RequireService([typeof(IXamlTypeResolver), typeof(IXmlLineInfoProvider)])]
+	[RequireService([typeof(IXamlTypeResolver), typeof(IXamlLineInfo)])]
 	public class TypeExtension : IMarkupExtension<Type>
 	{
 		/// <summary>
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new ArgumentException("No IXamlTypeResolver in IServiceProvider");
 			if (string.IsNullOrEmpty(TypeName))
 			{
-				var li = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lip) ? lip.XmlLineInfo : new XmlLineInfo();
+				var li = (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo lineInfo) ? lineInfo : new XamlLineInfo();
 				throw new XamlParseException("TypeName isn't set.", li);
 			}
 

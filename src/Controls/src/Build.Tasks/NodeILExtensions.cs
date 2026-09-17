@@ -734,9 +734,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Callvirt, addService);
 			}
 
-			if (node is IXmlLineInfo && createAllServices || requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")), TypeRefComparer.Default))
+			if (node is IXmlLineInfo && createAllServices || requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXamlLineInfo")), TypeRefComparer.Default))
 			{
 				yield return Create(Dup); //Duplicate the serviceProvider
+				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXamlLineInfo")));
+				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+				var xmlLineInfo = (IXmlLineInfo)node;
+				yield return Create(Ldc_I4, xmlLineInfo.LineNumber);
+				yield return Create(Ldc_I4, xmlLineInfo.LinePosition);
+				yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlLineInfo"), parameterTypes: new[] {
+					("mscorlib", "System", "Int32"),
+					("mscorlib", "System", "Int32"),
+				}));
+				yield return Create(Callvirt, addService);
+			}
+			if (node is IXmlLineInfo
+				&& !createAllServices
+				&& requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")), TypeRefComparer.Default))
+			{
+				yield return Create(Dup);
 				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")));
 				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				foreach (var instruction in node.PushXmlLineInfo(context))

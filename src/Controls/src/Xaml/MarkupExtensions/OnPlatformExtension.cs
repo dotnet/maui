@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	[RequireService(
 		[typeof(IProvideValueTarget),
 		 typeof(IValueConverterProvider),
-		 typeof(IXmlLineInfoProvider),
+		 typeof(IXamlLineInfo),
 		 typeof(IConverterOptions)])]
 	[RequiresUnreferencedCode("The OnPlatformExtension is not trim safe. Use OnPlatform<T> instead.")]
 	public class OnPlatformExtension : IMarkupExtension

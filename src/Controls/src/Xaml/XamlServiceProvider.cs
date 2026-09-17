@@ -32,7 +32,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 
 			if (node is IXmlLineInfo xmlLineInfo)
+			{
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
+				IXamlLineInfo = new XamlLineInfo(xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
+			}
 
 			IValueConverterProvider = defaultValueConverterProvider;
 
@@ -73,6 +76,12 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			set => services[typeof(IXmlLineInfoProvider)] = value;
 		}
 
+		internal IXamlLineInfo IXamlLineInfo
+		{
+			get => (IXamlLineInfo)GetService(typeof(IXamlLineInfo));
+			set => services[typeof(IXamlLineInfo)] = value;
+		}
+
 		internal IValueConverterProvider IValueConverterProvider
 		{
 			get => (IValueConverterProvider)GetService(typeof(IValueConverterProvider));
@@ -81,7 +90,12 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public object GetService(Type serviceType) => services.TryGetValue(serviceType, out var service) ? service : null;
 
-		public void Add(Type type, object service) => services.Add(type, service);
+		public void Add(Type type, object service)
+		{
+			services.Add(type, service);
+			if (type != typeof(IXamlLineInfo) && service is IXamlLineInfo lineInfo && !services.ContainsKey(typeof(IXamlLineInfo)))
+				services.Add(typeof(IXamlLineInfo), lineInfo);
+		}
 	}
 
 	class XamlValueTargetProvider : IProvideParentValues, IProvideValueTarget
@@ -255,8 +269,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			IXmlLineInfo xmlLineInfo = null;
 			if (serviceProvider != null)
 			{
-				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider)
-					xmlLineInfo = lineInfoProvider.XmlLineInfo;
+				if (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo lineInfo)
+					xmlLineInfo = lineInfo.ToXmlLineInfo();
 			}
 
 			var xmlType = TypeArgumentsParser.ParseSingle(qualifiedTypeName, namespaceResolver, xmlLineInfo);
@@ -273,11 +287,17 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public object RootObject { get; }
 	}
 
-	public class XmlLineInfoProvider : IXmlLineInfoProvider
+	public class XmlLineInfoProvider : IXmlLineInfoProvider, IXamlLineInfo
 	{
 		public XmlLineInfoProvider(IXmlLineInfo xmlLineInfo) => XmlLineInfo = xmlLineInfo;
 
 		public IXmlLineInfo XmlLineInfo { get; }
+
+		bool IXamlLineInfo.HasLineInfo() => XmlLineInfo.HasLineInfo();
+
+		int IXamlLineInfo.LineNumber => XmlLineInfo.LineNumber;
+
+		int IXamlLineInfo.LinePosition => XmlLineInfo.LinePosition;
 	}
 
 	class ReferenceProvider : IReferenceProvider

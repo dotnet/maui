@@ -89,11 +89,14 @@ static class ServiceProviderExtensions
 		}
 		if (node is IXmlLineInfo xmlLineInfo
 			&& (createAllServices
-			   || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IXmlLineInfoProvider")!, SymbolEqualityComparer.Default)))
+			   || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IXamlLineInfo")!, SymbolEqualityComparer.Default)))
 		{
-			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXmlLineInfoProvider), new global::Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider(new global::Microsoft.Maui.Controls.Xaml.XmlLineInfo({xmlLineInfo.LineNumber}, {xmlLineInfo.LinePosition})));");
-
+			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlLineInfo), new global::Microsoft.Maui.Controls.Xaml.XamlLineInfo({xmlLineInfo.LineNumber}, {xmlLineInfo.LinePosition}));");
 		}
+		if (node is IXmlLineInfo legacyXmlLineInfo
+			&& !createAllServices
+			&& requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IXmlLineInfoProvider")!, SymbolEqualityComparer.Default))
+			writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXmlLineInfoProvider), new global::Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider(new global::Microsoft.Maui.Controls.Xaml.XmlLineInfo({legacyXmlLineInfo.LineNumber}, {legacyXmlLineInfo.LinePosition})));");
 	}
 
 	static IEnumerable<ILocalValue> ParentObjects(this INode node, SourceGenContext context)

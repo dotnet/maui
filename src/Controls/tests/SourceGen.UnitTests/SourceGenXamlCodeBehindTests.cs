@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
@@ -38,6 +41,96 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 		Assert.True(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
 		Assert.True(generated.Contains("public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
 
+	}
+
+	[Fact]
+	public void GeneratedLineInfoDoesNotReferenceSystemXmlReaderWriter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<Label Text="{local:LineInfoMarkup}" />
+</ContentPage>
+""";
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+public partial class TestPage : ContentPage
+{
+	public TestPage() => InitializeComponent();
+}
+
+public class LineInfoMarkup : IMarkupExtension
+{
+	public object ProvideValue(IServiceProvider serviceProvider)
+	{
+		var lineInfo = (IXamlLineInfo)serviceProvider.GetService(typeof(IXamlLineInfo));
+		return $"{lineInfo.LineNumber}:{lineInfo.LinePosition}";
+	}
+}
+""";
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var (_, generatedCompilation) = RunGeneratorAndUpdateCompilation<XamlGenerator>(compilation, [new AdditionalXamlFile("Test.xaml", xaml)]);
+		using var assembly = new MemoryStream();
+
+		var emitResult = generatedCompilation.Emit(assembly);
+		Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
+		assembly.Position = 0;
+		using var peReader = new PEReader(assembly);
+		var metadataReader = peReader.GetMetadataReader();
+		var assemblyReferences = metadataReader.AssemblyReferences
+			.Select(handle => metadataReader.GetString(metadataReader.GetAssemblyReference(handle).Name));
+
+		Assert.DoesNotContain("System.Xml.ReaderWriter", assemblyReferences);
+	}
+
+	[Fact]
+	public void LegacyXmlLineInfoServiceStillGeneratesCompatibilityProvider()
+	{
+		var xaml =
+"""
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+	<Label Text="{local:LegacyLineInfoMarkup}" />
+</ContentPage>
+""";
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+public partial class TestPage : ContentPage
+{
+	public TestPage() => InitializeComponent();
+}
+
+[RequireService([typeof(IXmlLineInfoProvider)])]
+public class LegacyLineInfoMarkup : IMarkupExtension
+{
+	public object ProvideValue(IServiceProvider serviceProvider) => "legacy line info";
+}
+""";
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+		var generated = result.Results.Single().GeneratedSources.Single(source => source.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
+
+		Assert.Contains("new global::Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider(new global::Microsoft.Maui.Controls.Xaml.XmlLineInfo(", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

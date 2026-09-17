@@ -9,8 +9,11 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 {
-	record XmlLineInfoProvider(IXmlLineInfo XmlLineInfo) : IXmlLineInfoProvider
+	record XamlLineInfo(IXmlLineInfo XmlLineInfo) : IXamlLineInfo
 	{
+		public bool HasLineInfo() => XmlLineInfo.HasLineInfo();
+		public int LineNumber => XmlLineInfo.LineNumber;
+		public int LinePosition => XmlLineInfo.LinePosition;
 	}
 
 	record SGContextProvider(SourceGenContext Context)
@@ -288,7 +291,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		serviceProvider.Add(typeof(IXmlNamespaceResolver), nsResolver);
 		serviceProvider.Add(typeof(SGContextProvider), new SGContextProvider(Context));
 		if (xmlLineInfo != null)
-			serviceProvider.Add(typeof(IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
+			serviceProvider.Add(typeof(IXamlLineInfo), new XamlLineInfo(xmlLineInfo));
 
 		return new MarkupExpansionParser().Parse(match!, ref expression, serviceProvider);
 	}
@@ -304,8 +307,8 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			if (serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is not IXmlNamespaceResolver nsResolver)
 				throw new ArgumentException();
 			IXmlLineInfo? xmlLineInfo = null;
-			if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
-				xmlLineInfo = xmlLineInfoProvider.XmlLineInfo;
+			if (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo xamlLineInfo)
+				xmlLineInfo = new XmlLineInfo(xamlLineInfo.LineNumber, xamlLineInfo.LinePosition);
 			var contextProvider = serviceProvider.GetService(typeof(SGContextProvider)) as SGContextProvider;
 
 			var split = match.Split(':');

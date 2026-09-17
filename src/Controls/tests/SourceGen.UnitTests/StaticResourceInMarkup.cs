@@ -166,7 +166,7 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xmlNamespaceResolver.Add("local", "clr-namespace:TestApp");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::TestApp.TestPage).Assembly));
-		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXmlLineInfoProvider), new global::Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider(new global::Microsoft.Maui.Controls.Xaml.XmlLineInfo(11, 9)));
+		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlLineInfo), new global::Microsoft.Maui.Controls.Xaml.XamlLineInfo(11, 9));
 		var color2 = (global::Microsoft.Maui.Graphics.Color)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Graphics.Color>)myExtension).ProvideValue(xamlServiceProvider);
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(color2!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color2!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 11, 9);

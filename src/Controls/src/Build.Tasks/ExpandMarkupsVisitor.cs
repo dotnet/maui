@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var provider = new XamlServiceProvider(null, null);
 			provider.Add(typeof(ILContextProvider), new ILContextProvider(context));
 			provider.Add(typeof(IXmlNamespaceResolver), nsResolver);
-			provider.Add(typeof(IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
+			provider.Add(typeof(IXamlLineInfo), new XamlLineInfo(xmlLineInfo.LineNumber, xmlLineInfo.LinePosition));
 
 			return new MarkupExpansionParser().Parse(match, ref expression, provider);
 		}
@@ -117,8 +117,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
 					throw new ArgumentException();
 				IXmlLineInfo xmlLineInfo = null;
-				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
-					xmlLineInfo = xmlLineInfoProvider.XmlLineInfo;
+				if (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo xamlLineInfo)
+					xmlLineInfo = new XmlLineInfo(xamlLineInfo.LineNumber, xamlLineInfo.LinePosition);
 				var contextProvider = serviceProvider.GetService(typeof(ILContextProvider)) as ILContextProvider;
 
 				var split = match.Split(':');

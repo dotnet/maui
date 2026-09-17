@@ -126,8 +126,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
 					throw new ArgumentException();
 				IXmlLineInfo xmlLineInfo = null;
-				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
-					xmlLineInfo = xmlLineInfoProvider.XmlLineInfo;
+				if (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo xamlLineInfo)
+					xmlLineInfo = xamlLineInfo.ToXmlLineInfo();
 
 				var (prefix, name) = ParseName(match);
 
