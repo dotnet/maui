@@ -23,9 +23,17 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			services.TryAddSingleton<IMauiHandlersFactory>(sp => new MauiHandlersFactory(sp.GetRequiredService<IMauiHandlersCollection>()));
-			services.TryAddSingleton<IMauiHandlersCollection>(sp => new HandlerServiceBuilder(sp.GetServices<HandlerRegistration>()));
+			services.TryAddSingleton<IMauiHandlersCollection>(sp => new HandlerServiceBuilder(
+				sp.GetServices<HandlerRegistration>(),
+				sp.GetService<ElementHandlerDefaultsRegistration>() is not null));
 
 			return services;
+		}
+
+		internal static MauiAppBuilder EnableElementHandlerDefaults(this MauiAppBuilder builder)
+		{
+			builder.Services.TryAddSingleton<ElementHandlerDefaultsRegistration>();
+			return builder;
 		}
 
 		internal class HandlerRegistration
@@ -43,10 +51,12 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
-		internal class HandlerServiceBuilder : MauiServiceCollection, IMauiHandlersCollection
+		internal class HandlerServiceBuilder : MauiServiceCollection, IMauiHandlersCollection, IElementHandlerDefaultsCollection
 		{
-			public HandlerServiceBuilder(IEnumerable<HandlerRegistration> registrationActions)
+			public HandlerServiceBuilder(IEnumerable<HandlerRegistration> registrationActions, bool elementHandlerDefaultsEnabled)
 			{
+				ElementHandlerDefaultsEnabled = elementHandlerDefaultsEnabled;
+
 				if (registrationActions != null)
 				{
 					foreach (var effectRegistration in registrationActions)
@@ -56,6 +66,17 @@ namespace Microsoft.Maui.Hosting
 				}
 				HotReload.MauiHotReloadHelper.RegisterHandlers(this);
 			}
+
+			public bool ElementHandlerDefaultsEnabled { get; }
 		}
+	}
+
+	internal sealed class ElementHandlerDefaultsRegistration
+	{
+	}
+
+	internal interface IElementHandlerDefaultsCollection
+	{
+		bool ElementHandlerDefaultsEnabled { get; }
 	}
 }

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			   new PropertyMapper<IToolbar, IToolbarHandler>(ElementMapper)
 			   {
 				   [nameof(IToolbar.Title)] = MapTitle,
-			   };
+			   }.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IToolbar, IToolbarHandler> CommandMapper = new();
 

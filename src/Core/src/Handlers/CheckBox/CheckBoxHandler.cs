@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 			[nameof(ICheckBox.Foreground)] = MapForeground,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<ICheckBox, CheckBoxHandler> CommandMapper = new(ViewCommandMapper)
 		{

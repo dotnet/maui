@@ -2,6 +2,8 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.Handlers;
 
 
 namespace Microsoft.Maui.Controls
@@ -14,8 +16,27 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="Source"/> property to specify the image, and the <see cref="Aspect"/> property to control how the image is scaled.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if ANDROID
+	[ImageHandler]
+#else
+	[ElementHandler(typeof(ImageHandler))]
+#endif
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
+#if ANDROID
+		internal sealed class ImageHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(ImageHandler2);
+
+				return typeof(ImageHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
