@@ -102,7 +102,7 @@ sealed class ItemsViewAccessibilityHelper
         _itemsView.ContainerPrepared += OnContainerPrepared;
     }
 
-    void CancelPendingContainerPrepared()
+    void CancelPendingContainerPreparedCore()
     {
         if (_pendingContainerPrepared is not null)
         {
@@ -221,9 +221,15 @@ sealed class ItemsViewAccessibilityHelper
 
         return false;
     }
-    public void CleanUp()
+
+    internal void CancelPendingContainerPrepared()
     {
-        CancelPendingContainerPrepared();
+        CancelPendingContainerPreparedCore();
+    }
+
+    internal void CleanUp()
+    {
+        CancelPendingContainerPreparedCore();
         _itemsView.GettingFocus -= OnGettingFocus;
     }
 }

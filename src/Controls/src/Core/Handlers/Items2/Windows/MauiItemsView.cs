@@ -215,6 +215,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override void OnApplyTemplate()
 	{
+		CleanUpAccessibilityHelper();
 		CleanUpAutomationEvents();
 
 		base.OnApplyTemplate();
@@ -382,6 +383,16 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		element.ClearValue(WAutomationProperties.SizeOfSetProperty);
 	}
 
+	internal void CleanUpAccessibilityHelper()
+	{
+		_accessibilityHelper?.CleanUp();
+	}
+
+	internal void CancelPendingAccessibilityFocus()
+	{
+		_accessibilityHelper?.CancelPendingContainerPrepared();
+	}
+
 	internal void CleanUpAutomationEvents()
 	{
 		if (_itemsRepeater is ItemsRepeater repeater)
@@ -394,7 +405,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_automationSetUpdateQueued = false;
 		_automationDataItemCount = -1;
 		_automationExcludedIndexes = null;
-		_accessibilityHelper?.CleanUp();
 	}
 
 	static bool IsAutomationDataItem(object? item) =>
