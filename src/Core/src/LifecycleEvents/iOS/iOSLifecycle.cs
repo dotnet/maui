@@ -13,6 +13,29 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnActivated(UIApplication application);
 		public delegate void OnResignActivation(UIApplication application);
 		public delegate bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options);
+		/// <summary>
+		/// Handles a quick action delivered through the application or scene lifecycle.
+		/// </summary>
+		/// <param name="application">The application receiving the action.</param>
+		/// <param name="shortcutItem">The user-selected quick action.</param>
+		/// <param name="completionHandler">
+		/// The acknowledgement callback for this registration. Invoke it exactly once with
+		/// <see langword="true"/> if this handler handled the action, or <see langword="false"/> otherwise.
+		/// </param>
+		/// <remarks>
+		/// <para>
+		/// Each registration receives its own callback rather than sharing the native completion callback.
+		/// Existing handlers that only observe or log the action must therefore be updated to acknowledge
+		/// <see langword="false"/>. Acknowledgement may be deferred until asynchronous work completes;
+		/// returning from the handler is not an acknowledgement.
+		/// </para>
+		/// <para>
+		/// When dispatch does not throw, native completion waits until all handler invocations have returned
+		/// and either one registration has reported <see langword="true"/> or every registration has reported
+		/// <see langword="false"/>. If a registration never replies and none reports <see langword="true"/>,
+		/// native completion can remain pending.
+		/// </para>
+		/// </remarks>
 		public delegate void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler);
 		public delegate void WillEnterForeground(UIApplication application);
 		public delegate void WillTerminate(UIApplication application);

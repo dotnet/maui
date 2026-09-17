@@ -404,7 +404,9 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 
 		static MauiApp CreateApp(ILoggerFactory? loggerFactory, params CompletionEvent[] handlers)
 		{
-			var builder = MauiApp.CreateBuilder()
+			// These tests only need lifecycle services; full defaults couple them to the
+			// process-wide DispatcherProvider state exercised by unrelated tests.
+			var builder = MauiApp.CreateBuilder(useDefaults: false)
 				.ConfigureLifecycleEvents(lifecycle =>
 				{
 					foreach (var handler in handlers)

@@ -146,9 +146,19 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="windowScene">The scene receiving the action.</param>
 		/// <param name="shortcutItem">The user-selected quick action.</param>
-		/// <param name="completionHandler">Called once on the main thread to report whether the action was handled.</param>
+		/// <param name="completionHandler">
+		/// The native completion callback used to report whether the action was handled.
+		/// When completion is determined, it is invoked once on the main thread.
+		/// </param>
 		/// <remarks>
 		/// Dispatches through the existing <see cref="iOSLifecycle.PerformActionForShortcutItem"/> registrations.
+		/// Each registration must acknowledge exactly once with <see langword="true"/> if it handled the action,
+		/// or <see langword="false"/> otherwise, including logging-only observers.
+		/// Acknowledgement may be deferred for asynchronous work; returning from a handler does not acknowledge it.
+		/// When dispatch does not throw, native completion waits until all handler invocations have returned
+		/// and either one registration has reported <see langword="true"/> or every registration has reported
+		/// <see langword="false"/>. If a registration never replies and none reports <see langword="true"/>,
+		/// native completion can remain pending.
 		/// </remarks>
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.1")]
