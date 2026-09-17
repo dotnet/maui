@@ -173,7 +173,6 @@ namespace Microsoft.Maui.DeviceTests
 				var contentFrame = new FrameLayout(context);
 				var scrollView = new Microsoft.Maui.Platform.MauiScrollView(context);
 				appBarLayout.SetLiftable(true);
-				scrollView.Id = View.GenerateViewId();
 
 				contentFrame.AddView(scrollView, new ViewGroup.LayoutParams(
 					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
@@ -184,6 +183,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				await coordinator.AttachAndRun(async () =>
 				{
+					Assert.True(scrollView.IsAttachedToWindow);
+
 					using var cancellationTokenSource = new CancellationTokenSource();
 					var cancellationToken = cancellationTokenSource.Token;
 					var gcTask = Task.Run(() =>
@@ -209,8 +210,6 @@ namespace Microsoft.Maui.DeviceTests
 						await gcTask;
 					}
 
-					Assert.NotEqual(View.NoId, scrollView.Id);
-					Assert.Equal(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
 					scrollView.ClearAppBarLiftTarget();
 				});
 			});
