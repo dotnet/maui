@@ -1,12 +1,9 @@
 #nullable disable
 using System;
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
-using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility

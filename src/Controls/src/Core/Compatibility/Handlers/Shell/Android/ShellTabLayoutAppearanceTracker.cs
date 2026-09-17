@@ -1,5 +1,4 @@
 #nullable disable
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -13,10 +12,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public class ShellTabLayoutAppearanceTracker : IShellTabLayoutAppearanceTracker
 	{
 		bool _disposed;
-		bool _originalAppearanceCaptured;
-		ColorStateList _originalTextColors;
-		Drawable _originalBackground;
-		int? _originalIndicatorColor;
 		IShellContext _shellContext;
 
 		public ShellTabLayoutAppearanceTracker(IShellContext shellContext)
@@ -140,9 +135,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			_disposed = true;
-			_originalBackground = null;
-			_originalTextColors = null;
-			_originalIndicatorColor = null;
 			_shellContext = null;
 		}
 
