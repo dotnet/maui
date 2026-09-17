@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
@@ -153,6 +154,64 @@ namespace Microsoft.Maui.DeviceTests
 					// Without an AppBarLayout in the hierarchy, no view ID should be generated
 					// (SetAppBarLiftTarget only assigns an ID when it actually claims the target).
 					Assert.Equal(View.NoId, scrollView.Id);
+				});
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task AppBarLiftTargetCheckSurvivesGarbageCollection()
+		{
+			if (!Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var context = MauiContext.Context!;
+				var coordinator = new CoordinatorLayout(context);
+				var appBarLayout = new AppBarLayout(context);
+				var contentFrame = new FrameLayout(context);
+				var scrollView = new Microsoft.Maui.Platform.MauiScrollView(context);
+				appBarLayout.SetLiftable(true);
+				scrollView.Id = View.GenerateViewId();
+
+				contentFrame.AddView(scrollView, new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+				coordinator.AddView(appBarLayout, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+				coordinator.AddView(contentFrame, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+
+				await coordinator.AttachAndRun(async () =>
+				{
+					using var cancellationTokenSource = new CancellationTokenSource();
+					var cancellationToken = cancellationTokenSource.Token;
+					var gcTask = Task.Run(() =>
+					{
+						while (!cancellationToken.IsCancellationRequested)
+						{
+							GC.Collect();
+							GC.WaitForPendingFinalizers();
+							Thread.Sleep(1);
+						}
+					});
+
+					try
+					{
+						for (int i = 0; i < 2_000; i++)
+						{
+							scrollView.TrySetAppBarLiftTargetIfOnScreen();
+						}
+					}
+					finally
+					{
+						cancellationTokenSource.Cancel();
+						await gcTask;
+					}
+
+					Assert.NotEqual(View.NoId, scrollView.Id);
+					Assert.Equal(scrollView.Id, appBarLayout.LiftOnScrollTargetViewId);
+					scrollView.ClearAppBarLiftTarget();
 				});
 			});
 		}
