@@ -114,6 +114,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<ArgumentNullException>(
 				() => new PropertyChangeEventArgsCache<PropertyChangedEventArgs>(null));
 		}
+
+		[Fact]
+		public void StaysBoundedUnderConcurrentMisses()
+		{
+			// Regression: reading _count and then incrementing it were two separate steps, so two threads missing
+			// on different names at once could both pass the capacity check before either incremented it.
+			const int capacity = 4;
+			var cache = CreateCache(capacity);
+
+			System.Threading.Tasks.Parallel.For(0, Environment.ProcessorCount * 25, i => cache.Get("Property" + i));
+
+			Assert.True(cache.Count <= capacity, $"Cache count {cache.Count} exceeded capacity {capacity}.");
+		}
+
 	}
 
 	public class PropertyChangeEventArgsUnitTests
