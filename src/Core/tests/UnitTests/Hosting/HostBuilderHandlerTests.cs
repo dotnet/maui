@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -9,6 +13,16 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderHandlerTests
 	{
+		[Fact]
+		public void ElementHandlerAttributePreservesPublicParameterlessConstructor()
+		{
+			var genericParameter = typeof(ElementHandlerAttribute<>).GetGenericArguments().Single();
+			var attribute = genericParameter.GetCustomAttribute<DynamicallyAccessedMembersAttribute>();
+
+			Assert.NotNull(attribute);
+			Assert.Equal(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, attribute.MemberTypes);
+		}
+
 		[Fact]
 		public void HostBuilderCanBuildAHost()
 		{
