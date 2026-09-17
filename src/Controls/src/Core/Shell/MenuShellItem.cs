@@ -9,18 +9,49 @@ namespace Microsoft.Maui.Controls
 {
 	internal class MenuShellItem : ShellItem, IMenuItemController, IStyleSelectable
 	{
+		bool _isConnected;
+
 		internal MenuShellItem(MenuItem menuItem)
 		{
 			MenuItem = menuItem;
-			MenuItem.Parent = this;
 			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(menuItem));
 
 			this.SetBinding(TitleProperty, static (MenuItem item) => item.Text, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(IconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(FlyoutIconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(AutomationIdProperty, static (MenuItem item) => item.AutomationId, BindingMode.OneWay, source: menuItem);
+		}
 
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+
+			if (Parent is null)
+				Disconnect();
+			else
+				Connect();
+		}
+
+		void Connect()
+		{
+			if (_isConnected)
+				return;
+
+			_isConnected = true;
+			MenuItem.Parent = this;
 			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
+		}
+
+		void Disconnect()
+		{
+			if (!_isConnected)
+				return;
+
+			_isConnected = false;
+			MenuItem.PropertyChanged -= OnMenuItemPropertyChanged;
+
+			if (MenuItem.Parent == this)
+				MenuItem.Parent = null;
 		}
 
 		IList<string> IStyleSelectable.Classes => ((IStyleSelectable)MenuItem).Classes;
@@ -57,7 +88,8 @@ namespace Microsoft.Maui.Controls
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
-			SetInheritedBindingContext(MenuItem, BindingContext);
+			if (_isConnected)
+				SetInheritedBindingContext(MenuItem, BindingContext);
 		}
 	}
 }
