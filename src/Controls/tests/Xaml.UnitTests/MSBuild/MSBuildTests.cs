@@ -332,6 +332,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(applyTpiTarget);
 		}
 
+		void AddControlsTargetsImport(XElement project)
+		{
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+		}
+
 		void AddMauiReferences(XElement project)
 		{
 			var itemGroup = NewElement("ItemGroup");
@@ -411,6 +417,45 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				Assert.DoesNotContain("--partial", log, StringComparison.Ordinal);
 				Assert.DoesNotContain("test.mibc", log, StringComparison.Ordinal);
 			}
+		}
+
+		[Theory]
+		[InlineData(true, null, "false", true)]
+		[InlineData(false, null, "true", false)]
+		[InlineData(true, "true", "true", false)]
+		public void MauiAspireFeatureSwitchMatchesOptimization(bool optimize, string explicitValue, string expected, bool trimsMauiCore)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("TrimMode").WithValue("partial"));
+			propertyGroup.Add(NewElement("Optimize").WithValue(optimize.ToString().ToLowerInvariant()));
+			propertyGroup.Add(NewElement("UsingAndroidNETSdk").WithValue("true"));
+			if (explicitValue is not null)
+			{
+				propertyGroup.Add(NewElement("_EnableMauiAspire").WithValue(explicitValue));
+				propertyGroup.Add(NewElement("MauiDisableAspireValidation").WithValue("true"));
+			}
+			project.Add(propertyGroup);
+
+			AddControlsTargetsImport(project);
+
+			var target = NewElement("Target")
+				.WithAttribute("Name", "_PrepareTrimConfiguration");
+			target.Add(NewElement("Message")
+				.WithAttribute("Text", "MauiAspireFeatureSwitch=$(_EnableMauiAspire);@(RuntimeHostConfigurationOption);TrimmableAssemblies=@(TrimmableAssembly)")
+				.WithAttribute("Importance", "high"));
+			project.Add(target);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile, target: "_PrepareTrimConfiguration");
+
+			Assert.Contains($"MauiAspireFeatureSwitch={expected};", log, StringComparison.Ordinal);
+			Assert.Contains("Microsoft.Maui.RuntimeFeature.EnableMauiAspire", log, StringComparison.Ordinal);
+			Assert.Equal(trimsMauiCore, log.Contains("TrimmableAssemblies=Microsoft.Maui", StringComparison.Ordinal));
 		}
 
 		[Theory]
