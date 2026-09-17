@@ -713,12 +713,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
-			if (mauiNavView.PaneDisplayMode == paneDisplayMode)
+
+			if (mauiNavView.PaneDisplayMode != paneDisplayMode)
 			{
-				return;
+				mauiNavView.PaneDisplayMode = paneDisplayMode;
 			}
 
-			mauiNavView.PaneDisplayMode = paneDisplayMode;
 			mauiNavView.PinPaneDisplayModeTo = paneDisplayMode;
 		}
 
