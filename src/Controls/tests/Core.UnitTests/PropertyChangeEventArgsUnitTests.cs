@@ -130,6 +130,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			public void RaiseByName(string propertyName) => OnPropertyChanged(propertyName);
+
+			public void RaiseChangingByName(string propertyName) => OnPropertyChanging(propertyName);
 		}
 
 		// Mirrors what controls in the wild do: override the virtual and expect it to still be called.
@@ -240,6 +242,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal("NotABindableProperty", changed.PropertyName);
 			Assert.Same(BindableProperty.GetCachedPropertyChangedEventArgs("NotABindableProperty"), changed);
+		}
+
+		[Fact]
+		public void GetCachedPropertyChangedEventArgsAcceptsANullName()
+		{
+			var args = BindableProperty.GetCachedPropertyChangedEventArgs(null);
+
+			Assert.Null(args.PropertyName);
+			Assert.Same(args, BindableProperty.GetCachedPropertyChangedEventArgs(null));
+		}
+
+		[Fact]
+		public void GetCachedPropertyChangingEventArgsAcceptsANullName()
+		{
+			var args = BindableProperty.GetCachedPropertyChangingEventArgs(null);
+
+			Assert.Null(args.PropertyName);
+			Assert.Same(args, BindableProperty.GetCachedPropertyChangingEventArgs(null));
+		}
+
+		// OnPropertyChanged(null)/OnPropertyChanging(null) are valid public API - they notify listeners that any or
+		// all properties may have changed - and must keep working rather than throwing when the cache is keyed.
+		[Fact]
+		public void RaisingWithANullNameNotifiesSubscribersInsteadOfThrowing()
+		{
+			var notifier = new Notifier();
+			PropertyChangedEventArgs changed = null;
+			PropertyChangingEventArgs changing = null;
+			notifier.PropertyChanged += (_, e) => changed = e;
+			notifier.PropertyChanging += (_, e) => changing = e;
+
+			var changedException = Record.Exception(() => notifier.RaiseByName(null));
+			var changingException = Record.Exception(() => notifier.RaiseChangingByName(null));
+
+			Assert.Null(changedException);
+			Assert.Null(changingException);
+			Assert.NotNull(changed);
+			Assert.Null(changed.PropertyName);
+			Assert.NotNull(changing);
+			Assert.Null(changing.PropertyName);
 		}
 
 		[Fact]
