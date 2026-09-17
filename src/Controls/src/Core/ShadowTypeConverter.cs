@@ -412,7 +412,11 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		static bool IsHexDigit(char value)
+#if NET
+			=> char.IsAsciiHexDigit(value);
+#else
 			=> value is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
+#endif
 
 		/// <summary>
 		/// Converts a Shadow to a string.
