@@ -441,7 +441,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AddControlsTargetsImport(project);
 
 			var target = NewElement("Target")
-				.WithAttribute("Name", "_PrepareTrimConfiguration");
+				.WithAttribute("Name", "ReportMauiAspireFeatureSwitch");
 			target.Add(NewElement("Message")
 				.WithAttribute("Text", "MauiAspireFeatureSwitch=$(_EnableMauiAspire);@(RuntimeHostConfigurationOption)")
 				.WithAttribute("Importance", "high"));
@@ -450,7 +450,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			var log = Build(projectFile, target: "_PrepareTrimConfiguration");
+			var log = Build(projectFile, target: "ReportMauiAspireFeatureSwitch");
 
 			Assert.Contains($"MauiAspireFeatureSwitch={expected};", log, StringComparison.Ordinal);
 			Assert.Contains("Microsoft.Maui.RuntimeFeature.EnableMauiAspire", log, StringComparison.Ordinal);

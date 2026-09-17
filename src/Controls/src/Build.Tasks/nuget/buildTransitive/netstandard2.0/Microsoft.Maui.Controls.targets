@@ -33,11 +33,19 @@
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<AndroidUseDefaultAotProfile Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
+
+		<_MauiAspireWasExplicitlyConfigured Condition="'$(_EnableMauiAspire)' != ''">true</_MauiAspireWasExplicitlyConfigured>
+		<!-- Keep Aspire environment propagation in non-optimized builds, but substitute it away from optimized apps. -->
+		<_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
+		<_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<AvailableItemName Include="MauiXaml" />
 		<AvailableItemName Include="MauiCss" />
+		<RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
+		                                Value="$(_EnableMauiAspire)"
+		                                Trim="true" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
@@ -325,13 +333,7 @@
     <Warning
       Code="MA002"
       Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
-      Condition="'$(_EnableMauiAspire)' != '' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
-    
-    <PropertyGroup>
-      <!-- Keep Aspire environment propagation in non-optimized builds, but substitute it away from optimized apps. -->
-      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
-      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
-    </PropertyGroup>
+      Condition="'$(_MauiAspireWasExplicitlyConfigured)' == 'true' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
 
     <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
@@ -378,10 +380,6 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
-                                      Condition="'$(_EnableMauiAspire)' != ''"
-                                      Value="$(_EnableMauiAspire)"
                                       Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled"
                                       Condition="'$(UseMaterial3)' != ''"
