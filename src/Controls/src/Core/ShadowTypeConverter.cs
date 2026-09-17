@@ -405,7 +405,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static bool IsAsciiLetter(char value)
+#if NET
+			=> char.IsAsciiLetter(value);
+#else
 			=> value is >= 'a' and <= 'z' or >= 'A' and <= 'Z';
+#endif
 
 		static bool IsHexDigit(char value)
 			=> value is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
