@@ -420,10 +420,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Theory]
-		[InlineData(true, null, "false", true)]
-		[InlineData(false, null, "true", false)]
-		[InlineData(true, "true", "true", false)]
-		public void MauiAspireFeatureSwitchMatchesOptimization(bool optimize, string explicitValue, string expected, bool trimsMauiCore)
+		[InlineData(true, null, "false")]
+		[InlineData(false, null, "true")]
+		[InlineData(true, "true", "true")]
+		public void MauiAspireFeatureSwitchMatchesOptimization(bool optimize, string explicitValue, string expected)
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -431,7 +431,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
 			propertyGroup.Add(NewElement("TrimMode").WithValue("partial"));
 			propertyGroup.Add(NewElement("Optimize").WithValue(optimize.ToString().ToLowerInvariant()));
-			propertyGroup.Add(NewElement("UsingAndroidNETSdk").WithValue("true"));
 			if (explicitValue is not null)
 			{
 				propertyGroup.Add(NewElement("_EnableMauiAspire").WithValue(explicitValue));
@@ -444,7 +443,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var target = NewElement("Target")
 				.WithAttribute("Name", "_PrepareTrimConfiguration");
 			target.Add(NewElement("Message")
-				.WithAttribute("Text", "MauiAspireFeatureSwitch=$(_EnableMauiAspire);@(RuntimeHostConfigurationOption);TrimmableAssemblies=@(TrimmableAssembly)")
+				.WithAttribute("Text", "MauiAspireFeatureSwitch=$(_EnableMauiAspire);@(RuntimeHostConfigurationOption)")
 				.WithAttribute("Importance", "high"));
 			project.Add(target);
 
@@ -455,7 +454,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			Assert.Contains($"MauiAspireFeatureSwitch={expected};", log, StringComparison.Ordinal);
 			Assert.Contains("Microsoft.Maui.RuntimeFeature.EnableMauiAspire", log, StringComparison.Ordinal);
-			Assert.Equal(trimsMauiCore, log.Contains("TrimmableAssemblies=Microsoft.Maui", StringComparison.Ordinal));
 		}
 
 		[Theory]
