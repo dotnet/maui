@@ -286,11 +286,14 @@ namespace Microsoft.Maui.Controls
 		private static readonly PropertyChangeEventArgsCache<PropertyChangingEventArgs> s_changingArgsCache
 			= new(static name => new PropertyChangingEventArgs(name));
 
+		private static readonly PropertyChangedEventArgs s_nullNameChangedEventArgs = new(null);
+		private static readonly PropertyChangingEventArgs s_nullNameChangingEventArgs = new(null);
+
 		internal static PropertyChangedEventArgs GetCachedPropertyChangedEventArgs(string propertyName)
-			=> s_changedArgsCache.Get(propertyName);
+			=> propertyName is null ? s_nullNameChangedEventArgs : s_changedArgsCache.Get(propertyName);
 
 		internal static PropertyChangingEventArgs GetCachedPropertyChangingEventArgs(string propertyName)
-			=> s_changingArgsCache.Get(propertyName);
+			=> propertyName is null ? s_nullNameChangingEventArgs : s_changingArgsCache.Get(propertyName);
 
 		// Properties that this property depends on - when getting this property's value,
 		// if the dependency has a pending binding, return the default value instead.
