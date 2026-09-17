@@ -215,12 +215,25 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Brush.IsNullOrEmpty(background))
 			{
 				appBarLayout.Background = originalBackground.CreateDrawable();
+				appBarLayout.SetLiftOnScrollColor(null);
 				return;
 			}
 
 			if (background is SolidColorBrush { Color: not null } solidColorBrush)
 			{
-				if (RuntimeFeature.IsMaterial3Enabled && appBarLayout.Background is MaterialShapeDrawable materialShapeDrawable)
+				var materialShapeDrawable = appBarLayout.Background as MaterialShapeDrawable;
+
+				if (RuntimeFeature.IsMaterial3Enabled && materialShapeDrawable is null)
+				{
+					materialShapeDrawable = originalBackground.CreateDrawable() as MaterialShapeDrawable;
+
+					if (materialShapeDrawable is not null)
+					{
+						appBarLayout.Background = materialShapeDrawable;
+					}
+				}
+
+				if (RuntimeFeature.IsMaterial3Enabled && materialShapeDrawable is not null)
 				{
 					var platformColor = solidColorBrush.Color.ToPlatform();
 					materialShapeDrawable.FillColor = ColorStateList.ValueOf(platformColor);
@@ -232,11 +245,14 @@ namespace Microsoft.Maui.Controls.Platform
 					appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
 					ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
 					ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
+					appBarLayout.SetLiftOnScrollColor(null);
 				}
 
 				return;
 			}
 
+			// Gradient/image/non-solid background.
+			appBarLayout.SetLiftOnScrollColor(null);
 			appBarLayout.UpdateBackground(background);
 		}
 

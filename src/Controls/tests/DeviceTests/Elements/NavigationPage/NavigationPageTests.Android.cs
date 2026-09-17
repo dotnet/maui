@@ -170,11 +170,15 @@ namespace Microsoft.Maui.DeviceTests
 				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
 				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 				Assert.NotNull(appBar);
-				Assert.IsType<MaterialShapeDrawable>(appBar.Background);
-				AssertAppBarBackgroundColor(appBar, firstColor);
+				var materialShapeDrawable = Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+				Assert.Null(ViewCompat.GetBackgroundTintList(appBar));
+				Assert.Equal(firstColor.ToPlatform().ToArgb(), GetMaterialShapeDrawableFillColor(materialShapeDrawable));
 
 				navPage.BarBackgroundColor = secondColor;
-				await AssertEventually(() => appBar.Background is MaterialShapeDrawable && GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+				await AssertEventually(() =>
+					appBar.Background is MaterialShapeDrawable drawable &&
+					ViewCompat.GetBackgroundTintList(appBar) is null &&
+					GetMaterialShapeDrawableFillColor(drawable) == secondColor.ToPlatform().ToArgb());
 			});
 		}
 
@@ -280,6 +284,12 @@ namespace Microsoft.Maui.DeviceTests
 		static void AssertAppBarBackgroundColor(AppBarLayout appBar, Color expectedColor)
 		{
 			Assert.Equal(expectedColor.ToPlatform().ToArgb(), GetAppBarBackgroundColor(appBar));
+		}
+
+		static int GetMaterialShapeDrawableFillColor(MaterialShapeDrawable drawable)
+		{
+			Assert.NotNull(drawable.FillColor);
+			return drawable.FillColor.DefaultColor;
 		}
 
 		[Fact(DisplayName = "NavigationPage push to hidden navigation bar clears app bar inset padding")]
