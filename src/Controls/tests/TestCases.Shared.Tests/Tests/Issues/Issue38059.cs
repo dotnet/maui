@@ -13,7 +13,7 @@ public class Issue38059 : _IssuesUITest
     public override string Issue => "CollectionView VerticalGrid has excessive spacing without an ItemTemplate";
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
+    [ShardedTestCategory(UITestCategories.CollectionView)]
     public void Issue38059_UntemplatedVerticalGridDisplaysCompactRowsInTwoColumns()
     {
         App.WaitForElement("InstructionsLabel");
