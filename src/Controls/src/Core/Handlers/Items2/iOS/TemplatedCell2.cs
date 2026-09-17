@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		Size _measuredSize;
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
+		WeakReference<object> _itemsSource;
 
 		// Indicates the cell is being used as a supplementary view (group header/footer)
 		internal bool isSupplementaryView = false;
@@ -305,6 +306,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
 			ResetArrangeState();
+			ResetCachedConstraintsIfItemsSourceChanged(itemsView.ItemsSource);
 
 			var oldElement = PlatformHandler?.VirtualView as View;
 
@@ -438,6 +440,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return false;
+		}
+		void ResetCachedConstraintsIfItemsSourceChanged(object itemsSource)
+		{
+			if (itemsSource is null)
+			{
+				if (_itemsSource is not null)
+				{
+					_itemsSource = null;
+					_cachedConstraints = default;
+				}
+
+				return;
+			}
+
+			if (_itemsSource is null ||
+				!_itemsSource.TryGetTarget(out var previousItemsSource) ||
+				!ReferenceEquals(previousItemsSource, itemsSource))
+			{
+				_itemsSource = new(itemsSource);
+				_cachedConstraints = default;
+			}
 		}
 
 		public override bool Selected
