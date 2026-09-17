@@ -157,6 +157,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task WarmSceneUnhandledActionCompletesFalseOnce()
+		{
+			var events = new List<string>();
+			await using var fixture = await CreateFixtureAsync(events);
+			using var shortcutItem = new UIApplicationShortcutItem(
+				"foreign-action",
+				"Foreign Action",
+				null,
+				null,
+				null);
+			var received = 0;
+			EventHandler<AppActionEventArgs> appActionHandler = (_, _) => received++;
+			AppActions.OnAppAction += appActionHandler;
+
+			try
+			{
+				await fixture.ConnectAsync(null);
+				await fixture.ActivateAsync();
+
+				var completion = new CompletionRecorder();
+				await fixture.PerformWarmActionAsync(shortcutItem, completion);
+
+				Assert.False(await completion.WaitAsync());
+				completion.AssertCompletedOnce(false);
+				Assert.True(completion.WasOnMainThread);
+				Assert.Equal(0, received);
+			}
+			finally
+			{
+				AppActions.OnAppAction -= appActionHandler;
+			}
+		}
+
+		[Fact]
 		public async Task WarmSceneActionWaitsForAsyncCustomHandlerAfterEssentialsDeclines()
 		{
 			var events = new List<string>();
