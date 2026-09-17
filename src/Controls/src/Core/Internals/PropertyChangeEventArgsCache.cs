@@ -93,12 +93,27 @@ sealed class PropertyChangeEventArgsCache<TArgs> : ICache<string, TArgs>
 	{
 		var args = _factory(propertyName);
 
-		if (Volatile.Read(ref _count) < _capacity && _entries.TryAdd(propertyName, args))
+		// Reading _count and then incrementing it are two separate steps, and two threads missing on different
+		// names at once can both pass the read before either increments - the capacity check has to be the
+		// increment itself, not a read that precedes it, or a capacity of 1 can admit 2 entries.
+		var reserved = Interlocked.Increment(ref _count);
+
+		if (reserved > _capacity)
 		{
-			Interlocked.Increment(ref _count);
+			// Over budget: give back the slot this call reserved but never used.
+			Interlocked.Decrement(ref _count);
+			return args;
 		}
 
-		return args;
+		if (_entries.TryAdd(propertyName, args))
+		{
+			return args;
+		}
+
+		// Lost a race with another thread adding the same name: the slot this call reserved was never spent on a
+		// new entry, so give it back, and hand out whichever instance actually won.
+		Interlocked.Decrement(ref _count);
+		return _entries.TryGetValue(propertyName, out var winner) ? winner : args;
 	}
 
 	/// <summary>Removes every cached entry.</summary>
