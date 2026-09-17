@@ -186,6 +186,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			return;
 
 		_selectionUpdateQueued = true;
+
 		void OnReady()
 		{
 			if (!_selectionUpdateQueued || !ReferenceEquals(PlatformView, platformView))
@@ -200,7 +201,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 				_containerPreparedHandler = null;
 			}
 
-
+			PlatformView.IsTabStop = true;
 			if (_selectionDirty)
 			{
 				_selectionDirty = false;
@@ -227,10 +228,16 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		platformView.SelectionChanged -= PlatformSelectionChanged;
 		platformView.Loaded -= OnPlatformViewLoaded;
 		platformView.ClearValue(WItemsView.SelectionModeProperty);
-		if (platformView is MauiItemsView mauiItemsView && _containerPreparedHandler is not null)
+		if (platformView is MauiItemsView mauiItemsView)
 		{
-			mauiItemsView.ContainerPrepared -= _containerPreparedHandler;
-			_containerPreparedHandler = null;
+			if (_containerPreparedHandler is not null)
+			{
+				mauiItemsView.ContainerPrepared -= _containerPreparedHandler;
+				_containerPreparedHandler = null;
+			}
+
+			mauiItemsView.CleanUpAccessibilityHelper();
+			mauiItemsView.CleanUpAutomationEvents();
 		}
 		_selectionUpdateQueued = false;
 		_platformSelectionUpdateQueued = false;
@@ -246,6 +253,11 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 	protected override void UpdateItemsSource()
 	{
+		if (PlatformView is not null && PlatformView is MauiItemsView mauiItemsView)
+		{
+			mauiItemsView.CancelPendingAccessibilityFocus();
+		}
+
 		_ignorePlatformSelectionChange = true;
 		try
 		{
