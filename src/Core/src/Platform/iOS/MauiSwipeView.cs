@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Platform
 		bool _isScrollEnabled;
 		bool _isResettingSwipe;
 		bool _isOpen;
+		bool _isUpdatingSwipeItemSize;
 		OpenSwipeItem _previousOpenSwipeItem;
 
 		internal ISwipeView? Element => CrossPlatformLayout as ISwipeView;
@@ -392,6 +393,11 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
+					if (items.Mode == SwipeMode.Reveal &&child is UIButton button)
+					{
+						UpdateSwipeItemInsets(button);
+					}
+
 					previousWidth += swipeItemWidth;
 				}
 
@@ -432,14 +438,22 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateSwipeItemSize(ISwipeItem item)
 		{
-			if (!_isOpen)
+			if (!_isOpen || _isUpdatingSwipeItemSize)
 				return;
 
 			if (item?.Handler?.PlatformView is UIView platformView)
 			{
-				_swipeOpenDistance = 0;
-				LayoutSwipeItems(GetNativeSwipeItems());
-				SwipeToThreshold(false);
+				try
+				{
+					_isUpdatingSwipeItemSize = true;
+					_swipeOpenDistance = 0;
+					LayoutSwipeItems(GetNativeSwipeItems());
+					SwipeToThreshold(false);
+				}
+				finally
+				{
+					_isUpdatingSwipeItemSize = false;
+				}
 			}
 		}
 
