@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -41,6 +42,49 @@ public class AppleTemplateManifestTests : BaseTemplateTests
 	public AppleTemplateManifestTests(IntegrationTestFixture fixture, ITestOutputHelper output)
 		: base(fixture, output)
 	{
+	}
+
+	[Fact]
+	public void PropertyListLoaderIgnoresDocumentTypeWithoutResolvingExternalResources()
+	{
+		var externalDtdPath = Path.Combine(TestDirectory, "not-present.dtd");
+		var plistPath = Path.Combine(TestDirectory, "external-doctype.plist");
+		File.WriteAllText(plistPath, $"""
+			<!DOCTYPE plist SYSTEM "{new Uri(externalDtdPath).AbsoluteUri}">
+			<plist version="1.0"><dict /></plist>
+			""");
+
+		try
+		{
+			var document = LoadPropertyList(plistPath);
+			Assert.NotNull(document.Root);
+			Assert.Equal("plist", document.Root!.Name.LocalName);
+		}
+		finally
+		{
+			File.Delete(plistPath);
+		}
+	}
+
+	[Fact]
+	public void PropertyListLoaderDoesNotExpandDocumentTypeEntities()
+	{
+		var plistPath = Path.Combine(TestDirectory, "doctype-entity.plist");
+		File.WriteAllText(plistPath, """
+			<!DOCTYPE plist [
+				<!ENTITY value "expanded">
+			]>
+			<plist version="1.0"><dict><key>value</key><string>&value;</string></dict></plist>
+			""");
+
+		try
+		{
+			Assert.Throws<XmlException>(() => LoadPropertyList(plistPath));
+		}
+		finally
+		{
+			File.Delete(plistPath);
+		}
 	}
 
 	[Theory]
@@ -212,7 +256,7 @@ public class AppleTemplateManifestTests : BaseTemplateTests
 
 	static void AssertSceneManifest(string plistPath, ApplePlatform platform, TemplateLayout layout)
 	{
-		var document = XDocument.Load(plistPath);
+		var document = LoadPropertyList(plistPath);
 		Assert.NotNull(document.Root);
 		Assert.Equal("plist", document.Root!.Name.LocalName);
 		Assert.Equal("1.0", document.Root.Attribute("version")?.Value);
@@ -238,6 +282,18 @@ public class AppleTemplateManifestTests : BaseTemplateTests
 		Assert.Equal(SceneConfigurationName, GetString(configurationValues, "UISceneConfigurationName", plistPath));
 		Assert.Equal(SceneDelegateName, GetString(configurationValues, "UISceneDelegateClassName", plistPath));
 		Assert.False(configurationValues.ContainsKey("UISceneStoryboardFile"), $"Property-list '{plistPath}' must not declare UISceneStoryboardFile.");
+	}
+
+	static XDocument LoadPropertyList(string plistPath)
+	{
+		var settings = new XmlReaderSettings
+		{
+			DtdProcessing = DtdProcessing.Ignore,
+			XmlResolver = null,
+		};
+
+		using var reader = XmlReader.Create(plistPath, settings);
+		return XDocument.Load(reader);
 	}
 
 	static void AssertPreservedValues(
