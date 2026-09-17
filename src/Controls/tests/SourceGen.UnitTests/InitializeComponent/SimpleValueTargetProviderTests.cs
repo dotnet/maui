@@ -130,7 +130,7 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xmlNamespaceResolver.Add("local", "clr-namespace:Test");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::Test.TestPage).Assembly));
-		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlLineInfo), new global::Microsoft.Maui.Controls.Xaml.XamlLineInfo(7, 9));
+		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.XamlLineInfo), new global::Microsoft.Maui.Controls.Xaml.XamlLineInfo(7, 9));
 		var object0 = (object)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension)testMarkupExtension).ProvideValue(xamlServiceProvider);
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(object0!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(object0!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 9);
@@ -293,7 +293,7 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xmlNamespaceResolver.Add("local", "clr-namespace:Test");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::Test.TestPage).Assembly));
-		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlLineInfo), new global::Microsoft.Maui.Controls.Xaml.XamlLineInfo(7, 23));
+		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.XamlLineInfo), new global::Microsoft.Maui.Controls.Xaml.XamlLineInfo(7, 23));
 		var object0 = (object)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension)testMarkupExtension).ProvideValue(xamlServiceProvider);
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(object0!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(object0!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 23);

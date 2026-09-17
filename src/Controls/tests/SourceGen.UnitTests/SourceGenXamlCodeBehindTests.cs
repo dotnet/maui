@@ -74,7 +74,7 @@ public class LineInfoMarkup : IMarkupExtension
 {
 	public object ProvideValue(IServiceProvider serviceProvider)
 	{
-		var lineInfo = (IXamlLineInfo)serviceProvider.GetService(typeof(IXamlLineInfo));
+		var lineInfo = (XamlLineInfo)serviceProvider.GetService(typeof(XamlLineInfo));
 		return $"{lineInfo.LineNumber}:{lineInfo.LinePosition}";
 	}
 }

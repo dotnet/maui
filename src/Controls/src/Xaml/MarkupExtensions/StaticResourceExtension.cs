@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// Provides a XAML markup extension that resolves a resource from a <see cref="ResourceDictionary"/>.
 	/// </summary>
 	[ContentProperty(nameof(Key))]
-	[RequireService([typeof(IXamlLineInfo), typeof(IProvideParentValues), typeof(IRootObjectProvider)])]
+	[RequireService([typeof(XamlLineInfo), typeof(IProvideParentValues), typeof(IRootObjectProvider)])]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticResourceExtension")]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 			{
-				var xamlLineInfo = serviceProvider.GetService(typeof(IXamlLineInfo)) as IXamlLineInfo;
+				var xamlLineInfo = serviceProvider.GetService(typeof(XamlLineInfo)) as XamlLineInfo;
 				var ex = new XamlParseException($"StaticResource not found for key {Key}", xamlLineInfo);
 				if (Controls.Internals.ResourceLoader.ExceptionHandler2 is var ehandler && ehandler != null)
 				{

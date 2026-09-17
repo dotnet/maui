@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			if (node is IXmlLineInfo xmlLineInfo)
 			{
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
-				IXamlLineInfo = new XamlLineInfo(xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
+				XamlLineInfo = new XamlLineInfo(xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
 			}
 
 			IValueConverterProvider = defaultValueConverterProvider;
@@ -76,10 +76,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			set => services[typeof(IXmlLineInfoProvider)] = value;
 		}
 
-		internal IXamlLineInfo IXamlLineInfo
+		internal XamlLineInfo XamlLineInfo
 		{
-			get => (IXamlLineInfo)GetService(typeof(IXamlLineInfo));
-			set => services[typeof(IXamlLineInfo)] = value;
+			get => (XamlLineInfo)GetService(typeof(XamlLineInfo));
+			set => services[typeof(XamlLineInfo)] = value;
 		}
 
 		internal IValueConverterProvider IValueConverterProvider
@@ -93,8 +93,6 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public void Add(Type type, object service)
 		{
 			services.Add(type, service);
-			if (type != typeof(IXamlLineInfo) && service is IXamlLineInfo lineInfo && !services.ContainsKey(typeof(IXamlLineInfo)))
-				services.Add(typeof(IXamlLineInfo), lineInfo);
 		}
 	}
 
@@ -269,7 +267,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			IXmlLineInfo xmlLineInfo = null;
 			if (serviceProvider != null)
 			{
-				if (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo lineInfo)
+				if (serviceProvider.GetService(typeof(XamlLineInfo)) is XamlLineInfo lineInfo)
 					xmlLineInfo = lineInfo.ToXmlLineInfo();
 			}
 
@@ -287,17 +285,12 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public object RootObject { get; }
 	}
 
-	public class XmlLineInfoProvider : IXmlLineInfoProvider, IXamlLineInfo
+	public class XmlLineInfoProvider : IXmlLineInfoProvider
 	{
 		public XmlLineInfoProvider(IXmlLineInfo xmlLineInfo) => XmlLineInfo = xmlLineInfo;
 
 		public IXmlLineInfo XmlLineInfo { get; }
 
-		bool IXamlLineInfo.HasLineInfo() => XmlLineInfo.HasLineInfo();
-
-		int IXamlLineInfo.LineNumber => XmlLineInfo.LineNumber;
-
-		int IXamlLineInfo.LinePosition => XmlLineInfo.LinePosition;
 	}
 
 	class ReferenceProvider : IReferenceProvider

@@ -1,15 +1,11 @@
 #nullable enable
-Microsoft.Maui.Controls.Xaml.IXamlLineInfo
-Microsoft.Maui.Controls.Xaml.IXamlLineInfo.HasLineInfo() -> bool
-Microsoft.Maui.Controls.Xaml.IXamlLineInfo.LineNumber.get -> int
-Microsoft.Maui.Controls.Xaml.IXamlLineInfo.LinePosition.get -> int
 Microsoft.Maui.Controls.Xaml.XamlLineInfo
 Microsoft.Maui.Controls.Xaml.XamlLineInfo.HasLineInfo() -> bool
 Microsoft.Maui.Controls.Xaml.XamlLineInfo.LineNumber.get -> int
 Microsoft.Maui.Controls.Xaml.XamlLineInfo.LinePosition.get -> int
 Microsoft.Maui.Controls.Xaml.XamlLineInfo.XamlLineInfo() -> void
 Microsoft.Maui.Controls.Xaml.XamlLineInfo.XamlLineInfo(int lineNumber, int linePosition) -> void
-~Microsoft.Maui.Controls.Xaml.XamlParseException.XamlInfo.get -> Microsoft.Maui.Controls.Xaml.IXamlLineInfo
+~Microsoft.Maui.Controls.Xaml.XamlParseException.XamlInfo.get -> Microsoft.Maui.Controls.Xaml.XamlLineInfo
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void

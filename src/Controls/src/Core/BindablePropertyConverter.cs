@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Controls
 				return null;
 			if (!(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver))
 				return null;
-			IXamlLineInfo lineinfo = null;
-			if (serviceProvider.GetService(typeof(IXamlLineInfo)) is IXamlLineInfo xamlLineInfo)
+			XamlLineInfo lineinfo = null;
+			if (serviceProvider.GetService(typeof(XamlLineInfo)) is XamlLineInfo xamlLineInfo)
 				lineinfo = xamlLineInfo;
 			string[] parts = value.Split('.');
 			Type type = null;
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls
 			return ConvertFrom(type, parts[1], null);
 		}
 
-		BindableProperty ConvertFrom(Type type, string propertyName, IXamlLineInfo lineinfo)
+		BindableProperty ConvertFrom(Type type, string propertyName, XamlLineInfo lineinfo)
 		{
 			var name = propertyName + "Property";
 			FieldInfo bpinfo = GetPropertyField(type, name);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 		static FieldInfo GetPropertyField(Type type, string fieldName)
 			=> type.GetField(fieldName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
-		Type FindTypeForVisualState(IProvideParentValues parentValueProvider, IXamlLineInfo lineInfo)
+		Type FindTypeForVisualState(IProvideParentValues parentValueProvider, XamlLineInfo lineInfo)
 		{
 			var parents = parentValueProvider.ParentObjects.ToList();
 

@@ -4,7 +4,7 @@ using System.Xml;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	/// <summary>Provides line and position information for XAML parsing.</summary>
-	public class XmlLineInfo : IXmlLineInfo, IXamlLineInfo
+	public class XmlLineInfo : IXmlLineInfo
 	{
 		readonly bool _hasLineInfo;
 

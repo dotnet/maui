@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Xaml
 {
 	/// <summary>Provides line and position information for XAML processing.</summary>
-	public sealed class XamlLineInfo : IXamlLineInfo
+	public sealed class XamlLineInfo
 	{
 		readonly bool _hasLineInfo;
 

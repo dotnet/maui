@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	[RequireService(
 		[typeof(IProvideValueTarget),
 		 typeof(IValueConverterProvider),
-		 typeof(IXamlLineInfo),
+		 typeof(XamlLineInfo),
 		 typeof(IConverterOptions)])]
 	public class AppThemeBindingExtension : IMarkupExtension<BindingBase>
 	{

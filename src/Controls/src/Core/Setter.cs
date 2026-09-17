@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
 	[RequireService(
 		[typeof(IValueConverterProvider),
-		 typeof(IXamlLineInfo)])]
+		 typeof(XamlLineInfo)])]
 	public sealed class Setter : IValueProvider
 	{
 		/// <summary>

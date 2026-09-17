@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// Provides a XAML markup extension that creates a <see cref="DynamicResource"/> for dynamic resource lookup.
 	/// </summary>
 	[ContentProperty(nameof(Key))]
-	[RequireService([typeof(IXamlLineInfo)])]
+	[RequireService([typeof(XamlLineInfo)])]
 	public sealed class DynamicResourceExtension : IMarkupExtension<DynamicResource>
 	{
 		/// <summary>

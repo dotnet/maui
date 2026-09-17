@@ -21,8 +21,8 @@ public class MarkupExtensionBase : IMarkupExtension
 			services.Add("IXamlTypeResolver");
 		if (serviceProvider.GetService(typeof(IRootObjectProvider)) != null)
 			services.Add($"IRootObjectProvider({((IRootObjectProvider)serviceProvider.GetService(typeof(IRootObjectProvider))).RootObject.GetType().Name})");
-		if (serviceProvider.GetService(typeof(IXamlLineInfo)) != null)
-			services.Add("IXamlLineInfo");
+		if (serviceProvider.GetService(typeof(XamlLineInfo)) != null)
+			services.Add("XamlLineInfo");
 		if (serviceProvider.GetService(typeof(IValueConverterProvider)) != null)
 			services.Add("IValueConverterProvider");
 		if (serviceProvider.GetService(typeof(IProvideParentValues)) != null)
@@ -43,13 +43,13 @@ public class SPMarkup1 : MarkupExtensionBase { }
 [RequireService([typeof(IProvideParentValues)])]
 public class SPMarkup2 : MarkupExtensionBase { }
 
-[RequireService([typeof(IXamlLineInfo)])]
+[RequireService([typeof(XamlLineInfo)])]
 public class SPMarkup3 : IMarkupExtension
 {
 	public object ProvideValue(IServiceProvider serviceProvider)
 	{
-		var lineInfo = (IXamlLineInfo)serviceProvider.GetService(typeof(IXamlLineInfo));
-		return $"IXamlLineInfo({lineInfo.LineNumber},{lineInfo.LinePosition})";
+		var lineInfo = (XamlLineInfo)serviceProvider.GetService(typeof(XamlLineInfo));
+		return $"XamlLineInfo({lineInfo.LineNumber},{lineInfo.LinePosition})";
 	}
 }
 
@@ -91,19 +91,8 @@ public partial class ServiceProviderTests : ContentPage
 
 			Assert.Null(page.label0.Text);
 			Assert.Contains("IProvideValueTarget", page.label1.Text, StringComparison.Ordinal);
-			Assert.Equal("IXamlLineInfo(11,32)", page.label3.Text);
+			Assert.Equal("XamlLineInfo(11,32)", page.label3.Text);
 			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text, StringComparison.Ordinal); //https://github.com/dotnet/maui/issues/16881
-		}
-
-		[Fact]
-		public void LegacyLineInfoProviderAlsoRegistersMauiLineInfo()
-		{
-			var serviceProvider = new Internals.XamlServiceProvider();
-			serviceProvider.Add(typeof(IXmlLineInfoProvider), new Internals.XmlLineInfoProvider(new XmlLineInfo(4, 7)));
-
-			var lineInfo = Assert.IsAssignableFrom<IXamlLineInfo>(serviceProvider.GetService(typeof(IXamlLineInfo)));
-			Assert.Equal(4, lineInfo.LineNumber);
-			Assert.Equal(7, lineInfo.LinePosition);
 		}
 	}
 }

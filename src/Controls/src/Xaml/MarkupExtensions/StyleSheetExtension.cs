@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// </summary>
 	[ContentProperty(nameof(Style))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
-	[RequireService([typeof(IXamlLineInfo), typeof(IRootObjectProvider)])]
+	[RequireService([typeof(XamlLineInfo), typeof(IRootObjectProvider)])]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		/// <summary>
@@ -27,14 +27,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
-			IXamlLineInfo lineInfo;
+			XamlLineInfo lineInfo;
 
 			if (!string.IsNullOrEmpty(Style) && Source != null)
 				throw new XamlParseException($"StyleSheet cannot have both a Source and a content", serviceProvider);
 
 			if (Source != null)
 			{
-				lineInfo = serviceProvider.GetService(typeof(IXamlLineInfo)) as IXamlLineInfo;
+				lineInfo = serviceProvider.GetService(typeof(XamlLineInfo)) as XamlLineInfo;
 				if (Source.IsAbsoluteUri)
 					throw new XamlParseException($"Source only accepts Relative URIs", lineInfo);
 
