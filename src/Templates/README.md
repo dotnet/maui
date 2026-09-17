@@ -52,6 +52,10 @@ Core/Essentials forwards AppActions through the existing registrations for both 
 
 When migrating existing shortcut handlers, update every `PerformActionForShortcutItem` registration to invoke its completion callback exactly once: `true` when handled, or `false` when unhandled. Logging-only observers must also acknowledge `false`. A handler may acknowledge asynchronously after returning; returning alone is not an acknowledgement. If no handler reports `true`, an observer that never acknowledges prevents the native warm-action completion from finishing. There is no automatic timeout, because it would discard legitimate delayed responses. Cold scene connection options do not supply a native completion callback.
 
+Essentials forwards warm scene URL contexts and user activities with a `WebPageUrl` through WebAuthenticator's existing callback handling. This preserves externally delivered callbacks for custom authenticators implementing `IPlatformWebAuthenticatorCallback`. The built-in modern `ASWebAuthenticationSession` flow still receives its result through the authentication session's own completion handler.
+
+This authentication bridge is not general application deep-link navigation and does not replay URLs or user activities from a cold scene connection. Applications handling their own links must configure the corresponding scene handlers, including `SceneWillConnect` for connection options and `SceneContinueUserActivity` for continued universal-link activities. Those handlers are relevant even when multiple windows are disabled.
+
 ## Mac Catalyst deployment target
 
 Mac Catalyst app templates explicitly target `SupportedOSPlatformVersion` 17.0 (macOS 14), the minimum accepted by the .NET Mac Catalyst 27.x SDK. This SDK requirement is separate from scene adoption and applies when using that Apple SDK band with .NET 10 as well. The iOS app minimum remains 15.0.

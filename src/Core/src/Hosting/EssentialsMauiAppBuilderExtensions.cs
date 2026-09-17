@@ -19,6 +19,9 @@ using Microsoft.Maui.Storage;
 using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 #if ANDROID
 using Android.App;
+#elif __IOS__
+using System.Linq;
+using Foundation;
 #endif
 
 namespace Microsoft.Maui.Hosting
@@ -89,6 +92,13 @@ namespace Microsoft.Maui.Hosting
 					.OpenUrl((application, url, options) =>
 					{
 						return ApplicationModel.Platform.OpenUrl(application, url, options);
+					})
+					.SceneOpenUrl((scene, urlContexts) =>
+						OpenWebAuthenticatorUrls(urlContexts.Select<UIKit.UIOpenUrlContext, NSUrl>(context => context.Url), WebAuthenticator.Default))
+					.SceneContinueUserActivity((scene, userActivity) =>
+					{
+						var url = userActivity?.WebPageUrl?.AbsoluteString;
+						return !string.IsNullOrEmpty(url) && WebAuthenticator.Default.OpenUrl(new Uri(url));
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
@@ -119,6 +129,20 @@ namespace Microsoft.Maui.Hosting
 
 			return builder;
 		}
+
+#if __IOS__
+		internal static bool OpenWebAuthenticatorUrls(IEnumerable<NSUrl> urls, IWebAuthenticator webAuthenticator)
+		{
+			var wasHandled = false;
+			foreach (var url in urls)
+			{
+				if (url?.AbsoluteString is string absoluteUrl)
+					wasHandled = webAuthenticator.OpenUrl(new Uri(absoluteUrl)) || wasHandled;
+			}
+
+			return wasHandled;
+		}
+#endif
 
 		public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder>? configureDelegate = null)
 		{
