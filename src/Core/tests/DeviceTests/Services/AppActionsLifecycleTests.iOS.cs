@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
@@ -11,6 +12,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -289,6 +291,164 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task SceneFixtureConnectionPreservesKeyboardAutoManagerState(
+			bool connectObservers,
+			bool initialDisconnect)
+		{
+			var originalShouldDisconnectLifecycle = false;
+			var shouldRestoreDisconnectLifecycle = false;
+			NSObject?[]? originalObserverTokens = null;
+			NSObject?[]? fixtureObserverTokensBefore = null;
+			SceneFixture? fixture = null;
+			LifecycleEventService? lifecycleService = null;
+			var platformWindowCreatedCallbackRegistered = false;
+			var platformWindowCreatedCount = 0;
+			bool? disconnectLifecycleDuringWindowCreated = null;
+			iOSLifecycle.OnPlatformWindowCreated onPlatformWindowCreated = _ =>
+			{
+				platformWindowCreatedCount++;
+				disconnectLifecycleDuringWindowCreated =
+					KeyboardAutoManagerScroll.ShouldDisconnectLifecycle;
+			};
+
+			try
+			{
+				await InvokeOnMainThreadAsync(() =>
+				{
+					originalShouldDisconnectLifecycle = KeyboardAutoManagerScroll.ShouldDisconnectLifecycle;
+					shouldRestoreDisconnectLifecycle = true;
+					originalObserverTokens = GetKeyboardObserverTokens();
+
+					if (connectObservers)
+						KeyboardAutoManagerScroll.Connect();
+				});
+
+				fixture = await CreateFixtureAsync(new List<string>());
+				var lifecycle = Assert.IsType<LifecycleEventService>(
+					fixture.Services.GetRequiredService<ILifecycleEventService>());
+				lifecycleService = lifecycle;
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					((ILifecycleBuilder)lifecycle).AddEvent(
+						nameof(iOSLifecycle.OnPlatformWindowCreated),
+						onPlatformWindowCreated);
+					platformWindowCreatedCallbackRegistered = true;
+					fixtureObserverTokensBefore = GetKeyboardObserverTokens();
+					if (connectObservers)
+						Assert.All(fixtureObserverTokensBefore!, token => Assert.NotNull(token));
+
+					KeyboardAutoManagerScroll.ShouldDisconnectLifecycle = initialDisconnect;
+				});
+
+				await fixture.ConnectAsync(null);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					Assert.Equal(1, platformWindowCreatedCount);
+					Assert.True(disconnectLifecycleDuringWindowCreated == true);
+					Assert.Equal(initialDisconnect, KeyboardAutoManagerScroll.ShouldDisconnectLifecycle);
+					AssertKeyboardObserverTokensSame(fixtureObserverTokensBefore!);
+				});
+
+				await InvokeOnMainThreadAsync(() =>
+					lifecycle.RemoveEvent(
+						nameof(iOSLifecycle.OnPlatformWindowCreated),
+						onPlatformWindowCreated));
+				platformWindowCreatedCallbackRegistered = false;
+
+				await fixture.DisposeAsync();
+				fixture = null;
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					Assert.Equal(initialDisconnect, KeyboardAutoManagerScroll.ShouldDisconnectLifecycle);
+					AssertKeyboardObserverTokensSame(fixtureObserverTokensBefore!);
+				});
+			}
+			finally
+			{
+				try
+				{
+					if (lifecycleService is not null && platformWindowCreatedCallbackRegistered)
+					{
+						await InvokeOnMainThreadAsync(() =>
+							lifecycleService.RemoveEvent(
+								nameof(iOSLifecycle.OnPlatformWindowCreated),
+								onPlatformWindowCreated));
+					}
+
+					if (fixture is not null)
+						await fixture.DisposeAsync();
+				}
+				finally
+				{
+					if (shouldRestoreDisconnectLifecycle)
+					{
+						await InvokeOnMainThreadAsync(() =>
+						{
+							try
+							{
+								if (originalObserverTokens is not null &&
+									originalObserverTokens.All(token => token is null) &&
+									GetKeyboardObserverTokens().Any(token => token is not null))
+								{
+									KeyboardAutoManagerScroll.Disconnect();
+								}
+							}
+							finally
+							{
+								KeyboardAutoManagerScroll.ShouldDisconnectLifecycle =
+									originalShouldDisconnectLifecycle;
+							}
+						});
+					}
+				}
+			}
+		}
+
+		static NSObject?[] GetKeyboardObserverTokens()
+		{
+			const BindingFlags Flags = BindingFlags.Static | BindingFlags.NonPublic;
+			var observerFields = new[]
+			{
+				"TextFieldToken",
+				"TextViewToken",
+				"WillShowToken",
+				"WillHideToken",
+				"DidHideToken",
+			};
+			var tokens = new NSObject?[observerFields.Length];
+
+			for (var i = 0; i < observerFields.Length; i++)
+			{
+				var field = typeof(KeyboardAutoManagerScroll).GetField(observerFields[i], Flags);
+				Assert.NotNull(field);
+
+				var value = field!.GetValue(null);
+				Assert.True(
+					value is null || value is NSObject,
+					$"{observerFields[i]} must be an NSObject observer token.");
+				tokens[i] = value as NSObject;
+			}
+
+			return tokens;
+		}
+
+		static void AssertKeyboardObserverTokensSame(NSObject?[] expected)
+		{
+			var actual = GetKeyboardObserverTokens();
+			Assert.Equal(expected.Length, actual.Length);
+
+			for (var i = 0; i < expected.Length; i++)
+				Assert.Same(expected[i], actual[i]);
+		}
+
 		async Task<SceneFixture> CreateFixtureAsync(List<string> events)
 		{
 			EnsureHandlerCreated(builder =>
@@ -396,7 +556,17 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					AssertWillConnectPreconditions();
 					using var options = new TestSceneConnectionOptions(shortcutItem);
-					SceneDelegate.WillConnect(Scene, Session, options);
+					var originalShouldDisconnectLifecycle = KeyboardAutoManagerScroll.ShouldDisconnectLifecycle;
+					// The fixture's non-input window must not change process-wide keyboard observer state.
+					KeyboardAutoManagerScroll.ShouldDisconnectLifecycle = true;
+					try
+					{
+						SceneDelegate.WillConnect(Scene, Session, options);
+					}
+					finally
+					{
+						KeyboardAutoManagerScroll.ShouldDisconnectLifecycle = originalShouldDisconnectLifecycle;
+					}
 					AssertMappedWindow();
 				});
 
