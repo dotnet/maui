@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls
 	public class ShadowTypeConverter : TypeConverter
 	{
 		const int MaxShadowParts = 5;
-		const int ValuesPerPart = 2;
 
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
@@ -54,14 +53,14 @@ namespace Microsoft.Maui.Controls
 
 			try
 			{
-				Span<int> parts = stackalloc int[MaxShadowParts * ValuesPerPart];
+				Span<Part> parts = stackalloc Part[MaxShadowParts];
 				var partCount = Tokenize(strValue, parts);
 
 				if (partCount == 3) // <color> | <float> | <float> e.g. #000000 4 4
 				{
-					var brush = ParseBrush(GetPartString(strValue, parts, 0));
-					var offsetX = float.Parse(GetPartString(strValue, parts, 1), CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(GetPartString(strValue, parts, 2), CultureInfo.InvariantCulture);
+					var brush = ParseBrush(parts[0].GetString(strValue));
+					var offsetX = float.Parse(parts[1].GetString(strValue), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(parts[2].GetString(strValue), CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -71,10 +70,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (partCount == 4) // <float> | <float> | <float> | <color> e.g. 4 4 16 #000000
 				{
-					var offsetX = float.Parse(GetPartString(strValue, parts, 0), CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(GetPartString(strValue, parts, 1), CultureInfo.InvariantCulture);
-					var radius = float.Parse(GetPartString(strValue, parts, 2), CultureInfo.InvariantCulture);
-					var brush = ParseBrush(GetPartString(strValue, parts, 3));
+					var offsetX = float.Parse(parts[0].GetString(strValue), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(parts[1].GetString(strValue), CultureInfo.InvariantCulture);
+					var radius = float.Parse(parts[2].GetString(strValue), CultureInfo.InvariantCulture);
+					var brush = ParseBrush(parts[3].GetString(strValue));
 
 					return new Shadow
 					{
@@ -85,11 +84,11 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (partCount == 5) // <float> | <float> | <float> | <color> | <float> e.g. 4 4 16 #000000 0.5
 				{
-					var offsetX = float.Parse(GetPartString(strValue, parts, 0), CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(GetPartString(strValue, parts, 1), CultureInfo.InvariantCulture);
-					var radius = float.Parse(GetPartString(strValue, parts, 2), CultureInfo.InvariantCulture);
-					var brush = ParseBrush(GetPartString(strValue, parts, 3));
-					var opacity = float.Parse(GetPartString(strValue, parts, 4), CultureInfo.InvariantCulture);
+					var offsetX = float.Parse(parts[0].GetString(strValue), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(parts[1].GetString(strValue), CultureInfo.InvariantCulture);
+					var radius = float.Parse(parts[2].GetString(strValue), CultureInfo.InvariantCulture);
+					var brush = ParseBrush(parts[3].GetString(strValue));
+					var opacity = float.Parse(parts[4].GetString(strValue), CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -116,13 +115,7 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(IShadow)}.");
 		}
 
-		static string GetPartString(string value, ReadOnlySpan<int> parts, int partIndex)
-		{
-			var offset = partIndex * ValuesPerPart;
-			return value.Substring(parts[offset], parts[offset + 1]);
-		}
-
-		static int Tokenize(string value, Span<int> parts)
+		static int Tokenize(string value, Span<Part> parts)
 		{
 			var input = value.AsSpan();
 			var partCount = 0;
@@ -140,9 +133,7 @@ namespace Microsoft.Maui.Controls
 
 				if (partCount < MaxShadowParts)
 				{
-					var offset = partCount * ValuesPerPart;
-					parts[offset] = position;
-					parts[offset + 1] = length;
+					parts[partCount] = new Part(position, length);
 				}
 
 				partCount++;
@@ -155,6 +146,22 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return partCount;
+		}
+
+		readonly struct Part
+		{
+			public Part(int start, int length)
+			{
+				Start = start;
+				Length = length;
+			}
+
+			public int Start { get; }
+
+			public int Length { get; }
+
+			public string GetString(string value)
+				=> value.Substring(Start, Length);
 		}
 
 		static bool TryReadColor(ReadOnlySpan<char> value, out int length)
