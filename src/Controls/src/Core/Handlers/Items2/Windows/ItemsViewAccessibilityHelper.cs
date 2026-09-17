@@ -42,13 +42,9 @@ sealed class ItemsViewAccessibilityHelper
         if (args.OldFocusedElement is DependencyObject oldElement && IsDescendantOf(oldElement, _itemsView))
             return;
 
-        // WinUI may have already resolved a legitimate focus target inside the CollectionView —
-        // e.g. an interactive Button/Entry inside a Header, Footer, GroupHeaderTemplate, or
-        // EmptyView. Those live INSIDE an ItemContainer wrapper but are never an ItemContainer
-        // themselves, so "not an ItemContainer, but still a descendant" is what distinguishes
-        // a real interactive control from WinUI's default data-item target. Only skip our
-        // redirect for that case — a plain data ItemContainer still goes through the redirect
-        // below, preserving the original selected/first-item behavior.
+        // If WinUI already focused a real interactive control inside the CollectionView
+        // (Header, Footer, GroupHeader, or EmptyView), don't redirect focus. Only
+        // data-item ItemContainers should use the redirect logic below.
         if (args.NewFocusedElement is DependencyObject newElement &&
             newElement is not ItemContainer &&
             !ReferenceEquals(newElement, _itemsView) &&
