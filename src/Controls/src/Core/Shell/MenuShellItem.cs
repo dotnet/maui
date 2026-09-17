@@ -27,15 +27,21 @@ namespace Microsoft.Maui.Controls
 			base.OnParentSet();
 
 			if (Parent is null)
+			{
 				Disconnect();
+			}
 			else
+			{
 				Connect();
+			}
 		}
 
 		void Connect()
 		{
 			if (_isConnected)
+			{
 				return;
+			}
 
 			_isConnected = true;
 			MenuItem.Parent = this;
@@ -45,13 +51,17 @@ namespace Microsoft.Maui.Controls
 		void Disconnect()
 		{
 			if (!_isConnected)
+			{
 				return;
+			}
 
 			_isConnected = false;
 			MenuItem.PropertyChanged -= OnMenuItemPropertyChanged;
 
 			if (MenuItem.Parent == this)
+			{
 				MenuItem.Parent = null;
+			}
 		}
 
 		IList<string> IStyleSelectable.Classes => ((IStyleSelectable)MenuItem).Classes;
@@ -89,7 +99,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			if (_isConnected)
+			{
 				SetInheritedBindingContext(MenuItem, BindingContext);
+			}
 		}
 	}
 }

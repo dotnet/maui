@@ -774,6 +774,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(bindingContext, menuItem2.BindingContext);
 		}
 
+		[Fact, Category(TestCategory.Memory)]
+		public async Task LongLivedMenuItemDoesNotRetainImplicitShellItem()
+		{
+			var menuItem = new MenuItem();
+
+			WeakReference CreateWrapperReference()
+			{
+				ShellItem wrapper = menuItem;
+				wrapper.BindingContext = new object();
+				return new WeakReference(wrapper);
+			}
+
+			var wrapperReference = CreateWrapperReference();
+
+			Assert.False(await wrapperReference.WaitForCollect(), "MenuItem should not retain an unattached implicit ShellItem wrapper.");
+			GC.KeepAlive(menuItem);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task LongLivedMenuItemDoesNotRetainRemovedShellItem()
+		{
+			var menuItem = new MenuItem();
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+
+			WeakReference AddAndRemoveWrapper()
+			{
+				ShellItem wrapper = menuItem;
+				shell.Items.Add(wrapper);
+				shell.Items.Remove(wrapper);
+				return new WeakReference(wrapper);
+			}
+
+			var wrapperReference = AddAndRemoveWrapper();
+
+			Assert.Null(menuItem.Parent);
+			Assert.False(await wrapperReference.WaitForCollect(), "MenuItem should not retain a removed ShellItem wrapper.");
+			GC.KeepAlive(menuItem);
+			GC.KeepAlive(shell);
+		}
+
 		[Fact]
 		public void FlyoutMenuItemIsVisibleSynchronized()
 		{
@@ -1817,7 +1858,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellSection2 = new ShellSection();
 			var shellContent1 = new ShellContent { Title = "Page1", Content = new ContentPage() };
 			var shellContent2 = new ShellContent { Title = "Page2", Content = new ContentPage() };
-			
+
 			shellSection1.Items.Add(shellContent1);
 			shellSection2.Items.Add(shellContent2);
 			flyoutItem.Items.Add(shellSection1);
@@ -1827,7 +1868,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Both should be able to have the same route since they're in different parents
 			shellContent1.Route = sameRoute;
 			shellContent2.Route = sameRoute; // Should not throw - different parents
-			
+
 			Assert.Equal(sameRoute, shellContent1.Route);
 			Assert.Equal(sameRoute, shellContent2.Route);
 		}
