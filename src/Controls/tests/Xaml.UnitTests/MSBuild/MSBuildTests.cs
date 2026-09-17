@@ -338,6 +338,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
 		}
 
+		void AddCoreBeforeTargetsImport(XElement project)
+		{
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Core", "src", "nuget", "buildTransitive", "Microsoft.Maui.Core.Before.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+		}
+
 		void AddMauiReferences(XElement project)
 		{
 			var itemGroup = NewElement("ItemGroup");
@@ -438,12 +444,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 			project.Add(propertyGroup);
 
-			AddControlsTargetsImport(project);
+			AddCoreBeforeTargetsImport(project);
 
 			var target = NewElement("Target")
 				.WithAttribute("Name", "ReportMauiAspireFeatureSwitch");
 			target.Add(NewElement("Message")
-				.WithAttribute("Text", "MauiAspireFeatureSwitch=$(_EnableMauiAspire);@(RuntimeHostConfigurationOption)")
+				.WithAttribute("Text", "MauiAspireFeatureSwitch=$(_EnableMauiAspire);@(RuntimeHostConfigurationOption->'%(Identity)=%(Value),Trim=%(Trim)')")
 				.WithAttribute("Importance", "high"));
 			project.Add(target);
 
@@ -453,7 +459,30 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var log = Build(projectFile, target: "ReportMauiAspireFeatureSwitch");
 
 			Assert.Contains($"MauiAspireFeatureSwitch={expected};", log, StringComparison.Ordinal);
-			Assert.Contains("Microsoft.Maui.RuntimeFeature.EnableMauiAspire", log, StringComparison.Ordinal);
+			Assert.Contains($"Microsoft.Maui.RuntimeFeature.EnableMauiAspire={expected},Trim=true", log, StringComparison.Ordinal);
+		}
+
+		[Theory]
+		[InlineData("true")]
+		[InlineData("false")]
+		public void ExplicitMauiAspireFeatureSwitchWarnsInOptimizedBuild(string explicitValue)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("Optimize").WithValue("true"));
+			propertyGroup.Add(NewElement("_EnableMauiAspire").WithValue(explicitValue));
+			project.Add(propertyGroup);
+
+			AddCoreBeforeTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile, target: "_MauiValidateAspireConfiguration");
+
+			Assert.Contains("warning MA002", log, StringComparison.Ordinal);
 		}
 
 		[Theory]
