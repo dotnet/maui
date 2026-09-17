@@ -16,7 +16,7 @@
     failing checks. Accepts repeated values or comma-separated values.
 
 .PARAMETER CheckName
-    Optional substring filter for GitHub check names.
+    Optional check-name substring to prioritize. All three pipelines remain in scope.
 
 .PARAMETER LookbackBuilds
     Number of recent base-branch builds to include for comparison.
@@ -110,71 +110,6 @@ function Assert-Command {
 
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
         throw "Required command '$Name' was not found on PATH."
-    }
-}
-
-function Invoke-SealedVisualMerge {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$MergeScriptContent,
-        [Parameter(Mandatory = $true)]
-        [string]$ContextJsonContent,
-        [Parameter(Mandatory = $true)]
-        [string]$CommentBodyPath,
-        [Parameter(Mandatory = $true)]
-        [int]$PrNumber,
-        [Parameter(Mandatory = $true)]
-        [string]$Repository
-    )
-
-    $sealedMergeDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("review-tests-merge-" + [guid]::NewGuid().ToString("N"))
-    $sealedMergeScriptPath = Join-Path $sealedMergeDirectory "Merge-TestVisualsIntoComment.ps1"
-    $sealedContextJsonPath = Join-Path $sealedMergeDirectory "context.json"
-    $tokenNames = @(
-        "COPILOT_GITHUB_TOKEN",
-        "GH_TOKEN",
-        "GITHUB_TOKEN",
-        "GH_AW_GITHUB_TOKEN",
-        "GH_AW_GITHUB_MCP_SERVER_TOKEN",
-        "GITHUB_MCP_SERVER_TOKEN"
-    )
-    $savedTokens = @{}
-    $mergeExitCode = 1
-    $mergeOutput = @()
-    foreach ($tokenName in $tokenNames) {
-        $savedTokens[$tokenName] = [Environment]::GetEnvironmentVariable($tokenName, "Process")
-    }
-    try {
-        New-Item -ItemType Directory -Path $sealedMergeDirectory | Out-Null
-        [System.IO.File]::WriteAllText($sealedMergeScriptPath, $MergeScriptContent, [System.Text.UTF8Encoding]::new($false))
-        [System.IO.File]::WriteAllText($sealedContextJsonPath, $ContextJsonContent, [System.Text.UTF8Encoding]::new($false))
-        foreach ($tokenName in $tokenNames) {
-            [Environment]::SetEnvironmentVariable($tokenName, $null, "Process")
-        }
-
-        $mergeOutput = @(& pwsh $sealedMergeScriptPath `
-                -PrNumber $PrNumber `
-                -Repository $Repository `
-                -ContextJsonPath $sealedContextJsonPath `
-                -CommentBodyPath $CommentBodyPath 2>&1)
-        $mergeExitCode = $LASTEXITCODE
-    }
-    catch {
-        $mergeExitCode = 1
-        $mergeOutput = @("Visual comparison merge setup failed: $($_.Exception.Message)")
-    }
-    finally {
-        foreach ($tokenName in $tokenNames) {
-            [Environment]::SetEnvironmentVariable($tokenName, $savedTokens[$tokenName], "Process")
-        }
-        if (Test-Path -LiteralPath $sealedMergeDirectory) {
-            Remove-Item -LiteralPath $sealedMergeDirectory -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    return [pscustomobject]@{
-        exitCode = $mergeExitCode
-        output = $mergeOutput
     }
 }
 
@@ -410,58 +345,6 @@ function Get-EmbeddedTestFailureReport {
     return $null
 }
 
-function Escape-Html {
-    param([string]$Value)
-
-    if ($null -eq $Value) {
-        return ""
-    }
-
-    return $Value -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
-}
-
-function Get-ReportVerdict {
-    param([string]$Content)
-
-    $match = [regex]::Match($Content, '\*\*Overall verdict:\*\*\s*(?<verdict>[^\r\n]+)')
-    if ($match.Success) {
-        return $match.Groups["verdict"].Value.Trim()
-    }
-
-    return "Needs human investigation"
-}
-
-function Get-VerdictColor {
-    param([string]$Verdict)
-
-    switch -Regex ($Verdict) {
-        # Overall merge-readiness verdicts
-        'Ready to merge' { return '1a7f37' }
-        'No failures found' { return '1a7f37' }
-        'Not ready' { return 'd1242f' }
-        'Insufficient data' { return '6e7781' }
-        'Needs human' { return 'bf8700' }
-        # Backward-compatible per-failure verdict words
-        'Likely PR-caused' { return 'd1242f' }
-        'Likely unrelated' { return '1a7f37' }
-        default { return 'bf8700' }
-    }
-}
-
-function New-Badge {
-    param(
-        [string]$Label,
-        [string]$Message,
-        [string]$Color,
-        [string]$Alt
-    )
-
-    $encodedLabel = [Uri]::EscapeDataString($Label) -replace '-', '--'
-    $encodedMessage = [Uri]::EscapeDataString($Message) -replace '-', '--'
-    $safeAlt = Escape-Html $Alt
-    return "  <img alt=""$safeAlt"" src=""https://img.shields.io/badge/$encodedLabel-$encodedMessage-$Color`?labelColor=30363d&style=flat-square"">"
-}
-
 function Collapse-OpenDetails {
     param([string]$Content)
 
@@ -497,86 +380,7 @@ function New-TestFailureReviewBody {
         return $completeReport
     }
 
-    $prJson = & gh pr view $PRNumber --repo $Repository --json author,headRefOid 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to fetch PR metadata for comment formatting: $prJson"
-    }
-
-    $pr = $prJson | ConvertFrom-Json
-    $commitFull = [string]$pr.headRefOid
-    $commitSha7 = if ($commitFull.Length -ge 7) { $commitFull.Substring(0, 7) } else { "unknown" }
-    $commitUrl = if ($commitFull) { "https://github.com/$Repository/commit/$commitFull" } else { "#" }
-    $prAuthor = $pr.author.login
-
-    $verdict = Get-ReportVerdict -Content $ReportContent
-    $safeVerdict = Escape-Html $verdict
-    $verdictColor = Get-VerdictColor -Verdict $verdict
-
-    $failureCount = 0
-    $baselineMatchCount = 0
-    $regressedVsBase = 0
-    $unattributedFailures = 0
-    $platforms = @()
-    if (Test-Path $ContextJsonPath) {
-        try {
-            $context = Get-Content -Path $ContextJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
-            $failureCount = @($context.failures.unique).Count
-            $baselineMatchCount = [int]$context.failures.baselineMatchCount
-            $regressedVsBase = [int]$context.gate.legsRegressedVsBase
-            $unattributedFailures = [int]$context.gate.unattributedFailures
-            $platforms = @($context.failures.unique | ForEach-Object { $_.platform } | Where-Object { $_ -and $_ -ne "unknown" } | Select-Object -Unique)
-        }
-        catch {
-            Write-Warning "Could not parse context JSON while formatting comment: $($_.Exception.Message)"
-        }
-    }
-
-    $badgeLines = @()
-    $badgeLines += New-Badge -Label "Overall" -Message $verdict -Color $verdictColor -Alt "Overall $verdict"
-    $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "bf8700" -Alt "Failures $failureCount"
-    $badgeLines += New-Badge -Label "Baseline" -Message "$baselineMatchCount on base" -Color "0969da" -Alt "Baseline $baselineMatchCount on base"
-    # Surface the deterministic job-level regression count (red on PR, green on base) when
-    # any leg regressed -- it is the strongest PR-caused signal and caps the verdict ceiling.
-    if ($regressedVsBase -gt 0) {
-        $badgeLines += New-Badge -Label "Regressed" -Message "$regressedVsBase vs base" -Color "d1242f" -Alt "Regressed $regressedVsBase vs base"
-    }
-    # Surface failures the deterministic prior could not attribute either way -- they cap the
-    # ceiling at "Needs human investigation" (neither dismissible nor provably PR-caused).
-    if ($unattributedFailures -gt 0) {
-        $badgeLines += New-Badge -Label "Unattributed" -Message "$unattributedFailures" -Color "bf8700" -Alt "Unattributed $unattributedFailures"
-    }
-    foreach ($platform in $platforms) {
-        $badgeLines += New-Badge -Label "Platform" -Message $platform -Color "0969da" -Alt "Platform $platform"
-    }
-
-    $authorPing = if ($prAuthor) {
-        "> @$prAuthor — test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
-    }
-    else {
-        "> Test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
-    }
-    $badges = $badgeLines -join "`n"
-
-    return @"
-$marker
-
-## Tests Failure Analysis
-
-$authorPing
-
-> Maintainers can request a fresh review after new comments, commits, or CI runs by commenting `/review tests`.
-
-<p align="left">
-$badges
-</p>
-
-<details>
-<summary><strong>Test Failure Review:</strong> $safeVerdict - click to expand</summary>
-
-$ReportContent
-
-</details>
-"@
+    throw "Copilot did not produce the skill's complete structured report. No comment was posted."
 }
 
 function Invoke-GhApiWithJsonPayload {
@@ -660,7 +464,8 @@ $gatherArgs = @(
     "-PrNumber", "$PRNumber",
     "-OutputDirectory", $OutputDirectory,
     "-Repository", $Repository,
-    "-LookbackBuilds", "$LookbackBuilds"
+    "-LookbackBuilds", "$LookbackBuilds",
+    "-SkipVisualEvidence"
 )
 if ($BuildId.Count -gt 0) {
     $gatherArgs += "-BuildId"
@@ -680,29 +485,6 @@ if ($GatherOnly) {
     Write-Host "GatherOnly set; skipping Copilot analysis."
     Write-Host "Context: $ContextMarkdownPath"
     exit 0
-}
-
-if ($PostComment -and -not $DryRun) {
-    $publisherScript = Join-Path $RepoRoot ".github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1"
-    Write-Host "Publishing visual comparison assets for the analysis comment..."
-    & pwsh $publisherScript `
-        -PrNumber $PRNumber `
-        -Repository $Repository `
-        -ContextJsonPath $ContextJsonPath
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Visual comparison publishing failed; continuing with the ordinary test-failure report."
-    }
-}
-
-$visualMergeScript = Join-Path $RepoRoot ".github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1"
-$sealedVisualMergeContent = $null
-$sealedVisualContextContent = $null
-if ((Test-Path -LiteralPath $visualMergeScript) -and (Test-Path -LiteralPath $ContextJsonPath)) {
-    # Capture trusted post-processing inputs in this parent process before Copilot runs. The child
-    # cannot mutate these in-memory strings, even when the explicit -AllowAllTools escape hatch is
-    # enabled. Materialize them outside the worktree only after the child exits.
-    $sealedVisualMergeContent = Get-Content -LiteralPath $visualMergeScript -Raw -Encoding UTF8
-    $sealedVisualContextContent = Get-Content -LiteralPath $ContextJsonPath -Raw -Encoding UTF8
 }
 
 Assert-Command -Name "copilot"
@@ -728,8 +510,7 @@ Context files:
 
 Rules:
 - Do not modify source files.
-- Do not include visual image links or panels in your report. The local runner merges
-  trusted, bounded visual panels into the final comment after your analysis.
+- Do not run other review skills or add a second output format.
 - Do not apply labels.
 - Do not trigger builds or reruns.
 - Do not post comments; this local runner handles optional posting after you finish.
@@ -787,25 +568,6 @@ Write-Host "Report: $ReportPath"
 $reportContent = Get-Content -Path $ReportPath -Raw -Encoding UTF8
 $reviewBody = New-TestFailureReviewBody -PRNumber $PRNumber -Repository $Repository -ReportContent $reportContent -ContextJsonPath $ContextJsonPath
 Set-Content -Path $CommentPath -Value $reviewBody -Encoding UTF8
-
-if ($null -ne $sealedVisualMergeContent -and $null -ne $sealedVisualContextContent) {
-    $mergeResult = Invoke-SealedVisualMerge `
-        -MergeScriptContent $sealedVisualMergeContent `
-        -ContextJsonContent $sealedVisualContextContent `
-        -CommentBodyPath $CommentPath `
-        -PrNumber $PRNumber `
-        -Repository $Repository
-    foreach ($line in @($mergeResult.output)) {
-        Write-Host $line
-    }
-    if ($mergeResult.exitCode -eq 0) {
-        $reviewBody = Get-Content -Path $CommentPath -Raw -Encoding UTF8
-    }
-    else {
-        Write-Warning "Visual comparison merge failed; continuing with the ordinary test-failure report."
-        Set-Content -Path $CommentPath -Value $reviewBody -Encoding UTF8
-    }
-}
 
 Write-Host "Review body: $CommentPath"
 

@@ -11,14 +11,9 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
-            'Invoke-SealedVisualMerge',
             'Get-EmbeddedTestFailureReport',
             'Get-EmbeddedTestFailureReportCandidate',
             'Get-MarkdownFenceState',
-            'Escape-Html',
-            'Get-ReportVerdict',
-            'Get-VerdictColor',
-            'New-Badge',
             'Collapse-OpenDetails',
             'New-TestFailureReviewBody'
         )) {
@@ -31,63 +26,61 @@ BeforeAll {
     }
 }
 
-Describe 'Local visual merge trust boundary' {
-    It 'runs captured merger content without GitHub tokens and restores the parent environment' {
-        $commentPath = Join-Path $TestDrive 'comment.md'
-        $priorToken = [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process')
-        [Environment]::SetEnvironmentVariable('GH_TOKEN', 'secret-for-test', 'Process')
-        try {
-            $mergeScript = @'
-param(
-    [int]$PrNumber,
-    [string]$Repository,
-    [string]$ContextJsonPath,
-    [string]$CommentBodyPath
-)
-$tokenState = if ([string]::IsNullOrEmpty($env:GH_TOKEN)) { 'missing' } else { 'present' }
-$context = Get-Content -LiteralPath $ContextJsonPath -Raw
-Set-Content -LiteralPath $CommentBodyPath -Value "$tokenState|$context" -NoNewline
-'@
-            $result = Invoke-SealedVisualMerge `
-                -MergeScriptContent $mergeScript `
-                -ContextJsonContent '{"sealed":true}' `
-                -CommentBodyPath $commentPath `
-                -PrNumber 123 `
-                -Repository 'dotnet/maui'
-
-            $result.exitCode | Should -Be 0
-            (Get-Content -LiteralPath $commentPath -Raw) | Should -Be 'missing|{"sealed":true}'
-            [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process') | Should -Be 'secret-for-test'
+Describe 'Review tests workflow contract' {
+    BeforeAll {
+        $workflowPath = Join-Path $PSScriptRoot '../workflows/copilot-review-tests.md'
+        $workflow = Get-Content -LiteralPath $workflowPath -Raw
+        $workflowBody = ([regex]::Split($workflow, '(?m)^---\r?$'))[2]
+        $guard = [regex]::Match(
+            $workflow,
+            '(?ms)^    - name: Confirm exact /review tests command\r?\n.*?^      run: \|\r?\n(?<script>(?:^        [^\r\n]*\r?\n)+)')
+        if (-not $guard.Success) {
+            throw 'Exact-command guard was not found in the workflow.'
         }
-        finally {
-            [Environment]::SetEnvironmentVariable('GH_TOKEN', $priorToken, 'Process')
-        }
+        $guardPath = Join-Path $TestDrive 'exact-command.sh'
+        Set-Content -LiteralPath $guardPath -Value ($guard.Groups['script'].Value -replace '(?m)^ {8}', '')
     }
 
-    It 'returns a nonzero result when sealed merge setup fails' {
-        $priorToken = [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process')
-        [Environment]::SetEnvironmentVariable('GH_TOKEN', 'secret-for-setup-failure', 'Process')
-        Mock New-Item {
-            throw 'simulated setup failure'
-        } -ParameterFilter {
-            $ItemType -eq 'Directory'
+    It 'uses one skill and one comment without a competing format or visual publisher' {
+        $workflow | Should -Match '(?m)^skills:\r?\n  - \.github/skills/review-test-failures\r?\n\r?\nsafe-outputs:'
+        $workflow | Should -Match 'add-comment:\r?\n    max: 1'
+        $workflow | Should -Match 'roles: \[admin, maintain, write\]'
+        $workflow | Should -Match 'persist-credentials: false'
+        $workflow | Should -Match '(?m)^model: gpt-'
+        $workflow | Should -Match '-SkipVisualEvidence'
+        $workflow | Should -Not -Match 'Publish-TestVisualAssets|Merge-TestVisualsIntoComment'
+        $workflowBody | Should -Match 'Invoke \*\*review-test-failures\*\*'
+        $workflowBody | Should -Not -Match 'gate\.verdictCeiling|Comment-format precedence|img.shields.io|<details>'
+    }
+
+    It 'accepts only the exact subcommand on PR comments: <Comment> / <Event> / <PullRequest>' -ForEach @(
+        @{ Comment = '/review tests'; Event = 'issue_comment'; PullRequest = 'https://api.github.com/repos/dotnet/maui/pulls/1'; Expected = 'true' }
+        @{ Comment = "/review tests`n"; Event = 'issue_comment'; PullRequest = 'https://api.github.com/repos/dotnet/maui/pulls/1'; Expected = 'true' }
+        @{ Comment = '/review'; Event = 'issue_comment'; PullRequest = 'https://api.github.com/repos/dotnet/maui/pulls/1'; Expected = 'false' }
+        @{ Comment = '/review android'; Event = 'issue_comment'; PullRequest = 'https://api.github.com/repos/dotnet/maui/pulls/1'; Expected = 'false' }
+        @{ Comment = '/review tests extra'; Event = 'issue_comment'; PullRequest = 'https://api.github.com/repos/dotnet/maui/pulls/1'; Expected = 'false' }
+        @{ Comment = '/review tests'; Event = 'issue_comment'; PullRequest = ''; Expected = 'false' }
+        @{ Comment = '/review tests'; Event = 'pull_request_review_comment'; PullRequest = 'https://api.github.com/repos/dotnet/maui/pulls/1'; Expected = 'false' }
+        @{ Comment = ''; Event = 'workflow_dispatch'; PullRequest = ''; Expected = 'true' }
+    ) {
+        $names = @('EVENT_NAME', 'COMMENT_BODY', 'ISSUE_PULL_REQUEST_URL', 'GITHUB_OUTPUT')
+        $saved = @{}
+        foreach ($name in $names) {
+            $saved[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
         }
-
         try {
-            $result = Invoke-SealedVisualMerge `
-                -MergeScriptContent 'throw "should not run"' `
-                -ContextJsonContent '{}' `
-                -CommentBodyPath (Join-Path $TestDrive 'comment.md') `
-                -PrNumber 123 `
-                -Repository 'dotnet/maui'
-
-            $result.exitCode | Should -Be 1
-            ($result.output -join "`n") | Should -Match 'simulated setup failure'
-            [Environment]::GetEnvironmentVariable('GH_TOKEN', 'Process') |
-                Should -Be 'secret-for-setup-failure'
+            $env:EVENT_NAME = $Event
+            $env:COMMENT_BODY = $Comment
+            $env:ISSUE_PULL_REQUEST_URL = $PullRequest
+            $env:GITHUB_OUTPUT = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+            & bash $guardPath
+            $LASTEXITCODE | Should -Be 0
+            (Get-Content -LiteralPath $env:GITHUB_OUTPUT -Raw).Trim() | Should -Be "should_run=$Expected"
         }
         finally {
-            [Environment]::SetEnvironmentVariable('GH_TOKEN', $priorToken, 'Process')
+            foreach ($name in $names) {
+                [Environment]::SetEnvironmentVariable($name, $saved[$name], 'Process')
+            }
         }
     }
 }
@@ -730,20 +723,46 @@ Generated report:
         $body | Should -Not -Match 'Generated report:'
     }
 
-    It 'keeps the refresh command discoverable in synthesized reports' {
-        Mock gh {
-            $global:LASTEXITCODE = 0
-            return '{"author":{"login":"author"},"headRefOid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'
-        }
+    It 'refuses to manufacture a comment from an incomplete analysis' {
+        {
+            New-TestFailureReviewBody `
+                -PRNumber 123 `
+                -Repository 'dotnet/maui' `
+                -ReportContent 'Short incomplete analysis.' `
+                -ContextJsonPath (Join-Path $TestDrive 'missing.json')
+        } | Should -Throw '*complete structured report*'
+    }
 
+    It 'preserves the single skill format and five-run history without adding badges' {
+        $content = @'
+<!-- Tests Failure -->
+
+## Tests Failure Analysis
+
+**Overall verdict:** Inconclusive
+
+<details>
+<summary>Pipeline results and failure evidence</summary>
+
+| Pipeline | Current build | Previous five runs on the same branch | Coverage |
+| --- | --- | --- | --- |
+| maui-pr | 123 | refs/pull/1/merge; 5/5 available | Complete |
+| maui-pr-devicetests | 124 | refs/pull/1/merge; 3/5 available | Unverified |
+| maui-pr-uitests | 125 | refs/pull/1/merge; 5/5 available | Complete |
+
+**Coverage:** Incomplete - device results unavailable.
+**Next action:** Inspect the missing device results.
+
+</details>
+'@
         $body = New-TestFailureReviewBody `
-            -PRNumber 123 `
+            -PRNumber 1 `
             -Repository 'dotnet/maui' `
-            -ReportContent 'Short incomplete analysis.' `
-            -ContextJsonPath (Join-Path $TestDrive 'missing.json')
+            -ReportContent $content `
+            -ContextJsonPath (Join-Path $TestDrive 'unused.json')
 
-        $body | Should -Match 'Maintainers can request a fresh review'
-        $body | Should -Match '/review tests'
+        $body | Should -Be $content.Replace('<!-- Tests Failure -->', '<!-- Tests Failure (local) -->')
+        $body | Should -Not -Match 'img.shields.io|Deterministic ceiling|Ready to merge'
     }
 
     It 'returns null when no complete report is embedded' {
