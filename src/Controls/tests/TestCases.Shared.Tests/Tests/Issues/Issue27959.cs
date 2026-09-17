@@ -63,6 +63,11 @@ public class Issue27959 : _IssuesUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void ItemsViewHeaderFooterTemplatedToggleNullToNonNull()
 	{
+		if (Device == TestDevice.Mac)
+		{
+			Assert.Ignore("Flaky on MacCatalyst: this templated header/footer toggle scenario can hang the CollectionView UITest leg.");
+		}
+
 		App.WaitForElement("ItemsViewTemplatedButton").Click();
 		App.WaitForElement("ToggleHeaderTemplateButton");
 		App.Click("ToggleHeaderTemplateButton");
