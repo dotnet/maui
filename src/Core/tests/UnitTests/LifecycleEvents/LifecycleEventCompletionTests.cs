@@ -137,6 +137,21 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 		}
 
 		[Fact]
+		public void FalseAndSilentHandlersDoNotCompleteOnReturn()
+		{
+			var silentHandlerInvoked = false;
+			using var app = CreateApp(
+				callback => callback(false),
+				_ => silentHandlerInvoked = true);
+			var completion = new CompletionRecorder();
+
+			Invoke(app.Services, completion);
+
+			Assert.True(silentHandlerInvoked);
+			Assert.Equal(0, completion.Count);
+		}
+
+		[Fact]
 		public void AsyncTrueHandlerWinsAfterSynchronousFalse()
 		{
 			Action<bool>? delayedCompletion = null;

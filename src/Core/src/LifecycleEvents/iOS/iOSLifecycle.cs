@@ -49,7 +49,29 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void SceneOnActivated(UIScene scene);
 		public delegate void SceneOnResignActivation(UIScene scene);
 		public delegate void SceneDidEnterBackground(UIScene scene);
+		/// <summary>
+		/// Handles URL contexts delivered through a scene's open-URL callback.
+		/// </summary>
+		/// <param name="scene">The scene receiving the URLs.</param>
+		/// <param name="urlContexts">The URL contexts supplied by UIKit.</param>
+		/// <returns><see langword="true"/> if this handler handled the delivery; otherwise, <see langword="false"/>.</returns>
+		/// <remarks>
+		/// URLs supplied when a scene connects are available in <see cref="UISceneConnectionOptions.UrlContexts"/>
+		/// through <see cref="SceneWillConnect"/>. They are not automatically replayed through this callback.
+		/// </remarks>
 		public delegate bool SceneOpenUrl(UIScene scene, NSSet<UIOpenUrlContext> urlContexts);
+		/// <summary>
+		/// Handles a user activity delivered through a scene's continuation callback.
+		/// </summary>
+		/// <param name="scene">The scene receiving the activity.</param>
+		/// <param name="userActivity">The user activity supplied by UIKit.</param>
+		/// <returns><see langword="true"/> if this handler handled the activity; otherwise, <see langword="false"/>.</returns>
+		/// <remarks>
+		/// Activities supplied in <see cref="UISceneConnectionOptions.UserActivities"/> when a scene connects
+		/// are available through <see cref="SceneWillConnect"/>. They are not automatically replayed through
+		/// this callback. UIKit can also deliver Handoff activities separately through this callback after
+		/// the scene connects.
+		/// </remarks>
 		public delegate bool SceneContinueUserActivity(UIScene scene, NSUserActivity userActivity);
 		public delegate void SceneWillContinueUserActivity(UIScene scene, string userActivityType);
 		public delegate void SceneDidFailToContinueUserActivity(UIScene scene, string userActivityType, NSError error);
