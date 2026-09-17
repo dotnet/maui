@@ -473,7 +473,7 @@ namespace Microsoft.Maui.Controls
 		// All three notification sites pass property.PropertyName itself, so the parked property is the right one
 		// exactly when the reference matches. An override that calls base.OnPropertyChanged with some other name —
 		// or any notification that never came from a BindableProperty at all — falls through to the keyed cache.
-		PropertyChangedEventArgs ChangedEventArgsFor(string propertyName)
+		internal PropertyChangedEventArgs ChangedEventArgsFor(string propertyName)
 		{
 			var property = _notifyingProperty;
 
