@@ -48,17 +48,21 @@ public class ScrollViewInitialOffsetInGridRow : _IssuesUITest
 			var text = App.FindElement("ResultLabel").GetText() ?? "";
 			TestContext.Out.WriteLine($"[{pushButton}] {text}");
 
-			var adjustedTop = double.Parse(Regex.Match(text, @"adjusted=\(([-\d.]+),").Groups[1].Value,
-				System.Globalization.CultureInfo.InvariantCulture);
+			if (Device == TestDevice.iOS)
+			{
+				var adjustedTop = double.Parse(Regex.Match(text, @"adjusted=\(([-\d.]+),").Groups[1].Value,
+					System.Globalization.CultureInfo.InvariantCulture);
 
-			// User-visible oracle: the first item's top sits exactly at the visible top of the
-			// ScrollView (its frame top plus the adjusted inset) plus the content Padding (8)
-			// and the item's Margin (8) — nothing scrolled away, nothing covered
-			var scroll = App.WaitForElement("TheScrollView").GetRect();
-			var first = App.WaitForElement("FirstItem").GetRect();
-			var visibleTop = scroll.Y + adjustedTop;
-			Assert.That(first.Y, Is.EqualTo(visibleTop + 16).Within(2),
-				$"First item Y={first.Y}, expected visible top {visibleTop} + 16 (scroll frame Y={scroll.Y}, adjustedTop={adjustedTop}); {text}");
+				// User-visible oracle: the first item's top sits exactly at the visible top of the
+				// ScrollView plus its adjusted inset, content Padding (8), and item Margin (8).
+				// Catalyst Appium rectangles use desktop screen coordinates and cannot be combined
+				// with a UIKit content inset, so its native offset oracle below is authoritative.
+				var scroll = App.WaitForElement("TheScrollView").GetRect();
+				var first = App.WaitForElement("FirstItem").GetRect();
+				var visibleTop = scroll.Y + adjustedTop;
+				Assert.That(first.Y, Is.EqualTo(visibleTop + 16).Within(2),
+					$"First item Y={first.Y}, expected visible top {visibleTop} + 16 (scroll frame Y={scroll.Y}, adjustedTop={adjustedTop}); {text}");
+			}
 			Assert.That(success, Is.True, $"ScrollView did not rest at the top when the page appeared: {text}");
 		}
 		finally
