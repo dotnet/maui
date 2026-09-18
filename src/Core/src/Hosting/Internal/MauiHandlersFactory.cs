@@ -101,6 +101,9 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			public object? GetService(Type serviceType)
 			{
+				if (serviceType == typeof(IServiceProvider))
+					return this;
+
 				if (serviceType == typeof(IMauiContext))
 					return _mauiContext;
 
