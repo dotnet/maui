@@ -136,10 +136,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						// ViewHolder not created yet, defer layout request to next UI loop iteration
 						platformView.Post(() =>
 						{
-							if (!ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
-							{
-								return;
-							}
 							var vh = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
 							vh?.ItemView.RequestLayout();
 						});
