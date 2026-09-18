@@ -38,6 +38,8 @@ public class TabbedPageManager
 	Fragment _tabLayoutFragment;
 	ColorStateList _originalTabTextColors;
 	ColorStateList _orignalTabIconColors;
+	Drawable _originalBottomNavigationViewBackground;
+	Drawable _originalTabLayoutBackground;
 	ColorStateList _newTabTextColors;
 	ColorStateList _newTabIconColors;
 	FragmentManager _fragmentManager;
@@ -139,10 +141,6 @@ public class TabbedPageManager
 
 			RemoveTabs();
 
-			// Defensively unsubscribe: SetTabLayout only unsubscribes once RootViewChanged fires,
-			// which may never happen if torn down first, otherwise leaking this manager.
-			_context.GetNavigationRootManager().RootViewChanged -= RootViewChanged;
-
 			_viewPager.LayoutChange -= OnLayoutChanged;
 
 			if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)
@@ -185,18 +183,17 @@ public class TabbedPageManager
 
 			if (IsBottomTabPlacement)
 			{
-				_bottomNavigationView = new BottomNavigationView(_context.Context)
+				_bottomNavigationView = RuntimeFeature.IsMaterial3Enabled
+					? new BottomNavigationView(_context.Context, null, Resource.Attribute.bottomNavigationViewStyle)
+					: new BottomNavigationView(_context.Context);
+
+				_bottomNavigationView.LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 				{
-					LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
-					{
-						Gravity = (int)GravityFlags.Bottom
-					}
+					Gravity = (int)GravityFlags.Bottom
 				};
-				_nativeTabRegistrations.Register(
-					Element,
-					_bottomNavigationView,
-					NativeElementRoles.ShellTab,
-					NativeElementDiscriminators.TabBar);
+
+				if (RuntimeFeature.IsMaterial3Enabled)
+					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
 			}
 			else
 			{
@@ -209,6 +206,11 @@ public class TabbedPageManager
 						TabGravity = TabLayout.GravityFill,
 						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					};
+
+					if (RuntimeFeature.IsMaterial3Enabled)
+					{
+						_originalTabLayoutBackground = _tabLayout.Background;
+					}
 				}
 				_nativeTabRegistrations.Register(
 					Element,
@@ -796,7 +798,16 @@ public class TabbedPageManager
 			Color tintColor = Element.BarBackgroundColor;
 
 			if (tintColor == null)
-				_bottomNavigationView.SetBackground(null);
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					RestoreBottomNavigationViewBackground();
+				}
+				else
+				{
+					_bottomNavigationView.SetBackground(null);
+				}
+			}
 			else if (tintColor != null)
 				_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
 		}
@@ -805,7 +816,14 @@ public class TabbedPageManager
 			Color tintColor = Element.BarBackgroundColor;
 
 			if (tintColor == null)
+			{
 				_tabLayout.BackgroundTintMode = null;
+
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					RestoreTabLayoutBackground();
+				}
+			}
 			else
 			{
 				_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
@@ -851,10 +869,38 @@ public class TabbedPageManager
 
 	protected virtual void RefreshBarBackground()
 	{
+		bool shouldRestoreNativeBackground = RuntimeFeature.IsMaterial3Enabled &&
+			Brush.IsNullOrEmpty(_currentBarBackground) &&
+			Element.BarBackgroundColor is null;
+
 		if (IsBottomTabPlacement)
+		{
 			_bottomNavigationView.UpdateBackground(_currentBarBackground);
+
+			if (shouldRestoreNativeBackground)
+			{
+				RestoreBottomNavigationViewBackground();
+			}
+		}
 		else
+		{
 			_tabLayout.UpdateBackground(_currentBarBackground);
+
+			if (shouldRestoreNativeBackground)
+			{
+				RestoreTabLayoutBackground();
+			}
+		}
+	}
+
+	void RestoreBottomNavigationViewBackground()
+	{
+		_bottomNavigationView.SetBackground(_originalBottomNavigationViewBackground);
+	}
+
+	void RestoreTabLayoutBackground()
+	{
+		_tabLayout.SetBackground(_originalTabLayoutBackground);
 	}
 
 	protected virtual ColorStateList GetItemTextColorStates()
