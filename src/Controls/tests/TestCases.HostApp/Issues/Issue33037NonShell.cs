@@ -44,6 +44,7 @@ public class Issue33037NonShellRootPage : ContentPage
 					CreateModalButton(),
 					CreateReporterScenarioButton(),
 					CreateReporterCollectionViewScenarioButton(),
+					CreateReporterLegacyCollectionViewScenarioButton(),
 					CreateShortReporterCollectionViewScenarioButton(),
 					CreateOpaqueNavigationButton(),
 					CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
@@ -142,7 +143,20 @@ public class Issue33037NonShellRootPage : ContentPage
 			Text = "Reporter 19-row CollectionView with bottom overlay"
 		};
 
-		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(19);
+		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(19, useLegacyHandler: false);
+
+		return button;
+	}
+
+	Button CreateReporterLegacyCollectionViewScenarioButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037ReporterLegacyCollectionViewButton",
+			Text = "Reporter 19-row legacy CollectionView with bottom overlay"
+		};
+
+		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(19, useLegacyHandler: true);
 
 		return button;
 	}
@@ -159,14 +173,14 @@ public class Issue33037NonShellRootPage : ContentPage
 			Text = "Reporter CollectionView with barely-scrollable content"
 		};
 
-		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(13);
+		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(13, useLegacyHandler: false);
 
 		return button;
 	}
 
-	Task PushReporterCollectionViewAsync(int itemCount)
+	Task PushReporterCollectionViewAsync(int itemCount, bool useLegacyHandler)
 	{
-		var navigationPage = new NavigationPage(new Issue33037ReporterCollectionViewScenarioPage(itemCount))
+		var navigationPage = new NavigationPage(new Issue33037ReporterCollectionViewScenarioPage(itemCount, useLegacyHandler))
 		{
 			BackgroundColor = Colors.LightGreen,
 			BarBackgroundColor = Colors.Transparent
@@ -562,22 +576,23 @@ class Issue33037ReporterScenarioPage : ContentPage
 // inside a modal NavigationPage that prefers large titles.
 class Issue33037ReporterCollectionViewScenarioPage : ContentPage
 {
-	public Issue33037ReporterCollectionViewScenarioPage(int itemCount = 19)
+	public Issue33037ReporterCollectionViewScenarioPage(int itemCount = 19, bool useLegacyHandler = false)
 	{
 		Title = "LargeTitle CollectionView";
 
-		var collectionView = new CollectionView
+		CollectionView collectionView = useLegacyHandler
+			? new Maui.Controls.Sample.CollectionView1()
+			: new Maui.Controls.Sample.CollectionView2();
+
+		collectionView.AutomationId = "Issue33037ReporterCollectionViewScroller";
+		collectionView.BackgroundColor = Colors.Transparent;
+		collectionView.ItemsSource = Issue33037NonShellScenarioPage.CreateItems(itemCount);
+		collectionView.ItemTemplate = new DataTemplate(() =>
 		{
-			AutomationId = "Issue33037ReporterCollectionViewScroller",
-			BackgroundColor = Colors.Transparent,
-			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(itemCount),
-			ItemTemplate = new DataTemplate(() =>
-			{
-				var label = new Label { HeightRequest = 50 };
-				label.SetBinding(Label.TextProperty, ".");
-				return label;
-			})
-		};
+			var label = new Label { HeightRequest = 50 };
+			label.SetBinding(Label.TextProperty, ".");
+			return label;
+		});
 
 		var overlayButton = new Button
 		{

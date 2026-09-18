@@ -84,20 +84,35 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller")]
-	[TestCase("Issue33037LegacyCollectionViewButton", "Issue33037LegacyCollectionViewScroller")]
-	public void ConsecutiveCollectionViewSwipesRetainForwardScrollProgress(string buttonId, string scrollerId)
+	[TestCase("Issue33037ReporterCollectionViewButton")]
+	[TestCase("Issue33037ReporterLegacyCollectionViewButton")]
+	public void ConsecutiveCollectionViewSwipesRetainForwardScrollProgress(string buttonId)
 	{
 		RequireIOS26OrHigher();
 		App.WaitForElement(buttonId).Click();
 
 		try
 		{
-			App.WaitForElement(scrollerId);
-			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.2, withInertia: false);
-			var itemAfterFirstSwipe = App.WaitForElement("Item 5").GetRect();
+			const string title = "LargeTitle CollectionView";
+			const string scrollerId = "Issue33037ReporterCollectionViewScroller";
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var expandedBarRect = GetNavigationBarRect(expandedTitleRect);
+			var scrollerRect = App.WaitForElement(scrollerId).GetRect();
+			var centerX = scrollerRect.X + scrollerRect.Width / 2;
+			var startY = scrollerRect.Y + scrollerRect.Height * 0.6f;
+			var endY = startY - 60;
 
-			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.2, withInertia: false);
+			App.DragCoordinates(centerX, startY, centerX, endY);
+
+			var collapsedTitleRect = GetNavigationTitleRect(title);
+			var collapsedBarRect = GetNavigationBarRect(collapsedTitleRect);
+			var firstItemRect = App.WaitForElement("Item 0").GetRect();
+			Assert.That(firstItemRect.Y, Is.LessThanOrEqualTo(collapsedBarRect.Bottom + GapTolerance),
+				"The first gesture must transfer top-inset ownership as the large title collapses.");
+
+			var itemAfterFirstSwipe = App.WaitForElement("Item 5").GetRect();
+			App.DragCoordinates(centerX, startY, centerX, endY);
+			App.WaitForElement(scrollerId);
 			var itemAfterSecondSwipe = App.WaitForElement("Item 5").GetRect();
 
 			Assert.That(itemAfterSecondSwipe.Y, Is.LessThan(itemAfterFirstSwipe.Y),
@@ -105,7 +120,7 @@ public class Issue33037NonShell : _IssuesUITest
 		}
 		finally
 		{
-			App.Back();
+			App.WaitForElement("Issue33037ReporterCollectionViewOverlayButton").Click();
 		}
 	}
 
