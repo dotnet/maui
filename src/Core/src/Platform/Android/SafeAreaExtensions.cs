@@ -137,16 +137,10 @@ internal static class SafeAreaExtensions
 					// making it impossible to detect animation for the RIGHT edge afterward.
 					var viewIsAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
 
-					// Vertical: During Shell navigation animations, the view may be positioned
-					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
-					// extend beyond the screen bottom. This happens because the fragment animation
-					// slides the view in from off-screen. We detect this animating state by checking:
-					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
-					// 2. viewBottom > screenHeight (view extends beyond screen)
-					// 3. viewHeight covers the usable screen (excludes translated child controls)
-					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
-					// When we detect animation state, apply the full top inset since view will settle at Y=0.
-					var viewIsAnimatingVertically = viewTop > top &&
+					// A full-height page can still be moving toward Y=0 when it overlaps the
+					// status bar near the end of a navigation animation. Keep the full inset
+					// throughout the transition, but exclude translated child controls.
+					var viewIsAnimatingVertically = viewTop > 0 &&
 						viewBottom > screenHeight &&
 						viewHeight >= screenHeight - top - bottom;
 
@@ -169,15 +163,14 @@ internal static class SafeAreaExtensions
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
 
-					if (top > 0 && viewTop < top && viewTop >= 0)
+					if (top > 0 && viewIsAnimatingVertically)
+					{
+						// Check animation before overlap so a transient position cannot reduce the inset.
+					}
+					else if (top > 0 && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
-					}
-					else if (top > 0 && viewIsAnimatingVertically)
-					{
-						// View is animating - positioned beyond status bar but extends off-screen
-						// Apply full top inset since view will settle at Y=0
 					}
 					else
 					{
