@@ -333,7 +333,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	{
 		foreach (var appTask in activityManager.AppTasks ?? [])
 		{
-			if (appTask.TaskInfo?.TaskId == taskId)
+			if (appTask.TaskInfo is { } taskInfo && PlatformUtils.GetTaskId(taskInfo) == taskId)
 				return true;
 		}
 

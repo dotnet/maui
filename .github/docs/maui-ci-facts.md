@@ -319,6 +319,7 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 |---------|-------|-------|
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
+| `java_home -X` / `Root element is missing` / invalid JDK `jar` path | `maui-pr` Android builds and integration tests | Android SDK discovery can inspect broken system registrations or archive parent directories even with `JAVA_HOME` set. `ProvisionJdk` must also publish the validated JDK home as `JavaSdkDirectory` for downstream MSBuild processes. Do not suppress these diagnostics or allow-list the tooling warnings. |
 | `error : ... Failed to load assembly` | `maui-pr` `Build <platform>` leg | **crossgen2 / ReadyToRun (R2R)** break — a failed **build job**, not a test, with no test name. Common after an SDK/runtime (`dotnet/dotnet`) bump on a flow PR. Job-level baseline diff: red on PR vs green on base ⇒ PR-caused. |
 | `error IL####` / `ILC####` / NativeAOT publish fail | `maui-pr` AOT legs, `Run Integration Tests – AOT` | **NativeAOT / ILC** trim-analysis break. May be pre-existing (e.g. HybridWebView `IL2026`) — confirm with a job- AND test-level baseline diff before attributing to the PR. |
 | `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
