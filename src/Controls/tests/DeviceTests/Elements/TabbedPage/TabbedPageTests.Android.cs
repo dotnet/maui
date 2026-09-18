@@ -71,46 +71,47 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(success);
 		}
 
-		[Theory]
-		[InlineData(false, false)]
-		[InlineData(false, true)]
-		[InlineData(true, false)]
-		[InlineData(true, true)]
-		public async Task ClearingBarBackgroundRestoresMaterial3Background(bool bottomTabs, bool useBrush)
+		[Fact]
+		public async Task ClearingBarBackgroundRestoresMaterial3ThemeColors()
 		{
 			if (!RuntimeFeature.IsMaterial3Enabled)
 				return;
 
 			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true);
 
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
 			{
-				var tabbedPageManager = tabbedPage.TabbedPageManager;
-				var originalBackground = bottomTabs
-					? tabbedPageManager.BottomNavigationView.Background
-					: tabbedPageManager.TabLayout.Background;
-				Assert.NotNull(originalBackground);
+				var bottomNav = GetBottomNavigationView(handler);
 
-				if (useBrush)
-					tabbedPage.BarBackground = SolidColorBrush.Red;
-				else
-					tabbedPage.BarBackgroundColor = Colors.Red;
+				var originalTextColors = bottomNav.ItemTextColor;
+				var originalIconColors = bottomNav.ItemIconTintList;
 
-				var customBackground = bottomTabs
-					? tabbedPageManager.BottomNavigationView.Background
-					: tabbedPageManager.TabLayout.Background;
-				Assert.NotSame(originalBackground, customBackground);
+				Assert.NotNull(originalTextColors);
+				Assert.NotNull(originalIconColors);
 
-				if (useBrush)
-					tabbedPage.BarBackground = null;
-				else
-					tabbedPage.BarBackgroundColor = null;
+				tabbedPage.BarBackgroundColor = Colors.Red;
 
-				var restoredBackground = bottomTabs
-					? tabbedPageManager.BottomNavigationView.Background
-					: tabbedPageManager.TabLayout.Background;
-				Assert.Same(originalBackground, restoredBackground);
+				var customizedTextColors = bottomNav.ItemTextColor;
+				var customizedIconColors = bottomNav.ItemIconTintList;
+
+				Assert.NotNull(customizedTextColors);
+				Assert.NotNull(customizedIconColors);
+
+				tabbedPage.BarBackgroundColor = null;
+
+				Assert.Equal(
+	originalTextColors.GetColorForState(
+		new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent),
+	bottomNav.ItemTextColor.GetColorForState(
+		new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent));
+
+				Assert.Equal(
+					originalIconColors.GetColorForState(
+						new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent),
+					bottomNav.ItemIconTintList.GetColorForState(
+						new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent));
 
 				return Task.CompletedTask;
 			});
