@@ -835,6 +835,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void MenuItemPropertyChangedIsObservedWhileConnected()
+		{
+			var shell = new Shell();
+			var menuItem = new MenuItem();
+			var menuShellItem = new MenuShellItem(menuItem);
+			var connectedTemplate = new DataTemplate();
+			var disconnectedTemplate = new DataTemplate();
+
+			shell.Items.Add(menuShellItem);
+			Shell.SetMenuItemTemplate(menuItem, connectedTemplate);
+
+			Assert.Same(connectedTemplate, Shell.GetMenuItemTemplate(menuShellItem));
+
+			shell.Items.Remove(menuShellItem);
+			Shell.SetMenuItemTemplate(menuItem, disconnectedTemplate);
+
+			Assert.Same(connectedTemplate, Shell.GetMenuItemTemplate(menuShellItem));
+		}
+
+		[Fact]
 		public async Task TitleViewLogicalChild()
 		{
 			Shell shell = new Shell();
