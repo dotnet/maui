@@ -15,7 +15,9 @@ BeforeAll {
             'Get-EmbeddedTestFailureReportCandidate',
             'Get-MarkdownFenceState',
             'Collapse-OpenDetails',
-            'New-TestFailureReviewBody'
+            'New-TestFailureReviewBody',
+            'Invoke-GhApiWithJsonPayload',
+            'Publish-TestFailureReviewComment'
         )) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -24,6 +26,19 @@ BeforeAll {
         if (-not $function) { throw "Function '$functionName' not found in $scriptPath" }
         Invoke-Expression $function.Extent.Text
     }
+
+    $skillPath = Join-Path $PSScriptRoot '../skills/review-test-failures/SKILL.md'
+    $skill = Get-Content -LiteralPath $skillPath -Raw
+    $templateMatch = [regex]::Match($skill, '(?s)```markdown\r?\n(?<report><!-- Tests Failure -->.*?)\r?\n```')
+    if (-not $templateMatch.Success) { throw 'Canonical report template was not found in the skill.' }
+    $reportTemplate = $templateMatch.Groups['report'].Value.Replace("`r`n", "`n")
+    $runner = Get-Content -LiteralPath $scriptPath -Raw
+    $publishStatement = $ast.EndBlock.Statements | Where-Object {
+        $_ -is [System.Management.Automation.Language.IfStatementAst] -and
+        $_.Clauses[0].Item1.Extent.Text -eq '$PostComment -and -not $DryRun'
+    }
+    if (-not $publishStatement) { throw 'Local posting guard was not found.' }
+    $publishGuard = [scriptblock]::Create($publishStatement.Extent.Text)
 }
 
 Describe 'Review tests workflow contract' {
@@ -31,6 +46,7 @@ Describe 'Review tests workflow contract' {
         $workflowPath = Join-Path $PSScriptRoot '../workflows/copilot-review-tests.md'
         $workflow = Get-Content -LiteralPath $workflowPath -Raw
         $workflowBody = ([regex]::Split($workflow, '(?m)^---\r?$'))[2]
+        $workflowLock = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/copilot-review-tests.lock.yml') -Raw
         $guard = [regex]::Match(
             $workflow,
             '(?ms)^    - name: Confirm exact /review tests command\r?\n.*?^      run: \|\r?\n(?<script>(?:^        [^\r\n]*\r?\n)+)')
@@ -51,6 +67,36 @@ Describe 'Review tests workflow contract' {
         $workflow | Should -Not -Match 'Publish-TestVisualAssets|Merge-TestVisualsIntoComment'
         $workflowBody | Should -Match 'Invoke \*\*review-test-failures\*\*'
         $workflowBody | Should -Not -Match 'gate\.verdictCeiling|Comment-format precedence|img.shields.io|<details>'
+    }
+
+    It 'propagates the canonical presentation without a second caller template' {
+        foreach ($caller in @($workflowBody, $runner)) {
+            $caller | Should -Match 'visible author/commit attribution and three badges'
+            $caller | Should -Match 'two closed top-level accordions: CI Analysis, then its sibling Follow-up'
+            $caller | Should -Match 'never nest Follow-up inside it'
+        }
+        $workflowBody | Should -Match 'call `add_comment` exactly once'
+        $workflowBody | Should -Match 'In dry-run\r?\nmode return the report without posting'
+        $skill | Should -Not -Match 'Do not add badges'
+    }
+
+    It 'preserves the marker and allows badge URLs through compiled safe outputs' {
+        $workflow | Should -Match 'body-header: "<!-- Tests Failure -->"'
+        $workflow | Should -Match '(?m)^    - img\.shields\.io$'
+        $messageSettings = [regex]::Matches($workflowLock, '(?m)^\s+GH_AW_SAFE_OUTPUT_MESSAGES: (?<json>"[^\r\n]+")')
+        $messageSettings.Count | Should -BeGreaterThan 0
+        foreach ($setting in $messageSettings) {
+            $messages = $setting.Groups['json'].Value | ConvertFrom-Json | ConvertFrom-Json
+            $messages.bodyHeader | Should -Be '<!-- Tests Failure -->'
+        }
+        $domainSettings = [regex]::Matches($workflowLock, '(?m)^\s+GH_AW_ALLOWED_DOMAINS: "(?<domains>[^"]+)"')
+        $domainSettings.Count | Should -BeGreaterThan 0
+        foreach ($setting in $domainSettings) {
+            $domains = $setting.Groups['domains'].Value.Split(',')
+            $domains | Should -Contain 'img.shields.io'
+            $domains | Should -Contain 'dev.azure.com'
+            $domains | Should -Contain 'helix.dot.net'
+        }
     }
 
     It 'accepts only the exact subcommand on PR comments: <Comment> / <Event> / <PullRequest>' -ForEach @(
@@ -82,6 +128,230 @@ Describe 'Review tests workflow contract' {
                 [Environment]::SetEnvironmentVariable($name, $saved[$name], 'Process')
             }
         }
+    }
+}
+
+Describe 'Canonical test-failure presentation' {
+    It 'keeps the header visible above exactly two closed sibling accordions in order' {
+        $header = $reportTemplate.Substring(0, $reportTemplate.IndexOf('<details>'))
+        $header | Should -Match '^<!-- Tests Failure -->\r?\n\r?\n## Tests Failure Analysis'
+        $header | Should -Match '> @AUTHOR_LOGIN .*?\[`SHORT_SHA`\]\(https://github.com/OWNER/REPO/commit/FULL_SHA\)'
+        $header | Should -Match '<p align="left">'
+        ([regex]::Matches($header, '<img ').Count) | Should -Be 3
+        ([regex]::Matches($header, 'labelColor=30363d&amp;style=flat-square').Count) | Should -Be 3
+        $header | Should -Match 'alt="Scope CI failures" src="https://img.shields.io/badge/Scope-CI%20failures-1f6feb'
+        $header | Should -Match 'alt="Commit SHORT_SHA" src="https://img.shields.io/badge/Commit-SHORT_SHA-1f6feb'
+        $reportTemplate | Should -Not -Match '<details\s+open'
+
+        $summaries = @(
+            '&#x1F9EA; CI Analysis',
+            '&#x1F4CB; Summary',
+            '&#x1F4CA; Pipeline coverage',
+            '&#x1F50E; Failure attribution',
+            '&#x1F4CB; Recovered attempts',
+            '&#x1F4CB; Previous-run comparison',
+            '&#x1F52C; Code and regression-test evidence',
+            '&#x1F4CB; Coverage and limitations',
+            '&#x1F9ED; Follow-up'
+        )
+        $summaryMatches = [regex]::Matches($reportTemplate, '<summary><strong>(?<title>.*?)</strong>.*?</summary>\r?\n<br/>')
+        @($summaryMatches | ForEach-Object { $_.Groups['title'].Value }) | Should -Be $summaries
+        $reportTemplate | Should -Match '<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>'
+        $reportTemplate | Should -Match '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>'
+        ([regex]::Matches($reportTemplate, '</details>\r?\n\r?\n---\r?\n\r?\n<details>').Count) | Should -Be 7
+
+        $depth = 0
+        $roots = 0
+        $rootTitles = @()
+        foreach ($tag in [regex]::Matches($reportTemplate, '(?m)^</?details>$|^<summary><strong>(?<title>.*?)</strong>.*?</summary>$')) {
+            if ($tag.Value -eq '<details>') {
+                if ($depth -eq 0) { $roots++ }
+                $depth++
+                $depth | Should -BeLessOrEqual 2
+            }
+            elseif ($tag.Value -eq '</details>') {
+                $depth--
+                $depth | Should -BeGreaterOrEqual 0
+            }
+            elseif ($depth -eq 1) {
+                $rootTitles += $tag.Groups['title'].Value
+            }
+        }
+        $roots | Should -Be 2
+        $rootTitles | Should -Be @('&#x1F9EA; CI Analysis', '&#x1F9ED; Follow-up')
+        $depth | Should -Be 0
+        $reportTemplate | Should -Match '</details>\s+</details>\s+---\s+<details>\s+<summary><strong>&#x1F9ED; Follow-up'
+        $reportTemplate | Should -Match '(?s)> Maintainers: comment `/review tests` to refresh this report\.\s*</details>$'
+    }
+
+    It 'preserves dynamic metadata and the causal verdict: <Verdict>' -ForEach @(
+        @{ Verdict = 'PR-related failures found'; Badge = 'PR--related%20failures%20found'; Color = 'd1242f'; Author = 'first-author'; Sha = '1111111222222233333334444444555555566666666' }
+        @{ Verdict = 'Observed failures appear unrelated'; Badge = 'Observed%20failures%20appear%20unrelated'; Color = '1a7f37'; Author = 'second-author'; Sha = '2222222333333344444445555555666666677777777' }
+        @{ Verdict = 'No failures found'; Badge = 'No%20failures%20found'; Color = '1a7f37'; Author = 'third-author'; Sha = '3333333444444455555556666666777777788888888' }
+        @{ Verdict = 'Inconclusive'; Badge = 'Inconclusive'; Color = 'bf8700'; Author = 'fourth-author'; Sha = '4444444555555566666667777777888888899999999' }
+    ) {
+        $skill | Should -Match ([regex]::Escape("| $Verdict | ``$Badge`` | ``$Color`` |"))
+        $shortSha = $Sha.Substring(0, 7)
+        $content = $reportTemplate.Replace('AUTHOR_LOGIN', $Author).
+            Replace('OWNER/REPO', 'dotnet/maui').Replace('FULL_SHA', $Sha).
+            Replace('SHORT_SHA', $shortSha).Replace('OVERALL_VERDICT', $Verdict).
+            Replace('VERDICT_BADGE_MESSAGE', $Badge).Replace('VERDICT_COLOR', $Color)
+
+        $body = New-TestFailureReviewBody -PRNumber 99999 -Repository 'dotnet/maui' `
+            -ReportContent $content -ContextJsonPath 'unused.json'
+
+        $body | Should -Be $content.Insert('<!-- Tests Failure -->'.Length, "`n<!-- Test Failure Review (local) -->")
+        $body | Should -Match ([regex]::Escape("> @$Author "))
+        $body | Should -Match ([regex]::Escape("/commit/$Sha"))
+        $body | Should -Match ([regex]::Escape("Verdict-$Badge-$Color"))
+        $body | Should -Match ([regex]::Escape("Commit-$shortSha-1f6feb"))
+        $body | Should -Match ([regex]::Escape("**Overall verdict:** $Verdict"))
+        ([regex]::Matches($body, '<img ').Count) | Should -Be 3
+        $body | Should -Not -Match 'Ready to merge|Not ready|Deterministic ceiling'
+        $body | Should -Match '/review tests'
+    }
+
+    It 'allows the optional recovery section to be absent without dropping follow-up' {
+        $skill | Should -Match 'Omit \*\*Recovered attempts\*\* entirely unless actual retry evidence supports it'
+        $content = [regex]::Replace($reportTemplate,
+            '(?s)<details>\r?\n<summary><strong>&#x1F4CB; Recovered attempts</strong>.*?</details>\r?\n\r?\n---\r?\n\r?\n', '')
+
+        $body = New-TestFailureReviewBody -PRNumber 99999 -Repository 'dotnet/maui' `
+            -ReportContent $content -ContextJsonPath 'unused.json'
+
+        $body | Should -Not -Match 'Recovered attempts'
+        ([regex]::Matches($body, '<details>').Count) | Should -Be 8
+        $body | Should -Match 'Follow-up'
+        $body | Should -Match '/review tests'
+    }
+
+    It 'collapses accidental open attributes without changing the report evidence' {
+        $content = $reportTemplate.Replace('<details>', '<details open="open">')
+        $body = New-TestFailureReviewBody -PRNumber 99999 -Repository 'dotnet/maui' `
+            -ReportContent $content -ContextJsonPath 'unused.json'
+        $body | Should -Be $reportTemplate.Insert('<!-- Tests Failure -->'.Length, "`n<!-- Test Failure Review (local) -->")
+    }
+
+    It 'normalizes legacy local markers and remains idempotent' {
+        $legacy = $reportTemplate.Replace('<!-- Tests Failure -->', '<!-- Tests Failure (local) -->')
+        $body = New-TestFailureReviewBody -PRNumber 99999 -Repository 'dotnet/maui' `
+            -ReportContent $legacy -ContextJsonPath 'unused.json'
+        $again = New-TestFailureReviewBody -PRNumber 99999 -Repository 'dotnet/maui' `
+            -ReportContent $body -ContextJsonPath 'unused.json'
+
+        $body | Should -Match '^<!-- Tests Failure -->'
+        $body | Should -Not -Match '<!-- Tests Failure \(local\) -->'
+        ([regex]::Matches($body, '<!-- Test Failure Review \(local\) -->').Count) | Should -Be 1
+        $again | Should -Be $body
+    }
+
+    It 'extracts both sibling accordions without trailing chatter (fenced=<Fenced>, CRLF=<CrLf>, decoded=<Decoded>)' -ForEach @(
+        @{ Fenced = $false; CrLf = $false; Decoded = $false }
+        @{ Fenced = $true; CrLf = $false; Decoded = $false }
+        @{ Fenced = $false; CrLf = $true; Decoded = $false }
+        @{ Fenced = $true; CrLf = $true; Decoded = $false }
+        @{ Fenced = $false; CrLf = $false; Decoded = $true }
+        @{ Fenced = $true; CrLf = $true; Decoded = $true }
+    ) {
+        $expected = if ($Decoded) { [System.Net.WebUtility]::HtmlDecode($reportTemplate) } else { $reportTemplate }
+        $content = if ($Fenced) { "``````markdown`n$expected`n``````" } else { $expected }
+        $content = "Assistant preamble.`n`n$content`n`nTrailing note:`n<details>`n<summary>Chatter</summary>`nNot part of the report.`n</details>"
+        if ($CrLf) {
+            $content = $content.Replace("`n", "`r`n")
+            $expected = $expected.Replace("`n", "`r`n")
+        }
+
+        $report = Get-EmbeddedTestFailureReport -Content $content
+
+        $report | Should -Be $expected
+        $report | Should -Not -Match 'Assistant preamble|Trailing note|Chatter'
+        $report | Should -Match '/review tests'
+    }
+
+    It 'refuses a rich report whose Follow-up sibling is missing or unclosed' {
+        $followUpBoundary = [regex]::Match($reportTemplate,
+            '</details>\s+---\s+<details>\s+<summary><strong>&#x1F9ED; Follow-up')
+        $followUpBoundary.Success | Should -BeTrue
+        $withoutFollowUp = $reportTemplate.Substring(0, $followUpBoundary.Index + '</details>'.Length)
+        $unclosedFollowUp = $reportTemplate.Substring(0, $reportTemplate.LastIndexOf('</details>'))
+
+        foreach ($content in @($withoutFollowUp, $unclosedFollowUp)) {
+            Get-EmbeddedTestFailureReport -Content $content | Should -BeNullOrEmpty
+            {
+                New-TestFailureReviewBody -PRNumber 99999 -Repository 'dotnet/maui' `
+                    -ReportContent $content -ContextJsonPath 'unused.json'
+            } | Should -Throw '*complete structured report*'
+        }
+    }
+
+    It 'refuses a balanced rich report with Follow-up incorrectly nested inside CI Analysis' {
+        $misnested = [regex]::Replace($reportTemplate,
+            '</details>\s+---\s+(?=<details>\s+<summary><strong>&#x1F9ED; Follow-up)', "---`n`n") + "`n`n</details>"
+
+        Get-EmbeddedTestFailureReport -Content $misnested | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Local single-comment publication' {
+    BeforeEach {
+        $PRNumber = 99999
+        $Repository = 'dotnet/maui'
+        $CommentPath = Join-Path $TestDrive 'comment.md'
+        $reviewBody = New-TestFailureReviewBody -PRNumber $PRNumber -Repository $Repository `
+            -ReportContent $reportTemplate -ContextJsonPath 'unused.json'
+        Mock Invoke-GhApiWithJsonPayload { 'https://github.com/dotnet/maui/pull/99999#issuecomment-1' }
+    }
+
+    It 'updates exactly one local report for ownership marker <Marker>' -ForEach @(
+        @{ Marker = '<!-- Test Failure Review (local) -->' }
+        @{ Marker = '<!-- Tests Failure (local) -->' }
+    ) {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            @(
+                @{ id = 100; body = '<!-- Tests Failure --> workflow-owned report' },
+                @{ id = 101; body = $Marker }
+            ) | ConvertTo-Json
+        }
+
+        Publish-TestFailureReviewComment -PRNumber $PRNumber -Repository $Repository `
+            -CommentPath $CommentPath -CommentBody $reviewBody | Out-Null
+
+        Should -Invoke Invoke-GhApiWithJsonPayload -Times 1 -Exactly -ParameterFilter {
+            ($Arguments -join ' ') -eq '--method PATCH repos/dotnet/maui/issues/comments/101' -and
+            $Payload.body -eq $reviewBody
+        }
+        (Get-Content -LiteralPath $CommentPath -Raw).Trim() | Should -Be $reviewBody
+    }
+
+    It 'posts one local comment without replacing a workflow-owned report' {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            '[{"id":100,"body":"<!-- Tests Failure --> workflow-owned report"}]'
+        }
+
+        Publish-TestFailureReviewComment -PRNumber $PRNumber -Repository $Repository `
+            -CommentPath $CommentPath -CommentBody $reviewBody | Out-Null
+
+        Should -Invoke Invoke-GhApiWithJsonPayload -Times 1 -Exactly -ParameterFilter {
+            ($Arguments -join ' ') -eq '--method POST repos/dotnet/maui/issues/99999/comments' -and
+            $Payload.body -eq $reviewBody
+        }
+    }
+
+    It 'honors posting and dry-run flags: PostComment=<Post>, DryRun=<Dry>' -ForEach @(
+        @{ Post = $false; Dry = $false; Calls = 0 }
+        @{ Post = $false; Dry = $true; Calls = 0 }
+        @{ Post = $true; Dry = $true; Calls = 0 }
+        @{ Post = $true; Dry = $false; Calls = 1 }
+    ) {
+        $PostComment = $Post
+        $DryRun = $Dry
+        Mock Publish-TestFailureReviewComment { 'https://github.com/dotnet/maui/pull/99999#issuecomment-1' }
+
+        & $publishGuard
+
+        Should -Invoke Publish-TestFailureReviewComment -Times $Calls -Exactly
     }
 }
 
@@ -142,8 +412,8 @@ Evidence
             -ContextJsonPath 'unused.json'
 
         $body | Should -Not -Match 'fallback rule|here is the complete report'
-        $body | Should -Match '^<!-- Tests Failure \(local\) -->'
-        ([regex]::Matches($body, '<!-- Tests Failure \(local\) -->').Count) | Should -Be 1
+        $body | Should -Match '^<!-- Tests Failure -->'
+        ([regex]::Matches($body, '<!-- Test Failure Review \(local\) -->').Count) | Should -Be 1
     }
 
     It 'continues past a standalone marker in an earlier fenced example' {
@@ -197,7 +467,7 @@ Actual evidence
 
         $body | Should -Not -Match 'Example only'
         $body | Should -Match 'Actual evidence'
-        ([regex]::Matches($body, '<!-- Tests Failure \(local\) -->').Count) | Should -Be 1
+        ([regex]::Matches($body, '<!-- Test Failure Review \(local\) -->').Count) | Should -Be 1
     }
 
     It 'prefers a standalone marker over an earlier explanatory report heading' {
@@ -717,7 +987,7 @@ Generated report:
             -ReportContent $content `
             -ContextJsonPath (Join-Path $TestDrive 'unused.json')
 
-        $body | Should -Match '^<!-- Tests Failure \(local\) -->'
+        $body | Should -Match '^<!-- Tests Failure -->'
         ([regex]::Matches($body, '## Tests Failure Analysis').Count) | Should -Be 1
         ([regex]::Matches($body, '\*\*Overall verdict:\*\*').Count) | Should -Be 1
         $body | Should -Not -Match 'Generated report:'
@@ -733,7 +1003,7 @@ Generated report:
         } | Should -Throw '*complete structured report*'
     }
 
-    It 'preserves the single skill format and five-run history without adding badges' {
+    It 'preserves legacy report evidence without manufacturing a replacement' {
         $content = @'
 <!-- Tests Failure -->
 
@@ -761,8 +1031,8 @@ Generated report:
             -ReportContent $content `
             -ContextJsonPath (Join-Path $TestDrive 'unused.json')
 
-        $body | Should -Be $content.Replace('<!-- Tests Failure -->', '<!-- Tests Failure (local) -->')
-        $body | Should -Not -Match 'img.shields.io|Deterministic ceiling|Ready to merge'
+        $body | Should -Be $content.Insert('<!-- Tests Failure -->'.Length, "`n<!-- Test Failure Review (local) -->")
+        $body | Should -Not -Match 'Deterministic ceiling|Ready to merge'
     }
 
     It 'returns null when no complete report is embedded' {

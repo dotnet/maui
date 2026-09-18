@@ -100,21 +100,77 @@ or Evidence rather than appended to the label.
 Use this format unless an offline evaluator requests a narrower response. Keep
 the summary short, group tests only when they share a demonstrated cause, and
 retain the distinct count and relevant variants in each group. Use stable evidence
-links, not signed download URLs. Do not add badges, image panels, or another report.
+links, not signed download URLs. Do not append image panels or another report.
+
+The marker, heading, author attribution, and three badges stay visible above two
+closed top-level sibling accordions, in order: **CI Analysis**, then **Follow-up**.
+Only the analysis sections are nested inside CI Analysis. Follow-up must be outside
+it, independently visible while CI Analysis is collapsed, with a horizontal rule
+between the two. All nested sections must also be closed. Use the exact summaries,
+HTML entities, `<br/>` spacing, and horizontal rules below. Never use `<details open>`.
+
+Fill the header from the analyzed PR metadata: `pr.author` is the actual PR author's
+login, and `pr.headRefOid` is the pinned full head SHA. Use its first seven characters
+for `SHORT_SHA`, but the full SHA in the commit URL. Do not substitute the command
+requester, bot, merge SHA, or a newer head. If metadata is missing, retrieve it
+read-only when possible; otherwise say author/commit unavailable, omit the unknown
+mention/link, and use `unknown` for the Commit badge. Never invent metadata.
+
+Use exactly three Shields badges: **Verdict**, **Scope** (`CI failures`), and
+**Commit** (`SHORT_SHA`). Use `style=flat-square`, `labelColor=30363d`, and blue
+`1f6feb` for Scope/Commit. The Verdict badge and Summary must agree on the causal
+verdict selected below; use this URL-encoded Shields message and color:
+
+| Overall verdict | `VERDICT_BADGE_MESSAGE` | `VERDICT_COLOR` |
+| --- | --- | --- |
+| PR-related failures found | `PR--related%20failures%20found` | `d1242f` |
+| Observed failures appear unrelated | `Observed%20failures%20appear%20unrelated` | `1a7f37` |
+| No failures found | `No%20failures%20found` | `1a7f37` |
+| Inconclusive | `Inconclusive` | `bf8700` |
+
+These badges describe failure attribution, never merge readiness. Escape dynamic
+HTML attributes; Shields requires doubled literal hyphens (as in `PR--related`).
+Replace every placeholder below with evidence, not example values from another PR.
+Omit **Recovered attempts** entirely unless actual retry evidence supports it.
+For other sections, state the concrete gap or that no relevant evidence exists
+instead of inventing failures, history, regression tests, recoveries, or counts.
 
 ```markdown
 <!-- Tests Failure -->
 
 ## Tests Failure Analysis
 
-**PR:** #N at [head SHA](commit URL), targeting `base branch`.
-**Overall verdict:** [PR-related failures found | Observed failures appear unrelated | No failures found | Inconclusive]
-[One sentence summarizing related, existing, and unresolved failures.]
+> @AUTHOR_LOGIN &#x2014; test-failure analysis for commit [`SHORT_SHA`](https://github.com/OWNER/REPO/commit/FULL_SHA).
 
-Comment `/review tests` to refresh this report.
+<p align="left">
+  <img alt="Verdict OVERALL_VERDICT" src="https://img.shields.io/badge/Verdict-VERDICT_BADGE_MESSAGE-VERDICT_COLOR?labelColor=30363d&amp;style=flat-square">
+  <img alt="Scope CI failures" src="https://img.shields.io/badge/Scope-CI%20failures-1f6feb?labelColor=30363d&amp;style=flat-square">
+  <img alt="Commit SHORT_SHA" src="https://img.shields.io/badge/Commit-SHORT_SHA-1f6feb?labelColor=30363d&amp;style=flat-square">
+</p>
+
+---
 
 <details>
-<summary>Pipeline results and failure evidence</summary>
+<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>
+<br/>
+
+<details>
+<summary><strong>&#x1F4CB; Summary</strong></summary>
+<br/>
+
+**PR:** #N targeting `BASE_BRANCH`.
+**Overall verdict:** OVERALL_VERDICT
+[One short paragraph summarizing related, existing, and unresolved failures.]
+
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F4CA; Pipeline coverage</strong></summary>
+<br/>
+
+[Verified current-head provenance, including synthetic merge parents when applicable.]
 
 | Pipeline | Current build | Previous five runs on the same branch | Coverage |
 | --- | --- | --- | --- |
@@ -122,16 +178,83 @@ Comment `/review tests` to refresh this report.
 | maui-pr-devicetests | [build/SHA] | [branch; N/5 available; links] | [Complete or gap] |
 | maui-pr-uitests | [build/SHA] | [branch; N/5 available; links] | [Complete or gap] |
 
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F50E; Failure attribution</strong></summary>
+<br/>
+
 | Failure / pipeline / variant | Relation to PR | History | Evidence |
 | --- | --- | --- | --- |
-| [test or build step; count if grouped] | [attribution] | [matched runs; unknown samples; recovered/newly exposed if applicable] | [change + diagnostic + comparison links and short explanation] |
+| [test or build step; count if grouped] | [exact attribution label] | [matched runs; unknown samples; newly exposed if applicable] | [change + diagnostic + comparison links and short explanation] |
+
+[If no failures were observed, replace the failure table with that fact and any coverage qualification.]
+
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F4CB; Recovered attempts</strong></summary>
+<br/>
+
+[Include only when relevant: earlier failure with its exact attribution label and causal evidence or gap; verified later execution at the same SHA/configuration, with links. Separate recovery from causality and from any incomplete retry.]
+
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F4CB; Previous-run comparison</strong></summary>
+<br/>
+
+[Per pipeline: actual source ref/definition; available N/5 completed runs with SHAs and links; matching reasons/variants and unreadable or unexecuted samples. Keep PR history separate from target-branch evidence.]
+
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F52C; Code and regression-test evidence</strong></summary>
+<br/>
+
+[Relevant pinned diff hunks, causal paths, and actual regression-test outcomes. Distinguish code inspection from executed tests; identify missing evidence.]
+
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F4CB; Coverage and limitations</strong></summary>
+<br/>
 
 **Coverage:** [Complete | Incomplete] - [current-pipeline gaps].
 **Limitations:** [Missing history/diff/results; otherwise None].
+
+</details>
+
+</details>
+
+---
+
+<details>
+<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>
+<br/>
+
 **Next action:** [One necessary correction/investigation, or None].
+
+> Maintainers: comment `/review tests` to refresh this report.
 
 </details>
 ```
+
+Before returning, check that the visible header is outside both accordions, all
+details are balanced and closed, and there are exactly two top-level sections:
+CI Analysis followed by its sibling Follow-up, not a nested Follow-up. Check that
+the optional recovery section is justified and that the final action/refresh
+instruction is included in the same report.
 
 Use `PR-related failures found` if at least one failure is likely PR-caused, even
 when other evidence is incomplete. Otherwise use `Inconclusive` when current

@@ -268,6 +268,8 @@ function Get-EmbeddedTestFailureReportCandidate {
     }
     $detailsDepth = 0
     $sawDetails = $false
+    $requiresFollowUp = $false
+    $completedRoots = 0
     $reportEnd = -1
     foreach ($match in $structuralDetails) {
         if ($match.Value.StartsWith("</", [StringComparison]::Ordinal)) {
@@ -276,11 +278,29 @@ function Get-EmbeddedTestFailureReportCandidate {
             }
             $detailsDepth--
             if ($detailsDepth -eq 0) {
+                $completedRoots++
+                if ($requiresFollowUp -and $completedRoots -eq 1) {
+                    # Rich reports end after the adjacent Follow-up sibling, not arbitrary trailing details.
+                    $afterAnalysis = $report.Substring($match.Index + $match.Length)
+                    $followUpPattern = '\A(?:[ \t]*\r?\n)+[ ]{0,3}---[ \t]*\r?\n' +
+                        '(?:[ \t]*\r?\n)*[ ]{0,3}<details>[ \t]*\r?\n' +
+                        '[ ]{0,3}<summary><strong>(?:&#x1F9ED;|\uD83E\uDDED) Follow-up</strong> (?:&#x2014;|\u2014) actions and refresh</summary>[ \t]*\r?\n[ ]{0,3}<br/>'
+                    if (-not [regex]::IsMatch($afterAnalysis, $followUpPattern)) {
+                        return $null
+                    }
+                    continue
+                }
                 $reportEnd = $match.Index + $match.Length
                 break
             }
         }
         else {
+            if (-not $sawDetails) {
+                # Safe-output sanitization decodes the template's HTML entities.
+                $requiresFollowUp = [regex]::IsMatch(
+                    $report.Substring($match.Index + $match.Length),
+                    '\A[ \t]*\r?\n[ ]{0,3}<summary><strong>(?:&#x1F9EA;|\uD83E\uDDEA) CI Analysis</strong> (?:&#x2014;|\u2014) click to expand</summary>')
+            }
             $sawDetails = $true
             $detailsDepth++
         }
@@ -367,15 +387,18 @@ function New-TestFailureReviewBody {
         [string]$ContextJsonPath
     )
 
-    $marker = "<!-- Tests Failure (local) -->"
+    $marker = "<!-- Tests Failure -->"
+    $localMarker = "<!-- Test Failure Review (local) -->"
     $ReportContent = Collapse-OpenDetails $ReportContent
     $completeReport = Get-EmbeddedTestFailureReport -Content $ReportContent
     if ($completeReport) {
-        if ($completeReport.Contains("<!-- Tests Failure -->")) {
-            $completeReport = $completeReport.Replace("<!-- Tests Failure -->", $marker)
-        }
-        elseif (-not $completeReport.Contains($marker)) {
+        $completeReport = [regex]::Replace($completeReport, '\A<!-- Tests Failure \(local\) -->', $marker)
+        if (-not $completeReport.StartsWith($marker, [StringComparison]::Ordinal)) {
             $completeReport = "$marker`n`n$completeReport"
+        }
+        # Keep local refresh ownership separate from the canonical report marker.
+        if (-not [regex]::IsMatch($completeReport, '\A<!-- Tests Failure -->\r?\n<!-- Test Failure Review \(local\) -->')) {
+            $completeReport = $completeReport.Insert($marker.Length, "`n$localMarker")
         }
         return $completeReport
     }
@@ -501,6 +524,9 @@ Task:
 - Read and follow ``.github/skills/review-test-failures/SKILL.md``.
 - Analyze PR #$PRNumber in $Repository using the gathered context files below.
 - Produce the final report using the skill's output format.
+- Preserve its visible author/commit attribution and three badges, followed by the
+  two closed top-level accordions: CI Analysis, then its sibling Follow-up.
+- Keep analysis subsections inside CI Analysis; never nest Follow-up inside it.
 - Write the final report to ``$ReportPath``.
 - Also return the report in your final response.
 

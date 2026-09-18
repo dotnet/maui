@@ -168,10 +168,16 @@ Then it posts a `Test Failure Review` comment that classifies failures as:
 - **Needs human investigation**
 - **Insufficient data**
 
-The workflow posts exactly one structured comment: a short attribution summary,
-an all-three-pipelines coverage table, failure classifications with history and
-evidence links, and a recommended action inside collapsible details. It also posts
-when there are no failures or evidence is incomplete.
+The workflow posts exactly one structured comment. Its visible header names the
+actual PR author and pinned commit, followed by Verdict, Scope (`CI failures`),
+and Commit badges. The closed **CI Analysis** accordion contains closed sections
+for the summary, all-three-pipelines coverage, failure attribution, previous-run
+comparison, code/regression-test evidence, and coverage limitations.
+**Recovered attempts** appears only when supported by actual retry evidence.
+A second closed, top-level **Follow-up** accordion follows a horizontal rule and
+gives the next action and the maintainer's `/review tests` refresh command. It is
+independently visible while CI Analysis is collapsed, not nested inside it.
+The workflow also posts when there are no failures or evidence is incomplete.
 
 This is failure attribution, not merge approval. The skill does not use the
 legacy gatherer's deterministic merge-readiness verdict as a causal conclusion.
@@ -199,6 +205,12 @@ To post the generated comment:
 ```powershell
 pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800 -BuildId 1443464 -PostComment
 ```
+
+The local runner preserves the same header, badges, and closed sections; it does
+not wrap or replace the skill's report. It retains the canonical
+`<!-- Tests Failure -->` marker and adds a separate hidden local-ownership marker
+so subsequent local runs update the local comment, not a workflow-owned report.
+`-DryRun` prevents posting even when `-PostComment` is also supplied.
 
 To gather evidence without invoking Copilot:
 
@@ -248,7 +260,11 @@ The top-level title is always:
 ## Tests Failure Analysis
 ```
 
-The verdict details and "Test Failure Review" label live in badges and in the expanded review session.
+The three flat-square badges show the causal verdict, `CI failures` scope, and
+analyzed short SHA. Expand **CI Analysis**, then its individual sections, for the
+evidence, or expand its sibling **Follow-up** for actions and refresh instructions.
+The badge is not merge approval; incomplete evidence remains explicit.
+The canonical layout lives in the skill rather than a separate caller template.
 
 ## Recommended workflow for maintainers
 

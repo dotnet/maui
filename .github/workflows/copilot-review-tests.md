@@ -181,6 +181,9 @@ skills:
   - .github/skills/review-test-failures
 
 safe-outputs:
+  # gh-aw strips agent-supplied HTML comments before adding this trusted header.
+  messages:
+    body-header: "<!-- Tests Failure -->"
   add-comment:
     max: 1
     target: "*"
@@ -208,6 +211,8 @@ network:
     - "*.visualstudio.com"
     - helix.dot.net
     - "*.blob.core.windows.net"
+    # Safe-output URL sanitization also inherits this allowlist.
+    - img.shields.io
 
 concurrency:
   group: "review-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
@@ -229,6 +234,9 @@ steps:
 Invoke **review-test-failures** and follow
 `.github/skills/review-test-failures/SKILL.md`. It owns the analysis and the single
 structured comment format; do not run other review skills.
+Preserve its visible author/commit attribution and three badges, followed by the
+two closed top-level accordions: CI Analysis, then its sibling Follow-up.
+Keep analysis subsections inside CI Analysis; never nest Follow-up inside it.
 
 - Repository: `${{ github.repository }}`
 - PR: `${{ github.event.issue.number || inputs.pr_number }}`

@@ -318,11 +318,16 @@ stimuli:
           pattern: '^Attribution: Insufficient data\r?\nCoverage: Incomplete\r?\nConclusion: Inconclusive\s*$'
 
   - name: standard-report-keeps-evidence-and-coverage
+    tags: { kind: presentation }
     prompt: |
       Use the review-test-failures skill on this synthetic frozen bundle
-      and return its standard report. Do not fetch or execute anything.
-      Synthetic PR #99999 targets main, head 1111111, base 2222222; collection
-      time 2026-09-17T18:00:00Z. All listed builds are verified against head.
+      and return only its standard report. Dry run is true: do not post,
+      fetch, execute code, or write files.
+      Synthetic PR #99999 targets main, author fixture-ci-author,
+      head 1111111111111111111111111111111111111111, base 2222222;
+      collection time 2026-09-17T18:00:00Z.
+      All listed builds are verified against head. There were no retries
+      or recovered attempts. Source-ref history was not supplied.
       Complete diff: in DispatchUpdate, replace "_dispatcher.Dispatch(callback);"
       with "callback();". The supplied call path shows a worker invokes
       DispatchUpdate and callback mutates a native Android view; the change
@@ -365,6 +370,92 @@ stimuli:
       - type: output-matches
         config:
           pattern: '^(?![\s\S]*refs/pull/99999/merge)[\s\S]*$'
+      - type: output-matches
+        config:
+          pattern: '^<!-- Tests Failure -->\s+## Tests Failure Analysis\s+> @fixture-ci-author [^\r\n]*\[`1111111`\]\(https://github\.com/dotnet/maui/commit/1111111111111111111111111111111111111111\)\.'
+      - type: output-matches
+        config:
+          pattern: '<p align="left">\s+<img alt="Verdict PR-related failures found" src="https://img\.shields\.io/badge/Verdict-PR--related%20failures%20found-d1242f\?labelColor=30363d&amp;style=flat-square">\s+<img alt="Scope CI failures" src="https://img\.shields\.io/badge/Scope-CI%20failures-1f6feb\?labelColor=30363d&amp;style=flat-square">\s+<img alt="Commit 1111111" src="https://img\.shields\.io/badge/Commit-1111111-1f6feb\?labelColor=30363d&amp;style=flat-square">\s+</p>\s+---\s+<details>\s+<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>\s+<br/>'
+      - type: output-matches
+        config:
+          pattern: '<summary><strong>&#x1F4CB; Summary</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F4CA; Pipeline coverage</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F50E; Failure attribution</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F4CB; Previous-run comparison</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F52C; Code and regression-test evidence</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F4CB; Coverage and limitations</strong></summary>\s+<br/>'
+      - type: output-matches
+        config:
+          pattern: '</details>\s+</details>\s+---\s+<details>\s+<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>\s+<br/>[\s\S]*\*\*Next action:\*\*[\s\S]*> Maintainers: comment `/review tests` to refresh this report\.\s+</details>\s*$'
+      - type: output-matches
+        config:
+          pattern: '^(?:(?!</?details>)[\s\S])*<details>(?:(?:(?!</?details>)[\s\S])*<details>(?:(?!</?details>)[\s\S])*</details>)+(?:(?!</?details>)[\s\S])*</details>\s+---\s+<details>(?:(?!</?details>)[\s\S])*</details>\s*$'
+      - type: output-matches
+        config:
+          pattern: '^(?![\s\S]*(?:<details\s+open|Recovered attempts|Ready to merge|Not ready))[\s\S]*$'
+
+  - name: standard-report-keeps-recovery-separate-from-incomplete-coverage
+    tags: { kind: presentation }
+    prompt: |
+      Use the review-test-failures skill and return only its standard report
+      for this synthetic frozen bundle. Dry run is true: do not post, fetch,
+      execute code, or write files.
+      Synthetic PR #99998 targets main, author retry-fixture-author,
+      head aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa. All three current builds
+      directly tested that exact SHA (sourceVersion equals the head, not a
+      synthetic merge), with recorded source ref refs/pull/99998/merge.
+      Previous-run discovery completed for each pipeline definition on that
+      source ref and returned zero earlier completed runs (0/5 each).
+      The full diff changes a shared scheduler delay from 20ms to 25ms:
+      https://github.com/dotnet/maui/blob/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/src/Core/src/Scheduling.cs#L20
+      There is no diagnostic or call path connecting this change to the timeout.
+      maui-pr has complete passing timelines and actual test outcomes:
+      https://dev.azure.com/dnceng-public/public/_build/results?buildId=999911
+      maui-pr-devicetests is green but only one of two expected Helix work items
+      has readable, complete passing XML; the other result file is missing.
+      That work item's test and fixture outcomes cannot be verified:
+      https://dev.azure.com/dnceng-public/public/_build/results?buildId=999912
+      maui-pr-uitests Tap on Android timed out on attempt 1, then actually
+      executed and passed on attempt 2 at the same SHA, runtime, OS, and setup.
+      All final UI outcomes are complete; this is the only earlier failure.
+      No comparable pre-PR main evidence establishes whether it is unrelated.
+      Current UI: https://dev.azure.com/dnceng-public/public/_build/results?buildId=999913
+      Earlier timeout: https://dev.azure.com/dnceng-public/public/_apis/build/builds/999913/logs/1
+      Later actual pass: https://dev.azure.com/dnceng-public/public/_apis/build/builds/999913/logs/2
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config:
+          pattern: '^<!-- Tests Failure -->\s+## Tests Failure Analysis\s+> @retry-fixture-author [^\r\n]*\[`aaaaaaa`\]\(https://github\.com/dotnet/maui/commit/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\)\.'
+      - type: output-matches
+        config:
+          pattern: 'alt="Verdict Inconclusive" src="https://img\.shields\.io/badge/Verdict-Inconclusive-bf8700\?labelColor=30363d&amp;style=flat-square"'
+      - type: output-matches
+        config:
+          pattern: 'alt="Scope CI failures"[\s\S]*alt="Commit aaaaaaa"[\s\S]*<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>'
+      - type: output-matches
+        config:
+          pattern: '\*\*Overall verdict:\*\* Inconclusive'
+      - type: output-matches
+        config:
+          pattern: '\| maui-pr \|[\s\S]*\| maui-pr-devicetests \|[\s\S]*\| maui-pr-uitests \|'
+      - type: output-matches
+        config:
+          pattern: 'Insufficient data'
+      - type: output-matches
+        config:
+          pattern: 'Needs human investigation'
+      - type: output-matches
+        config:
+          pattern: '<summary><strong>&#x1F4CB; Recovered attempts</strong></summary>\s+<br/>[\s\S]*https://dev\.azure\.com/dnceng-public/public/_apis/build/builds/999913/logs/1[\s\S]*https://dev\.azure\.com/dnceng-public/public/_apis/build/builds/999913/logs/2'
+      - type: output-matches
+        config:
+          pattern: 'Coverage:\s*(?:\*\*\s*)?Incomplete'
+      - type: output-matches
+        config:
+          pattern: '</details>\s+</details>\s+---\s+<details>\s+<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>\s+<br/>[\s\S]*> Maintainers: comment `/review tests` to refresh this report\.\s+</details>\s*$'
+      - type: output-matches
+        config:
+          pattern: '^(?:(?!</?details>)[\s\S])*<details>(?:(?:(?!</?details>)[\s\S])*<details>(?:(?!</?details>)[\s\S])*</details>)+(?:(?!</?details>)[\s\S])*</details>\s+---\s+<details>(?:(?!</?details>)[\s\S])*</details>\s*$'
+      - type: output-matches
+        config:
+          pattern: '^(?![\s\S]*(?:<details\s+open|Ready to merge|Not ready|ButtonUpdate|fixture-ci-author))[\s\S]*$'
 
   - name: earlier-pr-commits-do-not-prove-unrelatedness
     prompt: |
