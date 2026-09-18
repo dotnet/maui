@@ -84,6 +84,33 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller")]
+	[TestCase("Issue33037LegacyCollectionViewButton", "Issue33037LegacyCollectionViewScroller")]
+	public void ConsecutiveCollectionViewSwipesRetainForwardScrollProgress(string buttonId, string scrollerId)
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement(buttonId).Click();
+
+		try
+		{
+			App.WaitForElement(scrollerId);
+			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.2, withInertia: false);
+			var itemAfterFirstSwipe = App.WaitForElement("Item 5").GetRect();
+
+			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.2, withInertia: false);
+			var itemAfterSecondSwipe = App.WaitForElement("Item 5").GetRect();
+
+			Assert.That(itemAfterSecondSwipe.Y, Is.LessThan(itemAfterFirstSwipe.Y),
+				"A second forward gesture must retain scroll progress instead of restoring the delegated top inset and moving content backward.");
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
 	public void NestedSafeAreaLongTableScrollsWithoutDoubleTopInset()
 	{
 		RequireIOS26OrHigher();
