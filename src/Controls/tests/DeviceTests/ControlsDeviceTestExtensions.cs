@@ -26,9 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 								.OpenUrl((app, url, options) =>
 									ApplicationModel.Platform.OpenUrl(app, url, options))
 								.ContinueUserActivity((application, userActivity, completionHandler) =>
-									ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler))
-								.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
-									ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler)));
+									ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler)));
 #elif WINDOWS
 						lifecycle
 							.AddWindows(windows =>

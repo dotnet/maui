@@ -993,14 +993,21 @@ Generated report:
         $body | Should -Not -Match 'Generated report:'
     }
 
-    It 'refuses to manufacture a comment from an incomplete analysis' {
+    It 'refuses to manufacture a comment from an incomplete analysis: <ReportContent>' -ForEach @(
+        @{ ReportContent = 'Short incomplete analysis.' }
+        @{ ReportContent = '**Overall verdict:** Not ready "quoted" </details><img alt="breakout">' }
+    ) {
+        Mock gh { throw 'Incomplete reports must not fetch formatting metadata.' }
+
         {
             New-TestFailureReviewBody `
                 -PRNumber 123 `
                 -Repository 'dotnet/maui' `
-                -ReportContent 'Short incomplete analysis.' `
+                -ReportContent $ReportContent `
                 -ContextJsonPath (Join-Path $TestDrive 'missing.json')
-        } | Should -Throw '*complete structured report*'
+        } | Should -Throw '*complete structured report*No comment was posted*'
+
+        Should -Invoke gh -Times 0 -Exactly
     }
 
     It 'preserves legacy report evidence without manufacturing a replacement' {
