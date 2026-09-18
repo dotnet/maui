@@ -1,0 +1,1 @@
+N:System.Text.RegularExpressions;Regular expressions increase trimmed application size. Use an allocation-conscious parser instead.
