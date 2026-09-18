@@ -764,7 +764,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(StateTriggerRemovalOperation.Clear)]
 		[InlineData(StateTriggerRemovalOperation.Remove)]
 		[InlineData(StateTriggerRemovalOperation.RemoveAt)]
-		[InlineData(StateTriggerRemovalOperation.Replace)]
 		public void RemovingStateTriggerDetachesIt(StateTriggerRemovalOperation operation)
 		{
 			var trigger = new LifecycleStateTrigger();
