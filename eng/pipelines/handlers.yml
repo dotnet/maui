@@ -327,6 +327,3 @@ stages:
             skipProvisionator: false
           ${{ else }}:
             skipProvisionator: true
-
-- ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-  - template: common/localization.yml

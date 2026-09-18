@@ -276,5 +276,39 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
 			Assert.Null(handlerType);
 		}
+
+		[Fact]
+		public void SecondConfigureMauiHandlersCallReplacesHandler()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, AlternateViewHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handlerService = mauiHandlersFactory.GetHandler(typeof(ViewStub));
+			Assert.NotNull(handlerService);
+			Assert.IsType<AlternateViewHandlerStub>(handlerService);
+		}
+
+		[Fact]
+		public void FactoryBasedHandlerRegistrationReplacesHandler()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => new AlternateViewHandlerStub()))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handlerService = mauiHandlersFactory.GetHandler(typeof(ViewStub));
+			Assert.NotNull(handlerService);
+			Assert.IsType<AlternateViewHandlerStub>(handlerService);
+		}
+
+		class AlternateViewHandlerStub : ViewHandlerStub
+		{
+		}
 	}
 }

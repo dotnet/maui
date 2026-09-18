@@ -54,6 +54,7 @@ permissions:
   issues: read
   pull-requests: read
 
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:
@@ -91,6 +92,7 @@ safe-outputs:
   # for the issue-creation step is correctly suppressed.
 
 tools:
+  bash: false
   github:
     # `default` gives us issues, repos, pull_requests, context.
     # `labels` adds `list_label` (singular) and `get_label` — needed for

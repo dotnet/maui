@@ -10,7 +10,7 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
-  testFilter: ''
+  testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
@@ -152,7 +152,7 @@ steps:
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
     }
-    
+
     $headless = ${{ parameters.headless }}
     if ($headless) {
       $command += " --headless ""$headless"""

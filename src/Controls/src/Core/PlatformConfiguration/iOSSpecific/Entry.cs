@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to enable auto font size adjustment; otherwise, <see langword="false"/>.</param>
 		public static void SetAdjustsFontSizeToFitWidth(BindableObject element, bool value)
 		{
-			element.SetValue(AdjustsFontSizeToFitWidthProperty, value);
+			element.SetValue(AdjustsFontSizeToFitWidthProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that tells whether the entry control automatically adjusts the font size.</summary>

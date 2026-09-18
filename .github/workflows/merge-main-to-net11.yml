@@ -31,6 +31,7 @@ concurrency:
 
 jobs:
   CheckForOpenMergePullRequest:
+    if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
     permissions:
       contents: read

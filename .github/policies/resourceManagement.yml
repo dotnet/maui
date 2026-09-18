@@ -731,8 +731,6 @@ configuration:
       - titleContains:
           pattern: '^\[automated\] Merge branch ''main'' => ''net11\.0''$'
           isRegex: True
-      - targetsBranch:
-          branch: net11.0
       then:
       - approvePullRequest:
           comment: Auto-approved automated inter-branch merge.
@@ -751,8 +749,6 @@ configuration:
       - titleContains:
           pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-preview7''$'
           isRegex: True
-      - targetsBranch:
-          branch: release/11.0.1xx-preview7
       then:
       - approvePullRequest:
           comment: Auto-approved automated inter-branch merge.
@@ -771,8 +767,6 @@ configuration:
       - titleContains:
           pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc1''$'
           isRegex: True
-      - targetsBranch:
-          branch: release/11.0.1xx-rc1
       then:
       - approvePullRequest:
           comment: Auto-approved automated inter-branch merge.
@@ -791,8 +785,6 @@ configuration:
       - titleContains:
           pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc2''$'
           isRegex: True
-      - targetsBranch:
-          branch: release/11.0.1xx-rc2
       then:
       - approvePullRequest:
           comment: Auto-approved automated inter-branch merge.

@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnDrawerStateChanged(object sender, DrawerStateChangedEventArgs e)
 		{
-			if (_flyoutContent?.AndroidView == null)
+			if (_releasingDrawerCallback || _flyoutContent?.AndroidView == null)
 				return;
 
 			if (DrawerLayout.StateIdle == e.NewState)
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnDrawerOpened(object sender, DrawerOpenedEventArgs e)
 		{
-			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
+			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
 		}
 
 		void OnDrawerSlide(object sender, DrawerSlideEventArgs e)
@@ -95,7 +95,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnDrawerClosed(object sender, DrawerClosedEventArgs e)
 		{
-			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
+			if (_releasingDrawerCallback)
+				return;
+
+			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.FalseBox);
 		}
 
 		#endregion IDrawerListener
@@ -129,6 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal bool FlyoutFirstDrawPassFinished { get; private set; }
 		int _currentLockMode;
 		bool _disposed;
+		bool _releasingDrawerCallback;
 		Brush _scrimBrush;
 		Paint _scrimPaint;
 		int _previousHeight;
@@ -319,7 +323,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				case FlyoutBehavior.Disabled:
 					CloseDrawers();
-					Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
+					Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.FalseBox);
 					_currentLockMode = LockModeLockedClosed;
 					SetDrawerLockMode(_currentLockMode);
 					_content.SetPadding(0, _content.PaddingTop, _content.PaddingRight, _content.PaddingBottom);
@@ -332,7 +336,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					break;
 
 				case FlyoutBehavior.Locked:
-					Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
+					Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
 					_currentLockMode = LockModeLockedOpen;
 					SetDrawerLockMode(_currentLockMode);
 
@@ -430,6 +434,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_shellContext = null;
+		}
+
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			_releasingDrawerCallback = true;
+			try
+			{
+				if (_flyoutContent?.AndroidView is AView flyoutView && flyoutView.Parent == this)
+				{
+					CloseDrawer(flyoutView, false);
+				}
+
+				SetDrawerLockMode(LockModeLockedClosed);
+			}
+			finally
+			{
+				_releasingDrawerCallback = false;
+			}
 		}
 
 		protected override void Dispose(bool disposing)

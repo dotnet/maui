@@ -153,25 +153,18 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
 
     @Override
     public void onDescendantInvalidated(@NonNull View child, @NonNull View target) {
-        // API 26+: On modern Android, when a hardware-accelerated child view calls invalidate()
-        // (e.g., SwitchCompat animating its thumb), the framework calls onDescendantInvalidated()
-        // on the parent instead of invalidateChildInParent().
-        //
-        // CRITICAL: In hardware-accelerated mode, each view has its own RenderNode display list.
-        // When a child invalidates, only the CHILD's RenderNode is re-recorded — the parent's
-        // display list is replayed from cache (including the stale shadow draw call baked in).
-        //
-        // Without invalidate(): SwitchCompat redraws (thumb moves) but PlatformWrapperView's
-        // display list is replayed unchanged → shadow stays at its original OFF/ON position.
-        // With invalidate(): PlatformWrapperView's display list is marked dirty → dispatchDraw()
-        // is re-invoked next frame → shadow is redrawn at the correct current thumb position.
-        //
-        // Guard: only force re-invalidation when this wrapper has an active shadow — avoids
-        // unnecessary redraws for clip/border-only wrappers.
         super.onDescendantInvalidated(child, target);
-        if (this.hasShadow) {
+
+        if (shouldInvalidateShadow(child, target)) {
             invalidate();
         }
+    }
+
+    protected final boolean shouldInvalidateShadow(@NonNull View child, @NonNull View target) {
+        // Shadowed controls such as Switch need a wrapper redraw when the immediate child
+        // animates. Deeper descendants redraw through their own RenderNodes; invalidating the
+        // wrapper for them makes scrolling content redraw the entire shadowed container.
+        return this.hasShadow && child == target;
     }
 
     // API 25 and below: invalidateChildInParent() is the legacy path called when a

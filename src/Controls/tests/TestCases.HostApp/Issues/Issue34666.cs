@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 34666, "The C6 page cannot scroll on Windows and Android platforms", PlatformAffected.All)]
+	[Issue(IssueTracker.Github, 34666, "Disabling RefreshView cascades IsEnabled=false to its child CollectionView, preventing scrolling", PlatformAffected.All)]
 	public class Issue34666 : ContentPage
 	{
 		public Issue34666()

@@ -86,6 +86,7 @@ Current workload release channels (IDs shown for reference — when running `add
 | "latest MAUI build" | MCP: `maestro_latest_build(repository="https://github.com/dotnet/maui")` |
 | "what channels is MAUI on" | MCP: `maestro_default_channels(repository="https://github.com/dotnet/maui")` |
 | "subscription health for MAUI" | MCP: `maestro_subscription_health(targetRepository="https://github.com/dotnet/maui")` |
+| "validate a Preview workload install" | Use release-readiness's `PreviewInstallability.ps1`; it resolves the workload-set package, public component feeds, package-source mapping, and representative packs without mutating feeds. |
 
 ## MAUI-Specific Rules
 

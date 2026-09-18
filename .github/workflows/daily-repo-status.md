@@ -24,11 +24,14 @@ on:
   workflow_dispatch:
   permissions: {}
 
+if: github.repository == 'dotnet/maui'
+
 permissions:
   contents: read
   issues: read
   pull-requests: read
 
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:

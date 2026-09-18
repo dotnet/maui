@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 					_logger.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
 				}
-			});
+			}).ObserveExceptionsAsync(_logger);
 		}
 
 		/// <inheritdoc />

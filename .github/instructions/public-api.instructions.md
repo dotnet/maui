@@ -22,6 +22,9 @@ applyTo:
 
 ## PublicAPI.Unshipped.txt
 - Entries must exactly match the actual API shape (namespace, type, member signature)
+- A leading `~` is Microsoft.CodeAnalysis.PublicApiAnalyzers' nullable-oblivious marker. It is unrelated to whether an API is public, internal, static, or instance.
+- Do not manually add or remove `~` based on an entry's appearance or inferred API visibility. Preserve analyzer-generated markers and use `dotnet format analyzers` or the repository's documented PublicAPI generation workflow when correcting entries.
+- Removing a required `~` makes the recorded nullability shape differ from the source API and creates the analyzer mismatch that the marker prevents.
 
 > For PublicAPI.Unshipped.txt file management workflow (never disable analyzers, `dotnet format analyzers`, revert-then-add pattern), see `copilot-instructions.md` § PublicAPI.Unshipped.txt File Management.
 

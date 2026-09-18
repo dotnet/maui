@@ -1,4 +1,5 @@
 ﻿#nullable enable
+Microsoft.Maui.FontManager.Dispose() -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
@@ -16,3 +17,4 @@ static Microsoft.Maui.Handlers.DatePickerHandler.MapFlowDirection(Microsoft.Maui
 override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void

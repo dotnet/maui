@@ -22,16 +22,16 @@ namespace Microsoft.Maui.Controls
 			coerceValue: (o, v) => (Keyboard)v ?? Keyboard.Default);
 
 		/// <summary>Bindable property for <see cref="IsSpellCheckEnabled"/>.</summary>
-		public static readonly BindableProperty IsSpellCheckEnabledProperty = BindableProperty.Create(nameof(IsSpellCheckEnabled), typeof(bool), typeof(InputView), true);
+		public static readonly BindableProperty IsSpellCheckEnabledProperty = BindableProperty.Create(nameof(IsSpellCheckEnabled), typeof(bool), typeof(InputView), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
-		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(InputView), true);
+		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(InputView), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="MaxLength"/>.</summary>
 		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(InputView), int.MaxValue);
 
 		/// <summary>Bindable property for <see cref="IsReadOnly"/>.</summary>
-		public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(InputView), false);
+		public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(InputView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="Placeholder"/>.</summary>
 		public static readonly BindableProperty PlaceholderProperty = PlaceholderElement.PlaceholderProperty;
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsSpellCheckEnabled
 		{
 			get => (bool)GetValue(IsSpellCheckEnabledProperty);
-			set => SetValue(IsSpellCheckEnabledProperty, value);
+			set => SetValue(IsSpellCheckEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets or sets a value that controls whether text prediction and automatic text correction are enabled.</summary>
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsTextPredictionEnabled
 		{
 			get => (bool)GetValue(IsTextPredictionEnabledProperty);
-			set => SetValue(IsTextPredictionEnabledProperty, value);
+			set => SetValue(IsTextPredictionEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets or sets a value indicating whether the user can edit text in this input view. This is a bindable property.</summary>
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsReadOnly
 		{
 			get => (bool)GetValue(IsReadOnlyProperty);
-			set => SetValue(IsReadOnlyProperty, value);
+			set => SetValue(IsReadOnlyProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets or sets the placeholder text shown when the input view is empty. This is a bindable property.</summary>
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>

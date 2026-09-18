@@ -58,6 +58,9 @@ namespace Microsoft.Maui.IntegrationTests
 				// affect only C# compiler warnings).
 				buildArgs += " -warnaserror";
 
+				// Previous-.NET compatibility tests intentionally exercise workloads after end of support.
+				buildArgs += " -warnnotaserror:NETSDK1202";
+
 				// However, we need to ignore specific MSBuild warnings that are acceptable in these tests:
 				var csWarningsToIgnore = new List<string>
 				{

@@ -99,6 +99,24 @@ namespace Microsoft.Maui.Platform
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
+		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, bool hasText)
+		{
+			if (OperatingSystem.IsMacCatalyst())
+			{
+				var clearButton = uiSearchBar.GetClearButton();
+
+				if (clearButton != null)
+				{
+					var shouldHide = !hasText;
+
+					if (clearButton.Hidden != shouldHide)
+					{
+						clearButton.Hidden = shouldHide;
+					}
+				}
+			}
+		}
+
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UpdateVerticalTextAlignment(searchBar, null);
@@ -460,5 +478,7 @@ namespace Microsoft.Maui.Platform
 			var end = textField.GetPosition(start, endOffset - startOffset);
 			return end ?? start;
 		}
+		internal static UIButton? GetClearButton(this UISearchBar searchBar) =>
+			searchBar.GetSearchTextField()?.ValueForKey(new NSString("clearButton")) as UIButton;
 	}
 }

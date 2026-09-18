@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
-using Android.Graphics;
+using Android.OS;
 using Android.Webkit;
 using AUri = Android.Net.Uri;
 using AWebView = Android.Webkit.WebView;
@@ -16,33 +16,33 @@ namespace Microsoft.Maui.Platform
 	{
 		private readonly WeakReference<HybridWebViewHandler> _handler;
 		private static readonly AUri AndroidAppOriginUri = AUri.Parse(HybridWebViewHandler.AppOrigin)!;
-		readonly Rect _clipRect;
+		volatile bool _detachPending;
 
 		public MauiHybridWebView(HybridWebViewHandler handler, Context context) : base(context)
 		{
 			ArgumentNullException.ThrowIfNull(handler, nameof(handler));
 			_handler = new WeakReference<HybridWebViewHandler>(handler);
 
-			// Initialize with empty clip bounds to prevent the WebView from briefly
-			// rendering at full screen size before layout is complete.
-			// https://github.com/dotnet/maui/issues/31475
-			_clipRect = new Rect(0, 0, 0, 0);
-			ClipBounds = _clipRect;
+			// Pre-register the JS bridge BEFORE any page loads.
+			// Android WebView only exposes addJavascriptInterface bindings for pages that
+			// start loading AFTER the call is made. If Attach is deferred to
+			// OnAttachedToWindow, cold-start apps load their page before the view enters
+			// the window hierarchy, so the bridge is invisible to JS.
+			// Attach is idempotent, so later calls from OnAttachedToWindow are safe no-ops.
+			RefreshViewWebViewScrollCapture.Attach(this);
 		}
 
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
 		{
 			base.OnSizeChanged(width, height, oldWidth, oldHeight);
-			UpdateClipBounds(width, height);
 		}
 
 		// OnAttachedToWindow — calls Attach(this) when inside a SwipeRefreshLayout.
 		protected override void OnAttachedToWindow()
 		{
-			base.OnAttachedToWindow();
+			_detachPending = false;
 
-			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
-			UpdateClipBounds(Width, Height);
+			base.OnAttachedToWindow();
 
 			if (RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(this))
 			{
@@ -54,40 +54,34 @@ namespace Microsoft.Maui.Platform
 					RefreshViewWebViewScrollCapture.InjectObserver(this);
 				}
 			}
+			else
+			{
+				// Not inside a RefreshView — remove the bridge that was pre-registered
+				// in the constructor so it is not exposed to untrusted page content
+				// loaded in standalone HybridWebViews.
+				RefreshViewWebViewScrollCapture.Detach(this);
+			}
 		}
 
 		// OnDetachedFromWindow — calls Detach().
 		protected override void OnDetachedFromWindow()
 		{
-			RefreshViewWebViewScrollCapture.Detach(this);
-			base.OnDetachedFromWindow();
-		}
+			if (RefreshViewWebViewScrollCapture.IsAttached(this))
+			{
+				_detachPending = true;
+#pragma warning disable CA1422 // Validate platform compatibility
+				new Handler(Looper.MainLooper!).Post(() =>
+#pragma warning restore CA1422 // Validate platform compatibility
+				{
+					if (_detachPending)
+					{
+						_detachPending = false;
+						RefreshViewWebViewScrollCapture.Detach(this);
+					}
+				});
+			}
 
-		void UpdateClipBounds(int width, int height)
-		{
-			if (width > 0 && height > 0)
-			{
-				if (Parent is WrapperView)
-				{
-					// Parent is WrapperView (shadow/border/clip applied).
-					// Remove ClipBounds to allow visual effects like shadows
-					// to render outside the view area.
-					ClipBounds = null;
-				}
-				else
-				{
-					// No WrapperView — apply exact bounds to prevent the WebView
-					// from briefly rendering at full screen size before layout.
-					_clipRect.Set(0, 0, width, height);
-					ClipBounds = _clipRect;
-				}
-			}
-			else
-			{
-				// Re-apply empty clip bounds when the view becomes zero-sized or hidden.
-				_clipRect.Set(0, 0, 0, 0);
-				ClipBounds = _clipRect;
-			}
+			base.OnDetachedFromWindow();
 		}
 
 		public void SendRawMessage(string rawMessage)
@@ -102,6 +96,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (disposing)
 			{
+				_detachPending = false;
 				RefreshViewWebViewScrollCapture.Detach(this);
 			}
 

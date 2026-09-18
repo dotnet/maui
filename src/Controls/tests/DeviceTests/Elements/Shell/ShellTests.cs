@@ -32,13 +32,25 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(Type shellHandlerType = null)
+			=> SetupBuilder(null, shellHandlerType);
+
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions, Type shellHandlerType = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
+#if IOS || MACCATALYST
+				builder.ConfigureImageSources(services =>
+				{
+					services.AddService<IDelayedImageSource, DelayedImageSourceService>();
+				});
+#endif
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);
+					if (shellHandlerType != null)
+						handlers.AddHandler(typeof(Shell), shellHandlerType);
+
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
@@ -46,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
+				additionalCreationActions?.Invoke(builder);
 			});
 		}
 #if !MACCATALYST

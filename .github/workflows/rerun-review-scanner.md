@@ -65,6 +65,8 @@ on:
         if-no-files-found: error
         retention-days: 1
 
+if: github.repository == 'dotnet/maui'
+
 permissions:
   contents: read
   issues: read
@@ -81,6 +83,7 @@ concurrency:
   group: "gh-aw-${{ github.workflow }}"
   cancel-in-progress: false
 
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:

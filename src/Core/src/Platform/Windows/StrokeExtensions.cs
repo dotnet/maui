@@ -24,14 +24,12 @@
 		{
 			var strokeThickness = border.StrokeThickness;
 			platformView.BorderPath?.UpdateStrokeThickness(strokeThickness);
+			platformView.InvalidateContentClip();
 		}
 
 		public static void UpdateStrokeDashPattern(this ContentPanel platformView, IBorderStroke border)
 		{
 			var strokeDashPattern = border.StrokeDashPattern;
-
-			if (strokeDashPattern == null)
-				return;
 
 			platformView.BorderPath?.UpdateStrokeDashPattern(strokeDashPattern);
 		}

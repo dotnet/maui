@@ -339,6 +339,9 @@ namespace Microsoft.Maui.Handlers
 			}
 #endif
 
+#if IOS || MACCATALYST
+			MapInputTransparentToContainer(handler, view);
+#endif
 			((PlatformView?)handler.PlatformView)?.UpdateIsEnabled(view);
 		}
 
@@ -527,9 +530,21 @@ namespace Microsoft.Maui.Handlers
 			bool hasContainerOldValue = handler.HasContainer;
 
 			if (handler is ViewHandler viewHandler)
+			{
+#if WINDOWS
+				// Reusing a disconnected handler creates a new platform view; preserve the wrapper's visual-tree slot.
+				if (hasContainerOldValue)
+					viewHandler.ReconnectContainer();
+#endif
+
 				handler.HasContainer = viewHandler.NeedsContainer;
+			}
 			else
 				handler.HasContainer = view.NeedsContainer();
+
+#if IOS || MACCATALYST || WINDOWS
+			MapInputTransparentToContainer(handler, view);
+#endif
 
 			if (hasContainerOldValue != handler.HasContainer)
 			{
@@ -610,16 +625,31 @@ namespace Microsoft.Maui.Handlers
 				wrapper.InputTransparent = view.InputTransparent;
 #else
 
-#if IOS || MACCATALYST
-			// Containers on iOS/Mac Catalyst may be hit testable, so we need to
-			// propagate the the view's values to its container view.
-			if (handler.ContainerView is WrapperView wrapper)
-				wrapper.UpdateInputTransparent(handler, view);
+#if IOS || MACCATALYST || WINDOWS
+			// Containers may be hit testable, so we need to
+			// propagate the view's values to its container view.
+			MapInputTransparentToContainer(handler, view);
 #endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
 #endif
 		}
+
+#if IOS || MACCATALYST || WINDOWS
+		static void MapInputTransparentToContainer(IViewHandler handler, IView view)
+		{
+#if WINDOWS
+			// LayoutPanel has a specialized mapper that makes the panel transparent to input without
+			// disabling its child tree. Other handlers disable their platform view and its subtree, so
+			// propagating the same value to their wrapper preserves their existing behavior.
+			if (handler is ILayoutHandler)
+				return;
+#endif
+
+			if (handler.ContainerView is WrapperView wrapper)
+				wrapper.UpdateInputTransparent(handler, view);
+		}
+#endif
 
 		/// <summary>
 		/// Maps the abstract <see cref="IView.Unfocus"/> method to the platform-specific implementations.

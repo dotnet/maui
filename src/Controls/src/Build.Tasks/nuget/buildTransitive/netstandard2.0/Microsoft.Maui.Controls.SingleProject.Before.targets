@@ -28,6 +28,14 @@
     <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
   </PropertyGroup>
 
+  <!--
+    Built-in folder mappings declare only the legacy singular TargetPlatformIdentifier
+    metadata so that _MauiNormalizePlatformSpecificFolders is the single source of
+    truth for back-filling the plural TargetPlatformIdentifiers contract. Keeping
+    one source avoids drift between the two metadata fields and ensures the
+    normalization code path is exercised on every SingleProject build (so a
+    regression in the back-fill is caught immediately).
+  -->
   <ItemGroup>
     <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
     <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
@@ -35,6 +43,36 @@
     <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
     <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
   </ItemGroup>
+
+  <!--
+    Normalize MauiPlatformSpecificFolder items so downstream targets and any
+    third-party extension can rely on a uniform shape:
+      - TargetPlatformIdentifiers is back-filled from the legacy singular
+        TargetPlatformIdentifier when only the singular is set.
+    Identity (folder path) is intentionally not rewritten here because MSBuild
+    item-Identity rewriting requires a remove/re-add dance that loses caller
+    metadata. Instead, downstream consumers apply EnsureTrailingSlash() at the
+    use site (see _MauiCollectPlatformSpecificCompileItems).
+  -->
+  <!--
+    BeforeTargets is intentionally limited to _MauiRemovePlatformCompileItems
+    because _MauiCollectPlatformSpecificCompileItems already declares
+    DependsOnTargets="_MauiNormalizePlatformSpecificFolders" (single source of
+    truth for that ordering). The Remove target does not depend on Collect (so
+    Normalize-Before-Remove is the only way to guarantee Remove sees the
+    back-filled TargetPlatformIdentifiers metadata when Collect is short-circuited).
+  -->
+  <Target Name="_MauiNormalizePlatformSpecificFolders"
+          BeforeTargets="_MauiRemovePlatformCompileItems"
+          Condition=" '$(SingleProject)' == 'true' ">
+    <ItemGroup>
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)' != '' ">
+        <TargetPlatformIdentifiers>%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)</TargetPlatformIdentifiers>
+      </MauiPlatformSpecificFolder>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>

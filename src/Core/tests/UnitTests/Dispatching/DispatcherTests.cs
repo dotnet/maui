@@ -10,6 +10,15 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	// Technically these tests are useless because they cannot test shipping code as they are
 	// none of the platforms. However, they sort of do test the test dispatcher...
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
+	// DispatcherTests mutates the static DispatcherProvider.Current. Other test
+	// classes that build a MauiApp capture that singleton via DI (see
+	// AppHostBuilderExtensions.ConfigureDispatching's IDispatcherProvider factory)
+	// and the MainThreadBridgeInitializer / ApplicationDispatcherInitializer call
+	// IDispatcher resolution at MauiApp.Build() time. If DispatcherTests' Dispose
+	// runs concurrently and disposes its DispatcherProviderStub's ThreadLocal,
+	// those bystander tests throw ObjectDisposedException. Serialize via the
+	// shared MainThreadStaticState collection.
+	[Collection("MainThreadStaticState")]
 	public class DispatcherTests : IDisposable
 	{
 		DispatcherProviderStub _dispatcherProvider;
