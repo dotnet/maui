@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
+		FragmentManager _fragmentManager;
 		IMauiContext _mauiContext;
 		bool _disposed;
 
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected Context AndroidContext { get; private set; }
 		protected Shell Element { get; private set; }
 		FragmentManager FragmentManager =>
-			Element.FindMauiContext().GetFragmentManager();
+			_fragmentManager ??= _mauiContext.GetFragmentManager();
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
@@ -183,6 +184,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_disposed)
+				return;
+
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
 
@@ -339,6 +343,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			CommandMapper.Invoke(this, Element, command, args);
 		}
 
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+				return;
+
+			if (_flyoutView is ShellFlyoutRenderer shellFlyoutRenderer)
+				shellFlyoutRenderer.ReleaseDrawerCallbackBeforePageChange();
+		}
+
 		void IElementHandler.DisconnectHandler()
 		{
 			if (_disposed)
@@ -350,21 +363,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element.SizeChanged -= OnElementSizeChanged;
 			((IShellController)Element).RemoveAppearanceObserver(this);
 
+			if (_currentView is ShellItemRendererBase)
+			{
+				var currentFragment = _currentView.Fragment;
+				if (_fragmentManager is not null &&
+					!_fragmentManager.IsDestroyed(AndroidContext))
+				{
+					var transaction = _fragmentManager.BeginTransactionEx();
+					transaction.RemoveEx(currentFragment);
+					transaction.CommitAllowingStateLossEx();
+				}
+			}
+			else
+				_currentView?.Dispose();
+
+			_currentView = null;
+
 			if (_flyoutView is ShellFlyoutRenderer sfr)
 				sfr.Disconnect();
 			else
 				(_flyoutView as IDisposable)?.Dispose();
 
-			if (_currentView is ShellItemRendererBase sir)
-				sir.Disconnect();
-			else
-				_currentView.Dispose();
-
-			_currentView = null;
-
-			Element = null;
-
-			_disposed = true;
+			// FragmentManager owns deferred destruction, which still reads IShellContext.Shell.
 		}
 	}
 }

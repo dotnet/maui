@@ -57,6 +57,36 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(0, frame.Width);
 		}
 
+		[Theory]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.End)]
+		public void VerticalAlignmentDoesNotReverseWhenMarginExceedsBounds(LayoutAlignment layoutAlignment)
+		{
+			var element = Substitute.For<IView>();
+			element.Margin.Returns(new Thickness(0, 40, 0, 0));
+			element.DesiredSize.Returns(new Size(20, 60));
+			element.VerticalLayoutAlignment.Returns(layoutAlignment);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, 40, 40));
+
+			Assert.Equal(40, frame.Top);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.End)]
+		public void HorizontalAlignmentDoesNotReverseWhenMarginExceedsBounds(LayoutAlignment layoutAlignment)
+		{
+			var element = Substitute.For<IView>();
+			element.Margin.Returns(new Thickness(40, 0, 0, 0));
+			element.DesiredSize.Returns(new Size(60, 20));
+			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, 40, 40));
+
+			Assert.Equal(40, frame.Left);
+		}
+
 		[Fact]
 		public void DesiredSizeIncludesMargin()
 		{

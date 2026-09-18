@@ -310,6 +310,31 @@ internal static class SafeAreaExtensions
 		return newWindowInsets;
 	}
 
+	internal static bool ApplyAnimatedSoftInputInsetsPx(WindowInsetsCompat windowInsets, ICrossPlatformLayout crossPlatformLayout, Context context, View view, bool isImeOpening)
+	{
+		var bottomRegion = GetSafeAreaRegionForEdge(3, crossPlatformLayout);
+		if (!SafeAreaEdges.IsSoftInput(bottomRegion))
+		{
+			return false;
+		}
+
+		var keyboardBottom = windowInsets.GetKeyboardInsetsPx(context).Bottom;
+		var containerBottom = windowInsets.ToSafeAreaInsetsPx(context).Bottom;
+
+		// While the keyboard is opening, track it directly so the container's bottom padding
+		// (and the viewport it controls) shrinks in step with every animation frame. Clamping
+		// to containerBottom here would hold the padding flat until keyboardBottom exceeds it,
+		// compressing the real shrink into the last few frames and clipping a focused editor.
+		// While closing, keep the containerBottom floor so padding doesn't dip below the
+		// resting container inset and pop back up once the animation ends.
+		var bottom = SafeAreaEdges.IsOnlySoftInput(bottomRegion) || isImeOpening
+			? keyboardBottom
+			: Math.Max(containerBottom, keyboardBottom);
+
+		view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
+		return bottom > 0;
+	}
+
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
 	{
 		// Edge-to-edge content - no safe area padding
