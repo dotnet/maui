@@ -895,24 +895,29 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else if (e.Is(TapGestureRecognizer.NumberOfTapsRequiredProperty) && sender is TapGestureRecognizer tapGesture)
 			{
-				foreach (var kvp in _gestureRecognizers)
+				UpdateNumberOfTapsRequired(tapGesture);
+			}
+		}
+
+		void UpdateNumberOfTapsRequired(TapGestureRecognizer tapGesture)
+		{
+			foreach (var kvp in _gestureRecognizers)
+			{
+				var key = kvp.Key;
+
+				// Direct case: key IS the TapGestureRecognizer
+				// Span case: key is a ChildGestureRecognizer wrapping it
+				var resolvedGesture = key as TapGestureRecognizer
+					?? (key as ChildGestureRecognizer)?.GestureRecognizer as TapGestureRecognizer;
+
+				if (resolvedGesture != tapGesture)
+					continue;
+
+				foreach (var uiRecognizer in kvp.Value)
 				{
-					var key = kvp.Key;
-
-					// Direct case: key IS the TapGestureRecognizer
-					// Span case: key is a ChildGestureRecognizer wrapping it
-					var resolvedGesture = key as TapGestureRecognizer
-						?? (key as ChildGestureRecognizer)?.GestureRecognizer as TapGestureRecognizer;
-
-					if (resolvedGesture != tapGesture)
-						continue;
-
-					foreach (var uiRecognizer in kvp.Value)
+					if (uiRecognizer is UITapGestureRecognizer uiTapGestureRecognizer)
 					{
-						if (uiRecognizer is UITapGestureRecognizer uiTapGestureRecognizer)
-						{
-							uiTapGestureRecognizer.NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired;
-						}
+						uiTapGestureRecognizer.NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired;
 					}
 				}
 			}
@@ -1195,7 +1200,7 @@ namespace Microsoft.Maui.Controls.Platform
 								}
 						}
 					}
-					
+
 					// Return null to prevent actual context menu from appearing
 					// We only want to detect the right-click, not show a menu
 					return null;
