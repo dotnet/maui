@@ -143,12 +143,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			var navigationBar = ActiveNavigationController().NavigationBar;
-			if (_shellSection?.Stack is null || navigationBar?.Items is null)
+			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
 				return true;
 
 			// If stacks are in sync, nothing to do
-			if (_shellSection.Stack.Count == navigationBar.Items.Length)
+			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
 				return true;
 
 			// Stacks out of sync: treat as user-initiated back (e.g., swipe-back).
@@ -159,11 +158,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal bool SendPop(UIViewController topViewController = null)
 		{
-			var navigationController = ActiveNavigationController();
-			var navigationBar = navigationController.NavigationBar;
-
 			// this means the pop is already done, nothing we can do
-			if (ActiveViewControllers().Length < navigationBar.Items.Length)
+			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
 				return true;
 
 			// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
@@ -178,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_sendPopPending = true;
 			}
 
-			topViewController ??= navigationController.TopViewController;
+			topViewController ??= TopViewController;
 			foreach (var tracker in _trackers)
 			{
 				if (tracker.Value.ViewController == topViewController)
@@ -223,7 +219,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// we now route this through "GoToAsync"
 			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(async () =>
 			{
-				var navItemsCount = navigationBar.Items.Length;
+				var navItemsCount = NavigationBar.Items.Length;
 
 				try
 				{
@@ -235,11 +231,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				// This means the navigation was cancelled
-				if (navigationBar.Items.Length == navItemsCount)
+				if (NavigationBar.Items.Length == navItemsCount)
 				{
-					for (int i = 0; i < navigationBar.Subviews.Length; i++)
+					for (int i = 0; i < NavigationBar.Subviews.Length; i++)
 					{
-						var child = navigationBar.Subviews[i];
+						var child = NavigationBar.Subviews[i];
 						if (child.Alpha != 1)
 							UIView.Animate(.2f, () => child.Alpha = 1);
 					}
@@ -513,7 +509,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_trackers[page] = tracker;
 
-			InsertViewController(ActiveViewControllers().IndexOf(beforeRenderer.ViewController), renderer.ViewController);
+			InsertViewController(NavigationViewControllers().IndexOf(beforeRenderer.ViewController), renderer.ViewController);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSectionController.NavigationRequested subscription is removed in Disconnect before the shell section is released.")]
@@ -594,16 +590,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_ignorePopCall = true;
 				_completionTasks[_renderer.ViewController] = task;
 				e.Task = task.Task;
-				var navigationController = ActiveNavigationController();
-				if (ReferenceEquals(navigationController, this))
-				{
-					PopToRootViewController(animated);
-				}
-				else
-				{
-					navigationController.PopToViewController(_renderer.ViewController, animated);
-					HandleMoreNavigationCompletionTasks(_renderer.ViewController);
-				}
+				PopToRootViewController(animated);
 			}
 			finally
 			{
@@ -679,7 +666,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_trackers.TryGetValue(page, out var tracker))
 			{
-				if (!calledFromDispose && tracker.ViewController != null && ActiveViewControllers().Contains(tracker.ViewController))
+				if (!calledFromDispose && tracker.ViewController != null && NavigationViewControllers().Contains(tracker.ViewController))
 				{
 					System.Diagnostics.Debug.Write($"Disposing {_trackers[page].ViewController.GetHashCode()}");
 					RemoveViewController(_trackers[page].ViewController);
@@ -800,37 +787,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		UINavigationController ActiveNavigationController()
 		{
-			if (IsInMoreTab && MoreNavigationController is UINavigationController moreNavigationController)
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
-				return moreNavigationController;
+				return tabBarController.MoreNavigationController;
 			}
 
 			return this;
 		}
 
-		UIViewController[] ActiveViewControllers()
+		UIViewController[] NavigationViewControllers()
 		{
 			var navigationController = ActiveNavigationController();
 			if (ReferenceEquals(navigationController, this))
 			{
-				return _pendingViewControllers ?? base.ViewControllers;
+				return ActiveViewControllers();
 			}
 
-			var viewControllers = navigationController.ViewControllers;
-			var sectionIndex = Array.IndexOf(viewControllers, _renderer.ViewController);
-			return sectionIndex >= 0 ? viewControllers.Skip(sectionIndex).ToArray() : base.ViewControllers;
+			return navigationController.ViewControllers;
 		}
+
+		UIViewController[] ActiveViewControllers() =>
+			_pendingViewControllers ?? base.ViewControllers;
 
 		void RemoveViewController(UIViewController viewController)
 		{
 			var navigationController = ActiveNavigationController();
 			if (!ReferenceEquals(navigationController, this))
 			{
-				var viewControllers = navigationController.ViewControllers;
-				if (viewControllers.Contains(viewController))
+				if (navigationController.ViewControllers.Contains(viewController))
 				{
-					navigationController.ViewControllers = viewControllers.Remove(viewController);
+					navigationController.ViewControllers = navigationController.ViewControllers.Remove(viewController);
 				}
+
 				return;
 			}
 
@@ -846,9 +834,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var navigationController = ActiveNavigationController();
 			if (!ReferenceEquals(navigationController, this))
 			{
-				var viewControllers = navigationController.ViewControllers;
-				var sectionIndex = Array.IndexOf(viewControllers, _renderer.ViewController);
-				navigationController.ViewControllers = viewControllers.Insert(sectionIndex + index, viewController);
+				navigationController.ViewControllers = navigationController.ViewControllers.Insert(index, viewController);
 				return;
 			}
 
