@@ -10,10 +10,13 @@ namespace Microsoft.Maui.Controls
 	internal class MenuShellItem : ShellItem, IMenuItemController, IStyleSelectable
 	{
 		bool _isConnected;
+		readonly PropertyChangedEventHandler _onMenuItemPropertyChanged;
+		readonly WeakNotifyPropertyChangedProxy _menuItemPropertyChangedProxy = new();
 
 		internal MenuShellItem(MenuItem menuItem)
 		{
 			MenuItem = menuItem;
+			_onMenuItemPropertyChanged = OnMenuItemPropertyChanged;
 			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(menuItem));
 
 			this.SetBinding(TitleProperty, static (MenuItem item) => item.Text, BindingMode.OneWay, source: menuItem);
@@ -21,6 +24,8 @@ namespace Microsoft.Maui.Controls
 			this.SetBinding(FlyoutIconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(AutomationIdProperty, static (MenuItem item) => item.AutomationId, BindingMode.OneWay, source: menuItem);
 		}
+
+		~MenuShellItem() => _menuItemPropertyChangedProxy.Unsubscribe();
 
 		protected override void OnParentSet()
 		{
@@ -45,7 +50,7 @@ namespace Microsoft.Maui.Controls
 
 			_isConnected = true;
 			MenuItem.Parent = this;
-			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
+			_menuItemPropertyChangedProxy.Subscribe(MenuItem, _onMenuItemPropertyChanged);
 		}
 
 		void Disconnect()
@@ -56,7 +61,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_isConnected = false;
-			MenuItem.PropertyChanged -= OnMenuItemPropertyChanged;
+			_menuItemPropertyChangedProxy.Unsubscribe();
 
 			if (MenuItem.Parent == this)
 			{
