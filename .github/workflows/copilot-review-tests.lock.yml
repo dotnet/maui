@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"d92fe1553e4a2ead813cb03bcb627e3f28b90e41629f6742dae999237b6662f7","body_hash":"14c66e233d3662f50998b006d0508f6a963dae8990b0822838e152d9e1939492","compiler_version":"v0.86.2","strict":true,"agent_id":"copilot","agent_model":"gpt-5.6-sol","engine_versions":{"copilot":"1.0.79"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"6aab9e5b5c91c615506061f09bedd81a23babe3c","version":"v0.86.2"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44","digest":"sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44@sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44","digest":"sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44@sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44","digest":"sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44@sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.9","digest":"sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.9@sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0d9f1fb5fd6610c0ac1f5194a38e45a8a1e81f8a390d5142d8e4e6f26a4b3196","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0d9f1fb5fd6610c0ac1f5194a38e45a8a1e81f8a390d5142d8e4e6f26a4b3196"},{"image":"ghcr.io/github/github-mcp-server:v1.9.0","digest":"sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e","pinned_image":"ghcr.io/github/github-mcp-server:v1.9.0@sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e"}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"f8c277dca79e4a1db31779fc3c537beb2badac2ed8fd4698dcdf14fd6a1976e9","body_hash":"0085bc5bbd1347419e0d9d9bbdf28a9ae0b9815505ebc5b81f35783a963a5271","compiler_version":"v0.86.2","strict":true,"agent_id":"copilot","agent_model":"gpt-5.6-sol","engine_versions":{"copilot":"1.0.79"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"6aab9e5b5c91c615506061f09bedd81a23babe3c","version":"v0.86.2"}],"skills":[".github/skills/review-test-failures"],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44","digest":"sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.44@sha256:0d727725c737b58c7bdf51f640cffb928385ec46517e0917c7f1a02f1bada8b4"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44","digest":"sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.44@sha256:b50fbadba138f6e9aba94aca09711335c489bb3b15861220cb66f6092e042dc7"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44","digest":"sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.44@sha256:83e48bbe12c634be8c228a576832fe45f66c529ac3659db92bddbcf2eeb6d627"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.9","digest":"sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.9@sha256:e5a1569aeaf41820fa7bdee3e94468cae448133cdbf00119ad24f5b74db1ab9f"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0d9f1fb5fd6610c0ac1f5194a38e45a8a1e81f8a390d5142d8e4e6f26a4b3196","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0d9f1fb5fd6610c0ac1f5194a38e45a8a1e81f8a390d5142d8e4e6f26a4b3196"},{"image":"ghcr.io/github/github-mcp-server:v1.9.0","digest":"sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e","pinned_image":"ghcr.io/github/github-mcp-server:v1.9.0@sha256:881b53d6f75f69bdbc1b5b10fc2f1361717c19054143b3a8529fb5c32061a50e"}]}
 # This file was automatically generated by gh-aw (v0.86.2). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -23,7 +23,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Reviews PR CI/test failures and classifies whether they are likely caused by the PR or unrelated.
+# Reviews PR failures against the diff and the previous five CI runs on the same branch.
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -72,7 +72,7 @@ on:
   # permissions: # Permissions applied to pre-activation job
   # actions: read
   # checks: read
-  # contents: write
+  # contents: read
   # issues: write
   # pull-requests: write
   # roles: # Roles processed as role check in pre-activation job
@@ -117,12 +117,13 @@ on:
   # uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
   # with:
   # github-token: ${{ github.token }} # GitHub token used for reactions and status comments in activation
-  # script: "// Only hide when the command is exactly `/review tests` (should_run) AND the\n// commenter is an authorized collaborator (write/maintain/admin). This mirrors\n// the workflow's own role gate but is self-contained, so an unauthorized user's\n// comment is always left visible. A failed hide must not block activation.\ncore.setOutput('authorized', 'false');\nconst { owner, repo } = context.repo;\nconst actor = context.actor;\nlet permission = 'none';\ntry {\n  const res = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });\n  permission = res.data.permission;\n} catch (e) {\n  core.info(`Permission lookup for ${actor} failed: ${e.message}`);\n}\n// Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.\nif (!['admin', 'maintain', 'write'].includes(permission)) {\n  core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);\n  return;\n}\ncore.setOutput('authorized', 'true');\n// Only hide newly-created comments. The slash_command trigger also fires on\n// `edited`; an authorized edit may run, but must not collapse comment history.\nif (context.payload.action !== 'created') {\n  core.info('Skipping hide: comment was edited, not created.');\n  return;\n}\n// Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's\n// REST comment history, and minimized comments are still returned by the REST list\n// endpoint — only collapsed in the web UI. node_id is the comment's GraphQL global id.\nconst subjectId = context.payload.comment.node_id;\ntry {\n  await github.graphql(\n    `mutation($id: ID!) {\n       minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {\n         minimizedComment { isMinimized }\n       }\n     }`,\n    { id: subjectId }\n  );\n  core.info(`Hid /review tests command comment ${subjectId} as resolved.`);\n} catch (e) {\n  core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);\n}\n"
+  # script: "core.setOutput('authorized', 'false');\nconst { owner, repo } = context.repo;\nconst actor = context.actor;\nlet permission = 'none';\ntry {\n  const res = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });\n  permission = res.data.permission;\n} catch (e) {\n  core.info(`Permission lookup for ${actor} failed: ${e.message}`);\n}\n// Must mirror the workflow roles below.\nif (!['admin', 'maintain', 'write'].includes(permission)) {\n  core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);\n  return;\n}\ncore.setOutput('authorized', 'true');\nif (context.payload.action !== 'created') {\n  core.info('Skipping hide: comment was edited, not created.');\n  return;\n}\nconst subjectId = context.payload.comment.node_id;\ntry {\n  await github.graphql(\n    `mutation($id: ID!) {\n       minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {\n         minimizedComment { isMinimized }\n       }\n     }`,\n    { id: subjectId }\n  );\n  core.info(`Hid /review tests command comment ${subjectId} as resolved.`);\n} catch (e) {\n  core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);\n}\n"
   # - if: steps.exact_command.outputs.should_run == 'true' && steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true'
   # name: Checkout trusted review scripts
   # uses: actions/checkout@v7.0.1
   # with:
   # persist-credentials: false
+  # ref: ${{ github.event.repository.default_branch }}
   # - continue-on-error: true
   # env:
   # BUILD_ID: ${{ inputs.build_id }}
@@ -137,7 +138,7 @@ on:
   # echo "PR number is required."
   # exit 1
   # fi
-  # args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
+  # args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview" -SkipVisualEvidence)
   # if [ -n "${BUILD_ID:-}" ]; then
   # args+=(-BuildId "${BUILD_ID}")
   # fi
@@ -145,13 +146,6 @@ on:
   # args+=(-CheckName "${CHECK_NAME}")
   # fi
   # timeout -k 30s 20m pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
-  # - continue-on-error: true
-  # env:
-  # GH_TOKEN: ${{ github.token }}
-  # PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-  # if: steps.exact_command.outputs.should_run == 'true' && steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true' && (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
-  # name: Publish visual comparison assets
-  # run: "set -euo pipefail\ncontext=\"CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json\"\ntimeout -k 30s 16m pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \\\n  -PrNumber \"${PR_NUMBER}\" \\\n  -ContextJsonPath \"${context}\"\n"
   # - if: steps.exact_command.outputs.should_run == 'true' && steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true'
   # name: Upload test-failure context
   # uses: actions/upload-artifact@v7.0.1
@@ -172,7 +166,7 @@ on:
         required: false
         type: string
       check_name:
-        description: Optional GitHub check-name substring to focus on
+        description: Optional check to prioritize; all three pipelines remain in scope
         required: false
         type: string
       pr_number:
@@ -221,6 +215,8 @@ jobs:
       setup-parent-span-id: ${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}
       setup-span-id: ${{ steps.setup.outputs.span-id }}
       setup-trace-id: ${{ steps.setup.outputs.trace-id }}
+      skill_install_errors: ${{ steps.collect-skill-install-failures.outputs.errors || '' }}
+      skill_install_failure_count: ${{ steps.collect-skill-install-failures.outputs.failure_count || '0' }}
       slash_command: ${{ needs.pre_activation.outputs.matched_command }}
       stale_lock_file_failed: ${{ steps.check-lock-file.outputs.stale_lock_file_failed == 'true' }}
       text: ${{ steps.sanitized.outputs.text }}
@@ -261,6 +257,7 @@ jobs:
           GH_AW_INFO_FIREWALL_TYPE: "squid"
           GH_AW_INFO_AGENT_RUNTIME: ""
           GH_AW_COMPILED_STRICT: "true"
+          GH_AW_INFO_SKILLS: '[".github/skills/review-test-failures"]'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -371,6 +368,32 @@ jobs:
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/compute_text.cjs');
             await main();
+      - name: Upgrade gh CLI for frontmatter skills
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/ensure_gh_cli_min_version.sh" "2.90.0"
+      - name: Install frontmatter skill 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_AW_INFO_ENGINE_ID: "copilot"
+          GH_AW_GH_SKILL_AGENT_NAME: "github-copilot"
+          GH_AW_SKILL_DIR: ".github/skills"
+          GH_AW_FRONTMATTER_SKILLS: ".github/skills/review-test-failures"
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io, getOctokit);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/install_frontmatter_skills.cjs');
+            await main();
+      - name: Collect skill install failures
+        id: collect-skill-install-failures
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io, getOctokit);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/collect_skill_install_failures.cjs');
+            await main();
       - name: Log runtime features
         if: ${{ contains(toJSON(vars), '"GH_AW_RUNTIME_FEATURES":') }}
         run: bash "${RUNNER_TEMP}/gh-aw/actions/log_runtime_features_summary.sh"
@@ -391,8 +414,6 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_INCLUDE_PR_CONTEXT: ${{ (github.event_name == 'issue_comment' && github.event.issue.pull_request != null) || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review' }}
-          GH_AW_INPUTS_BUILD_ID: ${{ inputs.build_id }}
-          GH_AW_INPUTS_CHECK_NAME: ${{ inputs.check_name }}
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
           GH_AW_PROMPT_CONTENT_0000: "<system>\n"
@@ -415,8 +436,6 @@ jobs:
           GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
-          GH_AW_INPUTS_BUILD_ID: ${{ inputs.build_id }}
-          GH_AW_INPUTS_CHECK_NAME: ${{ inputs.check_name }}
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
         with:
@@ -439,8 +458,6 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_INCLUDE_PR_CONTEXT: ${{ (github.event_name == 'issue_comment' && github.event.issue.pull_request != null) || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review' }}
-          GH_AW_INPUTS_BUILD_ID: ${{ inputs.build_id }}
-          GH_AW_INPUTS_CHECK_NAME: ${{ inputs.check_name }}
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
           GH_AW_MCP_CLI_SERVERS_LIST: "- `github` — run `github --help` to see available tools\n- `safeoutputs` — run `safeoutputs --help` to see available tools"
@@ -467,8 +484,6 @@ jobs:
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
                 GH_AW_INCLUDE_PR_CONTEXT: process.env.GH_AW_INCLUDE_PR_CONTEXT,
-                GH_AW_INPUTS_BUILD_ID: process.env.GH_AW_INPUTS_BUILD_ID,
-                GH_AW_INPUTS_CHECK_NAME: process.env.GH_AW_INPUTS_CHECK_NAME,
                 GH_AW_INPUTS_PR_NUMBER: process.env.GH_AW_INPUTS_PR_NUMBER,
                 GH_AW_INPUTS_SUPPRESS_OUTPUT: process.env.GH_AW_INPUTS_SUPPRESS_OUTPUT,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
@@ -591,20 +606,12 @@ jobs:
         with:
           name: activation
           path: /tmp/gh-aw
-      - name: Verify connectivity to AzDO and Helix
-        run: "set -euo pipefail\n\ncheck_url() {\n  local label=\"$1\" url=\"$2\"\n  local code\n  code=$(curl -s -o /dev/null -w \"%{http_code}\" \"$url\")\n  echo \"$label: HTTP $code\"\n}\n\necho \"=== AzDO API check ===\"\ncheck_url \"AzDO\" 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&branchName=refs/heads/main&%24top=1&api-version=7.1'\n\necho \"=== Helix API check ===\"\ncheck_url \"Helix\" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'\n"
       - continue-on-error: true
         name: Download test-failure context
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: review-tests-context-${{ github.run_id }}
           path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
-      - continue-on-error: true
-        env:
-          CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json
-          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-        name: Seal trusted visual merger inputs
-        run: "set -euo pipefail\nif [ ! -f \"${CONTEXT_PATH}\" ]; then\n  echo \"No test-failure context artifact was available; continuing without trusted visual merge inputs.\"\n  exit 0\nfi\ntrusted=\"${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}\"\nsudo install -d -o root -g root -m 0555 \"${trusted}\"\nsudo install -o root -g root -m 0444 \"${CONTEXT_PATH}\" \"${trusted}/context.json\"\nsudo install -o root -g root -m 0555 \\\n  .github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1 \\\n  \"${trusted}/Merge-TestVisualsIntoComment.ps1\""
 
       - name: Configure Git credentials
         env:
@@ -1132,13 +1139,6 @@ jobs:
           if [ ! -f /tmp/gh-aw/agent_output.json ]; then
             echo '{"items":[]}' > /tmp/gh-aw/agent_output.json
           fi
-      - continue-on-error: true
-        env:
-          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-        if: always()
-        name: Merge trusted visuals into the analysis comment
-        run: "set -euo pipefail\ntrusted=\"${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}\"\nagent_output=\"/tmp/gh-aw/agent_output.json\"\nif [ ! -f \"${agent_output}\" ] || [ ! -f \"${trusted}/context.json\" ]; then\n  echo \"No agent comment payload or trusted visual context was available; leaving the ordinary analysis unchanged.\"\n  exit 0\nfi\nunset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN GH_AW_GITHUB_TOKEN GH_AW_GITHUB_MCP_SERVER_TOKEN GITHUB_MCP_SERVER_TOKEN\npwsh \"${trusted}/Merge-TestVisualsIntoComment.ps1\" \\\n  -PrNumber \"${PR_NUMBER}\" \\\n  -Repository \"${GITHUB_REPOSITORY}\" \\\n  -ContextJsonPath \"${trusted}/context.json\" \\\n  -AgentOutputPath \"${agent_output}\""
-
       - name: Upload agent artifacts
         if: always()
         continue-on-error: true
@@ -1394,9 +1394,12 @@ jobs:
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_OAUTH_TOKEN_CHECK_FAILED: ${{ needs.activation.outputs.oauth_token_check_failed }}
           GH_AW_STALE_LOCK_FILE_FAILED: ${{ needs.activation.outputs.stale_lock_file_failed }}
+          GH_AW_SKILL_INSTALL_FAILURE_COUNT: ${{ needs.activation.outputs.skill_install_failure_count || '0' }}
+          GH_AW_SKILL_INSTALL_ERRORS: ${{ needs.activation.outputs.skill_install_errors || '' }}
           GH_AW_DAILY_AI_CREDITS_EXCEEDED: ${{ needs.activation.outputs.daily_ai_credits_exceeded }}
           GH_AW_DAILY_AI_CREDITS_TOTAL_EFFECTIVE_TOKENS: ${{ needs.activation.outputs.daily_ai_credits_total_effective_tokens }}
           GH_AW_DAILY_AI_CREDITS_THRESHOLD: ${{ needs.activation.outputs.daily_ai_credits_threshold }}
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"bodyHeader\":\"\\u003c!-- Tests Failure --\\u003e\"}"
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "false"
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
@@ -1514,7 +1517,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           WORKFLOW_NAME: "Review PR Test Failures"
-          WORKFLOW_DESCRIPTION: "Reviews PR CI/test failures and classifies whether they are likely caused by the PR or unrelated."
+          WORKFLOW_DESCRIPTION: "Reviews PR failures against the diff and the previous five CI runs on the same branch."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
         with:
@@ -1776,7 +1779,7 @@ jobs:
     permissions:
       actions: read
       checks: read
-      contents: write
+      contents: read
       issues: write
       pull-requests: write
     env:
@@ -1852,10 +1855,6 @@ jobs:
         with:
           github-token: ${{ github.token }}
           script: |
-            // Only hide when the command is exactly `/review tests` (should_run) AND the
-            // commenter is an authorized collaborator (write/maintain/admin). This mirrors
-            // the workflow's own role gate but is self-contained, so an unauthorized user's
-            // comment is always left visible. A failed hide must not block activation.
             core.setOutput('authorized', 'false');
             const { owner, repo } = context.repo;
             const actor = context.actor;
@@ -1866,21 +1865,16 @@ jobs:
             } catch (e) {
               core.info(`Permission lookup for ${actor} failed: ${e.message}`);
             }
-            // Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.
+            // Must mirror the workflow roles below.
             if (!['admin', 'maintain', 'write'].includes(permission)) {
               core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
               return;
             }
             core.setOutput('authorized', 'true');
-            // Only hide newly-created comments. The slash_command trigger also fires on
-            // `edited`; an authorized edit may run, but must not collapse comment history.
             if (context.payload.action !== 'created') {
               core.info('Skipping hide: comment was edited, not created.');
               return;
             }
-            // Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's
-            // REST comment history, and minimized comments are still returned by the REST list
-            // endpoint — only collapsed in the web UI. node_id is the comment's GraphQL global id.
             const subjectId = context.payload.comment.node_id;
             try {
               await github.graphql(
@@ -1900,6 +1894,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.event.repository.default_branch }}
       - name: Gather test-failure context
         if: steps.exact_command.outputs.should_run == 'true' && steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true'
         run: |
@@ -1908,7 +1903,7 @@ jobs:
             echo "PR number is required."
             exit 1
           fi
-          args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
+          args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview" -SkipVisualEvidence)
           if [ -n "${BUILD_ID:-}" ]; then
             args+=(-BuildId "${BUILD_ID}")
           fi
@@ -1919,18 +1914,6 @@ jobs:
         env:
           BUILD_ID: ${{ inputs.build_id }}
           CHECK_NAME: ${{ inputs.check_name }}
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-        continue-on-error: true
-      - name: Publish visual comparison assets
-        if: steps.exact_command.outputs.should_run == 'true' && steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true' && (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
-        run: |
-          set -euo pipefail
-          context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
-          timeout -k 30s 16m pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
-            -PrNumber "${PR_NUMBER}" \
-            -ContextJsonPath "${context}"
-        env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
         continue-on-error: true
@@ -1967,6 +1950,7 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.6-sol"
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"bodyHeader\":\"\\u003c!-- Tests Failure --\\u003e\"}"
       GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}
       GH_AW_WORKFLOW_ID: "copilot-review-tests"
       GH_AW_WORKFLOW_NAME: "Review PR Test Failures"

@@ -13,7 +13,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | --- | --- | --- | --- |
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
-| `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Adds or updates a `Test Failure Review` comment. |
+| `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
@@ -140,13 +140,28 @@ Because gh-aw slash commands match only the first command token, the workflow li
 - change code;
 - start the full PR review pipeline.
 
+The workflow uses one skill,
+[`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
+and comment formatting. The local runner uses that same skill.
+
 It gathers evidence from:
 
-- GitHub PR metadata, labels, changed files, and check rollup;
+- GitHub PR metadata, the actual code diff, changed files, and check rollup;
 - Azure DevOps build metadata, timelines, and build logs;
 - Helix references when available for device tests;
 - optional authenticated AzDO data when `AZDO_TOKEN` or local Azure CLI auth is available;
-- PR scope, including changed platforms, areas, and test files.
+- the previous five completed runs on the same CI branch/ref for each pipeline.
+
+It always covers `maui-pr`, `maui-pr-devicetests`, and `maui-pr-uitests`. For each,
+it compares the current run with up to five earlier completed runs of the same
+pipeline definition and source branch (usually `refs/pull/N/merge`). It reports
+fewer than five or unreadable runs explicitly. An optional build or check input
+prioritizes evidence; it does not remove the other pipelines from the report.
+
+A failure seen in earlier PR commits is not automatically unrelated to the PR.
+The skill connects failure diagnostics to changed code and uses comparable
+target-branch evidence when available to distinguish pre-existing defects.
+Green device jobs require actual test-result confirmation.
 
 Then it posts a `Test Failure Review` comment that classifies failures as:
 
@@ -155,7 +170,20 @@ Then it posts a `Test Failure Review` comment that classifies failures as:
 - **Needs human investigation**
 - **Insufficient data**
 
-The comment includes status badges, a short summary, a per-failure table, recommended action, and collapsible evidence details.
+The workflow posts exactly one structured comment. Its visible header names the
+actual PR author and pinned commit, followed by Verdict, Scope (`CI failures`),
+and Commit badges. The closed **CI Analysis** accordion contains closed sections
+for the summary, all-three-pipelines coverage, failure attribution, previous-run
+comparison, code/regression-test evidence, and coverage limitations.
+**Recovered attempts** appears only when supported by actual retry evidence.
+A second closed, top-level **Follow-up** accordion follows a horizontal rule and
+gives the next action and the maintainer's `/review tests` refresh command. It is
+independently visible while CI Analysis is collapsed, not nested inside it.
+The workflow also posts when there are no failures or evidence is incomplete.
+
+This is failure attribution, not merge approval. The skill does not use the
+legacy gatherer's deterministic merge-readiness verdict as a causal conclusion.
+The workflow no longer publishes visual asset branches or appends image panels.
 
 ### Local usage
 
@@ -179,6 +207,12 @@ To post the generated comment:
 ```powershell
 pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800 -BuildId 1443464 -PostComment
 ```
+
+The local runner preserves the same header, badges, and closed sections; it does
+not wrap or replace the skill's report. It retains the canonical
+`<!-- Tests Failure -->` marker and adds a separate hidden local-ownership marker
+so subsequent local runs update the local comment, not a workflow-owned report.
+`-DryRun` prevents posting even when `-PostComment` is also supplied.
 
 To gather evidence without invoking Copilot:
 
@@ -228,7 +262,11 @@ The top-level title is always:
 ## Tests Failure Analysis
 ```
 
-The verdict details and "Test Failure Review" label live in badges and in the expanded review session.
+The three flat-square badges show the causal verdict, `CI failures` scope, and
+analyzed short SHA. Expand **CI Analysis**, then its individual sections, for the
+evidence, or expand its sibling **Follow-up** for actions and refresh instructions.
+The badge is not merge approval; incomplete evidence remains explicit.
+The canonical layout lives in the skill rather than a separate caller template.
 
 ## Recommended workflow for maintainers
 
