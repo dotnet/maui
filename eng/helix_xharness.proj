@@ -18,6 +18,8 @@
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
+        <!-- Servicing SDKs are published under the package version, not NETCoreSdkVersion. -->
+        <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion>
         <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
         <FailOnTestFailure>true</FailOnTestFailure>
         <TargetFrameworkToTest>$(_MauiDotNetTfm)</TargetFrameworkToTest>

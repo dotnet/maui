@@ -79,6 +79,20 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## MAUI-specific quirks
 
+### Helix SDK payload version
+
+Both `eng/helix.proj` and `eng/helix_xharness.proj` must set `DotNetCliVersion`
+from `MicrosoftNETSdkPackageVersion` in `eng/Versions.props`. The Helix default
+uses the installed `NETCoreSdkVersion`, which can omit the servicing build suffix.
+For example, SDK `10.0.113-servicing.26454.107` reports `10.0.113` after installation,
+but its archive is published under the full servicing version. Using the shorter
+version fails with `Unable to find dotnet cli sdk version ...` **before any Windows
+work items are submitted**; this is not a test assertion failure or a reason to
+retry unchanged.
+
+Run the property-evaluation regression checks with
+`Invoke-Pester -Path ./eng/helix_xharness.Tests.ps1`.
+
 ### XHarness exit-0 blind spot
 
 XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even
