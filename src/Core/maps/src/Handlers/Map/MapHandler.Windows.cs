@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) { }
 
 		/// <summary>
-		/// Handles the <see cref="IMap.MoveToRegion"/> command by navigating via the Azure Maps JS camera API.
+		/// Handles the <see cref="IMap.MoveToRegion(MapSpan, bool)"/> command by navigating via the Azure Maps JS camera API.
 		/// </summary>
 		/// <remarks>
 		/// The WinUI 3 MapControl wraps Azure Maps in a WebView2. Setting the <c>Center</c> dependency property
