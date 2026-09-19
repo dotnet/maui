@@ -69,8 +69,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			return testRunner;
 		}
 
-		public async Task<string?> RunTestsAsync()
+		public async Task<string?> RunTestsAsync(bool terminateAfterExecution = false)
 		{
+			_terminateAfterExecution = terminateAfterExecution;
 			TestsCompleted += OnTestsCompleted;
 
 			try
@@ -90,8 +91,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 				if (categoriesToRun.Length == 0)
 				{
-					_logger.WriteLine($"ERROR: Category index {_loopCount} out of range (categories file has {allCategories.Length} entries at '{_categoriesFilePath}').");
-					return null;
+					throw new InvalidOperationException($"Category index {_loopCount} out of range (categories file has {allCategories.Length} entries at '{_categoriesFilePath}').");
 				}
 
 				foreach (var test in allCategories.Except(categoriesToRun))
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			{
 				_logger.WriteLine(ex.ToString());
 				_exitCode = 1;
-				_terminateAfterExecution = ApplicationOptions.Current.TerminateAfterExecution;
+				_terminateAfterExecution |= ApplicationOptions.Current.TerminateAfterExecution;
 			}
 			TestsCompleted -= OnTestsCompleted;
 

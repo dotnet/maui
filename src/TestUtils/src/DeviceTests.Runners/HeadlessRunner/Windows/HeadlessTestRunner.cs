@@ -59,8 +59,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			return testRunner;
 		}
 
-		public async Task<string?> RunTestsAsync()
+		public async Task<string?> RunTestsAsync(bool terminateAfterExecution = false)
 		{
+			_terminateAfterExecution = terminateAfterExecution;
 			TestsCompleted += OnTestsCompleted;
 
 			try
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			{
 				_logger.WriteLine(ex.ToString());
 				_exitCode = 1;
-				_terminateAfterExecution = ApplicationOptions.Current.TerminateAfterExecution;
+				_terminateAfterExecution |= ApplicationOptions.Current.TerminateAfterExecution;
 			}
 			TestsCompleted -= OnTestsCompleted;
 
