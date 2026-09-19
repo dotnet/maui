@@ -141,6 +141,10 @@ public class TabbedPageManager
 
 			RemoveTabs();
 
+			// Defensively unsubscribe: SetTabLayout only unsubscribes once RootViewChanged fires,
+			// which may never happen if torn down first, otherwise leaking this manager.
+			_context.GetNavigationRootManager().RootViewChanged -= RootViewChanged;
+
 			_viewPager.LayoutChange -= OnLayoutChanged;
 
 			if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)
@@ -191,6 +195,11 @@ public class TabbedPageManager
 				{
 					Gravity = (int)GravityFlags.Bottom
 				};
+				_nativeTabRegistrations.Register(
+					Element,
+					_bottomNavigationView,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
 
 				if (RuntimeFeature.IsMaterial3Enabled)
 					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;

@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
-				if (_webViewHandler is null || _webViewHandler is IViewHandler ivh && ivh.VirtualView is null)
+				if (_webViewHandler is IViewHandler viewHandler && viewHandler.VirtualView is null)
 				{
 					return;
 				}
