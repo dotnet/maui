@@ -49,9 +49,14 @@ BeforeAll {
             'Get-HttpStatusCode',
             'Invoke-AzDoJsonWithProjectFallback',
             'Get-RequiredReviewPipelines',
+            'Get-TestReviewEvaluation',
+            'Get-TestResultPresence',
+            'Write-SkippedTestReviewContext',
+            'Get-TestFailureEvidenceUrl',
+            'Get-DeduplicatedFailures',
             'Get-ChecksForBuildDiscovery',
             'Get-BuildHeadEvidence',
-            'Get-RecentSourceBranchBuilds',
+            'Get-RecentTargetBranchBuilds',
             'Get-PipelineHistory',
             'Get-BuildLogTestFailures',
             'Get-TestFailuresFromLog',
@@ -130,6 +135,221 @@ BeforeAll {
                 webUrl = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$DefinitionId"
             }
         }
+    }
+}
+
+Describe 'No-results evaluation shortcut' {
+    It 'skips missing, pending, or skipped checks: <Case>' -ForEach @(
+        @{ Case = 'missing'; Checks = @() }
+        @{ Case = 'pending'; Checks = @(@{ name = 'maui-pr'; status = 'IN_PROGRESS' }) }
+        @{ Case = 'classic pending'; Checks = @(@{ context = 'maui-pr-uitests'; state = 'PENDING' }) }
+        @{ Case = 'skipped'; Checks = @(@{ name = 'maui-pr-devicetests'; status = 'COMPLETED'; conclusion = 'SKIPPED' }) }
+        @{ Case = 'unrelated workflow'; Checks = @(@{ name = 'maui-pr-custom'; status = 'COMPLETED'; conclusion = 'FAILURE' }) }
+    ) {
+        $evaluation = Get-TestReviewEvaluation -Checks $Checks
+        $evaluation.skip | Should -BeTrue
+        $evaluation.pipelines.name | Should -Be @('maui-pr', 'maui-pr-devicetests', 'maui-pr-uitests')
+    }
+
+    It 'inspects potentially useful completed evidence before skipping: <Conclusion>' -ForEach @(
+        @{ Conclusion = 'SUCCESS' }, @{ Conclusion = 'FAILURE' }, @{ Conclusion = 'TIMED_OUT' }, @{ Conclusion = 'CANCELLED' }
+    ) {
+        $checks = @(@{ name = 'maui-pr (build)'; status = 'COMPLETED'; conclusion = $Conclusion })
+        (Get-TestReviewEvaluation -Checks $checks).skip | Should -BeFalse
+    }
+
+    It 'inspects an explicitly supplied build or a classic failing status' {
+        (Get-TestReviewEvaluation -Checks @() -BuildId @('123')).skip | Should -BeFalse
+        (Get-TestReviewEvaluation -Checks @(@{ context = 'maui-pr'; state = 'FAILURE' })).skip | Should -BeFalse
+    }
+
+    It 'skips absent or confirmed outcome-less builds: <Case>' -ForEach @(
+        @{ Case = 'no builds'; Builds = @() }
+        @{ Case = 'green without results'; Builds = @(@{ metadata = @{ definitionId = 314; result = 'succeeded' }; accessible = $true; headEvidence = @{ verified = $true }; testResultPresence = @{ hasResults = $false; error = $null } }) }
+    ) {
+        (Get-TestReviewEvaluation -Checks @() -Builds $Builds).skip | Should -BeTrue
+    }
+
+    It 'distinguishes missing collected evidence from no CI results: <Case>' -ForEach @(
+        @{ Case = 'omitted build'; Checks = @(@{ name = 'maui-pr-uitests'; status = 'COMPLETED'; conclusion = 'FAILURE'; detailsUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707' }); Builds = @() }
+        @{ Case = 'classic status'; Checks = @(@{ context = 'maui-pr-uitests'; state = 'FAILURE'; targetUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707' }); Builds = @() }
+        @{ Case = 'stale'; Checks = @(); Builds = @(@{ metadata = @{ definitionId = 313; result = 'failed' }; accessible = $true; headEvidence = @{ verified = $false }; sourceUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707' }) }
+        @{ Case = 'inaccessible'; Checks = @(); Builds = @(@{ checkNames = @('maui-pr-uitests (Android)'); accessible = $false; error = 'HTTP 403'; sourceUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707' }) }
+        @{ Case = 'green but outcomes not collected'; Checks = @(); Builds = @(@{ metadata = @{ definitionId = 313; result = 'succeeded'; webUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707' }; accessible = $true; headEvidence = @{ verified = $true } }) }
+        @{ Case = 'unreadable outcomes'; Checks = @(); Builds = @(@{ metadata = @{ definitionId = 313 }; accessible = $true; headEvidence = @{ verified = $true }; testResultPresence = @{ hasResults = $false; error = 'HTTP 403' }; sourceUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707' }) }
+    ) {
+        $evaluation = Get-TestReviewEvaluation -Checks $Checks -Builds $Builds
+        $evaluation.skip | Should -BeFalse
+        $evaluation.pipelines.status | Should -Be @('unavailable', 'unavailable', 'unverified')
+        $evaluation.pipelines[2].message | Should -Match 'not collected or verified'
+        $evaluation.pipelines[2].message | Should -Match 'Refresh /review tests; do not rerun CI'
+        $evaluation.pipelines[2].message | Should -Not -Match 'No.*results|/azp run'
+        $evaluation.pipelines[2].buildUrl | Should -Be 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707'
+    }
+
+    It 'retains failures before tests start, hidden failures, and passing results: <Case>' -ForEach @(
+        @{ Case = 'build failure'; Evidence = @{ metadata = @{ definitionId = 302; result = 'failed' } } }
+        @{ Case = 'failed leg'; Evidence = @{ failedRecords = @(@{ name = 'Compile'; result = 'failed' }) } }
+        @{ Case = 'log failure'; Evidence = @{ testFailuresFromLogs = @(@{ testName = 'FailedTest' }) } }
+        @{ Case = 'hidden Helix failure'; Evidence = @{ testResults = @(@{ testName = 'HiddenFailure'; source = 'helix-workitem' }) } }
+        @{ Case = 'confirmed device success'; Evidence = @{ deviceTestFailedConfirmedZero = $true } }
+        @{ Case = 'passing outcomes'; Evidence = @{ testResultPresence = @{ hasResults = $true; error = $null } } }
+    ) {
+        $build = @{ accessible = $true; headEvidence = @{ verified = $true }; metadata = @{ definitionId = 302 } }
+        foreach ($key in $Evidence.Keys) { $build[$key] = $Evidence[$key] }
+        $evaluation = Get-TestReviewEvaluation -Checks @() -Builds @($build)
+        $evaluation.skip | Should -BeFalse
+        $evaluation.pipelines.status | Should -Be @('available', 'unavailable', 'unavailable')
+    }
+
+    It 'keeps a pending pipeline separate from available sibling results' {
+        $build = @{ accessible = $true; headEvidence = @{ verified = $true }; metadata = @{ definitionId = 302; result = 'failed' } }
+        $evaluation = Get-TestReviewEvaluation -Checks @(@{ name = 'maui-pr-uitests'; status = 'QUEUED' }) -Builds @($build)
+        $evaluation.skip | Should -BeFalse
+        $evaluation.pipelines.status | Should -Be @('available', 'unavailable', 'pending')
+    }
+
+    It 'still probes unverified successful builds before deciding whether results exist: <HasResults>' -ForEach @(
+        @{ HasResults = $true; ExpectedStatus = 'available' }
+        @{ HasResults = $false; ExpectedStatus = 'unavailable' }
+    ) {
+        $probe = $gatherAst.Find({
+            $args[0] -is [System.Management.Automation.Language.IfStatementAst] -and
+            $args[0].Clauses[0].Item1.Extent.Text -match '^\$buildSummary\.headEvidence\.verified\s+-and'
+        }, $true)
+        $probe | Should -Not -BeNullOrEmpty
+        $buildSummary = @{
+            metadata = @{ definitionId = 302; result = 'succeeded' }
+            accessible = $true
+            headEvidence = @{ verified = $true }
+        }
+        $buildRef = @{ org = 'dnceng-public'; project = 'public'; buildId = 123 }
+        $gatherHardDeadline = (Get-Date).AddMinutes(1)
+        Mock Get-TestResultPresence { @{ hasResults = $HasResults; error = $null } }
+        & ([scriptblock]::Create($probe.Extent.Text))
+        Should -Invoke Get-TestResultPresence -Times 1 -Exactly -ParameterFilter { $BuildId -eq 123 }
+        $checks = @(@{ name = 'maui-pr'; status = 'COMPLETED'; conclusion = 'SUCCESS' })
+        $evaluation = Get-TestReviewEvaluation -Checks $checks -Builds @($buildSummary)
+        $evaluation.pipelines[0].status | Should -Be $ExpectedStatus
+        $evaluation.skip | Should -Be (-not $HasResults)
+    }
+
+    It 'probes all outcomes so zero failures is not mistaken for no tests' {
+        Mock Invoke-JsonUrl { [pscustomobject]@{ value = @(@{ outcome = 'Passed' }) } }
+        $presence = Get-TestResultPresence -Org 'dnceng-public' -Project 'public' -BuildId 123 -Deadline ([datetime]::Now.AddMinutes(1))
+        $presence.hasResults | Should -BeTrue
+        $presence.error | Should -BeNullOrEmpty
+        Should -Invoke Invoke-JsonUrl -Times 1 -ParameterFilter { $Url -match '\$top=1&' -and $Url -notmatch 'outcomes=Failed' }
+    }
+
+    It 'distinguishes an empty result set from an unreadable endpoint' {
+        Mock Invoke-JsonUrl { [pscustomobject]@{ value = @() } }
+        $presence = Get-TestResultPresence -Org 'dnceng-public' -Project 'public' -BuildId 123 -Deadline ([datetime]::Now.AddMinutes(1))
+        $presence.hasResults | Should -BeFalse
+        $presence.error | Should -BeNullOrEmpty
+        Mock Invoke-JsonUrl { throw 'HTTP 403' }
+        $presence = Get-TestResultPresence -Org 'dnceng-public' -Project 'public' -BuildId 123 -Deadline ([datetime]::Now.AddMinutes(1))
+        $presence.hasResults | Should -BeFalse
+        $presence.error | Should -Be 'HTTP 403'
+    }
+
+    It 'exits after PR checks without reading diffs, registries, builds, or history' {
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $start = $source.IndexOf('$pr = Invoke-GhJson')
+        $end = $source.IndexOf('if ($CheckName)', $start)
+        $entry = $source.Substring($start, $end - $start).Replace('exit 0', "throw 'Evaluation skipped'")
+        $entry | Should -Not -Match 'Get-PinnedPrDiff|Get-KnownBuildIssues|Get-CiScanIssues|Get-PipelineHistory|Get-RecentBaseBuilds'
+        $source.IndexOf("`nInitialize-AzDoToken") | Should -BeGreaterThan $source.IndexOf('$evaluation = Get-TestReviewEvaluation -Checks $checks')
+        Mock Invoke-GhJson {
+            @{ number = 123; author = @{ login = 'fixture-author' }; headRefOid = ('a' * 40); baseRefName = 'net11.0'; statusCheckRollup = @() }
+        }
+        $OutputDirectory = Join-Path $TestDrive 'reports'
+        $RunDirectory = Join-Path $OutputDirectory '123'
+        New-Item -ItemType Directory -Path $RunDirectory -Force | Out-Null
+        $PrNumber = 123
+        $Repository = 'dotnet/maui'
+        $BuildId = @()
+        { & ([scriptblock]::Create($entry)) } | Should -Throw 'Evaluation skipped'
+        Should -Invoke Invoke-GhJson -Times 1
+        $contextPath = Join-Path $RunDirectory 'context.json'
+        $contextPath | Should -Exist
+        $context = Get-Content -LiteralPath $contextPath -Raw | ConvertFrom-Json
+        $context.evaluation.skip | Should -BeTrue
+        @($context.builds).Count | Should -Be 0
+        $context.evaluation.report | Should -Match 'Evaluation skipped'
+        $context.evaluation.report | Should -Match '@fixture-author &#x2014; test-failure analysis for commit \[`aaaaaaa`\]\(https://github.com/dotnet/maui/commit/a{40}\)'
+        $context.evaluation.report | Should -Match '/azp run'
+        ([regex]::Replace($context.evaluation.report, '<[^>]*>', '') -split '\s+').Count | Should -BeLessThan 100
+        ([regex]::Matches($context.evaluation.report, '<img ')).Count | Should -Be 2
+        ([regex]::Matches($context.evaluation.report, '(?m)^<details>\r?$')).Count | Should -Be 5
+        ([regex]::Matches($context.evaluation.report, '(?m)^</details>\r?$')).Count | Should -Be 5
+        $context.evaluation.report | Should -Match 'badge/Scope-CI%20failures-1f6feb'
+        $context.evaluation.report | Should -Match 'badge/Commit-aaaaaaa-1f6feb'
+        $context.evaluation.report | Should -Not -Match 'verdict|Inconclusive|; Summary</strong>|<details\s+open'
+        $context.PSObject.Properties.Name | Should -Not -Contain 'history'
+        $context.PSObject.Properties.Name | Should -Not -Contain 'scope'
+    }
+
+    It 'does not interpolate unknown or invalid author, commit, or repository metadata: <Case>' -ForEach @(
+        @{ Case = 'missing author and commit'; Author = $null; Sha = $null; Repo = 'dotnet/maui'; ExpectedAuthor = 'Author unavailable'; ExpectedCommit = 'unknown' }
+        @{ Case = 'invalid metadata'; Author = @{ login = '<img src=x>' }; Sha = ('a' * 39) + '"'; Repo = 'dotnet/maui'; ExpectedAuthor = 'Author unavailable'; ExpectedCommit = 'unknown' }
+        @{ Case = 'invalid repository'; Author = @{ login = 'fixture-author' }; Sha = ('a' * 40); Repo = 'dotnet/maui"><img'; ExpectedAuthor = '@fixture-author'; ExpectedCommit = 'unknown' }
+        @{ Case = 'string author'; Author = 'fixture-author'; Sha = ('a' * 40); Repo = 'dotnet/maui'; ExpectedAuthor = '@fixture-author'; ExpectedCommit = 'aaaaaaa' }
+        @{ Case = 'bot author'; Author = @{ login = 'fixture-bot[bot]' }; Sha = ('a' * 40); Repo = 'dotnet/maui'; ExpectedAuthor = '@fixture-bot[bot]'; ExpectedCommit = 'aaaaaaa' }
+    ) {
+        $pr = @{ number = 123; author = $Author; headRefOid = $Sha; baseRefName = 'net11.0' }
+        Write-SkippedTestReviewContext -Pr $pr -Repository $Repo -Evaluation (Get-TestReviewEvaluation -Checks @()) -OutputDirectory $TestDrive
+        $context = Get-Content -LiteralPath (Join-Path $TestDrive 'context.json') -Raw | ConvertFrom-Json
+        $context.evaluation.report | Should -Match ([regex]::Escape("> $ExpectedAuthor &#x2014;"))
+        $context.evaluation.report | Should -Match "badge/Commit-$ExpectedCommit-1f6feb"
+        $context.evaluation.report | Should -Not -Match 'src=x|maui"><img|verdict'
+        if ($ExpectedCommit -eq 'unknown') {
+            $context.evaluation.report | Should -Match 'commit unavailable'
+            $context.evaluation.report | Should -Not -Match 'github\.com/.*/commit/'
+        }
+    }
+
+    It 'checks gathered availability before any diff, registry, or baseline enrichment' {
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $guard = $source.IndexOf('$evaluation = Get-TestReviewEvaluation -Checks $unfilteredChecks -Builds $buildArray')
+        $guard | Should -BeGreaterThan 0
+        foreach ($call in @('$prDiff = Get-PinnedPrDiff', '$knownIssues = Get-KnownBuildIssues',
+                '$ciScanIssues = Get-CiScanIssues', '$history = Get-PipelineHistory',
+                '$buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds')) {
+            $source.IndexOf($call) | Should -BeGreaterThan $guard
+        }
+        $skipWrites = $gatherAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+            $args[0].GetCommandName() -eq 'Write-SkippedTestReviewContext'
+        }, $true)
+        $skipWrites.Count | Should -Be 2
+        foreach ($write in $skipWrites) {
+            $write.Extent.Text | Should -Match '-OutputDirectory \$RunDirectory(?:\s|$)'
+        }
+    }
+}
+
+Describe 'Direct failure links' {
+    It 'prefers a web test result, then Helix, then a specific log, then the build: <Case>' -ForEach @(
+        @{ Case = 'test'; Failure = @{ buildId = 123; runId = 10; resultId = 20; logId = 7 }; Expected = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=123&view=ms.vss-test-web.build-test-results-tab&runId=10&resultId=20' }
+        @{ Case = 'Helix'; Failure = @{ buildId = 123; helixJobId = '11111111-2222-3333-4444-555555555555'; helixWorkItem = 'Android tests/1' }; Expected = 'https://helix.dot.net/api/2019-06-17/jobs/11111111-2222-3333-4444-555555555555/workitems/Android%20tests%2F1' }
+        @{ Case = 'log'; Failure = @{ buildId = 123; logId = 7 }; Expected = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds/123/logs/7' }
+        @{ Case = 'build'; Failure = @{ buildId = 123 }; Expected = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=123' }
+        @{ Case = 'missing'; Failure = @{}; Expected = $null }
+    ) {
+        Get-TestFailureEvidenceUrl -Failure $Failure -Org 'dnceng-public' -Project 'public' | Should -Be $Expected
+    }
+
+    It 'keeps the linked occurrence under its pipeline after deduplication and JSON serialization' {
+        $failure = [ordered]@{
+            testName = 'SampleTest'; platform = 'Android'; buildId = 123; buildDefinition = 'maui-pr-uitests'
+            source = 'azdo-test-results'; runId = 10; resultId = 20
+        }
+        $failure.failureUrl = Get-TestFailureEvidenceUrl -Failure $failure -Org 'dnceng-public' -Project 'public'
+        $serialized = Get-DeduplicatedFailures -Failures @($failure) | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+        $serialized.buildDefinitions | Should -Be @('maui-pr-uitests')
+        $serialized.occurrences[0].failureUrl | Should -Be $failure.failureUrl
+        $serialized.occurrences[0].resultId | Should -Be 20
     }
 }
 
@@ -1076,6 +1296,19 @@ Describe 'Pinned PR patch evidence' -Tag 'EvidenceCollection' {
             @(Get-ChecksForBuildDiscovery -Checks $checks -InterestingChecks @()).Count | Should -Be 1
         }
 
+        It 'retains every pipeline when production checks are ordered dictionaries' {
+            $checks = @(
+                [ordered]@{ name = 'maui-pr-devicetests'; conclusion = 'FAILURE'; detailsUrl = '?buildId=1602708' },
+                [ordered]@{ name = 'maui-pr-uitests'; conclusion = 'FAILURE'; detailsUrl = '?buildId=1602707' },
+                [ordered]@{ name = 'maui-pr'; conclusion = 'SUCCESS'; detailsUrl = '?buildId=1602706' },
+                [ordered]@{ name = 'maui-pr-uitests'; conclusion = 'FAILURE'; detailsUrl = '?buildId=1602705' }
+            )
+            $discovered = @(Get-ChecksForBuildDiscovery -Checks $checks -InterestingChecks @($checks[0], $checks[1]))
+            $discovered.Count | Should -Be 4
+            $discovered.name | Should -Be @('maui-pr', 'maui-pr-devicetests', 'maui-pr-uitests', 'maui-pr-uitests')
+            $discovered.detailsUrl | Should -Be @('?buildId=1602706', '?buildId=1602708', '?buildId=1602705', '?buildId=1602707')
+        }
+
         It 'verifies an exact sourceVersion without a network query' {
             $build = New-HistoryBuildFixture -SourceVersion ('a' * 40)
             $proof = Get-BuildHeadEvidence -Build $build -Repository 'dotnet/maui' -PrNumber 123 -HeadRefOid ('a' * 40)
@@ -1119,49 +1352,80 @@ Describe 'Pinned PR patch evidence' -Tag 'EvidenceCollection' {
         }
     }
 
-    Describe 'Previous completed source-branch build selection' -Tag 'EvidenceCollection' {
+    Describe 'Latest completed target-branch build selection' -Tag 'EvidenceCollection' {
         BeforeEach {
             $script:historyApiBuilds = @(1..6 | ForEach-Object {
-                New-HistoryBuildFixture -Id (100 - $_) -FinishTime ([datetimeoffset]::Parse('2026-09-17T10:00:00Z').AddMinutes(-$_).ToString('o'))
+                New-HistoryBuildFixture -Id (100 - $_) -Branch 'refs/heads/net11.0' -FinishTime ([datetimeoffset]::Parse('2026-09-17T10:00:00Z').AddMinutes(-$_).ToString('o'))
             })
             Mock Invoke-AzDoJsonWithProjectFallback { return @{ value = @{ value = $script:historyApiBuilds }; error = $null } }
             $script:historyArguments = @{
                 Org = 'dnceng-public'; Project = 'public'; DefinitionId = 302
-                SourceBranch = 'refs/pull/123/merge'; CurrentBuildId = 100; BeforeQueueTime = '2026-09-17T10:00:00Z'
+                BaseBranch = 'net11.0'
             }
         }
 
-        It 'selects exactly five most recent completed runs before the current queue time by default' {
-            $history = Get-RecentSourceBranchBuilds @historyArguments
+        It 'selects exactly the latest five completed target-branch runs by default' {
+            $history = Get-RecentTargetBranchBuilds @historyArguments
+            $history.branch | Should -Be 'refs/heads/net11.0'
             $history.builds.id | Should -Be @(99, 98, 97, 96, 95)
             $history.error | Should -BeNullOrEmpty
             Should -Invoke Invoke-AzDoJsonWithProjectFallback -Times 1 -Exactly -ParameterFilter {
-                $RelativePath -match 'definitions=302&branchName=refs%2Fpull%2F123%2Fmerge' -and
-                $RelativePath -match 'statusFilter=completed&maxTime=' -and
-                $RelativePath -match 'queryOrder=finishTimeDescending&\$top=6&'
+                $RelativePath -match 'definitions=302&branchName=refs%2Fheads%2Fnet11\.0&' -and
+                $RelativePath -match 'statusFilter=completed&queryOrder=finishTimeDescending&\$top=5&' -and
+                $RelativePath -notmatch 'maxTime=|resultFilter=|refs%2Fpull'
             }
         }
 
-        It 'excludes the current build, other branches/definitions, unfinished runs, and time-boundary violations' {
+        It 'excludes PR refs, other branches/definitions, unfinished runs, duplicates, and invalid timestamps' {
             $script:historyApiBuilds += @(
-                (New-HistoryBuildFixture -Id 100),
-                (New-HistoryBuildFixture -Id 201 -DefinitionId 313),
+                (New-HistoryBuildFixture -Id 100 -Branch 'refs/pull/123/merge'),
+                (New-HistoryBuildFixture -Id 201 -DefinitionId 313 -Branch 'refs/heads/net11.0'),
                 (New-HistoryBuildFixture -Id 202 -Branch 'refs/heads/main'),
-                (New-HistoryBuildFixture -Id 203 -Status 'inProgress'),
-                (New-HistoryBuildFixture -Id 204 -FinishTime '2026-09-17T10:00:00Z'),
-                (New-HistoryBuildFixture -Id 205 -FinishTime '2026-09-17T10:01:00Z'),
-                (New-HistoryBuildFixture -Id 206 -Branch 'refs/Pull/123/merge')
+                (New-HistoryBuildFixture -Id 203 -Status 'inProgress' -Branch 'refs/heads/net11.0'),
+                (New-HistoryBuildFixture -Id 204 -FinishTime 'invalid' -Branch 'refs/heads/net11.0'),
+                (New-HistoryBuildFixture -Id 205 -Branch 'refs/heads/Net11.0'),
+                (New-HistoryBuildFixture -Id 206 -Branch 'refs/heads/fix-safearea-edge'),
+                $script:historyApiBuilds[0]
             )
-            $queuedLater = New-HistoryBuildFixture -Id 207
-            $queuedLater.queueTime = '2026-09-17T10:01:00Z'
-            $script:historyApiBuilds += $queuedLater
-            (Get-RecentSourceBranchBuilds @historyArguments).builds.id | Should -Be @(99, 98, 97, 96, 95)
+            (Get-RecentTargetBranchBuilds @historyArguments).builds.id | Should -Be @(99, 98, 97, 96, 95)
         }
 
-        It 'keeps older PR SHAs and separate reruns rather than filtering by the current commit' {
+        It 'includes target-branch runs newer than the PR build instead of imposing a PR queue-time cutoff' {
+            $script:historyApiBuilds += New-HistoryBuildFixture -Id 207 -Branch 'refs/heads/net11.0' -FinishTime '2026-09-18T10:01:00Z'
+            (Get-RecentTargetBranchBuilds @historyArguments).builds.id | Should -Be @(207, 99, 98, 97, 96)
+        }
+
+        It 'accepts JSON date objects independent of the host culture: <TimestampType>' -ForEach @(
+            @{ TimestampType = 'DateTime' }
+            @{ TimestampType = 'DateTimeOffset' }
+        ) {
+            $savedCulture = [cultureinfo]::CurrentCulture
+            try {
+                [cultureinfo]::CurrentCulture = [cultureinfo]::GetCultureInfo('pl-PL')
+                $script:historyApiBuilds = @($script:historyApiBuilds | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
+                foreach ($build in $script:historyApiBuilds) {
+                    $build.finishTime = if ($TimestampType -eq 'DateTimeOffset') {
+                        [datetimeoffset]$build.finishTime
+                    } else {
+                        [datetime]$build.finishTime
+                    }
+                }
+                $history = Get-RecentTargetBranchBuilds @historyArguments
+                $history.builds.id | Should -Be @(99, 98, 97, 96, 95)
+                $history.error | Should -BeNullOrEmpty
+            }
+            finally {
+                [cultureinfo]::CurrentCulture = $savedCulture
+            }
+        }
+
+        It 'keeps branch SHAs and separate reruns with explicit definition/ref provenance' {
             $script:historyApiBuilds[0].sourceVersion = ('c' * 40)
-            $history = Get-RecentSourceBranchBuilds @historyArguments
+            $history = Get-RecentTargetBranchBuilds @historyArguments
             $history.builds[0].sourceVersion | Should -Be ('c' * 40)
+            $history.builds[0].sourceBranch | Should -Be 'refs/heads/net11.0'
+            $history.builds[0].definitionId | Should -Be 302
+            $history.builds[0].status | Should -Be 'completed'
             $history.builds[1].sourceVersion | Should -Be ('b' * 40)
             $history.builds[2].sourceVersion | Should -Be ('b' * 40)
             $history.builds[1].id | Should -Not -Be $history.builds[2].id
@@ -1171,7 +1435,7 @@ Describe 'Pinned PR patch evidence' -Tag 'EvidenceCollection' {
 
         It 'records a short history window explicitly instead of treating it as five clean runs' {
             $script:historyApiBuilds = @($script:historyApiBuilds | Select-Object -First 2)
-            $history = Get-RecentSourceBranchBuilds @historyArguments
+            $history = Get-RecentTargetBranchBuilds @historyArguments
             $history.builds.Count | Should -Be 2
             $history.error | Should -Match 'Only 2 of 5'
             $history.builds[0].complete | Should -BeFalse
@@ -1179,16 +1443,55 @@ Describe 'Pinned PR patch evidence' -Tag 'EvidenceCollection' {
 
         It 'reports unreadable, missing, or expired history metadata' {
             Mock Invoke-AzDoJsonWithProjectFallback { return @{ value = $null; error = 'HTTP 404 expired build metadata' } }
-            $history = Get-RecentSourceBranchBuilds @historyArguments
+            $history = Get-RecentTargetBranchBuilds @historyArguments
             $history.builds.Count | Should -Be 0
             $history.error | Should -Match '404'
         }
 
-        It 'issues no network request with an invalid anchor or exhausted deadline' {
-            $script:historyArguments.BeforeQueueTime = ''
-            (Get-RecentSourceBranchBuilds @historyArguments).error | Should -Match 'queue time'
-            $script:historyArguments.BeforeQueueTime = '2026-09-17T10:00:00Z'
-            (Get-RecentSourceBranchBuilds @historyArguments -Deadline ((Get-Date).AddSeconds(-1))).error | Should -Match 'deadline'
+        It 'preserves the exact requested target branch: <Target>' -ForEach @(
+            @{ Target = 'main'; Ref = 'refs/heads/main' }
+            @{ Target = 'refs/heads/net11.0'; Ref = 'refs/heads/net11.0' }
+            @{ Target = 'release/10.0.1xx-sr9'; Ref = 'refs/heads/release/10.0.1xx-sr9' }
+        ) {
+            $script:historyArguments.BaseBranch = $Target
+            $script:historyApiBuilds = @(New-HistoryBuildFixture -Branch $Ref)
+            $history = Get-RecentTargetBranchBuilds @historyArguments
+            $history.branch | Should -BeExactly $Ref
+            $history.builds[0].sourceBranch | Should -BeExactly $Ref
+            Should -Invoke Invoke-AzDoJsonWithProjectFallback -Times 1 -Exactly -ParameterFilter {
+                $RelativePath.Contains("branchName=$([uri]::EscapeDataString($Ref))&")
+            }
+        }
+
+        It 'does not cherry-pick successful runs or replace a canceled sample with an older run' {
+            $script:historyApiBuilds[0].result = 'canceled'
+            $script:historyApiBuilds[1].result = 'succeeded'
+            $history = Get-RecentTargetBranchBuilds @historyArguments
+            $history.builds.id | Should -Be @(99, 98, 97, 96, 95)
+            $history.builds.result | Should -Be @('canceled', 'succeeded', 'failed', 'failed', 'failed')
+        }
+
+        It 'reports zero available runs without falling back to another branch' {
+            $script:historyApiBuilds = @()
+            $history = Get-RecentTargetBranchBuilds @historyArguments
+            $history.builds.Count | Should -Be 0
+            $history.error | Should -Match 'Only 0 of 5.*refs/heads/net11.0'
+            Should -Invoke Invoke-AzDoJsonWithProjectFallback -Times 1 -Exactly
+        }
+
+        It 'issues no network request for missing target metadata or non-head refs: <Target>' -ForEach @(
+            @{ Target = '' }
+            @{ Target = 'refs/pull/123/merge' }
+            @{ Target = 'refs/tags/v11.0' }
+            @{ Target = 'refs/heads/' }
+        ) {
+            $script:historyArguments.BaseBranch = $Target
+            (Get-RecentTargetBranchBuilds @historyArguments).error | Should -Match 'baseRefName'
+            Should -Invoke Invoke-AzDoJsonWithProjectFallback -Times 0 -Exactly
+        }
+
+        It 'issues no network request with an exhausted deadline' {
+            (Get-RecentTargetBranchBuilds @historyArguments -Deadline ((Get-Date).AddSeconds(-1))).error | Should -Match 'deadline'
             Should -Invoke Invoke-AzDoJsonWithProjectFallback -Times 0 -Exactly
         }
     }
@@ -1404,8 +1707,9 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
             (New-CurrentBuildFixture -DefinitionId 314 -Name 'maui-pr-devicetests'),
             (New-CurrentBuildFixture -DefinitionId 313 -Name 'maui-pr-uitests')
         )
-        Mock Get-RecentSourceBranchBuilds {
+        Mock Get-RecentTargetBranchBuilds {
             return @{
+                branch = "refs/heads/$BaseBranch"
                 error = $null
                 builds = @(1..$Top | ForEach-Object {
                     [ordered]@{
@@ -1429,13 +1733,16 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
         }
     }
 
-    It 'collects five runs per definition without combining older PR SHAs or reruns' {
-        $history = Get-PipelineHistory -Builds $currentBuilds
+    It 'collects five target-branch runs per definition, keeping PR refs and SHAs separate' {
+        $history = Get-PipelineHistory -Builds $currentBuilds -BaseBranch 'net11.0'
+        $history.scope | Should -Be 'target-branch'
+        $history.baseBranch | Should -Be 'net11.0'
         $history.requestedBuildCount | Should -Be 5
         $history.pipelines.Count | Should -Be 3
         $history.pipelines.definitionId | Should -Be @(302, 314, 313)
         foreach ($pipeline in $history.pipelines) {
-            $pipeline.branch | Should -Be 'refs/pull/123/merge'
+            $pipeline.branch | Should -Be 'refs/heads/net11.0'
+            $pipeline.currentSourceBranch | Should -Be 'refs/pull/123/merge'
             $pipeline.currentHeadVerified | Should -BeTrue
             $pipeline.builds.Count | Should -Be 5
             $pipeline.builds[0].sourceVersion | Should -Be ('c' * 40)
@@ -1444,8 +1751,8 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
             $pipeline.builds[1].id | Should -Not -Be $pipeline.builds[2].id
             $pipeline.builds[0].failures[0].message | Should -BeExactly "Expected: original`r`nActual: changed"
         }
-        Should -Invoke Get-RecentSourceBranchBuilds -Times 3 -Exactly -ParameterFilter {
-            $SourceBranch -eq 'refs/pull/123/merge' -and $BeforeQueueTime -eq '2026-09-17T10:00:00Z' -and $Top -eq 5
+        Should -Invoke Get-RecentTargetBranchBuilds -Times 3 -Exactly -ParameterFilter {
+            $BaseBranch -eq 'net11.0' -and $Top -eq 5 -and $Org -eq 'dnceng-public' -and $Project -eq 'public'
         }
         Should -Invoke Get-BuildLogTestFailures -Times 15 -Exactly -ParameterFilter { $IncludeOutcomeEvidence -and $FailureSource -eq 'azdo-history-log' }
     }
@@ -1453,7 +1760,7 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
     It 'never treats a green device build with an empty failure list as a complete passing run' {
         $script:historyBuildResult = 'succeeded'
         Mock Get-BuildLogTestFailures { return @{ failures = @(); outcomes = @(); complete = $true; incompleteReasons = @(); error = $null } }
-        $history = Get-PipelineHistory -Builds $currentBuilds
+        $history = Get-PipelineHistory -Builds $currentBuilds -BaseBranch 'net11.0'
         $device = $history.pipelines | Where-Object { $_.definitionId -eq 314 }
         $device.builds[0].result | Should -Be 'succeeded'
         $device.builds[0].complete | Should -BeFalse
@@ -1461,33 +1768,39 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
         $device.builds[0].note | Should -Match 'not passing device-test evidence'
     }
 
-    It 'does not relabel current failures solely because the same failure appears in PR history' {
+    It 'does not mutate current failures solely because the same test name appears in target history' {
         $script:currentBuilds[0].testResults = @(@{
             testName = 'Controls.Test'; message = "Expected: original`r`nActual: changed"
             alsoFailsOnBaseline = $false; deterministicAttribution = 'indeterminate'
         })
         $before = $currentBuilds | ConvertTo-Json -Depth 20 -Compress
-        Get-PipelineHistory -Builds $currentBuilds | Out-Null
+        Get-PipelineHistory -Builds $currentBuilds -BaseBranch 'net11.0' | Out-Null
         ($currentBuilds | ConvertTo-Json -Depth 20 -Compress) | Should -BeExactly $before
     }
 
-    It 'keeps explicit missing and inaccessible rows when only one pipeline could be inspected' {
+    It 'still collects target history for missing and inaccessible current pipelines' {
         $unreadable = @{ id = 314; org = 'dnceng-public'; project = 'public'; checkNames = @('maui-pr-devicetests'); accessible = $false; error = 'HTTP 403' }
-        $history = Get-PipelineHistory -Builds @($currentBuilds[2], $unreadable)
+        $history = Get-PipelineHistory -Builds @($currentBuilds[2], $unreadable) -BaseBranch 'net11.0'
         $history.pipelines.Count | Should -Be 3
-        $history.pipelines[0].error | Should -Match 'No current build'
-        $history.pipelines[1].error | Should -Match 'inaccessible.*403'
+        $history.pipelines[0].currentError | Should -Match 'No current build'
+        $history.pipelines[1].currentError | Should -Match 'inaccessible.*403'
         $history.pipelines[2].currentBuildId | Should -Be 313
+        foreach ($pipeline in $history.pipelines) {
+            $pipeline.branch | Should -Be 'refs/heads/net11.0'
+            $pipeline.builds.Count | Should -Be 5
+            $pipeline.error | Should -BeNullOrEmpty
+        }
+        Should -Invoke Get-RecentTargetBranchBuilds -Times 3 -Exactly
     }
 
-    It 'does not use a manually supplied stale build as verified current-head coverage' {
+    It 'does not treat a stale PR build as current-head coverage but still collects target history' {
         $stale = New-CurrentBuildFixture -Verified $false
-        $history = Get-PipelineHistory -Builds @($stale)
+        $history = Get-PipelineHistory -Builds @($stale) -BaseBranch 'net11.0'
         $history.pipelines[0].currentBuildId | Should -Be 302
         $history.pipelines[0].currentHeadVerified | Should -BeFalse
-        $history.pipelines[0].error | Should -Match 'captured PR head'
-        $history.pipelines[0].builds.Count | Should -Be 0
-        Should -Invoke Get-RecentSourceBranchBuilds -Times 0 -Exactly
+        $history.pipelines[0].currentError | Should -Match 'captured PR head'
+        $history.pipelines[0].builds.Count | Should -Be 5
+        Should -Invoke Get-RecentTargetBranchBuilds -Times 3 -Exactly
     }
 
     It 'selects a verified build ahead of a newer stale manual input and retains current timeline gaps' {
@@ -1495,7 +1808,7 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
         $stale.id = 999
         $stale.metadata.queueTime = '2026-09-17T11:00:00Z'
         $script:currentBuilds[0].timelineReadable = $false
-        $history = Get-PipelineHistory -Builds @($stale, $currentBuilds[0])
+        $history = Get-PipelineHistory -Builds @($stale, $currentBuilds[0]) -BaseBranch 'net11.0'
         $history.pipelines[0].currentBuildId | Should -Be 302
         $history.pipelines[0].currentTimelineReadable | Should -BeFalse
         $history.pipelines[0].currentError | Should -Match 'timeline is unreadable'
@@ -1508,7 +1821,7 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
         Mock Get-PublicBuildFailureEvidence {
             return @{ failures = @(); readable = $false; truncated = $true; totalResults = 0; error = 'Result list unavailable' }
         }
-        $history = Get-PipelineHistory -Builds @($currentBuilds[0])
+        $history = Get-PipelineHistory -Builds @($currentBuilds[0]) -BaseBranch 'net11.0'
         $entry = $history.pipelines[0].builds[0]
         $entry.complete | Should -BeFalse
         $entry.failures[0].message | Should -BeExactly 'Exact failure'
@@ -1518,7 +1831,7 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
     }
 
     It 'retains every discovered historical row when the evidence-read deadline is exhausted' {
-        $history = Get-PipelineHistory -Builds $currentBuilds -Deadline ((Get-Date).AddSeconds(-1))
+        $history = Get-PipelineHistory -Builds $currentBuilds -BaseBranch 'net11.0' -Deadline ((Get-Date).AddSeconds(-1))
         foreach ($pipeline in $history.pipelines) {
             $pipeline.builds.Count | Should -Be 5
             foreach ($build in $pipeline.builds) {
@@ -1528,6 +1841,25 @@ Describe 'Three-pipeline history coverage' -Tag 'EvidenceCollection' {
         }
         Should -Invoke Get-BuildLogTestFailures -Times 0 -Exactly
         Should -Invoke Get-PublicBuildFailureEvidence -Times 0 -Exactly
+    }
+
+    It 'collects all target windows even when no PR builds were discovered' {
+        $history = Get-PipelineHistory -Builds @() -BaseBranch 'net11.0'
+        foreach ($pipeline in $history.pipelines) {
+            $pipeline.currentBuildId | Should -BeNullOrEmpty
+            $pipeline.currentHeadVerified | Should -BeFalse
+            $pipeline.currentError | Should -Match 'No current build'
+            $pipeline.branch | Should -Be 'refs/heads/net11.0'
+            $pipeline.builds.Count | Should -Be 5
+        }
+        Should -Invoke Get-RecentTargetBranchBuilds -Times 3 -Exactly
+    }
+
+    It 'keeps a canceled target run visible as incomplete evidence' {
+        $script:historyBuildResult = 'canceled'
+        $history = Get-PipelineHistory -Builds $currentBuilds -BaseBranch 'net11.0'
+        $history.pipelines[0].builds[0].complete | Should -BeFalse
+        $history.pipelines[0].builds[0].note | Should -Match 'canceled'
     }
 }
 
@@ -1565,10 +1897,26 @@ Describe 'Visual opt-out keeps ordinary UI failure evidence' -Tag 'EvidenceColle
 }
 
 Describe 'Serialized evidence contract' -Tag 'EvidenceCollection' {
+    It 'passes the PR target, not build provenance, to history collection' {
+        $pr = @{ baseRefName = 'release/10.0.1xx-sr9'; headRefName = 'fix-safearea-edge' }
+        $buildArray = @()
+        $HistoryBuilds = 5
+        $gatherHardDeadline = [datetime]::MaxValue
+        Mock Get-PipelineHistory { return @{ scope = 'target-branch'; baseBranch = $BaseBranch } }
+        $assignment = $script:gatherAst.EndBlock.Statements | Where-Object {
+            $_ -is [System.Management.Automation.Language.AssignmentStatementAst] -and $_.Left.Extent.Text -eq '$history'
+        }
+        Invoke-Expression $assignment.Extent.Text
+        $history.baseBranch | Should -Be 'release/10.0.1xx-sr9'
+        Should -Invoke Get-PipelineHistory -Times 1 -Exactly -ParameterFilter {
+            $BaseBranch -eq $pr.baseRefName -and $Top -eq 5
+        }
+    }
+
     It 'keeps pinned patch and three history slots beside the existing gate and baseline fields' {
         $pr = @{ number = 123; headRefOid = ('a' * 40); baseRefOid = ('b' * 40) }
         $prDiff = @{ text = 'actual patch'; truncated = $false; error = $null; headRefOid = $pr.headRefOid; baseRefOid = $pr.baseRefOid }
-        $history = @{ requestedBuildCount = 5; pipelines = @(
+        $history = @{ scope = 'target-branch'; baseBranch = 'net11.0'; requestedBuildCount = 5; pipelines = @(
             @{ name = 'maui-pr'; definitionId = 302; builds = @(); error = 'Not run' },
             @{ name = 'maui-pr-devicetests'; definitionId = 314; builds = @(); error = 'Inaccessible' },
             @{ name = 'maui-pr-uitests'; definitionId = 313; builds = @(); error = 'Unverified head' }
@@ -1590,6 +1938,8 @@ Describe 'Serialized evidence contract' -Tag 'EvidenceCollection' {
         $serialized.scope.diff.text | Should -BeExactly 'actual patch'
         $serialized.scope.diff.headRefOid | Should -Be $pr.headRefOid
         $serialized.history.requestedBuildCount | Should -Be 5
+        $serialized.history.scope | Should -Be 'target-branch'
+        $serialized.history.baseBranch | Should -Be 'net11.0'
         $serialized.history.pipelines.definitionId | Should -Be @(302, 314, 313)
         $serialized.history.pipelines.error | Should -Be @('Not run', 'Inaccessible', 'Unverified head')
         $serialized.gate.unchanged | Should -Be 'legacy gate'
@@ -1631,7 +1981,7 @@ Describe 'Markdown evidence pointer' -Tag 'EvidenceCollection', 'MarkdownEvidenc
         $markdown = Get-Content -Path $ContextMarkdownPath -Raw
         $markdown | Should -Match '\[context\.json\]\(context\.json\)'
         $markdown | Should -Match '`scope\.diff` contains the PR patch'
-        $markdown | Should -Match '`history` contains the previous completed runs.*same source branch'
+        $markdown | Should -Match '`history` contains the latest completed runs.*target branch for each pipeline'
         $markdown | Should -Match 'five requested by default'
         $markdown | Should -Match '(?m)^## Merge-readiness gate \(deterministic\)'
     }

@@ -17,9 +17,13 @@ When a fact changes (e.g. a pipeline definition ID), change it HERE only.
 
 Authoritative operational reference for dotnet/maui CI investigation. The
 `review-test-failures` skill owns the current `/review tests` attribution rubric
-and structured comment. It compares all three pipelines with their previous five
-completed runs on the same CI source branch, then relates failures to the PR diff.
-Earlier PR-branch failures establish history, not proof that a failure is unrelated.
+and compact, pipeline-grouped comment. It compares all three pipelines with their latest five
+completed runs on the PR's exact target branch (`pr.baseRefName`), then relates
+failures to the PR diff. Previous PR-branch runs are not the baseline or required
+coverage. Target sampling is independent of current PR build availability and is
+not cut off at the PR build's queue time; missing or unreadable samples remain explicit.
+If no usable current-PR results or build-failure diagnostics exist in any pipeline,
+evaluation and target sampling are skipped, with a short `/azp run` request instead.
 
 The deterministic merge-readiness fields documented below remain in the gatherer
 for compatibility. They are not the current `/review tests` report policy: a
