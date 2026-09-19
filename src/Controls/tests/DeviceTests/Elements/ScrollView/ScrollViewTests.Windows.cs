@@ -1,7 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -22,92 +20,43 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ScrollViewTests
 	{
 		[Theory]
-		[InlineData("Baseline")]
-		[InlineData("Loading")]
-		[InlineData("Loaded")]
-		[InlineData("Unloaded")]
-		[InlineData("ViewChanged")]
-		[InlineData("AllEvents")]
-		[InlineData("FocusMapping")]
-		[InlineData("NativeField")]
-		[InlineData("Disconnect")]
-		public async Task ScrollViewCollectionAfterNativeCleanup(string cleanup)
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ScrollViewWithContentDoesNotLeak(bool reload)
 		{
 			SetupBuilder();
 			WeakReference viewReference = null;
 			WeakReference handlerReference = null;
 			WeakReference platformReference = null;
-			string state = null;
-			var view = new ScrollView();
+			var view = new ScrollView
+			{
+				Content = new Label { Text = "Scrollable content", HeightRequest = 2000 }
+			};
 			var page = new ContentPage { Content = view };
 
-			await CreateHandlerAndAddToWindow(page, () =>
+			await CreateHandlerAndAddToWindow(page, async () =>
 			{
 				viewReference = new(view);
 				handlerReference = new(view.Handler);
 				platformReference = new(view.Handler.PlatformView);
-				var platformView = (WScrollViewer)view.Handler.PlatformView;
-				state = DescribeNativeState(platformView);
-
-				switch (cleanup)
+				if (reload)
 				{
-					case "Loading":
-					case "Loaded":
-					case "Unloaded":
-					case "ViewChanged":
-						RemoveNativeHandlerEvent(view.Handler, platformView, cleanup);
-						break;
-					case "AllEvents":
-						foreach (var eventName in new[] { "Loading", "Loaded", "Unloaded", "ViewChanged" })
-							RemoveNativeHandlerEvent(view.Handler, platformView, eventName);
-						break;
-					case "FocusMapping":
-						var mappingField = typeof(ViewHandler).GetField("FocusManagerMapping", BindingFlags.NonPublic | BindingFlags.Static);
-						Assert.NotNull(mappingField);
-						var mapping = Assert.IsType<ConditionalWeakTable<Microsoft.UI.Xaml.FrameworkElement, ViewHandler>>(mappingField.GetValue(null));
-						Assert.True(mapping.Remove(platformView));
-						break;
-					case "NativeField":
-						var platformField = typeof(ScrollViewHandler).GetField("_tabStopPlatformView", BindingFlags.NonPublic | BindingFlags.Instance);
-						Assert.NotNull(platformField);
-						platformField.SetValue(view.Handler, null);
-						break;
-					case "Disconnect":
-						view.Handler.DisconnectHandler();
-						break;
+					page.Content = null;
+					await OnUnloadedAsync(view);
+					page.Content = view;
+					await OnLoadedAsync(view);
+					Assert.Same(handlerReference.Target, view.Handler);
+					Assert.Same(platformReference.Target, view.Handler.PlatformView);
 				}
 
-				state += $"; after {cleanup}: {DescribeNativeState(platformView)}";
+				await view.ScrollToAsync(0, 100, false).WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.True(view.ScrollY > 0);
 				page.Content = null;
 			});
 
 			view = null;
 			page = null;
-			var collected = await AssertionExtensions.WaitForCollect(viewReference, handlerReference, platformReference);
-			state += await InvokeOnMainThreadAsync(() =>
-				platformReference.Target is WScrollViewer platformView
-					? $"; after detach/GC: {DescribeNativeState(platformView)}"
-					: "; native collected");
-			Assert.True(collected, $"{state}; alive: view={viewReference.IsAlive}, handler={handlerReference.IsAlive}, native={platformReference.IsAlive}");
-		}
-
-		static void RemoveNativeHandlerEvent(IElementHandler handler, WScrollViewer platformView, string eventName)
-		{
-			var handlerMethod = typeof(ScrollViewHandler).GetMethod(
-				eventName == "ViewChanged" ? eventName : $"OnPlatformView{eventName}",
-				BindingFlags.NonPublic | BindingFlags.Instance);
-			Assert.NotNull(handlerMethod);
-			var nativeEvent = typeof(WScrollViewer).GetEvent(eventName);
-			Assert.NotNull(nativeEvent);
-			nativeEvent.RemoveEventHandler(platformView, Delegate.CreateDelegate(nativeEvent.EventHandlerType, handler, handlerMethod));
-		}
-
-		static string DescribeNativeState(WScrollViewer platformView)
-		{
-			var root = platformView.XamlRoot;
-			return $"loaded={platformView.IsLoaded}, focus={platformView.FocusState}, tabStop={platformView.IsTabStop}, " +
-				$"local={platformView.ReadLocalValue(WControl.IsTabStopProperty)}, binding={platformView.GetBindingExpression(WControl.IsTabStopProperty) is not null}, " +
-				$"root={root is not null}, focused={(root is null ? null : Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(root))}";
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
 		}
 
 		[Fact]
