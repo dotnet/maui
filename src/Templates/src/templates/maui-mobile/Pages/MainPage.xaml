@@ -1,11 +1,9 @@
-﻿<ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"             
-             xmlns:models="clr-namespace:MauiApp._1.Models"
-             xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
-             xmlns:pullToRefresh="clr-namespace:Syncfusion.Maui.Toolkit.PullToRefresh;assembly=Syncfusion.Maui.Toolkit"
+﻿<ContentPage xmlns:pullToRefresh="clr-namespace:Syncfusion.Maui.Toolkit.PullToRefresh;assembly=Syncfusion.Maui.Toolkit"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.MainPage"
-             x:DataType="pageModels:MainPageModel"
+             x:DataType="MainPageModel"
              x:Name="OverviewPage"
+             AutomationId="DashboardPage"
              Title="{Binding Today}">
 
     <ContentPage.Behaviors>
@@ -23,19 +21,14 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
 
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
-        </ResourceDictionary>
-    </ContentPage.Resources>
-
-    <Grid>
+    <Grid SafeAreaEdges="Container">
         <pullToRefresh:SfPullToRefresh
+            AutomationId="DashboardRefresh"
             IsRefreshing="{Binding IsRefreshing}"
             RefreshCommand="{Binding RefreshCommand}">
             <pullToRefresh:SfPullToRefresh.PullableContent>
-                <ScrollView>
-                    <Grid Padding="{StaticResource LayoutPadding}" RowSpacing="{StaticResource LayoutSpacing}">
+                <ScrollView SafeAreaEdges="None">
+                    <Grid SafeAreaEdges="None" Padding="{StaticResource LayoutPadding}" RowSpacing="{StaticResource LayoutSpacing}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -46,28 +39,30 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Row="0" Text="Task Categories" Style="{StaticResource Title2}" SemanticProperties.HeadingLevel="Level1"/>
-                        <controls:CategoryChart Grid.Row="1" />
+                        <CategoryChart Grid.Row="1" AutomationId="DashboardCategoryChart" />
                         <Label Grid.Row="2" Text="Projects" Style="{StaticResource Title2}" SemanticProperties.HeadingLevel="Level1"/>
                         <CollectionView Grid.Row="3" ItemsSource="{Binding Projects}"
                                         Margin="-7.5,0"
                                         MinimumHeightRequest="250"
                                         x:Name="ProjectsCollectionView"
+                                        AutomationId="DashboardProjects"
                                         SelectionMode="Single"
                                         SelectedItem="{Binding SelectedProject}"
-                                        SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:MainPageModel}"
+                                        SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type MainPageModel}}, x:DataType=MainPageModel}"
                                         SelectionChangedCommandParameter="{Binding SelectedProject}">
                             <CollectionView.ItemsLayout>
                                 <LinearItemsLayout Orientation="Horizontal" ItemSpacing="7.5"/>
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="models:Project">
-                                    <controls:ProjectCardView WidthRequest="200" />
+                                <DataTemplate x:DataType="Project">
+                                    <ProjectCardView WidthRequest="200" />
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
                         <Grid Grid.Row="4" MinimumHeightRequest="44">
                             <Label Text="Tasks" Style="{StaticResource Title2}" VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1"/>
                             <ImageButton 
+                                AutomationId="DashboardCleanTasks"
                                 Source="{StaticResource IconClean}"
                                 HorizontalOptions="End"
                                 VerticalOptions="Center"
@@ -81,6 +76,7 @@
                         <CollectionView ItemsSource="{Binding Tasks}"
                                         Grid.Row="5"
                                         x:Name="TasksCollectionView"
+                                        AutomationId="DashboardTasks"
                                         SelectionMode="Single"
                                         SelectedItem="{Binding SelectedTask}"
                                         SelectionChangedCommand="{Binding NavigateToTaskCommand}"
@@ -91,7 +87,7 @@
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:MainPageModel}"/>
+                                    <TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type MainPageModel}}, x:DataType=MainPageModel}"/>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
@@ -100,8 +96,9 @@
             </pullToRefresh:SfPullToRefresh.PullableContent>
         </pullToRefresh:SfPullToRefresh>
 
-        <controls:AddButton 
-            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+        <AddButton
+            AutomationId="DashboardAddTask"
+            IsEnabled="{!IsBusy}"
             Command="{Binding AddTaskCommand}"
             ToolTipProperties.Text="Add task"
             SemanticProperties.Description="Add task" />

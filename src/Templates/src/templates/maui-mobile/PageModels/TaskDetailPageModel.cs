@@ -6,13 +6,16 @@ using MauiApp._1.Services;
 
 namespace MauiApp._1.PageModels;
 
-public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
+public partial class TaskDetailPageModel(
+	ProjectRepository projectRepository,
+	TaskRepository taskRepository,
+	ModalErrorHandler errorHandler) : ObservableObject, IQueryAttributable
 {
 	public const string ProjectQueryKey = "project";
 	private ProjectTask? _task;
-	private readonly ProjectRepository _projectRepository;
-	private readonly TaskRepository _taskRepository;
-	private readonly ModalErrorHandler _errorHandler;
+	private readonly ProjectRepository _projectRepository = projectRepository;
+	private readonly TaskRepository _taskRepository = taskRepository;
+	private readonly ModalErrorHandler _errorHandler = errorHandler;
 
 	[ObservableProperty]
 	public partial string Title { get; set; } = string.Empty;
@@ -39,13 +42,6 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
 	public partial bool CanDelete { get; set; }
-
-	public TaskDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, ModalErrorHandler errorHandler)
-	{
-		_projectRepository = projectRepository;
-		_taskRepository = taskRepository;
-		_errorHandler = errorHandler;
-	}
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
@@ -79,13 +75,13 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 
 		// If the project is new, we don't need to load the project dropdown
 		if (Project?.ID == 0)
-        {
-            IsExistingProject = false;
+		{
+			IsExistingProject = false;
 		}
 		else
-        {
-            Projects = await _projectRepository.ListAsync();
-            IsExistingProject = true;
+		{
+			Projects = await _projectRepository.ListAsync();
+			IsExistingProject = true;
 		}
 
 		if (Project is not null)

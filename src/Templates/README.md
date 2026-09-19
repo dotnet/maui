@@ -1,10 +1,46 @@
 
 # MAUI Templates
 
+## MAUI app content
+
+The `maui` template has a small counter app and an optional offline project/task sample:
+
+```shell
+dotnet new maui -n CounterApp
+dotnet new maui -n CounterAppCSharp --ui csharp
+dotnet new maui -n ProjectTasks --sample-content
+```
+
+Sample content uses XAML. Selecting C# UI with sample content creates the C# counter app and reports that sample content was not applied. Selecting Avalonia with sample content keeps the XAML sample and reports that Avalonia was not applied.
+
+The counter app uses one .NET 11 bot PNG. The image's `BaseSize="190,185"` and `Resize="true"` metadata generate platform-density resources during the build. The page keeps the full composition, uses `AspectFit`, and limits its width. Do not replace this with runtime resizing or add the original image as a second raw asset. Recheck generated dimensions, resource selection, and display quality when changing the display size or supported scale range.
+
+The sample retains Shell navigation, typed page models, generated observable properties and commands, and parameterized SQLite storage. New language syntax must preserve persistence and notification behavior. In particular, retain the fixed-schema `JsonDocument` seed reader; do not restore the earlier generated seed-materialization path.
+
+The sample alone enables preview features for a XAML C# expression on the Dashboard Add action. Keep this opt-in out of the plain counter outputs. A conventional binding and inverse Boolean converter can replace the expression when preview features are not wanted.
+
+Sample asset metadata includes an explicit Android monochrome layer. The existing foreground SVG is already a single-color alpha mask, so it is reused rather than duplicated.
+The splash screen reuses its vector in light and dark appearances, with background and tint values from the sample palette. These sample settings do not change the counter app's icon or splash branding.
+
+## Validation
+
+Use the repository integration-test workflow and an isolated template hive for automated generation checks. Validate generated projects, not template files compiled outside the template engine. Include CLI/IDE sample selection, C# UI, combined-option warnings, and exclusions for sample-only files and assets.
+
+Keep the normal Debug development path separate from release publishing. Check breakpoints, locals, async stepping, C# method-body Hot Reload, and XAML updates to resources and realized item templates. A successful C# update does not rerun an already completed page constructor.
+
+Full trimming and Native AOT need actual publish and runtime checks of both app experiences. In the sample, check chart slices and labels, behaviors, SQLite native initialization, seed loading, and database reopen. A successful Debug build or a dependency's AOT compatibility flag is not sufficient. Use platform-specific supported publish settings; do not globally enable Native AOT and break managed Hot Reload.
+
+For performance comparisons, use the same SDK/workload, hardware, runtime, configuration, and package mode. Record each resolved dependency graph and include intentional package updates in the complete candidate. Measure first frame separately from usable seeded content, and report clean, no-op, incremental build, restore, and publish times separately. Keep repeated raw samples and binlogs; do not infer performance from image file size.
+
+## Manual build script
+
 For easy building and testing you can use the `build.ps1` script. This script is only for manual use and not part of any pipeline.
 
+> [!WARNING]
+> This script removes manual template installations and clears the user's template-engine folder. Do not run it in a shared development environment without approval. Use isolated template generation for automated checks.
+
 > [!NOTE]
-> On macOS you find encounter and error like: `error NU5119: Warning As Error: File '/file/path/.DS_Store' was not added to the package. Files and folders starting with '.' or ending with '.nupkg' are excluded by default. To include this file, use -NoDefaultExcludes from the commandline` when this happens, run a `git clean -xfd` on the repository to remove all `.DS_Store` files from the filesystem.
+> On macOS, an untracked `.DS_Store` file can cause NU5119 during packaging. Inspect and remove only the identified unwanted file; do not clean all untracked repository content.
 
 ## Functionality
 

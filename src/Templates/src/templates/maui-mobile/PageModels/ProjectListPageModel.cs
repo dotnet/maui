@@ -6,20 +6,15 @@ using MauiApp._1.Services;
 
 namespace MauiApp._1.PageModels;
 
-public partial class ProjectListPageModel : ObservableObject
+public partial class ProjectListPageModel(ProjectRepository projectRepository) : ObservableObject
 {
-	private readonly ProjectRepository _projectRepository;
+	private readonly ProjectRepository _projectRepository = projectRepository;
 
 	[ObservableProperty]
 	public partial List<Project> Projects { get; set; } = [];
 
 	[ObservableProperty]
 	public partial Project? SelectedProject { get; set; }
-
-	public ProjectListPageModel(ProjectRepository projectRepository)
-	{
-		_projectRepository = projectRepository;
-	}
 
 	[RelayCommand]
 	private async Task Appearing()

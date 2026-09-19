@@ -7,19 +7,11 @@ namespace MauiApp._1.Data;
 /// <summary>
 /// Repository class for managing categories in the database.
 /// </summary>
-public class CategoryRepository
+/// <param name="logger">The logger instance.</param>
+public class CategoryRepository(ILogger<CategoryRepository> logger)
 {
 	private bool _hasBeenInitialized = false;
-	private readonly ILogger _logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="CategoryRepository"/> class.
-	/// </summary>
-	/// <param name="logger">The logger instance.</param>
-	public CategoryRepository(ILogger<CategoryRepository> logger)
-	{
-		_logger = logger;
-	}
+	private readonly ILogger _logger = logger;
 
 	/// <summary>
 	/// Initializes the database connection and creates the Category table if it does not exist.
@@ -35,12 +27,13 @@ public class CategoryRepository
 		try
 		{
 			var createTableCmd = connection.CreateCommand();
-			createTableCmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS Category (
-                ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                Title TEXT NOT NULL,
-                Color TEXT NOT NULL
-            );";
+			createTableCmd.CommandText = """
+				CREATE TABLE IF NOT EXISTS Category (
+				    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+				    Title TEXT NOT NULL,
+				    Color TEXT NOT NULL
+				);
+				""";
 			await createTableCmd.ExecuteNonQueryAsync();
 		}
 		catch (Exception e)
@@ -64,7 +57,7 @@ public class CategoryRepository
 
 		var selectCmd = connection.CreateCommand();
 		selectCmd.CommandText = "SELECT * FROM Category";
-		var categories = new List<Category>();
+		List<Category> categories = [];
 
 		await using var reader = await selectCmd.ExecuteReaderAsync();
 		while (await reader.ReadAsync())
@@ -123,16 +116,18 @@ public class CategoryRepository
 		var saveCmd = connection.CreateCommand();
 		if (item.ID == 0)
 		{
-			saveCmd.CommandText = @"
-                INSERT INTO Category (Title, Color)
-                VALUES (@Title, @Color);
-                SELECT last_insert_rowid();";
+			saveCmd.CommandText = """
+				INSERT INTO Category (Title, Color)
+				VALUES (@Title, @Color);
+				SELECT last_insert_rowid();
+				""";
 		}
 		else
 		{
-			saveCmd.CommandText = @"
-                UPDATE Category SET Title = @Title, Color = @Color
-                WHERE ID = @ID";
+			saveCmd.CommandText = """
+				UPDATE Category SET Title = @Title, Color = @Color
+				WHERE ID = @ID
+				""";
 			saveCmd.Parameters.AddWithValue("@ID", item.ID);
 		}
 

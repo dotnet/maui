@@ -1,3 +1,4 @@
+using System.Collections;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -21,6 +22,10 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public static class BuildWarningsUtilities
 	{
+		// StructuredLogger 2.2.158 leaves message resources unset for empty UI cultures.
+		// Initialize once before any concurrent reader can use those formats.
+		static BuildWarningsUtilities() => Strings.Initialize();
+
 		// We rely on the fact that expected file paths are stored as relative to the repo root (e.g., src/Core/...).
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
 		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
@@ -38,6 +43,16 @@ namespace Microsoft.Maui.IntegrationTests
 		private static string NormalizeCompilerGeneratedOrdinals(string message) =>
 			s_compilerGeneratedOrdinal.Replace(message, "|N_N");
 
+		static IEnumerable<BuildEventArgs> ReadBuildEvents(string binlog)
+		{
+			using var stream = System.IO.File.OpenRead(binlog);
+			foreach (var record in new BinLogReader().ReadRecords(stream))
+			{
+				if (record.Args is { } buildEvent)
+					yield return buildEvent;
+			}
+		}
+
 		/// <summary>
 		/// Reads build errors from a binlog file and outputs them to the test output.
 		/// This makes errors visible in Azure DevOps logs instead of requiring artifact downloads.
@@ -54,9 +69,9 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			var errors = new List<string>();
-			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			foreach (var buildEvent in ReadBuildEvents(binLogFilePath))
 			{
-				if (record.Args is BuildErrorEventArgs error)
+				if (buildEvent is BuildErrorEventArgs error)
 				{
 					var file = NormalizeFilePath(error.File ?? "");
 					var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
@@ -85,9 +100,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
 			var actualWarnings = new List<WarningsPerFile>();
-			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			foreach (var buildEvent in ReadBuildEvents(binLogFilePath))
 			{
-				if (record.Args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
+				if (buildEvent is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
 				{
 					// We normalize all warnings file paths for easier comparison
 					actualWarnings.AddActualWarning(NormalizeFilePath(warning.File), warning.Code, warning.Message);
@@ -95,6 +110,93 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 			return actualWarnings;
 		}
+
+		public static void AssertProjectProperties(string binlog, string projectFile, string framework, params (string name, string value)[] expected)
+		{
+			Assert.True(System.IO.File.Exists(binlog), $"Binlog not found: {binlog}");
+			var evaluations = new Dictionary<(int nodeId, int evaluationId), Dictionary<string, string>>();
+			var startedProjects = new List<ProjectStartedEventArgs>();
+			foreach (var buildEvent in ReadBuildEvents(binlog))
+			{
+				switch (buildEvent)
+				{
+					case ProjectEvaluationFinishedEventArgs evaluation when SameProject(evaluation.ProjectFile, projectFile) &&
+						evaluation.Properties is not null && evaluation.BuildEventContext is { } context &&
+						context.EvaluationId != BuildEventContext.InvalidEvaluationId:
+						evaluations[(context.NodeId, context.EvaluationId)] = ReadProperties(evaluation.Properties);
+						break;
+					case ProjectStartedEventArgs project when SameProject(project.ProjectFile, projectFile):
+						startedProjects.Add(project);
+						break;
+				}
+			}
+
+			var instances = new List<Dictionary<string, string>>();
+			foreach (var project in startedProjects)
+			{
+				var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+				// Modern binlogs omit started-project properties already logged by the referenced evaluation.
+				if (project.BuildEventContext is { } context && context.EvaluationId != BuildEventContext.InvalidEvaluationId &&
+					evaluations.TryGetValue((context.NodeId, context.EvaluationId), out var evaluatedProperties))
+				{
+					foreach (var property in evaluatedProperties)
+						properties[property.Key] = property.Value;
+				}
+				if (project.Properties is not null)
+				{
+					foreach (var property in ReadProperties(project.Properties))
+						properties[property.Key] = property.Value;
+				}
+				instances.Add(properties);
+			}
+
+			Assert.True(instances.Any(properties =>
+				properties.TryGetValue("TargetFramework", out var targetFramework) &&
+				string.Equals(targetFramework, framework, StringComparison.OrdinalIgnoreCase) &&
+				expected.All(property => properties.TryGetValue(property.name, out var value) &&
+					string.Equals(value, property.value, StringComparison.OrdinalIgnoreCase))),
+				$"No project instance for '{projectFile}' ({framework}) had {string.Join(", ", expected.Select(p => $"{p.name}={p.value}"))}. " +
+				$"Observed: {(instances.Count == 0 ? "<no matching started project>" : string.Join("; ", instances.Select(properties =>
+					$"TargetFramework={properties.GetValueOrDefault("TargetFramework", "<missing>")}, " +
+					string.Join(", ", expected.Select(p => $"{p.name}={properties.GetValueOrDefault(p.name, "<missing>")}")))))}. See {binlog}.");
+		}
+
+		static Dictionary<string, string> ReadProperties(IEnumerable properties)
+		{
+			var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+			foreach (var property in properties)
+			{
+				switch (property)
+				{
+					case KeyValuePair<string, string> pair:
+						result[pair.Key] = pair.Value;
+						break;
+					case DictionaryEntry { Key: string name } entry:
+						result[name] = entry.Value?.ToString() ?? "";
+						break;
+					default:
+						throw new InvalidOperationException($"Unsupported binlog property entry type '{property?.GetType().FullName ?? "<null>"}'.");
+				}
+			}
+			return result;
+		}
+
+		public static void AssertTaskSucceeded(string binlog, string projectFile, string taskName)
+		{
+			Assert.True(ReadBuildEvents(binlog).Any(buildEvent =>
+				buildEvent is TaskFinishedEventArgs task && task.Succeeded && task.TaskName == taskName && SameProject(task.ProjectFile, projectFile)),
+				$"Expected task '{taskName}' to execute successfully for '{projectFile}'. See {binlog}.");
+		}
+
+		public static void AssertTargetSucceeded(string binlog, string projectFile, string targetName)
+		{
+			Assert.True(ReadBuildEvents(binlog).Any(buildEvent =>
+				buildEvent is TargetFinishedEventArgs target && target.Succeeded && target.TargetName == targetName && SameProject(target.ProjectFile, projectFile)),
+				$"Expected target '{targetName}' to finish successfully for '{projectFile}'. See {binlog}.");
+		}
+
+		static bool SameProject(string? actual, string expected) =>
+			!string.IsNullOrEmpty(actual) && string.Equals(Path.GetFullPath(actual), Path.GetFullPath(expected), StringComparison.OrdinalIgnoreCase);
 
 		private static void AddActualWarning(this List<WarningsPerFile> warnings, string file, string code, string message)
 		{
@@ -145,12 +247,14 @@ namespace Microsoft.Maui.IntegrationTests
 			foreach (var expectedWarningsPerFile in expectedWarnings)
 			{
 				var actualWarningsPerFile = actualWarnings.FirstOrDefault(actualWarning => actualWarning.File.CompareWarningsFilePaths(expectedWarningsPerFile.File));
-				if (actualWarningsPerFile is null) Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
+				if (actualWarningsPerFile is null)
+					Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
 
 				foreach (var expectedWarningsPerCode in expectedWarningsPerFile.WarningsPerCode)
 				{
 					var actualWarningsPerCode = actualWarningsPerFile!.WarningsPerCode.FirstOrDefault(x => x.Code == expectedWarningsPerCode.Code);
-					if (actualWarningsPerCode is null) Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
+					if (actualWarningsPerCode is null)
+						Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
 
 					foreach (var expectedWarningsMessage in expectedWarningsPerCode.Messages)
 					{
