@@ -96,5 +96,25 @@ namespace Microsoft.Maui.DeviceTests
 				timeout: 15_000,
 				message: "MapControl's WebView2 never finished loading");
 		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task MoveToRegionUpdatesNativeAndVisibleRegion(bool animated)
+		{
+			var map = new Map();
+			var region = new Microsoft.Maui.Maps.MapSpan(new Location(47.6458, -122.1419), 1, 1);
+
+			await CreateHandlerAndAddToWindow<MapHandler>(map, async handler =>
+			{
+				await WaitForMapReady(handler);
+				map.MoveToRegion(region, animated);
+
+				var platformMap = Assert.IsType<MapControl>(handler.PlatformView);
+				Assert.Same(region, map.VisibleRegion);
+				Assert.Equal(region.Center.Latitude, platformMap.Center.Position.Latitude);
+				Assert.Equal(region.Center.Longitude, platformMap.Center.Position.Longitude);
+			});
+		}
 	}
 }
