@@ -86,8 +86,11 @@ namespace Maui.Controls.Sample
 				appBuilder.Logging.AddProvider(new FileLoggingProvider(logFilePath, LogLevel.Debug));
 			}
 
+			ConfigureUiEvidence(appBuilder);
 			return appBuilder.Build();
 		}
+
+		static partial void ConfigureUiEvidence(MauiAppBuilder builder);
 
 		static partial void OverrideMainPage(ref Page mainPage);
 
