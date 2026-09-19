@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -21,8 +23,13 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Theory]
 		[InlineData("Baseline")]
-		[InlineData("Unfocus")]
-		[InlineData("ClearTabStop")]
+		[InlineData("Loading")]
+		[InlineData("Loaded")]
+		[InlineData("Unloaded")]
+		[InlineData("ViewChanged")]
+		[InlineData("AllEvents")]
+		[InlineData("FocusMapping")]
+		[InlineData("NativeField")]
 		[InlineData("Disconnect")]
 		public async Task ScrollViewCollectionAfterNativeCleanup(string cleanup)
 		{
@@ -44,11 +51,26 @@ namespace Microsoft.Maui.DeviceTests
 
 				switch (cleanup)
 				{
-					case "Unfocus":
-						Microsoft.Maui.Platform.ViewExtensions.Unfocus(platformView, view);
+					case "Loading":
+					case "Loaded":
+					case "Unloaded":
+					case "ViewChanged":
+						RemoveNativeHandlerEvent(view.Handler, platformView, cleanup);
 						break;
-					case "ClearTabStop":
-						platformView.ClearValue(WControl.IsTabStopProperty);
+					case "AllEvents":
+						foreach (var eventName in new[] { "Loading", "Loaded", "Unloaded", "ViewChanged" })
+							RemoveNativeHandlerEvent(view.Handler, platformView, eventName);
+						break;
+					case "FocusMapping":
+						var mappingField = typeof(ViewHandler).GetField("FocusManagerMapping", BindingFlags.NonPublic | BindingFlags.Static);
+						Assert.NotNull(mappingField);
+						var mapping = Assert.IsType<ConditionalWeakTable<Microsoft.UI.Xaml.FrameworkElement, ViewHandler>>(mappingField.GetValue(null));
+						Assert.True(mapping.Remove(platformView));
+						break;
+					case "NativeField":
+						var platformField = typeof(ScrollViewHandler).GetField("_tabStopPlatformView", BindingFlags.NonPublic | BindingFlags.Instance);
+						Assert.NotNull(platformField);
+						platformField.SetValue(view.Handler, null);
 						break;
 					case "Disconnect":
 						view.Handler.DisconnectHandler();
@@ -67,6 +89,17 @@ namespace Microsoft.Maui.DeviceTests
 					? $"; after detach/GC: {DescribeNativeState(platformView)}"
 					: "; native collected");
 			Assert.True(collected, $"{state}; alive: view={viewReference.IsAlive}, handler={handlerReference.IsAlive}, native={platformReference.IsAlive}");
+		}
+
+		static void RemoveNativeHandlerEvent(IElementHandler handler, WScrollViewer platformView, string eventName)
+		{
+			var handlerMethod = typeof(ScrollViewHandler).GetMethod(
+				eventName == "ViewChanged" ? eventName : $"OnPlatformView{eventName}",
+				BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(handlerMethod);
+			var nativeEvent = typeof(WScrollViewer).GetEvent(eventName);
+			Assert.NotNull(nativeEvent);
+			nativeEvent.RemoveEventHandler(platformView, Delegate.CreateDelegate(nativeEvent.EventHandlerType, handler, handlerMethod));
 		}
 
 		static string DescribeNativeState(WScrollViewer platformView)
