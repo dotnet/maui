@@ -18,6 +18,11 @@ function Add-ResultFailure {
   </collection>
 </assembly>
 '@
+    $timestamp = [DateTime]::UtcNow
+    $failure.DocumentElement.SetAttribute('environment', "PowerShell $($PSVersionTable.PSVersion) on $([Environment]::OSVersion.VersionString)")
+    $failure.DocumentElement.SetAttribute('test-framework', 'Windows device-test result validation')
+    $failure.DocumentElement.SetAttribute('run-date', $timestamp.ToString('yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture))
+    $failure.DocumentElement.SetAttribute('run-time', $timestamp.ToString('HH:mm:ss', [Globalization.CultureInfo]::InvariantCulture))
     $failure.SelectSingleNode('//test').SetAttribute('name', $Name)
     $failure.SelectSingleNode('//message').InnerText = $Message
     $Document.DocumentElement.AppendChild($Document.ImportNode($failure.DocumentElement, $true)) | Out-Null
