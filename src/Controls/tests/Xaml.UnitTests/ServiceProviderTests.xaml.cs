@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Mono.Cecil.Cil;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
@@ -19,8 +21,8 @@ public class MarkupExtensionBase : IMarkupExtension
 			services.Add("IXamlTypeResolver");
 		if (serviceProvider.GetService(typeof(IRootObjectProvider)) != null)
 			services.Add($"IRootObjectProvider({((IRootObjectProvider)serviceProvider.GetService(typeof(IRootObjectProvider))).RootObject.GetType().Name})");
-		if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) != null)
-			services.Add("IXmlLineInfoProvider");
+		if (serviceProvider.GetService(typeof(XamlLineInfo)) != null)
+			services.Add("XamlLineInfo");
 		if (serviceProvider.GetService(typeof(IValueConverterProvider)) != null)
 			services.Add("IValueConverterProvider");
 		if (serviceProvider.GetService(typeof(IProvideParentValues)) != null)
@@ -41,8 +43,15 @@ public class SPMarkup1 : MarkupExtensionBase { }
 [RequireService([typeof(IProvideParentValues)])]
 public class SPMarkup2 : MarkupExtensionBase { }
 
-[RequireService([typeof(IXmlLineInfoProvider)])]
-public class SPMarkup3 : MarkupExtensionBase { }
+[RequireService([typeof(XamlLineInfo)])]
+public class SPMarkup3 : IMarkupExtension
+{
+	public object ProvideValue(IServiceProvider serviceProvider)
+	{
+		var lineInfo = (XamlLineInfo)serviceProvider.GetService(typeof(XamlLineInfo));
+		return $"XamlLineInfo({lineInfo.LineNumber},{lineInfo.LinePosition})";
+	}
+}
 
 [RequireService([typeof(IRootObjectProvider)])]
 public class SPMarkup4 : MarkupExtensionBase { }
@@ -59,15 +68,30 @@ public partial class ServiceProviderTests : ContentPage
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
 		[Theory]
+		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
 		internal void TestServiceProviders(XamlInflator inflator)
 		{
 			var page = new ServiceProviderTests(inflator);
-			MockCompiler.Compile(typeof(ServiceProviderTests));
+			if (inflator == XamlInflator.XamlC)
+			{
+				MockCompiler.Compile(typeof(ServiceProviderTests), out var initializeComponent, out _);
+				var lineInfoConstructor = initializeComponent.Body.Instructions
+					.Where(instruction => instruction.OpCode == OpCodes.Newobj)
+					.Select(instruction => instruction.Operand)
+					.OfType<Mono.Cecil.MethodReference>()
+					.Single(method => method.DeclaringType.FullName == "Microsoft.Maui.Controls.Xaml.XamlLineInfo");
+
+				Assert.Collection(
+					lineInfoConstructor.Parameters,
+					parameter => Assert.Equal("System.Int32", parameter.ParameterType.FullName),
+					parameter => Assert.Equal("System.Int32", parameter.ParameterType.FullName));
+			}
 
 			Assert.Null(page.label0.Text);
 			Assert.Contains("IProvideValueTarget", page.label1.Text, StringComparison.Ordinal);
-			Assert.Contains("IXmlLineInfoProvider", page.label3.Text, StringComparison.Ordinal);
+			Assert.Equal("XamlLineInfo(11,32)", page.label3.Text);
 			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text, StringComparison.Ordinal); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
