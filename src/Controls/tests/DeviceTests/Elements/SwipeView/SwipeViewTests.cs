@@ -12,6 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SwipeView)]
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+#if !WINDOWS
 		void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
@@ -30,7 +31,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS
 		[Fact(DisplayName = "SwipeView LogicalChildren Works Correctly")]
 		public async Task SwipeViewLogicalChildren()
 		{
