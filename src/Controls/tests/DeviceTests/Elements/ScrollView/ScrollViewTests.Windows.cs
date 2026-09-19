@@ -51,6 +51,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				await view.ScrollToAsync(0, 100, false).WaitAsync(TimeSpan.FromSeconds(5));
 				Assert.True(view.ScrollY > 0);
+				// Scroll completion can resume inside native arrange; let it return before teardown.
+				await WaitForDispatcherIdle(((WScrollViewer)view.Handler.PlatformView).DispatcherQueue);
 				page.Content = null;
 			});
 
