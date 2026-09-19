@@ -16,7 +16,44 @@
     <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
     <UseMaterial3>false</UseMaterial3>
+    <EnableMauiDevFlow Condition="'$(EnableMauiDevFlow)' == ''">false</EnableMauiDevFlow>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableMauiDevFlow)' == 'true' and '$(Configuration)' == 'Debug' and '$(UseMaui)' != 'true' and ('$(_MauiTargetPlatformIsAndroid)' == 'true' or '$(_MauiTargetPlatformIsiOS)' == 'true')">
+    <_MauiDevFlowEnabled>true</_MauiDevFlowEnabled>
+    <DefineConstants>$(DefineConstants);MAUI_DEVFLOW</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_MauiDevFlowEnabled)' == 'true'">
+    <PackageReference Include="Microsoft.Maui.DevFlow.Agent" />
+    <!-- Keep the Agent's transitive build-only packages from duplicating the in-tree task imports. -->
+    <PackageReference Include="Microsoft.Maui.Controls.Build.Tasks" PrivateAssets="all" ExcludeAssets="build;buildTransitive" />
+    <PackageReference Include="Microsoft.Maui.Resizetizer" PrivateAssets="all" ExcludeAssets="build;buildTransitive" />
+  </ItemGroup>
+
+  <Target Name="ValidateMauiDevFlowConfiguration" BeforeTargets="PrepareForBuild;CollectPackageReferences" Condition="'$(EnableMauiDevFlow)' != 'false'">
+    <Error Condition="'$(EnableMauiDevFlow)' != 'true'" Text="EnableMauiDevFlow must be true or false." />
+    <Error Condition="'$(Configuration)' != 'Debug'" Text="EnableMauiDevFlow is only supported in Debug builds." />
+    <Error Condition="'$(UseMaui)' == 'true'" Text="EnableMauiDevFlow requires an in-tree Sandbox build. Do not enable UseMaui or UseWorkload." />
+    <Error Condition="'$(TargetFramework)' != '' and '$(_MauiDevFlowEnabled)' != 'true'" Text="EnableMauiDevFlow supports Android and iOS only. Select a supported target with MauiSamplePlatforms." />
+  </Target>
+
+  <Target Name="ValidateMauiDevFlowReferences" AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <_MauiDevFlowAgentReference Include="@(ReferencePath)" Condition="'%(ReferencePath.Filename)' == 'Microsoft.Maui.DevFlow.Agent'" />
+      <_MauiDevFlowFrameworkReference Include="@(ReferencePath)" Condition="'$(_MauiDevFlowEnabled)' == 'true' and ('%(ReferencePath.Filename)' == 'Microsoft.Maui' or '%(ReferencePath.Filename)' == 'Microsoft.Maui.Controls' or '%(ReferencePath.Filename)' == 'Microsoft.Maui.Controls.Xaml' or '%(ReferencePath.Filename)' == 'Microsoft.Maui.Essentials' or '%(ReferencePath.Filename)' == 'Microsoft.Maui.Graphics')" />
+    </ItemGroup>
+    <Error Condition="'$(_MauiDevFlowEnabled)' != 'true' and '@(_MauiDevFlowAgentReference)' != ''" Text="Stale DevFlow restore state. Build with restore after changing EnableMauiDevFlow or Configuration; do not use --no-restore." />
+    <Error Condition="'$(_MauiDevFlowEnabled)' == 'true' and '%(_MauiDevFlowFrameworkReference.ReferenceSourceTarget)' != 'ProjectReference'" Text="DevFlow Sandbox must use in-tree MAUI assemblies, not %(_MauiDevFlowFrameworkReference.Identity)." />
+  </Target>
+
+  <Target Name="TrackMauiDevFlowBundleFiles" BeforeTargets="_CleanGetCurrentAndPriorFileWrites" DependsOnTargets="_GenerateBundleName" Condition="'$(_MauiDevFlowEnabled)' == 'true' and '$(_MauiTargetPlatformIsiOS)' == 'true'">
+    <ItemGroup>
+      <!-- iOS copies these after IncrementalClean; register them so opting out removes the previous bundle's Agent. -->
+      <_MauiDevFlowBundleAssembly Include="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').StartsWith('Microsoft.Maui.DevFlow.')) and '%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
+      <FileWrites Include="@(_MauiDevFlowBundleAssembly->'$(AppBundleDir)/%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup>
     <ApplicationTitle>Sandbox</ApplicationTitle>

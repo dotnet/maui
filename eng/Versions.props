@@ -104,6 +104,8 @@
     <MicrosoftAspNetCoreMetadataPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreMetadataPreviousPackageVersion>
     <MicrosoftJSInteropPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftJSInteropPreviousPackageVersion>
     <!-- Other packages -->
+    <MicrosoftMauiDevFlowAgentVersion>0.1.0-preview.10.26274.3</MicrosoftMauiDevFlowAgentVersion>
+    <MicrosoftMauiDevFlowBuildTasksVersion>10.0.20</MicrosoftMauiDevFlowBuildTasksVersion>
     <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview*</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>4.14.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>4.14.0</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>

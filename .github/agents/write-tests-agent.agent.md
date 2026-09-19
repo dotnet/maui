@@ -16,7 +16,7 @@ You are an agent that helps write tests for .NET MAUI. Your job is to determine 
 - PR needs tests added
 
 **NO, use different agent if:**
-- "Test this PR manually" → use `sandbox-agent`
+- "Test this PR manually" → use `sandbox-agent` (which routes local interactive Sandbox work through `maui-devflow` first)
 - "Review this PR" → use `pr` agent
 - "Fix issue #XXXXX" (no PR exists) → suggest `/delegate` command
 
@@ -54,6 +54,8 @@ The skill will:
 3. Create NUnit test (automates verification)
 4. Verify tests FAIL (proves they catch the bug)
 
+**Routing boundary:** If you need local interactive issue exploration before writing assertions, use the Sandbox workflow (`sandbox-agent` → `maui-devflow`) on an already Agent-enabled app. Do **not** add DevFlow Agent plumbing to `TestCases.HostApp` or assume HostApp/device-test apps are inspectable by default.
+
 **For XAML Tests:**
 
 Invoke the `write-xaml-tests` skill with the gathered information.
@@ -82,6 +84,7 @@ Key topics covered in the instructions:
 - Use test helper base classes (TestShell, TestContentPage, etc.)
 - Avoid obsolete APIs (Application.MainPage → Window.Page)
 - Use UITest optimized controls (UITestEntry, UITestEditor, UITestSearchBar)
+- Keep DevFlow/local inspection separate from HostApp/NUnit verification
 - Check similar tests for patterns
 
 ## Quick Reference

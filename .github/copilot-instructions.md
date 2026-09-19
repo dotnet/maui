@@ -73,7 +73,7 @@ Platform-specific files use naming conventions to control compilation:
 ### Sample Projects
 
 - `src/Controls/samples/Maui.Controls.Sample` - Full gallery sample with all controls and features
-- `src/Controls/samples/Maui.Controls.Sample.Sandbox` - Empty project for testing/reproduction
+- `src/Controls/samples/Maui.Controls.Sample.Sandbox` - Sandbox sample for testing/reproduction; preferred local app for DevFlow-guided manual inspection once the branch includes the Sandbox DevFlow Agent integration
 - `src/Essentials/samples/Essentials.Sample` - Essentials API demonstrations (non-UI MAUI APIs)
 - `src/BlazorWebView/samples/` - BlazorWebView sample applications
 
@@ -251,7 +251,7 @@ The repository includes specialized custom agents and reusable skills for specif
 
 3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
-   - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
+   - **Capabilities**: Sandbox app setup, DevFlow-first local inspection/debugging, and Appium/native-input fallback for hit-testing or full regression validation
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
    - **Do NOT use for**: Code review (use pr agent), writing automated tests (use write-tests-agent)
 
@@ -322,7 +322,12 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
    - **Output**: Test files that fail without fix, pass with fix
 
-7. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+7. **maui-devflow** (`.github/skills/maui-devflow/SKILL.md`)
+   - **Purpose**: Local interactive emulator/simulator discovery, app inspection, semantic interaction, and bounded diagnostics for Agent-enabled MAUI apps
+   - **Trigger phrases**: "inspect this app locally", "use DevFlow on Sandbox", "debug this interaction on the simulator"
+   - **Do NOT use for**: Replacing Appium/NUnit/XHarness/integration runners, proving native hit-testing or accessibility, or assuming uninstrumented HostApp/device-test apps are inspectable
+
+8. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
    - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
    - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
    - **Output**: Test files for Controls.Xaml.UnitTests

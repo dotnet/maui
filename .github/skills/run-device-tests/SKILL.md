@@ -45,6 +45,14 @@ These are automatically loaded by the Run-DeviceTests.ps1 script.
 - User asks "run device tests on MacCatalyst"
 - User wants to run only specific test categories (e.g., "run Button tests")
 
+## DevFlow Boundary
+
+Use `maui-devflow` for local emulator/simulator discovery, app inspection, or semantic interaction **only when you already have an Agent-enabled app to inspect**. Keep this skill authoritative for device-test execution:
+
+- `Run-DeviceTests.ps1` + XHarness remain the source of truth for device-test pass/fail.
+- Device-test apps are **not** automatically Agent-enabled; do not inject DevFlow plumbing into them or claim they are inspectable by default.
+- DevFlow evidence can supplement local diagnosis, but it does not replace native input, XHarness execution, or XML test results.
+
 ## Available Test Projects
 
 | Project | Path |
@@ -157,6 +165,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting for iOS/MacCatalyst/Android
 - Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
+- If you also need local app inspection, keep the inspected app/session and the device-test run conceptually separate; do not assume `--device` behavior from DevFlow UI commands matches XHarness device selection semantics
 
 ## Test Filtering
 

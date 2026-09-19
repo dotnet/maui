@@ -19,6 +19,14 @@ Build the MAUI product, install local workloads, and run integration tests.
 - User wants to verify changes don't break template scenarios
 - User asks to run specific test categories (WindowsTemplates, Samples, Build, Blazor, etc.)
 
+## DevFlow Boundary
+
+Use `maui-devflow` only for separate local interactive debugging on an already Agent-enabled app such as Sandbox. This skill stays authoritative for integration testing:
+
+- Integration builds/launches stay in the normal in-tree runner; DevFlow has no build/run subcommand for this workflow.
+- Do not try to attach DevFlow expectations to template apps or XHarness-driven runs unless that app was explicitly instrumented for DevFlow.
+- Do not run competing simulator/emulator controllers while the integration runner owns the target lifecycle.
+
 ## Available Test Categories
 
 | Category | Platform | Description |
@@ -145,7 +153,7 @@ ls .dotnet/packs/Microsoft.Maui.Sdk
 | Session times out / becomes invalid | Integration tests are long-running (15-60+ min). Run manually in a terminal window instead of via Copilot CLI |
 | Tests take too long | Start with `Build` category (fastest), then run others. Use `-SkipBuild -SkipInstall` if workloads are already installed |
 | iOS tests fail with "mlaunch exited with 1" | Simulator state issue. Run individual tests instead of the whole category (see below) |
-| iOS simulator state errors (code 137/149) | Reset simulator: `xcrun simctl shutdown all && xcrun simctl erase all` or run tests individually |
+| iOS simulator state errors (code 137/149) | Prefer rerunning the individual test/category on the selected simulator after ensuring no competing controller is active. If recovery is necessary, use bounded selected-target cleanup only with clear ownership/consent; never blanket-reset all simulators while XHarness owns lifecycle |
 
 ## Running Manually (Recommended for Long-Running Tests)
 
@@ -197,3 +205,5 @@ foreach ($test in $iosTests) {
     pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~$test" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
 }
 ```
+
+**Recovery rule:** Let XHarness own simulator lifecycle during these runs. Do not use blanket `simctl shutdown all`, `simctl erase all`, or unrelated device cleanup as an "auto-heal" step.

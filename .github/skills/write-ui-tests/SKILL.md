@@ -35,6 +35,7 @@ If tests keep passing after 3 iterations:
 - ✅ PR has no tests and needs them
 - ✅ Issue needs a reproduction test before fixing
 - ✅ Existing tests don't adequately cover the bug
+- ❌ Local interactive Sandbox inspection/debugging → use `sandbox-agent` / `maui-devflow`
 
 ## Required Input
 
@@ -63,6 +64,12 @@ This contains the authoritative conventions for:
 - File locations (`TestCases.HostApp/Issues/`, `TestCases.Shared.Tests/Tests/Issues/`)
 - Required attributes (`[Issue()]`, `[Category()]`)
 - Test patterns and assertions
+
+### Local Exploration Boundary
+
+- Use `maui-devflow` only when you already have a **separately verified Agent-enabled app** (typically Sandbox) and need extra local observation before writing the UITest assertion.
+- `TestCases.HostApp` is **not** automatically Agent-enabled. Do not add Agent packages/plumbing to HostApp and do not assume DevFlow can inspect it.
+- Final proof still comes from the authored UITest plus `verify-tests-fail-without-fix`, not from DevFlow screenshots or semantic taps.
 
 ### Step 2: Create HostApp Page
 

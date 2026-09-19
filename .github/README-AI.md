@@ -8,10 +8,13 @@ This folder contains instructions and configurations for AI coding assistants wo
 The pr-review skill is a 4-phase orchestrator for investigating issues and reviewing/working on PRs. It invokes dedicated phase skills (pr-preflight, pr-gate, try-fix, pr-report) for context gathering, test verification, fix exploration, and review reports.
 
 ### Sandbox Agent
-The sandbox agent is your general-purpose tool for working with the .NET MAUI Sandbox app. Use it for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
+The sandbox agent is your general-purpose tool for working with the .NET MAUI Sandbox app. It now routes local interactive simulator/emulator work through `maui-devflow` first, then falls back to Appium/native-input workflows only when that evidence is required.
 
 ### UI Test Coding Agent
 The UI test coding agent writes and runs automated UI tests following .NET MAUI conventions. Use it for creating new test coverage, running existing tests from PRs, and validating UI test correctness.
+
+### MAUI DevFlow Skill
+The `maui-devflow` skill is the local interactive workflow for explicit device discovery, Agent-backed app inspection, semantic interaction, bounded logs, and screenshots only when genuinely visual evidence is needed. It launches Sandbox through the in-tree `Start-DevFlowSandbox.ps1` path, reuses the returned `connectionArguments`, keeps broker startup foreground, and leaves automated runners authoritative.
 
 ## How to Use
 
@@ -67,7 +70,7 @@ copilot
 # Invoke the sandbox-agent
 /agent sandbox-agent
 
-# Test a PR or reproduce an issue
+# Test a PR or reproduce an issue (the agent routes local interactive work through maui-devflow first)
 please test PR #32479
 please reproduce issue #12345
 ```
@@ -110,7 +113,7 @@ please review https://github.com/dotnet/maui/pull/XXXXX
 2. **Select your repository and branch** using the dropdown menus in the text box
 
 3. **Choose your agent** from the dropdown:
-   - `sandbox-agent` for manual testing and experimentation
+   - `sandbox-agent` for DevFlow-first manual testing and experimentation
    - `write-tests-agent` for writing tests (invokes appropriate skill)
    - `pr-review skill` for reviewing and working on existing PRs
 
@@ -133,8 +136,8 @@ Your go-to agent for hands-on work with the Sandbox app:
 1. **PR Testing** - Manually validates PRs by running them in the Sandbox app
 2. **Issue Reproduction** - Creates minimal reproduction cases for reported issues
 3. **Feature Experimentation** - Try out MAUI features in a clean environment
-4. **Quick Validation** - Fast manual testing without writing automated tests
-5. **Automated Logging** - Uses `BuildAndRunSandbox.ps1` to capture all logs to `CustomAgentLogsTmp/Sandbox/`
+4. **Quick Validation** - Uses `maui-devflow` first for explicit device selection, bounded inspection, semantic actions, and observable state assertions
+5. **Appium/Native Fallback** - Uses `BuildAndRunSandbox.ps1` and Appium only when native hit-testing, occlusion, disabled input, gestures, or uninstrumented-app behavior must be checked
 
 ### UI Test Coding Agent
 
@@ -222,6 +225,8 @@ These provide specialized guidance for specific scenarios used by all agents:
 
 - **`instructions/uitests.instructions.md`** - UI testing guidelines (when to use HostApp vs Sandbox)
 - **`instructions/sandbox.instructions.md`** - Sandbox app testing patterns
+- **`skills/maui-devflow/SKILL.md`** - DevFlow-first local app inspection and interaction workflow
+- **`skills/maui-devflow/references/sandbox.md`** - Sandbox-specific DevFlow launcher and evidence guidance
 - **`instructions/templates.instructions.md`** - Template modification rules
 - **`instructions/xaml-unittests.instructions.md`** - XAML unit testing guidelines
 - **`instructions/collectionview-handler-detection.instructions.md`** - CollectionView handler configuration
@@ -234,6 +239,7 @@ These provide specialized guidance for specific scenarios used by all agents:
 Automated PowerShell scripts for testing workflows:
 
 - **`scripts/BuildAndRunSandbox.ps1`** - Build, deploy, and test Sandbox app (Android/iOS)
+- **`skills/maui-devflow/scripts/Start-DevFlowSandbox.ps1`** - Build and launch the opt-in DevFlow Sandbox session on an explicit Android/iOS target
 - **`scripts/BuildAndRunHostApp.ps1`** - Build, deploy, and run UI tests (Android/iOS)
 - **`scripts/templates/RunWithAppiumTest.template.cs`** - Template for Appium test scripts
 
@@ -250,6 +256,7 @@ Reusable skills in `.github/skills/` that agents can invoke:
 
 - **`try-fix/`** - Proposes and tests independent fix approaches, records results, learns from failures
 - **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
+- **`maui-devflow/`** - Local interactive device discovery, app inspection, semantic interaction, and bounded diagnostics for Agent-enabled apps
 - **`write-ui-tests/`** - Creates UI tests for issues following MAUI conventions
 - **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
 - **`azdo-build-investigator/`** - Investigates CI failures for PRs (build errors, Helix test logs, binlog analysis) via dotnet/arcade-skills plugin
@@ -261,6 +268,7 @@ Reusable skills in `.github/skills/` that agents can invoke:
 2. **try-fix Skill** - New skill for exploring independent fix alternatives with empirical testing
 3. **Skills Integration** - Added `verify-tests-fail-without-fix` and `write-ui-tests` skills for reusable test workflows
 4. **Agent/Skills Guidelines** - New instruction files for authoring agents and skills
+5. **DevFlow Routing** - Manual local Sandbox inspection now prefers `maui-devflow`, with legacy Appium retained for cases where semantic activation is not enough evidence
 
 **Prior Infrastructure Consolidation (November 2025):**
 1. **Unified Log Structure** - All logs now under `CustomAgentLogsTmp/` with subdirectories for Sandbox and UITests
@@ -367,7 +375,7 @@ For issues or questions about the AI agent instructions:
 
 **Agent Files**:
 - 3 agent files (sandbox-agent.agent.md, write-tests-agent.agent.md, learn-from-pr.agent.md)
-- 15 skills (pr-review, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator, code-review, evaluate-pr-tests, find-reviewable-pr, issue-triage, learn-from-pr, pr-finalize, run-device-tests, run-helix-tests, run-integration-tests) + 3 phase docs (pr-preflight, pr-gate, pr-report)
+- 16 skills (pr-review, try-fix, verify-tests-fail-without-fix, maui-devflow, write-ui-tests, write-xaml-tests, azdo-build-investigator, code-review, evaluate-pr-tests, find-reviewable-pr, issue-triage, learn-from-pr, pr-finalize, run-device-tests, run-helix-tests, run-integration-tests) + 3 phase docs (pr-preflight, pr-gate, pr-report)
 - All validated and consistent with consolidated structure
 
 **Automation**:
@@ -383,6 +391,6 @@ For issues or questions about the AI agent instructions:
 
 ---
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-09-17
 
-**Note**: These instructions are actively being refined based on real-world usage. Agent consolidation completed January 2026 (unified 4-phase workflow with try-fix skill). Feedback and improvements are welcome!
+**Note**: These instructions are actively being refined based on real-world usage. Agent consolidation completed January 2026, and local DevFlow-first Sandbox routing was added in September 2026. Feedback and improvements are welcome!
