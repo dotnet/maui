@@ -11,7 +11,7 @@
     Exit codes:
       0 - App launched and exited cleanly
       2 - Timeout waiting for app to exit (process was killed)
-      3 - Other launch/wait failure
+      3 - Launch/wait failure, or an unsuccessful/unknown app exit code
 #>
 param(
     [Parameter(Mandatory=$true)][string]$PackageName,
@@ -68,6 +68,8 @@ Write-Host "Launched $aumid (PID $procId) with args: $AppArguments"
 
 try {
     $proc = Get-Process -Id $procId -ErrorAction Stop
+    # Retain the handle before waiting so Windows PowerShell can read ExitCode after exit.
+    $null = $proc.Handle
 } catch {
     Write-Error "App process $procId disappeared immediately after launch: $_"
     exit 3
@@ -79,5 +81,10 @@ if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
     exit 2
 }
 
-Write-Host "App PID $procId exited with code $($proc.ExitCode)"
+$appExitCode = $proc.ExitCode
+Write-Host "App PID $procId exited with code $appExitCode"
+if ($null -eq $appExitCode -or $appExitCode -ne 0) {
+    Write-Error "App PID $procId did not exit successfully." -ErrorAction Continue
+    exit 3
+}
 exit 0
