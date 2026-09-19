@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 2,
+  "limits": {
+    "maxRecommendations": 3
+  },
+  "tradeoffAssessments": [
+    "likely-worth-it",
+    "likely-not-worth-it",
+    "unclear",
+    "not-applicable"
+  ],
+  "costAttributions": [
+    "accidental",
+    "deliberate",
+    "unknown"
+  ],
+  "tradeoffAssessmentGates": {
+    "likely-worth-it": [
+      "correctness benefit established by tests or linked issue evidence",
+      "complete non-advisory performance evidence",
+      "no better tested alternative"
+    ],
+    "likely-not-worth-it": [
+      "material performance cost confirmed by non-advisory evidence",
+      "a tested lower-cost implementation preserves required correctness"
+    ],
+    "unclear": [
+      "evidence is incomplete, advisory-only, conflicting, or lacks a tested alternative"
+    ],
+    "not-applicable": [
+      "no correctness-versus-performance tradeoff is present"
+    ]
+  },
+  "confidenceLevels": [
+    "high",
+    "medium",
+    "low"
+  ],
+  "reportVerdicts": [
+    {
+      "id": "blocker",
+      "label": "🟥 Confirmed performance regression"
+    },
+    {
+      "id": "advisory",
+      "label": "🟧 Advisory timing regression"
+    },
+    {
+      "id": "improvement",
+      "label": "🟩 Measured improvement — whole-PR evidence complete"
+    },
+    {
+      "id": "clean",
+      "label": "✅ No performance blocker found — whole-PR evidence complete"
+    },
+    {
+      "id": "no-blocker-incomplete",
+      "label": "🟢 No performance blocker found; coverage incomplete"
+    },
+    {
+      "id": "device-required",
+      "label": "🟡 Partial/inconclusive — device measurement required"
+    },
+    {
+      "id": "inconclusive",
+      "label": "⚠️ Inconclusive — execution or coverage incomplete"
+    }
+  ],
+  "recommendationEvidence": [
+    "measured",
+    "statically-supported",
+    "hypothesis"
+  ],
+  "workaroundStatuses": [
+    "plausible-unverified",
+    "none"
+  ],
+  "nextActions": [
+    {
+      "id": "no_concerns",
+      "allowedAssessments": [
+        "not-applicable"
+      ],
+      "requires": [
+        "complete whole-PR coverage",
+        "complete non-advisory evidence",
+        "no confirmed regression",
+        "no high-confidence static hot-path finding"
+      ]
+    },
+    {
+      "id": "no_perf_action_needed",
+      "allowedAssessments": [
+        "not-applicable"
+      ],
+      "requires": [
+        "whole-PR direct coverage is incomplete",
+        "every selected sampled benchmark or device family completed without a concern",
+        "no static performance concern is identified",
+        "the report remains explicit about which paths were sampled versus directly measured"
+      ]
+    },
+    {
+      "id": "accept_tradeoff",
+      "allowedAssessments": [
+        "likely-worth-it"
+      ],
+      "requires": [
+        "complete whole-PR coverage",
+        "complete non-advisory evidence",
+        "measured deliberate cost",
+        "correctness benefit established by tests or linked issue evidence",
+        "no better tested alternative"
+      ]
+    },
+    {
+      "id": "accept_with_followup",
+      "allowedAssessments": [
+        "likely-worth-it"
+      ],
+      "requires": [
+        "complete whole-PR coverage",
+        "complete non-advisory evidence",
+        "correctness benefit established",
+        "confirmed measured optimization opportunity in sealed evidence",
+        "current cost does not clearly justify blocking the fix"
+      ]
+    },
+    {
+      "id": "optimize_before_merge",
+      "allowedAssessments": [
+        "likely-not-worth-it",
+        "not-applicable"
+      ],
+      "requires": [
+        "confirmed material regression or high-confidence hot-path regression",
+        "regression is accidental or a viable lower-cost approach is identified",
+        "confirmed regression is not suppressed by unrelated coverage gaps"
+      ]
+    },
+    {
+      "id": "run_more_measurements",
+      "allowedAssessments": [
+        "unclear"
+      ],
+      "requires": [
+        "decision-relevant evidence is missing, stale, incomplete, sampled-only, static-only, or device-required",
+        "a concrete supported measurement path exists",
+        "no confirmed blocking regression already determines optimize-before-merge"
+      ]
+    },
+    {
+      "id": "needs_human_discussion",
+      "allowedAssessments": [
+        "unclear"
+      ],
+      "requires": [
+        "evidence supports competing correctness, performance, compatibility, or maintenance concerns, or no supported measurement path exists"
+      ]
+    }
+  ],
+  "decisionRules": {
+    "confirmedRegressionTakesPrecedenceOverCoverageGaps": true,
+    "acceptanceRequiresCompleteNonAdvisoryEvidence": true,
+    "acceptanceRequiresConfirmedMeasuredCost": true,
+    "missingEvidenceRequiresConcreteMeasurementPath": true,
+    "unsupportedMissingEvidenceAction": "needs_human_discussion",
+    "externalEvidenceCanValidateWorkaround": false
+  },
+  "tradeoffFactors": [
+    "correctness severity",
+    "absolute measured cost",
+    "relative measured cost",
+    "execution frequency",
+    "affected scope",
+    "better tested alternative",
+    "workaround quality",
+    "evidence confidence"
+  ],
+  "hardGates": [
+    "Keep empirical verdict separate from recommended next action.",
+    "Do not calculate a synthetic worth-it score.",
+    "Use unknown when a factor is not established by evidence.",
+    "Do not invent an absolute cost, execution frequency, affected scope, or expected percentage benefit.",
+    "Incomplete or advisory-only evidence cannot support likely-worth-it or likely-not-worth-it.",
+    "Partial evidence cannot produce no_concerns.",
+    "A plausible-unverified workaround cannot drive merge or issue-disposition advice.",
+    "This workflow cannot mark a workaround validated because it has no trusted workaround-specific execution path.",
+    "Never recommend automatic issue closure and expose no issue-closing capability."
+  ]
+}
