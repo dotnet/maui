@@ -150,6 +150,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
 	var appiumLog = $"{binDir}/appium_mac_{resultsFileName}.log";
+	var performanceTrace = $"{binDir}/uitest_performance_{resultsFileName}.jsonl";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -161,6 +162,8 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
+	SetEnvironmentVariable("UITEST_PERFORMANCE_TRACE_FILE", performanceTrace);
+	Information("UI test performance trace: {0}", performanceTrace);
 
 	Information("Run UITests project {0}", project);
 	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
