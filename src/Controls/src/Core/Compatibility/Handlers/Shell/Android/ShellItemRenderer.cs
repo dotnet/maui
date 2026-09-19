@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			_shellAppearance = appearance;
+			BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomView);
 
 			if (appearance is not null)
 				SetAppearance(appearance);

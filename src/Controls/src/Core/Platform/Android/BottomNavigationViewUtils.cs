@@ -10,6 +10,7 @@ using Android.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -26,6 +27,22 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class BottomNavigationViewUtils
 	{
 		internal const int MoreTabId = 99;
+		static readonly Color s_lightActiveIndicatorColor = Color.FromArgb("#E8DEF8");
+		static readonly Color s_darkActiveIndicatorColor = Color.FromArgb("#4A4458");
+
+		internal static void UpdateActiveIndicatorColor(BottomNavigationView bottomNavigationView)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled || bottomNavigationView is null)
+			{
+				return;
+			}
+
+			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(
+				ResolveThemeColor(s_lightActiveIndicatorColor, s_darkActiveIndicatorColor).ToPlatform());
+		}
+
+		static Color ResolveThemeColor(Color light, Color dark) =>
+			Application.Current?.RequestedTheme == AppTheme.Dark ? dark : light;
 
 		public static Drawable CreateItemBackgroundDrawable()
 		{
