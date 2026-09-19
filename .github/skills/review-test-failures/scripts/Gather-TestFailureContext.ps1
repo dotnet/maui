@@ -21,7 +21,7 @@
     pipelines are still inspected even when their checks do not match this filter.
 
 .PARAMETER HistoryBuilds
-    Number of previous completed builds on each pipeline's actual source branch
+    Number of latest completed builds on the PR's target branch for each pipeline
     to inspect. Defaults to five. This history is evidence, not an attribution rule.
 
 .PARAMETER SkipVisualEvidence
@@ -232,8 +232,6 @@ function Invoke-ProcessWithGatherDeadline {
         $process.Dispose()
     }
 }
-
-Initialize-AzDoToken
 
 function Invoke-GhJson {
     param([string[]]$Arguments)
@@ -1007,13 +1005,178 @@ function Get-RequiredReviewPipelines {
     )
 }
 
+function Get-TestReviewEvaluation {
+    param([object[]]$Checks, [object[]]$Builds, [string[]]$BuildId)
+
+    $pipelines = foreach ($pipeline in Get-RequiredReviewPipelines) {
+        $namePattern = '^' + [regex]::Escape($pipeline.name) + '(?:$|[\s(])'
+        $matchingChecks = @($Checks | Where-Object {
+            $name = if ($_.name) { [string]$_.name } else { [string]$_.context }
+            $name -match $namePattern
+        })
+        $pending = @($matchingChecks | Where-Object {
+            $_.status -in @('QUEUED', 'IN_PROGRESS', 'WAITING', 'PENDING', 'REQUESTED') -or $_.state -eq 'PENDING'
+        }).Count -gt 0
+        $available = @($matchingChecks | Where-Object {
+            $_.state -in @('SUCCESS', 'FAILURE', 'ERROR') -or
+            $_.conclusion -in @('SUCCESS', 'FAILURE', 'TIMED_OUT', 'CANCELLED', 'ACTION_REQUIRED', 'STARTUP_FAILURE') -or
+            ($_.status -eq 'COMPLETED' -and -not $_.conclusion)
+        }).Count -gt 0
+        $message = if ($pending) { 'Pending; no results yet.' } else { 'No current-PR results available.' }
+        $unverified = $false
+        $buildUrl = $matchingChecks | ForEach-Object {
+            if ($_.detailsUrl) { $_.detailsUrl } elseif ($_.targetUrl) { $_.targetUrl }
+        } | Select-Object -First 1
+
+        if ($PSBoundParameters.ContainsKey('Builds')) {
+            $completedCheck = $available
+            $pipelineBuilds = @($Builds | Where-Object {
+                $_.metadata.definitionId -eq $pipeline.definitionId -or
+                @($_.checkNames | Where-Object { $_ -match $namePattern }).Count -gt 0
+            })
+            $currentBuilds = @($pipelineBuilds | Where-Object {
+                $_.accessible -and $_.headEvidence.verified
+            })
+            $available = @($currentBuilds | Where-Object {
+                $_.metadata.result -in @('failed', 'partiallySucceeded') -or
+                @(ConvertTo-Array $_.failedRecords).Count -gt 0 -or
+                @(ConvertTo-Array $_.testFailuresFromLogs).Count -gt 0 -or
+                @($_.testResults | Where-Object { -not $_.error -and ($_.testName -or $_.outcome) }).Count -gt 0 -or
+                $_.deviceTestFailedConfirmedZero -or $_.testResultPresence.hasResults
+            }).Count -gt 0
+            $confirmedEmpty = $currentBuilds.Count -gt 0 -and @($currentBuilds | Where-Object {
+                -not $_.testResultPresence -or $_.testResultPresence.error -or
+                $_.testResultPresence.hasResults -ne $false
+            }).Count -eq 0
+            $unverified = -not $available -and -not $pending -and -not $confirmedEmpty -and
+                ($completedCheck -or $pipelineBuilds.Count -gt 0)
+            if (-not $buildUrl) {
+                $buildUrl = $pipelineBuilds | ForEach-Object {
+                    if ($_.metadata.webUrl) { $_.metadata.webUrl } elseif ($_.sourceUrl) { $_.sourceUrl }
+                } | Select-Object -First 1
+            }
+            if (-not $pending) {
+                $message = if ($unverified) {
+                    'CI run found, but current-head evidence was not collected or verified. Refresh /review tests; do not rerun CI.'
+                }
+                else {
+                    'No current-PR test results or failure diagnostics found.'
+                }
+            }
+        }
+
+        [ordered]@{
+            name = $pipeline.name
+            status = if ($available) { 'available' } elseif ($unverified) { 'unverified' } elseif ($pending) { 'pending' } else { 'unavailable' }
+            message = if ($available) { 'Current evidence available; evaluate before attributing failures.' } else { $message }
+            buildUrl = $buildUrl
+        }
+    }
+
+    return [ordered]@{
+        skip = (@($pipelines | Where-Object { $_.status -in @('available', 'unverified') }).Count -eq 0 -and
+            ($PSBoundParameters.ContainsKey('Builds') -or @(ConvertTo-Array $BuildId).Count -eq 0))
+        pipelines = @($pipelines)
+    }
+}
+
+function Get-TestResultPresence {
+    param([string]$Org, [string]$Project, [int]$BuildId, [datetime]$Deadline)
+
+    try {
+        $timeout = Get-VisualRequestTimeoutSeconds -Deadline $Deadline
+        # Probe all outcomes, not just Failed: an empty failure list can be a passing test run.
+        $url = "https://vstmr.dev.azure.com/$Org/$Project/_apis/testresults/resultsbybuild?buildId=$BuildId&`$top=1&api-version=7.1-preview.1"
+        $body = Invoke-JsonUrl -Url $url -TimeoutSec $timeout
+        if ($null -eq $body -or $null -eq $body.value) {
+            throw "Test-result presence could not be read for build $BuildId."
+        }
+        return [ordered]@{ hasResults = @(ConvertTo-Array $body.value).Count -gt 0; error = $null }
+    }
+    catch {
+        return [ordered]@{ hasResults = $false; error = $_.Exception.Message }
+    }
+}
+
+function Write-SkippedTestReviewContext {
+    param([object]$Pr, [string]$Repository, [object]$Evaluation, [string]$OutputDirectory, [object[]]$Builds)
+
+    $shortSha = 'unknown'
+    $commit = 'commit unavailable'
+    if ($Pr.headRefOid -match '^[0-9a-fA-F]{40}$' -and $Repository -match '^[\w.-]+/[\w.-]+$') {
+        $shortSha = $Pr.headRefOid.Substring(0, 7)
+        $commit = 'commit [`' + $shortSha + '`](' + "https://github.com/$Repository/commit/$($Pr.headRefOid))"
+    }
+    $login = if ($Pr.author -is [string]) { $Pr.author } else { $Pr.author.login }
+    $author = if ($login -match '^[A-Za-z0-9][A-Za-z0-9-]*(?:\[bot\])?$') { "@$login" } else { 'Author unavailable' }
+    $lines = @(
+        '<!-- Tests Failure -->', '', '## Tests Failure Analysis', '',
+        "> $author &#x2014; test-failure analysis for $commit.", '',
+        '<p align="left">',
+        '  <img alt="Scope CI failures" src="https://img.shields.io/badge/Scope-CI%20failures-1f6feb?labelColor=30363d&amp;style=flat-square">',
+        ('  <img alt="Commit {0}" src="https://img.shields.io/badge/Commit-{0}-1f6feb?labelColor=30363d&amp;style=flat-square">' -f $shortSha),
+        '</p>', '', '---', '',
+        '<details>',
+        '<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>', '<br/>', '',
+        'Evaluation skipped: no usable current-PR results.', ''
+    )
+    foreach ($pipeline in $Evaluation.pipelines) {
+        $icon = if ($pipeline.name -eq 'maui-pr') { '&#x1F4CA;' } else { '&#x1F9EA;' }
+        $lines += @(
+            '<details>', "<summary><strong>$icon $($pipeline.name)</strong></summary>", '<br/>', '',
+            $pipeline.message, '', '</details>', ''
+        )
+        if ($pipeline.name -ne 'maui-pr-uitests') { $lines += @('---', '') }
+    }
+    $lines += @(
+        '</details>', '', '---', '',
+        '<details>',
+        '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>', '<br/>', '',
+        '**Next action:** Comment `/azp run` to run CI (wait if it is already running).',
+        '', '> Maintainers: comment `/review tests` to refresh this report.', '', '</details>'
+    )
+    $Evaluation['report'] = $lines -join "`n"
+    $context = [ordered]@{
+        schemaVersion = 2
+        generatedAtUtc = (Get-Date).ToUniversalTime().ToString('o')
+        repository = $Repository
+        pr = [ordered]@{ number = $Pr.number; author = $login; headRefOid = $Pr.headRefOid; baseRefName = $Pr.baseRefName }
+        evaluation = $Evaluation
+        builds = @(ConvertTo-Array $Builds)
+    }
+    $context | ConvertTo-Json -Depth 40 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'context.json') -Encoding UTF8
+    $Evaluation.report | Set-Content -LiteralPath (Join-Path $OutputDirectory 'context.md') -Encoding UTF8
+    Write-Host 'No usable current-PR results; skipping diff, history, and failure attribution.'
+}
+
+function Get-TestFailureEvidenceUrl {
+    param([object]$Failure, [string]$Org, [string]$Project)
+
+    if ($Org -notmatch '^[\w.-]+$' -or $Project -notmatch '^[\w.-]+$' -or [string]$Failure.buildId -notmatch '^[1-9]\d*$') {
+        return $null
+    }
+    $baseUrl = Get-AzDoApiBase -Org $Org -Project $Project
+    $buildUrl = "$baseUrl/_build/results?buildId=$($Failure.buildId)"
+    if ([string]$Failure.runId -match '^[1-9]\d*$' -and [string]$Failure.resultId -match '^[1-9]\d*$') {
+        return "$buildUrl&view=ms.vss-test-web.build-test-results-tab&runId=$($Failure.runId)&resultId=$($Failure.resultId)"
+    }
+    if ([string]$Failure.helixJobId -match '^[0-9a-fA-F-]{36}$' -and $Failure.helixWorkItem) {
+        return "https://helix.dot.net/api/2019-06-17/jobs/$($Failure.helixJobId)/workitems/$([uri]::EscapeDataString([string]$Failure.helixWorkItem))"
+    }
+    if ([string]$Failure.logId -match '^[1-9]\d*$') {
+        return "$baseUrl/_apis/build/builds/$($Failure.buildId)/logs/$($Failure.logId)"
+    }
+    return $buildUrl
+}
+
 function Get-ChecksForBuildDiscovery {
     param([object[]]$Checks, [object[]]$InterestingChecks)
 
     $requiredChecks = @($Checks | Where-Object {
         [string]$_.name -match '^maui-pr(?:-devicetests|-uitests)?(?:$|[\s(])'
     })
-    return @(@($InterestingChecks) + $requiredChecks | Sort-Object name, detailsUrl -Unique)
+    # Production checks are ordered dictionaries; named-property sorting drops distinct entries.
+    return @(@($InterestingChecks) + $requiredChecks | Sort-Object { $_.name }, { $_.detailsUrl } -Unique)
 }
 
 function Get-BuildHeadEvidence {
@@ -2081,52 +2244,54 @@ function Get-RecentBaseBuilds {
     })
 }
 
-function Get-RecentSourceBranchBuilds {
+function Get-RecentTargetBranchBuilds {
     param(
         [string]$Org,
         [string]$Project,
         [int]$DefinitionId,
-        [string]$SourceBranch,
-        [int]$CurrentBuildId,
-        [string]$BeforeQueueTime,
+        [string]$BaseBranch,
         [int]$Top = 5,
         [datetime]$Deadline = [datetime]::MaxValue
     )
 
-    $history = [ordered]@{ builds = @(); error = $null }
-    $before = [datetimeoffset]::MinValue
-    if ($DefinitionId -le 0 -or $CurrentBuildId -le 0 -or [string]::IsNullOrWhiteSpace($SourceBranch) -or
-        -not [datetimeoffset]::TryParse($BeforeQueueTime, [ref]$before)) {
-        $history.error = "History requires the current build's definition, actual source branch, ID, and queue time."
+    $history = [ordered]@{ branch = $null; builds = @(); error = $null }
+    if ([string]::IsNullOrWhiteSpace($BaseBranch) -or
+        ($BaseBranch.StartsWith('refs/') -and -not $BaseBranch.StartsWith('refs/heads/')) -or
+        $BaseBranch -ceq 'refs/heads/') {
+        $history.error = "Target-branch history requires the PR's baseRefName; no PR source ref or default branch may be substituted."
+        return $history
+    }
+    $history.branch = if ($BaseBranch.StartsWith('refs/heads/')) { $BaseBranch } else { "refs/heads/$BaseBranch" }
+    if ($DefinitionId -le 0) {
+        $history.error = "Target-branch history requires a pipeline definition ID."
         return $history
     }
     if ($Top -le 0) {
-        $history.error = "Same-branch history sampling was disabled."
+        $history.error = "Target-branch history sampling was disabled."
         return $history
     }
     try {
-        if ((Get-Date) -ge $Deadline) { throw "Overall gather deadline reached before branch history discovery." }
-        $branch = [uri]::EscapeDataString($SourceBranch)
-        $maxTime = [uri]::EscapeDataString($before.ToUniversalTime().ToString("o"))
-        # maxTime follows queryOrder's time field: only runs completed BEFORE this build queued.
-        $relative = "_apis/build/builds?definitions=$DefinitionId&branchName=$branch&statusFilter=completed&maxTime=$maxTime&queryOrder=finishTimeDescending&`$top=$($Top + 1)&api-version=7.1"
+        if ((Get-Date) -ge $Deadline) { throw "Overall gather deadline reached before target-branch history discovery." }
+        $branch = [uri]::EscapeDataString($history.branch)
+        $relative = "_apis/build/builds?definitions=$DefinitionId&branchName=$branch&statusFilter=completed&queryOrder=finishTimeDescending&`$top=$Top&api-version=7.1"
         $response = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath $relative -Deadline $Deadline
         if ($response.error -or -not $response.value -or $null -eq $response.value.value) {
-            throw "Branch history could not be read: $($response.error)"
+            throw "Target-branch history could not be read: $($response.error)"
         }
         $eligible = New-Object System.Collections.Generic.List[object]
         $seenIds = @{}
         foreach ($build in @(ConvertTo-Array $response.value.value)) {
             $finish = [datetimeoffset]::MinValue
-            $queued = [datetimeoffset]::MinValue
-            if ([int]$build.id -le 0 -or [int]$build.id -eq $CurrentBuildId -or
-                [int]$build.definition.id -ne $DefinitionId -or [string]$build.sourceBranch -cne $SourceBranch -or
-                [string]$build.status -ne 'completed' -or
-                -not [datetimeoffset]::TryParse([string]$build.finishTime, [ref]$finish) -or $finish -ge $before) {
-                continue
+            # ConvertFrom-Json can materialize dates; a string cast loses their invariant format.
+            $finishText = if ($build.finishTime -is [datetime] -or $build.finishTime -is [datetimeoffset]) {
+                $build.finishTime.ToString('o', [cultureinfo]::InvariantCulture)
+            } else {
+                [string]$build.finishTime
             }
-            if ($build.queueTime -and
-                (-not [datetimeoffset]::TryParse([string]$build.queueTime, [ref]$queued) -or $queued -ge $before)) {
+            if ([int]$build.id -le 0 -or
+                [int]$build.definition.id -ne $DefinitionId -or [string]$build.sourceBranch -cne $history.branch -or
+                [string]$build.status -ne 'completed' -or
+                -not [datetimeoffset]::TryParse($finishText, [cultureinfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal, [ref]$finish)) {
                 continue
             }
             if ($seenIds.ContainsKey([string]$build.id)) { continue }
@@ -2137,19 +2302,22 @@ function Get-RecentSourceBranchBuilds {
             [ordered]@{
                 id = $_.id
                 url = if ($_._links.web.href) { $_._links.web.href } else { "https://dev.azure.com/$Org/$Project/_build/results?buildId=$($_.id)" }
+                definitionId = $_.definition.id
+                sourceBranch = $_.sourceBranch
                 sourceVersion = $_.sourceVersion
                 queueTime = $_.queueTime
                 finishTime = $_.finishTime
+                status = $_.status
                 result = $_.result
                 failures = @()
                 outcomes = @()
                 failureResultCount = $null
                 complete = $false
-                note = "History evidence has not been inspected."
+                note = "Target-branch history evidence has not been inspected."
             }
         })
         if ($history.builds.Count -lt $Top) {
-            $history.error = "Only $($history.builds.Count) of $Top requested previous completed builds were returned for this exact definition/branch/time window; history coverage is incomplete."
+            $history.error = "Only $($history.builds.Count) of $Top requested latest completed builds were returned for definition $DefinitionId on $($history.branch); target-branch history coverage is incomplete."
         }
     }
     catch {
@@ -2161,6 +2329,7 @@ function Get-RecentSourceBranchBuilds {
 function Get-PipelineHistory {
     param(
         [object[]]$Builds,
+        [string]$BaseBranch,
         [int]$Top = 5,
         [datetime]$Deadline = [datetime]::MaxValue
     )
@@ -2176,6 +2345,7 @@ function Get-PipelineHistory {
             currentStatus = $null
             currentResult = $null
             currentUrl = $null
+            currentSourceBranch = $null
             currentSourceVersion = $null
             currentQueueTime = $null
             currentTimelineReadable = $false
@@ -2193,37 +2363,37 @@ function Get-PipelineHistory {
         if (-not $current) {
             $namePattern = '^' + [regex]::Escape([string]$definition.name) + '(?:$|[\s(])'
             $unreadable = @($Builds | Where-Object { @($_.checkNames | Where-Object { $_ -match $namePattern }).Count -gt 0 })
-            $row.error = if ($unreadable.Count -gt 0) {
+            $row.currentError = if ($unreadable.Count -gt 0) {
                 "Current pipeline metadata is inaccessible: $(@($unreadable | ForEach-Object { $_.error }) -join '; ')"
             }
             else {
                 "No current build was discovered for this required pipeline; it may not have run or its check/build reference is unavailable."
             }
-            continue
         }
-        $row.branch = $current.metadata.sourceBranch
-        $row.currentBuildId = $current.id
-        $row.currentHeadVerified = [bool]$current.headEvidence.verified
-        $row.currentStatus = $current.metadata.status
-        $row.currentResult = $current.metadata.result
-        $row.currentUrl = $current.metadata.webUrl
-        $row.currentSourceVersion = $current.metadata.sourceVersion
-        $row.currentQueueTime = $current.metadata.queueTime
-        $row.currentTimelineReadable = [bool]$current.timelineReadable
-        $row.currentError = if ($current.error) { $current.error } elseif (-not $current.timelineReadable) { "The current build timeline is unreadable." } else { $null }
-        if (-not $current.accessible -or -not $row.currentHeadVerified) {
-            $row.error = "No build is verified for the captured PR head. $($current.headEvidence.error)"
-            continue
+        else {
+            $row.currentBuildId = $current.id
+            $row.currentHeadVerified = [bool]$current.headEvidence.verified
+            $row.currentStatus = $current.metadata.status
+            $row.currentResult = $current.metadata.result
+            $row.currentUrl = $current.metadata.webUrl
+            $row.currentSourceBranch = $current.metadata.sourceBranch
+            $row.currentSourceVersion = $current.metadata.sourceVersion
+            $row.currentQueueTime = $current.metadata.queueTime
+            $row.currentTimelineReadable = [bool]$current.timelineReadable
+            $row.currentError = if ($current.error) { $current.error } elseif (-not $current.timelineReadable) { "The current build timeline is unreadable." } else { $null }
+            if (-not $current.accessible -or -not $row.currentHeadVerified) {
+                $row.currentError = "No build is verified for the captured PR head. $($current.headEvidence.error) $($row.currentError)".Trim()
+            }
         }
-        $recent = Get-RecentSourceBranchBuilds -Org $current.org -Project $current.project `
-            -DefinitionId $definition.definitionId -SourceBranch $row.branch -CurrentBuildId $current.id `
-            -BeforeQueueTime ([string]$current.metadata.queueTime) -Top $Top -Deadline $Deadline
+        $recent = Get-RecentTargetBranchBuilds -Org 'dnceng-public' -Project 'public' `
+            -DefinitionId $definition.definitionId -BaseBranch $BaseBranch -Top $Top -Deadline $Deadline
+        $row.branch = $recent.branch
         $row.builds = @($recent.builds)
         $row.error = $recent.error
     }
 
     # Discover all three windows before spending the shared budget on individual historical logs.
-    # History remains separate from baseline/attribution: old PR commits can contain the current bug.
+    # Target-branch discovery does not depend on current PR build availability or queue time.
     foreach ($pipeline in $pipelines.ToArray()) {
         foreach ($build in $pipeline.builds) {
             if ((Get-Date) -ge $Deadline) {
@@ -2251,6 +2421,9 @@ function Get-PipelineHistory {
                 if ([string]::IsNullOrWhiteSpace([string]$build.sourceVersion)) {
                     $notes.Add("The historical build's source SHA is unavailable.")
                 }
+                if ($build.result -eq 'canceled') {
+                    $notes.Add("The target-branch build was canceled; incomplete execution is not passing evidence.")
+                }
                 if ($pipeline.definitionId -eq 314) {
                     $notes.Add("Bounded device history does not verify every Helix work item. A green build or empty Failed-result list is not passing device-test evidence.")
                 }
@@ -2262,7 +2435,7 @@ function Get-PipelineHistory {
             $build.note = if ($notes.Count -gt 0) { $notes -join " " } else { $null }
         }
     }
-    return [ordered]@{ requestedBuildCount = $Top; pipelines = $pipelines.ToArray() }
+    return [ordered]@{ scope = 'target-branch'; baseBranch = $BaseBranch; requestedBuildCount = $Top; pipelines = $pipelines.ToArray() }
 }
 
 function Get-TimelineRecordResultMap {
@@ -2824,41 +2997,6 @@ $pr = Invoke-GhJson -Arguments @(
     "--json", "number,title,state,url,body,baseRefName,baseRefOid,headRefName,headRefOid,labels,author,statusCheckRollup"
 )
 
-$prDiff = Get-PinnedPrDiff -Repository $Repository -BaseRefOid $pr.baseRefOid -HeadRefOid $pr.headRefOid
-$changedFiles = @()
-$diffResult = $null
-try {
-    $diffResult = Invoke-ProcessWithGatherDeadline `
-        -FileName "gh" `
-        -Arguments @("pr", "diff", "$PrNumber", "--repo", $Repository, "--name-only")
-}
-catch {
-    $diffResult = $null
-}
-if ($diffResult -and $diffResult.exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$diffResult.stdout)) {
-    $changedFiles = @(([string]$diffResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-}
-else {
-    try {
-        $apiResult = Invoke-ProcessWithGatherDeadline `
-            -FileName "gh" `
-            -Arguments @("api", "repos/$Repository/pulls/$PrNumber/files", "--paginate", "--jq", ".[].filename")
-        if ($apiResult.exitCode -eq 0) {
-            $changedFiles = @(([string]$apiResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-        }
-    }
-    catch {
-        $changedFiles = @()
-    }
-}
-
-$labels = @(ConvertTo-Array $pr.labels | ForEach-Object { $_.name })
-$platformLabels = @($labels | Where-Object { $_ -like "platform/*" })
-$areaLabels = @($labels | Where-Object { $_ -like "area-*" })
-$inferredPlatforms = @($changedFiles | ForEach-Object { Get-PlatformFromPath -Path $_ } | Where-Object { $_ } | Select-Object -Unique)
-$areaHints = @($changedFiles | ForEach-Object { Get-AreaHintsFromPath -Path $_ } | Where-Object { $_ } | Select-Object -Unique)
-$changedTestFiles = @($changedFiles | Where-Object { $_ -match '(?i)(tests?/|TestCases|UnitTests|DeviceTests)' })
-
 $checks = @(ConvertTo-Array $pr.statusCheckRollup | ForEach-Object {
     $check = $_
     [ordered]@{
@@ -2878,28 +3016,13 @@ $checks = @(ConvertTo-Array $pr.statusCheckRollup | ForEach-Object {
 })
 $unfilteredChecks = $checks
 
-Write-Host "Loading known-issue registry ('Known Build Error' issues)..."
-$knownIssues = Get-KnownBuildIssues -Repository $Repository
-if ($knownIssues.error) {
-    Write-Host "  $($knownIssues.error)"
-}
-else {
-    Write-Host "  Loaded $(@($knownIssues.patterns).Count) known-issue matcher(s)."
+$evaluation = Get-TestReviewEvaluation -Checks $checks -BuildId $BuildId
+if ($evaluation.skip) {
+    Write-SkippedTestReviewContext -Pr $pr -Repository $Repository -Evaluation $evaluation -OutputDirectory $RunDirectory
+    exit 0
 }
 
-# ci-scan registry: MAUI's multi-build base-branch failure history (recurring flakes,
-# regressions, build breaks on main / net11.0), scoped to the PR's base branch family. Used
-# ONLY to demote a few-build 'regressed-vs-base' claim to NHI when the same failure is
-# documented on the base branch -- a false-RED reduction, never a dismissal-to-green.
-$prBaseBranchFamily = Get-BranchFamily -Branch ([string]$pr.baseRefName)
-Write-Host "Loading ci-scan registry ('ci-scan' issues) for branch family '$prBaseBranchFamily'..."
-$ciScanIssues = Get-CiScanIssues -Repository $Repository
-if ($ciScanIssues.error) {
-    Write-Host "  $($ciScanIssues.error)"
-}
-else {
-    Write-Host "  Loaded $(@($ciScanIssues.matchers).Count) ci-scan matcher(s)."
-}
+Initialize-AzDoToken
 
 if ($CheckName) {
     $checks = @($checks | Where-Object { $_.name -like "*$CheckName*" })
@@ -4028,6 +4151,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                             buildId = $buildRef.buildId
                             buildDefinition = $build.definition.name
                             runId = $run.id
+                            resultId = $result.id
                             runName = $run.name
                             outcome = $result.outcome
                             durationInMs = $result.durationInMs
@@ -4081,26 +4205,96 @@ foreach ($buildRef in $buildRefsById.Values) {
         continue
     }
 
-    $definitionId = 0
-    if ($build.definition -and $build.definition.id) {
-        $definitionId = [int]$build.definition.id
+    if ($buildSummary.headEvidence.verified -and
+        (Get-TestReviewEvaluation -Builds @($buildSummary)).pipelines.status -notcontains 'available') {
+        $buildSummary.testResultPresence = Get-TestResultPresence -Org $buildRef.org -Project $buildRef.project `
+            -BuildId $buildRef.buildId -Deadline $gatherHardDeadline
     }
-    # Fetch enough recent base builds to satisfy BOTH the baseline lookback AND the regression-diff
-    # sampling window: RegressionBaseBuilds only trims an already-fetched list, so fetching just
-    # $LookbackBuilds would silently cap the leg diff (e.g. -RegressionBaseBuilds 10 with the default
-    # -LookbackBuilds 5 could sample at most 5 and miss a base failure in an omitted build).
-    $baseFetchTop = [Math]::Max($LookbackBuilds, $RegressionBaseBuilds)
-    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildRef.org -Project $buildRef.project -DefinitionId $definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop -Deadline $gatherHardDeadline)
-
     $builds.Add($buildSummary)
 }
 
+$buildArray = $builds.ToArray()
+$evaluation = Get-TestReviewEvaluation -Checks $unfilteredChecks -Builds $buildArray
+if ($evaluation.skip) {
+    Write-SkippedTestReviewContext -Pr $pr -Repository $Repository -Evaluation $evaluation -OutputDirectory $RunDirectory -Builds $buildArray
+    exit 0
+}
+
+$prDiff = Get-PinnedPrDiff -Repository $Repository -BaseRefOid $pr.baseRefOid -HeadRefOid $pr.headRefOid
+$changedFiles = @()
+$diffResult = $null
+try {
+    $diffResult = Invoke-ProcessWithGatherDeadline `
+        -FileName "gh" `
+        -Arguments @("pr", "diff", "$PrNumber", "--repo", $Repository, "--name-only")
+}
+catch {
+    $diffResult = $null
+}
+if ($diffResult -and $diffResult.exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$diffResult.stdout)) {
+    $changedFiles = @(([string]$diffResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+}
+else {
+    try {
+        $apiResult = Invoke-ProcessWithGatherDeadline `
+            -FileName "gh" `
+            -Arguments @("api", "repos/$Repository/pulls/$PrNumber/files", "--paginate", "--jq", ".[].filename")
+        if ($apiResult.exitCode -eq 0) {
+            $changedFiles = @(([string]$apiResult.stdout -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        }
+    }
+    catch {
+        $changedFiles = @()
+    }
+}
+
+$labels = @(ConvertTo-Array $pr.labels | ForEach-Object { $_.name })
+$platformLabels = @($labels | Where-Object { $_ -like "platform/*" })
+$areaLabels = @($labels | Where-Object { $_ -like "area-*" })
+$inferredPlatforms = @($changedFiles | ForEach-Object { Get-PlatformFromPath -Path $_ } | Where-Object { $_ } | Select-Object -Unique)
+$areaHints = @($changedFiles | ForEach-Object { Get-AreaHintsFromPath -Path $_ } | Where-Object { $_ } | Select-Object -Unique)
+$changedTestFiles = @($changedFiles | Where-Object { $_ -match '(?i)(tests?/|TestCases|UnitTests|DeviceTests)' })
+
+Write-Host "Loading known-issue registry ('Known Build Error' issues)..."
+$knownIssues = Get-KnownBuildIssues -Repository $Repository
+if ($knownIssues.error) {
+    Write-Host "  $($knownIssues.error)"
+}
+else {
+    Write-Host "  Loaded $(@($knownIssues.patterns).Count) known-issue matcher(s)."
+}
+
+$prBaseBranchFamily = Get-BranchFamily -Branch ([string]$pr.baseRefName)
+Write-Host "Loading ci-scan registry ('ci-scan' issues) for branch family '$prBaseBranchFamily'..."
+$ciScanIssues = Get-CiScanIssues -Repository $Repository
+if ($ciScanIssues.error) {
+    Write-Host "  $($ciScanIssues.error)"
+}
+else {
+    Write-Host "  Loaded $(@($ciScanIssues.matchers).Count) ci-scan matcher(s)."
+}
+
+foreach ($buildSummary in $buildArray) {
+    if (-not $buildSummary.accessible) { continue }
+    $baseFetchTop = [Math]::Max($LookbackBuilds, $RegressionBaseBuilds)
+    $buildSummary.recentBaseBuilds = @(Get-RecentBaseBuilds -Org $buildSummary.org -Project $buildSummary.project `
+        -DefinitionId $buildSummary.metadata.definitionId -BaseBranch $pr.baseRefName -Top $baseFetchTop -Deadline $gatherHardDeadline)
+}
+
 $allFailuresArray = $allLogFailures.ToArray()
+foreach ($failure in $allFailuresArray) {
+    $owners = @($buildArray | Where-Object { $_.id -eq $failure.buildId })
+    if ($owners.Count -eq 1) {
+        $failure['failureUrl'] = Get-TestFailureEvidenceUrl -Failure $failure -Org $owners[0].org -Project $owners[0].project
+    }
+    else {
+        $failure['failureLinkError'] = 'No unique build owner was found; a direct failure link is unavailable.'
+    }
+}
 $allExcerptsArray = $allLogExcerpts.ToArray()
 $visualEvidenceArray = $allVisualEvidence.ToArray()
-$buildArray = $builds.ToArray()
 $dedupedFailures = @(Get-DeduplicatedFailures -Failures $allFailuresArray)
-$history = Get-PipelineHistory -Builds $buildArray -Top $HistoryBuilds -Deadline $gatherHardDeadline
+$history = Get-PipelineHistory -Builds $buildArray -BaseBranch $pr.baseRefName -Top $HistoryBuilds -Deadline $gatherHardDeadline
 
 # --- Baseline (base-branch) per-test comparison ---
 # For each inspected PR build, look at the most recent completed base-branch builds
@@ -4944,6 +5138,7 @@ $context = [ordered]@{
     schemaVersion = 2
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repository = $Repository
+    evaluation = $evaluation
     azdo = [ordered]@{
         authenticated = -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)
         authSource = $script:AzDoAuthSource
@@ -5016,7 +5211,7 @@ $md.Add("# Test Failure Context for PR #$PrNumber")
 $md.Add("")
 $md.Add("Generated: $($context.generatedAtUtc)")
 $md.Add("")
-$md.Add("Read the adjacent [context.json](context.json) for structured evidence: ``scope.diff`` contains the PR patch; ``history`` contains the previous completed runs on each pipeline's same source branch (five requested by default), including evidence-completeness notes.")
+$md.Add("Read the adjacent [context.json](context.json) for structured evidence: ``scope.diff`` contains the PR patch; ``history`` contains the latest completed runs on the PR's target branch for each pipeline (five requested by default), including evidence-completeness notes. Current PR build gaps are separate from target-branch history gaps.")
 $md.Add("")
 $md.Add("## Merge-readiness gate (deterministic)")
 $md.Add("")

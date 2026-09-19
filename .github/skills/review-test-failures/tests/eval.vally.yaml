@@ -8,8 +8,8 @@ type: capability
 defaults:
   runs: 3
   timeout: 5m
-  model: gpt-5.5
-  judge_model: gpt-5.5
+  model: gpt-6-astra
+  judge_model: gpt-6-astra
   executor: copilot-sdk
 
 environment:
@@ -327,7 +327,7 @@ stimuli:
       head 1111111111111111111111111111111111111111, base 2222222;
       collection time 2026-09-17T18:00:00Z.
       All listed builds are verified against head. There were no retries
-      or recovered attempts. Source-ref history was not supplied.
+      or recovered attempts. Target-branch history was not supplied.
       Complete diff: in DispatchUpdate, replace "_dispatcher.Dispatch(callback);"
       with "callback();". The supplied call path shows a worker invokes
       DispatchUpdate and callback mutates a native Android view; the change
@@ -342,6 +342,7 @@ stimuli:
       created a view hierarchy can touch its views. Full UI outcomes/logs
       are read, with no other failures:
       https://dev.azure.com/dnceng-public/public/_build/results?buildId=999903
+      failureUrl: https://dev.azure.com/dnceng-public/public/_build/results?buildId=999903&view=ms.vss-test-web.build-test-results-tab&runId=12&resultId=34
       Comparable pre-PR main build at 2222222 executed ButtonUpdate on the
       same Android runtime/device and passed while retaining the dispatch:
       https://dev.azure.com/dnceng-public/public/_build/results?buildId=999900
@@ -351,45 +352,48 @@ stimuli:
         config: { required: [review-test-failures] }
       - type: output-matches
         config:
-          pattern: 'PR-related failures found'
+          pattern: '(?i)^(?![\s\S]*(?:verdict|inconclusive| Summary</strong>))[\s\S]*$'
       - type: output-matches
         config:
-          pattern: '\| maui-pr \|[\s\S]*\| maui-pr-devicetests \|[\s\S]*\| maui-pr-uitests \|'
+          pattern: '<summary><strong>[^<]* maui-pr</strong></summary>[\s\S]*<summary><strong>[^<]* maui-pr-devicetests</strong></summary>[\s\S]*<summary><strong>[^<]* maui-pr-uitests</strong></summary>'
       - type: output-matches
         config:
-          pattern: 'Likely PR-caused'
+          pattern: '(?:&#x1F534;|🔴)\s+\*\*Likely PR-caused\*\*'
       - type: output-matches
         config:
-          pattern: 'Coverage:\s*(?:\*\*\s*)?Incomplete'
+          pattern: 'Insufficient data'
       - type: output-matches
         config:
           pattern: 'https://github\.com/dotnet/maui/blob/1111111/src/Core/src/Handlers/View/ViewHandler\.cs#L10-L14'
       - type: output-matches
         config:
-          pattern: 'https://dev\.azure\.com/dnceng-public/public/_build/results\?buildId=999900'
+          pattern: 'https://dev\.azure\.com/dnceng-public/public/_build/results\?buildId=999903&view=ms.vss-test-web.build-test-results-tab&runId=12&resultId=34'
       - type: output-matches
         config:
           pattern: '^(?![\s\S]*refs/pull/99999/merge)[\s\S]*$'
       - type: output-matches
         config:
-          pattern: '^<!-- Tests Failure -->\s+## Tests Failure Analysis\s+> @fixture-ci-author [^\r\n]*\[`1111111`\]\(https://github\.com/dotnet/maui/commit/1111111111111111111111111111111111111111\)\.'
+          pattern: '^<!-- Tests Failure -->\s+## Tests Failure Analysis\s+> @fixture-ci-author (?:&#x2014;|\u2014) test-failure analysis for commit \[`1111111`\]\(https://github\.com/dotnet/maui/commit/1111111111111111111111111111111111111111\)'
       - type: output-matches
         config:
-          pattern: '<p align="left">\s+<img alt="Verdict PR-related failures found" src="https://img\.shields\.io/badge/Verdict-PR--related%20failures%20found-d1242f\?labelColor=30363d&amp;style=flat-square">\s+<img alt="Scope CI failures" src="https://img\.shields\.io/badge/Scope-CI%20failures-1f6feb\?labelColor=30363d&amp;style=flat-square">\s+<img alt="Commit 1111111" src="https://img\.shields\.io/badge/Commit-1111111-1f6feb\?labelColor=30363d&amp;style=flat-square">\s+</p>\s+---\s+<details>\s+<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>\s+<br/>'
+          pattern: '(?s)\A.{1,3500}\z'
       - type: output-matches
         config:
-          pattern: '<summary><strong>&#x1F4CB; Summary</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F4CA; Pipeline coverage</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F50E; Failure attribution</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F4CB; Previous-run comparison</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F52C; Code and regression-test evidence</strong></summary>\s+<br/>[\s\S]*<summary><strong>&#x1F4CB; Coverage and limitations</strong></summary>\s+<br/>'
+          pattern: '/azp run maui-pr-devicetests'
       - type: output-matches
         config:
-          pattern: '</details>\s+</details>\s+---\s+<details>\s+<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>\s+<br/>[\s\S]*\*\*Next action:\*\*[\s\S]*> Maintainers: comment `/review tests` to refresh this report\.\s+</details>\s*$'
+          pattern: '> Maintainers: comment `/review tests` to refresh this report\.\s*</details>\s*$'
       - type: output-matches
         config:
-          pattern: '^(?:(?!</?details>)[\s\S])*<details>(?:(?:(?!</?details>)[\s\S])*<details>(?:(?!</?details>)[\s\S])*</details>)+(?:(?!</?details>)[\s\S])*</details>\s+---\s+<details>(?:(?!</?details>)[\s\S])*</details>\s*$'
+          pattern: '<img alt="Scope CI failures" src="https://img\.shields\.io/badge/Scope-CI%20failures-1f6feb\?labelColor=30363d(?:&amp;|&)style=flat-square">[\s\S]*<img alt="Commit 1111111" src="https://img\.shields\.io/badge/Commit-1111111-1f6feb\?labelColor=30363d(?:&amp;|&)style=flat-square">'
       - type: output-matches
         config:
-          pattern: '^(?![\s\S]*(?:<details\s+open|Recovered attempts|Ready to merge|Not ready))[\s\S]*$'
+          pattern: '<details>\s*<summary><strong>[^<]* CI Analysis</strong>[^<]*</summary>[\s\S]*</details>\s*</details>\s*---\s*<details>\s*<summary><strong>[^<]* Follow-up</strong>[^<]*</summary>[\s\S]*</details>\s*$'
+      - type: output-matches
+        config:
+          pattern: '^(?![\s\S]*(?:<details\s+open|Recovered attempts|Ready to merge|Not ready|Pipeline coverage|Target-branch comparison|Coverage and limitations))[\s\S]*$'
 
-  - name: standard-report-keeps-recovery-separate-from-incomplete-coverage
+  - name: styled-report-keeps-recovery-and-gaps-in-their-pipeline
     tags: { kind: presentation }
     prompt: |
       Use the review-test-failures skill and return only its standard report
@@ -399,8 +403,8 @@ stimuli:
       head aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa. All three current builds
       directly tested that exact SHA (sourceVersion equals the head, not a
       synthetic merge), with recorded source ref refs/pull/99998/merge.
-      Previous-run discovery completed for each pipeline definition on that
-      source ref and returned zero earlier completed runs (0/5 each).
+      Target-branch discovery completed for each pipeline definition on
+      refs/heads/main and returned zero completed runs (0/5 each).
       The full diff changes a shared scheduler delay from 20ms to 25ms:
       https://github.com/dotnet/maui/blob/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/src/Core/src/Scheduling.cs#L20
       There is no diagnostic or call path connecting this change to the timeout.
@@ -422,37 +426,40 @@ stimuli:
         config: { required: [review-test-failures] }
       - type: output-matches
         config:
-          pattern: '^<!-- Tests Failure -->\s+## Tests Failure Analysis\s+> @retry-fixture-author [^\r\n]*\[`aaaaaaa`\]\(https://github\.com/dotnet/maui/commit/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\)\.'
+          pattern: '^<!-- Tests Failure -->\s+## Tests Failure Analysis\s+> @retry-fixture-author (?:&#x2014;|\u2014) test-failure analysis for commit \[`aaaaaaa`\]\(https://github\.com/dotnet/maui/commit/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\)'
       - type: output-matches
         config:
-          pattern: 'alt="Verdict Inconclusive" src="https://img\.shields\.io/badge/Verdict-Inconclusive-bf8700\?labelColor=30363d&amp;style=flat-square"'
+          pattern: '(?s)\A.{1,3500}\z'
       - type: output-matches
         config:
-          pattern: 'alt="Scope CI failures"[\s\S]*alt="Commit aaaaaaa"[\s\S]*<summary><strong>&#x1F9EA; CI Analysis</strong> &#x2014; click to expand</summary>'
+          pattern: '<img alt="Scope CI failures" src="https://img\.shields\.io/badge/Scope-CI%20failures-1f6feb\?labelColor=30363d(?:&amp;|&)style=flat-square">[\s\S]*<img alt="Commit aaaaaaa" src="https://img\.shields\.io/badge/Commit-aaaaaaa-1f6feb\?labelColor=30363d(?:&amp;|&)style=flat-square">'
       - type: output-matches
         config:
-          pattern: '\*\*Overall verdict:\*\* Inconclusive'
+          pattern: '(?i)^(?![\s\S]*(?:verdict|inconclusive| Summary</strong>|Recovered attempts))[\s\S]*$'
       - type: output-matches
         config:
-          pattern: '\| maui-pr \|[\s\S]*\| maui-pr-devicetests \|[\s\S]*\| maui-pr-uitests \|'
+          pattern: '<summary><strong>[^<]* maui-pr</strong></summary>[\s\S]*<summary><strong>[^<]* maui-pr-devicetests</strong></summary>[\s\S]*<summary><strong>[^<]* maui-pr-uitests</strong></summary>'
       - type: output-matches
         config:
           pattern: 'Insufficient data'
       - type: output-matches
         config:
-          pattern: 'Needs human investigation'
+          pattern: '(?:&#x1F7E1;|🟡)\s+\*\*Needs human investigation\*\*'
       - type: output-matches
         config:
-          pattern: '<summary><strong>&#x1F4CB; Recovered attempts</strong></summary>\s+<br/>[\s\S]*https://dev\.azure\.com/dnceng-public/public/_apis/build/builds/999913/logs/1[\s\S]*https://dev\.azure\.com/dnceng-public/public/_apis/build/builds/999913/logs/2'
+          pattern: '<summary><strong>[^<]* maui-pr-uitests</strong></summary>[\s\S]*https://dev\.azure\.com/dnceng-public/public/_apis/build/builds/999913/logs/1'
       - type: output-matches
         config:
-          pattern: 'Coverage:\s*(?:\*\*\s*)?Incomplete'
+          pattern: '(?i)(?:passed|recovered|retry)'
       - type: output-matches
         config:
-          pattern: '</details>\s+</details>\s+---\s+<details>\s+<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>\s+<br/>[\s\S]*> Maintainers: comment `/review tests` to refresh this report\.\s+</details>\s*$'
+          pattern: '> Maintainers: comment `/review tests` to refresh this report\.\s*</details>\s*$'
       - type: output-matches
         config:
-          pattern: '^(?:(?!</?details>)[\s\S])*<details>(?:(?:(?!</?details>)[\s\S])*<details>(?:(?!</?details>)[\s\S])*</details>)+(?:(?!</?details>)[\s\S])*</details>\s+---\s+<details>(?:(?!</?details>)[\s\S])*</details>\s*$'
+          pattern: '</details>\s*</details>\s*---\s*<details>\s*<summary><strong>[^<]* Follow-up</strong>[^<]*</summary>[\s\S]*</details>\s*$'
+      - type: output-matches
+        config:
+          pattern: '/azp run maui-pr-devicetests'
       - type: output-matches
         config:
           pattern: '^(?![\s\S]*(?:<details\s+open|Ready to merge|Not ready|ButtonUpdate|fixture-ci-author))[\s\S]*$'
@@ -483,11 +490,12 @@ stimuli:
       Use the review-test-failures skill on this synthetic frozen bundle.
       All three pipelines have complete current-head evidence. A UI timeout
       overlaps the changed area but no concrete causal path is established.
-      Complete history discovery found only three previous completed UI runs
-      on this same source branch and definition. Two have the identical
-      timeout/configuration; the third has unreadable results. There are no
-      other prior runs or comparable base results. The recurrence is on
-      earlier PR commits, not proof that it predates the PR.
+      Complete target-branch history discovery found only three completed UI
+      runs on refs/heads/net11.0, this PR's exact target, and the same definition.
+      Two have the identical timeout/configuration without this PR's changes;
+      the third has unreadable results. The diff does not change the failing
+      test, its setup, or the exercised code. There are no other target runs.
+      Missing older PR runs are irrelevant to target-branch comparison.
       Do not fetch or execute anything. Reply with exactly four lines:
       Attribution: <per-failure attribution>
       Coverage: <Complete or Incomplete>
@@ -498,7 +506,189 @@ stimuli:
         config: { required: [review-test-failures] }
       - type: output-matches
         config:
-          pattern: '^Attribution: Needs human investigation\r?\nCoverage: Complete\r?\nConclusion: Inconclusive\r?\nHistory: 3/5, 2 matching, 1 unknown\s*$'
+          pattern: '^Attribution: Likely unrelated\r?\nCoverage: Complete\r?\nConclusion: Observed failures appear unrelated\r?\nHistory: 3/5, 2 matching, 1 unknown\s*$'
+
+  - name: compare-target-branch-not-pr-merge-history
+    prompt: |
+      Use the review-test-failures skill on this synthetic frozen bundle.
+      PR #36226 targets net11.0; headRefName is fix-safearea-edge.
+      All three current PR pipelines use refs/pull/36226/merge and have
+      complete current-head evidence. There are zero older runs of that PR ref.
+      history.scope is target-branch. For each of definitions 302, 314, and 313,
+      history.pipelines contains five completed runs on refs/heads/net11.0.
+      They are the latest at review time; two finished after the PR build.
+      Only the fifth target UI sample reproduces the current exact timeout
+      with the same OS/runtime/setup and without this PR's changes. The other
+      four executed and passed that test. The PR only changes documentation.
+      All other current outcomes pass, including complete device results.
+      Do not fetch or execute anything. Reply with exactly five lines:
+      Branch: <comparison ref>
+      Samples: <number per pipeline>/5
+      Attribution: <per-failure attribution>
+      Coverage: <Complete or Incomplete>
+      Conclusion: <conclusion>
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config:
+          pattern: '^Branch: refs/heads/net11\.0\r?\nSamples: 5/5\r?\nAttribution: Likely unrelated\r?\nCoverage: Complete\r?\nConclusion: Observed failures appear unrelated\s*$'
+
+  - name: missing-current-build-does-not-hide-target-history
+    prompt: |
+      Use the review-test-failures skill on this synthetic frozen bundle.
+      The PR targets release/10.0.1xx-sr9. Current maui-pr and UI builds cannot
+      be read, so their currentError fields report HTTP 404 and their source
+      refs are unknown. The device build is verified at the current PR head
+      and has complete passing outcomes for every expected test and work item.
+      history.scope is target-branch, and all three history.pipelines rows
+      have five completed, readable runs on refs/heads/release/10.0.1xx-sr9.
+      There is no target-history discovery error. Current failure diagnostics
+      are missing. The full diff edits shared handlers; causality is unknown.
+      Do not fetch or execute anything. Reply with exactly four lines:
+      Branch: <comparison ref>
+      Samples: <number per pipeline>/5
+      Coverage: <Complete or Incomplete>
+      Conclusion: <conclusion>
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config:
+          pattern: '^Branch: refs/heads/release/10\.0\.1xx-sr9\r?\nSamples: 5/5\r?\nCoverage: Incomplete\r?\nConclusion: Inconclusive\s*$'
+
+  - name: no-results-skips-evaluation-and-requests-ci
+    tags: { kind: presentation }
+    prompt: |
+      Use the review-test-failures skill. Return only the standard report.
+      Dry run: do not post, execute code, fetch, or write files.
+      PR #99997 targets net11.0. There are no current builds or test results
+      in any of the three pipelines. No frozen diff or target history was
+      collected because there are no results to evaluate. Do not request
+      older PR runs or investigate historical failures. Commit unavailable.
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config: { pattern: '(?i)Evaluation skipped' }
+      - type: output-matches
+        config: { pattern: '`/azp run`' }
+      - type: output-matches
+        config: { pattern: '<summary><strong>[^<]* maui-pr</strong></summary>[\s\S]*<summary><strong>[^<]* maui-pr-devicetests</strong></summary>[\s\S]*<summary><strong>[^<]* maui-pr-uitests</strong></summary>' }
+      - type: output-matches
+        config: { pattern: '(?s)\A.{1,2400}\z' }
+      - type: output-matches
+        config: { pattern: '(?i)^(?![\s\S]*(?:verdict|inconclusive| Summary</strong>|Likely unrelated|No failures found|Latest five target-branch runs))[\s\S]*$' }
+      - type: output-matches
+        config: { pattern: '> Maintainers: comment `/review tests` to refresh this report\.\s*</details>\s*$' }
+      - type: output-matches
+        config: { pattern: 'https://img\.shields\.io/badge/Scope-CI%20failures-1f6feb[\s\S]*https://img\.shields\.io/badge/Commit-unknown-1f6feb' }
+      - type: output-matches
+        config: { pattern: '</details>\s*</details>\s*---\s*<details>\s*<summary><strong>[^<]* Follow-up</strong>[^<]*</summary>[\s\S]*</details>\s*$' }
+
+  - name: missing-one-pipeline-does-not-hide-known-failure
+    tags: { kind: presentation }
+    prompt: |
+      Use the review-test-failures skill. Return only the standard report.
+      Dry run: do not post, execute code, fetch, or write files.
+      PR #99996 targets main and changes only documentation. Current builds
+      are verified against its head. maui-pr is fully passing. maui-pr-uitests
+      has never run, with no results or diagnostics.
+      maui-pr-devicetests has complete results including a single Android
+      ImageColor assertion failure. Five comparable main runs were inspected;
+      the same assertion occurs in the fifth, with unchanged code and setup.
+      No other failures exist. Do not show a five-run inventory.
+      Current failure: https://helix.dot.net/api/2019-06-17/jobs/11111111-2222-3333-4444-555555555555/workitems/ImageColor
+      Matching main: https://dev.azure.com/dnceng-public/public/_build/results?buildId=999950
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config: { pattern: '(?i)^(?![\s\S]*(?:verdict|inconclusive| Summary</strong>))[\s\S]*$' }
+      - type: output-matches
+        config: { pattern: '<summary><strong>[^<]* maui-pr-devicetests</strong></summary>[\s\S]*Likely unrelated[\s\S]*<summary><strong>[^<]* maui-pr-uitests</strong></summary>' }
+      - type: output-matches
+        config: { pattern: '(?:&#x1F7E2;|🟢)\s+\*\*Likely unrelated\*\*' }
+      - type: output-matches
+        config: { pattern: 'https://helix\.dot\.net/api/2019-06-17/jobs/11111111-2222-3333-4444-555555555555/workitems/ImageColor' }
+      - type: output-matches
+        config: { pattern: '`/azp run maui-pr-uitests`' }
+      - type: output-matches
+        config: { pattern: '^(?![\s\S]*(?:Evaluation skipped|<details\s+open))[\s\S]*$' }
+
+  - name: unreadable-context-is-not-evidence-that-ci-never-ran
+    tags: { kind: presentation }
+    prompt: |
+      Use the review-test-failures skill. Return only the standard report.
+      Dry run: do not post, execute code, fetch, or write files.
+      The supplied context.json could not be read because access was denied.
+      No evaluation flag, commit, build, or test result was read. Whether CI
+      has results is therefore unknown. Stop without investigating elsewhere.
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config: { pattern: '(?i)^(?![\s\S]*(?:verdict|inconclusive| Summary</strong>))[\s\S]*$' }
+      - type: output-matches
+        config: { pattern: '(?i)(?:access|unreadable|could not be read)' }
+      - type: output-matches
+        config: { pattern: '> Maintainers: comment `/review tests` to refresh this report\.\s*</details>\s*$' }
+      - type: output-matches
+        config: { pattern: '(?s)\A.{1,2400}\z' }
+      - type: output-matches
+        config: { pattern: '^(?![\s\S]*(?:/azp run|No failures found|Likely unrelated|Evaluation skipped|<details\s+open))[\s\S]*$' }
+
+  - name: omitted-ui-build-is-not-missing-ci-results
+    tags: { kind: presentation }
+    prompt: |
+      Use the review-test-failures skill. Return only the standard report.
+      Dry run: do not post, execute code, fetch, or write files.
+      The frozen context is readable and evaluation.skip is false.
+      All three checks exist at the captured PR head. maui-pr has complete
+      passing outcomes. Device outcomes are complete and passing.
+      The completed maui-pr-uitests check failed and links run 1602707,
+      but a collector defect omitted that build and all its results from
+      context.builds. evaluation.pipelines marks UI as unverified.
+      UI buildUrl: https://dev.azure.com/dnceng-public/public/_build/results?buildId=1602707
+      Do not claim CI has no results or ask for another CI run. Attribution
+      cannot proceed until the existing run's evidence has been collected.
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config: { pattern: 'maui-pr-uitests</strong></summary>[\s\S]*Insufficient data' }
+      - type: output-matches
+        config: { pattern: 'https://dev\.azure\.com/dnceng-public/public/_build/results\?buildId=1602707' }
+      - type: output-matches
+        config: { pattern: '(?i)(?:collect|omitted|missing evidence)' }
+      - type: output-matches
+        config: { pattern: '/review tests' }
+      - type: output-matches
+        config: { pattern: '(?i)^(?![\s\S]*(?:/azp run|No results available|Evaluation skipped|overall verdict))[\s\S]*$' }
+
+  - name: generic-history-names-cannot-clear-a-parameterized-android-failure
+    prompt: |
+      Use the review-test-failures skill on this synthetic frozen bundle.
+      All three current pipelines have complete evidence. The PR changes
+      Android activity lifecycle only. Android reports Handler Does Not Leak
+      (type: AbsoluteLayout) with a MissingMethodException. The same named
+      test and exception occur on current iOS/MacCatalyst, whose binaries
+      this diff cannot change. No trace establishes the Android cause.
+      Each of the latest five net11.0 device runs has a bare "Handler Does
+      Not Leak" failed-result row, but none supplies parameters, diagnostics,
+      platform, or runtime for that row. No row names AbsoluteLayout.
+      Classify the Android failure only. Do not inherit the unaffected
+      platforms' attribution or count generic names as comparable failures.
+      Do not fetch or execute anything. Reply with exactly three lines:
+      Attribution: <per-failure attribution>
+      Coverage: <Complete or Incomplete>
+      Conclusion: <conclusion>
+    graders:
+      - type: skill-invocation
+        config: { required: [review-test-failures] }
+      - type: output-matches
+        config:
+          pattern: '^Attribution: Needs human investigation\r?\nCoverage: Complete\r?\nConclusion: Inconclusive\s*$'
 
 scoring:
   threshold: 1.0

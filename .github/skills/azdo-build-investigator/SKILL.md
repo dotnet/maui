@@ -18,8 +18,8 @@ answering "why is CI red?" and "is this PR ready to merge?". Use it together wit
 > available). This skill provides MAUI-specific corrections and context on top of that.
 
 For the **automated** path (a maintainer comments `/review tests` on a PR), the
-`review-test-failures` skill relates failures to the PR diff and the previous five
-runs on each pipeline's source branch, then posts one structured attribution
+`review-test-failures` skill relates failures to the PR diff and the latest five
+completed runs per pipeline on the PR's target branch, then posts one compact attribution
 comment. It does not issue merge approval. Both use the operational facts below.
 
 ## MAUI CI facts (canonical)
