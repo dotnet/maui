@@ -187,6 +187,15 @@ artifacts. Previously a packaged Maps crash produced an empty XML that the merge
 omitted, yielding a green task with the Maps tests missing. Regression coverage is in
 `eng/devices/WindowsDeviceTestRunner.Tests.ps1`.
 
+The Windows headless hosts report explicit outcome exit codes only **after** awaiting
+XHarness `RunAsync`, which owns and disposes the XML writer. The previous
+`Application.Current.Exit()` path returned `-1` even for fully passing runs.
+Do not whitelist that status or call `Environment.Exit` inside `TerminateWithSuccess`:
+the latter callback runs before the writer is disposed and can truncate results.
+`WindowsHeadlessTestRunner.Tests.ps1` runs the actual host classes in subprocesses with
+XHarness lifecycle stubs to cover passing/failing runs, exceptions, category discovery,
+writer disposal, and non-terminating interactive mode.
+
 > ⚠️ **Content-type gotcha (decode bug, fixed).** Azure blob serves the `.xml` result files as
 > `application/octet-stream`, so `Invoke-WebRequest`'s `.Content` is a **`byte[]`** — a plain
 > `[string]` cast stringifies it as space-joined decimal byte values (`"60 63 120 …"`) and breaks
