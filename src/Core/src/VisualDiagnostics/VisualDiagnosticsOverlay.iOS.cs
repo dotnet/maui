@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -9,16 +9,14 @@ namespace Microsoft.Maui
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay
 	{
-		const string ScrollViewContentOffsetKey = "contentOffset";
-
 		readonly Dictionary<IScrollView, IDisposable> _scrollViews = new();
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.ToPlatform();
-			if (nativeScroll != null)
+			if (nativeScroll is UIScrollView uiScrollView)
 			{
-				var dispose = nativeScroll.AddObserver(ScrollViewContentOffsetKey, NSKeyValueObservingOptions.New, FrameAction);
+				var dispose = KeyValueObservation.ObserveContentOffset(uiScrollView, FrameAction);
 				_scrollViews.Add(scrollBar, dispose);
 			}
 		}
@@ -39,7 +37,7 @@ namespace Microsoft.Maui
 			Invalidate();
 		}
 
-		void FrameAction(Foundation.NSObservedChange obj)
+		void FrameAction()
 		{
 			Invalidate();
 		}
