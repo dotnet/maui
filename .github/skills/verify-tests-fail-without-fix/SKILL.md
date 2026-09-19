@@ -34,6 +34,14 @@ Test type is **auto-detected** from changed files. Override with `-TestType` if 
 
 Requires: a **platform** and either **test files in the PR** or an explicit **TestFilter**.
 
+## DevFlow Boundary
+
+This skill remains the authoritative verifier for fail-without-fix / pass-with-fix transitions.
+
+- Do not replace this script with `maui-devflow`.
+- Do not add Agent plumbing to `TestCases.HostApp`, device-test apps, or integration-test apps just to inspect them.
+- If you use DevFlow at all, it is only for side diagnosis on a separately verified Agent-enabled app such as Sandbox, not for the final verification verdict.
+
 ## ⚠️ CRITICAL: Inverted Pass/Fail Semantics
 
 In this skill, test outcomes mean the OPPOSITE of normal:

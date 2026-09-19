@@ -168,6 +168,14 @@ The skill handles:
 - ✅ Test results in TRX format
 - ✅ Proper error reporting
 
+### DevFlow Boundary
+
+`maui-devflow` is for separate local interactive inspection of an already Agent-enabled app. It does **not** replace this integration runner, and it should not compete with XHarness/template-runner lifecycle management.
+
+- Keep integration verification on `Run-IntegrationTests.ps1`.
+- Do not describe template apps or integration-test apps as automatically inspectable through DevFlow.
+- If an iOS/Android run is flaky, prefer rerunning a bounded test/category instead of erasing or rebooting unrelated devices.
+
 See `.github/skills/run-integration-tests/SKILL.md` for full documentation.
 
 ---
@@ -235,6 +243,7 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 | Device/simulator not found | Verify `IOS_TEST_DEVICE` or emulator is running |
 | XHarness timeout on iOS | Expected behavior - app runs until timeout |
 | Architecture mismatch | Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` |
+| Flaky iOS simulator state | Re-run the selected test/category and avoid competing simulator controllers; if recovery is needed, make it bounded to the owned target instead of resetting unrelated simulators |
 
 ## Best Practices
 

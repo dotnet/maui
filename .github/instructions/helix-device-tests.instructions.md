@@ -91,6 +91,14 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 
 See `.github/skills/run-device-tests/SKILL.md` for full documentation.
 
+### DevFlow Boundary for Local Work
+
+If you need local emulator/simulator discovery or interactive inspection while investigating a device-test issue, route that work through `maui-devflow` **only for a separately Agent-enabled app**. Keep these rules:
+
+- `Run-DeviceTests.ps1` and Helix/XHarness remain the authoritative runners for device tests.
+- Device-test apps are not automatically instrumented for DevFlow; do not inject Agent plumbing or describe them as inspectable by default.
+- Use DevFlow only for bounded local diagnosis. Do not treat semantic taps as proof of native hit-testing, gestures, accessibility, or final regression coverage.
+
 ### Submit to Helix
 
 Set required environment variables:

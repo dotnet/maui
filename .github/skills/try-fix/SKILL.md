@@ -54,6 +54,12 @@ If the prompt does not include a **problem to fix** and a **test command to veri
    variables do not persist between tool calls, so redeclare the same literal
    `$OUTPUT_DIR` at the start of each later shell command instead of writing a
    repository marker file.
+11. **Keep supplied runners authoritative** - If the invoker provides
+   `BuildAndRunHostApp.ps1`, `Run-DeviceTests.ps1`,
+   `verify-tests-fail-without-fix`, or integration-test commands, preserve that
+   command as the source of truth. You may use `maui-devflow` only for local
+   observation on a separately verified Agent-enabled app; never replace the
+   supplied runner or instrument HostApp/device-test apps just to inspect them.
 
 **Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
 

@@ -1,6 +1,20 @@
 <Project>
   <ItemGroup>
     <PackageReference
+        Update="Microsoft.Maui.DevFlow.Agent"
+        Version="$(MicrosoftMauiDevFlowAgentVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Maui.Controls.Build.Tasks"
+        Version="$(MicrosoftMauiDevFlowBuildTasksVersion)"
+        Condition="'$(_MauiDevFlowEnabled)' == 'true'"
+    />
+    <PackageReference
+        Update="Microsoft.Maui.Resizetizer"
+        Version="$(MicrosoftMauiDevFlowBuildTasksVersion)"
+        Condition="'$(_MauiDevFlowEnabled)' == 'true'"
+    />
+    <PackageReference
         Update="HarfBuzzSharp"
         Version="$(_HarfBuzzSharpVersion)"
     />

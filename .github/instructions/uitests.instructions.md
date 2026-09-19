@@ -419,6 +419,16 @@ Move platform-specific logic to extension methods to keep test code clean and re
 
 **CRITICAL: ALWAYS use the BuildAndRunHostApp.ps1 script to run UI tests. NEVER run `dotnet test` or `dotnet build` commands manually.**
 
+### DevFlow Boundary for Local Diagnosis
+
+Use `maui-devflow` only for **separate local interactive diagnosis** when you already have an Agent-enabled app such as Sandbox running on an explicit device. Keep these boundaries clear:
+
+- `BuildAndRunHostApp.ps1` + NUnit/Appium remain the **authoritative** UITest runner path.
+- `TestCases.HostApp` is **not** automatically instrumented for DevFlow; do not add Agent plumbing or describe it as inspectable by default.
+- DevFlow semantic activation can trigger handlers/commands or set state directly; it does **not** prove native hit-testing, occlusion, disabled input, gesture routing, or accessibility.
+- Use Appium/native input when the regression is specifically about those behaviors.
+- Prefer bounded element queries, compact trees, finite log windows, and screenshots only when the evidence is genuinely visual.
+
 ### BuildAndRunHostApp.ps1 Script (ONLY Way to Run Tests)
 
 **Script location**: `.github/scripts/BuildAndRunHostApp.ps1`
@@ -499,26 +509,7 @@ adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
 
 **iOS App Crashes on Launch or Won't Start with Appium:**
 
-If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`:
-
-**Solution:** Read the crash logs to find the actual exception:
-```bash
-# Capture crash logs
-xcrun simctl spawn booted log stream --predicate 'processImagePath contains "TestCases.HostApp"' --level=debug > /tmp/ios_crash.log 2>&1 &
-LOG_PID=$!
-
-# Try to launch the app
-xcrun simctl launch $UDID com.microsoft.maui.uitests
-
-# Wait a moment for crash
-sleep 3
-
-# Stop log capture
-kill $LOG_PID
-
-# Review the crash log
-cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
-```
+If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`, start from the logs already produced by `BuildAndRunHostApp.ps1`. If you need additional local inspection, use the Sandbox + `maui-devflow` workflow on an Agent-enabled repro app rather than trying to retrofit DevFlow into HostApp.
 
 **Debugging steps:**
 1. **Find the exception** in the crash log - look for stack traces
