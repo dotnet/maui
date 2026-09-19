@@ -19,6 +19,48 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ScrollViewTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ScrollViewWithContentDoesNotLeak(bool reload)
+		{
+			SetupBuilder();
+			WeakReference viewReference = null;
+			WeakReference handlerReference = null;
+			WeakReference platformReference = null;
+			var view = new ScrollView
+			{
+				Content = new Label { Text = "Scrollable content", HeightRequest = 2000 }
+			};
+			var page = new ContentPage { Content = view };
+
+			await CreateHandlerAndAddToWindow(page, async () =>
+			{
+				viewReference = new(view);
+				handlerReference = new(view.Handler);
+				platformReference = new(view.Handler.PlatformView);
+				if (reload)
+				{
+					page.Content = null;
+					await OnUnloadedAsync(view);
+					page.Content = view;
+					await OnLoadedAsync(view);
+					Assert.Same(handlerReference.Target, view.Handler);
+					Assert.Same(platformReference.Target, view.Handler.PlatformView);
+				}
+
+				await view.ScrollToAsync(0, 100, false).WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.True(view.ScrollY > 0);
+				// Scroll completion can resume inside native arrange; let it return before teardown.
+				await WaitForDispatcherIdle(((WScrollViewer)view.Handler.PlatformView).DispatcherQueue);
+				page.Content = null;
+			});
+
+			view = null;
+			page = null;
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
+		}
+
 		[Fact]
 		public async Task EntryDoesNotReceiveFocusWhenWindowOpens()
 		{

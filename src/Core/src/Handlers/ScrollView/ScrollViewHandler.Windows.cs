@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 		ScrollViewer? _tabStopPlatformView;
 		int _tabStopGeneration;
 		bool _isTabStopTemporary;
+		ScrollViewEventProxy? _eventProxy;
 
 		// Stores a scroll request that arrived before the content was laid out.
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
@@ -44,10 +45,8 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);
-			platformView.Loading += OnPlatformViewLoading;
-			platformView.Loaded += OnPlatformViewLoaded;
-			platformView.Unloaded += OnPlatformViewUnloaded;
-			platformView.ViewChanged += ViewChanged;
+			_eventProxy ??= new ScrollViewEventProxy(this);
+			_eventProxy.Connect(platformView);
 			_tabStopPlatformView = platformView;
 		}
 
@@ -59,10 +58,7 @@ namespace Microsoft.Maui.Handlers
 			// causing a WinUI COM exception "Element already has a parent" (Issue #35277).
 			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
 			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
-			platformView.Loading -= OnPlatformViewLoading;
-			platformView.Loaded -= OnPlatformViewLoaded;
-			platformView.Unloaded -= OnPlatformViewUnloaded;
-			platformView.ViewChanged -= ViewChanged;
+			_eventProxy?.Disconnect(platformView);
 			_tabStopPlatformView = null;
 			_tabStopGeneration++;
 			RestoreIsTabStop(platformView);
@@ -187,6 +183,57 @@ namespace Microsoft.Maui.Handlers
 			_isTabStopBinding = null;
 			_temporaryTabStopBinding = null;
 			_isTabStopTemporary = false;
+		}
+
+		// Every native subscription must avoid retaining the handler, including ViewChanged.
+		sealed class ScrollViewEventProxy
+		{
+			readonly WeakReference<ScrollViewHandler> _handler;
+
+			public ScrollViewEventProxy(ScrollViewHandler handler) => _handler = new(handler);
+
+			public void Connect(ScrollViewer platformView)
+			{
+				platformView.Loading += OnLoading;
+				platformView.Loaded += OnLoaded;
+				platformView.Unloaded += OnUnloaded;
+				platformView.ViewChanged += OnViewChanged;
+			}
+
+			public void Disconnect(ScrollViewer platformView)
+			{
+				platformView.Loading -= OnLoading;
+				platformView.Loaded -= OnLoaded;
+				platformView.Unloaded -= OnUnloaded;
+				platformView.ViewChanged -= OnViewChanged;
+			}
+
+			void OnLoading(FrameworkElement sender, object args)
+			{
+				if (_handler.TryGetTarget(out var handler))
+					handler.OnPlatformViewLoading(sender, args);
+			}
+
+			void OnLoaded(object sender, RoutedEventArgs args)
+			{
+				if (_handler.TryGetTarget(out var handler))
+					handler.OnPlatformViewLoaded(sender, args);
+			}
+
+			void OnUnloaded(object sender, RoutedEventArgs args)
+			{
+				if (_handler.TryGetTarget(out var handler))
+					handler.OnPlatformViewUnloaded(sender, args);
+			}
+
+			void OnViewChanged(object? sender, ScrollViewerViewChangedEventArgs args)
+			{
+				if (_handler.TryGetTarget(out var handler) &&
+					((IElementHandler)handler).PlatformView is ScrollViewer platformView &&
+					ReferenceEquals(platformView, sender) &&
+					((IElementHandler)handler).VirtualView is not null)
+					handler.ViewChanged(sender, args);
+			}
 		}
 
 		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)

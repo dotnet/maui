@@ -44,16 +44,18 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 				if (cliArgs.Length >= 3)
 				{
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<ControlsHeadlessTestRunner>();
-					await headlessRunner.RunTestsAsync();
+					await headlessRunner.RunTestsAsync(terminateAfterExecution: true);
 				}
 				else
 				{
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<HeadlessTestRunner>();
-					await headlessRunner.RunTestsAsync();
+					await headlessRunner.RunTestsAsync(terminateAfterExecution: true);
 				}
 #endif
 
+#if !WINDOWS
 				Process.GetCurrentProcess().Kill();
+#endif
 			}
 		}
 
