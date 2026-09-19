@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -22,6 +23,13 @@ namespace Microsoft.Maui.HotReload
 		public static void Reset()
 		{
 			replacedViews.Clear();
+			activatedHandlerTypes.Clear();
+
+			lock (handlerReplacementLock)
+			{
+				replacedHandlers.Clear();
+				pendingHandlerReplacements.Clear();
+			}
 		}
 		public static bool IsEnabled { get; set; } = Debugger.IsAttached;
 
@@ -117,6 +125,40 @@ namespace Microsoft.Maui.HotReload
 		static Dictionary<string, Type> replacedViews = new(StringComparer.Ordinal);
 		static Dictionary<IHotReloadableView, object[]> currentViews = new Dictionary<IHotReloadableView, object[]>();
 		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
+		static ConcurrentDictionary<string, Type> pendingHandlerReplacements = new(StringComparer.Ordinal);
+		static ConcurrentDictionary<ServiceDescriptor, Type> activatedHandlerTypes = new();
+		static readonly object handlerReplacementLock = new();
+
+		[UnconditionalSuppressMessage("Trimming", "IL2026",
+			Justification = "Pending replacements are only populated by the trim-incompatible Hot Reload path.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050",
+			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
+		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
+		{
+			activatedHandlerTypes[descriptor] = handlerType;
+
+			if (pendingHandlerReplacements.IsEmpty || handlerType.FullName is not string handlerTypeName)
+				return;
+
+			lock (handlerReplacementLock)
+			{
+				if (!pendingHandlerReplacements.TryGetValue(handlerTypeName, out var newHandlerType))
+					return;
+
+				var handler = new KeyValuePair<Type, Type>(descriptor.ServiceType, handlerType);
+				if (!replacedHandlers.TryGetValue(handlerTypeName, out var views))
+				{
+					views = new List<KeyValuePair<Type, Type>>();
+					replacedHandlers[handlerTypeName] = views;
+				}
+
+				if (views.Contains(handler))
+					return;
+
+				views.Add(handler);
+				RegisterHandler(handler, newHandlerType);
+			}
+		}
 
 		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
 #if !NETSTANDARD
@@ -152,37 +194,64 @@ namespace Microsoft.Maui.HotReload
 				replacedViews[oldViewType] = newViewType;
 
 			if (typeof(IViewHandler).IsAssignableFrom(newViewType))
+				RegisterHandlerReplacement(oldViewType, newViewType);
+		}
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
+		internal static void RegisterHandlerReplacement(string oldHandlerType, Type newHandlerType)
+		{
+			_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
+
+			List<KeyValuePair<Type, Type>> views;
+			lock (handlerReplacementLock)
 			{
-				if (replacedHandlers.TryGetValue(oldViewType, out var vTypes))
+				pendingHandlerReplacements[oldHandlerType] = newHandlerType;
+				if (replacedHandlers.TryGetValue(oldHandlerType, out var registeredViews))
 				{
-					foreach (var vType in vTypes)
-						RegisterHandler(vType, newViewType);
-					return;
+					views = registeredViews.ToList();
+				}
+				else
+				{
+					var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+					var handlerType = assemblies.Select(x => x.GetType(oldHandlerType)).FirstOrDefault(x => x != null);
+
+					views = handlerType is null
+						? new List<KeyValuePair<Type, Type>>()
+						: HandlerService
+							.Select(x => new KeyValuePair<Type, Type?>(x.ServiceType, GetRegisteredHandlerType(x)))
+							.Where(x => x.Value == handlerType)
+							.Select(x => new KeyValuePair<Type, Type>(x.Key, x.Value!))
+							.Distinct()
+							.ToList();
+
+					if (views.Count > 0)
+						replacedHandlers[oldHandlerType] = views.ToList();
 				}
 
-				_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
-				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-				var t = assemblies.Select(x => x.GetType(oldViewType)).FirstOrDefault(x => x != null);
-
-				var views = HandlerService!.Where(x => x.ImplementationType == t).Select(x => new KeyValuePair<Type, Type>(x.ServiceType, x.ImplementationType!)).ToList();
-
-
-				replacedHandlers[oldViewType] = views.ToList();
-				foreach (var h in views)
-				{
-					RegisterHandler(h, newViewType);
-				}
+				foreach (var view in views)
+					RegisterHandler(view, newHandlerType);
 			}
+		}
 
-			static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
-			{
-				_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
-				var view = pair.Key;
-				var newType = newHandler;
-				if (pair.Value.IsGenericType)
-					newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-				HandlerService.AddHandler(view, newType);
-			}
+		static Type? GetRegisteredHandlerType(ServiceDescriptor descriptor) =>
+			descriptor.ImplementationType
+				?? (activatedHandlerTypes.TryGetValue(descriptor, out var handlerType) ? handlerType : null);
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
+		static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
+		{
+			_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
+			var view = pair.Key;
+			var newType = newHandler;
+			if (pair.Value.IsGenericType)
+				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
+			HandlerService.AddHandler(view, newType);
 		}
 
 		public static void TriggerReload()

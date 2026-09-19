@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			ArgumentNullException.ThrowIfNull(builder);
 			builder.Services.ConfigureMauiHandlers(handlers =>
-				handlers.AddHandler<IBlazorWebView, THandler>());
+				handlers.AddHandler<IBlazorWebView>(static _ => new THandler()));
 			return builder;
 		}
 

@@ -77,6 +77,8 @@ namespace Microsoft.Maui.Platform
 				{
 					if (handlersWithConstructors.Contains(viewType))
 						handler = viewType.CreateTypeWithInjection(context);
+					else if (context.Handlers is Hosting.Internal.MauiHandlersFactory handlersFactory)
+						handler = handlersFactory.GetHandler(viewType, context);
 					else
 						handler = context.Handlers.GetHandler(viewType);
 				}
