@@ -156,6 +156,31 @@ auth** (verified live). The useful files are:
   HybridWebView test results after 480 seconds`, an unhandled exception, or a non-zero exit line).
 - a `*.dmp` crash dump when the host crashed.
 
+**Windows runner acceptance:** `Run-PackagedAppAndWait.ps1` must retain the process handle
+before waiting (otherwise Windows PowerShell loses `ExitCode`), propagate unsuccessful
+or unknown app exit codes, and the cmd runner must retain failures from every launch.
+`Merge-WindowsTestResults.ps1` validates each category's XML and counters before merging.
+Unreadable/missing results and crash dumps produce explicit failed infrastructure tests while
+valid category results remain available. Empty categories can be legitimate after platform
+filtering, but an entire run with zero reported tests fails. Do not infer completeness from
+exit code zero or a merged XML alone: compare expected categories/tests and inspect crash
+artifacts. Previously a packaged Maps crash produced an empty XML that the merger silently
+omitted, yielding a green task with the Maps tests missing. Regression coverage is in
+`eng/devices/WindowsDeviceTestRunner.Tests.ps1`.
+
+The Windows headless hosts report explicit outcome exit codes only **after** awaiting
+XHarness `RunAsync`, which owns and disposes the XML writer. The command-line path in
+`HomePage` must explicitly request termination: XHarness's `TerminateAfterExecution`
+defaults to false, so relying only on `TerminateWithSuccess` leaves that path running.
+Previously `HomePage` killed the process after awaiting the runner, producing `-1` on
+Windows even for fully passing runs. Do not whitelist that status or call
+`Environment.Exit` inside `TerminateWithSuccess`: the latter callback runs before the
+writer is disposed and can truncate results. `WindowsHeadlessTestRunner.Tests.ps1`
+compiles the actual host classes and `HomePage` in subprocesses with XHarness lifecycle
+stubs. It covers both explicit XHarness termination and the real CLI caller with the
+default option, passing/failing runs, exceptions, invalid category indices, discovery,
+writer disposal, and non-terminating interactive mode.
+
 > ⚠️ **Content-type gotcha (decode bug, fixed).** Azure blob serves the `.xml` result files as
 > `application/octet-stream`, so `Invoke-WebRequest`'s `.Content` is a **`byte[]`** — a plain
 > `[string]` cast stringifies it as space-joined decimal byte values (`"60 63 120 …"`) and breaks
@@ -184,10 +209,11 @@ extract); or the work item exited non-zero with **zero** named failures. A devic
 > incompleteness cap narrows `isIncomplete` to markers that *prove* a run didn't finish, and that
 > narrowing is **coupled to the Windows runner's exact echo strings**:
 > - `[FAIL] Timeout waiting for <category> test results after N seconds` — `eng/devices/run-windows-devicetests.cmd:503` (an unfinished category)
-> - `All test processes may have crashed` — `run-windows-devicetests.cmd:430` (a total wipeout)
+> - `All test processes may have crashed` — `eng/devices/Merge-WindowsTestResults.ps1` (a total wipeout)
+> - `Test run did not finish` — `Merge-WindowsTestResults.ps1` (invalid or entirely empty results; matched by the existing `did not (complete|finish)` pattern)
 > - `Test execution completed with exit code: N` — `run-windows-devicetests.cmd:481` is **deliberately EXCLUDED** from the cap: the cmd echoes it **unconditionally** on every non-zero run (it only ever `exit /b 0|1`), so treating it as incompleteness over-caps *every* failed Windows work item and never lets a cleanly-named failure flow to base/known-issue attribution.
 >
-> The first two strings are the *independent* incompleteness markers in `Get-ConsoleFailureReason`'s
+> The first three strings are the *independent* incompleteness markers in `Get-ConsoleFailureReason`'s
 > `$incompleteRegex`. **If anyone rewords them in the cmd, mirror the change in
 > `$incompleteRegex` (`Gather-TestFailureContext.ps1`)** — otherwise the cap silently weakens **with
 > no test failing** (the coupling is enforced only by comments + this note, not by a shared
