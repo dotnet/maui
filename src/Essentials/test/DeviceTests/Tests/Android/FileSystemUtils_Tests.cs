@@ -1,6 +1,9 @@
+using System;
 using System.IO;
+using Android.App;
 using Microsoft.Maui.Storage;
 using Xunit;
+using AndroidUri = Android.Net.Uri;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
@@ -15,6 +18,66 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			{
 				File.WriteAllText(filePath, "test content");
 				Assert.True(FileSystemUtils.IsFileReadable(filePath));
+			}
+			finally
+			{
+				if (File.Exists(filePath))
+				{
+					File.Delete(filePath);
+				}
+			}
+		}
+
+		[Fact]
+		public void EnsurePhysicalPath_Rejects_FileUri_Inside_AppDataDirectory()
+			=> AssertFileUriRejected(FileSystem.AppDataDirectory);
+
+		[Fact]
+		public void EnsurePhysicalPath_Rejects_FileUri_Inside_DeviceProtectedStorage()
+		{
+			var deviceProtectedContext = Application.Context.CreateDeviceProtectedStorageContext();
+			var filesDirectory = deviceProtectedContext.FilesDir ??
+				throw new InvalidOperationException("Device-protected files directory is not available.");
+
+			AssertFileUriRejected(filesDirectory.CanonicalPath);
+		}
+
+		static void AssertFileUriRejected(string directory)
+		{
+			var filePath = Path.Combine(directory, $"picker_private_{Guid.NewGuid():N}.txt");
+			File.WriteAllText(filePath, "private app data");
+
+			try
+			{
+				using var file = new Java.IO.File(filePath);
+				using var uri = AndroidUri.FromFile(file);
+
+				Assert.Throws<FileNotFoundException>(() => FileSystemUtils.EnsurePhysicalPath(uri));
+			}
+			finally
+			{
+				if (File.Exists(filePath))
+				{
+					File.Delete(filePath);
+				}
+			}
+		}
+
+		[Fact]
+		public void EnsurePhysicalPath_Allows_FileUri_Outside_AppDataDirectory()
+		{
+			var externalCacheDirectory = Application.Context.ExternalCacheDir;
+			Assert.NotNull(externalCacheDirectory);
+
+			var filePath = Path.Combine(externalCacheDirectory.AbsolutePath, $"picker_external_{Guid.NewGuid():N}.txt");
+			File.WriteAllText(filePath, "external app data");
+
+			try
+			{
+				using var file = new Java.IO.File(filePath);
+				using var uri = AndroidUri.FromFile(file);
+
+				Assert.Equal(file.CanonicalPath, FileSystemUtils.EnsurePhysicalPath(uri));
 			}
 			finally
 			{
