@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Handlers
 		ScrollViewer? _tabStopPlatformView;
 		int _tabStopGeneration;
 		bool _isTabStopTemporary;
-		TabStopEventProxy? _tabStopEventProxy;
 
 		// Stores a scroll request that arrived before the content was laid out.
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
@@ -45,8 +44,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);
-			_tabStopEventProxy ??= new TabStopEventProxy(this);
-			_tabStopEventProxy.Connect(platformView);
+			platformView.Loading += OnPlatformViewLoading;
+			platformView.Loaded += OnPlatformViewLoaded;
+			platformView.Unloaded += OnPlatformViewUnloaded;
 			platformView.ViewChanged += ViewChanged;
 			_tabStopPlatformView = platformView;
 		}
@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Handlers
 			// causing a WinUI COM exception "Element already has a parent" (Issue #35277).
 			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
 			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
-			_tabStopEventProxy?.Disconnect(platformView);
+			platformView.Loading -= OnPlatformViewLoading;
+			platformView.Loaded -= OnPlatformViewLoaded;
+			platformView.Unloaded -= OnPlatformViewUnloaded;
 			platformView.ViewChanged -= ViewChanged;
 			_tabStopPlatformView = null;
 			_tabStopGeneration++;
@@ -130,17 +132,13 @@ namespace Microsoft.Maui.Handlers
 		void QueueTemporaryTabStopRestore(ScrollViewer scrollViewer, bool restoreWhenLoaded)
 		{
 			var generation = ++_tabStopGeneration;
-			var handlerReference = new WeakReference<ScrollViewHandler>(this);
-			var platformViewReference = new WeakReference<ScrollViewer>(scrollViewer);
 			void RestoreIfCurrent()
 			{
-				if (handlerReference.TryGetTarget(out var handler) &&
-					platformViewReference.TryGetTarget(out var platformView) &&
-					generation == handler._tabStopGeneration &&
-					ReferenceEquals(handler._tabStopPlatformView, platformView) &&
-					platformView.IsLoaded == restoreWhenLoaded)
+				if (generation == _tabStopGeneration &&
+					ReferenceEquals(_tabStopPlatformView, scrollViewer) &&
+					scrollViewer.IsLoaded == restoreWhenLoaded)
 				{
-					handler.RestoreIsTabStop(platformView);
+					RestoreIsTabStop(scrollViewer);
 				}
 			}
 
@@ -189,46 +187,6 @@ namespace Microsoft.Maui.Handlers
 			_isTabStopBinding = null;
 			_temporaryTabStopBinding = null;
 			_isTabStopTemporary = false;
-		}
-
-		// Native load events must not keep a detached handler and its view alive.
-		sealed class TabStopEventProxy
-		{
-			readonly WeakReference<ScrollViewHandler> _handler;
-
-			public TabStopEventProxy(ScrollViewHandler handler) => _handler = new(handler);
-
-			public void Connect(ScrollViewer platformView)
-			{
-				platformView.Loading += OnLoading;
-				platformView.Loaded += OnLoaded;
-				platformView.Unloaded += OnUnloaded;
-			}
-
-			public void Disconnect(ScrollViewer platformView)
-			{
-				platformView.Loading -= OnLoading;
-				platformView.Loaded -= OnLoaded;
-				platformView.Unloaded -= OnUnloaded;
-			}
-
-			void OnLoading(FrameworkElement sender, object args)
-			{
-				if (_handler.TryGetTarget(out var handler))
-					handler.OnPlatformViewLoading(sender, args);
-			}
-
-			void OnLoaded(object sender, RoutedEventArgs args)
-			{
-				if (_handler.TryGetTarget(out var handler))
-					handler.OnPlatformViewLoaded(sender, args);
-			}
-
-			void OnUnloaded(object sender, RoutedEventArgs args)
-			{
-				if (_handler.TryGetTarget(out var handler))
-					handler.OnPlatformViewUnloaded(sender, args);
-			}
 		}
 
 		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)

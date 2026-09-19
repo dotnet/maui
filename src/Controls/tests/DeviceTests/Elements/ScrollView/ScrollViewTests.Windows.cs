@@ -19,6 +19,64 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ScrollViewTests
 	{
+		[Theory]
+		[InlineData("Baseline")]
+		[InlineData("Unfocus")]
+		[InlineData("ClearTabStop")]
+		[InlineData("Disconnect")]
+		public async Task ScrollViewCollectionAfterNativeCleanup(string cleanup)
+		{
+			SetupBuilder();
+			WeakReference viewReference = null;
+			WeakReference handlerReference = null;
+			WeakReference platformReference = null;
+			string state = null;
+			var view = new ScrollView();
+			var page = new ContentPage { Content = view };
+
+			await CreateHandlerAndAddToWindow(page, () =>
+			{
+				viewReference = new(view);
+				handlerReference = new(view.Handler);
+				platformReference = new(view.Handler.PlatformView);
+				var platformView = (WScrollViewer)view.Handler.PlatformView;
+				state = DescribeNativeState(platformView);
+
+				switch (cleanup)
+				{
+					case "Unfocus":
+						Microsoft.Maui.Platform.ViewExtensions.Unfocus(platformView, view);
+						break;
+					case "ClearTabStop":
+						platformView.ClearValue(WControl.IsTabStopProperty);
+						break;
+					case "Disconnect":
+						view.Handler.DisconnectHandler();
+						break;
+				}
+
+				state += $"; after {cleanup}: {DescribeNativeState(platformView)}";
+				page.Content = null;
+			});
+
+			view = null;
+			page = null;
+			var collected = await AssertionExtensions.WaitForCollect(viewReference, handlerReference, platformReference);
+			state += await InvokeOnMainThreadAsync(() =>
+				platformReference.Target is WScrollViewer platformView
+					? $"; after detach/GC: {DescribeNativeState(platformView)}"
+					: "; native collected");
+			Assert.True(collected, $"{state}; alive: view={viewReference.IsAlive}, handler={handlerReference.IsAlive}, native={platformReference.IsAlive}");
+		}
+
+		static string DescribeNativeState(WScrollViewer platformView)
+		{
+			var root = platformView.XamlRoot;
+			return $"loaded={platformView.IsLoaded}, focus={platformView.FocusState}, tabStop={platformView.IsTabStop}, " +
+				$"local={platformView.ReadLocalValue(WControl.IsTabStopProperty)}, binding={platformView.GetBindingExpression(WControl.IsTabStopProperty) is not null}, " +
+				$"root={root is not null}, focused={(root is null ? null : Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(root))}";
+		}
+
 		[Fact]
 		public async Task EntryDoesNotReceiveFocusWhenWindowOpens()
 		{
