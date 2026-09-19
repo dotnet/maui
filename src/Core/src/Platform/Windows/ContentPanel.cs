@@ -278,12 +278,14 @@ namespace Microsoft.Maui.Platform
 
 			if (clipGeometry is IRoundRectangle roundedRectangle)
 			{
-				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
+				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2, includeShapeStroke: true);
 				IsInnerPath = true;
 			}
 			else
 			{
-				clipPath = clipGeometry.PathForBounds(pathSize);
+				clipPath = clipGeometry is IShapeWithStroke shapeWithStroke
+				? shapeWithStroke.PathForBounds(pathSize, includeStroke: true)
+				: clipGeometry.PathForBounds(pathSize);
 				IsInnerPath = false;
 			}
 

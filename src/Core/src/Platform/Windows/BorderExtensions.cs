@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Platform
 
 			var strokeThickness = borderPath?.StrokeThickness ?? 0;
 			var pathSize = new Graphics.Rect(0, 0, width - strokeThickness, height - strokeThickness);
-			var shapePath = borderShape.PathForBounds(pathSize);
+			var shapePath = borderShape is IShapeWithStroke shapeWithStroke
+				? shapeWithStroke.PathForBounds(pathSize, includeStroke: true)
+				: borderShape.PathForBounds(pathSize);
 			var geometry = shapePath.AsPathGeometry();
 
 			if (borderPath is not null)
