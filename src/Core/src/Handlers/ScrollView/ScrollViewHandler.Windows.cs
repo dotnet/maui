@@ -400,13 +400,31 @@ namespace Microsoft.Maui.Handlers
 
 			var paddingShim = new ContentPanel()
 			{
-				CrossPlatformLayout = crossPlatformLayout,
+				CrossPlatformLayout = new WeakCrossPlatformLayout(crossPlatformLayout),
 				Tag = ContentPanelTag
 			};
 
 			scrollViewer.Content = null;
 			paddingShim.CachedChildren.Add(nativeContent);
 			scrollViewer.Content = paddingShim;
+		}
+
+		// The native content panel must not keep its owning handler alive through layout callbacks.
+		sealed class WeakCrossPlatformLayout : ICrossPlatformLayout
+		{
+			readonly WeakReference<ICrossPlatformLayout> _layout;
+
+			public WeakCrossPlatformLayout(ICrossPlatformLayout layout) => _layout = new(layout);
+
+			public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
+				_layout.TryGetTarget(out var layout)
+					? layout.CrossPlatformMeasure(widthConstraint, heightConstraint)
+					: Size.Zero;
+
+			public Size CrossPlatformArrange(Rect bounds) =>
+				_layout.TryGetTarget(out var layout)
+					? layout.CrossPlatformArrange(bounds)
+					: Size.Zero;
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
