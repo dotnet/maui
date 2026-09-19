@@ -109,6 +109,11 @@ Describe 'Windows device-test result validation' {
         $LASTEXITCODE | Should -Be 1 -Because ($output | Out-String)
         $merged = [xml](Get-Content (Join-Path $resultsPath 'testResults.xml') -Raw)
         $merged.SelectNodes('//test[@result="Fail"]').Count | Should -Be 1
+        $assembly = $merged.SelectSingleNode('/assemblies/assembly')
+        $assembly.GetAttribute('environment') | Should -Not -BeNullOrEmpty
+        $assembly.GetAttribute('test-framework') | Should -Not -BeNullOrEmpty
+        $assembly.GetAttribute('run-date') | Should -Match '^\d{4}-\d{2}-\d{2}$'
+        $assembly.GetAttribute('run-time') | Should -Match '^\d{2}:\d{2}:\d{2}$'
     }
 
     It 'fails when every category reported zero tests' {
