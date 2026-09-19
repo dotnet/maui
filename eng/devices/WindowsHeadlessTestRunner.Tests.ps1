@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.XHarness.TestRunners.Common
     public class ApplicationOptions
     {
         public static ApplicationOptions Current { get; } = new();
-        public bool TerminateAfterExecution { get; set; } = true;
+        public bool TerminateAfterExecution { get; set; }
     }
     public class TestRunResult : EventArgs
     {
@@ -92,6 +92,56 @@ namespace Microsoft.UI.Xaml
         public void Exit() => Environment.Exit(-1);
     }
 }
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static class ServiceProviderExtensions
+    {
+        public static T GetRequiredService<T>(this IServiceProvider services) =>
+            (T)services.GetService(typeof(T))!;
+    }
+}
+namespace Microsoft.Maui.Controls
+{
+    using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
+    public class ContentPage
+    {
+        public event EventHandler? Loaded;
+        public TestHandler Handler { get; } = new();
+        public object? BindingContext { get; set; }
+        public void RaiseLoaded() => Loaded?.Invoke(this, EventArgs.Empty);
+        protected virtual void OnAppearing() { }
+    }
+    public class TestHandler { public TestContext MauiContext { get; } = new(); }
+    public class TestContext { public IServiceProvider Services { get; } = new TestServices(); }
+    public class TestServices : IServiceProvider
+    {
+        public object? GetService(Type type) =>
+            Activator.CreateInstance(type, new HeadlessRunnerOptions(), new TestOptions());
+    }
+}
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
+{
+    public class ViewModelBase { public void OnAppearing() { } }
+}
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
+{
+    // Supply CLI arguments to the real HomePage without changing the subprocess's own arguments.
+    static class Environment
+    {
+        public static string[] GetCommandLineArgs() => HomePageTestHost.Arguments;
+    }
+    public static class HomePageTestHost
+    {
+        public static string[] Arguments = Array.Empty<string>();
+        public static void Run() => new HomePage().RaiseLoaded();
+    }
+    partial class HomePage
+    {
+        readonly TestAssemblyList assemblyList = new();
+        void InitializeComponent() { }
+    }
+    class TestAssemblyList { public object? SelectedItem { get; set; } }
+}
 namespace Microsoft.Maui.Storage
 {
     public static class FileSystemUtils
@@ -126,24 +176,37 @@ namespace Xunit
 }
 '@ | Set-Content -LiteralPath $stubsPath
         @'
-param([string]$SourceDirectory, [string]$StubsPath, [string]$ResultsPath, [string]$RunnerType, [string]$Mode)
+param([string]$SourceDirectory, [string]$StubsPath, [string]$ResultsPath, [string]$RunnerType, [string]$Mode, [string]$EntryPoint)
 $ErrorActionPreference = 'Stop'
 Add-Type -Path @(
     $StubsPath
     (Join-Path $SourceDirectory 'HeadlessTestRunner.cs')
     (Join-Path $SourceDirectory 'ControlsHeadlessTestRunner.cs')
-)
+    (Join-Path $SourceDirectory '../../VisualRunner/Pages/HomePage.xaml.cs')
+) -CompilerOptions '/define:WINDOWS'
 $type = "Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.$RunnerType" -as [type]
 $type.GetField('TestResultsFile').SetValue($null, $ResultsPath)
 [Microsoft.DotNet.XHarness.TestRunners.Xunit.AndroidApplicationEntryPoint]::FailedTests = [int]($Mode -eq 'failing')
 [Microsoft.DotNet.XHarness.TestRunners.Xunit.AndroidApplicationEntryPoint]::ThrowDuringExecution = $Mode -eq 'throwing'
-[Microsoft.DotNet.XHarness.TestRunners.Common.ApplicationOptions]::Current.TerminateAfterExecution = $Mode -ne 'interactive'
+[Microsoft.DotNet.XHarness.TestRunners.Common.ApplicationOptions]::Current.TerminateAfterExecution = $EntryPoint -eq 'runner' -and $Mode -ne 'interactive'
 if ($RunnerType -eq 'ControlsHeadlessTestRunner') {
     if ($Mode -eq 'discovery') {
         [Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.ControlsHeadlessTestRunner]::LoopCount = -1
     } else {
         'Test' | Set-Content (Join-Path (Split-Path $ResultsPath) 'devicetestcategories.txt')
     }
+}
+if ($EntryPoint -eq 'page') {
+    $cliArgs = @('DeviceTests.exe')
+    if ($Mode -ne 'interactive') {
+        $cliArgs += $ResultsPath
+        if ($RunnerType -eq 'ControlsHeadlessTestRunner') {
+            $cliArgs += $(if ($Mode -eq 'discovery') { '-1' } elseif ($Mode -eq 'invalid-category') { '99' } else { '0' })
+        }
+    }
+    [Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.HomePageTestHost]::Arguments = $cliArgs
+    [Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.HomePageTestHost]::Run()
+    exit 99
 }
 $runner = [Activator]::CreateInstance($type, @(
     [Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.HeadlessRunnerOptions]::new()
@@ -154,25 +217,36 @@ exit 99
 '@ | Set-Content -LiteralPath $harnessPath
     }
 
-    It '<RunnerType> reports <Expected> for <Mode> after closing its output file' -ForEach @(
-        @{ RunnerType = 'HeadlessTestRunner'; Mode = 'passing'; Expected = 0 }
-        @{ RunnerType = 'HeadlessTestRunner'; Mode = 'failing'; Expected = 1 }
-        @{ RunnerType = 'HeadlessTestRunner'; Mode = 'throwing'; Expected = 1 }
-        @{ RunnerType = 'HeadlessTestRunner'; Mode = 'interactive'; Expected = 99 }
-        @{ RunnerType = 'ControlsHeadlessTestRunner'; Mode = 'passing'; Expected = 0 }
-        @{ RunnerType = 'ControlsHeadlessTestRunner'; Mode = 'failing'; Expected = 1 }
-        @{ RunnerType = 'ControlsHeadlessTestRunner'; Mode = 'throwing'; Expected = 1 }
-        @{ RunnerType = 'ControlsHeadlessTestRunner'; Mode = 'interactive'; Expected = 99 }
-        @{ RunnerType = 'ControlsHeadlessTestRunner'; Mode = 'discovery'; Expected = 0 }
+    It '<RunnerType> via <EntryPoint> reports <Expected> for <Mode> after closing its output file' -ForEach @(
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'passing'; Expected = 0 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'failing'; Expected = 1 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'throwing'; Expected = 1 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'interactive'; Expected = 99 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'passing'; Expected = 0 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'failing'; Expected = 1 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'throwing'; Expected = 1 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'interactive'; Expected = 99 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'runner'; Mode = 'discovery'; Expected = 0 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'page'; Mode = 'passing'; Expected = 0 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'page'; Mode = 'failing'; Expected = 1 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'page'; Mode = 'throwing'; Expected = 1 }
+        @{ RunnerType = 'HeadlessTestRunner'; EntryPoint = 'page'; Mode = 'interactive'; Expected = 99 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'page'; Mode = 'passing'; Expected = 0 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'page'; Mode = 'failing'; Expected = 1 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'page'; Mode = 'throwing'; Expected = 1 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'page'; Mode = 'discovery'; Expected = 0 }
+        @{ RunnerType = 'ControlsHeadlessTestRunner'; EntryPoint = 'page'; Mode = 'invalid-category'; Expected = 1 }
     ) {
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString())
         New-Item -ItemType Directory -Path $directory | Out-Null
         $resultsPath = Join-Path $directory 'TestResults.xml'
-        $output = & $powershellPath -NoProfile -File $harnessPath $sourceDirectory $stubsPath $resultsPath $RunnerType $Mode 2>&1
+        $output = & $powershellPath -NoProfile -File $harnessPath $sourceDirectory $stubsPath $resultsPath $RunnerType $Mode $EntryPoint 2>&1
         $LASTEXITCODE | Should -Be $Expected -Because ($output | Out-String)
 
         if ($Mode -eq 'discovery') {
             Get-Content (Join-Path $directory 'devicetestcategories.txt') -Raw | Should -Match '^Test\s*$'
+        } elseif ($EntryPoint -eq 'page' -and $Mode -in @('interactive', 'invalid-category')) {
+            Test-Path -LiteralPath $resultsPath | Should -BeFalse
         } else {
             $resultFile = if ($RunnerType -eq 'ControlsHeadlessTestRunner') { 'TestResults_Test.xml' } else { 'TestResults.xml' }
             Get-Content (Join-Path $directory $resultFile) -Raw | Should -Be 'flushed results'

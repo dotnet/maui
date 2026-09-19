@@ -188,12 +188,16 @@ omitted, yielding a green task with the Maps tests missing. Regression coverage 
 `eng/devices/WindowsDeviceTestRunner.Tests.ps1`.
 
 The Windows headless hosts report explicit outcome exit codes only **after** awaiting
-XHarness `RunAsync`, which owns and disposes the XML writer. The previous
-`Application.Current.Exit()` path returned `-1` even for fully passing runs.
-Do not whitelist that status or call `Environment.Exit` inside `TerminateWithSuccess`:
-the latter callback runs before the writer is disposed and can truncate results.
-`WindowsHeadlessTestRunner.Tests.ps1` runs the actual host classes in subprocesses with
-XHarness lifecycle stubs to cover passing/failing runs, exceptions, category discovery,
+XHarness `RunAsync`, which owns and disposes the XML writer. The command-line path in
+`HomePage` must explicitly request termination: XHarness's `TerminateAfterExecution`
+defaults to false, so relying only on `TerminateWithSuccess` leaves that path running.
+Previously `HomePage` killed the process after awaiting the runner, producing `-1` on
+Windows even for fully passing runs. Do not whitelist that status or call
+`Environment.Exit` inside `TerminateWithSuccess`: the latter callback runs before the
+writer is disposed and can truncate results. `WindowsHeadlessTestRunner.Tests.ps1`
+compiles the actual host classes and `HomePage` in subprocesses with XHarness lifecycle
+stubs. It covers both explicit XHarness termination and the real CLI caller with the
+default option, passing/failing runs, exceptions, invalid category indices, discovery,
 writer disposal, and non-terminating interactive mode.
 
 > ⚠️ **Content-type gotcha (decode bug, fixed).** Azure blob serves the `.xml` result files as
