@@ -11,23 +11,44 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		public static async Task WaitForWebViewReady(WebView2 wv2)
 		{
 			CoreWebView2 coreWebView2 = null;
+			Exception initializationException = null;
 
-			// Ensure that the WebView2 runtime is installed and initialized and has a CoreWebView2 instance.
-			if (wv2?.CoreWebView2 == null)
+			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 			{
-				string version = CoreWebView2Environment.GetAvailableBrowserVersionString(null);
-				if (string.IsNullOrEmpty(version))
-				{
-					throw new InvalidOperationException("WebView2 runtime is not installed.");
-				}
-				await wv2.EnsureCoreWebView2Async();
+				initializationException = args.Exception;
 			}
 
-			await Retry(() =>
+			wv2.CoreWebView2Initialized += OnCoreWebView2Initialized;
+			try
 			{
-				coreWebView2 = wv2.CoreWebView2;
-				return Task.FromResult(coreWebView2 != null);
-			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2 to be available.")));
+				// Ensure that the WebView2 runtime is installed and initialized and has a CoreWebView2 instance.
+				if (wv2.CoreWebView2 == null)
+				{
+					string version = CoreWebView2Environment.GetAvailableBrowserVersionString(null);
+					if (string.IsNullOrEmpty(version))
+					{
+						throw new InvalidOperationException("WebView2 runtime is not installed.");
+					}
+					await wv2.EnsureCoreWebView2Async();
+				}
+
+				await Retry(() =>
+				{
+					// WinUI can complete EnsureCoreWebView2Async but report failure through this event.
+					if (initializationException != null)
+					{
+						throw new InvalidOperationException(
+							$"WebView2 initialization failed (HRESULT 0x{initializationException.HResult:X8}).",
+							initializationException);
+					}
+					coreWebView2 = wv2.CoreWebView2;
+					return Task.FromResult(coreWebView2 != null);
+				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2 to be available.")));
+			}
+			finally
+			{
+				wv2.CoreWebView2Initialized -= OnCoreWebView2Initialized;
+			}
 
 			var domLoaded = false;
 			var sem = new SemaphoreSlim(1);

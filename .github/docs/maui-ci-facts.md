@@ -200,6 +200,14 @@ stubs. It covers both explicit XHarness termination and the real CLI caller with
 default option, passing/failing runs, exceptions, invalid category indices, discovery,
 writer disposal, and non-terminating interactive mode.
 
+**Windows Blazor initialization failures:** `EnsureCoreWebView2Async` can complete
+without a `CoreWebView2` instance when WinUI reports an exception through
+`CoreWebView2Initialized`. The device-test readiness helper preserves that exception
+and HRESULT instead of replacing it with a generic 30-second timeout. Its observer
+is removed on both success and failure. `WindowsWebViewReadiness.Tests.ps1` covers
+this diagnostic path; it does not establish that a native initialization failure
+is fixed or justify retrying/ignoring a failed test.
+
 > ⚠️ **Content-type gotcha (decode bug, fixed).** Azure blob serves the `.xml` result files as
 > `application/octet-stream`, so `Invoke-WebRequest`'s `.Content` is a **`byte[]`** — a plain
 > `[string]` cast stringifies it as space-joined decimal byte values (`"60 63 120 …"`) and breaks
