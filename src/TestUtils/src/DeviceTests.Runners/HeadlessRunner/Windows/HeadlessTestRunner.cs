@@ -17,6 +17,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		readonly TestOptions _options;
 		readonly string? _resultsPath;
 		TestLogger _logger;
+		bool _terminateAfterExecution;
+		int _exitCode = 1;
 
 		public HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, TestOptions options)
 		{
@@ -43,7 +45,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		protected override void TerminateWithSuccess()
 		{
-			UI.Xaml.Application.Current.Exit();
+			// XHarness still owns the XML writer here; exit only after RunAsync disposes it.
+			_terminateAfterExecution = true;
 		}
 
 		protected override TestRunner GetTestRunner(LogWriter logWriter)
@@ -67,8 +70,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			catch (Exception ex)
 			{
 				_logger.WriteLine(ex.ToString());
+				_exitCode = 1;
+				_terminateAfterExecution = ApplicationOptions.Current.TerminateAfterExecution;
 			}
 			TestsCompleted -= OnTestsCompleted;
+
+			if (_terminateAfterExecution)
+				Environment.Exit(_exitCode);
 
 			if (File.Exists(TestsResultsFinalPath))
 				return TestsResultsFinalPath;
@@ -77,6 +85,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			void OnTestsCompleted(object? sender, TestRunResult results)
 			{
+				_exitCode = results.FailedTests == 0 ? 0 : 1;
 				var message =
 					$"Tests run: {results.ExecutedTests} " +
 					$"Passed: {results.PassedTests} " +
@@ -85,7 +94,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 					$"Ignored: {results.SkippedTests}";
 
 				_logger.WriteLine("test-execution-summary" + message);
-				_logger.WriteLine("return-code " + (results.FailedTests == 0 ? 0 : 1));
+				_logger.WriteLine("return-code " + _exitCode);
 			}
 		}
 	}
