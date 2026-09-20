@@ -163,6 +163,98 @@ jobs:
   pre-activation:
     outputs:
       exact_command_should_run: ${{ steps.exact_command.outputs.should_run }}
+      review_authorized: ${{ steps.authorization.outputs.authorized }}
+  notify_review_failure:
+    needs: [pre_activation, activation, agent, safe_outputs]
+    if: >-
+      !cancelled() &&
+      needs.pre_activation.outputs.activated == 'true' &&
+      needs.pre_activation.outputs.exact_command_should_run == 'true' &&
+      (github.event_name == 'workflow_dispatch' || needs.pre_activation.outputs.review_authorized == 'true') &&
+      inputs.suppress_output != true &&
+      needs.agent.result != 'skipped' &&
+      (needs.agent.result == 'failure' || needs.safe_outputs.result == 'failure') &&
+      needs.safe_outputs.outputs.comment_id == ''
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 5
+    steps:
+      - name: Notify target PR of failed test review
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REVIEW_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
+          EXACT_COMMAND: ${{ needs.pre_activation.outputs.exact_command_should_run }}
+          REVIEW_AUTHORIZED: ${{ needs.pre_activation.outputs.review_authorized }}
+          AGENT_RESULT: ${{ needs.agent.result }}
+          PUBLICATION_RESULT: ${{ needs.safe_outputs.result }}
+          REPORT_COMMENT_ID: ${{ needs.safe_outputs.outputs.comment_id }}
+          SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const env = process.env;
+            if (env.REVIEW_ACTIVATED !== 'true' || env.EXACT_COMMAND !== 'true' ||
+                env.SUPPRESS_OUTPUT === 'true' || env.REPORT_COMMENT_ID ||
+                env.AGENT_RESULT === 'skipped' ||
+                (env.AGENT_RESULT !== 'failure' && env.PUBLICATION_RESULT !== 'failure')) {
+              core.info('No test-review failure notification required.');
+              return;
+            }
+            if (context.eventName === 'issue_comment') {
+              if (env.REVIEW_AUTHORIZED !== 'true' || context.payload.action !== 'created' ||
+                  !context.payload.issue?.pull_request ||
+                  !/^\/review\s+tests\s*$/.test(context.payload.comment?.body ?? '')) {
+                core.info('Not an authorized /review tests PR comment.');
+                return;
+              }
+            } else if (context.eventName !== 'workflow_dispatch') {
+              core.info('Not a test-review trigger.');
+              return;
+            }
+            const { owner, repo } = context.repo;
+            const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner, repo, username: context.actor
+            });
+            if (!['admin', 'maintain', 'write'].includes(permission.data.permission)) {
+              core.info('Caller is no longer authorized to request a test review.');
+              return;
+            }
+            const prNumber = Number(env.PR_NUMBER);
+            if (!/^[1-9][0-9]*$/.test(env.PR_NUMBER ?? '') || !Number.isSafeInteger(prNumber)) {
+              throw new Error('A positive target PR number is required.');
+            }
+            if (context.eventName === 'issue_comment' && prNumber !== context.payload.issue.number) {
+              throw new Error('Notification target does not match the triggering PR.');
+            }
+            // Verify dispatch targets are PRs; never consume a target or text from agent artifacts.
+            await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const runMarker = `<!-- review-tests-run:${runUrl} -->`;
+            const failureMarker = '<!-- review-tests-failure -->';
+            // Same author allowlist as shared/Remove-StaleMauiBotComments.ps1.
+            const trustedAuthors = new Set(['mauibot', 'maui-bot', 'maui-bot[bot]', 'github-actions[bot]']);
+            for await (const { data } of github.paginate.iterator(github.rest.issues.listComments, {
+              owner, repo, issue_number: prNumber, per_page: 100
+            })) {
+              if (data.some(comment =>
+                  trustedAuthors.has(comment.user?.login?.toLowerCase()) &&
+                  comment.body?.includes(runMarker) &&
+                  (comment.body.includes('<!-- Tests Failure -->') || comment.body.startsWith(failureMarker)))) {
+                core.info('This run already has a report or failure notification.');
+                return;
+              }
+            }
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: prNumber,
+              body: `${failureMarker}\n${runMarker}\n\n` +
+                'The `/review tests` workflow failed before publishing a report. ' +
+                `[View the workflow run](${runUrl}).\n\n` +
+                'This is an automation failure, not a verdict on the PR tests. ' +
+                'Maintainers can retry `/review tests` after the workflow failure is resolved.'
+            });
 
 permissions:
   contents: read
@@ -171,7 +263,8 @@ permissions:
   actions: read
   checks: read
 
-model: gpt-6-astra
+# The hosted gh-aw BYOK /chat/completions route supports this known-good model.
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:
@@ -181,12 +274,13 @@ skills:
   - .github/skills/review-test-failures
 
 safe-outputs:
+  staged: ${{ github.event_name == 'workflow_dispatch' && inputs.suppress_output == true }}
   # gh-aw strips agent-supplied HTML comments before adding this trusted header.
   messages:
-    body-header: "<!-- Tests Failure -->"
+    body-header: "<!-- Tests Failure -->\n<!-- review-tests-run:{run_url} -->"
   add-comment:
     max: 1
-    target: "*"
+    target: ${{ github.event.issue.number || inputs.pr_number }}
     hide-older-comments: true
     discussions: false
     footer: false

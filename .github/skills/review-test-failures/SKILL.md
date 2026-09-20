@@ -13,6 +13,14 @@ Use this skill for `/review tests` and its local runner. Analyze evidence and
 produce one short comment. Do not run other review skills, change code, execute
 PR scripts, rerun CI, apply labels, approve, or merge.
 
+The hosted workflow uses `gpt-5.6-sol` for compatibility with gh-aw's BYOK
+`/chat/completions` route; the local runner and evaluation models are independent.
+If the agent or publication job fails before posting, a separate trusted job
+posts a fixed failure notice with the workflow-run link (not a CI verdict).
+It never reads agent artifacts, stays silent for dry runs and rejected commands,
+and deduplicates reports/notices for the same run across reruns. Notification API
+errors fail that job rather than silently discarding the notice.
+
 ## Check for results first
 
 Read the supplied `context.json` before doing any investigation.
