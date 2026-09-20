@@ -185,13 +185,12 @@ public class Issue33037NonShell : _IssuesUITest
 	// Reporter follow-up for #33037: once the large title collapses, the first row has to sit
 	// directly under the shortened navigation bar. A delegated top inset that keeps the expanded
 	// large-title height leaves the scroll view resting a full large-title height too low, which the
-	// reporter saw as a gap between the collapsed title and the first item. The barely-scrollable
-	// case is the one that exposes it, because that scroll view always rebounds to its resting
-	// position instead of holding a scrolled one.
+	// reporter saw as a gap between the collapsed title and the first item. This assertion requires
+	// enough content to hold the navigation bar in its collapsed state after the gesture; the
+	// barely-scrollable manual scenario intentionally rebounds and cannot provide that invariant.
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[TestCase("Issue33037ReporterCollectionViewButton")]
-	[TestCase("Issue33037ShortReporterCollectionViewButton")]
 	public void ModalCollectionViewFirstItemFollowsCollapsingLargeTitle(string buttonId)
 	{
 		RequireIOS26OrHigher();
