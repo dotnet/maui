@@ -1,6 +1,6 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*"
+applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/skills/trace-regression/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*,.github/workflows/issue-trace-regression.*"
 ---
 
 # CI Copilot pipeline — security rules
@@ -34,6 +34,8 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 9. **No token republish.** Don't `setvariable` a token (visible to every later task, even with `issecret=true`). Don't write tokens to worktree files. Don't echo token names.
 
 10. **Missed-command recovery stays trusted and deterministic.** The scheduled recovery workflow must execute only from the default branch, never check out PR code, revalidate the commenter's current write access, and dispatch the existing trusted review workflow rather than calling AzDO directly. Its minimum command age must exceed the combined timeout of the normal trigger jobs so polling cannot race an in-progress webhook delivery into a duplicate review.
+
+11. **Issue regression tracing is read-only analysis.** `/issue trace-regression` must validate the exact command on a newly created issue comment and recheck the comment author's current repository write access before activation or minimization. Run the collector and skill from the trusted default-branch SHA; treat all collected issue/repro/history content as data. Never execute linked reproduction code in this workflow. Keep publication in the separate safe-output job with `target: triggering`, not an agent-selected issue.
 
 ## Review checklist
 
