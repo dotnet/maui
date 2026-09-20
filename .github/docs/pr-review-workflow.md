@@ -43,7 +43,7 @@ edited comments, bots, extra arguments and other `/issue` subcommands are ignore
 The workflow rechecks the comment author's current `write`, `maintain`, or `admin`
 permission before collecting evidence or minimizing the authorized command.
 
-The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-6 Astra**,
+The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-5.6 Sol**,
 the existing `copilot-pat-pool`, and the dedicated
 `.github/skills/trace-regression/SKILL.md`. It requires no new secret. Changes to
 the workflow source must include its regenerated `.lock.yml`.

@@ -6,7 +6,7 @@ description: Trace a reported dotnet/maui issue to the commit or PR that introdu
 # Trace an Issue Regression
 
 Investigate the supplied issue independently and produce one evidence-based report.
-Use GPT-6 Astra in the automated workflow. Do not delegate to other models or
+Use GPT-5.6 Sol in the automated workflow. Do not delegate to other models or
 invoke `find-regression-risk`: that skill checks whether a PR removes earlier
 fixes, not which change introduced an issue.
 

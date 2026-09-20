@@ -1314,6 +1314,11 @@ Describe 'Issue regression workflow and report source contracts' {
         $script:WorkflowYaml | Should -Match '(?m)^model: gpt-[a-z0-9.-]+[ \t]*\r?$'
     }
 
+    It 'pins GPT-5.6 Sol consistently in the workflow and tracing skill' {
+        $script:WorkflowYaml | Should -Match '(?m)^model: gpt-5\.6-sol[ \t]*\r?$'
+        $script:SkillText | Should -Match 'Use GPT-5\.6 Sol in the automated workflow\.'
+    }
+
     It 'publishes at most one triggering-issue comment and disables issue-creation fallbacks' {
         $comment = Get-ContractYamlBlock $script:SafeOutputsBlock 'add-comment' 2
         $comment | Should -Match '(?m)^    max: 1[ \t]*\r?$'
