@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class XamlDiagnosticHelpers
 {
+	static readonly SourceInfo EmptySourceInfo = new(null, null, 0, 0, null);
+
 	public static Diagnostic CreateXamlParserDiagnostic(ProjectItem? projectItem, SourceText? sourceText, Exception exception)
 	{
 		var (lineInfo, errorMessage) = GetExceptionInfo(exception);
@@ -38,7 +40,7 @@ static class XamlDiagnosticHelpers
 	{
 		var filePath = projectItem?.AdditionalText.Path ?? projectItem?.RelativePath;
 		if (filePath is null)
-			return new SourceInfo(null, null, 0, 0, null);
+			return EmptySourceInfo;
 
 		if (sourceText is null)
 			return new SourceInfo(Location.Create(filePath, new TextSpan(), new LinePositionSpan()), filePath, lineInfo.LineNumber, lineInfo.LinePosition, null);
@@ -59,7 +61,7 @@ static class XamlDiagnosticHelpers
 		columnNumber = lineInfo.LinePosition;
 		excerpt = null;
 
-		if (lineNumber <= 0 || lineNumber > sourceText.Lines.Count)
+		if ((uint)(lineNumber - 1) >= (uint)sourceText.Lines.Count)
 			return false;
 
 		var lineIndex = lineNumber - 1;
@@ -182,21 +184,5 @@ static class XamlDiagnosticHelpers
 		return new XmlLineInfo();
 	}
 
-	readonly struct SourceInfo
-	{
-		public SourceInfo(Location? location, string? filePath, int lineNumber, int columnNumber, string? excerpt)
-		{
-			Location = location;
-			FilePath = filePath;
-			LineNumber = lineNumber;
-			ColumnNumber = columnNumber;
-			Excerpt = excerpt;
-		}
-
-		public Location? Location { get; }
-		public string? FilePath { get; }
-		public int LineNumber { get; }
-		public int ColumnNumber { get; }
-		public string? Excerpt { get; }
-	}
+	readonly record struct SourceInfo(Location? Location, string? FilePath, int LineNumber, int ColumnNumber, string? Excerpt);
 }
