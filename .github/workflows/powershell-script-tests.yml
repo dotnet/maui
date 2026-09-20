@@ -22,6 +22,7 @@ on:
       - '.github/patches/**'
       - '.github/skills/run-device-tests/scripts/*.ps1'
       - '.github/skills/verify-tests-fail-without-fix/scripts/*.ps1'
+      - '.github/skills/resolve-pr-conflicts/**'
       - '.github/workflows/**'
       - 'eng/scripts/**'
       - 'eng/pipelines/ci-copilot.yml'
@@ -46,6 +47,17 @@ permissions:
   contents: read
 
 jobs:
+  conflict-resolution:
+    name: Conflict resolution orchestration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run hermetic Git and publication-gate tests
+        run: python3 -m unittest discover -s .github/scripts -p test_resolve_conflicts.py -v
+
   pester:
     name: Pester scripts
     runs-on: ubuntu-latest
