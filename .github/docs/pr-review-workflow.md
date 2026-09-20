@@ -4,7 +4,6 @@ This guide explains the automated review commands used in dotnet/maui pull reque
 
 - `/review`
 - `/review tests`
-- `/resolve conflicts`
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
 
@@ -15,7 +14,6 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
-| `/resolve conflicts` | Repository users with write, maintain, or admin access | Resolves conflicts with the PR's target branch using GPT-6 Astra, builds on Windows and macOS, and pushes a merge commit only if both builds pass. | Posts one expandable `PR Conflict Resolution` report, including blocked/no-change outcomes. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
@@ -31,10 +29,6 @@ Use `/review tests` when the question is specifically about CI/test failures, fo
 - "Are these failures unrelated infrastructure or existing failures?"
 
 Do not use `/review tests` as a substitute for a code review. It does not approve, request changes, apply labels, trigger reruns, or change the PR. It only posts evidence-based failure classification.
-
-Use `/resolve conflicts` when a PR cannot merge cleanly with its target branch.
-Unlike the review commands, this command authorizes a code update to the original
-PR branch after successful build validation; it does not merge the PR.
 
 ## `/review`: full PR review
 
@@ -268,73 +262,6 @@ Common causes:
 - device-test failures may be hidden in Helix and no Helix data was available.
 
 Do not treat `Insufficient data` as "unrelated." It means a human or a rerun with better data is needed.
-
-## `/resolve conflicts`: build-gated conflict resolution
-
-Comment exactly `/resolve conflicts` on a PR, or dispatch **Resolve PR Conflicts**
-from the default branch with a PR number. Like `/review tests`, only human
-collaborators with current `write`, `maintain`, or `admin` permission may trigger
-it. Command edits, bot comments, extra arguments, and comments on issues do not
-activate it. Authorized command comments are minimized as resolved.
-
-The dedicated [`resolve-pr-conflicts`](../skills/resolve-pr-conflicts/SKILL.md)
-skill owns the resolution instructions and report contract. The workflow
-`.github/workflows/resolve-conflicts.yml` uses ordinary Actions jobs, rather than
-a gh-aw single-agent job, to keep these boundaries independent:
-
-1. Trusted code freezes the actual PR head and target SHAs.
-2. GPT-6 Astra (`gpt-6-astra`) edits only conflicted files in a sanitized source
-   copy. It cannot run commands, push, build, or choose another model.
-3. Fresh Windows and macOS runners reconstruct the exact same merge commit.
-   Both run `dotnet tool restore` and
-   `dotnet cake --target=dotnet-build --configuration=Release`. Cake provisions
-   the repository's SDK/workloads, builds BuildTasks, and builds the Windows
-   solution or macOS solution filter. These are builds, not the full UI/device
-   test matrix. Missing SDKs, Xcode/Android tooling, or feeds fail closed.
-4. Only after **both** builds succeed does a fresh trusted job recheck the
-   requester's permission, current PR branches/SHAs, and fork edit permission,
-   and push a normal fast-forward merge commit to the PR's original branch.
-   It never rebases, force-pushes, approves, or merges the PR.
-
-If the head or target changes during execution, the workflow refuses publication
-and requests a fresh `/resolve conflicts`. A failed, canceled, or skipped build
-never authorizes a push. A clean merge is a no-op: there are no conflicts to fix,
-so the workflow does not update the branch or run builds. Conflicts in `.github/`,
-binary files, symlinks/submodules, or oversized input require manual resolution.
-The agent may not change unrelated files or weaken the build to pass it.
-
-### Credentials and rollout
-
-Inference uses the existing `copilot-pat-pool` environment's `COPILOT_PAT_0` through
-`COPILOT_PAT_9` secrets (first configured entry); they are scoped only to the
-agent step, never to build or push steps. The Copilot CLI is version-pinned.
-
-Publication uses the same credential fallback as the existing gh-aw workflows:
-`GH_AW_GITHUB_TOKEN` when configured, otherwise the automatic `GITHUB_TOKEN`.
-No workflow-specific token or new secret name is required. Inference PATs are
-deliberately not reused. Fork PRs must enable **Allow edits by maintainers**, and
-the publication credential must have access to their branches; that access is
-not guaranteed by the base repository's `GITHUB_TOKEN`. Without adequate push
-permission the workflow reports the failure and leaves the branch unchanged.
-GitHub suppresses push-triggered Actions for pushes using `GITHUB_TOKEN`; the
-independent pre-push builds are required regardless of which credential is used.
-
-Merge the workflow and helpers to the default branch before using the comment
-trigger. No Azure DevOps pipeline registration or gh-aw compilation is needed.
-The Python helper uses only the standard library for portable Git/subprocess
-handling; its hermetic regression suite runs alongside the PowerShell-script
-gate without installing packages.
-
-### Report
-
-The report follows `/review tests` styling: visible author/original-commit header,
-Scope/Commit badges, and closed **Conflict Resolution** and **Follow-up** sibling
-accordions. Nested **Changes** and **Build validation** sections explain the
-conflict decisions, affected files, and actual build outcome, with links to logs
-and the pushed commit. Blocked runs explicitly say **Nothing was pushed**.
-Older workflow-owned reports are minimized; rerunning the same Actions run
-updates its existing report. Neither an agent assertion nor an earlier green
-CI build can substitute for the independent build gate.
 
 ## How to read the review comments
 

@@ -1,6 +1,6 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/skills/resolve-pr-conflicts/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/resolve-conflicts.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*"
+applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*"
 ---
 
 # CI Copilot pipeline — security rules
@@ -34,19 +34,6 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 9. **No token republish.** Don't `setvariable` a token (visible to every later task, even with `issecret=true`). Don't write tokens to worktree files. Don't echo token names.
 
 10. **Missed-command recovery stays trusted and deterministic.** The scheduled recovery workflow must execute only from the default branch, never check out PR code, revalidate the commenter's current write access, and dispatch the existing trusted review workflow rather than calling AzDO directly. Its minimum command age must exceed the combined timeout of the normal trigger jobs so polling cannot race an in-progress webhook delivery into a duplicate review.
-
-11. **Conflict resolution separates inference, builds, and publication.** The
-    `/resolve conflicts` agent receives a sanitized source copy and file-only
-    tools, never a GitHub write token. Its bounded JSON artifact can replace
-    only the actual conflicted regular files; trusted code reconstructs the
-    merge separately on each runner. The Python runner's `without_tokens()`
-    environment is passed directly to each build subprocess (the equivalent of
-    `Invoke-WithoutGhTokens`), also removing runner control-file variables.
-    Both fresh hosted build jobs must succeed before the fresh publication job
-    can push. That job never runs PR code, imports scripts/configuration from
-    artifacts, reuses inference credentials for pushes, or trusts agent-reported
-    build results. Preserve the pinned-parent checks, permission recheck, and
-    ordinary non-force push.
 
 ## Review checklist
 
