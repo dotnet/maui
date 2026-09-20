@@ -349,7 +349,7 @@ namespace Microsoft.Maui.DeviceTests
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
 				}
-			});
+			}, timeOut: TimeSpan.FromSeconds(30)); // Covers ten animated navigations plus tab changes.
 		}
 
 #if !WINDOWS

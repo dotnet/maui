@@ -48,6 +48,19 @@ namespace Microsoft.Maui.DeviceTests
 				await image.WaitUntilLoaded();
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, handler.MauiContext);
 			});
+#elif ANDROID
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+				var rootView = handler.ToPlatform();
+
+				// Attaching can restart image loading if Glide cleared the detached drawable.
+				await rootView.AttachAndRun(async () =>
+				{
+					await image.WaitUntilLoaded();
+					await rootView.AssertContainsColor(Colors.Red, MauiContext);
+				});
+			});
 #else
 			// On iOS/MacCatalyst, use the original approach to avoid timeout issues
 			await InvokeOnMainThreadAsync(async () =>

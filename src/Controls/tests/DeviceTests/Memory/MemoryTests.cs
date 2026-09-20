@@ -333,7 +333,6 @@ public class MemoryTests : ControlsHandlerTestBase
 			else if (view is HybridWebView hybridWebView)
 			{
 				hybridWebView.HybridRoot = "HybridTestRoot";
-				await Task.Delay(1000);
 			}
 			else if (view is TemplatedView templated)
 			{
@@ -349,7 +348,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			var viewHandler = view.Handler;
 			Assert.NotNull(viewHandler);
 
-			if (view is HybridWebView)
+			if (view is HybridWebView hybrid)
 			{
 #if WINDOWS
 				// Await WebView2's own readiness API instead of polling or using a fixed delay.
@@ -359,6 +358,9 @@ public class MemoryTests : ControlsHandlerTestBase
 				{
 					await webView2.EnsureCoreWebView2Async();
 				}
+#elif IOS || MACCATALYST
+				// WebKit loads asynchronously; creating the handler is not a readiness signal.
+				await HybridWebViewTestsBase.WebViewHelpers.WaitForHybridWebViewLoaded(hybrid);
 #endif
 			}
 

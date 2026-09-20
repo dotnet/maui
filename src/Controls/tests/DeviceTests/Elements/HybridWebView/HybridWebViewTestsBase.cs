@@ -62,7 +62,7 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 		});
 	}
 
-	protected static partial class WebViewHelpers
+	protected internal static partial class WebViewHelpers
 	{
 		const int MaxWaitTimes = 100;
 		const int WaitTimeInMS = 250;
