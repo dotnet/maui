@@ -41,25 +41,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			layout.Add(image);
 
-#if WINDOWS
-			// On Windows, use CreateHandlerAndAddToWindow to ensure the correct window context
+#if WINDOWS || ANDROID
+			// Host the layout in a window so loading and native layout run through the normal lifecycle.
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
 				await image.WaitUntilLoaded();
+#if ANDROID
+				var nativeImage = ((ImageHandler)image.Handler).PlatformView;
+				await AssertHelpers.AssertEventually(
+					() => nativeImage.Drawable != null &&
+						nativeImage.Width > 0 && nativeImage.Height > 0 &&
+						!nativeImage.IsLayoutRequested,
+					message: "The loaded image did not complete native layout.");
+#endif
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, handler.MauiContext);
-			});
-#elif ANDROID
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = CreateHandler<LayoutHandler>(layout);
-				var rootView = handler.ToPlatform();
-
-				// Attaching can restart image loading if Glide cleared the detached drawable.
-				await rootView.AttachAndRun(async () =>
-				{
-					await image.WaitUntilLoaded();
-					await rootView.AssertContainsColor(Colors.Red, MauiContext);
-				});
 			});
 #else
 			// On iOS/MacCatalyst, use the original approach to avoid timeout issues
