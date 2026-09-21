@@ -21,7 +21,7 @@ public class Issue32983 : _IssuesUITest
 		App.WaitForElement("ShowBottomSheetButton");
 		App.Tap("ShowBottomSheetButton");
 
-		App.WaitForElement("BottomSheetCollectionView");
+		App.WaitForElement("Item #1");
 		VerifyScreenshot();
 	}
 }
