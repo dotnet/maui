@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CoreAnimation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -19,6 +20,34 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests
 	{
+		[Fact(DisplayName = "TabbedPage BarBackground gradient persists after iOS 15 appearance update")]
+		public async Task BarBackgroundGradientPersistsAfteriOS15AppearanceUpdate()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Red, 0),
+					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 1));
+			tabbedPage.SelectedTabColor = Colors.Green;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				Assert.Contains(
+					GetTabBar(tabbedPage).Layer.Sublayers,
+					layer => layer is CAGradientLayer);
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task BadgePropertiesUpdateNativeTabBarItem()
 		{
