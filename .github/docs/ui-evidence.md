@@ -65,13 +65,12 @@ must not be overwritten. Keep inputs unchanged while validation/interpretation
 runs. The legacy `measuredHeadSha` summary field identifies the selected head;
 with no completed runs it does not mean that head was measured.
 
-The measurement skill/context helper are supplied by the independent non-AI
-change. Until that change is integrated, the interpretation entrypoint remains
-usable with existing core scripts: run `Select-UiEvidenceScenarios.ps1` and, for
-a ready selection, `New-UiEvidenceRequests.ps1`, then replace `selection.requests`
-with the full generated request array. Preserve the selector's original status,
-coverage, and provenance. For an exit-3 selection, retain its empty request array.
-This is local context preparation, not evidence that measurements ran.
+The measurement skill, context helper, and core validators are supplied by the
+prerequisite [#38533](https://github.com/dotnet/maui/pull/38533). Keep this
+interpretation layer stacked on the corrected measurement implementation; do
+not install it without those core scripts. Context preparation is not evidence
+that measurements ran. Existing bundles must still pass the current validator,
+including its complete hidden-file inventory and path checks.
 
 ## Validation and trust boundary
 
