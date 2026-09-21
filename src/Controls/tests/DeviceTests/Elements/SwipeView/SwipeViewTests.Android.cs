@@ -469,5 +469,44 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.InRange(textTop - iconBottom, -tolerance, maxAlignmentGap);
 			});
 		}
+
+		[Fact]
+		public async Task SwipeItemIconTintDoesNotAffectSharedImageSource()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var swipeItem = new SwipeItem
+				{
+					BackgroundColor = Colors.White,
+					IconImageSource = "red.png"
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(swipeItem);
+
+				try
+				{
+					var button = Assert.IsAssignableFrom<ATextView>(handler.PlatformView);
+					await AssertEventually(() => button.GetCompoundDrawables()[1] is not null);
+					Assert.NotNull(button.GetCompoundDrawables()[1].ColorFilter);
+
+					using var result = await ImageSource.FromFile("red.png").GetPlatformImageAsync(MauiContext);
+					var drawable = result.Value;
+					using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(
+						drawable.IntrinsicWidth, drawable.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+					using (var canvas = new global::Android.Graphics.Canvas(bitmap))
+					{
+						drawable.SetBounds(0, 0, bitmap.Width, bitmap.Height);
+						drawable.Draw(canvas);
+					}
+
+					await bitmap.AssertContainsColor(Colors.Red);
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
 	}
 }

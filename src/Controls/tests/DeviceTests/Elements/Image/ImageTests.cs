@@ -41,19 +41,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			layout.Add(image);
 
-#if WINDOWS || ANDROID
-			// Host the layout in a window so loading and native layout run through the normal lifecycle.
+#if WINDOWS
+			// On Windows, use CreateHandlerAndAddToWindow to ensure the correct window context
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
 				await image.WaitUntilLoaded();
-#if ANDROID
-				var nativeImage = ((ImageHandler)image.Handler).PlatformView;
-				await AssertHelpers.AssertEventually(
-					() => nativeImage.Drawable != null &&
-						nativeImage.Width > 0 && nativeImage.Height > 0 &&
-						!nativeImage.IsLayoutRequested,
-					message: "The loaded image did not complete native layout.");
-#endif
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, handler.MauiContext);
 			});
 #else

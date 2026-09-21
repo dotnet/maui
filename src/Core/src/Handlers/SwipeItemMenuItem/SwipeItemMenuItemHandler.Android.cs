@@ -167,6 +167,9 @@ namespace Microsoft.Maui.Handlers
 
 				if (platformImage is not null)
 				{
+					// Resource drawables share their state with images loaded elsewhere.
+					platformImage = platformImage.Mutate();
+
 					var iconSize = GetIconSize(Handler);
 					var textColor = item.GetTextColor()?.ToPlatform();
 					int drawableWidth = platformImage.IntrinsicWidth;
