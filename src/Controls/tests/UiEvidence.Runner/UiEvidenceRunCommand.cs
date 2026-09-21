@@ -15,6 +15,7 @@ static class UiEvidenceRunCommand
 		var platform = options.Required("platform");
 		if (platform is not ("android" or "windows"))
 			throw new ArgumentException("Platform must be 'android' or 'windows'.");
+		var deviceId = platform == "android" ? RequiredDeviceId(options) : string.Empty;
 
 		var variant = options.Required("variant");
 		if (variant is not ("base" or "head"))
@@ -48,16 +49,18 @@ static class UiEvidenceRunCommand
 			StartedAtUtc = startedAt.ToString("O"),
 			FinishedAtUtc = startedAt.ToString("O"),
 			AppArtifactSha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(appPath))).ToLowerInvariant(),
-			Environment = CreateEnvironment(platform, options)
+			Environment = CreateEnvironment(platform, options, inspectDevice: false)
 		};
 
 		AppiumApp? app = null;
+		var forwardedPort = 0;
 		try
 		{
+			result.Environment = CreateEnvironment(platform, options);
 			if (platform == "android")
-				ResetAndroidApp(appPath, options.Optional("device-id", string.Empty));
+				ResetAndroidApp(appPath, deviceId);
 			else
-				ResetWindowsApp(appPath);
+				EnsureWindowsAppNotRunning(appPath);
 
 			app = CreateApp(platform, appPath, output, options);
 			var allAssertionsPassed = true;
@@ -79,7 +82,7 @@ static class UiEvidenceRunCommand
 							passed ? "passed" : "failed",
 							new UiEvidenceRect(rect.X, rect.Y, rect.Width, rect.Height)));
 					}
-					catch
+					catch (TimeoutException)
 					{
 						allAssertionsPassed = false;
 						result.Assertions.Add(new UiEvidenceAssertion(automationId, "failed", null));
@@ -106,7 +109,10 @@ static class UiEvidenceRunCommand
 			{
 				var devFlowPort = options.OptionalInt("devflow-port", 9223);
 				if (platform == "android")
-					ForwardAndroidPort(options.Optional("device-id", string.Empty), devFlowPort);
+				{
+					ForwardAndroidPort(deviceId, devFlowPort);
+					forwardedPort = devFlowPort;
+				}
 				result.DevFlow = await DevFlowEvidenceCollector.CaptureAsync(output, devFlowPort);
 			}
 
@@ -124,14 +130,27 @@ static class UiEvidenceRunCommand
 		}
 		finally
 		{
-			try
+			void Cleanup(Action action, string code)
 			{
-				app?.CloseApp();
+				try
+				{
+					action();
+				}
+				catch (Exception ex)
+				{
+					result.Status = "harness-failed";
+					result.ErrorCodes.Add(code);
+					Console.Error.WriteLine($"{code}: {ex.Message}");
+				}
 			}
-			catch
+			if (app is not null)
 			{
+				Cleanup(() => app.CloseApp(), "ui-evidence-app-close-failed");
+				Cleanup(app.Dispose, "ui-evidence-app-dispose-failed");
 			}
-			app?.Dispose();
+			if (forwardedPort != 0)
+				Cleanup(() => RunProcess("adb", ["-s", deviceId, "forward", "--remove", $"tcp:{forwardedPort}"], false),
+					"ui-evidence-forward-cleanup-failed");
 			result.FinishedAtUtc = DateTimeOffset.UtcNow.ToString("O");
 			UiEvidenceJson.Write(Path.Combine(output, "run-result.json"), result);
 		}
@@ -145,6 +164,23 @@ static class UiEvidenceRunCommand
 		string output,
 		CommandLineOptions options)
 	{
+		var config = CreateAppConfig(platform, appPath, output, options);
+		var remoteAddress = new Uri(options.Optional("appium-url", "http://127.0.0.1:4723/wd/hub"));
+		return platform == "android"
+			? AppiumAndroidApp.CreateAndroidApp(remoteAddress, config)
+			: new AppiumWindowsApp(remoteAddress, config);
+	}
+
+	internal static string RequiredDeviceId(CommandLineOptions options)
+	{
+		var deviceId = options.Required("device-id");
+		if (deviceId == "true" || deviceId.Any(char.IsWhiteSpace) || deviceId.StartsWith('-'))
+			throw new ArgumentException("Option '--device-id' must identify an explicit Android device.");
+		return deviceId;
+	}
+
+	internal static Config CreateAppConfig(string platform, string appPath, string output, CommandLineOptions options)
+	{
 		var config = new Config();
 		config.SetProperty("AppPath", appPath);
 		config.SetProperty("AppId", AppId);
@@ -155,14 +191,13 @@ static class UiEvidenceRunCommand
 		config.SetProperty("NoReset", false);
 		config.SetProperty("Headless", options.Flag("headless"));
 		config.SetProperty("DeviceName", options.Optional("device-name", string.Empty));
+		if (platform == "android")
+			config.SetProperty("Udid", RequiredDeviceId(options));
 		config.SetProperty("PlatformVersion", options.Optional("platform-version", string.Empty));
 		config.SetProperty("EnableDebugPopup", false);
 		config.SetProperty("AvdForceInstall", false);
 
-		var remoteAddress = new Uri(options.Optional("appium-url", "http://127.0.0.1:4723/wd/hub"));
-		return platform == "android"
-			? AppiumAndroidApp.CreateAndroidApp(remoteAddress, config)
-			: new AppiumWindowsApp(remoteAddress, config);
+		return config;
 	}
 
 	static void ResetAndroidApp(string appPath, string deviceId)
@@ -176,15 +211,9 @@ static class UiEvidenceRunCommand
 			return arguments;
 		}
 
-		var installed = false;
-		try
-		{
-			installed = !string.IsNullOrWhiteSpace(
-				RunProcessCapture("adb", Arguments("shell", "pm", "path", AppId)));
-		}
-		catch
-		{
-		}
+		var installed = RunProcessCapture("adb", Arguments("shell", "pm", "list", "packages", AppId))
+			.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.Contains($"package:{AppId}", StringComparer.Ordinal);
 		if (installed)
 			RunProcess("adb", Arguments("uninstall", AppId), allowFailure: false);
 
@@ -204,19 +233,19 @@ static class UiEvidenceRunCommand
 			arguments.Add("-s");
 			arguments.Add(deviceId);
 		}
-		arguments.AddRange(["forward", $"tcp:{port}", $"tcp:{port}"]);
+		arguments.AddRange(["forward", "--no-rebind", $"tcp:{port}", $"tcp:{port}"]);
 		RunProcess("adb", arguments, allowFailure: false);
 	}
 
-	static void ResetWindowsApp(string appPath)
+	internal static void EnsureWindowsAppNotRunning(string appPath)
 	{
 		var processName = Path.GetFileNameWithoutExtension(appPath);
 		foreach (var process in Process.GetProcessesByName(processName))
 		{
 			try
 			{
-				process.Kill(entireProcessTree: true);
-				process.WaitForExit(10000);
+				if (!process.HasExited)
+					throw new InvalidOperationException($"A same-name app is already running (PID {process.Id}); refusing to terminate an unowned process.");
 			}
 			finally
 			{
@@ -227,34 +256,15 @@ static class UiEvidenceRunCommand
 
 	static void RunProcess(string fileName, IEnumerable<string> arguments, bool allowFailure)
 	{
-		using var process = new Process
-		{
-			StartInfo = new ProcessStartInfo
-			{
-				FileName = fileName,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				UseShellExecute = false,
-				CreateNoWindow = true
-			}
-		};
-		foreach (var argument in arguments)
-			process.StartInfo.ArgumentList.Add(argument);
-
-		process.Start();
-		if (!process.WaitForExit(30000))
-		{
-			process.Kill(entireProcessTree: true);
-			throw new TimeoutException($"{fileName} did not complete within 30 seconds.");
-		}
-		if (!allowFailure && process.ExitCode != 0)
-			throw new InvalidOperationException($"{fileName} exited with code {process.ExitCode}.");
+		var result = UiEvidenceProcess.RunAsync(fileName, arguments).GetAwaiter().GetResult();
+		if (!allowFailure && result.ExitCode != 0)
+			throw new InvalidOperationException($"{fileName} exited with code {result.ExitCode}: {result.Error.Trim()}");
 	}
 
-	static UiEvidenceEnvironment CreateEnvironment(string platform, CommandLineOptions options)
+	static UiEvidenceEnvironment CreateEnvironment(string platform, CommandLineOptions options, bool inspectDevice = true)
 	{
 		var deviceId = options.Optional("device-id", string.Empty);
-		if (platform == "android")
+		if (platform == "android" && inspectDevice)
 		{
 			string Adb(params string[] arguments)
 			{
@@ -280,13 +290,13 @@ static class UiEvidenceRunCommand
 		}
 
 		return new UiEvidenceEnvironment(
-			"windows",
+			platform,
 			Environment.OSVersion.VersionString,
 			Environment.Version.ToString(),
 			Environment.MachineName,
-			null,
-			Environment.MachineName,
-			Environment.OSVersion.Version.ToString(),
+			string.IsNullOrWhiteSpace(deviceId) ? null : deviceId,
+			platform == "windows" ? Environment.MachineName : null,
+			platform == "windows" ? Environment.OSVersion.Version.ToString() : null,
 			null,
 			null,
 			null,
@@ -295,30 +305,9 @@ static class UiEvidenceRunCommand
 
 	static string RunProcessCapture(string fileName, IEnumerable<string> arguments)
 	{
-		using var process = new Process
-		{
-			StartInfo = new ProcessStartInfo
-			{
-				FileName = fileName,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				UseShellExecute = false,
-				CreateNoWindow = true
-			}
-		};
-		foreach (var argument in arguments)
-			process.StartInfo.ArgumentList.Add(argument);
-
-		process.Start();
-		var output = process.StandardOutput.ReadToEnd();
-		var error = process.StandardError.ReadToEnd();
-		if (!process.WaitForExit(30000))
-		{
-			process.Kill(entireProcessTree: true);
-			throw new TimeoutException($"{fileName} did not complete within 30 seconds.");
-		}
-		if (process.ExitCode != 0)
-			throw new InvalidOperationException($"{fileName} failed while collecting device identity: {error.Trim()}");
-		return output.Replace("\r", string.Empty, StringComparison.Ordinal).Trim();
+		var result = UiEvidenceProcess.RunAsync(fileName, arguments).GetAwaiter().GetResult();
+		if (result.ExitCode != 0)
+			throw new InvalidOperationException($"{fileName} failed while collecting device identity: {result.Error.Trim()}");
+		return result.Output.Replace("\r", string.Empty, StringComparison.Ordinal).Trim();
 	}
 }

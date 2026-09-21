@@ -18,8 +18,8 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
 try {
-    $resolvedRoot = (Resolve-Path -LiteralPath $Root).Path
-    $sealPath = Join-Path $resolvedRoot "evidence-seal.json"
+    $resolvedRoot = Assert-UiEvidenceLocalPath $Root
+    $sealPath = Resolve-UiEvidenceChildPath $resolvedRoot "evidence-seal.json"
     $seal = Read-UiEvidenceJson $sealPath
 
     if ($seal.schemaVersion -ne 1 -or $seal.sealed -ne $true -or $seal.algorithm -ne "sha256") {
@@ -45,17 +45,12 @@ try {
         }
         $sealedPaths[$relativePath.ToLowerInvariant()] = $true
 
-        $fullPath = [IO.Path]::GetFullPath((Join-Path $resolvedRoot $relativePath))
-        if (-not $fullPath.StartsWith(
-            $resolvedRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar,
-            [StringComparison]::OrdinalIgnoreCase)) {
-            throw "Evidence path escapes the bundle root: $relativePath"
-        }
+        $fullPath = Resolve-UiEvidenceChildPath $resolvedRoot $relativePath
         if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
             throw "Sealed evidence file is missing: $relativePath"
         }
 
-        $file = Get-Item -LiteralPath $fullPath
+        $file = Get-Item -LiteralPath $fullPath -Force
         if (($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
             throw "Sealed evidence file is a reparse point: $relativePath"
         }
@@ -71,7 +66,7 @@ try {
         $inventoryLines.Add("${relativePath}:$($file.Length):$actualHash")
     }
 
-    foreach ($file in @(Get-ChildItem -LiteralPath $resolvedRoot -File -Recurse)) {
+    foreach ($file in @(Get-UiEvidenceFiles $resolvedRoot)) {
         if ($file.FullName -eq $sealPath) {
             continue
         }

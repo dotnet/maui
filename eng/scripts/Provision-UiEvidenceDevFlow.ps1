@@ -68,7 +68,7 @@ function New-DeterministicArchive {
             $false)
         try {
             $fixedTimestamp = [DateTimeOffset]::new(2000, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
-            foreach ($file in @(Get-ChildItem -LiteralPath $SourceDirectory -File -Recurse | Sort-Object FullName)) {
+            foreach ($file in @(Get-UiEvidenceFiles $SourceDirectory | Sort-Object FullName)) {
                 $relativePath = [IO.Path]::GetRelativePath($SourceDirectory, $file.FullName).Replace('\', '/')
                 $entry = $archive.CreateEntry($relativePath, [IO.Compression.CompressionLevel]::Optimal)
                 $entry.LastWriteTime = $fixedTimestamp
@@ -541,14 +541,12 @@ try {
     Write-UiEvidenceJson $manifest (Join-Path $OutputDirectory "devflow-manifest.json")
 
     if ($SourceOutputDirectory) {
-        $sourceOutput = [IO.Path]::GetFullPath($SourceOutputDirectory)
-        Remove-Item -LiteralPath $sourceOutput -Recurse -Force -ErrorAction SilentlyContinue
-        New-Item -ItemType Directory -Force -Path $sourceOutput | Out-Null
+        $sourceOutput = New-UiEvidenceOutputDirectory $SourceOutputDirectory @($sourceDirectory)
         Get-ChildItem -LiteralPath $sourceDirectory -Force |
             Where-Object { $_.Name -notin @(".git", "artifacts", ".packages") } |
             Copy-Item -Destination $sourceOutput -Recurse -Force
         $sourceFiles = @(
-            Get-ChildItem -LiteralPath $sourceOutput -File -Recurse |
+            Get-UiEvidenceFiles $sourceOutput |
                 Sort-Object FullName |
                 ForEach-Object {
                     [PSCustomObject][ordered]@{

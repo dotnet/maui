@@ -21,7 +21,8 @@ param(
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
-$root = (Resolve-Path -LiteralPath $ArtifactRoot).Path
+$root = Assert-UiEvidenceLocalPath $ArtifactRoot
+$artifactFiles = @(Get-UiEvidenceFiles $root)
 $request = Read-UiEvidenceJson $RequestPath
 $devFlow = Read-UiEvidenceJson $DevFlowManifestPath
 $expectedCommit = if ($Variant -eq "base") {
@@ -33,20 +34,17 @@ else {
 
 if ($request.platform -eq "android") {
     $candidates = @(
-        Get-ChildItem -LiteralPath $root -File -Recurse -Filter "*-Signed.apk" |
-            Where-Object { $_.FullName -match 'Controls\.TestCases\.HostApp' }
+        $artifactFiles | Where-Object { $_.Name -like "*-Signed.apk" -and $_.FullName -match 'Controls\.TestCases\.HostApp' }
     )
     if ($candidates.Count -eq 0) {
         $candidates = @(
-            Get-ChildItem -LiteralPath $root -File -Recurse -Filter "*.apk" |
-                Where-Object { $_.FullName -match 'Controls\.TestCases\.HostApp' }
+            $artifactFiles | Where-Object { $_.Name -like "*.apk" -and $_.FullName -match 'Controls\.TestCases\.HostApp' }
         )
     }
 }
 elseif ($request.platform -eq "windows") {
     $candidates = @(
-        Get-ChildItem -LiteralPath $root -File -Recurse -Filter "Controls.TestCases.HostApp.exe" |
-            Where-Object { $_.FullName -match '[\\/]win-x64[\\/]' }
+        $artifactFiles | Where-Object { $_.Name -eq "Controls.TestCases.HostApp.exe" -and $_.FullName -match '[\\/]win-x64[\\/]' }
     )
     $publishedCandidates = @($candidates | Where-Object { $_.FullName -match '[\\/]publish[\\/]' })
     if ($publishedCandidates.Count -eq 1) {
@@ -68,7 +66,7 @@ if (($appRoot.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
     throw "UI evidence app root cannot be a reparse point."
 }
 $appFiles = @(
-    Get-ChildItem -LiteralPath $app.DirectoryName -File -Recurse |
+    Get-UiEvidenceFiles $app.DirectoryName |
         Sort-Object FullName |
         ForEach-Object {
             if (($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {

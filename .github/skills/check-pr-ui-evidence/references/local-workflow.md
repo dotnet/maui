@@ -151,7 +151,8 @@ source/harness identity and complete artifact provenance before proceeding.
 For each variant, call `New-UiEvidenceBuildMetadata.ps1` with its `ArtifactRoot`,
 the bound `RequestPath`, `Variant`, `DevFlowManifestPath`, and an `OutputPath`
 named `ui-evidence-build-metadata.json` under that artifact root. It must find
-exactly one requested app and records hashes for the complete app directory.
+exactly one requested app and records hashes for the complete app directory,
+including hidden files and directories. Linked/reparse-point paths are rejected.
 
 Call `Prepare-UiEvidencePayload.ps1` with `BaseArtifacts`, `HeadArtifacts`,
 `RequestPath`, the context's `scenarios.json` as `RegistryPath`, `DevFlowFeed`,
@@ -173,19 +174,21 @@ assemblies. Do not silently choose the first matching configuration.
 ## 5. Execute one bounded local sequence
 
 Start a dedicated localhost Appium server and retain its process identity and
-log. For Android, explicitly pin `appium:udid` to `$deviceId` using the server's
-`--default-capabilities` JSON/file option; the current runner's `--device-id`
-scopes adb but is not forwarded into Appium capabilities. Assign an unused
-UiAutomator2 system port when another investigation is running. Do not reuse an
-unverified server or change another device's port forward. The current DevFlow
-adapter uses port `9223`; stop if that port is owned by another investigation.
+log. `Start-UiEvidenceAppium.ps1` refuses an occupied port and requires fresh state
+and log files. For Android, `DeviceId` is mandatory: the runner uses that same
+serial for adb and the Appium `udid` capability. Assign an unused UiAutomator2
+system port when another investigation is running. Do not reuse an unverified
+server. DevFlow uses port `9223`; its adb forward uses `--no-rebind` and is removed
+only after this run successfully created it.
 
-Before Windows execution, stop if any other TestCases.HostApp is running: the
-current Windows reset helper is not suitable for concurrent same-name apps.
-Do not kill another process to get past this guard.
+Windows execution refuses to start while a same-name TestCases.HostApp is
+running; it does not terminate existing processes. Do not kill another process
+to get past this guard.
 
 Check server readiness and exact target identity. Use new output/log directories;
-the low-level scripts replace their output directories. Then run:
+packaging, capture, and comparison reject existing directories rather than
+deleting them. Outputs must also be outside their input directories.
+Then run:
 
 ```powershell
 pwsh -NoProfile -File "$repo\eng\scripts\Invoke-UiEvidenceRuns.ps1" `
@@ -220,3 +223,7 @@ Retain failed attempts separately. Only after a diagnosed transient failure may
 the caller request a complete fresh sequence; never replace individual failing
 samples or overwrite the first attempt. Finish by stopping only owned process
 IDs and device forwards. Do not post results or queue a follow-up automatically.
+
+`Stop-UiEvidenceAppium.ps1` requires the version-2 state written by the start
+helper and verifies both PID and process start time before stopping the owned
+process tree. Legacy or mismatched state cannot authorize termination.

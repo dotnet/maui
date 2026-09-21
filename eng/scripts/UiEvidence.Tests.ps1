@@ -9,6 +9,9 @@ $requestManifestBuilder = Join-Path $PSScriptRoot "New-UiEvidenceRequestManifest
 $payloadBuilder = Join-Path $PSScriptRoot "Prepare-UiEvidencePayload.ps1"
 $sealer = Join-Path $PSScriptRoot "Seal-UiEvidence.ps1"
 $validator = Join-Path $PSScriptRoot "Validate-UiEvidenceBundle.ps1"
+$metadataBuilder = Join-Path $PSScriptRoot "New-UiEvidenceBuildMetadata.ps1"
+$runBuilder = Join-Path $PSScriptRoot "Invoke-UiEvidenceRuns.ps1"
+. (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 $registry = Join-Path $repoRoot "eng\ui-evidence\scenarios.json"
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ("maui-ui-evidence-tests-" + [Guid]::NewGuid().ToString("N"))
 $baseSha = "1111111111111111111111111111111111111111"
@@ -45,6 +48,19 @@ function Write-ChangedFiles([string]$Name, [string[]]$Files) {
     $path = Join-Path $testRoot "$Name.txt"
     $Files | Set-Content -LiteralPath $path -Encoding UTF8
     return $path
+}
+
+function Assert-ScriptFailure([string]$Script, [string[]]$Arguments, [string]$MessagePattern) {
+    $text = (& pwsh -NoProfile -File $Script @Arguments 2>&1 | Out-String)
+    Assert-True ($LASTEXITCODE -ne 0) "Expected failure from $Script"
+    Assert-True ($text -match $MessagePattern) "Expected '$MessagePattern' from $Script, received: $text"
+}
+
+function New-HiddenFile([string]$Path) {
+    "hidden evidence" | Set-Content -LiteralPath $Path
+    if ($IsWindows) {
+        [IO.File]::SetAttributes($Path, [IO.FileAttributes]::Hidden)
+    }
 }
 
 function Invoke-Selection([string]$Name, [string[]]$Files) {
@@ -308,6 +324,179 @@ try {
     Assert-Equal "base/app/app.exe" $payloadManifest.baseAppRelativePath "Payload base app path"
     Assert-Equal "head/app/app.exe" $payloadManifest.headAppRelativePath "Payload head app path"
 
+    $baseMetadataFile = Join-Path $baseArtifacts "ui-evidence-build-metadata.json"
+    $originalMetadata = Get-Content -LiteralPath $baseMetadataFile -Raw
+    $payloadArguments = @(
+        "-BaseArtifacts", $baseArtifacts, "-HeadArtifacts", $headArtifacts,
+        "-RequestPath", $requestManifestPath, "-RegistryPath", $registry, "-DevFlowFeed", $fakeFeed
+    )
+    $outsideRoot = Join-Path $testRoot "outside"
+    New-Item -ItemType Directory -Path $outsideRoot | Out-Null
+    Copy-Item -LiteralPath (Join-Path $baseAppRoot "app.exe") -Destination (Join-Path $outsideRoot "app.exe")
+    foreach ($case in @(
+        @{ Name = "parent-root"; Root = "../outside"; App = "../outside/app.exe" },
+        @{ Name = "absolute-root"; Root = $outsideRoot; App = (Join-Path $outsideRoot "app.exe") },
+        @{ Name = "outside-app"; Root = "app"; App = "ui-evidence-build-metadata.json" }
+    )) {
+        $metadata = $originalMetadata | ConvertFrom-Json
+        $metadata.appRootRelativePath = $case.Root
+        $metadata.appRelativePath = $case.App
+        Write-UiEvidenceJson $metadata $baseMetadataFile
+        Assert-ScriptFailure $payloadBuilder ($payloadArguments + @(
+            "-OutputDirectory", (Join-Path $testRoot $case.Name)
+        )) "safe relative path|unsafe character"
+    }
+    Set-Content -LiteralPath $baseMetadataFile -Value $originalMetadata
+
+    $hiddenAppFile = Join-Path $baseAppRoot ".injected"
+    New-HiddenFile $hiddenAppFile
+    Assert-ScriptFailure $payloadBuilder ($payloadArguments + @(
+        "-OutputDirectory", (Join-Path $testRoot "hidden-payload")
+    )) "unsealed file"
+    Remove-Item -LiteralPath $hiddenAppFile -Force
+
+    $link = Join-Path $baseAppRoot "linked"
+    $linkType = if ($IsWindows) { "Junction" } else { "SymbolicLink" }
+    New-Item -ItemType $linkType -Path $link -Target $outsideRoot | Out-Null
+    try {
+        Assert-ScriptFailure $payloadBuilder ($payloadArguments + @(
+            "-OutputDirectory", (Join-Path $testRoot "linked-payload")
+        )) "reparse point"
+    }
+    finally {
+        [IO.Directory]::Delete($link)
+    }
+
+    $metadataArtifacts = Join-Path $testRoot "metadata-artifacts"
+    $metadataApp = Join-Path $metadataArtifacts "win-x64"
+    $hiddenDirectory = Join-Path $metadataApp ".assets"
+    New-Item -ItemType Directory -Force -Path $hiddenDirectory | Out-Null
+    "app" | Set-Content -LiteralPath (Join-Path $metadataApp "Controls.TestCases.HostApp.exe")
+    New-HiddenFile (Join-Path $metadataApp ".hidden")
+    New-HiddenFile (Join-Path $hiddenDirectory ".nested")
+    if ($IsWindows) { [IO.File]::SetAttributes($hiddenDirectory, [IO.FileAttributes]::Hidden) }
+    $windowsRequest = @($requests | Where-Object platform -eq "windows")[0]
+    $windowsRequestPath = Join-Path $testRoot "windows-request.json"
+    Write-UiEvidenceJson $windowsRequest $windowsRequestPath
+    $metadataPath = Join-Path $testRoot "generated-metadata.json"
+    Assert-Equal 0 (Invoke-ScriptProcess $metadataBuilder @(
+        "-ArtifactRoot", $metadataArtifacts, "-RequestPath", $windowsRequestPath, "-Variant", "base",
+        "-DevFlowManifestPath", (Join-Path $fakeFeed "devflow-manifest.json"), "-OutputPath", $metadataPath
+    )) "Build metadata with hidden files must succeed"
+    $generatedMetadata = Read-UiEvidenceJson $metadataPath
+    Assert-Equal 3 @($generatedMetadata.appFiles).Count "App inventory must include hidden files and hidden directories"
+
+    $sentinel = Join-Path $payloadPath "preserve.txt"
+    "existing session" | Set-Content -LiteralPath $sentinel
+    Assert-ScriptFailure $payloadBuilder ($payloadArguments + @("-OutputDirectory", $payloadPath)) "must be fresh"
+    Assert-True (Test-Path -LiteralPath $sentinel) "Payload preparation must not delete an existing session"
+    $runArguments = @(
+        "-PayloadRoot", $payloadPath, "-RunnerPath", (Join-Path $testRoot "not-a-runner.dll"),
+        "-DeviceId", "ui-evidence-test-target"
+    )
+    Assert-ScriptFailure $runBuilder ($runArguments + @("-OutputDirectory", $payloadPath)) "must be fresh"
+    Assert-True (Test-Path -LiteralPath $sentinel) "Capture must not delete an existing session"
+    Assert-ScriptFailure (Join-Path $PSScriptRoot "Complete-UiEvidenceComparison.ps1") @(
+        "-RawEvidenceRoot", $payloadPath, "-PayloadRoot", $payloadPath,
+        "-RunnerPath", (Join-Path $testRoot "not-a-runner.dll"), "-OutputDirectory", $payloadPath
+    ) "must be fresh"
+    Assert-True (Test-Path -LiteralPath $sentinel) "Comparison must not delete an existing session"
+    Assert-ScriptFailure $payloadBuilder ($payloadArguments + @(
+        "-OutputDirectory", (Join-Path $baseArtifacts "nested-output")
+    )) "outside its input"
+    Assert-ScriptFailure $runBuilder @(
+        "-PayloadRoot", $payloadPath, "-RunnerPath", (Join-Path $testRoot "not-a-runner.dll"),
+        "-OutputDirectory", (Join-Path $testRoot "missing-device")
+    ) "requires an explicit DeviceId"
+
+    $hiddenPayloadFile = Join-Path $payloadPath "base\app\.injected"
+    New-HiddenFile $hiddenPayloadFile
+    Assert-ScriptFailure $runBuilder ($runArguments + @(
+        "-OutputDirectory", (Join-Path $testRoot "hidden-run"), "-LogDirectory", (Join-Path $testRoot "hidden-run-logs")
+    )) "unsealed file"
+    Remove-Item -LiteralPath $hiddenPayloadFile -Force
+
+    $payloadManifestPath = Join-Path $payloadPath "payload-manifest.json"
+    $originalPayload = Get-Content -LiteralPath $payloadManifestPath -Raw
+    $payloadManifest.baseAppRelativePath = "../outside/app.exe"
+    Write-UiEvidenceJson $payloadManifest $payloadManifestPath
+    Assert-ScriptFailure $runBuilder ($runArguments + @(
+        "-OutputDirectory", (Join-Path $testRoot "escaping-run"), "-LogDirectory", (Join-Path $testRoot "escaping-run-logs")
+    )) "safe relative path"
+    Set-Content -LiteralPath $payloadManifestPath -Value $originalPayload
+
+    $payloadRegistry = Join-Path $payloadPath "scenarios.json"
+    $originalRegistry = [IO.File]::ReadAllBytes($payloadRegistry)
+    Add-Content -LiteralPath $payloadRegistry -Value " "
+    Assert-ScriptFailure $runBuilder ($runArguments + @(
+        "-OutputDirectory", (Join-Path $testRoot "changed-registry-run")
+    )) "registry hash"
+    [IO.File]::WriteAllBytes($payloadRegistry, $originalRegistry)
+
+    $devFlowSource = Join-Path $testRoot "devflow-source"
+    $sourceEntries = @()
+    foreach ($relative in @(
+        "src/DevFlow/Microsoft.Maui.DevFlow.Agent.Core/Microsoft.Maui.DevFlow.Agent.Core.csproj",
+        "src/DevFlow/Microsoft.Maui.DevFlow.Agent.Core/DevFlowAgentService.cs",
+        "src/DevFlow/Microsoft.Maui.DevFlow.Agent.Core/LayoutDiagnostics/VisualTreeWalker.LayoutDiagnostics.cs",
+        ".hidden-source"
+    )) {
+        $path = Join-Path $devFlowSource $relative
+        New-Item -ItemType Directory -Force -Path (Split-Path $path -Parent) | Out-Null
+        New-HiddenFile $path
+        $sourceEntries += @{ relativePath = $relative; sizeBytes = (Get-Item -LiteralPath $path -Force).Length; sha256 = Get-UiEvidenceSha256 $path }
+    }
+    Write-UiEvidenceJson @{
+        schemaVersion = 1; commit = $harnessSha
+        compatibility = @{ dependencyBaseline = "dotnet-maui"; windowsNativeUiAutomationDisabled = $true; sourceMauiProjectReferencesEnabled = $true }
+        files = $sourceEntries
+    } (Join-Path $devFlowSource "devflow-source-manifest.json")
+    $sourceValidator = Join-Path $PSScriptRoot "Validate-UiEvidenceDevFlowSource.ps1"
+    Assert-Equal 0 (Invoke-ScriptProcess $sourceValidator @(
+        "-SourceDirectory", $devFlowSource, "-ExpectedCommit", $harnessSha
+    )) "Hidden source files must validate when inventoried"
+    New-HiddenFile (Join-Path $devFlowSource ".injected")
+    Assert-ScriptFailure $sourceValidator @(
+        "-SourceDirectory", $devFlowSource, "-ExpectedCommit", $harnessSha
+    ) "unsealed file"
+
+    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $listener.Start()
+    try {
+        $port = $listener.LocalEndpoint.Port
+        Assert-ScriptFailure (Join-Path $PSScriptRoot "Start-UiEvidenceAppium.ps1") @(
+            "-Port", "$port", "-StatePath", (Join-Path $testRoot "appium-state.json"),
+            "-LogPath", (Join-Path $testRoot "appium.log")
+        ) "port $port is unavailable"
+    }
+    finally {
+        $listener.Stop()
+    }
+
+    $owned = Start-Process pwsh -ArgumentList "-NoProfile", "-NonInteractive", "-Command", "Start-Sleep -Seconds 60" -PassThru
+    try {
+        $statePath = Join-Path $testRoot "owned-process.json"
+        $state = @{
+            schemaVersion = 2; started = $true; processId = $owned.Id
+            processStartedAtUtc = $owned.StartTime.ToUniversalTime().AddMinutes(1).ToString("O")
+        }
+        Write-UiEvidenceJson $state $statePath
+        Assert-ScriptFailure (Join-Path $PSScriptRoot "Stop-UiEvidenceAppium.ps1") @(
+            "-StatePath", $statePath
+        ) "identity changed"
+        Assert-True (-not $owned.HasExited) "A mismatched process identity must not be terminated"
+        $state.processStartedAtUtc = $owned.StartTime.ToUniversalTime().ToString("O")
+        Write-UiEvidenceJson $state $statePath
+        Assert-Equal 0 (Invoke-ScriptProcess (Join-Path $PSScriptRoot "Stop-UiEvidenceAppium.ps1") @(
+            "-StatePath", $statePath
+        )) "The exact owned process must be stopped"
+        Assert-True ($owned.WaitForExit(10000)) "Owned process cleanup must finish"
+    }
+    finally {
+        if (-not $owned.HasExited) { $owned.Kill($true); $owned.WaitForExit() }
+        $owned.Dispose()
+    }
+
     $bundleRoot = Join-Path $testRoot "bundle"
     New-Item -ItemType Directory -Force -Path $bundleRoot | Out-Null
     $requestPath = Join-Path $bundleRoot "request.json"
@@ -316,6 +505,8 @@ try {
         schemaVersion = 1
         verdict = "no-difference-observed"
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $bundleRoot "comparison-summary.json") -Encoding UTF8
+    $hiddenBundleFile = Join-Path $bundleRoot ".captured"
+    New-HiddenFile $hiddenBundleFile
 
     $sealExit = Invoke-ScriptProcess $sealer @(
         "-Root", $bundleRoot,
@@ -323,6 +514,8 @@ try {
     )
     Assert-Equal 0 $sealExit "Bundle sealing should succeed"
     Assert-True (Test-Path (Join-Path $bundleRoot "evidence-seal.json")) "Seal should exist"
+    $seal = Read-UiEvidenceJson (Join-Path $bundleRoot "evidence-seal.json")
+    Assert-True ($seal.files.relativePath -contains ".captured") "Seal must inventory hidden evidence"
 
     $validationPath = Join-Path $testRoot "validation.json"
     $validateExit = Invoke-ScriptProcess $validator @(
@@ -334,6 +527,14 @@ try {
     Assert-Equal 0 $validateExit "Sealed bundle should validate"
     $validation = Get-Content -LiteralPath $validationPath -Raw | ConvertFrom-Json
     Assert-Equal $true $validation.valid "Validation result"
+
+    $injectedBundleFile = Join-Path $bundleRoot ".injected"
+    New-HiddenFile $injectedBundleFile
+    Assert-ScriptFailure $validator @("-Root", $bundleRoot) "unsealed file"
+    Remove-Item -LiteralPath $injectedBundleFile -Force
+    Add-Content -LiteralPath $hiddenBundleFile -Value "tampered" -Force
+    Assert-ScriptFailure $validator @("-Root", $bundleRoot) "size changed|hash changed"
+    "hidden evidence" | Set-Content -LiteralPath $hiddenBundleFile -Force
 
     Add-Content -LiteralPath (Join-Path $bundleRoot "comparison-summary.json") -Value "tampered"
     $tamperedPath = Join-Path $testRoot "tampered-validation.json"

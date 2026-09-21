@@ -34,8 +34,8 @@ function Normalize-UiEvidenceRepositoryPath {
         [string]$Path
     )
 
-    if ($Path.IndexOf([char]0) -ge 0) {
-        throw "Repository path contains a NUL character."
+    if ($Path -match '[\x00-\x1f:*?"<>|]') {
+        throw "Repository path contains an unsafe character."
     }
 
     $normalized = $Path.Replace('\', '/').Trim()
@@ -47,6 +47,71 @@ function Normalize-UiEvidenceRepositoryPath {
     }
 
     return $normalized
+}
+
+function Assert-UiEvidenceLocalPath([string]$Path) {
+    $fullPath = [IO.Path]::GetFullPath($Path)
+    if ($fullPath.StartsWith('\\') -or $fullPath.StartsWith('//')) {
+        throw "UI evidence paths must be local."
+    }
+    for ($ancestor = $fullPath; $ancestor; $ancestor = [IO.Path]::GetDirectoryName($ancestor)) {
+        if (Test-Path -LiteralPath $ancestor) {
+            if (((Get-Item -LiteralPath $ancestor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "UI evidence paths cannot contain a reparse point: $ancestor"
+            }
+        }
+    }
+    return $fullPath
+}
+
+function Resolve-UiEvidenceChildPath([string]$Root, [string]$RelativePath) {
+    $rootPath = Assert-UiEvidenceLocalPath $Root
+    $relative = Normalize-UiEvidenceRepositoryPath $RelativePath
+    $fullPath = [IO.Path]::GetFullPath((Join-Path $rootPath $relative))
+    $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    if (-not $fullPath.StartsWith($rootPath.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar, $comparison)) {
+        throw "UI evidence path escapes its root: $RelativePath"
+    }
+    return Assert-UiEvidenceLocalPath $fullPath
+}
+
+function Get-UiEvidenceFiles([string]$Root) {
+    $rootPath = Assert-UiEvidenceLocalPath $Root
+    if (-not (Test-Path -LiteralPath $rootPath -PathType Container)) {
+        throw "UI evidence directory does not exist: $rootPath"
+    }
+    $directories = [Collections.Generic.Stack[string]]::new()
+    $directories.Push($rootPath)
+    while ($directories.Count -gt 0) {
+        foreach ($item in @(Get-ChildItem -LiteralPath $directories.Pop() -Force -ErrorAction Stop)) {
+            if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "UI evidence trees cannot contain a reparse point: $($item.FullName)"
+            }
+            if ($item.PSIsContainer) {
+                $directories.Push($item.FullName)
+            }
+            else {
+                $item
+            }
+        }
+    }
+}
+
+function New-UiEvidenceOutputDirectory([string]$Path, [string[]]$InputRoots = @()) {
+    $fullPath = Assert-UiEvidenceLocalPath $Path
+    if (Test-Path -LiteralPath $fullPath) {
+        throw "UI evidence output directory must be fresh: $fullPath"
+    }
+    $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    foreach ($inputRoot in $InputRoots) {
+        $source = Assert-UiEvidenceLocalPath $inputRoot
+        if ($fullPath.Equals($source, $comparison) -or
+            $fullPath.StartsWith($source.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar, $comparison)) {
+            throw "UI evidence output must be outside its input directories."
+        }
+    }
+    New-Item -ItemType Directory -Path $fullPath -Force | Out-Null
+    return $fullPath
 }
 
 function Get-UiEvidenceSha256 {

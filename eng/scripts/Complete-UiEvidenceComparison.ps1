@@ -15,17 +15,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
-$raw = (Resolve-Path -LiteralPath $RawEvidenceRoot).Path
-$payload = (Resolve-Path -LiteralPath $PayloadRoot).Path
-$output = [IO.Path]::GetFullPath($OutputDirectory)
-Remove-Item -LiteralPath $output -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $output | Out-Null
-foreach ($item in @(Get-ChildItem -LiteralPath $raw -Force -Recurse)) {
-    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-        throw "Raw UI evidence cannot contain reparse points."
-    }
-}
+$raw = Assert-UiEvidenceLocalPath $RawEvidenceRoot
+$payload = Assert-UiEvidenceLocalPath $PayloadRoot
+Get-UiEvidenceFiles $raw | Out-Null
+Get-UiEvidenceFiles $payload | Out-Null
+$output = New-UiEvidenceOutputDirectory $OutputDirectory @($raw, $payload)
 Get-ChildItem -LiteralPath $raw -Force | Copy-Item -Destination $output -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $payload "request.json") `
     -Destination (Join-Path $output "request.json") `
