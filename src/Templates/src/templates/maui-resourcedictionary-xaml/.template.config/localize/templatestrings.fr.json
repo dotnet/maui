@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI ResourceDictionary (XAML)",
   "description": "Référentiel pour les ressources utilisées par une application .NET MAUI. Les ressources classiques stockées dans un ResourceDictionary incluent des styles, des modèles de contrôle, des modèles de données, des convertisseurs et des couleurs.",
