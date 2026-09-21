@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -352,6 +353,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
 			Assert.Null(handlerType);
+
+			Assert.IsType<ViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(ViewStub)));
+			Assert.Null(mauiHandlersFactory.GetHandlerType(typeof(ViewStub)));
 		}
 
 		[Fact]
@@ -432,6 +436,28 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			finally
 			{
 				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		[Fact]
+		public async Task ActivatedHandlerTypeMetadataDoesNotRootServiceDescriptor()
+		{
+			try
+			{
+				var descriptorReference = RegisterActivatedHandlerType();
+
+				Assert.False(await descriptorReference.WaitForCollect(), "Activated handler metadata should not keep service descriptors alive.");
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+
+			static WeakReference RegisterActivatedHandlerType()
+			{
+				var descriptor = ServiceDescriptor.Transient(typeof(IViewStub), static _ => new ViewHandlerStub());
+				MauiHotReloadHelper.RegisterHandlerType(descriptor, typeof(ViewHandlerStub));
+				return new WeakReference(descriptor);
 			}
 		}
 

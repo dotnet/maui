@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.HotReload
 		public static void Reset()
 		{
 			replacedViews.Clear();
-			activatedHandlerTypes.Clear();
+			activatedHandlerTypes = new();
 
 			lock (handlerReplacementLock)
 			{
@@ -126,7 +127,7 @@ namespace Microsoft.Maui.HotReload
 		static Dictionary<IHotReloadableView, object[]> currentViews = new Dictionary<IHotReloadableView, object[]>();
 		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
 		static ConcurrentDictionary<string, Type> pendingHandlerReplacements = new(StringComparer.Ordinal);
-		static ConcurrentDictionary<ServiceDescriptor, Type> activatedHandlerTypes = new();
+		static ConditionalWeakTable<ServiceDescriptor, ActivatedHandlerType> activatedHandlerTypes = new();
 		static readonly object handlerReplacementLock = new();
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026",
@@ -135,7 +136,7 @@ namespace Microsoft.Maui.HotReload
 			Justification = "Pending replacements are only populated by the AOT-incompatible Hot Reload path.")]
 		internal static void RegisterHandlerType(ServiceDescriptor descriptor, Type handlerType)
 		{
-			activatedHandlerTypes[descriptor] = handlerType;
+			activatedHandlerTypes.GetValue(descriptor, static _ => new()).Type = handlerType;
 
 			if (pendingHandlerReplacements.IsEmpty || handlerType.FullName is not string handlerTypeName)
 				return;
@@ -238,7 +239,12 @@ namespace Microsoft.Maui.HotReload
 
 		static Type? GetRegisteredHandlerType(ServiceDescriptor descriptor) =>
 			descriptor.ImplementationType
-				?? (activatedHandlerTypes.TryGetValue(descriptor, out var handlerType) ? handlerType : null);
+				?? (activatedHandlerTypes.TryGetValue(descriptor, out var activatedHandlerType) ? activatedHandlerType.Type : null);
+
+		sealed class ActivatedHandlerType
+		{
+			public Type? Type { get; set; }
+		}
 
 		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
 #if !NETSTANDARD

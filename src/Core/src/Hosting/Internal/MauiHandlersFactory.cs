@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Hosting.Internal
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
 		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new();
-		readonly ConcurrentDictionary<ServiceDescriptor, Type> _handlerTypeCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Hosting.Internal
 				&& serviceDescriptor is not null
 				&& GetService(serviceType, implementationFactoryServiceProvider) is IElementHandler handler)
 			{
-				_handlerTypeCache[serviceDescriptor] = handler.GetType();
 				HotReload.MauiHotReloadHelper.RegisterHandlerType(serviceDescriptor, handler.GetType());
 				return handler;
 			}
@@ -55,8 +53,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
 				&& serviceDescriptor is not null)
 			{
-				return serviceDescriptor.ImplementationType
-					?? (_handlerTypeCache.TryGetValue(serviceDescriptor, out Type? type) ? type : null);
+				return serviceDescriptor.ImplementationType;
 			}
 
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
