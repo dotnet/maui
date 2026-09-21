@@ -102,8 +102,10 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
 		{
-			if (oldCollection != null)
+			if (oldCollection is not null)
+			{
 				_segmentsCollectionProxy.Unsubscribe();
+			}
 
 			UnsubscribeFromAllPathSegmentPropertyChanged();
 
