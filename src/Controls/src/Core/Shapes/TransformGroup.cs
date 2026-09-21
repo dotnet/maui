@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	public sealed class TransformGroup : Transform
 	{
 		readonly Dictionary<INotifyPropertyChanged, int> _subscribedTransforms = new();
+		WeakNotifyCollectionChangedProxy _childrenCollectionChangedProxy;
+		NotifyCollectionChangedEventHandler _childrenCollectionChanged;
 
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
@@ -24,6 +26,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			Children = new TransformCollection();
 		}
+
+		~TransformGroup() => _childrenCollectionChangedProxy?.Unsubscribe();
 
 		/// <summary>
 		/// Gets or sets the collection of child <see cref="Transform"/> objects. This is a bindable property.
@@ -57,7 +61,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				return;
 			}
 
-			collection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenCollectionChanged ??= OnChildrenCollectionChanged;
+			_childrenCollectionChangedProxy ??= new WeakNotifyCollectionChangedProxy();
+			_childrenCollectionChangedProxy.Subscribe(collection, _childrenCollectionChanged);
 
 			foreach (var transform in collection)
 			{
@@ -72,7 +78,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				return;
 			}
 
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
+			_childrenCollectionChangedProxy?.Unsubscribe();
 
 			ClearAllTransformSubscriptions();
 		}
