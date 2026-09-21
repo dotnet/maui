@@ -61,7 +61,7 @@ static class XamlDiagnosticHelpers
 		columnNumber = lineInfo.LinePosition;
 		excerpt = null;
 
-		if ((uint)(lineNumber - 1) >= (uint)sourceText.Lines.Count)
+		if (lineNumber <= 0 || lineNumber > sourceText.Lines.Count)
 			return false;
 
 		var lineIndex = lineNumber - 1;
