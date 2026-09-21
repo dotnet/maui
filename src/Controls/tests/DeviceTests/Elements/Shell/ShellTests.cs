@@ -33,6 +33,9 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder(Type shellHandlerType = null)
+			=> SetupBuilder(null, shellHandlerType);
+
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions, Type shellHandlerType = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -55,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
+				additionalCreationActions?.Invoke(builder);
 			});
 		}
 #if !MACCATALYST

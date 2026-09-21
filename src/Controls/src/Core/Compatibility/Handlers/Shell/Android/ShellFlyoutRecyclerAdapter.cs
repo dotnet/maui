@@ -6,6 +6,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		List<List<Element>> _flyoutGroupings;
 		Action<Element> _selectedCallback;
 		bool _disposed;
+		readonly HashSet<ElementViewHolder> _viewHolders = new HashSet<ElementViewHolder>();
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
 		public ShellFlyoutRecyclerAdapter(IShellContext shellContext, Action<Element> selectedCallback)
@@ -83,14 +85,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (holder is ElementViewHolder evh)
 			{
+				evh.UnregisterNativeElement();
+				_viewHolders.Remove(evh);
+
 				// only clear out the Element if the item has been removed
 				bool found = false;
-				foreach (var item in _listItems)
+				if (_listItems is not null)
 				{
-					if (item.Element == evh.Element)
+					foreach (var item in _listItems)
 					{
-						found = true;
-						break;
+						if (item.Element == evh.Element)
+						{
+							found = true;
+							break;
+						}
 					}
 				}
 
@@ -106,8 +114,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var item = _listItems[position];
 			var elementHolder = (ElementViewHolder)holder;
 
+			_viewHolders.Add(elementHolder);
 			elementHolder.Bar.Visibility = item.DrawTopLine ? ViewStates.Visible : ViewStates.Gone;
 			elementHolder.Element = item.Element;
+			elementHolder.RegisterNativeElement(item.Element);
 		}
 
 		class ShellLinearLayout : LinearLayout
@@ -152,7 +162,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
-			return new ElementViewHolder(content, linearLayout, bar, _selectedCallback, _shellContext.Shell);
+			var holder = new ElementViewHolder(
+				content,
+				linearLayout,
+				bar,
+				_selectedCallback,
+				_shellContext.Shell,
+				OnViewHolderDisposed);
+			return holder;
+		}
+
+		void OnViewHolderDisposed(ElementViewHolder holder)
+		{
+			_viewHolders.Remove(holder);
 		}
 
 		protected virtual List<AdapterListItem> GenerateItemList()
@@ -222,6 +244,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			foreach (var holder in _viewHolders)
+				holder.UnregisterNativeElement();
+			_viewHolders.Clear();
+
+			if (_shellContext is null)
+				return;
+
 			if (Shell is IShellController scc)
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
 
@@ -255,8 +284,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AView _itemView;
 			bool _disposed;
 			Shell _shell;
+			Action<ElementViewHolder> _disposedCallback;
+			readonly NativeElementRegistrationSet _nativeElementRegistrations = new NativeElementRegistrationSet();
 
-			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback, Shell shell) : base(itemView)
+			public ElementViewHolder(
+				View view,
+				AView itemView,
+				AView bar,
+				Action<Element> selectedCallback,
+				Shell shell) : this(view, itemView, bar, selectedCallback, shell, null)
+			{
+			}
+
+			internal ElementViewHolder(
+				View view,
+				AView itemView,
+				AView bar,
+				Action<Element> selectedCallback,
+				Shell shell,
+				Action<ElementViewHolder> disposedCallback) : base(itemView)
 			{
 				_itemView = itemView;
 				itemView.Click += OnClicked;
@@ -264,6 +310,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Bar = bar;
 				_selectedCallback = selectedCallback;
 				_shell = shell;
+				_disposedCallback = disposedCallback;
 			}
 
 			public View View { get; }
@@ -335,6 +382,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_selectedCallback(Element);
 			}
 
+			internal void RegisterNativeElement(Element element)
+			{
+				_nativeElementRegistrations.RegisterExclusive(
+					element,
+					_itemView,
+					NativeElementRoles.ShellFlyout,
+					NativeElementDiscriminators.RealizedView);
+			}
+
+			internal void UnregisterNativeElement()
+			{
+				_nativeElementRegistrations.Clear();
+			}
+
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
@@ -344,11 +405,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (disposing)
 				{
+					_nativeElementRegistrations.Clear();
 					_itemView.Click -= OnClicked;
 
 					Element = null;
 					_itemView = null;
 					_selectedCallback = null;
+					_disposedCallback?.Invoke(this);
+					_disposedCallback = null;
 				}
 
 				base.Dispose(disposing);

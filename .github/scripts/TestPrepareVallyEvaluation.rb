@@ -102,13 +102,170 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "uses forbidden key(s): mcpServers"
   end
 
-  def test_rejects_mock_executor_override
-    write_spec("defaults" => { "executor" => "mock" })
+  def test_accepts_workflow_executor_in_defaults
+    write_spec("defaults" => { "executor" => "copilot-sdk" })
+
+    _stdout, stderr, status = run_validator
+
+    assert status.success?, stderr
+  end
+
+  def test_accepts_workflow_executor_in_legacy_config
+    write_spec("config" => { "executor" => "copilot-sdk" })
+
+    _stdout, stderr, status = run_validator
+
+    assert status.success?, stderr
+  end
+
+  def test_rejects_other_executor_values_in_defaults_and_legacy_config
+    invalid_executors = [
+      nil,
+      "",
+      "mock",
+      {
+        "name" => "copilot-sdk",
+        "config" => { "model" => "gpt-5.6-sol" }
+      }
+    ]
+
+    %w[defaults config].each do |scope|
+      invalid_executors.each do |executor|
+        write_spec(scope => { "executor" => executor })
+
+        _stdout, stderr, status = run_validator
+
+        refute status.success?, "expected #{scope} executor #{executor.inspect} to be rejected"
+        assert_includes stderr, "#{scope}.executor must be the exact string \"copilot-sdk\""
+      end
+    end
+  end
+
+  def test_rejects_defaults_judge_provider
+    write_spec(
+      "defaults" => {
+        "judge_provider" => {
+          "baseUrl" => "https://example.invalid",
+          "apiKeyEnv" => "MODEL_KEY",
+          "bearerTokenEnv" => "MODEL_TOKEN",
+          "headers" => { "X-Test" => "value" }
+        }
+      }
+    )
 
     _stdout, stderr, status = run_validator
 
     refute status.success?
-    assert_includes stderr, "must not override the trusted copilot-sdk executor"
+    assert_includes stderr, 'uses unsupported execution key "judge_provider"'
+  end
+
+  def test_rejects_legacy_config_judge_provider
+    write_spec(
+      "config" => {
+        "judge_provider" => {
+          "baseUrl" => "https://example.invalid",
+          "headers" => { "X-Test" => "value" }
+        }
+      }
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, 'uses unsupported execution key "judge_provider"'
+  end
+
+  def test_rejects_provider_mapping_with_connection_options
+    write_spec(
+      "defaults" => {
+        "provider" => {
+          "baseUrl" => "https://example.invalid",
+          "apiKeyEnv" => "MODEL_KEY",
+          "bearerTokenEnv" => "MODEL_TOKEN",
+          "headers" => { "X-Test" => "value" }
+        }
+      }
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, 'uses unsupported execution key "provider"'
+  end
+
+  def test_rejects_root_plugin_keys
+    %w[grader_plugins executor_plugins eval_plugin].each do |key|
+      write_spec(key => ["custom"])
+
+      _stdout, stderr, status = run_validator
+
+      refute status.success?, "expected #{key} to be rejected"
+      assert_includes stderr, "uses unsupported execution key #{key.inspect}"
+    end
+  end
+
+  def test_rejects_nested_execution_keys
+    keys = %w[
+      judge_provider
+      provider
+      apiKeyEnv
+      bearerTokenEnv
+      grader_plugins
+      executor_plugins
+      eval_plugin
+    ]
+    documents = {
+      "stimulus" => ->(key) { { "stimuli" => [{ "name" => "custom", key => "custom" }] } },
+      "environment" => ->(key) { { "environment" => { "metadata" => { key => "custom" } } } },
+      "grader" => lambda do |key|
+        {
+          "stimuli" => [
+            {
+              "name" => "custom",
+              "graders" => [{ "type" => "output-contains", key => "custom" }]
+            }
+          ]
+        }
+      end,
+      "config" => lambda do |key|
+        {
+          "stimuli" => [
+            {
+              "name" => "custom",
+              "graders" => [{ "type" => "output-contains", "config" => { key => "custom" } }]
+            }
+          ]
+        }
+      end
+    }
+
+    documents.each do |location, build_document|
+      keys.each do |key|
+        write_spec(build_document.call(key))
+
+        _stdout, stderr, status = run_validator
+
+        refute status.success?, "expected nested #{location} key #{key} to be rejected"
+        assert_includes stderr, "uses unsupported execution key #{key.inspect}"
+      end
+    end
+  end
+
+  def test_allows_execution_terms_in_prompt_and_rubric_text
+    terms = "judge_provider provider apiKeyEnv bearerTokenEnv grader_plugins executor_plugins eval_plugin"
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "text-only",
+          "prompt" => "Explain these literal words: #{terms}",
+          "rubric" => ["The response may quote #{terms} as plain text."]
+        }
+      ]
+    )
+
+    _stdout, stderr, status = run_validator
+
+    assert status.success?, stderr
   end
 
   def test_rejects_executable_grader
@@ -651,6 +808,40 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_match(/retries:\s+3/, post_comment)
   end
 
+  def test_evaluate_job_validation_stops_later_execution_steps
+    skip "skill-validation workflow not supplied" unless SKILL_VALIDATION_WORKFLOW
+
+    workflow = File.read(SKILL_VALIDATION_WORKFLOW)
+    job = workflow_job(workflow, "evaluate")
+    validation = workflow_step(job, "Validate specs and prepare trusted fixtures")
+    token_selection = workflow_step(job, "Select Copilot token")
+    evaluation = workflow_step(job, "Run Vally evaluation")
+
+    assert_step_order(job, validation, token_selection, evaluation)
+    assert_match(/set -euo pipefail/, validation)
+    assert_match(/ruby "\$PREPARER"/, validation)
+    refute_match(/continue-on-error:\s*true/, validation)
+    refute_match(/^\s+if:/, token_selection)
+    refute_match(/^\s+if:/, evaluation)
+  end
+
+  def test_control_job_validation_stops_later_execution_steps
+    skip "skill-validation workflow not supplied" unless SKILL_VALIDATION_WORKFLOW
+
+    workflow = File.read(SKILL_VALIDATION_WORKFLOW)
+    job = workflow_job(workflow, "hermeticity-gate")
+    validation = workflow_step(job, "Validate safe Vally specs")
+    token_selection = workflow_step(job, "Select Copilot token")
+    evaluation = workflow_step(job, "Run hermeticity control")
+
+    assert_step_order(job, validation, token_selection, evaluation)
+    assert_match(/set -euo pipefail/, validation)
+    assert_match(/ruby "\$PREPARER"/, validation)
+    refute_match(/continue-on-error:\s*true/, validation)
+    refute_match(/^\s+if:/, token_selection)
+    refute_match(/^\s+if:/, evaluation)
+  end
+
   def test_rejects_vcs_metadata_destination
     write_fixture("fixture.txt")
     write_spec(
@@ -875,6 +1066,39 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s): .github/copilot/settings.json"
   end
 
+  def test_sanitized_history_fixture_preserves_source_diff_and_trusted_controls
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":true}\n")
+    write_repo_file("src/Example.cs", "class Example { }\n")
+    trusted = commit_all("trusted")
+
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":false}\n")
+    commit_all("historical controls")
+    write_repo_file("src/Example.cs", "class Example { public bool Broken => true; }\n")
+    source = commit_all("historical regression")
+
+    fixture = {
+      marker: "historical-regression",
+      source_ref: source,
+      message: "Sanitized historical regression"
+    }
+    head = create_sanitized_history_fixture_commit(@repo_root, fixture, trusted)
+
+    assert_equal ["src/Example.cs"], git("diff", "--name-only", "#{head}^", head).lines.map(&:strip)
+    assert_equal(
+      "{\"disableAllHooks\":true}\n",
+      git("show", "#{head}:.github/copilot/settings.json", strip: false)
+    )
+    assert_equal(
+      "{\"disableAllHooks\":true}\n",
+      git("show", "#{head}^:.github/copilot/settings.json", strip: false)
+    )
+    assert_equal(
+      "class Example { public bool Broken => true; }\n",
+      git("show", "#{head}:src/Example.cs", strip: false)
+    )
+  end
+
   def test_requires_trusted_repository_control_ref
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -890,7 +1114,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     write_spec(
       "defaults" => {
         "model" => "gpt-5.6-sol",
-        "judge_model" => "claude-opus-5"
+        "judge_model" => "gpt-5.3-codex"
       },
       "stimuli" => [
         {
@@ -926,7 +1150,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert status.success?, stderr
     assert_equal(
       %w[
-        claude-opus-5
+        gpt-5.3-codex
         gpt-5.6-sol
         panel-judge-a
         panel-judge-b
@@ -997,15 +1221,13 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "must declare config.model or inherit an explicit judge_model"
   end
 
-  def test_rejects_combined_legacy_config_and_defaults_for_model_listing
+  def test_rejects_combined_legacy_config_and_defaults
     write_spec(
       "config" => { "model" => "legacy-executor" },
       "defaults" => { "model" => "executor" }
     )
-    initialize_git_repo
-    commit_all("candidate")
 
-    _stdout, stderr, status = run_validator(list_models: true)
+    _stdout, stderr, status = run_validator
 
     refute status.success?
     assert_includes stderr, "must not combine legacy config with defaults"
@@ -1383,6 +1605,17 @@ class TestPrepareVallyEvaluation < Minitest::Test
     refute_includes content, '"$trusted_copilot_home/hooks"'
   end
 
+  def test_runtime_setup_grants_only_read_only_workspace_access
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, "missing_packages+=(acl)"
+    assert_includes content, 'sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"'
+    assert_includes content, 'sudo -n setfacl -m "u:$eval_user:r-x" "$GITHUB_WORKSPACE"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -r "$GITHUB_WORKSPACE/.git/HEAD"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
+  end
+
   def test_token_selector_skips_pat_with_an_invalid_model_probe_response
     skip "token selector not provided" unless TOKEN_SELECTOR
 
@@ -1427,7 +1660,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
             fi
             shift
           done
-          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "claude-opus-5" ]; then
+          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "gpt-5.3-codex" ]; then
             printf WRONG_MODEL
             exit 0
           fi
@@ -1458,7 +1691,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
         root,
         File.join(root, "probe"),
         "gpt-5.6-sol",
-        "claude-opus-5"
+        "gpt-5.3-codex"
       )
 
       assert status.success?, stderr
@@ -1609,6 +1842,23 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "persistently writes Git identity"
+  end
+
+  def workflow_job(workflow, job_name)
+    job = workflow[/^  #{Regexp.escape(job_name)}:\n.*?(?=^  [a-zA-Z0-9_-]+:\n|\z)/m]
+    refute_nil job, "missing #{job_name} workflow job"
+    job
+  end
+
+  def workflow_step(job, step_name)
+    step = job[/^      - name: #{Regexp.escape(step_name)}\n.*?(?=^      - name: |\z)/m]
+    refute_nil step, "missing #{step_name} workflow step"
+    step
+  end
+
+  def assert_step_order(job, *steps)
+    indexes = steps.map { |step| job.index(step) }
+    assert_equal indexes.sort, indexes
   end
 
   def assert_javascript_matcher_boundaries(patterns, disallowed, allowed)
