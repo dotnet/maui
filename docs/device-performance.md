@@ -135,12 +135,32 @@ state checks with the real native-view layout methods against UIKit
 stubs; this does not replace native Apple validation. The Windows driver suite
 executes the actual discovery and runner sources with non-UI fixtures.
 
+The [PowerShell Script Tests workflow](../.github/workflows/powershell-script-tests.yml)
+runs all six standalone device-performance suites in separate, ten-minute-bounded
+jobs on `ubuntu-latest` and `windows-latest`. Each suite runs in its own `pwsh`
+process, and every suite is attempted even if another fails. These jobs are
+independent of the Pester job; inherited Pester failures cannot skip them.
+Per-suite logs are uploaded as `device-performance-scripts-<OS>` artifacts.
+The Windows job additionally executes the Windows-only fake-process cases.
+These script checks do not launch native MAUI apps or verify native Apple behavior.
+
 The Apple disabled-swipe workload requires the native `MauiCollectionView` layout
 reapplication behavior introduced by [#36428](https://github.com/dotnet/maui/pull/36428).
 It checks embedded swipe/bounce state, outer bounce state, and the presence of an
 embedded scroll view after resetting native state and laying out. Older product revisions
 without that behavior can report correctness failures; preserve those results rather
 than overlaying product code or relaxing the checks.
+
+### Historical local validation evidence
+
+The September 21 artifacts under `artifacts/log/perf-completion` have distinct scopes:
+
+| Artifact | Outcome and limits |
+|---|---|
+| `android/` | **Failed** before tests executed: `Invalid userId -2`, XHarness exit 82. This attempt is not passing Android evidence. |
+| `android-explicit/` | Separate explicit-instrumentation retry: three target performance methods passed, with two additional uncategorized tests. This is not a base/head performance comparison. |
+| `windows-smoke/` | **Plumbing self-comparison**, using the same app and commit (`c8289e0ac0`) for both variants. Handler-property records passed correctness and completion checks; Carousel remained **inconclusive**, with 120-pixel center error and 10/10 measured positions outside tolerance in every run. |
+| Apple source fixtures | Execute production method bodies against UIKit stubs, not UIKit itself. **No native Apple verification** was performed on the Windows host. |
 
 Timing changes remain advisory: the comparator flags non-overlapping repeated ranges with
 at least a 15% median change by default. Its classifications are `neutral`,

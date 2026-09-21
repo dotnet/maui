@@ -200,6 +200,7 @@ namespace $fixtureNamespace.Foundation
     $scenarioMethod = Get-SourceMethod $scenarioSource "ApplyLayoutAfterNativeStateReset"
     $embeddedViews = Get-SourceMethod $scenarioSource "GetEmbeddedScrollViews"
     $setSwipe = Get-SourceMethod $viewSource "SetSwipeEnabled"
+    $setBounce = Get-SourceMethod $viewSource "SetBounceEnabled"
     $addSubview = Get-SourceMethod $viewSource "AddSubview"
     $layout = Get-SourceMethod $viewSource "LayoutSubviews"
     $applySwipe = Get-SourceMethod $viewSource "ApplySwipeEnabledToEmbeddedScrollViews"
@@ -237,8 +238,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
     public class MauiCollectionView : UICollectionView
     {
         bool? _isSwipeEnabled;
-        bool? _isBounceEnabled = false;
+        bool? _isBounceEnabled;
         $setSwipe
+        $setBounce
         $addSubview
         $layout
         $applySwipe
@@ -258,7 +260,10 @@ public static class ApplePerformanceFixture
             view.AddSubview(new UIScrollView());
         view.AddSubview(new UICollectionView());
         if (configured)
+        {
+            view.SetBounceEnabled(false);
             view.SetSwipeEnabled(swipe);
+        }
         var result = ApplyLayoutAfterNativeStateReset(view);
         return new[] { result.EmbeddedScrollViewCount, result.Failures };
     }
@@ -271,6 +276,17 @@ public static class ApplePerformanceFixture
         return !scroller.ScrollEnabled && !scroller.Bounces &&
             !scroller.AlwaysBounceHorizontal && !scroller.AlwaysBounceVertical;
     }
+    public static bool[] EnabledSwipeBounce(bool? bounce)
+    {
+        var view = new MauiCollectionView();
+        var scroller = new UIScrollView();
+        view.AddSubview(scroller);
+        if (bounce.HasValue)
+            view.SetBounceEnabled(bounce.Value);
+        view.SetSwipeEnabled(true);
+        view.LayoutSubviews();
+        return new[] { view.Bounces, scroller.Bounces };
+    }
 }
 "@
     $result = [ApplePerformanceFixture]::Run($false, $true, $true)
@@ -280,6 +296,9 @@ public static class ApplePerformanceFixture
     Assert-Equal $true ([ApplePerformanceFixture]::Run($false, $false, $true)[1] -gt 0) "Missing cached state must fail the workload's correctness checks"
     Assert-Equal $true ([ApplePerformanceFixture]::Run($false, $true, $false)[1] -gt 0) "Missing embedded scrollers must not pass vacuously"
     Assert-Equal $true ([ApplePerformanceFixture]::NewlyAddedScrollerIsDisabled()) "The real native-view method reapplies cached swipe state to new scrollers"
+    Assert-Equal "True,True" ([ApplePerformanceFixture]::EnabledSwipeBounce($null) -join ",") "An unset bounce cache retains the production default on both native targets"
+    Assert-Equal "False,False" ([ApplePerformanceFixture]::EnabledSwipeBounce($false) -join ",") "Explicitly disabled bounce is distinct from an unset cache"
+    Assert-Equal "True,True" ([ApplePerformanceFixture]::EnabledSwipeBounce($true) -join ",") "Explicitly enabled bounce reaches both native targets"
 
     Write-Host "Device performance behavioral tests passed ($assertionCount assertions)."
 }
