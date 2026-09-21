@@ -52,13 +52,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
 #else
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
-#endif
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 #endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
