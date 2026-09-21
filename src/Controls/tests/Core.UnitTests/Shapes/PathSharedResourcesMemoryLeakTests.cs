@@ -30,6 +30,33 @@ public class PathSharedResourcesMemoryLeakTests : BaseTestFixture
 		return new WeakReference(path);
 	}
 
+	static WeakReference CreatePathFigureWithSegments(PathSegmentCollection segments)
+	{
+		var figure = new PathFigure { Segments = segments };
+		return new WeakReference(figure);
+	}
+
+	[Fact]
+	public void SharedPathSegmentCollection_DoesNotKeepPathFigureAlive()
+	{
+		var sharedSegments = new PathSegmentCollection
+		{
+			new LineSegment { Point = new Point(100, 100) }
+		};
+
+		var figureRef = CreatePathFigureWithSegments(sharedSegments);
+
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		GC.Collect();
+
+		Assert.False(figureRef.IsAlive,
+			"PathFigure was not collected. The shared PathSegmentCollection or one of its segments " +
+			"is holding a strong reference to PathFigure via an event handler.");
+
+		GC.KeepAlive(sharedSegments);
+	}
+
 	[Fact]
 	public void SharedPathGeometry_DoesNotKeepPathAlive()
 	{
