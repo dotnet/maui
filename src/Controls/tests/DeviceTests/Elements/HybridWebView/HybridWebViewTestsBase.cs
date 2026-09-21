@@ -67,6 +67,8 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 			}
 			finally
 			{
+				// Windows AttachAndRun closes the host window, which already disconnects the WebView.
+#if !WINDOWS
 				var handler = hybridWebView.Handler;
 #if ANDROID
 				var platformView = handler?.PlatformView as global::Android.Webkit.WebView;
@@ -76,6 +78,7 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 				// AttachAndRun has removed the view; release its browser resources before the next test.
 				platformView?.Destroy();
 				platformView?.Dispose();
+#endif
 #endif
 			}
 		});
