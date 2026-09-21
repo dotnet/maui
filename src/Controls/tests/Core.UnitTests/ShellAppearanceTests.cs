@@ -62,6 +62,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void GradientStopChange_UpdatesTabBarAppearanceAndDetachesWhenObserverIsRemoved()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var gradient = CreateGradient();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, gradient);
+
+			var shellController = (IShellController)shell;
+			shellController.AddAppearanceObserver(observer, shellItem);
+
+			Assert.Same(gradient, observer.LastAppearance.EffectiveTabBarBackground);
+			Assert.Equal(1, observer.UpdateCount);
+
+			gradient.GradientStops[0].Color = Colors.Red;
+
+			Assert.Same(gradient, observer.LastAppearance.EffectiveTabBarBackground);
+			Assert.Equal(Colors.Red, ((GradientBrush)observer.LastAppearance.EffectiveTabBarBackground).GradientStops[0].Color);
+			Assert.Equal(2, observer.UpdateCount);
+
+			var replacementGradient = CreateGradient();
+			Shell.SetBackground(shell, replacementGradient);
+
+			Assert.Same(replacementGradient, observer.LastAppearance.EffectiveTabBarBackground);
+			Assert.Equal(3, observer.UpdateCount);
+
+			gradient.GradientStops[0].Color = Colors.Blue;
+			Assert.Equal(3, observer.UpdateCount);
+
+			replacementGradient.GradientStops[0].Color = Colors.Blue;
+			Assert.Equal(4, observer.UpdateCount);
+
+			Assert.True(shellController.RemoveAppearanceObserver(observer));
+			replacementGradient.GradientStops[0].Color = Colors.Red;
+
+			Assert.Equal(4, observer.UpdateCount);
+		}
+
+		[Fact]
 		public void EffectiveTabBarBackground_UsesBackgroundColor()
 		{
 			var result = IngestAppearance(item =>
@@ -124,6 +164,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			Assert.Equal(Colors.Red, ((IShellAppearanceElement)result).EffectiveTabBarBackgroundColor);
+		}
+
+		class TestAppearanceObserver : IAppearanceObserver
+		{
+			public ShellAppearance LastAppearance { get; private set; }
+			public int UpdateCount { get; private set; }
+
+			public void OnAppearanceChanged(ShellAppearance appearance)
+			{
+				LastAppearance = appearance;
+				UpdateCount++;
+			}
 		}
 	}
 }
