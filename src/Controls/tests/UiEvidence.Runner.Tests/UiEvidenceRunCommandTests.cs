@@ -26,6 +26,7 @@ public class UiEvidenceRunCommandTests
 	{
 		var options = CommandLineOptions.Parse(["--variant", "base", "--device-id", "emulator-5588"]);
 		var config = UiEvidenceRunCommand.CreateAppConfig("android", "app.apk", "output", options);
+		config.SetProperty("PlatformName", "Android");
 		var capabilities = OptionsProbe.Build(config).ToCapabilities();
 
 		Assert.Equal(UiEvidenceRunCommand.RequiredDeviceId(options), capabilities.GetCapability("appium:udid"));
@@ -35,9 +36,29 @@ public class UiEvidenceRunCommandTests
 	public void GeneralAppiumOptions_PreserveIosUdidAndOmitUnspecifiedUdid()
 	{
 		var config = new Config();
+		config.SetProperty("PlatformName", "iOS");
 		Assert.Null(OptionsProbe.Build(config).ToCapabilities().GetCapability("appium:udid"));
 		config.SetProperty("Udid", "existing-ios-device");
 		Assert.Equal("existing-ios-device", OptionsProbe.Build(config).ToCapabilities().GetCapability("appium:udid"));
+	}
+
+	[Theory]
+	[InlineData("Android", true)]
+	[InlineData("android", true)]
+	[InlineData("iOS", true)]
+	[InlineData("IOS", true)]
+	[InlineData("Windows", false)]
+	[InlineData("mac", false)]
+	[InlineData("MacCatalyst", false)]
+	[InlineData("", false)]
+	public void GeneralAppiumOptions_OnlyMobilePlatformsReceiveUdid(string platform, bool expected)
+	{
+		var config = new Config();
+		config.SetProperty("PlatformName", platform);
+		config.SetProperty("Udid", "configured-device");
+		var capabilities = OptionsProbe.Build(config).ToCapabilities();
+
+		Assert.Equal(expected ? "configured-device" : null, capabilities.GetCapability("appium:udid"));
 	}
 
 	[Fact]

@@ -99,8 +99,14 @@ dotnet test src\Controls\tests\UiEvidence.Runner.Tests\Controls.UiEvidence.Runne
 ```
 
 The runner tests use local PowerShell child processes to exercise full redirected
-pipes, cancellation, process termination, and output-drain deadlines. They do not
-connect to a device or run the HostApp.
+pipes, read faults, cancellation, process termination, and output-drain deadlines.
+Capability tests ensure only Android/iOS receive `udid`, not Windows or Mac
+Catalyst. They do not connect to a device or run the HostApp.
+
+For focused Appium startup fault-injection tests, run
+`Invoke-Pester eng\scripts\UiEvidenceAppium.Tests.ps1` with Pester 5 or later.
+These verify that cleanup/disposal errors are reported without replacing the
+startup error, including when warnings would normally terminate execution.
 
 Provision the pinned DevFlow Driver and source adapter:
 
