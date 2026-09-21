@@ -58,6 +58,9 @@ namespace Microsoft.Maui.IntegrationTests
 				// affect only C# compiler warnings).
 				buildArgs += " -warnaserror";
 
+				// Previous-.NET compatibility tests intentionally exercise workloads after end of support.
+				buildArgs += " -warnnotaserror:NETSDK1202";
+
 				// However, we need to ignore specific MSBuild warnings that are acceptable in these tests:
 				var csWarningsToIgnore = new List<string>
 				{
@@ -80,13 +83,13 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			var result = Run("build", $"{buildArgs}", output: output);
-			
+
 			// On failure, extract and output errors from the binlog for visibility in CI logs
 			if (!result)
 			{
 				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath, output: output);
 			}
-			
+
 			return result;
 		}
 
@@ -94,19 +97,29 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var (buildArgs, actualBinlogPath) = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, true);
 			var result = Run("publish", $"{buildArgs}", output: output);
-			
+
 			// On failure, extract and output errors from the binlog for visibility in CI logs
 			if (!result)
 			{
 				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath, output: output);
 			}
-			
+
 			return result;
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null, ITestOutputHelper? output = null)
+		public static bool InstallTemplate(string packagePath, string customHive, ITestOutputHelper? output = null)
 		{
-			var args = $"{shortName} -o \"{outputDirectory}\"";
+			var args = $"--debug:custom-hive \"{customHive}\" --no-update-check install \"{packagePath}\" --force";
+			return Run("new", args, timeoutinSeconds: 300, output: output);
+		}
+
+		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null, ITestOutputHelper? output = null, string? customHive = null)
+		{
+			var hiveArgs = string.IsNullOrEmpty(customHive)
+				? string.Empty
+				: $"--debug:custom-hive \"{customHive}\" ";
+			var updateCheckArgs = string.IsNullOrEmpty(customHive) ? string.Empty : " --no-update-check";
+			var args = $"{hiveArgs}{shortName}{updateCheckArgs} -o \"{outputDirectory}\"";
 
 			if (!string.IsNullOrEmpty(framework))
 			{

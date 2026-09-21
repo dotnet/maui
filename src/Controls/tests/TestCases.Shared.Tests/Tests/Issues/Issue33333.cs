@@ -11,7 +11,7 @@ public class Issue33333 : _IssuesUITest
 	public Issue33333(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void CollectionViewScrolledEventShouldNotFireOnInitialLoad()
 	{
 		App.WaitForElement("ScrollCountLabel");

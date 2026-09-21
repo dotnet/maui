@@ -142,11 +142,13 @@ internal static class SafeAreaExtensions
 					// extend beyond the screen bottom. This happens because the fragment animation
 					// slides the view in from off-screen. We detect this animating state by checking:
 					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
-					// 2. viewBottom > screenHeight (view extends beyond screen - confirms it's not just a small view)
-					// 3. viewTop > 0 (view is not at origin)
+					// 2. viewBottom > screenHeight (view extends beyond screen)
+					// 3. viewHeight covers the usable screen (excludes translated child controls)
 					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
 					// When we detect animation state, apply the full top inset since view will settle at Y=0.
-					var viewIsAnimatingVertically = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
+					var viewIsAnimatingVertically = viewTop > top &&
+						viewBottom > screenHeight &&
+						viewHeight >= screenHeight - top - bottom;
 
 					// Adjust for view's position relative to parent (including margins) to calculate
 					// safe area insets relative to the parent's position, not the view's visual position.
