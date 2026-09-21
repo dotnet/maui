@@ -52,9 +52,6 @@ fi
 # Configures warning treatment in msbuild.
 warn_as_error=${warn_as_error:-true}
 
-# Specifies semi-colon delimited list of warning codes that should not be treated as errors.
-warn_not_as_error=${warn_not_as_error:-''}
-
 # True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
 use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
@@ -433,7 +430,7 @@ function InitializeToolset {
   fi
 
   echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
-  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file" /p:RestoreIgnoreFailedSources=true
+  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
 
   local toolset_build_proj=`cat "$toolset_location_file"`
 
@@ -529,18 +526,7 @@ function MSBuild-Core {
     }
   }
 
-  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
-  local mt_switch=""
-  if [[ "${MSBUILD_MT_ENABLED:-}" == "1" ]]; then
-    mt_switch="-mt"
-  fi
-
-  local warnnotaserror_switch=""
-  if [[ -n "$warn_not_as_error" && "$warn_as_error" == true ]]; then
-    warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=${warn_not_as_error//;/%3B}"
-  fi
-
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {

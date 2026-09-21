@@ -9,7 +9,6 @@ parameters:
     default: 3
     values:
     - 3
-    - 4
 
   - name: BARBuildId
     displayName: BAR Build Id
@@ -121,7 +120,7 @@ stages:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: AzurePipelines-EO
-          image: 1ESPT-Windows2025
+          image: 1ESPT-Windows2022
           demands: Cmd
           os: windows
         # If it's not devdiv, it's dnceng
@@ -141,30 +140,16 @@ stages:
             PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
             is1ESPipeline: ${{ parameters.is1ESPipeline }}
 
-        - ${{ if ne(parameters.publishingInfraVersion, 4) }}:
-          - task: DownloadBuildArtifacts@0
-            displayName: Download Package Artifacts
-            inputs:
-              buildType: specific
-              buildVersionToDownload: specific
-              project: $(AzDOProjectName)
-              pipeline: $(AzDOPipelineId)
-              buildId: $(AzDOBuildId)
-              artifactName: PackageArtifacts
-              checkDownloadedFiles: true
-        - ${{ if eq(parameters.publishingInfraVersion, 4) }}:
-          - task: DownloadPipelineArtifact@2
-            displayName: Download Pipeline Artifacts (V4)
-            inputs:
-              itemPattern: '*/packages/**/*.nupkg'
-              targetPath: '$(Build.ArtifactStagingDirectory)/PipelineArtifactsDownload'
-          - task: CopyFiles@2
-            displayName: Flatten packages to PackageArtifacts
-            inputs:
-              SourceFolder: '$(Build.ArtifactStagingDirectory)/PipelineArtifactsDownload'
-              Contents: '**/*.nupkg'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/PackageArtifacts'
-              flattenFolders: true
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(AzDOProjectName)
+            pipeline: $(AzDOPipelineId)
+            buildId: $(AzDOBuildId)
+            artifactName: PackageArtifacts
+            checkDownloadedFiles: true
 
         - task: PowerShell@2
           displayName: Validate
@@ -179,14 +164,14 @@ stages:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: AzurePipelines-EO
-          image: 1ESPT-Windows2025
+          image: 1ESPT-Windows2022
           demands: Cmd
           os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           ${{ if eq(parameters.is1ESPipeline, true) }}:        
             name: $(DncEngInternalBuildPool)
-            image: windows.vs2026.amd64
+            image: 1es-windows-2022
             os: windows
           ${{ else }}:
             name: $(DncEngInternalBuildPool)
@@ -198,30 +183,16 @@ stages:
             PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
             is1ESPipeline: ${{ parameters.is1ESPipeline }}
 
-        - ${{ if ne(parameters.publishingInfraVersion, 4) }}:
-          - task: DownloadBuildArtifacts@0
-            displayName: Download Package Artifacts
-            inputs:
-              buildType: specific
-              buildVersionToDownload: specific
-              project: $(AzDOProjectName)
-              pipeline: $(AzDOPipelineId)
-              buildId: $(AzDOBuildId)
-              artifactName: PackageArtifacts
-              checkDownloadedFiles: true
-        - ${{ if eq(parameters.publishingInfraVersion, 4) }}:
-          - task: DownloadPipelineArtifact@2
-            displayName: Download Pipeline Artifacts (V4)
-            inputs:
-              itemPattern: '*/packages/**/*.nupkg'
-              targetPath: '$(Build.ArtifactStagingDirectory)/PipelineArtifactsDownload'
-          - task: CopyFiles@2
-            displayName: Flatten packages to PackageArtifacts
-            inputs:
-              SourceFolder: '$(Build.ArtifactStagingDirectory)/PipelineArtifactsDownload'
-              Contents: '**/*.nupkg'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/PackageArtifacts'
-              flattenFolders: true
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(AzDOProjectName)
+            pipeline: $(AzDOPipelineId)
+            buildId: $(AzDOBuildId)
+            artifactName: PackageArtifacts
+            checkDownloadedFiles: true
 
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -254,14 +225,14 @@ stages:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: AzurePipelines-EO
-          image: 1ESPT-Windows2025
+          image: 1ESPT-Windows2022
           demands: Cmd
           os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           ${{ if eq(parameters.is1ESPipeline, true) }}:          
             name: $(DncEngInternalBuildPool)
-            image: windows.vs2026.amd64
+            image: 1es-windows-2022
             os: windows
           ${{ else }}:
             name: $(DncEngInternalBuildPool)
@@ -273,30 +244,16 @@ stages:
             PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
             is1ESPipeline: ${{ parameters.is1ESPipeline }}
 
-        - ${{ if ne(parameters.publishingInfraVersion, 4) }}:
-          - task: DownloadBuildArtifacts@0
-            displayName: Download Blob Artifacts
-            inputs:
-              buildType: specific
-              buildVersionToDownload: specific
-              project: $(AzDOProjectName)
-              pipeline: $(AzDOPipelineId)
-              buildId: $(AzDOBuildId)
-              artifactName: BlobArtifacts
-              checkDownloadedFiles: true
-        - ${{ if eq(parameters.publishingInfraVersion, 4) }}:
-          - task: DownloadPipelineArtifact@2
-            displayName: Download Pipeline Artifacts (V4)
-            inputs:
-              itemPattern: '*/assets/**'
-              targetPath: '$(Build.ArtifactStagingDirectory)/PipelineArtifactsDownload'
-          - task: CopyFiles@2
-            displayName: Flatten assets to BlobArtifacts
-            inputs:
-              SourceFolder: '$(Build.ArtifactStagingDirectory)/PipelineArtifactsDownload'
-              Contents: '**/*'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/BlobArtifacts'
-              flattenFolders: true
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Blob Artifacts
+          inputs:
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(AzDOProjectName)
+            pipeline: $(AzDOPipelineId)
+            buildId: $(AzDOBuildId)
+            artifactName: BlobArtifacts
+            checkDownloadedFiles: true
 
         - task: PowerShell@2
           displayName: Validate
@@ -329,18 +286,18 @@ stages:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: AzurePipelines-EO
-          image: 1ESPT-Windows2025
+          image: 1ESPT-Windows2022
           demands: Cmd
           os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           ${{ if eq(parameters.is1ESPipeline, true) }}:          
             name: NetCore1ESPool-Publishing-Internal
-            image: windows.vs2026.amd64
+            image: windows.vs2019.amd64
             os: windows
           ${{ else }}:
             name: NetCore1ESPool-Publishing-Internal
-            demands: ImageOverride -equals windows.vs2026.amd64
+            demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
           parameters:
@@ -352,6 +309,8 @@ stages:
 
         # Populate internal runtime variables.
         - template: /eng/common/templates/steps/enable-internal-sources.yml
+          parameters:
+            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
         - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
@@ -369,7 +328,7 @@ stages:
             scriptPath: $(System.DefaultWorkingDirectory)/eng/common/post-build/publish-using-darc.ps1
             arguments: >
               -BuildId $(BARBuildId)
-              -PublishingInfraVersion 3
+              -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
               -AzdoToken '$(System.AccessToken)'
               -WaitPublishingFinish true
               -RequireDefaultChannels ${{ parameters.requireDefaultChannels }}
