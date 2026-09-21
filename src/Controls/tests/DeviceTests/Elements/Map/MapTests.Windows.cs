@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
@@ -6,6 +5,7 @@ using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -41,6 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				layout.Add(map);
 				await OnLoadedAsync(map);
+				await WaitForMapReady(mapHandler);
 
 				map.Pins.Add(new Pin
 				{
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var pinsLayer = Assert.IsType<MapElementsLayer>(platformMap.Layers[0]);
 				Assert.Single(pinsLayer.MapElements);
+				await WaitForMapReady(mapHandler, expectedPins: 1);
 
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
@@ -86,15 +88,28 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		static Task WaitForMapReady(MapHandler handler)
+		static Task WaitForMapReady(MapHandler handler, int expectedPins = 0)
 		{
-			var webViewReadyField = typeof(MapHandler).GetField("_webViewReady", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(webViewReadyField);
+			var platformMap = Assert.IsType<MapControl>(handler.PlatformView);
 
+			// NavigationCompleted precedes WinUI's asynchronous layer/pin scripts.
+			// Unloading while those scripts are pending can crash the native MapControl.
 			return AssertEventually(
-				() => webViewReadyField.GetValue(handler) is true,
+				async () =>
+				{
+					if (VisualTreeHelper.GetChildrenCount(platformMap) == 0 ||
+						VisualTreeHelper.GetChild(platformMap, 0) is not WebView2 webView ||
+						webView.CoreWebView2 is null)
+					{
+						return false;
+					}
+
+					var ready = await webView.ExecuteScriptAsync(
+						$"typeof symbolLayers !== 'undefined' && symbolLayers.length >= {platformMap.Layers.Count} && typeof id === 'number' && id > {expectedPins}");
+					return ready == "true";
+				},
 				timeout: 15_000,
-				message: "MapControl's WebView2 never finished loading");
+				message: "MapControl's browser layers and pins did not finish initializing");
 		}
 	}
 }

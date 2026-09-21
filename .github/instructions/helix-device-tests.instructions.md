@@ -188,6 +188,21 @@ Helix jobs:
 Invoke-Pester -Path ./eng/helix_xharness.Tests.ps1 -Output Detailed
 ```
 
+### Windows Result Integrity
+
+The Windows runner must fail when an app crashes or a category produces empty,
+malformed, or incomplete results. File existence alone is not proof of completion:
+a crashed app can leave a zero-byte XML file. `Merge-DeviceTestResults.ps1`
+preserves readable results for diagnosis but returns nonzero for invalid XML,
+invalid counts, test failures, or assembly errors. Never downgrade those errors
+to warnings or use the merged partial result as proof that every category passed.
+
+Run its cross-platform regression checks with:
+
+```powershell
+Invoke-Pester -Path ./eng/devices/Merge-DeviceTestResults.Tests.ps1 -Output Detailed
+```
+
 ### Work Item Settings
 
 The `eng/helix_xharness.proj` configuration includes:

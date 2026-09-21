@@ -274,6 +274,10 @@ if %IS_PACKAGED%==1 (
         start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
         set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
         echo App exited with code: !LAUNCH_ERRORLEVEL!
+        if !LAUNCH_ERRORLEVEL! NEQ 0 (
+            call :dump_diagnostics
+            set EXIT_CODE=1
+        )
         
         REM Check if app crashed with Windows App SDK bootstrap error
         if "!LAUNCH_ERRORLEVEL!"=="-1073741189" (
@@ -319,6 +323,12 @@ if %IS_PACKAGED%==1 (
             
             echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
             start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
+            set LAUNCH_EXIT=!ERRORLEVEL!
+            if !LAUNCH_EXIT! NEQ 0 (
+                echo ERROR: Unpackaged app exited with code !LAUNCH_EXIT! for !CATEGORY_NAME!
+                call :dump_diagnostics
+                set EXIT_CODE=1
+            )
             
             if not exist "!EXPECTED_RESULT_FILE!" (
                 echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
@@ -335,6 +345,10 @@ if %IS_PACKAGED%==1 (
         start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%"
         set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
         echo App exited with code: !LAUNCH_ERRORLEVEL!
+        if !LAUNCH_ERRORLEVEL! NEQ 0 (
+            call :dump_diagnostics
+            set EXIT_CODE=1
+        )
         
         if not exist "%TEST_RESULTS_FILE%" (
             echo ERROR: Test results file was not created: %TEST_RESULTS_FILE%
@@ -434,34 +448,8 @@ echo Found %RESULT_COUNT% test result file(s)
 
 REM Merge results into testResults.xml for Helix
 echo Merging test results for Helix...
-powershell -Command ^
-    "$resultFiles = Get-ChildItem -Path '%TEST_RESULTS_DIR%' -Filter 'TestResults-*.xml';" ^
-    "$mergedDoc = New-Object System.Xml.XmlDocument;" ^
-    "$assembliesNode = $mergedDoc.CreateElement('assemblies');" ^
-    "$mergedDoc.AppendChild($assembliesNode) | Out-Null;" ^
-    "foreach ($file in $resultFiles) {" ^
-    "    try {" ^
-    "        $doc = New-Object System.Xml.XmlDocument;" ^
-    "        $doc.Load($file.FullName);" ^
-    "        $nodes = $doc.SelectNodes('//assembly');" ^
-    "        foreach ($node in $nodes) {" ^
-    "            $imported = $mergedDoc.ImportNode($node, $true);" ^
-    "            $assembliesNode.AppendChild($imported) | Out-Null;" ^
-    "        }" ^
-    "    } catch { Write-Host \"WARNING: Failed to parse $($file.Name): $_\" }" ^
-    "}" ^
-    "$mergedDoc.Save('%TEST_RESULTS_DIR%\testResults.xml');" ^
-    "Write-Host 'Created merged testResults.xml'"
-
-REM Check for test failures in result files
-for %%f in ("%TEST_RESULTS_DIR%\TestResults-*.xml") do (
-    powershell -Command ^
-        "$doc = New-Object System.Xml.XmlDocument;" ^
-        "$doc.Load('%%f');" ^
-        "$failed = $doc.SelectSingleNode('/assemblies/assembly[@failed > 0 or @errors > 0]/@failed');" ^
-        "if ($failed) { Write-Host 'ERROR: At least' $failed.Value 'test(s) failed in %%~nxf'; exit 1 }"
-    if !ERRORLEVEL! NEQ 0 set EXIT_CODE=1
-)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Merge-DeviceTestResults.ps1" -ResultsDirectory "%TEST_RESULTS_DIR%"
+if %ERRORLEVEL% NEQ 0 set EXIT_CODE=1
 
 :upload
 REM ========================================

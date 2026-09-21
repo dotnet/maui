@@ -12,6 +12,7 @@
       0 - App launched and exited cleanly
       2 - Timeout waiting for app to exit (process was killed)
       3 - Other launch/wait failure
+      Otherwise the app's nonzero exit code is propagated.
 #>
 param(
     [Parameter(Mandatory=$true)][string]$PackageName,
@@ -68,6 +69,8 @@ Write-Host "Launched $aumid (PID $procId) with args: $AppArguments"
 
 try {
     $proc = Get-Process -Id $procId -ErrorAction Stop
+    # Retain a handle so ExitCode remains readable after the process exits.
+    $null = $proc.Handle
 } catch {
     Write-Error "App process $procId disappeared immediately after launch: $_"
     exit 3
@@ -80,4 +83,4 @@ if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
 }
 
 Write-Host "App PID $procId exited with code $($proc.ExitCode)"
-exit 0
+exit $proc.ExitCode
