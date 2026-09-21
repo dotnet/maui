@@ -374,6 +374,8 @@
 			Text="JDK $(_ProvisionedAndroidJavaVersion) is outside the required range [$(_AndroidJdkVersion), $(_AndroidJdkVersionNextMajor))." />
 
 		<Message Text="##vso[task.setvariable variable=JAVA_HOME]$(_AndroidJdkPath)" Importance="High" />
+		<!-- Android SDK discovery can report invalid system JDKs before consulting JAVA_HOME. -->
+		<Message Text="##vso[task.setvariable variable=JavaSdkDirectory]$(_AndroidJdkPath)" Importance="High" />
 
 		<Exec
 			Command="dotnet maui android jdk check --ci"

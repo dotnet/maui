@@ -16,6 +16,7 @@ using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.Badge;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
@@ -182,26 +183,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			Brush barBackground = toolbar.BarBackground;
-
-			if (barBackground is SolidColorBrush solidColor)
+			if (!RuntimeFeature.IsMaterial3Enabled)
 			{
-				var tintColor = solidColor.Color;
-				if (tintColor == null)
+				Brush barBackground = toolbar.BarBackground;
+
+				if (barBackground is SolidColorBrush solidColor)
 				{
-					nativeToolbar.BackgroundTintMode = null;
+					var tintColor = solidColor.Color;
+					if (tintColor == null)
+					{
+						nativeToolbar.BackgroundTintMode = null;
+					}
+					else
+					{
+						nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
+						nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
+					}
 				}
 				else
 				{
-					nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
-					nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
+					nativeToolbar.BackgroundTintMode = null;
+					nativeToolbar.BackgroundTintList = null;
+					nativeToolbar.UpdateBackground(barBackground);
 				}
-			}
-			else
-			{
-				nativeToolbar.BackgroundTintMode = null;
-				nativeToolbar.BackgroundTintList = null;
-				nativeToolbar.UpdateBackground(barBackground);
 			}
 			nativeToolbar.UpdateBarTextColor(toolbar);
 		}
