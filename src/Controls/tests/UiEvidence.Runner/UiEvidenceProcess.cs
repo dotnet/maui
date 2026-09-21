@@ -4,52 +4,79 @@ namespace Microsoft.Maui.UiEvidence;
 
 static class UiEvidenceProcess
 {
-	public static async Task<(int ExitCode, string Output, string Error)> RunAsync(
+	public static Task<(int ExitCode, string Output, string Error)> RunAsync(
 		string fileName,
 		IEnumerable<string> arguments,
 		TimeSpan? timeout = null,
 		CancellationToken cancellationToken = default)
 	{
+		var startInfo = new ProcessStartInfo(fileName);
+		foreach (var argument in arguments)
+			startInfo.ArgumentList.Add(argument);
+		return RunAsync(startInfo, timeout, cancellationToken);
+	}
+
+	internal static async Task<(int ExitCode, string Output, string Error)> RunAsync(
+		ProcessStartInfo startInfo,
+		TimeSpan? timeout = null,
+		CancellationToken cancellationToken = default)
+	{
+		startInfo.RedirectStandardOutput = true;
+		startInfo.RedirectStandardError = true;
+		startInfo.UseShellExecute = false;
+		startInfo.CreateNoWindow = true;
 		var duration = timeout ?? TimeSpan.FromSeconds(30);
 		using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		deadline.CancelAfter(duration);
-		using var process = new Process
-		{
-			StartInfo = new ProcessStartInfo(fileName)
-			{
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				UseShellExecute = false,
-				CreateNoWindow = true
-			}
-		};
-		foreach (var argument in arguments)
-			process.StartInfo.ArgumentList.Add(argument);
-
-		cancellationToken.ThrowIfCancellationRequested();
-		process.Start();
-		var output = process.StandardOutput.ReadToEndAsync(deadline.Token);
-		var error = process.StandardError.ReadToEndAsync(deadline.Token);
+		using var process = new Process { StartInfo = startInfo };
+		var started = false;
 		try
 		{
-			await Task.WhenAll(output, error, process.WaitForExitAsync(deadline.Token))
-				.WaitAsync(deadline.Token).ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
+			process.Start();
+			started = true;
+			var output = process.StandardOutput.ReadToEndAsync(deadline.Token);
+			var error = process.StandardError.ReadToEndAsync(deadline.Token);
+			var pending = new List<Task> { output, error, process.WaitForExitAsync(deadline.Token) };
+			while (pending.Count != 0)
+			{
+				var completed = await Task.WhenAny(pending).WaitAsync(deadline.Token).ConfigureAwait(false);
+				await completed.ConfigureAwait(false);
+				pending.Remove(completed);
+			}
 			return (process.ExitCode, await output.ConfigureAwait(false), await error.ConfigureAwait(false));
 		}
-		catch (OperationCanceledException ex) when (deadline.IsCancellationRequested)
+		catch (Exception ex)
 		{
+			var cancelled = ex is OperationCanceledException && deadline.IsCancellationRequested;
 			try
 			{
-				if (!process.HasExited)
-					process.Kill(entireProcessTree: true);
+				await deadline.CancelAsync().ConfigureAwait(false);
+				if (started)
+				{
+					try
+					{
+						if (!process.HasExited)
+							process.Kill(entireProcessTree: true);
+					}
+					catch (InvalidOperationException) when (process.HasExited)
+					{
+						// The owned process can exit between the check and termination.
+					}
+					await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+				}
 			}
-			catch (InvalidOperationException) when (process.HasExited)
+			catch (Exception cleanupError)
 			{
-				// The owned process can exit between the check and termination.
+				ex.Data["UiEvidenceProcessCleanupError"] = cleanupError;
+				Console.Error.WriteLine($"UI evidence process cleanup failed: {cleanupError.Message}");
 			}
-			await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-			cancellationToken.ThrowIfCancellationRequested();
-			throw new TimeoutException($"{fileName} did not complete within {duration.TotalSeconds} seconds.", ex);
+			if (cancelled)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				throw new TimeoutException($"{startInfo.FileName} did not complete within {duration.TotalSeconds} seconds.", ex);
+			}
+			throw;
 		}
 	}
 }

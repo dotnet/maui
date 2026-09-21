@@ -23,6 +23,32 @@ public sealed class UiEvidenceProcessTests : IDisposable
 	}
 
 	[Fact]
+	public async Task RunAsync_OutputReadFaultTerminatesOwnedProcessAndPreservesError()
+	{
+		var pidPath = Path.Combine(_root, "fault.pid");
+		var command = $"[IO.File]::WriteAllText('{Escape(pidPath)}', [string]$PID); " +
+			"$output = [Console]::OpenStandardOutput(); $output.WriteByte(255); $output.Flush(); Start-Sleep -Seconds 60";
+		var startInfo = new ProcessStartInfo("pwsh")
+		{
+			StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
+		};
+		foreach (var argument in new[] { "-NoProfile", "-NonInteractive", "-EncodedCommand", Convert.ToBase64String(Encoding.Unicode.GetBytes(command)) })
+			startInfo.ArgumentList.Add(argument);
+		var watch = Stopwatch.StartNew();
+		try
+		{
+			await Assert.ThrowsAsync<DecoderFallbackException>(() =>
+				UiEvidenceProcess.RunAsync(startInfo, TimeSpan.FromSeconds(10)));
+			Assert.True(watch.Elapsed < TimeSpan.FromSeconds(9), "A read fault must not wait for the process deadline.");
+			Assert.True(HasExited(int.Parse(File.ReadAllText(pidPath))));
+		}
+		finally
+		{
+			StopTestProcess(pidPath);
+		}
+	}
+
+	[Fact]
 	public async Task RunAsync_QuietProcessTimeoutTerminatesOwnedProcess()
 	{
 		var pidPath = Path.Combine(_root, "timeout.pid");

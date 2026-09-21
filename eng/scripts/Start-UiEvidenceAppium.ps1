@@ -114,11 +114,23 @@ try {
     throw "Timed out waiting for Appium at $statusUrl."
 }
 finally {
-    if (-not $started -and -not $process.HasExited) {
-        $process.Kill($true)
-        if (-not $process.WaitForExit(10000)) {
-            throw "The owned Appium process did not exit after failed startup."
+    try {
+        if (-not $started -and -not $process.HasExited) {
+            $process.Kill($true)
+            if (-not $process.WaitForExit(10000)) {
+                throw "The owned Appium process did not exit after failed startup."
+            }
         }
     }
-    $process.Dispose()
+    catch {
+        Write-Warning "Appium startup cleanup failed: $($_.Exception.Message)" -WarningAction Continue
+    }
+    finally {
+        try {
+            $process.Dispose()
+        }
+        catch {
+            Write-Warning "Appium process disposal failed: $($_.Exception.Message)" -WarningAction Continue
+        }
+    }
 }
