@@ -22,19 +22,28 @@ public sealed class HotReloadLeakTest
     [Fact]
     public void MauiHotReloadHelper_CurrentViews_Leaks()
     {
-        var control = Create(Mode.Control);
-        var leaky = Create(Mode.Leaky);
-        var mitigation = Create(Mode.Mitigation);
+        var wasEnabled = MauiHotReloadHelper.IsEnabled;
 
-        ForceGc();
+        try
+        {
+            var control = Create(Mode.Control);
+            var leaky = Create(Mode.Leaky);
+            var mitigation = Create(Mode.Mitigation);
 
-        var controlAlive = Alive(control);
-        var mitigationAlive = Alive(mitigation);
-        var leakyAlive = Alive(leaky);
+            ForceGc();
 
-        Assert.Equal(0, controlAlive);
-        Assert.Equal(0, mitigationAlive);
-        Assert.Equal(0, leakyAlive);
+            var controlAlive = Alive(control);
+            var mitigationAlive = Alive(mitigation);
+            var leakyAlive = Alive(leaky);
+
+            Assert.Equal(0, controlAlive);
+            Assert.Equal(0, mitigationAlive);
+            Assert.Equal(0, leakyAlive);
+        }
+        finally
+        {
+            MauiHotReloadHelper.IsEnabled = wasEnabled;
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
