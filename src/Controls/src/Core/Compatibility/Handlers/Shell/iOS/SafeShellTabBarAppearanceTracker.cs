@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var tabBar = controller.TabBar;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				// Remove any gradient/solid background applied through SetAppearance so it does not survive the reset.
 				Microsoft.Maui.Platform.LayerExtensions.RemoveBackgroundLayer(tabBar);
