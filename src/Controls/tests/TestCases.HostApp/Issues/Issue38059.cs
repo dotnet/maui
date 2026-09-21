@@ -38,18 +38,31 @@ public class Issue38059 : ContentPage
             }
         };
 
+        var button = new Button
+        {
+            Text = "Change a layout orientation",
+            AutomationId = "ChangeLayoutButton"
+        };
+        button.Clicked += (s, e) =>
+        {
+            collectionView.ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Horizontal);
+        };
+
+
         var root = new Grid
         {
             Margin = new Thickness(20),
             RowDefinitions =
             {
                 new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto),
                 new RowDefinition(GridLength.Star)
             }
         };
 
         root.Add(instructions);
-        root.Add(collectionView, row: 1);
+        root.Add(button, row: 1);
+        root.Add(collectionView, row: 2);
         Content = root;
     }
 }
