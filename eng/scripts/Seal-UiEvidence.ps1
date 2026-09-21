@@ -22,23 +22,17 @@ param(
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
-$resolvedRoot = (Resolve-Path -LiteralPath $Root).Path
+$resolvedRoot = Assert-UiEvidenceLocalPath $Root
 $request = Read-UiEvidenceJson $RequestManifestPath
 if ($request.schemaVersion -ne 1) {
     throw "Unsupported UI evidence request version '$($request.schemaVersion)'."
 }
 
-$outputFullPath = [IO.Path]::GetFullPath($OutputPath)
+$outputFullPath = Assert-UiEvidenceLocalPath $OutputPath
 $files = @()
 $totalBytes = [long]0
 
-foreach ($item in @(Get-ChildItem -LiteralPath $resolvedRoot -Force -Recurse)) {
-    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-        throw "Evidence bundles cannot contain reparse points."
-    }
-}
-
-foreach ($file in @(Get-ChildItem -LiteralPath $resolvedRoot -File -Recurse | Sort-Object FullName)) {
+foreach ($file in @(Get-UiEvidenceFiles $resolvedRoot | Sort-Object FullName)) {
     if ([IO.Path]::GetFullPath($file.FullName) -eq $outputFullPath) {
         continue
     }

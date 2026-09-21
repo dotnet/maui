@@ -16,18 +16,21 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
 $statusUrl = "http://127.0.0.1:$Port/wd/hub/status"
-try {
-    Invoke-RestMethod -Uri $statusUrl -TimeoutSec 3 | Out-Null
-    Write-UiEvidenceJson ([PSCustomObject]@{
-        schemaVersion = 1
-        started = $false
-        processId = $null
-        port = $Port
-        statusUrl = $statusUrl
-    }) $StatePath
-    exit 0
+$StatePath = Assert-UiEvidenceLocalPath $StatePath
+$LogPath = Assert-UiEvidenceLocalPath $LogPath
+if ((Test-Path -LiteralPath $StatePath) -or (Test-Path -LiteralPath $LogPath)) {
+    throw "Appium state and log paths must be fresh."
 }
-catch {
+$probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Any, $Port)
+$probe.ExclusiveAddressUse = $true
+try {
+    $probe.Start()
+}
+catch [Net.Sockets.SocketException] {
+    throw "Appium port $Port is unavailable; do not reuse an unrelated server. $($_.Exception.Message)"
+}
+finally {
+    $probe.Stop()
 }
 
 $logDirectory = Split-Path -Parent $LogPath
@@ -37,7 +40,7 @@ if ($logDirectory) {
 if ($IsWindows) {
     $appiumCommand = Get-Command "appium.cmd" -ErrorAction SilentlyContinue
     if ($null -ne $appiumCommand) {
-        $commandLine = "/d /s /c call `"$($appiumCommand.Source)`" --base-path /wd/hub --port $Port --log `"$LogPath`""
+        $commandLine = "/d /s /c call `"$($appiumCommand.Source)`" --address 127.0.0.1 --base-path /wd/hub --port $Port --log `"$LogPath`""
         $startParameters = @{
             FilePath = $env:ComSpec
             ArgumentList = $commandLine
@@ -55,6 +58,7 @@ if ($IsWindows) {
             ArgumentList = @(
                 "-NoProfile",
                 "-File", $appiumScript.Source,
+                "--address", "127.0.0.1",
                 "--base-path", "/wd/hub",
                 "--port", "$Port",
                 "--log", $LogPath
@@ -71,37 +75,50 @@ else {
     }
     $startParameters = @{
         FilePath = $appium.Source
-        ArgumentList = @("--base-path", "/wd/hub", "--port", "$Port", "--log", $LogPath)
+        ArgumentList = @("--address", "127.0.0.1", "--base-path", "/wd/hub", "--port", "$Port", "--log", $LogPath)
         PassThru = $true
     }
 }
 $process = Start-Process @startParameters
 
-$deadline = [DateTimeOffset]::UtcNow.AddSeconds(60)
-while ([DateTimeOffset]::UtcNow -lt $deadline) {
-    if ($process.HasExited) {
-        throw "Appium exited before becoming ready with code $($process.ExitCode)."
-    }
-    try {
-        Invoke-RestMethod -Uri $statusUrl -TimeoutSec 3 | Out-Null
-        Write-UiEvidenceJson ([PSCustomObject]@{
-            schemaVersion = 1
-            started = $true
-            processId = $process.Id
-            port = $Port
-            statusUrl = $statusUrl
-        }) $StatePath
-        Write-Host "Appium is ready at $statusUrl."
-        exit 0
-    }
-    catch {
+$started = $false
+try {
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds(60)
+    while ([DateTimeOffset]::UtcNow -lt $deadline) {
+        if ($process.HasExited) {
+            throw "Appium exited before becoming ready with code $($process.ExitCode)."
+        }
+        $ready = $false
+        try {
+            $status = Invoke-RestMethod -Uri $statusUrl -TimeoutSec 3
+            $ready = $status.value.ready -eq $true
+        }
+        catch {
+            Write-Verbose "Waiting for Appium readiness: $($_.Exception.Message)"
+        }
+        if ($ready) {
+            Write-UiEvidenceJson ([PSCustomObject]@{
+                schemaVersion = 2
+                started = $true
+                processId = $process.Id
+                processStartedAtUtc = $process.StartTime.ToUniversalTime().ToString("O")
+                port = $Port
+                statusUrl = $statusUrl
+            }) $StatePath
+            $started = $true
+            Write-Host "Appium is ready at $statusUrl."
+            exit 0
+        }
         Start-Sleep -Seconds 1
     }
+    throw "Timed out waiting for Appium at $statusUrl."
 }
-
-try {
-    $process.Kill($true)
+finally {
+    if (-not $started -and -not $process.HasExited) {
+        $process.Kill($true)
+        if (-not $process.WaitForExit(10000)) {
+            throw "The owned Appium process did not exit after failed startup."
+        }
+    }
+    $process.Dispose()
 }
-catch {
-}
-throw "Timed out waiting for Appium at $statusUrl."

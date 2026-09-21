@@ -24,8 +24,12 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
 $request = Read-UiEvidenceJson $RequestPath
-$baseMetadataPath = @(Get-ChildItem -LiteralPath $BaseArtifacts -File -Recurse -Filter "ui-evidence-build-metadata.json")
-$headMetadataPath = @(Get-ChildItem -LiteralPath $HeadArtifacts -File -Recurse -Filter "ui-evidence-build-metadata.json")
+if ((Get-UiEvidenceSha256 $RegistryPath) -cne [string]$request.registrySha256) {
+    throw "UI evidence registry hash does not match the request."
+}
+$baseMetadataPath = @(Get-UiEvidenceFiles $BaseArtifacts | Where-Object Name -eq "ui-evidence-build-metadata.json")
+$headMetadataPath = @(Get-UiEvidenceFiles $HeadArtifacts | Where-Object Name -eq "ui-evidence-build-metadata.json")
+Get-UiEvidenceFiles $DevFlowFeed | Out-Null
 if ($baseMetadataPath.Count -ne 1 -or $headMetadataPath.Count -ne 1) {
     throw "Base and head artifacts must each contain one UI evidence build metadata file."
 }
@@ -46,9 +50,7 @@ foreach ($item in @(
     }
 }
 
-$output = [IO.Path]::GetFullPath($OutputDirectory)
-Remove-Item -LiteralPath $output -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $output | Out-Null
+$output = New-UiEvidenceOutputDirectory $OutputDirectory @($BaseArtifacts, $HeadArtifacts, $DevFlowFeed)
 
 function Copy-Variant {
     param(
@@ -57,8 +59,9 @@ function Copy-Variant {
         [object]$Metadata
     )
 
-    $sourceRoot = [IO.Path]::GetFullPath((Join-Path $Artifacts ([string]$Metadata.appRootRelativePath)))
-    $sourceApp = [IO.Path]::GetFullPath((Join-Path $Artifacts ([string]$Metadata.appRelativePath)))
+    $sourceRoot = Resolve-UiEvidenceChildPath $Artifacts ([string]$Metadata.appRootRelativePath)
+    $sourceApp = Resolve-UiEvidenceChildPath $Artifacts ([string]$Metadata.appRelativePath)
+    $relativeWithinRoot = Get-UiEvidenceRelativePath $sourceRoot $sourceApp
     if (-not (Test-Path -LiteralPath $sourceRoot -PathType Container) -or
         -not (Test-Path -LiteralPath $sourceApp -PathType Leaf)) {
         throw "$Name app artifact is missing."
@@ -76,23 +79,18 @@ function Copy-Variant {
             throw "$Name app metadata contains duplicate path '$relativePath'."
         }
         $sealedPaths[$key] = $true
-        $path = [IO.Path]::GetFullPath((Join-Path $sourceRoot $relativePath))
-        if (-not $path.StartsWith(
-            $sourceRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar,
-            [StringComparison]::OrdinalIgnoreCase)) {
-            throw "$Name app metadata escapes the app root."
-        }
+        $path = Resolve-UiEvidenceChildPath $sourceRoot $relativePath
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             throw "$Name app file is missing: $relativePath"
         }
-        $file = Get-Item -LiteralPath $path
+        $file = Get-Item -LiteralPath $path -Force
         $actualHash = Get-UiEvidenceSha256 $path
         if ([long]$entry.sizeBytes -ne $file.Length -or [string]$entry.sha256 -ne $actualHash) {
             throw "$Name app file changed: $relativePath"
         }
         $inventory += "${relativePath}:$($file.Length):$actualHash"
     }
-    foreach ($file in @(Get-ChildItem -LiteralPath $sourceRoot -File -Recurse)) {
+    foreach ($file in @(Get-UiEvidenceFiles $sourceRoot)) {
         $relativePath = Get-UiEvidenceRelativePath $sourceRoot $file.FullName
         if (-not $sealedPaths.ContainsKey($relativePath.ToLowerInvariant())) {
             throw "$Name app root contains an unsealed file: $relativePath"
@@ -105,7 +103,6 @@ function Copy-Variant {
     $destinationRoot = Join-Path $output "$Name\app"
     New-Item -ItemType Directory -Force -Path $destinationRoot | Out-Null
     Get-ChildItem -LiteralPath $sourceRoot -Force | Copy-Item -Destination $destinationRoot -Recurse -Force
-    $relativeWithinRoot = [IO.Path]::GetRelativePath($sourceRoot, $sourceApp).Replace('\', '/')
     return "$Name/app/$relativeWithinRoot"
 }
 

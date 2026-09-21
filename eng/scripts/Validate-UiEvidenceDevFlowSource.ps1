@@ -12,8 +12,8 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
 Assert-UiEvidenceSha $ExpectedCommit "ExpectedCommit"
-$root = (Resolve-Path -LiteralPath $SourceDirectory).Path
-$manifestPath = Join-Path $root "devflow-source-manifest.json"
+$root = Assert-UiEvidenceLocalPath $SourceDirectory
+$manifestPath = Resolve-UiEvidenceChildPath $root "devflow-source-manifest.json"
 $manifest = Read-UiEvidenceJson $manifestPath
 if ($manifest.schemaVersion -ne 1 -or
     [string]$manifest.commit -ne $ExpectedCommit.ToLowerInvariant() -or
@@ -32,16 +32,11 @@ foreach ($entry in @($manifest.files)) {
     }
     $sealed[$key] = $true
 
-    $path = [IO.Path]::GetFullPath((Join-Path $root $relativePath))
-    if (-not $path.StartsWith(
-        $root.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar,
-        [StringComparison]::OrdinalIgnoreCase)) {
-        throw "DevFlow source path escapes the source root."
-    }
+    $path = Resolve-UiEvidenceChildPath $root $relativePath
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "DevFlow source file is missing: $relativePath"
     }
-    $file = Get-Item -LiteralPath $path
+    $file = Get-Item -LiteralPath $path -Force
     if (($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
         throw "DevFlow source contains a reparse point: $relativePath"
     }
@@ -50,7 +45,7 @@ foreach ($entry in @($manifest.files)) {
     }
 }
 
-foreach ($file in @(Get-ChildItem -LiteralPath $root -File -Recurse)) {
+foreach ($file in @(Get-UiEvidenceFiles $root)) {
     if ($file.FullName -eq $manifestPath) {
         continue
     }

@@ -49,6 +49,14 @@ builds, captures, and reports remain local. Do not pass GitHub or Azure DevOps
 write credentials to PR-controlled builds or apps, or treat environment-token
 removal as a sandbox for the current user's other credentials.
 
+Packaging, capture, and comparison require fresh output/log directories and never delete an
+existing session. Artifact paths must stay inside their declared roots, without
+links/reparse points; inventories and seals include hidden files and directories.
+The registry bytes must match the request hash before packaging, capture, or
+comparison. Android requires an explicit device ID shared by adb and Appium.
+Windows refuses an already-running same-name app, and Appium cleanup verifies
+PID plus start time instead of relying on a process name or a stale PID.
+
 ### Prepare a request
 
 In a trusted checkout, resolve the PR's full head SHA and merge-base. Fetch the
@@ -89,6 +97,10 @@ Run the contracts and runner tests without the optional AI layer:
 pwsh eng\scripts\UiEvidence.Tests.ps1
 dotnet test src\Controls\tests\UiEvidence.Runner.Tests\Controls.UiEvidence.Runner.Tests.csproj
 ```
+
+The runner tests use local PowerShell child processes to exercise full redirected
+pipes, cancellation, process termination, and output-drain deadlines. They do not
+connect to a device or run the HostApp.
 
 Provision the pinned DevFlow Driver and source adapter:
 

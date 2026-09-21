@@ -99,7 +99,7 @@ sealed record UiEvidenceRunResult
 	public required string StartedAtUtc { get; init; }
 	public required string FinishedAtUtc { get; set; }
 	public required string AppArtifactSha256 { get; init; }
-	public required UiEvidenceEnvironment Environment { get; init; }
+	public required UiEvidenceEnvironment Environment { get; set; }
 	public List<UiEvidenceAssertion> Assertions { get; init; } = [];
 	public List<UiEvidenceCheckpoint> Checkpoints { get; init; } = [];
 	public UiEvidenceDevFlow DevFlow { get; set; } =

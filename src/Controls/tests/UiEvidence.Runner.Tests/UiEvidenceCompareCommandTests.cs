@@ -3,6 +3,10 @@ using Xunit;
 
 namespace Microsoft.Maui.UiEvidence;
 
+[CollectionDefinition("UI evidence current directory", DisableParallelization = true)]
+public class UiEvidenceCurrentDirectoryCollection;
+
+[Collection("UI evidence current directory")]
 public sealed class UiEvidenceCompareCommandTests : IDisposable
 {
 	readonly string _root = Path.Combine(
@@ -157,6 +161,37 @@ public sealed class UiEvidenceCompareCommandTests : IDisposable
 	}
 
 	[Fact]
+	public void Execute_ChangedRegistryBytes_ThrowsBeforeWritingSummary()
+	{
+		var paths = CreateFixture(headColor: MagickColors.White);
+		File.AppendAllText(paths.Registry, "\n");
+
+		var error = Assert.Throws<InvalidDataException>(() => Execute(paths));
+
+		Assert.Contains("registry hash", error.Message, StringComparison.Ordinal);
+		Assert.False(File.Exists(paths.Output));
+	}
+
+	[Fact]
+	public void Execute_FilenameOnlyOutput_WritesVisualDiffBesideSummary()
+	{
+		var paths = CreateFixture(headColor: MagickColors.Black) with { Output = "comparison-summary.json" };
+		var originalDirectory = Directory.GetCurrentDirectory();
+		try
+		{
+			Directory.SetCurrentDirectory(_root);
+			Assert.Equal(0, Execute(paths));
+			var summary = UiEvidenceJson.Read<UiEvidenceComparisonSummary>(paths.Output);
+			Assert.Equal("visual-change-advisory", summary.Verdict);
+			Assert.True(File.Exists(Path.Combine(_root, summary.CheckpointComparisons[0].DiffPath!)));
+		}
+		finally
+		{
+			Directory.SetCurrentDirectory(originalDirectory);
+		}
+	}
+
+	[Fact]
 	public void Execute_UnsafeScreenshotPath_Throws()
 	{
 		var paths = CreateFixture(headColor: MagickColors.White);
@@ -211,7 +246,6 @@ public sealed class UiEvidenceCompareCommandTests : IDisposable
 			coverage,
 			["base-1", "head-1", "head-2", "base-2"],
 			2);
-		UiEvidenceJson.Write(requestPath, request);
 		UiEvidenceJson.Write(
 			payloadManifestPath,
 			new UiEvidencePayloadManifest(
@@ -241,6 +275,12 @@ public sealed class UiEvidenceCompareCommandTests : IDisposable
 		UiEvidenceJson.Write(
 			registryPath,
 			new ScenarioRegistry(1, new ScenarioLimits(8), [], [scenario]));
+		request = request with
+		{
+			RegistrySha256 = Convert.ToHexString(
+				System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(registryPath))).ToLowerInvariant()
+		};
+		UiEvidenceJson.Write(requestPath, request);
 
 		var runs = new[]
 		{

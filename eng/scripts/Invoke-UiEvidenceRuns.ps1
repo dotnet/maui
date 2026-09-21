@@ -11,7 +11,7 @@ param(
     [string]$OutputDirectory,
 
     [Parameter(Mandatory = $false)]
-    [string]$LogDirectory = (Join-Path ([IO.Path]::GetTempPath()) "maui-ui-evidence-runner-logs"),
+    [string]$LogDirectory = (Join-Path ([IO.Path]::GetTempPath()) ("maui-ui-evidence-runner-logs-" + [Guid]::NewGuid().ToString("N"))),
 
     [Parameter(Mandatory = $false)]
     [string]$AppiumUrl = "http://127.0.0.1:4723/wd/hub",
@@ -32,16 +32,23 @@ param(
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "UiEvidence.Common.ps1")
 
-$payload = (Resolve-Path -LiteralPath $PayloadRoot).Path
+$payload = Assert-UiEvidenceLocalPath $PayloadRoot
+Get-UiEvidenceFiles $payload | Out-Null
 $manifest = Read-UiEvidenceJson (Join-Path $payload "payload-manifest.json")
 $requestPath = Join-Path $payload "request.json"
 $request = Read-UiEvidenceJson $requestPath
 $registryPath = Join-Path $payload "scenarios.json"
-$output = [IO.Path]::GetFullPath($OutputDirectory)
-$logs = [IO.Path]::GetFullPath($LogDirectory)
-Remove-Item -LiteralPath $output -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath $logs -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $output, $logs | Out-Null
+if ($request.platform -eq "android" -and [string]::IsNullOrWhiteSpace($DeviceId)) {
+    throw "Android UI evidence requires an explicit DeviceId."
+}
+if ($manifest.schemaVersion -ne 1 -or $manifest.requestKey -cne $request.requestKey) {
+    throw "UI evidence payload does not match the request."
+}
+if ((Get-UiEvidenceSha256 $registryPath) -cne [string]$request.registrySha256) {
+    throw "UI evidence registry hash does not match the request."
+}
+$output = New-UiEvidenceOutputDirectory $OutputDirectory @($payload)
+$logs = New-UiEvidenceOutputDirectory $LogDirectory @($payload, $output)
 Copy-Item -LiteralPath $requestPath -Destination (Join-Path $output "request.json")
 Copy-Item -LiteralPath $registryPath -Destination (Join-Path $output "scenarios.json")
 Copy-Item -LiteralPath (Join-Path $payload "payload-manifest.json") -Destination (Join-Path $output "payload-manifest.json")
@@ -71,23 +78,18 @@ function Assert-VariantPayload {
             throw "$Variant payload contains duplicate file '$relativePath'."
         }
         $sealed[$key] = $true
-        $path = [IO.Path]::GetFullPath((Join-Path $root $relativePath))
-        if (-not $path.StartsWith(
-            $root.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar,
-            [StringComparison]::OrdinalIgnoreCase)) {
-            throw "$Variant payload file escapes the app root."
-        }
+        $path = Resolve-UiEvidenceChildPath $root $relativePath
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             throw "$Variant payload file is missing: $relativePath"
         }
-        $file = Get-Item -LiteralPath $path
+        $file = Get-Item -LiteralPath $path -Force
         $actualHash = Get-UiEvidenceSha256 $path
         if ([long]$entry.sizeBytes -ne $file.Length -or [string]$entry.sha256 -ne $actualHash) {
             throw "$Variant payload file changed: $relativePath"
         }
         $inventory += "${relativePath}:$($file.Length):$actualHash"
     }
-    foreach ($file in @(Get-ChildItem -LiteralPath $root -File -Recurse)) {
+    foreach ($file in @(Get-UiEvidenceFiles $root)) {
         $relativePath = Get-UiEvidenceRelativePath $root $file.FullName
         if (-not $sealed.ContainsKey($relativePath.ToLowerInvariant())) {
             throw "$Variant payload contains an unsealed file: $relativePath"
@@ -108,13 +110,16 @@ Write-UiEvidenceJson $plan (Join-Path $output "run-plan.json")
 
 foreach ($run in $plan) {
     Assert-VariantPayload $run.Variant
+    $appPath = Resolve-UiEvidenceChildPath $payload $run.App
+    $variantRoot = Join-Path $payload "$($run.Variant)\app"
+    Get-UiEvidenceRelativePath $variantRoot $appPath | Out-Null
     $runOutput = Join-Path $output $run.Directory
     New-Item -ItemType Directory -Force -Path $runOutput | Out-Null
     $arguments = @(
         $RunnerPath,
         "run",
         "--platform", [string]$request.platform,
-        "--app", (Join-Path $payload $run.App),
+        "--app", $appPath,
         "--scenario", [string]$request.scenarioId,
         "--registry", $registryPath,
         "--output", $runOutput,

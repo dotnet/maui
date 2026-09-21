@@ -15,7 +15,12 @@ static class UiEvidenceCompareCommand
 		var payload = UiEvidenceJson.Read<UiEvidencePayloadManifest>(options.Required("payload-manifest"));
 		if (payload.SchemaVersion != 1 || payload.RequestKey != request.RequestKey)
 			throw new InvalidDataException("Payload manifest does not match the UI evidence request.");
-		var registry = UiEvidenceJson.Read<ScenarioRegistry>(options.Required("registry"));
+		var registryPath = options.Required("registry");
+		var registryHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(registryPath))).ToLowerInvariant();
+		if (registryHash != request.RegistrySha256)
+			throw new InvalidDataException("Scenario registry hash does not match the UI evidence request.");
+		var registry = UiEvidenceJson.Read<ScenarioRegistry>(registryPath);
+		var outputPath = Path.GetFullPath(options.Required("output"));
 		var scenario = registry.Scenarios.SingleOrDefault(item => item.Id == request.ScenarioId)
 			?? throw new InvalidDataException($"Scenario '{request.ScenarioId}' is missing from the registry.");
 		var runsRoot = Path.GetFullPath(options.Required("runs-root"));
@@ -90,7 +95,7 @@ static class UiEvidenceCompareCommand
 			{
 				status = "change-detected";
 				diffPath = Path.Combine("diffs", $"{checkpoint.Id}-diff.png").Replace('\\', '/');
-				var absoluteDiffPath = Path.Combine(Path.GetDirectoryName(options.Required("output"))!, diffPath);
+				var absoluteDiffPath = Path.Combine(Path.GetDirectoryName(outputPath)!, diffPath);
 				Directory.CreateDirectory(Path.GetDirectoryName(absoluteDiffPath)!);
 				var generator = new MagickNetVisualDiffGenerator();
 				var diffPair = cross.MaxBy(item => item.Difference);
