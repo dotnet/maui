@@ -54,11 +54,30 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 		SetupBuilder();
 
 		// Set up the view to be displayed/parented and run our tests on it
-		await AttachAndRun(hybridWebView, async handler =>
+		await InvokeOnMainThreadAsync(async () =>
 		{
-			await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+			try
+			{
+				await AttachAndRun(hybridWebView, async handler =>
+				{
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
-			await test((HybridWebViewHandler)handler, hybridWebView);
+					await test((HybridWebViewHandler)handler, hybridWebView);
+				});
+			}
+			finally
+			{
+				var handler = hybridWebView.Handler;
+#if ANDROID
+				var platformView = handler?.PlatformView as global::Android.Webkit.WebView;
+#endif
+				handler?.DisconnectHandler();
+#if ANDROID
+				// AttachAndRun has removed the view; release its browser resources before the next test.
+				platformView?.Destroy();
+				platformView?.Dispose();
+#endif
+			}
 		});
 	}
 
@@ -89,7 +108,11 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 			{
 				var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
 				return loaded == "true";
-			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get the HybridWebView test page to be ready.")));
+			}, createExceptionWithTimeoutMS: async (int timeoutInMS) =>
+			{
+				var state = await hybridWebView.EvaluateJavaScriptAsync("JSON.stringify({ url: location.href, readyState: document.readyState, bridge: typeof window.HybridWebView, htmlLoaded: document.getElementById('htmlLoaded') !== null, body: document.body?.innerText })");
+				return new Exception($"Waited {timeoutInMS}ms but couldn't get the HybridWebView test page to be ready. Page state: {state}");
+			});
 		}
 
 		public static async Task WaitForHtmlStatusSet(HybridWebView hybridWebView)
