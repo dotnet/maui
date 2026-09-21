@@ -345,6 +345,7 @@ namespace WindowsRunnerFixture
     {
         public static string Mode = "";
         public static string[] Arguments = Array.Empty<string>();
+        public static string[] SkippedCategories = Array.Empty<string>();
         public static int DiscoveryCount, UiExits, Kills;
         public static int? ExplicitExit;
         public static bool CompletedBeforeWriterClosed;
@@ -357,6 +358,7 @@ namespace WindowsRunnerFixture
             DiscoveryCount = UiExits = Kills = 0;
             ExplicitExit = null;
             CompletedBeforeWriterClosed = false;
+            SkippedCategories = Array.Empty<string>();
             Runner = null;
             new Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.HomePage().RaiseLoaded();
         }
@@ -366,7 +368,11 @@ namespace Microsoft.DotNet.XHarness.TestRunners.Common
 {
     public interface IDevice { }
     public class LogWriter { }
-    public class TestRunner { public void SkipCategories(IEnumerable<string> categories) { } }
+    public class TestRunner
+    {
+        public void SkipCategories(IEnumerable<string> categories) =>
+            WindowsRunnerFixture.State.SkippedCategories = new List<string>(categories).ToArray();
+    }
     public class TestAssemblyInfo
     {
         public Assembly Assembly { get; }
@@ -393,6 +399,7 @@ namespace Microsoft.DotNet.XHarness.TestRunners.Xunit
 
         public Task RunAsync()
         {
+            GetTestRunner(new LogWriter());
             string mode = WindowsRunnerFixture.State.Mode;
             if (mode == "runner-error")
                 throw new InvalidOperationException("Fixture runner error.");
@@ -426,7 +433,10 @@ namespace Xunit
     public class TestCase
     {
         public Dictionary<string, List<string>> Traits { get; } = new() {
-            ["Category"] = new List<string> { "Button", "PerformanceCarouselViewWheelSnap" }
+            ["Category"] = new List<string> {
+                "Button", "PerformanceCarouselViewWheelSnap", "Performance",
+                "PerformanceFutureScenario", "performanceLowercase", "NotPerformance"
+            }
         };
     }
     public class TestDiscoverySink : IDisposable
@@ -534,6 +544,21 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 '@ | Set-Content -LiteralPath $stubs -Encoding UTF8
         Add-Type -Path $producerSource, $homePageSource, $stubs -CompilerOptions "/define:WINDOWS"
 
+        foreach ($optIn in @($null, "", "0", "true", "1")) {
+            $directory = Join-Path $testRoot ("category-policy-" + [Guid]::NewGuid().ToString("N"))
+            New-Item -ItemType Directory -Path $directory | Out-Null
+            [Environment]::SetEnvironmentVariable("MAUI_INCLUDE_PERFORMANCE_TESTS", $optIn)
+            [Environment]::SetEnvironmentVariable("MAUI_PERF_RUN_ID", $null)
+            [WindowsRunnerFixture.State]::Run("success", (Join-Path $directory "TestResults.xml"), -1)
+            $categories = @(Get-Content (Join-Path $directory "devicetestcategories.txt"))
+            $expected = if ($optIn -ceq "1") {
+                "Button,PerformanceCarouselViewWheelSnap,Performance,PerformanceFutureScenario,performanceLowercase,NotPerformance"
+            } else {
+                "Button,performanceLowercase,NotPerformance"
+            }
+            Assert-Equal "$expected,$expected" ($categories -join ",") "Windows discovery in both assemblies requires exact explicit opt-in '$optIn'"
+        }
+
         $producerCases = @(
             @{ Mode = "success"; Index = -1; Exit = 0 },
             @{ Mode = "success"; Index = 1; Exit = 0 },
@@ -574,6 +599,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
             Assert-Equal ($case.Exit -eq 0) (Test-Path -LiteralPath "$xmlPath.completed" -PathType Leaf) "Only successful producer runs create a completion marker"
             if ($case.Exit -eq 0) {
                 Assert-Equal $env:MAUI_PERF_RUN_ID (Get-Content -LiteralPath "$xmlPath.completed" -Raw) "Producer writes the exact current invocation token"
+                if ($case.Index -eq 1) {
+                    Assert-Equal "Category=Button" ([WindowsRunnerFixture.State]::SkippedCategories -join ",") "Explicit performance execution skips only the other discovered category"
+                }
             }
             else {
                 Assert-Equal $true ([WindowsRunnerFixture.State]::Runner.Logger.ToString().Length -gt 0) "Producer failure is logged"

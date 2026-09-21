@@ -2,8 +2,6 @@
 
 $ErrorActionPreference = "Stop"
 $script = Join-Path $PSScriptRoot "Run-DevicePerformanceComparison.ps1"
-$repositoryRoot = [IO.Path]::GetFullPath([IO.Path]::Combine($PSScriptRoot, "..", ".."))
-$devicesShared = [IO.Path]::Combine($repositoryRoot, "eng", "devices", "devices-shared.cake")
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ("maui-device-perf-driver-" + [Guid]::NewGuid().ToString("N"))
 
 function Assert-Equal($expected, $actual, [string]$message) {
@@ -62,11 +60,6 @@ try
     foreach ($artifactName in @("results.json", "comparison-summary.json", "comparison-summary.md")) {
         Assert-Equal $true $driverSource.Contains($artifactName) "Driver artifact contract for $artifactName"
     }
-
-    $devicesSharedSource = Get-Content $devicesShared -Raw
-    Assert-Equal $true (
-        $devicesSharedSource.Contains('category.StartsWith("Performance", StringComparison.Ordinal)')
-    ) "Normal Apple device runs must exclude all performance categories"
 
     $globalArguments = $runArguments.Clone()
     $globalArguments.XHarnessMode = "global"

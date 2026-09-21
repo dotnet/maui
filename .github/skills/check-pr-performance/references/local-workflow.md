@@ -61,12 +61,17 @@ src/Controls/tests/DeviceTests/Performance
 src/Core/tests/DeviceTests.Shared/DeviceTestSharedHelpers.cs
 src/Core/tests/DeviceTests.Shared/DevicePerformanceResult.cs
 src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/Windows/ControlsHeadlessTestRunner.cs
+src/TestUtils/src/DeviceTests.Runners/VisualRunner/Pages/HomePage.xaml.cs
 ```
 
 Replace only these harness paths in the disposable snapshots. Remove a
 snapshot's existing `Performance` directory before copying the trusted one, so
 obsolete files cannot survive a recursive copy. Do not remove product files
 outside the listed paths.
+
+Keep the Windows runner and `HomePage.xaml.cs` together: the page exits with the
+performance result only after the runner closes its output. An older page kills
+the process instead and cannot satisfy the driver's successful-exit contract.
 
 For each `$VariantRoot`, invoke the trusted category merger:
 

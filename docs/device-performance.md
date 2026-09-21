@@ -89,7 +89,7 @@ test host; local results are machine-specific.
 | `comparison-summary.md` | Compact, comment-ready results with collapsed findings and follow-up |
 
 The Windows driver resolves output paths from the caller's PowerShell directory before
-launching a child in the app directory, and rejects nonpositive PR numbers before
+launching a child in the app directory, and rejects zero or negative PR numbers before
 discovery. Rebuild both Windows apps with the updated runner: each invocation receives
 a unique `MAUI_PERF_RUN_ID` and must finish with exit zero plus its matching
 `TestResults.xml.completed` sidecar and fresh, valid output. The opted-in performance
@@ -127,6 +127,20 @@ platform/scenario pairs are rejected before the local driver plans or launches a
 The helper/reporter and Android picker-text verification are also covered by
 `DevicePerformanceTests` in `Controls.Core.UnitTests`; these tests execute the shared
 C# emitter and check stale non-empty values, rather than relying on source-text checks.
+
+Run `pwsh -NoProfile -File eng/scripts/DevicePerformanceBehavior.Tests.ps1` with
+PowerShell 7 to execute the actual Cake category selector and Android/iOS/MacCatalyst
+filter adapters against non-UI fixtures. It also exercises the Apple workload's
+state checks with the real native-view layout methods against UIKit
+stubs; this does not replace native Apple validation. The Windows driver suite
+executes the actual discovery and runner sources with non-UI fixtures.
+
+The Apple disabled-swipe workload requires the native `MauiCollectionView` layout
+reapplication behavior introduced by [#36428](https://github.com/dotnet/maui/pull/36428).
+It checks embedded swipe/bounce state, outer bounce state, and the presence of an
+embedded scroll view after resetting native state and laying out. Older product revisions
+without that behavior can report correctness failures; preserve those results rather
+than overlaying product code or relaxing the checks.
 
 Timing changes remain advisory: the comparator flags non-overlapping repeated ranges with
 at least a 15% median change by default. Its classifications are `neutral`,

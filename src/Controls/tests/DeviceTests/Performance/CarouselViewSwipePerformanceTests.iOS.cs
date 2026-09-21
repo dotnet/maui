@@ -109,10 +109,18 @@ namespace Microsoft.Maui.DeviceTests
 					scrollView.AlwaysBounceHorizontal = true;
 					scrollView.AlwaysBounceVertical = true;
 				}
+				collectionView.Bounces = true;
+				collectionView.AlwaysBounceHorizontal = true;
+				collectionView.AlwaysBounceVertical = true;
 
 				collectionView.LayoutSubviews();
 
-				foreach (UIScrollView scrollView in GetEmbeddedScrollViews(collectionView))
+				embeddedScrollViews = GetEmbeddedScrollViews(collectionView);
+				if (embeddedScrollViews.Length == 0 || collectionView.Bounces
+					|| collectionView.AlwaysBounceHorizontal || collectionView.AlwaysBounceVertical)
+					failures++;
+
+				foreach (UIScrollView scrollView in embeddedScrollViews)
 				{
 					if (scrollView.ScrollEnabled
 						|| scrollView.Bounces
