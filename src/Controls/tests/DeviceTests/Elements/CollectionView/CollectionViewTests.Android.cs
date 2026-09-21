@@ -107,6 +107,43 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DisconnectingWhileEmptyViewLayoutIsQueuedDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var host = new Grid();
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(host, async _ =>
+			{
+				var collectionView = new CollectionView
+				{
+					ItemsSource = System.Array.Empty<string>(),
+					EmptyView = new Label { Text = "Empty" }
+				};
+
+				host.Add(collectionView);
+
+				var handler = Assert.IsType<CollectionViewHandler>(collectionView.Handler);
+				var platformView = handler.PlatformView;
+
+				Assert.True(platformView.IsAttachedToWindow);
+				Assert.IsType<EmptyViewAdapter>(platformView.GetAdapter());
+				Assert.Null(platformView.FindViewHolderForAdapterPosition(0));
+
+				handler.GetDesiredSize(317, 241);
+
+				host.Remove(collectionView);
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Null(((IElementHandler)handler).PlatformView);
+
+				var nextLooperTurn = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				MauiContext.Context.GetActivity().Window.DecorView.Post(() => nextLooperTurn.SetResult(true));
+				await nextLooperTurn.Task.WaitAsync(System.TimeSpan.FromSeconds(5));
+			});
+		}
+
+		[Fact]
 		public async Task GroupedCollectionViewEmptyViewTracksOuterGroupCount()
 		{
 			SetupBuilder();
