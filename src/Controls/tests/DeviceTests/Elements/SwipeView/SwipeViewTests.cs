@@ -26,13 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Grid), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Label), typeof(LabelHandler));
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
-#endif
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 					handlers.AddHandler<SwipeItemView, SwipeItemViewHandler>();
