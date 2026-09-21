@@ -23,7 +23,12 @@ namespace Microsoft.Maui.DeviceTests
 			GC.Collect(2, GCCollectionMode.Forced, true);
 			GC.WaitForPendingFinalizers();
 			GC.Collect(2, GCCollectionMode.Forced, true);
+#if ANDROID
+			// Timed native callbacks, such as scrollbar fading, can temporarily retain detached views.
+			await Task.Delay(100);
+#else
 			await Task.Yield();
+#endif
 		}
 
 

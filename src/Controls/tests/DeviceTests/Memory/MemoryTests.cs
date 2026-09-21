@@ -716,6 +716,39 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
+#if ANDROID
+	[Fact]
+	public async Task GarbageCollectionWaitsForPendingNativeCallbacks()
+	{
+		using var handler = new global::Android.OS.Handler(global::Android.OS.Looper.MainLooper);
+		var callbackCompleted = new TaskCompletionSource<bool>();
+		var reference = QueueNativeCallback(handler, callbackCompleted);
+
+		await AssertionExtensions.WaitForGC(reference);
+		Assert.True(callbackCompleted.Task.IsCompletedSuccessfully);
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static WeakReference QueueNativeCallback(global::Android.OS.Handler handler, TaskCompletionSource<bool> callbackCompleted)
+	{
+		var view = new Label();
+		Assert.True(handler.PostDelayed(() =>
+		{
+			callbackCompleted.SetResult(true);
+			GC.KeepAlive(view);
+		}, 1000));
+		return new WeakReference(view);
+	}
+
+	[Fact]
+	public async Task GarbageCollectionDoesNotCollectRootedObjects()
+	{
+		var view = new Label();
+		await Assert.ThrowsAsync<Xunit.Sdk.TrueException>(() => AssertionExtensions.WaitForGC(new WeakReference(view)));
+		GC.KeepAlive(view);
+	}
+#endif
+
 	// https://github.com/dotnet/maui/issues/35472
 	// CarouselViewController2 leaked because the block-based NSNotificationCenter observer token was
 	// discarded and the subsequent RemoveObserver(this,...) call targeted the wrong observer type.

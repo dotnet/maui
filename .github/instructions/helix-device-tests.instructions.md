@@ -225,6 +225,20 @@ When using category splitting, `CustomCommands` metadata overrides the default x
 
 ## Troubleshooting
 
+### Android Memory Assertions
+
+Android's message queue can temporarily retain detached views through delayed
+callbacks, including `View.ScrollabilityCache` scrollbar fading. CoreCLR can
+finish repeated managed collections before those callbacks become due.
+`AssertionExtensions.Collect` therefore gives Android's native callbacks time
+to run between collection attempts; the 40-attempt limit and live-reference
+assertions remain unchanged.
+
+When investigating a failure, check both managed and Java retention paths.
+Do not force-dispose the object under test, remove intentional roots, or skip the
+assertion. The Memory category includes a delayed native-callback regression
+and a rooted-object negative control for the GC assertion helper.
+
 ### Common Issues
 
 1. **Build failures**: Ensure MSBuild tasks are built first
