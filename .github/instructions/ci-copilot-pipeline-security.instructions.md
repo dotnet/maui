@@ -1,6 +1,6 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*"
+applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*,.github/workflows/skill-validation.yml"
 ---
 
 # CI Copilot pipeline — security rules
@@ -36,6 +36,37 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 10. **Missed-command recovery stays trusted and deterministic.** The scheduled recovery workflow must execute only from the default branch, never check out PR code, revalidate the commenter's current write access, and dispatch the existing trusted review workflow rather than calling AzDO directly. Its minimum command age must exceed the combined timeout of the normal trigger jobs so polling cannot race an in-progress webhook delivery into a duplicate review.
 
 ## Review checklist
+
+### Fork skill-validation content
+
+Only the base repository at `github.workflow_sha` may be checked out. Never
+enable `allow-unsafe-pr-checkout` or check out a PR/merge ref in this workflow.
+The trusted `AcquireSkillValidationContent.rb` reads the gated repository and
+full head SHA through GitHub's commit/tree/blob API; it never extracts archives,
+follows redirects, or executes candidate scripts. Tree/blob hashes, regular-file
+modes, paths, repository controls, and response/file/total limits are checked
+before skills are materialized. Agent/plugin metadata remains inert.
+
+Candidate workflow YAML and the rollback JSON fixture must still be validated
+by the trusted policy tests. Acquire those three allowlisted files into a fresh
+`$RUNNER_TEMP/skill-validation-policy` directory, not over trusted workflows or
+scripts. Missing candidate files must fail validation, never fall back to the
+trusted copies. Skills are the only candidate files installed in the checkout;
+`HEAD` remains trusted, so discovery and baseline restoration use a data-only
+snapshot rather than `HEAD`.
+
+Keep provider/executor restrictions, sanitized historical fixtures, static-only
+mode, `skill-evaluation-pat-pool`, and all authorization gates intact. Fixture
+fetches use only pins declared by the trusted workflow revision and sanitized
+fixture source refs; candidate YAML cannot authorize fetching a new revision.
+Run the acquisition, preparer, and workflow-mode test suites together.
+
+This change must land independently on the base branch. A fork PR cannot repair
+its own `pull_request_target` workflow; fresh validation must use the updated
+workflow source. Do not bypass the gate or trigger credentialed evaluations to
+test acquisition.
+
+### General pipeline checks
 
 - [ ] Every checkout has `persistCredentials: false`; no task extracts the checkout `extraheader`.
 - [ ] Prompt-influenced analysis and credentialed posting run in separate Microsoft-hosted jobs.

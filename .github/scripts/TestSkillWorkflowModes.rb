@@ -103,9 +103,10 @@ class TestSkillWorkflowModes < Minitest::Test
     assert_includes static_check, ".github/scripts/fixtures/skill-workflow-policy"
     assert_includes static_check, ".github/workflows"
     assert_includes static_check, 'git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestSkillWorkflowModes.rb" > "$WORKFLOW_MODE_TESTS"'
-    assert_includes static_check, 'SKILL_VALIDATION_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-validation.yml"'
-    assert_includes static_check, 'SKILL_EVALUATION_SOAK_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-evaluation-soak.yml"'
-    assert_includes static_check, 'ROLLBACK_FIXTURE="$GITHUB_WORKSPACE/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"'
+    assert_includes static_check, 'SKILL_VALIDATION_WORKFLOW="$RUNNER_TEMP/skill-validation-policy/.github/workflows/skill-validation.yml"'
+    assert_includes static_check, 'SKILL_EVALUATION_SOAK_WORKFLOW="$RUNNER_TEMP/skill-validation-policy/.github/workflows/skill-evaluation-soak.yml"'
+    assert_includes static_check, 'ROLLBACK_FIXTURE="$RUNNER_TEMP/skill-validation-policy/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"'
+    assert_includes static_check, 'ruby .github/scripts/AcquireSkillValidationContent.rb acquire "$GITHUB_WORKSPACE"'
     refute_includes static_check, '${TRUSTED_SHA}:.github/workflows/skill-validation.yml'
     refute_includes static_check, '${TRUSTED_SHA}:.github/workflows/skill-evaluation-soak.yml'
     refute_includes static_check, '${TRUSTED_SHA}:.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json'

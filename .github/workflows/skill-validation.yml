@@ -25,8 +25,11 @@
 #   - Workflow YAML: always from the default branch (enforced by both triggers)
 #   - Evaluator: @microsoft/vally-cli, pinned and installed while tokenless by a
 #     workflow-SHA-pinned setup script; credentialed evals use that local binary.
-#   - Skill/test content: checked out from the PR (markdown/YAML data files;
-#     the evaluate job needs full history for frozen-worktree fixtures)
+#   - Only github.workflow_sha from the base repository is checked out.
+#     Candidate skills are acquired as bounded, hash-verified Git data, never
+#     by checking out a fork. Candidate policy files are inert input outside the
+#     trusted checkout; scripts, agents, plugin metadata and HEAD stay trusted.
+#     Baseline/restore use the candidate snapshot, not the trusted HEAD.
 #   - A workflow-SHA-pinned validator rejects PR-authored commands, process
 #     environment overrides, local MCP servers, executable graders, repository
 #     Copilot controls that differ from the trusted base, and file overlays
@@ -53,6 +56,8 @@ on:
     paths:
       - '.github/skills/**'
       - '.github/plugin.json'
+      - '.github/scripts/AcquireSkillValidationContent.rb'
+      - '.github/scripts/TestAcquireSkillValidationContent.rb'
       - '.github/scripts/PrepareVallyEvaluation.rb'
       - '.github/scripts/SelectVallyToken.sh'
       - '.github/scripts/TestPrepareVallyEvaluation.rb'
@@ -312,18 +317,25 @@ jobs:
     outputs:
       exit_code: ${{ steps.check.outputs.exit_code }}
     steps:
-      - name: Checkout PR content
+      - name: Checkout trusted workflow source
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
-          sparse-checkout: |
-            .github/skills
-            .github/agents
-            .github/plugin.json
-            .github/scripts/fixtures/skill-workflow-policy
-            .github/workflows
+          repository: ${{ github.repository }}
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: .github
           persist-credentials: false
+
+      - name: Acquire bounded candidate data
+        id: content
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          HEAD_REPOSITORY: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
+          POLICY_DIRECTORY: ${{ runner.temp }}/skill-validation-policy
+        run: ruby .github/scripts/AcquireSkillValidationContent.rb acquire "$GITHUB_WORKSPACE"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -337,18 +349,14 @@ jobs:
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
-          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
-            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
-          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
           TOKEN_SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
           SETUP_RUNTIME="$RUNNER_TEMP/SetupVallyRuntime.sh"
           WORKFLOW_MODE_TESTS="$RUNNER_TEMP/TestSkillWorkflowModes.rb"
-          SKILL_VALIDATION_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-validation.yml"
-          SKILL_EVALUATION_SOAK_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-evaluation-soak.yml"
-          ROLLBACK_FIXTURE="$GITHUB_WORKSPACE/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"
+          SKILL_VALIDATION_WORKFLOW="$RUNNER_TEMP/skill-validation-policy/.github/workflows/skill-validation.yml"
+          SKILL_EVALUATION_SOAK_WORKFLOW="$RUNNER_TEMP/skill-validation-policy/.github/workflows/skill-evaluation-soak.yml"
+          ROLLBACK_FIXTURE="$RUNNER_TEMP/skill-validation-policy/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"
           RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
           VERIFICATION_SPEC="$RUNNER_TEMP/eval.protocol.vally.yaml"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
@@ -360,6 +368,7 @@ jobs:
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
           chmod 700 "$TOKEN_SELECTOR"
           ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC" "$SETUP_RUNTIME" "$TOKEN_SELECTOR" "$SKILL_VALIDATION_WORKFLOW"
+          ruby .github/scripts/TestAcquireSkillValidationContent.rb
           ruby "$WORKFLOW_MODE_TESTS" "$SKILL_VALIDATION_WORKFLOW" "$SKILL_EVALUATION_SOAK_WORKFLOW" "$ROLLBACK_FIXTURE"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" --validate-mandatory-layout
           while IFS= read -r tests_path; do
@@ -420,12 +429,13 @@ jobs:
       # ── Upload results for comment job ────────────────────────────
       - name: Save results artifact
         if: always()
+        env:
+          SKILL_COUNT: ${{ steps.content.outputs.skill_count }}
+          AGENT_COUNT: ${{ steps.content.outputs.agent_count }}
         run: |
           mkdir -p sv-results
-          skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
-          echo "$skill_count" > sv-results/skill-count.txt
-          agent_count=$(find .github/agents -mindepth 1 -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
-          echo "$agent_count" > sv-results/agent-count.txt
+          printf '%s\n' "$SKILL_COUNT" > sv-results/skill-count.txt
+          printf '%s\n' "$AGENT_COUNT" > sv-results/agent-count.txt
           echo "${{ steps.check.outputs.spec_count }}" > sv-results/spec-count.txt
           echo "${{ steps.check.outputs.exit_code }}" > sv-results/exit-code.txt
           if [ -f sv-output.txt ]; then
@@ -464,23 +474,33 @@ jobs:
       entries: ${{ steps.find.outputs.entries }}
       has_entries: ${{ steps.find.outputs.has_entries }}
     steps:
-      - name: Checkout PR content
+      - name: Checkout trusted workflow source
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
-          sparse-checkout: |
-            .github/skills
-            .github/plugin.json
+          repository: ${{ github.repository }}
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: .github
           persist-credentials: false
+
+      - name: Acquire bounded candidate data
+        id: content
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          HEAD_REPOSITORY: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
+          POLICY_DIRECTORY: ${{ runner.temp }}/skill-validation-policy
+        run: ruby .github/scripts/AcquireSkillValidationContent.rb acquire "$GITHUB_WORKSPACE"
 
       - name: Discover changed files
         id: changed
         env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
           EVENT_NAME: ${{ github.event_name }}
           INPUT_SKILLS: ${{ github.event.inputs.skills }}
+          CHANGED_SKILLS: ${{ steps.content.outputs.changed_skills }}
+          HARNESS_CHANGED: ${{ steps.content.outputs.harness_changed }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             # Manual run: evaluate the requested skills, or every skill that
@@ -495,15 +515,8 @@ jobs:
               EVAL_ALL=true
             fi
           else
-            CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
-              --paginate --jq '.[].filename')
-            SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
-              sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-            # Trusted evaluation-harness change => evaluate all skills with specs.
-            HARNESS_CHANGES=$(echo "$CHANGED" \
-              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb|scripts/(SelectVallyToken|SetupVallyRuntime)\.sh)$' \
-              || true)
-            if [ -n "$HARNESS_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
+            SKILL_DIRS=$(printf '%s' "$CHANGED_SKILLS" | tr ',' '\n')
+            EVAL_ALL="$HARNESS_CHANGED"
           fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
@@ -534,13 +547,16 @@ jobs:
           }
 
           foreach ($skill in $skills) {
+            if ($skill -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$') {
+              throw "Invalid skill name: $skill"
+            }
             $testsDir = ".github/skills/$skill/tests"
             $specs = @()
-            if (Test-Path $testsDir) {
+            if (Test-Path -LiteralPath $testsDir) {
               # Required deterministic suites only: eval*.vally.yaml. This
               # deliberately EXCLUDES hermeticity.vally.yaml (its dedicated
               # gate) and soak*.vally.yaml (scheduled/manual advisory runs).
-              $specs = @(Get-ChildItem -Path $testsDir -Filter "eval*.vally.yaml" -File -ErrorAction SilentlyContinue)
+              $specs = @(Get-ChildItem -LiteralPath $testsDir -Filter "eval*.vally.yaml" -File)
             }
             if ($specs.Count -gt 0) {
               Write-Host "  -> $skill has $($specs.Count) eval spec(s)"
@@ -604,29 +620,35 @@ jobs:
       matrix:
         entry: ${{ fromJson(needs.discover-eval.outputs.entries || '[]') }}
     steps:
-      - name: Checkout PR content
+      - name: Checkout trusted workflow source
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
-          # Full history (NOT sparse): capability suites pin frozen worktrees
-          # at historical merge commits via `environment.git.ref`, and
-          # `git worktree add <SHA>` must be able to resolve them.
+          repository: ${{ github.repository }}
+          ref: ${{ github.workflow_sha }}
+          # Frozen fixtures require trusted history, never the fork's history.
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Acquire bounded candidate data
+        id: content
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          HEAD_REPOSITORY: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
+          POLICY_DIRECTORY: ${{ runner.temp }}/skill-validation-policy
+        run: ruby .github/scripts/AcquireSkillValidationContent.rb acquire "$GITHUB_WORKSPACE"
+
       - name: Ensure fixture history is available
+        env:
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
         run: |
-          # Capability suites freeze fixtures at historical dotnet/maui merge
-          # commits (the `ref:` values in *.vally.yaml). On a same-repo PR with
-          # fetch-depth:0 these are already present; for FORK PRs the head repo
-          # may not contain them, so fetch each referenced SHA from the base
-          # repo's network. SHAs are discovered dynamically so this never
-          # drifts from the specs.
-          BASE_REPO="${{ github.repository }}"
-          git remote add upstream "https://github.com/${BASE_REPO}.git" 2>/dev/null || true
-          REFS=$(grep -rhoE 'ref:[[:space:]]*[0-9a-f]{40}' .github/skills/*/tests/*.vally.yaml 2>/dev/null \
-            | grep -oE '[0-9a-f]{40}' | sort -u || true)
+          set -euo pipefail
+          git remote add upstream "https://github.com/${TRUSTED_REPOSITORY}.git"
+          REFS=$(ruby .github/scripts/PrepareVallyEvaluation.rb "$GITHUB_WORKSPACE" --list-fixture-refs)
           for sha in $REFS; do
             if git cat-file -e "${sha}^{commit}" 2>/dev/null; then
               echo "fixture ${sha} present"
@@ -634,8 +656,7 @@ jobs:
               echo "Fetching fixture commit ${sha} from upstream..."
               # depth=2: fetch the commit AND its first parent so that
               # `git diff HEAD^ HEAD` works inside worktrees pinned to it.
-              git fetch --no-tags --depth=2 upstream "$sha" 2>/dev/null \
-                || echo "::warning::Could not fetch fixture commit ${sha}; worktree stimuli pinned to it may error."
+              git fetch --no-tags --depth=2 upstream "$sha"
             fi
           done
 
@@ -652,10 +673,6 @@ jobs:
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
-          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
-            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
-          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
@@ -744,6 +761,7 @@ jobs:
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
           BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          SNAPSHOT_TREE: ${{ steps.content.outputs.tree_sha }}
         run: |
           set -e
           if [ -z "${BASE_SHA:-}" ]; then
@@ -751,83 +769,14 @@ jobs:
             echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          SKILL_DIR="${TESTS_PATH%/tests}"
-
-          # Ensure the base commit is available locally (fork PRs may need it
-          # fetched from the base repo, added as `upstream` by the fixture step).
-          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            git fetch --no-tags --depth=1 upstream "$BASE_SHA" 2>/dev/null || true
-          fi
-          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            echo "::warning::Base commit ${BASE_SHA} unavailable — skipping baseline run."
-            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Skill is new on this branch ⇒ no pre-change reviewer to compare to.
-          if ! git cat-file -e "${BASE_SHA}:${SKILL_DIR}/SKILL.md" 2>/dev/null; then
-            echo "No base SKILL.md under ${SKILL_DIR} — new skill; skipping baseline."
-            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Compare the union of base and PR Markdown instructions. This catches
-          # deleted/renamed files while keeping the PR's eval specs and scripts.
-          mapfile -t INSTR < <(
-            {
-              git ls-tree -r --name-only "$BASE_SHA" -- "$SKILL_DIR"
-              git ls-tree -r --name-only HEAD -- "$SKILL_DIR"
-            } | awk -v prefix="${SKILL_DIR}/" '
-              index($0, prefix) == 1 &&
-              index($0, prefix "tests/") != 1 &&
-              /\.md$/ { print }
-            ' | sort -u
-          )
-          if [ ${#INSTR[@]} -eq 0 ]; then
-            echo "No instruction files under ${SKILL_DIR} — skipping baseline."
-            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # If reviewer instructions are identical to base, before == after.
-          if git diff --quiet "$BASE_SHA" HEAD -- "${INSTR[@]}"; then
-            echo "Skill instructions unchanged vs base — before == after; skipping baseline."
-            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # An invoked script or other non-Markdown asset changed with the
-          # instructions would make this a hybrid base/PR reviewer. Skip instead.
-          mapfile -t NON_MARKDOWN_ASSETS < <(
-            {
-              git ls-tree -r --name-only "$BASE_SHA" -- "$SKILL_DIR"
-              git ls-tree -r --name-only HEAD -- "$SKILL_DIR"
-            } | awk -v prefix="${SKILL_DIR}/" '
-              index($0, prefix) == 1 &&
-              index($0, prefix "tests/") != 1 &&
-              !/\.md$/ { print }
-            ' | sort -u
-          )
-          if [ ${#NON_MARKDOWN_ASSETS[@]} -gt 0 ] &&
-             ! git diff --quiet "$BASE_SHA" HEAD -- "${NON_MARKDOWN_ASSETS[@]}"; then
-            echo "Non-Markdown reviewer assets changed — skipping partial baseline."
-            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "Reverting ${#INSTR[@]} instruction file(s) under ${SKILL_DIR} to base ${BASE_SHA} for the baseline run"
-          # Always restore PR content when this step exits, even on error, so the
-          # authoritative "after" run below never sees base content.
-          restore() { git --no-replace-objects restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
+          CONTENT_HELPER="$GITHUB_WORKSPACE/.github/scripts/AcquireSkillValidationContent.rb"
+          restore() { ruby "$CONTENT_HELPER" restore "$GITHUB_WORKSPACE" "$SNAPSHOT_TREE"; }
           trap restore EXIT
-          for f in "${INSTR[@]}"; do
-            if git cat-file -e "${BASE_SHA}:${f}" 2>/dev/null; then
-              git --no-replace-objects checkout "$BASE_SHA" -- "$f"
-            else
-              # File was added by the PR; it did not exist pre-change.
-              rm -f "$f"
-            fi
-          done
+          BASELINE_READY=$(ruby "$CONTENT_HELPER" baseline "$GITHUB_WORKSPACE" "$SNAPSHOT_TREE" "$BASE_SHA" "$TESTS_PATH")
+          if [ "$BASELINE_READY" != "true" ]; then
+            echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
           SPECS=()
           for f in "$TESTS_PATH"/eval*.vally.yaml; do
@@ -891,8 +840,10 @@ jobs:
       # Belt-and-suspenders: guarantee the PR's skill content is restored before
       # the authoritative run, regardless of how the baseline step exited.
       - name: Restore PR skill content
-        if: always()
-        run: git --no-replace-objects restore --staged --worktree --source=HEAD -- .github/skills
+        if: always() && steps.content.outcome == 'success'
+        env:
+          SNAPSHOT_TREE: ${{ steps.content.outputs.tree_sha }}
+        run: ruby .github/scripts/AcquireSkillValidationContent.rb restore "$GITHUB_WORKSPACE" "$SNAPSHOT_TREE"
 
       - name: Revalidate specs and restore trusted fixtures
         env:
@@ -902,10 +853,6 @@ jobs:
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
-          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
-            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
-          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
@@ -1086,15 +1033,25 @@ jobs:
       contents: read
     timeout-minutes: 30
     steps:
-      - name: Checkout PR content
+      - name: Checkout trusted workflow source
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
-          sparse-checkout: |
-            .github/skills
-            .github/plugin.json
+          repository: ${{ github.repository }}
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: .github
           persist-credentials: false
+
+      - name: Acquire bounded candidate data
+        id: content
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          HEAD_REPOSITORY: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || needs.execution-mode.outputs.trusted_default_sha || github.sha }}
+          POLICY_DIRECTORY: ${{ runner.temp }}/skill-validation-policy
+        run: ruby .github/scripts/AcquireSkillValidationContent.rb acquire "$GITHUB_WORKSPACE"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -1109,10 +1066,6 @@ jobs:
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
-          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
-            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
-          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" ".github/skills/code-review/tests" --validate-only
