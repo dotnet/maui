@@ -13,7 +13,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | --- | --- | --- | --- |
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
-| `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Adds or updates a `Test Failure Review` comment. |
+| `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
@@ -62,6 +62,8 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 6. minimizes (collapses) the command comment as resolved once authorized.
 
 The workflow intentionally does not handle `/review tests`; that subcommand is reserved for the test-failure review workflow.
+
+GitHub Actions webhook deliveries can occasionally be delayed or dropped during an Actions incident. A deterministic scheduled fallback (`.github/workflows/review-trigger-recovery.yml`) polls recent commands, waits 25 minutes so both bounded trigger jobs have time to finish, rechecks the commenter's current repository permission, and dispatches the same trusted review workflow. The default-branch commit used by the first scheduled run is a permanent lower bound, preventing already-handled commands from being replayed when the fallback is introduced. Processed commands are marked so a delayed webhook cannot trigger a duplicate review.
 
 **Note**: Command comments are minimized (collapsed as "Resolved") after authorization to reduce conversation clutter while preserving the comment history. Unauthorized or malformed command comments remain fully visible.
 
@@ -138,13 +140,34 @@ Because gh-aw slash commands match only the first command token, the workflow li
 - change code;
 - start the full PR review pipeline.
 
+The workflow uses one skill,
+[`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
+and comment formatting. The local runner uses that same skill. Both use GPT-6 Astra
+(`gpt-6-astra`), as do the offline attribution evaluations and their judge.
+
 It gathers evidence from:
 
-- GitHub PR metadata, labels, changed files, and check rollup;
+- GitHub PR metadata, the actual code diff, changed files, and check rollup;
 - Azure DevOps build metadata, timelines, and build logs;
 - Helix references when available for device tests;
 - optional authenticated AzDO data when `AZDO_TOKEN` or local Azure CLI auth is available;
-- PR scope, including changed platforms, areas, and test files.
+- the latest five completed runs on the PR's target branch for each pipeline.
+
+It always covers `maui-pr`, `maui-pr-devicetests`, and `maui-pr-uitests`. For each,
+it compares the current run with the latest five completed runs of the same
+pipeline definition on `refs/heads/<pr.baseRefName>` (for example,
+`refs/heads/net11.0` for a PR targeting `net11.0`), never the PR source/merge ref.
+These are the latest runs at review time, not only runs predating the PR build.
+When there is current evidence to evaluate, it queries all three target-branch
+windows even if one current PR build is missing or unreadable. Missing or
+unreadable historical samples are disclosed when they affect attribution.
+An optional build or check input
+prioritizes evidence; it does not remove the other pipelines from the report.
+
+Previous PR runs are not required and their absence is not a coverage gap.
+The skill connects failure diagnostics to changed code and compares matching
+reasons/configurations across all five target samples to distinguish existing defects.
+Green device jobs require actual test-result confirmation.
 
 Then it posts a `Test Failure Review` comment that classifies failures as:
 
@@ -153,7 +176,36 @@ Then it posts a `Test Failure Review` comment that classifies failures as:
 - **Needs human investigation**
 - **Insufficient data**
 
-The comment includes status badges, a short summary, a per-failure table, recommended action, and collapsible evidence details.
+The workflow posts exactly one concise comment using the original styled layout:
+a visible author/commit header, Scope/Commit badges, and two closed
+top-level sibling accordions, **CI Analysis** and **Follow-up**. CI Analysis
+contains three nested sections: **maui-pr**,
+**maui-pr-devicetests**, and **maui-pr-uitests**. Each failure gets its attribution,
+a direct test-result/log/Helix link, and one short reason. Passing pipelines get
+one line; missing evidence is mentioned only in its pipeline. Sampling inventories
+and repeated coverage summaries stay out of the comment; detailed evidence stays
+in the context artifact. There is no overall verdict, Verdict badge, or Summary
+section; attribution is reported per failure rather than obscured by an aggregate
+`Inconclusive` label. Follow-up contains an action only when needed and the
+`/review tests` refresh instruction.
+
+If no current-PR results exist, gathering stops before diff, known-issue,
+and target-history analysis. It still posts a short **Evaluation skipped** report
+asking for `/azp run` (or to wait if CI is already running). The local runner uses
+that deterministic report, with the same badges and accordions, without invoking
+Copilot. If just one pipeline lacks
+results, the others are evaluated and the report requests `/azp run <pipeline>`
+for the missing one. Actual build/restore/linker or host failures remain actionable
+even when they prevent tests from starting; zero failed tests is not zero results.
+Existing runs whose evidence was omitted, inaccessible, or not verified are
+reported as **Insufficient data**, with a run link and `/review tests` refresh
+guidance, not `No results available` or an unnecessary `/azp run`. Check discovery
+deduplicates explicitly by name and URL so all three pipelines survive the
+collector's ordered-dictionary representation.
+
+This is failure attribution, not merge approval. The skill does not use the
+legacy gatherer's deterministic merge-readiness verdict as a causal conclusion.
+The workflow no longer publishes visual asset branches or appends image panels.
 
 ### Local usage
 
@@ -177,6 +229,17 @@ To post the generated comment:
 ```powershell
 pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800 -BuildId 1443464 -PostComment
 ```
+
+The local runner preserves the same styled, pipeline-grouped report; it does
+not wrap or replace the skill's report. It retains the canonical
+`<!-- Tests Failure -->` marker and adds a separate hidden local-ownership marker
+so subsequent local runs update the local comment, not a workflow-owned report.
+`-DryRun` prevents posting even when `-PostComment` is also supplied.
+The report process has scoped access to the run's artifact directory, including
+when `-OutputDirectory` is outside the checkout. Its default tools can only inspect
+the frozen evidence (file readers and `jq`); the runner saves the final response
+instead of granting model write access or reusing an earlier report. A missing or
+unreadable context is an access problem, not proof that CI has no results.
 
 To gather evidence without invoking Copilot:
 
@@ -226,7 +289,16 @@ The top-level title is always:
 ## Tests Failure Analysis
 ```
 
-The verdict details and "Test Failure Review" label live in badges and in the expanded review session.
+The header gives the author and analyzed commit, with two badges showing the
+`CI failures` scope and short SHA. Expand **CI Analysis** for the
+three pipeline sections with related/unrelated/uncertain failures and direct
+evidence links. Expand its sibling **Follow-up** for actions and refresh.
+Failure labels use &#x1F534; for **Likely PR-caused**, &#x1F7E2; for
+**Likely unrelated**, and &#x1F7E1; for **Needs human investigation**.
+Green indicates attribution, not a passing test; yellow indicates unresolved causality.
+Missing results produce `/azp run` guidance, not a long evaluation.
+This is not merge approval; incomplete evidence remains explicit in its pipeline.
+The canonical layout lives in the skill rather than a separate caller template.
 
 ## Recommended workflow for maintainers
 
@@ -262,7 +334,7 @@ Important safeguards:
 
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
-| `/review` does nothing | The commenter does not have write/maintain/admin access, or the comment is not on a PR. | Ask a maintainer to run the command on the PR. |
+| `/review` does nothing | The commenter does not have write/maintain/admin access, the comment is not on a PR, or GitHub Actions delayed the webhook. | Authorized commands should be recovered automatically within about 35 minutes. Check GitHub Status if Actions is degraded. |
 | `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
 | The AI Summary looks stale | New commits or author comments landed after the last review. | Wait for the automatic rerun queue, or ask a maintainer to run `/review` for an immediate review. |
@@ -272,6 +344,8 @@ Important safeguards:
 ## Related files
 
 - `.github/workflows/review-trigger.yml` — GitHub comment trigger for `/review`.
+- `.github/workflows/review-trigger-recovery.yml` — scheduled fallback for missed `/review` webhooks.
+- `.github/scripts/Recover-MissedReviewCommands.ps1` — deterministic recovery and duplicate-prevention logic.
 - `eng/pipelines/ci-copilot.yml` — Azure DevOps PR review pipeline.
 - `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
