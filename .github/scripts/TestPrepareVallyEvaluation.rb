@@ -1710,6 +1710,25 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, "GitHub /user transport failed"
   end
 
+  def test_token_selector_defaults_missing_pool_diagnostic
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    stderr, status = run_token_selector_without_tokens
+
+    refute status.success?
+    assert_includes stderr, "No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
+  end
+
+  def test_token_selector_uses_configured_missing_pool_diagnostic
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    stderr, status = run_token_selector_without_tokens(pool_name: "skill-evaluation-pat-pool")
+
+    refute status.success?
+    assert_includes stderr, "No COPILOT_PAT_* secrets are configured in the skill-evaluation-pat-pool environment"
+    refute_includes stderr, "in the copilot-pat-pool environment"
+  end
+
   def test_token_selector_combines_run_attempt_and_matrix_entropy
     skip "token selector not provided" unless TOKEN_SELECTOR
 
@@ -1799,6 +1818,27 @@ class TestPrepareVallyEvaluation < Minitest::Test
   end
 
   private
+
+  def run_token_selector_without_tokens(pool_name: nil)
+    Dir.mktmpdir("select-vally-token-") do |root|
+      executable = File.join(root, "executable")
+      write_executable(executable, "#!/usr/bin/env bash\nexit 0\n")
+      env = { "COPILOT_PAT_POOL_NAME" => pool_name }
+      _stdout, stderr, status = Open3.capture3(
+        env,
+        "bash",
+        TOKEN_SELECTOR,
+        File.join(root, "output"),
+        executable,
+        executable,
+        executable,
+        root,
+        File.join(root, "probe"),
+        "gpt-5.6-sol"
+      )
+      [stderr, status]
+    end
+  end
 
   def initialize_git_repo
     git("init", "--quiet")

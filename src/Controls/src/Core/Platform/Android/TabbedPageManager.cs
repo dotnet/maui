@@ -144,7 +144,6 @@ public class TabbedPageManager
 			// Defensively unsubscribe: SetTabLayout only unsubscribes once RootViewChanged fires,
 			// which may never happen if torn down first, otherwise leaking this manager.
 			_context.GetNavigationRootManager().RootViewChanged -= RootViewChanged;
-
 			_viewPager.LayoutChange -= OnLayoutChanged;
 
 			if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)

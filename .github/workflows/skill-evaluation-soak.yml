@@ -1,5 +1,8 @@
 name: Live Skill Evaluation Soak
 
+# Set the repository variable SKILL_VALIDATION_STATIC_ONLY to exactly "true"
+# to validate the soak spec and publish results without starting the live job.
+
 on:
   schedule:
     - cron: '0 5 * * 0'
@@ -26,17 +29,126 @@ env:
   NODE_VERSION: "22"
 
 jobs:
-  code-review:
-    name: code-review live soak (advisory)
+  execution-mode:
+    name: Resolve execution mode
     if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
-    environment: copilot-pat-pool
-    timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      manual_source_valid: ${{ steps.mode.outputs.manual_source_valid }}
+      static_only: ${{ steps.mode.outputs.static_only }}
+      trusted_default_sha: ${{ steps.mode.outputs.trusted_default_sha }}
+    steps:
+      - name: Resolve workflow source and operating mode
+        id: mode
+        uses: actions/github-script@v7
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REF: ${{ github.ref }}
+          EVENT_REF_TYPE: ${{ github.ref_type }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          STATIC_ONLY_SETTING: ${{ vars.SKILL_VALIDATION_STATIC_ONLY }}
+        with:
+          script: |
+            const eventName = process.env.EVENT_NAME || '';
+            const eventRef = process.env.EVENT_REF || '';
+            const eventRefType = process.env.EVENT_REF_TYPE || '';
+            const defaultBranch = process.env.DEFAULT_BRANCH || '';
+            const workflowSha = process.env.WORKFLOW_SHA || '';
+            const staticOnly = process.env.STATIC_ONLY_SETTING === 'true';
+
+            let trustedDefaultSha = '';
+            if (defaultBranch) {
+              try {
+                const response = await github.rest.repos.getCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: defaultBranch,
+                });
+                trustedDefaultSha = response.data.sha || '';
+              } catch (error) {
+                core.warning(`Could not resolve the current default-branch commit: ${error.message}`);
+              }
+            }
+
+            const expectedRef = defaultBranch ? `refs/heads/${defaultBranch}` : '';
+            const manualSourceValid = eventName !== 'workflow_dispatch' || (
+              eventRefType === 'branch' &&
+              eventRef === expectedRef &&
+              Boolean(workflowSha) &&
+              Boolean(trustedDefaultSha) &&
+              workflowSha === trustedDefaultSha
+            );
+
+            core.setOutput('manual_source_valid', String(manualSourceValid));
+            core.setOutput('static_only', String(staticOnly));
+            core.setOutput('trusted_default_sha', trustedDefaultSha);
+
+            if (eventName === 'workflow_dispatch' && !manualSourceValid) {
+              core.warning('Manual execution requires the current default branch and matching workflow source.');
+            }
+
+  static-check:
+    name: Static validation
+    needs: execution-mode
+    if: always() && !cancelled() && github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout trusted default branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ needs.execution-mode.outputs.trusted_default_sha || github.workflow_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate live soak spec
+        run: >-
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint
+          --eval-spec .github/skills/code-review/tests/soak.capability.vally.yaml
+          --strict
+
+  code-review:
+    name: code-review live soak (advisory)
+    needs: [execution-mode, static-check]
+    if: >-
+      always() && !cancelled() &&
+      github.repository == 'dotnet/maui' &&
+      needs.execution-mode.result == 'success' &&
+      needs.execution-mode.outputs.static_only != 'true' &&
+      needs.execution-mode.outputs.manual_source_valid == 'true' &&
+      needs.execution-mode.outputs.trusted_default_sha != '' &&
+      (
+        github.event_name != 'workflow_dispatch' || (
+          github.ref_type == 'branch' &&
+          github.event.repository.default_branch != '' &&
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          github.workflow_sha != '' &&
+          github.workflow_sha == needs.execution-mode.outputs.trusted_default_sha
+        )
+      ) &&
+      needs.static-check.result == 'success'
+    runs-on: ubuntu-latest
+    environment: skill-evaluation-pat-pool
+    timeout-minutes: 90
+    outputs:
+      eval_exit_code: ${{ steps.soak.outputs.exit_code }}
+      junit_present: ${{ steps.soak.outputs.junit_present }}
+      report_valid: ${{ steps.soak.outputs.report_valid }}
+      eval_passed: ${{ steps.soak.outputs.eval_passed }}
+    steps:
+      - name: Checkout trusted default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.execution-mode.outputs.trusted_default_sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -53,12 +165,6 @@ jobs:
           "$VALLY_VERSION"
           "$GITHUB_OUTPUT"
 
-      - name: Validate live soak spec
-        run: >-
-          "${{ steps.vally-runtime.outputs.vally_bin }}" lint
-          --eval-spec .github/skills/code-review/tests/soak.capability.vally.yaml
-          --strict
-
       - name: Select Copilot token
         id: select-token
         env:
@@ -72,6 +178,7 @@ jobs:
           COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
           COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
           COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_POOL_NAME: skill-evaluation-pat-pool
         run: |
           set -euo pipefail
           .github/scripts/SelectVallyToken.sh \
@@ -119,6 +226,34 @@ jobs:
           printf '%s\n' "$rc" > "$RESULTS_PATH/eval-exit-code.txt"
 
           junit=$(find "$RESULTS_PATH" -name eval-results.junit.xml -type f | head -1 || true)
+          junit_present=false
+          report_valid=false
+          eval_passed=na
+          if [ -n "$junit" ]; then
+            junit_present=true
+            report_status=$(
+              ruby -r rexml/document -e '
+                document = REXML::Document.new(File.read(ARGV.fetch(0)))
+                suites = REXML::XPath.match(document, "//testsuite")
+                abort "missing testsuite" if suites.empty?
+                verdicts = suites.map do |suite|
+                  property = REXML::XPath.first(suite, "./properties/property[@name=\"passed\"]")
+                  value = property&.attributes&.[]("value")
+                  abort "invalid suite verdict" unless %w[true false].include?(value)
+                  value
+                end
+                puts(verdicts.all? { |value| value == "true" } ? "true" : "false")
+              ' "$junit" 2>/dev/null || true
+            )
+            if [ "$report_status" = "true" ] || [ "$report_status" = "false" ]; then
+              report_valid=true
+              eval_passed=$report_status
+            fi
+          fi
+          echo "junit_present=$junit_present" >> "$GITHUB_OUTPUT"
+          echo "report_valid=$report_valid" >> "$GITHUB_OUTPUT"
+          echo "eval_passed=$eval_passed" >> "$GITHUB_OUTPUT"
+
           {
             echo "## Code-review live soak"
             echo
@@ -126,7 +261,7 @@ jobs:
             echo
             echo "- Vally exit code: \`$rc\`"
             echo "- Trials per stimulus: \`$RUNS\`"
-            if [ -n "$junit" ]; then
+            if [ "$report_valid" = "true" ]; then
               score=$(sed -nE 's/.*name="overallScore" value="([^"]+)".*/\1/p' "$junit" | head -1)
               passed=$(sed -nE 's/.*name="passed" value="([^"]+)".*/\1/p' "$junit" | head -1)
               root=$(grep -m1 '<testsuites' "$junit" || true)
@@ -135,9 +270,12 @@ jobs:
               echo "- Suite score: \`${score:-unavailable}\`"
               echo "- Suite verdict: \`${passed:-unavailable}\`"
               echo "- Trial failures/errors: \`${failures:-0}/${errors:-0}\`"
-            else
+            elif [ "$junit_present" != "true" ]; then
               echo "::warning::Live soak produced no JUnit report under $RESULTS_PATH"
               echo "- Suite result: \`incomplete (no JUnit report)\`"
+            else
+              echo "::warning::Live soak produced an invalid JUnit report under $RESULTS_PATH"
+              echo "- Suite result: \`incomplete (invalid JUnit report)\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -153,3 +291,101 @@ jobs:
           path: ${{ steps.vally-runtime.outputs.results_root }}/live-soak-results/
           include-hidden-files: true
           retention-days: 30
+
+  report-status:
+    name: Report status
+    needs: [execution-mode, static-check, code-review]
+    if: always() && !cancelled() && github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      statuses: write
+    steps:
+      - name: Publish workflow result
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ needs.execution-mode.outputs.manual_source_valid == 'true' && needs.execution-mode.outputs.trusted_default_sha || github.sha || github.workflow_sha }}
+          MANUAL_SOURCE_VALID: ${{ needs.execution-mode.outputs.manual_source_valid }}
+          STATIC_ONLY: ${{ needs.execution-mode.outputs.static_only }}
+          STATIC_RESULT: ${{ needs.static-check.result }}
+          LIVE_RESULT: ${{ needs.code-review.result }}
+          LIVE_EXIT_CODE: ${{ needs.code-review.outputs.eval_exit_code }}
+          LIVE_JUNIT_PRESENT: ${{ needs.code-review.outputs.junit_present }}
+          LIVE_REPORT_VALID: ${{ needs.code-review.outputs.report_valid }}
+          LIVE_EVAL_PASSED: ${{ needs.code-review.outputs.eval_passed }}
+        with:
+          script: |
+            const headSha = process.env.HEAD_SHA || '';
+            const manualSourceValid = process.env.MANUAL_SOURCE_VALID === 'true';
+            const staticOnly = process.env.STATIC_ONLY === 'true';
+            const staticResult = process.env.STATIC_RESULT || '';
+            const liveResult = process.env.LIVE_RESULT || '';
+            const liveExitCode = process.env.LIVE_EXIT_CODE || '';
+            const liveJunitPresent = process.env.LIVE_JUNIT_PRESENT === 'true';
+            const liveReportValid = process.env.LIVE_REPORT_VALID === 'true';
+            const liveEvalPassed = process.env.LIVE_EVAL_PASSED === 'true';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let conclusion = 'failure';
+            let title = 'Live evaluation incomplete';
+            if (!manualSourceValid) {
+              title = 'Manual execution source is not supported';
+            } else if (staticResult !== 'success') {
+              title = 'Static validation failed';
+            } else if (staticOnly) {
+              conclusion = 'success';
+              title = 'passed (static only)';
+            } else if (
+              liveResult === 'success' &&
+              liveExitCode === '0' &&
+              liveJunitPresent &&
+              liveReportValid &&
+              liveEvalPassed
+            ) {
+              conclusion = 'success';
+              title = 'Live skill evaluation completed';
+            } else if (liveResult === 'success' && !liveJunitPresent) {
+              title = 'Live evaluation incomplete: no JUnit report';
+            } else if (liveResult === 'success' && !liveReportValid) {
+              title = 'Live evaluation incomplete: invalid JUnit report';
+            } else if (liveResult === 'success' && (liveExitCode !== '0' || !liveEvalPassed)) {
+              title = 'Live skill evaluation failed';
+            } else if (liveResult === 'skipped') {
+              title = 'Live evaluation unexpectedly skipped';
+            } else {
+              title = `Live evaluation incomplete: ${liveResult || 'unknown'}`;
+            }
+
+            if (!headSha) {
+              core.setFailed('No commit is available for the workflow result.');
+              return;
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: headSha,
+              state: conclusion === 'success' ? 'success' : 'failure',
+              context: 'skill-evaluation-soak',
+              description: title,
+              target_url: runUrl,
+            });
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Skill Evaluation Soak',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title,
+                summary: `[View full results](${runUrl})`,
+              },
+              details_url: runUrl,
+            });
+
+            if (conclusion !== 'success') {
+              core.setFailed(title);
+            }
