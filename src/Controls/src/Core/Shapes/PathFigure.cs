@@ -15,9 +15,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
 		readonly WeakNotifyCollectionChangedProxy _segmentsCollectionProxy = new();
-		readonly List<WeakNotifyPropertyChangedProxy> _segmentProxies = new();
+		readonly List<PathSegment> _subscribedSegments = new();
 		NotifyCollectionChangedEventHandler _segmentsCollectionChanged;
-		PropertyChangedEventHandler _segmentPropertyChanged;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathFigure"/> class.
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Segments = new PathSegmentCollection();
 		}
 
-		~PathFigure() => UnsubscribeAllSegments();
+		~PathFigure() => _segmentsCollectionProxy.Unsubscribe();
 
 		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
 		public static readonly BindableProperty SegmentsProperty =
@@ -104,14 +103,14 @@ namespace Microsoft.Maui.Controls.Shapes
 		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
 		{
 			if (oldCollection != null)
-				UnsubscribeAllSegments();
+				_segmentsCollectionProxy.Unsubscribe();
+
+			UnsubscribeFromAllPathSegmentPropertyChanged();
 
 			if (newCollection == null)
 				return;
 
 			_segmentsCollectionChanged ??= OnPathSegmentCollectionChanged;
-			_segmentPropertyChanged ??= OnPathSegmentPropertyChanged;
-
 			_segmentsCollectionProxy.Subscribe(newCollection, _segmentsCollectionChanged);
 
 			foreach (var newPathSegment in newCollection)
@@ -165,41 +164,26 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void SubscribeToPathSegmentPropertyChanged(PathSegment pathSegment)
 		{
-			for (int i = 0; i < _segmentProxies.Count; i++)
-			{
-				if (_segmentProxies[i].TryGetSource(out var proxySource) && ReferenceEquals(proxySource, pathSegment))
-					return;
-			}
+			if (_subscribedSegments.Contains(pathSegment))
+				return;
 
-			_segmentProxies.Add(new WeakNotifyPropertyChangedProxy(pathSegment, _segmentPropertyChanged));
+			pathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+			_subscribedSegments.Add(pathSegment);
 		}
 
 		void UnsubscribeFromPathSegmentPropertyChanged(PathSegment pathSegment)
 		{
-			for (int i = _segmentProxies.Count - 1; i >= 0; i--)
-			{
-				var proxy = _segmentProxies[i];
-				if (proxy.TryGetSource(out var proxySource) && ReferenceEquals(proxySource, pathSegment))
-				{
-					proxy.Unsubscribe();
-					_segmentProxies.RemoveAt(i);
-					break;
-				}
-			}
-		}
+			if (!_subscribedSegments.Contains(pathSegment))
+				return;
 
-		void UnsubscribeAllSegments()
-		{
-			_segmentsCollectionProxy.Unsubscribe();
-			UnsubscribeFromAllPathSegmentPropertyChanged();
+			pathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
+			_subscribedSegments.Remove(pathSegment);
 		}
 
 		void UnsubscribeFromAllPathSegmentPropertyChanged()
 		{
-			for (int i = 0; i < _segmentProxies.Count; i++)
-				_segmentProxies[i].Unsubscribe();
-
-			_segmentProxies.Clear();
+			for (int i = _subscribedSegments.Count - 1; i >= 0; i--)
+				UnsubscribeFromPathSegmentPropertyChanged(_subscribedSegments[i]);
 		}
 
 		void OnPathSegmentPropertyChanged(object sender, PropertyChangedEventArgs e)

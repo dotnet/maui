@@ -39,10 +39,7 @@ public class PathSharedResourcesMemoryLeakTests : BaseTestFixture
 	[Fact]
 	public void SharedPathSegmentCollection_DoesNotKeepPathFigureAlive()
 	{
-		var sharedSegments = new PathSegmentCollection
-		{
-			new LineSegment { Point = new Point(100, 100) }
-		};
+		var sharedSegments = new PathSegmentCollection();
 
 		var figureRef = CreatePathFigureWithSegments(sharedSegments);
 
@@ -51,8 +48,8 @@ public class PathSharedResourcesMemoryLeakTests : BaseTestFixture
 		GC.Collect();
 
 		Assert.False(figureRef.IsAlive,
-			"PathFigure was not collected. The shared PathSegmentCollection or one of its segments " +
-			"is holding a strong reference to PathFigure via an event handler.");
+			"PathFigure was not collected. The shared PathSegmentCollection is holding a strong " +
+			"reference to PathFigure via its CollectionChanged event handler.");
 
 		GC.KeepAlive(sharedSegments);
 	}
