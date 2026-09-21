@@ -25,7 +25,7 @@ static class XamlDiagnosticHelpers
 	static (IXmlLineInfo lineInfo, string errorMessage) GetExceptionInfo(Exception exception)
 	{
 		if (exception is XamlParseException xpe)
-			return (xpe.XmlInfo, xpe.UnformattedMessage);
+			return (xpe.XmlInfo ?? new XmlLineInfo(), xpe.UnformattedMessage);
 
 		if (exception is XmlException xmlEx)
 			return (new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition), StripLineInfoFromXmlExceptionMessage(xmlEx.Message));
@@ -46,9 +46,6 @@ static class XamlDiagnosticHelpers
 			return new SourceInfo(Location.Create(filePath, new TextSpan(), new LinePositionSpan()), filePath, lineInfo.LineNumber, lineInfo.LinePosition, null);
 
 		if (TryGetLineInfoLocation(filePath, sourceText, lineInfo, out var location, out var lineNumber, out var columnNumber, out var excerpt))
-			return new SourceInfo(location, filePath, lineNumber, columnNumber, excerpt);
-
-		if (TryGetMalformedMarkupExtensionLocation(filePath, sourceText, out location, out lineNumber, out columnNumber, out excerpt))
 			return new SourceInfo(location, filePath, lineNumber, columnNumber, excerpt);
 
 		return new SourceInfo(Location.Create(filePath, new TextSpan(), new LinePositionSpan()), filePath, 0, 0, null);
@@ -80,42 +77,12 @@ static class XamlDiagnosticHelpers
 		return true;
 	}
 
-	static bool TryGetMalformedMarkupExtensionLocation(string filePath, SourceText sourceText, out Location location, out int lineNumber, out int columnNumber, out string? excerpt)
-	{
-		location = Location.None;
-		lineNumber = 0;
-		columnNumber = 0;
-		excerpt = null;
-
-		for (var i = 0; i < sourceText.Lines.Count; i++)
-		{
-			var line = sourceText.Lines[i];
-			var lineText = sourceText.ToString(line.Span);
-			var match = Regex.Match(lineText, @"[\w:.-]+\s*=\s*[""']\{x:Static\}[""']");
-			if (!match.Success)
-				continue;
-
-			excerpt = match.Value.Trim();
-			lineNumber = i + 1;
-			columnNumber = match.Index + 1;
-			location = CreateLocation(filePath, sourceText, i, match.Index, Math.Max(1, match.Length));
-			return true;
-		}
-
-		return false;
-	}
-
 	static (int start, int length) GetBestLineExcerpt(string lineText, int columnIndex)
 	{
 		foreach (Match match in Regex.Matches(lineText, @"[\w:.-]+\s*=\s*(?:""[^""]*""|'[^']*')"))
 		{
 			if (columnIndex >= match.Index && columnIndex <= match.Index + match.Length)
 				return (match.Index, match.Length);
-		}
-
-		foreach (Match match in Regex.Matches(lineText, @"[\w:.-]+\s*=\s*[""'][^""']*\{x:Static\}[^""']*[""']"))
-		{
-			return (match.Index, match.Length);
 		}
 
 		var trimmed = lineText.Trim();

@@ -80,6 +80,8 @@ public partial class HomePage : ContentPage
 			Assert.Contains("Line: 2", message, System.StringComparison.Ordinal);
 			Assert.Contains("IconSource", message, System.StringComparison.Ordinal);
 			Assert.Contains("{x:Static}", message, System.StringComparison.Ordinal);
+			Assert.Contains("Syntax for x:Static", message, System.StringComparison.Ordinal);
+			Assert.DoesNotContain("Index was out of range", message, System.StringComparison.Ordinal);
 		}
 	}
 }
