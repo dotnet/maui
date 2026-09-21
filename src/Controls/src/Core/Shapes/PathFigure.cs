@@ -165,7 +165,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		void SubscribeToPathSegmentPropertyChanged(PathSegment pathSegment)
 		{
 			if (_subscribedSegments.Contains(pathSegment))
+			{
 				return;
+			}
 
 			pathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
 			_subscribedSegments.Add(pathSegment);
@@ -174,7 +176,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		void UnsubscribeFromPathSegmentPropertyChanged(PathSegment pathSegment)
 		{
 			if (!_subscribedSegments.Contains(pathSegment))
+			{
 				return;
+			}
 
 			pathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
 			_subscribedSegments.Remove(pathSegment);
@@ -183,7 +187,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		void UnsubscribeFromAllPathSegmentPropertyChanged()
 		{
 			for (int i = _subscribedSegments.Count - 1; i >= 0; i--)
+			{
 				UnsubscribeFromPathSegmentPropertyChanged(_subscribedSegments[i]);
+			}
 		}
 
 		void OnPathSegmentPropertyChanged(object sender, PropertyChangedEventArgs e)
