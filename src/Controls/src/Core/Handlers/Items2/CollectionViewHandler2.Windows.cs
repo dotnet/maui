@@ -514,10 +514,8 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
 
-				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
-				int index = 0;
-
-				foreach (var nativeItem in itemList)
+				// Use index-based access to avoid issues while the collection is updating.
+				for (int index = 0; index < itemList.Count; index++)
 				{
 					var nativeItem = itemList[index];
 					if (nativeItem is ItemTemplateContext2 itemPair && ItemsView.SelectedItems.Contains(itemPair.Item))

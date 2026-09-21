@@ -215,7 +215,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override void OnApplyTemplate()
 	{
-		CleanUpAccessibilityHelper();
+		CancelPendingAccessibilityFocus();
 		CleanUpAutomationEvents();
 
 		base.OnApplyTemplate();
