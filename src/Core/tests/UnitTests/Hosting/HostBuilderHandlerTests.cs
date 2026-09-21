@@ -1,8 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Platform;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Hosting
@@ -101,6 +103,42 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			var handler = Assert.IsType<ContextAwareHandlerStub>(new ViewStub().ToHandler(mauiContext));
 
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
+		}
+
+		[Fact]
+		public void ApplicationHandlerFactoriesReceiveTheCurrentMauiContext()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<IApplication>(services =>
+						new ContextAwareElementHandlerStub<IApplication>(
+							new ContextAwareService(services.GetRequiredService<IMauiContext>()))))
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var application = Substitute.For<IApplication>();
+
+			new object().SetApplicationHandler(application, mauiContext);
+
+			var handler = Assert.IsType<ContextAwareElementHandlerStub<IApplication>>(application.Handler);
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
+		}
+
+		[Fact]
+		public void WindowHandlerFactoriesReceiveTheCurrentMauiContext()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<IWindow>(services =>
+						new ContextAwareElementHandlerStub<IWindow>(
+							new ContextAwareService(services.GetRequiredService<IMauiContext>()))))
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var window = Substitute.For<IWindow>();
+
+			new object().SetWindowHandler(window, mauiContext);
+
+			var handler = Assert.IsType<ContextAwareElementHandlerStub<IWindow>>(window.Handler);
 			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
 		}
 
@@ -409,6 +447,20 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 
 			public ContextAwareService ContextAwareService { get; }
+		}
+
+		class ContextAwareElementHandlerStub<TVirtualView> : ElementHandler<TVirtualView, object>
+			where TVirtualView : class, IElement
+		{
+			public ContextAwareElementHandlerStub(ContextAwareService contextAwareService)
+				: base(new PropertyMapper<TVirtualView>())
+			{
+				ContextAwareService = contextAwareService;
+			}
+
+			public ContextAwareService ContextAwareService { get; }
+
+			protected override object CreatePlatformElement() => new object();
 		}
 
 		class ContextAwareService

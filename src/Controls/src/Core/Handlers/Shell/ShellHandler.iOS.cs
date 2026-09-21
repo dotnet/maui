@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting.Internal;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -172,10 +173,11 @@ namespace Microsoft.Maui.Controls.Handlers
         protected virtual IShellItemRenderer CreateShellItemRenderer(ShellItem item)
         {
             // Resolve through the handler registry so custom ShellItemHandler subclasses
-            // registered via AddHandler<ShellItem, THandler>() are honored, matching Android.
-            var handler = MauiContext!.Handlers.GetHandler(item.GetType()) as ShellItemHandler
+            // registered for ShellItem are honored, matching Android.
+            var mauiContext = item.FindMauiContext() ?? MauiContext!;
+            var handler = mauiContext.Handlers.GetHandler(item.GetType(), mauiContext) as ShellItemHandler
                  ?? new ShellItemHandler();
-            handler.SetMauiContext(item.FindMauiContext()!);
+            handler.SetMauiContext(mauiContext);
             handler.SetVirtualView(item);
             return new ShellItemHandler.ShellItemHandlerAdapter(handler);
         }
@@ -193,10 +195,11 @@ namespace Microsoft.Maui.Controls.Handlers
         protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection)
         {
             // Resolve through the handler registry so custom ShellSectionHandler subclasses
-            // registered via AddHandler<ShellSection, THandler>() are honored, matching Android.
-            var handler = MauiContext!.Handlers.GetHandler(shellSection.GetType()) as ShellSectionHandler
+            // registered for ShellSection are honored, matching Android.
+            var mauiContext = shellSection.FindMauiContext() ?? MauiContext!;
+            var handler = mauiContext.Handlers.GetHandler(shellSection.GetType(), mauiContext) as ShellSectionHandler
                  ?? new ShellSectionHandler();
-            handler.SetMauiContext(shellSection.FindMauiContext()!);
+            handler.SetMauiContext(mauiContext);
             handler.SetVirtualView(shellSection);
             return new ShellSectionHandler.ShellSectionHandlerAdapter(handler);
         }

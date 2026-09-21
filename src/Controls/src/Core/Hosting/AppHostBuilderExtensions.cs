@@ -180,7 +180,11 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0618 // Type or member is obsolete
 #if !TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
+#if WINDOWS
+		handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
+#else
 		handlersCollection.AddHandler<Cell>(static _ => new Handlers.Compatibility.CellRenderer());
+#endif
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler<ImageCell>(static _ => new Handlers.Compatibility.ImageCellRenderer());

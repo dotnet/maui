@@ -118,4 +118,12 @@ namespace Microsoft.Maui.Hosting.Internal
 		}
 
 	}
+
+	static class MauiHandlersFactoryExtensions
+	{
+		internal static IElementHandler? GetHandler(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
+			handlers is MauiHandlersFactory handlersFactory
+				? handlersFactory.GetHandler(type, mauiContext)
+				: handlers.GetHandler(type);
+	}
 }
