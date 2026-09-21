@@ -32,6 +32,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override string TestsResultsFinalPath => _resultsPath!;
 
+		internal int ExitCode { get; private set; } = 1;
+
 		protected override int? MaxParallelThreads => Environment.ProcessorCount;
 
 		protected override IDevice Device { get; } = new TestDevice();
@@ -58,6 +60,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public async Task<string?> RunTestsAsync()
 		{
+			ExitCode = 1;
 			TestsCompleted += OnTestsCompleted;
 
 			try
@@ -66,6 +69,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			}
 			catch (Exception ex)
 			{
+				ExitCode = 1;
 				_logger.WriteLine(ex.ToString());
 			}
 			TestsCompleted -= OnTestsCompleted;
@@ -73,6 +77,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			if (File.Exists(TestsResultsFinalPath))
 				return TestsResultsFinalPath;
 
+			ExitCode = 1;
 			return null;
 
 			void OnTestsCompleted(object? sender, TestRunResult results)
@@ -84,8 +89,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 					$"Failed: {results.FailedTests} " +
 					$"Ignored: {results.SkippedTests}";
 
+				ExitCode = results.FailedTests == 0 ? 0 : 1;
 				_logger.WriteLine("test-execution-summary" + message);
-				_logger.WriteLine("return-code " + (results.FailedTests == 0 ? 0 : 1));
+				_logger.WriteLine("return-code " + ExitCode);
 			}
 		}
 	}

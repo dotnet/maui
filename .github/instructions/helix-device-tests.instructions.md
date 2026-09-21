@@ -197,6 +197,12 @@ preserves readable results for diagnosis but returns nonzero for invalid XML,
 invalid counts, test failures, or assembly errors. Never downgrade those errors
 to warnings or use the merged partial result as proof that every category passed.
 
+Windows headless apps must exit with their test outcome after `RunTestsAsync`
+returns, so the XML writer has been disposed. Do not use `Process.Kill()` for
+normal completion: it reports exit code `-1` on Windows even when every test
+passed. Discovery exits zero only after writing the category list; test failures
+and runner exceptions must still exit nonzero.
+
 Run its cross-platform regression checks with:
 
 ```powershell

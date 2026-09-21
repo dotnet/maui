@@ -40,20 +40,25 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 				var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<HeadlessTestRunner>();
 
 				await headlessRunner.RunTestsAsync();
+				Process.GetCurrentProcess().Kill();
 #else
+				int exitCode;
 				if (cliArgs.Length >= 3)
 				{
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<ControlsHeadlessTestRunner>();
 					await headlessRunner.RunTestsAsync();
+					exitCode = headlessRunner.ExitCode;
 				}
 				else
 				{
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<HeadlessTestRunner>();
 					await headlessRunner.RunTestsAsync();
+					exitCode = headlessRunner.ExitCode;
 				}
-#endif
 
-				Process.GetCurrentProcess().Kill();
+				// RunTestsAsync has returned and disposed the results writer; Kill would report -1 on Windows.
+				Environment.Exit(exitCode);
+#endif
 			}
 		}
 
