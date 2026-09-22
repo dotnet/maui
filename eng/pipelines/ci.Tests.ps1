@@ -15,6 +15,21 @@ Describe 'ci.yml provisioning' {
         Join-Path $PSScriptRoot '../../Directory.Build.props') -Raw
       [xml]$versions = Get-Content -LiteralPath (
         Join-Path $PSScriptRoot '../Versions.props') -Raw
+      [xml]$buildTargets = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../../Directory.Build.targets') -Raw
+      $nativeProject = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../../src/Core/AppleNative/PlatformInterop/MauiPlatformInterop.xcodeproj/project.pbxproj') -Raw
+    }
+
+    It 'aligns native and managed iOS deployment targets with the Xcode 27 minimum' {
+      $iosProperties = $buildTargets.Project.PropertyGroup |
+        Where-Object { $_.Condition -eq "'`$(_MauiTargetPlatformIsiOS)' == 'True'" }
+
+      $iosProperties.SupportedOSPlatformVersion | Should -Be '15.0'
+      $iosProperties.TargetPlatformMinVersion | Should -Be '15.0'
+      ([regex]::Matches($nativeProject, '(?m)^\s*IPHONEOS_DEPLOYMENT_TARGET = 15\.0;')).Count |
+        Should -Be 2
+      $nativeProject | Should -Not -Match 'IPHONEOS_DEPLOYMENT_TARGET\[sdk=iphoneos'
     }
 
     It 'aligns <Platform> target frameworks with the selected Apple SDK' -TestCases @(
