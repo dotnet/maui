@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // On Catalyst, Swipe actions not supported in Appium.
 // On Windows, StackLayout AutomationId not works in Automation. 
 using NUnit.Framework;
@@ -21,6 +21,7 @@ public class Issue9088 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void Issue9088SwipeViewConfictWithShellMenuSwipeInFromLeft()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))

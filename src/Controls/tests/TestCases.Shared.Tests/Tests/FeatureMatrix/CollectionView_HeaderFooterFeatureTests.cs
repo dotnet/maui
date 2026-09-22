@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 {
 	public const string HeaderFooterFeatureMatrix = "CollectionView Feature Matrix";
@@ -196,6 +197,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyHeaderViewWithFooterView()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);
@@ -232,6 +234,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyHeaderViewWithFooterString()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);
@@ -311,6 +314,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyHeaderViewWhenGroupHeaderTemplateView()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);
@@ -333,6 +337,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyHeaderStringWhenGroupFooterTemplateView()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);
@@ -397,6 +402,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyHeaderViewWhenHeaderTemplateView()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);
@@ -1133,6 +1139,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyFooterViewWhenGroupHeaderTemplateView()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);
@@ -1592,6 +1599,7 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyFooterTemplateWhenGroupHeaderTemplateView()
 	{
 		App.WaitForElementTillPageNavigationSettled(Options);

@@ -269,7 +269,7 @@ public class ShellFeatureTests : _GalleryUITest
 			$"MenuItem4 should move up after scrolling. Initial Y: {initialMenuItem4Y}, After scroll Y: {afterScrollMenuItem4Y}");
 		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.WaitForElement(OpenFlyout); 
+		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
 
@@ -288,7 +288,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
-		float startingHeight = App.WaitForElement(Header).GetRect().Y; 
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -300,7 +300,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
- 
+
 	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorScroll()
@@ -316,7 +316,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
-		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -328,7 +328,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
- 
+
 	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorCollapseOnScroll()
@@ -343,7 +343,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -916,6 +916,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 	[Test, Order(46)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundColor()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -940,6 +941,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 	[Test, Order(47)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellFlyout_FlyoutIsPresented()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test

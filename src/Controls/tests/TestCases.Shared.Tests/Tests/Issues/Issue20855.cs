@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+		[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void GroupedCollectionViewItems()
 		{
 			App.WaitForElement("Item 1");

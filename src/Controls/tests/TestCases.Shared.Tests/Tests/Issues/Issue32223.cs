@@ -14,6 +14,7 @@ public class Issue32223 : _IssuesUITest
 	[Test]
 	[Retry(5)]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void CanReorderWithItemDataTemplateSelector()
 	{
 		App.WaitForElement("ReorderableCollectionView");

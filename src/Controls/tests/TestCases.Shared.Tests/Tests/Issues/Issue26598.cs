@@ -20,6 +20,7 @@ public class Issue26598 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0 / main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()
 	{
 		// Is a iOS issue; see https://github.com/dotnet/maui/issues/26598

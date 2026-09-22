@@ -1,4 +1,4 @@
-﻿#if IOS
+#if IOS
 using NUnit.Framework;
 using UITest.Core;
 
@@ -22,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
+		[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void EntriesScrollingPageTest()
 		{
 			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
