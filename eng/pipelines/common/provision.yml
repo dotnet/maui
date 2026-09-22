@@ -209,8 +209,12 @@ steps:
           exit 1
         fi
 
+        RUNTIME_ARCHITECTURE=universal
+        if [[ "$(uname -m)" == "arm64" ]]; then
+          RUNTIME_ARCHITECTURE=arm64
+        fi
         # Keep recovery downloads pinned too: a runtime newer than Xcode can break actool/ibtool.
-        DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant universal -buildVersion "${MAJOR}.${MINOR}")
+        DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant "$RUNTIME_ARCHITECTURE" -buildVersion "${MAJOR}.${MINOR}")
 
         # `simctl runtime list --json` reports disk images (including stuck
         # "(Deleting)" images), unlike `simctl list runtimes -j`, which reports
@@ -242,8 +246,15 @@ steps:
           printf '%s\n' "${counts%%$'\t'*}"
         }
 
-        RC=0
-        sudo xcodebuild "${DOWNLOAD_ARGS[@]}" || RC=$?
+        DOWNLOAD_LOG=$(mktemp) || exit 1
+        sudo xcodebuild "${DOWNLOAD_ARGS[@]}" 2>&1 | tee "$DOWNLOAD_LOG"
+        RC=${PIPESTATUS[0]}
+        if grep -Fq "is not available for download." "$DOWNLOAD_LOG"; then
+          rm -f "$DOWNLOAD_LOG"
+          echo "##vso[task.logissue type=error]iOS ${MAJOR}.${MINOR} (${RUNTIME_ARCHITECTURE}) is unavailable for download. Check the selected Xcode and runtime architecture; simulator recovery cannot fix an unavailable download."
+          exit 1
+        fi
+        rm -f "$DOWNLOAD_LOG"
         if [[ "$RC" != "0" ]]; then
           echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
           # Exit code 70 ("Unable to connect to simulator") means CoreSimulatorService is

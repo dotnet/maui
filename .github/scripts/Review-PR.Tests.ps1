@@ -986,10 +986,63 @@ Describe 'Snapshot diff asset publishing' {
 Describe 'Simulator runtime provisioning contract' {
     It 'pins every recovery download and smoke test to the selected Xcode version' {
         $provisionContent | Should -Match ([regex]::Escape(
-            'DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant universal -buildVersion "${MAJOR}.${MINOR}")'))
+            'DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant "$RUNTIME_ARCHITECTURE" -buildVersion "${MAJOR}.${MINOR}")'))
         ([regex]::Matches($provisionContent, [regex]::Escape(
             'sudo xcodebuild "${DOWNLOAD_ARGS[@]}"'))).Count | Should -Be 3
         $provisionContent | Should -Match 'SMOKE_RT=.*--arg req "\$\{MAJOR\}\.\$\{MINOR\}".*== \$req'
+    }
+
+    It 'selects <RuntimeArchitecture> simulator downloads on <HostArchitecture>' -TestCases @(
+        @{ HostArchitecture = 'arm64'; RuntimeArchitecture = 'arm64' },
+        @{ HostArchitecture = 'x86_64'; RuntimeArchitecture = 'universal' }
+    ) -Skip:(-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        param($HostArchitecture, $RuntimeArchitecture)
+
+        $selection = [regex]::Match(
+            $provisionContent,
+            '(?ms)^\s*RUNTIME_ARCHITECTURE=universal.*?^\s*DOWNLOAD_ARGS=.*?\r?$')
+        $selection.Success | Should -BeTrue
+        $script = @'
+HOST_ARCH="$1"
+uname() { printf '%s\n' "$HOST_ARCH"; }
+MAJOR=27
+MINOR=0
+'@ + "`n" + $selection.Value + "`n" + 'printf "%s\n" "${DOWNLOAD_ARGS[@]}"'
+        $actual = & bash -c $script -- $HostArchitecture
+
+        $LASTEXITCODE | Should -Be 0
+        ($actual -join ' ') | Should -Be "-downloadPlatform iOS -architectureVariant $RuntimeArchitecture -buildVersion 27.0"
+    }
+
+    It 'handles <Case> before simulator recovery' -TestCases @(
+        @{ Case = 'unavailable runtime'; Message = 'iOS 27.0 (arm64) is not available for download.'; DownloadExitCode = 70; ExpectedExitCode = 1 },
+        @{ Case = 'CoreSimulator connection failure'; Message = 'Unable to connect to simulator'; DownloadExitCode = 70; ExpectedExitCode = 0 },
+        @{ Case = 'successful download'; Message = 'Download complete'; DownloadExitCode = 0; ExpectedExitCode = 0 }
+    ) -Skip:(-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        param($Case, $Message, $DownloadExitCode, $ExpectedExitCode)
+
+        $download = [regex]::Match(
+            $provisionContent,
+            '(?ms)^\s*DOWNLOAD_LOG=\$\(mktemp\).*?(?=^\s*if \[\[ "\$RC" != "0" \]\]; then)')
+        $download.Success | Should -BeTrue
+        $script = @'
+DOWNLOAD_MESSAGE="$1"
+DOWNLOAD_EXIT_CODE="$2"
+sudo() { printf '%s\n' "$DOWNLOAD_MESSAGE"; return "$DOWNLOAD_EXIT_CODE"; }
+MAJOR=27
+MINOR=0
+RUNTIME_ARCHITECTURE=arm64
+DOWNLOAD_ARGS=(-downloadPlatform iOS)
+'@ + "`n" + $download.Value + "`n" + 'echo "RECOVERY_CHECK_RC=$RC"'
+        $actual = & bash -c $script -- $Message $DownloadExitCode
+
+        $LASTEXITCODE | Should -Be $ExpectedExitCode
+        if ($ExpectedExitCode -eq 1) {
+            ($actual -join "`n") | Should -Match 'simulator recovery cannot fix an unavailable download'
+            ($actual -join "`n") | Should -Not -Match 'RECOVERY_CHECK_RC'
+        } else {
+            ($actual -join "`n") | Should -Match "RECOVERY_CHECK_RC=$DownloadExitCode"
+        }
     }
 
     It 'requires a Ready runtime matching Xcode rather than any installed runtime' -Skip:(-not (Get-Command jq -ErrorAction SilentlyContinue)) {
