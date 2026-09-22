@@ -325,6 +325,10 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
+| Apple workload install cannot find a `net10.0` SDK pack | `maui-pr` SDK provisioning | The .NET 11 Apple manifests also install .NET 10 compatibility packs. Resolve the exact missing version's feed with `darc get-asset`; the current .NET 11 feed alone may not contain it. |
+| `Svg.Animation` / `Svg.SceneGraph` `NU1603`, or `SKPathBuilder` `CS0246` | `maui-pr` restore/build | Release merges can preserve old `eng/Versions.props` pins while importing Skia 4 source and packaging changes. Restore the coordinated SkiaSharp/HarfBuzz/SVG dependency versions, not just the first missing package. |
+| Requested iOS runtime is unavailable after Xcode fallback | `maui-pr` macOS provisioning | Check `Select Xcode Version`: falling back to an older installed Xcode is not sufficient for the pinned Apple SDK. Build, pack, and integration lanes must provision the required Xcode before downloading its simulator runtime. |
+| Helix monitor cannot use `NetCore-Svc-Public` | `maui-pr` release branches | The monitor must use the pipeline's selected Helix submission pool, with its Linux image demand, rather than independently selecting an unauthorized pool from the branch name. |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |

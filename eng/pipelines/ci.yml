@@ -175,7 +175,8 @@ stages:
         onlyAndroidPlatformDefaultApis: true
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
-        skipProvisioning: true
+        skipProvisionator: false
+        skipCertificates: true
         skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
@@ -197,7 +198,8 @@ stages:
         onlyAndroidPlatformDefaultApis: true
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
-        skipProvisioning: true
+        skipProvisionator: false
+        skipCertificates: true
         skipXcode: false
 
 

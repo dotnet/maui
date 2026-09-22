@@ -23,7 +23,8 @@ steps:
     onlyAndroidPlatformDefaultApis: true
     skipAndroidEmulatorImages: true
     skipAndroidCreateAvds: true
-    skipProvisioning: true
+    skipProvisionator: false
+    skipCertificates: true
     skipXcode: ${{ parameters.skipXcode }}
     skipSimulatorSetup: ${{ parameters.skipXcode }}
 
