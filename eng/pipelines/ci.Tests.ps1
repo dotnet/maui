@@ -17,8 +17,22 @@ Describe 'ci.yml provisioning' {
         Join-Path $PSScriptRoot '../Versions.props') -Raw
       [xml]$buildTargets = Get-Content -LiteralPath (
         Join-Path $PSScriptRoot '../../Directory.Build.targets') -Raw
+      [xml]$versionDetails = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../Version.Details.xml') -Raw
+      $globalJson = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../../global.json') -Raw | ConvertFrom-Json
       $nativeProject = Get-Content -LiteralPath (
         Join-Path $PSScriptRoot '../../src/Core/AppleNative/PlatformInterop/MauiPlatformInterop.xcodeproj/project.pbxproj') -Raw
+    }
+
+    It 'uses a consistent SDK new enough to run the Apple 27 binding generator' {
+      $sdkVersion = $versions.SelectSingleNode(
+        '/Project/PropertyGroup/MicrosoftNETSdkPackageVersion').InnerText
+      $globalJson.tools.dotnet | Should -Be $sdkVersion
+      $versionDetails.SelectSingleNode(
+        "/Dependencies/ProductDependencies/Dependency[@Name='Microsoft.NET.Sdk']").Version |
+        Should -Be $sdkVersion
+      [semver]$sdkVersion | Should -BeGreaterOrEqual ([semver]'11.0.100-rc.2.26465.108')
     }
 
     It 'aligns native and managed iOS deployment targets with the Xcode 27 minimum' {
