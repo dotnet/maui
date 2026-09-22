@@ -3,36 +3,36 @@
 Describe 'ci.yml provisioning' {
   BeforeAll {
     $pipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'ci.yml') -Raw
-    $setupTestEnv = Get-Content -LiteralPath (
-      Join-Path $PSScriptRoot 'arcade/setup-test-env.yml') -Raw
+    $provision = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'common/provision.yml') -Raw
     $helixStage = Get-Content -LiteralPath (
       Join-Path $PSScriptRoot 'arcade/stage-helix-tests.yml') -Raw
   }
 
-  It 'provisions the required Xcode without enabling certificate provisioning in <Stage>' -TestCases @(
-    @{ Stage = 'stage-build' }
-    @{ Stage = 'stage-pack' }
-  ) {
-    param($Stage)
+  It 'selects Xcode 27 RC agents for public macOS build, pack, and integration jobs' {
+    $buildPools = [regex]::Match(
+      $pipeline, '(?ms)^- name: BuildPlatformsPublic\r?\n.*?(?=^- name:)').Value
+    $macPools = [regex]::Match(
+      $pipeline, '(?ms)^- name: MacOSPool\r?\n.*?(?=^- name:)').Value
+    $xcodeDemand = [regex]::Escape(
+      'xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer')
 
-    $stageMatch = [regex]::Match(
-      $pipeline,
-      '(?ms)^- template: /eng/pipelines/arcade/' + [regex]::Escape($Stage) +
-      '\.yml@self\r?\n.*?(?=^- template:|\z)')
-
-    $stageMatch.Success | Should -BeTrue
-    $stageMatch.Value | Should -Match '(?m)^\s*skipProvisionator: false\r?$'
-    $stageMatch.Value | Should -Match '(?m)^\s*skipCertificates: true\r?$'
-    $stageMatch.Value | Should -Match '(?m)^\s*skipXcode: false\r?$'
+    $buildPools | Should -Match '(?s)- name: MAUI\s+demands:'
+    $buildPools | Should -Match $xcodeDemand
+    $macPools | Should -Match '(?s)public:\s+name: MAUI\s+demands:'
+    $macPools | Should -Match $xcodeDemand
   }
 
-  It 'provisions Xcode for integration tests while preserving Android-only opt-outs' {
-    $setupTestEnv | Should -Match '(?m)^\s*skipProvisionator: false\r?$'
-    $setupTestEnv | Should -Match '(?m)^\s*skipCertificates: true\r?$'
-    $setupTestEnv | Should -Match (
-      [regex]::Escape('skipXcode: ${{ parameters.skipXcode }}'))
-    $setupTestEnv | Should -Match (
-      [regex]::Escape('skipSimulatorSetup: ${{ parameters.skipXcode }}'))
+  It 'fails before simulator setup when the required Xcode is missing' {
+    $missingXcodeMatch = [regex]::Match(
+      $provision,
+      '(?s)if \[\[ -z "\$XCODE_PATH" \]\]; then.*?\r?\n      fi')
+
+    $missingXcodeMatch.Success | Should -BeTrue
+    $missingXcodeMatch.Value | Should -Match 'task\.logissue type=error'
+    $missingXcodeMatch.Value | Should -Match 'Update the macOS agent image'
+    $missingXcodeMatch.Value | Should -Match '(?m)^\s*exit 1\r?$'
+    $missingXcodeMatch.Value | Should -Not -Match 'LATEST_XCODE'
   }
 
   It 'runs the Helix monitor in the submission pool with the appropriate Linux image' {

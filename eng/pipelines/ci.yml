@@ -74,9 +74,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: AcesShared
+  - name: MAUI
     demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
+        - xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -104,9 +104,9 @@ parameters:
       vmImage: $(HostedMacImage)
       label: macOS
     public:
-      name: AcesShared
+      name: MAUI
       demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
+        - xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer
       label: macOS
 # Switch back to this once XCode 26.2 is available on Azure Pipelines
 #     name: Azure Pipelines
@@ -175,8 +175,7 @@ stages:
         onlyAndroidPlatformDefaultApis: true
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
-        skipProvisionator: false
-        skipCertificates: true
+        skipProvisioning: true
         skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
@@ -198,8 +197,7 @@ stages:
         onlyAndroidPlatformDefaultApis: true
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
-        skipProvisionator: false
-        skipCertificates: true
+        skipProvisioning: true
         skipXcode: false
 
 
