@@ -432,6 +432,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(command);
 		}
 
+		[Fact]
+		public void ClearingCommandReEnablesSwipeItemView()
+		{
+			var swipeItemView = new SwipeItemView
+			{
+				Command = new Command(() => { }, () => false)
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.Command = null;
+
+			Assert.True(swipeItemView.IsEnabled);
+		}
+
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static WeakReference CreateSwipeItemViewWeakReference(ICommand command)
 		{
