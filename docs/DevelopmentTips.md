@@ -248,6 +248,15 @@ colors, opacity, enablement, and binding updates directly instead of using scree
 It reuses the gallery's view model, converters, and trigger action. Preserve a UI test when the
 regression concerns how those properties are rendered, rather than which values are assigned.
 
+For larger feature matrices, separate state combinations from native integration coverage.
+`GalleryVisualStateTests` and `GalleryBindableLayoutTests` source-link the gallery pages and
+exercise their real event handlers, bindings, styles, and collection notifications. They compare
+colors, opacity, scale, text, child order, and template selection directly, including transitions
+back to the original state. Keep representative rendering and native input tests (taps on disabled
+controls, focus, keyboard completion, and dragging); a managed event invocation does not prove
+that the native control raises or suppresses that event. When pruning an ordered UI fixture,
+preserve its navigation/setup and the starting state required by the retained tests.
+
 Keep native interaction portions of mixed fixtures and their manual gallery reproductions.
 Remove only snapshot baselines no longer referenced by any remaining test, across all platform
 directories. A managed-looking assertion is not sufficient evidence for migration: validation may

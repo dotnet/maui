@@ -1,4 +1,6 @@
+using System;
 using System.Text.RegularExpressions;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
 
@@ -128,4 +130,3 @@ public partial class VisualStateManagerEntryPage : ContentPage
 		}
 	}
 }
-

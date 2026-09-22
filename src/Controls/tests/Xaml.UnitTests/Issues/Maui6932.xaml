@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui6932"
+             x:Name="ThePage">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="ItemTemplate">
+            <Frame Padding="10" BackgroundColor="Yellow">
+                <Label Text="{Binding}" />
+            </Frame>
+        </DataTemplate>
+        <DataTemplate x:Key="EmptyTemplate">
+            <Frame Padding="10" BackgroundColor="Fuchsia"
+                   AutomationId="{Binding BindingContext.EmptyTemplateId, Source={x:Reference ThePage}}">
+                <Label Text="No items here" />
+            </Frame>
+        </DataTemplate>
+    </ContentPage.Resources>
+    <VerticalStackLayout>
+        <StackLayout x:Name="ViewLayout"
+                     BindableLayout.ItemsSource="{Binding Items}"
+                     BindableLayout.ItemTemplate="{StaticResource ItemTemplate}">
+            <BindableLayout.EmptyView>
+                <Grid BackgroundColor="Blue" AutomationId="{Binding EmptyViewId}">
+                    <Label Text="No Results" />
+                </Grid>
+            </BindableLayout.EmptyView>
+        </StackLayout>
+        <StackLayout x:Name="StringLayout"
+                     BindableLayout.ItemsSource="{Binding Items}"
+                     BindableLayout.ItemTemplate="{StaticResource ItemTemplate}"
+                     BindableLayout.EmptyView="{Binding EmptyText}" />
+        <StackLayout x:Name="TemplateLayout"
+                     BindableLayout.ItemsSource="{Binding Items}"
+                     BindableLayout.ItemTemplate="{StaticResource ItemTemplate}"
+                     BindableLayout.EmptyViewTemplate="{StaticResource EmptyTemplate}" />
+    </VerticalStackLayout>
+</ContentPage>

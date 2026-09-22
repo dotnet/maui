@@ -55,6 +55,8 @@
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
     <Compile Include="..\TestCases.HostApp\FeatureMatrix\Triggers\TriggersViewModel.cs" Link="TestCases\TriggersViewModel.cs" />
+    <Compile Include="..\TestCases.HostApp\Controls\UITestEntry.cs" Link="TestCases\UITestEntry.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\BindableLayout\BindableLayoutViewModel.cs" Link="TestCases\BindableLayoutViewModel.cs" />
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
@@ -79,6 +81,20 @@
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
 
     <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exercise the gallery's actual markup and event handlers, not copies of its state machines. -->
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMLabel\VisualStateManagerLabelPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMButton\VisualStateManagerButtonPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMCheckBox\VisualStateManagerCheckBoxPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMSwitch\VisualStateManagerSwitchPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMSlider\VisualStateManagerSliderPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMEntry\VisualStateManagerEntryPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\BindableLayout\BindableLayoutControlPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\BindableLayout\BindableLayoutOptionsPage.xaml" />
+    <Compile Include="@(_GalleryTestPage->'%(Identity).cs')" Link="TestCases\%(Filename)%(Extension)" />
+    <MauiXaml Include="@(_GalleryTestPage)" Link="TestCases\%(Filename)%(Extension)" Inflator="Runtime;SourceGen;XamlC" />
   </ItemGroup>
 
   <ItemGroup>

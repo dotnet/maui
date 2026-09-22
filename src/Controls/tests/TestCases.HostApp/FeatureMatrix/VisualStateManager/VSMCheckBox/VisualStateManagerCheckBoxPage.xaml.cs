@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Maui.Controls;
+
 namespace Maui.Controls.Sample;
 
 public partial class VisualStateManagerCheckBoxPage : ContentPage
@@ -48,4 +51,3 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 		CheckBoxState.Text = "State: Normal";
 	}
 }
-

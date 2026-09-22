@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Maui.Controls;
+
 namespace Maui.Controls.Sample;
 
 public partial class VisualStateManagerSliderPage : ContentPage
@@ -91,4 +94,3 @@ public partial class VisualStateManagerSliderPage : ContentPage
 		SliderState.Text = $"State: Focused | Value: {e.NewValue:0}";
 	}
 }
-

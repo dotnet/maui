@@ -1,4 +1,7 @@
-﻿namespace Maui.Controls.Sample
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+
+namespace Maui.Controls.Sample
 {
 	public interface IUITestEntry : IEntry
 	{

@@ -117,20 +117,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(8)]
-	public void VerifyVSM_Entry_DisableWhileReset()
-	{
-		App.WaitForElement("ResetEntryButton");
-		App.Tap("ResetEntryButton");
-		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		App.WaitForElement("DisableEntryButton");
-		App.Tap("DisableEntryButton");
-		stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
-	}
-
 	[Test, Order(9)]
 	public void VerifyVSM_Entry_DisableAndEnableWhileFocused()
 	{
@@ -196,23 +182,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
 	}
 
-	[Test, Order(12)]
-	public void VerifyVSM_Entry_ResetWhileDisabled()
-	{
-		App.WaitForElement("ResetEntryButton");
-		App.Tap("ResetEntryButton");
-		App.WaitForElement("DisableEntryButton");
-		App.Tap("DisableEntryButton");
-		App.WaitForElement("EntryState");
-		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("ResetEntryButton");
-		App.Tap("ResetEntryButton");
-		App.WaitForElement("EntryState");
-		stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
-	}
-
 	[Test, Order(13)]
 	public void VerifyVSM_Entry_FocusedWhileDisabled()
 	{
@@ -224,23 +193,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("VSMEntry");
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-	}
-
-	[Test, Order(14)]
-	public void VerifyVSM_Entry_UnfocusedWhileDisabled()
-	{
-		App.WaitForElement("ResetEntryButton");
-		App.Tap("ResetEntryButton");
-		App.WaitForElement("DisableEntryButton");
-		App.Tap("DisableEntryButton");
-		App.WaitForElement("EntryState");
-		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("NormalEntryButton");
-		App.Tap("NormalEntryButton");
-		App.WaitForElement("EntryState");
-		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 
@@ -280,55 +232,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(17)]
-	public void VerifyVSM_Entry_ResetValidation()
-	{
-		App.WaitForElement("ResetValidationEntryButton");
-		App.Tap("ResetValidationEntryButton");
-		App.WaitForElement("ValidationEntry");
-		App.Tap("ValidationEntry");
-		App.EnterText("ValidationEntry", "777-777-7777");
-#if ANDROID || IOS
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
-#endif
-		App.WaitForElement("ValidationEntryLabel");
-		var stateText = App.FindElement("ValidationEntryLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Valid"));
-		App.WaitForElement("ResetValidationEntryButton");
-		App.Tap("ResetValidationEntryButton");
-		App.WaitForElement("ValidationEntryLabel");
-		stateText = App.FindElement("ValidationEntryLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Invalid"));
-	}
-
-	[Test, Order(18)]
-	public void VerifyVSM_Entry_ValidToInvalid()
-	{
-		App.WaitForElement("ResetValidationEntryButton");
-		App.Tap("ResetValidationEntryButton");
-		App.WaitForElement("ValidationEntry");
-		App.Tap("ValidationEntry");
-		App.EnterText("ValidationEntry", "965-999-9999");
-#if ANDROID || IOS
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
-#endif
-		App.WaitForElement("ValidationEntryLabel");
-		var stateText = App.FindElement("ValidationEntryLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Valid"));
-		App.WaitForElement("ValidateEntryButton");
-		App.Tap("ValidateEntryButton");
-		App.ClearText("ValidationEntry");
-		App.EnterText("ValidationEntry", "6789-456-1234");
-#if ANDROID || IOS
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
-#endif
-		App.WaitForElement("ValidationEntryLabel");
-		stateText = App.FindElement("ValidationEntryLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Invalid"));
-	}
 #if TEST_FAILS_ON_ANDROID // When PressEnter() is triggered to verify the Completed state, the Entry automatically becomes visually unfocused. Therefore, the test currently fails on Android in automation but passes during manual testing.
 	[Test, Order(19)]
 	public void VerifyVSM_Entry_Completed()
