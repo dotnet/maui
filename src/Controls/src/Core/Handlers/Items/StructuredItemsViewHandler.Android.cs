@@ -12,6 +12,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override StructuredItemsViewAdapter<TItemsView, IItemsViewSource> CreateAdapter() => new(VirtualView);
 
+		// HeaderProperty and HeaderTemplateProperty (and the Footer equivalents) both route here, since the
+		// shared PropertyMapper maps them to the same action. _lastHeaderTemplate/_lastFooterTemplate let us
+		// tell a template swap (needs a full adapter rebuild) apart from a plain content change (doesn't).
+		DataTemplate _lastHeaderTemplate;
+		DataTemplate _lastFooterTemplate;
+
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateHeaderFooter(true);
@@ -45,62 +51,59 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var currentTemplate = isHeader ? VirtualView.HeaderTemplate : VirtualView.FooterTemplate;
+
 			bool hasHeaderOrFooter = isHeader
 			? (VirtualView.Header ?? VirtualView.HeaderTemplate) != null
 			: (VirtualView.Footer ?? VirtualView.FooterTemplate) != null;
 
 			bool exists = isHeader
-			? DoesHeaderExist(adapter)
-			: DoesFooterExist(adapter);
+			? DoesHeaderOrFooterExist(adapter, position: 0, ItemViewType.Header)
+			: DoesHeaderOrFooterExist(adapter, position: adapter.ItemCount - 1, ItemViewType.Footer);
 
-			if (hasHeaderOrFooter && exists && IsDynamicChange())
+			bool templateChanged = isHeader
+			? !ReferenceEquals(_lastHeaderTemplate, currentTemplate)
+			: !ReferenceEquals(_lastFooterTemplate, currentTemplate);
+
+			if (isHeader)
 			{
+				_lastHeaderTemplate = currentTemplate;
+			}
+			else
+			{
+				_lastFooterTemplate = currentTemplate;
+			}
+
+			if (hasHeaderOrFooter != exists)
+			{
+				// Header/footer was added or removed - item positions shift, so the adapter needs a full rebuild.
 				recyclerView.UpdateAdapter();
 			}
-			else if (hasHeaderOrFooter != exists)
+			else if (hasHeaderOrFooter && exists && templateChanged)
 			{
+				// The template itself changed - the existing ViewHolder type may no longer apply.
 				recyclerView.UpdateAdapter();
 			}
+
+			// Otherwise this is a content-only change (same template, header/footer already present);
+			// StructuredItemsViewAdapter.ItemsViewPropertyChanged already rebinds just that position.
 		}
 
-		bool DoesHeaderExist(RecyclerView.Adapter adapter)
+		bool DoesHeaderOrFooterExist(RecyclerView.Adapter adapter, int position, int expectedViewType)
 		{
-			if (adapter.ItemCount <= 0)
+			if (position < 0 || position >= adapter.ItemCount)
 			{
 				return false;
 			}
 
 			try
 			{
-				return adapter.GetItemViewType(0) == ItemViewType.Header;
+				return adapter.GetItemViewType(position) == expectedViewType;
 			}
 			catch
 			{
 				return false;
 			}
-		}
-
-		bool DoesFooterExist(RecyclerView.Adapter adapter)
-		{
-			var footerPosition = adapter.ItemCount - 1;
-			if (footerPosition < 0)
-			{
-				return false;
-			}
-
-			try
-			{
-				return adapter.GetItemViewType(footerPosition) == ItemViewType.Footer;
-			}
-			catch
-			{
-				return false;
-			}
-		}
-
-		bool IsDynamicChange()
-		{
-			return (PlatformView as RecyclerView)?.IsLaidOut == true;
 		}
 	}
 }
