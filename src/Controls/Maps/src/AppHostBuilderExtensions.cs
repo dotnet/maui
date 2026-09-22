@@ -95,9 +95,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		/// <returns>The provided <see cref="IMauiHandlersCollection"/> object with the registered map handlers for subsequent registration calls.</returns>
 		public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlersCollection)
 		{
-			handlersCollection.AddHandler<Map, MapHandler>();
-			handlersCollection.AddHandler<Pin, MapPinHandler>();
-			handlersCollection.AddHandler<MapElement, MapElementHandler>();
+			handlersCollection.AddHandler<Map>(static _ => new MapHandler());
+			handlersCollection.AddHandler<Pin>(static _ => new MapPinHandler());
+			handlersCollection.AddHandler<MapElement>(static _ => new MapElementHandler());
 
 			return handlersCollection;
 		}
