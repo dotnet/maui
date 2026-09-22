@@ -958,6 +958,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 	[Test, Order(48)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same build/SHA in PR #38777; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellFlyout_FlyoutBehaviorLocked()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
