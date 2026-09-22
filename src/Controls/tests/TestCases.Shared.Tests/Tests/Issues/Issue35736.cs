@@ -29,6 +29,7 @@ public class Issue35736 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0 / main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 #if WINDOWS
 	[Ignore("ClearPlaceholderIcon is not displayed in Shell SearchHander : https://github.com/dotnet/maui/issues/28619")]
 #endif
@@ -48,6 +49,7 @@ public class Issue35736 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 #if WINDOWS
 	[Ignore("ClearIcon is not displayed in Shell SearchHander : https://github.com/dotnet/maui/issues/28619")]
 #endif
