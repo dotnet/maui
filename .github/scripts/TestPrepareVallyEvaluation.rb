@@ -814,13 +814,18 @@ class TestPrepareVallyEvaluation < Minitest::Test
     workflow = File.read(SKILL_VALIDATION_WORKFLOW)
     job = workflow_job(workflow, "evaluate")
     validation = workflow_step(job, "Validate specs and prepare trusted fixtures")
+    runtime_setup = workflow_step(job, "Setup isolated Vally runtime")
     token_selection = workflow_step(job, "Select Copilot token")
+    revalidation = workflow_step(job, "Revalidate specs and restore trusted fixtures")
     evaluation = workflow_step(job, "Run Vally evaluation")
 
-    assert_step_order(job, validation, token_selection, evaluation)
+    assert_step_order(job, validation, runtime_setup, token_selection, revalidation, evaluation)
     assert_match(/set -euo pipefail/, validation)
     assert_match(/ruby "\$PREPARER"/, validation)
     refute_match(/continue-on-error:\s*true/, validation)
+    assert_includes token_selection, "steps.vally-runtime.outputs.workspace_root"
+    assert_includes revalidation, "steps.vally-runtime.outputs.workspace_root"
+    assert_includes revalidation, 'cd "$EVALUATOR_WORKSPACE"'
     refute_match(/^\s+if:/, token_selection)
     refute_match(/^\s+if:/, evaluation)
   end
@@ -831,13 +836,15 @@ class TestPrepareVallyEvaluation < Minitest::Test
     workflow = File.read(SKILL_VALIDATION_WORKFLOW)
     job = workflow_job(workflow, "hermeticity-gate")
     validation = workflow_step(job, "Validate safe Vally specs")
+    runtime_setup = workflow_step(job, "Setup isolated Vally runtime")
     token_selection = workflow_step(job, "Select Copilot token")
     evaluation = workflow_step(job, "Run hermeticity control")
 
-    assert_step_order(job, validation, token_selection, evaluation)
+    assert_step_order(job, validation, runtime_setup, token_selection, evaluation)
     assert_match(/set -euo pipefail/, validation)
     assert_match(/ruby "\$PREPARER"/, validation)
     refute_match(/continue-on-error:\s*true/, validation)
+    assert_includes evaluation, "steps.vally-runtime.outputs.workspace_root"
     refute_match(/^\s+if:/, token_selection)
     refute_match(/^\s+if:/, evaluation)
   end
@@ -1582,11 +1589,12 @@ class TestPrepareVallyEvaluation < Minitest::Test
     skip "runtime setup script not provided" unless SETUP_RUNTIME
 
     content = File.read(SETUP_RUNTIME)
-    assert_includes content, 'sudo -n install -d -o root -g root -m 755 "$trusted_copilot_home"'
+    assert_includes content, 'sudo -n install -d -o root -g "$eval_user" -m 1770 "$trusted_copilot_home"'
     refute_includes content, 'sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"'
     assert_includes content, '"$trusted_copilot_home/config.json"'
     assert_includes content, '"$trusted_copilot_home/settings.json"'
     assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/mv -f'
     refute_includes content, "\n\t--experimental \\\n"
   end
 
@@ -1597,23 +1605,57 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700'
     assert_includes content, '"$trusted_copilot_home/logs"'
     assert_includes content, '"$trusted_copilot_home/session-state"'
-    assert_includes content, '"$trusted_copilot_home/session-store.db"'
-    assert_includes content, '"$trusted_copilot_home/session-store.db-shm"'
-    assert_includes content, '"$trusted_copilot_home/session-store.db-wal"'
+    assert_includes content, "session-store.db-shm"
+    assert_includes content, "session-store.db-wal"
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/touch "$state_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/rm "$state_path"'
+    refute_match(/install .*session-store\.db/, content)
+    refute_match(/touch \\\n\s*"\$trusted_copilot_home\/session-store\.db"/, content)
     assert_includes content, 'sudo -n install -d -o root -g root -m 555'
     assert_includes content, '"$trusted_copilot_home/installed-plugins"'
     refute_includes content, '"$trusted_copilot_home/hooks"'
   end
 
-  def test_runtime_setup_grants_only_read_only_workspace_access
+  def test_runtime_setup_copies_workspace_without_changing_checkout_permissions
     skip "runtime setup script not provided" unless SETUP_RUNTIME
 
     content = File.read(SETUP_RUNTIME)
-    assert_includes content, "missing_packages+=(acl)"
+    assert_includes content, 'workspace_root="$RUNNER_TEMP/${eval_user}-workspace"'
+    assert_includes content, 'cp -a "$GITHUB_WORKSPACE/." "$workspace_root/"'
+    assert_includes content, 'original_workspace_stat=$(stat -c'
+    assert_includes content, 'original_git_stat=$(stat -c'
+    assert_includes content, 'echo "workspace_root=$workspace_root"'
     assert_includes content, 'sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"'
-    assert_includes content, 'sudo -n setfacl -m "u:$eval_user:r-x" "$GITHUB_WORKSPACE"'
-    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -r "$GITHUB_WORKSPACE/.git/HEAD"'
-    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
+    refute_match(/setfacl .*"\$GITHUB_WORKSPACE"/, content)
+    refute_match(/(?:chown|chgrp|chmod).*"\$GITHUB_WORKSPACE"/, content)
+  end
+
+  def test_runtime_setup_sanitizes_and_protects_copied_git_configuration
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'sanitized_git_config="$RUNNER_TEMP/${eval_user}-git-config"'
+    assert_includes content, "core.sparsecheckout"
+    assert_includes content, "extensions.objectformat"
+    assert_includes content, 'git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"'
+    assert_includes content, 'sudo -n chmod 3770 "$workspace_root" "$git_dir"'
+    assert_includes content, 'sudo -n install -o root -g root -m 444'
+    assert_includes content, 'git -C "$workspace_root" config --local alias.runtime-probe status'
+    assert_includes content, "for probe_number in 1 2; do"
+    assert_includes content, 'git -C "$workspace_root" worktree add --detach'
+    assert_includes content, 'git -C "$workspace_root" worktree remove --force'
+  end
+
+  def test_runtime_wrapper_uses_evaluator_workspace_and_runtime_flags
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'cd "$workspace_root"'
+    assert_includes content, '"GITHUB_WORKSPACE=$workspace_root"'
+    assert_includes content, '"$vally_runner" /usr/bin/printenv GITHUB_WORKSPACE'
+    assert_includes content, '"$vally_runner" /bin/pwd'
+    assert_includes content, "--sandbox"
+    assert_includes content, "--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN"
   end
 
   def test_token_selector_skips_pat_with_an_invalid_model_probe_response

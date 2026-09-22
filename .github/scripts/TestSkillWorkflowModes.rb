@@ -97,6 +97,19 @@ class TestSkillWorkflowModes < Minitest::Test
     assert_equal 1, @soak.lines.count { |line| line.match?(/^\s+COPILOT_PAT_POOL_NAME:\s+skill-evaluation-pat-pool\s*$/) }
   end
 
+  def test_live_workflows_route_post_setup_execution_to_evaluator_workspace
+    validation_job = job_block(@validation, "evaluate")
+    control_job = job_block(@validation, "hermeticity-gate")
+    soak_job = job_block(@soak, "code-review")
+    workspace_output = 'EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}'
+
+    assert_operator validation_job.scan(workspace_output).length, :>=, 4
+    assert_operator control_job.scan(workspace_output).length, :>=, 1
+    assert_operator soak_job.scan(workspace_output).length, :>=, 1
+    assert_includes validation_job, 'cd "$EVALUATOR_WORKSPACE"'
+    assert_includes validation_job, 'git -C "$EVALUATOR_WORKSPACE" --no-replace-objects restore'
+  end
+
   def test_trusted_policy_tests_receive_candidate_workflows_and_fixture
     static_check = job_block(@validation, "static-check")
 

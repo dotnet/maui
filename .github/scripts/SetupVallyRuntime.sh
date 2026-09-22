@@ -134,12 +134,16 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	fi
 
 	eval_user="vally$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
+	workspace_owner=$(id -un)
 	eval_home="$RUNNER_TEMP/${eval_user}-home"
+	workspace_root="$RUNNER_TEMP/${eval_user}-workspace"
 	trusted_copilot_home="$RUNNER_TEMP/${eval_user}-copilot-home"
 	trusted_git_root="$RUNNER_TEMP/${eval_user}-trusted-git"
 	trusted_git_config="$trusted_git_root/config"
 	trusted_git_hooks="$trusted_git_root/hooks"
 	eval_results_root="$RUNNER_TEMP/${eval_user}-results"
+	original_workspace_stat=$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE")
+	original_git_stat=$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE/.git")
 	sudo -n useradd --system --user-group --no-create-home \
 		--shell /usr/sbin/nologin "$eval_user"
 	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
@@ -147,78 +151,79 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	sudo -n install -d -o "$(id -un)" -g "$eval_user" -m 2770 \
 		"$eval_results_root"
 
-	# The hosted runner's home is private, so the isolated user cannot even
-	# traverse to GITHUB_WORKSPACE by default. Grant that one user execute-only
-	# access to the parent chain and read/execute access to the checkout root.
-	# Candidate files remain read-only, and sibling paths under the runner home
-	# remain inaccessible because their own permissions are unchanged.
-	workspace_parent=$(dirname "$GITHUB_WORKSPACE")
-	while [ "$workspace_parent" != "/" ]; do
-		sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"
-		workspace_parent=$(dirname "$workspace_parent")
-	done
-	sudo -n setfacl -m "u:$eval_user:r-x" "$GITHUB_WORKSPACE"
-
-	# Vally creates detached worktrees outside the checkout. Grant its no-sudo
-	# user write access only to Git's private worktree metadata and the dedicated
-	# results root outside the checkout. Keep candidate content and the rest of
-	# the common Git directory read-only to the evaluator.
-	git_dir="$GITHUB_WORKSPACE/.git"
+	# Preserve the prepared working tree and complete object database without
+	# changing the Actions checkout. This retains patched specs and synthetic
+	# fixture commits that a fresh clone would omit.
+	git_dir="$workspace_root/.git"
+	sudo -n install -d -o "$workspace_owner" -g "$eval_user" -m 3770 \
+		"$workspace_root"
+	cp -a "$GITHUB_WORKSPACE/." "$workspace_root/"
 	if [ ! -d "$git_dir" ]; then
 		echo "Expected a standalone Git directory at $git_dir" >&2
 		exit 1
 	fi
-	git_group=$(stat -c '%G' "$git_dir")
-	sudo -n chgrp -R "$git_group" "$git_dir"
-	sudo -n chmod -R go-w "$git_dir"
-	sudo -n install -d -o "$(stat -c '%U' "$git_dir")" -g "$eval_user" -m 2770 \
-		"$git_dir/worktrees"
+	sudo -n chown -R "$workspace_owner:$eval_user" "$workspace_root"
+	sudo -n chmod -R g+rwX,o-rwx "$workspace_root"
+	sudo -n find "$workspace_root" -type d -exec chmod g+rwxs,o-rwx {} +
+	sudo -n chmod 3770 "$workspace_root" "$git_dir"
+	workspace_parent=$(dirname "$workspace_root")
+	while [ "$workspace_parent" != "/" ]; do
+		sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"
+		workspace_parent=$(dirname "$workspace_parent")
+	done
+
 	sudo -n install -d -o root -g root -m 755 "$trusted_git_root"
 	sudo -n install -d -o root -g root -m 555 "$trusted_git_hooks"
 	sudo -n install -o root -g root -m 600 /dev/null "$trusted_git_config"
 	sudo -n git config --file "$trusted_git_config" --add \
-		safe.directory "$GITHUB_WORKSPACE"
+		safe.directory "$workspace_root"
 	sudo -n git config --file "$trusted_git_config" \
 		core.hooksPath "$trusted_git_hooks"
 	sudo -n chmod 444 "$trusted_git_config"
-	for protected_path in \
-		"$git_dir/HEAD" \
-		"$git_dir/config" \
-		"$git_dir/objects" \
-		"$git_dir/refs"; do
-		if [ -e "$protected_path" ] &&
-			sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
-			echo "Isolated Vally user can modify protected Git path $protected_path" >&2
-			exit 1
-		fi
+
+	# Rebuild the copied repository configuration from a small functional
+	# allowlist, then protect it with the sticky Git directory. The evaluator
+	# can update refs, objects, and worktree metadata without replacing config.
+	copied_git_config="$git_dir/config"
+	sanitized_git_config="$RUNNER_TEMP/${eval_user}-git-config"
+	: > "$sanitized_git_config"
+	for key in \
+		core.repositoryformatversion \
+		core.filemode \
+		core.bare \
+		core.logallrefupdates \
+		core.ignorecase \
+		core.precomposeunicode \
+		core.sparsecheckout \
+		core.sparsecheckoutcone \
+		extensions.objectformat; do
+		while IFS= read -r value; do
+			git config --file "$sanitized_git_config" --add "$key" "$value"
+		done < <(git config --file "$copied_git_config" --get-all "$key" || true)
 	done
-	for protected_path in \
-		"$GITHUB_WORKSPACE" \
-		"$GITHUB_WORKSPACE/.github" \
-		"$GITHUB_WORKSPACE/.github/scripts" \
-		"$GITHUB_WORKSPACE/.github/skills" \
-		"$GITHUB_WORKSPACE/.github/workflows"; do
-		if [ -e "$protected_path" ] &&
-			sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
-			echo "Isolated Vally user can modify protected workspace path $protected_path" >&2
-			exit 1
-		fi
-	done
-	if ! sudo -n -u "$eval_user" /usr/bin/test -r "$GITHUB_WORKSPACE/.git/HEAD"; then
-		echo "Isolated Vally user cannot read the candidate checkout" >&2
+	git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"
+	sudo -n install -o root -g root -m 444 \
+		"$sanitized_git_config" "$copied_git_config"
+	rm -f "$sanitized_git_config"
+	sudo -n rm -f "$git_dir/config.worktree"
+
+	if ! sudo -n -u "$eval_user" /usr/bin/test -r "$workspace_root/.git/HEAD"; then
+		echo "Isolated Vally user cannot read the evaluator workspace" >&2
 		exit 1
 	fi
-	worktree_probe="$eval_home/worktree-probe"
-	sudo -n -u "$eval_user" env \
-		HOME="$eval_home" \
-		GIT_CONFIG_GLOBAL="$trusted_git_config" \
-		GIT_CONFIG_NOSYSTEM=1 \
-		git -C "$GITHUB_WORKSPACE" worktree add --detach "$worktree_probe" HEAD
-	sudo -n -u "$eval_user" env \
-		HOME="$eval_home" \
-		GIT_CONFIG_GLOBAL="$trusted_git_config" \
-		GIT_CONFIG_NOSYSTEM=1 \
-		git -C "$GITHUB_WORKSPACE" worktree remove --force "$worktree_probe"
+	for probe_number in 1 2; do
+		worktree_probe="$eval_home/worktree-probe-$probe_number"
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" worktree add --detach "$worktree_probe" HEAD
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" worktree remove --force "$worktree_probe"
+	done
 	if [ "$(
 		sudo -n -u "$eval_user" env \
 			HOME="$eval_home" \
@@ -229,18 +234,38 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		echo "Isolated Vally user is not using the trusted Git configuration" >&2
 		exit 1
 	fi
+	if [ "$(
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" config --get core.hooksPath
+	)" != "$trusted_git_hooks" ]; then
+		echo "Evaluator workspace is not using the trusted Git hooks path" >&2
+		exit 1
+	fi
+	if sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$workspace_root" config --local alias.runtime-probe status 2>/dev/null; then
+		echo "Isolated Vally user can replace the evaluator Git configuration" >&2
+		exit 1
+	fi
+	if [ "$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE")" != "$original_workspace_stat" ] ||
+		[ "$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE/.git")" != "$original_git_stat" ]; then
+		echo "Runtime setup changed the original Actions checkout permissions" >&2
+		exit 1
+	fi
+
 	# Keep configuration immutable to the evaluator. Only runtime output that the
 	# CLI never reads as policy is writable across its headless sessions.
-	sudo -n install -d -o root -g root -m 755 "$trusted_copilot_home"
+	sudo -n install -d -o root -g "$eval_user" -m 1770 "$trusted_copilot_home"
 	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
 		"$trusted_copilot_home/logs" \
 		"$trusted_copilot_home/session-state"
 	sudo -n install -d -o root -g root -m 555 \
 		"$trusted_copilot_home/installed-plugins"
-	sudo -n install -o "$eval_user" -g "$eval_user" -m 600 /dev/null \
-		"$trusted_copilot_home/session-store.db" \
-		"$trusted_copilot_home/session-store.db-shm" \
-		"$trusted_copilot_home/session-store.db-wal"
 	cat <<EOF | sudo -n tee "$trusted_copilot_home/settings.json" >/dev/null
 {
   "disableAllHooks": true,
@@ -276,7 +301,6 @@ EOF
 	sudo -n chmod 444 "$trusted_copilot_home/settings.json"
 	sudo -n chmod 444 "$trusted_copilot_home/config.json"
 	for protected_path in \
-		"$trusted_copilot_home" \
 		"$trusted_copilot_home/config.json" \
 		"$trusted_copilot_home/installed-plugins" \
 		"$trusted_copilot_home/settings.json"; do
@@ -285,16 +309,49 @@ EOF
 			exit 1
 		fi
 	done
+	for protected_path in \
+		"$trusted_copilot_home/config.json" \
+		"$trusted_copilot_home/installed-plugins" \
+		"$trusted_copilot_home/settings.json"; do
+		remove_command=(/bin/rm "$protected_path")
+		if [ -d "$protected_path" ]; then
+			remove_command=(/usr/bin/rmdir "$protected_path")
+		fi
+		if sudo -n -u "$eval_user" "${remove_command[@]}" 2>/dev/null; then
+			echo "Isolated Vally user can remove protected Copilot path $protected_path" >&2
+			exit 1
+		fi
+		if sudo -n -u "$eval_user" /bin/mv \
+			"$protected_path" "$protected_path.runtime-probe" 2>/dev/null; then
+			echo "Isolated Vally user can rename protected Copilot path $protected_path" >&2
+			exit 1
+		fi
+		replacement_path="$trusted_copilot_home/runtime-policy-replacement"
+		sudo -n -u "$eval_user" /usr/bin/touch "$replacement_path"
+		if sudo -n -u "$eval_user" /bin/mv -f \
+			"$replacement_path" "$protected_path" 2>/dev/null; then
+			echo "Isolated Vally user can replace protected Copilot path $protected_path" >&2
+			exit 1
+		fi
+		sudo -n -u "$eval_user" /bin/rm -f "$replacement_path"
+	done
 	for writable_path in \
 		"$trusted_copilot_home/logs" \
-		"$trusted_copilot_home/session-state" \
-		"$trusted_copilot_home/session-store.db" \
-		"$trusted_copilot_home/session-store.db-shm" \
-		"$trusted_copilot_home/session-store.db-wal"; do
+		"$trusted_copilot_home/session-state"; do
 		if ! sudo -n -u "$eval_user" /usr/bin/test -w "$writable_path"; then
 			echo "Isolated Vally user cannot write Copilot runtime state $writable_path" >&2
 			exit 1
 		fi
+	done
+	for state_name in \
+		session-store.db \
+		session-store.db-shm \
+		session-store.db-wal; do
+		state_path="$trusted_copilot_home/$state_name"
+		sudo -n -u "$eval_user" /usr/bin/touch "$state_path"
+		sudo -n -u "$eval_user" /bin/rm "$state_path"
+		sudo -n -u "$eval_user" /usr/bin/touch "$state_path"
+		sudo -n -u "$eval_user" /bin/rm "$state_path"
 	done
 
 	{
@@ -302,6 +359,7 @@ EOF
 		echo 'set -euo pipefail'
 		printf 'eval_user=%q\n' "$eval_user"
 		printf 'eval_home=%q\n' "$eval_home"
+		printf 'workspace_root=%q\n' "$workspace_root"
 		printf 'trusted_git_config=%q\n' "$trusted_git_config"
 		cat <<'EOF'
 : "${COPILOT_GITHUB_TOKEN:?COPILOT_GITHUB_TOKEN is required}"
@@ -309,10 +367,12 @@ EOF
 : "${TRUSTED_COPILOT_CLI_PATH:?TRUSTED_COPILOT_CLI_PATH is required}"
 : "${TRUSTED_COPILOT_HOME:?TRUSTED_COPILOT_HOME is required}"
 umask 0002
+cd "$workspace_root"
 child_env=(
 	"HOME=$eval_home"
 	"TMPDIR=$eval_home/tmp"
 	"PATH=$PATH"
+	"GITHUB_WORKSPACE=$workspace_root"
 	"COPILOT_CLI_PATH=$COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_CLI_PATH=$TRUSTED_COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_HOME=$TRUSTED_COPILOT_HOME"
@@ -320,7 +380,7 @@ child_env=(
 	"GIT_CONFIG_GLOBAL=$trusted_git_config"
 	"GIT_CONFIG_NOSYSTEM=1"
 )
-for name in CI GITHUB_ACTIONS GITHUB_WORKSPACE RUNNER_TEMP \
+for name in CI GITHUB_ACTIONS RUNNER_TEMP \
 	HTTP_PROXY HTTPS_PROXY NO_PROXY NODE_EXTRA_CA_CERTS SSL_CERT_FILE; do
 	if [[ -v "$name" ]]; then
 		child_env+=("$name=${!name}")
@@ -355,6 +415,25 @@ EOF
 		echo "Isolated Vally process is not using the trusted Copilot home" >&2
 		exit 1
 	fi
+	test_workspace=$(
+		COPILOT_GITHUB_TOKEN=probe \
+			COPILOT_CLI_PATH="$copilot_wrapper" \
+			TRUSTED_COPILOT_CLI_PATH="${copilot_runtimes[0]}" \
+			TRUSTED_COPILOT_HOME="$trusted_copilot_home" \
+			"$vally_runner" /usr/bin/printenv GITHUB_WORKSPACE
+	)
+	test_working_directory=$(
+		COPILOT_GITHUB_TOKEN=probe \
+			COPILOT_CLI_PATH="$copilot_wrapper" \
+			TRUSTED_COPILOT_CLI_PATH="${copilot_runtimes[0]}" \
+			TRUSTED_COPILOT_HOME="$trusted_copilot_home" \
+			"$vally_runner" /bin/pwd
+	)
+	if [ "$test_workspace" != "$workspace_root" ] ||
+		[ "$test_working_directory" != "$workspace_root" ]; then
+		echo "Isolated Vally process is not using the evaluator workspace" >&2
+		exit 1
+	fi
 	if [ "$(sudo -n -u "$eval_user" /usr/bin/id -Gn)" != "$eval_user" ]; then
 		echo "Isolated Vally user unexpectedly belongs to another group" >&2
 		exit 1
@@ -371,6 +450,7 @@ EOF
 		exit 1
 	fi
 else
+	workspace_root=${GITHUB_WORKSPACE:-$(pwd)}
 	trusted_copilot_home="$install_root/copilot-home"
 	mkdir -p "$trusted_copilot_home"
 	mkdir -p "$eval_results_root"
@@ -410,16 +490,17 @@ EOF
 		"$trusted_copilot_home/installed-plugins" \
 		"$trusted_copilot_home/logs" \
 		"$trusted_copilot_home/session-state"
-	touch \
-		"$trusted_copilot_home/session-store.db" \
-		"$trusted_copilot_home/session-store.db-shm" \
-		"$trusted_copilot_home/session-store.db-wal"
-	cat > "$vally_runner" <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
+	{
+		echo '#!/usr/bin/env bash'
+		echo 'set -euo pipefail'
+		printf 'workspace_root=%q\n' "$workspace_root"
+		cat <<'EOF'
+cd "$workspace_root"
+export GITHUB_WORKSPACE="$workspace_root"
 export EVALUATE_USE_HOST_COPILOT_HOME=1
 exec "$@"
 EOF
+	} > "$vally_runner"
 	chmod 700 "$vally_runner"
 fi
 
@@ -457,4 +538,5 @@ EOF
 	echo "copilot_runtime=${copilot_runtimes[0]}"
 	echo "copilot_home=$trusted_copilot_home"
 	echo "results_root=$eval_results_root"
+	echo "workspace_root=$workspace_root"
 } >> "$github_output"
