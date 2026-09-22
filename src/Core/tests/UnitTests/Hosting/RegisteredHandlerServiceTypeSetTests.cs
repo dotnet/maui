@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Hosting.Internal;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.UnitTests;
