@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Hosting
 		private static readonly ConditionalWeakTable<IImageSourceServiceCollection, ImageSourceToImageSourceServiceTypeMapping> s_instances = new();
 
 		internal static ImageSourceToImageSourceServiceTypeMapping GetInstance(IImageSourceServiceCollection collection) =>
-			s_instances.GetOrAdd(collection, static _ => new ImageSourceToImageSourceServiceTypeMapping());
+			s_instances.GetValue(collection, static _ => new ImageSourceToImageSourceServiceTypeMapping());
 
 		private readonly Dictionary<Type, Type> _concreteTypeMapping = new();
 		private readonly Dictionary<Type, Type> _interfaceTypeMapping = new();
