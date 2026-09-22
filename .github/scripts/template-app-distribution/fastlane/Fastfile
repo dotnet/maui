@@ -77,6 +77,10 @@ platform :ios do
   desc "Upload a generated MAUI template IPA or Mac Catalyst PKG to TestFlight"
   lane :template_app_testflight do |options|
     groups = optional_option(options, :groups).to_s.split(",").map(&:strip).reject(&:empty?)
+    ios_sample_only = options[:ios_sample_only].to_s == "true"
+    if ios_sample_only && (groups.empty? || !optional_option(options, :pkg).nil?)
+      UI.user_error!("iOS sample TestFlight requires an IPA and explicitly selected tester groups, not a Mac package or upload-only run.")
+    end
     changelog = release_notes
     api_key = app_store_connect_api_key(
       key_id: required_option(options, :api_key_id),
@@ -89,7 +93,7 @@ platform :ios do
       api_key: api_key,
       uses_non_exempt_encryption: false,
       wait_processing_timeout_duration: integer_environment("TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS", 2700),
-      skip_waiting_for_build_processing: groups.empty? && changelog.nil?
+      skip_waiting_for_build_processing: !ios_sample_only && groups.empty? && changelog.nil?
     }
 
     pkg = optional_option(options, :pkg)
@@ -105,8 +109,8 @@ platform :ios do
     unless groups.empty?
       upload_options[:groups] = groups
       upload_options[:distribute_external] = true
-      upload_options[:notify_external_testers] = true
-      upload_options[:reject_build_waiting_for_review] = true if truthy_environment?("TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW")
+      upload_options[:notify_external_testers] = !ios_sample_only
+      upload_options[:reject_build_waiting_for_review] = true if !ios_sample_only && truthy_environment?("TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW")
     end
 
     begin

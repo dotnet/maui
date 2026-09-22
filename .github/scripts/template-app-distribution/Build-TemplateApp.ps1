@@ -37,6 +37,8 @@ param(
 
     [switch]$WindowsTestMsix,
 
+    [switch]$IosSampleTestFlight,
+
     [switch]$CreateBinlog
 )
 
@@ -46,6 +48,11 @@ $ErrorActionPreference = "Stop"
 
 if ($WindowsTestMsix -and ($Publish -or $Platform -ne 'windows' -or $RuntimeIdentifier -ne 'win-x64')) {
     throw "Windows test MSIX requires a Windows x64 dry run without store publishing."
+}
+
+if ($IosSampleTestFlight -and (-not $Publish -or $Platform -ne 'ios' -or $RuntimeIdentifier -ne 'ios-arm64' -or
+    $WindowsTestMsix -or $CreateBinlog)) {
+    throw "iOS sample TestFlight requires a signed iOS arm64 publish without MSIX or binlogs."
 }
 
 function Assert-EnvironmentValue([string]$Name) {
@@ -587,6 +594,9 @@ $projectFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -Recurse | Se
 if (-not $projectFile) {
     throw "No project file was found in '$ProjectPath'."
 }
+if ($IosSampleTestFlight -and $projectFile.BaseName -cne 'MauiTemplateSample') {
+    throw "iOS sample TestFlight is restricted to the MauiTemplateSample project."
+}
 
 New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
 $binlogs = Get-BinlogConfiguration -OutputPath $OutputPath -Platform $Platform -Publish:$Publish -CreateBinlog:$CreateBinlog
@@ -756,15 +766,17 @@ switch ($Platform) {
             Copy-Item -Path $storeIpa.FullName -Destination $storeIpaPath -Force
             $package = Get-Item $storeIpaPath
 
-            $sideloadPackage = New-IosAdHocSideload `
-                -ProjectFile $projectFile `
-                -TargetFramework $TargetFramework `
-                -Configuration $Configuration `
-                -RuntimeIdentifier $RuntimeIdentifier `
-                -OutputPath $OutputPath `
-                -AppDisplayVersion $AppDisplayVersion `
-                -AppBuildNumber $AppBuildNumber `
-                -BinlogArguments $sideloadBinlogArguments
+            if (-not $IosSampleTestFlight) {
+                $sideloadPackage = New-IosAdHocSideload `
+                    -ProjectFile $projectFile `
+                    -TargetFramework $TargetFramework `
+                    -Configuration $Configuration `
+                    -RuntimeIdentifier $RuntimeIdentifier `
+                    -OutputPath $OutputPath `
+                    -AppDisplayVersion $AppDisplayVersion `
+                    -AppBuildNumber $AppBuildNumber `
+                    -BinlogArguments $sideloadBinlogArguments
+            }
         } else {
             # A dry-run has no signing secrets. We produce two complementary iOS artifacts:
             #
@@ -965,9 +977,10 @@ $provenance = [ordered]@{
     packages = $script:sourceManifest.packages
     payloads = @()
 }
-if (-not $Publish) {
+if (-not $Publish -or $IosSampleTestFlight) {
     foreach ($artifact in @($package, $sideloadPackage, $additionalPackage) | Where-Object { $_ } | Sort-Object FullName -Unique) {
-        $provenance.payloads += Get-AppPayloadProof $artifact.FullName $SourceSha $script:sourceManifest
+        $provenance.payloads += Get-AppPayloadProof $artifact.FullName $SourceSha $script:sourceManifest `
+            -RequireTemplateProvenance:$IosSampleTestFlight
     }
 }
 $provenancePath = Join-Path $OutputPath 'provenance.json'

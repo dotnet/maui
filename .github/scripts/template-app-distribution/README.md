@@ -27,14 +27,73 @@ Dry runs accept any safe ref. Publishing always accepts the default branch and a
 additional exact protected branches only when an administrator lists them in the repository
 variable `TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES`; wildcard branch conventions are not trusted.
 
+### iOS sample only: signed TestFlight publishing
+
+Set **`ios_sample_testflight=true`, `publish=true`, `windows_test_msix=false`** to
+select exactly the standard `MauiTemplateSample` iOS device build. Leaving the new
+option off preserves the existing default matrix; **`publish=true` alone still
+selects all platforms/variants**, not just iOS. Incompatible selections and custom
+overrides of the sample project/template/bundle ID are rejected.
+
+Publishing must run from the repository's **default workflow branch**, not a PR
+branch. The selected source commit must be reachable from the default branch or an
+explicitly trusted protected source branch. A full SHA is accepted only when that
+ancestry check passes. Pin the intended merged upstream main commit once, verify it
+is available through that trusted source history, and keep framework, SDK targets
+and templates on that same SHA. A fork branch or a matching version label alone
+does not satisfy this gate; do not disable it to run a PR-only workflow.
+
+Before an authorized dispatch, an administrator must securely configure:
+
+- A protected **`template-app-distribution`** environment with appropriate reviewers
+  and deployment-branch restrictions.
+- Environment secrets `TEMPLATE_APP_IOS_CERTIFICATE_BASE64` (the authorized Apple
+  Distribution signing identity as a password-protected P12),
+  `TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD`, and
+  `TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64` (a current **App Store**
+  profile matching that identity, team, entitlements and sample bundle ID).
+- Environment secrets `TEMPLATE_APPSTORE_CONNECT_ISSUER_ID`,
+  `TEMPLATE_APPSTORE_CONNECT_KEY_ID`, `TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY`;
+  the authorized App Store Connect API key must have access to the real app record
+  and permission to upload/distribute its TestFlight builds.
+- Repository variable `TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID`, explicitly matching the
+  existing Apple App ID/profile/App Store Connect app record. No generated default
+  bundle ID is accepted in this mode.
+- Repository variable `TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS`, a comma-separated
+  list of explicitly approved external tester groups for this sample. Arrange the
+  intended tester's membership/invitation in App Store Connect; the workflow does
+  not create accounts, discover email addresses or invent invite links.
+
+Use GitHub's secure secret configuration, never chat, source files or uploaded
+artifacts. This mode does not use Android/Mac publishing, blank apps, optional
+ad-hoc profiles, broad `TEMPLATE_APP_TESTFLIGHT_GROUPS`, tester notification blasts,
+or replacement/rejection of a build already waiting for beta review. Missing group
+configuration fails rather than falling back to upload-only behavior.
+
+The store IPA must pass the same restored source-package hash and final MAUI
+assembly provenance gates as dry runs, plus its embedded template provenance
+check, **before** artifact outputs or TestFlight upload. Matching `source-packages-*`
+are uploaded for independent verification. Publish jobs produce no binlogs.
+Uninspectable payloads fail closed, including a future toolchain that removes the
+managed metadata required by the checker.
+
+The Actions download contains the **App Store IPA and provenance**, not a
+direct-install device IPA. An unsigned dry run is not a substitute for TestFlight
+and cannot fix device-installation error `0xe800801c`. TestFlight installation
+requires Apple processing, beta review when applicable, and access for the intended
+tester. Confirm the actual app version/build and invitation or approved public
+TestFlight link before announcing delivery. A successful upload alone is not proof
+of tester access, successful launch or accessibility behavior.
+
 ## What you get, per platform
 
-The goal is that **every artifact a tester downloads can actually be installed** without an
-App Store / Play account. The build script therefore emits two things:
+Artifacts have different installation requirements. In particular, unsigned iOS
+dry runs and App Store IPAs are not directly installable on a tester's device.
+The build script emits:
 
 - `package_path` — the **store** package (`.aab` / App Store `.ipa` / Mac App Store `.pkg`).
   Consumed only by the Google Play / TestFlight upload steps.
-- `sideload_package_path` — the **directly installable** artifact. This is what the dry-run
+- `sideload_package_path` — the preferred downloadable artifact. This is what the dry-run
   job and the publish "artifact copy" step upload for testers. When optional Apple sideload
   signing is not configured, the publish job intentionally falls back to the store package.
 - `additional_package_path` — an optional extra file uploaded next to the sideload one. Used on
@@ -44,7 +103,7 @@ App Store / Play account. The build script therefore emits two things:
 | --- | --- | --- | --- |
 | **Android** | Debug-signed **APK** (installs via `adb install` / file manager) | `.aab` → Google Play | Release-signed **APK** |
 | **Windows** | **Self-contained** unpackaged zip (no runtime install needed) | same zip | same zip |
-| **iOS** | unsigned device **`.ipa`** (AltStore/Sideloadly) + Simulator `.app` zip | App Store `.ipa` → TestFlight | ad-hoc `.ipa` *(only if the ad-hoc secret is set — see below)* |
+| **iOS** | unsigned device **`.ipa`** (not directly installable) + Simulator `.app` zip | App Store `.ipa` → TestFlight | ad-hoc `.ipa` *(only if configured outside iOS-sample-only mode and the profile covers the device)* |
 | **macOS (Mac Catalyst)** | Native **arm64** `.app` zip (Apple Silicon) | Mac App Store `.pkg` → TestFlight | notarized `.app` zip *(only if the Developer ID secrets are set — see below)* |
 
 ### Windows sample test installer
@@ -93,9 +152,9 @@ exposes an installer artifact.
   building an **arm64 iOS Simulator** app (`dotnet build -r iossimulator-arm64`; `dotnet publish`
   rejects simulator RIDs) and ad-hoc re-signing it so the Simulator (which enforces code signing on
   macOS 15+/26) actually launches it. The dry-run **also** wraps an unsigned `ios-arm64` device
-  build as a `Payload/*.app` **`.ipa`** so testers who want to run on real hardware have an IPA to
-  sideload with AltStore/Sideloadly (which re-sign it with their own Apple ID). A *directly*
-  installable device build still needs the ad-hoc IPA (secret-gated) or TestFlight.
+  build as a `Payload/*.app` **`.ipa`** for inspection; it is not a ready-to-install
+  device delivery. A device build needs the correctly provisioned ad-hoc IPA
+  (secret-gated, registered devices only) or TestFlight.
 - **macOS** — the `.pkg` was Mac App Store signed and defaulted to `maccatalyst-x64` (Rosetta),
   so launching it outside the store gave `SIGKILL (Code Signature Invalid)` /
   `Taskgated Invalid Signature`. Fixed by shipping a directly-launchable **arm64-native** `.app`
@@ -115,19 +174,18 @@ exposes an installer artifact.
   device/emulator.
 - **Windows** — unzip and run the `.exe`. Because the app is self-contained no .NET runtime
   install is required. (SmartScreen may warn for an unsigned app — *More info → Run anyway*.)
-- **iOS** — the dry-run artifact contains one or two files (the unsigned device `.ipa` is built on a best-effort basis, so it may be absent — leaving only the Simulator `.app.zip`):
-  - **`MyApp.ipa`** — an **unsigned device** build for a **physical iPhone/iPad**. iOS refuses to
-    run unsigned or ad-hoc code on a device, so install it with **[AltStore](https://altstore.io)**
-    or **[Sideloadly](https://sideloadly.io)**, which re-sign the app with your own Apple ID (a free
-    Apple ID works but must be refreshed every 7 days; a paid Developer account lasts a year). A
-    plain Finder drag / double-click will *not* install an unsigned IPA.
+- **iOS** — use the approved TestFlight invitation/link and the actual processed build
+  provided by the maintainer. The dry-run artifact is not a physical-device delivery:
+  - **`MyApp.ipa`** — an **unsigned device** build; Finder drag / double-click will
+    **not** install it. Do not offer this as a replacement for a signed TestFlight build.
   - **`MyApp.app.zip`** — an **arm64 iOS Simulator** build. Unzip and run it in the Simulator:
     `xcrun simctl install booted MyApp.app && xcrun simctl launch booted <bundle-id>`. It is ad-hoc
     re-signed so the Simulator (which enforces code signing on macOS 15+/26) launches it.
 
   For a **directly installable** device build (no AltStore, no re-signing) use one of the
-  secret-gated publish paths: **TestFlight** (`publish=true`, the smoothest — testers install from
-  the TestFlight app, no UDID needed) or the **ad-hoc `.ipa`** (below) with each tester's device
+  secret-gated publish paths: **TestFlight** (use the iOS-sample-only selection above for
+  that sample; testers install from the TestFlight app, no UDID needed) or the
+  **ad-hoc `.ipa`** (below) with each tester's device
   UDID registered in the ad-hoc profile.
 - **macOS** — the dry-run `.app` is **ad-hoc signed** (not notarized), so Gatekeeper blocks it on
   first launch. Clear quarantine and open it:
@@ -141,11 +199,13 @@ exposes an installer artifact.
 
 The header of `template-app-distribution.yml` is the source of truth. Summary:
 
-**Required for `publish=true`** (protected `template-app-distribution` environment): the Android
+**Required for default all-platform `publish=true`** (protected `template-app-distribution` environment): the Android
 keystore, the Google Play service account JSON, the Apple distribution certificate, the App Store
 / Mac App Store provisioning profiles, and the App Store Connect API key. `publish=false` needs
 **none** of these — it produces the installable Android APK and self-contained Windows zip
 immediately.
+The opt-in iOS-sample-only mode requires only its Apple setup and explicit repository
+variables listed above, not Android or Mac credentials.
 
 **Optional publish-source policy:**
 

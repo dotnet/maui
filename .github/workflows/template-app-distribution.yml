@@ -43,6 +43,8 @@
 # - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
 # - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
 # - TEMPLATE_APP_TESTFLIGHT_GROUPS (variable): defaults to no explicit group distribution.
+# - TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS (repository variable): explicitly approved groups
+#   for ios_sample_testflight only; never falls back to TEMPLATE_APP_TESTFLIGHT_GROUPS.
 # - TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW (variable): set to true to reject a prior waiting Beta App Review build and submit the latest one.
 # - TEMPLATE_APP_TESTFLIGHT_WAIT_TIMEOUT_SECONDS (variable): defaults to 2700 seconds.
 # - TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS (variable): defaults to 1800 seconds; maximum 7200.
@@ -67,6 +69,11 @@ on:
         type: boolean
       windows_test_msix:
         description: Build only the Windows x64 sample as a self-signed test MSIX (publish must be false).
+        required: true
+        default: false
+        type: boolean
+      ios_sample_testflight:
+        description: Publish only the signed iOS sample to explicitly configured TestFlight groups (publish must be true).
         required: true
         default: false
         type: boolean
@@ -212,12 +219,15 @@ jobs:
           TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID }}
           DOTNET_TFM: ${{ steps.sdk.outputs.dotnet_tfm }}
           WINDOWS_TEST_MSIX: ${{ inputs.windows_test_msix || false }}
+          IOS_SAMPLE_TESTFLIGHT: ${{ inputs.ios_sample_testflight || false }}
+          TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS }}
           PUBLISH: ${{ inputs.publish }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Prepare-Matrix.ps1" `
             -Variants "all" `
             -Platforms "all" `
             -WindowsTestMsix:([bool]::Parse($env:WINDOWS_TEST_MSIX)) `
+            -IosSampleTestFlight:([bool]::Parse($env:IOS_SAMPLE_TESTFLIGHT)) `
             -Publish:([bool]::Parse($env:PUBLISH)) `
             -DotNetTfm "$env:DOTNET_TFM"
 
@@ -486,7 +496,7 @@ jobs:
 
   publish:
     name: Publish/build template apps
-    if: ${{ inputs.publish }}
+    if: ${{ inputs.publish && needs.prepare.outputs.trusted == 'true' }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
@@ -507,6 +517,18 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
+      - name: Guard iOS sample publishing scope
+        if: ${{ inputs.ios_sample_testflight }}
+        shell: pwsh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          VARIANT: ${{ matrix.variant }}
+          PROJECT_NAME: ${{ matrix.projectName }}
+        run: |
+          if ($env:PLATFORM -cne 'ios' -or $env:VARIANT -cne 'sample' -or $env:PROJECT_NAME -cne 'MauiTemplateSample') {
+            throw "iOS sample TestFlight must not run any other platform or variant."
+          }
+
       - name: Configure Git defaults
         shell: pwsh
         run: |
@@ -784,7 +806,7 @@ jobs:
           APPLE_DEVELOPERID_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_MAC_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64 }}
           APPLE_DEVELOPERID_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_MAC_DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD }}
           APPLE_DEVELOPERID_PROVISIONING_PROFILE_BASE64: ${{ matrix.platform == 'maccatalyst' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_MACCATALYST_DEVELOPERID_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'maccatalyst' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_MACCATALYST_DEVELOPERID_PROVISIONING_PROFILE_BASE64 || '' }}
-          APPLE_ADHOC_PROVISIONING_PROFILE_BASE64: ${{ matrix.platform == 'ios' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_ADHOC_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'ios' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_ADHOC_PROVISIONING_PROFILE_BASE64 || '' }}
+          APPLE_ADHOC_PROVISIONING_PROFILE_BASE64: ${{ !inputs.ios_sample_testflight && (matrix.platform == 'ios' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_ADHOC_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'ios' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_ADHOC_PROVISIONING_PROFILE_BASE64) || '' }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Install-AppleSigningAssets.ps1" `
             -Variant "$env:MATRIX_VARIANT" `
@@ -794,19 +816,20 @@ jobs:
         id: build
         shell: pwsh
         env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_BASE64: ${{ matrix.platform == 'android' && secrets.TEMPLATE_APP_ANDROID_KEYSTORE_BASE64 || '' }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ matrix.platform == 'android' && secrets.TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD || '' }}
+          ANDROID_KEY_ALIAS: ${{ matrix.platform == 'android' && secrets.TEMPLATE_APP_ANDROID_KEY_ALIAS || '' }}
+          ANDROID_KEY_PASSWORD: ${{ matrix.platform == 'android' && secrets.TEMPLATE_APP_ANDROID_KEY_PASSWORD || '' }}
           ANDROID_KEYSTORE_TYPE: ${{ vars.TEMPLATE_APP_ANDROID_KEYSTORE_TYPE }}
-          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
-          APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
-          APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
+          APPSTORE_CONNECT_ISSUER_ID: ${{ !inputs.ios_sample_testflight && secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID || '' }}
+          APPSTORE_CONNECT_KEY_ID: ${{ !inputs.ios_sample_testflight && secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID || '' }}
+          APPSTORE_CONNECT_PRIVATE_KEY: ${{ !inputs.ios_sample_testflight && secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY || '' }}
           MATRIX_VARIANT: ${{ matrix.variant }}
           MATRIX_PLATFORM: ${{ matrix.platform }}
           MATRIX_TARGET_FRAMEWORK: ${{ matrix.targetFramework }}
           MATRIX_RUNTIME_IDENTIFIER: ${{ matrix.runtimeIdentifier }}
           PROJECT_PATH: ${{ steps.app.outputs.project_path }}
+          IOS_SAMPLE_TESTFLIGHT: ${{ inputs.ios_sample_testflight || false }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
             -ProjectPath "$env:PROJECT_PATH" `
@@ -818,6 +841,7 @@ jobs:
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
             -SourceManifestPath "${{ steps.pack.outputs.source_manifest_path }}" `
             -SourceSha "$env:SOURCE_SHA" `
+            -IosSampleTestFlight:([bool]::Parse($env:IOS_SAMPLE_TESTFLIGHT)) `
             -Publish
 
       - name: Upload artifact copy
@@ -828,6 +852,15 @@ jobs:
           path: |
             ${{ steps.build.outputs.sideload_package_path }}
             ${{ steps.build.outputs.provenance_path }}
+          retention-days: 14
+
+      - name: Upload iOS sample source-built package evidence
+        if: ${{ inputs.ios_sample_testflight && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-packages-sample-ios-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
+          path: ${{ steps.pack.outputs.source_packages_path }}
+          if-no-files-found: error
           retention-days: 14
 
       - name: Write Google Play credentials
@@ -895,14 +928,25 @@ jobs:
           APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
           MATRIX_IOS_BUNDLE_ID: ${{ matrix.iosBundleId }}
           BUILD_PACKAGE_PATH: ${{ steps.build.outputs.package_path }}
+          IOS_SAMPLE_TESTFLIGHT: ${{ inputs.ios_sample_testflight || false }}
+          SAMPLE_IOS_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS }}
         run: |
+          $groups = $env:TEMPLATE_APP_TESTFLIGHT_GROUPS
+          if ([bool]::Parse($env:IOS_SAMPLE_TESTFLIGHT)) {
+            $groups = $env:SAMPLE_IOS_TESTFLIGHT_GROUPS
+            if ([string]::IsNullOrWhiteSpace($groups)) {
+              throw "TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS must explicitly select approved tester groups."
+            }
+          }
           & bundle exec fastlane ios template_app_testflight `
             "ipa:$env:BUILD_PACKAGE_PATH" `
             "app_identifier:$env:MATRIX_IOS_BUNDLE_ID" `
             "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
             "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
             "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `
-            "groups:$env:TEMPLATE_APP_TESTFLIGHT_GROUPS"
+            "groups:$groups" `
+            "ios_sample_only:$env:IOS_SAMPLE_TESTFLIGHT"
+          if ($LASTEXITCODE -ne 0) { throw "iOS TestFlight upload/distribution failed (exit $LASTEXITCODE)." }
 
       - name: Publish Mac Catalyst to TestFlight with fastlane
         if: ${{ matrix.platform == 'maccatalyst' }}

@@ -207,7 +207,7 @@ function Expand-AndroidAssemblyPayload {
 }
 
 function Get-AppPayloadProof {
-    param([string]$Path, [string]$SourceSha, $Manifest)
+    param([string]$Path, [string]$SourceSha, $Manifest, [switch]$RequireTemplateProvenance)
 
     $isMsix = [IO.Path]::GetExtension($Path) -in @('.msix', '.appx')
     if ([IO.Path]::GetExtension($Path) -in @('.msixbundle', '.appxbundle')) {
@@ -223,16 +223,21 @@ function Get-AppPayloadProof {
             foreach ($name in @('coreclr.dll', 'hostfxr.dll', 'Microsoft.UI.Xaml.dll')) {
                 if ($name -notin $archive.Entries.Name) { throw "Self-contained MSIX is missing '$name'." }
             }
+        }
+        if ($isMsix -or $RequireTemplateProvenance) {
+            if (-not $Manifest) { throw 'Template provenance verification requires the source package manifest.' }
             $resources = @($archive.Entries | Where-Object Name -CEQ 'source-provenance.json')
-            if ($resources.Count -ne 1) { throw 'MSIX template source provenance is missing or ambiguous.' }
+            if ($resources.Count -ne 1) { throw 'Packaged template source provenance is missing or ambiguous.' }
             $reader = [IO.StreamReader]::new($resources[0].Open())
             try { $templateProof = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
             $template = @($Manifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*')
             if ($template.Count -ne 1 -or $templateProof.sourceSha -ne $SourceSha -or
                 $templateProof.frameworkVersion -ne $Manifest.version -or
                 $templateProof.template.sha512 -cne $template[0].sha512) {
-                throw 'MSIX embedded template provenance does not match the source-built package.'
+                throw 'Packaged embedded template provenance does not match the source-built package.'
             }
+        }
+        if ($isMsix) {
             $runtimeFiles = @($archive.Entries | Where-Object Name -Like '*.runtimeconfig.json')
             if ($runtimeFiles.Count -ne 1) { throw 'MSIX self-contained runtime configuration is missing or ambiguous.' }
             $reader = [IO.StreamReader]::new($runtimeFiles[0].Open())
