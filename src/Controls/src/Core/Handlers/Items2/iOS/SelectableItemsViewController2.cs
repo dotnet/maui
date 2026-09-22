@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CoreFoundation;
 using Foundation;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
@@ -14,6 +13,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class SelectableItemsViewController2<TItemsView> : StructuredItemsViewController2<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
+		bool _updateSelectionWhenAttached;
+
 		public SelectableItemsViewController2(TItemsView selectableItemsView, UICollectionViewLayout layout)
 			: base(selectableItemsView, layout)
 		{
@@ -59,16 +60,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				if (!CollectionView.IsLoaded())
 				{
-					DispatchQueue.MainQueue.DispatchAsync(() =>
-					{
-						ValidateAndSelectItem(selectedItem, originalSource);
-					});
+					_updateSelectionWhenAttached = true;
 				}
 				else
 				{
 					ValidateAndSelectItem(selectedItem, originalSource);
 				}
 			}
+		}
+
+		private protected override void AttachingToWindow()
+		{
+			base.AttachingToWindow();
+
+			if (!_updateSelectionWhenAttached)
+			{
+				return;
+			}
+
+			_updateSelectionWhenAttached = false;
+			UpdatePlatformSelection();
 		}
 
 		private void ValidateAndSelectItem(object selectedItem, object originalSource)
