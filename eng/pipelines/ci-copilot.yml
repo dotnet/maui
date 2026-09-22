@@ -1177,11 +1177,11 @@ stages:
                 xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "(none enrolled)"
                 echo "-- simctl runtime list --json (image state/sig/mount/path) --"
                 xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null) path=\(.path // "null")"' 2>/dev/null || echo "(no images)"
-                # CoreSimulator is Xcode-specific: point xcode-select at the newest Xcode (the
+                # CoreSimulator is Xcode-specific: point xcode-select at the configured Xcode (the
                 # runtimes may have been enrolled under it) then 'simctl runtime add <path>' each
                 # Ready-but-unavailable image (stages/verifies/mounts). Best-effort; ignore errors.
-                NEWEST_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
-                [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to newest Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
+                NEWEST_XCODE=$(ls -d /Applications/Xcode_$(XCODE)*.app 2>/dev/null | sort -V | tail -1)
+                [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to configured Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
                 AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
                 while IFS=$'\t' read -r IMG_ID IMG_PATH; do
                   [ -z "$IMG_ID" ] && continue
@@ -2437,10 +2437,10 @@ stages:
                 xcrun simctl list runtimes
 
                 # The net11 Microsoft.iOS workload recommends the iOS 27.0 SDK, so the
-                # HostApp must build with the newest installed Xcode (an older Xcode fails
+                # HostApp must build with the configured Xcode (an older Xcode fails
                 # with error MT0180). Select it up-front so the SDK-version probe below
                 # reflects the Xcode the build will actually use.
-                LATEST_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+                LATEST_XCODE=$(ls -d /Applications/Xcode_$(XCODE)*.app 2>/dev/null | sort -V | tail -1)
                 if [ -n "$LATEST_XCODE" ]; then
                   echo "Using $LATEST_XCODE"
                   sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
@@ -2524,9 +2524,9 @@ stages:
                     [ -d "$cand" ] && BUILD_XCODE="$cand"
                   done
                 fi
-                # Fall back to the newest installed Xcode if no runtime-matched Xcode was found.
+                # Fall back to the configured Xcode if no runtime-matched Xcode was found.
                 if [ -z "$BUILD_XCODE" ]; then
-                  BUILD_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+                  BUILD_XCODE=$(ls -d /Applications/Xcode_$(XCODE)*.app 2>/dev/null | sort -V | tail -1)
                 fi
                 if [ -n "$BUILD_XCODE" ]; then
                   echo "Selecting build Xcode (matches installed sim runtime ${AVAIL_RT_VER:-none}): $BUILD_XCODE"

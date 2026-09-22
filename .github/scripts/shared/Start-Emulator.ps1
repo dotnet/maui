@@ -831,6 +831,23 @@ if ($Platform -eq "android") {
             } catch { Write-Info "    (could not parse simctl runtime list --json: $_)" }
             Write-Info "==== end diagnostics ($Label) ===="
         }
+
+        function Get-ConfiguredXcodePath {
+            $xcodeVersion = $env:XCODE
+            if (-not $xcodeVersion -and $env:REQUIRED_XCODE -match '^(\d+\.\d+)') {
+                $xcodeVersion = $Matches[1]
+            }
+
+            $glob = if ($xcodeVersion) {
+                "/Applications/Xcode_$xcodeVersion*.app"
+            }
+            else {
+                "/Applications/Xcode_*.app"
+            }
+
+            return (& bash -c 'ls -d $1 2>/dev/null | sort -V | tail -1' bash $glob)
+        }
+
         # ENROLL Ready-but-unavailable runtimes: `simctl runtime add <path>` stages, verifies,
         # and mounts a runtime disk image — the step CoreSimulator skips when the image is
         # "Ready" on disk but unenrolled. Best-effort and only over runtimes NOT already in the
@@ -842,8 +859,8 @@ if ($Platform -eq "android") {
                 # MULTI-XCODE HYPOTHESIS: CoreSimulator is Xcode-version-specific. If a NEWER
                 # Xcode downloaded/enrolled the runtimes but `simctl` here runs under an OLDER
                 # xcode-select path, the runtimes look "Ready" on disk yet "Invalid" to create.
-                # Point xcode-select at the newest installed Xcode before enrolling (best-effort).
-                $newestXcode = & bash -c 'ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1'
+                # Point xcode-select at the configured Xcode before enrolling (best-effort).
+                $newestXcode = Get-ConfiguredXcodePath
                 if ($newestXcode) {
                     $curDev = (& xcode-select -p 2>$null)
                     if ($curDev -notlike "$newestXcode*") {
@@ -921,10 +938,10 @@ if ($Platform -eq "android") {
 
             $attempted = $false
             try {
-                # CoreSimulator/runtime downloads are Xcode-version-specific — select the newest
+                # CoreSimulator/runtime downloads are Xcode-version-specific — select the configured
                 # installed Xcode first so the SDK probe + download target the version the build
                 # will actually use (mirrors the deep stage's install step).
-                $newestXcode = & bash -c 'ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1'
+                $newestXcode = Get-ConfiguredXcodePath
                 if ($newestXcode) {
                     $curDev = (& xcode-select -p 2>$null)
                     if ($curDev -notlike "$newestXcode*") {
