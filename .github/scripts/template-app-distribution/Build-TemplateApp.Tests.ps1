@@ -100,6 +100,12 @@ BeforeAll {
         'FAKE_CODESIGN_MODE',
         'FAKE_TESTFLIGHT_ERROR',
         'FAKE_TESTFLIGHT_GROUPS',
+        'FAKE_TESTFLIGHT_IOS_SAMPLE_ONLY',
+        'FAKE_TESTFLIGHT_PKG',
+        'TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW',
+        'TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID',
+        'TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS',
+        'FAKE_TEMPLATE_PROOF_MODE',
         'FAKE_SOURCE_ASSETS_MODE',
         'FAKE_SOURCE_MANIFEST_PATH',
         'FAKE_SOURCE_SHA',
@@ -580,6 +586,16 @@ function Write-FakeArchive([string]$ArchivePath, [string]$Prefix, $Manifest) {
         Add-ArchiveTextEntry -Archive $archive -EntryPath $depsPath -Content (
             ([ordered]@{ libraries = $depsLibraries } | ConvertTo-Json -Depth 10)
         )
+        if ($env:FAKE_TEMPLATE_PROOF_MODE -ne 'missing') {
+            $templateProof = @{
+                sourceSha = $env:FAKE_SOURCE_SHA
+                frameworkVersion = $Manifest.version
+                template = @($Manifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*')[0]
+            }
+            if ($env:FAKE_TEMPLATE_PROOF_MODE -eq 'mismatch') { $templateProof.sourceSha = 'stale' }
+            $proofPath = if ($Prefix) { "$Prefix/source-provenance.json" } else { 'source-provenance.json' }
+            Add-ArchiveTextEntry $archive $proofPath ($templateProof | ConvertTo-Json -Depth 10)
+        }
     }
     finally {
         $archive.Dispose()
@@ -787,6 +803,7 @@ exec pwsh -NoLogo -NoProfile -File "$fakeDittoScriptPath" "`$@"
     $script:fastfileHarnessPath = Join-Path $testRoot 'fastfile-harness.rb'
     @'
 $lanes = {}
+require "json"
 
 module UI
   def self.user_error!(message)
@@ -823,8 +840,10 @@ end
 def upload_to_play_store(**_kwargs)
 end
 
-def upload_to_testflight(*_args)
-  raise ENV.fetch("FAKE_TESTFLIGHT_ERROR")
+def upload_to_testflight(options)
+  puts JSON.generate(options)
+  error = ENV.fetch("FAKE_TESTFLIGHT_ERROR", "")
+  raise error unless error.empty?
 end
 
 load ENV.fetch("FASTFILE_PATH")
@@ -835,7 +854,9 @@ options = {
   issuer_id: "issuer",
   api_private_key_path: "key.p8",
   ipa: "TestApp.ipa",
-  groups: ENV.fetch("FAKE_TESTFLIGHT_GROUPS", "")
+  groups: ENV.fetch("FAKE_TESTFLIGHT_GROUPS", ""),
+  ios_sample_only: ENV.fetch("FAKE_TESTFLIGHT_IOS_SAMPLE_ONLY", ""),
+  pkg: ENV.fetch("FAKE_TESTFLIGHT_PKG", "")
 }
 
 begin
@@ -913,6 +934,7 @@ end
         [string]$RuntimeIdentifier,
         [switch]$Publish,
         [switch]$WindowsTestMsix,
+        [switch]$IosSampleTestFlight,
         [switch]$CreateBinlog
     ) {
         $arguments = @(
@@ -933,6 +955,7 @@ end
             $arguments += '-CreateBinlog'
         }
         if ($WindowsTestMsix) { $arguments += '-WindowsTestMsix' }
+        if ($IosSampleTestFlight) { $arguments += '-IosSampleTestFlight' }
 
         $env:FAKE_SOURCE_MANIFEST_PATH = $TestCase.SourceManifestPath
         $env:FAKE_SOURCE_SHA = $TestCase.SourceSha
@@ -971,7 +994,7 @@ end
         )
     }
 
-    function Invoke-PrepareMatrix([string]$Variants, [string]$Platforms, [switch]$WindowsTestMsix, [switch]$Publish) {
+    function Invoke-PrepareMatrix([string]$Variants, [string]$Platforms, [switch]$WindowsTestMsix, [switch]$Publish, [switch]$IosSampleTestFlight) {
         $arguments = @(
             '-Variants', $Variants,
             '-Platforms', $Platforms,
@@ -979,6 +1002,7 @@ end
         )
         if ($WindowsTestMsix) { $arguments += '-WindowsTestMsix' }
         if ($Publish) { $arguments += '-Publish' }
+        if ($IosSampleTestFlight) { $arguments += '-IosSampleTestFlight' }
         return Invoke-ExternalPowerShell $script:prepareMatrixScriptPath $arguments
     }
 
@@ -1018,12 +1042,13 @@ end
         [string]$RepositoryPath,
         [string]$SourceRef,
         [bool]$Publish,
-        [string]$TrustedPublishBranches = ''
+        [string]$TrustedPublishBranches = '',
+        [string]$WorkflowRef = 'refs/heads/main'
     ) {
         $arguments = @(
             '-RepositoryPath', $RepositoryPath,
             '-SourceRef', $SourceRef,
-            '-WorkflowRef', 'refs/heads/main',
+            '-WorkflowRef', $WorkflowRef,
             '-DefaultBranch', 'main',
             "-Publish:$($Publish.ToString().ToLowerInvariant())"
         )
@@ -1123,6 +1148,35 @@ Describe 'source ref trust resolution' {
 
         $result.ExitCode | Should -Be 0 -Because $result.Output
         Get-Content -Path $env:GITHUB_OUTPUT | Should -Contain 'trusted=true'
+    }
+
+    It 'rejects publishing from the PR workflow branch even for trusted source' {
+        $repositoryPath = New-SourceRefTestRepository
+        $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+        $result = Invoke-ResolveSourceRef -RepositoryPath $repositoryPath -SourceRef 'main' `
+            -WorkflowRef 'refs/heads/template-app-distribution' -Publish $true
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match "Publishing must be run from workflow ref 'refs/heads/main'"
+        Test-Path $env:GITHUB_OUTPUT | Should -BeFalse
+    }
+
+    It 'allows a pinned merged commit but rejects an untrusted SHA for publishing' {
+        foreach ($untrusted in @($false, $true)) {
+            $repositoryPath = New-SourceRefTestRepository -UntrustedHead:$untrusted
+            $sha = (& git -C $repositoryPath rev-parse HEAD).Trim()
+            $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+            $result = Invoke-ResolveSourceRef -RepositoryPath $repositoryPath -SourceRef $sha -Publish $true
+            if ($untrusted) {
+                $result.ExitCode | Should -Not -Be 0
+                $result.Output | Should -Match 'Publishing requires a trusted source_ref'
+                Test-Path $env:GITHUB_OUTPUT | Should -BeFalse
+            } else {
+                $result.ExitCode | Should -Be 0 -Because $result.Output
+                Get-Content $env:GITHUB_OUTPUT | Should -Contain "source_sha=$sha"
+                Get-Content $env:GITHUB_OUTPUT | Should -Contain 'trusted=true'
+            }
+        }
     }
 
     It 'rejects an untrusted branch for protected publishing' {
@@ -1705,6 +1759,176 @@ Describe 'Android artifact safety' {
         if (Test-Path $case.GitHubOutput) {
             (Read-GitHubOutputValues $case.GitHubOutput).ContainsKey('package_path') | Should -BeFalse
         }
+    }
+}
+
+Describe 'iOS sample TestFlight selection' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+        $case = New-BuildTestCase
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID = 'com.example.approved.sample'
+        $env:TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS = 'Approved Sample Testers'
+    }
+
+    It 'restricts the production matrix to exactly the standard iOS sample' {
+        $result = Invoke-PrepareMatrix 'all' 'all' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $matrix = (Read-GitHubOutputValues $case.GitHubOutput).matrix | ConvertFrom-Json
+        @($matrix.include).Count | Should -Be 1
+        $app = $matrix.include[0]
+        $app.variant | Should -BeExactly 'sample'
+        $app.platform | Should -BeExactly 'ios'
+        $app.projectName | Should -BeExactly 'MauiTemplateSample'
+        $app.applicationId | Should -BeExactly $env:TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID
+        $app.template | Should -BeExactly 'maui'
+        $app.templateArgsJson | Should -BeExactly '["--sample-content"]'
+        $app.runtimeIdentifier | Should -BeExactly 'ios-arm64'
+    }
+
+    It 'leaves the original default dry-run matrix unchanged' {
+        $result = Invoke-PrepareMatrix 'all' 'all'
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $matrix = (Read-GitHubOutputValues $case.GitHubOutput).matrix | ConvertFrom-Json
+        @($matrix.include).Count | Should -Be 8
+        @($matrix.include.platform | Sort-Object -Unique) | Should -Be @('android', 'ios', 'maccatalyst', 'windows')
+        @($matrix.include.variant | Sort-Object -Unique) | Should -Be @('blank', 'sample')
+    }
+
+    It 'rejects an iOS publishing selection without publish=true' {
+        $result = Invoke-PrepareMatrix 'all' 'all' -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'requires publish=true'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects combining TestFlight with the test MSIX selection' {
+        $result = Invoke-PrepareMatrix 'all' 'all' -Publish -IosSampleTestFlight -WindowsTestMsix
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'windows_test_msix=false'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'requires explicit <Name> rather than using generated IDs or broad tester groups' -ForEach @(
+        @{ Name = 'TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID' },
+        @{ Name = 'TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS' }
+    ) {
+        [Environment]::SetEnvironmentVariable($Name, '')
+        $result = Invoke-PrepareMatrix 'all' 'all' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match ([regex]::Escape($Name))
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects custom sample overrides for <Field>' -ForEach @(
+        @{ Field = 'projectName'; Value = 'MauiTemplateBlank' },
+        @{ Field = 'template'; Value = 'mauiblazor' },
+        @{ Field = 'templateArgs'; Value = @() },
+        @{ Field = 'iosBundleId'; Value = 'com.example.unapproved' }
+    ) {
+        $env:TEMPLATE_APP_VARIANTS_JSON = @{ sample = @{ $Field = $Value } } | ConvertTo-Json -Depth 5
+        $result = Invoke-PrepareMatrix 'all' 'all' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'does not allow custom overrides'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects a group list containing only separators before the build' {
+        $env:TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS = ' , , '
+        $result = Invoke-PrepareMatrix 'all' 'all' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'at least one explicitly approved'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+}
+
+Describe 'iOS sample signed publishing entrypoint' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+        $case = New-BuildTestCase
+        Rename-Item (Join-Path $case.ProjectRoot 'TestApp.csproj') 'MauiTemplateSample.csproj'
+        $env:FAKE_DOTNET_MODE = 'ios-publish-success'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:RUNNER_TEMP = $case.RunnerTemp
+        $env:IOS_CODESIGN_KEY = 'Apple Distribution'
+        $env:IOS_CODESIGN_PROVISION = 'App Store Profile'
+    }
+
+    It 'verifies the final store IPA and restore provenance without binlogs or an ad-hoc rebuild' {
+        $env:IOS_ADHOC_CODESIGN_PROVISION = 'Ad Hoc Profile'
+        $env:FAKE_DOTNET_MODE = 'ios-adhoc-failure'
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $values = Read-GitHubOutputValues $case.GitHubOutput
+        $values.package_path | Should -Match '[/\\]store[/\\].*\.ipa$'
+        $values.sideload_package_path | Should -Be $values.package_path
+        $values.binlog_path | Should -BeNullOrEmpty
+        @(Get-ChildItem $case.Root -Recurse -Filter '*.binlog').Count | Should -Be 0
+        $proof = Get-Content $values.provenance_path -Raw | ConvertFrom-Json
+        @($proof.resolutions).Count | Should -Be 1
+        $proof.resolutions[0].description | Should -Be 'iOS publish'
+        @($proof.payloads).Count | Should -Be 1
+        $proof.payloads[0].sha256 | Should -BeExactly (Get-FileHash $values.package_path -Algorithm SHA256).Hash.ToLowerInvariant()
+        @($proof.payloads[0].assemblies).Count | Should -Be 3
+        foreach ($assembly in $proof.payloads[0].assemblies) {
+            $assembly.informationalVersion | Should -Match $case.SourceSha
+        }
+    }
+
+    It 'rejects a non-sample project before building' {
+        Rename-Item (Join-Path $case.ProjectRoot 'MauiTemplateSample.csproj') 'MauiTemplateBlank.csproj'
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'restricted to the MauiTemplateSample project'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects secret-bearing binlogs before exposing any output' {
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight -CreateBinlog
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'or binlogs'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects the wrong platform before building' {
+        $result = Invoke-BuildTemplateApp $case 'android' 'net10.0-android' 'android-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'signed iOS arm64 publish'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'fails without signing configuration instead of substituting an unsigned IPA' {
+        $env:IOS_CODESIGN_PROVISION = ''
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'IOS_CODESIGN_PROVISION'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects <Mode> template provenance inside the produced IPA' -ForEach @(
+        @{ Mode = 'missing' }, @{ Mode = 'mismatch' }
+    ) {
+        $env:FAKE_TEMPLATE_PROOF_MODE = $Mode
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'template.*provenance'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects a restored package hash mismatch before upload' {
+        $env:FAKE_SOURCE_ASSETS_MODE = 'hash-mismatch'
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'not the pinned source-built package'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+
+    It 'rejects a stale framework binary in the final IPA before upload' {
+        $env:FAKE_MAUI_ASSEMBLY_DIRECTORY = Initialize-FakeMauiPayloadAssemblies -SourceSha ('f' * 40)
+        $result = Invoke-BuildTemplateApp $case 'ios' 'net10.0-ios' 'ios-arm64' -Publish -IosSampleTestFlight
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'Packaged assembly.*not from'
+        Test-Path $case.GitHubOutput | Should -BeFalse
     }
 }
 
@@ -2309,6 +2533,18 @@ Describe 'Windows test MSIX' {
 }
 
 Describe 'workflow test gate' {
+    It 'wires opt-in sample-only publishing through matrix, build and TestFlight routing' {
+        $script:workflowText | Should -Match '(?s)ios_sample_testflight:\s+description:.*?default: false\s+type: boolean'
+        [regex]::Matches($script:workflowText, '-IosSampleTestFlight:\(\[bool\]::Parse\(\$env:IOS_SAMPLE_TESTFLIGHT\)\)').Count | Should -Be 2
+        $script:workflowText | Should -Match "inputs.publish && needs.prepare.outputs.trusted == 'true'"
+        $script:workflowText | Should -Match 'if \(\$env:PLATFORM -cne ''ios'' -or \$env:VARIANT -cne ''sample'''
+        $script:workflowText | Should -Match 'SAMPLE_IOS_TESTFLIGHT_GROUPS:\s*\$\{\{\s*vars.TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS'
+        $script:workflowText | Should -Match '"ios_sample_only:\$env:IOS_SAMPLE_TESTFLIGHT"'
+        $script:workflowText | Should -Match "inputs.ios_sample_testflight && steps.build.outcome == 'success'"
+        $script:workflowText | Should -Match 'name: source-packages-sample-ios-'
+        $script:workflowText | Should -Match 'APPLE_ADHOC_PROVISIONING_PROFILE_BASE64:.*!inputs.ios_sample_testflight'
+    }
+
     It 'runs the behavioral suite before matrix preparation' {
         $scriptTestsJob = [regex]::Match(
             $script:workflowText,
@@ -2454,6 +2690,47 @@ Describe 'template metadata replacement' {
 Describe 'TestFlight error handling' {
     BeforeEach {
         Reset-BuildTestEnvironment
+    }
+
+    It 'limits sample mode to named groups without notifications or review replacement' {
+        $env:FAKE_TESTFLIGHT_IOS_SAMPLE_ONLY = 'true'
+        $env:FAKE_TESTFLIGHT_GROUPS = 'Approved Sample Testers'
+        $env:TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW = 'true'
+        $result = Invoke-FastfileHarness
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $options = ($result.Output -split "`n" | Where-Object { $_.StartsWith('{') }) | ConvertFrom-Json
+        @($options.groups) | Should -Be @('Approved Sample Testers')
+        $options.ipa | Should -Be 'TestApp.ipa'
+        $options.skip_waiting_for_build_processing | Should -BeFalse
+        $options.notify_external_testers | Should -BeFalse
+        $options.reject_build_waiting_for_review | Should -BeNullOrEmpty
+        $options.pkg | Should -BeNullOrEmpty
+    }
+
+    It 'rejects upload-only or Mac routing for the sample-only lane' -ForEach @(
+        @{ Groups = ''; Pkg = '' },
+        @{ Groups = ' , '; Pkg = '' },
+        @{ Groups = 'Approved Sample Testers'; Pkg = 'Unexpected.pkg' }
+    ) {
+        $env:FAKE_TESTFLIGHT_IOS_SAMPLE_ONLY = 'true'
+        $env:FAKE_TESTFLIGHT_GROUPS = $Groups
+        $env:FAKE_TESTFLIGHT_PKG = $Pkg
+        $result = Invoke-FastfileHarness
+        $result.ExitCode | Should -Be 42
+        $result.Output | Should -Match 'requires an IPA and explicitly selected tester groups'
+    }
+
+    It 'fails sample delivery on a review conflict or processing timeout' -ForEach @(
+        @{ Failure = 'Another build is in review' },
+        @{ Failure = 'BuildWatcher exceeded processing timeout' }
+    ) {
+        $env:FAKE_TESTFLIGHT_IOS_SAMPLE_ONLY = 'true'
+        $env:FAKE_TESTFLIGHT_GROUPS = 'Approved Sample Testers'
+        $env:FAKE_TESTFLIGHT_ERROR = $Failure
+        $result = Invoke-FastfileHarness
+        $result.ExitCode | Should -Be 42
+        $result.Output | Should -Not -Match 'lane succeeded'
     }
 
     It 'fails when external groups cannot receive a build due to a beta-review conflict' {

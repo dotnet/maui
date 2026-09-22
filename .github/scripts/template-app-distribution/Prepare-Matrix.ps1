@@ -12,10 +12,28 @@ param(
 
     [switch]$WindowsTestMsix,
 
+    [switch]$IosSampleTestFlight,
+
     [switch]$Publish
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($IosSampleTestFlight) {
+    if (-not $Publish -or $WindowsTestMsix) {
+        throw "iOS sample TestFlight requires publish=true and windows_test_msix=false."
+    }
+    foreach ($name in @('TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID', 'TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS')) {
+        if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+            throw "iOS sample TestFlight requires an explicitly configured $name repository variable."
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace(($env:TEMPLATE_APP_SAMPLE_IOS_TESTFLIGHT_GROUPS -replace ',', ''))) {
+        throw "iOS sample TestFlight requires at least one explicitly approved tester group."
+    }
+    $Variants = 'sample'
+    $Platforms = 'ios'
+}
 
 if ($WindowsTestMsix) {
     if ($Publish) { throw "Windows test MSIX cannot be combined with store publishing." }
@@ -124,6 +142,15 @@ if (-not [string]::IsNullOrWhiteSpace($env:TEMPLATE_APP_VARIANTS_JSON)) {
 
         Merge-VariantDefinition $variantDefinitions $variantName $property.Value
     }
+}
+
+if ($IosSampleTestFlight -and (
+    $variantDefinitions.sample.projectName -cne 'MauiTemplateSample' -or
+    $variantDefinitions.sample.template -cne 'maui' -or
+    @($variantDefinitions.sample.templateArgs).Count -ne 1 -or
+    $variantDefinitions.sample.templateArgs[0] -cne '--sample-content' -or
+    $variantDefinitions.sample.iosBundleId -cne $env:TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID)) {
+    throw "iOS sample TestFlight does not allow custom overrides of the sample project, template, arguments or bundle ID."
 }
 
 $platformDefinitions = [ordered]@{
