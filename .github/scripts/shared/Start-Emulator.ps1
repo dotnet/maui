@@ -521,11 +521,11 @@ if ($Platform -eq "android") {
         #
         # iOS-26-4 is pinned FIRST (ahead of the generic iOS-26): the deep stage's
         # "Install iOS simulator runtimes" step installs the runtime matching the
-        # build SDK (26.5) so actool can compile — but that ALSO makes the generic
-        # "iOS-26" tier's descending sort prefer 26.5. The ios-26 visual baselines
-        # were captured on iOS 26.4 (PR #35061), so rendering on 26.5 would produce
+        # build SDK so actool can compile — but that ALSO makes the generic
+        # "iOS-26" tier's descending sort prefer the newest installed runtime. The ios-26 visual baselines
+        # were captured on iOS 26.4 (PR #35061), so rendering on a newer runtime would produce
         # spurious pixel diffs. Selecting 26.4 explicitly keeps the RUN on the
-        # baseline OS while the build still uses the 26.5 SDK. Falls back to the
+        # baseline OS while the build still uses the selected SDK. Falls back to the
         # newest iOS-26 (then 18/17) if 26.4 is ever absent.
         $preferredVersions = @("iOS-26-4", "iOS-26", "iOS-18", "iOS-17")
         # Preferred devices per iOS version. Every iOS UI-test snapshot baseline
@@ -843,7 +843,7 @@ if ($Platform -eq "android") {
                 # Xcode downloaded/enrolled the runtimes but `simctl` here runs under an OLDER
                 # xcode-select path, the runtimes look "Ready" on disk yet "Invalid" to create.
                 # Point xcode-select at the newest installed Xcode before enrolling (best-effort).
-                $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
+                $newestXcode = & bash -c 'ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1'
                 if ($newestXcode) {
                     $curDev = (& xcode-select -p 2>$null)
                     if ($curDev -notlike "$newestXcode*") {
@@ -924,7 +924,7 @@ if ($Platform -eq "android") {
                 # CoreSimulator/runtime downloads are Xcode-version-specific — select the newest
                 # installed Xcode first so the SDK probe + download target the version the build
                 # will actually use (mirrors the deep stage's install step).
-                $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
+                $newestXcode = & bash -c 'ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1'
                 if ($newestXcode) {
                     $curDev = (& xcode-select -p 2>$null)
                     if ($curDev -notlike "$newestXcode*") {

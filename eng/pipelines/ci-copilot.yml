@@ -51,21 +51,16 @@ parameters:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
-  # Override the shared REQUIRED_XCODE/DEVICETESTS_REQUIRED_XCODE/XCODE pins (26.0.1 in
-  # variables.yml) for this pipeline only. The net11 Microsoft.iOS / Microsoft.MacCatalyst
-  # workloads require the iOS 26.5 SDK; building the HostApp with an older Xcode (26.0.1)
-  # fails hard with MT0180 ("requires the iOS 26.5 SDK"). The shared "Select Xcode Version"
-  # step (eng/pipelines/common/provision.yml) reads $(REQUIRED_XCODE) and — because it finds
-  # an exact 26.0.1 match — never reaches its "latest available Xcode" fallback, so it
-  # downgrades the agent from the newest installed Xcode (26.5) to 26.0.1 in BOTH the review
-  # and deep UI-test stages. Pinning to 26.5 here fixes provision.yml everywhere in ci-copilot;
-  # if 26.5 is ever removed from the agents, provision.yml's fallback selects the newest available.
+  # Keep the Copilot PR-review pipeline aligned with the shared Xcode pin. This
+  # pipeline has its own override because it can run against older branch
+  # variables during backports, but the net11 Apple workload now recommends
+  # Xcode 27.0.
   - name: REQUIRED_XCODE
-    value: 26.5
+    value: 27.0
   - name: DEVICETESTS_REQUIRED_XCODE
-    value: 26.5
+    value: 27.0
   - name: XCODE
-    value: 26.5
+    value: 27.0
   - name: Codeql.Enabled
     value: false
   - name: Codeql.SkipTaskAutoInjection
@@ -1185,7 +1180,7 @@ stages:
                 # CoreSimulator is Xcode-specific: point xcode-select at the newest Xcode (the
                 # runtimes may have been enrolled under it) then 'simctl runtime add <path>' each
                 # Ready-but-unavailable image (stages/verifies/mounts). Best-effort; ignore errors.
-                NEWEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                NEWEST_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
                 [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to newest Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
                 AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
                 while IFS=$'\t' read -r IMG_ID IMG_PATH; do
@@ -2423,13 +2418,13 @@ stages:
               continueOnError: true
 
           # Install the iOS simulator runtimes the deep stage needs. Two runtimes matter:
-          #  1. The runtime matching the BUILD SDK (newest Xcode = 26.5). actool
+          #  1. The runtime matching the BUILD SDK (newest Xcode = 27.0). actool
           #     (asset-catalog compilation, part of every HostApp build) requires a
-          #     simulator runtime that matches the build SDK. Building with Xcode 26.5
-          #     (iphonesimulator SDK 26.5 / 23F73) while only 26.0 + 26.4 runtimes are
+          #     simulator runtime that matches the build SDK. Building with Xcode 27.0
+          #     while only older runtimes are
           #     installed makes EVERY iOS deep category fail at build time with
-          #       actool error: No simulator runtime version from ["23A343","23E244"]
-          #       available to use with iphonesimulator SDK version 23F73
+          #       actool error: No simulator runtime version from [...] available
+          #       to use with the selected iphonesimulator SDK version
           #     -> zero iOS deep results (build 14663650). So we MUST install the
           #     runtime matching the selected Xcode's SDK.
           #  2. The iOS 26.4 runtime — the OS the ios-26 snapshot baselines were captured
@@ -2441,11 +2436,11 @@ stages:
                 echo "=== Current runtimes ==="
                 xcrun simctl list runtimes
 
-                # The net11 Microsoft.iOS workload requires the iOS 26.5 SDK, so the
+                # The net11 Microsoft.iOS workload recommends the iOS 27.0 SDK, so the
                 # HostApp must build with the newest installed Xcode (an older Xcode fails
                 # with error MT0180). Select it up-front so the SDK-version probe below
                 # reflects the Xcode the build will actually use.
-                LATEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                LATEST_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
                 if [ -n "$LATEST_XCODE" ]; then
                   echo "Using $LATEST_XCODE"
                   sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
@@ -2453,7 +2448,7 @@ stages:
 
                 # (1) Install the runtime that MATCHES the build SDK so actool can compile
                 # the asset catalog. Probe the selected Xcode's iphonesimulator SDK version
-                # (e.g. 26.5) and download exactly that runtime — this is future-proof as the
+                # (e.g. 27.0) and download exactly that runtime — this is future-proof as the
                 # agents move to newer Xcodes.
                 SDK_VER=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null)
                 echo "--- Selected Xcode iphonesimulator SDK version: $SDK_VER ---"
@@ -2469,13 +2464,13 @@ stages:
                   || sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
 
                 # ENROLLMENT RECOVERY (builds 14691165 + 14689412, #36507 ios). 'xcodebuild
-                # -downloadPlatform' can leave a NEWER iOS runtime (e.g. 26.5) as a "Ready" disk
+                # -downloadPlatform' can leave a NEWER iOS runtime (e.g. 27.0) as a "Ready" disk
                 # image that CoreSimulator has NOT enrolled into its active registry, so
                 # 'simctl list runtimes available' reports only the OLDER 26.4 baseline. Two
                 # downstream failures follow from that stale "available" view:
                 #   (a) the BUILD_XCODE picker below sees newest-available=26.4 and selects the
                 #       older Xcode_26.4, whose SDK is too old for the Microsoft.iOS workload, so
-                #       the deep build dies "error MT0180: requires the iOS 26.5 SDK" (build
+                #       the deep build dies with an MT0180 Xcode/SDK mismatch (build
                 #       14689412 -> 0 iOS deep results); and
                 #   (b) the gate/deep Boot step's 'simctl create' rejects the Ready-but-unenrolled
                 #       runtime with "Invalid runtime" (build 14691165) and gives up.
@@ -2502,17 +2497,17 @@ stages:
 
                 # Select the BUILD Xcode to MATCH an INSTALLED simulator runtime. actool
                 # (asset-catalog compilation, part of every HostApp build) needs a simulator
-                # runtime matching the build SDK. The agents now ship Xcode 26.5 — a net11
-                # PREVIEW whose iphonesimulator SDK (23F73) has NO installable simulator
-                # runtime (Apple offers no matching download; only iOS 26.4 / 23E244 installs).
+                # runtime matching the build SDK. The agents now ship a net11
+                # workload whose iphonesimulator SDK may not have an installable simulator
+                # runtime yet (Apple may offer only older downloads).
                 # So blindly selecting the NEWEST Xcode makes EVERY iOS deep category fail at
                 # build time with:
-                #   actool error: No simulator runtime version from ["23E244"] available to use
-                #   with iphonesimulator SDK version 23F73        (build 14664046 -> 0 iOS results)
+                #   actool error: No simulator runtime version from [...] available to use
+                #   with the selected iphonesimulator SDK version (build 14664046 -> 0 iOS results)
                 # Instead pick the newest Xcode whose iOS simulator runtime is actually present,
                 # so actool finds its match. This is safe on the version front: build 14657467
-                # built the same net11 iOS HostApp with Xcode 26.0.1 (an OLDER Xcode with a
-                # matching runtime) and ran 46 real tests with NO MT0180 — the 26.5 pin was the
+                # built the same net11 iOS HostApp with an OLDER Xcode that had a
+                # matching runtime) and ran 46 real tests with NO MT0180 — the strict latest-Xcode pin was the
                 # regression, not a requirement. ValidateXcodeVersion=false (in the build command)
                 # skips the SDK's Xcode-version gate; the app also renders on 26.4, the OS the
                 # ios-26 visual baselines were captured on (PR #35061). Self-correcting: once an
@@ -2531,7 +2526,7 @@ stages:
                 fi
                 # Fall back to the newest installed Xcode if no runtime-matched Xcode was found.
                 if [ -z "$BUILD_XCODE" ]; then
-                  BUILD_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                  BUILD_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
                 fi
                 if [ -n "$BUILD_XCODE" ]; then
                   echo "Selecting build Xcode (matches installed sim runtime ${AVAIL_RT_VER:-none}): $BUILD_XCODE"
