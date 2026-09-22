@@ -9,6 +9,39 @@ Describe 'ci.yml provisioning' {
       Join-Path $PSScriptRoot 'arcade/stage-helix-tests.yml') -Raw
   }
 
+  Describe 'Apple dependency alignment' {
+    BeforeAll {
+      [xml]$buildProps = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../../Directory.Build.props') -Raw
+      [xml]$versions = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../Versions.props') -Raw
+    }
+
+    It 'aligns <Platform> target frameworks with the selected Apple SDK' -TestCases @(
+      @{ Platform = 'Ios'; SdkAlias = 'MicrosoftiOSSdkPackageVersion' }
+      @{ Platform = 'Tvos'; SdkAlias = 'MicrosofttvOSSdkPackageVersion' }
+      @{ Platform = 'MacCatalyst'; SdkAlias = 'MicrosoftMacCatalystSdkPackageVersion' }
+      @{ Platform = 'Macos'; SdkAlias = 'MicrosoftmacOSSdkPackageVersion' }
+    ) {
+      param($Platform, $SdkAlias)
+
+      $reference = $versions.SelectSingleNode("/Project/PropertyGroup/$SdkAlias").InnerText
+      $referenceMatch = [regex]::Match($reference, '^\$\((?<property>[A-Za-z0-9_]+)\)$')
+      $referenceMatch.Success | Should -BeTrue
+      $sdkProperty = $referenceMatch.Groups['property'].Value
+      $sdkVersion = $versions.SelectSingleNode("/Project/PropertyGroup/$sdkProperty").InnerText
+      [version]$version = ($sdkVersion -split '-')[0]
+      $platformVersion = "$($version.Major).$($version.Minor)"
+
+      $buildProps.SelectSingleNode(
+        "/Project/PropertyGroup/${Platform}TargetFrameworkVersionSdkDefault").InnerText |
+        Should -Be $platformVersion
+      $buildProps.SelectSingleNode(
+        "/Project/PropertyGroup/${Platform}TargetFrameworkVersion").InnerText |
+        Should -Be $platformVersion
+    }
+  }
+
   It 'selects Xcode 27 RC agents for public macOS build, pack, and integration jobs' {
     $buildPools = [regex]::Match(
       $pipeline, '(?ms)^- name: BuildPlatformsPublic\r?\n.*?(?=^- name:)').Value
