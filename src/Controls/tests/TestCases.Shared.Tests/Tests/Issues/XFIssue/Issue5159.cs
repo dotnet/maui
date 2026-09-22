@@ -8,7 +8,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 [Category(UITestCategories.Picker)]
 public class Issue5159 : _IssuesUITest
 {
-	string doneButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 	const string DatePickerButton = "DatePickerButton";
 	const string TimePickerButton = "TimePickerButton";
 	const string PickerButton = "PickerButton";
@@ -23,7 +22,7 @@ public class Issue5159 : _IssuesUITest
 	{
 		App.WaitForElement("DatePickerButton");
 		App.Tap(DatePickerButton);
-		App.WaitForElement(doneButton);
+		App.WaitForElement("Done");
 		App.TapCoordinates(5, 100);
 	}
 
@@ -32,7 +31,7 @@ public class Issue5159 : _IssuesUITest
 	{
 		App.WaitForElement(TimePickerButton);
 		App.Tap(TimePickerButton);
-		App.WaitForElement(doneButton);
+		App.WaitForElement("Done");
 		App.TapCoordinates(5, 100);
 	}
 
@@ -41,7 +40,7 @@ public class Issue5159 : _IssuesUITest
 	{
 		App.WaitForElement(PickerButton);
 		App.Tap(PickerButton);
-		App.WaitForElement(doneButton);
+		App.WaitForElement("Done");
 	}
 }
 #endif
