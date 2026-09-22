@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Hosting.Internal;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.UnitTests;
@@ -140,6 +141,27 @@ namespace Microsoft.Maui.UnitTesting.Hosting
 			var resolvedServiceType = registeredTypes.ResolveVirtualViewToRegisteredHandlerServiceType(typeof(ChildViewStub));
 
 			Assert.Equal(typeof(ViewStub), resolvedServiceType);
+		}
+
+		[Fact]
+		public void RegisteredHandlerServiceCollectionCanBeCollected()
+		{
+			var collection = RegisterHandlerService();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(collection.IsAlive);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static WeakReference RegisterHandlerService()
+		{
+			var collection = new MauiHandlersCollection();
+			collection.AddHandler<ViewStub, ViewHandlerStub>();
+
+			return new WeakReference(collection);
 		}
 
 		class ChildViewStub : ViewStub, IParentAViewStub, IParentBViewStub { }
