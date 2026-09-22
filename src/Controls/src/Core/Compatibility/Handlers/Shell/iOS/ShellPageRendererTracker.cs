@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _isVisiblePage;
 		NSObject? _keyboardWillHideObserver;
 		bool _pendingKeyboardNavigation;
+		UILabel? _compactTitleLabel;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -105,6 +106,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_flyoutBehavior = behavior;
 			UpdateToolbarItemsInternal();
+			UpdateCompactTitle();
 		}
 
 #nullable disable
@@ -112,7 +114,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 #nullable restore
 			if (e.Is(VisualElement.FlowDirectionProperty))
+			{
 				UpdateFlowDirection();
+				UpdateCompactTitle();
+			}
 			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
 			{
 				UpdateLeftToolbarItems();
@@ -216,6 +221,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// Update back-stack pages so iOS back button/history menu reflects title changes
 			NavigationItem.Title = Page?.Title;
+			UpdateCompactTitle();
 		}
 
 
@@ -324,6 +330,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var titleView = _context?.Shell?.Toolbar?.TitleView as View;
+			if (titleView is null && ShouldUseCompactTitle())
+			{
+				UpdateCompactTitle();
+				return;
+			}
+
+			ClearCompactTitle();
 
 			if (NavigationItem.TitleView is TitleViewContainer tvc &&
 				tvc.View == titleView)
@@ -358,6 +371,71 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					titleView.ParentSet += OnTitleViewParentSet;
 				}
 			}
+		}
+
+		bool ShouldUseCompactTitle()
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(18) &&
+				   !OperatingSystem.IsIOSVersionAtLeast(26) &&
+				   _flyoutBehavior == FlyoutBehavior.Locked &&
+				   (_context?.Shell as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true &&
+				   _context?.Shell?.Toolbar?.TitleView is null;
+		}
+
+		void UpdateCompactTitle()
+		{
+			if (!ShouldUseCompactTitle())
+			{
+				ClearCompactTitle();
+				return;
+			}
+
+			if (NavigationItem is null ||
+				ViewController?.NavigationController?.NavigationBar is not UINavigationBar navigationBar)
+			{
+				return;
+			}
+
+			if (_compactTitleLabel is null)
+			{
+				var existingTitleView = NavigationItem.TitleView;
+				NavigationItem.TitleView?.Dispose();
+				NavigationItem.TitleView = null;
+
+				_compactTitleLabel = new UILabel
+				{
+					LineBreakMode = UILineBreakMode.TailTruncation,
+					Lines = 1,
+					TextAlignment = UITextAlignment.Center,
+				};
+
+				var font = UIFont.BoldSystemFontOfSize(UIFont.LabelFontSize);
+
+				if (font is not null)
+				{
+					_compactTitleLabel.Font = font;
+				}
+				NavigationItem.TitleView = _compactTitleLabel;
+			}
+
+			_compactTitleLabel.Text = NavigationItem.Title ?? string.Empty;
+			_compactTitleLabel.TextColor = navigationBar.TitleTextAttributes?.ForegroundColor ?? UIColor.Label;
+		}
+
+		void ClearCompactTitle()
+		{
+			if (_compactTitleLabel is null)
+			{
+				return;
+			}
+
+			if (ReferenceEquals(NavigationItem?.TitleView, _compactTitleLabel))
+			{
+				NavigationItem.TitleView = null;
+			}
+
+			_compactTitleLabel.Dispose();
+			_compactTitleLabel = null;
 		}
 
 		/// <summary>
@@ -1530,6 +1608,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (disposing)
 			{
 				_searchHandlerAppearanceTracker?.Dispose();
+				ClearCompactTitle();
 
 				if (Page is not null)
 				{
