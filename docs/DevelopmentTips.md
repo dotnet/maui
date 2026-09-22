@@ -224,6 +224,36 @@ The harness regression tests do not require MAUI workloads or an emulator:
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --filter "FullyQualifiedName~ToolRunnerTests|FullyQualifiedName~BuildWarningsUtilitiesTests"
 ```
 
+## Choosing a Test Suite
+
+Use the least expensive suite that exercises the behavior under test:
+
+| Behavior | Suite |
+| --- | --- |
+| Bindable properties, commands, managed visual states, and control logic without handlers | `src/Controls/tests/Core.UnitTests` |
+| XAML inflation, bindings, triggers, templates, and styles without native views | `src/Controls/tests/Xaml.UnitTests` |
+| Handler/service registration, shared infrastructure, and managed disposal | `src/Core/tests/UnitTests` |
+| Shared Essentials validation, parsing, and value objects | `src/Essentials/test/UnitTests` |
+| Native handler mappings, lifecycle, platform APIs, and mobile-runtime regressions | The corresponding `DeviceTests` project |
+| Gestures, focus, accessibility, native layout, and rendered appearance | `src/Controls/tests/TestCases.Shared.Tests` with a `TestCases.HostApp` reproduction |
+
+The unit suites run on desktop .NET without launching an app or an emulator.
+Use their existing fixtures to initialize and restore shared dispatcher and application state.
+XAML scenarios should use `[XamlInflatorData]` to exercise runtime inflation, XamlC, and source generation.
+
+When migrating a device or UI test, check the implementation and existing unit coverage first.
+Move the original assertions, including failure and recovery paths, or remove the duplicate if an
+equivalent unit test already exists. For example, `TriggerBindingScenarios` checks trigger-driven
+colors, opacity, enablement, and binding updates directly instead of using screenshots to infer state.
+It reuses the gallery's view model, converters, and trigger action. Preserve a UI test when the
+regression concerns how those properties are rendered, rather than which values are assigned.
+
+Keep native interaction portions of mixed fixtures and their manual gallery reproductions.
+Remove only snapshot baselines no longer referenced by any remaining test, across all platform
+directories. A managed-looking assertion is not sufficient evidence for migration: validation may
+live in a platform implementation, and a deployed mobile-runtime regression cannot be covered by
+the desktop runtime. Do not replace the behavior under test with a mock merely to move it.
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.

@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.DeviceTests
+namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[Category(TestCategory.Mapper)]
-	public class MapperTests : ControlsHandlerTestBase
+	public class MapperTests : BaseTestFixture
 	{
 		[Theory]
 		[ClassData(typeof(MapperGenericTypeCases))]
 		public void ValidateMapperGenerics(IPropertyMapper propertyMapper, Type viewType, Type handlerType)
 		{
-			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(h => h.AddMauiControlsHandlers()));
+			using var app = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(h => h.AddMauiControlsHandlers())
+				.Build();
 			var generics = propertyMapper.GetType().GenericTypeArguments;
 			Assert.Equal(viewType, generics[0]);
 			Assert.Equal(handlerType, generics[1]);

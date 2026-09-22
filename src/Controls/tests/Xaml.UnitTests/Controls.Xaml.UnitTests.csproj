@@ -54,6 +54,7 @@
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\Triggers\TriggersViewModel.cs" Link="TestCases\TriggersViewModel.cs" />
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:gallery="clr-namespace:Maui.Controls.Sample"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.TriggerBindingScenarios"
+             x:DataType="gallery:TriggersViewModel">
+    <ContentPage.Resources>
+        <gallery:InverseBooleanConverter x:Key="inverseBooleanConverter" />
+        <gallery:StringNotNullOrEmptyConverter x:Key="stringNotNullOrEmptyConverter" />
+        <Style x:Key="CheckableGridStyle" TargetType="Grid">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup>
+                        <VisualState x:Name="Checked">
+                            <VisualState.StateTriggers>
+                                <StateTrigger IsActive="{Binding IsToggled}" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="Black" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Unchecked">
+                            <VisualState.StateTriggers>
+                                <StateTrigger IsActive="{Binding IsToggled, Converter={StaticResource inverseBooleanConverter}}" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="White" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+        <Style x:Key="CompareStateGridStyle" TargetType="Grid">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup>
+                        <VisualState x:Name="CheckedState">
+                            <VisualState.StateTriggers>
+                                <CompareStateTrigger Property="{Binding IsChecked}" Value="True" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="DarkGreen" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="UncheckedState">
+                            <VisualState.StateTriggers>
+                                <CompareStateTrigger Property="{Binding IsChecked}" Value="False" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="LightGray" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+    <VerticalStackLayout>
+        <Entry x:Name="DataEntry" Text="{Binding DataEntryText}" />
+        <Button x:Name="SaveButton" Text="Save" IsEnabled="{Binding IsSaveButtonEnabled}">
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding IsSaveButtonEnabled}" Value="False">
+                    <Setter Property="Opacity" Value="0.5" />
+                </DataTrigger>
+                <DataTrigger TargetType="Button" Binding="{Binding IsSaveButtonEnabled}" Value="True">
+                    <Setter Property="Opacity" Value="1.0" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
+        <Entry x:Name="NumericEntry">
+            <Entry.Triggers>
+                <EventTrigger Event="TextChanged">
+                    <gallery:NumericValidationTriggerAction />
+                </EventTrigger>
+            </Entry.Triggers>
+        </Entry>
+        <Entry x:Name="EmailEntry" Text="{Binding EmailEntryText}" />
+        <Entry x:Name="PhoneEntry" Text="{Binding PhoneEntryText}" />
+        <Button x:Name="SubmitButton" Text="Submit" IsEnabled="False" Opacity="0.5">
+            <Button.Triggers>
+                <MultiTrigger TargetType="Button">
+                    <MultiTrigger.Conditions>
+                        <BindingCondition Binding="{Binding EmailEntryText, Converter={StaticResource stringNotNullOrEmptyConverter}}" Value="True" />
+                        <BindingCondition Binding="{Binding PhoneEntryText, Converter={StaticResource stringNotNullOrEmptyConverter}}" Value="True" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="IsEnabled" Value="True" />
+                    <Setter Property="Opacity" Value="1.0" />
+                </MultiTrigger>
+            </Button.Triggers>
+        </Button>
+        <Grid x:Name="StateGrid" Style="{StaticResource CheckableGridStyle}" />
+        <Switch x:Name="StateSwitch" IsToggled="{Binding IsToggled}" />
+        <Grid x:Name="CompareGrid" Style="{StaticResource CompareStateGridStyle}">
+            <CheckBox x:Name="CompareCheckBox" IsChecked="{Binding IsChecked}" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentPage>
