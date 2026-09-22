@@ -649,23 +649,9 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				// Store local reference to allow cancellation inside the Post callback
-				var localDisposable = disposable;
+				disposable?.Dispose();
 				disposable = null;
-				view.Post(() =>
-				{
-					if (view.IsAttachedToWindow && localDisposable is not null)
-					{
-						action();
-						localDisposable.Dispose();
-					}
-					else if (localDisposable is not null)
-					{
-						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
-						// Restore disposable so the next ViewAttachedToWindow can retry.
-						disposable = localDisposable;
-					}
-				});
+				action();
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;
