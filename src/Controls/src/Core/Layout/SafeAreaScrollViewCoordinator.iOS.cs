@@ -1,6 +1,8 @@
 #nullable disable
 using System;
+using CoreAnimation;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -26,6 +28,12 @@ sealed class SafeAreaScrollViewCoordinator
 	double _delegatedBoundsHeight = -1;
 	nfloat _delegatedStatusBarHeight = -1;
 	string _delegatedContentSizeCategory;
+	CADisplayLink _deferredInteractionDisplayLink;
+	WeakReference<IView> _deferredScrollHost;
+	WeakReference<IView> _deferredScrollContent;
+	Rect _deferredBounds;
+	double _deferredContentTopInset;
+	double _deferredSystemTopInset;
 
 	public bool TryDelegate(
 		IView scrollHost,
@@ -99,17 +107,31 @@ sealed class SafeAreaScrollViewCoordinator
 			nativeFrameInHostParent is CGRect hostParentFrame &&
 			hostParentFrame.Top >= delegatedFrame.Top + classificationSystemTopInset - 0.5;
 
+		var interactionActive =
+			nativeScrollView.Tracking ||
+			nativeScrollView.Dragging ||
+			nativeScrollView.Decelerating;
+		var topologyChangeDeferred = false;
 		if (!isFirstDelegation &&
 			nativeScrollIsSafeAreaPinned != _nativeScrollIsSafeAreaPinned &&
-			(nativeScrollView.Tracking || nativeScrollView.Dragging || nativeScrollView.Decelerating))
+			interactionActive)
 		{
 			nativeScrollIsSafeAreaPinned = _nativeScrollIsSafeAreaPinned;
+			topologyChangeDeferred = true;
 		}
 
 		_nativeScrollIsSafeAreaPinned = nativeScrollIsSafeAreaPinned;
 
 		if (_nativeScrollIsSafeAreaPinned)
 		{
+			UpdateDeferredInteractionRetry(
+				topologyChangeDeferred,
+				scrollHost,
+				scrollContent,
+				bounds,
+				contentTopInset,
+				systemTopInset);
+
 			// The container already supplies this region, so hand any inset MAUI had taken over
 			// back before stepping aside; otherwise a topology that resolves its constraints late
 			// keeps a manual inset stacked on top of the pinned position.
@@ -137,18 +159,27 @@ sealed class SafeAreaScrollViewCoordinator
 			nativeScrollView.SafeAreaInsets.Top > 0.5 &&
 			nativeScrollView is not MauiCollectionView { UsesUIKitSystemInset: false };
 
-		TransferNativeScrollInsetOwnership(
+		var insetChangeDeferred = TransferNativeScrollInsetOwnership(
 			nativeScrollView,
 			contentTopInset,
 			systemTopInset,
 			isFirstDelegation,
 			requestedUIKitOwnsSystemInset);
 
+		UpdateDeferredInteractionRetry(
+			topologyChangeDeferred || insetChangeDeferred,
+			scrollHost,
+			scrollContent,
+			bounds,
+			contentTopInset,
+			systemTopInset);
+
 		return true;
 	}
 
 	public void Reset()
 	{
+		StopDeferredInteractionRetry();
 		ResetNativeScrollFrameOwnership();
 		ResetNativeScrollInsetOwnership();
 		ResetContentScrollView();
@@ -328,7 +359,7 @@ sealed class SafeAreaScrollViewCoordinator
 			FindNativeScrollView(platformView, verticallyScrollableOnly: false) is not null;
 	}
 
-	void TransferNativeScrollInsetOwnership(
+	bool TransferNativeScrollInsetOwnership(
 		UIScrollView nativeScrollView,
 		double topInset,
 		double systemTopInset,
@@ -373,6 +404,7 @@ sealed class SafeAreaScrollViewCoordinator
 		// Applying either direction mid-gesture is safe because the content offset is only rewritten
 		// once the interaction ends, so a handoff moves the resting position and nothing else.
 		var systemTopInsetOwnershipChanged = requestedUIKitOwnsSystemInset != _uiKitOwnsSystemInset;
+		var insetChangeDeferred = false;
 
 		// Shrinking the inset MAUI owns mid-gesture pulls the content out from under the finger, so
 		// an active interaction defers the whole pair to the next arrange.
@@ -383,6 +415,7 @@ sealed class SafeAreaScrollViewCoordinator
 		{
 			requestedUIKitOwnsSystemInset = _uiKitOwnsSystemInset;
 			requestedTopInset = _delegatedTopInset;
+			insetChangeDeferred = true;
 		}
 
 		var delegatedInsetChanged =
@@ -398,7 +431,7 @@ sealed class SafeAreaScrollViewCoordinator
 			_delegatedTopInset = requestedTopInset;
 			_delegatedScrollIndicatorTopInset = requestedTopInset;
 			safeAreaScrollView.ApplyDelegatedTopInset(requestedTopInset, _uiKitOwnsSystemInset);
-			return;
+			return insetChangeDeferred;
 		}
 
 		var distanceFromTop = nativeScrollView.ContentOffset.Y + nativeScrollView.AdjustedContentInset.Top;
@@ -434,6 +467,82 @@ sealed class SafeAreaScrollViewCoordinator
 					? -nativeScrollView.AdjustedContentInset.Top
 					: distanceFromTop - nativeScrollView.AdjustedContentInset.Top);
 		}
+
+		return insetChangeDeferred;
+	}
+
+	void UpdateDeferredInteractionRetry(
+		bool retryRequired,
+		IView scrollHost,
+		IView scrollContent,
+		Rect bounds,
+		double contentTopInset,
+		double systemTopInset)
+	{
+		if (!retryRequired)
+		{
+			StopDeferredInteractionRetry();
+			return;
+		}
+
+		if (_deferredScrollHost is null)
+			_deferredScrollHost = new(scrollHost);
+		else
+			_deferredScrollHost.SetTarget(scrollHost);
+
+		if (_deferredScrollContent is null)
+			_deferredScrollContent = new(scrollContent);
+		else
+			_deferredScrollContent.SetTarget(scrollContent);
+
+		_deferredBounds = bounds;
+		_deferredContentTopInset = contentTopInset;
+		_deferredSystemTopInset = systemTopInset;
+
+		if (_deferredInteractionDisplayLink is not null)
+			return;
+
+		_deferredInteractionDisplayLink = CADisplayLink.Create(RetryDeferredInteractionChange);
+		_deferredInteractionDisplayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
+	}
+
+	void RetryDeferredInteractionChange()
+	{
+		if (_deferredScrollHost?.TryGetTarget(out var scrollHost) != true ||
+			_deferredScrollContent?.TryGetTarget(out var scrollContent) != true)
+		{
+			StopDeferredInteractionRetry();
+			return;
+		}
+
+		if (_delegatedNativeScrollView?.TryGetTarget(out var nativeScrollView) != true ||
+			nativeScrollView.Handle == IntPtr.Zero)
+		{
+			StopDeferredInteractionRetry();
+			return;
+		}
+
+		if (nativeScrollView.Tracking || nativeScrollView.Dragging || nativeScrollView.Decelerating)
+			return;
+
+		var bounds = _deferredBounds;
+		var contentTopInset = _deferredContentTopInset;
+		var systemTopInset = _deferredSystemTopInset;
+		StopDeferredInteractionRetry();
+		TryDelegate(scrollHost, scrollContent, bounds, contentTopInset, systemTopInset);
+	}
+
+	void StopDeferredInteractionRetry()
+	{
+		if (_deferredInteractionDisplayLink is not null)
+		{
+			_deferredInteractionDisplayLink.Invalidate();
+			_deferredInteractionDisplayLink.Dispose();
+			_deferredInteractionDisplayLink = null;
+		}
+
+		_deferredScrollHost = null;
+		_deferredScrollContent = null;
 	}
 
 	void UpdateLayoutEpoch(UIScrollView nativeScrollView, Rect bounds, double systemTopInset)

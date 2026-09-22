@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
@@ -346,6 +347,41 @@ namespace Microsoft.Maui.DeviceTests
 						"BottomNavigationView should be visible after popping back to TabbedPage");
 				}
 			});
+		}
+
+		[Fact(DisplayName = "Repeated tab layout requests subscribe once while root view is unavailable")]
+		public async Task RepeatedTabLayoutRequestsSubscribeOnceWhileRootViewIsUnavailable()
+		{
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage();
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			var tabbedPageManager = tabbedPage.TabbedPageManager;
+
+			Assert.Null(rootManager.RootView);
+
+			tabbedPageManager.SetTabLayout();
+			tabbedPageManager.SetTabLayout();
+
+			Assert.Single(
+				GetRootViewChangedSubscribers(rootManager),
+				subscriber => ReferenceEquals(subscriber.Target, tabbedPageManager));
+
+			tabbedPage.Handler = null;
+
+			Assert.DoesNotContain(GetRootViewChangedSubscribers(rootManager),
+				subscriber => ReferenceEquals(subscriber.Target, tabbedPageManager));
+		}
+
+		static Delegate[] GetRootViewChangedSubscribers(NavigationRootManager rootManager)
+		{
+			var eventField = typeof(NavigationRootManager).GetField(
+				"RootViewChanged",
+				BindingFlags.Instance | BindingFlags.NonPublic);
+
+			Assert.NotNull(eventField);
+			return (eventField.GetValue(rootManager) as MulticastDelegate)?.GetInvocationList() ?? [];
 		}
 
 		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)

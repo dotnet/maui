@@ -155,7 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		public Task PinnedTopologyRestoresOriginalOwnershipAndDefersEdgeTransitionDuringDrag() =>
-			RunNestedCoordinatorTest((coordinator, host, scrollView) =>
+			RunNestedCoordinatorTest(async (coordinator, host, scrollView) =>
 			{
 				// Edge-extended content starts at the page edge while its MAUI host is arranged
 				// below the safe area, so MAUI initially supplies the system inset.
@@ -184,7 +184,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.InRange((double)scrollView.ContentInset.Top, -0.5, 0.5);
 
 				scrollView.SimulatedInteraction = false;
-				DelegateSafeArea(coordinator, host);
+				for (var retry = 0; retry < 10 &&
+					scrollView.ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never; retry++)
+				{
+					await Task.Delay(20);
+				}
+
 				AssertOwnedByMaui(scrollView);
 			});
 
@@ -263,8 +268,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		Task RunNestedCoordinatorTest(
-			Action<SafeAreaScrollViewCoordinator, IView, SimulatedSafeAreaScrollView> assertions) =>
-			InvokeOnMainThreadAsync(() =>
+			Func<SafeAreaScrollViewCoordinator, IView, SimulatedSafeAreaScrollView, Task> assertions) =>
+			InvokeOnMainThreadAsync(async () =>
 			{
 				var host = new SimulatedNestedSafeAreaScrollViewStub();
 				var handler = CreateHandler<SimulatedNestedSafeAreaScrollViewStubHandler>(host);
@@ -275,7 +280,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
-					assertions(coordinator, host, handler.PlatformView.ScrollView);
+					await assertions(coordinator, host, handler.PlatformView.ScrollView);
 				}
 				finally
 				{

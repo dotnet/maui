@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_safeAreaFrame = safeFrame;
 
-			var center = new CGPoint(delegatedFrame.Center.X, delegatedFrame.Center.Y);
+			var center = new CGPoint(this.GetPlatformArrangeCenterX(delegatedFrame.Center.X), delegatedFrame.Center.Y);
 			var bounds = new CGRect(Bounds.X, Bounds.Y, delegatedFrame.Width, delegatedFrame.Height);
 
 			// Reassigning an equivalent Center/Bounds still lets UIKit compensate the hosted scroll
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			var safeFrame = Element.Frame;
-			Center = new CGPoint(safeFrame.Center.X, safeFrame.Center.Y);
+			Center = new CGPoint(this.GetPlatformArrangeCenterX(safeFrame.Center.X), safeFrame.Center.Y);
 			Bounds = new CGRect(Bounds.X, Bounds.Y, safeFrame.Width, safeFrame.Height);
 
 			if ((this as IElementHandler).PlatformView is UIView platformView &&

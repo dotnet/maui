@@ -137,22 +137,7 @@ namespace Microsoft.Maui
 			if (platformView == null)
 				return;
 
-			var centerX = rect.Center.X;
-
-			var parent = platformView.Superview;
-			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft &&
-				parent is not MauiScrollView)
-			{
-				// We'll need to adjust the center point to reflect the RTL layout
-				// Find the center of the parent
-				var parentCenter = parent.Bounds.Right - (parent.Bounds.Width / 2);
-
-				// Figure out how far the center of the destination rect is from the center of the parent
-				var distanceFromParentCenter = parentCenter - centerX;
-
-				// Mirror the center to the other side of the center of the parent
-				centerX += (distanceFromParentCenter * 2);
-			}
+			var centerX = platformView.GetPlatformArrangeCenterX(rect.Center.X);
 
 			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
 			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
@@ -160,6 +145,20 @@ namespace Microsoft.Maui
 			platformView.Bounds = new CGRect(platformView.Bounds.X, platformView.Bounds.Y, rect.Width, rect.Height);
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
+		}
+
+		internal static nfloat GetPlatformArrangeCenterX(this UIView platformView, double centerX)
+		{
+			var parent = platformView.Superview;
+			if (parent?.EffectiveUserInterfaceLayoutDirection != UIUserInterfaceLayoutDirection.RightToLeft ||
+				parent is MauiScrollView)
+			{
+				return (nfloat)centerX;
+			}
+
+			var parentCenter = parent.Bounds.Right - (parent.Bounds.Width / 2);
+			var distanceFromParentCenter = parentCenter - centerX;
+			return (nfloat)(centerX + (distanceFromParentCenter * 2));
 		}
 
 		internal static double ResolveConstraints(double measured, double exact, double min, double max)
