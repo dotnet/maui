@@ -562,6 +562,11 @@ public class TabbedPageManager
 			_bottomNavigationView,
 			Element.FindMauiContext());
 
+		if (_tabItemStyleLoaded)
+		{
+			UpdateItemIconColor();
+		}
+
 		if (Element.CurrentPage == null && Element.Children.Count > 0)
 			Element.CurrentPage = Element.Children[0];
 	}
