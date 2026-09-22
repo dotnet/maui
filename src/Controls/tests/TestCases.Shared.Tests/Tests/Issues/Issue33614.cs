@@ -6,17 +6,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33614 : _IssuesUITest
 {
-    public override string Issue => "CollectionView Scrolled event reports incorrect FirstVisibleItemIndex after programmatic ScrollTo";
+	public override string Issue => "CollectionView Scrolled event reports incorrect FirstVisibleItemIndex after programmatic ScrollTo";
 
-    public Issue33614(TestDevice device) : base(device) { }
+	public Issue33614(TestDevice device) : base(device) { }
 
-    [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
-    public void FirstVisibleItemIndexShouldBeCorrectAfterScrollTo()
-    {
-        App.WaitForElement("ScrollToButton");
-        App.Tap("ScrollToButton");
-        var firstIndexText = App.FindElement("FirstIndexLabel").GetText();
-        Assert.That(firstIndexText, Is.EqualTo("FirstVisibleItemIndex: 15"));
-    }
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
+	public void FirstVisibleItemIndexShouldBeCorrectAfterScrollTo()
+	{
+		App.WaitForElement("ScrollToButton");
+		App.Tap("ScrollToButton");
+		var firstIndexText = App.FindElement("FirstIndexLabel").GetText();
+		Assert.That(firstIndexText, Is.EqualTo("FirstVisibleItemIndex: 15"));
+	}
 }

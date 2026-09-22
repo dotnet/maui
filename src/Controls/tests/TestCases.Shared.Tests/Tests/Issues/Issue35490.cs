@@ -15,6 +15,7 @@ public class Issue35490 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.TabbedPage)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void NavigationPageChildContentExtendsUnderFloatingTabBar()
 	{
 		App.WaitForElement("Tab1Label");

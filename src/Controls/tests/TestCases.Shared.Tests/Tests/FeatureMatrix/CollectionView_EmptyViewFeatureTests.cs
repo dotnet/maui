@@ -557,6 +557,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndEmptyViewTemplate()
 		{
 			App.WaitForElement("Options");
@@ -572,6 +573,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndCustomEmptyViewTemplateSize()
 		{
 			App.WaitForElement("Options");
@@ -587,6 +589,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void ValidateEmptyViewStringDisplayed_AndBasicItemTemplateSetFirst()
 		{
 			App.WaitForElement("Options");
@@ -632,6 +635,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_WhenBasicItemTemplate()
 		{
 			App.WaitForElement("Options");
@@ -1062,6 +1066,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndCustomEmptyView()
 		{
 			App.WaitForElement("Options");

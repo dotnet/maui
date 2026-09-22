@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
 // TEST_FAILS_ON_WINDOWS    : For more info : https://github.com/dotnet/maui/issues/31375
 // TEST_FAILS_ON_CATALYST   : ScrollTo is not working properly on MacCatalyst.
 using System.Globalization;
@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.RefreshView)]
+		[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void CollectionViewWithRefreshViewShouldNotReset()
 		{
 			TapFooter();

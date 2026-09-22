@@ -146,6 +146,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(8)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_ShowTitleView()
 	{
 		App.WaitForElement(Options); // to reset the old value
@@ -159,6 +160,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(9)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_ShowTitleViewHidden()
 	{
 		App.WaitForElement("HideTitleViewButton");
@@ -220,6 +222,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_IsVisibleFalse()
 	{
 		App.WaitForElement(Options);
@@ -233,6 +236,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_IsVisibleTrue()
 	{
 		App.WaitForElement(Options);
@@ -246,6 +250,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_PresentationModeNotAnimated()
 	{
 		App.WaitForElement("NotAnimatedButton");
@@ -256,6 +261,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_PresentationModeAnimated()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -268,6 +274,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(18)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_PresentationModeModal()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -280,6 +287,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(19)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_PresentationModeModalAnimated()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -292,8 +300,9 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 	[Test, Order(20)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_PresentationModeModalNotAnimated()
-	{ 
+	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
 		App.Tap("GoBackButton");
 		App.WaitForElement("ModalNotAnimatedButton");
@@ -332,7 +341,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(23)]
@@ -453,7 +462,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/33909
 	[Test, Order(30)]
@@ -470,11 +479,12 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		VerifyShellScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // Issue Link:https://github.com/dotnet/maui/issues/32993
 	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellPages_FlowDirectionRTL()
 	{
 		App.WaitForElement(Options);
