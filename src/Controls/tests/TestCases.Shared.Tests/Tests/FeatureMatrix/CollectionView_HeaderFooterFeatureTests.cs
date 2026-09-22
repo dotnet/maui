@@ -37,15 +37,6 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	{
 	}
 
-	protected override bool ResetAfterEachTest => true;
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.WaitForElementTillPageNavigationSettled(HeaderFooterViewButton);
-		App.Tap(HeaderFooterViewButton);
-	}
-
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
