@@ -796,7 +796,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private protected virtual void AttachingToWindow()
 		{
-
+#if MACCATALYST
+			// Mac Catalyst 27 can retain a compositional layout prepared before the
+			// CollectionView has been attached to a window and received its final bounds.
+			// This leaves estimated, self-sizing content blank until a bounds change, such
+			// as resizing the window, causes UIKit to prepare the layout again.
+			// Invalidate after attachment and complete the pending layout immediately.
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(27) &&
+				CollectionView.CollectionViewLayout is UICollectionViewCompositionalLayout layout)
+			{
+				layout.InvalidateLayout();
+				CollectionView.LayoutIfNeeded();
+			}
+#endif
 		}
 
 		private protected virtual void DetachingFromWindow()
