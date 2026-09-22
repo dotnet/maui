@@ -17,13 +17,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Shapes
 		}
 
 		[Fact]
-		public async Task SharedChildrenDoesNotRetainGroup()
+		public async Task SharedChildrenWithTransformDoesNotRetainGroup()
 		{
-			var sharedChildren = new TransformCollection();
+			var sharedTransform = new ScaleTransform();
+			var sharedChildren = new TransformCollection { sharedTransform };
 			var weakGroup = AssignSharedChildrenAndDrop(sharedChildren);
 
 			Assert.False(await weakGroup.WaitForCollect(),
-				"TransformGroup should not be retained by a shared TransformCollection.");
+				"TransformGroup should not be retained by a shared TransformCollection or its transforms.");
+			GC.KeepAlive(sharedTransform);
 			GC.KeepAlive(sharedChildren);
 		}
 
