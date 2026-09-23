@@ -31,34 +31,11 @@ namespace Microsoft.Maui.Controls
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is VisualStateGroupList { VisualElement: { } oldElement } oldVisualStateGroupList)
+			if (oldValue is VisualStateGroupList { VisualElement: { } } oldVisualStateGroupList)
 			{
-				var vsgSpecificity = oldVisualStateGroupList.Specificity;
-				var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
-
 				foreach (var group in oldVisualStateGroupList)
 				{
-					// Detach triggers first so OnDetached() unsubscribes window events before visual cleanup.
-					foreach (var visualState in group.States)
-					{
-						foreach (var trigger in visualState.StateTriggers)
-						{
-							trigger.SendDetached();
-						}
-					}
-
-					if (group.CurrentState is { } state)
-					{
-						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
-						// Custom developer-defined states keep downgraded priority.
-						var unapplySpecificity = IsSystemDrivenState(state.Name)
-							? baseSpecificity.WithFullVsmPriority()
-							: baseSpecificity;
-						foreach (var setter in state.Setters)
-						{
-							setter.UnApply(oldElement, unapplySpecificity);
-						}
-					}
+					oldVisualStateGroupList.OnGroupRemoving(group);
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -325,7 +302,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnGroupRemoving(VisualStateGroup group)
+		internal void OnGroupRemoving(VisualStateGroup group)
 		{
 			if (group.CurrentState is { } currentState)
 			{
