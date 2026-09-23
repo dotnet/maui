@@ -5424,7 +5424,7 @@ Methods:
 	void Microsoft.Maui.Controls.VisualStateManager:.cctor ()
 	void Microsoft.Maui.Controls.VisualStateManager/<>c:.cctor ()
 	void Microsoft.Maui.Controls.VisualStateManager/<>c:.ctor ()
-	void Microsoft.Maui.Controls.WatchList`1<Microsoft.Maui.Controls.VisualStateGroup>:.ctor (System.Action`1<System.Collections.Generic.List`1<Microsoft.Maui.Controls.VisualStateGroup>>)
+	void Microsoft.Maui.Controls.WatchList`1<Microsoft.Maui.Controls.VisualStateGroup>:.ctor (System.Action`1<System.Collections.Generic.List`1<Microsoft.Maui.Controls.VisualStateGroup>>,System.Action`1<Microsoft.Maui.Controls.VisualStateGroup>,System.Action`1<Microsoft.Maui.Controls.VisualStateGroup>)
 	void Microsoft.Maui.Controls.WebView:.cctor ()
 	void Microsoft.Maui.Controls.WebView:RemapForControls ()
 	void Microsoft.Maui.Controls.WebView/<>c:.cctor ()

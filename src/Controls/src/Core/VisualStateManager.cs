@@ -304,6 +304,14 @@ namespace Microsoft.Maui.Controls
 
 		internal void OnGroupRemoving(VisualStateGroup group)
 		{
+			foreach (var state in group.States)
+			{
+				foreach (var trigger in state.StateTriggers)
+				{
+					trigger.SendDetached();
+				}
+			}
+
 			if (group.CurrentState is { } currentState)
 			{
 				if (group.VisualElement is { } visualElement)
@@ -312,14 +320,6 @@ namespace Microsoft.Maui.Controls
 				}
 
 				group.CurrentState = null;
-			}
-
-			foreach (var state in group.States)
-			{
-				foreach (var trigger in state.StateTriggers)
-				{
-					trigger.SendDetached();
-				}
 			}
 
 			group.StatesChanged -= ValidateAndNotify;
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (string.Equals(_internalList[i].Name, item.Name, StringComparison.Ordinal))
 					{
-						_internalList.Remove(_internalList[i]);
+						RemoveAt(i);
 						break;
 					}
 				}
@@ -437,7 +437,21 @@ namespace Microsoft.Maui.Controls
 		public VisualStateGroup this[int index]
 		{
 			get => _internalList[index];
-			set => _internalList[index] = value;
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException(nameof(value));
+				}
+
+				var oldItem = _internalList[index];
+				if (ReferenceEquals(oldItem, value))
+				{
+					return;
+				}
+
+				_internalList[index] = value;
+			}
 		}
 
 		WeakReference<VisualElement> _visualElement;
@@ -774,7 +788,7 @@ namespace Microsoft.Maui.Controls
 		public VisualState()
 		{
 			Setters = new ObservableCollection<Setter>();
-			StateTriggers = new WatchList<StateTriggerBase>(OnStateTriggersChanged);
+			StateTriggers = new WatchList<StateTriggerBase>(OnStateTriggersChanged, onItemRemoving: OnStateTriggerRemoving);
 		}
 
 		/// <summary>
@@ -827,6 +841,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			VisualStateGroup?.UpdateStateTriggers();
+		}
+
+		void OnStateTriggerRemoving(StateTriggerBase stateTrigger)
+		{
+			stateTrigger.SendDetached();
+			stateTrigger.VisualState = null;
 		}
 
 		public override bool Equals(object obj) => Equals(obj as VisualState);
@@ -948,6 +968,9 @@ namespace Microsoft.Maui.Controls
 
 		public void Clear()
 		{
+			if (_internalList.Count == 0)
+				return;
+
 			if (_onItemRemoving != null)
 			{
 				foreach (var item in _internalList)
@@ -1014,6 +1037,11 @@ namespace Microsoft.Maui.Controls
 			get => _internalList[index];
 			set
 			{
+				if (ReferenceEquals(_internalList[index], value))
+				{
+					return;
+				}
+
 				_onItemRemoving?.Invoke(_internalList[index]);
 				_internalList[index] = value;
 				_onCollectionChanged(_internalList);

@@ -77,9 +77,9 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			var launchArgs = $"-verbose -detect-image-hang -port {Port} -avd {Name}";
 			launchArgs += TestEnvironment.IsRunningOnCI ? " -no-window -no-boot-anim -no-audio -no-snapshot -cache-size 512" : string.Empty;
 
-			// Emulator process does not stop once the emulator is running, end it after 15 seconds and then begin polling for boot success
+			// Stop capturing startup output after 15 seconds, but leave the emulator running while polling for boot success.
 			output?.WriteLine($"Launching AVD: {Name}...");
-			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15, output: output);
+			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15, output: output, killOnTimeout: false);
 			File.WriteAllText(logFile, emulatorOutput);
 
 			if (emulatorOutput.Contains("failed to initialize HVF", StringComparison.OrdinalIgnoreCase))

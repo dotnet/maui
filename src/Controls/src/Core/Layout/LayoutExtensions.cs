@@ -14,6 +14,17 @@ internal static class LayoutExtensions
 			{
 				IgnoreLayoutSafeArea(childLayout);
 			}
+		    else if (child is IContentView contentView)
+			{
+				if (contentView.PresentedContent is Layout presentedLayout)
+ 				{
+ 					IgnoreLayoutSafeArea(presentedLayout);
+ 				}
+ 				else if (contentView.Content is Layout contentLayout)
+ 				{
+ 					IgnoreLayoutSafeArea(contentLayout);
+ 				}
+			}
 		}
 	}
 }

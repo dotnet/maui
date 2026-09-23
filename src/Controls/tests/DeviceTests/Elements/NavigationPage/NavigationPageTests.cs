@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -351,7 +352,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS || ANDROID
 			, Skip = "Failing https://github.com/dotnet/maui/issues/27411"
@@ -360,27 +360,35 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
-			var references = new List<WeakReference>();
 
-			{
-				var navPage = new NavigationPage(new ContentPage());
-				var window = new Window(navPage);
-
-				await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (handler) =>
-				{
-					references.Add(new(navPage));
-					references.Add(new(navPage.Handler));
-					references.Add(new(navPage.Handler.PlatformView));
-					references.Add(new(handler));
-
-					// Just replace the page with a new one
-					window.Page = new ContentPage();
-				});
-			}
+			var references = await CreateNavigationPageLeakReferencesAsync();
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
-#endif
+
+		// Extracted into a non-inlineable method so the `navPage`/`window` locals aren't hoisted into the
+		// caller's async state machine, which could keep them rooted past the WaitForGC await above.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<List<WeakReference>> CreateNavigationPageLeakReferencesAsync()
+		{
+			var references = new List<WeakReference>();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (handler) =>
+			{
+				references.Add(new(navPage));
+				references.Add(new(navPage.Handler));
+				references.Add(new(navPage.Handler.PlatformView));
+				references.Add(new(handler));
+
+				// Just replace the page with a new one
+				window.Page = new ContentPage();
+			});
+
+			return references;
+		}
 
 		[Fact(DisplayName = "Child Pages Do Not Leak"
 #if WINDOWS

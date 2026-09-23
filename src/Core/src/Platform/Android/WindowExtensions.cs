@@ -59,26 +59,34 @@ namespace Microsoft.Maui
 				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
-				// Resolve the actual status bar background color from the current theme and
-				// choose icon/text appearance based on its luminance. If the theme color cannot
-				// be resolved, preserve the previous theme-based behavior.
-				if (TryGetThemeColor(activity, global::Android.Resource.Attribute.ColorPrimary, out var statusBarColor))
-					windowInsetsController.AppearanceLightStatusBars = IsLightColor(statusBarColor);
-				else
-					windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				windowInsetsController.AppearanceLightStatusBars =
+					GetStatusBarAppearance(activity, isLightTheme, RuntimeFeature.IsMaterial3Enabled);
 
 				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
 		}
 
-		static bool TryGetThemeColor(Activity activity, int attribute, out AColor color)
+		internal static bool GetStatusBarAppearance(Context context, bool isLightTheme, bool isMaterial3)
+		{
+			// Material 3 draws its surface behind the transparent edge-to-edge status bar.
+			// The Material 2 app bar uses colorPrimary in the same area.
+			var backgroundAttribute = isMaterial3
+				? Resource.Attribute.colorSurface
+				: global::Android.Resource.Attribute.ColorPrimary;
+
+			return TryGetThemeColor(context, backgroundAttribute, out var backgroundColor)
+				? IsLightColor(backgroundColor)
+				: isLightTheme;
+		}
+
+		static bool TryGetThemeColor(Context context, int attribute, out AColor color)
 		{
 			color = default;
 
-			if (activity.Theme is null)
+			if (context.Theme is null)
 				return false;
 
-			using var ta = activity.Theme.ObtainStyledAttributes([attribute]);
+			using var ta = context.Theme.ObtainStyledAttributes([attribute]);
 
 			if (!ta.HasValue(0))
 				return false;

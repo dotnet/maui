@@ -5910,7 +5910,7 @@ Methods:
 	void Microsoft.Maui.Controls.VisualStateManager:VisualStateGroupsPropertyChanged (Microsoft.Maui.Controls.BindableObject,object,object)
 	void Microsoft.Maui.Controls.VisualStateManager/<>c:.cctor ()
 	void Microsoft.Maui.Controls.VisualStateManager/<>c:.ctor ()
-	void Microsoft.Maui.Controls.WatchList`1<Microsoft.Maui.Controls.StateTriggerBase>:.ctor (System.Action`1<System.Collections.Generic.List`1<Microsoft.Maui.Controls.StateTriggerBase>>)
+	void Microsoft.Maui.Controls.WatchList`1<Microsoft.Maui.Controls.StateTriggerBase>:.ctor (System.Action`1<System.Collections.Generic.List`1<Microsoft.Maui.Controls.StateTriggerBase>>,System.Action`1<Microsoft.Maui.Controls.StateTriggerBase>,System.Action`1<Microsoft.Maui.Controls.StateTriggerBase>)
 	void Microsoft.Maui.Controls.WatchList`1<Microsoft.Maui.Controls.VisualState>:Add (Microsoft.Maui.Controls.VisualState)
 	void Microsoft.Maui.Controls.WeakEventProxy`2<System.ComponentModel.INotifyPropertyChanged, System.ComponentModel.PropertyChangedEventHandler>:Subscribe (System.ComponentModel.INotifyPropertyChanged,System.ComponentModel.PropertyChangedEventHandler)
 	void Microsoft.Maui.Controls.WebView:.cctor ()

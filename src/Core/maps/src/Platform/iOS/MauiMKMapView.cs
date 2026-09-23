@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Maps.Platform
 		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
-		List<IMapElement>? _trackedMapElements;
+		HashSet<IMapElement>? _trackedMapElements;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 		internal void AddElements(IList elements)
 		{
-			_trackedMapElements = new List<IMapElement>();
+			_trackedMapElements ??= new HashSet<IMapElement>(ReferenceEqualityComparer.Instance);
 
 			foreach (IMapElement element in elements)
 			{
@@ -208,6 +208,9 @@ namespace Microsoft.Maui.Maps.Platform
 			{
 				if (element.MapElementId is IMKOverlay overlay)
 					RemoveOverlay(overlay);
+
+				_trackedMapElements?.Remove(element);
+				element.MapElementId = null;
 			}
 		}
 
