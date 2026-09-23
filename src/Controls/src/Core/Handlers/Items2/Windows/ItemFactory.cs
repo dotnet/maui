@@ -155,13 +155,26 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 
 				if (wrapper.VirtualView is View semanticView)
 				{
-					container.ClearValue(WAutomationProperties.NameProperty);
-					container.ClearValue(WAutomationProperties.HelpTextProperty);
-					container.ClearValue(WAutomationProperties.HeadingLevelProperty);
-					container.UpdateSemantics(semanticView);
-					if (string.IsNullOrWhiteSpace(((IView)semanticView).Semantics?.Description))
+					RefreshContainerAutomationProperties(container, semanticView);
+
+					// Live-refresh automation metadata (and the wrapper's AccessibilityView) when
+					// the item's semantics change after binding — e.g. a bound
+					// SemanticProperties.Description updates via INotifyPropertyChanged. Subscribed
+					// once per wrapper; wrapper/container pairs are recycled together for their
+					// lifetime, so the captured `container` stays valid for as long as `semanticView`
+					// (the wrapper's persistent VirtualView) is alive.
+					if (wrapper.TryAttachSemanticsRefresh())
 					{
-						WAutomationProperties.SetName(container, templateContext.Item?.ToString() ?? string.Empty);
+						semanticView.PropertyChanged += (_, e) =>
+						{
+							if (e.Is(SemanticProperties.DescriptionProperty) ||
+								e.Is(SemanticProperties.HintProperty) ||
+								e.Is(SemanticProperties.HeadingLevelProperty))
+							{
+								RefreshContainerAutomationProperties(container, semanticView);
+								wrapper.UpdateAccessibilityView();
+							}
+						};
 					}
 				}
 
@@ -252,6 +265,23 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	}
 
 	/// <summary>
+	/// Refreshes the WinUI automation Name/HelpText/HeadingLevel on <paramref name="container"/>
+	/// from <paramref name="semanticView"/>'s current <see cref="SemanticProperties"/> values.
+	/// Called both when a container is bound/recycled and whenever those semantics change later.
+	/// </summary>
+	static void RefreshContainerAutomationProperties(ItemContainer container, View semanticView)
+	{
+		container.ClearValue(WAutomationProperties.NameProperty);
+		container.ClearValue(WAutomationProperties.HelpTextProperty);
+		container.ClearValue(WAutomationProperties.HeadingLevelProperty);
+		container.UpdateSemantics(semanticView);
+		if (string.IsNullOrWhiteSpace(((IView)semanticView).Semantics?.Description))
+		{
+			WAutomationProperties.SetName(container, semanticView.BindingContext?.ToString() ?? string.Empty);
+		}
+	}
+
+	/// <summary>
 	/// Clears the recycle pool and removes logical children held by pooled elements.
 	/// Must be called when the items source changes or when the handler disconnects
 	/// to prevent memory leaks from pooled ItemContainers holding strong references.
@@ -298,6 +328,21 @@ internal partial class ElementWrapper : ContentControl
 	SizeChangedEventHandler? _contentSizeChangedHandler;
 	FrameworkElement? _observedContent;
 	WAccessibilityView? _defaultAccessibilityView;
+	bool _semanticsRefreshAttached;
+
+	/// <summary>
+	/// Returns true only the first time it's called for this wrapper instance, so callers can
+	/// guard a one-time semantics-changed subscription against being registered again on every
+	/// recycle/rebind of the same wrapper.
+	/// </summary>
+	internal bool TryAttachSemanticsRefresh()
+	{
+		if (_semanticsRefreshAttached)
+			return false;
+
+		_semanticsRefreshAttached = true;
+		return true;
+	}
 
 	/// <summary>
 	/// Unsubscribes the first-item SizeChanged observer wired during MeasureOverride.

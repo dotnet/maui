@@ -177,6 +177,11 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
 			PlatformView.Loaded += OnPlatformViewLoaded;
+
+			if (PlatformView is MauiItemsView mauiItemsViewConnect)
+			{
+				mauiItemsViewConnect.ReattachAccessibilityHelper();
+			}
 		}
 	}
 
