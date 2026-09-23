@@ -76,7 +76,11 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
-		Assert.That(App.WaitForKeyboardToHide(), Is.True);
+		if (Device is TestDevice.Android or TestDevice.iOS)
+		{
+			Assert.That(App.WaitForKeyboardToHide(), Is.True);
+		}
+
 		var layout = App.WaitForElement("MainLayout");
 		App.WaitForElement("BlueBox");
 		App.WaitForElement("FixedLabel");
