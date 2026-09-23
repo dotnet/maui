@@ -169,19 +169,10 @@ steps:
       done
 
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "WARNING: No exact match for requested Xcode version ${ORIGINAL_VERSION}"
+        echo "##vso[task.logissue type=error]Required Xcode ${ORIGINAL_VERSION} is not installed on this agent. Update the macOS agent image before building with the pinned Apple SDK."
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        echo "Falling back to latest available Xcode on this agent..."
-        # Find the latest Xcode by sorting version numbers
-        LATEST_XCODE=$(ls -1d /Applications/Xcode_*.app 2>/dev/null | sed 's|/Applications/Xcode_||;s|\.app||' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
-        if [[ -n "$LATEST_XCODE" ]]; then
-          XCODE_VERSION="$LATEST_XCODE"
-          XCODE_PATH="/Applications/Xcode_${LATEST_XCODE}.app"
-          echo "Using latest available Xcode: ${XCODE_VERSION} at ${XCODE_PATH}"
-        else
-          echo "ERROR: No Xcode installations found in /Applications"
-          exit 1
-        fi
+        echo "Installed Xcode versions: ${XCODE_LIST[*]}"
+        exit 1
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
@@ -218,8 +209,12 @@ steps:
           exit 1
         fi
 
+        RUNTIME_ARCHITECTURE=universal
+        if [[ "$(uname -m)" == "arm64" ]]; then
+          RUNTIME_ARCHITECTURE=arm64
+        fi
         # Keep recovery downloads pinned too: a runtime newer than Xcode can break actool/ibtool.
-        DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant universal -buildVersion "${MAJOR}.${MINOR}")
+        DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant "$RUNTIME_ARCHITECTURE" -buildVersion "${MAJOR}.${MINOR}")
 
         # `simctl runtime list --json` reports disk images (including stuck
         # "(Deleting)" images), unlike `simctl list runtimes -j`, which reports
@@ -251,8 +246,15 @@ steps:
           printf '%s\n' "${counts%%$'\t'*}"
         }
 
-        RC=0
-        sudo xcodebuild "${DOWNLOAD_ARGS[@]}" || RC=$?
+        DOWNLOAD_LOG=$(mktemp) || exit 1
+        sudo xcodebuild "${DOWNLOAD_ARGS[@]}" 2>&1 | tee "$DOWNLOAD_LOG"
+        RC=${PIPESTATUS[0]}
+        if grep -Fq "is not available for download." "$DOWNLOAD_LOG"; then
+          rm -f "$DOWNLOAD_LOG"
+          echo "##vso[task.logissue type=error]iOS ${MAJOR}.${MINOR} (${RUNTIME_ARCHITECTURE}) is unavailable for download. Check the selected Xcode and runtime architecture; simulator recovery cannot fix an unavailable download."
+          exit 1
+        fi
+        rm -f "$DOWNLOAD_LOG"
         if [[ "$RC" != "0" ]]; then
           echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
           # Exit code 70 ("Unable to connect to simulator") means CoreSimulatorService is

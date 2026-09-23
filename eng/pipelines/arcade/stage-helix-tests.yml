@@ -104,11 +104,10 @@ stages:
     displayName: Monitor Helix Jobs
     timeoutInMinutes: ${{ parameters.helixJobMonitorTimeoutInMinutes }}
     pool:
+      name: ${{ parameters.helixPool.name }}
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals build.azurelinux.3.amd64.open
       ${{ else }}:
-        name: $(DncEngInternalBuildPool)
         demands: ImageOverride -equals build.azurelinux.3.amd64
     steps:
     - checkout: self
