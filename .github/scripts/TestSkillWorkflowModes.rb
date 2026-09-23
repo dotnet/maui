@@ -2,6 +2,7 @@
 
 require "json"
 require "minitest/autorun"
+require "yaml"
 
 SKILL_VALIDATION_WORKFLOW = File.realpath(ARGV.fetch(0))
 SKILL_EVALUATION_SOAK_WORKFLOW = File.realpath(ARGV.fetch(1))
@@ -98,17 +99,36 @@ class TestSkillWorkflowModes < Minitest::Test
   end
 
   def test_trusted_policy_tests_receive_candidate_workflows_and_fixture
-    static_check = job_block(@validation, "static-check")
+    assert_candidate_policy_inputs(@validation)
+  end
 
-    assert_includes static_check, ".github/scripts/fixtures/skill-workflow-policy"
-    assert_includes static_check, ".github/workflows"
-    assert_includes static_check, 'git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestSkillWorkflowModes.rb" > "$WORKFLOW_MODE_TESTS"'
-    assert_includes static_check, 'SKILL_VALIDATION_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-validation.yml"'
-    assert_includes static_check, 'SKILL_EVALUATION_SOAK_WORKFLOW="$GITHUB_WORKSPACE/.github/workflows/skill-evaluation-soak.yml"'
-    assert_includes static_check, 'ROLLBACK_FIXTURE="$GITHUB_WORKSPACE/.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"'
-    refute_includes static_check, '${TRUSTED_SHA}:.github/workflows/skill-validation.yml'
-    refute_includes static_check, '${TRUSTED_SHA}:.github/workflows/skill-evaluation-soak.yml'
-    refute_includes static_check, '${TRUSTED_SHA}:.github/scripts/fixtures/skill-workflow-policy/rollback-drill.json'
+  def test_policy_input_checks_reject_trusted_checkout_fallbacks
+    %w[SKILL_VALIDATION_WORKFLOW SKILL_EVALUATION_SOAK_WORKFLOW ROLLBACK_FIXTURE].each do |variable|
+      mutation = @validation.sub(
+        "#{variable}=\"$RUNNER_TEMP/skill-validation-policy/",
+        "#{variable}=\"$GITHUB_WORKSPACE/"
+      )
+      refute_equal @validation, mutation
+      assert_raises(Minitest::Assertion) { assert_candidate_policy_inputs(mutation) }
+    end
+  end
+
+  def test_policy_input_checks_reject_mismatched_acquisition_directory
+    mutation = @validation.sub(
+      'POLICY_DIRECTORY: ${{ runner.temp }}/skill-validation-policy',
+      'POLICY_DIRECTORY: ${{ runner.temp }}/other-policy'
+    )
+    refute_equal @validation, mutation
+    assert_raises(Minitest::Assertion) { assert_candidate_policy_inputs(mutation) }
+  end
+
+  def test_policy_input_checks_require_validation_of_acquired_files
+    mutation = @validation.sub(
+      'ruby "$WORKFLOW_MODE_TESTS" "$SKILL_VALIDATION_WORKFLOW" "$SKILL_EVALUATION_SOAK_WORKFLOW" "$ROLLBACK_FIXTURE"',
+      'echo ".github/workflows .github/scripts/fixtures/skill-workflow-policy"'
+    )
+    refute_equal @validation, mutation
+    assert_raises(Minitest::Assertion) { assert_candidate_policy_inputs(mutation) }
   end
 
   def test_static_only_mode_gates_every_live_job
@@ -285,6 +305,31 @@ class TestSkillWorkflowModes < Minitest::Test
   end
 
   private
+
+  def assert_candidate_policy_inputs(workflow)
+    steps = YAML.safe_load(workflow).fetch("jobs").fetch("static-check").fetch("steps")
+    acquisition = steps.find { |step| step["id"] == "content" }
+    validation = steps.find { |step| step["name"] == "Validate safe Vally specs" }
+    refute_nil acquisition
+    refute_nil validation
+    assert_equal "${{ runner.temp }}/skill-validation-policy", acquisition.fetch("env").fetch("POLICY_DIRECTORY")
+    assert_equal 'ruby .github/scripts/AcquireSkillValidationContent.rb acquire "$GITHUB_WORKSPACE"', acquisition.fetch("run")
+    refute acquisition["continue-on-error"]
+    assert_operator steps.index(acquisition), :<, steps.index(validation)
+
+    commands = validation.fetch("run").lines.map(&:strip)
+    assert_includes commands, 'git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestSkillWorkflowModes.rb" > "$WORKFLOW_MODE_TESTS"'
+    {
+      "SKILL_VALIDATION_WORKFLOW" => ".github/workflows/skill-validation.yml",
+      "SKILL_EVALUATION_SOAK_WORKFLOW" => ".github/workflows/skill-evaluation-soak.yml",
+      "ROLLBACK_FIXTURE" => ".github/scripts/fixtures/skill-workflow-policy/rollback-drill.json"
+    }.each do |variable, path|
+      assert_equal ["#{variable}=\"$RUNNER_TEMP/skill-validation-policy/#{path}\""],
+        commands.grep(/\A#{variable}=/), "#{variable} must bind exactly once to the acquired candidate file"
+      refute_includes validation.fetch("run"), "${TRUSTED_SHA}:#{path}"
+    end
+    assert_includes commands, 'ruby "$WORKFLOW_MODE_TESTS" "$SKILL_VALIDATION_WORKFLOW" "$SKILL_EVALUATION_SOAK_WORKFLOW" "$ROLLBACK_FIXTURE"'
+  end
 
   def manual_source_valid?(event_name:, ref:, ref_type:, default_branch:, workflow_sha:, default_sha:)
     return true unless event_name == "workflow_dispatch"

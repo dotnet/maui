@@ -340,8 +340,8 @@ def fail!(message)
   exit 1
 end
 
-def run_git(repo_root, *args, env: {}, input: nil, strip: true)
-  stdout, stderr, status = Open3.capture3(env, "git", "-C", repo_root, *args, stdin_data: input)
+def run_git(repo_root, *args, env: {}, input: nil, strip: true, binary: false)
+  stdout, stderr, status = Open3.capture3(env, "git", "-C", repo_root, *args, stdin_data: input, binmode: binary)
   raise "git #{args.join(' ')} failed: #{stderr}" unless status.success?
 
   strip ? stdout.strip : stdout
@@ -886,10 +886,67 @@ def patch_fixture_ref!(spec_path, fixture, fixture_head)
   File.write(spec_path, content.sub(pattern, "\\1#{fixture_head}\\3"))
 end
 
+def trusted_fixture_refs(repo_root, trusted_ref)
+  paths = run_git(repo_root, "--no-replace-objects", "ls-tree", "-r", "-z", "--name-only", trusted_ref, "--", ".github/skills", strip: false)
+    .split("\0").grep(/\.vally\.yaml\z/)
+  refs = paths.flat_map do |path|
+    document = YAML.safe_load(
+      run_git(repo_root, "--no-replace-objects", "show", "#{trusted_ref}:#{path}", strip: false),
+      permitted_classes: [], permitted_symbols: [], aliases: false
+    )
+    environments = [document["environment"]] + Array(document["stimuli"]).map { |stimulus| stimulus["environment"] }
+    environments.filter_map { |environment| environment.dig("git", "ref") if environment.is_a?(Hash) }
+  end
+  refs += FIXTURES.values.flat_map(&:values).flatten.filter_map { |fixture| fixture[:source_ref] }
+  refs << BASE_REF
+  fail!("trusted fixture refs must be full commit SHAs") unless refs.all? { |ref| ref.is_a?(String) && ref.match?(/\A[0-9a-f]{40}\z/) }
+  refs.uniq.sort
+end
+
+def validate_fixture_refs!(document, approved_refs, location)
+  return unless approved_refs
+
+  environments = [document["environment"]] + Array(document["stimuli"]).map { |stimulus| stimulus["environment"] }
+  environments.compact.each do |environment|
+    ref = environment.dig("git", "ref")
+    if ref && !approved_refs.include?(ref)
+      fail!("#{location} uses a fixture ref not approved by the trusted workflow revision")
+    end
+  end
+end
+
+def prepared_fixture_heads(repo_root, skill_name, trusted_control_ref)
+  fixtures = FIXTURES.fetch(skill_name, {})
+  return {} if fixtures.empty?
+
+  parent = if skill_name == "verify-tests-fail-without-fix"
+             create_skill_overlay_commit(
+               repo_root, BASE_REF, trusted_fixture_source_ref(repo_root),
+               ".github/skills/#{skill_name}/scripts", "Synthetic verification skill baseline"
+             )
+           else
+             BASE_REF
+           end
+  fixtures.transform_values do |entries|
+    entries.map do |fixture|
+      head = if fixture[:source_ref]
+               create_sanitized_history_fixture_commit(repo_root, fixture, trusted_control_ref)
+             else
+               create_fixture_commit(repo_root, fixture, parent_ref: parent)
+             end
+      [fixture, head]
+    end
+  end
+end
+
 def main(argv = ARGV)
   allow_missing_trusted_control_ref = argv.delete("--allow-missing-trusted-control-ref")
   list_models = argv.delete("--list-models")
   repo_root = File.realpath(File.expand_path(argv.fetch(0)))
+  if argv.fetch(1) == "--list-fixture-refs"
+    puts trusted_fixture_refs(repo_root, trusted_fixture_source_ref(repo_root))
+    return
+  end
   if argv.fetch(1) == "--validate-mandatory-layout"
     validate_mandatory_layout!(repo_root)
     puts "Validated #{MANDATORY_SPEC_PATHS.length} mandatory Vally spec path(s)"
@@ -917,6 +974,11 @@ def main(argv = ARGV)
     allow_missing: allow_missing_trusted_control_ref
   )
   validate_repository_controls!(repo_root, "HEAD", trusted_control_ref, "candidate checkout")
+  approved_refs = if !ENV["TRUSTED_SHA"].to_s.empty?
+                    trusted_fixture_refs(repo_root, trusted_fixture_source_ref(repo_root))
+                  end
+  prepared_heads = list_models && approved_refs ? prepared_fixture_heads(repo_root, skill_name, trusted_control_ref) : {}
+  approved_refs += prepared_heads.values.flatten(1).map(&:last) if approved_refs
 
   spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
   fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
@@ -933,6 +995,7 @@ def main(argv = ARGV)
       inspect_git_refs: !validate_only && !skill_fixtures,
       trusted_control_ref: trusted_control_ref
     )
+    validate_fixture_refs!(document, approved_refs, relative_spec_path)
     [spec_path, document]
   end
   mandatory_specs = MANDATORY_SPEC_PATHS.select do |relative_path|
@@ -961,33 +1024,11 @@ def main(argv = ARGV)
   end
 
   if !validate_only && skill_fixtures
-    fixture_parent = if File.basename(skill_root) == "verify-tests-fail-without-fix"
-                       scripts_root = Pathname.new(File.join(skill_root, "scripts"))
-                         .relative_path_from(Pathname.new(repo_root)).to_s
-                       create_skill_overlay_commit(
-                         repo_root,
-                         BASE_REF,
-                         trusted_fixture_source_ref(repo_root),
-                         scripts_root,
-                         "Synthetic verification skill baseline"
-                       )
-                     else
-                       BASE_REF
-                     end
-    skill_fixtures.each do |spec_name, fixtures|
+    prepared_fixture_heads(repo_root, skill_name, trusted_control_ref).each do |spec_name, fixtures|
       spec_path = File.join(tests_path, spec_name)
       fail!("missing fixture spec #{spec_path}") unless File.file?(spec_path)
 
-      fixtures.each do |fixture|
-        fixture_head = if fixture[:source_ref]
-                         create_sanitized_history_fixture_commit(
-                           repo_root,
-                           fixture,
-                           trusted_control_ref
-                         )
-                       else
-                         create_fixture_commit(repo_root, fixture, parent_ref: fixture_parent)
-                       end
+      fixtures.each do |fixture, fixture_head|
         patch_fixture_ref!(spec_path, fixture, fixture_head)
         puts "Prepared #{fixture[:marker]} at #{fixture_head}"
       end

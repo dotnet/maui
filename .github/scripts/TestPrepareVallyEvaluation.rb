@@ -268,6 +268,65 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert status.success?, stderr
   end
 
+  def test_rejects_undeclared_fixture_ref_even_when_its_commit_is_locally_available
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    trusted = commit_all("trusted fixture declarations")
+    write_repo_file("candidate-script.rb", "raise 'must not execute'\n")
+    untrusted = commit_all("untrusted commit")
+    write_spec("environment" => { "git" => { "type" => "worktree", "source" => ".", "ref" => untrusted } })
+    commit_all("candidate spec")
+
+    _stdout, stderr, status = run_validator(env: { "TRUSTED_SHA" => trusted })
+
+    refute status.success?
+    assert_includes stderr, "fixture ref not approved by the trusted workflow revision"
+  end
+
+  def test_accepts_declared_fixture_and_lists_trusted_pins_and_sanitized_sources
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    fixture = commit_all("historical fixture")
+    write_spec("environment" => { "git" => { "type" => "worktree", "source" => ".", "ref" => fixture } })
+    trusted = commit_all("trusted fixture declaration")
+
+    _stdout, stderr, status = run_validator(env: { "TRUSTED_SHA" => trusted }, validate_only: false)
+    assert status.success?, stderr
+
+    write_spec("environment" => { "git" => { "type" => "worktree", "source" => ".", "ref" => "a" * 40 } })
+    commit_all("candidate fixture declaration")
+    stdout, stderr, status = Open3.capture3(
+      { "TRUSTED_SHA" => trusted }, "ruby", PREPARER, @repo_root, "--list-fixture-refs"
+    )
+    assert status.success?, stderr
+    sources = FIXTURES.values.flat_map(&:values).flatten.filter_map { |entry| entry[:source_ref] }
+    assert_equal [BASE_REF, fixture, *sources].uniq.sort, stdout.lines(chomp: true)
+    refute_includes stdout, "a" * 40
+  end
+
+  def test_prepared_fixture_heads_preserve_sanitized_history_dispatch
+    sanitized = []
+    synthetic = []
+    singleton_class.define_method(:create_sanitized_history_fixture_commit) do |repo, fixture, control|
+      sanitized << [repo, fixture, control]
+      "b" * 40
+    end
+    singleton_class.define_method(:create_fixture_commit) do |*args, **kwargs|
+      synthetic << [args, kwargs]
+      "c" * 40
+    end
+
+    heads = prepared_fixture_heads(@repo_root, "code-review", "d" * 40)
+
+    assert_equal 4, sanitized.length
+    assert_empty synthetic
+    assert sanitized.all? { |repo, fixture, control| repo == @repo_root && fixture[:source_ref] && control == "d" * 40 }
+    assert heads.values.flatten(1).all? { |_fixture, head| head == "b" * 40 }
+  ensure
+    singleton_class.remove_method(:create_sanitized_history_fixture_commit)
+    singleton_class.remove_method(:create_fixture_commit)
+  end
+
   def test_rejects_executable_grader
     write_spec(
       "stimuli" => [
