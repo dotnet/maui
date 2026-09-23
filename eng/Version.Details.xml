@@ -176,9 +176,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>11741c82dbdf7acebca70db556911222226bee52</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.26454.107">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.26461.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>11741c82dbdf7acebca70db556911222226bee52</Sha>
+      <Sha>fa5198e61f57d7b1887976deaaff177e91c1b63d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.26454.107">
       <Uri>https://github.com/dotnet/dotnet</Uri>
