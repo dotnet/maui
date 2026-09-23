@@ -470,6 +470,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "CollectionView header update preserves adapter")]
+		public async Task HeaderUpdatePreservesAdapter()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				Header = "Header 1",
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = Enumerable.Range(0, 100).ToList()
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var adapter = handler.PlatformView.GetAdapter();
+
+				collectionView.Header = "Header 2";
+
+				Assert.Same(adapter, handler.PlatformView.GetAdapter());
+			});
+		}
+
 		[Fact(DisplayName = "Grouped CollectionView header rebind does not grow logical children")]
 		public async Task GroupHeaderRebindDoesNotGrowLogicalChildren()
 		{
