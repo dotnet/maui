@@ -188,8 +188,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					Assert.NotNull(intent.ClipData);
 					Assert.Equal(1, intent.ClipData.ItemCount);
 					Assert.NotNull(intent.ClipData.GetItemAt(0)?.Uri);
-					Assert.Equal("Test Share", intent.GetStringExtra(Android.Content.Intent.ExtraTitle));
-					Assert.True(intent.Flags.HasFlag(Android.Content.ActivityFlags.GrantReadUriPermission));
+					Assert.Equal("Test Share", intent.GetStringExtra(global::Android.Content.Intent.ExtraTitle));
+					Assert.True(intent.Flags.HasFlag(global::Android.Content.ActivityFlags.GrantReadUriPermission));
 				}
 				else
 				{
