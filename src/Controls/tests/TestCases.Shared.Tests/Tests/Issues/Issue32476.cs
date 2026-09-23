@@ -16,10 +16,19 @@ public class Issue32476 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleButton");
 		App.Tap("ToggleButton");
-		App.Tap("ToggleButton");
+		App.WaitForElement("FlowDirection is now RTL");
 
-		// wait for window layout to update after flow direction change.
-		Task.Delay(500).Wait();
+		if (App.GetTestDevice() == TestDevice.Mac)
+		{
+			App.WaitForElement(() =>
+			{
+				var menu = App.FindElement("OK");
+				var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow[@identifier='SceneWindow']")).GetRect();
+				return menu.GetRect().Left > windowBounds.Left + windowBounds.Width / 2
+					? menu : null;
+			}, "The native flyout button did not move to the right after switching to RTL");
+		}
+
 		VerifyScreenshot(includeTitleBar: true);
 	}
 }

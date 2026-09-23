@@ -394,13 +394,13 @@ public class LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
+		App.WaitForElement("UseSampleText");
+		App.Tap("UseSampleText");
 		App.WaitForElement(LineBreakModeCharacterWrap);
 		App.Tap(LineBreakModeCharacterWrap);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		WaitForLabelLayout();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -850,17 +850,32 @@ public class LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
+		App.WaitForElement("UseSampleText");
+		App.Tap("UseSampleText");
 		App.WaitForElement(LineHeightEntry);
 		App.ClearText(LineHeightEntry);
 		App.EnterText(LineHeightEntry, "2");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(MainLabel);
-		App.Tap(MainLabel);
+		WaitForLabelLayout();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	void WaitForLabelLayout()
+	{
+		App.WaitForNoElement(Apply);
+		App.WaitForElement(Options);
+		App.WaitForElement(MainLabel);
+		Assert.That(() => App.FindElement(MainLabel).GetText(),
+			Is.EqualTo("Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea").After(5000, 100));
+		var previous = App.FindElement(MainLabel).GetRect();
+		Assert.That(() =>
+		{
+			var current = App.FindElement(MainLabel).GetRect();
+			var settled = current == previous && current.Width > 0 && current.Height > 0;
+			previous = current;
+			return settled;
+		}, Is.True.After(5000, 100));
 	}
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/37117

@@ -55,7 +55,7 @@ public class ShellFlyoutSizing : TestShell
 			//scale = scale / DeviceDisplay.MainDisplayInfo.Density;
 		}
 
-		var increaseMenuItem = new MenuItem()
+		ShellItem increaseMenuItem = new MenuItem()
 		{
 			Text = "Increase Height and Width",
 			Command = new Command(() =>
@@ -66,7 +66,7 @@ public class ShellFlyoutSizing : TestShell
 			AutomationId = "IncreaseFlyoutSizes"
 		};
 
-		var descreaseMenuItem = new MenuItem()
+		ShellItem descreaseMenuItem = new MenuItem()
 		{
 			Text = "Decrease Height and Width",
 			Command = new Command(() =>
@@ -85,8 +85,10 @@ public class ShellFlyoutSizing : TestShell
 			{
 				FlyoutWidth = 350;
 				FlyoutHeight = 350;
-				Items.Add(increaseMenuItem);
-				Items.Add(descreaseMenuItem);
+				if (!Items.Contains(increaseMenuItem))
+					Items.Add(increaseMenuItem);
+				if (!Items.Contains(descreaseMenuItem))
+					Items.Add(descreaseMenuItem);
 			}),
 			AutomationId = "ChangeFlyoutSizes"
 		});

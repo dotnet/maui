@@ -205,6 +205,7 @@
                                                                          AutomationId="{Binding Id, StringFormat='LocationCheckBox_{0}'}"/>
                                                                <Label Grid.Column="1"
                                                                       Text="{Binding Name}"
+                                                                      AutomationId="{Binding Id, StringFormat='LocationName_{0}'}"
                                                                       FontSize="15"
                                                                       VerticalOptions="Center"/>
                                                         </Grid>

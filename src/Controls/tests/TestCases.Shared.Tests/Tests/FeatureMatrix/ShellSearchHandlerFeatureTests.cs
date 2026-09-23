@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 /// continue from the same page. Each Options round-trip calls Reset()
 /// on the ViewModel so all properties return to defaults before the
 /// next option is applied.
+/// Appearance regressions explicitly restart their own scenario in TestSetup.
 /// </summary>
 public class ShellSearchHandlerFeatureTests : _GalleryUITest
 {
@@ -20,6 +21,17 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	protected override string GallerySubPageButton => "ShellSearchButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
+	bool IsIndependentAppearanceTest => TestContext.CurrentContext.Test.MethodName is
+		"VerifyShellSearch_TextColor" or "VerifyShellSearch_CancelButtonColor" or
+		"VerifyShellSearch_CharacterSpacing" or "VerifyShellSearch_TextTransformUppercase";
+	protected override string? GallerySubPageButton => IsIndependentAppearanceTest ? "ShellSearchButton" : null;
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+		if (IsIndependentAppearanceTest)
+			FixtureSetup();
+	}
 
 #if IOS
 	private const int CropBottomValue = 1450;
@@ -53,6 +65,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForNoElement(Apply);
 	}
 
 	// Scrolls/drags the search page into view on platforms where the collapsible
@@ -181,7 +194,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35085
 	[Test, Order(10)]
@@ -205,7 +218,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35085, https://github.com/dotnet/maui/issues/36629
 	[Test, Order(12)]
@@ -257,7 +270,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+#endif
 
 	[Test, Order(16)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
@@ -595,12 +608,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_TextColor()
 	{
-#if IOS
-	 App.PressEnter();
-#elif MACCATALYST
-	 App.WaitForElement("Options");
-	 App.Tap("Options");
-#endif
 		OpenOptions();
 		App.WaitForElement("TextColorRedRadio");
 		App.Tap("TextColorRedRadio");
@@ -609,6 +616,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
 
@@ -616,13 +624,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
-// TODO: For now, CI shows an incorrect screenshot for this test; it renders properly on local macOS 26.
-#if IOS
-	 App.PressEnter();
-#elif MACCATALYST
-	 App.WaitForElement("Options");
-	 App.Tap("Options");
-#endif
 		OpenOptions();
 		App.WaitForElement("CancelButtonColorOrangeRadio");
 		App.Tap("CancelButtonColorOrangeRadio");
@@ -631,6 +632,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
+		if (App is AppiumWindowsApp)
+			App.WaitForElement(() => App.FindElements("DeleteButton").FirstOrDefault(element => element.IsDisplayed()));
 		VerifyShellSearchScreenshot();
 	}
 #endif
@@ -640,12 +644,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_CharacterSpacing()
 	{
-#if IOS
-	 App.PressEnter();
-#elif MACCATALYST
-	 App.WaitForElement("Options");
-	 App.Tap("Options");
-#endif
 		OpenOptions();
 		App.WaitForElement("CharacterSpacingEntry");
 		App.ClearText("CharacterSpacingEntry");
@@ -655,6 +653,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
 #endif
@@ -664,12 +663,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_TextTransformUppercase()
 	{
-#if IOS
-      App.PressEnter();
-#elif MACCATALYST
-	 App.WaitForElement("Options");
-	 App.Tap("Options");
-#endif
 		OpenOptions();
 		App.WaitForElement("TextTransformUppercase");
 		App.Tap("TextTransformUppercase");
@@ -678,7 +671,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyShellSearchScreenshot();
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("TESTING").After(10000, 200));
 	}
 #endif
 

@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_GroupingFeatureTests : _GalleryUITest
 {
 	public const string GroupingFeatureMatrix = "CollectionView Feature Matrix";
@@ -22,10 +23,19 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	public const string FlowDirectionRTL = "FlowDirectionRightToLeft";
 	public override string GalleryPageName => GroupingFeatureMatrix;
 	protected override string GallerySubPageButton => "GroupingButton";
+	protected override bool ResetAfterEachTest => true;
 
 	public CollectionView_GroupingFeatureTests(TestDevice device)
 		: base(device)
 	{
+	}
+
+	void ConfigureOptions(params string[] options)
+	{
+		CollectionViewFeatureTestActions.OpenOptions(App);
+		foreach (var option in options)
+			CollectionViewFeatureTestActions.SelectOption(App, option, "IsGroupedFalse");
+		CollectionViewFeatureTestActions.ApplyOptions(App);
 	}
 
 	[Test]
@@ -84,16 +94,10 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupHeaderTemplate_WithFooterString()
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(GroupHeaderTemplateGrid);
-		App.Tap(GroupHeaderTemplateGrid);
-		App.WaitForElement(FooterString);
-		App.Tap(FooterString);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("CollectionView Footer(String)");
+		ConfigureOptions(GroupHeaderTemplateGrid, FooterString);
+		App.WaitForElement("Apple");
 		App.WaitForNoElement("GroupHeaderTemplate");
+		CollectionViewFeatureTestActions.ScrollToVisible(App, "CollectionView Footer(String)", "CollectionViewControl");
 		App.WaitForNoElement("GroupHeaderTemplate");
 	}
 
@@ -200,14 +204,12 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyIsGroupedFalse_WithBasicItemTemplate()
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemTemplateBasic);
-		App.Tap(ItemTemplateBasic);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(ItemTemplateBasic);
 		App.WaitForElement("Apple");
 		App.WaitForElement("Banana");
+		Assert.That(App.FindElementByText("Banana").GetRect().Y, Is.GreaterThan(App.FindElementByText("Apple").GetRect().Y));
+		App.WaitForNoElement("Fruits");
+		App.WaitForNoElement("Vegetables");
 	}
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
@@ -431,17 +433,12 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndObservableCollection()
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(GroupHeaderTemplateGrid);
-		App.Tap(GroupHeaderTemplateGrid);
-		App.WaitForElement(GroupFooterTemplateGrid);
-		App.Tap(GroupFooterTemplateGrid);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForNoElement("GroupHeaderTemplate");
+		ConfigureOptions(GroupHeaderTemplateGrid, GroupFooterTemplateGrid);
 		App.WaitForElement("Apple");
-		App.WaitForElement("Carrot");
+		App.WaitForNoElement("GroupHeaderTemplate");
+		App.WaitForNoElement("GroupFooterTemplate");
+		CollectionViewFeatureTestActions.ScrollToVisible(App, "Carrot", "CollectionViewControl");
+		App.WaitForNoElement("GroupHeaderTemplate");
 		App.WaitForNoElement("GroupFooterTemplate");
 	}
 
@@ -514,19 +511,13 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionRTLIsGrouped_WithHorizontalGridAndGroupedList()
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsLayoutHorizontalGrid);
-		App.Tap(ItemsLayoutHorizontalGrid);
-		App.WaitForElement(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement(FlowDirectionRTL);
-		App.Tap(FlowDirectionRTL);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(ItemsLayoutHorizontalGrid, ItemsSourceGroupedList, IsGroupedTrue, FlowDirectionRTL);
 		App.WaitForElement("Fruits");
+		App.WaitForElement("Banana");
+		App.WaitForElement("Grapes");
+		Assert.That(() => App.FindElementByText("Banana").GetRect().X,
+			Is.GreaterThan(App.FindElementByText("Grapes").GetRect().X).After(5000, 100),
+			"Successive columns must advance from right to left.");
 		VerifyScreenshot();
 	}
 
@@ -1055,4 +1046,58 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
 	}
 #endif
+}
+
+internal static class CollectionViewFeatureTestActions
+{
+	public static void OpenOptions(IApp app)
+	{
+		app.WaitForElement("Options");
+		app.Tap("Options");
+		app.WaitForElement("Apply");
+		app.WaitForElement("OptionsScrollView");
+	}
+
+	public static void SelectOption(IApp app, string option, string firstOption)
+	{
+		ScrollToVisible(app, firstOption, "OptionsScrollView", down: false);
+		ScrollToVisible(app, option, "OptionsScrollView");
+		app.Tap(option);
+	}
+
+	public static void ApplyOptions(IApp app)
+	{
+		app.Tap("Apply");
+		app.WaitForNoElement("Apply");
+		app.WaitForElement("Options");
+		app.WaitForElement("CollectionViewControl");
+	}
+
+	public static void ScrollToVisible(IApp app, string target, string scrollView, bool down = true)
+	{
+		app.WaitForElement(scrollView);
+		var timeout = System.Diagnostics.Stopwatch.StartNew();
+		while (timeout.Elapsed < TimeSpan.FromSeconds(15))
+		{
+			var viewport = app.FindElement(scrollView).GetRect();
+			var elements = app.FindElements(target);
+			if (elements.Count == 0)
+				elements = app.FindElementsByText(target);
+
+			foreach (var element in elements)
+			{
+				var bounds = element.GetRect();
+				if (element.IsDisplayed() && bounds.Width > 0 && bounds.Height > 0
+					&& bounds.Y >= viewport.Y && bounds.Bottom <= viewport.Bottom)
+					return;
+			}
+
+			if (down)
+				app.ScrollDown(scrollView, swipePercentage: 0.4, withInertia: false);
+			else
+				app.ScrollUp(scrollView, swipePercentage: 0.4, withInertia: false);
+		}
+
+		Assert.Fail($"'{target}' did not become fully visible inside '{scrollView}'.");
+	}
 }

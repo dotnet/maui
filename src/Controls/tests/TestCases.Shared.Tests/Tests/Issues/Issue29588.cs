@@ -17,11 +17,10 @@ internal class Issue29588 : _IssuesUITest
 	public void RemainingItemsThresholdReachedEventShouldTrigger()
 	{
 		App.WaitForElement("29588CollectionView");
-		for (int i = 0; i < 5; i++)
-		{
-			App.ScrollDown("29588CollectionView", ScrollStrategy.Gesture, 0.8, 500);
-		}
-		App.WaitForElement("29588ThresholdLabel");
-		Assert.That(App.FindElement("29588ThresholdLabel").GetText(), Is.EqualTo("Threshold reached"));
+		App.ScrollTo("Item 20");
+		App.RetryAssert(() => Assert.That(App.WaitForElement("29588ThresholdLabel").GetText(),
+			Is.EqualTo("Threshold reached")));
+		App.ScrollTo("Loaded Item 30");
+		Assert.That(App.WaitForElement("Loaded Item 30").GetText(), Is.EqualTo("Loaded Item 30"));
 	}
 }

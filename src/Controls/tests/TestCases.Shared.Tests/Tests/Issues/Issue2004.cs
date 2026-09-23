@@ -16,7 +16,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
-			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(15));
+			for (var step = 1; step <= 9; step++)
+			{
+				App.WaitForElement($"NextStep{step}");
+				App.Tap($"NextStep{step}");
+				if (step is 2 or 4 or 6 or 8)
+					App.WaitForElement("qwe");
+			}
+			App.WaitForElement("Success");
 		}
 	}
 }

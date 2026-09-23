@@ -4,6 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";
@@ -30,10 +31,44 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	public override string GalleryPageName => ScrollingFeatureMatrix;
 	protected override string GallerySubPageButton => "ScrollingButton";
+	protected override bool ResetAfterEachTest => true;
 
 	public CollectionView_ScrollingFeatureTests(TestDevice device)
 		: base(device)
 	{
+	}
+
+	void SelectScrollOption(string option)
+	{
+		CollectionViewFeatureTestActions.SelectOption(App, option, ItemSizingMeasureFirstItem);
+	}
+
+	void SetScrollIndex(string entry, string value)
+	{
+		CollectionViewFeatureTestActions.SelectOption(App, entry, ItemSizingMeasureFirstItem);
+		App.ClearText(entry);
+		App.EnterText(entry, value);
+		App.DismissKeyboard();
+	}
+
+	void AssertKiwiScrollPosition(bool atEnd)
+	{
+		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
+		App.Tap("ScrollTo");
+		Assert.That(() => App.FindElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired").After(5000, 100));
+		Assert.That(App.FindElement("IndexLabel").GetText(), Is.EqualTo("12"));
+		App.WaitForElement("Kiwi");
+		App.WaitForElement("CollectionItem_Kiwi");
+
+		// Scrolled fires throughout the animation, and grouped native indices include headers.
+		// The item container's final native edge directly verifies ScrollToPosition instead.
+		Assert.That(() =>
+		{
+			var viewport = App.FindElement("CollectionViewControl").GetRect();
+			var item = App.FindElement("CollectionItem_Kiwi").GetRect();
+			return atEnd ? item.Right - viewport.Right : item.X - viewport.X;
+		}, Is.EqualTo(0).Within(1).After(5000, 100));
+		Assert.That(() => App.FindElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired").After(5000, 100));
 	}
 
 	[Test]
@@ -267,7 +302,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-	
+
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRAndMeasureFirstItemsWithGroupedList()
@@ -2208,27 +2243,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("ScrollToPositionStart");
-		App.Tap("ScrollToPositionStart");
-		App.WaitForElement("ScrollToIndexEntry");
-		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "12");
-		App.WaitForElement(ItemsLayoutHorizontalList);
-		App.Tap(ItemsLayoutHorizontalList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("CollectionViewControl");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
-		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
-		App.WaitForElement("Kiwi");
-		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
-		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		VerifyScreenshot();
+		CollectionViewFeatureTestActions.OpenOptions(App);
+		SelectScrollOption("ScrollToPositionStart");
+		SetScrollIndex(ScrollToIndexEntry, "12");
+		SelectScrollOption(ItemsLayoutHorizontalList);
+		CollectionViewFeatureTestActions.ApplyOptions(App);
+		AssertKiwiScrollPosition(atEnd: false);
+		Assert.That(() => App.FindElement("FirstIndexLabel").GetText(), Is.EqualTo("12").After(5000, 100));
 	}
 
 	[Test]
@@ -3128,36 +3149,17 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ItemsSourceGroupedList3);
-		App.Tap(ItemsSourceGroupedList3);
-		App.WaitForElement(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElement("ScrollToIndexEntry");
-		App.ClearText("ScrollToIndexEntry");
-		App.EnterText("ScrollToIndexEntry", "12");
-		App.WaitForElement("GroupIndexEntry");
-		App.ClearText("GroupIndexEntry");
-		App.EnterText("GroupIndexEntry", "0");
-		App.WaitForElement("ScrollToByIndex");
-		App.Tap("ScrollToByIndex");
-		App.WaitForElement("ScrollToPositionEnd");
-		App.Tap("ScrollToPositionEnd");
-		App.WaitForElement(ItemsLayoutHorizontalList);
-		App.Tap(ItemsLayoutHorizontalList);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("CollectionViewControl");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Not Fired"));
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
-		App.WaitForElement("ScrollToRequestedLabel");
-		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
-		App.WaitForElement("Kiwi");
-		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
-		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		VerifyScreenshot();
+		CollectionViewFeatureTestActions.OpenOptions(App);
+		SelectScrollOption(ItemsSourceGroupedList3);
+		SelectScrollOption(IsGroupedTrue);
+		SetScrollIndex(ScrollToIndexEntry, "12");
+		SetScrollIndex("GroupIndexEntry", "0");
+		SelectScrollOption("ScrollToByIndex");
+		SelectScrollOption("ScrollToPositionEnd");
+		SelectScrollOption(ItemsLayoutHorizontalList);
+		CollectionViewFeatureTestActions.ApplyOptions(App);
+		AssertKiwiScrollPosition(atEnd: true);
+		Assert.That(App.FindElement("GroupIndexLabel").GetText(), Is.EqualTo("0"));
 	}
 
 	[Test]

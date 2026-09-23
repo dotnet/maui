@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue20062 : TestContentPage
 {
 	CollectionView _collectionView;
-	List<string> list = new List<string>();
+	sealed record Item(string AutomationId);
 
 	protected override void Init()
 	{
@@ -41,6 +41,7 @@ public class Issue20062 : TestContentPage
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalOptions = LayoutOptions.Center
 				};
+				label.SetBinding(AutomationIdProperty, nameof(Item.AutomationId));
 				var grid = new Grid
 				{
 					RowDefinitions =
@@ -85,11 +86,8 @@ public class Issue20062 : TestContentPage
 			Spacing = 25,
 			Children = { _collectionView }
 		};
-		list.Add("a");
-		list.Add("a");
-		list.Add("a");
-		list.Add("a");
-		_collectionView.ItemsSource = list;
+		_collectionView.ItemsSource = Enumerable.Range(0, 4)
+			.Select(index => new Item($"Item{index}")).ToList();
 
 		Content = new ScrollView
 		{
@@ -98,4 +96,3 @@ public class Issue20062 : TestContentPage
 
 	}
 }
-

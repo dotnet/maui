@@ -19,7 +19,11 @@ public class Issue32995 : _IssuesUITest
 		VerifyScreenshot("DisabledTabWithGreenColor");
 
 		App.Tap("EnableButton");
-		App.WaitForElement("Tab2");
+		App.WaitForElement(() =>
+		{
+			var tab = App.FindElement("Tab2");
+			return tab.IsEnabled() ? tab : null;
+		}, "Tab2 did not become enabled");
 		VerifyScreenshot("EnabledTabWithNormalColor");
 	}
 }

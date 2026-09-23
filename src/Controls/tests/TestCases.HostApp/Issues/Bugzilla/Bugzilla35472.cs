@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace Maui.Controls.Sample.Issues
 {
 
@@ -43,38 +41,41 @@ namespace Maui.Controls.Sample.Issues
 					Text = "Push this button"
 				};
 
-				var successLabel = new Label() { Text = "The test has passed", IsVisible = false };
+				var successLabel = new Label() { AutomationId = "ScrollResult", IsVisible = false };
 
-				var startPage = new ContentPage()
+				Content = new StackLayout
 				{
-					Content = new StackLayout
+					VerticalOptions = LayoutOptions.Center,
+					Children =
 					{
-						VerticalOptions = LayoutOptions.Center,
-						Children = {
 						goButton,
 						successLabel
 					}
-					}
 				};
 
-				Navigation.PushAsync(startPage);
-
-				goButton.Clicked += (sender, args) => Navigation.PushAsync(pageWithScrollView);
+				goButton.Clicked += async (sender, args) => await Navigation.PushAsync(pageWithScrollView);
 
 				scrollToButton.Clicked += async (sender, args) =>
 				{
 					try
 					{
-#pragma warning disable 4014
 						// Deliberately not awaited so we can simulate a user navigating back before the scroll is finished
-						scrollView.ScrollToAsync(0, 1500, true);
-#pragma warning restore 4014
+						var scrolling = scrollView.ScrollToAsync(0, 1500, true);
+						// A disconnected handler need not complete the scroll task, but faults must still fail the app.
+						_ = scrolling.ContinueWith(task =>
+							Dispatcher.Dispatch(() => System.Runtime.ExceptionServices.ExceptionDispatchInfo
+								.Capture(task.Exception.GetBaseException()).Throw()),
+							CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
 						await Navigation.PopAsync();
-						successLabel.IsVisible = true;
+						successLabel.Text = "The test has passed";
 					}
 					catch (Exception ex)
 					{
-						Debug.WriteLine(ex);
+						successLabel.Text = ex.ToString();
+					}
+					finally
+					{
+						successLabel.IsVisible = true;
 					}
 				};
 			}

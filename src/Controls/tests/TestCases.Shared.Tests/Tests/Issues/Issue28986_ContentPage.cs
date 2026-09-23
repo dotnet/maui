@@ -139,6 +139,9 @@ public class Issue28986_ContentPage : _IssuesUITest
 		const int pollingIntervalMilliseconds = 500;
 
 		App.WaitForElement("ContentGrid");
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
+		Assert.That(App.WaitForKeyboardToHide(), Is.True);
 
 		App.Tap("GridResetAllButton");
 		var baselinePosition = App.WaitForElement("ContentGrid").GetRect();

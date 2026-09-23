@@ -28,6 +28,6 @@ public partial class LabelControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new LabelViewModel();
-		await Navigation.PushAsync(new LabelOptionsPage(_viewModel));
+		await Navigation.PushAsync(new LabelOptionsPage(_viewModel), animated: false);
 	}
 }
