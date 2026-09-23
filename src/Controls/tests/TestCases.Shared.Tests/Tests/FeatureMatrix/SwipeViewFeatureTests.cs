@@ -545,23 +545,18 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
 		App.SwipeLeftToRight("SwipeViewImage");
-		bool iconDismissed = false;
-		for (int i = 0; i < 3 && !iconDismissed; i++)
-		{
-			try
-			{
-				App.WaitForElement("Icon");
-				App.Tap("Icon");
-				App.WaitForNoElement("Icon");
-				iconDismissed = true;
-				break;
-			}
-			catch (Exception)
-			{
-				// retry
-			}
-		}
-		Assert.That(iconDismissed, Is.True, "Icon did not disappear after 3 attempts.");
+#if MACCATALYST
+		var icon = App.WaitForElement("Icon");
+		var iconRect = icon.GetRect();
+		App.TapCoordinates(iconRect.CenterX(), iconRect.CenterY());
+#else
+		App.WaitForElement("Icon");
+		App.Tap("Icon");
+#endif
+		App.WaitForNoElement("Icon");
+		Assert.That(
+			App.WaitForElement("EventInvokedLabel").GetText(),
+			Is.EqualTo("Icon Invoked"));
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
@@ -1029,9 +1024,10 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		VerifyMultipleSwipeItems("Down");
 		CloseSwipeView();
 
+		swipeViewRect = App.WaitForElement("SwipeViewControl").GetRect();
 		App.DragCoordinates(
-			swipeViewRect.CenterX(), swipeViewRect.Y + swipeViewRect.Height - 10,
-			swipeViewRect.CenterX(), swipeViewRect.Y + swipeViewRect.Height * 0.1f);
+			swipeViewRect.CenterX(), swipeViewRect.Y + swipeViewRect.Height * 0.8f,
+			swipeViewRect.CenterX(), swipeViewRect.Y - 10);
 		VerifyMultipleSwipeItems("Up");
 	}
 
@@ -1074,6 +1070,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	private void CloseSwipeView()
 	{
 		App.Tap("CloseSwipeViewButton");
+		App.WaitForNoElement("Label");
 		App.WaitForNoElement("Label2");
 	}
 
