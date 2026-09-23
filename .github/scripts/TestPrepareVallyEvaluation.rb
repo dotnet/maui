@@ -1626,6 +1626,9 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'original_git_stat=$(stat -c'
     assert_includes content, 'echo "workspace_root=$workspace_root"'
     assert_includes content, 'sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"'
+    assert_includes content, 'sudo -n chmod -R g+rX,g-w,o-rwx "$workspace_root"'
+    assert_includes content, 'sudo -n chmod 2750 "$workspace_root"'
+    refute_includes content, 'sudo -n chmod -R g+rwX,o-rwx "$workspace_root"'
     refute_match(/setfacl .*"\$GITHUB_WORKSPACE"/, content)
     refute_match(/(?:chown|chgrp|chmod).*"\$GITHUB_WORKSPACE"/, content)
   end
@@ -1638,12 +1641,45 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, "core.sparsecheckout"
     assert_includes content, "extensions.objectformat"
     assert_includes content, 'git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"'
-    assert_includes content, 'sudo -n chmod 3770 "$workspace_root" "$git_dir"'
+    assert_includes content, 'sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"'
+    assert_includes content, 'sudo -n chmod 3770 "$git_dir"'
+    assert_includes content, "for mutable_git_path in worktrees refs logs; do"
+    assert_includes content, '"$git_dir/$mutable_git_path"'
+    assert_includes content, 'sudo -n chown "$eval_user:$eval_user" "$git_dir/packed-refs"'
     assert_includes content, 'sudo -n install -o root -g root -m 444'
     assert_includes content, 'git -C "$workspace_root" config --local alias.runtime-probe status'
+    assert_includes content, 'git -C "$workspace_root" update-ref "$probe_ref" HEAD'
+    assert_includes content, 'git -C "$workspace_root" pack-refs --all --prune'
+    assert_includes content, 'git -C "$workspace_root" update-ref -d "$probe_ref"'
     assert_includes content, "for probe_number in 1 2; do"
     assert_includes content, 'git -C "$workspace_root" worktree add --detach'
     assert_includes content, 'git -C "$workspace_root" worktree remove --force'
+  end
+
+  def test_runtime_setup_probes_repository_controls_as_evaluator
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    %w[
+      .mcp.json
+      .github/hooks
+      .github/mcp.json
+      .github/copilot/settings.json
+      .github/copilot/settings.local.json
+      .claude/settings.json
+      .claude/settings.local.json
+    ].each do |path|
+      assert_includes content, path
+    end
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$control_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/tee "$control_path"'
+    assert_includes content, '"$control_path" "$renamed_path"'
+    assert_includes content, 'remove_command=(/bin/rm -rf -- "$control_path")'
+    assert_includes content, 'remove_command=(/bin/rm -- "$control_path")'
+    assert_includes content, '"$replacement_path" "$control_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/mkdir "$control_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/mkdir -p "$control_parent"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/touch "$control_path"'
   end
 
   def test_runtime_wrapper_uses_evaluator_workspace_and_runtime_flags

@@ -163,9 +163,27 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		exit 1
 	fi
 	sudo -n chown -R "$workspace_owner:$eval_user" "$workspace_root"
-	sudo -n chmod -R g+rwX,o-rwx "$workspace_root"
-	sudo -n find "$workspace_root" -type d -exec chmod g+rwxs,o-rwx {} +
-	sudo -n chmod 3770 "$workspace_root" "$git_dir"
+	sudo -n chmod -R g+rX,g-w,o-rwx "$workspace_root"
+
+	# The prepared working tree is evaluator-readable but remains writable only
+	# by the runner for baseline restoration and trusted fixture preparation.
+	# Detached worktrees need only their dedicated common-Git metadata plus the
+	# root lock used when packed refs are refreshed.
+	sudo -n chmod 2750 "$workspace_root"
+	sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"
+	sudo -n chmod 3770 "$git_dir"
+	for mutable_git_path in worktrees refs logs; do
+		sudo -n install -d -o "$workspace_owner" -g "$eval_user" -m 2770 \
+			"$git_dir/$mutable_git_path"
+		sudo -n chgrp -R "$eval_user" "$git_dir/$mutable_git_path"
+		sudo -n chmod -R g+rwX,o-rwx "$git_dir/$mutable_git_path"
+		sudo -n find "$git_dir/$mutable_git_path" -type d \
+			-exec chmod g+rws,o-rwx {} +
+	done
+	if [ -e "$git_dir/packed-refs" ]; then
+		sudo -n chown "$eval_user:$eval_user" "$git_dir/packed-refs"
+		sudo -n chmod 660 "$git_dir/packed-refs"
+	fi
 	workspace_parent=$(dirname "$workspace_root")
 	while [ "$workspace_parent" != "/" ]; do
 		sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"
@@ -211,6 +229,75 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		echo "Isolated Vally user cannot read the evaluator workspace" >&2
 		exit 1
 	fi
+	repository_controls=(
+		"file:.mcp.json"
+		"dir:.github/hooks"
+		"file:.github/mcp.json"
+		"file:.github/copilot/settings.json"
+		"file:.github/copilot/settings.local.json"
+		"file:.claude/settings.json"
+		"file:.claude/settings.local.json"
+	)
+	control_probe_number=0
+	for control_entry in "${repository_controls[@]}"; do
+		control_kind=${control_entry%%:*}
+		control_relative_path=${control_entry#*:}
+		control_path="$workspace_root/$control_relative_path"
+		control_probe_number=$((control_probe_number + 1))
+		replacement_path="$eval_home/repository-control-replacement-$control_probe_number"
+		renamed_path="$control_path.runtime-probe"
+
+		if [ -e "$control_path" ]; then
+			if sudo -n -u "$eval_user" /usr/bin/test -w "$control_path"; then
+				echo "Isolated Vally user can modify repository control $control_path" >&2
+				exit 1
+			fi
+			if [ "$control_kind" = "file" ] &&
+				printf 'runtime probe\n' |
+					sudo -n -u "$eval_user" /usr/bin/tee "$control_path" >/dev/null 2>&1; then
+				echo "Isolated Vally user can overwrite repository control $control_path" >&2
+				exit 1
+			fi
+			if sudo -n -u "$eval_user" /bin/mv \
+				"$control_path" "$renamed_path" 2>/dev/null; then
+				echo "Isolated Vally user can rename repository control $control_path" >&2
+				exit 1
+			fi
+			if [ "$control_kind" = "dir" ]; then
+				sudo -n -u "$eval_user" /bin/mkdir "$replacement_path"
+				remove_command=(/bin/rm -rf -- "$control_path")
+			else
+				sudo -n -u "$eval_user" /usr/bin/touch "$replacement_path"
+				remove_command=(/bin/rm -- "$control_path")
+			fi
+			if sudo -n -u "$eval_user" "${remove_command[@]}" 2>/dev/null; then
+				echo "Isolated Vally user can remove repository control $control_path" >&2
+				exit 1
+			fi
+			if sudo -n -u "$eval_user" /bin/mv -T -f \
+				"$replacement_path" "$control_path" 2>/dev/null; then
+				echo "Isolated Vally user can replace repository control $control_path" >&2
+				exit 1
+			fi
+			sudo -n -u "$eval_user" /bin/rm -rf -- "$replacement_path"
+		elif [ "$control_kind" = "dir" ]; then
+			if sudo -n -u "$eval_user" /bin/mkdir "$control_path" 2>/dev/null; then
+				echo "Isolated Vally user can create repository control $control_path" >&2
+				exit 1
+			fi
+		else
+			control_parent=$(dirname "$control_path")
+			if [ ! -d "$control_parent" ] &&
+				sudo -n -u "$eval_user" /bin/mkdir -p "$control_parent" 2>/dev/null; then
+				echo "Isolated Vally user can create repository control parent $control_parent" >&2
+				exit 1
+			fi
+			if sudo -n -u "$eval_user" /usr/bin/touch "$control_path" 2>/dev/null; then
+				echo "Isolated Vally user can create repository control $control_path" >&2
+				exit 1
+			fi
+		fi
+	done
 	for probe_number in 1 2; do
 		worktree_probe="$eval_home/worktree-probe-$probe_number"
 		sudo -n -u "$eval_user" env \
@@ -252,6 +339,27 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		echo "Isolated Vally user can replace the evaluator Git configuration" >&2
 		exit 1
 	fi
+	probe_ref="refs/heads/vally-runtime-probe"
+	sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$workspace_root" update-ref "$probe_ref" HEAD
+	sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$workspace_root" pack-refs --all --prune
+	sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$workspace_root" update-ref -d "$probe_ref"
+	sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$workspace_root" pack-refs --all --prune
 	if [ "$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE")" != "$original_workspace_stat" ] ||
 		[ "$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE/.git")" != "$original_git_stat" ]; then
 		echo "Runtime setup changed the original Actions checkout permissions" >&2
