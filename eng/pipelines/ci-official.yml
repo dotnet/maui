@@ -52,8 +52,10 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    # Hosted macOS images lack the Xcode 27 RC required by this branch.
+    name: MAUI
+    demands:
+      - xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer
     os: macOS
 
 resources:
