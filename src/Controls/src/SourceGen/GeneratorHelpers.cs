@@ -55,11 +55,11 @@ static class GeneratorHelpers
 		}
 		try
 		{
-			return new XamlProjectItemForIC(projectItem!, text.ToString());
+			return new XamlProjectItemForIC(projectItem!, text, text.ToString());
 		}
 		catch (Exception e)
 		{
-			return new XamlProjectItemForIC(projectItem!, e);
+			return new XamlProjectItemForIC(projectItem!, text, e);
 		}
 	}
 
@@ -132,7 +132,7 @@ static class GeneratorHelpers
 		}
 		catch (Exception xe)
 		{
-			return new XamlProjectItemForCB(projectItem!, xe);
+			return new XamlProjectItemForCB(projectItem!, text, xe);
 		}
 
 		if (root == null)
@@ -153,7 +153,7 @@ static class GeneratorHelpers
 			nsmgr.AddNamespace(attr.LocalName, attr.Value);
 		}
 
-		return new XamlProjectItemForCB(projectItem, root, nsmgr);
+		return new XamlProjectItemForCB(projectItem, text, root, nsmgr);
 	}
 
 	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyAttributes assemblyCaches, CancellationToken cancellationToken)
@@ -385,8 +385,7 @@ static class GeneratorHelpers
 		}
 		catch (Exception e)
 		{
-			var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+			reportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 		}
 		return (code, xamlItem, diagnostics);
 	}
