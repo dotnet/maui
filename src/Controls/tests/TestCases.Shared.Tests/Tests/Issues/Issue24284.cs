@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void FlyoutHeaderAdaptsToMinimumHeight()
 		{
 			var heightReferenceLabel = App.WaitForElement("HeightReferenceLabel").GetRect();
+			App.TapShellFlyoutIcon();
 			var headerLabel = App.WaitForElement("HeaderLabel").GetRect();
 
 			ClassicAssert.True(Math.Abs(headerLabel.Height - heightReferenceLabel.Height) < 0.2);
