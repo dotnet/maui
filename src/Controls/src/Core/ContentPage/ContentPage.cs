@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls
 
 			Frame = bounds;
 			this.ArrangeContent(bounds);
-			ApplyCrossPlatformArrangeSafeArea(platformBounds, delegateTopSafeArea, topSafeArea);
+			ApplyCrossPlatformArrangeSafeArea(platformBounds, bounds, delegateTopSafeArea, topSafeArea);
 			return bounds.Size;
 		}
 
@@ -137,6 +137,7 @@ namespace Microsoft.Maui.Controls
 
 		partial void ApplyCrossPlatformArrangeSafeArea(
 			Rect platformBounds,
+			Rect arrangedBounds,
 			bool delegateTopSafeArea,
 			double topSafeArea);
 

@@ -47,6 +47,9 @@ public class Issue33037NonShellRootPage : ContentPage
 					CreateShortReporterCollectionViewScenarioButton(),
 					CreateOpaqueNavigationButton(),
 					CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
+					CreateButton("Issue33037MarginScrollViewButton", "Direct ScrollView with top margin", () => new Issue33037NonShellMarginScrollViewPage()),
+					CreateButton("Issue33037CenteredScrollViewButton", "Short centered ScrollView", () => new Issue33037NonShellAlignedScrollViewPage(LayoutOptions.Center, "Issue33037 Centered", "Issue33037CenteredScrollViewScroller")),
+					CreateButton("Issue33037EndScrollViewButton", "Short bottom-aligned ScrollView", () => new Issue33037NonShellAlignedScrollViewPage(LayoutOptions.End, "Issue33037 End", "Issue33037EndScrollViewScroller")),
 					CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
 					CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
 					CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
@@ -255,6 +258,51 @@ class Issue33037NonShellScrollViewPage : Issue33037NonShellScenarioPage
 		{
 			AutomationId = "Issue33037ScrollViewScroller",
 			Content = CreateStackContent("Issue33037Direct")
+		};
+	}
+}
+
+class Issue33037NonShellMarginScrollViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellMarginScrollViewPage() : base("Issue33037 Margin")
+	{
+		var content = new VerticalStackLayout
+		{
+			Spacing = 4
+		};
+		content.Children.Add(new Label
+		{
+			AutomationId = "Issue33037MarginFirstItem",
+			Text = "Margin Item 0"
+		});
+
+		for (int i = 1; i < 60; i++)
+		{
+			content.Children.Add(new Label { Text = $"Margin Item {i}" });
+		}
+
+		Content = new ScrollView
+		{
+			AutomationId = "Issue33037MarginScrollViewScroller",
+			Margin = new Thickness(0, 20, 0, 0),
+			Content = content
+		};
+	}
+}
+
+class Issue33037NonShellAlignedScrollViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellAlignedScrollViewPage(
+		LayoutOptions verticalOptions,
+		string title,
+		string automationId) : base(title)
+	{
+		Content = new ScrollView
+		{
+			AutomationId = automationId,
+			HeightRequest = 200,
+			VerticalOptions = verticalOptions,
+			Content = CreateStackContent(automationId)
 		};
 	}
 }

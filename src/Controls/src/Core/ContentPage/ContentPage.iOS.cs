@@ -22,9 +22,9 @@ public partial class ContentPage
 		ref double topSafeArea)
 	{
 		if (Content is not IView content ||
-			SafeAreaScrollViewCoordinator.FindVerticalScrollContent(content) != content ||
 			Handler?.PlatformView is not MauiView mauiView ||
-			!mauiView.TryGetSafeAreaForScrollDelegation(out var safeArea))
+			!mauiView.TryGetSafeAreaForScrollDelegation(out var safeArea) ||
+			SafeAreaScrollViewCoordinator.FindVerticalScrollContent(content) != content)
 		{
 			return;
 		}
@@ -40,6 +40,7 @@ public partial class ContentPage
 
 	partial void ApplyCrossPlatformArrangeSafeArea(
 		Rect platformBounds,
+		Rect arrangedBounds,
 		bool delegateTopSafeArea,
 		double topSafeArea)
 	{
@@ -49,11 +50,20 @@ public partial class ContentPage
 			return;
 		}
 
+		const double tolerance = 1;
+		var contentFrame = content.Frame;
+		if (contentFrame.Top < arrangedBounds.Top - tolerance ||
+			contentFrame.Height < arrangedBounds.Height / 2)
+		{
+			_safeAreaScrollViewCoordinator?.Reset();
+			return;
+		}
+
 		(_safeAreaScrollViewCoordinator ??= new()).TryDelegate(
 			content,
 			content,
 			platformBounds,
-			topSafeArea,
+			contentFrame.Top - platformBounds.Top,
 			topSafeArea);
 	}
 }

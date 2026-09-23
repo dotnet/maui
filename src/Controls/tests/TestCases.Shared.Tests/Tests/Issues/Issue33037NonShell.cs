@@ -84,6 +84,60 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	public void DirectScrollViewPreservesTopMarginWhileCollapsingLargeTitle()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037MarginScrollViewButton").Click();
+
+		try
+		{
+			const string title = "Issue33037 Margin";
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var expandedBarRect = GetNavigationBarRect(expandedTitleRect);
+			var firstItemRect = App.WaitForElement("Issue33037MarginFirstItem").GetRect();
+
+			Assert.That(firstItemRect.Y, Is.EqualTo(expandedBarRect.Bottom + 20).Within(GapTolerance),
+				"The direct ScrollView top margin should remain between the navigation bar and its first item.");
+
+			App.ScrollDown(
+				"Issue33037MarginScrollViewScroller",
+				ScrollStrategy.Gesture,
+				swipePercentage: 0.8,
+				withInertia: false);
+
+			var collapsedTitleRect = GetNavigationTitleRect(title);
+			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
+				"The direct ScrollView should still collapse the large title when it has a top margin.");
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	[TestCase("Issue33037CenteredScrollViewButton", "Issue33037CenteredScrollViewScroller")]
+	[TestCase("Issue33037EndScrollViewButton", "Issue33037EndScrollViewScroller")]
+	public void ShortAlignedDirectScrollViewPreservesArrangedHeight(string buttonId, string scrollerId)
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement(buttonId).Click();
+
+		try
+		{
+			var scrollerRect = App.WaitForElement(scrollerId).GetRect();
+			Assert.That(scrollerRect.Height, Is.EqualTo(200).Within(GapTolerance),
+				"A short aligned direct ScrollView must not be expanded to the top of the page for large-title delegation.");
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
 	public void NestedSafeAreaLongTableScrollsWithoutDoubleTopInset()
 	{
 		RequireIOS26OrHigher();
