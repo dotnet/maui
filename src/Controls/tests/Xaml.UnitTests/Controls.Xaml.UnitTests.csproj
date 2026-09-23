@@ -47,6 +47,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Source-linked gallery files rely on these global imports in HostApp. -->
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
+    <Using Include="Microsoft.Maui" />
+    <Using Include="Microsoft.Maui.Controls" />
+    <Using Include="Microsoft.Maui.Dispatching" />
+    <Using Include="Microsoft.Maui.Graphics" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="DispatcherStub.cs" />
     <Compile Include="..\Core.UnitTests\Log.cs" Link="Log.cs" />
     <Compile Include="..\Core.UnitTests\MockPlatformServices.cs" />

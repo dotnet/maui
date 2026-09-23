@@ -1,8 +1,3 @@
-using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
-
 #if ANDROID
 using Android.Views;
 using AndroidX.Core.View;

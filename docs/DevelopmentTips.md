@@ -256,6 +256,8 @@ back to the original state. Keep representative rendering and native input tests
 controls, focus, keyboard completion, and dragging); a managed event invocation does not prove
 that the native control raises or suppresses that event. When pruning an ordered UI fixture,
 preserve its navigation/setup and the starting state required by the retained tests.
+Keep imports needed by source-linked gallery files in the unit project's `Using` items,
+rather than adding imports to each gallery file solely for the unit-test build.
 
 Test Shell navigation through its managed navigation APIs and `IShellController`, rather than
 opening flyouts to read labels containing event arguments. `ShellGalleryNavigationTests` checks

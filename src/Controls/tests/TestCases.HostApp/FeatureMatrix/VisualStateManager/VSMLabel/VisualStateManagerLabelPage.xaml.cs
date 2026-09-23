@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample;
 
 public partial class VisualStateManagerLabelPage : ContentPage
@@ -50,3 +47,4 @@ public partial class VisualStateManagerLabelPage : ContentPage
 		LabelState.Text = "State: Normal";
 	}
 }
+

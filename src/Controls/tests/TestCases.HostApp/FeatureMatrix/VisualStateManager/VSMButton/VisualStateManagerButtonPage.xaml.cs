@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample;
 
 public partial class VisualStateManagerButtonPage : ContentPage
@@ -83,3 +80,4 @@ public partial class VisualStateManagerButtonPage : ContentPage
 		DemoButton.Text = "Focused";
 	}
 }
+
