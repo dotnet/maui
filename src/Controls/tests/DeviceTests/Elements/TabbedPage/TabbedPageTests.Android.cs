@@ -368,7 +368,10 @@ namespace Microsoft.Maui.DeviceTests
 				GetRootViewChangedSubscribers(rootManager),
 				subscriber => ReferenceEquals(subscriber.Target, tabbedPageManager));
 
-			tabbedPage.Handler = null;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				tabbedPage.Handler = null;
+			});
 
 			Assert.DoesNotContain(GetRootViewChangedSubscribers(rootManager),
 				subscriber => ReferenceEquals(subscriber.Target, tabbedPageManager));
