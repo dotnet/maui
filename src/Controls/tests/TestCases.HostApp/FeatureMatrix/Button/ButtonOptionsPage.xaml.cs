@@ -1,3 +1,8 @@
+using System;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+
 namespace Maui.Controls.Sample;
 
 public partial class ButtonOptionsPage : ContentPage

@@ -57,6 +57,11 @@
     <Compile Include="..\TestCases.HostApp\FeatureMatrix\Triggers\TriggersViewModel.cs" Link="TestCases\TriggersViewModel.cs" />
     <Compile Include="..\TestCases.HostApp\Controls\UITestEntry.cs" Link="TestCases\UITestEntry.cs" />
     <Compile Include="..\TestCases.HostApp\FeatureMatrix\BindableLayout\BindableLayoutViewModel.cs" Link="TestCases\BindableLayoutViewModel.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\AbsoluteLayout\AbsoluteLayoutViewModel.cs" Link="TestCases\AbsoluteLayoutViewModel.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\Button\ButtonViewModel.cs" Link="TestCases\ButtonViewModel.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\MenuBarItem\MenuBarItemViewModel.cs" Link="TestCases\MenuBarItemViewModel.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\SafeAreaViewModel.cs" Link="TestCases\SafeAreaViewModel.cs" />
+    <Compile Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\SafeAreaExtensions.cs" Link="TestCases\SafeAreaExtensions.cs" />
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
@@ -93,6 +98,16 @@
     <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\VisualStateManager\VSMEntry\VisualStateManagerEntryPage.xaml" />
     <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\BindableLayout\BindableLayoutControlPage.xaml" />
     <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\BindableLayout\BindableLayoutOptionsPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\AbsoluteLayout\AbsoluteLayoutControlPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\AbsoluteLayout\AbsoluteLayoutOptionsPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\Button\ButtonControlPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\Button\ButtonOptionsPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\MenuBarItem\MenuBarItemControlPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\SafeAreaOptionsPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\ContentPage\SafeAreaContentPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\ContentView\SafeAreaContentViewPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\Border\SafeAreaBorderPage.xaml" />
+    <_GalleryTestPage Include="..\TestCases.HostApp\FeatureMatrix\SafeArea\Layout\Grid\SafeAreaGridPage.xaml" />
     <Compile Include="@(_GalleryTestPage->'%(Identity).cs')" Link="TestCases\%(Filename)%(Extension)" />
     <MauiXaml Include="@(_GalleryTestPage)" Link="TestCases\%(Filename)%(Extension)" Inflator="Runtime;SourceGen;XamlC" />
   </ItemGroup>

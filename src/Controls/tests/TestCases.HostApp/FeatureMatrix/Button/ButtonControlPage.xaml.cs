@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Maui.Controls;
+
 namespace Maui.Controls.Sample;
 
 public class ButtonControlPage : NavigationPage

@@ -257,6 +257,25 @@ controls, focus, keyboard completion, and dragging); a managed event invocation 
 that the native control raises or suppresses that event. When pruning an ordered UI fixture,
 preserve its navigation/setup and the starting state required by the retained tests.
 
+Test Shell navigation through its managed navigation APIs and `IShellController`, rather than
+opening flyouts to read labels containing event arguments. `ShellGalleryNavigationTests` checks
+the actual page identities, stack contents, routes, navigation sources, and event ordering.
+Use the controller's selection API when reproducing platform-initiated selection: assigning
+`CurrentItem` directly does not have the same navigating/cancellation semantics.
+
+`GalleryAbsoluteLayoutTests` drives the real options page and layout manager, comparing arranged
+rectangles rather than screenshots of each proportional flag combination. Its remaining native
+proportional-layout smoke test compares native bounds and edge anchors in the same coordinate
+space, accounting for system insets without device-density assumptions. `GalleryButtonTests` and
+`GalleryMenuBarTests` similarly check real gallery bindings and commands; native font, image,
+menu accessibility, and input coverage remain separate.
+
+Distinguish safe-area policy from OS behavior. `GallerySafeAreaTests` verifies the actual pages'
+edge, padding, background, and status-label bindings without a handler. A status label saying
+`None` does not prove that content extends underneath a notch. Keep native bounds assertions for
+notches, keyboard avoidance, orientation changes, and additive safe-area padding. Reset any
+padding/options left by a removed ordered test before running subsequent native geometry checks.
+
 Keep native interaction portions of mixed fixtures and their manual gallery reproductions.
 Remove only snapshot baselines no longer referenced by any remaining test, across all platform
 directories. A managed-looking assertion is not sufficient evidence for migration: validation may

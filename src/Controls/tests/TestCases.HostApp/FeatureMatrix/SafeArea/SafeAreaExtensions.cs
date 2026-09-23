@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls;
+
 namespace Maui.Controls.Sample;
 
 /// <summary>
@@ -7,12 +9,12 @@ namespace Maui.Controls.Sample;
 /// </summary>
 static class SafeAreaExtensions
 {
-    /// <summary>
-    /// Gets the raw safe area insets (system bars + display cutout) as a formatted string.
-    /// Format: "L:{left},T:{top},R:{right},B:{bottom},KH:{keyboardHeight},CoL:{cutoutLeft},CoR:{cutoutRight}".
-    /// </summary>
-    public static string GetSafeAreaInfo(Page page)
-    {
+	/// <summary>
+	/// Gets the raw safe area insets (system bars + display cutout) as a formatted string.
+	/// Format: "L:{left},T:{top},R:{right},B:{bottom},KH:{keyboardHeight},CoL:{cutoutLeft},CoR:{cutoutRight}".
+	/// </summary>
+	public static string GetSafeAreaInfo(Page page)
+	{
 #if ANDROID
         try
         {
@@ -40,6 +42,6 @@ static class SafeAreaExtensions
         }
         catch { }
 #endif
-        return "L:0,T:0,R:0,B:0,KH:0,CoL:0,CoR:0";
-    }
+		return "L:0,T:0,R:0,B:0,KH:0,CoL:0,CoR:0";
+	}
 }

@@ -55,218 +55,6 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_WidthAndHeight()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "500");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "250");
-		App.WaitForElement(LayoutFlagNoneCheckBox);
-		App.Tap(LayoutFlagNoneCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_XProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(XEntry);
-		App.ClearText(XEntry);
-		App.EnterText(XEntry, "0.5");
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "100");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "100");
-		App.WaitForElement(LayoutFlagXProportionalCheckBox);
-		App.Tap(LayoutFlagXProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_YProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(YEntry);
-		App.ClearText(YEntry);
-		App.EnterText(YEntry, "0.5");
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "100");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "100");
-		App.WaitForElement(LayoutFlagYProportionalCheckBox);
-		App.Tap(LayoutFlagYProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_XProportionalAndYProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(XEntry);
-		App.ClearText(XEntry);
-		App.EnterText(XEntry, "0.5");
-		App.WaitForElement(YEntry);
-		App.ClearText(YEntry);
-		App.EnterText(YEntry, "0.5");
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "100");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "100");
-		App.WaitForElement(LayoutFlagXProportionalCheckBox);
-		App.Tap(LayoutFlagXProportionalCheckBox);
-		App.WaitForElement(LayoutFlagYProportionalCheckBox);
-		App.Tap(LayoutFlagYProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_PositionProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(XEntry);
-		App.ClearText(XEntry);
-		App.EnterText(XEntry, "0.5");
-		App.WaitForElement(YEntry);
-		App.ClearText(YEntry);
-		App.EnterText(YEntry, "0.5");
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "100");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "100");
-		App.WaitForElement(LayoutFlagPositionProportionalCheckBox);
-		App.Tap(LayoutFlagPositionProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_WidthProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "100");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "0.5");
-		App.WaitForElement(LayoutFlagWidthProportionalCheckBox);
-		App.Tap(LayoutFlagWidthProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_HeightProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "0.5");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "100");
-		App.WaitForElement(LayoutFlagHeightProportionalCheckBox);
-		App.Tap(LayoutFlagHeightProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_WidthProportionalAndHeightProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "0.5");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "0.5");
-		App.WaitForElement(LayoutFlagHeightProportionalCheckBox);
-		App.Tap(LayoutFlagHeightProportionalCheckBox);
-		App.WaitForElement(LayoutFlagWidthProportionalCheckBox);
-		App.Tap(LayoutFlagWidthProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_SizeProportional()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "0.5");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "0.5");
-		App.WaitForElement(LayoutFlagSizeProportionalCheckBox);
-		App.Tap(LayoutFlagSizeProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_SizeProportionalWithMaximumValue()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "1");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "1");
-		App.WaitForElement(LayoutFlagSizeProportionalCheckBox);
-		App.Tap(LayoutFlagSizeProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
 	public void VerifyAbsoluteLayout_AllProportional()
 	{
 		App.WaitForElement(Options);
@@ -287,34 +75,32 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagAllCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Category(UITestCategories.Layout)]
-	public void VerifyAbsoluteLayout_SizeProportionalAndPositionProportional()
-	{
 		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(XEntry);
-		App.ClearText(XEntry);
-		App.EnterText(XEntry, "0.5");
-		App.WaitForElement(YEntry);
-		App.ClearText(YEntry);
-		App.EnterText(YEntry, "0.5");
-		App.WaitForElement(HeightEntry);
-		App.ClearText(HeightEntry);
-		App.EnterText(HeightEntry, "0.5");
-		App.WaitForElement(WidthEntry);
-		App.ClearText(WidthEntry);
-		App.EnterText(WidthEntry, "0.5");
-		App.WaitForElement(LayoutFlagSizeProportionalCheckBox);
-		App.Tap(LayoutFlagSizeProportionalCheckBox);
-		App.WaitForElement(LayoutFlagPositionProportionalCheckBox);
-		App.Tap(LayoutFlagPositionProportionalCheckBox);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		Assert.That(App.WaitForKeyboardToHide(), Is.True);
+		var layout = App.WaitForElement("MainLayout");
+		App.WaitForElement("BlueBox");
+		App.WaitForElement("FixedLabel");
+		App.WaitForElement("ClickMeButton");
+		Assert.That(layout.GetRect().Width, Is.GreaterThan(0));
+		Assert.That(layout.GetRect().Height, Is.GreaterThan(0));
+		Assert.That(() =>
+		{
+			var parent = App.FindElement("MainLayout").GetRect();
+			var child = App.FindElement("BlueBox").GetRect();
+			var top = App.FindElement("FixedLabel").GetRect();
+			var bottom = App.FindElement("ClickMeButton").GetRect();
+			// The native parent's bounds include system insets. These y=0 and y=0.99
+			// children locate the usable content height without assuming an inset size.
+			var contentHeight = (bottom.Y - top.Y) / 0.99 + bottom.Height;
+			return new[]
+			{
+				child.Width - parent.Width * 0.5,
+				child.Height - contentHeight * 0.5,
+				child.X - (parent.X + (parent.Width - child.Width) * 0.5),
+				child.Y - (top.Y + (contentHeight - child.Height) * 0.5)
+			};
+		}, Is.All.InRange(-2.0, 2.0).After(5000, 100),
+			"The native box should occupy half the layout's width and height and be centered.");
 	}
 
 	[Test]
@@ -346,7 +132,18 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap("IsVisibleFalse");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(Options);
+		App.WaitForNoElement("MainLayout");
+		App.WaitForNoElement("BlueBox");
+		App.WaitForNoElement("FixedLabel");
+		App.WaitForNoElement("ClickMeButton");
+
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("MainLayout");
+		App.WaitForElement("FixedLabel");
+		App.WaitForElement("ClickMeButton");
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31496
