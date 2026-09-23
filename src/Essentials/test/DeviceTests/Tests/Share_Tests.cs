@@ -155,6 +155,52 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				File.Delete(file2);
 			}
 		}
+
+		[Fact]
+		public void Share_TextIntent_WithoutPreviewImage_HasNoClipData()
+		{
+			var intent = ShareImplementation.CreateShareTextIntent(new ShareTextRequest
+			{
+				Title = "Test Share",
+				Uri = "https://dotnet.microsoft.com"
+			});
+
+			Assert.Null(intent.ClipData);
+		}
+
+		[Fact]
+		public void Share_TextIntent_WithPreviewImage_HasClipData()
+		{
+			var image = Path.Combine(FileSystem.CacheDirectory, "share_preview_test.png");
+			File.WriteAllBytes(image, new byte[] { 0x89, 0x50, 0x4E, 0x47 });
+
+			try
+			{
+				var intent = ShareImplementation.CreateShareTextIntent(new ShareTextRequest
+				{
+					Title = "Test Share",
+					Uri = "https://dotnet.microsoft.com",
+					PreviewImage = new ShareFile(image)
+				});
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					Assert.NotNull(intent.ClipData);
+					Assert.Equal(1, intent.ClipData.ItemCount);
+					Assert.NotNull(intent.ClipData.GetItemAt(0)?.Uri);
+					Assert.Equal("Test Share", intent.GetStringExtra(Android.Content.Intent.ExtraTitle));
+					Assert.True(intent.Flags.HasFlag(Android.Content.ActivityFlags.GrantReadUriPermission));
+				}
+				else
+				{
+					Assert.Null(intent.ClipData);
+				}
+			}
+			finally
+			{
+				File.Delete(image);
+			}
+		}
 #endif
 	}
 }
