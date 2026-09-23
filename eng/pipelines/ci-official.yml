@@ -52,8 +52,9 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    # Xcode 27 requires the GitHub-hosted ARM64 image, not the shared Intel image.
+    name: GitHub-hosted Agents
+    vmImage: xcode-27
     os: macOS
 
 resources:
