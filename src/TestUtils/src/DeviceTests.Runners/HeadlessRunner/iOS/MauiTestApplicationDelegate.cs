@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.DotNet.XHarness.iOS.Shared.Execution;
@@ -14,50 +13,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
 	public abstract class MauiTestApplicationDelegate : UIApplicationDelegate
 	{
-		// TODO: https://github.com/xamarin/xamarin-macios/issues/12555
-		readonly static string[] EnvVarNames = {
-			"NUNIT_AUTOSTART",
-			"NUNIT_AUTOEXIT",
-			"NUNIT_ENABLE_NETWORK",
-			"DISABLE_SYSTEM_PERMISSION_TESTS",
-			"NUNIT_HOSTNAME",
-			"NUNIT_TRANSPORT",
-			"NUNIT_LOG_FILE",
-			"NUNIT_HOSTPORT",
-			"USE_TCP_TUNNEL",
-			"RUN_END_TAG",
-			"NUNIT_ENABLE_XML_OUTPUT",
-			"NUNIT_ENABLE_XML_MODE",
-			"NUNIT_XML_VERSION",
-			"NUNIT_SORTNAMES",
-			"NUNIT_RUN_ALL",
-			"NUNIT_SKIPPED_METHODS",
-			"NUNIT_SKIPPED_CLASSES",
-		};
-
-		readonly static Dictionary<string, string?> EnvVars = new();
-
-		static MauiTestApplicationDelegate()
-		{
-			// copy into dictionary for later
-			foreach (var envvar in EnvVarNames)
-			{
-				EnvVars[envvar] = Environment.GetEnvironmentVariable(envvar);
-			}
-
-			// Add entry to indicate we're running headless
-			EnvVars.Add("headlessrunner", "true");
-		}
-
-		static void SetEnvironmentVariables()
-		{
-			// read from dictionary
-			foreach (var envvar in EnvVars)
-			{
-				Console.WriteLine($"  {envvar.Key} = '{envvar.Value}'");
-				Environment.SetEnvironmentVariable(envvar.Key, envvar.Value);
-			}
-		}
+		readonly TaskCompletionSource _windowReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		public static bool IsHeadlessRunner(string[] args)
 		{
@@ -80,7 +36,12 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override UIWindow? Window { get; set; }
 
+		internal Task WindowReady => _windowReady.Task;
+
 		protected abstract MauiApp CreateMauiApp();
+
+		internal void SetWindowReady() =>
+			_windowReady.TrySetResult();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
@@ -102,7 +63,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			var mauiApp = CreateMauiApp();
 			Services = mauiApp.Services;
 
-			SetEnvironmentVariables();
+			Environment.SetEnvironmentVariable("headlessrunner", "true");
 
 			Options = Services.GetRequiredService<TestOptions>();
 			RunnerOptions = Services.GetRequiredService<HeadlessRunnerOptions>();
@@ -112,19 +73,27 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
-			var tcs = new TaskCompletionSource();
-
-			Window = new UIWindow(UIScreen.MainScreen.Bounds)
+			var window = new UIWindow(UIScreen.MainScreen.Bounds)
 			{
-				RootViewController = new MauiTestViewController(tcs.Task)
+				RootViewController = new MauiTestViewController(WindowReady)
 			};
 
-			Window.MakeKeyAndVisible();
+			Window = window;
 
-			tcs.TrySetResult();
+#if MACCATALYST
+			if (HasSceneManifest())
+				return true;
+#endif
+
+			window.MakeKeyAndVisible();
+			SetWindowReady();
 
 			return true;
 		}
 
+#if MACCATALYST
+		static bool HasSceneManifest() =>
+			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString("UIApplicationSceneManifest")) == true;
+#endif
 	}
 }

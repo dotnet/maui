@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// TemplatedCell2 _measurementCellTemplated;
 		// DefaultCell2 _measurementCellDefault;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Transient: cleared (set to null) immediately after it is invoked, so it is not retained.")]
 		Action _scrollAnimationEndedCallback;
 
 		public GroupableItemsViewController2(TItemsView groupableItemsView, UICollectionViewLayout layout)

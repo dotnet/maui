@@ -2,11 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -70,11 +72,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion IAppearanceObserver
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the section renderer lifetime and released in Dispose after shell event subscriptions are removed.")]
 		IShellContext _context;
 
 		readonly Dictionary<Element, IShellPageRendererTracker> _trackers =
 			new Dictionary<Element, IShellPageRendererTracker>();
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The navigation bar appearance tracker is owned by this renderer and disposed in Dispose.")]
 		IShellNavBarAppearanceTracker _appearanceTracker;
 
 		Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks =
@@ -84,9 +88,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		bool _firstLayoutCompleted;
 		TaskCompletionSource<bool> _popCompletionTask;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The root renderer is owned by this section renderer and disposed in Dispose.")]
 		IShellSectionRootRenderer _renderer;
 		ShellSection _shellSection;
 		bool _ignorePopCall;
+		bool _interactivePopGesturePending;
 
 		// Prevents multiple concurrent GoToAsync("..") dispatches from SendPop().
 		// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
@@ -94,6 +100,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
 		// until it completes (success or cancel).
 		bool _sendPopPending;
+		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
+		int _tabRegistrationGeneration;
 
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
@@ -103,6 +112,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// ViewControllers = ViewControllers.Remove(vc1)
 		// ViewControllers = ViewControllers.Remove(vc2)  
 		// You've now added vc1 back because the second call to ViewControllers will still return a ViewControllers list with vc1 in it
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The pending view controller snapshot is transient navigation state and is cleared after navigation operations and in Dispose.")]
 		UIViewController[] _pendingViewControllers;
 
 		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
@@ -165,43 +175,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			topViewController ??= TopViewController;
-			foreach (var tracker in _trackers)
+			if (!_interactivePopGesturePending && BackButtonPressedHandled(topViewController, isInteractivePopGesture: false))
 			{
-				if (tracker.Value.ViewController == topViewController)
-				{
-					var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Value.Page);
-					var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
-					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
-					var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
-
-					if (!enabled)
-					{
-						_sendPopPending = false;  // reset before returning
-						return false;
-					}
-
-					if (command != null)
-					{
-						if (command.CanExecute(commandParameter))
-						{
-							command.Execute(commandParameter);
-						}
-						// Reset the iOS 26+ guard so subsequent back presses are not blocked.
-						_sendPopPending = false;
-						return false;
-					}
-
-					// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
-					// are invoked consistently for both the navigation bar back button and the
-					// hardware/system back button.
-					if (_context.Shell?.SendBackButtonPressed() == true)
-					{
-						_sendPopPending = false;  // reset before returning
-						return false;
-					}
-
-					break;
-				}
+				_sendPopPending = false;
+				return false;
 			}
 
 			// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
@@ -235,8 +212,50 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return false;
 		}
 
+		bool BackButtonPressedHandled(UIViewController topViewController, bool isInteractivePopGesture)
+		{
+			IShellPageRendererTracker tracker = null;
+			foreach (var candidate in _trackers.Values)
+			{
+				if (candidate.ViewController == topViewController)
+				{
+					tracker = candidate;
+					break;
+				}
+			}
+
+			if (tracker is null)
+			{
+				return false;
+			}
+
+			var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Page);
+			if (!behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true))
+			{
+				return true;
+			}
+
+			var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+			var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+			if (command is not null)
+			{
+				if (command.CanExecute(commandParameter))
+				{
+					command.Execute(commandParameter);
+				}
+
+				return true;
+			}
+
+			return isInteractivePopGesture
+				? _context.Shell.SendBackButtonPressedFromGesture()
+				: _context.Shell?.SendBackButtonPressed() == true;
+		}
+
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
+
 			// If this page is removed from the View Hierarchy we need to resolve any
 			// pending navigation operations
 			var sourcesToComplete = new List<TaskCompletionSource<bool>>();
@@ -345,7 +364,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			base.ViewDidLoad();
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(this, ShouldPop);
+			if (ShellSection is not null)
+			{
+				_nativeNavigationRegistrations.Register(
+					ShellSection,
+					NavigationBar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.RealizedView);
+			}
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(this);
 			UpdateFlowDirection();
 		}
 
@@ -362,6 +389,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IDisconnectable.Disconnect()
 		{
+			_tabRegistrationGeneration++;
+			_nativeNavigationRegistrations.Clear();
+			_nativeTabRegistrations.Clear();
 			(_renderer as IDisconnectable)?.Disconnect();
 
 			if (_displayedPage != null)
@@ -390,6 +420,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed)
 				return;
 
+			_interactivePopGesturePending = false;
+
 			if (disposing)
 			{
 				this.RemoveFromParentViewController();
@@ -412,6 +444,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellSection = null;
 			_appearanceTracker = null;
 			_renderer = null;
+			_pendingViewControllers = null;
 			_context = null;
 
 			base.Dispose(disposing);
@@ -430,12 +463,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return UIImage.GetSystemImage("ellipsis.circle");
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.PropertyChanged subscription is removed in Disconnect before the shell context is released.")]
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSection.PropertyChanged subscription is removed in Disconnect before the shell section is released.")]
 		protected virtual void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName)
@@ -499,6 +534,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			InsertViewController(ActiveViewControllers().IndexOf(beforeRenderer.ViewController), renderer.ViewController);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSectionController.NavigationRequested subscription is removed in Disconnect before the shell section is released.")]
 		protected virtual void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
 		{
 			switch (e.RequestType)
@@ -637,12 +673,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateTabBarItem()
 		{
 			Title = ShellSection.Title;
+			var registrationGeneration = ++_tabRegistrationGeneration;
+			var shellSection = ShellSection;
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
+				if (_disposed ||
+					registrationGeneration != _tabRegistrationGeneration ||
+					!ReferenceEquals(ShellSection, shellSection))
+				{
+					icon?.Dispose();
+					return;
+				}
+
+				_nativeTabRegistrations.Clear();
+
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				_nativeTabRegistrations.Register(
+					shellSection,
+					TabBarItem,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBarItem);
 			});
 		}
 
@@ -677,6 +730,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return null;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The displayed page PropertyChanged subscription is removed in Disconnect and when the displayed page changes.")]
 		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.NavBarIsVisibleProperty.PropertyName)
@@ -687,11 +741,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		// We only care about using pendingViewControllers when we are setting the ViewControllers array directly
 		// So, once navigation starts again (or ends) we can just clear the pendingViewControllers
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.Navigating subscription is removed in Disconnect before the shell context is released.")]
 		void OnNavigating(object sender, ShellNavigatingEventArgs e)
 		{
 			_pendingViewControllers = null;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.Navigated subscription is removed in Disconnect before the shell context is released.")]
 		void OnNavigated(object sender, ShellNavigatedEventArgs e)
 		{
 			_pendingViewControllers = null;
@@ -822,6 +878,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		bool ShouldPop()
 		{
+			if (BackButtonPressedHandled(TopViewController, isInteractivePopGesture: true))
+			{
+				return false;
+			}
+
 			var shellItem = _context.Shell.CurrentItem;
 			var shellSection = shellItem?.CurrentItem;
 			var shellContent = shellSection?.CurrentItem;
@@ -829,7 +890,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			stack?.RemoveAt(stack.Count - 1);
 
-			return ((IShellController)_context.Shell).ProposeNavigation(ShellNavigationSource.Pop, shellItem, shellSection, shellContent, stack, true);
+			_interactivePopGesturePending = ((IShellController)_context.Shell).ProposeNavigation(
+				ShellNavigationSource.Pop, shellItem, shellSection, shellContent, stack, true);
+
+			return _interactivePopGesturePending;
 		}
 
 		void UpdateNavigationBarHidden()
@@ -849,30 +913,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		class GestureDelegate : UIGestureRecognizerDelegate
 		{
-			readonly UINavigationController _parent;
-			readonly Func<bool> _shouldPop;
+			readonly WeakReference<ShellSectionRenderer> _parent;
 
-			public GestureDelegate(UINavigationController parent, Func<bool> shouldPop)
+			public GestureDelegate(ShellSectionRenderer parent)
 			{
-				_parent = parent;
-				_shouldPop = shouldPop;
+				_parent = new(parent);
 			}
 
 			public override bool ShouldBegin(UIGestureRecognizer recognizer)
 			{
-				if ((_parent as ShellSectionRenderer).ActiveViewControllers().Length == 1)
+				if (!_parent.TryGetTarget(out var parent) || parent._disposed)
 					return false;
-				return _shouldPop();
+
+				if (parent.ActiveViewControllers().Length == 1)
+					return false;
+				return parent.ShouldPop();
 			}
 		}
 
 		class NavDelegate : UINavigationControllerDelegate
 		{
-			readonly ShellSectionRenderer _self;
+			readonly WeakReference<ShellSectionRenderer> _self;
 
 			public NavDelegate(ShellSectionRenderer renderer)
 			{
-				_self = renderer;
+				_self = new(renderer);
 			}
 
 			// This is currently working around a Mono Interpreter bug
@@ -887,10 +952,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				if (!_self.TryGetTarget(out var self) || self._disposed)
+					return;
+
+				self._interactivePopGesturePending = false;
 				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
 
-				var tasks = _self._completionTasks;
-				var popTask = _self._popCompletionTask;
+				var tasks = self._completionTasks;
+				var popTask = self._popCompletionTask;
 
 				if (tasks.TryGetValue(viewController, out var source))
 				{
@@ -905,14 +974,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				var element = _self.ElementForViewController(viewController);
+				if (!_self.TryGetTarget(out var self) || self._disposed)
+					return;
+
+				var element = self.ElementForViewController(viewController);
 
 				bool navBarVisible = false;
 
 				if (element is not null)
 				{
 					if (element is ShellSection)
-						navBarVisible = _self._renderer.ShowNavBar;
+						navBarVisible = self._renderer.ShowNavBar;
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
 
@@ -931,8 +1003,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// Because the back button title needs to be set on the previous VC
 				// We want to set the BackButtonItem as early as possible so there is no flickering
-				var currentPage = _self._context?.Shell?.GetCurrentShellPage();
-				var trackers = _self._trackers;
+				var currentPage = self._context?.Shell?.GetCurrentShellPage();
+				var trackers = self._trackers;
 				if (currentPage?.Handler is IPlatformViewHandler pvh &&
 					pvh.ViewController == viewController &&
 					trackers.TryGetValue(currentPage, out var tracker) &&
@@ -953,8 +1025,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (!context.IsCancelled)
 				{
-					_self._popCompletionTask = new TaskCompletionSource<bool>();
-					_self.SendPoppedOnCompletion(_self._popCompletionTask.Task);
+					if (!_self.TryGetTarget(out var self) || self._disposed)
+						return;
+
+					self._popCompletionTask = new TaskCompletionSource<bool>();
+					self.SendPoppedOnCompletion(self._popCompletionTask.Task);
 				}
 			}
 		}

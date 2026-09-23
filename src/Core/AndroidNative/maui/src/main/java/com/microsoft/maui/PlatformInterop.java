@@ -206,7 +206,6 @@ public class PlatformInterop {
     public static BottomNavigationView createNavigationBar(Context context, int styleAttribute, LinearLayout linearLayout, BottomNavigationView.OnItemSelectedListener listener) {
         BottomNavigationView navigationView = new BottomNavigationView(context, null, styleAttribute);
         navigationView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        navigationView.setBackgroundColor(Color.WHITE);
         navigationView.setOnItemSelectedListener(listener);
         linearLayout.addView(navigationView);
         return navigationView;

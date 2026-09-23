@@ -171,6 +171,25 @@ xharness android test --package-name com.microsoft.maui.controls.devicetests --a
 
 ## Configuration Details
 
+### Windows SDK Payload
+
+Windows does not use XHarness, so `helix_xharness.proj` defaults `DotNetCliVersion`
+to `MicrosoftNETSdkPackageVersion` from `eng/Versions.props`. Preserve the full
+package version: a servicing SDK such as `10.0.113-servicing.26454.107` reports
+`NETCoreSdkVersion=10.0.113`, but the download feed uses the full servicing version
+in its path. Falling back to the installed SDK version can fail before any tests
+are submitted. Explicit pipeline or command-line overrides remain supported;
+other platforms keep the SDK selected by XHarness.
+
+Run the SDK-selection regression checks without building device apps or submitting
+Helix jobs:
+
+```powershell
+Invoke-Pester -Path ./eng/helix_xharness.Tests.ps1 -Output Detailed
+```
+
+### Work Item Settings
+
 The `eng/helix_xharness.proj` configuration includes:
 
 - **Timeouts**: 2-hour work item timeout, 1-hour 15-min test timeout for category splits

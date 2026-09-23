@@ -33,6 +33,7 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
 					fonts.AddFont("Montserrat-Bold.otf", "MontserratBold");
+					fonts.AddFont("MyCustomFont.ttf", "MyCustomFont");
 				})
 				.RenderingPerformanceAddMappers()
 				.Issue21109AddMappers()
@@ -42,7 +43,8 @@ namespace Maui.Controls.Sample
 				.Issue18720TimePickerAddMappers()
 				.Issue28945AddMappers()
 				.Issue25436RegisterNavigationService()
-				.Issue36853RegisterServices();
+				.Issue36853RegisterServices()
+				.Issue38361RegisterServices();
 
 #if IOS || MACCATALYST
 			appBuilder.ConfigureCollectionViewHandlers();
