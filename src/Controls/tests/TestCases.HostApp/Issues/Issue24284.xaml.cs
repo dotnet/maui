@@ -16,6 +16,5 @@ public partial class Issue24284 : Shell
 
 		FlyoutHeader = label;
 		FlyoutHeaderBehavior = FlyoutHeaderBehavior.CollapseOnScroll;
-		FlyoutIsPresented = true;
 	}
 }
