@@ -404,6 +404,7 @@ Describe 'Pipeline trust boundaries' {
         $verify = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '../../eng/pipelines/common/issue-replicate-verify-job.yml')
         $pipeline | Should -Match '(?s)- job: Sample.*?- checkout: none'
         $verify | Should -Match '(?s)jobs:.*?- checkout: none'
+        $verify | Should -Match 'task\.prependpath\]\$ANDROID_SDK_ROOT/platform-tools'
         $pipeline | Should -Match 'ISSUE_REPRO_COPILOT_TOKEN'
         $pipeline | Should -Match 'ISSUE_REPRO_COMMENT_TOKEN'
         $verify | Should -Not -Match 'ISSUE_REPRO_(COPILOT|COMMENT)_TOKEN'

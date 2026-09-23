@@ -96,6 +96,8 @@ jobs:
             timeout 600 "$adb" wait-for-device
             for attempt in $(seq 1 120); do
               if [ "$("$adb" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
                 exit 0
               fi
               sleep 5
