@@ -172,6 +172,19 @@ In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions*
 
 See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) for a ready-to-use workflow.
 
+### Public `/issue replicate` pipeline
+
+The issue trigger in [`.github/workflows/issue-replicate-trigger.yml`](../workflows/issue-replicate-trigger.yml)
+uses the same OIDC exchange but targets a **new** definition in
+`dnceng-public/public`, not the DevDiv `/review` pipeline. Register
+`eng/pipelines/ci-issue-replicate.yml`, set `ISSUE_REPLICATE_PIPELINE_ID` as a
+GitHub Actions repository variable, and give the identity Basic access and
+Queue builds permission **in dnceng-public**. DevDiv permissions do not carry
+over. The pipeline needs separately protected read, Copilot GPT, and
+issue-comment-only credentials. For the deployment checklist, isolation model,
+command syntax, recovery variable, and result limitations, see
+[the issue-replicate guide](issue-replicate.md).
+
 ## How It Works (Token Flow)
 
 ```

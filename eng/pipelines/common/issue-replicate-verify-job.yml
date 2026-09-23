@@ -1,0 +1,140 @@
+parameters:
+  - name: name
+    type: string
+  - name: dependsOn
+    type: string
+  - name: condition
+    type: string
+  - name: proposal
+    type: string
+  - name: platform
+    type: string
+
+jobs:
+  - job: ${{ parameters.name }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    ${{ if eq(parameters.platform, 'android') }}:
+      pool:
+        vmImage: ubuntu-22.04
+    ${{ else }}:
+      pool:
+        vmImage: macOS-15-arm64
+    timeoutInMinutes: 180
+    steps:
+      - checkout: none
+      - download: current
+        artifact: IssueTools
+      - download: current
+        artifact: IssueInput
+      - download: current
+        artifact: SampleOutput
+      - download: current
+        artifact: ${{ parameters.proposal }}
+      - pwsh: |
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
+            -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
+            -Destination "$(Pipeline.Workspace)/maui"
+          if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
+        displayName: 'Fetch pinned public source without a checkout credential'
+      - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
+        displayName: 'Prepare local provisioning logs'
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - template: enable-kvm.yml
+      - template: provision.yml
+        parameters:
+          checkoutDirectory: $(Pipeline.Workspace)/maui
+          skipProvisionator: true
+          skipInternalFeeds: true
+          skipCertificates: true
+          skipGradleCache: true
+          skipXcode: ${{ eq(parameters.platform, 'android') }}
+          skipSimulatorSetup: ${{ eq(parameters.platform, 'android') }}
+          skipJdk: ${{ eq(parameters.platform, 'ios') }}
+          skipAndroidCommonSdks: ${{ eq(parameters.platform, 'ios') }}
+          skipAndroidPlatformApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+      - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+        workingDirectory: $(Pipeline.Workspace)/maui
+        displayName: 'Install pinned public MAUI SDK/workloads'
+        timeoutInMinutes: 50
+      - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
+        displayName: 'Use pinned SDK'
+      - task: UseNode@1
+        inputs:
+          version: "24.x"
+        displayName: 'Install Node.js for Appium'
+      - pwsh: |
+          $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+            ConvertFrom-Json -Depth 6
+          if ($candidate.kind -ne 'ui') { exit 0 }
+          $repo = "$(Pipeline.Workspace)/maui"
+          dotnet build "$repo/src/Provisioning/Provisioning.csproj" -t:ProvisionAppium -p:SkipAppiumDoctor=true
+          if ($LASTEXITCODE -ne 0) { throw 'Could not provision Appium for UI tests.' }
+        displayName: 'Provision Appium only for UI candidates'
+        env:
+          APPIUM_HOME: $(Pipeline.Workspace)/.appium
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - bash: |
+            set -euo pipefail
+            if [ "$(jq -r .kind "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json")" != ui ]; then
+              exit 0
+            fi
+            test -d "$ANDROID_SDK_ROOT"
+            for tool_dir in "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin; do
+              if [ -x "$tool_dir/sdkmanager" ]; then
+                break
+              fi
+            done
+            test -x "$tool_dir/sdkmanager"
+            "$tool_dir/sdkmanager" --install "system-images;android-30;google_apis;x86_64" "platforms;android-30"
+            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --package "system-images;android-30;google_apis;x86_64"
+            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -no-window -no-audio -no-snapshot -gpu swiftshader_indirect \
+              > "$(Agent.TempDirectory)/issue-emulator.log" 2>&1 &
+            adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+            timeout 600 "$adb" wait-for-device
+            for attempt in $(seq 1 120); do
+              if [ "$("$adb" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+                exit 0
+              fi
+              sleep 5
+            done
+            echo 'Android emulator could not boot' >&2
+            exit 1
+          displayName: 'Boot unprivileged Android emulator for UI candidate'
+          timeoutInMinutes: 25
+      - pwsh: |
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Verify.ps1" `
+            -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
+            -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
+            -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
+            -RepoRoot "$(Pipeline.Workspace)/maui" `
+            -OutputDirectory "$(Pipeline.Workspace)/IssueVerified"
+          if ($LASTEXITCODE -ne 0) { throw 'Generated test verification did not complete.' }
+        displayName: 'Run generated test without credentials'
+        timeoutInMinutes: 85
+        continueOnError: true
+        env:
+          APPIUM_HOME: $(Pipeline.Workspace)/.appium
+      - pwsh: |
+          $status = 'inconclusive'
+          $path = "$(Pipeline.Workspace)/IssueVerified/result.json"
+          if (Test-Path -LiteralPath $path) {
+            try {
+              $result = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+              if ($result.status -cin @('candidate-failed', 'not-reproduced-on-tested-revision', 'inconclusive', 'unsupported')) {
+                $status = $result.status
+              }
+            } catch {
+              Write-Host 'Verification result was unreadable; recording inconclusive.'
+            }
+          }
+          Write-Host "##vso[task.setvariable variable=verdict;isOutput=true]$status"
+          New-Item -ItemType Directory -Path "$(Pipeline.Workspace)/IssueVerified" -Force | Out-Null
+        name: verify
+        displayName: 'Freeze fixed verification status'
+        condition: succeededOrFailed()
+      - publish: '$(Pipeline.Workspace)/IssueVerified'
+        artifact: Verified${{ replace(parameters.name, 'Verify', '') }}
+        condition: succeededOrFailed()

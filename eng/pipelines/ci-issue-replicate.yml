@@ -1,0 +1,272 @@
+# Public-only issue reproduction pipeline. Register this YAML as a separate
+# dnceng-public/public pipeline; it must never be reused in an internal project.
+trigger: none
+pr: none
+
+parameters:
+  - name: IssueNumber
+    type: number
+  - name: CommentId
+    type: number
+  - name: Platform
+    type: string
+    values: [android, ios]
+  - name: TargetRef
+    type: string
+    default: main
+
+variables:
+  # Never import the shared MAUI variable group into sample/test jobs.
+  - name: DOTNET_VERSION
+    value: 10.0.100
+  - name: XCODE
+    value: 26.5
+  - name: REQUIRED_XCODE
+    value: 26.5
+  - name: __PWSH_LOGIN_CHECKED
+    value: '1'
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)/logs
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true
+
+stages:
+  - stage: Reproduce
+    displayName: 'Reproduce public issue'
+    jobs:
+      - job: Intake
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 20
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ("$(System.CollectionUri)" -notmatch '^https://dev\.azure\.com/dnceng-public/') {
+                throw 'The issue reproduction pipeline must run in dnceng-public.'
+              }
+              if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
+                  (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
+                throw 'Issue repro infrastructure must run from an immutable main checkout.'
+              }
+              if ($env:ISSUE_NUMBER -notmatch '^[1-9][0-9]*$' -or
+                  $env:COMMENT_ID -notmatch '^[1-9][0-9]*$') {
+                throw 'Issue and comment IDs must be positive integers.'
+              }
+              if ($env:TARGET_REF -cnotmatch '^(main|net[0-9]+\.0)$') {
+                throw 'Only main and netN.0 MAUI targets are supported.'
+              }
+              $tools = "$(Build.ArtifactStagingDirectory)/IssueTools"
+              New-Item -ItemType Directory -Path $tools -Force | Out-Null
+              Copy-Item .github/scripts/IssueReplicate*.ps1 $tools
+              & pwsh -NoProfile -File "$tools/IssueReplicate.Intake.ps1" `
+                -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
+                -Platform $env:PLATFORM -TargetRef $env:TARGET_REF `
+                -OutputDirectory "$(Pipeline.Workspace)/IssueInput"
+              if ($LASTEXITCODE -ne 0) { throw 'Bounded intake failed.' }
+            displayName: 'Pin and bound the author repro'
+            env:
+              ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              COMMENT_ID: ${{ parameters.CommentId }}
+              PLATFORM: ${{ parameters.Platform }}
+              TARGET_REF: ${{ parameters.TargetRef }}
+              GH_READ_TOKEN: $(ISSUE_REPRO_READ_TOKEN)
+          - publish: '$(Build.ArtifactStagingDirectory)/IssueTools'
+            artifact: IssueTools
+            condition: succeededOrFailed()
+          - publish: '$(Pipeline.Workspace)/IssueInput'
+            artifact: IssueInput
+            condition: succeeded()
+
+      - job: Sample
+        dependsOn: Intake
+        condition: succeeded('Intake')
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool:
+            vmImage: ubuntu-22.04
+        ${{ else }}:
+          pool:
+            vmImage: macOS-15-arm64
+        timeoutInMinutes: 120
+        steps:
+          - checkout: none
+          - download: current
+            artifact: IssueTools
+          - download: current
+            artifact: IssueInput
+          - pwsh: |
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
+                -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
+                -Destination "$(Pipeline.Workspace)/maui"
+              if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
+            displayName: 'Fetch pinned public source without a checkout credential'
+          - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
+            displayName: 'Prepare local provisioning logs'
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - template: common/enable-kvm.yml
+          - template: common/provision.yml
+            parameters:
+              checkoutDirectory: $(Pipeline.Workspace)/maui
+              skipProvisionator: true
+              skipInternalFeeds: true
+              skipCertificates: true
+              skipGradleCache: true
+              skipXcode: ${{ eq(parameters.Platform, 'android') }}
+              skipSimulatorSetup: ${{ eq(parameters.Platform, 'android') }}
+              skipJdk: ${{ eq(parameters.Platform, 'ios') }}
+              skipAndroidCommonSdks: ${{ eq(parameters.Platform, 'ios') }}
+              skipAndroidPlatformApis: true
+              skipAndroidEmulatorImages: true
+              skipAndroidCreateAvds: true
+          - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+            workingDirectory: $(Pipeline.Workspace)/maui
+            displayName: 'Install pinned public MAUI SDK/workloads'
+            timeoutInMinutes: 50
+          - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
+            displayName: 'Use pinned SDK'
+          - pwsh: |
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Sample.ps1" `
+                -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+                -OutputDirectory "$(Pipeline.Workspace)/SampleOutput"
+              if ($LASTEXITCODE -ne 0) { throw 'Author sample build failed (inconclusive).' }
+            displayName: 'Build author sample without credentials'
+            timeoutInMinutes: 35
+          - publish: '$(Pipeline.Workspace)/SampleOutput'
+            artifact: SampleOutput
+            condition: succeededOrFailed()
+
+      - job: Generate1
+        dependsOn: Sample
+        condition: succeeded('Sample')
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 35
+        steps:
+          - checkout: none
+          - download: current
+            artifact: IssueTools
+          - download: current
+            artifact: IssueInput
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+          - bash: npm install -g @github/copilot && copilot --version
+            displayName: 'Install Copilot CLI'
+          - pwsh: |
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
+                -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+                -OutputDirectory "$(Pipeline.Workspace)/Proposal1"
+              if ($LASTEXITCODE -ne 0) { throw 'Copilot could not draft a test.' }
+            displayName: 'Draft test without executable tools'
+            env:
+              COPILOT_GITHUB_TOKEN: $(ISSUE_REPRO_COPILOT_TOKEN)
+          - publish: '$(Pipeline.Workspace)/Proposal1'
+            artifact: Proposal1
+            condition: succeeded()
+
+      - template: common/issue-replicate-verify-job.yml
+        parameters:
+          name: Verify1
+          dependsOn: Generate1
+          condition: succeeded('Generate1')
+          proposal: Proposal1
+          platform: ${{ parameters.Platform }}
+
+      - job: Generate2
+        dependsOn: Verify1
+        condition: eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive')
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 35
+        steps:
+          - checkout: none
+          - download: current
+            artifact: IssueTools
+          - download: current
+            artifact: IssueInput
+          - download: current
+            artifact: Verified1
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+          - bash: npm install -g @github/copilot && copilot --version
+            displayName: 'Install Copilot CLI'
+          - pwsh: |
+              $feedback = "$(Pipeline.Workspace)/Verified1/test.log"
+              if (-not (Test-Path $feedback)) { throw 'The first test has no diagnostic feedback.' }
+              $content = Get-Content -LiteralPath $feedback -Tail 25
+              $content = ($content -join "`n")
+              if ($content.Length -gt 3500) { $content = $content.Substring($content.Length - 3500) }
+              $path = "$(Agent.TempDirectory)/test-feedback.txt"
+              Set-Content -LiteralPath $path -Value $content -Encoding utf8
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
+                -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+                -OutputDirectory "$(Pipeline.Workspace)/Proposal2" -FeedbackPath $path
+              if ($LASTEXITCODE -ne 0) { throw 'Copilot could not revise the test.' }
+            displayName: 'Revise test from bounded feedback'
+            env:
+              COPILOT_GITHUB_TOKEN: $(ISSUE_REPRO_COPILOT_TOKEN)
+          - publish: '$(Pipeline.Workspace)/Proposal2'
+            artifact: Proposal2
+            condition: succeeded()
+
+      - template: common/issue-replicate-verify-job.yml
+        parameters:
+          name: Verify2
+          dependsOn: Generate2
+          condition: succeeded('Generate2')
+          proposal: Proposal2
+          platform: ${{ parameters.Platform }}
+
+      - job: Post
+        dependsOn: [Intake, Sample, Generate1, Verify1, Generate2, Verify2]
+        condition: always()
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 20
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - download: current
+            artifact: IssueInput
+            continueOnError: true
+          - download: current
+            artifact: Verified1
+            continueOnError: true
+          - download: current
+            artifact: Verified2
+            continueOnError: true
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
+                  (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
+                throw 'Posting code differs from the trusted pipeline revision.'
+              }
+              $issue = [int]$env:ISSUE_NUMBER
+              $comment = [long]$env:COMMENT_ID
+              $result = "$(Pipeline.Workspace)/Verified1"
+              if (Test-Path -LiteralPath "$(Pipeline.Workspace)/Verified2/result.json") {
+                $result = "$(Pipeline.Workspace)/Verified2"
+              }
+              try {
+                & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
+                  -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
+                  -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result
+                if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
+              } catch {
+                $url = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$(Build.BuildId)"
+                $message = "> [!WARNING]`n> ``/issue replicate`` was inconclusive: the public build could not publish a validated result. [Build log]($url). This is not evidence against the issue."
+                $message | gh issue comment $issue --repo dotnet/maui --body-file -
+                if ($LASTEXITCODE -ne 0) { throw 'Could not publish the incomplete notice.' }
+                throw
+              }
+            displayName: 'Post validated issue outcome on a clean agent'
+            env:
+              GH_TOKEN: $(ISSUE_REPRO_COMMENT_TOKEN)
+              ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              COMMENT_ID: ${{ parameters.CommentId }}
