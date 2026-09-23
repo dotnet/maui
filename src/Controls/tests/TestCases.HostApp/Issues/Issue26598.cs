@@ -103,6 +103,7 @@ public class Issue26598 : TestShell
 			label = new Label()
 			{
 				Text = "Page Loaded in Recent Tab",
+				AutomationId = "RecentTabContent",
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center,
 

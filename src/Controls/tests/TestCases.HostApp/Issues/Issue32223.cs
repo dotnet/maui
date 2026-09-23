@@ -34,6 +34,7 @@ public class Issue32223 : ContentPage
 
 			var nameLabel = new Label { FontSize = 18, TextColor = Colors.White };
 			nameLabel.SetBinding(Label.TextProperty, "Name");
+			nameLabel.SetBinding(AutomationIdProperty, "Name");
 
 			var ageLabel = new Label { FontSize = 14, TextColor = Colors.DarkGreen };
 			ageLabel.SetBinding(Label.TextProperty, new Binding("Age", stringFormat: "Age: {0}"));
@@ -63,6 +64,7 @@ public class Issue32223 : ContentPage
 
 			var nameLabel = new Label { FontSize = 18, TextColor = Colors.White };
 			nameLabel.SetBinding(Label.TextProperty, "Name");
+			nameLabel.SetBinding(AutomationIdProperty, "Name");
 
 			var ageLabel = new Label { FontSize = 14, TextColor = Colors.DarkBlue };
 			ageLabel.SetBinding(Label.TextProperty, new Binding("Age", stringFormat: "Age: {0}"));
@@ -82,7 +84,7 @@ public class Issue32223 : ContentPage
 
 		Label label = new Label
 		{
-			Text = "",
+			Text = "Waiting",
 			AutomationId = "ReorderedLabel"
 		};
 
@@ -99,7 +101,7 @@ public class Issue32223 : ContentPage
 
 		Grid grid = new Grid();
 		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 		grid.Children.Add(label);
 		grid.Children.Add(collectionView);
 

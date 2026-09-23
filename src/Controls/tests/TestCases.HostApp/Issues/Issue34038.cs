@@ -61,6 +61,8 @@ public class Issue34038TestPage : ContentPage
 
 	MenuBarItem _menuBarItem;
 	Label _statusLabel;
+	Label _executionCountLabel;
+	int _executionCount;
 
 	public Issue34038TestPage()
 	{
@@ -80,7 +82,11 @@ public class Issue34038TestPage : ContentPage
 			AutomationId = "Issue34038MenuFlyoutItem"
 		};
 
-		flyoutItem.Clicked += (_, _) => _statusLabel.Text = "Success";
+		flyoutItem.Clicked += (_, _) =>
+		{
+			_statusLabel.Text = "Success";
+			_executionCountLabel.Text = (++_executionCount).ToString();
+		};
 		_menuBarItem.Add(flyoutItem);
 		MenuBarItems.Add(_menuBarItem);
 
@@ -88,6 +94,11 @@ public class Issue34038TestPage : ContentPage
 		{
 			AutomationId = "Issue34038StatusLabel",
 			Text = InitialStatus
+		};
+		_executionCountLabel = new Label
+		{
+			AutomationId = "Issue34038ExecutionCount",
+			Text = "0"
 		};
 
 		var isEnabledSwitch = new Switch
@@ -122,7 +133,8 @@ public class Issue34038TestPage : ContentPage
 						isEnabledSwitch
 					}
 				},
-				_statusLabel
+				_statusLabel,
+				_executionCountLabel
 			}
 		};
 	}

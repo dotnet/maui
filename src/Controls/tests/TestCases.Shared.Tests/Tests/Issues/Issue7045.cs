@@ -20,5 +20,8 @@ public class Issue7045 : _IssuesUITest
 		App.Click("NavigateButton");
 		App.WaitForElement("DetailPageLabel");
 		VerifyScreenshot();
+		App.TapBackArrow("Back");
+		App.WaitForElement("NavigateButton");
+		App.WaitForNoElement("DetailPageLabel");
 	}
 }

@@ -20,19 +20,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationPortrait();
 #endif
 				WaitForAllElements();
-				var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
 				// Use retryTimeout to allow layout to settle
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
-				changeBoundsButton.Click();
+				App.Tap("ChangeBoundsButton");
 
-				WaitForAllElements();
+				WaitForAllElements(small: true);
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 #if IOS || ANDROID
 				App.SetOrientationLandscape();
 
-				WaitForAllElements();
+				WaitForAllElements(small: true, landscape: true);
 				// Use retryTimeout to allow orientation change to settle
 #if ANDROID
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -40,11 +39,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 
-				changeBoundsButton.Click();
-				WaitForAllElements();
+				App.Tap("ChangeBoundsButton");
+				WaitForAllElements(landscape: true);
 
 				App.SetOrientationPortrait();
-				WaitForAllElements();
+				WaitForAllElements(landscape: false);
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 			}
@@ -55,13 +54,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 		}
 
-		void WaitForAllElements()
+		void WaitForAllElements(bool small = false, bool? landscape = null)
 		{
-			App.WaitForElement("ButtonLeft");
-			App.WaitForElement("ButtonTop");
-			App.WaitForElement("ButtonRight");
-			App.WaitForElement("ButtonBottom");
 			App.WaitForElement("ChangeBoundsButton");
+			App.RetryAssert(() =>
+			{
+				var grid = App.WaitForElementAndGetRect("TopGrid");
+				if (landscape.HasValue)
+					Assert.That(grid.Width > grid.Height, Is.EqualTo(landscape.Value));
+
+				foreach (var buttonId in new[] { "ButtonLeft", "ButtonTop", "ButtonRight", "ButtonBottom" })
+				{
+					var button = App.WaitForElementAndGetRect(buttonId);
+					Assert.That(button.Height, Is.GreaterThan(0));
+					Assert.That(button.Width, Is.EqualTo(grid.Width / (small ? 7.0 : 3.0)).Within(2));
+				}
+			});
 		}
 	}
 }

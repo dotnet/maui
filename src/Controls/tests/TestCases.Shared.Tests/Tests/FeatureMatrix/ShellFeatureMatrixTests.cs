@@ -9,6 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 /// Shell Flyout feature matrix tests.
 /// WARNING: Tests use [Order] and maintain state across methods.
 /// They are NOT independent - running out of order may cause failures.
+/// The flyout visibility and size/color regressions initialize their own scenario.
 /// </summary>
 public class ShellFeatureTests : _GalleryUITest
 {
@@ -22,6 +23,18 @@ public class ShellFeatureTests : _GalleryUITest
 	public const string FooterTemplate = "FooterTemplate";
 	public const string OpenFlyout = "OpenFlyout";
 	public const string ShellFlyoutButton = "ShellFlyoutButton";
+	bool IsIndependentFlyoutTest => TestContext.CurrentContext.Test.MethodName is
+		nameof(VerifyShellFlyout_HeightAndWidthWithBackgroundColor) or
+		nameof(VerifyShellFlyout_FlyoutIsPresented) or
+		nameof(VerifyShellFlyout_FlyoutBehaviorLocked);
+	protected override string? GallerySubPageButton => IsIndependentFlyoutTest ? ShellFlyoutButton : null;
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+		if (IsIndependentFlyoutTest)
+			FixtureSetup();
+	}
 
 	public ShellFeatureTests(TestDevice device)
 		: base(device)
@@ -269,7 +282,7 @@ public class ShellFeatureTests : _GalleryUITest
 			$"MenuItem4 should move up after scrolling. Initial Y: {initialMenuItem4Y}, After scroll Y: {afterScrollMenuItem4Y}");
 		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.WaitForElement(OpenFlyout); 
+		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
 
@@ -288,7 +301,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
-		float startingHeight = App.WaitForElement(Header).GetRect().Y; 
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -300,7 +313,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
- 
+
 	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorScroll()
@@ -316,7 +329,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
-		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -328,7 +341,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
- 
+
 	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorCollapseOnScroll()
@@ -343,7 +356,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -918,8 +931,6 @@ public class ShellFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundColor()
 	{
-		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
-		App.Tap(OpenFlyout);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlyoutBackgroundColorBlue");
@@ -932,6 +943,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "400");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForNoElement(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
@@ -942,14 +954,14 @@ public class ShellFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyout_FlyoutIsPresented()
 	{
-		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
-		App.Tap(OpenFlyout);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsPresentedTrue");
 		App.Tap("IsPresentedTrue");
 		App.WaitForElement(OpenFlyout); // verify the flyout is opened
+		App.WaitForElement("MenuItem1");
 		App.Tap(OpenFlyout);
+		App.WaitForNoElement(() => App.FindElements("MenuItem1").FirstOrDefault(e => e.IsDisplayed()));
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 	}
@@ -967,6 +979,10 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement("FlyoutBehaviorLocked");
 		App.Tap("FlyoutBehaviorLocked");
 		App.WaitForElement(OpenFlyout);
+		App.Tap(OpenFlyout);
+		App.WaitForElement("MenuItem1");
+		Assert.That(App.FindElement("MenuItem1").IsDisplayed(), Is.True,
+			"A locked flyout must remain visible when its close command is invoked.");
 		App.WaitForElement("FlyoutBehavior");
 		App.Tap("FlyoutBehavior");
 #if IOS || MACCATALYST

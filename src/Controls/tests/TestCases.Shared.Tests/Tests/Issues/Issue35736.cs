@@ -10,14 +10,24 @@ public class Issue35736 : _IssuesUITest
 
 	public override string Issue => "SearchHandler QueryIcon, ClearIcon, ClearPlaceholderIcon need to update visually at runtime";
 
+	protected override bool ResetAfterEachTest => true;
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void SearchHandlerQueryIconUpdatesAtRuntime()
 	{
 		App.WaitForElement("Issue35736QueryIconLabel");
 
+		// These states used to leak in from the two clear-icon tests.
+		if (App.GetTestDevice() != TestDevice.Windows)
+		{
+			App.Tap("Issue35736ToggleClearIcon");
+			App.Tap("Issue35736ToggleClearPlaceholderIcon");
+		}
+
 		App.Tap("Issue35736ToggleQueryIcon");
-		App.WaitForElement("Issue35736QueryIconLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736QueryIconLabel", "QueryIcon: calculator.png"), Is.True);
+		EnterQueryForVisibleIcons();
 
 #if IOS
 		VerifyScreenshot(cropBottom:1000);
@@ -35,8 +45,10 @@ public class Issue35736 : _IssuesUITest
 	{
 		App.WaitForElement("Issue35736ClearPlaceholderIconLabel");
 
+		App.Tap("Issue35736ToggleClearIcon");
 		App.Tap("Issue35736ToggleClearPlaceholderIcon");
-		App.WaitForElement("Issue35736ClearPlaceholderIconLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736ClearPlaceholderIconLabel", "ClearPlaceholderIcon: calculator.png"), Is.True);
+		EnterQueryForVisibleIcons();
 
 #if IOS
 		VerifyScreenshot(cropBottom:1000);
@@ -58,7 +70,7 @@ public class Issue35736 : _IssuesUITest
 		// Type text so the clear (X) button becomes visible
 		App.EnterTextInShellSearchHandler("A");
 
-		App.WaitForElement("Issue35736ClearIconLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736ClearIconLabel", "ClearIcon: calculator.png"), Is.True);
 
 #if IOS
 		VerifyScreenshot(cropBottom:1000);
@@ -80,12 +92,21 @@ public class Issue35736 : _IssuesUITest
 
 		// Reset all back to defaults
 		App.Tap("Issue35736ResetAll");
-		App.WaitForElement("Issue35736QueryIconLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736QueryIconLabel", "QueryIcon: default"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736ClearIconLabel", "ClearIcon: default"), Is.True);
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736ClearPlaceholderIconLabel", "ClearPlaceholderIcon: default"), Is.True);
+		EnterQueryForVisibleIcons();
 
 #if IOS
 		VerifyScreenshot(cropBottom:1000);
 #else
 		VerifyScreenshot();
 #endif
+	}
+
+	void EnterQueryForVisibleIcons()
+	{
+		if (App.GetTestDevice() != TestDevice.Windows)
+			App.EnterTextInShellSearchHandler("A");
 	}
 }
