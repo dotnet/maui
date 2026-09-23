@@ -268,7 +268,9 @@ Use the controller's selection API when reproducing platform-initiated selection
 `GalleryAbsoluteLayoutTests` drives the real options page and layout manager, comparing arranged
 rectangles rather than screenshots of each proportional flag combination. Its remaining native
 proportional-layout smoke test compares native bounds and edge anchors in the same coordinate
-space, accounting for system insets without device-density assumptions. Limit soft-keyboard
+space, accounting for system insets without device-density assumptions. Windows retains its
+visual baseline because the Win2D-backed `BoxView` is not exposed through UI Automation.
+Do not replace that native rendering check with managed bounds or skip it. Limit soft-keyboard
 visibility queries to Android/iOS; the Windows Appium driver does not implement them.
 `GalleryButtonTests` and `GalleryMenuBarTests` similarly check real gallery bindings and commands;
 native font, image, menu accessibility, and input coverage remain separate.

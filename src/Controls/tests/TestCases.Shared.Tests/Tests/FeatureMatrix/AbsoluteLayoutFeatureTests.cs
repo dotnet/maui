@@ -76,6 +76,13 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
+		if (Device == TestDevice.Windows)
+		{
+			// The Win2D-backed BoxView is not exposed through Windows UI Automation.
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			return;
+		}
+
 		if (Device is TestDevice.Android or TestDevice.iOS)
 		{
 			Assert.That(App.WaitForKeyboardToHide(), Is.True);
