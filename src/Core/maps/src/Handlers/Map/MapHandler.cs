@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMap.IsScrollEnabled)] = MapIsScrollEnabled,
 			[nameof(IMap.IsTrafficEnabled)] = MapIsTrafficEnabled,
 			[nameof(IMap.IsZoomEnabled)] = MapIsZoomEnabled,
+			[nameof(IMap.IsClusteringEnabled)] = MapIsClusteringEnabled,
 
+			[nameof(IMap.MapStyle)] = MapMapStyle,
 			[nameof(IMap.Pins)] = MapPins,
 			[nameof(IMap.Elements)] = MapElements,
 		};
@@ -90,10 +92,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapShowInfoWindow(IMapHandler handler, IMap map, object? arg)
 		{
 			if (arg is IMapPin pin && handler is MapHandler mapHandler)
-			{
-				
-			}
-				//mapHandler.ShowInfoWindow(pin);
+				mapHandler.ShowInfoWindow(pin);
 		}
 
 		/// <summary>
@@ -102,10 +101,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapHideInfoWindow(IMapHandler handler, IMap map, object? arg)
 		{
 			if (arg is IMapPin pin && handler is MapHandler mapHandler)
-			{
-				
-			}
-				//mapHandler.HideInfoWindow(pin);
+				mapHandler.HideInfoWindow(pin);
 		}
 
 		// Android reclusters once the zoom has moved a full level away from the last clustering pass.
