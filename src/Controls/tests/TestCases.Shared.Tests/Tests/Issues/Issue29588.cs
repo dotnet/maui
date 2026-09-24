@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,8 +26,9 @@ internal class Issue29588 : _IssuesUITest
 
 	void ScrollToVisibleItem(string text)
 	{
-		var elapsed = Stopwatch.StartNew();
-		while (true)
+		// Bound traversal by the fixture's 30 items, not native-driver round-trip time.
+		const int maxScrolls = 30;
+		for (int scrollCount = 0; scrollCount <= maxScrolls; scrollCount++)
 		{
 			var viewport = App.WaitForElementAndGetRect("29588CollectionView");
 			var item = App.FindElementByText(text);
@@ -41,8 +41,7 @@ internal class Issue29588 : _IssuesUITest
 					return;
 			}
 
-			// Inspect the last gesture's result even when it consumed the remaining time.
-			if (elapsed.Elapsed >= TimeSpan.FromSeconds(15))
+			if (scrollCount == maxScrolls)
 				break;
 
 			// Container scrolling uses the native macOS scroll action, unlike App.ScrollTo.
@@ -50,6 +49,6 @@ internal class Issue29588 : _IssuesUITest
 				swipePercentage: App is AppiumWindowsApp or AppiumCatalystApp ? 0.8 : 0.5);
 		}
 
-		Assert.Fail($"'{text}' did not become fully visible inside 29588CollectionView.");
+		Assert.Fail($"'{text}' did not become fully visible inside 29588CollectionView after {maxScrolls} scrolls.");
 	}
 }
