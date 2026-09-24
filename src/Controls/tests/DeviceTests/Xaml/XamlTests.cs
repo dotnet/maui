@@ -40,6 +40,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact("Parsed XAML can use x:Array")]
 		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TypeExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ArrayExtension))]
 		public void x_Array_Parsed()
 		{
 			var page = new ContentPage();
