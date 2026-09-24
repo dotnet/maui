@@ -342,7 +342,12 @@ namespace Microsoft.Maui.DeviceTests
 
                                 if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
                                 {
-                                        AssertionExtensions.CloseEnough(headerMinHeight, scrolledBox.Height, 0.3, "Collapsed Header Height");
+                                        // UIKit lays out the resized header on a subsequent layout pass.
+                                        await AssertionExtensions.AssertEventually(() =>
+                                        {
+                                                scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+                                                return Math.Abs(headerMinHeight - scrolledBox.Height) <= 0.3;
+                                        }, message: "Flyout header did not collapse to its minimum height.");
                                 }
                                 else
                                 {
