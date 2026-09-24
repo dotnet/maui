@@ -1,4 +1,3 @@
-#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,4 +20,3 @@ public class Issue38147 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif
