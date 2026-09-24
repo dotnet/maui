@@ -992,11 +992,13 @@ Describe 'Simulator runtime provisioning contract' {
         $provisionContent | Should -Match 'SMOKE_RT=.*--arg req "\$\{MAJOR\}\.\$\{MINOR\}".*== \$req'
     }
 
-    It 'selects <RuntimeArchitecture> simulator downloads on <HostArchitecture>' -TestCases @(
-        @{ HostArchitecture = 'arm64'; RuntimeArchitecture = 'arm64' },
-        @{ HostArchitecture = 'x86_64'; RuntimeArchitecture = 'universal' }
+    It 'selects <RuntimeArchitecture> simulator downloads on <HostArchitecture> for Xcode <XcodeVersion>' -TestCases @(
+        @{ HostArchitecture = 'arm64'; RuntimeArchitecture = 'arm64'; XcodeVersion = '26.5' },
+        @{ HostArchitecture = 'x86_64'; RuntimeArchitecture = 'universal'; XcodeVersion = '26.5' },
+        @{ HostArchitecture = 'arm64'; RuntimeArchitecture = 'arm64'; XcodeVersion = '27.0' },
+        @{ HostArchitecture = 'x86_64'; RuntimeArchitecture = 'universal'; XcodeVersion = '27.0' }
     ) -Skip:(-not (Get-Command bash -ErrorAction SilentlyContinue)) {
-        param($HostArchitecture, $RuntimeArchitecture)
+        param($HostArchitecture, $RuntimeArchitecture, $XcodeVersion)
 
         $selection = [regex]::Match(
             $provisionContent,
@@ -1005,17 +1007,18 @@ Describe 'Simulator runtime provisioning contract' {
         $script = @'
 HOST_ARCH="$1"
 uname() { printf '%s\n' "$HOST_ARCH"; }
-MAJOR=27
-MINOR=0
+MAJOR="${2%.*}"
+MINOR="${2#*.}"
 '@ + "`n" + $selection.Value + "`n" + 'printf "%s\n" "${DOWNLOAD_ARGS[@]}"'
-        $actual = & bash -c $script -- $HostArchitecture
+        $actual = & bash -c $script -- $HostArchitecture $XcodeVersion
 
         $LASTEXITCODE | Should -Be 0
-        ($actual -join ' ') | Should -Be "-downloadPlatform iOS -architectureVariant $RuntimeArchitecture -buildVersion 27.0"
+        ($actual -join ' ') | Should -Be "-downloadPlatform iOS -architectureVariant $RuntimeArchitecture -buildVersion $XcodeVersion"
     }
 
     It 'handles <Case> before simulator recovery' -TestCases @(
-        @{ Case = 'unavailable runtime'; Message = 'iOS 27.0 (arm64) is not available for download.'; DownloadExitCode = 70; ExpectedExitCode = 1 },
+        @{ Case = 'unavailable 26.5 runtime'; Message = 'iOS 26.5 (arm64) is not available for download.'; DownloadExitCode = 70; ExpectedExitCode = 1 },
+        @{ Case = 'unavailable 27.0 runtime'; Message = 'iOS 27.0 (arm64) is not available for download.'; DownloadExitCode = 70; ExpectedExitCode = 1 },
         @{ Case = 'CoreSimulator connection failure'; Message = 'Unable to connect to simulator'; DownloadExitCode = 70; ExpectedExitCode = 0 },
         @{ Case = 'successful download'; Message = 'Download complete'; DownloadExitCode = 0; ExpectedExitCode = 0 }
     ) -Skip:(-not (Get-Command bash -ErrorAction SilentlyContinue)) {
@@ -1029,8 +1032,8 @@ MINOR=0
 DOWNLOAD_MESSAGE="$1"
 DOWNLOAD_EXIT_CODE="$2"
 sudo() { printf '%s\n' "$DOWNLOAD_MESSAGE"; return "$DOWNLOAD_EXIT_CODE"; }
-MAJOR=27
-MINOR=0
+MAJOR=26
+MINOR=5
 RUNTIME_ARCHITECTURE=arm64
 DOWNLOAD_ARGS=(-downloadPlatform iOS)
 '@ + "`n" + $download.Value + "`n" + 'echo "RECOVERY_CHECK_RC=$RC"'

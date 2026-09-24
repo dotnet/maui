@@ -50,7 +50,7 @@ public static class EmbeddingExtensions
 		// Register the embedded window handler.
 		builder.ConfigureMauiHandlers(handlers =>
 		{
-			handlers.AddHandler<EmbeddedWindow, EmbeddedWindowHandler>();
+			handlers.AddHandler<EmbeddedWindow>(static _ => new EmbeddedWindowHandler());
 		});
 
 		return builder;

@@ -5,6 +5,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Hosting.Internal;
 using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -602,8 +603,8 @@ namespace Microsoft.Maui.Controls.Handlers
         protected virtual IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
         {
             // Resolve the handler through the handler service to allow custom ShellItemHandler subclasses
-            // registered via AddHandler<ShellItem, THandler>() to be used.
-            var handler = MauiContext!.Handlers.GetHandler(shellItem.GetType()) as ShellItemHandler
+            // registered for ShellItem to be used.
+            var handler = MauiContext!.Handlers.GetHandler(shellItem.GetType(), MauiContext) as ShellItemHandler
                 ?? new ShellItemHandler();
             handler.SetMauiContext(MauiContext!);
             handler.SetVirtualView(shellItem);
@@ -625,8 +626,8 @@ namespace Microsoft.Maui.Controls.Handlers
         protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection)
         {
             // Resolve the handler through the handler service to allow custom ShellSectionHandler subclasses
-            // registered via AddHandler<ShellSection, THandler>() to be used.
-            var handler = MauiContext!.Handlers.GetHandler(shellSection.GetType()) as ShellSectionHandler
+            // registered for ShellSection to be used.
+            var handler = MauiContext!.Handlers.GetHandler(shellSection.GetType(), MauiContext) as ShellSectionHandler
                 ?? new ShellSectionHandler();
 
             handler.SetMauiContext(MauiContext!);
