@@ -245,8 +245,8 @@ The device test projects include:
 
 Check available queues at [helix.dot.net](https://helix.dot.net). The current configuration uses:
 
-- **iOS**: `osx.15.arm64.Open`
-- **Mac Catalyst**: `osx.15.arm64.Open`  
+- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
+- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Android**: `ubuntu.2204.amd64.android.33.open`
 
 ### Running Device Tests Locally
@@ -348,7 +348,7 @@ The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
 ### CI Integration
 
 The device tests are integrated into the CI pipeline via:
-- `eng/pipelines/common/stage-device-tests.yml` - Pipeline template
+- `eng/pipelines/arcade/stage-device-tests.yml` - Pipeline template
 - `eng/test-configuration.json` - Test retry configuration
 - Automatic execution on PR builds for qualifying changes
 
