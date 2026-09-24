@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly WebViewHandler _handler;
 		bool _hasSwipeViewParent;
+		float _lastTouchY;
 		volatile bool _detachPending;
 
 		// Tracks whether about:blank was loaded synthetically for layout (null source).
@@ -89,19 +90,36 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
-			if (e == null)
+			if (e is null)
+			{
 				return false;
+			}
 
 			switch (e.Action)
 			{
 				case MotionEventActions.Down:
+					_lastTouchY = e.GetY();
+					if (!_hasSwipeViewParent && Parent is not null)
+					{
+						Parent.RequestDisallowInterceptTouchEvent(CanScrollVertically(-1) || CanScrollVertically(1));
+					}
+					break;
+
 				case MotionEventActions.Move:
 					// Do not request disallow intercept when inside a SwipeView — that would set
 					// FLAG_DISALLOW_INTERCEPT on the SwipeView and prevent it from detecting
 					// swipe gestures
-					if (!_hasSwipeViewParent)
+					if (!_hasSwipeViewParent && Parent is not null)
 					{
-						Parent?.RequestDisallowInterceptTouchEvent(true);
+						float currentTouchY = e.GetY();
+						float deltaY = currentTouchY - _lastTouchY;
+						_lastTouchY = currentTouchY;
+
+						if (deltaY != 0)
+						{
+							int scrollDirection = deltaY < 0 ? 1 : -1;
+							Parent.RequestDisallowInterceptTouchEvent(CanScrollVertically(scrollDirection));
+						}
 					}
 					break;
 
