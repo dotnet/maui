@@ -224,5 +224,19 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
+
+		[Fact, Category(TestCategory.Layout)]
+		public Task PlatformArrangeCenterMirrorsDelegatedFramesInRTL() =>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var parent = new UIView(new CGRect(0, 0, 300, 200))
+				{
+					SemanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft
+				};
+				var child = new UIView();
+				parent.AddSubview(child);
+
+				Assert.Equal(250, child.GetPlatformArrangeCenterX(50));
+			});
 	}
 }

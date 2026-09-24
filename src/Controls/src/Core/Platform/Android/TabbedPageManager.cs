@@ -73,6 +73,7 @@ public class TabbedPageManager
 	readonly List<AView> _moreItemViews = new List<AView>();
 	BottomSheetDialog _moreDialog;
 	int _tabRegistrationGeneration;
+	bool _isWaitingForRootView;
 
 	protected NavigationRootManager NavigationRootManager { get; }
 	public static bool IsDarkTheme => (Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark;
@@ -141,6 +142,10 @@ public class TabbedPageManager
 
 			RemoveTabs();
 
+			// Defensively unsubscribe: SetTabLayout only unsubscribes once RootViewChanged fires,
+			// which may never happen if torn down first, otherwise leaking this manager.
+			UnsubscribeFromRootViewChanged(_context.GetNavigationRootManager());
+
 			_viewPager.LayoutChange -= OnLayoutChanged;
 
 			if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)
@@ -191,6 +196,11 @@ public class TabbedPageManager
 				{
 					Gravity = (int)GravityFlags.Bottom
 				};
+				_nativeTabRegistrations.Register(
+					Element,
+					_bottomNavigationView,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
 
 				if (RuntimeFeature.IsMaterial3Enabled)
 					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
@@ -322,7 +332,7 @@ public class TabbedPageManager
 	{
 		if (sender is NavigationRootManager rootManager)
 		{
-			rootManager.RootViewChanged -= RootViewChanged;
+			UnsubscribeFromRootViewChanged(rootManager);
 			SetTabLayout();
 		}
 	}
@@ -339,9 +349,11 @@ public class TabbedPageManager
 		_tabItemStyleLoaded = false;
 		if (rootManager.RootView == null)
 		{
-			rootManager.RootViewChanged += RootViewChanged;
+			SubscribeToRootViewChanged(rootManager);
 			return;
 		}
+
+		UnsubscribeFromRootViewChanged(rootManager);
 
 		if (IsBottomTabPlacement)
 		{
@@ -387,6 +399,24 @@ public class TabbedPageManager
 							.Commit();
 					});
 		}
+	}
+
+	void SubscribeToRootViewChanged(NavigationRootManager rootManager)
+	{
+		if (_isWaitingForRootView)
+			return;
+
+		rootManager.RootViewChanged += RootViewChanged;
+		_isWaitingForRootView = true;
+	}
+
+	void UnsubscribeFromRootViewChanged(NavigationRootManager rootManager)
+	{
+		if (!_isWaitingForRootView)
+			return;
+
+		rootManager.RootViewChanged -= RootViewChanged;
+		_isWaitingForRootView = false;
 	}
 
 	void SetContentBottomMargin(int bottomMargin)
