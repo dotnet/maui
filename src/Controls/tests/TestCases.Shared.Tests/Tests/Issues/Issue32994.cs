@@ -22,8 +22,7 @@ public class Issue32994 : _IssuesUITest
 	void AssertTabBarHidden()
 	{
 		// Tab2 exists only in the native tab bar, not in the current page content.
-		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "Tab2"),
-			"The native tab bar is still visible.");
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab2");
 	}
 
 	void AssertTabBarWorks()

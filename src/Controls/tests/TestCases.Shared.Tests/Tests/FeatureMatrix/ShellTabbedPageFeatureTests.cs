@@ -159,7 +159,7 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Tab1Label");
-		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "Tab4"));
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab4");
 		ShellFeatureTestActions.WaitForBottomTab(App, "Tab3").Tap();
 		App.WaitForElement("Tab3Label");
 		App.Tap("GoToTab1Button");

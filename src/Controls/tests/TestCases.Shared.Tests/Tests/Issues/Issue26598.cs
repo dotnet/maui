@@ -8,12 +8,6 @@ public class Issue26598 : _IssuesUITest
 {
 	public override string Issue => "Tabbar disappears when navigating back from page with hidden TabBar in iOS";
 
-#if ANDROID
-	const string back = "";
-#else
-	const string back = "InnerTab";
-#endif
-
 	public Issue26598(TestDevice device) : base(device)
 	{
 	}
@@ -34,17 +28,10 @@ public class Issue26598 : _IssuesUITest
 		App.WaitForElement("NavigateToTabBarPage");
 		App.Click("NavigateToTabBarPage");
 		App.WaitForElement("Issue26589NonTab");
-		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "RecentTab"));
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "RecentTab");
 
 		// Case 3 - Navigate back to the HomeTab, the TabBar should be visible
-		if (App is AppiumCatalystApp || App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow(back);
-		}
+		ShellFeatureTestActions.TapPageBack(App, "InnerTab");
 		App.WaitForElement("NavigateToTabBarPage");
 		ShellFeatureTestActions.WaitForBottomTab(App, "RecentTab").Tap();
 		App.WaitForElement("RecentTabContent");
