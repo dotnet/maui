@@ -47,7 +47,7 @@ internal class Issue29588 : _IssuesUITest
 
 			// Container scrolling uses the native macOS scroll action, unlike App.ScrollTo.
 			App.ScrollDown("29588CollectionView", ScrollStrategy.Gesture,
-				swipePercentage: App is AppiumWindowsApp ? 0.8 : 0.5);
+				swipePercentage: App is AppiumWindowsApp or AppiumCatalystApp ? 0.8 : 0.5);
 		}
 
 		Assert.Fail($"'{text}' did not become fully visible inside 29588CollectionView.");
