@@ -664,6 +664,7 @@ jobs:
         id: vally-runtime
         env:
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_UPSTREAM_URL: https://github.com/${{ github.repository }}.git
         run: |
           set -euo pipefail
           SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
@@ -757,9 +758,9 @@ jobs:
           SKILL_DIR="${TESTS_PATH%/tests}"
 
           # Ensure the base commit is available locally (fork PRs may need it
-          # fetched from the base repo, added as `upstream` by the fixture step).
+          # fetched from the trusted `upstream` rebuilt by runtime setup).
           if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            git fetch --no-tags --depth=1 upstream "$BASE_SHA" 2>/dev/null || true
+            git fetch --no-tags --no-write-fetch-head --depth=1 upstream "$BASE_SHA" 2>/dev/null || true
           fi
           if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
             echo "::warning::Base commit ${BASE_SHA} unavailable — skipping baseline run."

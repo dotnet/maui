@@ -1269,6 +1269,21 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "candidate checkout traverses repository control symlink: .github/copilot"
   end
 
+  def test_rejects_candidate_checkout_external_target_symlink
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file("README.md", "trusted\n")
+    trusted = commit_all("trusted")
+    FileUtils.mkdir_p(File.join(@repo_root, "docs"))
+    File.symlink("/etc/hostname", File.join(@repo_root, "docs", "external.md"))
+    commit_all("candidate symlink")
+
+    _stdout, stderr, status = run_validator(env: { "TRUSTED_BASE_SHA" => trusted })
+
+    refute status.success?
+    assert_includes stderr, "candidate checkout contains symlink: docs/external.md"
+  end
+
   def test_rejects_fixture_ref_with_repository_control_directory_symlink
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -1304,6 +1319,40 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "stimuli[0].environment.git.ref traverses repository control symlink: .github/copilot"
+  end
+
+  def test_rejects_fixture_ref_with_external_target_symlink
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file("README.md", "trusted\n")
+    trusted = commit_all("trusted")
+    FileUtils.mkdir_p(File.join(@repo_root, "docs"))
+    File.symlink("/etc/hostname", File.join(@repo_root, "docs", "external.md"))
+    fixture = commit_all("fixture symlink")
+    FileUtils.rm(File.join(@repo_root, "docs", "external.md"))
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "external-target-symlink",
+          "environment" => {
+            "git" => {
+              "type" => "worktree",
+              "source" => ".",
+              "ref" => fixture
+            }
+          }
+        }
+      ]
+    )
+    commit_all("candidate spec")
+
+    _stdout, stderr, status = run_validator(
+      env: { "TRUSTED_BASE_SHA" => trusted },
+      validate_only: false
+    )
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].environment.git.ref contains symlink: docs/external.md"
   end
 
   def test_rejects_symlinked_destination_component
@@ -1381,7 +1430,28 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator
 
     refute status.success?
-    assert_includes stderr, "tests path traverses checkout symlink"
+    assert_includes stderr, "skills root contains symlink"
+    assert_includes stderr, ".github/skills/test-skill/tests"
+  end
+
+  def test_rejects_external_symlink_in_any_evaluator_skill
+    outside_root = Dir.mktmpdir("prepare-vally-skill-content-")
+    begin
+      outside_file = File.join(outside_root, "host-content.md")
+      File.write(outside_file, "host content\n")
+      other_skill = File.join(@repo_root, ".github", "skills", "other-skill")
+      FileUtils.mkdir_p(other_skill)
+      File.symlink(outside_file, File.join(other_skill, "SKILL.md"))
+      write_spec("environment" => { "skills" => [".."] })
+
+      _stdout, stderr, status = run_validator
+
+      refute status.success?
+      assert_includes stderr, "skills root contains symlink"
+      assert_includes stderr, ".github/skills/other-skill/SKILL.md"
+    ensure
+      FileUtils.remove_entry(outside_root)
+    end
   end
 
   def test_mandatory_layout_rejects_symlinked_tests_scope
@@ -1622,6 +1692,8 @@ class TestPrepareVallyEvaluation < Minitest::Test
     content = File.read(SETUP_RUNTIME)
     assert_includes content, 'workspace_root="$RUNNER_TEMP/${eval_user}-workspace"'
     assert_includes content, 'cp -a "$GITHUB_WORKSPACE/." "$workspace_root/"'
+    assert_includes content, 'find "$workspace_root" -path "$git_dir" -prune -o'
+    assert_includes content, 'Evaluator workspace contains unsupported symlink'
     assert_includes content, 'original_workspace_stat=$(stat -c'
     assert_includes content, 'original_git_stat=$(stat -c'
     assert_includes content, 'echo "workspace_root=$workspace_root"'
@@ -1643,7 +1715,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"'
     assert_includes content, 'sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"'
     assert_includes content, 'sudo -n chmod 3770 "$git_dir"'
-    assert_includes content, "for mutable_git_path in worktrees refs logs; do"
+    assert_includes content, "for mutable_git_path in objects worktrees refs logs; do"
     assert_includes content, '"$git_dir/$mutable_git_path"'
     assert_includes content, 'sudo -n chown "$eval_user:$eval_user" "$git_dir/packed-refs"'
     assert_includes content, 'sudo -n install -o root -g root -m 444'
@@ -1654,6 +1726,11 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, "for probe_number in 1 2; do"
     assert_includes content, 'git -C "$workspace_root" worktree add --detach'
     assert_includes content, 'git -C "$workspace_root" worktree remove --force'
+    assert_includes content, 'remote.upstream.url "$TRUSTED_UPSTREAM_URL"'
+    assert_includes content, 'remote.upstream.fetch "+refs/heads/*:refs/remotes/upstream/*"'
+    assert_includes content, 'git -C "$workspace_root" remote'
+    assert_includes content, 'git -C "$workspace_root" remote get-url upstream'
+    assert_includes content, 'Evaluator workspace retained a checkout Git remote'
   end
 
   def test_runtime_setup_probes_repository_controls_as_evaluator

@@ -162,6 +162,14 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		echo "Expected a standalone Git directory at $git_dir" >&2
 		exit 1
 	fi
+	workspace_symlink=$(
+		find "$workspace_root" -path "$git_dir" -prune -o \
+			-type l -print -quit
+	)
+	if [ -n "$workspace_symlink" ]; then
+		echo "Evaluator workspace contains unsupported symlink: ${workspace_symlink#"$workspace_root"/}" >&2
+		exit 1
+	fi
 	sudo -n chown -R "$workspace_owner:$eval_user" "$workspace_root"
 	sudo -n chmod -R g+rX,g-w,o-rwx "$workspace_root"
 
@@ -172,7 +180,7 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	sudo -n chmod 2750 "$workspace_root"
 	sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"
 	sudo -n chmod 3770 "$git_dir"
-	for mutable_git_path in worktrees refs logs; do
+	for mutable_git_path in objects worktrees refs logs; do
 		sudo -n install -d -o "$workspace_owner" -g "$eval_user" -m 2770 \
 			"$git_dir/$mutable_git_path"
 		sudo -n chgrp -R "$eval_user" "$git_dir/$mutable_git_path"
@@ -220,6 +228,16 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		done < <(git config --file "$copied_git_config" --get-all "$key" || true)
 	done
 	git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"
+	if [ -n "${TRUSTED_UPSTREAM_URL:-}" ]; then
+		if [[ ! "$TRUSTED_UPSTREAM_URL" =~ ^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git$ ]]; then
+			echo "TRUSTED_UPSTREAM_URL must be a plain GitHub repository URL" >&2
+			exit 1
+		fi
+		git config --file "$sanitized_git_config" \
+			remote.upstream.url "$TRUSTED_UPSTREAM_URL"
+		git config --file "$sanitized_git_config" \
+			remote.upstream.fetch "+refs/heads/*:refs/remotes/upstream/*"
+	fi
 	sudo -n install -o root -g root -m 444 \
 		"$sanitized_git_config" "$copied_git_config"
 	rm -f "$sanitized_git_config"
@@ -338,6 +356,40 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		git -C "$workspace_root" config --local alias.runtime-probe status 2>/dev/null; then
 		echo "Isolated Vally user can replace the evaluator Git configuration" >&2
 		exit 1
+	fi
+	if [ -n "${TRUSTED_UPSTREAM_URL:-}" ]; then
+		mapfile -t evaluator_remotes < <(
+			sudo -n -u "$eval_user" env \
+				HOME="$eval_home" \
+				GIT_CONFIG_GLOBAL="$trusted_git_config" \
+				GIT_CONFIG_NOSYSTEM=1 \
+				git -C "$workspace_root" remote
+		)
+		if [ "${#evaluator_remotes[@]}" -ne 1 ] ||
+			[ "${evaluator_remotes[0]}" != "upstream" ]; then
+			echo "Evaluator workspace contains an unexpected Git remote" >&2
+			exit 1
+		fi
+		evaluator_upstream=$(
+			sudo -n -u "$eval_user" env \
+				HOME="$eval_home" \
+				GIT_CONFIG_GLOBAL="$trusted_git_config" \
+				GIT_CONFIG_NOSYSTEM=1 \
+				git -C "$workspace_root" remote get-url upstream
+		)
+		if [ "$evaluator_upstream" != "$TRUSTED_UPSTREAM_URL" ]; then
+			echo "Evaluator workspace is not using the trusted upstream repository" >&2
+			exit 1
+		fi
+	else
+		if sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" remote | grep -q .; then
+			echo "Evaluator workspace retained a checkout Git remote" >&2
+			exit 1
+		fi
 	fi
 	probe_ref="refs/heads/vally-runtime-probe"
 	sudo -n -u "$eval_user" env \

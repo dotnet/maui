@@ -108,6 +108,8 @@ class TestSkillWorkflowModes < Minitest::Test
     assert_operator soak_job.scan(workspace_output).length, :>=, 1
     assert_includes validation_job, 'cd "$EVALUATOR_WORKSPACE"'
     assert_includes validation_job, 'git -C "$EVALUATOR_WORKSPACE" --no-replace-objects restore'
+    assert_includes validation_job, 'TRUSTED_UPSTREAM_URL: https://github.com/${{ github.repository }}.git'
+    assert_includes validation_job, 'git fetch --no-tags --no-write-fetch-head --depth=1 upstream "$BASE_SHA"'
   end
 
   def test_trusted_policy_tests_receive_candidate_workflows_and_fixture
