@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -18,15 +19,27 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ShellTests
 	{
 		[Fact]
-		public async Task TabBarVisibleAfterNavigationFromHiddenRoot26598()
+		public Task TabBarVisibleAfterNavigationFromHiddenRoot26598() =>
+			AssertTabBarNavigation26598(useNativeWindow: false);
+
+#if MACCATALYST
+		// Mac's production WindowHandler wraps Shell in WindowViewController, unlike the modal test stub.
+		[Fact]
+		public Task TabBarVisibleAfterRoutedNavigationInNativeWindow26598() =>
+			AssertTabBarNavigation26598(useNativeWindow: true);
+#endif
+
+		async Task AssertTabBarNavigation26598(bool useNativeWindow)
 		{
 			SetupBuilder();
 
 			var homeButton = new Button { Text = "Navigate to InnerTab" };
 			var innerButton = new Button { Text = "Navigate to TabBarPage" };
+			var nonTabLabel = new Label { Text = "This is Non TabBarPage" };
 			var recentLabel = new Label { Text = "Page Loaded in Recent Tab" };
 			var home = CreatePage("Home", homeButton, false, 200);
 			var inner = CreatePage("InnerTab", innerButton, true);
+			var nonTab = CreatePage("NoTabBarPage", nonTabLabel, false);
 			var recent = CreatePage("Recent", recentLabel, true, 200);
 
 			var shell = await CreateShellAsync(shell =>
@@ -41,7 +54,54 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async renderer =>
+			if (useNativeWindow)
+			{
+				await InvokeOnMainThreadAsync(async () =>
+				{
+					var nativeWindow = UIApplication.SharedApplication.GetKeyWindow();
+					Assert.NotNull(nativeWindow);
+					var previousRoot = nativeWindow.RootViewController;
+					Assert.NotNull(previousRoot);
+					var scene = nativeWindow.WindowScene;
+					var previousTitle = scene?.Title;
+					var context = new MauiContext(MauiContext.Services);
+					context.AddWeakSpecific(nativeWindow);
+					var window = new Controls.Window(shell);
+					IWindowHandler windowHandler = null;
+					try
+					{
+						windowHandler = CreateHandler<WindowHandler>(window, context);
+						await OnLoadedAsync(home);
+						if (!window.IsActivated)
+							((IWindow)window).Activated();
+						await RunScenario(Assert.IsAssignableFrom<ShellRenderer>(shell.Handler));
+					}
+					finally
+					{
+						try
+						{
+							if (window.IsActivated)
+								((IWindow)window).Deactivated();
+						}
+						finally
+						{
+							nativeWindow.RootViewController = previousRoot;
+							if (scene is not null)
+								scene.Title = previousTitle;
+							if (!window.IsDestroyed)
+								((IWindow)window).Destroying();
+							shell.Handler?.DisconnectHandler();
+							windowHandler?.DisconnectHandler();
+						}
+					}
+				});
+			}
+			else
+			{
+				await CreateHandlerAndAddToWindow<ShellRenderer>(shell, RunScenario);
+			}
+
+			async Task RunScenario(ShellRenderer renderer)
 			{
 				var itemRenderer = ((IShellContext)renderer).CurrentShellItemRenderer;
 				var controller = Assert.IsAssignableFrom<UITabBarController>(itemRenderer?.ViewController);
@@ -52,8 +112,50 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertState("Initial hidden Home", home, homeButton, 0, false, 1);
 
-				await shell.Navigation.PushAsync(inner);
-				await AssertState("First navigation to InnerTab", inner, innerButton, 0, true, 2);
+				if (!useNativeWindow)
+				{
+					await shell.Navigation.PushAsync(inner);
+					await AssertState("First navigation to InnerTab", inner, innerButton, 0, true, 2);
+					return;
+				}
+
+				var innerRoute = nameof(AssertTabBarNavigation26598) + "Inner";
+				var nonTabRoute = nameof(AssertTabBarNavigation26598) + "NonTab";
+				Routing.RegisterRoute(innerRoute, new TabBarRouteFactory26598(inner));
+				Routing.RegisterRoute(nonTabRoute, new TabBarRouteFactory26598(nonTab));
+				try
+				{
+					await shell.GoToAsync(innerRoute);
+					await AssertState("First routed navigation to InnerTab", inner, innerButton, 0, true, 2);
+
+					await shell.GoToAsync(nonTabRoute);
+					await AssertState("Routed page with hidden tabs", nonTab, nonTabLabel, 0, false, 3);
+
+					await shell.GoToAsync("..");
+					await AssertState("Returned to InnerTab", inner, innerButton, 0, true, 2);
+
+					SelectTab(1);
+					await AssertState("Selected RecentTab", recent, recentLabel, 1, true, 1);
+
+					SelectTab(0);
+					await AssertState("HomeTab restores InnerTab", inner, innerButton, 0, true, 2);
+
+					await shell.GoToAsync("..");
+					await AssertState("Returned to hidden Home root", home, homeButton, 0, false, 1);
+				}
+				finally
+				{
+					Routing.UnRegisterRoute(innerRoute);
+					Routing.UnRegisterRoute(nonTabRoute);
+				}
+
+				void SelectTab(int index)
+				{
+					var target = controller.ViewControllers[index];
+					Assert.True(controller.ShouldSelectViewController?.Invoke(controller, target) == true,
+						$"Issue26598: native tab selection rejected index {index}. {DescribeState()}");
+					controller.SelectedViewController = target;
+				}
 
 				async Task AssertState(string stage, ContentPage page, View content, int index, bool visible, int stackDepth)
 				{
@@ -131,7 +233,7 @@ namespace Microsoft.Maui.DeviceTests
 						$"tabBarHitTarget={GetTabBarHitTarget()?.GetType().Name ?? "null"}, " +
 						$"tab bar ancestry: {DescribeAncestry(tabBar)}";
 				}
-			});
+			}
 
 			static ContentPage CreatePage(string title, View content, bool visible, double height = -1)
 			{
@@ -185,6 +287,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				return description.Length == 0 ? "unattached/null" : description.ToString();
 			}
+		}
+
+		sealed class TabBarRouteFactory26598(ContentPage page) : RouteFactory
+		{
+			public override Element GetOrCreate() => page;
+			public override Element GetOrCreate(IServiceProvider services) => page;
 		}
 
 		UITabBar GetTabBar(ShellSection item)
