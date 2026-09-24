@@ -439,19 +439,19 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Tab back into the CollectionView.
 				mauiItemsView.Focus(FocusState.Keyboard);
-				await Task.Delay(200);
 
-				var focused = UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot) as UIElement;
-
-				if (focused is MauiItemsView)
+				int FocusedIndex()
 				{
-					// CollectionView2 keeps focus on the root control.
-					Assert.True(true);
-					return;
+					var focused = UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot) as UIElement;
+					return focused is null ? -1 : repeater.GetElementIndex(focused);
 				}
 
-				var focusedIndex = repeater.GetElementIndex(focused);
-				Assert.Equal(2, focusedIndex);
+				// Poll instead of asserting after a fixed delay, and fail (not trivially pass)
+				// if focus never actually moves to the last-focused item.
+				await AssertEventually(() => FocusedIndex() == 2, timeout: 3000,
+					message: "Focus was not restored to the last-focused item (index 2)");
+
+				Assert.Equal(2, FocusedIndex());
 			});
 		}
 
@@ -492,21 +492,19 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Tab from the button into the never-before-focused CollectionView.
 				mauiItemsView.Focus(FocusState.Keyboard);
-				await Task.Delay(200);
 
-				var focused = UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot) as UIElement;
-
-				if (focused is MauiItemsView)
+				int FocusedIndex()
 				{
-					var selectedContainer = repeater.TryGetElement(3);
-					Assert.NotNull(selectedContainer);
-
-					focused = selectedContainer;
+					var focused = UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot) as UIElement;
+					return focused is null ? -1 : repeater.GetElementIndex(focused);
 				}
 
-				var focusedIndex = focused is not null ? repeater.GetElementIndex(focused) : -1;
+				// Poll instead of asserting after a fixed delay, and fail (not trivially pass)
+				// if focus never actually lands on the selected item.
+				await AssertEventually(() => FocusedIndex() == 3, timeout: 3000,
+					message: "Focus did not land on the selected item (index 3) on first keyboard entry");
 
-				Assert.Equal(3, focusedIndex);
+				Assert.Equal(3, FocusedIndex());
 			});
 		}
 

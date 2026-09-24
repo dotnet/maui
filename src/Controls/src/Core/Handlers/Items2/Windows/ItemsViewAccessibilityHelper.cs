@@ -317,19 +317,26 @@ sealed class ItemsViewAccessibilityHelper
         return false;
     }
 
+    void CancelQueuedFocusCore()
+    {
+        _focusCts?.Cancel();
+        _focusCts?.Dispose();
+        _focusCts = null;
+    }
+
+    // Cancels both the pending ContainerPrepared subscription and any already-queued
+    // dispatcher/Loaded focus callback — e.g. called from UpdateItemsSource so a stale
+    // callback can't fire against a recycled container after the source rebinds.
     internal void CancelPendingContainerPrepared()
     {
         CancelPendingContainerPreparedCore();
+        CancelQueuedFocusCore();
     }
 
     internal void CleanUp()
     {
         CancelPendingContainerPreparedCore();
-
-        // Cancel any queued dispatcher/Loaded focus callback still in flight.
-        _focusCts?.Cancel();
-        _focusCts?.Dispose();
-        _focusCts = null;
+        CancelQueuedFocusCore();
 
         if (_attached)
         {
