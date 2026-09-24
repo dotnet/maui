@@ -228,6 +228,10 @@ public class FlyoutPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_Title()
 	{
+		// Do not reuse native controls transformed by the preceding Windows RTL test.
+		if (Device == TestDevice.Windows)
+			FixtureSetup();
+
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(TitleEntry);
