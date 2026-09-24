@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
-					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler(typeof(CollectionView), collectionViewHandlerType ?? typeof(CollectionViewHandler));
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
