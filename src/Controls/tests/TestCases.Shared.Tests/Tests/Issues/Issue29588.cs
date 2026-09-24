@@ -28,7 +28,7 @@ internal class Issue29588 : _IssuesUITest
 	void ScrollToVisibleItem(string text)
 	{
 		var elapsed = Stopwatch.StartNew();
-		while (elapsed.Elapsed < TimeSpan.FromSeconds(15))
+		while (true)
 		{
 			var viewport = App.WaitForElementAndGetRect("29588CollectionView");
 			var item = App.FindElementByText(text);
@@ -41,8 +41,13 @@ internal class Issue29588 : _IssuesUITest
 					return;
 			}
 
+			// Inspect the last gesture's result even when it consumed the remaining time.
+			if (elapsed.Elapsed >= TimeSpan.FromSeconds(15))
+				break;
+
 			// Container scrolling uses the native macOS scroll action, unlike App.ScrollTo.
-			App.ScrollDown("29588CollectionView", ScrollStrategy.Gesture, swipePercentage: 0.5);
+			App.ScrollDown("29588CollectionView", ScrollStrategy.Gesture,
+				swipePercentage: App is AppiumWindowsApp ? 0.8 : 0.5);
 		}
 
 		Assert.Fail($"'{text}' did not become fully visible inside 29588CollectionView.");

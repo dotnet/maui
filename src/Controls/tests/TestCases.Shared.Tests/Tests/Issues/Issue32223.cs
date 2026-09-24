@@ -1,10 +1,7 @@
 using NUnit.Framework;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
-using PointerInputDevice = OpenQA.Selenium.Appium.Interactions.PointerInputDevice;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
@@ -26,14 +23,16 @@ public class Issue32223 : _IssuesUITest
 		{
 			var source = windowsApp.Driver.FindElement(MobileBy.AccessibilityId("David"));
 			var target = windowsApp.Driver.FindElement(MobileBy.AccessibilityId("Charlie"));
-			var mouse = new PointerInputDevice(PointerKind.Mouse);
-			var drag = new ActionSequence(mouse, 0);
-			drag.AddAction(mouse.CreatePointerMove(source, 0, 0, TimeSpan.Zero));
-			drag.AddAction(mouse.CreatePointerDown(PointerButton.LeftMouse));
-			// The cell center is an insertion boundary; drop in its leading half.
-			drag.AddAction(mouse.CreatePointerMove(target, -target.Size.Width / 4, 0, TimeSpan.FromSeconds(1)));
-			drag.AddAction(mouse.CreatePointerUp(PointerButton.LeftMouse));
-			windowsApp.Driver.PerformActions([drag]);
+			// WinAppDriver's W3C actions do not support mouse input.
+			windowsApp.Driver.ExecuteScript("windows: clickAndDrag", new Dictionary<string, object>
+			{
+				["startElementId"] = source.Id,
+				["endElementId"] = target.Id,
+				// The cell center is an insertion boundary; drop in its leading half.
+				["endX"] = target.Size.Width / 4,
+				["endY"] = target.Size.Height / 2,
+				["durationMs"] = 1000
+			});
 		}
 		else
 		{
