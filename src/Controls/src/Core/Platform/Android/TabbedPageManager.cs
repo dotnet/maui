@@ -130,6 +130,7 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
+			Application.Current!.RequestedThemeChanged -= OnRequestedThemeChanged;
 			_tabRegistrationGeneration++;
 			_nativeTabRegistrations.Clear();
 			CloseMoreDialog();
@@ -194,6 +195,8 @@ public class TabbedPageManager
 
 				if (RuntimeFeature.IsMaterial3Enabled)
 					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
+
+				BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 			}
 			else
 			{
@@ -226,9 +229,15 @@ public class TabbedPageManager
 			previousPage = tabbedPage.CurrentPage;
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+			Application.Current!.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			SetTabLayout();
 		}
+	}
+
+	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+	{
+		BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
