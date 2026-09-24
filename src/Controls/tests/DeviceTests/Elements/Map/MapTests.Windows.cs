@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class MapTests : ControlsHandlerTestBase
 	{
 		// Regression test for https://github.com/dotnet/maui/issues/37096
-		[Fact]
+		[Fact(Skip = "Windows MapHandler is not implemented on net11.0.")]
 		public async Task RemovingAndReaddingMapDoesNotMutateNativeLayers()
 		{
 			var map = new Map
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(Skip = "Windows MapHandler is not implemented on net11.0.")]
 		public async Task DisconnectHandlerDoesNotMutateNativeLayers()
 		{
 			var map = new Map
