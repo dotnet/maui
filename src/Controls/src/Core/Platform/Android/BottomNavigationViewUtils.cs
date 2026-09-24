@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
@@ -27,9 +28,6 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class BottomNavigationViewUtils
 	{
 		internal const int MoreTabId = 99;
-		static readonly Color s_lightActiveIndicatorColor = Color.FromArgb("#E8DEF8");
-		static readonly Color s_darkActiveIndicatorColor = Color.FromArgb("#4A4458");
-
 		internal static void UpdateActiveIndicatorColor(BottomNavigationView bottomNavigationView)
 		{
 			if (!RuntimeFeature.IsMaterial3Enabled || bottomNavigationView is null)
@@ -37,12 +35,24 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(
-				ResolveThemeColor(s_lightActiveIndicatorColor, s_darkActiveIndicatorColor).ToPlatform());
+			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(new AColor(GetThemeAttrColor(bottomNavigationView.Context, Resource.Attribute.colorSecondaryContainer)));
 		}
 
-		static Color ResolveThemeColor(Color light, Color dark) =>
-			Application.Current?.RequestedTheme == AppTheme.Dark ? dark : light;
+		static int GetThemeAttrColor(Context context, int attr)
+		{
+			var requestedTheme = Application.Current?.RequestedTheme;
+			if (requestedTheme is not AppTheme.Dark and not AppTheme.Light)
+			{
+				return context.GetThemeAttrColor(attr);
+			}
+
+			using var configuration = new Configuration(context.Resources?.Configuration);
+			configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) | (requestedTheme == AppTheme.Dark ? UiMode.NightYes : UiMode.NightNo);
+
+			using var configuredContext = context.CreateConfigurationContext(configuration);
+			configuredContext.SetTheme(Resource.Style.Maui_Material3_Theme_NoActionBar);
+			return configuredContext.GetThemeAttrColor(attr);
+		}
 
 		public static Drawable CreateItemBackgroundDrawable()
 		{
