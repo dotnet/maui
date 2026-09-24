@@ -286,13 +286,16 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
-	if (IsCIBuild() && emulatorProcess != null)
+	if (IsCIBuild() && deviceCreate && emulatorProcess != null)
 	{
 		var packages = AdbShell("pm list packages com.android.vending", adbSettings);
 		if (packages.Any(package => package.Trim() == "package:com.android.vending"))
 		{
-			Information("Stopping Play Store background updates on the CI emulator before UI tests.");
-			AdbShell("am force-stop com.android.vending", adbSettings);
+			Information("Disabling Play Store background updates on the disposable CI emulator.");
+			AdbShell("pm disable-user --user 0 com.android.vending", adbSettings);
+			var disabledPackages = AdbShell("pm list packages -d --user 0 com.android.vending", adbSettings);
+			if (!disabledPackages.Any(package => package.Trim() == "package:com.android.vending"))
+				throw new InvalidOperationException("Could not disable Play Store background updates on the disposable CI emulator.");
 		}
 	}
 

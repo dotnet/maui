@@ -83,6 +83,32 @@ Describe 'UI test fixture retry reports' {
             Should -Be 'FullyQualifiedName~Example.A\(Android\).|FullyQualifiedName~Example.Z\(Android\).'
     }
 
+    It 'preserves skips when VSTest leaves notExecuted at zero in <Report> reports' -ForEach @(
+        @{ Report = 'initial'; ZeroOriginal = $true; ZeroRetry = $false }
+        @{ Report = 'retry'; ZeroOriginal = $false; ZeroRetry = $true }
+        @{ Report = 'both'; ZeroOriginal = $true; ZeroRetry = $true }
+    ) {
+        foreach ($path in @(
+            if ($ZeroOriginal) { $original }
+            if ($ZeroRetry) { $retry }
+        )) {
+            [xml]$xml = Get-Content -Raw $path
+            $xml.TestRun.ResultSummary.Counters.notExecuted = '0'
+            $xml.Save($path)
+        }
+
+        [UITestRetry]::GetFilter($original, 'TestCategory=Shell') |
+            Should -Be '(TestCategory=Shell)&(FullyQualifiedName~Example.Screen\(Mac\).)'
+        [UITestRetry]::Merge($original, $retry, $original) | Should -BeTrue
+        [xml]$merged = Get-Content -Raw $original
+        $merged.TestRun.Results.UnitTestResult.Count | Should -Be 4
+        @($merged.TestRun.Results.UnitTestResult | Where-Object outcome -eq 'NotExecuted').Count | Should -Be 1
+        $merged.TestRun.ResultSummary.Counters.executed | Should -Be '3'
+        $merged.TestRun.ResultSummary.Counters.passed | Should -Be '3'
+        $merged.TestRun.ResultSummary.Counters.failed | Should -Be '0'
+        $merged.TestRun.ResultSummary.Counters.notExecuted | Should -Be '1'
+    }
+
     It 'preserves unselected passes and skips while replacing all retried execution metadata' {
         [xml]$before = Get-Content -Raw $original
         [xml]$retried = Get-Content -Raw $retry
@@ -182,9 +208,17 @@ Describe 'UI test fixture retry reports' {
         { [UITestRetry]::Merge($original, $retry, $original) } | Should -Throw '*execution metadata*'
     }
 
-    It 'rejects mismatched counters' {
+    It 'rejects invalid <Counter> counters with value <Value>' -ForEach @(
+        @{ Counter = 'total'; Value = '99' }
+        @{ Counter = 'executed'; Value = '4' }
+        @{ Counter = 'passed'; Value = '3' }
+        @{ Counter = 'failed'; Value = '0' }
+        @{ Counter = 'notExecuted'; Value = '2' }
+        @{ Counter = 'notExecuted'; Value = '-1' }
+        @{ Counter = 'notExecuted'; Value = 'invalid' }
+    ) {
         [xml]$xml = Get-Content -Raw $original
-        $xml.TestRun.ResultSummary.Counters.total = '99'
+        $xml.TestRun.ResultSummary.Counters.SetAttribute($Counter, $Value)
         $xml.Save($original)
         { [UITestRetry]::GetFilter($original, '') } | Should -Throw '*counters*'
     }
@@ -362,8 +396,10 @@ Describe 'UI pipeline retry wiring' {
         $pipeline | Should -Match '!\$\(TestResultsDirectory\)/\*\.retry\.trx'
     }
 
-    It 'stops Play Store updates only on the CI-created emulator' {
+    It 'disables Play Store updates only on a newly created CI emulator and verifies the result' {
         $source = Get-Content -Raw (Join-Path $PSScriptRoot '../devices/android.cake')
-        $source | Should -Match '(?s)if \(IsCIBuild\(\) && emulatorProcess != null\).*?am force-stop com.android.vending'
+        $source | Should -Match '(?s)if \(IsCIBuild\(\) && deviceCreate && emulatorProcess != null\).*?pm disable-user --user 0 com.android.vending'
+        $source | Should -Match 'pm list packages -d --user 0 com.android.vending'
+        $source | Should -Match 'throw new InvalidOperationException\("Could not disable Play Store'
     }
 }

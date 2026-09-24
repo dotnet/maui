@@ -291,6 +291,9 @@ For retained UI coverage, disable prediction and spell checking on fixture input
 preserve exact text. Wait for replacement native elements after changing flyout content.
 WebView history tests should navigate from inline HTML to a local HTTP page and wait for
 the loaded document, rather than depending on a public website or a fixed delay.
+On newly created CI Android emulators, Play Store is disabled for the disposable device's
+lifetime so its update screen cannot reclaim the foreground after a force-stop.
+Local runs, existing emulators, physical devices, and Google Play services are unchanged.
 
 UI CI retries failed fixtures once, within the original category filter. Retrying a fixture
 preserves ordered setup without repeating all the passing fixtures. The merged TRX retains
@@ -298,6 +301,9 @@ first-attempt results outside those fixtures and the complete retry results insi
 Missing cases, skipped replacements, inconsistent metadata, and test-host errors remain
 failures. Both attempt reports are retained under `TestResultsFailures`; attachments remain
 in their original deployment directories.
+VSTest can leave the `notExecuted` counter at zero for skipped tests. Retry validation
+accounts for those cases through their individual outcomes and the total/executed counts;
+the merged report still retains every skipped case.
 Do not add a whole-task retry on top of this: it can repeat hours of successful UI coverage
 and leave a canceled job publishing an earlier failure instead of the retry results.
 

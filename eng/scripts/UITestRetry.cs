@@ -184,8 +184,9 @@ public static class UITestRetry
 		};
 		foreach (var expected in expectedCounts)
 		{
+			// VSTest leaves notExecuted at zero for skips; total and executed still account for them.
 			if (!int.TryParse((string)counters.Attribute(expected.Key), NumberStyles.None, CultureInfo.InvariantCulture, out var count) ||
-				count != expected.Value)
+				(count != expected.Value && !(expected.Key == "notExecuted" && count == 0)))
 				throw new InvalidDataException("TRX counters do not match the reported test results.");
 		}
 		if (counters.Attributes().Any(attribute => !expectedCounts.ContainsKey(attribute.Name.LocalName) && attribute.Value != "0"))
