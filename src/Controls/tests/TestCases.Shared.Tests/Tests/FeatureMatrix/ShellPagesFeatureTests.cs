@@ -252,7 +252,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
-		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "Tab2"));
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab2");
 		VerifyScreenshot();
 	}
 
@@ -266,7 +266,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap("IsVisibleFalse");
 		App.Tap(Apply);
 		App.WaitForElement(Options);
-		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "Tab2"));
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab2");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsVisibleTrue");
@@ -561,7 +561,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 internal static class ShellFeatureTestActions
 {
-	internal static IUIElement? FindBottomTab(IApp app, string title)
+	static IUIElement? FindBottomTab(IApp app, string title)
 	{
 		// Android uppercases top tabs, not bottom tabs; Windows exposes the title as Name, not AutomationId.
 		var query = app switch
@@ -574,12 +574,27 @@ internal static class ShellFeatureTestActions
 		return app.FindElements(query).FirstOrDefault(element => element.IsDisplayed());
 	}
 
-	internal static IUIElement WaitForBottomTab(IApp app, string title) =>
-		app.WaitForElement(() => FindBottomTab(app, title));
+	internal static IUIElement WaitForBottomTab(IApp app, string title)
+	{
+		IUIElement? tab = null;
+		// Navigation can replace a tab between its lookup and the native visibility query.
+		app.RetryAssert(() =>
+		{
+			tab = FindBottomTab(app, title);
+			Assert.That(tab, Is.Not.Null, $"The native bottom tab '{title}' should be visible.");
+		});
+		return tab!;
+	}
+
+	internal static void WaitForNoBottomTab(IApp app, string title) =>
+		app.RetryAssert(() => Assert.That(FindBottomTab(app, title), Is.Null,
+			$"The native bottom tab '{title}' should be hidden."));
 
 	internal static void TapPageBack(IApp app, string previousTitle)
 	{
-		if (app is AppiumIOSApp iosApp && !HelperExtensions.IsIOS26OrHigher(iosApp))
+		if (app is AppiumCatalystApp)
+			app.TapBackArrow(AppiumQuery.ByXPath($"//XCUIElementTypeNavigationBar//XCUIElementTypeButton[@label='{previousTitle}']"));
+		else if (app is AppiumIOSApp iosApp && !HelperExtensions.IsIOS26OrHigher(iosApp))
 			app.TapBackArrow(previousTitle);
 		else
 			app.TapBackArrow();
