@@ -38,7 +38,7 @@ namespace Maui.Controls.Sample.Issues
 					Padding = new Thickness(10, 0)
 				};
 				label.SetBinding(Label.TextProperty, "Name");
-				label.SetBinding(AutomationIdProperty, "Name");
+				label.SetBinding(AutomationIdProperty, nameof(Issue20855ItemGroup.AutomationId));
 
 				return label;
 			});
@@ -57,14 +57,14 @@ namespace Maui.Controls.Sample.Issues
 					HeightRequest = 80
 				};
 				nameLabel.SetBinding(Label.TextProperty, "Name");
-				nameLabel.SetBinding(AutomationIdProperty, "Name");
+				nameLabel.SetBinding(AutomationIdProperty, nameof(Issue20855Item.AutomationId));
 
 				var dateLabel = new Label
 				{
 					Padding = new Thickness(8, 0),
 					HeightRequest = 85
 				};
-				dateLabel.SetBinding(AutomationIdProperty, new Binding("Name", stringFormat: "Date_{0}"));
+				dateLabel.SetBinding(AutomationIdProperty, new Binding(nameof(Issue20855Item.AutomationId), stringFormat: "Date_{0}"));
 				dateLabel.SetBinding(Label.TextProperty, nameof(Issue20855Item.DisplayDate));
 
 				flexLayout.Children.Add(nameLabel);
@@ -81,6 +81,7 @@ namespace Maui.Controls.Sample.Issues
 	public class Issue20855Item
 	{
 		public string Name { get; set; }
+		public string AutomationId => Name.Replace(" ", string.Empty, StringComparison.Ordinal);
 		public DateTime CreateDate { get; set; }
 		public string DisplayDate => CreateDate.ToString("MMM d", CultureInfo.InvariantCulture);
 	}
@@ -88,5 +89,6 @@ namespace Maui.Controls.Sample.Issues
 	public class Issue20855ItemGroup : ObservableCollection<Issue20855Item>
 	{
 		public string Name { get; set; }
+		public string AutomationId => Name.Replace(" ", string.Empty, StringComparison.Ordinal);
 	}
 }

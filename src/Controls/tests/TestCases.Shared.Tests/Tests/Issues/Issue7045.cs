@@ -19,9 +19,12 @@ public class Issue7045 : _IssuesUITest
 		App.WaitForElement("NavigateButton");
 		App.Click("NavigateButton");
 		App.WaitForElement("DetailPageLabel");
-		VerifyScreenshot();
-		App.TapBackArrow("Back");
-		App.WaitForElement("NavigateButton");
+		if (App is AppiumCatalystApp || App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			App.TapBackArrow();
+		else
+			App.TapBackArrow("Back");
+		Assert.That(() => App.WaitForElement("NavigateButton").GetText(),
+			Is.EqualTo("Back command executed").After(10000, 200));
 		App.WaitForNoElement("DetailPageLabel");
 	}
 }

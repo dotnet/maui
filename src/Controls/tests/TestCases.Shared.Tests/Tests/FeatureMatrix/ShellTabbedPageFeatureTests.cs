@@ -149,7 +149,7 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShell_IsVisible()
 	{
-		App.TapTab("Tab4");
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab4").Tap();
 		App.WaitForElement("Tab4Label");
 		App.Tap("GoToTab1Button");
 		App.WaitForElement(Options);
@@ -159,8 +159,8 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Tab1Label");
-		App.WaitForNoElement(() => App.FindElements("Tab4").FirstOrDefault(e => e.IsDisplayed()));
-		App.TapTab("Tab3");
+		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "Tab4"));
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab3").Tap();
 		App.WaitForElement("Tab3Label");
 		App.Tap("GoToTab1Button");
 		App.WaitForElement(Options);

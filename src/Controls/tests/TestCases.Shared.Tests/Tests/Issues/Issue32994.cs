@@ -14,7 +14,7 @@ public class Issue32994 : _IssuesUITest
 	void SelectPage(string page)
 	{
 		if (App is AppiumWindowsApp)
-			App.TapTab("Tab1");
+			ShellFeatureTestActions.WaitForBottomTab(App, "Tab1").Tap();
 
 		App.TapTab(page);
 	}
@@ -22,15 +22,16 @@ public class Issue32994 : _IssuesUITest
 	void AssertTabBarHidden()
 	{
 		// Tab2 exists only in the native tab bar, not in the current page content.
-		App.WaitForNoElement(() => App.FindElements("Tab2").FirstOrDefault(e => e.IsDisplayed()),
+		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "Tab2"),
 			"The native tab bar is still visible.");
 	}
 
 	void AssertTabBarWorks()
 	{
-		App.TapTab("Tab2");
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab2").Tap();
 		App.WaitForElement("Tab2Label");
-		App.TapTab("Tab1");
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab1").Tap();
+		App.WaitForNoElement("Tab2Label");
 	}
 
 	[Test]
@@ -38,7 +39,7 @@ public class Issue32994 : _IssuesUITest
 	public void TabBarVisibilityHidesOnPage1UsingDirectSet()
 	{
 		App.WaitForElement("HidePage1TabBar");
-		AssertTabBarWorks();
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab2");
 		App.Tap("HidePage1TabBar");
 		AssertTabBarHidden();
 		VerifyScreenshot();

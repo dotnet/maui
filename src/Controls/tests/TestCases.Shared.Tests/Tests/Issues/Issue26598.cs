@@ -28,12 +28,13 @@ public class Issue26598 : _IssuesUITest
 		App.Click("NavigateToInnerTab");
 
 		// Case 1 - After navigating to Inner Page ,  the TabBar should be visible
-		App.WaitForElement("RecentTab");
+		ShellFeatureTestActions.WaitForBottomTab(App, "RecentTab");
 
 		// Case 2 - Navigate to the InnerTabPage where the TabBar is hidden
 		App.WaitForElement("NavigateToTabBarPage");
 		App.Click("NavigateToTabBarPage");
 		App.WaitForElement("Issue26589NonTab");
+		App.WaitForNoElement(() => ShellFeatureTestActions.FindBottomTab(App, "RecentTab"));
 
 		// Case 3 - Navigate back to the HomeTab, the TabBar should be visible
 		if (App is AppiumCatalystApp || App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -45,10 +46,10 @@ public class Issue26598 : _IssuesUITest
 			App.TapBackArrow(back);
 		}
 		App.WaitForElement("NavigateToTabBarPage");
-		App.TapTab("RecentTab");
+		ShellFeatureTestActions.WaitForBottomTab(App, "RecentTab").Tap();
 		App.WaitForElement("RecentTabContent");
 		App.WaitForNoElement("NavigateToTabBarPage");
-		App.TapTab("HomeTab");
+		ShellFeatureTestActions.WaitForBottomTab(App, "HomeTab").Tap();
 		App.WaitForElement("NavigateToTabBarPage");
 	}
 }

@@ -18,8 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			for (var step = 1; step <= 9; step++)
 			{
-				App.WaitForElement($"NextStep{step}");
-				App.Tap($"NextStep{step}");
+				var nextStep = AppiumQuery.ByAccessibilityId($"NextStep{step}");
+				App.WaitForElement(nextStep);
+				App.Tap(nextStep);
 				if (step is 2 or 4 or 6 or 8)
 					App.WaitForElement("qwe");
 			}
