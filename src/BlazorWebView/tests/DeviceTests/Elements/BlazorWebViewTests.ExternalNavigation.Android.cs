@@ -98,10 +98,12 @@ public partial class BlazorWebViewTests
 	[InlineData("android-app")]
 	public async Task StructuredIntentUriWithExplicitComponentDoesNotLaunchActivity(string uriScheme)
 	{
+		var testActivity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+		Assert.NotNull(testActivity);
 		var activityLaunch = ActivityLaunchMonitor<ExplicitIntentTestActivity>.PrepareForLaunch();
 		var intentUri = uriScheme == "intent"
-			? $"intent:#Intent;component={ExternalNavigationTestData.ApplicationId}/{ExternalNavigationTestData.ExplicitActivityName};S.test=value;end"
-			: $"android-app://{ExternalNavigationTestData.ApplicationId}/#Intent;component={ExternalNavigationTestData.ApplicationId}/{ExternalNavigationTestData.ExplicitActivityName};S.test=value;end";
+			? $"intent:#Intent;package={ExternalNavigationTestData.ApplicationId};action={ExternalNavigationTestData.ExplicitAction};component={ExternalNavigationTestData.ApplicationId}/{ExternalNavigationTestData.ExplicitActivityName};S.test=value;end"
+			: $"android-app://{ExternalNavigationTestData.ApplicationId}/#Intent;action={ExternalNavigationTestData.ExplicitAction};component={ExternalNavigationTestData.ApplicationId}/{ExternalNavigationTestData.ExplicitActivityName};S.test=value;end";
 
 		try
 		{
@@ -109,6 +111,8 @@ public partial class BlazorWebViewTests
 
 			var completedTask = await Task.WhenAny(activityLaunch, Task.Delay(ActivityNotLaunchedTimeout));
 			Assert.NotSame(activityLaunch, completedTask);
+			await InvokeOnMainThreadAsync(() =>
+				Assert.True(testActivity.HasWindowFocus, "External intent navigation left the test activity in the background."));
 		}
 		finally
 		{

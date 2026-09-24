@@ -80,4 +80,9 @@ if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
 }
 
 Write-Host "App PID $procId exited with code $($proc.ExitCode)"
+# WinUI Application.Exit may return -1; other nonzero codes indicate a failed process.
+if ($proc.ExitCode -notin @(0, -1)) {
+    Write-Error "Packaged test process crashed with exit code $($proc.ExitCode)"
+    exit 3
+}
 exit 0
