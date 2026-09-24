@@ -155,7 +155,22 @@ steps:
 
       echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
 
+      # Temporary RC2 workaround for GoldenGate's nonstandard prerelease bundle name.
+      # Remove this fast path once standard images provide conventionally named, compatible Xcode.
+      if SELECTED_XCODE_PATH=$(xcode-select --print-path) && SELECTED_XCODE_INFO=$(xcodebuild -version); then
+        SELECTED_XCODE_VERSION=$(printf '%s\n' "$SELECTED_XCODE_INFO" | awk '$1 == "Xcode" { print $2; exit }')
+        if [[ -d "$SELECTED_XCODE_PATH" && ( "$SELECTED_XCODE_VERSION" == "$XCODE_MAJOR_MINOR" || "$SELECTED_XCODE_VERSION" == "$XCODE_MAJOR_MINOR".* ) ]]; then
+          XCODE_PATH="$SELECTED_XCODE_PATH"
+          echo "Using image-selected Xcode $SELECTED_XCODE_VERSION at $XCODE_PATH"
+        fi
+      else
+        echo "##vso[task.logissue type=warning]Unable to inspect the selected Xcode; checking installed versions."
+      fi
+
       for VERSION in "${VERSIONS_TO_TRY[@]}"; do
+        if [[ -n "$XCODE_PATH" ]]; then
+          break
+        fi
         CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
         echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
         if [[ -d "$CANDIDATE_PATH" ]]; then

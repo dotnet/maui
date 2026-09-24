@@ -51,6 +51,32 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
+### Shared macOS image selection
+
+GoldenGate routing is a temporary RC2 workaround. Return to the standard images
+once they include Xcode compatible with the pinned Apple SDK.
+
+All public and internal macOS pool defaults in `ci.yml`, `ci-device-tests.yml`,
+and `ci-uitests.yml` use `AcesShared` with
+`ImageOverride -equals $(AcesMacImageOverride)`. This covers build, pack, integration,
+shared UI app builds, iOS and MacCatalyst UI runs, and device-test app builds.
+Pool parameters still support caller overrides. Select the image
+once in `eng/pipelines/common/variables.yml`; RC2 uses `ACES_VM_SharedPool_GoldenGate`,
+the image selected for official builds in #38852. Do not pin an Xcode application
+path in individual pipeline demands.
+
+The Aces image is independent of `HostedMacImage`: Azure Pipelines hosted images
+and Aces images receive new Xcode versions at different times. The older Aces Tahoe
+image only had Xcode 26.x, which cannot build the RC2 Apple SDK.
+
+Keep shared Xcode selection and simulator provisioning enabled for the test jobs.
+Provisioning accepts the image-selected Xcode when its reported major/minor version
+matches `$(XCODE)`, including prerelease bundles with nonstandard filenames. If it
+does not match, the existing named-bundle lookup and missing-Xcode error still apply.
+The official pack-only job can use `skipXcode: true`, but that also skips simulator
+setup in `common/provision.yml`, which iOS UI tests need. Device-test execution
+still uses the Helix queues in `eng/helix_xharness.proj`.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,
