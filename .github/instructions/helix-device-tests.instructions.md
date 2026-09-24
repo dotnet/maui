@@ -21,10 +21,12 @@ This document provides guidance for working with .NET MAUI device tests that run
 
 ### Available Helix Queues
 
-Current configuration uses:
+Public (default) configuration uses:
 - **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Android**: `ubuntu.2204.amd64.android.33.open`
+
+Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
 
 Check available queues at [helix.dot.net](https://helix.dot.net).
 
