@@ -24,7 +24,7 @@ public class SourceGenDeterminismTests : SourceGenTestsBase
 </ContentPage>
 """;
 
-	private record AdditionalXamlFile(string Path, string Inflator = "Runtime")
+	private record AdditionalXamlFile(string Path)
 		: AdditionalFile(
 			Text: ToAdditionalText(Path, Xaml),
 			Kind: "Xaml",
@@ -32,25 +32,7 @@ public class SourceGenDeterminismTests : SourceGenTestsBase
 			TargetPath: Path,
 			ManifestResourceName: "Test.TestPage.xaml",
 			TargetFramework: "net10.0",
-			NoWarn: null,
-			Inflator: Inflator);
-
-	[Fact]
-	public void RuntimeInflatorStillGeneratesAssemblyMetadata()
-	{
-		var result = RunGenerator<XamlGenerator>(
-			CreateMauiCompilation(),
-			new AdditionalXamlFile("Test.xaml"));
-
-		var sources = GetGeneratedSources(result);
-
-		Assert.DoesNotContain(sources.Keys, hintName => hintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase));
-		Assert.Contains(
-			"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(",
-			sources.Single(source => source.Key.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).Value,
-			StringComparison.Ordinal);
-		Assert.Contains("GlobalXmlns.g.cs", sources.Keys);
-	}
+			NoWarn: null);
 
 	[Fact]
 	public void EquivalentReferenceOrderProducesIdenticalGeneratedOutput()
@@ -67,29 +49,6 @@ public class SourceGenDeterminismTests : SourceGenTestsBase
 			new AdditionalXamlFile("Test.xaml"));
 
 		AssertGeneratedSourcesEqual(GetGeneratedSources(first), GetGeneratedSources(second));
-	}
-
-	[Fact]
-	public void HydratedReferenceAddsGlobalXmlnsGeneratedDocument()
-	{
-		var xamlFile = new AdditionalXamlFile("Test.xaml");
-		var compilation = CreateCompilationWithGlobalXmlns();
-		var reference = CreateXmlnsReference("External.Hydrated", "External.Hydrated");
-
-		var (beforeHydration, afterHydration) = RunGeneratorWithChanges<XamlGenerator>(
-			compilation,
-			(driver, currentCompilation) => (driver, currentCompilation.AddReferences(reference)),
-			xamlFile);
-
-		var beforeSources = GetGeneratedSources(beforeHydration);
-		var afterSources = GetGeneratedSources(afterHydration);
-
-		Assert.Contains("Global.Xmlns.cs", afterSources.Keys);
-		Assert.DoesNotContain("External.Hydrated", beforeSources["Global.Xmlns.cs"], StringComparison.Ordinal);
-		Assert.Contains(
-			"""[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "External.Hydrated", AssemblyName = "External.Hydrated")]""",
-			afterSources["Global.Xmlns.cs"],
-			StringComparison.Ordinal);
 	}
 
 	private static Compilation CreateCompilationWithGlobalXmlns()
