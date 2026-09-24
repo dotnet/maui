@@ -6,12 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -31,6 +33,32 @@ namespace Microsoft.Maui.Controls.Platform
 		internal const int MoreTabId = 99;
 		static readonly ConditionalWeakTable<BottomNavigationView, MenuGeneration> s_menuGenerations =
 			new ConditionalWeakTable<BottomNavigationView, MenuGeneration>();
+
+		internal static void UpdateActiveIndicatorColor(BottomNavigationView bottomNavigationView)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled || bottomNavigationView is null)
+			{
+				return;
+			}
+
+			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(new AColor(GetThemeAttrColor(bottomNavigationView.Context, Resource.Attribute.colorSecondaryContainer)));
+		}
+
+		static int GetThemeAttrColor(Context context, int attr)
+		{
+			var requestedTheme = Application.Current?.RequestedTheme;
+			if (requestedTheme is not AppTheme.Dark and not AppTheme.Light)
+			{
+				return context.GetThemeAttrColor(attr);
+			}
+
+			using var configuration = new Configuration(context.Resources?.Configuration);
+			configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) | (requestedTheme == AppTheme.Dark ? UiMode.NightYes : UiMode.NightNo);
+
+			using var configuredContext = context.CreateConfigurationContext(configuration);
+			configuredContext.SetTheme(Resource.Style.Maui_Material3_Theme_NoActionBar);
+			return configuredContext.GetThemeAttrColor(attr);
+		}
 
 		public static Drawable CreateItemBackgroundDrawable()
 		{
