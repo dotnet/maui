@@ -40,15 +40,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
 		{
-			bool allCollected = true;
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
-				var isAlive = await reference.WaitForCollect();
-				if (isAlive)
-					allCollected = false;
+				await reference.WaitForCollect();
 			}
-			return allCollected; // Only true if all references are collected
+
+			// Collecting later references can also release an earlier reference.
+			foreach (var reference in references)
+			{
+				if (reference.IsAlive)
+					return false;
+			}
+
+			return true;
 		}
 
 		public static async Task WaitForGC(params WeakReference[] references)
