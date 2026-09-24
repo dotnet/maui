@@ -470,32 +470,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "CollectionView header update preserves adapter")]
-		public async Task HeaderUpdatePreservesAdapter()
-		{
-			SetupBuilder();
-
-			var collectionView = new CollectionView
-			{
-				Header = "Header 1",
-				ItemTemplate = new DataTemplate(() => new Label()),
-				ItemsSource = Enumerable.Range(0, 100).ToList()
-			};
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-
-				LayoutAndGetViewHolder(handler.PlatformView);
-
-				var adapter = handler.PlatformView.GetAdapter();
-
-				collectionView.Header = "Header 2";
-
-				Assert.Same(adapter, handler.PlatformView.GetAdapter());
-			});
-		}
-
 		[Fact(DisplayName = "Grouped CollectionView header rebind does not grow logical children")]
 		public async Task GroupHeaderRebindDoesNotGrowLogicalChildren()
 		{
@@ -567,6 +541,148 @@ namespace Microsoft.Maui.DeviceTests
 					adapter.OnBindViewHolder(footerHolder, footerPosition);
 					Assert.Equal(initialCount, ((IElementController)collectionView).LogicalChildren.Count);
 				}
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView header content update preserves adapter")]
+		public async Task HeaderContentUpdatePreservesAdapter()
+		{
+			var headerTemplate = new DataTemplate(() => new Label());
+
+			var collectionView = new CollectionView
+			{
+				HeaderTemplate = headerTemplate,
+				Header = "Header 1",
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = new[] { "Item 1", "Item 2" }
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var adapterBefore = handler.PlatformView.GetAdapter();
+
+				collectionView.Header = "Header 2";
+
+				Assert.Same(adapterBefore, handler.PlatformView.GetAdapter());
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView footer content update preserves adapter")]
+		public async Task FooterContentUpdatePreservesAdapter()
+		{
+			var footerTemplate = new DataTemplate(() => new Label());
+
+			var collectionView = new CollectionView
+			{
+				FooterTemplate = footerTemplate,
+				Footer = "Footer 1",
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = new[] { "Item 1", "Item 2" }
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var adapterBefore = handler.PlatformView.GetAdapter();
+
+				collectionView.Footer = "Footer 2";
+
+				Assert.Same(adapterBefore, handler.PlatformView.GetAdapter());
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView header template change recreates adapter")]
+		public async Task HeaderTemplateChangeRecreatesAdapter()
+		{
+			var collectionView = new CollectionView
+			{
+				HeaderTemplate = new DataTemplate(() => new Label()),
+				Header = "Header",
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = new[] { "Item 1", "Item 2" }
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var adapterBefore = handler.PlatformView.GetAdapter();
+
+				collectionView.HeaderTemplate = new DataTemplate(() => new Label());
+
+				Assert.NotSame(adapterBefore, handler.PlatformView.GetAdapter());
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView footer template change recreates adapter")]
+		public async Task FooterTemplateChangeRecreatesAdapter()
+		{
+			var collectionView = new CollectionView
+			{
+				FooterTemplate = new DataTemplate(() => new Label()),
+				Footer = "Footer",
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = new[] { "Item 1", "Item 2" }
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var adapterBefore = handler.PlatformView.GetAdapter();
+
+				collectionView.FooterTemplate = new DataTemplate(() => new Label());
+
+				Assert.NotSame(adapterBefore, handler.PlatformView.GetAdapter());
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView with preconfigured HeaderTemplate does not treat initial mapper pass as a template change")]
+		public async Task PreconfiguredHeaderTemplateSeedsBaselineOnConnect()
+		{
+			// Regression test: HeaderProperty and HeaderTemplateProperty share the same mapper action, so a
+			// CollectionView that already has a HeaderTemplate set before the handler connects must not be
+			// treated as a "template change" on the very first mapper pass (there's no prior snapshot yet).
+			var headerTemplate = new DataTemplate(() => new Label());
+
+			var collectionView = new CollectionView
+			{
+				HeaderTemplate = headerTemplate,
+				Header = "Header",
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = new[] { "Item 1", "Item 2" }
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var handlerType = typeof(StructuredItemsViewHandler<ReorderableItemsView>);
+				var seenField = handlerType.GetField("_headerTemplateSeen", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+				var lastTemplateField = handlerType.GetField("_lastHeaderTemplate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+				Assert.NotNull(seenField);
+				Assert.NotNull(lastTemplateField);
+				Assert.True((bool)seenField.GetValue(handler));
+				Assert.Same(headerTemplate, lastTemplateField.GetValue(handler));
 			});
 		}
 

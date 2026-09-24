@@ -15,8 +15,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// HeaderProperty and HeaderTemplateProperty (and the Footer equivalents) both route here, since the
 		// shared PropertyMapper maps them to the same action. _lastHeaderTemplate/_lastFooterTemplate let us
 		// tell a template swap (needs a full adapter rebuild) apart from a plain content change (doesn't).
+		// _headerTemplateSeen/_footerTemplateSeen guard the very first mapper pass, where a preconfigured
+		// template has no prior snapshot to compare against and must not be treated as a "change".
 		DataTemplate _lastHeaderTemplate;
 		DataTemplate _lastFooterTemplate;
+		bool _headerTemplateSeen;
+		bool _footerTemplateSeen;
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
@@ -62,16 +66,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			: DoesHeaderOrFooterExist(adapter, position: adapter.ItemCount - 1, ItemViewType.Footer);
 
 			bool templateChanged = isHeader
-			? !ReferenceEquals(_lastHeaderTemplate, currentTemplate)
-			: !ReferenceEquals(_lastFooterTemplate, currentTemplate);
+			? _headerTemplateSeen && !ReferenceEquals(_lastHeaderTemplate, currentTemplate)
+			: _footerTemplateSeen && !ReferenceEquals(_lastFooterTemplate, currentTemplate);
 
 			if (isHeader)
 			{
 				_lastHeaderTemplate = currentTemplate;
+				_headerTemplateSeen = true;
 			}
 			else
 			{
 				_lastFooterTemplate = currentTemplate;
+				_footerTemplateSeen = true;
 			}
 
 			if (hasHeaderOrFooter != exists)
