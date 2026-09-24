@@ -287,6 +287,20 @@ directories. A managed-looking assertion is not sufficient evidence for migratio
 live in a platform implementation, and a deployed mobile-runtime regression cannot be covered by
 the desktop runtime. Do not replace the behavior under test with a mock merely to move it.
 
+For retained UI coverage, disable prediction and spell checking on fixture inputs that must
+preserve exact text. Wait for replacement native elements after changing flyout content.
+WebView history tests should navigate from inline HTML to a local HTTP page and wait for
+the loaded document, rather than depending on a public website or a fixed delay.
+
+UI CI retries failed fixtures once, within the original category filter. Retrying a fixture
+preserves ordered setup without repeating all the passing fixtures. The merged TRX retains
+first-attempt results outside those fixtures and the complete retry results inside them.
+Missing cases, skipped replacements, inconsistent metadata, and test-host errors remain
+failures. Both attempt reports are retained under `TestResultsFailures`; attachments remain
+in their original deployment directories.
+Do not add a whole-task retry on top of this: it can repeat hours of successful UI coverage
+and leave a canceled job publishing an earlier failure instead of the retry results.
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.

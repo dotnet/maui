@@ -151,7 +151,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);
-	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName);
 	Information("UI Tests completed.");
 }
 

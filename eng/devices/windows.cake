@@ -790,7 +790,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
+	RunUITestsWithRetry(PROJECT.FullPath, CONFIGURATION, localToolPath, $"{name}-{CONFIGURATION}-windows");
 });
 
 RunTarget(TARGET);

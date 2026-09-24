@@ -286,28 +286,25 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
-	int numOfRetries = 0;
-
-	if (IsCIBuild())
-		numOfRetries = 1;
+	if (IsCIBuild() && emulatorProcess != null)
+	{
+		var packages = AdbShell("pm list packages com.android.vending", adbSettings);
+		if (packages.Any(package => package.Trim() == "package:com.android.vending"))
+		{
+			Information("Stopping Play Store background updates on the CI emulator before UI tests.");
+			AdbShell("am force-stop com.android.vending", adbSettings);
+		}
+	}
 
 	Information("Run UITests  project {0}", project);
-	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
+	try
 	{
-		try
-		{
-			Information("Retry UITests run Count: {0}", retryCount);
-			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
-			break;
-		}
-		catch(Exception)
-		{
-			if (retryCount == numOfRetries)
-			{
-				WriteLogCat();
-				throw;
-			}
-		}
+		RunUITestsWithRetry(project, config, toolPath, resultsFileName);
+	}
+	catch
+	{
+		WriteLogCat();
+		throw;
 	}
 	Information("UI Tests completed.");
 }
