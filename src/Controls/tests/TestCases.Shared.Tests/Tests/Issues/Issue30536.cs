@@ -14,15 +14,14 @@ public class Issue30536 : _IssuesUITest
 	[Category(UITestCategories.Gestures)]
 	public void PointerGesturesShouldWorkProperlyOnMultiWindows()
 	{
-		var newWindowButton = App.WaitForElement("NewWindowButton").GetRect();
+		App.WaitForElement("NewWindowButton");
 		try
 		{
 			// Use mouse coordinates so the pointer starts outside the border and actually enters it.
-			App.Click(newWindowButton.CenterX(), newWindowButton.CenterY());
+			ClickWithMouse("NewWindowButton");
 			App.WaitForElement("MinimizeSecondWindowButton");
 			App.Tap("MinimizeSecondWindowButton");
-			var borderButton = App.WaitForElement("BorderButton").GetRect();
-			App.Click(borderButton.CenterX(), borderButton.CenterY());
+			ClickWithMouse("BorderButton");
 			Assert.That(() => App.FindElement("PointerEnterCountLabel").GetText(),
 				Is.EqualTo("Pointer Enter Count: 1").After(5000, 100));
 			Assert.That(App.FindElement("PointerExitCountLabel").GetText(),
@@ -33,6 +32,17 @@ public class Issue30536 : _IssuesUITest
 			App.WaitForElement("CloseNewWindowButton");
 			App.Tap("CloseNewWindowButton");
 		}
+	}
+
+	void ClickWithMouse(string automationId)
+	{
+		var bounds = App.WaitForElement(automationId).GetRect();
+		// WinAppDriver supports pen/touch W3C actions, not mouse actions.
+		((AppiumApp)App).Driver.ExecuteScript("windows: click", new Dictionary<string, object>
+		{
+			["x"] = bounds.CenterX(),
+			["y"] = bounds.CenterY()
+		});
 	}
 }
 #endif
