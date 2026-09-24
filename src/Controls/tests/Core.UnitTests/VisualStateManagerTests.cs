@@ -363,6 +363,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RemovingCurrentStateClearsStateAndUnappliesSetters()
+		{
+			var label = new Label();
+			var state = new VisualState
+			{
+				Name = NormalStateName,
+				Setters =
+				{
+					new Setter { Property = Label.TextProperty, Value = "Active" }
+				}
+			};
+			var group = new VisualStateGroup { States = { state } };
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+
+			Assert.Same(state, group.CurrentState);
+			Assert.Equal("Active", label.Text);
+
+			group.States.Remove(state);
+
+			Assert.Null(group.CurrentState);
+			Assert.Null(label.Text);
+		}
+
+		[Fact]
 		public void CanRemoveAGroupAndAddANewGroupWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
@@ -445,6 +470,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			groups[0] = new VisualStateGroup { Name = "Replacement" };
 
 			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void ReplacingGroupByIndexWithSameGroupKeepsStateTriggersAttached()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups[0] = groups[0];
+
+			Assert.True(trigger.IsAttached);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void RemovingGroupDetachesTriggersBeforeUnapplyingSetters(bool replaceGroupList)
+		{
+			var label = new Label();
+			var trigger = new LifecycleStateTrigger();
+			var state = new VisualState
+			{
+				Name = NormalStateName,
+				StateTriggers = { trigger },
+				Setters = { new Setter { Property = Label.TextProperty, Value = "Active" } }
+			};
+			var group = new VisualStateGroup { States = { state } };
+			var groups = new VisualStateGroupList { group };
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			_ = new Window { Page = new ContentPage { Content = label } };
+			Assert.True(trigger.IsAttached);
+			Assert.Equal("Active", label.Text);
+
+			bool? attachedWhenUnapplied = null;
+			label.PropertyChanged += (_, args) =>
+			{
+				if (args.PropertyName == Label.TextProperty.PropertyName)
+					attachedWhenUnapplied = trigger.IsAttached;
+			};
+
+			if (replaceGroupList)
+				VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList());
+			else
+				groups.Remove(group);
+
+			Assert.Equal(false, attachedWhenUnapplied);
+			Assert.Null(label.Text);
+			Assert.Null(group.CurrentState);
+			Assert.Equal(1, trigger.DetachCount);
 		}
 
 		static (VisualStateGroupList Groups, StateTriggerBase Trigger) CreateAttachedStateTriggerGroup()
@@ -904,6 +977,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(StateTriggerRemovalOperation.Clear)]
 		[InlineData(StateTriggerRemovalOperation.Remove)]
 		[InlineData(StateTriggerRemovalOperation.RemoveAt)]
+		[InlineData(StateTriggerRemovalOperation.Replace)]
 		public void RemovingStateTriggerDetachesIt(StateTriggerRemovalOperation operation)
 		{
 			var trigger = new LifecycleStateTrigger();
@@ -938,6 +1012,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(trigger.IsAttached);
 			Assert.Equal(1, trigger.DetachCount);
 			Assert.Null(trigger.VisualState);
+		}
+
+		[Fact]
+		public void ReplacingStateTriggerWithSameInstanceDoesNotDetachIt()
+		{
+			var trigger = new LifecycleStateTrigger();
+			var state = new VisualState { Name = "Active", StateTriggers = { trigger } };
+			trigger.SendAttached();
+
+			state.StateTriggers[0] = trigger;
+
+			Assert.True(trigger.IsAttached);
+			Assert.Equal(0, trigger.DetachCount);
+			Assert.Same(state, trigger.VisualState);
 		}
 
 		static VisualStateGroupList CreateStateGroupsWithSelectedAndPointerOver()
