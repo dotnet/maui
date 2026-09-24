@@ -3,8 +3,12 @@
         HeightRequest="32" 
         StrokeThickness="0" 
         Background="{Binding DisplayColor}"
-        Padding="{OnPlatform '12,0,12,8',Android='12,0,12,0'}"
         x:DataType="Tag">
+        <Border.Padding>
+            <OnPlatform x:TypeArguments="Thickness" Default="12,0,12,8">
+                <On Platform="Android" Value="12,0,12,0" />
+            </OnPlatform>
+        </Border.Padding>
         
         <Label Text="{Binding Title}" x:Name="TitleLabel"
             TextColor="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}" 

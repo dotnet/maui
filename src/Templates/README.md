@@ -19,6 +19,8 @@ The sample retains Shell navigation, typed page models, generated observable pro
 
 The sample alone enables preview features for a XAML C# expression on the Dashboard Add action. Keep this opt-in out of the plain counter outputs. A conventional binding and inverse Boolean converter can replace the expression when preview features are not wanted.
 
+Device-idiom and platform values use typed `OnIdiom<T>` and `OnPlatform<T>` elements instead of their reflection-based markup extensions. Shared typography values keep the same font choices without rooting the trim-unsafe extensions.
+
 Sample asset metadata includes an explicit Android monochrome layer. The existing foreground SVG is already a single-color alpha mask, so it is reused rather than duplicated.
 The splash screen reuses its vector in light and dark appearances, with background and tint values from the sample palette. These sample settings do not change the counter app's icon or splash branding.
 

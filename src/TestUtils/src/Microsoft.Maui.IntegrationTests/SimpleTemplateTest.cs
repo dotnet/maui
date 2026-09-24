@@ -292,7 +292,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 			AssertContains("x:DataType=\"MainPageModel\"", dashboard);
 			AssertContains("IsEnabled=\"{!IsBusy}\"", dashboard);
 			foreach (var xaml in Directory.GetFiles(projectDir, "*.xaml", SearchOption.AllDirectories))
+			{
 				AssertDoesNotContain("{OnIdiom", File.ReadAllText(xaml));
+				AssertDoesNotContain("{OnPlatform", File.ReadAllText(xaml));
+			}
 			var manageMeta = File.ReadAllText(Path.Combine(projectDir, "Pages", "ManageMetaPage.xaml"));
 			AssertDoesNotContain("TextValidationBehavior", manageMeta);
 			Assert.Equal(2, Regex.Matches(manageMeta, @"\bUnfocused=""[^""]+""").Count);

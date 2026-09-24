@@ -114,8 +114,12 @@
                             <Border StrokeShape="RoundRectangle 22" 
                                 HeightRequest="44" 
                                 VerticalOptions="Center"
-                                Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
                                 SemanticProperties.Description="{Binding Title}">
+                                <Border.Padding>
+                                    <OnPlatform x:TypeArguments="Thickness" Default="18,0,18,8">
+                                        <On Platform="Android" Value="18,0,18,0" />
+                                    </OnPlatform>
+                                </Border.Padding>
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">

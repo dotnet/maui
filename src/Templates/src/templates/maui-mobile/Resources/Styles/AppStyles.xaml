@@ -46,6 +46,17 @@
         <OnIdiom.Desktop>15</OnIdiom.Desktop>
     </OnIdiom>
 
+    <OnPlatform x:Key="StrongFontFamily" x:TypeArguments="x:String" Default="">
+        <On Platform="WinUI" Value="SegoeSemibold" />
+        <On Platform="iOS, MacCatalyst" Value=".SFUI-SemiBold" />
+    </OnPlatform>
+    <OnPlatform x:Key="StrongFontAttributes" x:TypeArguments="FontAttributes" Default="None">
+        <On Platform="Android" Value="Bold" />
+    </OnPlatform>
+    <OnPlatform x:Key="TitleFontAttributes" x:TypeArguments="FontAttributes" Default="Bold">
+        <On Platform="WinUI" Value="None" />
+    </OnPlatform>
+
     <FontImageSource x:Key="IconDashboard"
                      Glyph="{x:Static FluentUI.diagram_24_regular}"
                      FontFamily="{x:Static FluentUI.FontFamily}"
@@ -147,9 +158,9 @@
                 Value="1.38" />
         <!-- 18 -->
         <Setter Property="FontFamily"
-                Value="{OnPlatform WinUI=SegoeSemibold, iOS=.SFUI-SemiBold, MacCatalyst=.SFUI-SemiBold, Default=''}" />
+                Value="{StaticResource StrongFontFamily}" />
         <Setter Property="FontAttributes"
-                Value="{OnPlatform Default=None, Android=Bold}" />
+                Value="{StaticResource StrongFontAttributes}" />
     </Style>
     <Style x:Key="Body2"
            TargetType="Label">
@@ -167,9 +178,9 @@
                 Value="1.33" />
         <!-- 20 -->
         <Setter Property="FontFamily"
-                Value="{OnPlatform WinUI=SegoeSemibold, iOS=.SFUI-SemiBold, MacCatalyst=.SFUI-SemiBold, Default=''}" />
+                Value="{StaticResource StrongFontFamily}" />
         <Setter Property="FontAttributes"
-                Value="{OnPlatform Default=None, Android=Bold}" />
+                Value="{StaticResource StrongFontAttributes}" />
     </Style>
     <Style x:Key="Body1"
            TargetType="Label">
@@ -187,9 +198,9 @@
                 Value="1.29" />
         <!-- 22 -->
         <Setter Property="FontFamily"
-                Value="{OnPlatform WinUI=SegoeSemibold, iOS=.SFUI-SemiBold, MacCatalyst=.SFUI-SemiBold, Default=''}" />
+                Value="{StaticResource StrongFontFamily}" />
         <Setter Property="FontAttributes"
-                Value="{OnPlatform Default=None, Android=Bold}" />
+                Value="{StaticResource StrongFontAttributes}" />
     </Style>
     <Style x:Key="Title3"
            TargetType="Label">
@@ -199,9 +210,9 @@
                 Value="1.25" />
         <!-- 25 -->
         <Setter Property="FontFamily"
-                Value="{OnPlatform WinUI=SegoeSemibold, iOS=.SFUI-SemiBold, MacCatalyst=.SFUI-SemiBold, Default=''}" />
+                Value="{StaticResource StrongFontFamily}" />
         <Setter Property="FontAttributes"
-                Value="{OnPlatform Default=None, Android=Bold}" />
+                Value="{StaticResource StrongFontAttributes}" />
     </Style>
     <Style x:Key="Title2"
            TargetType="Label">
@@ -211,9 +222,9 @@
                 Value="1.27" />
         <!-- 28 -->
         <Setter Property="FontFamily"
-                Value="{OnPlatform WinUI=SegoeSemibold, iOS=.SFUI-SemiBold, MacCatalyst=.SFUI-SemiBold, Default=''}" />
+                Value="{StaticResource StrongFontFamily}" />
         <Setter Property="FontAttributes"
-                Value="{OnPlatform Android=Bold, Default=None}" />
+                Value="{StaticResource StrongFontAttributes}" />
     </Style>
     <Style x:Key="Title1"
            TargetType="Label">
@@ -223,7 +234,7 @@
                 Value="1.21" />
         <!-- 34 -->
         <Setter Property="FontAttributes"
-                Value="{OnPlatform WinUI=None, Default=Bold}" />
+                Value="{StaticResource TitleFontAttributes}" />
     </Style>
     <Style x:Key="LargeTitle"
            TargetType="Label">
@@ -233,7 +244,7 @@
                 Value="1.21" />
         <!-- 41 -->
         <Setter Property="FontAttributes"
-                Value="{OnPlatform WinUI=None, Default=Bold}" />
+                Value="{StaticResource TitleFontAttributes}" />
     </Style>
     <Style x:Key="Display"
            TargetType="Label">
@@ -243,7 +254,7 @@
                 Value="1.17" />
         <!-- 70 -->
         <Setter Property="FontAttributes"
-                Value="{OnPlatform WinUI=None, Default=Bold}" />
+                Value="{StaticResource TitleFontAttributes}" />
     </Style>
 
     <Style TargetType="Border">
