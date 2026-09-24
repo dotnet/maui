@@ -1705,6 +1705,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             var viewControllers = navigationController.ViewControllers ?? Array.Empty<UIViewController>();
             var sectionIndex = Array.IndexOf(viewControllers, _rootViewController);
+
+            if (sectionIndex < 0)
+            {
+                _navManager?.InsertViewController(index, viewController);
+                return;
+            }
             navigationController.ViewControllers = viewControllers.Insert(sectionIndex + index, viewController);
         }
 
