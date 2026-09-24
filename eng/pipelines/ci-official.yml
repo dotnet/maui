@@ -52,8 +52,9 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    name: AcesShared
+    demands:
+      - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
     os: macOS
 
 resources:
@@ -110,7 +111,7 @@ extends:
             skipAndroidCreateAvds: true
             skipSimulatorSetup: true
             skipProvisioning: true
-            skipXcode: false
+            skipXcode: true
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
