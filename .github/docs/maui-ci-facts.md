@@ -53,6 +53,9 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ### Shared macOS image selection
 
+GoldenGate routing is a temporary RC2 workaround. Return to the standard images
+once they include Xcode compatible with the pinned Apple SDK.
+
 All public and internal macOS pool defaults in `ci.yml`, `ci-device-tests.yml`,
 and `ci-uitests.yml` use `AcesShared` with
 `ImageOverride -equals $(AcesMacImageOverride)`. This covers build, pack, integration,

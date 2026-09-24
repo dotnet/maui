@@ -38,6 +38,8 @@ variables:
 # Hosted and Aces images are independent: the providers receive new Xcode versions at different times.
 - name: HostedMacImage
   value: ${{ parameters.hostedMacImage }}
+# Temporary RC2 workaround for Xcode availability. Return to the regular Aces image
+# once it supports the pinned Apple SDK.
 - name: AcesMacImageOverride
   value: ACES_VM_SharedPool_GoldenGate
 - name: HostedWindowsImage

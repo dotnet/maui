@@ -64,6 +64,8 @@ parameters:
     type: boolean
     default: false
 
+  # Temporary RC2 workaround: macOS build and UI-test pools use GoldenGate until
+  # standard images provide Xcode compatible with the pinned Apple SDK.
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object

@@ -155,7 +155,8 @@ steps:
 
       echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
 
-      # Image-selected prerelease bundles may not use Xcode_major.minor.app names.
+      # Temporary RC2 workaround for GoldenGate's nonstandard prerelease bundle name.
+      # Remove this fast path once standard images provide conventionally named, compatible Xcode.
       if SELECTED_XCODE_PATH=$(xcode-select --print-path) && SELECTED_XCODE_INFO=$(xcodebuild -version); then
         SELECTED_XCODE_VERSION=$(printf '%s\n' "$SELECTED_XCODE_INFO" | awk '$1 == "Xcode" { print $2; exit }')
         if [[ -d "$SELECTED_XCODE_PATH" && ( "$SELECTED_XCODE_VERSION" == "$XCODE_MAJOR_MINOR" || "$SELECTED_XCODE_VERSION" == "$XCODE_MAJOR_MINOR".* ) ]]; then

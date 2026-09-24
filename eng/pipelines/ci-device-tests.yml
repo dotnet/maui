@@ -55,6 +55,8 @@ variables:
 
 parameters:
 
+# Temporary RC2 workaround: macOS defaults use GoldenGate until standard images
+# provide Xcode compatible with the pinned Apple SDK.
 # Internal pools (dnceng)
 - name: windowsPoolInternal
   type: object
