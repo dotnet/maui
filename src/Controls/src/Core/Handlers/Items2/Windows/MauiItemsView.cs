@@ -388,6 +388,17 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_accessibilityHelper?.CleanUp();
 	}
 
+	/// <summary>
+	/// Resubscribes the accessibility helper's focus events. Required after
+	/// <see cref="CleanUpAccessibilityHelper"/> if this platform view is reconnected
+	/// to a handler (e.g. Shell tab switch or temporary visual-tree removal); a no-op
+	/// otherwise since the helper is already attached from construction.
+	/// </summary>
+	internal void ReattachAccessibilityHelper()
+	{
+		_accessibilityHelper?.Attach();
+	}
+
 	internal void CancelPendingAccessibilityFocus()
 	{
 		_accessibilityHelper?.CancelPendingContainerPrepared();

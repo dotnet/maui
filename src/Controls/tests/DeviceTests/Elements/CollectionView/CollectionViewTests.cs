@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
 #else
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #endif
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -34,23 +35,41 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
+		void RegisterCommonHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+			RegisterNavigationPageHandler(handlers);
+			handlers.AddHandler<Page, PageHandler>();
+			handlers.AddHandler<Window, WindowHandlerStub>();
+			handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+			handlers.AddHandler<Grid, LayoutHandler>();
+			handlers.AddHandler<Label, LabelHandler>();
+			handlers.AddHandler<Button, ButtonHandler>();
+			handlers.AddHandler<SwipeView, SwipeViewHandler>();
+			handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+		}
+
 		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					RegisterNavigationPageHandler(handlers);
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
+					RegisterCommonHandlers(handlers);
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handlers.AddHandler<Grid, LayoutHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-					handlers.AddHandler<SwipeView, SwipeViewHandler>();
-					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+				});
+			});
+		}
+
+
+		protected virtual void SetupBuilderCollectionView2()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					RegisterCommonHandlers(handlers);
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
 				});
 			});
 		}
