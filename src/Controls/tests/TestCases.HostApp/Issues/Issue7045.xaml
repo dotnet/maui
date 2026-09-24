@@ -14,10 +14,8 @@
         </ContentPage>
     </ShellContent>
 
-    <ShellContent
-        Title="Detail"
-        Route="DetialPage">
-        <ContentPage x:Name="DetailPage" x:DataType="local:Issue7045">
+    <Shell.Resources>
+        <ContentPage x:Key="DetailPage" Title="Detail" x:DataType="local:Issue7045">
             <Shell.BackButtonBehavior>
                 <BackButtonBehavior
                     TextOverride="Back"
@@ -28,5 +26,5 @@
                 Text="Hello from Detail Page"
                 AutomationId="DetailPageLabel"/>
         </ContentPage>
-    </ShellContent>
+    </Shell.Resources>
 </Shell>

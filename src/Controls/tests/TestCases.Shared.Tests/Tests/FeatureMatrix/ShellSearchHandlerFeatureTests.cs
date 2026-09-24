@@ -625,6 +625,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
+		FocusSearchBeforeAppearanceOptions();
 		OpenOptions();
 		App.WaitForElement("CancelButtonColorOrangeRadio");
 		App.Tap("CancelButtonColorOrangeRadio");
@@ -634,8 +635,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
 		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
-		if (App is AppiumWindowsApp)
-			App.WaitForElement(() => App.FindElements("DeleteButton").FirstOrDefault(element => element.IsDisplayed()));
 		VerifyShellSearchScreenshot();
 	}
 #endif
@@ -645,6 +644,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CharacterSpacing()
 	{
+		FocusSearchBeforeAppearanceOptions();
 		OpenOptions();
 		App.WaitForElement("CharacterSpacingEntry");
 		App.ClearText("CharacterSpacingEntry");
@@ -658,6 +658,17 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyShellSearchScreenshot();
 	}
 #endif
+
+	void FocusSearchBeforeAppearanceOptions()
+	{
+		if (App is AppiumWindowsApp)
+		{
+			// Options resets the event log; establish the same focused native control each time.
+			App.GetShellSearchHandler().Tap();
+			Assert.That(() => App.WaitForElement("FocusStatus").GetText(),
+				Is.EqualTo("Focused").After(10000, 200));
+		}
+	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35667
 	[Test, Order(38)]

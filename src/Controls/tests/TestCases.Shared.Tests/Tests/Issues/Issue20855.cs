@@ -24,15 +24,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				var previousBottom = collection.Top;
 				for (var group = 1; group <= 2; group++)
 				{
-					var header = App.WaitForElementAndGetRect($"Group {group}");
+					var headerElement = App.WaitForElement($"Group{group}");
+					Assert.That(headerElement.GetText(), Is.EqualTo($"Group {group}"));
+					var header = headerElement.GetRect();
 					Assert.That(header.Height, Is.GreaterThan(0));
 					Assert.That(header.Top, Is.GreaterThanOrEqualTo(previousBottom - 1));
 					previousBottom = header.Bottom;
 
 					for (var item = group * 2 - 1; item <= group * 2; item++)
 					{
-						var name = App.WaitForElementAndGetRect($"Item {item}");
-						var dateElement = App.WaitForElement($"Date_Item {item}");
+						var nameElement = App.WaitForElement($"Item{item}");
+						Assert.That(nameElement.GetText(), Is.EqualTo($"Item {item}"));
+						var name = nameElement.GetRect();
+						var dateElement = App.WaitForElement($"Date_Item{item}");
 						var date = dateElement.GetRect();
 						Assert.That(dateElement.GetText(), Is.EqualTo($"Feb {21 - item}"));
 						Assert.That(name.Height, Is.GreaterThan(0));

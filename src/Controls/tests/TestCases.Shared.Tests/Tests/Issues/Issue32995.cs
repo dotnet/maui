@@ -15,16 +15,22 @@ public class Issue32995 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void TabBarDisabledColorAppliedToDisabledTab()
 	{
-		App.WaitForElement("Tab2");
+		App.WaitForElement(FindTab2, "Tab2 did not appear");
 		VerifyScreenshot("DisabledTabWithGreenColor");
 
 		App.Tap("EnableButton");
-		App.WaitForElement(() =>
+		App.RetryAssert(() =>
 		{
-			var tab = App.FindElement("Tab2");
-			return tab.IsEnabled() ? tab : null;
-		}, "Tab2 did not become enabled");
+			var tab = FindTab2();
+			Assert.That(tab, Is.Not.Null, "Tab2 was not found after enabling it");
+			Assert.That(tab.IsEnabled(), Is.True, "Tab2 did not become enabled");
+		});
 		VerifyScreenshot("EnabledTabWithNormalColor");
 	}
+
+	IUIElement FindTab2() =>
+		App.GetTestDevice() == TestDevice.Android
+			? App.FindElement(AppiumQuery.ByAccessibilityId("Tab2"))
+			: App.FindElement("Tab2");
 }
 #endif

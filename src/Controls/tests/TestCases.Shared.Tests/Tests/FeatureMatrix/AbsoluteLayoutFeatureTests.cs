@@ -362,13 +362,13 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.WaitForNoElement(Apply);
 		App.WaitForElement(Options);
 		App.WaitForElement("MainLayout");
-		App.WaitForElement("BlueBox");
 		if (Device != TestDevice.iOS)
 		{
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 			return;
 		}
 
+		App.WaitForElement("BlueBox");
 		string frameDetails = "Native frames have not been read.";
 		Assert.That(() =>
 		{

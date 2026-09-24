@@ -106,6 +106,10 @@ public class Issue30381 : ContentPage
 	{
 		MyWebView.Source = new HtmlWebViewSource
 		{
+#if MACCATALYST
+			// Mac app assets live in Contents/Resources, not at the bundle root.
+			BaseUrl = Foundation.NSBundle.MainBundle.ResourcePath,
+#endif
 			Html = @"
             <html>
             <head>

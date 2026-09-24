@@ -394,8 +394,8 @@ public class LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("UseSampleText");
-		App.Tap("UseSampleText");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("UseSampleText"));
+		App.Tap(AppiumQuery.ByAccessibilityId("UseSampleText"));
 		App.WaitForElement(LineBreakModeCharacterWrap);
 		App.Tap(LineBreakModeCharacterWrap);
 		App.WaitForElement(Apply);
@@ -850,8 +850,8 @@ public class LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
-		App.WaitForElement("UseSampleText");
-		App.Tap("UseSampleText");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("UseSampleText"));
+		App.Tap(AppiumQuery.ByAccessibilityId("UseSampleText"));
 		App.WaitForElement(LineHeightEntry);
 		App.ClearText(LineHeightEntry);
 		App.EnterText(LineHeightEntry, "2");
