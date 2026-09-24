@@ -610,6 +610,7 @@ void WriteLogCat(string filename = null)
 void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin, bool headless)
 {
 	PrepareDevice(deviceBootWait);
+	PrepareUITestEmulator();
 
 	//install apk on the emulator or device
 	Information("Install with xharness: {0}", testApp);
@@ -665,6 +666,34 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	}
 
 	DotNetTool("tool", settings);
+}
+
+void PrepareUITestEmulator()
+{
+	// Only configure the disposable emulator created by this CI UI-test run.
+	if (!IsCIBuild() || !deviceCreate || emulatorProcess == null ||
+		!(testDevice.StartsWith("android-emulator-", StringComparison.OrdinalIgnoreCase) ||
+		  testDevice.StartsWith("android-simulator-", StringComparison.OrdinalIgnoreCase)))
+		return;
+
+	var emulators = AdbDevices(adbSettings)
+		.Where(device => device.Serial.StartsWith("emulator-", StringComparison.Ordinal))
+		.ToArray();
+	if (emulators.Length != 1)
+		throw new Exception($"Expected exactly one CI UI-test emulator, found {emulators.Length}. Refusing to configure an ambiguous device.");
+
+	var exitCode = StartProcess("pwsh", new ProcessSettings
+	{
+		Arguments = new ProcessArgumentBuilder()
+			.Append("-NoProfile")
+			.Append("-File").AppendQuoted(MakeAbsolute(File("./Prepare-AndroidUITestEmulator.ps1")).FullPath)
+			.Append("-AdbPath").AppendQuoted($"{androidSdkRoot}/platform-tools/adb")
+			.Append("-Serial").AppendQuoted(emulators[0].Serial)
+			.Append("-AvdName").AppendQuoted(androidAvd),
+		Timeout = AdbCommandTimeoutSeconds * 1000
+	});
+	if (exitCode != 0)
+		throw new Exception($"Android UI-test emulator preparation failed with exit code {exitCode}.");
 }
 
 void GetDevices(string version, string toolPath)
