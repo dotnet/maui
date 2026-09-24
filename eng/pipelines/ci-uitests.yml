@@ -105,13 +105,12 @@ parameters:
       vmImage: macOS-14
 
   # Public pools (dnceng-public)
-  # This pool also builds the shared iOS/MacCatalyst app; match ci.yml's Xcode demand.
   - name: androidPoolPublic
     type: object
     default:
-      name: MAUI
+      name: AcesShared
       demands:
-        - xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: androidPoolLinuxPublic
     type: object
@@ -123,9 +122,9 @@ parameters:
   - name: iosPoolPublic
     type: object
     default:
-      name: MAUI
+      name: AcesShared
       demands:
-        - xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: windowsBuildPoolPublic
     type: object

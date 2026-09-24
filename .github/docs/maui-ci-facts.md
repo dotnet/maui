@@ -51,16 +51,25 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
-### RC2 Xcode agent selection
+### Shared macOS image selection
 
-On `release/11.0.1xx-rc2`, public Apple build and iOS UI-test jobs use the `MAUI`
-pool with the demand `xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer`,
-matching the working `maui-pr` configuration in `eng/pipelines/ci.yml`.
-Keep `ci-device-tests.yml`'s `macOSPoolPublic` and `ci-uitests.yml`'s
-`androidPoolPublic` (shared Apple/Android app builds) and `iosPoolPublic` aligned.
-The macOS image name alone does not guarantee the required Xcode is installed:
-the `AcesShared` Tahoe agents in the failing RC2 runs only had Xcode 26.x.
-Device-test execution still uses the Helix queues in `eng/helix_xharness.proj`.
+Public Apple jobs in `maui-pr`, `maui-pr-devicetests`, and `maui-pr-uitests` use
+`AcesShared` with `ImageOverride -equals $(AcesMacImageOverride)`. Select the image
+once in `eng/pipelines/common/variables.yml`; RC2 uses `ACES_VM_SharedPool_GoldenGate`,
+the image selected for official builds in #38852. Do not pin an Xcode application
+path in individual pipeline demands.
+
+The Aces image is independent of `HostedMacImage`: Azure Pipelines hosted images
+and Aces images receive new Xcode versions at different times. The older Aces Tahoe
+image only had Xcode 26.x, which cannot build the RC2 Apple SDK.
+
+Keep shared Xcode selection and simulator provisioning enabled for the test jobs.
+Provisioning accepts the image-selected Xcode when its reported major/minor version
+matches `$(XCODE)`, including prerelease bundles with nonstandard filenames. If it
+does not match, the existing named-bundle lookup and missing-Xcode error still apply.
+The official pack-only job can use `skipXcode: true`, but that also skips simulator
+setup in `common/provision.yml`, which iOS UI tests need. Device-test execution
+still uses the Helix queues in `eng/helix_xharness.proj`.
 
 ## AzDO data sources
 
