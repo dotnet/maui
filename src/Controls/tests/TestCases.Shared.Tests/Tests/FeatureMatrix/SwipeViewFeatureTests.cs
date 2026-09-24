@@ -545,7 +545,22 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
 		App.SwipeLeftToRight("SwipeViewImage");
-#if MACCATALYST
+#if ANDROID
+		var swipeViewImage = App.WaitForElement("SwipeViewImage");
+		App.WaitForElement(
+			() =>
+			{
+				var icon = App.FindElementByText("Icon");
+				if (icon is null)
+				{
+					return null;
+				}
+
+				return icon.GetRect().CenterX() < swipeViewImage.GetRect().X ? icon : null;
+			},
+			"The icon SwipeItem was not fully revealed.");
+		App.Tap("Icon");
+#elif MACCATALYST
 		var icon = App.WaitForElement("Icon");
 		var iconRect = icon.GetRect();
 		App.TapCoordinates(iconRect.CenterX(), iconRect.CenterY());
