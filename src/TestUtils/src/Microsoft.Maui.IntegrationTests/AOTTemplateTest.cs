@@ -36,7 +36,9 @@ public class AOTTemplateTest : BaseTemplateTests
 		}
 
 		extendedBuildProps.Add($"TargetFrameworks={framework}");
-		extendedBuildProps.Add("TrimMode=full");
+		// Apple Native AOT selects full trimming itself; an explicit TrimMode bypasses its Full link mode.
+		if (!isApplePlatform)
+			extendedBuildProps.Add("TrimMode=full");
 		if (!isSimulator)
 		{
 			extendedBuildProps.Remove("_IsPublishing=true");
@@ -62,6 +64,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		}
 		BuildWarningsUtilities.AssertProjectProperties(binLogFilePath, projectFile, framework,
 			("PublishAot", "true"), ("PublishTrimmed", "true"), ("TrimMode", "full"));
+		BuildWarningsUtilities.AssertTaskSucceededInTarget(binLogFilePath, projectFile, "IlcCompile", "Exec");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 		var androidPreview = isAndroidPlatform && options == "--sample-content";
@@ -143,9 +146,19 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: buildProps,
 			runtimeIdentifier: runtimeIdentifier, binlogPath: binlog, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed full-trim publication.");
-		BuildWarningsUtilities.AssertProjectProperties(binlog, projectFile, framework,
-			("PublishTrimmed", "true"), ("TrimMode", "full"));
-		BuildWarningsUtilities.AssertTaskSucceeded(binlog, projectFile, "ILLink");
+		if (isApple)
+		{
+			// _ComputePublishTrimmed sets PublishTrimmed during execution, not project evaluation.
+			BuildWarningsUtilities.AssertProjectProperties(binlog, projectFile, framework, ("TrimMode", "full"));
+		}
+		else
+		{
+			BuildWarningsUtilities.AssertProjectProperties(binlog, projectFile, framework,
+				("PublishTrimmed", "true"), ("TrimMode", "full"));
+		}
+		BuildWarningsUtilities.AssertTaskSucceededInTarget(binlog, projectFile, "_RunILLink", "ILLink", ("TrimMode", "full"));
+		// The SDK's ILLink target is conditional on PublishTrimmed=true.
+		BuildWarningsUtilities.AssertTargetSucceeded(binlog, projectFile, "ILLink");
 		BuildWarningsUtilities.AssertTargetSucceeded(binlog, projectFile, "Publish");
 		BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog).AssertNoWarnings();
 	}

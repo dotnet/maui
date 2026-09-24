@@ -194,6 +194,70 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Expected task '{taskName}' to execute successfully for '{projectFile}'. See {binlog}.");
 		}
 
+		/// <summary>
+		/// Requires an executed task, its scalar inputs, and its containing target to succeed in the same build context.
+		/// Target completion alone also occurs for incremental builds that skip the task.
+		/// </summary>
+		public static void AssertTaskSucceededInTarget(string binlog, string projectFile, string targetName, string taskName,
+			params (string name, string value)[] expectedParameters)
+		{
+			var targets = new Dictionary<(int node, int project, int target), Dictionary<int, TaskEvidence>>();
+			var succeeded = false;
+			ReadBuildEvents(binlog, buildEvent =>
+			{
+				if (buildEvent.BuildEventContext is not { } context ||
+					context.ProjectContextId == BuildEventContext.InvalidProjectContextId ||
+					context.TargetId == BuildEventContext.InvalidTargetId)
+					return;
+
+				var targetKey = (context.NodeId, context.ProjectContextId, context.TargetId);
+				if (buildEvent is TargetStartedEventArgs startedTarget &&
+					startedTarget.TargetName == targetName && SameProject(startedTarget.ProjectFile, projectFile))
+				{
+					targets[targetKey] = new();
+				}
+				else if (targets.TryGetValue(targetKey, out var tasks))
+				{
+					switch (buildEvent)
+					{
+						case TaskStartedEventArgs startedTask when startedTask.TaskName == taskName &&
+							SameProject(startedTask.ProjectFile, projectFile) && context.TaskId != BuildEventContext.InvalidTaskId:
+							tasks[context.TaskId] = new();
+							break;
+						case TaskParameterEventArgs parameter when parameter.Kind == TaskParameterMessageKind.TaskInput &&
+							tasks.TryGetValue(context.TaskId, out var task) && !task.Finished:
+							// Scalar inputs are logged as one task item, including TrimMode on the ILLink task.
+							if (parameter.Items is { Count: 1 } && parameter.Items[0] is ITaskItem item)
+								task.Parameters[parameter.ItemType] = item.ItemSpec;
+							break;
+						case TaskFinishedEventArgs finishedTask when finishedTask.TaskName == taskName &&
+							SameProject(finishedTask.ProjectFile, projectFile) && tasks.TryGetValue(context.TaskId, out var task):
+							task.Finished = true;
+							task.Succeeded = finishedTask.Succeeded;
+							break;
+						case TargetFinishedEventArgs finishedTarget:
+							succeeded |= finishedTarget.TargetName == targetName && finishedTarget.Succeeded &&
+								SameProject(finishedTarget.ProjectFile, projectFile) &&
+								tasks.Values.Any(task => task.Finished && task.Succeeded &&
+									expectedParameters.All(parameter => task.Parameters.TryGetValue(parameter.name, out var value) &&
+										string.Equals(value, parameter.value, StringComparison.OrdinalIgnoreCase)));
+							targets.Remove(targetKey);
+							break;
+					}
+				}
+			});
+			Assert.True(succeeded,
+				$"Expected task '{taskName}' to execute successfully in target '{targetName}' for '{projectFile}'" +
+				$" with inputs [{string.Join(", ", expectedParameters.Select(p => $"{p.name}={p.value}"))}] and a successful target completion. See {binlog}.");
+		}
+
+		sealed class TaskEvidence
+		{
+			public Dictionary<string, string> Parameters { get; } = new(StringComparer.OrdinalIgnoreCase);
+			public bool Finished { get; set; }
+			public bool Succeeded { get; set; }
+		}
+
 		public static void AssertTargetSucceeded(string binlog, string projectFile, string targetName)
 		{
 			var succeeded = false;
