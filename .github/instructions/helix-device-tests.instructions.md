@@ -25,6 +25,7 @@ Public (default) configuration uses:
 - **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Android**: `ubuntu.2204.amd64.android.33.open`
+- **Windows**: `windows.11.amd64.client.open`
 
 Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
 
