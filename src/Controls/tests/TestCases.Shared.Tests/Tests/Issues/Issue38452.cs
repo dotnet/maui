@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/38838
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,3 +31,4 @@ public class Issue38452 : _IssuesUITest
 		Assert.That(scrollState, Is.EqualTo("Scrolled"));
 	}
 }
+#endif
