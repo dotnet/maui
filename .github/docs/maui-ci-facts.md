@@ -51,6 +51,17 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
+### RC2 Xcode agent selection
+
+On `release/11.0.1xx-rc2`, public Apple build and iOS UI-test jobs use the `MAUI`
+pool with the demand `xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer`,
+matching the working `maui-pr` configuration in `eng/pipelines/ci.yml`.
+Keep `ci-device-tests.yml`'s `macOSPoolPublic` and `ci-uitests.yml`'s
+`androidPoolPublic` (shared Apple/Android app builds) and `iosPoolPublic` aligned.
+The macOS image name alone does not guarantee the required Xcode is installed:
+the `AcesShared` Tahoe agents in the failing RC2 runs only had Xcode 26.x.
+Device-test execution still uses the Helix queues in `eng/helix_xharness.proj`.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,

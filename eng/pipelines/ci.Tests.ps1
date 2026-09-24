@@ -1,6 +1,6 @@
 #Requires -Modules Pester
 
-Describe 'ci.yml provisioning' {
+Describe 'Public CI provisioning' {
   BeforeAll {
     $pipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'ci.yml') -Raw
     $provision = Get-Content -LiteralPath (
@@ -83,6 +83,25 @@ Describe 'ci.yml provisioning' {
     $buildPools | Should -Match $xcodeDemand
     $macPools | Should -Match '(?s)public:\s+name: MAUI\s+demands:'
     $macPools | Should -Match $xcodeDemand
+  }
+
+  It 'selects Xcode 27 RC agents for <Pipeline> <Pool>' -TestCases @(
+    @{ Pipeline = 'ci-device-tests.yml'; Pool = 'macOSPoolPublic' }
+    @{ Pipeline = 'ci-uitests.yml'; Pool = 'androidPoolPublic' }
+    @{ Pipeline = 'ci-uitests.yml'; Pool = 'iosPoolPublic' }
+  ) {
+    param($Pipeline, $Pool)
+
+    $testPipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot $Pipeline) -Raw
+    $poolMatch = [regex]::Match(
+      $testPipeline,
+      '(?ms)^\s*- name: ' + [regex]::Escape($Pool) + '\r?\n.*?(?=^\s*- name:|\z)')
+
+    $poolMatch.Success | Should -BeTrue
+    $poolMatch.Value | Should -Match '(?m)^\s+name: MAUI\r?$'
+    $poolMatch.Value | Should -Match (
+      [regex]::Escape('xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer'))
+    $poolMatch.Value | Should -Not -Match 'ImageOverride|vmImage'
   }
 
   It 'fails before simulator setup when the required Xcode is missing' {

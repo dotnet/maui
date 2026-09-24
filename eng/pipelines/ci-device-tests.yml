@@ -97,9 +97,9 @@ parameters:
 - name: macOSPoolPublic
   type: object
   default:
-    name: AcesShared
+    name: MAUI
     demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
+      - xcode -equals /Applications/Xcode_27.0.0-rc.app/Contents/Developer
 
 - name: targetFrameworkVersions
   type: object
