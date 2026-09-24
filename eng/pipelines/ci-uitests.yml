@@ -47,6 +47,8 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  - name: IosUITestImageOverride
+    value: ACES_VM_SharedPool_Tahoe
 
 parameters:
 
@@ -64,8 +66,13 @@ parameters:
     type: boolean
     default: false
 
-  # Temporary RC2 workaround: macOS build and UI-test pools use GoldenGate until
-  # standard images provide Xcode compatible with the pinned Apple SDK.
+  - name: iosXcodeVersion
+    type: string
+    default: '26.5'
+
+  # Temporary RC2 workaround: build Apple apps on GoldenGate with Xcode 27, but
+  # run the prebuilt apps on the established Appium images until GoldenGate
+  # supports the Simulator UI, iOS 18.5 runtime, and Mac2 driver.
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -86,7 +93,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
+        - ImageOverride -equals $(IosUITestImageOverride)
   
   - name: windowsBuildPoolInternal
     type: object
@@ -105,9 +112,8 @@ parameters:
   - name: macosPoolInternal
     type: object
     default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
+      name: Azure Pipelines
+      vmImage: macOS-14
 
   # Public pools (dnceng-public)
   - name: androidPoolPublic
@@ -129,7 +135,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
+        - ImageOverride -equals $(IosUITestImageOverride)
   
   - name: windowsBuildPoolPublic
     type: object
@@ -148,14 +154,14 @@ parameters:
   - name: macosPoolPublic
     type: object
     default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals $(AcesMacImageOverride)
+      name: Azure Pipelines
+      vmImage: macOS-14
 
 stages:
 
   - template: common/ui-tests.yml
     parameters:
+      iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         androidPool: ${{ parameters.androidPoolInternal }}

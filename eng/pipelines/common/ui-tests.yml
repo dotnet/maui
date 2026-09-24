@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   androidLinuxPool: { }
   iosPool: { }
+  iosXcodeVersion: ''
   windowsPool: { }
   windowsBuildPool: { }
   macosPool: { }
@@ -293,7 +294,11 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  ${{ if ne(parameters.iosXcodeVersion, '') }}:
+                    XCODE: ${{ parameters.iosXcodeVersion }}
+                    REQUIRED_XCODE: ${{ parameters.iosXcodeVersion }}
+                  ${{ else }}:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -342,6 +347,9 @@ stages:
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                   pool: ${{ parameters.iosPool }}
                   variables:
+                    ${{ if ne(parameters.iosXcodeVersion, '') }}:
+                      XCODE: ${{ parameters.iosXcodeVersion }}
+                      REQUIRED_XCODE: ${{ parameters.iosXcodeVersion }}
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
                     - template: ui-tests-steps.yml
