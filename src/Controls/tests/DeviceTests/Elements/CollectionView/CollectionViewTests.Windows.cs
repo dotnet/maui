@@ -402,7 +402,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CollectionView2 restores keyboard focus to the last-focused item")]
 		public async Task CollectionView2RestoresFocusToLastFocusedItem()
 		{
-			SetupBuilder(typeof(CollectionViewHandler2));
+			SetupBuilderCollectionView2();
 
 			var data = new ObservableCollection<string>
 			{
@@ -461,7 +461,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CollectionView2 focuses the selected item on first keyboard entry")]
 		public async Task CollectionView2FocusesSelectedItemOnFirstEntry()
 		{
-			SetupBuilder(typeof(CollectionViewHandler2));
+			SetupBuilderCollectionView2();
 
 			var data = new ObservableCollection<string>
 			{
