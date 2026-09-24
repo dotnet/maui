@@ -1,6 +1,7 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Xunit.Abstractions;
@@ -43,16 +44,6 @@ namespace Microsoft.Maui.IntegrationTests
 		private static string NormalizeCompilerGeneratedOrdinals(string message) =>
 			s_compilerGeneratedOrdinal.Replace(message, "|N_N");
 
-		static IEnumerable<BuildEventArgs> ReadBuildEvents(string binlog)
-		{
-			using var stream = System.IO.File.OpenRead(binlog);
-			foreach (var record in new BinLogReader().ReadRecords(stream))
-			{
-				if (record.Args is { } buildEvent)
-					yield return buildEvent;
-			}
-		}
-
 		/// <summary>
 		/// Reads build errors from a binlog file and outputs them to the test output.
 		/// This makes errors visible in Azure DevOps logs instead of requiring artifact downloads.
@@ -69,14 +60,26 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			var errors = new List<string>();
-			foreach (var buildEvent in ReadBuildEvents(binLogFilePath))
+			try
 			{
-				if (buildEvent is BuildErrorEventArgs error)
+				ReadBuildEvents(binLogFilePath, args =>
 				{
-					var file = NormalizeFilePath(error.File ?? "");
-					var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
-					errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
-				}
+					if (args is BuildErrorEventArgs error)
+					{
+						var file = NormalizeFilePath(error.File ?? "");
+						var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
+						errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
+					}
+				});
+			}
+			catch (Exception ex) when (ex is IOException or InvalidDataException)
+			{
+				// A timed-out build can leave a truncated binlog. Keep the original build failure visible.
+				var message = $"[BuildWarningsUtilities] Could not completely read binlog '{binLogFilePath}': {ex.Message}";
+				if (output is null)
+					Console.WriteLine(message);
+				else
+					output.WriteLine(message);
 			}
 
 			if (errors.Count > 0)
@@ -100,14 +103,14 @@ namespace Microsoft.Maui.IntegrationTests
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
 			var actualWarnings = new List<WarningsPerFile>();
-			foreach (var buildEvent in ReadBuildEvents(binLogFilePath))
+			ReadBuildEvents(binLogFilePath, args =>
 			{
-				if (buildEvent is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
+				if (args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
 				{
 					// We normalize all warnings file paths for easier comparison
 					actualWarnings.AddActualWarning(NormalizeFilePath(warning.File), warning.Code, warning.Message);
 				}
-			}
+			});
 			return actualWarnings;
 		}
 
@@ -116,7 +119,7 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.True(System.IO.File.Exists(binlog), $"Binlog not found: {binlog}");
 			var evaluations = new Dictionary<(int nodeId, int evaluationId), Dictionary<string, string>>();
 			var startedProjects = new List<ProjectStartedEventArgs>();
-			foreach (var buildEvent in ReadBuildEvents(binlog))
+			ReadBuildEvents(binlog, buildEvent =>
 			{
 				switch (buildEvent)
 				{
@@ -129,7 +132,7 @@ namespace Microsoft.Maui.IntegrationTests
 						startedProjects.Add(project);
 						break;
 				}
-			}
+			});
 
 			var instances = new List<Dictionary<string, string>>();
 			foreach (var project in startedProjects)
@@ -183,20 +186,47 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static void AssertTaskSucceeded(string binlog, string projectFile, string taskName)
 		{
-			Assert.True(ReadBuildEvents(binlog).Any(buildEvent =>
-				buildEvent is TaskFinishedEventArgs task && task.Succeeded && task.TaskName == taskName && SameProject(task.ProjectFile, projectFile)),
+			var succeeded = false;
+			ReadBuildEvents(binlog, buildEvent =>
+				succeeded |= buildEvent is TaskFinishedEventArgs task && task.Succeeded &&
+					task.TaskName == taskName && SameProject(task.ProjectFile, projectFile));
+			Assert.True(succeeded,
 				$"Expected task '{taskName}' to execute successfully for '{projectFile}'. See {binlog}.");
 		}
 
 		public static void AssertTargetSucceeded(string binlog, string projectFile, string targetName)
 		{
-			Assert.True(ReadBuildEvents(binlog).Any(buildEvent =>
-				buildEvent is TargetFinishedEventArgs target && target.Succeeded && target.TargetName == targetName && SameProject(target.ProjectFile, projectFile)),
+			var succeeded = false;
+			ReadBuildEvents(binlog, buildEvent =>
+				succeeded |= buildEvent is TargetFinishedEventArgs target && target.Succeeded &&
+					target.TargetName == targetName && SameProject(target.ProjectFile, projectFile));
+			Assert.True(succeeded,
 				$"Expected target '{targetName}' to finish successfully for '{projectFile}'. See {binlog}.");
 		}
 
 		static bool SameProject(string? actual, string expected) =>
 			!string.IsNullOrEmpty(actual) && string.Equals(Path.GetFullPath(actual), Path.GetFullPath(expected), StringComparison.OrdinalIgnoreCase);
+
+		static void ReadBuildEvents(string binLogFilePath, Action<BuildEventArgs> processEvent)
+		{
+			using var stream = File.OpenRead(binLogFilePath);
+			var reader = new BinLogReader();
+			bool buildFinished = false;
+			reader.AnyEventRaised += (_, args) =>
+			{
+				buildFinished |= args is BuildFinishedEventArgs;
+				processEvent(args);
+			};
+			// Replay otherwise reports read exceptions only through this event.
+			reader.OnException += exception => ExceptionDispatchInfo.Capture(exception).Throw();
+			reader.Replay(stream);
+
+			// BuildFinished precedes the embedded imports and final end-of-file marker.
+			if (reader.HasEncounteredTruncation)
+				throw new InvalidDataException("The binlog is incomplete: the end-of-file marker was not recorded.");
+			if (!buildFinished)
+				throw new InvalidDataException("The binlog is incomplete: no BuildFinished event was recorded.");
+		}
 
 		private static void AddActualWarning(this List<WarningsPerFile> warnings, string file, string code, string message)
 		{

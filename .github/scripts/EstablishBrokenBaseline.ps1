@@ -163,9 +163,14 @@ function Find-MergeBase {
     # Fetch all remote refs to ensure we have latest
     git fetch origin 2>$null
 
-    # Get remote branches matching common base branch patterns
+    # Get remote branches matching common base branch patterns.
+    # inflight/* is included so this closest-base fallback can still pick the
+    # current integration branch (inflight/current) when the primary PR-number
+    # base resolution is unavailable — without it, this scan can only ever pick
+    # main/net*.0/release and silently mis-bases inflight/current PRs on main
+    # (gate build 14670709, #36274: 200+ file fix-set, broken without-fix build).
     $remoteBranches = git branch -r --format='%(refname:short)' 2>$null | Where-Object {
-        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*)$'
+        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*|inflight/.*)$'
     }
 
     $bestMatch = $null

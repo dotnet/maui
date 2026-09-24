@@ -84,7 +84,7 @@ public class Issue38321 : ContentPage
 		headerGrid.Add(removeButton, 1, 0);
 		headerGrid.Add(_statusLabel, 0, 1);
 
-		var collectionView = new CollectionView
+		var collectionView = new CollectionView2
 		{
 			AutomationId = "GroupedCollectionView",
 			IsGrouped = true,

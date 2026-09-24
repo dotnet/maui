@@ -156,10 +156,9 @@ Controls whether MAUI Aspire integration features are enabled at runtime.
 
 **Automatic Configuration**: This feature switch is automatically configured by the MAUI build system based on optimization settings:
 - **Non-optimized builds (Debug)**: Enabled (`true`)
-- **Optimized builds (Release)**: Disabled (`false`) 
-- **Regular builds (no AOT/Trimming)**: Uses runtime default (`true`)
+- **Optimized builds (Release)**: Disabled (`false`)
 
-The automatic configuration only applies when `PublishAot=true` OR `TrimMode=full` is set.
+The switch is configured for all MAUI Core and Controls apps, including regular builds without AOT or full trimming. When trimming is enabled, this value is also passed to the trimmer so unreachable Aspire integration code can be removed.
 
 **Manual Override** (Not Recommended): While it's possible to manually override this setting, it's not recommended as it may introduce performance and security risks in production:
 
@@ -169,6 +168,6 @@ The automatic configuration only applies when `PublishAot=true` OR `TrimMode=ful
 </PropertyGroup>
 ```
 
-**Warning**: Manually setting this property in optimized builds (where `Optimize=true`) will trigger build warning MA002.
+**Warning**: Manually setting this property in optimized builds (where `Optimize=true`) will trigger build warning MA002. Set `MauiDisableAspireValidation=true` only when the optimized Aspire configuration is intentional.
 
 **Trimming Behavior**: When `_EnableMauiAspire=false` and trimming is enabled, the .NET trimmer can eliminate MAUI Aspire-related code paths, reducing the final application size and potentially improving performance in production scenarios.

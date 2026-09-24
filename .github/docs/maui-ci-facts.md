@@ -15,10 +15,19 @@ When a fact changes (e.g. a pipeline definition ID), change it HERE only.
 
 # .NET MAUI CI Facts
 
-Authoritative reference for dotnet/maui CI investigation, test-failure
-classification, and merge-readiness assessment. Both the interactive
-`azdo-build-investigator` skill and the automated `/review tests`
-(`review-test-failures`) workflow reason from these same facts.
+Authoritative operational reference for dotnet/maui CI investigation. The
+`review-test-failures` skill owns the current `/review tests` attribution rubric
+and compact, pipeline-grouped comment. It compares all three pipelines with their latest five
+completed runs on the PR's exact target branch (`pr.baseRefName`), then relates
+failures to the PR diff. Previous PR-branch runs are not the baseline or required
+coverage. Target sampling is independent of current PR build availability and is
+not cut off at the PR build's queue time; missing or unreadable samples remain explicit.
+If no usable current-PR results or build-failure diagnostics exist in any pipeline,
+evaluation and target sampling are skipped, with a short `/azp run` request instead.
+
+The deterministic merge-readiness fields documented below remain in the gatherer
+for compatibility. They are not the current `/review tests` report policy: a
+green base job alone is not causal proof, and missing evidence is reported explicitly.
 
 ## Pipelines
 
@@ -268,23 +277,14 @@ Messages like `Baseline snapshot not yet created`, missing snapshot paths, or sn
 environment-version mismatches are strong **unrelated** evidence — unless the PR adds or
 modifies that visual test or the affected snapshot/platform.
 
-The automated `/review tests` lane gathers failed UI result IDs from the public
+The gatherer can collect failed UI result IDs from the public
 `vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
-result-detail and attachment APIs. It publishes validated baseline/actual/diff PNGs to
-the repository's orphan, asset-only `review-tests-assets-v2` branch. The legacy
-`review-tests-assets` branch remains intact so existing commit-pinned image URLs stay
-reachable; it is not used for new publications because its inherited repository tree
-contains workflow files that `GITHUB_TOKEN` cannot update. A trusted post-step inserts
-as many complete expandable comparison panels as fit inside the single test-failure
-analysis comment while enforcing gh-aw's URL, mention, and character limits; excess
-panels are reported as omitted rather than creating another comment. Visual publishing is
-supplementary evidence only: missing images never raise or lower the deterministic
-verdict ceiling. Each panel also shows a conservative relationship label derived from
-the exact test-and-platform `deterministicAttribution` plus exact changed snapshot/test
-scope: `regressed-vs-base` or directly changed visual coverage is Likely PR-caused,
-`pre-existing-on-base` or `known-issue` is Likely unrelated, and indeterminate or
-unmatched evidence remains Needs human investigation. A same-named snapshot on another
-platform and platform or area mismatch alone never change the label.
+result-detail and attachment APIs. The simplified workflow/local runner skips
+visual enrichment and no longer publishes image panels. Earlier reports used the
+asset-only `review-tests-assets-v2` branch (and previously `review-tests-assets`);
+those branches and their commit-pinned image URLs remain intact. The legacy
+publisher/merger scripts are retained for compatibility, not called by the current
+`/review tests` workflow. Missing images do not establish a failure's cause.
 
 ## Platform mismatch
 
@@ -325,15 +325,25 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
+| Apple workload install cannot find a `net10.0` SDK pack | `maui-pr` SDK provisioning | The .NET 11 Apple manifests also install .NET 10 compatibility packs. Resolve the exact missing version's feed with `darc get-asset`; the current .NET 11 feed alone may not contain it. Do not copy another branch's compatibility feed without checking its manifest versions. |
+| `NETSDK1140` rejects the Apple target platform version | `maui-pr` build/pack | Align current Apple target-framework versions and SDK defaults in `Directory.Build.props` with the selected Apple SDK. net11.0 uses 26.5; the RC2 release branch uses 27.0. Preserve previous-.NET compatibility targets. |
+| Xcode 27 rejects native iOS 12.x / mapped macOS 10.15 deployment targets | `maui-pr` native interop archive | On branches using Apple 27, align the native framework and managed iOS minimum to 15.0, already used by app templates. This maps to macOS 12.0 for Mac Catalyst. Do not raise minimums on Apple 26.5 branches solely to match RC2. |
+| Apple `bgen.dll` exits 150 requesting a newer .NET runtime | `maui-pr` Apple binding generation | Keep bootstrap (`global.json`), workload provisioning (`MicrosoftNETSdkPackageVersion`), and SDK provenance pins aligned with a compatible host runtime. SDK `11.0.100-rc.2.26470.103` satisfies the Apple 27 generator's `26465.108` requirement and is already selected on net11.0. |
+| Resizetizer raster test assertions pass but `Dispose` fails with a Windows sharing violation | Helix Windows unit tests | Keep temporary images under `BaseTest.DestinationDirectory` and reuse its bounded, logged cleanup retries from #38124. Dispose raster tools deterministically; preserve all image assertions and let exhausted cleanup retries fail the test. |
+| `Svg.Animation` / `Svg.SceneGraph` `NU1603`, or `SKPathBuilder` `CS0246` | `maui-pr` restore/build | Release merges can preserve old `eng/Versions.props` pins while importing Skia 4 source and packaging changes. Restore the coordinated SkiaSharp/HarfBuzz/SVG dependency versions, not just the first missing package. |
+| Required Xcode is missing / requested iOS runtime is unavailable | `maui-pr` macOS provisioning | Select an image or agents providing the branch's required Xcode. net11.0 retains Aces with Xcode 26.5; RC2 needs the MAUI pool's Xcode 27 RC agents. Do not fall back to an unrelated Xcode or purge runtimes to repair a version mismatch. The legacy Provisionator task is unavailable in `dnceng-public`; enabling it prevents pipeline startup. |
+| `iOS 27.0 (universal) is not available for download` | `maui-pr` simulator provisioning | Request the `arm64` runtime on Apple Silicon agents; retain `universal` on Intel. Keep all downloads version-pinned. An unavailable download can also return exit code 70, so do not treat every exit 70 as a wedged CoreSimulator or delete installed runtimes. |
+| Helix monitor cannot use `NetCore-Svc-Public` | `maui-pr` release branches | The monitor must use the pipeline's selected Helix submission pool, with its Linux image demand, rather than independently selecting an unauthorized pool from the branch name. |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
 
 ## Merge-readiness criteria
 
-Used by both the interactive investigator (answering "is this PR ready to merge?") and
-the automated `/review tests` overall verdict. Assess **only CI/test health** — code
-review and approval are separate, human-only decisions.
+Retained for the interactive investigator and legacy deterministic gate consumers.
+The current `/review tests` skill reports attribution and evidence coverage instead
+of these merge-readiness verdicts. Assess **only CI/test health** — code review and
+approval are separate, human-only decisions.
 
 | Overall verdict | Use when |
 |-----------------|----------|
@@ -415,9 +425,10 @@ If none of these hold, a failure on a path/platform the PR changes leans PR-caus
 that **not every failure is a test** — a red build leg with no extracted test name still
 counts as a failure and must be classified, never silently dropped.
 
-The automated `/review tests` lane additionally computes a **deterministic verdict
-ceiling** in `Gather-TestFailureContext.ps1` (`gate.verdictCeiling`): the overall verdict
-can never be more favorable than what coverage allows. A green verdict
+The gatherer's **legacy deterministic verdict ceiling** (`gate.verdictCeiling`)
+constrains legacy merge-readiness consumers, not the current skill's attribution
+verdict. For those consumers, the overall verdict can never be more favorable than
+what coverage allows. A green verdict
 (`Ready to merge` / `No failures found`) is forbidden whenever a check is still pending, a
 failing check could not be inspected, **or a failed build leg produced no extractable
 failure** (`gate.unexplainedFailedLegs > 0` — the backstop that stops a crossgen/NativeAOT

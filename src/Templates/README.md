@@ -73,3 +73,33 @@ Find sample usages of the different parameters below, of course these can be mix
 * Set a custom version number for the template: `.\build.ps1 -templateVersion 1.2.3`
 * Build another template project: `.\build.ps1 -templatesProjectPath src\Microsoft.Maui.Templates-new.csproj`
 * Don't start VS after creating the new project using the latest template changes: `.\build.ps1 -startVsAfterBuild $false`
+
+## iOS and Mac Catalyst scene lifecycle
+
+All app templates use UIKit's scene-based lifecycle on iOS and Mac Catalyst, as [required for apps built with the 27 SDKs](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle). Each Apple app head includes a `UIApplicationSceneManifest` in `Info.plist` and a registered `SceneDelegate` derived from `MauiUISceneDelegate`.
+
+Keep the configuration name `__MAUI_DEFAULT_SCENE_CONFIGURATION__` unchanged: it must match MAUI's framework configuration. The delegate's `[Register]` name must match `UISceneDelegateClassName` (`SceneDelegate` in these templates). MAUI creates the scene's window programmatically, so do not add `UISceneStoryboardFile` or change the existing `MauiSplashScreen` / `UILaunchStoryboardName` configuration.
+
+`UIApplicationSupportsMultipleScenes` is set to `false` to preserve single-window behavior. To enable multiple windows, change this existing value to `true` rather than adding another manifest or `SceneDelegate` class. On Mac Catalyst, enabling multiple scenes also enables automatic window tabbing by default.
+
+Existing apps need both the manifest and delegate in each Apple app head. MAUI already forwards scene events to the cross-platform `Window` lifecycle events; do not add duplicate forwarding to `SceneDelegate`. Custom platform lifecycle handlers must use the corresponding scene callbacks for activation and backgrounding. UIKit still calls `FinishedLaunching`, and MAUI forwards any application launch options UIKit supplies. Under the scene lifecycle, scene activation data such as shortcut items, URLs, and user activities comes through `UISceneConnectionOptions` in `WillConnect` and the corresponding scene callbacks, rather than the legacy application launch-options dictionary. See [Apple's migration guidance](https://developer.apple.com/documentation/technotes/tn3187-migrating-to-the-uikit-scene-based-life-cycle).
+
+Core/Essentials forwards AppActions through the existing registrations for both application and scene lifecycles. Warm scene shortcuts use the native scene callback; a shortcut supplied when connecting a scene is delivered after that window's activation callbacks, at most once per connection. Do not duplicate this forwarding in template delegates or add another `Platform.PerformActionForShortcutItem` registration when using the default MAUI builder.
+
+When migrating existing shortcut handlers, update every `PerformActionForShortcutItem` registration to invoke its completion callback exactly once: `true` when handled, or `false` when unhandled. Logging-only observers must also acknowledge `false`. A handler may acknowledge asynchronously after returning; returning alone is not an acknowledgement. If no handler reports `true`, an observer that never acknowledges prevents the native warm-action completion from finishing. There is no automatic timeout, because it would discard legitimate delayed responses. Cold scene connection options do not supply a native completion callback.
+
+Essentials forwards warm scene URL contexts and user activities with a `WebPageUrl` through WebAuthenticator's existing callback handling. This preserves externally delivered callbacks for custom authenticators implementing `IPlatformWebAuthenticatorCallback`. The built-in modern `ASWebAuthenticationSession` flow still receives its result through the authentication session's own completion handler.
+
+This authentication bridge is not general application deep-link navigation and does not replay URLs or user activities from a cold scene connection. Applications handling their own links must configure the corresponding scene handlers, including `SceneWillConnect` for connection options and `SceneContinueUserActivity` for continued universal-link activities. Those handlers are relevant even when multiple windows are disabled.
+
+## Mac Catalyst deployment target
+
+Mac Catalyst app templates explicitly target `SupportedOSPlatformVersion` 17.0 (macOS 14), the minimum accepted by the .NET Mac Catalyst 27.x SDK. This SDK requirement is separate from scene adoption and applies when using that Apple SDK band with .NET 10 as well. The iOS app minimum remains 15.0.
+
+The new app-template default is 17.0 even with older SDKs. Apps that need Mac Catalyst 15.0/16.0 must use a compatible 26.x SDK and explicitly lower their deployment target. The class-library template retains its 15.0 minimum; it does not create an app bundle.
+
+## Generated-template regression tests
+
+`AppleTemplateManifestTests` in `Microsoft.Maui.IntegrationTests` verifies the generated Apple manifests, registered delegates, platform exclusions, and Mac Catalyst app deployment targets. Each case installs the selected package into a fresh, isolated template hive.
+
+CI selects `artifacts/Microsoft.Maui.Templates.net10.$MAUI_PACKAGE_VERSION.nupkg`. For a local package, set `MAUI_TEMPLATE_TEST_PACKAGE` to its full path and run the integration tests with `--filter FullyQualifiedName~AppleTemplateManifestTests`. These tests do not modify the global template cache.

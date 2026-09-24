@@ -11,6 +11,7 @@ $script:AiSummaryCommentMarker = '<!-- AI Summary -->'
 $script:AiGateCommentMarker = '<!-- AI Gate -->'
 $script:MergeConflictCommentMarker = '<!-- MAUI_BOT_MERGE_CONFLICT -->'
 $script:TryFixCommentMarker = '<!-- MAUI_BOT_TRY_FIX -->'
+$script:ReviewIncompleteCommentMarker = '<!-- MAUI_BOT_REVIEW_INCOMPLETE -->'
 
 function Test-IsMauiBotCommentAuthor {
     param([object]$Comment)
@@ -58,6 +59,22 @@ function Test-IsAISummaryCommentBody {
     }
 
     return $Body.Contains($script:AiSummaryCommentMarker)
+}
+
+function Test-IsReviewIncompleteCommentBody {
+    param([string]$Body)
+
+    if ([string]::IsNullOrWhiteSpace($Body)) {
+        return $false
+    }
+
+    # The "no review was produced" fallback notice (ci-copilot.yml
+    # 'Post review-incomplete notice'). Match the marker for comments posted
+    # after it was added, and fall back to the stable header text so notices
+    # posted BEFORE the marker (e.g. #35606 comment 4981725981) are still
+    # collapsed once a real review or a newer notice supersedes them.
+    return $Body.Contains($script:ReviewIncompleteCommentMarker) -or
+        $Body.Contains('Automated review could not complete')
 }
 
 function Test-ShouldPreserveMauiBotArtifact {
@@ -155,6 +172,7 @@ function Hide-StaleMauiBotIssueComments {
         [switch]$IncludeLegacyGate,
         [switch]$IncludeMergeConflict,
         [switch]$IncludeTryFix,
+        [switch]$IncludeReviewIncomplete,
 
         [string[]]$PreserveNodeIds = @(),
         [string[]]$PreserveIds = @(),
@@ -189,7 +207,8 @@ function Hide-StaleMauiBotIssueComments {
         $matchesBotOnlyContent =
             (Test-IsMauiBotCommentAuthor $comment) -and (
                 ($IncludeMergeConflict -and (Test-IsMergeConflictCommentBody $body)) -or
-                ($IncludeTryFix -and (Test-IsTryFixCommentBody $body))
+                ($IncludeTryFix -and (Test-IsTryFixCommentBody $body)) -or
+                ($IncludeReviewIncomplete -and (Test-IsReviewIncompleteCommentBody $body))
             )
 
         if ($matchesGeneratedMarker -or $matchesBotOnlyContent) {
@@ -216,6 +235,7 @@ function Remove-StaleMauiBotIssueComments {
         [switch]$IncludeLegacyGate,
         [switch]$IncludeMergeConflict,
         [switch]$IncludeTryFix,
+        [switch]$IncludeReviewIncomplete,
 
         [string[]]$PreserveNodeIds = @(),
         [string[]]$PreserveIds = @(),
@@ -233,6 +253,7 @@ function Remove-StaleMauiBotIssueComments {
         -IncludeLegacyGate:$IncludeLegacyGate `
         -IncludeMergeConflict:$IncludeMergeConflict `
         -IncludeTryFix:$IncludeTryFix `
+        -IncludeReviewIncomplete:$IncludeReviewIncomplete `
         -PreserveNodeIds $PreserveNodeIds `
         -PreserveIds $PreserveIds `
         -Classifier $Classifier `

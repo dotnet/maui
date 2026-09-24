@@ -66,5 +66,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Assert.Equal("value 1", builder.Configuration["key 1"]);
 		}
+
+		[Theory]
+		[InlineData("http://localhost:5000", "http://test-tunnel-5000.devtunnels.ms")]
+		[InlineData("https://localhost:5001/path", "https://test-tunnel-5001.devtunnels.ms/path")]
+		[InlineData("HTTPS://LOCALHOST:5002/path?value=1", "HTTPS://test-tunnel-5002.devtunnels.ms/path?value=1")]
+		[InlineData("https://example.com:5003/path", "https://example.com:5003/path")]
+		public void ReplacesLocalhostWithDevTunnel(string uri, string expected)
+		{
+			Assert.Equal(expected, AppHostBuilderExtensions.ReplaceLocalhost(uri, "test-tunnel"));
+		}
 	}
 }
