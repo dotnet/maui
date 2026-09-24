@@ -272,6 +272,38 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
+			public void SvgWithGaussianBlurFilterRenders_38319()
+			{
+				var info = new ResizeImageInfo {
+					Filename = "images/issue38319.svg",
+				};
+				using var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(456, resultImage.Width);
+				Assert.Equal(456, resultImage.Height);
+			}
+
+			[Fact]
+			public void SvgWithPositionedTextSpanRenders_38507()
+			{
+				var info = new ResizeImageInfo {
+					Filename = "images/issue38507.svg",
+				};
+				using var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(320, resultImage.Width);
+				Assert.Equal(120, resultImage.Height);
+			}
+
+			[Fact]
 			public void SvgImageWithDecodingIssue_15442()
 			{
 				var info = new ResizeImageInfo();
