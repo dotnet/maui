@@ -50,6 +50,8 @@ parameters:
   - Debug
   - Release
 
+# Temporary RC2 workaround: macOS defaults use GoldenGate until standard images
+# provide Xcode compatible with the pinned Apple SDK.
 - name: BuildPlatforms
   type: object
   default:
@@ -59,8 +61,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: MAUI
-    vmImage: MAUI
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -95,24 +98,21 @@ parameters:
         - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
-# Typically X64 pools but XCode 26.2 isn't available yet for the Azure Pipelines X64 Pools
+# Apple jobs share the Aces image used by UI and device test builds.
 - name: MacOSPool
   type: object
   default:
     internal:
-      name: Azure Pipelines
-      vmImage: $(HostedMacImage)
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
+      os: macOS
       label: macOS
     public:
       name: AcesShared
       demands:
         - ImageOverride -equals $(AcesMacImageOverride)
       label: macOS
-# Switch back to this once XCode 26.2 is available on Azure Pipelines
-#     name: Azure Pipelines
-#     vmImage: $(HostedMacImage)
-#     os: macOS
-#     label: macOS
 
 - name: AndroidPoolLinux
   type: object
@@ -122,8 +122,8 @@ parameters:
       - ImageOverride -equals 1ESPT-Ubuntu22.04
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
-# Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
-# Re-enable once Azure Pipelines has Xcode 26.2 on x64 pools.
+# These additional comparison lanes remain disabled; the standard build, pack,
+# and ARM64 integration lanes provide public macOS coverage.
 # Original condition: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
 - name: macOSPoolLaneCondition
   type: string

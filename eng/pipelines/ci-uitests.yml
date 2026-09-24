@@ -64,12 +64,15 @@ parameters:
     type: boolean
     default: false
 
+  # Temporary RC2 workaround: macOS build and UI-test pools use GoldenGate until
+  # standard images provide Xcode compatible with the pinned Apple SDK.
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-15-arm64
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: androidPoolLinuxInternal
     type: object
@@ -81,8 +84,9 @@ parameters:
   - name: iosPoolInternal
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-15-arm64
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: windowsBuildPoolInternal
     type: object
@@ -101,8 +105,9 @@ parameters:
   - name: macosPoolInternal
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
 
   # Public pools (dnceng-public)
   - name: androidPoolPublic
@@ -143,8 +148,9 @@ parameters:
   - name: macosPoolPublic
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
 
 stages:
 
