@@ -205,9 +205,9 @@
       Condition=" '$(InstallDotNet)' == 'true' and Exists('$(DotNetDirectory)sdk-manifests') ">
     <ItemGroup>
       <_AllManifestBands Include="$([System.IO.Directory]::GetDirectories('$(DotNetDirectory)sdk-manifests'))" />
-      <_StaleManifestBands Include="@(_AllManifestBands)" Condition="'%(Filename)' != '$(DotNetSdkManifestsFolder)'" />
+      <_StaleManifestBands Include="@(_AllManifestBands)" Condition="'%(_AllManifestBands.Filename)%(_AllManifestBands.Extension)' != '$(DotNetSdkManifestsFolder)'" />
     </ItemGroup>
-    <Message Text="Removing stale workload manifest band: %(Filename)" Importance="High"
+    <Message Text="Removing stale workload manifest band: %(_StaleManifestBands.Filename)%(_StaleManifestBands.Extension)" Importance="High"
         Condition="'@(_StaleManifestBands)' != ''" />
     <RemoveDir Directories="@(_StaleManifestBands)" />
   </Target>
