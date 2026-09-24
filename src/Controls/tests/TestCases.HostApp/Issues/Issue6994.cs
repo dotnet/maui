@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -56,7 +57,7 @@ namespace Maui.Controls.Sample.Issues
 					async () =>
 					{
 						await Task.Delay(20);
-						source.Clear();
+						await MainThread.InvokeOnMainThreadAsync(source.Clear);
 						await Task.Delay(2000);
 #pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
