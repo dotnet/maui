@@ -304,6 +304,9 @@ in their original deployment directories.
 VSTest can leave the `notExecuted` counter at zero for skipped tests. Retry validation
 accounts for those cases through their individual outcomes and the total/executed counts;
 the merged report still retains every skipped case.
+Compile platform-only tests only into supported UI test projects. A test-body `Assert.Ignore`
+runs after fixture setup, so a setup failure can turn an unsupported case into a failed
+result that cannot safely be replaced by a skipped retry.
 Do not add a whole-task retry on top of this: it can repeat hours of successful UI coverage
 and leave a canceled job publishing an earlier failure instead of the retry results.
 
