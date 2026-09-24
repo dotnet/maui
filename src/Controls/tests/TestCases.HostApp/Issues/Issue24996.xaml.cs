@@ -30,29 +30,23 @@ public partial class Issue24996 : ContentPage
 		};
 	}
 
-	protected override async void OnAppearing()
-	{
-		base.OnAppearing();
-		await Task.Delay(250);
-		Lvl1.MeasurePasses = Lvl1.ArrangePasses = 0;
-		Lvl2.MeasurePasses = Lvl2.ArrangePasses = 0;
-		Lvl3.MeasurePasses = Lvl3.ArrangePasses = 0;
-		UpdateText();
-	}
-
 	public async void OnTapped(object sender, EventArgs e)
 	{
 		var testPoint = _translations[++_index % _translations.Length];
-		Coords.Text = $"X: {testPoint.X}, Y: {testPoint.Y}";
+		// Exclude initial layout and previous diagnostic-label updates from this translation.
+		Lvl1.MeasurePasses = Lvl1.ArrangePasses = 0;
+		Lvl2.MeasurePasses = Lvl2.ArrangePasses = 0;
+		Lvl3.MeasurePasses = Lvl3.ArrangePasses = 0;
 		Lvl2.TranslationX = testPoint.X;
 		Lvl2.TranslationY = testPoint.Y;
 		await Task.Delay(100);
 		UpdateText();
+		Coords.Text = $"X: {testPoint.X}, Y: {testPoint.Y}";
 	}
 
 	void UpdateText()
 	{
-		Stats.Text = $"Lvl1[{Lvl1.MeasurePasses}/{Lvl1.ArrangePasses}] - Lvl2[{Lvl2.MeasurePasses}/{Lvl2.ArrangePasses}] - Lvl3[{Lvl3.MeasurePasses}/{Lvl3.ArrangePasses}]";
+		Stats.Text = $"Step {_index + 1}: Lvl1[{Lvl1.MeasurePasses}/{Lvl1.ArrangePasses}] - Lvl2[{Lvl2.MeasurePasses}/{Lvl2.ArrangePasses}] - Lvl3[{Lvl3.MeasurePasses}/{Lvl3.ArrangePasses}]";
 	}
 }
 
