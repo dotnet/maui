@@ -53,8 +53,11 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ### Shared macOS image selection
 
-Public Apple jobs in `maui-pr`, `maui-pr-devicetests`, and `maui-pr-uitests` use
-`AcesShared` with `ImageOverride -equals $(AcesMacImageOverride)`. Select the image
+All public and internal macOS pool defaults in `ci.yml`, `ci-device-tests.yml`,
+and `ci-uitests.yml` use `AcesShared` with
+`ImageOverride -equals $(AcesMacImageOverride)`. This covers build, pack, integration,
+shared UI app builds, iOS and MacCatalyst UI runs, and device-test app builds.
+Pool parameters still support caller overrides. Select the image
 once in `eng/pipelines/common/variables.yml`; RC2 uses `ACES_VM_SharedPool_GoldenGate`,
 the image selected for official builds in #38852. Do not pin an Xcode application
 path in individual pipeline demands.

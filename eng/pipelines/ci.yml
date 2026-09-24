@@ -59,8 +59,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: MAUI
-    vmImage: MAUI
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -95,13 +96,15 @@ parameters:
         - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
-# Public Apple jobs share the Aces image used by UI and device test builds.
+# Apple jobs share the Aces image used by UI and device test builds.
 - name: MacOSPool
   type: object
   default:
     internal:
-      name: Azure Pipelines
-      vmImage: $(HostedMacImage)
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
+      os: macOS
       label: macOS
     public:
       name: AcesShared
