@@ -509,8 +509,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_FlowDirectionRTL()
 	{
-		Assert.That(ShellFeatureTestActions.WaitForBottomTab(App, "Home").GetRect().X,
-			Is.LessThan(ShellFeatureTestActions.WaitForBottomTab(App, "Tab3").GetRect().X));
+		AssertShellLayoutDirection(((AppiumApp)App).Driver.PageSource, rightToLeft: false);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlowDirectionRTL");
@@ -518,14 +517,34 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(Options);
-		Assert.That(() => App.WaitForElement("NavBarShowButton").GetRect().X >
-			App.WaitForElement("NavBarHideButton").GetRect().X,
-			Is.True.After(10000, 200),
-			"RTL must mirror the native content layout.");
-		Assert.That(() => ShellFeatureTestActions.WaitForBottomTab(App, "Home").GetRect().X >
-			ShellFeatureTestActions.WaitForBottomTab(App, "Tab3").GetRect().X,
-			Is.True.After(10000, 200),
-			"Changing Shell.FlowDirection must reverse the native Shell tab order.");
+		App.RetryAssert(() => AssertShellLayoutDirection(((AppiumApp)App).Driver.PageSource, rightToLeft: true),
+			timeout: TimeSpan.FromSeconds(10));
+	}
+
+	static void AssertShellLayoutDirection(string pageSource, bool rightToLeft)
+	{
+		// WinAppDriver /location uses mirrored window coordinates in RTL; source bounds remain screen-relative.
+		var document = System.Xml.Linq.XDocument.Parse(pageSource);
+		var show = document.Descendants("Button").Single(element => (string?)element.Attribute("AutomationId") == "NavBarShowButton");
+		var hide = document.Descendants("Button").Single(element => (string?)element.Attribute("AutomationId") == "NavBarHideButton");
+		var home = document.Descendants("TabItem").Single(element => (string?)element.Attribute("Name") == "Home");
+		var lastTab = document.Descendants("TabItem").Single(element => (string?)element.Attribute("Name") == "Tab3");
+
+		foreach (var (first, last) in new[] { (show, hide), (home, lastTab) })
+		{
+			foreach (var element in new[] { first, last })
+			{
+				Assert.That((string?)element.Attribute("IsOffscreen"), Is.EqualTo("False"));
+				Assert.That((int)element.Attribute("width")!, Is.GreaterThan(0));
+				Assert.That((int)element.Attribute("height")!, Is.GreaterThan(0));
+			}
+
+			var left = rightToLeft ? last : first;
+			var right = rightToLeft ? first : last;
+			Assert.That((int)left.Attribute("x")! + (int)left.Attribute("width")!,
+				Is.LessThanOrEqualTo((int)right.Attribute("x")!),
+				$"Native {first.Name} order must be {(rightToLeft ? "RTL" : "LTR")}.");
+		}
 	}
 
 #endif
