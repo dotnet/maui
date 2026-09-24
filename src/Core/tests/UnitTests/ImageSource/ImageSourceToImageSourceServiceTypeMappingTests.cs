@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Hosting.Internal;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.ImageSource
@@ -95,9 +97,33 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.Equal(typeof(IImageSourceService<FirstAndSecondImageSource>), imageSourceServiceType);
 		}
 
+		[Fact]
+		public void RegisteredImageSourceServiceCollectionCanBeCollected()
+		{
+			var collection = RegisterImageSourceService();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(collection.IsAlive);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static WeakReference RegisterImageSourceService()
+		{
+			var collection = new TestImageSourceServiceCollection();
+			collection.AddService<TestImageSource, TestImageSourceService>();
+
+			return new WeakReference(collection);
+		}
+
 		private interface IFirstImageSource : IImageSource { }
 		private interface ISecondImageSource : IImageSource { }
 		private class FirstAndSecondImageSource : IFirstImageSource, ISecondImageSource { public bool IsEmpty => throw new NotImplementedException(); }
+		private sealed class TestImageSource : IImageSource { public bool IsEmpty => true; }
+		private sealed class TestImageSourceService : IImageSourceService<TestImageSource> { }
+		private sealed class TestImageSourceServiceCollection : MauiServiceCollection, IImageSourceServiceCollection { }
 
 		interface IMyCustomImageSource : IFileImageSource { }
 		private abstract class MyCustomImageSource : IMyCustomImageSource
