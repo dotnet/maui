@@ -3,7 +3,7 @@ name: run-device-tests
 description: "Build and run .NET MAUI device tests locally with category filtering. Supports iOS, MacCatalyst, Android on macOS; Android, Windows on Windows. Use TestFilter to run specific test categories."
 metadata:
   author: dotnet-maui
-  version: "2.1"
+  version: "2.2"
 compatibility: Requires xharness CLI (for iOS/MacCatalyst/Android), Xcode (for Apple platforms), Android SDK (for Android), and .NET SDK with platform workloads.
 ---
 
@@ -80,6 +80,9 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 # Run with test filter
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "Category=Button"
 
+# Run one exact Core test class on Windows
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -IncludeClasses "Microsoft.Maui.DeviceTests.WindowHandlerTests"
+
 # Run other test projects
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Essentials -Platform android
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Graphics -Platform maccatalyst
@@ -90,6 +93,14 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Blazor
 
 ```bash
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -BuildOnly
+```
+
+### Force a Full Rebuild
+
+Use `-Rebuild` when source files changed after an earlier build in the same worktree, such as an A/B verification run:
+
+```bash
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -Rebuild
 ```
 
 ### List Available Simulators/Emulators
@@ -156,6 +167,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Windows tests run directly on the local machine
 - Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting for iOS/MacCatalyst/Android
+- Class-filtered XHarness retries use isolated child output directories; Android also uses a per-run result filename so stale diagnostics or device-side XML cannot be reused
 - Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
 
 ## Test Filtering
@@ -191,6 +203,15 @@ Test filtering is implemented in `src/Core/tests/DeviceTests.Shared/DeviceTestSh
 | **iOS/MacCatalyst** | `--set-env=TestFilter=...` | `NSProcessInfo.ProcessInfo.Environment["TestFilter"]` |
 | **Android** | `--arg TestFilter=...` | `MauiTestInstrumentation.Current.Arguments.GetString("TestFilter")` |
 | **Windows Controls** | App argument selects discovered category index | `ControlsHeadlessTestRunner` category loop |
+| **Windows non-Controls class filter** | Per-child `NUNIT_SKIPPED_CLASSES` plus the normal runner | XHarness `ApplicationOptions` class include |
+
+The Copilot Gate combines `-TestFilter` with `-IncludeClasses` when it knows the exact
+test class. On Windows, Controls still requires category discovery, while Core,
+Essentials, Graphics, and BlazorWebView bypass discovery and use XHarness's native class
+include. The result parser rejects output containing any unrelated class. Exact-class
+Windows runs, including scoped Controls category runs, are capped at 10 minutes per
+attempt; the Gate retries a timeout three times before treating repeated target-only
+timeouts as deterministic evidence.
 
 ### Available Test Categories
 

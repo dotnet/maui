@@ -7,13 +7,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_ContentPage : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
+	public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
 
-    public Issue28986_ContentPage(TestDevice device) : base(device)
-    {
-    }
+	public Issue28986_ContentPage(TestDevice device) : base(device)
+	{
+	}
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaMainGridBasicFunctionality()
 	{
@@ -135,6 +135,9 @@ public class Issue28986_ContentPage : _IssuesUITest
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaNoWhiteSpaceAfterKeyboardDismissAndEdgeToggle()
 	{
+		const int timeoutMilliseconds = 15000;
+		const int pollingIntervalMilliseconds = 500;
+
 		App.WaitForElement("ContentGrid");
 
 		App.Tap("GridResetAllButton");
@@ -142,26 +145,21 @@ public class Issue28986_ContentPage : _IssuesUITest
 
 		App.Tap("SoftInputTestEntry");
 		Assert.That(App.WaitForKeyboardToShow(), Is.True, "Keyboard should be visible before validating the resized safe area");
-		App.RetryAssert(() =>
-		{
-			var withKeyboard = App.WaitForElement("ContentGrid").GetRect();
-			Assert.That(withKeyboard.Height, Is.LessThan(baselinePosition.Height),
-				"ContentGrid should shrink when keyboard is showing with SafeAreaEdges=All");
-		});
+		// Poll the constraint without recording transient NUnit assertion failures.
+		Assert.That(() => App.WaitForElement("ContentGrid").GetRect().Height,
+			Is.LessThan(baselinePosition.Height).After(timeoutMilliseconds, pollingIntervalMilliseconds),
+			"ContentGrid should shrink when keyboard is showing with SafeAreaEdges=All");
 
 		App.Tap("GridSetContainerButton");
 		App.DismissKeyboard();
 		Assert.That(App.WaitForKeyboardToHide(), Is.True, "Keyboard should be hidden before restoring all safe-area edges");
 		App.Tap("GridResetAllButton");
 
-		App.RetryAssert(() =>
-		{
-			var finalPosition = App.WaitForElement("ContentGrid").GetRect();
-			Assert.That(finalPosition.Height, Is.EqualTo(baselinePosition.Height).Within(1),
-				"ContentGrid height should match baseline after toggling edges with keyboard dismiss — no white space (#34846)");
-			Assert.That(finalPosition.Y, Is.EqualTo(baselinePosition.Y).Within(1),
-				"ContentGrid Y should match baseline after toggling edges with keyboard dismiss");
-		});
+		Assert.That(() => App.WaitForElement("ContentGrid").GetRect(),
+			Has.Property(nameof(baselinePosition.Height)).EqualTo(baselinePosition.Height).Within(1)
+				.And.Property(nameof(baselinePosition.Y)).EqualTo(baselinePosition.Y).Within(1)
+				.After(timeoutMilliseconds, pollingIntervalMilliseconds),
+			"ContentGrid height and Y should match baseline after toggling edges with keyboard dismiss — no white space (#34846)");
 	}
 }
 #endif

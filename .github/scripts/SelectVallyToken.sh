@@ -15,6 +15,12 @@ copilot_home=$5
 probe_root=$6
 shift 6
 
+pat_pool_name=${COPILOT_PAT_POOL_NAME:-copilot-pat-pool}
+if [[ ! "$pat_pool_name" =~ ^[A-Za-z0-9._-]+$ ]]; then
+	echo "COPILOT_PAT_POOL_NAME must contain only letters, digits, dots, underscores, or hyphens" >&2
+	exit 1
+fi
+
 for executable in "$vally_runner" "$copilot_wrapper" "$copilot_runtime"; do
 	if [ ! -x "$executable" ]; then
 		echo "Required evaluator executable is missing: $executable" >&2
@@ -51,7 +57,7 @@ for i in 0 1 2 3 4 5 6 7 8 9; do
 	fi
 done
 if [ "${#tokens[@]}" -eq 0 ]; then
-	echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment" >&2
+	echo "::error::No COPILOT_PAT_* secrets are configured in the $pat_pool_name environment" >&2
 	exit 1
 fi
 

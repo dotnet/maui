@@ -51,11 +51,12 @@ namespace Microsoft.Maui.ApplicationModel
 		Task OnLaunched(UI.Xaml.LaunchActivatedEventArgs e);
 #elif IOS || MACCATALYST
 		/// <summary>
-		/// The lifecycle event that is triggered when this app is launched.
+		/// The lifecycle event that is triggered when the user selects an app action.
 		/// </summary>
 		/// <param name="application">The <see cref="UIKit.UIApplication"/> instance this action is performed for.</param>
 		/// <param name="shortcutItem">The shortcut item that was chosen from the app icon.</param>
-		/// <param name="completionHandler">The completion handler that is triggered when this action has completed.</param>
+		/// <param name="completionHandler">Invoked once to report whether the action was handled.</param>
+		/// <remarks>Handler failures are reported as unsuccessful before their exceptions are propagated.</remarks>
 		void PerformActionForShortcutItem(UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler);
 #elif ANDROID
 		/// <summary>
@@ -151,12 +152,12 @@ namespace Microsoft.Maui.ApplicationModel
 			appActions.AsPlatform().OnLaunched(e);
 #elif IOS || MACCATALYST
 		/// <summary>
-		/// The lifecycle event that is triggered when this app is launched.
+		/// The lifecycle event that is triggered when the user selects an app action.
 		/// </summary>
 		/// <param name="appActions">Instance of the <see cref="IAppActions"/> object this event is invoked on.</param>
 		/// <param name="application">The <see cref="UIKit.UIApplication"/> instance this action is performed for.</param>
 		/// <param name="shortcutItem">The shortcut item that was chosen from the app icon.</param>
-		/// <param name="completionHandler">The completion handler that is triggered when this action has completed.</param>
+		/// <param name="completionHandler">Invoked once to report whether the action was handled.</param>
 		public static void PerformActionForShortcutItem(this IAppActions appActions, UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler) =>
 			appActions.AsPlatform().PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 #elif ANDROID

@@ -24,6 +24,7 @@
 		{
 			var strokeThickness = border.StrokeThickness;
 			platformView.BorderPath?.UpdateStrokeThickness(strokeThickness);
+			platformView.InvalidateContentClip();
 		}
 
 		public static void UpdateStrokeDashPattern(this ContentPanel platformView, IBorderStroke border)

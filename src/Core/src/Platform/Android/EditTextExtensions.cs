@@ -387,10 +387,12 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					if (editText.InputType.HasFlag(InputTypes.ClassText))
+					if (editText.InputType.HasFlag(InputTypes.ClassText) &&
+						editText.InputType.HasFlag(InputTypes.TextVariationPassword))
 						editText.InputType &= ~InputTypes.TextVariationPassword;
 
-					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+					if (editText.InputType.HasFlag(InputTypes.ClassNumber) &&
+						editText.InputType.HasFlag(InputTypes.NumberVariationPassword))
 						editText.InputType &= ~InputTypes.NumberVariationPassword;
 				}
 			}

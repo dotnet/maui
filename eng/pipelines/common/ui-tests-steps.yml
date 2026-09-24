@@ -10,7 +10,7 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
-  testFilter: ''
+  testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
@@ -195,5 +195,6 @@ steps:
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
     displayName: 'Enable Notification Center'
+    condition: always()
     continueOnError: true
     timeoutInMinutes: 60

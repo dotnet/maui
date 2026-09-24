@@ -3,10 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
@@ -25,13 +31,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UIColor _defaultBarColor;
 		bool _defaultBarColorSet;
 		bool? _defaultBarTranslucent;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The tab bar appearance is owned by the renderer and disposed in Dispose.")]
 		UITabBarAppearance _tabBarAppearance;
 		WeakReference<VisualElement> _element;
+		readonly NativeElementRegistrationSet _nativeTabBarRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeTabItemRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeVisibleTabRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+		readonly Dictionary<Page, long> _tabRegistrationGenerations = new Dictionary<Page, long>();
+		long _nextTabRegistrationGeneration;
+		bool _disposed;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The More table view is retained only while observed and cleared by DetachMoreTableView.")]
+		UITableView _moreTableView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The content offset observer is disposed by DetachMoreTableView when the table changes and in Dispose.")]
+		IDisposable _moreContentOffsetObserver;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The diagnostics subscription watcher is disposed and cleared when the element is detached and in Dispose.")]
+		IDisposable _nativeSubscriptionWatcher;
 
 		Brush _currentBarBackground;
 
 		IMauiContext MauiContext => _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
 		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewCommandMapper);
 
@@ -54,8 +76,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// If the selected view controller is the "More" navigation controller, do not update the current page
 				// because it is a special case where the user is navigating to a different set of tabs
 				if (value == MoreNavigationController)
+				{
+					RegisterMoreRows();
 					return;
+				}
 
+				_nativeMoreRegistrations.Clear();
+				DetachMoreTableView();
 				UpdateCurrentPage();
 			}
 		}
@@ -67,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public VisualElement Element => _viewHandlerWrapper?.Element ?? _element?.GetTargetOrDefault();
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -77,14 +105,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return View; }
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "TabbedPage PropertyChanged and PagesChanged subscriptions are removed in Dispose.")]
 		public void SetElement(VisualElement element)
 		{
+			SetNativeDiagnosticsSubscription(element is not null);
+			_nativeTabBarRegistrations.Clear();
+			_nativeTabItemRegistrations.Clear();
+			_nativeVisibleTabRegistrations.Clear();
+			_nativeMoreRegistrations.Clear();
+			DetachMoreTableView();
+			_tabRegistrationGenerations.Clear();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
 			_element = element is null ? null : new(element);
 
-			FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
+			FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
+			if (element is not null)
+				FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
 			if (element is TabbedPage tabbed)
 			{
+				_nativeTabBarRegistrations.Register(
+					tabbed,
+					TabBar,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
 				tabbed.PropertyChanged += OnPropertyChanged;
 				tabbed.PagesChanged += OnPagesChanged;
 			}
@@ -137,12 +180,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// in narrow viewports (< 667 points) before Element is set. Guard against this.
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
+
+			RegisterVisibleTabViews();
+			if (SelectedViewController == MoreNavigationController)
+				RegisterMoreRows();
 		}
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
 			if (disposing)
 			{
+				SetNativeDiagnosticsSubscription(false);
+				_nativeTabBarRegistrations.Clear();
+				_nativeTabItemRegistrations.Clear();
+				_nativeVisibleTabRegistrations.Clear();
+				_nativeMoreRegistrations.Clear();
+				DetachMoreTableView();
+				_tabRegistrationGenerations.Clear();
 				_tabBarAppearance?.Dispose();
 				_tabBarAppearance = null;
 
@@ -152,6 +210,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					tabbed.PropertyChanged -= OnPropertyChanged;
 					tabbed.PagesChanged -= OnPagesChanged;
+
+					foreach (var page in tabbed.Children)
+						page.PropertyChanged -= OnPagePropertyChanged;
 				}
 
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
@@ -168,6 +229,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			base.Dispose(disposing);
+		}
+
+		void OnNativeElementSubscriptionAdded()
+		{
+			if (Volatile.Read(ref _disposed))
+				return;
+
+			BeginInvokeOnMainThread(() =>
+			{
+				if (_disposed)
+					return;
+
+				RegisterVisibleTabViews();
+				if (SelectedViewController == MoreNavigationController)
+					RegisterMoreRows();
+			});
+		}
+
+		void SetNativeDiagnosticsSubscription(bool subscribe)
+		{
+			if (subscribe)
+			{
+				_nativeSubscriptionWatcher ??=
+					NativeElementSubscriptionWatcher<TabbedRenderer>.Attach(
+						this,
+						static renderer => renderer.OnNativeElementSubscriptionAdded());
+			}
+			else
+			{
+				_nativeSubscriptionWatcher?.Dispose();
+				_nativeSubscriptionWatcher = null;
+			}
 		}
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
@@ -225,6 +318,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			_nativeMoreRegistrations.Clear();
+			DetachMoreTableView();
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				_nativeTabItemRegistrations.Clear();
+				_nativeVisibleTabRegistrations.Clear();
+				_tabRegistrationGenerations.Clear();
+			}
+
 			e.Apply((o, i, c) => SetupPage((Page)o, i), (o, i) => TeardownPage((Page)o, i), Reset);
 
 			SetControllers();
@@ -377,6 +479,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateTabBarVisibility();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Page PropertyChanged subscriptions are removed in TeardownPage and Dispose.")]
 		void SetupPage(Page page, int index)
 		{
 			var renderer = (IPlatformViewHandler)page.ToHandler(_mauiContext);
@@ -388,6 +491,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void TeardownPage(Page page, int index)
 		{
+			_nativeTabItemRegistrations.UnregisterOwner(page);
+			_nativeVisibleTabRegistrations.UnregisterOwner(page);
+			_tabRegistrationGenerations.Remove(page);
 			page.PropertyChanged -= OnPagePropertyChanged;
 
 			page.Handler?.DisconnectHandler();
@@ -420,6 +526,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Gradient brush InvalidateGradientBrushRequested is removed before replacing the brush and in Dispose.")]
 		void UpdateBarBackground()
 		{
 			if (Tabbed is not TabbedPage tabbed || TabBar == null)
@@ -557,7 +664,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (page == null)
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
+			var registrationGeneration = ++_nextTabRegistrationGeneration;
+			_tabRegistrationGenerations[page] = registrationGeneration;
 			var icons = await GetIcon(page);
+			if (!_tabRegistrationGenerations.TryGetValue(page, out var activeGeneration) ||
+				activeGeneration != registrationGeneration ||
+				renderer.VirtualView != page ||
+				Tabbed?.Children.Contains(page) != true)
+			{
+				icons?.Item1?.Dispose();
+				icons?.Item2?.Dispose();
+				return;
+			}
+
 			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item1);
 			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item2);
 			SetTabBarItem(resizedImage, resizedSelectedImage);
@@ -571,10 +690,166 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					Tag = Tabbed?.Children.IndexOf(page) ?? -1,
 					AccessibilityIdentifier = page.AutomationId
 				};
+				_nativeTabItemRegistrations.RegisterExclusive(
+					page,
+					renderer.ViewController.TabBarItem,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBarItem);
 			}
 
 			icons?.Item1?.Dispose();
 			icons?.Item2?.Dispose();
+		}
+
+		void RegisterVisibleTabViews()
+		{
+			if (!NativeElementDiagnostics.IsRegistrationEnabled)
+			{
+				if (_nativeVisibleTabRegistrations.HasRegistrations)
+					_nativeVisibleTabRegistrations.Clear();
+				return;
+			}
+
+			if (Tabbed is not TabbedPage tabbed)
+				return;
+
+			var controls = TabBar.Subviews
+				.OfType<UIControl>()
+				.OrderBy(control => control.Frame.X)
+				.ToList();
+			if (TabBar.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+				controls.Reverse();
+
+			var tabBarItems = TabBar.Items;
+			var tabBarItemCount = tabBarItems?.Length ?? 0;
+			var viewControllerCount = ViewControllers?.Length ?? 0;
+			UITabBarItem moreItem = null;
+			var lastItemIsMore = false;
+			if (viewControllerCount > tabBarItemCount &&
+				tabBarItems?.LastOrDefault() is UITabBarItem lastItem)
+			{
+				var candidate = MoreNavigationController.TabBarItem;
+				lastItemIsMore = candidate is not null &&
+					(ReferenceEquals(lastItem, candidate) || lastItem.Handle == candidate.Handle);
+				if (lastItemIsMore)
+					moreItem = lastItem;
+			}
+
+			var canMapRealizedViews = NativeTabBarRegistrationPlanner.TryPlan(
+				tabbed.Children.Count,
+				viewControllerCount,
+				tabBarItemCount,
+				controls.Count,
+				lastItemIsMore,
+				out var slotCount,
+				out var hasMore);
+			if (hasMore && moreItem is not null)
+			{
+				_nativeVisibleTabRegistrations.Register(
+					tabbed,
+					moreItem,
+					NativeElementRoles.ShellTabOverflow,
+					NativeElementDiscriminators.TabBarItem);
+			}
+
+			if (!canMapRealizedViews)
+			{
+				if (hasMore && moreItem is not null)
+					_nativeVisibleTabRegistrations.Retain(new[] { moreItem });
+				else
+					_nativeVisibleTabRegistrations.Clear();
+				return;
+			}
+
+			var retainedElements = new List<object>(slotCount + 1);
+			for (int index = 0; index < slotCount; index++)
+			{
+				var isMore = hasMore && index == slotCount - 1;
+				var control = controls[index];
+				retainedElements.Add(control);
+				_nativeVisibleTabRegistrations.RegisterExclusive(
+					isMore ? (object)tabbed : tabbed.Children[index],
+					control,
+					isMore ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.RealizedView);
+			}
+
+			if (hasMore && moreItem is not null)
+				retainedElements.Add(moreItem);
+
+			_nativeVisibleTabRegistrations.Retain(retainedElements);
+		}
+
+		void RegisterMoreRows()
+		{
+			if (!NativeElementDiagnostics.IsRegistrationEnabled)
+			{
+				if (_nativeMoreRegistrations.HasRegistrations)
+					_nativeMoreRegistrations.Clear();
+				DetachMoreTableView();
+				return;
+			}
+
+			if (_disposed ||
+				Tabbed is not TabbedPage tabbed ||
+				MoreNavigationController.TopViewController.View is not UITableView tableView)
+			{
+				_nativeMoreRegistrations.Clear();
+				DetachMoreTableView();
+				return;
+			}
+
+			if (!ReferenceEquals(_moreTableView, tableView))
+			{
+				DetachMoreTableView();
+				_moreTableView = tableView;
+				_moreContentOffsetObserver = _moreTableView.AddObserver(
+					"contentOffset",
+					NSKeyValueObservingOptions.New,
+					_ => OnMoreTableScrolled());
+			}
+
+			if (tableView.Window is null)
+			{
+				_nativeMoreRegistrations.Clear();
+				return;
+			}
+
+			var retainedCells = new List<object>();
+			foreach (var cell in tableView.VisibleCells)
+			{
+				var indexPath = tableView.IndexPathForCell(cell);
+				if (indexPath is null)
+					continue;
+
+				var pageIndex = 4 + (int)indexPath.Row;
+				if (pageIndex < 4 || pageIndex >= tabbed.Children.Count)
+					continue;
+
+				retainedCells.Add(cell);
+				_nativeMoreRegistrations.Register(
+					tabbed.Children[pageIndex],
+					cell,
+					NativeElementRoles.ShellTabOverflow,
+					NativeElementDiscriminators.OverflowRow);
+			}
+
+			_nativeMoreRegistrations.Retain(retainedCells);
+		}
+
+		void OnMoreTableScrolled()
+		{
+			if (_disposed)
+				return;
+
+			RegisterMoreRows();
+		}
+
+		void DetachMoreTableView()
+		{
+			_moreContentOffsetObserver?.Dispose();
+			_moreContentOffsetObserver = null;
+			_moreTableView = null;
 		}
 
 		void UpdateSelectedTabColors()
