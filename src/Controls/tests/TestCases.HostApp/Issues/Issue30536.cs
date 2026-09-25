@@ -12,6 +12,7 @@ public class Issue30536 : ContentPage
 	Button minimizeSecondWindowButton;
 	Label pointerEnterCountLabel;
 	Label pointerExitCountLabel;
+	Label secondWindowStateLabel;
 	Border theBorder;
 	int enterCount = 0;
 	int exitCount = 0;
@@ -79,6 +80,12 @@ public class Issue30536 : ContentPage
 
 		};
 
+		secondWindowStateLabel = new Label
+		{
+			Text = "Not Created",
+			AutomationId = "SecondWindowStateLabel"
+		};
+
 		// Create the border with red background
 		theBorder = new Border
 		{
@@ -104,6 +111,7 @@ public class Issue30536 : ContentPage
 		stackLayout.Children.Add(closeNewWindowButton);
 		stackLayout.Children.Add(pointerEnterCountLabel);
 		stackLayout.Children.Add(pointerExitCountLabel);
+		stackLayout.Children.Add(secondWindowStateLabel);
 		stackLayout.Children.Add(theBorder);
 
 		// Set the content
@@ -114,6 +122,9 @@ public class Issue30536 : ContentPage
 	// Windows API declarations
 	[DllImport("user32.dll")]
 	private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+	[DllImport("user32.dll")]
+	private static extern bool IsIconic(IntPtr hWnd);
  
 	// ShowWindow constants
 	private const int SW_MINIMIZE = 6;
@@ -122,6 +133,7 @@ public class Issue30536 : ContentPage
 	private void OnNewWindowButton_Clicked(object sender, EventArgs e)
 	{
 		secondWindow = new Window(new ContentPage());
+		secondWindow.Created += (sender, args) => secondWindowStateLabel.Text = "Created";
 		Application.Current.OpenWindow(secondWindow);
 	}
 
@@ -135,6 +147,7 @@ public class Issue30536 : ContentPage
 			if (hwnd != IntPtr.Zero)
 			{
 				ShowWindow(hwnd, SW_MINIMIZE);
+				secondWindowStateLabel.Text = IsIconic(hwnd) ? "Minimized" : "Minimize Failed";
 			}
 		}
 #endif
