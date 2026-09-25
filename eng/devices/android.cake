@@ -286,28 +286,28 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
-	int numOfRetries = 0;
-
-	if (IsCIBuild())
-		numOfRetries = 1;
+	if (IsCIBuild() && deviceCreate && emulatorProcess != null)
+	{
+		var packages = AdbShell("pm list packages com.android.vending", adbSettings);
+		if (packages.Any(package => package.Trim() == "package:com.android.vending"))
+		{
+			Information("Disabling Play Store background updates on the disposable CI emulator.");
+			AdbShell("pm disable-user --user 0 com.android.vending", adbSettings);
+			var disabledPackages = AdbShell("pm list packages -d --user 0 com.android.vending", adbSettings);
+			if (!disabledPackages.Any(package => package.Trim() == "package:com.android.vending"))
+				throw new InvalidOperationException("Could not disable Play Store background updates on the disposable CI emulator.");
+		}
+	}
 
 	Information("Run UITests  project {0}", project);
-	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
+	try
 	{
-		try
-		{
-			Information("Retry UITests run Count: {0}", retryCount);
-			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
-			break;
-		}
-		catch(Exception)
-		{
-			if (retryCount == numOfRetries)
-			{
-				WriteLogCat();
-				throw;
-			}
-		}
+		RunUITestsWithRetry(project, config, toolPath, resultsFileName);
+	}
+	catch
+	{
+		WriteLogCat();
+		throw;
 	}
 	Information("UI Tests completed.");
 }

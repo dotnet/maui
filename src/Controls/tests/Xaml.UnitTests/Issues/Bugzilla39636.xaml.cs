@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Xunit;
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 public partial class Bugzilla39636 : ContentPage
 {
 	[Collection("Issue")]
-	public class Tests : IDisposable
+	public class Tests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
@@ -18,7 +19,30 @@ public partial class Bugzilla39636 : ContentPage
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		public void Dispose() => DeviceInfo.SetCurrent(null);
+		public static IEnumerable<object[]> Platforms
+		{
+			get
+			{
+				foreach (var inflator in Enum.GetValues<XamlInflator>())
+				{
+					yield return new object[] { inflator, DevicePlatform.iOS, 40.0 };
+					yield return new object[] { inflator, DevicePlatform.Android, 30.0 };
+					yield return new object[] { inflator, DevicePlatform.MacCatalyst, 0.0 };
+					yield return new object[] { inflator, DevicePlatform.WinUI, 60.0 };
+				}
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(Platforms))]
+		internal void ResourceAndInlineOnPlatformUseTheSameTypedValues(XamlInflator inflator, DevicePlatform platform, double expected)
+		{
+			mockDeviceInfo.Platform = platform;
+			var page = new Bugzilla39636(inflator);
+			Assert.Equal(expected, page.testLabel.WidthRequest);
+			Assert.Equal(expected, page.testBox.WidthRequest);
+			Assert.Equal(expected, page.testBox.HeightRequest);
+		}
 
 		[Theory]
 		[XamlInflatorData]
@@ -37,4 +61,3 @@ public partial class Bugzilla39636 : ContentPage
 		}
 	}
 }
-

@@ -224,6 +224,92 @@ The harness regression tests do not require MAUI workloads or an emulator:
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --filter "FullyQualifiedName~ToolRunnerTests|FullyQualifiedName~BuildWarningsUtilitiesTests"
 ```
 
+## Choosing a Test Suite
+
+Use the least expensive suite that exercises the behavior under test:
+
+| Behavior | Suite |
+| --- | --- |
+| Bindable properties, commands, managed visual states, and control logic without handlers | `src/Controls/tests/Core.UnitTests` |
+| XAML inflation, bindings, triggers, templates, and styles without native views | `src/Controls/tests/Xaml.UnitTests` |
+| Handler/service registration, shared infrastructure, and managed disposal | `src/Core/tests/UnitTests` |
+| Shared Essentials validation, parsing, and value objects | `src/Essentials/test/UnitTests` |
+| Native handler mappings, lifecycle, platform APIs, and mobile-runtime regressions | The corresponding `DeviceTests` project |
+| Gestures, focus, accessibility, native layout, and rendered appearance | `src/Controls/tests/TestCases.Shared.Tests` with a `TestCases.HostApp` reproduction |
+
+The unit suites run on desktop .NET without launching an app or an emulator.
+Use their existing fixtures to initialize and restore shared dispatcher and application state.
+XAML scenarios should use `[XamlInflatorData]` to exercise runtime inflation, XamlC, and source generation.
+
+When migrating a device or UI test, check the implementation and existing unit coverage first.
+Move the original assertions, including failure and recovery paths, or remove the duplicate if an
+equivalent unit test already exists. For example, `TriggerBindingScenarios` checks trigger-driven
+colors, opacity, enablement, and binding updates directly instead of using screenshots to infer state.
+It reuses the gallery's view model, converters, and trigger action. Preserve a UI test when the
+regression concerns how those properties are rendered, rather than which values are assigned.
+
+For larger feature matrices, separate state combinations from native integration coverage.
+`GalleryVisualStateTests` and `GalleryBindableLayoutTests` source-link the gallery pages and
+exercise their real event handlers, bindings, styles, and collection notifications. They compare
+colors, opacity, scale, text, child order, and template selection directly, including transitions
+back to the original state. Keep representative rendering and native input tests (taps on disabled
+controls, focus, keyboard completion, and dragging); a managed event invocation does not prove
+that the native control raises or suppresses that event. When pruning an ordered UI fixture,
+preserve its navigation/setup and the starting state required by the retained tests.
+Keep imports needed by source-linked gallery files in the unit project's `Using` items,
+rather than adding imports to each gallery file solely for the unit-test build.
+
+Test Shell navigation through its managed navigation APIs and `IShellController`, rather than
+opening flyouts to read labels containing event arguments. `ShellGalleryNavigationTests` checks
+the actual page identities, stack contents, routes, navigation sources, and event ordering.
+Use the controller's selection API when reproducing platform-initiated selection: assigning
+`CurrentItem` directly does not have the same navigating/cancellation semantics.
+
+`GalleryAbsoluteLayoutTests` drives the real options page and layout manager, comparing arranged
+rectangles rather than screenshots of each proportional flag combination. Its remaining native
+proportional-layout smoke test compares native bounds and edge anchors in the same coordinate
+space, accounting for system insets without device-density assumptions. Windows retains its
+visual baseline because the Win2D-backed `BoxView` is not exposed through UI Automation.
+Do not replace that native rendering check with managed bounds or skip it. Limit soft-keyboard
+visibility queries to Android/iOS; the Windows Appium driver does not implement them.
+`GalleryButtonTests` and `GalleryMenuBarTests` similarly check real gallery bindings and commands;
+native font, image, menu accessibility, and input coverage remain separate.
+
+Distinguish safe-area policy from OS behavior. `GallerySafeAreaTests` verifies the actual pages'
+edge, padding, background, and status-label bindings without a handler. A status label saying
+`None` does not prove that content extends underneath a notch. Keep native bounds assertions for
+notches, keyboard avoidance, orientation changes, and additive safe-area padding. Reset any
+padding/options left by a removed ordered test before running subsequent native geometry checks.
+
+Keep native interaction portions of mixed fixtures and their manual gallery reproductions.
+Remove only snapshot baselines no longer referenced by any remaining test, across all platform
+directories. A managed-looking assertion is not sufficient evidence for migration: validation may
+live in a platform implementation, and a deployed mobile-runtime regression cannot be covered by
+the desktop runtime. Do not replace the behavior under test with a mock merely to move it.
+
+For retained UI coverage, disable prediction and spell checking on fixture inputs that must
+preserve exact text. Wait for replacement native elements after changing flyout content.
+WebView history tests should navigate from inline HTML to a local HTTP page and wait for
+the loaded document, rather than depending on a public website or a fixed delay.
+On newly created CI Android emulators, Play Store is disabled for the disposable device's
+lifetime so its update screen cannot reclaim the foreground after a force-stop.
+Local runs, existing emulators, physical devices, and Google Play services are unchanged.
+
+UI CI retries failed fixtures once, within the original category filter. Retrying a fixture
+preserves ordered setup without repeating all the passing fixtures. The merged TRX retains
+first-attempt results outside those fixtures and the complete retry results inside them.
+Missing cases, skipped replacements, inconsistent metadata, and test-host errors remain
+failures. Both attempt reports are retained under `TestResultsFailures`; attachments remain
+in their original deployment directories.
+VSTest can leave the `notExecuted` counter at zero for skipped tests. Retry validation
+accounts for those cases through their individual outcomes and the total/executed counts;
+the merged report still retains every skipped case.
+Compile platform-only tests only into supported UI test projects. A test-body `Assert.Ignore`
+runs after fixture setup, so a setup failure can turn an unsupported case into a failed
+result that cannot safely be replaced by a skipped retry.
+Do not add a whole-task retry on top of this: it can repeat hours of successful UI coverage
+and leave a canceled job publishing an earlier failure instead of the retry results.
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.

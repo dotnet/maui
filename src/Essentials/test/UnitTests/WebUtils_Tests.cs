@@ -6,6 +6,19 @@ namespace Tests
 {
 	public class WebUtils_Tests
 	{
+		[Theory]
+		[InlineData("xamarinessentials://#access_token=blah&refresh_token=blah2&expires=1", "blah", "blah2", "1")]
+		[InlineData("xamarinessentials://?access_token=blah&refresh_token=blah2&expires=1", "blah", "blah2", "1")]
+		[InlineData("xamarinessentials://?access_token=access+token+with+spaces&refresh_token=refresh%20token%20with%20spaces&expires=1", "access token with spaces", "refresh token with spaces", "1")]
+		public void ParseQueryString(string url, string accessToken, string refreshToken, string expires)
+		{
+			var result = Microsoft.Maui.WebUtils.ParseQueryString(new Uri(url));
+
+			Assert.Equal(accessToken, result["access_token"]);
+			Assert.Equal(refreshToken, result["refresh_token"]);
+			Assert.Equal(expires, result["expires"]);
+		}
+
 		// ============================================================
 		// ResolveRelativePath — valid cases
 		// ============================================================

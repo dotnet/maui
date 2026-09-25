@@ -653,6 +653,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[Fact]
 		// https://github.com/dotnet/maui/issues/35399
+		public void ChangeVisualStateShouldExitSelectedStateAfterDeselect()
+		{
+			var element = new SelectableView();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			element.IsSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			element.IsSelected = false;
+			Assert.Equal(NormalStateName, groups[0].CurrentState.Name);
+
+			element.IsSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		class SelectableView : ContentView
+		{
+			public static readonly BindableProperty IsSelectedProperty =
+				BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(SelectableView), false,
+					propertyChanged: (bindable, _, _) => ((SelectableView)bindable).ChangeVisualState());
+
+			public bool IsSelected
+			{
+				get => (bool)GetValue(IsSelectedProperty);
+				set => SetValue(IsSelectedProperty, value);
+			}
+
+			protected internal override void ChangeVisualState()
+			{
+				if (IsSelected && IsEnabled)
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected);
+				else
+					base.ChangeVisualState();
+			}
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
 		public void SelectHoverDeselectRestoresPointerOverState()
 		{
 			var element = new Label();
