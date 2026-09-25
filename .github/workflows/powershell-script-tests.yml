@@ -28,6 +28,7 @@ on:
       - 'global.json'
       - 'eng/Versions.props'
       - 'eng/Version.Details.xml'
+      - 'eng/helix.proj'
       - 'eng/pipelines/arcade/stage-helix-tests.yml'
       - 'eng/pipelines/ci.Tests.ps1'
       - 'eng/pipelines/ci-copilot.yml'

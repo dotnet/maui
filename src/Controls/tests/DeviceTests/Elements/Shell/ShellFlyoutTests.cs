@@ -139,7 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-		
+
 // This test is passing locally for android
 // the way the view positions with headless vs not headless
 // is causing this to be an issue
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			});
 		}
-		
+
                 [Theory]
                 [ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
                 public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
@@ -292,87 +292,87 @@ namespace Microsoft.Maui.DeviceTests
 // Because this works locally I'm not
 // worried for this pr.
 #if IOS
-        [Theory]
+		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
 		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
-                {
-                        // Skip on iOS 26+ due to FlyoutHeader collapse behavior changes
-                        // See: https://github.com/dotnet/maui/issues/33004
-                        if (OperatingSystem.IsIOSVersionAtLeast(26))
-                                return;
+		{
+			// Skip on iOS 26+ due to FlyoutHeader collapse behavior changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				return;
 
-                        var headerRequestedHeight = 250;
-                        var headerMinHeight = 100;
+			var headerRequestedHeight = 250;
+			var headerMinHeight = 100;
 
-                        await RunShellTest(shell =>
-                        {
-                                shell.FlyoutHeaderBehavior = flyoutHeaderBehavior;
-                                var layout = new VerticalStackLayout()
-                                {
-                                        new Label()
-                                        {
-                                                Text = "Header Content"
-                                        }
-                                };
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutHeaderBehavior = flyoutHeaderBehavior;
+				var layout = new VerticalStackLayout()
+				{
+					new Label()
+					{
+						Text = "Header Content"
+					}
+				};
 
-                                layout.HeightRequest = headerRequestedHeight;
+				layout.HeightRequest = headerRequestedHeight;
 
-                                shell.FlyoutHeader = new ScrollView()
-                                {
-                                        MinimumHeightRequest = headerMinHeight,
-                                        Content = layout
-                                };
+				shell.FlyoutHeader = new ScrollView()
+				{
+					MinimumHeightRequest = headerMinHeight,
+					Content = layout
+				};
 
-                                ShellFlyoutHeaderScrollTestCases.SetFlyoutContent(contentType, shell);
-                        },
-                        async shell =>
-                        {
+				ShellFlyoutHeaderScrollTestCases.SetFlyoutContent(contentType, shell);
+			},
+			async shell =>
+			{
 #if ANDROID
                                 var shellContext = (IShellContext)shell.Handler;
 #elif IOS || MACCATALYST
-                                var shellContext = (ShellHandler)shell.Handler;
+				var shellContext = (ShellHandler)shell.Handler;
 #endif
-                                await OpenFlyout(shellContext);
-                                var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				await OpenFlyout(shellContext);
+				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
-                                AssertionExtensions.CloseEnough(headerRequestedHeight, initialBox.Height, 0.3);
+				AssertionExtensions.CloseEnough(headerRequestedHeight, initialBox.Height, 0.3);
 
-                                var bottomOffset = await ScrollFlyoutToBottom(shellContext);
-                                var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+				var bottomOffset = await ScrollFlyoutToBottom(shellContext);
+				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
-                                if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
-                                {
-                                        // UIKit lays out the resized header on a subsequent layout pass.
-                                        await AssertionExtensions.AssertEventually(() =>
-                                        {
-                                                scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
-                                                return Math.Abs(headerMinHeight - scrolledBox.Height) <= 0.3;
-                                        }, message: "Flyout header did not collapse to its minimum height.");
-                                }
-                                else
-                                {
-                                        // After scrolling, the header height may include the safe area margin
-                                        // depending on the content type and how InvalidateMeasure is triggered.
-                                        var safeAreaTop = GetSafeArea(shell.Handler.ToPlatform()).Top;
-                                        Assert.True(
-                                                scrolledBox.Height >= headerRequestedHeight - 0.3 &&
-                                                scrolledBox.Height <= headerRequestedHeight + safeAreaTop + 0.3,
-                                                $"Header Height: expected between {headerRequestedHeight} and {headerRequestedHeight + safeAreaTop}, actual: {scrolledBox.Height}");
+				if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
+				{
+					// UIKit lays out the resized header on a subsequent layout pass.
+					await AssertionExtensions.AssertEventually(() =>
+					{
+						scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
+						return Math.Abs(headerMinHeight - scrolledBox.Height) <= 0.3;
+					}, message: "Flyout header did not collapse to its minimum height.");
+				}
+				else
+				{
+					// After scrolling, the header height may include the safe area margin
+					// depending on the content type and how InvalidateMeasure is triggered.
+					var safeAreaTop = GetSafeArea(shell.Handler.ToPlatform()).Top;
+					Assert.True(
+						scrolledBox.Height >= headerRequestedHeight - 0.3 &&
+						scrolledBox.Height <= headerRequestedHeight + safeAreaTop + 0.3,
+						$"Header Height: expected between {headerRequestedHeight} and {headerRequestedHeight + safeAreaTop}, actual: {scrolledBox.Height}");
 
-                                        if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
-                                        {
-                                                // scrolledBox.Y is negative because the header is scrolled up
-                                                var diff = scrolledBox.Y + scrolledBox.Height;
-                                                var epsilon = 0.3;
-                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is not enough to cover height ({scrolledBox.Height}). Epsilon: {epsilon}");
-                                        }
-                                        else
-                                        {
-                                                AssertionExtensions.CloseEnough(GetSafeArea(shell.Handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
-                                        }
-                                }
-                        });
-                }
+					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
+					{
+						// scrolledBox.Y is negative because the header is scrolled up
+						var diff = scrolledBox.Y + scrolledBox.Height;
+						var epsilon = 0.3;
+						Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is not enough to cover height ({scrolledBox.Height}). Epsilon: {epsilon}");
+					}
+					else
+					{
+						AssertionExtensions.CloseEnough(GetSafeArea(shell.Handler.ToPlatform()).Top, scrolledBox.Y, 0.3, "Header position");
+					}
+				}
+			});
+		}
 
 #endif
 
@@ -469,7 +469,7 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS || ANDROID
 			return Thickness.Zero;
 #endif
-			
+
 		}
 #endif
 

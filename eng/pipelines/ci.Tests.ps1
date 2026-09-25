@@ -54,6 +54,44 @@ Describe 'CI provisioning' {
     }
   }
 
+  Describe 'Helix MSBuild test payload' {
+    BeforeAll {
+      $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+      [xml]$helixProject = Get-Content -LiteralPath (Join-Path $repoRoot 'eng/helix.proj') -Raw
+      $stagingTarget = $helixProject.SelectSingleNode("/Project/Target[@Name='PrepareMauiHelixPayload']")
+
+      # Execute the real staging target without restoring the Helix SDK or submitting jobs.
+      $stagingProject = Join-Path $TestDrive 'staging.proj'
+      Set-Content -LiteralPath $stagingProject -Value "<Project>$($stagingTarget.OuterXml)</Project>"
+      $payloadDir = Join-Path $TestDrive 'payload'
+      $output = & dotnet msbuild $stagingProject -nologo -v:minimal -t:PrepareMauiHelixPayload `
+        "-p:RepoRoot=$repoRoot/" "-p:MauiHelixPayloadDir=$payloadDir/"
+      if ($LASTEXITCODE -ne 0) {
+        throw "Helix payload staging failed with exit code ${LASTEXITCODE}: $output"
+      }
+    }
+
+    It 'publishes the staged source files at their source-relative paths' {
+      $helixProject.SelectSingleNode(
+        '/Project/ItemGroup/HelixCorrelationPayload[@Include="$(MauiHelixPayloadDir)src"]/Destination').InnerText |
+        Should -Be 'src'
+    }
+
+    It 'stages an unchanged copy of <File>' -TestCases @(
+      @{ File = 'src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets' }
+      @{ File = 'src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets' }
+      @{ File = 'src/Maui.InTree.props' }
+      @{ File = 'src/Maui.InTree.targets' }
+    ) {
+      param($File)
+
+      $stagedFile = Join-Path $payloadDir $File
+      $stagedFile | Should -Exist
+      (Get-FileHash -LiteralPath $stagedFile).Hash |
+        Should -Be (Get-FileHash -LiteralPath (Join-Path $repoRoot $File)).Hash
+    }
+  }
+
   It 'fails before simulator setup when the required Xcode is missing' {
     $missingXcodeMatch = [regex]::Match(
       $provision,

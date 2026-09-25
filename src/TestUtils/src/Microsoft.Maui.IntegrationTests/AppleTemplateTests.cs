@@ -52,14 +52,15 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		private readonly IOSSimulatorFixture _simulatorFixture;
 
-		public AppleTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, IOSSimulatorFixture simulatorFixture) 
+		public AppleTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, IOSSimulatorFixture simulatorFixture)
 			: base(fixture, output)
 		{
 			_simulatorFixture = simulatorFixture;
-			
+
 			// Per-test setup: skip if not on macOS
 			if (!TestEnvironment.IsMacOS)
-				if (true) return; // Skip: "Running Apple templates is only supported on macOS."
+				if (true)
+					return; // Skip: "Running Apple templates is only supported on macOS."
 		}
 
 		// DotNetPrevious test methods
@@ -135,6 +136,13 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			var completionMarker = $"MAUI_APP_COMPLETED_{Guid.NewGuid():N}";
+			var probeFile = Path.Combine(projectDir, "Platforms", "iOS", "AppleTemplateLaunchProbe.cs");
+			FileUtilities.CreateFileFromResource("AppleTemplateLaunchProbe.cs", probeFile);
+			FileUtilities.ReplaceInFile(probeFile, "__MAUI_APP_COMPLETION_MARKER__", completionMarker);
+			FileUtilities.ReplaceInFile(Path.Combine(projectDir, "MauiProgram.cs"), "return builder.Build();",
+				"#if IOS\n\t\tAppleTemplateLaunchProbe.Configure(builder);\n#endif\n\t\treturn builder.Build();");
+
 			var buildProps = BuildProps;
 			var runtimeIdentifier = "";
 
@@ -147,8 +155,8 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 				buildProps.Add("_IsPublishing=true"); // using dotnet build with -p:_IsPublishing=true enables targeting simulators
-				// Restrict to iOS-only to avoid restoring NativeAOT packages for other platforms (e.g., Android)
-				// which may not be available in the configured NuGet sources
+													  // Restrict to iOS-only to avoid restoring NativeAOT packages for other platforms (e.g., Android)
+													  // which may not be available in the configured NuGet sources
 				buildProps.Add($"TargetFrameworks={framework}-ios");
 				// NativeAOT builds default to device (ios-arm64) when using PublishAot=true.
 				// We must explicitly specify the simulator RID so the app can run on the simulator in our tests.
@@ -175,9 +183,9 @@ namespace Microsoft.Maui.IntegrationTests
 			Directory.CreateDirectory(xhResultsDir);
 
 			// Let XHarness find the simulator based on target (e.g., ios-simulator-64_18.5).
-			// Don't pass a specific UDID - this gives XHarness full control over the simulator
-			// lifecycle and avoids race conditions with watchdog disabling.
-			Assert.True(XHarness.RunAppleForTimeout(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, output: _output),
+			// Only pin a UDID when a dedicated simulator was explicitly selected.
+			Assert.True(XHarness.RunApple(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, completionMarker,
+				deviceUdid: TestEnvironment.IosTestDeviceUdid, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

@@ -488,6 +488,15 @@ def validate_no_repository_control_symlinks!(repo_root, ref, location)
   end
 end
 
+def validate_no_git_tree_symlinks!(repo_root, ref, location)
+  output = run_git(repo_root, "ls-tree", "-r", ref, strip: false)
+  symlink = output.lines.find { |line| line.start_with?("120000 ") }
+  return unless symlink
+
+  _metadata, path = symlink.chomp.split("\t", 2)
+  fail!("#{location} contains symlink: #{path}")
+end
+
 def validate_repository_controls!(repo_root, ref, trusted_ref, location)
   return unless trusted_ref
 
@@ -540,6 +549,7 @@ def validate_effective_git_destinations!(document, repo_root, trusted_control_re
       fail!("#{location}.git.ref is unavailable for destination validation: #{e.message}")
     end
     validate_repository_controls!(repo_root, ref, trusted_control_ref, "#{location}.git.ref")
+    validate_no_git_tree_symlinks!(repo_root, ref, "#{location}.git.ref")
     files.each_with_index do |file, index|
       validate_git_destination!(repo_root, ref, file.fetch("dest"), "#{location}.files[#{index}].dest")
     end
@@ -900,7 +910,9 @@ def main(argv = ARGV)
   validate_only = argv.include?("--validate-only")
   skills_root_relative = File.join(".github", "skills")
   validate_no_checkout_symlinks!(skills_root_relative, repo_root, "skills root")
-  skills_root = File.realpath(File.join(repo_root, skills_root_relative))
+  skills_root_path = File.join(repo_root, skills_root_relative)
+  validate_no_nested_symlinks!(skills_root_path, "skills root")
+  skills_root = File.realpath(skills_root_path)
   fail!("skills root escapes checkout: #{skills_root}") unless inside?(skills_root, repo_root)
   requested_tests_relative = Pathname.new(requested_tests_path).relative_path_from(Pathname.new(repo_root)).to_s
   tests_match = requested_tests_relative.match(%r{\A\.github/skills/([^/]+)/tests\z})
@@ -917,6 +929,7 @@ def main(argv = ARGV)
     allow_missing: allow_missing_trusted_control_ref
   )
   validate_repository_controls!(repo_root, "HEAD", trusted_control_ref, "candidate checkout")
+  validate_no_git_tree_symlinks!(repo_root, "HEAD", "candidate checkout") if File.exist?(File.join(repo_root, ".git"))
 
   spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
   fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
