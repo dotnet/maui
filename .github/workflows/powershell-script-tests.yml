@@ -24,6 +24,7 @@ on:
       - '.github/skills/verify-tests-fail-without-fix/scripts/*.ps1'
       - '.github/workflows/**'
       - 'eng/scripts/**'
+      - 'eng/devices/android.cake'
       - 'eng/pipelines/ci-copilot.yml'
       - 'eng/pipelines/ci-official.yml'
       - 'eng/pipelines/ci-official.Tests.ps1'
