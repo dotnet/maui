@@ -1,3 +1,6 @@
+using System.IO.Compression;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -15,6 +18,132 @@ public class ResizetizerTests : BaseBuildTest
 			<rect x="0" y="0" width="456" height="456" fill="#512BD4" />
 		</svg>
 		""";
+
+	const string FilterSvgContents =
+		"""
+		<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+		<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
+			<filter id="blur">
+				<feGaussianBlur stdDeviation="8" />
+			</filter>
+			<rect x="0" y="0" width="456" height="456" fill="#512BD4" filter="url(#blur)" />
+		</svg>
+		""";
+
+	const string PositionedTextSvgContents =
+		"""
+		<?xml version="1.0" encoding="UTF-8"?>
+		<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120">
+			<rect width="320" height="120" rx="16" fill="#0B6E4F" />
+			<text fill="#FFFFFF" font-family="Arial, sans-serif" font-size="42" font-weight="700">
+				<tspan x="42 88 134 180 226" y="76">CLICK</tspan>
+			</text>
+		</svg>
+		""";
+
+	[Fact]
+	public void PackageContainsNetStandardSkiaSharpAssembly()
+	{
+		SetTestIdentifier();
+
+		var packageDirectory = Path.Combine(
+			Path.GetDirectoryName(_fixture.TestNuGetConfig)!,
+			"extra-packages");
+		var packagePath = Path.Combine(
+			packageDirectory,
+			$"Microsoft.Maui.Resizetizer.{MauiPackageVersion}.nupkg");
+
+		Assert.True(File.Exists(packagePath), $"Package was not found: {packagePath}");
+
+		using var package = ZipFile.OpenRead(packagePath);
+		var skiaSharpEntry = package.GetEntry("buildTransitive/SkiaSharp.dll");
+
+		Assert.NotNull(skiaSharpEntry);
+
+		using var packageStream = skiaSharpEntry.Open();
+		using var assemblyStream = new MemoryStream();
+		packageStream.CopyTo(assemblyStream);
+		assemblyStream.Position = 0;
+
+		using var peReader = new PEReader(assemblyStream);
+		var metadataReader = peReader.GetMetadataReader();
+
+		Assert.Equal(".NETStandard,Version=v2.0", GetTargetFramework(metadataReader));
+	}
+
+	static string? GetTargetFramework(MetadataReader metadataReader)
+	{
+		foreach (var attributeHandle in metadataReader.GetAssemblyDefinition().GetCustomAttributes())
+		{
+			var attribute = metadataReader.GetCustomAttribute(attributeHandle);
+			if (attribute.Constructor.Kind != HandleKind.MemberReference)
+				continue;
+
+			var constructor = metadataReader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+			if (constructor.Parent.Kind != HandleKind.TypeReference)
+				continue;
+
+			var attributeType = metadataReader.GetTypeReference((TypeReferenceHandle)constructor.Parent);
+			if (metadataReader.GetString(attributeType.Namespace) != "System.Runtime.Versioning" ||
+				metadataReader.GetString(attributeType.Name) != "TargetFrameworkAttribute")
+				continue;
+
+			var value = metadataReader.GetBlobReader(attribute.Value);
+			if (value.ReadUInt16() != 1)
+				return null;
+
+			return value.ReadSerializedString();
+		}
+
+		return null;
+	}
+
+	[Theory]
+	[InlineData("issue38319", FilterSvgContents, "SVG filter", "38319")]
+	[InlineData("issue38507", PositionedTextSvgContents, "positioned text", "38507")]
+	public void PackagedResizetizerProcessesSvgFiltersAndPositionedText(
+		string imageName,
+		string svgContents,
+		string feature,
+		string issueNumber)
+	{
+		SetTestIdentifier(imageName);
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		FileUtilities.ReplaceInFile(
+			projectFile,
+			"</Project>",
+			$"""
+			<PropertyGroup>
+				<MauiVersion>{MauiPackageVersion}</MauiVersion>
+			</PropertyGroup>
+			</Project>
+			""");
+
+		var imagesDirectory = Path.Combine(projectDir, "Resources", "Images");
+		File.WriteAllText(Path.Combine(imagesDirectory, $"{imageName}.svg"), svgContents);
+
+		var framework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", framework: framework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		var outputPath = Path.Combine(
+			projectDir,
+			"obj",
+			"Debug",
+			framework,
+			"resizetizer",
+			"r",
+			"drawable-mdpi",
+			$"{imageName}.png");
+		Assert.True(File.Exists(outputPath),
+			$"Resizetizer did not generate the {feature} image for #{issueNumber}.");
+	}
 
 	[Theory]
 	// windows unpackaged/exe
