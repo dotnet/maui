@@ -18,23 +18,21 @@ public class Issue2951 : _IssuesUITest
 	{
 		App.WaitForElement("Ready");
 
-		App.RetryAssert(() => Assert.That(App.FindElements("btnChangeStatus").Count(), Is.EqualTo(3)));
+		App.RetryAssert(() => Assert.That(FindStatusButtons().Count(), Is.EqualTo(3)));
 
-		var buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
-		buttonToClick.Click();
+		App.Tap("ChangeStatusB");
 
 		App.RetryAssert(() => Assert.That(
-			App.FindElements("btnChangeStatus").Select(button => button.GetText()),
+			FindStatusButtons().Select(button => button.GetText()),
 			Is.EqualTo(new[] { "A", "B", "A" })));
 
-		var updatedButton = App.FindElements("btnChangeStatus").ElementAt(1);
-		updatedButton.Click();
-		App.RetryAssert(() => Assert.That(App.FindElements("btnChangeStatus").Count(), Is.EqualTo(2)));
+		App.Tap("ChangeStatusB");
+		App.RetryAssert(() => Assert.That(FindStatusButtons().Count(), Is.EqualTo(2)));
+		App.WaitForNoElement("ChangeStatusB");
 
-		var newSecondButton = App.FindElements("btnChangeStatus").ElementAt(1);
-		newSecondButton.Click();
+		App.Tap("ChangeStatusC");
 		App.RetryAssert(() => Assert.That(
-			App.FindElements("btnChangeStatus").Select(button => button.GetText()),
+			FindStatusButtons().Select(button => button.GetText()),
 			Is.EqualTo(new[] { "A", "B" })));
 
 		// Use VerifyScreenshot to ensure the button background color has been updated properly
@@ -42,4 +40,8 @@ public class Issue2951 : _IssuesUITest
 		VerifyScreenshot();
 
 	}
+
+	IEnumerable<IUIElement> FindStatusButtons() =>
+		new[] { "ChangeStatusA", "ChangeStatusB", "ChangeStatusC" }
+			.SelectMany(id => App.FindElements(id));
 }
