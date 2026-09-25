@@ -50,6 +50,8 @@ namespace Microsoft.Maui.Controls
 
 			_isConnected = true;
 			MenuItem.Parent = this;
+			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
+			Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
 			_menuItemPropertyChangedProxy.Subscribe(MenuItem, _onMenuItemPropertyChanged);
 		}
 
