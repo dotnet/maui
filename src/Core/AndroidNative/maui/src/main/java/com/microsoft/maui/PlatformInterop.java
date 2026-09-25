@@ -61,6 +61,7 @@ import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -356,19 +357,12 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
+        InputStream replayableStream = new ReplayableInputStream(inputStream);
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(inputStream)
+            .load(replayableStream)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        loadInto(builder, imageView, false, callback, inputStream);
-    }
-
-    public static void loadImageFromBytes(ImageView imageView, byte[] bytes, ImageLoaderCallback callback) {
-        RequestBuilder<Drawable> builder = Glide
-            .with(imageView)
-            .load(bytes)
-            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        loadInto(builder, imageView, false, callback, bytes);
+        loadInto(builder, imageView, false, callback, replayableStream);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -412,23 +406,12 @@ public class PlatformInterop {
             callback.onComplete(false, null, null);
             return;
         }
+        InputStream replayableStream = new ReplayableInputStream(inputStream);
         RequestBuilder<Drawable> builder = Glide
             .with(context)
-            .load(inputStream)
+            .load(replayableStream)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        load(builder, context, false, callback, inputStream);
-    }
-
-    public static void loadImageFromBytes(Context context, byte[] bytes, ImageLoaderCallback callback) {
-        if (isContextDestroyed(context)) {
-            callback.onComplete(false, null, null);
-            return;
-        }
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
-            .load(bytes)
-            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        load(builder, context, false, callback, bytes);
+        load(builder, context, false, callback, replayableStream);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -714,5 +697,149 @@ public class PlatformInterop {
             return getActivity(baseContext);
         }
         return null;
+    }
+
+    private static final class ReplayableInputStream extends InputStream {
+        private static final int BUFFER_SIZE = 16 * 1024;
+
+        private final InputStream source;
+        private final byte[] singleByte = new byte[1];
+        private byte[] cache = new byte[BUFFER_SIZE];
+        private int cacheLength;
+        private int position;
+        private int mark;
+        private boolean sourceExhausted;
+        private boolean sourceClosed;
+
+        ReplayableInputStream(InputStream source) {
+            this.source = source;
+        }
+
+        @Override
+        public synchronized int read() throws IOException {
+            int count = read(singleByte, 0, 1);
+            return count == -1 ? -1 : singleByte[0] & 0xff;
+        }
+
+        @Override
+        public synchronized int read(@NonNull byte[] bytes, int offset, int length) throws IOException {
+            if (offset < 0 || length < 0 || length > bytes.length - offset)
+                throw new IndexOutOfBoundsException();
+
+            if (length == 0)
+                return 0;
+
+            int count = Math.min(length, cacheLength - position);
+            if (count > 0) {
+                System.arraycopy(cache, position, bytes, offset, count);
+                position += count;
+            }
+
+            if (count == length || sourceExhausted)
+                return count == 0 ? -1 : count;
+
+            int sourceCount = source.read(bytes, offset + count, length - count);
+            if (sourceCount == -1) {
+                sourceExhausted = true;
+                return count == 0 ? -1 : count;
+            }
+
+            if (sourceCount > 0) {
+                ensureCacheCapacity(cacheLength + sourceCount);
+                System.arraycopy(bytes, offset + count, cache, cacheLength, sourceCount);
+                cacheLength += sourceCount;
+                position += sourceCount;
+            }
+
+            return count + sourceCount;
+        }
+
+        @Override
+        public synchronized long skip(long byteCount) throws IOException {
+            if (byteCount <= 0)
+                return 0;
+
+            long skipped = Math.min(byteCount, cacheLength - position);
+            position += (int)skipped;
+
+            byte[] buffer = new byte[BUFFER_SIZE];
+            while (skipped < byteCount) {
+                int count = read(buffer, 0, (int)Math.min(buffer.length, byteCount - skipped));
+                if (count == -1)
+                    break;
+                skipped += count;
+            }
+
+            return skipped;
+        }
+
+        @Override
+        public synchronized int available() throws IOException {
+            long available = cacheLength - position;
+            if (!sourceExhausted)
+                available += source.available();
+            return (int)Math.min(available, Integer.MAX_VALUE);
+        }
+
+        @Override
+        public synchronized void close() throws IOException {
+            IOException failure = null;
+            if (!sourceClosed) {
+                byte[] buffer = new byte[BUFFER_SIZE];
+                try {
+                    while (!sourceExhausted) {
+                        int count = source.read(buffer);
+                        if (count == -1) {
+                            sourceExhausted = true;
+                        } else if (count > 0) {
+                            ensureCacheCapacity(cacheLength + count);
+                            System.arraycopy(buffer, 0, cache, cacheLength, count);
+                            cacheLength += count;
+                        }
+                    }
+                } catch (IOException exception) {
+                    failure = exception;
+                }
+
+                try {
+                    source.close();
+                } catch (IOException exception) {
+                    if (failure == null)
+                        failure = exception;
+                    else
+                        failure.addSuppressed(exception);
+                }
+                sourceClosed = true;
+            }
+
+            position = 0;
+            mark = 0;
+
+            if (failure != null)
+                throw failure;
+        }
+
+        @Override
+        public synchronized void mark(int readLimit) {
+            mark = position;
+        }
+
+        @Override
+        public synchronized void reset() {
+            position = mark;
+        }
+
+        @Override
+        public boolean markSupported() {
+            return true;
+        }
+
+        private void ensureCacheCapacity(int requiredCapacity) {
+            if (requiredCapacity <= cache.length)
+                return;
+
+            int newCapacity = Math.max(requiredCapacity, cache.length * 2);
+            cache = Arrays.copyOf(cache, newCapacity);
+        }
     }
 }

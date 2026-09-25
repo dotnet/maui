@@ -19,29 +19,30 @@ namespace Microsoft.Maui
 
 			if (!streamImageSource.IsEmpty)
 			{
+				Stream? stream = null;
 				try
 				{
-					byte[] bytes;
-					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken))
-					{
-						if (stream is null)
-						{
-							throw new InvalidOperationException("Unable to load image stream.");
-						}
-
-						bytes = await GetStreamBytesAsync(stream, cancellationToken);
-					}
+					stream = await streamImageSource.GetStreamAsync(cancellationToken);
 
 					var callback = new ImageLoaderCallback();
 
-					PlatformInterop.LoadImageFromBytes(imageView, bytes, callback);
+					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
 
-					return await callback.Result;
+					var result = await callback.Result;
+
+					stream?.Dispose();
+
+					return result;
 				}
 				catch (Exception ex)
 				{
 					Logger?.LogWarning(ex, "Unable to load image stream.");
 					throw;
+				}
+				finally
+				{
+					if (stream != null)
+						GC.KeepAlive(stream);
 				}
 			}
 
@@ -54,40 +55,35 @@ namespace Microsoft.Maui
 
 			if (!streamImageSource.IsEmpty)
 			{
+				Stream? stream = null;
+
 				try
 				{
-					byte[] bytes;
-					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false))
-					{
-						if (stream is null)
-						{
-							throw new InvalidOperationException("Unable to load image stream.");
-						}
-
-						bytes = await GetStreamBytesAsync(stream, cancellationToken).ConfigureAwait(false);
-					}
+					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromBytes(context, bytes, drawableCallback);
+					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
 
-					return await drawableCallback.Result.ConfigureAwait(false);
+					var result = await drawableCallback.Result.ConfigureAwait(false);
+
+					stream?.Dispose();
+
+					return result;
 				}
 				catch (Exception ex)
 				{
 					Logger?.LogWarning(ex, "Unable to load image stream.");
 					throw;
 				}
+				finally
+				{
+					if (stream != null)
+						GC.KeepAlive(stream);
+				}
 			}
 
 			return null;
-		}
-
-		static async Task<byte[]> GetStreamBytesAsync(Stream stream, CancellationToken cancellationToken)
-		{
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-			return memoryStream.ToArray();
 		}
 	}
 }
