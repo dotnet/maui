@@ -18,6 +18,6 @@ public class Issue38813 : _IssuesUITest
     {
         App.WaitForElement("Issue38813Button");
         App.Tap("Issue38813Button");
-        App.WaitForElement("Issue38813Label");
+        VerifyScreenshot();
     }
 }
