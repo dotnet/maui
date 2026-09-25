@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test, Order(1)]
 		[Category(UITestCategories.Shell)]
+		[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void EnsureCustomFlyoutIconColor()
 		{
 			App.WaitForElement("IconColorChangeButton");
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test, Order(2)]
 		[Category(UITestCategories.Shell)]
+		[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 		public void EnsureFlyoutIconWithForegroundColor()
 		{
 			string changeColor = "IconColorChangeButton";

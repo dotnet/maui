@@ -7,13 +7,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_ContentPage : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
+	public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
 
-    public Issue28986_ContentPage(TestDevice device) : base(device)
-    {
-    }
+	public Issue28986_ContentPage(TestDevice device) : base(device)
+	{
+	}
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaMainGridBasicFunctionality()
 	{
@@ -133,6 +133,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / net11.0 / release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void SafeAreaNoWhiteSpaceAfterKeyboardDismissAndEdgeToggle()
 	{
 		App.WaitForElement("ContentGrid");

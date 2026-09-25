@@ -16,6 +16,7 @@ public class Issue32941 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellContentShouldRespectSafeAreaEdges_After_Navigation()
 	{
 		App.WaitForElement("MainPageLabel");

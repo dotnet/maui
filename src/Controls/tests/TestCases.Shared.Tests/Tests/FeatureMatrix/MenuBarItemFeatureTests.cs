@@ -86,6 +86,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 
 	[Test, Order(5)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_LocationsMenuChangeLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -115,6 +116,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(6)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_LocationsMenuAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -141,6 +143,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(7)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_LocationsMenuEditLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -169,6 +172,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_LocationsMenuRemoveLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -191,6 +195,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_ViewMenuRefreshCommand()
 	{
 		App.WaitForElement("ResetButton");
@@ -306,6 +311,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(14)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_DynamicLocationMenuItems()
 	{
 		App.WaitForElement("ResetButton");
@@ -357,6 +363,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(16)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_AddMultipleLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -390,6 +397,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_CancelAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -411,6 +419,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_ResetRestoresDefaultLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -488,6 +497,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(21)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_EntryVisibilityToggling()
 	{
 		App.WaitForElement("ResetButton");
@@ -513,6 +523,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(22)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void MenuBarItem_AddEmptyLocationValidation()
 	{
 		App.WaitForElement("ResetButton");

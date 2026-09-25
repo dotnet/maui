@@ -21,9 +21,10 @@ public class Issue35826 : _IssuesUITest
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
 	// This test belongs to the Essentials category.
-    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
+	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
@@ -62,7 +63,7 @@ public class Issue35826 : _IssuesUITest
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
 	// This test belongs to the Essentials category.
-    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
+	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void OverlappingPhotoPickerRequestsAreRejected()
@@ -87,7 +88,7 @@ public class Issue35826 : _IssuesUITest
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
 	// This test belongs to the Essentials category.
-    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
+	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void FinishingLaunchingActivityCancelsPendingPhotoPicker()

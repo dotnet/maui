@@ -14,6 +14,7 @@ public class Issue32419 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellFlyoutContentAlignedInRTL()
 	{
 		App.WaitForElement("homePageLabel");
@@ -22,6 +23,7 @@ public class Issue32419 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellMenuItemsAlignedInRTL()
 	{
 		App.WaitForElement("homePageLabel");

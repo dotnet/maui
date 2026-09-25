@@ -7,16 +7,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33227 : _IssuesUITest
 {
-    public Issue33227(TestDevice device) : base(device)
-    {
-    }
+	public Issue33227(TestDevice device) : base(device)
+	{
+	}
 
-    public override string Issue => "Shell NavigationBar colors persist when navigating between pages";
+	public override string Issue => "Shell NavigationBar colors persist when navigating between pages";
 
-    [Test]
-    [Category(UITestCategories.Shell)]
-    public void ShellColorsResetOnNavigation()
-    {
+	[Test]
+	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
+	public void ShellColorsResetOnNavigation()
+	{
 #if WINDOWS
         App.TapTab("Tab1");
         App.WaitForElement("Page2");
@@ -26,10 +27,10 @@ public class Issue33227 : _IssuesUITest
         App.Tap("Page1");
         App.WaitForElement("Page1Label");
 #else
-        App.TapTab("Page2");
-        App.TapTab("Page1");
-        App.WaitForElement("Page1Label");
+		App.TapTab("Page2");
+		App.TapTab("Page1");
+		App.WaitForElement("Page1Label");
 #endif
-        VerifyScreenshot();
-    }
+		VerifyScreenshot();
+	}
 }

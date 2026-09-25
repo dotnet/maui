@@ -543,6 +543,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigating event fires with Source=ShellItemChanged when switching flyout items.
 	[Test, Order(30)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void NavEvents_ShellItemChanged_NavigatingEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
@@ -564,6 +565,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event fires with Source=ShellItemChanged; Current is the new item's page.
 	[Test, Order(31)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void NavEvents_ShellItemChanged_NavigatedEvent_CurrentIsPage2PreviousIsMain()
 	{
 		App.WaitForElement("Page2ContentA1PageLabel");
@@ -579,6 +581,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	// GoToAsync source is determined by structural path change, not by the API called.
 	// "//main/MainContent" from Page2 crosses a ShellItem boundary → Source=ShellItemChanged.
 	[Test, Order(32)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void NavEvents_GoToAsyncAbsoluteRoute_NavigatingEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("Page2ContentA1PageLabel");
@@ -591,6 +594,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Shell.Navigated also reports ShellItemChanged for the same GoToAsync absolute route.
 	[Test, Order(33)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void NavEvents_GoToAsyncAbsoluteRoute_NavigatedEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("MainPageIdentityLabel");

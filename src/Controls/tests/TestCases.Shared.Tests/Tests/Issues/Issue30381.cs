@@ -15,6 +15,7 @@ public class Issue30381 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.WebView)]
+    [FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
     public void WebViewCanGoForwardShouldHaveValueAfterNavigation()
     {
         App.WaitForElement("ClickLinkButton");

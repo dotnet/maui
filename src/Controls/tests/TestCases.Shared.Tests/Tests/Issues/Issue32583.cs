@@ -14,11 +14,12 @@ public class Issue32583 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void NavigationBarShouldRemainHiddenAfterNavigatingBack()
 	{
 		App.WaitForElement("Issue32583NavigateButton");
 		App.Tap("Issue32583NavigateButton");
-		
+
 		App.WaitForElement("Issue32583BackButton");
 		App.Tap("Issue32583BackButton");
 

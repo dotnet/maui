@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_GroupingFeatureTests : _GalleryUITest
 {
 	public const string GroupingFeatureMatrix = "CollectionView Feature Matrix";
@@ -82,6 +83,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyGroupHeaderTemplate_WithFooterString()
 	{
 		App.WaitForElement(Options);
@@ -198,6 +200,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyIsGroupedFalse_WithBasicItemTemplate()
 	{
 		App.WaitForElement(Options);
@@ -429,6 +432,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -512,6 +516,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyFlowDirectionRTLIsGrouped_WithHorizontalGridAndGroupedList()
 	{
 		App.WaitForElement(Options);

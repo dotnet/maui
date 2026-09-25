@@ -14,6 +14,7 @@ public class Issue33038 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void LayoutShouldBeCorrectOnFirstNavigation()
 	{
 		App.WaitForElement("StartPageLabel");
