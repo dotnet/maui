@@ -11,10 +11,18 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		public Simulator(ITestOutputHelper? output = null)
 		{
 			_output = output;
+			var deviceUdid = TestEnvironment.IosTestDeviceUdid;
+			if (!string.IsNullOrEmpty(deviceUdid))
+			{
+				if (!IsValidUDID(deviceUdid))
+					throw new ArgumentException("IOS_TEST_DEVICE_UDID must be a simulator UUID.");
+
+				_udid = deviceUdid;
+			}
 		}
 
 		string? _xharnessID;
-		
+
 		/// <summary>
 		/// Gets the XHarness target ID (e.g., "ios-simulator-64_18.5").
 		/// If IOS_TEST_DEVICE is not set or doesn't include a version, auto-detects
@@ -36,7 +44,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		string ResolveXHarnessID()
 		{
 			var envValue = TestEnvironment.IosTestDevice;
-			
+
 			// If env var is set and includes a version (has underscore), use it directly
 			if (!string.IsNullOrEmpty(envValue) && envValue.Contains('_', StringComparison.Ordinal))
 			{
@@ -118,7 +126,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 				return _udid;
 
 			var xharnessOutput = XHarness.GetSimulatorUDID(XHarnessID, output: _output).Trim();
-			
+
 			// XHarness returns a UDID on success, or an error message on failure.
 			// A valid UDID is a UUID format (e.g., "DE87D078-70D4-47F6-9F21-82612D9D4F7E")
 			if (IsValidUDID(xharnessOutput))
@@ -189,4 +197,3 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		}
 	}
 }
-
