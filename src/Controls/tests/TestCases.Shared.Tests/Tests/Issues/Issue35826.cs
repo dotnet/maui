@@ -126,8 +126,8 @@ public class Issue35826 : _IssuesUITest
 			if (dismissedPicker)
 			{
 				App.Back();
-				App.RetryAssert(() => Assert.That(driver.CurrentActivity, Does.Not.Contain("photopicker").IgnoreCase,
-					"The system picker must close before navigating out of the child activity."));
+				Assert.That(() => driver.CurrentActivity, Does.Not.Contain("photopicker").IgnoreCase.After(15000, 500),
+					"The system picker must close before navigating out of the child activity.");
 			}
 
 			if (driver.CurrentActivity.EndsWith("Issue35826ChildActivity", StringComparison.Ordinal))
@@ -161,8 +161,9 @@ public class Issue35826 : _IssuesUITest
 	void WaitForPhotoPicker()
 	{
 		var driver = (AndroidDriver)((AppiumAndroidApp)App).Driver;
-		App.RetryAssert(() => Assert.That(driver.CurrentActivity, Does.Contain("photopicker").IgnoreCase,
-			"Wait for the system picker before pressing Back, otherwise Back closes the launching activity."));
+		// NUnit retains caught assertion failures, so poll the constraint rather than retrying Assert.That.
+		Assert.That(() => driver.CurrentActivity, Does.Contain("photopicker").IgnoreCase.After(15000, 500),
+			"Wait for the system picker before pressing Back, otherwise Back closes the launching activity.");
 	}
 }
 #endif
