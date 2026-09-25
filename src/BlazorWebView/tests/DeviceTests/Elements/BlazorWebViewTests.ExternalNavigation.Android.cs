@@ -98,8 +98,8 @@ public partial class BlazorWebViewTests
 	[InlineData("android-app")]
 	public async Task StructuredIntentUriWithExplicitComponentDoesNotLaunchActivity(string uriScheme)
 	{
-		var testActivity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-		Assert.NotNull(testActivity);
+		var testActivity = Assert.IsAssignableFrom<global::AndroidX.Activity.ComponentActivity>(
+			Microsoft.Maui.ApplicationModel.Platform.CurrentActivity);
 		var activityLaunch = ActivityLaunchMonitor<ExplicitIntentTestActivity>.PrepareForLaunch();
 		var intentUri = uriScheme == "intent"
 			? $"intent:#Intent;package={ExternalNavigationTestData.ApplicationId};action={ExternalNavigationTestData.ExplicitAction};component={ExternalNavigationTestData.ApplicationId}/{ExternalNavigationTestData.ExplicitActivityName};S.test=value;end"
@@ -107,12 +107,15 @@ public partial class BlazorWebViewTests
 
 		try
 		{
+			await InvokeOnMainThreadAsync(() =>
+				Assert.Equal(global::AndroidX.Lifecycle.Lifecycle.State.Resumed, testActivity.Lifecycle.CurrentState));
 			await NavigateToExternalUriAsync(intentUri, uriScheme);
 
 			var completedTask = await Task.WhenAny(activityLaunch, Task.Delay(ActivityNotLaunchedTimeout));
 			Assert.NotSame(activityLaunch, completedTask);
+			// System overlays can take window focus without pausing the test activity.
 			await InvokeOnMainThreadAsync(() =>
-				Assert.True(testActivity.HasWindowFocus, "External intent navigation left the test activity in the background."));
+				Assert.Equal(global::AndroidX.Lifecycle.Lifecycle.State.Resumed, testActivity.Lifecycle.CurrentState));
 		}
 		finally
 		{

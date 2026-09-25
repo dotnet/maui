@@ -88,6 +88,14 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## MAUI-specific quirks
 
+### Android activity isolation
+
+External-intent fixtures must remain scoped to the test package and an unhandled
+action after component sanitization, rather than opening the resolver or system
+settings. Assert that the original activity is `RESUMED` before and after
+navigation. `HasWindowFocus` is not a lifecycle check: the notification shade can
+take focus while that same activity remains resumed.
+
 ### XHarness exit-0 blind spot
 
 Windows device categories also require complete, parseable xUnit output. The
