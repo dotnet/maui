@@ -254,6 +254,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Element _element;
 			AView _itemView;
 			bool _disposed;
+			bool _updatingVisualState;
 			Shell _shell;
 
 			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback, Shell shell) : base(itemView)
@@ -310,9 +311,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void UpdateVisualState()
 			{
-				if (Element is BaseShellItem baseShellItem)
+				if (_updatingVisualState || Element is not BaseShellItem baseShellItem)
 				{
+					return;
+				}
+
+				try
+				{
+					_updatingVisualState = true;
 					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
+				}
+				finally
+				{
+					_updatingVisualState = false;
 				}
 			}
 
