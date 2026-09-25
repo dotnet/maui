@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		object _bindingContext;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Resources changed listener is removed and the reference cleared in Disconnect.")]
 		IElementDefinition _viewResource;
+		bool _updatingVisualState;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Measure callback is cleared in Disconnect before the cell is released.")]
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
@@ -148,9 +149,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateVisualState()
 		{
-			if (BindingContext is BaseShellItem bsi)
+			if (_updatingVisualState || BindingContext is not BaseShellItem bsi)
 			{
+				return;
+			}
+
+			try
+			{
+				_updatingVisualState = true;
 				VisualStateManager.GoToState(View, bsi.IsChecked ? "Selected" : "Normal", force: true);
+			}
+			finally
+			{
+				_updatingVisualState = false;
 			}
 		}
 
