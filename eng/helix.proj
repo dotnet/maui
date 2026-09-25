@@ -77,6 +77,7 @@
       <BuildTasksNugetFiles Include="$(RepoRoot)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(BuildTasksNugetFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets" DestinationFolder="$(MauiHelixPayloadDir)src/Core/src/nuget/buildTransitive" SkipUnchangedFiles="true" />
     
     <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
   </Target>
@@ -94,7 +95,7 @@
       <Destination>buildtasks</Destination>
     </HelixCorrelationPayload>
     
-    <!-- MSBuild test support files (Maui.InTree.props/targets and Workload SDK) -->
+    <!-- MSBuild test support files (Core/Controls targets, Maui.InTree.props/targets and Workload SDK) -->
     <HelixCorrelationPayload Include="$(MauiHelixPayloadDir)src">
       <Destination>src</Destination>
     </HelixCorrelationPayload>
