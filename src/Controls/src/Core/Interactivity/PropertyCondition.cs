@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 						}
 						catch (AmbiguousMatchException e)
 						{
-							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
+							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XamlLineInfo(), innerException: e);
 						}
 					};
 					Value = s_valueConverter.Convert(Value, Property.ReturnType, minforetriever, null);
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 						}
 						catch (AmbiguousMatchException e)
 						{
-							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
+							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XamlLineInfo(), innerException: e);
 						}
 					};
 					value = s_valueConverter.Convert(value, Property.ReturnType, minforetriever, null);
