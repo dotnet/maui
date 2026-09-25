@@ -1,0 +1,208 @@
+name: Issue Replicate Trigger
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue containing the repro'
+        required: true
+      source_comment_id:
+        description: 'Existing /issue replicate comment ID (also used by recovery)'
+        required: true
+
+permissions: {}
+
+jobs:
+  authorize:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || github.event.issue.pull_request == null)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+      issue: ${{ steps.gate.outputs.issue }}
+      comment: ${{ steps.gate.outputs.comment }}
+      platform: ${{ steps.gate.outputs.platform }}
+      branch: ${{ steps.gate.outputs.branch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Validate command and current permission
+        id: gate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ISSUE: ${{ github.event.issue.number }}
+          EVENT_COMMENT: ${{ github.event.comment.id }}
+          INPUT_ISSUE: ${{ inputs.issue_number }}
+          INPUT_COMMENT: ${{ inputs.source_comment_id }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . .github/scripts/IssueReplicate.Core.ps1
+          $issueNumber = if ($env:EVENT_NAME -eq 'issue_comment') { $env:EVENT_ISSUE } else { $env:INPUT_ISSUE }
+          $commentId = if ($env:EVENT_NAME -eq 'issue_comment') { $env:EVENT_COMMENT } else { $env:INPUT_COMMENT }
+          if ($issueNumber -cnotmatch '^[1-9][0-9]*$' -or $commentId -cnotmatch '^[1-9][0-9]*$') {
+            throw 'Issue and comment must be positive integers.'
+          }
+          $comment = gh api "repos/$env:REPO/issues/comments/$commentId" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $comment.issue_url -cne "https://api.github.com/repos/$env:REPO/issues/$issueNumber") {
+            throw 'The comment does not belong to the requested issue.'
+          }
+          $command = Parse-IssueReplicateCommand -Body $comment.body
+          if ($null -eq $command) {
+            "proceed=false" >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          $permission = gh api "repos/$env:REPO/collaborators/$($comment.user.login)/permission" --jq .permission
+          if ($LASTEXITCODE -ne 0) { throw 'Could not verify the comment author permission.' }
+          if ($permission -cnotin @('admin', 'maintain', 'write')) {
+            "proceed=false" >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          $issue = gh api "repos/$env:REPO/issues/$issueNumber" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $issue.state -ne 'open' -or $issue.pull_request) {
+            throw 'The command is only supported on an open issue, not a pull request.'
+          }
+          if ($issue.comments -gt 300) { throw 'This issue has too many comments for bounded repro discovery.' }
+          $platform = Resolve-IssueReplicatePlatform -Labels @($issue.labels | ForEach-Object name) -Requested $command.Platform
+          "proceed=true" >> $env:GITHUB_OUTPUT
+          "issue=$issueNumber" >> $env:GITHUB_OUTPUT
+          "comment=$commentId" >> $env:GITHUB_OUTPUT
+          "platform=$platform" >> $env:GITHUB_OUTPUT
+          "branch=$($command.Branch)" >> $env:GITHUB_OUTPUT
+
+  dispatch:
+    needs: authorize
+    if: needs.authorize.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: issue-replicate-${{ needs.authorize.outputs.issue }}
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      ISSUE: ${{ needs.authorize.outputs.issue }}
+      COMMENT: ${{ needs.authorize.outputs.comment }}
+      PLATFORM: ${{ needs.authorize.outputs.platform }}
+      TARGET_REF: ${{ needs.authorize.outputs.branch }}
+    steps:
+      - name: Check durable acknowledgement
+        id: dedupe
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh api --paginate --slurp "repos/${REPO}/issues/comments/${COMMENT}/reactions?per_page=100" |
+             jq -e 'any(.[][]; .content == "rocket" and .user.login == "github-actions[bot]")' >/dev/null; then
+            echo "handled=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if gh api --paginate --slurp "repos/${REPO}/issues/${ISSUE}/comments?per_page=100" |
+             jq -e --arg marker "<!-- issue-replicate-start:${COMMENT}:" \
+               'any(.[][]; (.body // "") | startswith($marker))' >/dev/null; then
+            echo "handled=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "handled=false" >> "$GITHUB_OUTPUT"
+
+      - name: Reserve command before queueing
+        id: reserve
+        if: steps.dedupe.outputs.handled == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2016
+          body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is queueing a public reproduction build.\n' "$COMMENT")
+          ack_id=$(gh api "repos/${REPO}/issues/${ISSUE}/comments" --method POST \
+            -f body="$body" --jq .id)
+          if ! [[ "$ack_id" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Could not reserve the command on the issue."
+            exit 1
+          fi
+          echo "ack_id=${ack_id}" >> "$GITHUB_OUTPUT"
+
+      - name: Queue public Azure pipeline
+        id: queue
+        if: steps.reserve.outcome == 'success'
+        shell: bash
+        env:
+          TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          PIPELINE_ID: ${{ vars.ISSUE_REPLICATE_PIPELINE_ID }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$PIPELINE_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::ISSUE_REPLICATE_PIPELINE_ID must identify the dnceng-public/public pipeline."
+            exit 1
+          fi
+          oidc=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" | jq -er '.value')
+          echo "::add-mask::${oidc}"
+          token=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -X POST "https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token" \
+            --data-urlencode 'grant_type=client_credentials' \
+            --data-urlencode "client_id=${CLIENT_ID}" \
+            --data-urlencode 'client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer' \
+            --data-urlencode "client_assertion=${oidc}" \
+            --data-urlencode 'scope=499b84ac-1321-427f-aa17-267ca6975798/.default' | jq -er '.access_token')
+          unset oidc
+          echo "::add-mask::${token}"
+          payload=$(jq -n --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
+            --arg platform "$PLATFORM" --arg target "$TARGET_REF" \
+            '{templateParameters:{IssueNumber:$issue,CommentId:$comment,Platform:$platform,TargetRef:$target},
+              resources:{repositories:{self:{refName:"refs/heads/main"}}}}')
+          response=$(curl --fail-with-body --silent --show-error --max-time 45 -X POST \
+            "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${token}" -H 'Content-Type: application/json' -d "$payload")
+          unset token
+          run_id=$(printf '%s' "$response" | jq -er '.id')
+          if ! [[ "$run_id" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Azure returned an invalid run ID."
+            exit 1
+          fi
+          echo "run_id=${run_id}" >> "$GITHUB_OUTPUT"
+
+      - name: Acknowledge and post build link
+        if: steps.queue.outcome == 'success'
+        shell: bash
+        env:
+          RUN_ID: ${{ steps.queue.outputs.run_id }}
+          ACK_ID: ${{ steps.reserve.outputs.ack_id }}
+        run: |
+          set -euo pipefail
+          body=$(mktemp)
+          trap 'rm -f "$body"' EXIT
+          {
+            printf '<!-- issue-replicate-start:%s:%s -->\n' "$COMMENT" "$RUN_ID"
+            # shellcheck disable=SC2016
+            printf '> [!NOTE]\n> `/issue replicate` started on **%s** (%s).\n>\n' "$PLATFORM" "$TARGET_REF"
+            printf '> [Public reproduction build %s](https://dev.azure.com/dnceng-public/public/_build/results?buildId=%s) is running. The result will be posted here.\n' "$RUN_ID" "$RUN_ID"
+          } > "$body"
+          gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH -F body=@"$body" --silent
+          gh api "repos/${REPO}/issues/comments/${COMMENT}/reactions" --method POST -f content=rocket --silent
+
+      - name: Report queue failure
+        if: always() && steps.reserve.outcome == 'success' && steps.queue.outcome == 'failure'
+        shell: bash
+        env:
+          ACK_ID: ${{ steps.reserve.outputs.ack_id }}
+        run: |
+          gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH \
+            -f body="<!-- issue-replicate-start:${COMMENT}:pending -->
+          > [!WARNING]
+          > \`/issue replicate\` could not queue the public Azure pipeline. Check the [trigger run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) and use a new command to retry." --silent
