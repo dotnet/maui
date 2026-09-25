@@ -14,7 +14,6 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
 #else
 using Microsoft.Maui.Controls.Handlers.Items;
-using Microsoft.Maui.Controls.Handlers.Items2;
 #endif
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -61,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
+#if WINDOWS
 		protected virtual void SetupBuilderCollectionView2()
 		{
 			EnsureHandlerCreated(builder =>
@@ -69,10 +68,11 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					RegisterCommonHandlers(handlers);
-					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 				});
 			});
 		}
+#endif
 
 		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
 		// every CollectionViewTests test run against both the NavigationPage renderer and
