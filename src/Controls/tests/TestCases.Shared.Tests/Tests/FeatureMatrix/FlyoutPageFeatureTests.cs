@@ -178,6 +178,10 @@ public class FlyoutPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsFlowDirectionRTL()
 	{
+		// Start with a fresh flyout rather than the preceding navigation test's native tree.
+		if (Device == TestDevice.Windows)
+			FixtureSetup();
+
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(FlowDirectionRTL);
