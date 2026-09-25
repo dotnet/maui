@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <AssemblyName>Controls.UiEvidence.Runner.Tests</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UiEvidence.Runner\Controls.UiEvidence.Runner.csproj" />
+  </ItemGroup>
+
+</Project>

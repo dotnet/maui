@@ -89,6 +89,20 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
+### Manual PR UI evidence
+
+For an explicit request to compare PR UI evidence locally, use the
+`check-pr-ui-evidence` skill in `.github/skills/check-pr-ui-evidence/`. It
+orchestrates deterministic Appium/DevFlow measurements against pinned base/head
+revisions and retains local evidence. This is distinct from general issue-test
+authoring or Workbench Markdown-flow execution.
+
+The initial UI-evidence rollout is skills-only and manually invoked from Copilot.
+Do not create/register pipelines, dispatch workflows, post results, or require
+new cloud permissions for this flow. Any future hosted integration needs a
+separate justified proposal. Missing evidence and build failures must remain
+explicit; a smoke result is not whole-PR coverage or merge approval.
+
 ### CI Pipelines (Azure DevOps)
 
 When referencing or triggering CI pipelines, use these current pipeline names:

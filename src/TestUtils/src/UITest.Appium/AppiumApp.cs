@@ -146,6 +146,12 @@ namespace UITest.Appium
 			if (!string.IsNullOrEmpty(deviceName))
 				appiumOptions.DeviceName = deviceName;
 
+			var udid = config.GetProperty<string>("Udid");
+			if (!string.IsNullOrWhiteSpace(udid) &&
+				(string.Equals(appiumOptions.PlatformName, "Android", StringComparison.OrdinalIgnoreCase) ||
+				 string.Equals(appiumOptions.PlatformName, "iOS", StringComparison.OrdinalIgnoreCase)))
+				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
+
 			var platformVersion = config.GetProperty<string>("PlatformVersion");
 			if (!string.IsNullOrEmpty(platformVersion))
 				appiumOptions.PlatformVersion = platformVersion;

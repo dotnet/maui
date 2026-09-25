@@ -16,6 +16,16 @@
   <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
     <UseMaterial3>false</UseMaterial3>
+    <EnableMauiUiEvidence Condition="'$(EnableMauiUiEvidence)' == ''">false</EnableMauiUiEvidence>
+    <MauiUiEvidenceDevFlowEnabled Condition="'$(MauiUiEvidenceDevFlowEnabled)' == ''">false</MauiUiEvidenceDevFlowEnabled>
+    <MauiUiEvidenceDevFlowSourceRoot Condition="'$(MauiUiEvidenceDevFlowSourceRoot)' == ''"></MauiUiEvidenceDevFlowSourceRoot>
+    <MauiUiEvidenceScenario Condition="'$(MauiUiEvidenceScenario)' == ''">layout-controls-smoke</MauiUiEvidenceScenario>
+    <MauiDevFlowPort Condition="'$(MauiDevFlowPort)' == '' and '$(MauiUiEvidenceDevFlowEnabled)' == 'true'">9223</MauiDevFlowPort>
+    <DevFlowXamlSourceMapsEnabled Condition="'$(MauiUiEvidenceDevFlowEnabled)' == 'true'">false</DevFlowXamlSourceMapsEnabled>
+    <DefineConstants Condition="'$(EnableMauiUiEvidence)' == 'true'">$(DefineConstants);MAUI_UI_EVIDENCE</DefineConstants>
+    <DefineConstants Condition="'$(EnableMauiUiEvidence)' == 'true' and '$(MauiUiEvidenceScenario)' == 'layout-controls-smoke'">$(DefineConstants);MAUI_UI_EVIDENCE_LAYOUT_CONTROLS</DefineConstants>
+    <DefineConstants Condition="'$(EnableMauiUiEvidence)' == 'true' and '$(MauiUiEvidenceScenario)' == 'collectionview-smoke'">$(DefineConstants);MAUI_UI_EVIDENCE_COLLECTIONVIEW</DefineConstants>
+    <DefineConstants Condition="'$(EnableMauiUiEvidence)' == 'true' and '$(MauiUiEvidenceDevFlowEnabled)' == 'true'">$(DefineConstants);MAUI_UI_EVIDENCE_DEVFLOW</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,6 +49,14 @@
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableMauiUiEvidence)' == 'true'
+      and '$(MauiUiEvidenceDevFlowEnabled)' == 'true'
+      and '$(MauiUiEvidenceDevFlowSourceRoot)' != ''
+      and ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
+        or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows')">
+    <ProjectReference Include="$(MauiUiEvidenceDevFlowSourceRoot)\src\DevFlow\Microsoft.Maui.DevFlow.Agent.Core\Microsoft.Maui.DevFlow.Agent.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -87,4 +105,12 @@
   <ItemGroup>
     <MauiXaml Update="**\*.xaml" Inflator="SourceGen"  NoWarn="0612"/>
   </ItemGroup>
+
+  <Target Name="ValidateMauiUiEvidenceConfiguration" BeforeTargets="PrepareForBuild"
+          Condition="'$(EnableMauiUiEvidence)' == 'true'">
+    <Error Condition="'$(MauiUiEvidenceScenario)' != 'layout-controls-smoke' and '$(MauiUiEvidenceScenario)' != 'collectionview-smoke'"
+           Text="MauiUiEvidenceScenario must be 'layout-controls-smoke' or 'collectionview-smoke'." />
+    <Error Condition="'$(MauiUiEvidenceDevFlowEnabled)' == 'true' and '$(MauiUiEvidenceDevFlowSourceRoot)' == ''"
+           Text="MauiUiEvidenceDevFlowSourceRoot is required when DevFlow evidence is enabled." />
+  </Target>
 </Project>
