@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // More tab is not displayed on Windows, so MoreNavigationController navigation cannot be tested on this platform.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // The More tab appears differently on desktop platforms, so MoreNavigationController navigation cannot be tested on these platforms.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

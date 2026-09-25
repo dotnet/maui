@@ -1716,6 +1716,19 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void RemoveViewController(UIViewController viewController)
         {
+            var navigationController = ActiveNavigationController();
+
+            if (!ReferenceEquals(navigationController, _navigationController))
+            {
+                if (navigationController.ViewControllers.Contains(viewController))
+                {
+                    navigationController.ViewControllers =
+                        navigationController?.ViewControllers?.Remove(viewController);
+                }
+
+                return;
+            }
+
             _navManager?.RemoveViewController(viewController);
         }
 
