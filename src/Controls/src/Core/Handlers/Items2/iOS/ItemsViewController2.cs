@@ -249,9 +249,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					});
 				}
 
-				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(indexPathsArray);
-				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				if (IsAffectedByIOS15EstimatedSizeRegression())
+				{
+					// On iOS 15, UICollectionViewCompositionalLayout can leave items after an invalidated
+					// one positioned using their raw estimated size (NSCollectionLayoutDimension.CreateEstimated,
+					// see LayoutFactory2) instead of their committed measured size, causing overlapping cells
+					// (#38330). A full InvalidateLayout forces every visible cell's
+					// PreferredLayoutAttributesFittingAttributes to re-run; already-measured cells skip
+					// remeasuring, so this stays cheap.
+					collectionView.CollectionViewLayout.InvalidateLayout();
+				}
+				else
+				{
+					var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+					layoutInvalidationContext.InvalidateItems(indexPathsArray);
+					collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				}
 			}
 		}
 
@@ -260,7 +273,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
-    [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		static bool IsAffectedByIOS15EstimatedSizeRegression()
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsIOSVersionAtLeast(16);
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
