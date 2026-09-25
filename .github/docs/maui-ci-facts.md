@@ -88,7 +88,24 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## MAUI-specific quirks
 
+### Android activity isolation
+
+External-intent fixtures must remain scoped to the test package and an unhandled
+action after component sanitization, rather than opening the resolver or system
+settings. Assert that the original activity is `RESUMED` before and after
+navigation. `HasWindowFocus` is not a lifecycle check: the notification shade can
+take focus while that same activity remains resumed.
+
 ### XHarness exit-0 blind spot
+
+Windows device categories also require complete, parseable xUnit output. The
+Windows runner fails empty/malformed results and abnormal process exits, while
+preserving valid category results for upload. WinUI `Application.Exit()` may
+return `-1` normally; that code alone is not a crash. A successful build or a
+partial merged XML does not prove every category executed.
+The packaged launcher retains a native process handle before waiting: Windows
+PowerShell's .NET Framework cannot read `ExitCode` afterward without that handle.
+An unavailable exit code must not be treated as a successful exit.
 
 XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no

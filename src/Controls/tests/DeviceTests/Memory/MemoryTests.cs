@@ -289,6 +289,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #if !IOS && !MACCATALYST
 	[InlineData(typeof(CollectionView))]
 #endif
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(AbsoluteLayout))]
 	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
