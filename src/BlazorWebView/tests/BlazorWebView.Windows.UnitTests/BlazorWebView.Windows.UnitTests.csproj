@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)-windows</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Components.WebView.Windows.UnitTests</RootNamespace>
+    <AssemblyName>Microsoft.AspNetCore.Components.WebView.Windows.UnitTests</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WindowsForms\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj" />
+    <ProjectReference Include="..\..\src\Wpf\Microsoft.AspNetCore.Components.WebView.Wpf.csproj" />
+  </ItemGroup>
+
+</Project>

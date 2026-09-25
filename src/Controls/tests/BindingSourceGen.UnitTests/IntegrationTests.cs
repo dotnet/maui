@@ -154,6 +154,22 @@ public class IntegrationTests
 	}
 
 	[Fact]
+	public void GenerateBindingForNullConditionalTarget()
+	{
+		var source = """
+        using Microsoft.Maui.Controls;
+        Label? label = new Label();
+        label?.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+
+		AssertExtensions.AssertNoDiagnostics(result);
+		Assert.NotNull(result.Binding);
+		Assert.NotNull(result.Binding.InterceptableLocation);
+	}
+
+	[Fact]
 	public void GenerateSimpleBindingCreate()
 	{
 		var source = """
