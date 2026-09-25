@@ -56,11 +56,11 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 GoldenGate routing is a temporary RC2 workaround. Return to the standard images
 once they include Xcode compatible with the pinned Apple SDK.
 
-All public and internal macOS pool defaults in `ci.yml`, `ci-device-tests.yml`,
-and `ci-uitests.yml` use `AcesShared` with
+Public and internal macOS builds in `ci.yml`, `ci-device-tests.yml`, and
+`ci-uitests.yml` use `AcesShared` with
 `ImageOverride -equals $(AcesMacImageOverride)`. This covers build, pack, integration,
-shared UI app builds, iOS and MacCatalyst UI runs, and device-test app builds.
-Pool parameters still support caller overrides. Select the image
+shared UI app builds, and device-test app builds.
+Pool parameters still support caller overrides. Select the build image
 once in `eng/pipelines/common/variables.yml`; RC2 uses `ACES_VM_SharedPool_GoldenGate`,
 the image selected for official builds in #38852. Do not pin an Xcode application
 path in individual pipeline demands.
@@ -68,6 +68,15 @@ path in individual pipeline demands.
 The Aces image is independent of `HostedMacImage`: Azure Pipelines hosted images
 and Aces images receive new Xcode versions at different times. The older Aces Tahoe
 image only had Xcode 26.x, which cannot build the RC2 Apple SDK.
+
+Appium execution is a separate requirement from compilation. GoldenGate failed
+all iOS and MacCatalyst UI lanes in manual build 1611111: iOS 18.5 was unavailable,
+the current iOS lane could not locate `Simulator.app`, and the Mac2 driver failed
+to start. As a temporary RC2 workaround, `ci-uitests.yml` runs the prebuilt apps on
+Tahoe with `iosXcodeVersion: '26.5'` for both iOS runtime variants, and on the
+original `macOS-14` image for MacCatalyst. The iOS Xcode override applies only to
+execution jobs, including optional NativeAOT; app builds still use Xcode 27.
+Both the iOS 18.5 and latest-runtime lanes remain enabled.
 
 Keep shared Xcode selection and simulator provisioning enabled for the test jobs.
 Provisioning accepts the image-selected Xcode when its reported major/minor version
