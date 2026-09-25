@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_isInternalPositionUpdate = false;
 				return;
 			}
-
+			//var savedCurrentItem = Carousel.CurrentItem;
 			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
 			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
@@ -418,7 +418,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				carouselPosition = 0;
+				if (!removingCurrentElement)
+				{
+					carouselPosition = 0;
+				}
 			}
 
 			Carousel.
@@ -517,7 +520,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
 				ScrollToPosition(loopedPosition);
 			}
-			else	
+			else
 			{
 				ScrollToPosition(currentPosition);
 			}
