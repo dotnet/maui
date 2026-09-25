@@ -381,6 +381,7 @@ snapshots-diff/
 #install of dotnet version
 /.dotnet
 .dotnet
+.mono/
 temp
 .packages
 /src/Templates/.tempTemplateOutput
