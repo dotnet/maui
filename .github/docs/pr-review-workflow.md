@@ -1,9 +1,10 @@
-# .NET MAUI automated PR review workflow
+# .NET MAUI automated PR and issue investigations
 
-This guide explains the automated review commands used in dotnet/maui pull requests:
+This guide explains the automated investigation commands used in dotnet/maui:
 
 - `/review`
 - `/review tests`
+- `/issue trace-regression` (on issues)
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
 
@@ -14,8 +15,9 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
+| `/issue trace-regression` | Repository users with write, maintain, or admin access | Traces an issue's reported regression through release boundaries and source history to candidate introducing commits or PRs. | Posts one expandable `Regression Trace` comment on the issue and hides older reports. |
 
-Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
+Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR or issue.
 
 ## Choosing the right command
 
@@ -29,6 +31,44 @@ Use `/review tests` when the question is specifically about CI/test failures, fo
 - "Are these failures unrelated infrastructure or existing failures?"
 
 Do not use `/review tests` as a substitute for a code review. It does not approve, request changes, apply labels, trigger reruns, or change the PR. It only posts evidence-based failure classification.
+
+Use `/issue trace-regression` on an **issue** to investigate which change introduced
+the reported behavior. This is different from the full PR review's regression-risk
+check, which detects removal of earlier fixes.
+
+## `/issue trace-regression`: trace an introducing change
+
+Post exactly `/issue trace-regression` as a standalone issue comment. PR comments,
+edited comments, bots, extra arguments and other `/issue` subcommands are ignored.
+The workflow rechecks the comment author's current `write`, `maintain`, or `admin`
+permission before collecting evidence or minimizing the authorized command.
+
+The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-5.6 Sol**,
+the existing `copilot-pat-pool`, and the dedicated
+`.github/skills/trace-regression/SKILL.md`. It requires no new secret. Changes to
+the workflow source must include its regenerated `.lock.yml`.
+
+The trusted collector freezes the issue, up to 100 latest comments, reported
+working/failing versions, exact release-tag SHAs, and a bounded release comparison.
+The agent narrows that history to affected code and verifies candidate diffs,
+platform applicability and shipped ancestry. API failures, missing versions,
+divergent branches and truncated history remain explicit evidence gaps.
+
+The report distinguishes **Confirmed introduction**, **Likely introduction**,
+**Candidate**, and **Insufficient evidence**. Confirmation requires verifiable,
+linked same-environment parent/candidate runtime evidence; source inspection or a
+prior AI summary alone cannot establish it. A reported failing release is not
+automatically the first bad release.
+
+The command is **report-only**: it does not run reproduction code, builds, tests
+or bisects, change labels, or push a fix. When confirmation needs execution, it
+identifies the exact comparison to perform. Only the separate safe-output job
+posts the report, restricted to the triggering issue.
+
+The comment follows `/review tests` styling: author/issue header, Scope/Range
+badges, closed **Regression Analysis** and **Follow-up** accordions, and linked
+candidate evidence. Rerun the command after supplying missing version or
+reproduction details; older reports are collapsed automatically.
 
 ## `/review`: full PR review
 
