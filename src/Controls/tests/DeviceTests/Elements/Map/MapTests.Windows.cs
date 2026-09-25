@@ -6,6 +6,7 @@ using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
 			{
 				var mapHandler = Assert.IsType<MapHandler>(map.Handler);
-				await WaitForMapReady(mapHandler);
+				var webView = await WaitForMapReady(mapHandler);
 				var platformMap = Assert.IsType<MapControl>(map.Handler.PlatformView);
 				var layerCount = platformMap.Layers.Count;
 
@@ -50,6 +51,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				var pinsLayer = Assert.IsType<MapElementsLayer>(platformMap.Layers[0]);
 				Assert.Single(pinsLayer.MapElements);
+
+				// The embedded document allocates pin IDs from 1, before any map-service response.
+				await AssertEventually(
+					async () => await webView.ExecuteScriptAsync("id === 2") == "true",
+					timeout: 15_000,
+					message: "MapControl did not finish creating the pin");
 
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
@@ -86,15 +93,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		static Task WaitForMapReady(MapHandler handler)
+		static async Task<WebView2> WaitForMapReady(MapHandler handler)
 		{
 			var webViewReadyField = typeof(MapHandler).GetField("_webViewReady", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(webViewReadyField);
 
-			return AssertEventually(
+			await AssertEventually(
 				() => webViewReadyField.GetValue(handler) is true,
 				timeout: 15_000,
 				message: "MapControl's WebView2 never finished loading");
+
+			var platformMap = Assert.IsType<MapControl>(handler.PlatformView);
+			var webView = Assert.IsType<WebView2>(VisualTreeHelper.GetChild(platformMap, 0));
+
+			// NavigationCompleted precedes native InitializeWebMap/OnLayerAdded continuations.
+			// Wait for their script work, not map tiles, before allowing the test window to close.
+			await AssertEventually(
+				async () => await webView.ExecuteScriptAsync($"getSymbolLayers().length === {platformMap.Layers.Count}") == "true",
+				timeout: 15_000,
+				message: "MapControl did not finish initializing its native layers");
+
+			return webView;
 		}
 	}
 }
