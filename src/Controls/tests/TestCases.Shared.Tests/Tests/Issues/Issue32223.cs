@@ -22,19 +22,19 @@ public class Issue32223 : _IssuesUITest
 		App.WaitForElement("ReorderableCollectionView");
 		App.WaitForElement("Charlie");
 		App.WaitForElement("David");
-		if (App is AppiumWindowsApp windowsApp)
+		if (App is AppiumApp appiumApp && App is (AppiumWindowsApp or AppiumAndroidApp))
 		{
-			var source = windowsApp.Driver.FindElement(MobileBy.AccessibilityId("David"));
-			var target = windowsApp.Driver.FindElement(MobileBy.AccessibilityId("Charlie"));
+			var source = appiumApp.Driver.FindElement(App is AppiumWindowsApp ? MobileBy.AccessibilityId("David") : MobileBy.Id("David"));
+			var target = appiumApp.Driver.FindElement(App is AppiumWindowsApp ? MobileBy.AccessibilityId("Charlie") : MobileBy.Id("Charlie"));
 			var touch = new PointerInputDevice(PointerKind.Touch);
 			var drag = new ActionSequence(touch, 0);
 			drag.AddAction(touch.CreatePointerMove(source, 0, 0, TimeSpan.FromMilliseconds(5)));
 			drag.AddAction(touch.CreatePointerDown(PointerButton.TouchContact));
 			drag.AddAction(touch.CreatePause(TimeSpan.FromSeconds(1)));
-			// Keep the working touch gesture, but drop before the cell's insertion boundary.
+			// Cross the insertion boundary; center-to-center stops exactly at Android's swap threshold.
 			drag.AddAction(touch.CreatePointerMove(target, -target.Size.Width / 4, 0, TimeSpan.FromSeconds(1)));
 			drag.AddAction(touch.CreatePointerUp(PointerButton.TouchContact));
-			windowsApp.Driver.PerformActions([drag]);
+			appiumApp.Driver.PerformActions([drag]);
 		}
 		else
 		{
