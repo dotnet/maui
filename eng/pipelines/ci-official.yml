@@ -49,11 +49,15 @@ parameters:
     demands:
       - ImageOverride -equals 1es-windows-2022
     os: windows
+# Temporary RC2 workaround: the hosted macOS image does not yet provide Xcode 27,
+# which the pinned Apple SDK requires, so official builds use GoldenGate.
+# Restore `name: Azure Pipelines` / `vmImage: $(HostedMacImage)` once it does.
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    name: AcesShared
+    demands:
+      - ImageOverride -equals $(AcesMacImageOverride)
     os: macOS
 
 resources:
