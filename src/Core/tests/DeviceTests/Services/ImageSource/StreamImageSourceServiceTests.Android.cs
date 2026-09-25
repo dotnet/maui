@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
@@ -57,25 +58,27 @@ namespace Microsoft.Maui.DeviceTests
 			using var trackingStream = new TrackingStream(bitmapStream.ToArray());
 			var imageSource = new StreamImageSourceStub(trackingStream);
 			var service = new StreamImageSourceService();
-			using var imageView = new RequestTrackingImageView(MauiProgram.DefaultContext, trackingStream);
+			using var imageView = new RequestTrackingImageView(MauiProgram.DefaultContext);
 
 			await InvokeOnMainThreadAsync(() => imageView.AttachAndRun(async () =>
 			{
 				var requestManager = Glide.With(imageView);
-				var loadTask = service.LoadDrawableAsync(imageSource, imageView);
-
-				var submission = await imageView.RequestSubmitted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				var requestManagerStopped = false;
 
 				try
 				{
-					Assert.True(submission.SourceDisposed);
-					Assert.True(submission.Request.IsRunning);
+					var loadTask = service.LoadDrawableAsync(imageSource, imageView);
+
+					await trackingStream.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					var submission = await imageView.RequestSubmitted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+					Assert.True(submission.IsRunning);
 
 					requestManager.OnStop();
 					requestManagerStopped = true;
-					Assert.False(submission.Request.IsRunning);
+					Assert.False(submission.IsRunning);
 
+					trackingStream.AllowRead();
 					requestManager.OnStart();
 					requestManagerStopped = false;
 
@@ -87,6 +90,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
+					trackingStream.AllowRead();
+
 					if (requestManagerStopped)
 						requestManager.OnStart();
 
@@ -97,15 +102,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class RequestTrackingImageView : ImageView
 		{
-			readonly TrackingStream _sourceStream;
-
-			public RequestTrackingImageView(global::Android.Content.Context context, TrackingStream sourceStream)
+			public RequestTrackingImageView(global::Android.Content.Context context)
 				: base(context)
 			{
-				_sourceStream = sourceStream;
 			}
 
-			public TaskCompletionSource<(IRequest Request, bool SourceDisposed)> RequestSubmitted { get; } =
+			public TaskCompletionSource<IRequest> RequestSubmitted { get; } =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			public override void SetTag(int key, Java.Lang.Object tag)
@@ -113,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 				base.SetTag(key, tag);
 
 				if (tag is IRequest request)
-					RequestSubmitted.TrySetResult((request, _sourceStream.IsDisposed));
+					RequestSubmitted.TrySetResult(request);
 			}
 		}
 
@@ -124,13 +126,35 @@ namespace Microsoft.Maui.DeviceTests
 			{
 			}
 
-			public bool IsDisposed { get; private set; }
+			public TaskCompletionSource<bool> ReadStarted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-			protected override void Dispose(bool disposing)
+			readonly TaskCompletionSource<bool> _allowRead =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public void AllowRead() => _allowRead.TrySetResult(true);
+
+			public override int Read(byte[] buffer, int offset, int count)
 			{
-				IsDisposed = true;
-				base.Dispose(disposing);
+				ReadStarted.TrySetResult(true);
+				_allowRead.Task.GetAwaiter().GetResult();
+				return base.Read(buffer, offset, count);
 			}
+
+			public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+			{
+				ReadStarted.TrySetResult(true);
+				await _allowRead.Task.WaitAsync(cancellationToken);
+				return await base.ReadAsync(buffer, cancellationToken);
+			}
+
+			public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+			{
+				ReadStarted.TrySetResult(true);
+				await _allowRead.Task.WaitAsync(cancellationToken);
+				return await base.ReadAsync(buffer, offset, count, cancellationToken);
+			}
+
 		}
 	}
 }
