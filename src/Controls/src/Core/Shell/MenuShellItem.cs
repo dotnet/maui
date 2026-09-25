@@ -9,18 +9,66 @@ namespace Microsoft.Maui.Controls
 {
 	internal class MenuShellItem : ShellItem, IMenuItemController, IStyleSelectable
 	{
+		bool _isConnected;
+		readonly PropertyChangedEventHandler _onMenuItemPropertyChanged;
+		readonly WeakNotifyPropertyChangedProxy _menuItemPropertyChangedProxy = new();
+
 		internal MenuShellItem(MenuItem menuItem)
 		{
 			MenuItem = menuItem;
-			MenuItem.Parent = this;
+			_onMenuItemPropertyChanged = OnMenuItemPropertyChanged;
 			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(menuItem));
 
 			this.SetBinding(TitleProperty, static (MenuItem item) => item.Text, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(IconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(FlyoutIconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
 			this.SetBinding(AutomationIdProperty, static (MenuItem item) => item.AutomationId, BindingMode.OneWay, source: menuItem);
+		}
 
-			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
+		~MenuShellItem() => _menuItemPropertyChangedProxy.Unsubscribe();
+
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+
+			if (Parent is null)
+			{
+				Disconnect();
+			}
+			else
+			{
+				Connect();
+			}
+		}
+
+		void Connect()
+		{
+			if (_isConnected)
+			{
+				return;
+			}
+
+			_isConnected = true;
+			MenuItem.Parent = this;
+			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
+			Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
+			_menuItemPropertyChangedProxy.Subscribe(MenuItem, _onMenuItemPropertyChanged);
+		}
+
+		void Disconnect()
+		{
+			if (!_isConnected)
+			{
+				return;
+			}
+
+			_isConnected = false;
+			_menuItemPropertyChangedProxy.Unsubscribe();
+
+			if (MenuItem.Parent == this)
+			{
+				MenuItem.Parent = null;
+			}
 		}
 
 		IList<string> IStyleSelectable.Classes => ((IStyleSelectable)MenuItem).Classes;
@@ -57,7 +105,10 @@ namespace Microsoft.Maui.Controls
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
-			SetInheritedBindingContext(MenuItem, BindingContext);
+			if (_isConnected)
+			{
+				SetInheritedBindingContext(MenuItem, BindingContext);
+			}
 		}
 	}
 }
