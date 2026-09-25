@@ -34,6 +34,9 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
+#if WINDOWS
+	[Microsoft.UI.Xaml.Data.Bindable]
+#endif
 	public sealed class AsyncValue<T> : INotifyPropertyChanged
 	{
 		readonly T _defaultValue;

@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with a label and an on/off switch.</summary>
 	[Obsolete("The controls which use SwitchCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
+#if WINDOWS
+	[Microsoft.UI.Xaml.Data.Bindable]
+#endif
 	public class SwitchCell : Cell
 	{
 		/// <summary>Bindable property for <see cref="On"/>.</summary>
