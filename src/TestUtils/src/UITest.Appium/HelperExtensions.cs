@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using System.Drawing;
+using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
@@ -979,40 +979,6 @@ namespace UITest.Appium
 			var results = Wait(query, i => i != null, timeoutMessage, timeout, retryFrequency);
 
 			return results;
-		}
-
-		public static void RetryAssert(
-			this IApp app,
-			Action assertToRetry,
-			TimeSpan? timeout = null,
-			TimeSpan? retryFrequency = null)
-		{
-			timeout ??= DefaultTimeout;
-			retryFrequency ??= TimeSpan.FromMilliseconds(500);
-			DateTime start = DateTime.Now;
-
-			while (true)
-			{
-				try
-				{
-					assertToRetry();
-					return; // Assert succeeded, exit
-				}
-				catch
-				{
-
-					// Check if timeout has been reached
-					long elapsed = DateTime.Now.Subtract(start).Ticks;
-					if (elapsed >= timeout.Value.Ticks)
-					{
-						// Timeout reached, rethrow the last exception
-						throw;
-					}
-
-					// Wait before retrying
-					Task.Delay(retryFrequency.Value.Milliseconds).Wait();
-				}
-			}
 		}
 
 		/// <summary>
@@ -3074,18 +3040,18 @@ namespace UITest.Appium
 				{
 					// Signal cancellation (Appium driver won't respect it, but good hygiene)
 					cts.Cancel();
-					
+
 					// Warn about orphaned thread - the background task will continue blocking until
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
-					
+
 					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
 					task.ContinueWith(t =>
 					{
 						if (t.Exception is not null)
 							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
 					}, TaskContinuationOptions.OnlyOnFaulted);
-					
+
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
 						"The application may be unresponsive (e.g., due to an infinite layout loop).");

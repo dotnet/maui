@@ -18,8 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Description("ScrollView without Content no crash.")]
 		public void ScrollViewNoContentTest()
 		{
-			// 1. If the ScrollView is created without having Content, the test has passed.
-			App.WaitForNoElement("Success");
+			App.WaitForElement("Success");
 		}
 	}
 }

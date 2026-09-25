@@ -18,25 +18,30 @@ public class Issue2951 : _IssuesUITest
 	{
 		App.WaitForElement("Ready");
 
-		var initialButtonCount = App.FindElements("btnChangeStatus").Count();
-		Assert.That(initialButtonCount, Is.EqualTo(3));
+		App.RetryAssert(() => Assert.That(FindStatusButtons().Count(), Is.EqualTo(3)));
 
-		var buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
-		buttonToClick.Click();
+		App.Tap("ChangeStatusB");
 
-		var updatedButton = App.FindElements("btnChangeStatus").ElementAt(1);
-		Assert.That(updatedButton.GetText(), Is.EqualTo("B"));
+		App.RetryAssert(() => Assert.That(
+			FindStatusButtons().Select(button => button.GetText()),
+			Is.EqualTo(new[] { "A", "B", "A" })));
 
-		updatedButton.Click();
-		var updatedButtonCount = App.FindElements("btnChangeStatus").Count();
-		Assert.That(updatedButtonCount, Is.EqualTo(2));
+		App.Tap("ChangeStatusB");
+		App.RetryAssert(() => Assert.That(FindStatusButtons().Count(), Is.EqualTo(2)));
+		App.WaitForNoElement("ChangeStatusB");
 
-		var newSecondButton = App.FindElements("btnChangeStatus").ElementAt(1);
-		newSecondButton.Click();
+		App.Tap("ChangeStatusC");
+		App.RetryAssert(() => Assert.That(
+			FindStatusButtons().Select(button => button.GetText()),
+			Is.EqualTo(new[] { "A", "B" })));
 
 		// Use VerifyScreenshot to ensure the button background color has been updated properly
 		// This screenshot is captured to visually confirm that the background color has changed as expected
 		VerifyScreenshot();
 
 	}
+
+	IEnumerable<IUIElement> FindStatusButtons() =>
+		new[] { "ChangeStatusA", "ChangeStatusB", "ChangeStatusC" }
+			.SelectMany(id => App.FindElements(id));
 }

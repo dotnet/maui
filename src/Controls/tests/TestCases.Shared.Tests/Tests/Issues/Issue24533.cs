@@ -20,19 +20,27 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.RefreshView)]
 		public void CollectionViewWithRefreshViewShouldNotReset()
 		{
-			App.WaitForElement("Footer");
-			App.Tap("Footer");
+			App.WaitForElement("ItemsLoadedLabel");
 			App.ScrollTo("Footer");
 			App.Tap("Footer");
+			AssertLoaded(50);
+			App.ScrollTo("Footer");
+			App.Tap("Footer");
+			AssertLoaded(75);
 			App.ScrollTo("Footer");
 			var verticalOffsetBeforeRefresh = GetVerticalOffset();
 			Assert.That(verticalOffsetBeforeRefresh, Is.GreaterThan(0));
 
 			App.Tap("Footer");
-			App.ScrollTo("Footer");
-			var verticalOffsetAfterRefresh = GetVerticalOffset();
-			Assert.That(verticalOffsetAfterRefresh, Is.GreaterThan(0));
+			AssertLoaded(100);
+			// Scrolling again here would conceal the position reset this test must detect.
+			App.RetryAssert(() => Assert.That(GetVerticalOffset(),
+				Is.EqualTo(verticalOffsetBeforeRefresh).Within(1)));
 		}
+
+		void AssertLoaded(int count) =>
+			App.RetryAssert(() => Assert.That(App.WaitForElement("ItemsLoadedLabel").GetText(),
+				Is.EqualTo($"Loaded: {count}")));
 
 		double GetVerticalOffset()
 		{

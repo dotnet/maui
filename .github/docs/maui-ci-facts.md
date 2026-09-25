@@ -90,6 +90,15 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ### XHarness exit-0 blind spot
 
+Windows device categories also require complete, parseable xUnit output. The
+Windows runner fails empty/malformed results and abnormal process exits, while
+preserving valid category results for upload. WinUI `Application.Exit()` may
+return `-1` normally; that code alone is not a crash. A successful build or a
+partial merged XML does not prove every category executed.
+The packaged launcher retains a native process handle before waiting: Windows
+PowerShell's .NET Framework cannot read `ExitCode` afterward without that handle.
+An unavailable exit code must not be treated as a successful exit.
+
 XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no
 failures, but real failures are hidden inside the Helix work items.
@@ -326,7 +335,16 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
+| `device unauthorized` during `uitest-prepare` | `maui-pr-uitests` Android bootstrap | Check host ADB key changes during boot before investigating tests; no TRX means the suite did not execute. |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+
+Android Cake preparation must preserve the host ADB private key throughout emulator
+boot. `EnsureAdbKeys` generates a missing pair with `adb keygen`, restores a missing
+public key with `adb pubkey`, and sets `ADB_VENDOR_KEYS` to the **private** key.
+It does not push keys to an unbooted/unauthorized device or restart `adbd`.
+A missing private key alongside an existing public key is an explicit setup error,
+not permission to rotate the identity. An empty `adb devices` list is a separate
+failure: inspect emulator startup evidence rather than assuming authorization.
 
 ## Merge-readiness criteria
 

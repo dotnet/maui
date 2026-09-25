@@ -95,6 +95,7 @@ public class Issue9088 : TestShell
 		{
 			new Label
 			{
+				AutomationId = "SwipeContentLabel",
 				Text = "Standalone SwipeItem",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
@@ -113,6 +114,10 @@ public class Issue9088 : TestShell
 		// Create SwipeView
 		var mySwipeView = new SwipeView
 		{
+#if ANDROID
+			// Keep the content gesture outside Android's system Back-gesture inset.
+			Margin = new Thickness(32, 0),
+#endif
 			RightItems = rightSwipeItems,
 			LeftItems = leftSwipeItems,
 			Content = swipeContent,

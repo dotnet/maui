@@ -16,20 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		public void Issue35472PopAsyncDuringAnimatedScrollToAsync()
 		{
-			try
-			{
-				App.WaitForElement("PushButton");
-				App.Tap("PushButton");
+			App.WaitForElement("PushButton");
+			App.Tap("PushButton");
 
-				App.WaitForElement("NowPushButton");
-				App.Tap("NowPushButton");
+			App.WaitForElement("NowPushButton");
+			App.Tap("NowPushButton");
 
-				App.WaitForElement("The test has passed");
-			}
-			finally
-			{
-				App.Back();
-			}
+			Assert.That(App.WaitForElement("ScrollResult").GetText(), Is.EqualTo("The test has passed"));
 		}
 	}
 }

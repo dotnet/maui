@@ -12,6 +12,10 @@ public class Issue32983 : ContentPage
     readonly Label _measuredHeightLabel;
     readonly Label _statusLabel;
     readonly VerticalStackLayout _rootLayout;
+#if IOS || MACCATALYST
+    // The native controller only weakly references its managed content.
+    Issue32983BottomSheetContentView _bottomSheetContent;
+#endif
 
     public Issue32983()
     {
@@ -54,7 +58,7 @@ public class Issue32983 : ContentPage
     void OnShowBottomSheetClicked(object sender, EventArgs e)
     {
 #if IOS || MACCATALYST
-        var bottomSheetContent = new Issue32983BottomSheetContentView();
+        var bottomSheetContent = _bottomSheetContent = new Issue32983BottomSheetContentView();
         var vm = new Issue32983ViewModel();
         for (int i = 0; i < 10; i++)
         {

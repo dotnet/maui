@@ -11,6 +11,20 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	public override string GalleryPageName => ShellPagesFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
+	bool IsIndependentTest => TestContext.CurrentContext.Test.MethodName is
+		"ShellPages_ShowTitleView" or "ShellPages_ShowTitleViewHidden" or
+		"ShellPages_IsVisibleFalse" or "ShellPages_IsVisibleTrue" or
+		"ShellPages_PresentationModeNotAnimated" or "ShellPages_PresentationModeAnimated" or
+		"ShellPages_PresentationModeModal" or "ShellPages_PresentationModeModalAnimated" or
+		"ShellPages_PresentationModeModalNotAnimated" or "ShellPages_FlowDirectionRTL";
+	protected override string? GallerySubPageButton => IsIndependentTest ? "ShellPageButton" : null;
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+		if (IsIndependentTest)
+			FixtureSetup();
+	}
 
 	public ShellPagesFeatureTests(TestDevice device)
 		: base(device)
@@ -154,6 +168,8 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement("ShowTitleViewButton");
 		App.Tap("ShowTitleViewButton");
+		App.WaitForElement("ShellTitleViewText");
+		App.WaitForElement("ShellTitleViewImage");
 		VerifyScreenshot();
 	}
 
@@ -161,8 +177,14 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleViewHidden()
 	{
+		App.WaitForElement("ShowTitleViewButton");
+		App.Tap("ShowTitleViewButton");
+		App.WaitForElement("ShellTitleViewText");
+		App.WaitForElement("ShellTitleViewImage");
 		App.WaitForElement("HideTitleViewButton");
 		App.Tap("HideTitleViewButton");
+		App.WaitForNoElement("ShellTitleViewText");
+		App.WaitForNoElement("ShellTitleViewImage");
 		VerifyScreenshot();
 	}
 
@@ -222,12 +244,15 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_IsVisibleFalse()
 	{
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab2");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsVisibleFalse");
 		App.Tap("IsVisibleFalse");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(Options);
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab2");
 		VerifyScreenshot();
 	}
 
@@ -237,10 +262,19 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement("IsVisibleFalse");
+		App.Tap("IsVisibleFalse");
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab2");
+		App.WaitForElement(Options);
+		App.Tap(Options);
 		App.WaitForElement("IsVisibleTrue");
 		App.Tap("IsVisibleTrue");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(Options);
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab2");
 		VerifyScreenshot();
 	}
 
@@ -251,27 +285,29 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.WaitForElement("NotAnimatedButton");
 		App.Tap("NotAnimatedButton");
 		App.WaitForElement("GoBackButton");
-		VerifyScreenshot();
+		ShellFeatureTestActions.WaitForBottomTab(App, "Home");
+		ShellFeatureTestActions.TapPageBack(App, "Home");
+		App.WaitForElement("NotAnimatedButton");
+		App.WaitForNoElement("GoBackButton");
 	}
 
 	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeAnimated()
 	{
-		App.WaitForElement("GoBackButton"); // To go back to controls page
-		App.Tap("GoBackButton");
 		App.WaitForElement("AnimatedButton");
 		App.Tap("AnimatedButton");
 		App.WaitForElement("GoBackButton");
-		VerifyScreenshot();
+		ShellFeatureTestActions.WaitForBottomTab(App, "Home");
+		ShellFeatureTestActions.TapPageBack(App, "Home");
+		App.WaitForElement("AnimatedButton");
+		App.WaitForNoElement("GoBackButton");
 	}
 
 	[Test, Order(18)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeModal()
 	{
-		App.WaitForElement("GoBackButton"); // To go back to controls page
-		App.Tap("GoBackButton");
 		App.WaitForElement("ModalButton");
 		App.Tap("ModalButton");
 		App.WaitForElement("GoBackButton");
@@ -282,8 +318,6 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeModalAnimated()
 	{
-		App.WaitForElement("GoBackButton"); // To go back to controls page
-		App.Tap("GoBackButton");
 		App.WaitForElement("ModalAnimatedButton");
 		App.Tap("ModalAnimatedButton");
 		App.WaitForElement("GoBackButton");
@@ -293,9 +327,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Test, Order(20)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeModalNotAnimated()
-	{ 
-		App.WaitForElement("GoBackButton"); // To go back to controls page
-		App.Tap("GoBackButton");
+	{
 		App.WaitForElement("ModalNotAnimatedButton");
 		App.Tap("ModalNotAnimatedButton");
 		App.WaitForElement("GoBackButton");
@@ -332,7 +364,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(23)]
@@ -453,7 +485,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/33909
 	[Test, Order(30)]
@@ -470,21 +502,51 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		VerifyShellScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // Issue Link:https://github.com/dotnet/maui/issues/32993
 	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_FlowDirectionRTL()
 	{
+		AssertShellLayoutDirection(((AppiumApp)App).Driver.PageSource, rightToLeft: false);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlowDirectionRTL");
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		App.WaitForElement(Options);
+		App.RetryAssert(() => AssertShellLayoutDirection(((AppiumApp)App).Driver.PageSource, rightToLeft: true),
+			timeout: TimeSpan.FromSeconds(10));
 	}
+
+	static void AssertShellLayoutDirection(string pageSource, bool rightToLeft)
+	{
+		// WinAppDriver /location uses mirrored window coordinates in RTL; source bounds remain screen-relative.
+		var document = System.Xml.Linq.XDocument.Parse(pageSource);
+		var show = document.Descendants("Button").Single(element => (string?)element.Attribute("AutomationId") == "NavBarShowButton");
+		var hide = document.Descendants("Button").Single(element => (string?)element.Attribute("AutomationId") == "NavBarHideButton");
+		var home = document.Descendants("TabItem").Single(element => (string?)element.Attribute("Name") == "Home");
+		var lastTab = document.Descendants("TabItem").Single(element => (string?)element.Attribute("Name") == "Tab3");
+
+		foreach (var (first, last) in new[] { (show, hide), (home, lastTab) })
+		{
+			foreach (var element in new[] { first, last })
+			{
+				Assert.That((string?)element.Attribute("IsOffscreen"), Is.EqualTo("False"));
+				Assert.That((int)element.Attribute("width")!, Is.GreaterThan(0));
+				Assert.That((int)element.Attribute("height")!, Is.GreaterThan(0));
+			}
+
+			var left = rightToLeft ? last : first;
+			var right = rightToLeft ? first : last;
+			Assert.That((int)left.Attribute("x")! + (int)left.Attribute("width")!,
+				Is.LessThanOrEqualTo((int)right.Attribute("x")!),
+				$"Native {first.Name} order must be {(rightToLeft ? "RTL" : "LTR")}.");
+		}
+	}
+
 #endif
 
 	public void VerifyShellScreenshot()
@@ -494,5 +556,47 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #else
 		VerifyScreenshot();
 #endif
+	}
+}
+
+internal static class ShellFeatureTestActions
+{
+	static IUIElement? FindBottomTab(IApp app, string title)
+	{
+		// Android uppercases top tabs, not bottom tabs; Windows exposes the title as Name, not AutomationId.
+		var query = app switch
+		{
+			AppiumAndroidApp => AppiumQuery.ByXPath($"//android.widget.FrameLayout[@content-desc='{title}']"),
+			AppiumWindowsApp => AppiumQuery.ByXPath($"//TabItem[@Name='{title}']"),
+			AppiumIOSApp or AppiumCatalystApp => AppiumQuery.ByXPath($"//XCUIElementTypeTabBar//XCUIElementTypeButton[@label='{title}' or @name='{title}']"),
+			_ => throw new NotSupportedException("Unsupported Shell test platform.")
+		};
+		return app.FindElements(query).FirstOrDefault(element => element.IsDisplayed());
+	}
+
+	internal static IUIElement WaitForBottomTab(IApp app, string title)
+	{
+		IUIElement? tab = null;
+		// Navigation can replace a tab between its lookup and the native visibility query.
+		app.RetryAssert(() =>
+		{
+			tab = FindBottomTab(app, title);
+			Assert.That(tab, Is.Not.Null, $"The native bottom tab '{title}' should be visible.");
+		});
+		return tab!;
+	}
+
+	internal static void WaitForNoBottomTab(IApp app, string title) =>
+		app.RetryAssert(() => Assert.That(FindBottomTab(app, title), Is.Null,
+			$"The native bottom tab '{title}' should be hidden."));
+
+	internal static void TapPageBack(IApp app, string previousTitle)
+	{
+		if (app is AppiumCatalystApp)
+			app.TapBackArrow(AppiumQuery.ByXPath($"//XCUIElementTypeNavigationBar//XCUIElementTypeButton[@label='{previousTitle}']"));
+		else if (app is AppiumIOSApp iosApp && !HelperExtensions.IsIOS26OrHigher(iosApp))
+			app.TapBackArrow(previousTitle);
+		else
+			app.TapBackArrow();
 	}
 }
