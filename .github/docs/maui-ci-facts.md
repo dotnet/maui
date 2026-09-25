@@ -95,6 +95,9 @@ Windows runner fails empty/malformed results and abnormal process exits, while
 preserving valid category results for upload. WinUI `Application.Exit()` may
 return `-1` normally; that code alone is not a crash. A successful build or a
 partial merged XML does not prove every category executed.
+The packaged launcher retains a native process handle before waiting: Windows
+PowerShell's .NET Framework cannot read `ExitCode` afterward without that handle.
+An unavailable exit code must not be treated as a successful exit.
 
 XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no
