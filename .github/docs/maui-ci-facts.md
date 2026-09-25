@@ -51,6 +51,41 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
+### Shared macOS image selection
+
+GoldenGate routing is a temporary RC2 workaround. Return to the standard images
+once they include Xcode compatible with the pinned Apple SDK.
+
+Public and internal macOS builds in `ci.yml`, `ci-device-tests.yml`, and
+`ci-uitests.yml` use `AcesShared` with
+`ImageOverride -equals $(AcesMacImageOverride)`. This covers build, pack, integration,
+shared UI app builds, and device-test app builds.
+Pool parameters still support caller overrides. Select the build image
+once in `eng/pipelines/common/variables.yml`; RC2 uses `ACES_VM_SharedPool_GoldenGate`,
+the image selected for official builds in #38852. Do not pin an Xcode application
+path in individual pipeline demands.
+
+The Aces image is independent of `HostedMacImage`: Azure Pipelines hosted images
+and Aces images receive new Xcode versions at different times. The older Aces Tahoe
+image only had Xcode 26.x, which cannot build the RC2 Apple SDK.
+
+Appium execution is a separate requirement from compilation. GoldenGate failed
+all iOS and MacCatalyst UI lanes in manual build 1611111: iOS 18.5 was unavailable,
+the current iOS lane could not locate `Simulator.app`, and the Mac2 driver failed
+to start. As a temporary RC2 workaround, `ci-uitests.yml` runs the prebuilt apps on
+Tahoe with `iosXcodeVersion: '26.5'` for both iOS runtime variants, and on the
+original `macOS-14` image for MacCatalyst. The iOS Xcode override applies only to
+execution jobs, including optional NativeAOT; app builds still use Xcode 27.
+Both the iOS 18.5 and latest-runtime lanes remain enabled.
+
+Keep shared Xcode selection and simulator provisioning enabled for the test jobs.
+Provisioning accepts the image-selected Xcode when its reported major/minor version
+matches `$(XCODE)`, including prerelease bundles with nonstandard filenames. If it
+does not match, the existing named-bundle lookup and missing-Xcode error still apply.
+The official pack-only job can use `skipXcode: true`, but that also skips simulator
+setup in `common/provision.yml`, which iOS UI tests need. Device-test execution
+still uses the Helix queues in `eng/helix_xharness.proj`.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,
@@ -348,7 +383,7 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | Apple `bgen.dll` exits 150 requesting a newer .NET runtime | `maui-pr` Apple binding generation | Keep bootstrap (`global.json`), workload provisioning (`MicrosoftNETSdkPackageVersion`), and SDK provenance pins aligned with a compatible host runtime. SDK `11.0.100-rc.2.26470.103` satisfies the Apple 27 generator's `26465.108` requirement and is already selected on net11.0. |
 | Resizetizer raster test assertions pass but `Dispose` fails with a Windows sharing violation | Helix Windows unit tests | Keep temporary images under `BaseTest.DestinationDirectory` and reuse its bounded, logged cleanup retries from #38124. Dispose raster tools deterministically; preserve all image assertions and let exhausted cleanup retries fail the test. |
 | `Svg.Animation` / `Svg.SceneGraph` `NU1603`, or `SKPathBuilder` `CS0246` | `maui-pr` restore/build | Release merges can preserve old `eng/Versions.props` pins while importing Skia 4 source and packaging changes. Restore the coordinated SkiaSharp/HarfBuzz/SVG dependency versions, not just the first missing package. |
-| Required Xcode is missing / requested iOS runtime is unavailable | `maui-pr` macOS provisioning | Select an image or agents providing the branch's required Xcode. net11.0 retains Aces with Xcode 26.5; RC2 needs the MAUI pool's Xcode 27 RC agents. Do not fall back to an unrelated Xcode or purge runtimes to repair a version mismatch. The legacy Provisionator task is unavailable in `dnceng-public`; enabling it prevents pipeline startup. |
+| Required Xcode is missing / requested iOS runtime is unavailable | `maui-pr` macOS provisioning | Select an image or agents providing the branch's required Xcode. net11.0 retains Aces with Xcode 26.5; RC2 temporarily uses `AcesShared` with the GoldenGate image for Xcode 27 (see Shared macOS image selection above). Do not fall back to an unrelated Xcode or purge runtimes to repair a version mismatch. The legacy Provisionator task is unavailable in `dnceng-public`; enabling it prevents pipeline startup. |
 | `iOS 27.0 (universal) is not available for download` | `maui-pr` simulator provisioning | Request the `arm64` runtime on Apple Silicon agents; retain `universal` on Intel. Keep all downloads version-pinned. An unavailable download can also return exit code 70, so do not treat every exit 70 as a wedged CoreSimulator or delete installed runtimes. |
 | Helix monitor cannot use `NetCore-Svc-Public` | `maui-pr` release branches | The monitor must use the pipeline's selected Helix submission pool, with its Linux image demand, rather than independently selecting an unauthorized pool from the branch name. |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
