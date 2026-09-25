@@ -21,10 +21,13 @@ This document provides guidance for working with .NET MAUI device tests that run
 
 ### Available Helix Queues
 
-Current configuration uses:
-- **iOS**: `osx.15.arm64.maui.open`
-- **Mac Catalyst**: `osx.15.arm64.maui.open`
+Public (default) configuration uses:
+- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
+- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Android**: `ubuntu.2204.amd64.android.33.open`
+- **Windows**: `windows.11.amd64.client.open`
+
+Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
 
 Check available queues at [helix.dot.net](https://helix.dot.net).
 
@@ -33,7 +36,7 @@ Check available queues at [helix.dot.net](https://helix.dot.net).
 | File | Purpose |
 |------|---------|
 | `eng/helix_xharness.proj` | Main Helix configuration - defines scenarios, queues, and work items |
-| `eng/pipelines/common/stage-device-tests.yml` | Pipeline template for device tests |
+| `eng/pipelines/arcade/stage-device-tests.yml` | Pipeline template for device tests |
 | `eng/test-configuration.json` | Test retry configuration |
 
 ## iOS Category Splitting

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -417,6 +419,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SwipeItemViewIsNotRetainedByCommand()
+		{
+			var command = new TestCommand();
+			var swipeItemView = CreateSwipeItemViewWeakReference(command);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(swipeItemView.IsAlive);
+			GC.KeepAlive(command);
+		}
+
+		[Fact]
+		public void ClearingCommandReEnablesSwipeItemView()
+		{
+			var swipeItemView = new SwipeItemView
+			{
+				Command = new Command(() => { }, () => false)
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.Command = null;
+
+			Assert.True(swipeItemView.IsEnabled);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeItemViewWeakReference(ICommand command)
+		{
+			var swipeItemView = new SwipeItemView { Command = command };
+			return new WeakReference(swipeItemView);
+		}
+
+		sealed class TestCommand : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter)
+			{
+			}
+		}
+
+		[Fact]
 		public void SwipeItemsRemainInLogicalTreeWhenContentIsSet()
 		{
 			var swipeView = new SwipeView();
@@ -656,6 +705,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				GC.WaitForPendingFinalizers();
 				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
 			}
+		}
+		[Fact]
+		public void SharedContentDoesNotKeepSwipeViewsAlive()
+		{
+			var sharedContent = new BoxView();
+			var swipeViewRefs = CreateSwipeViewsSharingContent(sharedContent, 20);
+
+			ForceFullGC();
+
+			GC.KeepAlive(sharedContent);
+
+			Assert.All(swipeViewRefs, reference => Assert.False(reference.IsAlive,
+				"SwipeView was kept alive by shared content."));
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateSwipeViewsSharingContent(View sharedContent, int count)
+		{
+			var references = new List<WeakReference>(count);
+			for (int i = 0; i < count; i++)
+			{
+				var swipeView = new SwipeView { Content = sharedContent };
+				references.Add(new WeakReference(swipeView));
+			}
+
+			return references;
 		}
 	}
 }
