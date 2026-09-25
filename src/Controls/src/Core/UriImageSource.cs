@@ -9,7 +9,6 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
 	/// <summary>An <see cref="ImageSource"/> that loads an image from a URI, with caching support.</summary>
 	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
@@ -63,7 +62,7 @@ namespace Microsoft.Maui.Controls
 
 			try
 			{
-				stream = await GetStreamAsync(Uri, CancellationTokenSource.Token);
+				stream = await GetStreamAsync(Uri, CancellationTokenSource.Token, userToken);
 				await OnLoadingCompleted(false);
 			}
 			catch (OperationCanceledException)
@@ -86,40 +85,42 @@ namespace Microsoft.Maui.Controls
 			return $"Uri: {Uri}";
 		}
 
-		async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		async Task<Stream> GetStreamAsync(
+			Uri uri,
+			CancellationToken cancellationToken,
+			CancellationToken responseCancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			Stream stream = null;
-
 			if (CachingEnabled)
 			{
-				// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
-
-				// var key = GetKey();
-				// var cached = TryGetFromCache(key, out stream)
-				if (stream is null)
-					stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-				// if (!cached)
-				//    Cache(key, stream)
-			}
-			else
-			{
-				stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+				return await UriImageSourceCache.GetStreamAsync(
+					uri,
+					CacheValidity,
+					token => DownloadStreamAsync(uri, token, responseCancellationToken),
+					ex => Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Unable to cache image URI '{Uri}'.", uri),
+					cancellationToken).ConfigureAwait(false);
 			}
 
-			return stream;
+			return await DownloadStreamAsync(uri, cancellationToken, responseCancellationToken).ConfigureAwait(false);
 		}
 
-		async Task<Stream> DownloadStreamAsync(Uri uri, CancellationToken cancellationToken)
+		async Task<Stream> DownloadStreamAsync(
+			Uri uri,
+			CancellationToken cancellationToken,
+			CancellationToken responseCancellationToken)
 		{
 			try
 			{
-				using var client = new HttpClient();
-
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+				return await StreamWrapper.GetStreamAsync(
+					uri,
+					cancellationToken,
+					new HttpClient(),
+					responseCancellationToken).ConfigureAwait(false);
+			}
+			catch (OperationCanceledException)
+			{
+				throw;
 			}
 			catch (Exception ex)
 			{
