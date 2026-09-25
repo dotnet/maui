@@ -12,6 +12,80 @@ public class Issue26598 : _IssuesUITest
 	{
 	}
 
+#if MACCATALYST
+	readonly string _nativeLogPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"Issue26598-{Guid.NewGuid():N}.log");
+	Dictionary<string, string>? _loggingArguments;
+	string? _previousLogPath;
+	bool _hadPreviousLogPath;
+
+	public override IConfig GetTestConfig()
+	{
+		var config = base.GetTestConfig();
+		if (UITestContext is null)
+			ConfigureNativeLogging(config);
+		return config;
+	}
+
+	public override void LaunchAppWithTest()
+	{
+		ConfigureNativeLogging(((AppiumApp)App).Config);
+		base.LaunchAppWithTest();
+	}
+
+	void ConfigureNativeLogging(IConfig config)
+	{
+		if (_loggingArguments is not null)
+			return;
+
+		var arguments = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+		_hadPreviousLogPath = arguments.TryGetValue("MAUI_LOG_FILE", out _previousLogPath);
+		arguments["MAUI_LOG_FILE"] = _nativeLogPath;
+		config.SetProperty("TestConfigurationArgs", arguments);
+		_loggingArguments = arguments;
+	}
+
+	public override void TestTearDown()
+	{
+		try
+		{
+			if (File.Exists(_nativeLogPath))
+			{
+				var attachment = Path.ChangeExtension(_nativeLogPath, "captured.log");
+				File.Copy(_nativeLogPath, attachment, overwrite: true);
+				TestContext.WriteLine(File.ReadAllText(attachment));
+				TestContext.AddTestAttachment(attachment, "Issue26598 native tab bar state");
+			}
+			else
+			{
+				TestContext.Error.WriteLine($"Issue26598 native diagnostics were not produced: {_nativeLogPath}");
+			}
+		}
+		finally
+		{
+			base.TestTearDown();
+		}
+	}
+
+	protected override void FixtureOneTimeTearDown()
+	{
+		try
+		{
+			base.FixtureOneTimeTearDown();
+		}
+		finally
+		{
+			if (_loggingArguments is not null)
+			{
+				if (_hadPreviousLogPath)
+					_loggingArguments["MAUI_LOG_FILE"] = _previousLogPath!;
+				else
+					_loggingArguments.Remove("MAUI_LOG_FILE");
+				_loggingArguments = null;
+			}
+		}
+	}
+#endif
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()

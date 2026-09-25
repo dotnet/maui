@@ -1,4 +1,11 @@
 using Microsoft.Maui.Controls;
+#if MACCATALYST
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform.Compatibility;
+using System.Text;
+using UIKit;
+#endif
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -31,7 +38,62 @@ public class Issue26598 : TestShell
 		tabBar.Items.Add(homeShellContent);
 		tabBar.Items.Add(recentShellContent);
 		Items.Add(tabBar);
+#if MACCATALYST
+		if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MAUI_LOG_FILE")))
+		{
+			Loaded += (_, _) => LogNativeTabBarState("Loaded");
+			Navigated += (_, _) =>
+			{
+				LogNativeTabBarState("Navigated");
+				Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500),
+					() => LogNativeTabBarState("After navigation"));
+			};
+		}
+#endif
 	}
+
+#if MACCATALYST
+	void LogNativeTabBarState(string stage)
+	{
+		var context = Handler?.MauiContext ?? Application.Current?.Handler?.MauiContext;
+		if (context is null)
+		{
+			Console.Error.WriteLine($"Issue26598 {stage}: no native context is available for diagnostics.");
+			return;
+		}
+
+		var logger = context.Services.GetRequiredService<ILogger<Issue26598>>();
+		var controller = (Handler as IShellContext)?.CurrentShellItemRenderer?.ViewController as UITabBarController;
+		if (controller?.IsViewLoaded != true)
+		{
+			logger.LogInformation("Issue26598 {Stage}: page={Page}, controller={Controller}, view not loaded",
+				stage, CurrentPage?.Title, controller?.GetType().Name);
+			return;
+		}
+
+		// Observe the existing native hierarchy without forcing layout or changing visibility.
+		var nativeTabBar = controller.TabBar;
+		var navigation = controller.SelectedViewController as UINavigationController;
+		var state = new StringBuilder();
+		state.Append($"Issue26598 {stage}: page={CurrentPage?.Title}, " +
+			$"ShowTabs={(CurrentItem as IShellItemController)?.ShowTabs}, " +
+			$"TabBarHidden={(OperatingSystem.IsMacCatalystVersionAtLeast(18) ? controller.TabBarHidden.ToString() : "unavailable")}, " +
+			$"Mode={(OperatingSystem.IsMacCatalystVersionAtLeast(18) ? controller.Mode.ToString() : "unavailable")}, " +
+			$"selectedIndex={controller.SelectedIndex}, selectedItem={nativeTabBar?.SelectedItem?.Title}, " +
+			$"nativeStackDepth={navigation?.ViewControllers?.Length}, top={navigation?.TopViewController?.Title}, " +
+			$"HidesBottomBarWhenPushed={navigation?.TopViewController?.HidesBottomBarWhenPushed}; ancestry: ");
+
+		for (UIView current = nativeTabBar; current is not null; current = current.Superview)
+		{
+			state.Append($"{current.GetType().Name}[Hidden={current.Hidden}, Alpha={current.Alpha}, " +
+				$"Frame={current.Frame}, Bounds={current.Bounds}, ClipsToBounds={current.ClipsToBounds}, " +
+				$"LayerHidden={current.Layer.Hidden}, Opacity={current.Layer.Opacity}, PresentationOpacity={current.Layer.PresentationLayer?.Opacity}, " +
+				$"Window={current.Window?.Handle}] -> ");
+		}
+
+		logger.LogInformation("{NativeTabBarState}", state.ToString());
+	}
+#endif
 
 	public class Issue26598Home : ContentPage
 	{
