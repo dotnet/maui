@@ -380,6 +380,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task SwipeItemTintDoesNotAffectOtherDrawablesFromSameResource()
+		{
+			SetupBuilder();
+			var source = new FileImageSource { File = "red.png" };
+			var item = new SwipeItem
+			{
+				Text = "Back",
+				BackgroundColor = Colors.White,
+				IconImageSource = source
+			};
+			var swipeView = new SwipeView
+			{
+				WidthRequest = 300,
+				HeightRequest = 100,
+				LeftItems = new SwipeItems { item },
+				Content = new Label { Text = "Content" }
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				using var original = await source.GetPlatformImageAsync(MauiContext);
+				Assert.Null(original.Value.ColorFilter);
+
+				await AttachAndRun(swipeView, async _ =>
+				{
+					swipeView.Open(OpenSwipeItem.LeftItems, false);
+					await AssertEventually(() =>
+						(item.Handler?.PlatformView as ATextView)?.GetCompoundDrawables()[1] is not null);
+
+					var button = Assert.IsAssignableFrom<ATextView>(item.Handler.PlatformView);
+					var icon = button.GetCompoundDrawables()[1];
+					Assert.NotNull(icon.ColorFilter);
+					Assert.Null(original.Value.ColorFilter);
+
+					using var subsequent = await source.GetPlatformImageAsync(MauiContext);
+					Assert.Null(subsequent.Value.ColorFilter);
+				});
+			});
+		}
+
 		[Theory]
 		[InlineData(1)]
 		[InlineData(5)]
