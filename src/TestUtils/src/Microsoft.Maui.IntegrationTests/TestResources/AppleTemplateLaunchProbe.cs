@@ -9,19 +9,23 @@ internal static class AppleTemplateLaunchProbe
 
 	public static void Configure(MauiAppBuilder builder)
 	{
-		builder.ConfigureLifecycleEvents(events => events.AddiOS(ios => ios.OnActivated(app =>
-		{
-			if (activated)
-				return;
+		builder.ConfigureLifecycleEvents(events => events.AddiOS(ios => ios
+			.OnActivated(app => StartTimer())
+			.SceneOnActivated(scene => StartTimer())));
+	}
 
-			activated = true;
-			// Measure the smoke-test interval on the app's run loop, not during installation.
-			NSTimer.CreateScheduledTimer(TimeSpan.FromSeconds(15), timer =>
-			{
-				Console.WriteLine("__MAUI_APP_COMPLETION_MARKER__");
-				Console.Out.Flush();
-				Environment.Exit(0);
-			});
-		})));
+	static void StartTimer()
+	{
+		if (activated)
+			return;
+
+		activated = true;
+		// Scene-based apps do not raise application activation; both paths share one timer.
+		NSTimer.CreateScheduledTimer(TimeSpan.FromSeconds(15), timer =>
+		{
+			Console.WriteLine("__MAUI_APP_COMPLETION_MARKER__");
+			Console.Out.Flush();
+			Environment.Exit(0);
+		});
 	}
 }

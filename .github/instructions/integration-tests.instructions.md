@@ -240,12 +240,23 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 ## Best Practices
 
 The iOS template smoke tests inject `AppleTemplateLaunchProbe.cs` into the generated
-app (not the shipped templates). After iOS activation, a main-run-loop timer waits
+app (not the shipped templates). Both application `OnActivated` and
+`SceneOnActivated` start the same guarded main-run-loop timer, which waits
 15 seconds, writes a unique per-test completion marker, and exits with code zero.
 `XHarness.RunApple` requires both that marker in the application logs and exit code
 zero. Its existing 300-second command budget covers discovery, installation,
 launch, and execution; it is not the app's 15-second observation interval.
 Do not accept timeout codes or SIGKILL as evidence that the app started.
+
+For local template validation, set `DOTNET_CLI_HOME` to a session-owned directory
+before restoring tools and invoking the integration-test skill. This isolates
+user-installed templates that can otherwise override the workload's templates.
+Verify the selected template pack path/version in that home's
+`.templateengine/dotnetcli/<sdk-version>/templatecache.json`, along with the
+generated `Platforms/iOS/SceneDelegate.cs` and `UIApplicationSceneManifest`.
+Correct NuGet library versions alone do not establish template provenance.
+Exercise both scene-based templates and a test-only legacy lifecycle fixture;
+application activation alone is not raised for scene-based apps.
 
 ### DO
 - Use `BuildProps` from base class for isolation
