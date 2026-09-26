@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -393,6 +394,118 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/38660 (CollectionViewHandler2
+		// keyboard-focus redirection). Guards the ContainerPrepared/GettingFocus path: tabbing away
+		// from an item and back must restore focus to that item, not just the first item.
+		[Fact(DisplayName = "CollectionView2 restores keyboard focus to the last-focused item")]
+		public async Task CollectionView2RestoresFocusToLastFocusedItem()
+		{
+			SetupBuilderCollectionView2();
+
+			var data = new ObservableCollection<string>
+			{
+				"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"
+			};
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => new Label()),
+				SelectionMode = SelectionMode.None,
+				ItemsSource = data
+			};
+
+			var button = new Button { Text = "After" };
+			var layout = new VerticalStackLayout { collectionView, button };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var mauiItemsView = (MauiItemsView)collectionView.Handler.PlatformView;
+				await AssertEventually(() => mauiItemsView.IsTabStop, timeout: 5000);
+
+				var repeater = mauiItemsView.ItemsRepeaterControl;
+				Assert.NotNull(repeater);
+
+				// Focus the third item directly, as arrow-key navigation would.
+				var targetContainer = repeater.TryGetElement(2) as UI.Xaml.Controls.ItemContainer;
+				Assert.NotNull(targetContainer);
+				targetContainer.Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				// Tab away to a control after the CollectionView on the same page.
+				button.ToPlatform().Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				// Tab back into the CollectionView.
+				mauiItemsView.Focus(FocusState.Keyboard);
+
+				int FocusedIndex()
+				{
+					var focused = UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot) as UIElement;
+					return focused is null ? -1 : repeater.GetElementIndex(focused);
+				}
+
+				// Poll instead of asserting after a fixed delay, and fail (not trivially pass)
+				// if focus never actually moves to the last-focused item.
+				await AssertEventually(() => FocusedIndex() == 2, timeout: 3000,
+					message: "Focus was not restored to the last-focused item (index 2)");
+
+				Assert.Equal(2, FocusedIndex());
+			});
+		}
+
+		// Regression test guarding the redirect fallback when there is no focus history yet
+		// (e.g. first keyboard entry): focus must land on the selected item, matching CV1's
+		// selection-follows-focus behavior, instead of being left on WinUI's default candidate.
+		[Fact(DisplayName = "CollectionView2 focuses the selected item on first keyboard entry")]
+		public async Task CollectionView2FocusesSelectedItemOnFirstEntry()
+		{
+			SetupBuilderCollectionView2();
+
+			var data = new ObservableCollection<string>
+			{
+				"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"
+			};
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => new Label()),
+				SelectionMode = SelectionMode.Single,
+				ItemsSource = data,
+				SelectedItem = data[3]
+			};
+
+			var button = new Button { Text = "Before" };
+			var layout = new VerticalStackLayout { button, collectionView };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var mauiItemsView = (MauiItemsView)collectionView.Handler.PlatformView;
+				await AssertEventually(() => mauiItemsView.IsTabStop, timeout: 5000);
+
+				var repeater = mauiItemsView.ItemsRepeaterControl;
+				Assert.NotNull(repeater);
+
+				button.ToPlatform().Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				// Tab from the button into the never-before-focused CollectionView.
+				mauiItemsView.Focus(FocusState.Keyboard);
+
+				int FocusedIndex()
+				{
+					var focused = UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot) as UIElement;
+					return focused is null ? -1 : repeater.GetElementIndex(focused);
+				}
+
+				// Poll instead of asserting after a fixed delay, and fail (not trivially pass)
+				// if focus never actually lands on the selected item.
+				await AssertEventually(() => FocusedIndex() == 3, timeout: 3000,
+					message: "Focus did not land on the selected item (index 3) on first keyboard entry");
+
+				Assert.Equal(3, FocusedIndex());
+			});
 		}
 
 		class Subscriber
