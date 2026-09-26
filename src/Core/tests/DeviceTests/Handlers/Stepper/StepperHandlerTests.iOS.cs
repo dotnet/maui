@@ -35,7 +35,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
+#pragma warning disable CA1422 // A scene-less window is intentional to test the detached-scene fallback.
 				using var window = new UIWindow(new CoreGraphics.CGRect(0, 0, 844, 390));
+#pragma warning restore CA1422
 				window.AddSubview(handler.PlatformView);
 
 				var landscapeSize = handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
