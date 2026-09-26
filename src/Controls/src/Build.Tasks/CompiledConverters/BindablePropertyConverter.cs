@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					if (parent.XmlType.IsOfAnyType(nameof(Trigger), nameof(DataTrigger), nameof(MultiTrigger), nameof(Style)))
 					{
-						typeName = GetTargetTypeName(parent);
+						typeName = GetTargetTypeFromElement(parent, node.NamespaceResolver, (IXmlLineInfo)node);
 					}
 					else if (parent.XmlType.IsOfAnyType(nameof(VisualState)))
 					{
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				}
 				else if (node.Parent is ElementNode { XmlType: XmlType xt1 } && xt1.IsOfAnyType(nameof(Trigger)))
 				{
-					typeName = GetTargetTypeName(node.Parent);
+					typeName = GetTargetTypeFromElement(node.Parent as ElementNode, node.NamespaceResolver, (IXmlLineInfo)node);
 				}
 				propertyName = parts[0];
 			}
@@ -71,38 +71,44 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (bpRef == null)
 				throw new BuildException(PropertyResolution, node, null, propertyName, typeRef.Name);
 			return bpRef;
-
-			static XmlType GetTargetTypeName(INode node)
-			{
-				var targetType = ((node as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
-				return TypeArgumentsParser.ParseSingle(targetType, node.NamespaceResolver, (IXmlLineInfo)node);
-			}
 		}
 
 		static XmlType FindTypeNameForVisualState(ElementNode parent, IXmlLineInfo lineInfo, ILContext context)
 		{
-			//1. parent is VisualState, don't check that
+			// 1. parent is VisualState, don't check that
 
-			//2. check that the VS is in a VSG
-			// if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != nameof(VisualStateGroup))
+			// 2. check that the VS is in a VSG
 			if (parent.Parent is not ElementNode target || !target.XmlType.IsOfAnyType(nameof(VisualStateGroup)))
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parent.Parent}", lineInfo);
 
-			//3. if the VSG is in a VSGL, skip that as it could be implicit
-			if (   target.Parent is ListNode
+			// 3. if the VSG is in a VSGL, skip that as it could be implicit
+			if (target.Parent is ListNode
 				|| target.Parent is ElementNode { XmlType: XmlType xt } && xt.IsOfAnyType(nameof(VisualStateGroupList)))
 				target = target.Parent.Parent as ElementNode;
 			else
 				target = target.Parent as ElementNode;
 
-			//4. target is now a Setter in a Style, or a VE
+			// 4. target is now a Setter in a Style, or a VE
 			if (target.XmlType.IsOfAnyType(nameof(Setter)))
-			{
-				var targetType = ((target?.Parent as ElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
-				return TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
-			}
-			else
-				return target.XmlType;
+				return GetTargetTypeFromElement(target?.Parent as ElementNode, parent.NamespaceResolver, lineInfo);
+
+			return target.XmlType;
+		}
+
+		/// <summary>
+		/// Extracts the TargetType attribute from an element node and parses it as an XmlType.
+		/// Returns null if the element is null, has no TargetType, or TargetType is empty.
+		/// </summary>
+		static XmlType GetTargetTypeFromElement(ElementNode element, IXmlNamespaceResolver namespaceResolver, IXmlLineInfo lineInfo)
+		{
+			if (element?.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode) != true)
+				return null;
+
+			var targetType = (targetTypeNode as ValueNode)?.Value as string;
+			if (string.IsNullOrEmpty(targetType))
+				return null;
+
+			return TypeArgumentsParser.ParseSingle(targetType, namespaceResolver, lineInfo);
 		}
 
 		public static FieldReference GetBindablePropertyFieldReference(XamlCache cache, TypeReference typeRef, string propertyName, ModuleDefinition module)
