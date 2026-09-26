@@ -6,6 +6,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var renderer = new UIGraphicsImageRenderer(backgroundLayer.Bounds.Size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
+				Scale = (nfloat)control.GetDisplayScale(),
 			});
 
 			return renderer.CreateImage((context) => backgroundLayer.RenderInContext(context.CGContext));

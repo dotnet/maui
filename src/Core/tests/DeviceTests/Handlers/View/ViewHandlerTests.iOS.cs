@@ -13,6 +13,42 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ViewHandlerTests
 	{
 		[Fact]
+		public void SafeAreaPixelComparisonUsesProvidedDisplayScale()
+		{
+			var subPixelInset = new SafeAreaPadding(0.24, 0, 0, 0);
+
+			Assert.True(SafeAreaPadding.Empty.EqualsAtPixelLevel(subPixelInset, 2));
+			Assert.False(SafeAreaPadding.Empty.EqualsAtPixelLevel(subPixelInset, 3));
+		}
+
+		[Theory]
+		[InlineData(0.24, 2, false)]
+		[InlineData(0.24, 3, true)]
+		public void SafeAreaNonZeroComparisonUsesProvidedDisplayScale(double value, double scale, bool expected)
+		{
+			Assert.Equal(expected, SafeAreaPadding.IsNonZeroAtPixelLevel(value, scale));
+		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		public async Task EffectiveDisplayScaleUsesAttachedViewContentScale(double expected)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+#pragma warning disable CA1422 // A scene-less window is intentional to isolate the view's effective scale.
+				using var window = new UIWindow();
+#pragma warning restore CA1422
+				using var view = new UIView();
+				window.AddSubview(view);
+				view.ContentScaleFactor = (nfloat)expected;
+
+				Assert.Equal(expected, view.GetEffectiveDisplayScale());
+			});
+		}
+
+		[Fact]
 		public async Task KeyboardTransitionsInvalidateDescendantSafeAreaCache()
 		{
 			await InvokeOnMainThreadAsync(() =>
