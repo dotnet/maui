@@ -51,11 +51,15 @@ namespace Microsoft.Maui.Controls.Foldable
 		internal TwoPaneViewLayoutGuide(VisualElement layout, IFoldableService dualScreenService)
 		{
 			_layout = layout;
+			_dualScreenService = dualScreenService;
 
 			if (_layout != null)
 			{
 				UpdateLayouts(layout.Width, layout.Height);
 				_layout.HandlerChanged += OnLayoutHandlerChanged;
+
+				if (_layout.Handler != null)
+					ConnectToService();
 			}
 		}
 
@@ -64,12 +68,11 @@ namespace Microsoft.Maui.Controls.Foldable
 			if (_dualScreenService != null)
 			{
 				_dualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
+				_dualScreenService.StopMonitoring(_layout);
 			}
 
 			if (_layout.Handler != null)
-			{
-				DualScreenService.OnLayoutChanged += OnDualScreenServiceChanged;
-			}
+				ConnectToService();
 		}
 
 		void OnDualScreenServiceChanged(object sender, FoldEventArgs e)
@@ -79,13 +82,30 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		internal void SetFoldableService(IFoldableService foldableService)
 		{
+			if (_dualScreenService != null)
+			{
+				_dualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
+				_dualScreenService.StopMonitoring(_layout);
+			}
+
 			_dualScreenService = foldableService;
+
+			if (_layout?.Handler != null)
+				ConnectToService();
+
 			UpdateLayouts();
+		}
+
+		void ConnectToService()
+		{
+			DualScreenService.StartMonitoring(_layout);
+			DualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
+			DualScreenService.OnLayoutChanged += OnDualScreenServiceChanged;
 		}
 
 		public bool IsLandscape
 		{
-			get => DualScreenService.IsLandscape;
+			get => DualScreenService.IsLandscapeFor(_layout);
 			set => SetProperty(ref _isLandscape, value);
 		}
 
@@ -136,7 +156,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 			get
 			{
-				return DualScreenService.GetHinge();
+				return _hinge;
 			}
 			private set
 			{
@@ -150,7 +170,7 @@ namespace Microsoft.Maui.Controls.Foldable
 			Rect containerArea;
 			if (_layout == null)
 			{
-				containerArea = new Rect(Point.Zero, DualScreenService.ScaledScreenSize);
+				containerArea = new Rect(Point.Zero, DualScreenService.GetScaledScreenSize(null));
 			}
 			else
 			{
@@ -165,7 +185,7 @@ namespace Microsoft.Maui.Controls.Foldable
 			Rect containerArea;
 			if (_layout == null)
 			{
-				containerArea = new Rect(Point.Zero, DualScreenService.ScaledScreenSize);
+				containerArea = new Rect(Point.Zero, DualScreenService.GetScaledScreenSize(null));
 			}
 			else
 			{
@@ -204,32 +224,33 @@ namespace Microsoft.Maui.Controls.Foldable
 			// Pane dimensions are calculated relative to the layout container
 			Rect _newPane1 = Pane1;
 			Rect _newPane2 = Pane2;
+			var hinge = DualScreenService.GetHinge(_layout);
 			var locationOnScreen = GetScreenRelativeBounds(width, height);
-			if (locationOnScreen == Rect.Zero && Hinge == Rect.Zero)
+			if (locationOnScreen == Rect.Zero && hinge == Rect.Zero)
 				locationOnScreen = containerArea;
 
-			bool isSpanned = IsInMultipleRegions(locationOnScreen);
-			bool hingeIsVertical = Hinge.Height > Hinge.Width;
+			bool isSpanned = IsInMultipleRegions(locationOnScreen, hinge);
+			bool hingeIsVertical = hinge.Height > hinge.Width;
 
 			if (isSpanned)
 			{
 				if (hingeIsVertical)
 				{
-					var pane2X = Hinge.X + Hinge.Width;
+					var pane2X = hinge.X + hinge.Width;
 					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
 					var pane2Width = containerRightX - pane2X;
 
-					_newPane1 = new Rect(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
-					_newPane2 = new Rect(_newPane1.Width + Hinge.Width, 0, pane2Width, locationOnScreen.Height);
+					_newPane1 = new Rect(0, 0, hinge.X - locationOnScreen.X, locationOnScreen.Height);
+					_newPane2 = new Rect(_newPane1.Width + hinge.Width, 0, pane2Width, locationOnScreen.Height);
 				}
 				else
 				{
-					var pane2Y = Hinge.Y + Hinge.Height;
+					var pane2Y = hinge.Y + hinge.Height;
 					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
 					var pane2Height = containerBottomY - pane2Y;
 
-					_newPane1 = new Rect(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
-					_newPane2 = new Rect(0, _newPane1.Height + Hinge.Height, locationOnScreen.Width, pane2Height);
+					_newPane1 = new Rect(0, 0, locationOnScreen.Width, hinge.Y - locationOnScreen.Y);
+					_newPane2 = new Rect(0, _newPane1.Height + hinge.Height, locationOnScreen.Width, pane2Height);
 				}
 			}
 
@@ -239,15 +260,15 @@ namespace Microsoft.Maui.Controls.Foldable
 				{
 					// Check if part of the layout is underneath the hinge
 					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
-					var hingeRightX = Hinge.X + Hinge.Width;
+					var hingeRightX = hinge.X + hinge.Width;
 
 					// Right side under hinge
-					if (containerRightX > Hinge.X && containerRightX < hingeRightX)
+					if (containerRightX > hinge.X && containerRightX < hingeRightX)
 					{
-						_newPane1 = new Rect(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
+						_newPane1 = new Rect(0, 0, hinge.X - locationOnScreen.X, locationOnScreen.Height);
 					}
 					// left side under hinge
-					else if (Hinge.X < locationOnScreen.X && hingeRightX > locationOnScreen.X)
+					else if (hinge.X < locationOnScreen.X && hingeRightX > locationOnScreen.X)
 					{
 						var amountObscured = hingeRightX - locationOnScreen.X;
 						_newPane1 = new Rect(amountObscured, 0, locationOnScreen.Width - amountObscured, locationOnScreen.Height);
@@ -261,15 +282,15 @@ namespace Microsoft.Maui.Controls.Foldable
 				{
 					// Check if part of the layout is underneath the hinge
 					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
-					var hingeBottomY = Hinge.Y + Hinge.Height;
+					var hingeBottomY = hinge.Y + hinge.Height;
 
 					// bottom under hinge
-					if (containerBottomY > Hinge.Y && containerBottomY < hingeBottomY)
+					if (containerBottomY > hinge.Y && containerBottomY < hingeBottomY)
 					{
-						_newPane1 = new Rect(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
+						_newPane1 = new Rect(0, 0, locationOnScreen.Width, hinge.Y - locationOnScreen.Y);
 					}
 					// top under hinge
-					else if (Hinge.Y < locationOnScreen.Y && hingeBottomY > locationOnScreen.Y)
+					else if (hinge.Y < locationOnScreen.Y && hingeBottomY > locationOnScreen.Y)
 					{
 						var amountObscured = hingeBottomY - locationOnScreen.Y;
 						_newPane1 = new Rect(0, amountObscured, locationOnScreen.Width, locationOnScreen.Height - amountObscured);
@@ -289,9 +310,9 @@ namespace Microsoft.Maui.Controls.Foldable
 
 			Pane1 = _newPane1;
 			Pane2 = _newPane2;
-			Mode = GetTwoPaneViewMode(width, height, _hinge);
-			Hinge = DualScreenService.GetHinge();
-			IsLandscape = DualScreenService.IsLandscape;
+			Hinge = hinge;
+			Mode = GetTwoPaneViewMode(width, height, hinge);
+			IsLandscape = DualScreenService.IsLandscapeFor(_layout);
 
 			var properties = _pendingPropertyChanges.ToList();
 			_pendingPropertyChanges.Clear();
@@ -307,12 +328,12 @@ namespace Microsoft.Maui.Controls.Foldable
 		/// a hinge/fold
 		/// </summary>
 		/// <param name="layoutBounds">Coordinates of the view being tested</param>
+		/// <param name="hinge">Coordinates of the hinge or fold being tested</param>
 		/// <returns>true if layoutBounds intersects the hinge/fold</returns>
-		bool IsInMultipleRegions(Rect layoutBounds)
+		bool IsInMultipleRegions(Rect layoutBounds, Rect hinge)
 		{
 			bool isInMultipleRegions = false;
-			var hinge = DualScreenService.GetHinge();
-			bool hingeIsVertical = Hinge.Height > Hinge.Width;
+			bool hingeIsVertical = hinge.Height > hinge.Width;
 
 			if (hingeIsVertical)
 			{
@@ -353,7 +374,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		TwoPaneViewMode GetTwoPaneViewMode(double width, double height, Rect hinge)
 		{
 			// TODO: ideally this would also return SinglePane if isSeparating were false to mimic Samsung Flex Mode
-			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height)))
+			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height), hinge))
 				return TwoPaneViewMode.SinglePane;
 
 			// Hinge/fold orientation determines the direction to stack the views,

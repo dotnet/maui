@@ -85,13 +85,26 @@ namespace Microsoft.Maui.Foldable
 			{
 				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, FoldableService); // get if null
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
+				Element.HandlerChanged += OnElementHandlerChanged;
 			}
+		}
+
+		void OnElementHandlerChanged(object sender, EventArgs e)
+		{
+			SetFoldableService(Element.Handler?.MauiContext?.Services?.GetService<IFoldableService>());
 		}
 
 		internal void SetFoldableService(IFoldableService foldableService)
 		{
+			var oldService = _dualScreenService;
+			if (subscriberCount > 0 && oldService != null)
+				oldService.HingeAngleChanged -= OnHingeAngleChanged;
+
 			_dualScreenService = foldableService;
 			_twoPaneViewLayoutGuide.SetFoldableService(foldableService);
+
+			if (subscriberCount > 0 && foldableService != null)
+				foldableService.HingeAngleChanged += OnHingeAngleChanged;
 		}
 
 		EventHandler<HingeAngleChangedEventArgs> _hingeAngleChanged;
@@ -233,11 +246,6 @@ namespace Microsoft.Maui.Foldable
 			return true;
 		}
 
-#if !ANDROID
-		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
-		void ProcessHingeAngleSubscriberCount(int newCount) { }
-#else
-
 		static object hingeAngleLock = new object();
 		/// <summary>
 		/// Query the current hinge angle of the foldable device.
@@ -251,20 +259,21 @@ namespace Microsoft.Maui.Foldable
 			{
 				if (newCount == 1)
 				{
-					Foldable.FoldableService.HingeAngleChanged += OnHingeAngleChanged;
+					if (FoldableService != null)
+						FoldableService.HingeAngleChanged += OnHingeAngleChanged;
 				}
 				else if (newCount == 0)
 				{
-					Foldable.FoldableService.HingeAngleChanged -= OnHingeAngleChanged;
+					if (FoldableService != null)
+						FoldableService.HingeAngleChanged -= OnHingeAngleChanged;
 				}
 			}
 		}
 
-		void OnHingeAngleChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
+		void OnHingeAngleChanged(object sender, FoldableHingeAngleChangedEventArgs e)
 		{
-			_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
+			_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngleInDegrees));
 		}
-#endif
 	}
 
 	/// <summary>
