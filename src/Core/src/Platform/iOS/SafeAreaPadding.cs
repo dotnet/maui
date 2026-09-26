@@ -54,7 +54,11 @@ internal static class SafeAreaInsetsExtensions
 	internal static double GetDisplayScale(this UIView view)
 	{
 		var window = view.Window;
-		return (double)(window?.WindowScene?.Screen.Scale ?? window?.Screen?.Scale ?? UIScreen.MainScreen.Scale);
+		if (window is not null && view.ContentScaleFactor > 0)
+			return (double)view.ContentScaleFactor;
+
+		var scale = window?.WindowScene?.Screen.Scale ?? window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
+		return scale > 0 ? (double)scale : 1;
 	}
 
 	// UIKit does not always report new insets when only an ancestor's edge policy changes.
