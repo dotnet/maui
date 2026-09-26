@@ -51,4 +51,20 @@
 		/// </summary>
 		IMauiContext? MauiContext { get; }
 	}
+
+	internal interface IPropertyUpdateBatchingElement
+	{
+		bool IsPropertyUpdateBatchingEnabled { get; }
+
+		bool IsAutomaticPropertyUpdateBatchingEnabled { get; }
+
+		bool IsPropertyUpdateBatchingExplicitlyScoped { get; }
+	}
+
+	internal interface IPropertyUpdateBatchingHandler
+	{
+		void BeginPropertyUpdateBatch();
+
+		void FlushPendingPropertyUpdates();
+	}
 }
