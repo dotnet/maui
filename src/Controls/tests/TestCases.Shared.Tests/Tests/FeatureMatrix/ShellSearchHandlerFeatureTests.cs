@@ -52,6 +52,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForNoElement(Apply);
 	}
 
 	// Scrolls/drags the search page into view on platforms where the collapsible
@@ -589,6 +590,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
 
