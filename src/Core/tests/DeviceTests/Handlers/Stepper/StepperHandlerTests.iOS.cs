@@ -27,6 +27,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task DesiredSizeUsesOwningWindowBoundsForLandscapeCompensation()
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+				return;
+
 			var stepper = new StepperStub();
 			var handler = await CreateHandlerAsync(stepper);
 
