@@ -12,6 +12,7 @@ public class Issue34975 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellTitleViewWithXNameShouldNotLeakMemory()
 	{
 		App.WaitForElement("NavigateButton");

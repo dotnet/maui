@@ -56,6 +56,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_WidthAndHeight()
 	{
 		App.WaitForElement(Options);
@@ -75,6 +76,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_XProportional()
 	{
 		App.WaitForElement(Options);
@@ -97,6 +99,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_YProportional()
 	{
 		App.WaitForElement(Options);
@@ -119,6 +122,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_XProportionalAndYProportional()
 	{
 		App.WaitForElement(Options);
@@ -171,6 +175,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_WidthProportional()
 	{
 		App.WaitForElement(Options);
@@ -209,6 +214,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_WidthProportionalAndHeightProportional()
 	{
 		App.WaitForElement(Options);
@@ -249,6 +255,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_SizeProportionalWithMaximumValue()
 	{
 		App.WaitForElement(Options);
@@ -339,6 +346,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyAbsoluteLayout_Visibility()
 	{
 		App.WaitForElement(Options);

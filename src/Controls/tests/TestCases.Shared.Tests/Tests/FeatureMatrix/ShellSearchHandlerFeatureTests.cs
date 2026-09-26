@@ -182,7 +182,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35085
 	[Test, Order(10)]
@@ -206,7 +206,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35085, https://github.com/dotnet/maui/issues/36629
 	[Test, Order(12)]
@@ -258,7 +258,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+#endif
 
 	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
@@ -594,6 +594,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 
 	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / net11.0 / release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellSearch_TextColor()
 	{
 #if IOS
@@ -615,6 +616,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 
 	[Test, Order(36)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
 // TODO: For now, CI shows an incorrect screenshot for this test; it renders properly on local macOS 26.
@@ -639,6 +641,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35624
 	[Test, Order(37)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellSearch_CharacterSpacing()
 	{
 #if IOS
@@ -663,6 +666,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35667
 	[Test, Order(38)]
 	[Category(UITestCategories.Shell)]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main / release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyShellSearch_TextTransformUppercase()
 	{
 #if IOS

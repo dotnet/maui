@@ -13,6 +13,7 @@ public class Issue20062 : _IssuesUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on release/10.0.1xx-sr11; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void CollectionViewSelectionChangesVisualState()
 	{
 		App.WaitForElement("CollectionView");

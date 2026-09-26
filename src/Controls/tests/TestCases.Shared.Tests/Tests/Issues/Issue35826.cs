@@ -25,6 +25,7 @@ public class Issue35826 : _IssuesUITest
 	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on main; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
 	{
 		OpenChildActivityAndRequirePhotoPicker();

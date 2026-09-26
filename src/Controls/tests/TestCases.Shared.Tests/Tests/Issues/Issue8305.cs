@@ -12,6 +12,7 @@ public class Issue8305 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellBadgeInitialBadgeIsVisible()
 	{
 		// Tab2 ("Messages") is initialized with BadgeText = "3" in the HostApp
@@ -24,6 +25,7 @@ public class Issue8305 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellBadgeCanBeSetAtRuntime()
 	{
 		App.WaitForElement("SetBadgeButton");
@@ -40,6 +42,7 @@ public class Issue8305 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellBadgeCanBeCleared()
 	{
 		App.WaitForElement("ClearBadgeButton");
@@ -53,6 +56,7 @@ public class Issue8305 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void ShellBadgeMultipleTabsCanHaveBadges()
 	{
 		App.WaitForElement("SetBadgeButton");

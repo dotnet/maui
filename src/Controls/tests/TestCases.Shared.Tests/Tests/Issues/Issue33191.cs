@@ -6,16 +6,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33191 : _IssuesUITest
 {
-    public Issue33191(TestDevice testDevice) : base(testDevice)
-    {
-    }
+	public Issue33191(TestDevice testDevice) : base(testDevice)
+	{
+	}
 
-    public override string Issue => "NavBar visibility does not update when switching tabs";
+	public override string Issue => "NavBar visibility does not update when switching tabs";
 
-    [Test]
-    [Category(UITestCategories.Shell)]
-    public void NavBarUpdatesWhenSwitchingShellContent()
-    {
+	[Test]
+	[Category(UITestCategories.Shell)]
+	[FailsOnMacWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
+	public void NavBarUpdatesWhenSwitchingShellContent()
+	{
 #if WINDOWS
         App.TapTab("First Tab");
         App.WaitForElement("Page 1");
@@ -25,10 +26,10 @@ public class Issue33191 : _IssuesUITest
         App.Tap("Page");
         App.WaitForElement("Page1Label");
 #else
-        App.TapTab("Page 1");
-        App.TapTab("Page");
-        App.WaitForElement("Page1Label");
+		App.TapTab("Page 1");
+		App.TapTab("Page");
+		App.WaitForElement("Page1Label");
 #endif
-        VerifyScreenshot();
-    }
+		VerifyScreenshot();
+	}
 }

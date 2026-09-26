@@ -4,6 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";
@@ -268,7 +269,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-	
+
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRAndMeasureFirstItemsWithGroupedList()
@@ -2207,6 +2208,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3129,6 +3131,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Flaky in CI (failed->passed on same SHA on net11.0; see ui-flake-quarantine-20260922.csv). Re-enable after flakiness investigation.")]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
