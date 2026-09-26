@@ -13,6 +13,23 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ViewHandlerTests
 	{
 		[Fact]
+		public void SafeAreaPixelComparisonUsesProvidedDisplayScale()
+		{
+			var subPixelInset = new SafeAreaPadding(0.24, 0, 0, 0);
+
+			Assert.True(SafeAreaPadding.Empty.EqualsAtPixelLevel(subPixelInset, 2));
+			Assert.False(SafeAreaPadding.Empty.EqualsAtPixelLevel(subPixelInset, 3));
+		}
+
+		[Theory]
+		[InlineData(0.24, 2, false)]
+		[InlineData(0.24, 3, true)]
+		public void SafeAreaNonZeroComparisonUsesProvidedDisplayScale(double value, double scale, bool expected)
+		{
+			Assert.Equal(expected, SafeAreaPadding.IsNonZeroAtPixelLevel(value, scale));
+		}
+
+		[Fact]
 		public async Task KeyboardTransitionsInvalidateDescendantSafeAreaCache()
 		{
 			await InvokeOnMainThreadAsync(() =>

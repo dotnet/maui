@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -50,8 +51,12 @@ namespace Microsoft.Maui.Handlers
 			// iOS 26+ and Mac Catalyst (macOS 26) — it alone does not distinguish the two.
 			if (!OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(26))
 			{
-				var screen = UIKit.UIScreen.MainScreen;
-				bool isLandscape = screen.Bounds.Width > screen.Bounds.Height;
+				var window = PlatformView.Window;
+				var screen = window?.Screen ?? UIScreen.MainScreen;
+				bool isLandscape = IsLandscape(
+					window?.WindowScene?.InterfaceOrientation ?? UIInterfaceOrientation.Unknown,
+					screen.Bounds);
+
 				if (isLandscape)
 				{
 					result = new Size(result.Width + iOSLiquidGlassStepperOverflow, result.Height);
@@ -60,6 +65,14 @@ namespace Microsoft.Maui.Handlers
 
 			return result;
 		}
+
+		internal static bool IsLandscape(UIInterfaceOrientation orientation, CGRect fallbackScreenBounds) =>
+			orientation switch
+			{
+				UIInterfaceOrientation.LandscapeLeft or UIInterfaceOrientation.LandscapeRight => true,
+				UIInterfaceOrientation.Portrait or UIInterfaceOrientation.PortraitUpsideDown => false,
+				_ => fallbackScreenBounds.Width > fallbackScreenBounds.Height,
+			};
 
 		protected override void ConnectHandler(UIStepper platformView)
 		{
