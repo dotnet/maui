@@ -51,8 +51,11 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 
 internal static class SafeAreaInsetsExtensions
 {
-	internal static double GetDisplayScale(this UIView view) =>
-		(double)(view.Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale);
+	internal static double GetDisplayScale(this UIView view)
+	{
+		var window = view.Window;
+		return (double)(window?.WindowScene?.Screen.Scale ?? window?.Screen?.Scale ?? UIScreen.MainScreen.Scale);
+	}
 
 	// UIKit does not always report new insets when only an ancestor's edge policy changes.
 	internal static void InvalidateSafeAreaWithDescendants(this UIView startingView)
@@ -111,6 +114,7 @@ internal static class SafeAreaInsetsExtensions
 
 		Array.Clear(blockedEdges, 0, blockedEdges.Length);
 		int resolvedCount = 0;
+		var scale = startingView.GetDisplayScale();
 
 		startingView.FindParent(x =>
 		{
@@ -121,7 +125,7 @@ internal static class SafeAreaInsetsExtensions
 			{
 				if (!blockedEdges[edge] &&
 					mv.GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None &&
-					SafeAreaPadding.IsNonZeroAtPixelLevel(mv.GetSafeAreaComponentForEdge(edge), mv.GetDisplayScale()))
+					SafeAreaPadding.IsNonZeroAtPixelLevel(mv.GetSafeAreaComponentForEdge(edge), scale))
 				{
 					blockedEdges[edge] = true;
 					resolvedCount++;

@@ -1,5 +1,4 @@
 ﻿using System;
-using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -52,10 +51,9 @@ namespace Microsoft.Maui.Handlers
 			if (!OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(26))
 			{
 				var window = PlatformView.Window;
-				var screen = window?.Screen ?? UIScreen.MainScreen;
-				bool isLandscape = IsLandscape(
-					window?.WindowScene?.InterfaceOrientation ?? UIInterfaceOrientation.Unknown,
-					screen.Bounds);
+				var screen = window?.WindowScene?.Screen ?? window?.Screen ?? UIScreen.MainScreen;
+				var bounds = window?.Bounds ?? screen.Bounds;
+				bool isLandscape = bounds.Width > bounds.Height;
 
 				if (isLandscape)
 				{
@@ -65,14 +63,6 @@ namespace Microsoft.Maui.Handlers
 
 			return result;
 		}
-
-		internal static bool IsLandscape(UIInterfaceOrientation orientation, CGRect fallbackScreenBounds) =>
-			orientation switch
-			{
-				UIInterfaceOrientation.LandscapeLeft or UIInterfaceOrientation.LandscapeRight => true,
-				UIInterfaceOrientation.Portrait or UIInterfaceOrientation.PortraitUpsideDown => false,
-				_ => fallbackScreenBounds.Width > fallbackScreenBounds.Height,
-			};
 
 		protected override void ConnectHandler(UIStepper platformView)
 		{

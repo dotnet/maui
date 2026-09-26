@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -22,22 +23,27 @@ namespace Microsoft.Maui.DeviceTests
 		double GetNativeMinimum(StepperHandler stepperHandler) =>
 			GetNativeStepper(stepperHandler).MinimumValue;
 
-		[Theory]
-		[InlineData(UIInterfaceOrientation.LandscapeLeft, 390, 844, true)]
-		[InlineData(UIInterfaceOrientation.LandscapeRight, 390, 844, true)]
-		[InlineData(UIInterfaceOrientation.Portrait, 844, 390, false)]
-		[InlineData(UIInterfaceOrientation.PortraitUpsideDown, 844, 390, false)]
-		[InlineData(UIInterfaceOrientation.Unknown, 844, 390, true)]
-		[InlineData(UIInterfaceOrientation.Unknown, 390, 844, false)]
-		public void LandscapeDetectionPrefersSceneOrientation(
-			UIInterfaceOrientation orientation,
-			double screenWidth,
-			double screenHeight,
-			bool expected)
+#if IOS && !MACCATALYST
+		[Fact]
+		public async Task DesiredSizeUsesOwningWindowBoundsForLandscapeCompensation()
 		{
-			var screenBounds = new CoreGraphics.CGRect(0, 0, screenWidth, screenHeight);
+			var stepper = new StepperStub();
+			var handler = await CreateHandlerAsync(stepper);
 
-			Assert.Equal(expected, StepperHandler.IsLandscape(orientation, screenBounds));
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var window = new UIWindow(new CoreGraphics.CGRect(0, 0, 844, 390));
+				window.AddSubview(handler.PlatformView);
+
+				var landscapeSize = handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+
+				window.Bounds = new CoreGraphics.CGRect(0, 0, 390, 844);
+				var portraitSize = handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+
+				Assert.Equal(36, landscapeSize.Width - portraitSize.Width);
+				Assert.Equal(landscapeSize.Height, portraitSize.Height);
+			});
 		}
+#endif
 	}
 }
