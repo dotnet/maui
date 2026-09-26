@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(1)]
 		[InlineData(2)]
 		[InlineData(3)]
-		public async Task DisplayScaleUsesAttachedViewContentScale(double expected)
+		public async Task EffectiveDisplayScaleUsesAttachedViewContentScale(double expected)
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 				window.AddSubview(view);
 				view.ContentScaleFactor = (nfloat)expected;
 
-				Assert.Equal(expected, view.GetDisplayScale());
+				Assert.Equal(expected, view.GetEffectiveDisplayScale());
 			});
 		}
 
