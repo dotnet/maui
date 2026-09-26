@@ -8,19 +8,25 @@ namespace MauiApp._1.Utilities;
 public static class TaskUtilities
 {
 	/// <summary>
-	/// Fire and Forget Safe Async.
+	/// Extensions for asynchronous tasks.
 	/// </summary>
 	/// <param name="task">Task to Fire and Forget.</param>
-	/// <param name="handler">Error Handler.</param>
-	public static async void FireAndForgetSafeAsync(this Task task, IErrorHandler? handler = null)
+	extension(Task task)
 	{
-		try
+		/// <summary>
+		/// Fire and Forget Safe Async.
+		/// </summary>
+		/// <param name="handler">Error Handler.</param>
+		public async void FireAndForgetSafeAsync(IErrorHandler? handler = null)
 		{
-			await task;
-		}
-		catch (Exception ex)
-		{
-			handler?.HandleError(ex);
+			try
+			{
+				await task;
+			}
+			catch (Exception ex)
+			{
+				handler?.HandleError(ex);
+			}
 		}
 	}
 }

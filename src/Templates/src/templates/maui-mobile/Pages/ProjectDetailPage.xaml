@@ -1,15 +1,12 @@
-<ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
-             xmlns:models="clr-namespace:MauiApp._1.Models"
-             xmlns:pages="clr-namespace:MauiApp._1.Pages"
-             xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
-             xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
-             xmlns:fonts="clr-namespace:Fonts"
+<ContentPage xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
              x:Class="MauiApp._1.Pages.ProjectDetailPage"
-             x:DataType="pageModels:ProjectDetailPageModel"
+             AutomationId="ProjectDetailPage"
+             x:DataType="ProjectDetailPageModel"
              Title="Project">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem
+            AutomationId="DeleteProject"
             Text="Delete"
             Command="{Binding DeleteCommand}"
             Order="Primary"
@@ -18,24 +15,27 @@
             SemanticProperties.Description="Delete Project" />
     </ContentPage.ToolbarItems>
 
-    <Grid>
-        <ScrollView>
-            <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
+    <Grid SafeAreaEdges="All">
+        <ScrollView SafeAreaEdges="None">
+            <VerticalStackLayout SafeAreaEdges="None" Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
                 <sf:SfTextInputLayout 
                     Hint="Name" >
                     <Entry
+                        AutomationId="ProjectName"
                         Text="{Binding Name}" SemanticProperties.Description="Name" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
                     Hint="Description">
                     <Entry
+                        AutomationId="ProjectDescription"
                         Text="{Binding Description}" SemanticProperties.Description="Description" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout
                     Hint="Category">
-                    <Picker ItemsSource="{Binding Categories}"
+                    <Picker AutomationId="ProjectCategory"
+                            ItemsSource="{Binding Categories}"
                             SelectedItem="{Binding Category}"
                             SelectedIndex="{Binding CategoryIndex}"
                             IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"
@@ -46,6 +46,7 @@
                     Text="Icon" 
                     Style="{StaticResource Title2}"/>
                 <CollectionView 
+                    AutomationId="ProjectIcons"
                     HeightRequest="44" Margin="0,0,0,15"
                     SelectionMode="Single" 
                     SelectedItem="{Binding Icon}"
@@ -53,7 +54,7 @@
                     SelectionChangedCommandParameter="{Binding Icon}"
                     ItemsSource="{Binding Icons}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:IconData">
+                        <DataTemplate x:DataType="IconData">
                             <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}"
                                  SemanticProperties.Description="{Binding Description}">
                                 <VisualStateManager.VisualStateGroups>
@@ -77,7 +78,7 @@
                                 <Label 
                                     Text="{Binding Icon}"
                                     x:Name="IconImage"
-                                    FontFamily="{x:Static fonts:FluentUI.FontFamily}" 
+                                    FontFamily="{x:Static FluentUI.FontFamily}"
                                     FontSize="24" 
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
@@ -97,6 +98,7 @@
                     Style="{StaticResource Title2}"/>
 
                 <CollectionView
+                    AutomationId="ProjectTags"
                     ItemsSource="{Binding AllTags}"
                     SelectionMode="Multiple"
                     HeightRequest="44"
@@ -108,12 +110,16 @@
                         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="{StaticResource LayoutSpacing}" />
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Tag">
+                        <DataTemplate x:DataType="Tag">
                             <Border StrokeShape="RoundRectangle 22" 
                                 HeightRequest="44" 
                                 VerticalOptions="Center"
-                                Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
                                 SemanticProperties.Description="{Binding Title}">
+                                <Border.Padding>
+                                    <OnPlatform x:TypeArguments="Thickness" Default="18,0,18,8">
+                                        <On Platform="Android" Value="18,0,18,0" />
+                                    </OnPlatform>
+                                </Border.Padding>
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">
@@ -133,9 +139,11 @@
                                 <Label x:Name="TagLabel"
                                     Text="{Binding Title}"
                                     TextColor="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}" 
-                                    FontSize="{OnIdiom 16,Desktop=18}" 
                                     VerticalOptions="Center"
                                     VerticalTextAlignment="Center">
+                                    <Label.FontSize>
+                                        <OnIdiom x:TypeArguments="x:Double" Default="16" Desktop="18" />
+                                    </Label.FontSize>
                                 </Label>
                             </Border>
                         </DataTemplate>
@@ -143,9 +151,13 @@
                 </CollectionView>
                 
 
-                <Button Text="Save" 
-                    MinimumHeightRequest="{OnIdiom 44, Desktop=60}"
-                    Command="{Binding SaveCommand}" />
+                <Button Text="Save"
+                    AutomationId="SaveProject"
+                    Command="{Binding SaveCommand}">
+                    <Button.MinimumHeightRequest>
+                        <OnIdiom x:TypeArguments="x:Double" Default="44" Desktop="60" />
+                    </Button.MinimumHeightRequest>
+                </Button>
 
                 <Grid HeightRequest="44">
                     <Label 
@@ -153,6 +165,7 @@
                         Style="{StaticResource Title2}" 
                         VerticalOptions="Center"/>
                     <ImageButton 
+                        AutomationId="ProjectCleanTasks"
                         Source="{StaticResource IconClean}"
                         HorizontalOptions="End"
                         VerticalOptions="Center"
@@ -166,6 +179,7 @@
                 </Grid>
                 <CollectionView ItemsSource="{Binding Tasks}"
                                 x:Name="ProjectTasksCollectionView"
+                                AutomationId="ProjectTasks"
                                 SelectionMode="Single"
                                 SelectedItem="{Binding SelectedTask}"
                                 SelectionChangedCommand="{Binding NavigateToTaskCommand}"
@@ -176,14 +190,15 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}"/>
+                            <TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type ProjectDetailPageModel}}, x:DataType=ProjectDetailPageModel}"/>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
 
-        <controls:AddButton Command="{Binding AddTaskCommand}" 
+        <AddButton Command="{Binding AddTaskCommand}"
+                            AutomationId="ProjectAddTask"
                             SemanticProperties.Description="Add task" 
                             ToolTipProperties.Text="Add task" />
     </Grid>

@@ -5,11 +5,14 @@
             Padding="30,0"
             Spacing="25">
             <Image
+                AutomationId="BotImage"
                 Source="dotnet_bot.png"
                 HeightRequest="185"
+                MaximumWidthRequest="190"
                 Margin="0,20,0,0"
+                HorizontalOptions="Center"
                 Aspect="AspectFit"
-                SemanticProperties.Description="dot net bot riding a rocket" />
+                SemanticProperties.Description="Two dot net bots with a rocket marked eleven." />
 
             <Label
                 Text="Hello, World!"
@@ -24,6 +27,7 @@
 
             <Button
                 x:Name="CounterBtn"
+                AutomationId="CounterBtn"
                 Text="Click me" 
                 SemanticProperties.Hint="Counts the number of times you click"
                 Clicked="OnCounterClicked"

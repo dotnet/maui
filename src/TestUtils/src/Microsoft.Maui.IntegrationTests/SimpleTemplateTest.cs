@@ -1,4 +1,8 @@
+using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -123,11 +127,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			""");
 		File.WriteAllText(Path.Combine(legacyTemplateDir, "MauiApp.1.csproj"), "<Project />");
 
-		var templatePack = Path.Combine(
-			TestEnvironment.GetMauiDirectory(),
-			".dotnet",
-			"template-packs",
-			$"Microsoft.Maui.Templates.{DotNetCurrent.Split('.')[0]}.{MauiPackageVersion}.nupkg");
+		var templatePack = GetTemplatePackPath();
 		Assert.True(File.Exists(templatePack), $"Template pack '{templatePack}' does not exist.");
 
 		var installOutput = DotnetInternal.RunForOutput(
@@ -180,6 +180,221 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData("", "dotnetcli", false, false, false)]
+	[InlineData("--ui csharp", "dotnetcli", false, true, false)]
+	[InlineData("--sample-content", "dotnetcli", true, false, false)]
+	[InlineData("--IncludeSampleContentIde true", "vs", true, false, false)]
+	[InlineData("--sample-content --with-avalonia", "dotnetcli", true, false, false)]
+	[InlineData("--ui csharp --sample-content", "dotnetcli", false, true, false)]
+	[InlineData("--ui csharp --sample-content --with-avalonia", "dotnetcli", false, true, true)]
+	public void GeneratedMauiOptionsRespectContentBoundaries(string options, string host, bool sample, bool csharp, bool avalonia)
+	{
+		SetTestIdentifier(options, host);
+		var customHive = Path.Combine(TestDirectory, "template-hive");
+		var projectDir = Path.Combine(TestDirectory, "GeneratedApp");
+		var templatePack = GetTemplatePackPath();
+		Assert.True(File.Exists(templatePack), $"Template pack '{templatePack}' does not exist.");
+		var installSource = templatePack;
+		if (host == "vs")
+		{
+			// The CLI fixes its host identifier. Change only that input in a disposable copy
+			// to exercise the IDE option expression with the same template engine.
+			// This does not test the IDE host API.
+			installSource = Path.Combine(TestDirectory, "ide-template");
+			ZipFile.ExtractToDirectory(templatePack, installSource);
+			var configFile = Path.Combine(installSource, "content", "templates", "maui-mobile", ".template.config", "template.json");
+			var config = JsonNode.Parse(File.ReadAllText(configFile))!;
+			var symbols = config["symbols"]!.AsObject();
+			Assert.Equal("bind", symbols["HostIdentifier"]!["type"]!.GetValue<string>());
+			Assert.Equal("HostIdentifier", symbols["HostIdentifier"]!["binding"]!.GetValue<string>());
+			symbols["HostIdentifier"] = new JsonObject
+			{
+				["type"] = "parameter",
+				["datatype"] = "string",
+				["defaultValue"] = host,
+			};
+			File.WriteAllText(configFile, config.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+			_output.WriteLine("IDE option-branch simulation through the CLI engine with HostIdentifier=vs. IDE host-API and Visual Studio execution remain unverified.");
+		}
+		Assert.True(DotnetInternal.Run("new",
+			$"--debug:custom-hive \"{customHive}\" install \"{installSource}\"", output: _output),
+			"Unable to install the template pack in the isolated hive.");
+
+		var hostOptions = host == "vs" ? "--HostIdentifier vs" : "";
+		var commandOutput = DotnetInternal.RunForOutput("new",
+			$"--debug:custom-hive \"{customHive}\" maui -o \"{projectDir}\" -f {DotNetCurrent} {options} {hostOptions} --no-restore",
+			out var exitCode, timeoutInSeconds: 300, output: _output);
+		_output.WriteLine(commandOutput);
+		Assert.Equal(0, exitCode);
+		Assert.Equal(csharp && options.Contains("--sample-content", StringComparison.Ordinal),
+			commandOutput.Contains("Warning: The sample content option was not applied.", StringComparison.Ordinal));
+		Assert.Equal(sample && options.Contains("--with-avalonia", StringComparison.Ordinal),
+			commandOutput.Contains("Warning: The Avalonia option was not applied.", StringComparison.Ordinal));
+
+		var project = XDocument.Load(Path.Combine(projectDir, "GeneratedApp.csproj"));
+		Assert.Equal(avalonia, project.Descendants("PackageReference").Any(p =>
+			((string?)p.Attribute("Include"))?.StartsWith("Avalonia.", StringComparison.Ordinal) == true));
+		Assert.Equal(sample, project.Descendants("EnablePreviewFeatures").Any(p => p.Value == "true"));
+		Assert.Equal(sample, project.Descendants("MauiEnableXamlCBindingWithSourceCompilation").Any(p => p.Value == "true"));
+		Assert.Empty(project.Descendants("PublishAot"));
+		Assert.Empty(project.Descendants("PublishTrimmed"));
+		Assert.Empty(project.Descendants("NoWarn"));
+		var splash = Assert.Single(project.Descendants("MauiSplashScreen"));
+		Assert.Equal("Resources/Splash/splash.svg", ((string?)splash.Attribute("Include"))?.Replace('\\', '/'));
+		Assert.Equal("128,128", (string?)splash.Attribute("BaseSize"));
+		Assert.Equal(sample ? "#F2F2F2" : "#512BD4", (string?)splash.Attribute("Color"));
+		Assert.Equal(sample ? "#0D0D0D" : null, (string?)splash.Attribute("TintColor"));
+		Assert.Equal(sample ? "#17171a" : null, (string?)splash.Attribute("DarkColor"));
+		Assert.Equal(sample ? "#C3C3C3" : null, (string?)splash.Attribute("DarkTintColor"));
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertContains("#if DEBUG", mauiProgram);
+		AssertContains("builder.Logging.AddDebug();", mauiProgram);
+		Assert.Equal(1, mauiProgram.Split("AddDebug(", StringSplitOptions.None).Length - 1);
+
+		foreach (var directory in new[] { "Data", "Models", "PageModels", "Pages", "Services", "Utilities" })
+			Assert.Equal(sample, Directory.Exists(Path.Combine(projectDir, directory)));
+		if (!sample)
+		{
+			Assert.False(Directory.Exists(Path.Combine(projectDir, "Converter")));
+			Assert.False(Directory.Exists(Path.Combine(projectDir, "Messages")));
+		}
+		foreach (var file in new[]
+		{
+			"GlobalUsings.cs", "GlobalXmlns.cs", "Resources/Raw/SeedData.json",
+			"Resources/Styles/AppStyles.xaml",
+		})
+			Assert.Equal(sample, File.Exists(Path.Combine(projectDir, file)));
+
+		Assert.Equal(csharp, File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+		Assert.Equal(!sample && !csharp, File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+		Assert.Equal(!sample && !csharp, File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
+		var app = File.ReadAllText(Path.Combine(projectDir, csharp ? "App.cs" : "App.xaml.cs"));
+		Assert.Equal(sample, app.Contains("StatusBarTheme", StringComparison.Ordinal));
+		Assert.Equal(sample, app.Contains("RequestedThemeChanged +=", StringComparison.Ordinal));
+		var shell = File.ReadAllText(Path.Combine(projectDir, csharp ? "AppShell.cs" : "AppShell.xaml.cs"));
+		Assert.Equal(sample, shell.Contains("ThemeSegmentedControl", StringComparison.Ordinal));
+		Assert.Equal(sample, shell.Contains("UpdateBackButtonAccessibility", StringComparison.Ordinal));
+		AssertSampleProjectMetadata(project, templatePack, projectDir, sample);
+
+		var botFiles = Directory.GetFiles(projectDir, "dotnet_bot*", SearchOption.AllDirectories);
+		if (sample)
+		{
+			Assert.Empty(botFiles);
+			Assert.DoesNotContain(project.Descendants("MauiImage"), image =>
+				image.Attributes().Any(attribute => attribute.Value.Contains("dotnet_bot", StringComparison.Ordinal)));
+			var xmlns = File.ReadAllText(Path.Combine(projectDir, "GlobalXmlns.cs"));
+			foreach (var mappedNamespace in new[] { "GeneratedApp.Pages", "GeneratedApp.Pages.Controls", "GeneratedApp.PageModels", "GeneratedApp.Models", "Fonts" })
+				AssertContains($"\"{mappedNamespace}\"", xmlns);
+			AssertDoesNotContain("MauiApp._1", xmlns);
+			AssertDoesNotContain("Syncfusion", xmlns);
+			AssertContains("#if ANDROID || WINDOWS", shell);
+			var dashboard = File.ReadAllText(Path.Combine(projectDir, "Pages", "MainPage.xaml"));
+			AssertContains("x:DataType=\"MainPageModel\"", dashboard);
+			AssertContains("IsEnabled=\"{!IsBusy}\"", dashboard);
+			foreach (var xaml in Directory.GetFiles(projectDir, "*.xaml", SearchOption.AllDirectories))
+			{
+				AssertDoesNotContain("{OnIdiom", File.ReadAllText(xaml));
+				AssertDoesNotContain("{OnPlatform", File.ReadAllText(xaml));
+			}
+			var manageMeta = File.ReadAllText(Path.Combine(projectDir, "Pages", "ManageMetaPage.xaml"));
+			AssertDoesNotContain("TextValidationBehavior", manageMeta);
+			Assert.Equal(2, Regex.Matches(manageMeta, @"\bUnfocused=""[^""]+""").Count);
+			var manageMetaCode = File.ReadAllText(Path.Combine(projectDir, "Pages", "ManageMetaPage.xaml.cs"));
+			AssertContains("[GeneratedRegex(", manageMetaCode);
+		}
+		else
+		{
+			var bot = Assert.Single(botFiles);
+			Assert.Equal(Path.Combine(projectDir, "Resources", "Images", "dotnet_bot.png"), bot);
+			Assert.Equal("dac6f5c17bc85a0e9829206705719ff65197035f7356621724c790931b4eb026",
+				Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(bot))).ToLowerInvariant());
+			var image = Assert.Single(project.Descendants("MauiImage"), image =>
+				((string?)image.Attribute("Update"))?.Replace('\\', '/') == "Resources/Images/dotnet_bot.png");
+			Assert.Equal("true", (string?)image.Attribute("Resize"));
+			Assert.Equal("190,185", (string?)image.Attribute("BaseSize"));
+			Assert.DoesNotContain(project.Descendants("MauiImage"), image =>
+				((string?)image.Attribute("Include"))?.Contains("dotnet_bot", StringComparison.Ordinal) == true);
+			Assert.DoesNotContain(project.Descendants("MauiIcon"), icon => icon.Attribute("MonochromeFile") is not null);
+
+			var page = File.ReadAllText(Path.Combine(projectDir, csharp ? "MainPage.cs" : "MainPage.xaml"));
+			AssertContains("dotnet_bot.png", page);
+			AssertContains("Two dot net bots with a rocket marked eleven.", page);
+			AssertContains(csharp ? "HeightRequest = 185" : "HeightRequest=\"185\"", page);
+			AssertContains(csharp ? "MaximumWidthRequest = 190" : "MaximumWidthRequest=\"190\"", page);
+			AssertContains(csharp ? "Aspect = Aspect.AspectFit" : "Aspect=\"AspectFit\"", page);
+			AssertContains(csharp ? "HorizontalOptions = LayoutOptions.Center" : "HorizontalOptions=\"Center\"", page);
+			AssertContains("Click me", page);
+			AssertContains("OnCounterClicked", page);
+			var counter = csharp ? page : File.ReadAllText(Path.Combine(projectDir, "MainPage.xaml.cs"));
+			AssertContains(" time\"", counter);
+			AssertContains(" times\"", counter);
+			AssertContains("SemanticScreenReader.Announce(", counter);
+		}
+	}
+
+	string GetTemplatePackPath() => Path.Combine(
+		TestEnvironment.GetMauiDirectory(), ".dotnet", "template-packs",
+		$"Microsoft.Maui.Templates.{DotNetCurrent.Split('.')[0]}.{MauiPackageVersion}.nupkg");
+
+	[Theory]
+	[InlineData("Microsoft.Data.Sqlite.Core", "MicrosoftDataSqliteCorePackageVersion")]
+	[InlineData("SQLitePCLRaw.bundle_e_sqlite3", "SQLitePCLRawBundleESqlite3PackageVersion")]
+	[InlineData("CommunityToolkit.Maui", "CommunityToolkitMauiPackageVersion")]
+	[InlineData("CommunityToolkit.Mvvm", "CommunityToolkitMvvmPackageVersion")]
+	[InlineData("Syncfusion.Maui.Toolkit", "SyncfusionMauiToolkitPackageVersion")]
+	public void SampleDependencyMatchesComponentInventory(string package, string versionProperty)
+	{
+		var versions = XDocument.Load(Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Versions.props"));
+		var inventoryVersion = Assert.Single(versions.Descendants(versionProperty)).Value;
+		using var archive = ZipFile.OpenRead(GetTemplatePackPath());
+		var projectEntry = Assert.Single(archive.Entries, entry =>
+			entry.FullName.EndsWith("/maui-mobile/MauiApp.1.csproj", StringComparison.Ordinal));
+		using var source = projectEntry.Open();
+		var project = XDocument.Load(source);
+		var reference = Assert.Single(project.Descendants("PackageReference"),
+			item => (string?)item.Attribute("Include") == package);
+
+		Assert.Equal(inventoryVersion, (string?)reference.Attribute("Version"));
+	}
+
+	static void AssertSampleProjectMetadata(XDocument project, string templatePack, string projectDir, bool sample)
+	{
+		// Compare versions with the installed pack rather than a second dependency-version baseline.
+		using var archive = ZipFile.OpenRead(templatePack);
+		var projectEntry = Assert.Single(archive.Entries, entry =>
+			entry.FullName.EndsWith("/maui-mobile/MauiApp.1.csproj", StringComparison.Ordinal));
+		using var source = projectEntry.Open();
+		var templateProject = XDocument.Load(source);
+		foreach (var id in new[]
+		{
+			"CommunityToolkit.Mvvm", "CommunityToolkit.Maui", "Microsoft.Data.Sqlite.Core",
+			"SQLitePCLRaw.bundle_e_sqlite3", "Syncfusion.Maui.Toolkit",
+		})
+		{
+			var references = project.Descendants("PackageReference").Where(p => (string?)p.Attribute("Include") == id).ToArray();
+			if (sample)
+			{
+				var expected = templateProject.Descendants("PackageReference").Single(p => (string?)p.Attribute("Include") == id);
+				Assert.Equal((string?)expected.Attribute("Version"), (string?)Assert.Single(references).Attribute("Version"));
+			}
+			else
+				Assert.Empty(references);
+		}
+
+		var sampleIcon = templateProject.Descendants("MauiIcon").Single(icon => icon.Attribute("MonochromeFile") is not null);
+		var monochrome = sampleIcon.Attribute("MonochromeFile")!.Value;
+		var generatedIcon = Assert.Single(project.Descendants("MauiIcon"));
+		if (sample)
+		{
+			Assert.Equal(monochrome, (string?)generatedIcon.Attribute("MonochromeFile"));
+			Assert.True(File.Exists(Path.Combine(projectDir, monochrome.Replace('\\', '/'))));
+		}
+		else if (monochrome != (string?)sampleIcon.Attribute("ForegroundFile"))
+			Assert.False(File.Exists(Path.Combine(projectDir, monochrome.Replace('\\', '/'))),
+				"A sample-only monochrome asset leaked into the default app.");
+	}
+
+	[Theory]
 	[InlineData(DotNetCurrent, "Debug", "", "")]
 	[InlineData(DotNetCurrent, "Release", "", "TrimMode=partial")]
 	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -216,10 +431,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		var projectContent = File.ReadAllText(projectFile);
 		AssertContains("Margin = new Thickness(0, 20, 0, 0)", mainPageContent);
-		AssertContains("SemanticProperties.SetDescription(logo, \"dot net bot riding a rocket\")", mainPageContent);
+		AssertContains("SemanticProperties.SetDescription(logo, \"Two dot net bots with a rocket marked eleven.\")", mainPageContent);
 		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"Headline\")", mainPageContent);
 		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"SubHeadline\")", mainPageContent);
-		AssertDoesNotContain("HorizontalOptions = LayoutOptions.Center", mainPageContent);
+		AssertContains("MaximumWidthRequest = 190", mainPageContent);
 		AssertDoesNotContain("FontSize = 18", mainPageContent);
 		AssertDoesNotContain("FontAttributes = FontAttributes.Bold", mainPageContent);
 		AssertContains("HorizontalOptions = LayoutOptions.Fill", mainPageContent);
@@ -629,7 +844,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		var appShell = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml"));
 		AssertContains("xmlns:sf=\"clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit\"", appShell);
-		AssertContains("ContentTemplate=\"{DataTemplate pages:MainPage}\"", appShell);
+		AssertContains("ContentTemplate=\"{DataTemplate MainPage}\"", appShell);
 		AssertDoesNotContain("ContentTemplate=\"{DataTemplate local:MainPage}\"", appShell);
 
 		var appShellCodeBehind = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml.cs"));

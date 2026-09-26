@@ -7,25 +7,15 @@ namespace MauiApp._1.Data;
 /// <summary>
 /// Repository class for managing projects in the database.
 /// </summary>
-public class ProjectRepository
+/// <param name="taskRepository">The task repository instance.</param>
+/// <param name="tagRepository">The tag repository instance.</param>
+/// <param name="logger">The logger instance.</param>
+public class ProjectRepository(TaskRepository taskRepository, TagRepository tagRepository, ILogger<ProjectRepository> logger)
 {
 	private bool _hasBeenInitialized = false;
-	private readonly ILogger _logger;
-	private readonly TaskRepository _taskRepository;
-	private readonly TagRepository _tagRepository;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ProjectRepository"/> class.
-	/// </summary>
-	/// <param name="taskRepository">The task repository instance.</param>
-	/// <param name="tagRepository">The tag repository instance.</param>
-	/// <param name="logger">The logger instance.</param>
-	public ProjectRepository(TaskRepository taskRepository, TagRepository tagRepository, ILogger<ProjectRepository> logger)
-	{
-		_taskRepository = taskRepository;
-		_tagRepository = tagRepository;
-		_logger = logger;
-	}
+	private readonly ILogger _logger = logger;
+	private readonly TaskRepository _taskRepository = taskRepository;
+	private readonly TagRepository _tagRepository = tagRepository;
 
 	/// <summary>
 	/// Initializes the database connection and creates the Project table if it does not exist.
@@ -41,14 +31,15 @@ public class ProjectRepository
 		try
 		{
 			var createTableCmd = connection.CreateCommand();
-			createTableCmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS Project (
-                ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name TEXT NOT NULL,
-                Description TEXT NOT NULL,
-                Icon TEXT NOT NULL,
-                CategoryID INTEGER NOT NULL
-            );";
+			createTableCmd.CommandText = """
+				CREATE TABLE IF NOT EXISTS Project (
+				    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+				    Name TEXT NOT NULL,
+				    Description TEXT NOT NULL,
+				    Icon TEXT NOT NULL,
+				    CategoryID INTEGER NOT NULL
+				);
+				""";
 			await createTableCmd.ExecuteNonQueryAsync();
 		}
 		catch (Exception e)
@@ -72,7 +63,7 @@ public class ProjectRepository
 
 		var selectCmd = connection.CreateCommand();
 		selectCmd.CommandText = "SELECT * FROM Project";
-		var projects = new List<Project>();
+		List<Project> projects = [];
 
 		await using var reader = await selectCmd.ExecuteReaderAsync();
 		while (await reader.ReadAsync())
@@ -146,17 +137,19 @@ public class ProjectRepository
 		var saveCmd = connection.CreateCommand();
 		if (item.ID == 0)
 		{
-			saveCmd.CommandText = @"
-                INSERT INTO Project (Name, Description, Icon, CategoryID)
-                VALUES (@Name, @Description, @Icon, @CategoryID);
-                SELECT last_insert_rowid();";
+			saveCmd.CommandText = """
+				INSERT INTO Project (Name, Description, Icon, CategoryID)
+				VALUES (@Name, @Description, @Icon, @CategoryID);
+				SELECT last_insert_rowid();
+				""";
 		}
 		else
 		{
-			saveCmd.CommandText = @"
-                UPDATE Project
-                SET Name = @Name, Description = @Description, Icon = @Icon, CategoryID = @CategoryID
-                WHERE ID = @ID";
+			saveCmd.CommandText = """
+				UPDATE Project
+				SET Name = @Name, Description = @Description, Icon = @Icon, CategoryID = @CategoryID
+				WHERE ID = @ID
+				""";
 			saveCmd.Parameters.AddWithValue("@ID", item.ID);
 		}
 

@@ -1,21 +1,21 @@
 <Border
     xmlns:effectsView="clr-namespace:Syncfusion.Maui.Toolkit.EffectsView;assembly=Syncfusion.Maui.Toolkit"
-    xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
-    xmlns:models="clr-namespace:MauiApp._1.Models"
     xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
     x:Class="MauiApp._1.Pages.Controls.TaskView"
+    x:Name="TaskControl"
     StrokeShape="RoundRectangle 20"
     Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
-    x:DataType="models:ProjectTask">
+    x:DataType="ProjectTask">
 
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
             VerticalOptions="Fill"
-            IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
+            IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type IProjectTaskPageModel}}, x:DataType=IProjectTaskPageModel}">
             <shimmer:SfShimmer.CustomView>
-                <Grid 
-                    ColumnDefinitions="Auto,*"
-                    Padding="{OnIdiom 15, Desktop=20}">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Grid.Padding>
+                        <OnIdiom x:TypeArguments="Thickness" Default="15" Desktop="20" />
+                    </Grid.Padding>
                     <BoxView 
                         WidthRequest="24"
                         HeightRequest="24"
@@ -29,23 +29,34 @@
                 </Grid>
             </shimmer:SfShimmer.CustomView>
             <shimmer:SfShimmer.Content>
-                <Grid ColumnDefinitions="*" ColumnSpacing="15" Padding="{OnIdiom 15, Desktop=20}">
+                <Grid ColumnDefinitions="*" ColumnSpacing="15">
+                    <Grid.Padding>
+                        <OnIdiom x:TypeArguments="Thickness" Default="15" Desktop="20" />
+                    </Grid.Padding>
 
-                    <Grid SemanticProperties.Description="{Binding Title}" Margin="{OnIdiom -15, Desktop=-20}">
+                    <Grid SemanticProperties.Description="{Binding Title}">
+                        <Grid.Margin>
+                            <OnIdiom x:TypeArguments="Thickness" Default="-15" Desktop="-20" />
+                        </Grid.Margin>
                         <Label
-                            Margin="{OnIdiom '65,0,0,0', Desktop= '70,0,0,0'}"
                             Text="{Binding Title}"
                             HorizontalOptions="Start"
                             VerticalOptions="Center"
-                            LineBreakMode="WordWrap"/>
+                            LineBreakMode="WordWrap">
+                            <Label.Margin>
+                                <OnIdiom x:TypeArguments="Thickness" Default="65,0,0,0" Desktop="70,0,0,0" />
+                            </Label.Margin>
+                        </Label>
                     </Grid>
 
                     <CheckBox Grid.Column="0"
+                        x:Name="CompletionCheckBox"
                         WidthRequest="50"
                         HorizontalOptions="Start"
                         IsChecked="{Binding IsCompleted, Mode=OneTime}"
                         VerticalOptions="Center"
-                        CheckedChanged="CheckBox_CheckedChanged"
+                        Command="{Binding TaskCheckedCommand, Source={x:Reference TaskControl}, x:DataType=TaskView}"
+                        CommandParameter="{x:Reference CompletionCheckBox}"
                         AutomationProperties.IsInAccessibleTree="True"
                         SemanticProperties.Description="{Binding Title}"/>
                 </Grid>

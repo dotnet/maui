@@ -7,4 +7,10 @@ public partial class TaskDetailPage : ContentPage
 		InitializeComponent();
 		BindingContext = model;
 	}
+
+	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		AppShell.UpdateBackButtonAccessibility(this);
+	}
 }

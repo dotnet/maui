@@ -1,14 +1,13 @@
 <Border xmlns:chart="clr-namespace:Syncfusion.Maui.Toolkit.Charts;assembly=Syncfusion.Maui.Toolkit"
-        xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls" 
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
-        xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
-        xmlns:models="clr-namespace:MauiApp._1.Models"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
-        x:DataType="pageModels:MainPageModel"
-        SemanticProperties.Description="{Binding TodoCategoryData, Converter={controls:ChartDataSemanticConverter}}"
-        HeightRequest="{OnIdiom 300, Phone=200}"
+        x:DataType="MainPageModel"
+        SemanticProperties.Description="{Binding TodoCategoryData, Converter={ChartDataSemanticConverter}}"
         Margin="0, 12"
         Style="{StaticResource CardStyle}">
+    <Border.HeightRequest>
+        <OnIdiom x:TypeArguments="x:Double" Default="300" Phone="200" />
+    </Border.HeightRequest>
     <shimmer:SfShimmer
         AutomationProperties.IsInAccessibleTree="False"
         BackgroundColor="Transparent"
@@ -26,7 +25,7 @@
             <chart:SfCircularChart x:Name="Chart"
                     SemanticProperties.Description="Task Categories Chart">
                 <chart:SfCircularChart.Resources>
-                    <controls:ChartDataLabelConverter x:Key="ChartDataLabelConverter"/>
+                    <ChartDataLabelConverter x:Key="ChartDataLabelConverter"/>
                 </chart:SfCircularChart.Resources>
                 <chart:DoughnutSeries 
                     ItemsSource="{Binding TodoCategoryData}"
@@ -36,26 +35,37 @@
                     ShowDataLabels="True"
                     EnableTooltip="False"
                     x:Name="doughnutSeries"
-                    Radius="{OnIdiom 0.6, Phone=0.5}"
                     InnerRadius="0.7">
+                    <chart:DoughnutSeries.Radius>
+                        <OnIdiom x:TypeArguments="x:Double" Default="0.6" Phone="0.5" />
+                    </chart:DoughnutSeries.Radius>
                     <chart:DoughnutSeries.LabelTemplate>
                         <DataTemplate>
                             <HorizontalStackLayout x:DataType="chart:ChartDataLabel">
                                 <Label Text="{Binding Item, Converter={StaticResource ChartDataLabelConverter}, ConverterParameter='title'}"
                                         TextColor="{AppThemeBinding 
                                     Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}"
-                                        FontSize="{OnIdiom 18, Phone=14}"/>
+                                    Dark={StaticResource LightOnDarkBackground}}">
+                                    <Label.FontSize>
+                                        <OnIdiom x:TypeArguments="x:Double" Default="18" Phone="14" />
+                                    </Label.FontSize>
+                                </Label>
                                 <Label Text=": "
                                         TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}"
-                                        FontSize="{OnIdiom 18, Phone=14}"/>
+                                    Dark={StaticResource LightOnDarkBackground}}">
+                                    <Label.FontSize>
+                                        <OnIdiom x:TypeArguments="x:Double" Default="18" Phone="14" />
+                                    </Label.FontSize>
+                                </Label>
                                 <Label Text="{Binding Item, Converter={StaticResource ChartDataLabelConverter}, ConverterParameter='count'}"
                                         TextColor="{AppThemeBinding
                                     Light={StaticResource DarkOnLightBackground},
-                                    Dark={StaticResource LightOnDarkBackground}}"
-                                        FontSize="{OnIdiom 18, Phone=14}"/>
+                                    Dark={StaticResource LightOnDarkBackground}}">
+                                    <Label.FontSize>
+                                        <OnIdiom x:TypeArguments="x:Double" Default="18" Phone="14" />
+                                    </Label.FontSize>
+                                </Label>
                             </HorizontalStackLayout>
                         </DataTemplate>
                     </chart:DoughnutSeries.LabelTemplate>
