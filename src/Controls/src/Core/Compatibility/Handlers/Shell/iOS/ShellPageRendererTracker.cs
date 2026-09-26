@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
@@ -82,6 +83,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _isVisiblePage;
 		NSObject? _keyboardWillHideObserver;
 		bool _pendingKeyboardNavigation;
+		readonly List<ToolbarItem> _trackedToolbarItems = [];
+		bool _toolbarUpdatePending;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -249,6 +252,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (oldPage is not null)
 			{
+				CleanToolbarItems();
+
 				// The _tracker.Page assignment now occurs before the navigation animation,
 				// so oldPage.Disappearing is unsubscribed below before it fires — leaving
 				// _isVisiblePage stuck as true. Calling SetDisappeared() here resets it so
@@ -433,6 +438,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			CleanToolbarItems();
+
 			if (NavigationItem.RightBarButtonItems != null)
 			{
 				for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
@@ -447,6 +454,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Priority))
 				{
+					TrackToolbarItem(item);
+
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
 						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
@@ -461,6 +470,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(shellToolbarItems, x => x.Priority))
 				{
+					TrackToolbarItem(item);
+
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
 						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
@@ -507,6 +518,42 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateRightBarButtonItemTintColors();
 			UpdateLeftToolbarItems();
+		}
+
+		void TrackToolbarItem(ToolbarItem item)
+		{
+			item.PropertyChanged += OnToolbarItemPropertyChanged;
+			_trackedToolbarItems.Add(item);
+		}
+
+		void CleanToolbarItems()
+		{
+			foreach (var item in _trackedToolbarItems)
+				item.PropertyChanged -= OnToolbarItemPropertyChanged;
+
+			_trackedToolbarItems.Clear();
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed before replacement and in Dispose.")]
+		void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != MenuItem.IsEnabledProperty.PropertyName &&
+				e.PropertyName != MenuItem.TextProperty.PropertyName &&
+				e.PropertyName != MenuItem.IconImageSourceProperty.PropertyName)
+			{
+				return;
+			}
+
+			if (_toolbarUpdatePending)
+				return;
+
+			_toolbarUpdatePending = true;
+			ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
+			{
+				_toolbarUpdatePending = false;
+				if (!_disposed)
+					UpdateToolbarItems();
+			});
 		}
 
 		/// iOS 26+: LiquidGlass no longer inherits the foreground color from the navigation bar's TintColor.
@@ -1437,6 +1484,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
+				CleanToolbarItems();
 				_searchHandlerAppearanceTracker?.Dispose();
 
 				if (Page is not null)
