@@ -12,9 +12,9 @@ public class Issue17389 : _IssuesUITest
 
     public override string Issue => "InputTransparent should not affect background color on Windows layouts";
 
-    [Test, Order(1)]
+    [Test]
     [Category(UITestCategories.Layout)]
-    public void ValidateBackgroundColorDoesNotAffectInputTransparent()
+    public void InputTransparentToggleStopsTapRouting()
     {
         App.WaitForElement("ToggleInputTransparentButton");
 
@@ -42,21 +42,15 @@ public class Issue17389 : _IssuesUITest
         App.WaitForElement("Tap count: 0");
     }
 
-    [Test, Order(2)]
+    [Test]
     [Category(UITestCategories.Layout)]
-    public void ValidateInputTransparentBackgroundColorToggle()
+    public void BackgroundColorToggleDoesNotChangeInputTransparentState()
     {
-        Exception? exception = null;
-
-        App.WaitForElement("ToggleBackgroundColorsButton");
-        VerifyScreenshotOrSetException(ref exception, "BeforeToggleBackgroundColors");
+        App.WaitForElement("State: InputTransparent=False");
         App.WaitForElement("ToggleBackgroundColorsButton");
         App.Tap("ToggleBackgroundColorsButton");
-        VerifyScreenshotOrSetException(ref exception, "AfterToggleBackgroundColors");
-
-        if (exception != null)
-        {
-            throw exception;
-        }
+        App.WaitForElement("Background colors: Toggled");
+        App.WaitForElement("State: InputTransparent=False");
+        Assert.That(App.FindElement("TapCountLabel").GetText(), Is.EqualTo("Tap count: 0"));
     }
 }

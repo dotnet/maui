@@ -610,7 +610,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		VerifyShellSearchScreenshot();
+		App.WaitForElement("Testing");
 	}
 
 	[Test, Order(36)]

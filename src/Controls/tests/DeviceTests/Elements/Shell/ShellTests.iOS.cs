@@ -529,6 +529,55 @@ namespace Microsoft.Maui.DeviceTests
 
 			return bottomOffset.Y;
 		}
+
+		[Fact(DisplayName = "Shell SearchHandler TextColor updates native search bar")]
+		public async Task SearchHandlerTextColorUpdatesNativeSearchBar()
+		{
+			SetupBuilder();
+
+			var expectedColor = Colors.Red;
+			var page = new ContentPage
+			{
+				Title = "Search",
+				Content = new Label { Text = "Content" }
+			};
+
+			var searchHandler = new SearchHandler
+			{
+				SearchBoxVisibility = SearchBoxVisibility.Expanded,
+				TextColor = Colors.Black
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = page;
+				Shell.SetSearchHandler(page, searchHandler);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				UISearchBar searchBar = null;
+				await AssertEventually(() =>
+				{
+					searchBar = GetPlatformToolbar(handler)?.Items?.LastOrDefault()?.SearchController?.SearchBar;
+					return searchBar is not null;
+				},
+					message: "Shell SearchHandler native UISearchBar did not render.");
+
+				searchHandler.TextColor = expectedColor;
+				searchHandler.Query = "Testing";
+
+				await AssertEventually(() =>
+				{
+					var textField = searchBar.FindDescendantView<UITextField>();
+					return textField?.Text == "Testing" && textField.TextColor.ToColor() == expectedColor;
+				},
+					message: "Shell SearchHandler native UISearchBar did not apply the updated text color.");
+			});
+		}
 #if IOS
 		[Fact(DisplayName = "Back Button Text Has Correct Default")]
 		public async Task BackButtonTextHasCorrectDefault()

@@ -12,18 +12,23 @@ public class Issue17389 : TestContentPage
     Label greenGridLabel;
     Label blueBorderLabel;
     Label purpleContentLabel;
+    Label inputTransparentStateLabel;
+    Label backgroundColorsStateLabel;
     int tapCount;
 
     protected override void Init()
     {
-        tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center };
+        tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center, AutomationId = "TapCountLabel" };
+        inputTransparentStateLabel = new Label { Text = "State: InputTransparent=False", HorizontalOptions = LayoutOptions.Center };
+        backgroundColorsStateLabel = new Label { Text = "Background colors: Initial", HorizontalOptions = LayoutOptions.Center };
 
         redGrid = CreateBackgroundTestGrid(Colors.Red, false, "RedGrid", out redGridLabel);
         greenGrid = CreateBackgroundTestGrid(Colors.Green, false, "GreenGrid", out greenGridLabel);
 
-        blueBorderLabel = new Label { Text = "Blue Border (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = "BlueBorder" };
+        blueBorderLabel = new Label { Text = "Blue Border (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, InputTransparent = true };
         blueBorder = new Border
         {
+            AutomationId = "BlueBorder",
             BackgroundColor = Colors.Blue,
             InputTransparent = false,
             WidthRequest = 200,
@@ -32,9 +37,10 @@ public class Issue17389 : TestContentPage
         };
         AddTapGesture(blueBorder);
 
-        purpleContentLabel = new Label { Text = "Purple Content (InputTransparent=False)", AutomationId = "PurpleContent" };
+        purpleContentLabel = new Label { Text = "Purple Content (InputTransparent=False)", InputTransparent = true };
         purpleContent = new ContentView
         {
+            AutomationId = "PurpleContent",
             BackgroundColor = Colors.Purple,
             InputTransparent = false,
             WidthRequest = 200,
@@ -63,6 +69,8 @@ public class Issue17389 : TestContentPage
                         HorizontalOptions = LayoutOptions.Center
                     },
                     tapCountLabel,
+                    inputTransparentStateLabel,
+                    backgroundColorsStateLabel,
                     new Button
                     {
                         Text = "Toggle InputTransparent",
@@ -86,28 +94,20 @@ public class Issue17389 : TestContentPage
 
     Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText, out Label label)
     {
-        label = new Label { Text = $"{labelText} (InputTransparent={inputTransparent})", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
+        label = new Label { Text = $"{labelText} (InputTransparent={inputTransparent})", HorizontalOptions = LayoutOptions.Center, InputTransparent = true };
 
-        Grid childGrid = new Grid
+        Grid grid = new Grid
         {
+            AutomationId = labelText,
             BackgroundColor = bgColor,
             InputTransparent = inputTransparent,
             Children = { label }
         };
 
-        AddTapGesture(childGrid);
-
-        Grid parentGrid = new Grid
-        {
-            WidthRequest = 200,
-            HeightRequest = 100,
-            InputTransparent = inputTransparent,
-            BackgroundColor = Colors.LightGray,
-            Children = { childGrid }
-        };
-
-        AddTapGesture(parentGrid);
-        return parentGrid;
+        AddTapGesture(grid);
+        grid.WidthRequest = 200;
+        grid.HeightRequest = 100;
+        return grid;
     }
 
     void AddTapGesture(View view)
@@ -135,6 +135,7 @@ public class Issue17389 : TestContentPage
         greenGridLabel.Text = $"Green Grid (InputTransparent={greenGrid.InputTransparent})";
         blueBorderLabel.Text = $"Blue Border (InputTransparent={blueBorder.InputTransparent})";
         purpleContentLabel.Text = $"Purple Content (InputTransparent={purpleContent.InputTransparent})";
+        inputTransparentStateLabel.Text = $"State: InputTransparent={redGrid.InputTransparent}";
     }
 
     void ToggleBackgroundColors()
@@ -143,5 +144,6 @@ public class Issue17389 : TestContentPage
         greenGrid.BackgroundColor = Colors.Blue;
         blueBorder.BackgroundColor = Colors.LightBlue;
         purpleContent.BackgroundColor = Colors.Pink;
+        backgroundColorsStateLabel.Text = "Background colors: Toggled";
     }
 }

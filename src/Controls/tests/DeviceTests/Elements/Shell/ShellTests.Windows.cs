@@ -140,6 +140,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Shell SearchHandler TextColor updates native search box")]
+		public async Task SearchHandlerTextColorUpdatesNativeSearchBox()
+		{
+			SetupBuilder();
+
+			var expectedColor = Colors.Red;
+			var page = new ContentPage
+			{
+				Title = "Search",
+				Content = new Label { Text = "Content" }
+			};
+
+			var searchHandler = new SearchHandler
+			{
+				SearchBoxVisibility = SearchBoxVisibility.Expanded,
+				TextColor = Colors.Black
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = page;
+				Shell.SetSearchHandler(page, searchHandler);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page);
+				await OnNavigatedToAsync(page);
+
+				var navigationView = Assert.IsType<MauiNavigationView>(shell.CurrentItem.Handler.PlatformView);
+				AutoSuggestBox autoSuggestBox = null;
+				await AssertEventually(() =>
+				{
+					autoSuggestBox = navigationView.AutoSuggestBox;
+					return autoSuggestBox is not null;
+				},
+					message: "Shell SearchHandler native AutoSuggestBox did not render.");
+
+				searchHandler.TextColor = expectedColor;
+				searchHandler.Query = "Testing";
+
+				await AssertEventually(() =>
+					autoSuggestBox.Text == "Testing" &&
+					autoSuggestBox.Foreground is UI.Xaml.Media.SolidColorBrush brush &&
+					brush.Color.ToColor() == expectedColor,
+					message: "Shell SearchHandler native AutoSuggestBox did not apply the updated text color.");
+			});
+		}
+
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
 		public async Task BackButtonEnabledAndDisabled()
 		{

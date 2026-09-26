@@ -10,6 +10,8 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Xunit;
+using WCanvas = Microsoft.UI.Xaml.Controls.Canvas;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -56,6 +58,76 @@ namespace Microsoft.Maui.DeviceTests
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
 				Assert.IsType<MauiLayoutAutomationPeer>(peer);
 			});
+		}
+
+		[Fact(DisplayName = "InputTransparent layout keeps native background layer through child mutations")]
+		public async Task InputTransparentLayoutKeepsNativeBackgroundLayerThroughChildMutations()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var transparentChild = new Grid
+			{
+				BackgroundColor = Colors.Green,
+				InputTransparent = true,
+				WidthRequest = 100,
+				HeightRequest = 100
+			};
+			transparentChild.Add(new Label { Text = "Child", InputTransparent = false });
+
+			var parent = new Grid
+			{
+				BackgroundColor = Colors.Red,
+				WidthRequest = 120,
+				HeightRequest = 120,
+				Children = { transparentChild }
+			};
+
+			await AttachAndRun(parent, async (_) =>
+			{
+				await AssertInputTransparentBackgroundLayer(transparentChild, Colors.Green);
+
+				transparentChild.Clear();
+				transparentChild.Add(new Label { Text = "Replacement", InputTransparent = false });
+				await AssertInputTransparentBackgroundLayer(transparentChild, Colors.Green);
+
+				transparentChild.BackgroundColor = Colors.Yellow;
+				await AssertInputTransparentBackgroundLayer(transparentChild, Colors.Yellow);
+
+				transparentChild.InputTransparent = false;
+				Assert.Empty(GetNativeLayout(transparentChild).CachedChildren.OfType<WCanvas>());
+
+				transparentChild.InputTransparent = true;
+				await AssertInputTransparentBackgroundLayer(transparentChild, Colors.Yellow);
+			});
+		}
+
+		async Task AssertInputTransparentBackgroundLayer(Grid layout, Color expectedColor)
+		{
+			var platformLayout = GetNativeLayout(layout);
+			var backgroundLayer = Assert.Single(platformLayout.CachedChildren.OfType<WCanvas>());
+
+			Assert.False(backgroundLayer.IsHitTestVisible);
+			Assert.Equal(int.MinValue, WCanvas.GetZIndex(backgroundLayer));
+			Assert.True(platformLayout.CachedChildren.IndexOf(backgroundLayer) >= 0);
+			Assert.True(backgroundLayer.ActualWidth >= layout.WidthRequest);
+			Assert.True(backgroundLayer.ActualHeight >= layout.HeightRequest);
+
+			var brush = Assert.IsType<WSolidColorBrush>(backgroundLayer.Background);
+			Assert.Equal(expectedColor, brush.Color.ToColor());
+			await backgroundLayer.AssertColorAtPointAsync(expectedColor.ToWindowsColor(), 5, 5, MauiContext);
+		}
+
+		static LayoutPanel GetNativeLayout(Grid layout)
+		{
+			var handler = Assert.IsType<LayoutHandler>(layout.Handler);
+			return Assert.IsType<LayoutPanel>(handler.PlatformView);
 		}
 
 		[Fact(DisplayName = "LayoutPanel AutomationPeer default control type is Custom with lowercase class name as localized type")]
