@@ -34,20 +34,16 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 	/// Sub-pixel differences (e.g., 0.001pt from animation noise) that map to the same
 	/// physical pixel are treated as equal, preventing unnecessary layout invalidation cycles.
 	/// </summary>
-	public bool EqualsAtPixelLevel(SafeAreaPadding other)
+	public bool EqualsAtPixelLevel(SafeAreaPadding other, double scale)
 	{
-		var scale = (double)UIScreen.MainScreen.Scale;
 		return RoundToPixel(Left, scale) == RoundToPixel(other.Left, scale)
 			&& RoundToPixel(Right, scale) == RoundToPixel(other.Right, scale)
 			&& RoundToPixel(Top, scale) == RoundToPixel(other.Top, scale)
 			&& RoundToPixel(Bottom, scale) == RoundToPixel(other.Bottom, scale);
 	}
 
-	internal static bool IsNonZeroAtPixelLevel(double value)
-	{
-		var scale = (double)UIScreen.MainScreen.Scale;
-		return RoundToPixel(value, scale) != 0;
-	}
+	internal static bool IsNonZeroAtPixelLevel(double value, double scale) =>
+		RoundToPixel(value, scale) != 0;
 
 	static double RoundToPixel(double value, double scale)
 		=> Math.Round(value * scale, MidpointRounding.AwayFromZero);
@@ -55,6 +51,9 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 
 internal static class SafeAreaInsetsExtensions
 {
+	internal static double GetDisplayScale(this UIView view) =>
+		(double)(view.Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale);
+
 	// UIKit does not always report new insets when only an ancestor's edge policy changes.
 	internal static void InvalidateSafeAreaWithDescendants(this UIView startingView)
 	{
@@ -122,7 +121,7 @@ internal static class SafeAreaInsetsExtensions
 			{
 				if (!blockedEdges[edge] &&
 					mv.GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None &&
-					SafeAreaPadding.IsNonZeroAtPixelLevel(mv.GetSafeAreaComponentForEdge(edge)))
+					SafeAreaPadding.IsNonZeroAtPixelLevel(mv.GetSafeAreaComponentForEdge(edge), mv.GetDisplayScale()))
 				{
 					blockedEdges[edge] = true;
 					resolvedCount++;

@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var renderer = new UIGraphicsImageRenderer(backgroundLayer.Bounds.Size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
+				Scale = control.Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale,
 			});
 
 			return renderer.CreateImage((context) => backgroundLayer.RenderInContext(context.CGContext));
