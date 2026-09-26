@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Foldable
 
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
+		readonly WeakEventManager _hingeAngleChangedEventManager = new WeakEventManager();
 		public NoPlatformFoldableService()
 		{
 			DeviceDisplay.MainDisplayInfoChanged += OnDeviceInfoChanged;
@@ -43,6 +44,11 @@ namespace Microsoft.Maui.Foldable
 			add { _onLayoutChangedEventManager.AddEventHandler(value); }
 			remove { _onLayoutChangedEventManager.RemoveEventHandler(value); }
 		}
+		public event EventHandler<FoldableHingeAngleChangedEventArgs> HingeAngleChanged
+		{
+			add { _hingeAngleChangedEventManager.AddEventHandler(value); }
+			remove { _hingeAngleChangedEventManager.RemoveEventHandler(value); }
+		}
 		public void Dispose()
 		{
 		}
@@ -53,9 +59,23 @@ namespace Microsoft.Maui.Foldable
 			return Rect.Zero;
 		}
 
+		public Rect GetHinge(VisualElement visualElement) => GetHinge();
+
+		public bool IsLandscapeFor(VisualElement visualElement) => IsLandscape;
+
+		public Size GetScaledScreenSize(VisualElement visualElement) => ScaledScreenSize;
+
 		public Point? GetLocationOnScreen(VisualElement visualElement)
 		{
 			return null;
+		}
+
+		public void StartMonitoring(VisualElement visualElement)
+		{
+		}
+
+		public void StopMonitoring(VisualElement visualElement)
+		{
 		}
 
 		public object WatchForChangesOnLayout(VisualElement visualElement, Action action)

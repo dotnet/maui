@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Controls.Foldable.UnitTests</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.Foldable.UnitTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="FoldableRegionHelperTests.cs" />
+    <Compile Include="FoldableMonitorRegistryTests.cs" />
+    <Compile Include="TwoPaneViewLayoutGuideTests.cs" />
+  </ItemGroup>
+</Project>

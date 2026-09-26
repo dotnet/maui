@@ -15,10 +15,14 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
+  <!-- The iOS implementation compiles only after the iOS 27.1 bindings flow into MAUI. -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True' and $([MSBuild]::VersionGreaterThanOrEquals('$(IosTargetFrameworkVersion)', '27.1'))">
+    <DefineConstants>$(DefineConstants);IOS_DUO_BINDINGS</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>True</IsPackable>
-    <PackageTags>$(DefaultPackageTags);foldable;surface-duo</PackageTags>
+    <PackageTags>$(DefaultPackageTags);foldable;surface-duo;iphone-duo</PackageTags>
     <Description>Foldable or multi-screen device support for .NET Multi-platform App UI (.NET MAUI) apps.</Description>
   </PropertyGroup>
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
