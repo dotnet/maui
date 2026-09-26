@@ -133,12 +133,12 @@ public class Issue29588ViewModel : INotifyPropertyChanged
 
 	private async Task LoadMoreItemsAsync()
 	{
-		if (IsLoadingMore)
+		if (IsLoadingMore || _loadCount > 0)
 			return;
 
 		IsLoadingMore = true;
 
-		await Task.Delay(1500); // Simulate API call or long operation
+		await Task.Yield();
 
 		for (int i = 1; i <= 10; i++)
 		{
@@ -155,4 +155,3 @@ public class Issue29588ViewModel : INotifyPropertyChanged
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
-

@@ -819,10 +819,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (completionSource != null && showsPresentation)
 				_completionTasks[pageViewController] = completionSource;
 
+			ClearHiddenBottomBarRequestsForVisiblePush(pageViewController);
 			PushViewController(pageViewController, animated);
 
 			if (completionSource != null && !showsPresentation)
 				completionSource.TrySetResult(true);
+		}
+
+		void ClearHiddenBottomBarRequestsForVisiblePush(UIViewController pageViewController)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18) || pageViewController.HidesBottomBarWhenPushed)
+				return;
+
+			// Before iOS 18, UIKit hides the bottom bar after a push when any view controller in the stack requests it.
+			var viewControllers = IsInMoreTab && ParentViewController is UITabBarController tabBarController
+				? tabBarController.MoreNavigationController.ViewControllers
+				: ActiveViewControllers();
+
+			if (viewControllers is null)
+				return;
+
+			foreach (var viewController in viewControllers)
+				viewController.HidesBottomBarWhenPushed = false;
 		}
 
 		async void SendPoppedOnCompletion(Task popTask)

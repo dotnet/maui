@@ -14,66 +14,72 @@ namespace Maui.Controls.Sample.Issues
 
 		public class Issue2004MainPage : ContentPage
 		{
-			static internal NavigationPage settingsPage = new NavigationPage(new SettingsView());
-			static internal NavigationPage addressesPage = new NavigationPage(new AddressListView());
-			static internal NavigationPage associationsPage = new NavigationPage(new ContentPage());
-
-			static FlyoutPage RootPage;
+			readonly NavigationPage _addressesPage = new(new AddressListView());
+			readonly NavigationPage _associationsPage = new(new ContentPage());
+			readonly FlyoutPage _rootPage;
+			int _step;
 
 			public Issue2004MainPage()
 			{
-				FlyoutPage testPage = new FlyoutPage();
-				RootPage = testPage;
-				testPage.Flyout = new ContentPage
+				_rootPage = new FlyoutPage();
+				_rootPage.Flyout = new ContentPage
 				{
 					Title = "M",
 				};
 
-				testPage.Detail = new SettingsView();
+				_rootPage.Detail = new NavigationPage(new SettingsView());
+				PrepareNextStep();
 			}
 
 			protected override void OnAppearing()
 			{
 				base.OnAppearing();
-				Application.Current.MainPage = RootPage;
+				Application.Current.MainPage = _rootPage;
 			}
 
-			static void SetPage(Page page)
+			void PrepareNextStep()
 			{
-				RootPage.Detail = page;
+				var page = ((NavigationPage)_rootPage.Detail).CurrentPage;
+				page.ToolbarItems.Clear();
+				var next = new ToolbarItem
+				{
+					Text = "Next step",
+					AutomationId = $"NextStep{_step + 1}"
+				};
+				next.Clicked += async (_, _) => await AdvanceAsync();
+				page.ToolbarItems.Add(next);
 			}
 
-			static async Task UI(int delay)
+			async Task AdvanceAsync()
 			{
-				await Task.Delay(delay);
-			}
-
-			public static INavigation NavigationPage => RootPage.Detail.Navigation;
-
-			public static async Task DisposedBitmapTest()
-			{
-				SetPage(Issue2004MainPage.associationsPage);
-				await UI(999);
-				SetPage(Issue2004MainPage.addressesPage);
-				await UI(999);
-
-				SetPage(Issue2004MainPage.associationsPage);
-
-				await UI(999);
-				SetPage(Issue2004MainPage.addressesPage);
-				await UI(999);
-
-				await NavigationPage.PushAsync(new ContentPage());
-				await UI(999);
-				await NavigationPage.PopAsync();
-				await UI(999);
-
-				SetPage(Issue2004MainPage.associationsPage);
-				await UI(999);
-
-				SetPage(Issue2004MainPage.addressesPage);
-				await UI(999);
-				SetPage(new ContentPage() { Content = new Label() { Text = "Success" } });
+				switch (++_step)
+				{
+					case 1:
+					case 3:
+					case 7:
+						_rootPage.Detail = _associationsPage;
+						break;
+					case 2:
+					case 4:
+					case 8:
+						_rootPage.Detail = _addressesPage;
+						break;
+					case 5:
+						await _addressesPage.PushAsync(new ContentPage());
+						break;
+					case 6:
+						await _addressesPage.PopAsync();
+						break;
+					case 9:
+						_rootPage.Detail = new ContentPage
+						{
+							Content = new Label { Text = "Success", AutomationId = "Success" }
+						};
+						return;
+					default:
+						throw new InvalidOperationException("The page-switching regression has already completed.");
+				}
+				PrepareNextStep();
 			}
 
 
@@ -248,19 +254,6 @@ namespace Maui.Controls.Sample.Issues
 
 			public class SettingsView : ContentPage
 			{
-				public Command AutoTest => new Command(async () =>
-				{
-					await Issue2004MainPage.DisposedBitmapTest();
-				});
-
-
-				protected async override void OnAppearing()
-				{
-					base.OnAppearing();
-					await Task.Delay(1000);
-					AutoTest.Execute(null);
-
-				}
 				public SettingsView()
 				{
 					BindingContext = this;
@@ -272,7 +265,7 @@ namespace Maui.Controls.Sample.Issues
 						{
 							new Label()
 							{
-								Text = "Auto Test",
+								Text = "Use Next step to switch pages, push, and pop.",
 								HorizontalOptions = LayoutOptions.Start
 							}
 						}

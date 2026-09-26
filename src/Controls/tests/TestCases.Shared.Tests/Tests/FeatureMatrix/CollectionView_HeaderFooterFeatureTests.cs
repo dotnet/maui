@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 {
 	public const string HeaderFooterFeatureMatrix = "CollectionView Feature Matrix";
@@ -31,11 +32,27 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 
 	public override string GalleryPageName => HeaderFooterFeatureMatrix;
 	protected override string GallerySubPageButton => "HeaderFooterViewButton";
+	protected override bool ResetAfterEachTest => true;
 
 	public CollectionView_HeaderFooterFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}
+
+	void ConfigureOptions(params string[] options)
+	{
+		CollectionViewFeatureTestActions.OpenOptions(App);
+		foreach (var option in options)
+			CollectionViewFeatureTestActions.SelectOption(App, option, "HeaderNone");
+		CollectionViewFeatureTestActions.ApplyOptions(App);
+	}
+
+	void AssertContentVisible(string target)
+	{
+		CollectionViewFeatureTestActions.ScrollToVisible(App, target, "CollectionViewControl");
+		Assert.That(App.WaitForElement(target).GetRect().Height, Is.GreaterThan(0));
+	}
+
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
 	[Test]
@@ -198,18 +215,11 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyHeaderViewWithFooterView()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(HeaderGrid);
-		App.Tap(HeaderGrid);
-		App.WaitForElementTillPageNavigationSettled(FooterGrid);
-		App.Tap(FooterGrid);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(HeaderGrid, FooterGrid);
 		App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Mango");
-		App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
+		AssertContentVisible("Apple");
+		AssertContentVisible("Mango");
+		AssertContentVisible("FooterViewLabel");
 	}
 
 	[Test]
@@ -234,18 +244,11 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyHeaderViewWithFooterString()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(HeaderGrid);
-		App.Tap(HeaderGrid);
-		App.WaitForElementTillPageNavigationSettled(FooterString);
-		App.Tap(FooterString);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(HeaderGrid, FooterString);
 		App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Mango");
-		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
+		AssertContentVisible("Apple");
+		AssertContentVisible("Mango");
+		AssertContentVisible("CollectionView Footer(String)");
 	}
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28334
@@ -313,44 +316,22 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyHeaderViewWhenGroupHeaderTemplateView()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(HeaderGrid);
-		App.Tap(HeaderGrid);
-		App.WaitForElementTillPageNavigationSettled(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElementTillPageNavigationSettled(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElementTillPageNavigationSettled(GroupHeaderTemplateGrid);
-		App.Tap(GroupHeaderTemplateGrid);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(HeaderGrid, IsGroupedTrue, ItemsSourceGroupedList, GroupHeaderTemplateGrid);
 		App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 		App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Potato");
+		AssertContentVisible("Apple");
+		AssertContentVisible("Potato");
 	}
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyHeaderStringWhenGroupFooterTemplateView()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(HeaderString);
-		App.Tap(HeaderString);
-		App.WaitForElementTillPageNavigationSettled(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElementTillPageNavigationSettled(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElementTillPageNavigationSettled(GroupFooterTemplateGrid);
-		App.Tap(GroupFooterTemplateGrid);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(HeaderString, IsGroupedTrue, ItemsSourceGroupedList, GroupFooterTemplateGrid);
 		App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
-		App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Potato");
+		AssertContentVisible("Apple");
+		AssertContentVisible("GroupFooterTemplateLabel");
+		AssertContentVisible("Potato");
 	}
 
 	[Test]
@@ -399,18 +380,11 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyHeaderViewWhenHeaderTemplateView()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(HeaderGrid);
-		App.Tap(HeaderGrid);
-		App.WaitForElementTillPageNavigationSettled(HeaderTemplateGrid);
-		App.Tap(HeaderTemplateGrid);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
+		ConfigureOptions(HeaderGrid, HeaderTemplateGrid);
 		App.WaitForNoElement("HeaderViewLabel");
 		App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Mango");
+		AssertContentVisible("Apple");
+		AssertContentVisible("Mango");
 	}
 #endif
 
@@ -1135,22 +1109,11 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFooterViewWhenGroupHeaderTemplateView()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(FooterGrid);
-		App.Tap(FooterGrid);
-		App.WaitForElementTillPageNavigationSettled(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElementTillPageNavigationSettled(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElementTillPageNavigationSettled(GroupHeaderTemplateGrid);
-		App.Tap(GroupHeaderTemplateGrid);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Potato");
+		ConfigureOptions(FooterGrid, IsGroupedTrue, ItemsSourceGroupedList, GroupHeaderTemplateGrid);
 		App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateLabel");
+		AssertContentVisible("Apple");
+		AssertContentVisible("Potato");
+		AssertContentVisible("FooterViewLabel");
 	}
 #endif
 
@@ -1594,22 +1557,11 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFooterTemplateWhenGroupHeaderTemplateView()
 	{
-		App.WaitForElementTillPageNavigationSettled(Options);
-		App.Tap(Options);
-		App.WaitForElementTillPageNavigationSettled(FooterTemplateGrid);
-		App.Tap(FooterTemplateGrid);
-		App.WaitForElementTillPageNavigationSettled(IsGroupedTrue);
-		App.Tap(IsGroupedTrue);
-		App.WaitForElementTillPageNavigationSettled(ItemsSourceGroupedList);
-		App.Tap(ItemsSourceGroupedList);
-		App.WaitForElementTillPageNavigationSettled(GroupHeaderTemplateGrid);
-		App.Tap(GroupHeaderTemplateGrid);
-		App.WaitForElementTillPageNavigationSettled(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
-		App.WaitForElementTillPageNavigationSettled("Apple");
-		App.WaitForElementTillPageNavigationSettled("Potato");
+		ConfigureOptions(FooterTemplateGrid, IsGroupedTrue, ItemsSourceGroupedList, GroupHeaderTemplateGrid);
 		App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateLabel");
+		AssertContentVisible("Apple");
+		AssertContentVisible("Potato");
+		AssertContentVisible("FooterTemplateLabel");
 	}
 #endif
 

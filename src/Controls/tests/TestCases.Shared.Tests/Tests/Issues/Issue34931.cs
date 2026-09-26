@@ -20,11 +20,12 @@ public class Issue34931 : _IssuesUITest
 	{
 		App.WaitForElement("ChangeColorButton");
 		App.Tap("ChangeColorButton");
-		Assert.That(App.WaitForElement("CurrentColorLabel").GetText(), Does.Contain("#FF6347"));
+		Assert.That(App.WaitForTextToBePresentInElement("CurrentColorLabel", "#FF6347"), Is.True);
 		NavigateWithFlyout("Second", "Issue34931SecondPageLabel");
 		NavigateWithFlyout("Third", "Issue34931ThirdPageLabel");
 		NavigateWithFlyout("Home", "ChangeColorButton");
 		App.Tap("ChangeColorButton");
+		Assert.That(App.WaitForTextToBePresentInElement("CurrentColorLabel", "#512BD4"), Is.True);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("Third");
 		VerifyScreenshot();
