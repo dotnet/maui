@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Platform
 					var tintedClearImage = GetClearButtonTintImage(
 						defaultClearImage,
 						entry.TextColor.ToPlatform(),
-						(nfloat)clearButton.GetDisplayScale());
+						(nfloat)textField.GetDisplayScale());
 					if (tintedClearImage is not null)
 					{
 						clearButton.SetImage(tintedClearImage, UIControlState.Normal);
