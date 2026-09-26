@@ -14,8 +14,16 @@ public class Issue34975 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellTitleViewWithXNameShouldNotLeakMemory()
 	{
-		App.WaitForElement("NavigateButton");
-		App.Tap("NavigateButton");
+		// A second rendered page replaces accessibility's reference to the first.
+		// Wait for real presentation before popping, rather than racing push/pop inside one callback.
+		for (int i = 0; i < 2; i++)
+		{
+			App.WaitForElement("NavigateButton");
+			App.Tap("NavigateButton");
+			App.WaitForElement("SecondPageLabel");
+			App.Tap("ReturnButton");
+			App.WaitForNoElement("SecondPageLabel");
+		}
 
 		App.WaitForElement("CheckMemoryButton");
 		App.Tap("CheckMemoryButton");

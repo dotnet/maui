@@ -6,71 +6,78 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue32994 : _IssuesUITest
 {
-        public Issue32994(TestDevice device) : base(device)
-        {
-        }
+	public Issue32994(TestDevice device) : base(device) { }
 
-        public override string Issue => "Shell TabBarIsVisible binding not working on ShellContent";
+	public override string Issue => "Shell TabBarIsVisible binding not working on ShellContent";
+	protected override bool ResetAfterEachTest => true;
 
-        [Test, Order(1)]
-        [Category(UITestCategories.Shell)]
-        public void TabBarVisibilityHidesOnPage1UsingDirectSet()
-        {
-                App.WaitForElement("HidePage1TabBar");
-                App.Tap("HidePage1TabBar");
-                VerifyScreenshot();
-        }
+	void SelectPage(string page)
+	{
+		if (App is AppiumWindowsApp)
+			ShellFeatureTestActions.WaitForBottomTab(App, "Tab1").Tap();
 
-        [Test, Order(2)]
-        [Category(UITestCategories.Shell)]
-        public void TabBarVisibilityShowsOnPage1UsingDirectSet()
-        {
-                App.WaitForElement("ShowPage1TabBar");
-                App.Tap("ShowPage1TabBar");
-                App.WaitForElement("Tab1");
-        }
+		App.TapTab(page);
+	}
 
-        [Test, Order(3)]
-        [Category(UITestCategories.Shell)]
-        public void TabBarVisibilityShowsOnPage2UsingBinding()
-        {
-#if WINDOWS
-                // In Windows, multiple shell contents on the same tab are displayed in a dropdown,
-                // requiring the tab to be clicked first before selecting the specific shell content
-                App.WaitForElement("ShowPage2TabBar");
-                App.Tap("ShowPage2TabBar");
-                App.TapTab("Tab1");
-                App.WaitForElement("Page2");
-                App.Tap("Page2");
-                App.WaitForElement("Tab1");
-#else
-                App.WaitForElement("ShowPage2TabBar");
-                App.Tap("ShowPage2TabBar");
-                App.TapTab("Page2");
-                App.WaitForElement("Tab1");
-#endif
-        }
+	void AssertTabBarHidden()
+	{
+		// Tab2 exists only in the native tab bar, not in the current page content.
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab2");
+	}
 
-        [Test, Order(4)]
-        [Category(UITestCategories.Shell)]
-        public void TabBarVisibilityHidesOnPage2UsingBinding()
-        {
-#if WINDOWS
-                App.TapTab("Tab1");
-                App.WaitForElement("Page1");
-                App.Tap("Page1");
-                App.WaitForElement("HidePage2TabBar");
-                App.Tap("HidePage2TabBar");
-                App.TapTab("Tab1");
-                App.WaitForElement("Page2");
-                App.Tap("Page2");
-                VerifyScreenshot();
-#else
-                App.TapTab("Page1");
-                App.WaitForElement("HidePage2TabBar");
-                App.Tap("HidePage2TabBar");
-                App.TapTab("Page2");
-                VerifyScreenshot();
-#endif
-        }
+	void AssertTabBarWorks()
+	{
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab2").Tap();
+		App.WaitForElement("Tab2Label");
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab1").Tap();
+		App.WaitForNoElement("Tab2Label");
+	}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void TabBarVisibilityHidesOnPage1UsingDirectSet()
+	{
+		App.WaitForElement("HidePage1TabBar");
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab2");
+		App.Tap("HidePage1TabBar");
+		AssertTabBarHidden();
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void TabBarVisibilityShowsOnPage1UsingDirectSet()
+	{
+		App.WaitForElement("HidePage1TabBar");
+		App.Tap("HidePage1TabBar");
+		AssertTabBarHidden();
+		App.Tap("ShowPage1TabBar");
+		AssertTabBarWorks();
+		App.WaitForElement("ShowPage1TabBar");
+	}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void TabBarVisibilityShowsOnPage2UsingBinding()
+	{
+		App.WaitForElement("HidePage2TabBar");
+		App.Tap("HidePage2TabBar");
+		App.Tap("ShowPage2TabBar");
+		SelectPage("Page2");
+		App.WaitForElement("Page2Label");
+		AssertTabBarWorks();
+		App.WaitForElement("Page2Label");
+	}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void TabBarVisibilityHidesOnPage2UsingBinding()
+	{
+		App.WaitForElement("HidePage2TabBar");
+		App.Tap("HidePage2TabBar");
+		SelectPage("Page2");
+		App.WaitForElement("Page2Label");
+		AssertTabBarHidden();
+		VerifyScreenshot();
+	}
 }

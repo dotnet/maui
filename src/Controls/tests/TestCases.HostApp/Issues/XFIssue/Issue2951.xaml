@@ -35,7 +35,7 @@
 								<RowDefinition Height="*" />
 							</Grid.RowDefinitions>
 							<Label Grid.Column="0" Text="{Binding Name}" TextColor="Yellow" />
-							<Button AutomationId="btnChangeStatus" Grid.Column="1" Style="{StaticResource ChangeStatusButton}" />
+							<Button AutomationId="{Binding Name, StringFormat='ChangeStatus{0}'}" Grid.Column="1" Style="{StaticResource ChangeStatusButton}" />
 						</Grid>
 					</ViewCell.View>
 				</ViewCell>

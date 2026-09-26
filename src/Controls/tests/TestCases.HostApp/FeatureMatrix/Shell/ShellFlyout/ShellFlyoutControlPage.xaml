@@ -8,7 +8,7 @@
     FlyoutWidth="{Binding FlyoutWidth}"
     FlyoutHeight="{Binding FlyoutHeight}"
     FlyoutIcon="{Binding FlyoutIcon}"
-    FlyoutIsPresented="{Binding FlyoutIsPresented}"
+    FlyoutIsPresented="{Binding FlyoutIsPresented, Mode=TwoWay}"
     FlyoutBehavior="{Binding FlyoutBehavior, Mode=TwoWay}"
     FlyoutHeader="{Binding FlyoutHeader, Mode=TwoWay}"
     FlyoutFooter="{Binding FlyoutFooter, Mode=TwoWay}"

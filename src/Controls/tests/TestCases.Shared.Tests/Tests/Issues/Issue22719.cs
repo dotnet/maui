@@ -17,10 +17,16 @@ public class Issue22719 : _IssuesUITest
 	{
 		App.WaitForElement("Label");
 #if MACCATALYST //The EnterFullScreen script is applicable only for MacCatalyst
-		App.EnterFullScreen();
-		VerifyScreenshot(includeTitleBar: true);
-		// Exit fullscreen and tap the label to move cursor away from toolbar area and prevent unwanted hover effects for subsequent tests
-		App.ExitFullScreen();
+		try
+		{
+			App.EnterFullScreen();
+			VerifyScreenshot(includeTitleBar: true);
+		}
+		finally
+		{
+			App.ExitFullScreen();
+		}
+		// Move the cursor away from the toolbar to avoid hover effects in subsequent tests.
 		App.WaitForElement("Label");
 		App.Tap("Label");
 #else

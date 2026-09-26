@@ -11,6 +11,7 @@ public class ShellFlyoutSizing : _IssuesUITest
 	}
 
 	public override string Issue => "Shell Flyout Width and Height";
+	protected override bool ResetAfterEachTest => true;
 
 #if WINDOWS
     const string ChangeFlyoutSizes="Change Height and Width";
@@ -38,12 +39,12 @@ public class ShellFlyoutSizing : _IssuesUITest
 		var initialWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
 		var initialHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
 		App.Tap(ChangeFlyoutSizes);
-		Assert.That(App.WaitForElement("FlyoutHeader").GetRect().Width, Is.Not.EqualTo(initialWidth));
-		Assert.That(App.WaitForElement("FlyoutFooter").GetRect().Y, Is.Not.EqualTo(initialHeight));
+		Assert.That(() => App.FindElement("FlyoutHeader").GetRect().Width, Is.Not.EqualTo(initialWidth).After(10000, 200));
+		Assert.That(() => App.FindElement("FlyoutFooter").GetRect().Y, Is.Not.EqualTo(initialHeight).After(10000, 200));
 
 		App.Tap(ResetFlyoutSizes);
-		Assert.That(App.WaitForElement("FlyoutHeader").GetRect().Width, Is.EqualTo(initialWidth));
-		Assert.That(App.WaitForElement("FlyoutFooter").GetRect().Y, Is.EqualTo(initialHeight));
+		Assert.That(() => App.FindElement("FlyoutHeader").GetRect().Width, Is.EqualTo(initialWidth).After(10000, 200));
+		Assert.That(() => App.FindElement("FlyoutFooter").GetRect().Y, Is.EqualTo(initialHeight).After(10000, 200));
 	}
 
 	[Test, Order(2)]
@@ -51,14 +52,17 @@ public class ShellFlyoutSizing : _IssuesUITest
 	public void FlyoutHeightAndWidthIncreaseAndDecreaseCorrectly()
 	{
 		App.WaitForElement(ChangeFlyoutSizes);
+		var originalWidth = App.FindElement("FlyoutHeader").GetRect().Width;
 		App.Tap(ChangeFlyoutSizes);
+		Assert.That(() => App.FindElement("FlyoutHeader").GetRect().Width, Is.Not.EqualTo(originalWidth).After(10000, 200));
+		App.WaitForElement(DecreaseFlyoutSizes);
 		var initialWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
 		var initialHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
 		App.Tap(DecreaseFlyoutSizes);
-		var newWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
-		var newHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
-		Assert.That(initialWidth - newWidth, Is.EqualTo(difference).Within(1));
-		Assert.That(initialHeight - newHeight, Is.EqualTo(difference).Within(1));
+		Assert.That(() => initialWidth - App.FindElement("FlyoutHeader").GetRect().Width,
+			Is.EqualTo(difference).Within(1).After(10000, 200));
+		Assert.That(() => initialHeight - App.FindElement("FlyoutFooter").GetRect().Y,
+			Is.EqualTo(difference).Within(1).After(10000, 200));
 
 	}
 }

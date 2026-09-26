@@ -8,6 +8,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 {
 	public const string AbsoluteLayoutFeatureMatrix = "AbsoluteLayout Feature Matrix";
 	public override string GalleryPageName => AbsoluteLayoutFeatureMatrix;
+	protected override bool ResetAfterEachTest => true;
 	public const string Options = "Options";
 	protected override string GalleryPageReadyElement => Options;
 	public const string Apply = "Apply";
@@ -70,7 +71,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagNoneCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(250, 500);
 	}
 
 	[Test]
@@ -92,7 +93,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagXProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(100, 100, xProportional: true);
 	}
 
 	[Test]
@@ -114,7 +115,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagYProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(100, 100, yProportional: true);
 	}
 
 	[Test]
@@ -141,7 +142,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagYProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(100, 100, xProportional: true, yProportional: true);
 	}
 
 	[Test]
@@ -185,7 +186,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagWidthProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(0.5, 100, widthProportional: true);
 	}
 
 	[Test]
@@ -225,7 +226,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagWidthProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(0.5, 0.5, widthProportional: true, heightProportional: true);
 	}
 
 	[Test]
@@ -263,7 +264,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagSizeProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		AssertBoxBounds(1, 1, widthProportional: true, heightProportional: true);
 	}
 
 	[Test]
@@ -341,13 +342,52 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Layout)]
 	public void VerifyAbsoluteLayout_Visibility()
 	{
+		App.WaitForElement("FixedLabel");
+		App.WaitForElement("ClickMeButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsVisibleFalse");
 		App.Tap("IsVisibleFalse");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForNoElement(Apply);
+		App.WaitForElement(Options);
+		App.WaitForNoElement("MainLayout");
+		App.WaitForNoElement("FixedLabel");
+		App.WaitForNoElement("ClickMeButton");
+	}
+
+	void AssertBoxBounds(double width, double height, bool widthProportional = false,
+		bool heightProportional = false, bool xProportional = false, bool yProportional = false)
+	{
+		App.WaitForNoElement(Apply);
+		App.WaitForElement(Options);
+		App.WaitForElement("MainLayout");
+		if (Device != TestDevice.iOS)
+		{
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			return;
+		}
+
+		App.WaitForElement("BlueBox");
+		string frameDetails = "Native frames have not been read.";
+		Assert.That(() =>
+		{
+			var layout = App.FindElement("MainLayout").GetRect();
+			var box = App.FindElement("BlueBox").GetRect();
+			var expectedWidth = widthProportional ? layout.Width * width : width;
+			var expectedHeight = heightProportional ? layout.Height * height : height;
+			var expectedX = layout.X + (xProportional ? (layout.Width - expectedWidth) / 2 : 0);
+			var expectedY = layout.Y + (yProportional ? (layout.Height - expectedHeight) / 2 : 0);
+			frameDetails = $"Native MainLayout={layout}; actual BlueBox={box}; "
+				+ $"expected BlueBox=(X={expectedX}, Y={expectedY}, Width={expectedWidth}, Height={expectedHeight}); "
+				+ $"proportional flags: X={xProportional}, Y={yProportional}, Width={widthProportional}, Height={heightProportional}.";
+			return layout.Width > 0 && layout.Height > 0
+				&& Math.Abs(box.Width - expectedWidth) <= 1
+				&& Math.Abs(box.Height - expectedHeight) <= 1
+				&& Math.Abs(box.X - expectedX) <= 1
+				&& Math.Abs(box.Y - expectedY) <= 1;
+		}, Is.True.After(5000, 100), () => frameDetails);
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31496
