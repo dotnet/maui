@@ -537,6 +537,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed before replacement and in Dispose.")]
 		void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
+			if (sender is not ToolbarItem { Order: ToolbarItemOrder.Secondary })
+				return;
+
 			if (e.PropertyName != MenuItem.IsEnabledProperty.PropertyName &&
 				e.PropertyName != MenuItem.TextProperty.PropertyName &&
 				e.PropertyName != MenuItem.IconImageSourceProperty.PropertyName)
@@ -552,7 +555,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_toolbarUpdatePending = false;
 				if (!_disposed)
-					UpdateToolbarItems();
+					UpdateToolbarItemsInternal();
 			});
 		}
 

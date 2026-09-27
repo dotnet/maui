@@ -178,8 +178,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var imageSource = item?.IconImageSource;
 				if (!_forceName && imageSource is not null && !imageSource.IsEmpty)
 				{
-					Style = UIBarButtonItemStyle.Plain;
-					Title = _useTitleAndImage ? item.Text : null;
+					if (_useTitleAndImage)
+						Title = item.Text;
+
 					UpdateIcon(item, imageSource);
 				}
 				else
@@ -206,9 +207,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						return;
 					}
 
+					if (result?.Value is null)
+					{
+						Image = null;
+						Style = UIBarButtonItemStyle.Plain;
+						result?.Dispose();
+						_imageSourceResult?.Dispose();
+						_imageSourceResult = null;
+						return;
+					}
+
 					var previousResult = _imageSourceResult;
 					_imageSourceResult = result;
-					Image = result?.Value;
+					Image = result.Value;
+					Style = UIBarButtonItemStyle.Plain;
 					previousResult?.Dispose();
 				});
 			}

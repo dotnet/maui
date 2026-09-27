@@ -1,4 +1,4 @@
-#if IOS
+#if IOS || MACCATALYST
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +44,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertEventually(() => nativeItem.Image is not null);
 				Assert.Equal(
-					OperatingSystem.IsIOSVersionAtLeast(27, 1) ? toolbarItem.Text : null,
+					OperatingSystem.IsIOSVersionAtLeast(27, 1) && !OperatingSystem.IsMacCatalyst()
+						? toolbarItem.Text
+						: null,
 					nativeItem.Title);
 				Assert.Equal(toolbarItem.AutomationId, nativeItem.AccessibilityIdentifier);
 			});
@@ -94,6 +96,38 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(nativeItem.Image);
 				Assert.Equal(toolbarItem.Text, nativeItem.Title);
+			});
+		}
+
+		[Fact(DisplayName = "Legacy Toolbar Item Keeps Text When Icon Load Fails")]
+		public async Task LegacyToolbarItemKeepsTextWhenIconLoadFails()
+		{
+			SetupBuilder();
+			var imageSource = new ControlledToolbarImageSource();
+			var toolbarItem = new ToolbarItem
+			{
+				Text = "Toolbar Item"
+			};
+			var page = new ContentPage
+			{
+				ToolbarItems =
+				{
+					toolbarItem
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(page), async _ =>
+			{
+				using var nativeItem = toolbarItem.ToUIBarButtonItem(false, false, false);
+				Assert.Equal(toolbarItem.Text, nativeItem.Title);
+
+				toolbarItem.IconImageSource = imageSource;
+				await imageSource.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				imageSource.Complete(null);
+
+				await AssertEventually(() => imageSource.Disposed.Task.IsCompleted);
+				Assert.Equal(toolbarItem.Text, nativeItem.Title);
+				Assert.Null(nativeItem.Image);
 			});
 		}
 
