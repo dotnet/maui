@@ -56,7 +56,7 @@ public class XmlParserErrorTests : SourceGenTestsBase
 		// PR #13797 fix: The location should be extracted from XmlException
 		// and the duplicate "Line X, position Y" should be stripped from the message
 		Assert.Equal(6, location.StartLinePosition.Line); // Line 7 in 1-indexed = line 6 in 0-indexed
-		Assert.Equal(1, location.StartLinePosition.Character); // Position 1 from XmlException (not converted to 0-indexed by LocationHelpers)
+		Assert.Equal(0, location.StartLinePosition.Character); // Position 1 from XmlException maps to Roslyn's zero-based column 0
 		Assert.DoesNotContain("Line 7, position 1", message, System.StringComparison.Ordinal);
 	}
 
