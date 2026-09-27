@@ -13,12 +13,11 @@
 	/// </remarks>
 	public partial class TwoPaneViewPage
 	{
-		readonly DualScreenInfo _dualScreenInfo;
+		DualScreenInfo? _dualScreenInfo;
 
 		public TwoPaneViewPage()
 		{
 			InitializeComponent();
-			_dualScreenInfo = new DualScreenInfo(twoPaneView);
 
 			Pane1Length.ValueChanged += PaneLength_ValueChanged;
 			Pane2Length.ValueChanged += PaneLength_ValueChanged;
@@ -38,8 +37,9 @@
 		protected override async void OnAppearing()
 		{
 			base.OnAppearing();
+			_dualScreenInfo ??= new DualScreenInfo(twoPaneView);
 			_dualScreenInfo.HingeAngleChanged += OnHingeAngleChanged;
-			_dualScreenInfo.PropertyChanged += OnFoldableInfoChanged;
+			twoPaneView.ModeChanged += OnTwoPaneViewModeChanged;
 
 			PanePriority.SelectedIndex = 0;
 			TallModeConfiguration.SelectedIndex = 1;
@@ -49,15 +49,17 @@
 			hingeAngleLabel.Text = $"Hinge angle: {await _dualScreenInfo.GetHingeAngleAsync()}°";
 		}
 
-		void OnFoldableInfoChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnTwoPaneViewModeChanged(object? sender, EventArgs e)
 		{
 			UpdateFoldableInfo();
 		}
 
 		protected override void OnDisappearing()
 		{
-			_dualScreenInfo.HingeAngleChanged -= OnHingeAngleChanged;
-			_dualScreenInfo.PropertyChanged -= OnFoldableInfoChanged;
+			_dualScreenInfo?.HingeAngleChanged -= OnHingeAngleChanged;
+
+			twoPaneView.ModeChanged -= OnTwoPaneViewModeChanged;
+
 			base.OnDisappearing();
 		}
 
@@ -68,11 +70,10 @@
 
 		void UpdateFoldableInfo()
 		{
-			modeLabel.Text = $"Mode: {_dualScreenInfo.SpanMode}";
-			hingeBoundsLabel.Text = _dualScreenInfo.HingeBounds == Microsoft.Maui.Graphics.Rect.Zero
-				? "Division region: inactive"
-				: $"Division region: {_dualScreenInfo.HingeBounds}";
-			spanningBoundsLabel.Text = $"Spanning panes: {_dualScreenInfo.SpanningBounds.Length}";
+			bool isDivided = twoPaneView.Mode != TwoPaneViewMode.SinglePane;
+			modeLabel.Text = $"Mode: {twoPaneView.Mode}";
+			hingeBoundsLabel.Text = $"Division region: {(isDivided ? "active" : "inactive")}";
+			spanningBoundsLabel.Text = $"Visible panes: {(isDivided ? 2 : 1)}";
 		}
 
 		void OnReset(object? sender, System.EventArgs e)
