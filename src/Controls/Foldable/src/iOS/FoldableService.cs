@@ -127,10 +127,11 @@ namespace Microsoft.Maui.Foldable
 
 			_monitors.GetOrAdd(visualElement, () =>
 			{
-				var interaction = new UIHingeInteraction(OnHingeUpdated);
-				interaction.Enabled = true;
-				platformView.AddInteraction(interaction);
-				return new ViewMonitor(platformView, interaction);
+				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
+				UIHingeInteractionUpdateHandler updateHandler = OnHingeUpdated;
+				var interaction = new UIHingeInteraction(updateHandler);
+				interactionView.AddInteraction(interaction);
+				return new ViewMonitor(interactionView, interaction, updateHandler);
 			});
 		}
 
@@ -185,14 +186,19 @@ namespace Microsoft.Maui.Foldable
 
 		sealed class ViewMonitor
 		{
-			public ViewMonitor(UIView view, UIHingeInteraction interaction)
+			public ViewMonitor(
+				UIView view,
+				UIHingeInteraction interaction,
+				UIHingeInteractionUpdateHandler updateHandler)
 			{
 				View = view;
 				Interaction = interaction;
+				UpdateHandler = updateHandler;
 			}
 
 			public UIView View { get; }
 			public UIHingeInteraction Interaction { get; }
+			public UIHingeInteractionUpdateHandler UpdateHandler { get; }
 		}
 	}
 }

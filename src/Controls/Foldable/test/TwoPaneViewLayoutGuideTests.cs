@@ -82,6 +82,128 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			Assert.Equal(Rect.Zero, guide.Pane2);
 		}
 
+		[Fact]
+		public void ResponsiveThresholdsSwitchBetweenWideAndSinglePane()
+		{
+			var view = CreateTwoPaneView(new TestFoldableService());
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = 100;
+
+			view.Measure(300, 300);
+			view.Arrange(new Rect(0, 0, 300, 300));
+
+			Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+			Assert.True(((VisualElement)view.Children[0]).IsVisible);
+			Assert.True(((VisualElement)view.Children[1]).IsVisible);
+
+			view.MinWideModeWidth = 400;
+
+			Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
+			Assert.True(((VisualElement)view.Children[0]).IsVisible);
+			Assert.False(((VisualElement)view.Children[1]).IsVisible);
+		}
+
+		[Fact]
+		public void ActiveDivisionOverridesThresholdsAndPaneLengths()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var view = CreateTwoPaneView(service);
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = double.MaxValue;
+			view.Pane1Length = new GridLength(1, GridUnitType.Star);
+			view.Pane2Length = new GridLength(3, GridUnitType.Star);
+
+			view.Measure(1000, 1000);
+			view.Arrange(new Rect(0, 0, 1000, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+			Assert.Equal(490, view.ColumnDefinitions[0].Width.Value);
+			Assert.Equal(20, view.ColumnDefinitions[1].Width.Value);
+			Assert.Equal(490, view.ColumnDefinitions[2].Width.Value);
+		}
+
+		[Fact]
+		public void SinglePaneConfigurationHonorsPanePriority()
+		{
+			var view = CreateTwoPaneView(new TestFoldableService());
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = 0;
+			view.WideModeConfiguration = TwoPaneViewWideModeConfiguration.SinglePane;
+
+			view.Measure(300, 300);
+			view.Arrange(new Rect(0, 0, 300, 300));
+
+			Assert.True(((VisualElement)view.Children[0]).IsVisible);
+			Assert.False(((VisualElement)view.Children[1]).IsVisible);
+
+			view.PanePriority = TwoPaneViewPriority.Pane2;
+
+			Assert.False(((VisualElement)view.Children[0]).IsVisible);
+			Assert.True(((VisualElement)view.Children[1]).IsVisible);
+		}
+
+		[Fact]
+		public void ResponsivePaneLengthsAreApplied()
+		{
+			var view = CreateTwoPaneView(new TestFoldableService());
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = 0;
+			view.Pane1Length = new GridLength(1, GridUnitType.Star);
+			view.Pane2Length = new GridLength(3, GridUnitType.Star);
+
+			view.Measure(300, 300);
+			view.Arrange(new Rect(0, 0, 300, 300));
+
+			Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), view.ColumnDefinitions[0].Width);
+			Assert.Equal(new GridLength(3, GridUnitType.Star), view.ColumnDefinitions[2].Width);
+		}
+
+		[Fact]
+		public void HorizontalDivisionHonorsBottomTopConfiguration()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(0, 490, 1000, 20),
+				Location = Point.Zero,
+				Landscape = true,
+			};
+			var view = CreateTwoPaneView(service);
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = double.MaxValue;
+			view.TallModeConfiguration = TwoPaneViewTallModeConfiguration.BottomTop;
+
+			view.Measure(1000, 1000);
+			view.Arrange(new Rect(0, 0, 1000, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Tall, view.Mode);
+			Assert.Equal(490, view.RowDefinitions[0].Height.Value);
+			Assert.Equal(20, view.RowDefinitions[1].Height.Value);
+			Assert.Equal(490, view.RowDefinitions[2].Height.Value);
+			Assert.Equal(2, view.GetRow(view.Children[0]));
+			Assert.Equal(0, view.GetRow(view.Children[1]));
+		}
+
+		static TwoPaneView CreateTwoPaneView(TestFoldableService service)
+		{
+			var pane1 = new BoxView { IsPlatformEnabled = true };
+			var pane2 = new BoxView { IsPlatformEnabled = true };
+			var view = new TwoPaneView(service)
+			{
+				IsPlatformEnabled = true,
+				Pane1 = pane1,
+				Pane2 = pane2,
+			};
+
+			((VisualElement)view.Children[0]).IsPlatformEnabled = true;
+			((VisualElement)view.Children[1]).IsPlatformEnabled = true;
+			return view;
+		}
+
 		sealed class TestFoldableService : IFoldableService
 		{
 			public event EventHandler OnScreenChanged
