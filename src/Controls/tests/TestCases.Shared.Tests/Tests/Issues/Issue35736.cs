@@ -1,3 +1,5 @@
+#if ANDROID || WINDOWS // Apple coverage moved to ShellSearchHandlerRegressionTests.iOS.cs: SearchHandlerIconsUpdateNativeImages35736 and SearchHandlerResetAllRestoresNativeIcons35736.
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,11 +21,7 @@ public class Issue35736 : _IssuesUITest
 		App.Tap("Issue35736ToggleQueryIcon");
 		App.WaitForElement("Issue35736QueryIconLabel");
 
-#if IOS
-		VerifyScreenshot(cropBottom:1000);
-#else
 		VerifyScreenshot();
-#endif
 	}
 
 	[Test]
@@ -38,11 +36,7 @@ public class Issue35736 : _IssuesUITest
 		App.Tap("Issue35736ToggleClearPlaceholderIcon");
 		App.WaitForElement("Issue35736ClearPlaceholderIconLabel");
 
-#if IOS
-		VerifyScreenshot(cropBottom:1000);
-#else
 		VerifyScreenshot();
-#endif
 	}
 
 	[Test]
@@ -60,11 +54,7 @@ public class Issue35736 : _IssuesUITest
 
 		App.WaitForElement("Issue35736ClearIconLabel");
 
-#if IOS
-		VerifyScreenshot(cropBottom:1000);
-#else
 		VerifyScreenshot();
-#endif
 	}
 
 	[Test]
@@ -82,10 +72,8 @@ public class Issue35736 : _IssuesUITest
 		App.Tap("Issue35736ResetAll");
 		App.WaitForElement("Issue35736QueryIconLabel");
 
-#if IOS
-		VerifyScreenshot(cropBottom:1000);
-#else
 		VerifyScreenshot();
-#endif
 	}
 }
+
+#endif
