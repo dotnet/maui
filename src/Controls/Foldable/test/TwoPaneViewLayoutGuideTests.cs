@@ -188,6 +188,25 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			Assert.Equal(0, view.GetRow(view.Children[1]));
 		}
 
+		[Fact]
+		public void MonitoringRetryDoesNotDuplicateLayoutSubscription()
+		{
+			var layout = new Grid();
+			var service = new TestFoldableService();
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			guide.ConnectToService();
+			guide.ConnectToService();
+
+			Assert.Equal(2, service.StartMonitoringCount);
+			Assert.Equal(1, service.LayoutSubscriberCount);
+
+			guide.DisconnectFromService();
+
+			Assert.Equal(1, service.StopMonitoringCount);
+			Assert.Equal(0, service.LayoutSubscriberCount);
+		}
+
 		static TwoPaneView CreateTwoPaneView(TestFoldableService service)
 		{
 			var pane1 = new BoxView { IsPlatformEnabled = true };
@@ -206,6 +225,8 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 		sealed class TestFoldableService : IFoldableService
 		{
+			EventHandler<FoldEventArgs> _onLayoutChanged;
+
 			public event EventHandler OnScreenChanged
 			{
 				add { }
@@ -220,8 +241,16 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			public event EventHandler<FoldEventArgs> OnLayoutChanged
 			{
-				add { }
-				remove { }
+				add
+				{
+					_onLayoutChanged += value;
+					LayoutSubscriberCount = _onLayoutChanged?.GetInvocationList().Length ?? 0;
+				}
+				remove
+				{
+					_onLayoutChanged -= value;
+					LayoutSubscriberCount = _onLayoutChanged?.GetInvocationList().Length ?? 0;
+				}
 			}
 
 			public bool IsSpanned => Hinge != Rect.Zero;
@@ -230,6 +259,9 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			public Rect Hinge { get; set; }
 			public Point Location { get; set; }
 			public VisualElement LastHingeView { get; private set; }
+			public int LayoutSubscriberCount { get; private set; }
+			public int StartMonitoringCount { get; private set; }
+			public int StopMonitoringCount { get; private set; }
 			public Size ScaledScreenSize => new Size(1000, 1000);
 
 			public Rect GetHinge() => Hinge;
@@ -250,10 +282,12 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			public void StartMonitoring(VisualElement visualElement)
 			{
+				StartMonitoringCount++;
 			}
 
 			public void StopMonitoring(VisualElement visualElement)
 			{
+				StopMonitoringCount++;
 			}
 		}
 	}

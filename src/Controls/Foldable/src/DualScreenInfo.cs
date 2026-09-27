@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Foldable
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
 		IFoldableService _dualScreenService;
+		bool _hasExplicitService;
 		IFoldableService FoldableService =>
 			_dualScreenService ?? Element?.Handler?.MauiContext?.Services?.GetService<IFoldableService>();
 
@@ -76,6 +77,7 @@ namespace Microsoft.Maui.Foldable
 			_spanningBounds = Array.Empty<Rect>();
 			Element = element;
 			_dualScreenService = dualScreenService;
+			_hasExplicitService = dualScreenService != null;
 
 			if (element == null)
 			{
@@ -85,26 +87,29 @@ namespace Microsoft.Maui.Foldable
 			{
 				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, FoldableService); // get if null
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
-				Element.HandlerChanged += OnElementHandlerChanged;
 			}
 		}
 
-		void OnElementHandlerChanged(object sender, EventArgs e)
+		void BindFoldableService(IFoldableService foldableService)
 		{
-			SetFoldableService(Element.Handler?.MauiContext?.Services?.GetService<IFoldableService>());
-		}
+			if (ReferenceEquals(_dualScreenService, foldableService))
+				return;
 
-		internal void SetFoldableService(IFoldableService foldableService)
-		{
 			var oldService = _dualScreenService;
 			if (subscriberCount > 0 && oldService != null)
 				oldService.HingeAngleChanged -= OnHingeAngleChanged;
 
 			_dualScreenService = foldableService;
-			_twoPaneViewLayoutGuide.SetFoldableService(foldableService);
 
 			if (subscriberCount > 0 && foldableService != null)
 				foldableService.HingeAngleChanged += OnHingeAngleChanged;
+		}
+
+		internal void SetFoldableService(IFoldableService foldableService)
+		{
+			_hasExplicitService = foldableService != null;
+			BindFoldableService(foldableService);
+			_twoPaneViewLayoutGuide.SetFoldableService(foldableService);
 		}
 
 		EventHandler<HingeAngleChangedEventArgs> _hingeAngleChanged;
@@ -227,6 +232,9 @@ namespace Microsoft.Maui.Foldable
 
 		void OnTwoPaneViewLayoutGuideChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (!_hasExplicitService)
+				BindFoldableService(Element?.Handler?.MauiContext?.Services?.GetService<IFoldableService>());
+
 			SpanningBounds = GetSpanningBounds();
 			IsLandscape = GetIsLandscape();
 			HingeBounds = GetHingeBounds();
@@ -259,13 +267,11 @@ namespace Microsoft.Maui.Foldable
 			{
 				if (newCount == 1)
 				{
-					if (FoldableService != null)
-						FoldableService.HingeAngleChanged += OnHingeAngleChanged;
+					FoldableService?.HingeAngleChanged += OnHingeAngleChanged;
 				}
 				else if (newCount == 0)
 				{
-					if (FoldableService != null)
-						FoldableService.HingeAngleChanged -= OnHingeAngleChanged;
+					FoldableService?.HingeAngleChanged -= OnHingeAngleChanged;
 				}
 			}
 		}

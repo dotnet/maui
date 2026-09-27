@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Controls.Foldable
 		TwoPaneViewMode _mode;
 		VisualElement _layout;
 		IFoldableService _dualScreenService;
+		IFoldableService _connectedService;
+		readonly bool _hasExplicitService;
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
@@ -52,11 +54,14 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 			_layout = layout;
 			_dualScreenService = dualScreenService;
+			_hasExplicitService = dualScreenService != null;
 
 			if (_layout != null)
 			{
 				UpdateLayouts(layout.Width, layout.Height);
 				_layout.HandlerChanged += OnLayoutHandlerChanged;
+				_layout.Loaded += OnLayoutLoaded;
+				_layout.Unloaded += OnLayoutUnloaded;
 
 				if (_layout.Handler != null)
 					ConnectToService();
@@ -65,14 +70,24 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		void OnLayoutHandlerChanged(object sender, EventArgs e)
 		{
-			if (_dualScreenService != null)
-			{
-				_dualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
-				_dualScreenService.StopMonitoring(_layout);
-			}
+			DisconnectFromService();
+
+			if (!_hasExplicitService)
+				_dualScreenService = null;
 
 			if (_layout.Handler != null)
 				ConnectToService();
+		}
+
+		void OnLayoutLoaded(object sender, EventArgs e)
+		{
+			ConnectToService();
+			UpdateLayouts(_layout.Width, _layout.Height);
+		}
+
+		void OnLayoutUnloaded(object sender, EventArgs e)
+		{
+			DisconnectFromService();
 		}
 
 		void OnDualScreenServiceChanged(object sender, FoldEventArgs e)
@@ -82,11 +97,7 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		internal void SetFoldableService(IFoldableService foldableService)
 		{
-			if (_dualScreenService != null)
-			{
-				_dualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
-				_dualScreenService.StopMonitoring(_layout);
-			}
+			DisconnectFromService();
 
 			_dualScreenService = foldableService;
 
@@ -96,11 +107,23 @@ namespace Microsoft.Maui.Controls.Foldable
 			UpdateLayouts();
 		}
 
-		void ConnectToService()
+		internal void ConnectToService()
 		{
-			DualScreenService.StartMonitoring(_layout);
-			DualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
-			DualScreenService.OnLayoutChanged += OnDualScreenServiceChanged;
+			var service = DualScreenService;
+			service.StartMonitoring(_layout);
+			service.OnLayoutChanged -= OnDualScreenServiceChanged;
+			service.OnLayoutChanged += OnDualScreenServiceChanged;
+			_connectedService = service;
+		}
+
+		internal void DisconnectFromService()
+		{
+			if (_connectedService == null)
+				return;
+
+			_connectedService.OnLayoutChanged -= OnDualScreenServiceChanged;
+			_connectedService.StopMonitoring(_layout);
+			_connectedService = null;
 		}
 
 		public bool IsLandscape
