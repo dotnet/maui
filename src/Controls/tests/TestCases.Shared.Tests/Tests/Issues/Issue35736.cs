@@ -17,7 +17,7 @@ public class Issue35736 : _IssuesUITest
 		App.WaitForElement("Issue35736QueryIconLabel");
 
 		App.Tap("Issue35736ToggleQueryIcon");
-		App.WaitForElement("Issue35736QueryIconLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736QueryIconLabel", "QueryIcon: calculator.png"), Is.True);
 
 #if IOS
 		VerifyScreenshot(cropBottom:1000);
