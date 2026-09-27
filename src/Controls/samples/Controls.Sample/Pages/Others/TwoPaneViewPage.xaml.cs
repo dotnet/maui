@@ -6,22 +6,19 @@
 	using Microsoft.Maui.Foldable;
 
 	/// <summary>
-	/// Sample demonstrating the use of TwoPaneView control and 
-	/// hinge angle sensing for Surface Duo and other foldable Android devices.
+	/// Sample demonstrating TwoPaneView layout and hinge angle sensing on foldable devices.
 	/// </summary>
 	/// <remarks>
 	/// Requires the Microsoft.Maui.Controls.Foldable NuGet package.
-	/// 
-	/// Uses the Jetpack Window Manager Android library from Google for dual-screen capabilities,
-	/// which is bound in the Xamarin.AndroidX.Window.WindowJava NuGet package.
 	/// </remarks>
 	public partial class TwoPaneViewPage
 	{
+		readonly DualScreenInfo _dualScreenInfo;
+
 		public TwoPaneViewPage()
 		{
 			InitializeComponent();
-
-			System.Diagnostics.Debug.Write("TwoPaneViewPage.ctor", "JWM");
+			_dualScreenInfo = new DualScreenInfo(twoPaneView);
 
 			Pane1Length.ValueChanged += PaneLength_ValueChanged;
 			Pane2Length.ValueChanged += PaneLength_ValueChanged;
@@ -41,32 +38,41 @@
 		protected override async void OnAppearing()
 		{
 			base.OnAppearing();
-			System.Diagnostics.Debug.Write("TwoPaneViewPage.OnAppearing - hinge angle prepped", "JWM");
-			DualScreenInfo.Current.HingeAngleChanged += Current_HingeAngleChanged;
-			DualScreenInfo.Current.PropertyChanged += Current_PropertyChanged;
+			_dualScreenInfo.HingeAngleChanged += OnHingeAngleChanged;
+			_dualScreenInfo.PropertyChanged += OnFoldableInfoChanged;
 
 			PanePriority.SelectedIndex = 0;
 			TallModeConfiguration.SelectedIndex = 1;
 			WideModeConfiguration.SelectedIndex = 1;
 
-			hingeLabel.Text = "Hinge prepped " + await DualScreenInfo.Current.GetHingeAngleAsync();
+			UpdateFoldableInfo();
+			hingeAngleLabel.Text = $"Hinge angle: {await _dualScreenInfo.GetHingeAngleAsync()}°";
 		}
 
-		private void Current_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnFoldableInfoChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			spanLabel.Text += "Spanmode: " + DualScreenInfo.Current.SpanMode;
+			UpdateFoldableInfo();
 		}
 
 		protected override void OnDisappearing()
 		{
-			DualScreenInfo.Current.HingeAngleChanged -= Current_HingeAngleChanged;
-			DualScreenInfo.Current.PropertyChanged -= Current_PropertyChanged;
+			_dualScreenInfo.HingeAngleChanged -= OnHingeAngleChanged;
+			_dualScreenInfo.PropertyChanged -= OnFoldableInfoChanged;
+			base.OnDisappearing();
 		}
-		private void Current_HingeAngleChanged(object? sender, HingeAngleChangedEventArgs e)
-		{
-			System.Diagnostics.Debug.Write("TwoPaneViewPage.Current_HingeAngleChanged - " + e.HingeAngleInDegrees, "JWM");
 
-			hingeLabel.Text = "Hinge angle: " + e.HingeAngleInDegrees + " degrees";
+		void OnHingeAngleChanged(object? sender, HingeAngleChangedEventArgs e)
+		{
+			hingeAngleLabel.Text = $"Hinge angle: {e.HingeAngleInDegrees:F1}°";
+		}
+
+		void UpdateFoldableInfo()
+		{
+			modeLabel.Text = $"Mode: {_dualScreenInfo.SpanMode}";
+			hingeBoundsLabel.Text = _dualScreenInfo.HingeBounds == Microsoft.Maui.Graphics.Rect.Zero
+				? "Division region: inactive"
+				: $"Division region: {_dualScreenInfo.HingeBounds}";
+			spanningBoundsLabel.Text = $"Spanning panes: {_dualScreenInfo.SpanningBounds.Length}";
 		}
 
 		void OnReset(object? sender, System.EventArgs e)
