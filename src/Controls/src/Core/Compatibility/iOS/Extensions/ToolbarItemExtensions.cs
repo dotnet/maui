@@ -53,14 +53,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 			});
 
-			if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
-			{
-				item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
-				{
-					action.Image = result?.Value;
-				});
-			}
-
 			return new SecondarySubToolbarItem(item, action);
 		}
 
