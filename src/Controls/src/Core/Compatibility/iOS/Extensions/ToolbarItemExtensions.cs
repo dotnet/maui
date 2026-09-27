@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
-			return ToUIBarButtonItem(item, forceName, forcePrimary, OperatingSystem.IsIOSVersionAtLeast(27, 1));
+			return ToUIBarButtonItem(item, forceName, forcePrimary,
+				!OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(27, 1));
 		}
 
 		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName, bool forcePrimary, bool useTitleAndImage)
