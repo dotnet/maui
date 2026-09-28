@@ -14,7 +14,10 @@ public class NativeAppleIconTargetsTests
 	public void CollectsIconComposerBundleWithoutResizetizer()
 	{
 		using var project = new TestProject();
-		var bundle = project.CreateIconBundle(Path.Combine("Native Icon Resources", "Distinctive.ICON"), "back.png", "front.png");
+		var bundle = project.CreateIconBundle(
+			Path.Combine("Native Icon Resources", "Distinctive.ICON"),
+			"back.png",
+			Path.Combine("Foreground", "front.png"));
 		project.WriteProject(CreateProject(bundle, isApple: true));
 
 		var result = project.Run("Capture");
@@ -24,7 +27,7 @@ public class NativeAppleIconTargetsTests
 		AssertContains("XSAppIconAssets=", result.Capture);
 		AssertDoesNotContain("XSAppIconAssets=Assets.xcassets/appicon.appiconset", result.Capture);
 		AssertContains("Distinctive.icon/Assets/back.png", Normalize(result.Capture));
-		AssertContains("Distinctive.icon/Assets/front.png", Normalize(result.Capture));
+		AssertContains("Distinctive.icon/Assets/Foreground/front.png", Normalize(result.Capture));
 		AssertContains("Distinctive.icon/icon.json", Normalize(result.Capture));
 		AssertDoesNotContain("MauiImage=", result.Capture);
 	}
@@ -86,6 +89,33 @@ public class NativeAppleIconTargetsTests
 		Assert.True(androidResult.Success, androidResult.Output);
 		AssertContains("appicon.icon;IsAppIcon=True", Normalize(androidResult.Capture));
 		AssertDoesNotContain("ImageAsset=", androidResult.Capture);
+	}
+
+	[Fact]
+	public void InvalidatesAppleCachesWhenSwitchingToOrdinaryIcon()
+	{
+		using var project = new TestProject();
+		var bundle = project.CreateIconBundle("Distinctive.icon", "layer.png");
+		project.WriteProject(CreateProject(bundle, isApple: true));
+
+		var nativeResult = project.Run("Capture");
+		Assert.True(nativeResult.Success, nativeResult.Output);
+
+		var inputsFile = Path.Combine(project.Directory, "obj", "mauinativeappleicon.inputs");
+		var partialManifestCache = project.WriteFile(Path.Combine("obj", "actool-partial.plist"), "native");
+		var bundleResourceCache = project.WriteFile(Path.Combine("obj", "actool-bundle-items"), "native");
+		Assert.True(File.Exists(inputsFile));
+
+		var svg = project.WriteFile("appicon.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\" />");
+		project.WriteProject(CreateProject(svg, isApple: true));
+
+		var ordinaryResult = project.Run("Capture");
+
+		Assert.True(ordinaryResult.Success, ordinaryResult.Output);
+		Assert.False(File.Exists(inputsFile));
+		Assert.False(File.Exists(partialManifestCache));
+		Assert.False(File.Exists(bundleResourceCache));
+		AssertContains("appicon.svg;IsAppIcon=True", Normalize(ordinaryResult.Capture));
 	}
 
 	[Theory]
@@ -203,6 +233,8 @@ public class NativeAppleIconTargetsTests
 			    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
 			    <OutputType>Exe</OutputType>
 			    <IntermediateOutputPath>obj/</IntermediateOutputPath>
+			    <_ACTool_PartialAppManifestCache>obj/actool-partial.plist</_ACTool_PartialAppManifestCache>
+			    <_ACTool_BundleResourceCache>obj/actool-bundle-items</_ACTool_BundleResourceCache>
 			    <_ShortPackageVersion>{{workloadVersion}}</_ShortPackageVersion>
 			    <AppIcon>{{appIcon}}</AppIcon>
 			    <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
@@ -222,7 +254,7 @@ public class NativeAppleIconTargetsTests
 			      <_XSAppIconAssets>Assets.xcassets/appicon.appiconset</_XSAppIconAssets>
 			    </PropertyGroup>
 			  </Target>
-			  <Target Name="Capture" DependsOnTargets="ResizetizeCollectItems;_CollectMauiNativeAppleIcon;_ReadAppManifest">
+			  <Target Name="Capture" DependsOnTargets="ResizetizeCollectItems;_CollectMauiNativeAppleIcon;_InvalidateMauiNativeAppleIconCache;_InvalidateRemovedMauiNativeAppleIconCache;_ReadAppManifest">
 			    <ItemGroup>
 			      <_CaptureLine Include="AppIcon=$(AppIcon)" />
 			      <_CaptureLine Include="XSAppIconAssets=$(_XSAppIconAssets)" />

@@ -555,6 +555,13 @@
         <Delete Files="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache)" />
     </Target>
 
+    <Target Name="_InvalidateRemovedMauiNativeAppleIconCache"
+        Condition="'$(_MauiNativeAppleIconActive)' != 'True' And Exists('$(_MauiNativeAppleIconInputsFile)')"
+        BeforeTargets="_BeforeCoreCompileImageAssets"
+        DependsOnTargets="_CollectMauiNativeAppleIcon">
+        <Delete Files="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache);$(_MauiNativeAppleIconInputsFile)" />
+    </Target>
+
     <Target Name="_ClearMauiNativeAppleIconManifestSelection"
         Condition="'$(_MauiNativeAppleIconActive)' == 'True'"
         AfterTargets="_ReadAppManifest">

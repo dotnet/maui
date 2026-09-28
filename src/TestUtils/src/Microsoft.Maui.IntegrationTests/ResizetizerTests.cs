@@ -62,6 +62,7 @@ public class ResizetizerTests : BaseBuildTest
 			</ItemGroup>
 			</Project>
 			""");
+		var nativeProject = File.ReadAllText(projectFile);
 
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
 			$"The native MauiIcon build failed for {framework}.");
@@ -89,16 +90,19 @@ public class ResizetizerTests : BaseBuildTest
 			$"The native MauiIcon delete/rename build failed for {framework}.");
 		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
 
-		Assert.True(DotnetInternal.Build(projectFile, config, target: "Clean", framework: framework, properties: BuildProps, output: _output),
-			$"Clean failed for {framework}.");
-		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
-			$"The native MauiIcon clean rebuild failed for {framework}.");
-
-		// Switching back must restore the existing Resizetizer path and legacy manifest selection.
+		// Switching back without Clean must invalidate native ACTool caches, restore the
+		// existing Resizetizer path, and restore the legacy manifest selection.
 		File.WriteAllText(projectFile, originalProject);
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
 			$"Switching back to the ordinary MauiIcon failed for {framework}.");
 		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon", unexpectedIconName: "Distinctive");
+
+		File.WriteAllText(projectFile, nativeProject);
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "Clean", framework: framework, properties: BuildProps, output: _output),
+			$"Clean failed for {framework}.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon clean rebuild failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
 	}
 
 	[Theory]
