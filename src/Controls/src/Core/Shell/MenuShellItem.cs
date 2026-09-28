@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 			_isConnected = true;
 			MenuItem.Parent = this;
 			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
-			Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
+			SyncMenuItemTemplate();
 			_menuItemPropertyChangedProxy.Subscribe(MenuItem, _onMenuItemPropertyChanged);
 		}
 
@@ -78,11 +78,19 @@ namespace Microsoft.Maui.Controls
 		void OnMenuItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.MenuItemTemplateProperty.PropertyName)
-				Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
+				SyncMenuItemTemplate();
 			else if (e.PropertyName == TitleProperty.PropertyName)
 				OnPropertyChanged(MenuItem.TextProperty.PropertyName);
 			else if (e.PropertyName == Shell.FlyoutItemIsVisibleProperty.PropertyName)
 				Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
+		}
+
+		void SyncMenuItemTemplate()
+		{
+			if (MenuItem.IsSet(Shell.MenuItemTemplateProperty))
+				Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
+			else
+				ClearValue(Shell.MenuItemTemplateProperty);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
