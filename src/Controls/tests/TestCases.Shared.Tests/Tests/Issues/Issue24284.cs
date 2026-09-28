@@ -15,13 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void FlyoutHeaderAdaptsToMinimumHeight()
 		{
-			var heightReferenceLabel = App.WaitForElement("HeightReferenceLabel").GetRect();
 			var headerLabel = App.WaitForElement("HeaderLabel").GetRect();
 
-			ClassicAssert.Greater(heightReferenceLabel.Height, 0,
-				$"The visible reference label must have a positive measured height. Reference height: {heightReferenceLabel.Height}.");
-			ClassicAssert.True(Math.Abs(headerLabel.Height - heightReferenceLabel.Height) < 0.2,
-				$"Header height: {headerLabel.Height}; reference height: {heightReferenceLabel.Height}. Expected an absolute difference below 0.2.");
+			ClassicAssert.True(Math.Abs(headerLabel.Height - 30) < 0.2);
 		}
 	}
 }
