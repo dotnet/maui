@@ -153,6 +153,177 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0d, minHeight);
 		}
 
+		[Theory]
+		[InlineData(ItemsLayoutOrientation.Vertical, 0)]
+		[InlineData(ItemsLayoutOrientation.Vertical, 7.5)]
+		[InlineData(ItemsLayoutOrientation.Vertical, 30)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, 0)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, 7.5)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, 30)]
+		public async Task LinearItemSpacingMatchesRenderedGap(ItemsLayoutOrientation orientation, double spacing)
+		{
+			SetupBuilder();
+
+			var itemsLayout = new LinearItemsLayout(orientation) { ItemSpacing = spacing };
+			var labels = new List<Label>();
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 400,
+				HeightRequest = 400,
+				ItemsLayout = itemsLayout,
+				ItemsSource = new[] { "First", "Second" },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 80, HeightRequest = 40 };
+					label.SetBinding(Label.TextProperty, ".");
+					labels.Add(label);
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => labels.Count >= 2 &&
+					labels.Any(label => label.Text == "First" && label.IsLoaded) &&
+					labels.Any(label => label.Text == "Second" && label.IsLoaded));
+
+				var first = (FrameworkElement)labels.First(label => label.Text == "First" && label.IsLoaded).Handler.PlatformView;
+				var second = (FrameworkElement)labels.First(label => label.Text == "Second" && label.IsLoaded).Handler.PlatformView;
+
+				async Task AssertGap(double expected)
+				{
+					await AssertEventually(() =>
+					{
+						var firstPosition = first.TransformToVisual(handler.PlatformView).TransformPoint(default);
+						var secondPosition = second.TransformToVisual(handler.PlatformView).TransformPoint(default);
+						var gap = orientation == ItemsLayoutOrientation.Vertical
+							? secondPosition.Y - firstPosition.Y - first.ActualHeight
+							: secondPosition.X - firstPosition.X - first.ActualWidth;
+
+						return first.ActualWidth > 0 && first.ActualHeight > 0 && Math.Abs(gap - expected) <= 1;
+					});
+					Assert.Equal(80, first.ActualWidth, 1d);
+					Assert.Equal(40, first.ActualHeight, 1d);
+				}
+
+				await AssertGap(spacing);
+				foreach (var updatedSpacing in new[] { 10d, 0d, 30d })
+				{
+					itemsLayout.ItemSpacing = updatedSpacing;
+					await AssertGap(updatedSpacing);
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(ItemsLayoutOrientation.Vertical)]
+		[InlineData(ItemsLayoutOrientation.Horizontal)]
+		public async Task GridItemSpacingMatchesRenderedGap(ItemsLayoutOrientation orientation)
+		{
+			SetupBuilder();
+
+			var labels = new List<Label>();
+			var itemsLayout = new GridItemsLayout(2, orientation)
+			{
+				HorizontalItemSpacing = 30,
+				VerticalItemSpacing = 10
+			};
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 400,
+				HeightRequest = 400,
+				ItemsLayout = itemsLayout,
+				ItemsSource = new[] { "First", "Second", "Third", "Fourth" },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						WidthRequest = orientation == ItemsLayoutOrientation.Horizontal ? 80 : -1,
+						HeightRequest = orientation == ItemsLayoutOrientation.Vertical ? 40 : -1
+					};
+					label.SetBinding(Label.TextProperty, ".");
+					labels.Add(label);
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => new[] { "First", "Second", "Third" }
+					.All(text => labels.Any(label => label.Text == text && label.IsLoaded)));
+
+				var first = (FrameworkElement)labels.First(label => label.Text == "First" && label.IsLoaded).Handler.PlatformView;
+				var second = (FrameworkElement)labels.First(label => label.Text == "Second" && label.IsLoaded).Handler.PlatformView;
+				var third = (FrameworkElement)labels.First(label => label.Text == "Third" && label.IsLoaded).Handler.PlatformView;
+				var horizontalNeighbor = orientation == ItemsLayoutOrientation.Vertical ? second : third;
+				var verticalNeighbor = orientation == ItemsLayoutOrientation.Vertical ? third : second;
+
+				async Task AssertSpacing(double horizontal, double vertical)
+				{
+					var margin = (UI.Xaml.Thickness)handler.PlatformView.ItemContainerStyle.Setters
+						.OfType<WSetter>().Single(setter => setter.Property == FrameworkElement.MarginProperty).Value;
+					Assert.Equal(horizontal / 2, margin.Left);
+					Assert.Equal(horizontal / 2, margin.Right);
+					Assert.Equal(vertical / 2, margin.Top);
+					Assert.Equal(vertical / 2, margin.Bottom);
+					await AssertEventually(() =>
+					{
+						var origin = first.TransformToVisual(handler.PlatformView).TransformPoint(default);
+						var right = horizontalNeighbor.TransformToVisual(handler.PlatformView).TransformPoint(default);
+						var below = verticalNeighbor.TransformToVisual(handler.PlatformView).TransformPoint(default);
+						return first.ActualWidth > 0 && first.ActualHeight > 0 &&
+							Math.Abs(right.X - origin.X - first.ActualWidth - horizontal) <= 1 &&
+							Math.Abs(below.Y - origin.Y - first.ActualHeight - vertical) <= 1;
+					});
+				}
+
+				await AssertSpacing(30, 10);
+				itemsLayout.HorizontalItemSpacing = 7.5;
+				await AssertSpacing(7.5, 10);
+				itemsLayout.VerticalItemSpacing = 3.5;
+				await AssertSpacing(7.5, 3.5);
+				itemsLayout.HorizontalItemSpacing = 0;
+				itemsLayout.VerticalItemSpacing = 0;
+				await AssertSpacing(0, 0);
+			});
+		}
+
+		[Theory]
+		[InlineData(ItemsLayoutOrientation.Vertical)]
+		[InlineData(ItemsLayoutOrientation.Horizontal)]
+		public async Task UntemplatedLinearItemSpacingIsSharedBetweenAdjacentContainers(ItemsLayoutOrientation orientation)
+		{
+			SetupBuilder();
+
+			var itemsLayout = new LinearItemsLayout(orientation) { ItemSpacing = 7.5 };
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = itemsLayout,
+				ItemsSource = new[] { "First", "Second" }
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, handler =>
+			{
+				void AssertSpacing(double spacing)
+				{
+					var property = orientation == ItemsLayoutOrientation.Vertical
+						? FrameworkElement.MarginProperty
+						: UI.Xaml.Controls.Control.PaddingProperty;
+					var thickness = (UI.Xaml.Thickness)handler.PlatformView.ItemContainerStyle.Setters
+						.OfType<WSetter>().Single(setter => setter.Property == property).Value;
+					Assert.Equal(orientation == ItemsLayoutOrientation.Horizontal ? spacing / 2 : 0, thickness.Left);
+					Assert.Equal(orientation == ItemsLayoutOrientation.Horizontal ? spacing / 2 : 0, thickness.Right);
+					Assert.Equal(orientation == ItemsLayoutOrientation.Vertical ? spacing / 2 : 0, thickness.Top);
+					Assert.Equal(orientation == ItemsLayoutOrientation.Vertical ? spacing / 2 : 0, thickness.Bottom);
+				}
+
+				AssertSpacing(7.5);
+				itemsLayout.ItemSpacing = 0;
+				AssertSpacing(0);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task ValidateItemsVirtualize()
 		{
