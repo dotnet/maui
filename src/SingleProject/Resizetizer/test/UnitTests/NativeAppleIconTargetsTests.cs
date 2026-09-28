@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security;
 using System.Threading;
 using Xunit;
@@ -190,17 +191,29 @@ public class NativeAppleIconTargetsTests
 	}
 
 	[Fact]
-	public void ExportsAppleIconComposerBundleForProjectReferences()
+	public void CollectsSingleAppleIconComposerBundleFromProjectReference()
 	{
 		using var project = new TestProject();
-		var bundle = project.CreateIconBundle(Path.Combine("Linked Icons", "Shared.icon"), "layer.png");
-		project.WriteProject(CreateProject(bundle, isApple: true));
+		var bundle = project.CreateIconBundle(Path.Combine("Library", "Linked Icons", "Shared.icon"), "layer.png");
+		project.WriteFile(
+			Path.Combine("Library", "Library.proj"),
+			CreateProject(bundle, isApple: true));
+		project.WriteProject(CreateProjectReferenceApp(Path.Combine("Library", "Library.proj")));
 
-		var result = project.Run("CaptureExport");
+		var exportResult = project.Run("CaptureExport", Path.Combine("Library", "Library.proj"));
+		Assert.True(exportResult.Success, exportResult.Output);
+		var exportedIcons = exportResult.Capture
+			.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+			.Where(line => line.StartsWith("ExportedMauiItem=MauiIcon;", StringComparison.Ordinal))
+			.ToArray();
+		Assert.Single(exportedIcons);
+		AssertContains("Linked Icons/Shared.icon", Normalize(exportedIcons[0]));
 
-		Assert.True(result.Success, result.Output);
-		AssertContains("ExportedMauiItem=MauiIcon;", result.Capture);
-		AssertContains("Linked Icons/Shared.icon", Normalize(result.Capture));
+		var appResult = project.Run("Capture");
+		Assert.True(appResult.Success, appResult.Output);
+		AssertContains("NativeIconCount=1", appResult.Capture);
+		AssertContains("AppIcon=Shared", appResult.Capture);
+		AssertContains("Shared.icon/Assets/layer.png", Normalize(appResult.Capture));
 	}
 
 	static string CreateProject(
@@ -279,6 +292,50 @@ public class NativeAppleIconTargetsTests
 			""";
 	}
 
+	static string CreateProjectReferenceApp(string projectReference)
+	{
+		var target = SecurityElement.Escape(
+			Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Resizetizer.After.targets"));
+		var reference = SecurityElement.Escape(projectReference);
+
+		return $$"""
+			<Project>
+			  <PropertyGroup>
+			    <TargetFramework>net11.0-ios</TargetFramework>
+			    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+			    <OutputType>Exe</OutputType>
+			    <IntermediateOutputPath>obj/</IntermediateOutputPath>
+			    <_ShortPackageVersion>26.5.11720-net11-p6</_ShortPackageVersion>
+			    <_ResizetizerPlatformIsiOS>True</_ResizetizerPlatformIsiOS>
+			    <_ResizetizerIsiOSApp>True</_ResizetizerIsiOSApp>
+			    <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+			    <EnableMauiAssetProcessing>false</EnableMauiAssetProcessing>
+			    <EnableMauiFontProcessing>false</EnableMauiFontProcessing>
+			    <EnableMauiImageProcessing>false</EnableMauiImageProcessing>
+			    <EnableMauiSplashScreenProcessing>false</EnableMauiSplashScreenProcessing>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <ProjectReference Include="{{reference}}" />
+			  </ItemGroup>
+			  <Import Project="{{target}}" />
+			  <Target Name="Capture" DependsOnTargets="ResizetizeCollectItems;_CollectMauiNativeAppleIcon">
+			    <PropertyGroup>
+			      <_NativeIconCount>@(_MauiNativeAppleIcon->Count())</_NativeIconCount>
+			    </PropertyGroup>
+			    <ItemGroup>
+			      <_CaptureLine Include="NativeIconCount=$(_NativeIconCount)" />
+			      <_CaptureLine Include="AppIcon=$(AppIcon)" />
+			      <_CaptureLine Include="@(ImageAsset->'ImageAsset=%(Identity);Link=%(Link)')" />
+			    </ItemGroup>
+			    <WriteLinesToFile
+			      File="capture.txt"
+			      Overwrite="true"
+			      Lines="@(_CaptureLine)" />
+			  </Target>
+			</Project>
+			""";
+	}
+
 	static string Normalize(string value) => value.Replace('\\', '/');
 
 	static void AssertContains(string expected, string actual) =>
@@ -323,7 +380,7 @@ public class NativeAppleIconTargetsTests
 
 		public void WriteProject(string contents) => WriteFile("Test.proj", contents);
 
-		public (bool Success, string Output, string Capture) Run(string target)
+		public (bool Success, string Output, string Capture) Run(string target, string projectFile = "Test.proj")
 		{
 			var startInfo = new ProcessStartInfo("dotnet")
 			{
@@ -333,7 +390,7 @@ public class NativeAppleIconTargetsTests
 				UseShellExecute = false,
 			};
 			startInfo.ArgumentList.Add("msbuild");
-			startInfo.ArgumentList.Add("Test.proj");
+			startInfo.ArgumentList.Add(projectFile);
 			startInfo.ArgumentList.Add($"-t:{target}");
 			startInfo.ArgumentList.Add("-v:minimal");
 
@@ -343,7 +400,7 @@ public class NativeAppleIconTargetsTests
 			process.WaitForExit();
 
 			var combinedOutput = standardOutput + standardError;
-			var capturePath = Path.Combine(Directory, "capture.txt");
+			var capturePath = Path.Combine(Directory, Path.GetDirectoryName(projectFile) ?? string.Empty, "capture.txt");
 			var capture = File.Exists(capturePath) ? File.ReadAllText(capturePath) : string.Empty;
 			return (process.ExitCode == 0, combinedOutput, capture);
 		}
