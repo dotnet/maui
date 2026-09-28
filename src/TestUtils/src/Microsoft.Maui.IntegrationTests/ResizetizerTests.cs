@@ -868,9 +868,10 @@ public class ResizetizerTests : BaseBuildTest
 		if (!Directory.Exists(packsDirectory))
 			return false;
 
-		var sdkPack = platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase)
-			? "Microsoft.MacCatalyst.Sdk*"
-			: "Microsoft.iOS.Sdk*";
+		var sdkPackPrefix = platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase)
+			? "Microsoft.MacCatalyst.Sdk"
+			: "Microsoft.iOS.Sdk";
+		var sdkPack = $"{sdkPackPrefix}.{DotNetCurrent}_*";
 
 		return Directory.GetDirectories(packsDirectory, sdkPack)
 			.SelectMany(pack => Directory.GetDirectories(pack))
