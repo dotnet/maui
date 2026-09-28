@@ -6,14 +6,18 @@
 #
 # While the pinned SDK is not publicly downloadable, this step switches the local checkout's
 # global.json and eng/Versions.props to the equivalent public RC2 build (BAR 334092) so those
-# pipelines can still validate changes. Trusted internal builds never include this template and
-# always build with the pinned SDK. The step becomes a no-op as soon as the pinned SDK is public.
+# pipelines can still validate changes. Its net10 workload manifests reference unreleased .NET
+# 10.0.13 packs, so the step also adds the public release/10.0.1xx build feed (BAR 333293) that
+# contains them. Trusted internal builds never include this template and always build with the
+# pinned SDK and internal 10.0.13 packs. The step becomes a no-op as soon as the pinned SDK is public.
 #
 # Remove this template and its references once the pinned SDK is publicly available or the branch
 # moves to a public SDK.
 parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   publicFallbackSdkVersion: 11.0.100-rc.2.26475.137
+  publicFallbackPackageFeedName: temporary-darc-pub-dotnet-dotnet-e4bafa1e
+  publicFallbackPackageFeed: https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-dotnet-e4bafa1e/nuget/v3/index.json
 
 steps:
 - pwsh: |
@@ -66,5 +70,22 @@ steps:
       [IO.File]::WriteAllText($item.Path, [regex]::Replace($content, $item.Pattern, $item.Replacement))
     }
 
-    Write-Host "##vso[task.logissue type=warning]TEMPORARY: SDK $pinned is internal-only; this build uses public SDK $fallback instead."
+    $feedName = '${{ parameters.publicFallbackPackageFeedName }}'
+    $feedUrl = '${{ parameters.publicFallbackPackageFeed }}'
+    $nugetConfigPath = Join-Path $root 'NuGet.config'
+    $nugetConfig = New-Object xml
+    $nugetConfig.PreserveWhitespace = $true
+    $nugetConfig.Load($nugetConfigPath)
+    $packageSources = $nugetConfig.SelectSingleNode('/configuration/packageSources')
+    if (-not $packageSources.SelectSingleNode("add[@key='$feedName']")) {
+      $source = $nugetConfig.CreateElement('add')
+      $source.SetAttribute('key', $feedName)
+      $source.SetAttribute('value', $feedUrl)
+      $closingWhitespace = $packageSources.LastChild
+      $null = $packageSources.InsertBefore($nugetConfig.CreateWhitespace("`n    "), $closingWhitespace)
+      $null = $packageSources.InsertBefore($source, $closingWhitespace)
+      $nugetConfig.Save($nugetConfigPath)
+    }
+
+    Write-Host "##vso[task.logissue type=warning]TEMPORARY: SDK $pinned is internal-only; this build uses public SDK $fallback and package feed $feedUrl instead."
   displayName: 'TEMPORARY: Use public RC2 SDK when the pinned SDK is internal-only'
