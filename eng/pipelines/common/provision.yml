@@ -43,7 +43,9 @@ steps:
 - ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
-      legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      # Write the job's build service token into NuGet.config so `dotnet workload install` can
+      # read internal feeds on every OS without relying on the credential provider plugin.
+      legacyCredential: $(System.AccessToken)
 
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
     parameters:
