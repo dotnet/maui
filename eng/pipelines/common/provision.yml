@@ -40,7 +40,7 @@ steps:
 #               Provisioning Feeds               #
 ##################################################
 
-- ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['PrivateBuild'], 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
+- ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
 
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
