@@ -174,7 +174,7 @@ namespace Microsoft.Maui.DeviceTests
 				ItemsSource = new[] { "First", "Second" },
 				ItemTemplate = new Controls.DataTemplate(() =>
 				{
-					var label = new Label { WidthRequest = 80, HeightRequest = 40 };
+					var label = new Label { WidthRequest = 80, HeightRequest = 40, BackgroundColor = Colors.Blue };
 					label.SetBinding(Label.TextProperty, ".");
 					labels.Add(label);
 					return label;
@@ -183,25 +183,26 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-				await AssertEventually(() => labels.Count >= 2 &&
-					labels.Any(label => label.Text == "First" && label.IsLoaded) &&
-					labels.Any(label => label.Text == "Second" && label.IsLoaded));
-
-				var first = (FrameworkElement)labels.First(label => label.Text == "First" && label.IsLoaded).Handler.PlatformView;
-				var second = (FrameworkElement)labels.First(label => label.Text == "Second" && label.IsLoaded).Handler.PlatformView;
-
 				async Task AssertGap(double expected)
 				{
-					await AssertEventually(() =>
+					double gap = double.NaN;
+					FrameworkElement first = null;
+					var matched = await Wait(() =>
 					{
+						first = FindRealizedSpacingItem(labels, "First", handler.PlatformView);
+						var second = FindRealizedSpacingItem(labels, "Second", handler.PlatformView);
+						if (first is null || second is null)
+							return false;
+
 						var firstPosition = first.TransformToVisual(handler.PlatformView).TransformPoint(default);
 						var secondPosition = second.TransformToVisual(handler.PlatformView).TransformPoint(default);
-						var gap = orientation == ItemsLayoutOrientation.Vertical
+						gap = orientation == ItemsLayoutOrientation.Vertical
 							? secondPosition.Y - firstPosition.Y - first.ActualHeight
 							: secondPosition.X - firstPosition.X - first.ActualWidth;
 
 						return first.ActualWidth > 0 && first.ActualHeight > 0 && Math.Abs(gap - expected) <= 1;
 					});
+					Assert.True(matched, $"Expected {expected} DIP gap, got {gap}; first item {first?.ActualWidth}x{first?.ActualHeight}.");
 					Assert.Equal(80, first.ActualWidth, 1d);
 					Assert.Equal(40, first.ActualHeight, 1d);
 				}
@@ -238,6 +239,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var label = new Label
 					{
+						BackgroundColor = Colors.Blue,
 						WidthRequest = orientation == ItemsLayoutOrientation.Horizontal ? 80 : -1,
 						HeightRequest = orientation == ItemsLayoutOrientation.Vertical ? 80 : -1
 					};
@@ -249,15 +251,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-				await AssertEventually(() => new[] { "First", "Second", "Third" }
-					.All(text => labels.Any(label => label.Text == text && label.IsLoaded)));
-
-				var first = (FrameworkElement)labels.First(label => label.Text == "First" && label.IsLoaded).Handler.PlatformView;
-				var second = (FrameworkElement)labels.First(label => label.Text == "Second" && label.IsLoaded).Handler.PlatformView;
-				var third = (FrameworkElement)labels.First(label => label.Text == "Third" && label.IsLoaded).Handler.PlatformView;
-				var horizontalNeighbor = orientation == ItemsLayoutOrientation.Vertical ? second : third;
-				var verticalNeighbor = orientation == ItemsLayoutOrientation.Vertical ? third : second;
-
 				async Task AssertSpacing(double horizontal, double vertical)
 				{
 					var margin = (UI.Xaml.Thickness)handler.PlatformView.ItemContainerStyle.Setters
@@ -266,15 +259,29 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(horizontal / 2, margin.Right);
 					Assert.Equal(vertical / 2, margin.Top);
 					Assert.Equal(vertical / 2, margin.Bottom);
-					await AssertEventually(() =>
+					double horizontalGap = double.NaN;
+					double verticalGap = double.NaN;
+					FrameworkElement first = null;
+					var matched = await Wait(() =>
 					{
+						first = FindRealizedSpacingItem(labels, "First", handler.PlatformView);
+						var second = FindRealizedSpacingItem(labels, "Second", handler.PlatformView);
+						var third = FindRealizedSpacingItem(labels, "Third", handler.PlatformView);
+						if (first is null || second is null || third is null)
+							return false;
+
+						var horizontalNeighbor = orientation == ItemsLayoutOrientation.Vertical ? second : third;
+						var verticalNeighbor = orientation == ItemsLayoutOrientation.Vertical ? third : second;
 						var origin = first.TransformToVisual(handler.PlatformView).TransformPoint(default);
 						var right = horizontalNeighbor.TransformToVisual(handler.PlatformView).TransformPoint(default);
 						var below = verticalNeighbor.TransformToVisual(handler.PlatformView).TransformPoint(default);
+						horizontalGap = right.X - origin.X - first.ActualWidth;
+						verticalGap = below.Y - origin.Y - first.ActualHeight;
 						return first.ActualWidth > 0 && first.ActualHeight > 0 &&
-							Math.Abs(right.X - origin.X - first.ActualWidth - horizontal) <= 1 &&
-							Math.Abs(below.Y - origin.Y - first.ActualHeight - vertical) <= 1;
+							Math.Abs(horizontalGap - horizontal) <= 1 &&
+							Math.Abs(verticalGap - vertical) <= 1;
 					});
+					Assert.True(matched, $"Expected gaps {horizontal}/{vertical}, got {horizontalGap}/{verticalGap}; first item {first?.ActualWidth}x{first?.ActualHeight}.");
 				}
 
 				await AssertSpacing(30, 10);
@@ -322,6 +329,29 @@ namespace Microsoft.Maui.DeviceTests
 				AssertSpacing(0);
 				return Task.CompletedTask;
 			});
+		}
+
+		static FrameworkElement FindRealizedSpacingItem(List<Label> labels, string text, UI.Xaml.Controls.ListViewBase collectionView)
+		{
+			// Changing the container style can replace the realized item templates.
+			for (int i = labels.Count - 1; i >= 0; i--)
+			{
+				var label = labels[i];
+				if (label.Text != text || !label.IsLoaded || label.Handler is null)
+					continue;
+
+				var platformView = label.ToPlatform();
+				if (!platformView.IsLoaded)
+					continue;
+
+				for (DependencyObject parent = platformView; parent != null; parent = UI.Xaml.Media.VisualTreeHelper.GetParent(parent))
+				{
+					if (parent == collectionView)
+						return platformView;
+				}
+			}
+
+			return null;
 		}
 
 		[Fact]
