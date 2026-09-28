@@ -103,7 +103,14 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 ### Investigating CI Failures
 
-**🚨 ALWAYS use the `azdo-build-investigator` skill when investigating CI failures or assessing merge readiness.** Its instructions direct you to invoke the `ci-analysis` skill first for the core investigation workflow, then apply MAUI-specific corrections (correct pipeline names, XHarness quirks, binlog guidance).
+For `/review tests` and the local `Review-Tests.ps1` runner, use only the
+`review-test-failures` skill. It owns failure attribution and the single structured
+comment; do not chain other review skills in that lane.
+
+For other CI investigations or merge-readiness assessments, **always use the
+`azdo-build-investigator` skill**. Its instructions direct you to invoke the
+`ci-analysis` skill first for the core investigation workflow, then apply
+MAUI-specific corrections (correct pipeline names, XHarness quirks, binlog guidance).
 
 Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
 

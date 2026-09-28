@@ -91,6 +91,31 @@ Describe 'Resolve-RerunEligibility' {
         $parsed.PipelineRef | Should -Be 'feature/regression-check'
     }
 
+    It 'normalizes friendly platform aliases to the live trigger values' -TestCases @(
+        @{ Value = 'macos';       Expected = 'catalyst' }
+        @{ Value = 'maccatalyst'; Expected = 'catalyst' }
+        @{ Value = 'mac';         Expected = 'catalyst' }
+        @{ Value = 'win';         Expected = 'windows' }
+        @{ Value = 'IOS';         Expected = 'ios' }
+    ) {
+        param($Value, $Expected)
+
+        Normalize-ReviewPlatform $Value | Should -Be $Expected
+    }
+
+    It 'leaves unrecognized or omitted platforms empty for existing default selection' -TestCases @(
+        @{ Command = '/review' }
+        @{ Command = '/review linux' }
+        @{ Command = '/review --platform=linux' }
+    ) {
+        param($Command)
+
+        $parsed = ConvertFrom-ReviewCommand $Command
+
+        $parsed | Should -Not -BeNullOrEmpty
+        $parsed.Platform | Should -BeNullOrEmpty
+    }
+
     It 'strips refs heads prefix when normalizing review pipeline refs' {
         Normalize-ReviewPipelineRef 'refs/heads/feature/regression-check' |
             Should -Be 'feature/regression-check'

@@ -814,13 +814,18 @@ class TestPrepareVallyEvaluation < Minitest::Test
     workflow = File.read(SKILL_VALIDATION_WORKFLOW)
     job = workflow_job(workflow, "evaluate")
     validation = workflow_step(job, "Validate specs and prepare trusted fixtures")
+    runtime_setup = workflow_step(job, "Setup isolated Vally runtime")
     token_selection = workflow_step(job, "Select Copilot token")
+    revalidation = workflow_step(job, "Revalidate specs and restore trusted fixtures")
     evaluation = workflow_step(job, "Run Vally evaluation")
 
-    assert_step_order(job, validation, token_selection, evaluation)
+    assert_step_order(job, validation, runtime_setup, token_selection, revalidation, evaluation)
     assert_match(/set -euo pipefail/, validation)
     assert_match(/ruby "\$PREPARER"/, validation)
     refute_match(/continue-on-error:\s*true/, validation)
+    assert_includes token_selection, "steps.vally-runtime.outputs.workspace_root"
+    assert_includes revalidation, "steps.vally-runtime.outputs.workspace_root"
+    assert_includes revalidation, 'cd "$EVALUATOR_WORKSPACE"'
     refute_match(/^\s+if:/, token_selection)
     refute_match(/^\s+if:/, evaluation)
   end
@@ -831,13 +836,15 @@ class TestPrepareVallyEvaluation < Minitest::Test
     workflow = File.read(SKILL_VALIDATION_WORKFLOW)
     job = workflow_job(workflow, "hermeticity-gate")
     validation = workflow_step(job, "Validate safe Vally specs")
+    runtime_setup = workflow_step(job, "Setup isolated Vally runtime")
     token_selection = workflow_step(job, "Select Copilot token")
     evaluation = workflow_step(job, "Run hermeticity control")
 
-    assert_step_order(job, validation, token_selection, evaluation)
+    assert_step_order(job, validation, runtime_setup, token_selection, evaluation)
     assert_match(/set -euo pipefail/, validation)
     assert_match(/ruby "\$PREPARER"/, validation)
     refute_match(/continue-on-error:\s*true/, validation)
+    assert_includes evaluation, "steps.vally-runtime.outputs.workspace_root"
     refute_match(/^\s+if:/, token_selection)
     refute_match(/^\s+if:/, evaluation)
   end
@@ -1066,6 +1073,39 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s): .github/copilot/settings.json"
   end
 
+  def test_sanitized_history_fixture_preserves_source_diff_and_trusted_controls
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":true}\n")
+    write_repo_file("src/Example.cs", "class Example { }\n")
+    trusted = commit_all("trusted")
+
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":false}\n")
+    commit_all("historical controls")
+    write_repo_file("src/Example.cs", "class Example { public bool Broken => true; }\n")
+    source = commit_all("historical regression")
+
+    fixture = {
+      marker: "historical-regression",
+      source_ref: source,
+      message: "Sanitized historical regression"
+    }
+    head = create_sanitized_history_fixture_commit(@repo_root, fixture, trusted)
+
+    assert_equal ["src/Example.cs"], git("diff", "--name-only", "#{head}^", head).lines.map(&:strip)
+    assert_equal(
+      "{\"disableAllHooks\":true}\n",
+      git("show", "#{head}:.github/copilot/settings.json", strip: false)
+    )
+    assert_equal(
+      "{\"disableAllHooks\":true}\n",
+      git("show", "#{head}^:.github/copilot/settings.json", strip: false)
+    )
+    assert_equal(
+      "class Example { public bool Broken => true; }\n",
+      git("show", "#{head}:src/Example.cs", strip: false)
+    )
+  end
+
   def test_requires_trusted_repository_control_ref
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -1081,7 +1121,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     write_spec(
       "defaults" => {
         "model" => "gpt-5.6-sol",
-        "judge_model" => "claude-opus-5"
+        "judge_model" => "gpt-5.3-codex"
       },
       "stimuli" => [
         {
@@ -1117,7 +1157,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert status.success?, stderr
     assert_equal(
       %w[
-        claude-opus-5
+        gpt-5.3-codex
         gpt-5.6-sol
         panel-judge-a
         panel-judge-b
@@ -1229,6 +1269,21 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "candidate checkout traverses repository control symlink: .github/copilot"
   end
 
+  def test_rejects_candidate_checkout_external_target_symlink
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file("README.md", "trusted\n")
+    trusted = commit_all("trusted")
+    FileUtils.mkdir_p(File.join(@repo_root, "docs"))
+    File.symlink("/etc/hostname", File.join(@repo_root, "docs", "external.md"))
+    commit_all("candidate symlink")
+
+    _stdout, stderr, status = run_validator(env: { "TRUSTED_BASE_SHA" => trusted })
+
+    refute status.success?
+    assert_includes stderr, "candidate checkout contains symlink: docs/external.md"
+  end
+
   def test_rejects_fixture_ref_with_repository_control_directory_symlink
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -1264,6 +1319,40 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "stimuli[0].environment.git.ref traverses repository control symlink: .github/copilot"
+  end
+
+  def test_rejects_fixture_ref_with_external_target_symlink
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file("README.md", "trusted\n")
+    trusted = commit_all("trusted")
+    FileUtils.mkdir_p(File.join(@repo_root, "docs"))
+    File.symlink("/etc/hostname", File.join(@repo_root, "docs", "external.md"))
+    fixture = commit_all("fixture symlink")
+    FileUtils.rm(File.join(@repo_root, "docs", "external.md"))
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "external-target-symlink",
+          "environment" => {
+            "git" => {
+              "type" => "worktree",
+              "source" => ".",
+              "ref" => fixture
+            }
+          }
+        }
+      ]
+    )
+    commit_all("candidate spec")
+
+    _stdout, stderr, status = run_validator(
+      env: { "TRUSTED_BASE_SHA" => trusted },
+      validate_only: false
+    )
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].environment.git.ref contains symlink: docs/external.md"
   end
 
   def test_rejects_symlinked_destination_component
@@ -1341,7 +1430,28 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator
 
     refute status.success?
-    assert_includes stderr, "tests path traverses checkout symlink"
+    assert_includes stderr, "skills root contains symlink"
+    assert_includes stderr, ".github/skills/test-skill/tests"
+  end
+
+  def test_rejects_external_symlink_in_any_evaluator_skill
+    outside_root = Dir.mktmpdir("prepare-vally-skill-content-")
+    begin
+      outside_file = File.join(outside_root, "host-content.md")
+      File.write(outside_file, "host content\n")
+      other_skill = File.join(@repo_root, ".github", "skills", "other-skill")
+      FileUtils.mkdir_p(other_skill)
+      File.symlink(outside_file, File.join(other_skill, "SKILL.md"))
+      write_spec("environment" => { "skills" => [".."] })
+
+      _stdout, stderr, status = run_validator
+
+      refute status.success?
+      assert_includes stderr, "skills root contains symlink"
+      assert_includes stderr, ".github/skills/other-skill/SKILL.md"
+    ensure
+      FileUtils.remove_entry(outside_root)
+    end
   end
 
   def test_mandatory_layout_rejects_symlinked_tests_scope
@@ -1549,11 +1659,12 @@ class TestPrepareVallyEvaluation < Minitest::Test
     skip "runtime setup script not provided" unless SETUP_RUNTIME
 
     content = File.read(SETUP_RUNTIME)
-    assert_includes content, 'sudo -n install -d -o root -g root -m 755 "$trusted_copilot_home"'
+    assert_includes content, 'sudo -n install -d -o root -g "$eval_user" -m 1770 "$trusted_copilot_home"'
     refute_includes content, 'sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"'
     assert_includes content, '"$trusted_copilot_home/config.json"'
     assert_includes content, '"$trusted_copilot_home/settings.json"'
     assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/mv -f'
     refute_includes content, "\n\t--experimental \\\n"
   end
 
@@ -1564,12 +1675,100 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700'
     assert_includes content, '"$trusted_copilot_home/logs"'
     assert_includes content, '"$trusted_copilot_home/session-state"'
-    assert_includes content, '"$trusted_copilot_home/session-store.db"'
-    assert_includes content, '"$trusted_copilot_home/session-store.db-shm"'
-    assert_includes content, '"$trusted_copilot_home/session-store.db-wal"'
+    assert_includes content, "session-store.db-shm"
+    assert_includes content, "session-store.db-wal"
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/touch "$state_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/rm "$state_path"'
+    refute_match(/install .*session-store\.db/, content)
+    refute_match(/touch \\\n\s*"\$trusted_copilot_home\/session-store\.db"/, content)
     assert_includes content, 'sudo -n install -d -o root -g root -m 555'
     assert_includes content, '"$trusted_copilot_home/installed-plugins"'
     refute_includes content, '"$trusted_copilot_home/hooks"'
+  end
+
+  def test_runtime_setup_copies_workspace_without_changing_checkout_permissions
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'workspace_root="$RUNNER_TEMP/${eval_user}-workspace"'
+    assert_includes content, 'cp -a "$GITHUB_WORKSPACE/." "$workspace_root/"'
+    assert_includes content, 'find "$workspace_root" -path "$git_dir" -prune -o'
+    assert_includes content, 'Evaluator workspace contains unsupported symlink'
+    assert_includes content, 'original_workspace_stat=$(stat -c'
+    assert_includes content, 'original_git_stat=$(stat -c'
+    assert_includes content, 'echo "workspace_root=$workspace_root"'
+    assert_includes content, 'sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"'
+    assert_includes content, 'sudo -n chmod -R g+rX,g-w,o-rwx "$workspace_root"'
+    assert_includes content, 'sudo -n chmod 2750 "$workspace_root"'
+    refute_includes content, 'sudo -n chmod -R g+rwX,o-rwx "$workspace_root"'
+    refute_match(/setfacl .*"\$GITHUB_WORKSPACE"/, content)
+    refute_match(/(?:chown|chgrp|chmod).*"\$GITHUB_WORKSPACE"/, content)
+  end
+
+  def test_runtime_setup_sanitizes_and_protects_copied_git_configuration
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'sanitized_git_config="$RUNNER_TEMP/${eval_user}-git-config"'
+    assert_includes content, "core.sparsecheckout"
+    assert_includes content, "extensions.objectformat"
+    assert_includes content, 'git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"'
+    assert_includes content, 'sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"'
+    assert_includes content, 'sudo -n chmod 3770 "$git_dir"'
+    assert_includes content, "for mutable_git_path in objects worktrees refs logs; do"
+    assert_includes content, '"$git_dir/$mutable_git_path"'
+    assert_includes content, 'sudo -n chown "$eval_user:$eval_user" "$git_dir/packed-refs"'
+    assert_includes content, 'sudo -n install -o root -g root -m 444'
+    assert_includes content, 'git -C "$workspace_root" config --local alias.runtime-probe status'
+    assert_includes content, 'git -C "$workspace_root" update-ref "$probe_ref" HEAD'
+    assert_includes content, 'git -C "$workspace_root" pack-refs --all --prune'
+    assert_includes content, 'git -C "$workspace_root" update-ref -d "$probe_ref"'
+    assert_includes content, "for probe_number in 1 2; do"
+    assert_includes content, 'git -C "$workspace_root" worktree add --detach'
+    assert_includes content, 'git -C "$workspace_root" worktree remove --force'
+    assert_includes content, 'remote.upstream.url "$TRUSTED_UPSTREAM_URL"'
+    assert_includes content, 'remote.upstream.fetch "+refs/heads/*:refs/remotes/upstream/*"'
+    assert_includes content, 'git -C "$workspace_root" remote'
+    assert_includes content, 'git -C "$workspace_root" remote get-url upstream'
+    assert_includes content, 'Evaluator workspace retained a checkout Git remote'
+  end
+
+  def test_runtime_setup_probes_repository_controls_as_evaluator
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    %w[
+      .mcp.json
+      .github/hooks
+      .github/mcp.json
+      .github/copilot/settings.json
+      .github/copilot/settings.local.json
+      .claude/settings.json
+      .claude/settings.local.json
+    ].each do |path|
+      assert_includes content, path
+    end
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$control_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/tee "$control_path"'
+    assert_includes content, '"$control_path" "$renamed_path"'
+    assert_includes content, 'remove_command=(/bin/rm -rf -- "$control_path")'
+    assert_includes content, 'remove_command=(/bin/rm -- "$control_path")'
+    assert_includes content, '"$replacement_path" "$control_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/mkdir "$control_path"'
+    assert_includes content, 'sudo -n -u "$eval_user" /bin/mkdir -p "$control_parent"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/touch "$control_path"'
+  end
+
+  def test_runtime_wrapper_uses_evaluator_workspace_and_runtime_flags
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'cd "$workspace_root"'
+    assert_includes content, '"GITHUB_WORKSPACE=$workspace_root"'
+    assert_includes content, '"$vally_runner" /usr/bin/printenv GITHUB_WORKSPACE'
+    assert_includes content, '"$vally_runner" /bin/pwd'
+    assert_includes content, "--sandbox"
+    assert_includes content, "--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN"
   end
 
   def test_token_selector_skips_pat_with_an_invalid_model_probe_response
@@ -1616,7 +1815,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
             fi
             shift
           done
-          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "claude-opus-5" ]; then
+          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "gpt-5.3-codex" ]; then
             printf WRONG_MODEL
             exit 0
           fi
@@ -1647,7 +1846,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
         root,
         File.join(root, "probe"),
         "gpt-5.6-sol",
-        "claude-opus-5"
+        "gpt-5.3-codex"
       )
 
       assert status.success?, stderr
@@ -1664,6 +1863,25 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_match(/if ! status=\$\(.*?https:\/\/api\.github\.com\/user\s+\); then\s+status="transport-error"\s+fi/m, content)
     refute_match(/https:\/\/api\.github\.com\/user\s+\|\| true/, content)
     assert_includes content, "GitHub /user transport failed"
+  end
+
+  def test_token_selector_defaults_missing_pool_diagnostic
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    stderr, status = run_token_selector_without_tokens
+
+    refute status.success?
+    assert_includes stderr, "No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
+  end
+
+  def test_token_selector_uses_configured_missing_pool_diagnostic
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    stderr, status = run_token_selector_without_tokens(pool_name: "skill-evaluation-pat-pool")
+
+    refute status.success?
+    assert_includes stderr, "No COPILOT_PAT_* secrets are configured in the skill-evaluation-pat-pool environment"
+    refute_includes stderr, "in the copilot-pat-pool environment"
   end
 
   def test_token_selector_combines_run_attempt_and_matrix_entropy
@@ -1755,6 +1973,27 @@ class TestPrepareVallyEvaluation < Minitest::Test
   end
 
   private
+
+  def run_token_selector_without_tokens(pool_name: nil)
+    Dir.mktmpdir("select-vally-token-") do |root|
+      executable = File.join(root, "executable")
+      write_executable(executable, "#!/usr/bin/env bash\nexit 0\n")
+      env = { "COPILOT_PAT_POOL_NAME" => pool_name }
+      _stdout, stderr, status = Open3.capture3(
+        env,
+        "bash",
+        TOKEN_SELECTOR,
+        File.join(root, "output"),
+        executable,
+        executable,
+        executable,
+        root,
+        File.join(root, "probe"),
+        "gpt-5.6-sol"
+      )
+      [stderr, status]
+    end
+  end
 
   def initialize_git_repo
     git("init", "--quiet")

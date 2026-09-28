@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Xunit.Abstractions;
@@ -43,14 +44,26 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			var errors = new List<string>();
-			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			try
 			{
-				if (record.Args is BuildErrorEventArgs error)
+				ReadBuildEvents(binLogFilePath, args =>
 				{
-					var file = NormalizeFilePath(error.File ?? "");
-					var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
-					errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
-				}
+					if (args is BuildErrorEventArgs error)
+					{
+						var file = NormalizeFilePath(error.File ?? "");
+						var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
+						errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
+					}
+				});
+			}
+			catch (Exception ex) when (ex is IOException or InvalidDataException)
+			{
+				// A timed-out build can leave a truncated binlog. Keep the original build failure visible.
+				var message = $"[BuildWarningsUtilities] Could not completely read binlog '{binLogFilePath}': {ex.Message}";
+				if (output is null)
+					Console.WriteLine(message);
+				else
+					output.WriteLine(message);
 			}
 
 			if (errors.Count > 0)
@@ -74,15 +87,38 @@ namespace Microsoft.Maui.IntegrationTests
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
 			var actualWarnings = new List<WarningsPerFile>();
-			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			ReadBuildEvents(binLogFilePath, args =>
 			{
-				if (record.Args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
+				if (args is BuildWarningEventArgs warning && !string.IsNullOrEmpty(warning.Message))
 				{
 					// We normalize all warnings file paths for easier comparison
 					actualWarnings.AddActualWarning(NormalizeFilePath(warning.File), warning.Code, warning.Message);
 				}
-			}
+			});
 			return actualWarnings;
+		}
+
+		static void ReadBuildEvents(string binLogFilePath, Action<BuildEventArgs> processEvent)
+		{
+			using var stream = File.OpenRead(binLogFilePath);
+			// Unlike ReadRecords, Replay does not initialize message resources in a fresh process.
+			Strings.Initialize();
+			var reader = new BinLogReader();
+			bool buildFinished = false;
+			reader.AnyEventRaised += (_, args) =>
+			{
+				buildFinished |= args is BuildFinishedEventArgs;
+				processEvent(args);
+			};
+			// Replay otherwise reports read exceptions only through this event.
+			reader.OnException += exception => ExceptionDispatchInfo.Capture(exception).Throw();
+			reader.Replay(stream);
+
+			// BuildFinished precedes the embedded imports and final end-of-file marker.
+			if (reader.HasEncounteredTruncation)
+				throw new InvalidDataException("The binlog is incomplete: the end-of-file marker was not recorded.");
+			if (!buildFinished)
+				throw new InvalidDataException("The binlog is incomplete: no BuildFinished event was recorded.");
 		}
 
 		private static void AddActualWarning(this List<WarningsPerFile> warnings, string file, string code, string message)

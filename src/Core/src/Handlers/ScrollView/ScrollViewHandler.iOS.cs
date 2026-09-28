@@ -94,6 +94,31 @@ namespace Microsoft.Maui.Handlers
 			_eventProxy.Disconnect(platformView);
 		}
 
+		public override void PlatformArrange(Rect rect)
+		{
+			if (PlatformView is not { } scrollView)
+			{
+				base.PlatformArrange(rect);
+				return;
+			}
+
+			// A scroll view's Bounds.Origin is its content offset, and the base arrange sets
+			// Center and then Bounds (so non-identity transforms keep working). UIKit re-derives
+			// the offset inside setBounds: when the size changes — it keeps the content under the
+			// view's center stable, i.e. it scrolls by half the delta — so a parent layout
+			// resizing this view in the pass in which its content grows past the viewport would
+			// leave it scrolled. Arranging must not scroll: put the offset back, clamped to what
+			// the new size currently allows.
+			var contentOffset = scrollView.ContentOffset;
+
+			base.PlatformArrange(rect);
+
+			if (scrollView.ContentOffset != contentOffset)
+			{
+				scrollView.ContentOffset = ClampToScrollableRange(scrollView, contentOffset);
+			}
+		}
+
 		internal void ProcessPendingScrollRequest()
 		{
 			if (PendingScrollToRequest is { } pending)
@@ -200,23 +225,30 @@ namespace Microsoft.Maui.Handlers
 		static CGPoint GetTargetContentOffset(UIScrollView uiScrollView, ScrollToRequest request)
 		{
 			var adjustedInset = uiScrollView.AdjustedContentInset;
-			var bounds = uiScrollView.Bounds;
 
-			// MauiScrollView reports the extent to clamp against, since only it knows when its
-			// arrange baked safe-area padding into ContentSize that UIKit is also applying
-			// through AdjustedContentInset
+			return ClampToScrollableRange(uiScrollView, new CGPoint(
+				request.HorizontalOffset - (double)adjustedInset.Left,
+				request.VerticalOffset - (double)adjustedInset.Top));
+		}
+
+		// The native range is [-adjustedInset, extent + trailing inset - bounds] per axis.
+		// MauiScrollView reports the extent to clamp against, since only it knows when its
+		// arrange baked safe-area padding into ContentSize that UIKit is also applying through
+		// AdjustedContentInset.
+		static CGPoint ClampToScrollableRange(UIScrollView uiScrollView, CGPoint offset)
+		{
+			var adjustedInset = uiScrollView.AdjustedContentInset;
+			var bounds = uiScrollView.Bounds;
 			var contentSize = (uiScrollView as MauiScrollView)?.ScrollableContentSize ?? uiScrollView.ContentSize;
-			var contentWidth = (double)contentSize.Width;
-			var contentHeight = (double)contentSize.Height;
 
 			var minScrollHorizontal = -(double)adjustedInset.Left;
 			var minScrollVertical = -(double)adjustedInset.Top;
-			var maxScrollHorizontal = Math.Max(minScrollHorizontal, contentWidth + adjustedInset.Right - bounds.Width);
-			var maxScrollVertical = Math.Max(minScrollVertical, contentHeight + adjustedInset.Bottom - bounds.Height);
+			var maxScrollHorizontal = Math.Max(minScrollHorizontal, contentSize.Width + adjustedInset.Right - bounds.Width);
+			var maxScrollVertical = Math.Max(minScrollVertical, contentSize.Height + adjustedInset.Bottom - bounds.Height);
 
 			return new CGPoint(
-				Math.Clamp(request.HorizontalOffset - (double)adjustedInset.Left, minScrollHorizontal, maxScrollHorizontal),
-				Math.Clamp(request.VerticalOffset - (double)adjustedInset.Top, minScrollVertical, maxScrollVertical));
+				Math.Clamp((double)offset.X, minScrollHorizontal, maxScrollHorizontal),
+				Math.Clamp((double)offset.Y, minScrollVertical, maxScrollVertical));
 		}
 
 		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler)
