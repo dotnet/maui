@@ -382,6 +382,7 @@ public class NativeAppleIconTargetsTests
 
 		public (bool Success, string Output, string Capture) Run(string target, string projectFile = "Test.proj")
 		{
+			const int timeoutMilliseconds = 60_000;
 			var startInfo = new ProcessStartInfo("dotnet")
 			{
 				WorkingDirectory = Directory,
@@ -395,11 +396,20 @@ public class NativeAppleIconTargetsTests
 			startInfo.ArgumentList.Add("-v:minimal");
 
 			using var process = Process.Start(startInfo)!;
-			var standardOutput = process.StandardOutput.ReadToEnd();
-			var standardError = process.StandardError.ReadToEnd();
-			process.WaitForExit();
+			var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+			var standardErrorTask = process.StandardError.ReadToEndAsync();
+			if (!process.WaitForExit(timeoutMilliseconds))
+			{
+				process.Kill(entireProcessTree: true);
+				process.WaitForExit();
+				var timedOutOutput = standardOutputTask.GetAwaiter().GetResult();
+				var timedOutError = standardErrorTask.GetAwaiter().GetResult();
+				Assert.Fail($"MSBuild timed out after {timeoutMilliseconds}ms.{Environment.NewLine}{timedOutOutput}{timedOutError}");
+			}
 
-			var combinedOutput = standardOutput + standardError;
+			var combinedOutput =
+				standardOutputTask.GetAwaiter().GetResult() +
+				standardErrorTask.GetAwaiter().GetResult();
 			var capturePath = Path.Combine(Directory, Path.GetDirectoryName(projectFile) ?? string.Empty, "capture.txt");
 			var capture = File.Exists(capturePath) ? File.ReadAllText(capturePath) : string.Empty;
 			return (process.ExitCode == 0, combinedOutput, capture);
