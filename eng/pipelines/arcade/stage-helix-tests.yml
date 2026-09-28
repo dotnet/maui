@@ -94,11 +94,22 @@ stages:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
 
+          - ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
+            # Helix downloads the SDK when work items start, so this token must outlive the provisioning token.
+            - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
+              parameters:
+                outputVariableName: dotnetbuilds-internal-helix-sdk-read-token
+                expiryInHours: 8
+                base64Encode: false
+
           - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:EnableHelixJobMonitor=true /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
             displayName: Run Helix Tests
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: ${{ parameters.HelixAccessToken }}
+              ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
+                MAUI_HELIX_DOTNET_CLI_INTERNAL_FEED: https://ci.dot.net/internal
+                MAUI_HELIX_DOTNET_CLI_INTERNAL_FEED_SAS: $(dotnetbuilds-internal-helix-sdk-read-token)
 
   - job: HelixJobMonitor
     displayName: Monitor Helix Jobs
