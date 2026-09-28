@@ -42,6 +42,8 @@ steps:
 
 - ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
+    parameters:
+      legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
     parameters:
