@@ -76,6 +76,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellFlyoutContentManager.UpdateVerticalScrollMode();
 		}
 
+		internal void ForEachCachedView(Action<View> action) =>
+			_source.ForEachCachedView(action);
+
 		public void LayoutParallax() =>
 			ShellFlyoutContentManager.LayoutParallax();
 
