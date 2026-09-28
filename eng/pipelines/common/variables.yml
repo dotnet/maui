@@ -66,8 +66,6 @@ variables:
   value: true
 - name: _RunAsInternal
   value: false
-- name: PrivateBuild
-  value: false
 - name: cfsNugetWarnLevel
   value: warn
 - name: nugetMultiFeedWarnLevel
