@@ -15,7 +15,8 @@ The pipeline accepts:
 - `ghOwner` and `ghRepo`: the GitHub owner and repository name used to resolve
   the BAR build. Keep `ghOwner: dotnet` and enter `ghRepo: android-libraries`
   for an Android libraries release. For SkiaSharp, use `ghOwner: mono` and
-  `ghRepo: SkiaSharp`.
+  `ghRepo: SkiaSharp`. For SkiaSharp Extended, use `ghOwner: mono` and
+  `ghRepo: SkiaSharp.Extended`.
 - Workload behavior is inferred for `dotnet/android`, `dotnet/macios`, and
   `dotnet/maui`. Other enabled repositories use the ordinary NuGet package path.
 - `commitHash`: the source commit registered in BAR. The first matching build

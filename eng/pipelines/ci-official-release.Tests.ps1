@@ -102,7 +102,8 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/macios',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android-libraries',\r?$"
-    $pipeline | Should -Match "(?m)^\s*'https://github\.com/mono/skiasharp'\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/mono/skiasharp',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/mono/skiasharp\.extended'\r?$"
     $pipeline | Should -Match 'non-workload release cannot contain workload manifest'
     $pipeline | Should -Match '(?s)Name = ''NuGet packages''.*?Packages = \$selectedPackages.*?Identities = \$selectedIdentities'
     $pipeline | Should -Match '(?s)-Action FilterExisting.*?selectedPackages.*?stagedPackages'
