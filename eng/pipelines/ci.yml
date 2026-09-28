@@ -154,6 +154,12 @@ stages:
         skipAndroidCreateAvds: true
         skipProvisioning: true
         skipXcode: false
+        ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+          skipInternalFeeds: false
+    - ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+      - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml@self
+        parameters:
+          outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
@@ -177,6 +183,12 @@ stages:
         skipAndroidCreateAvds: true
         skipProvisioning: true
         skipXcode: false
+        ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+          skipInternalFeeds: false
+    - ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+      - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml@self
+        parameters:
+          outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
@@ -199,12 +211,20 @@ stages:
         skipAndroidCreateAvds: true
         skipProvisioning: true
         skipXcode: false
+        ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+          skipInternalFeeds: false
+    - ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+      - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml@self
+        parameters:
+          outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
 
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
   parameters:
     stageDependsOn: Pack
     publishTaskPrefix: ''
+    ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+      enableInternalFeeds: true
     jobMatrix:
     - name: win_sample_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:

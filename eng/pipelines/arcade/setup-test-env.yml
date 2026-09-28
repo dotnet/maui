@@ -6,6 +6,7 @@ parameters:
   buildMSBuildTasks: false
   androidSdkRoot: $(ANDROID_SDK_ROOT)
   skipXcode: false
+  enableInternalFeeds: false
 
 steps:
 - checkout: self
@@ -26,6 +27,8 @@ steps:
     skipProvisioning: true
     skipXcode: ${{ parameters.skipXcode }}
     skipSimulatorSetup: ${{ parameters.skipXcode }}
+    ${{ if eq(parameters.enableInternalFeeds, true) }}:
+      skipInternalFeeds: false
 
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
@@ -47,6 +50,10 @@ steps:
     inputs:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+    ${{ if eq(parameters.enableInternalFeeds, true) }}:
+      env:
+        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+        PRIVATE_BUILD: true
 
   - template: /eng/pipelines/common/run-dotnet-preview.yml
     parameters:
@@ -72,6 +79,10 @@ steps:
     inputs:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+    ${{ if eq(parameters.enableInternalFeeds, true) }}:
+      env:
+        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+        PRIVATE_BUILD: true
 
 # - template: /eng/pipelines/common/setup-android-dependencies.yml
 #   parameters:

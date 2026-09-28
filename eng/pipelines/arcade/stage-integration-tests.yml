@@ -5,6 +5,7 @@ parameters:
   buildConfig: Debug
   repoLogPath: $(Build.Arcade.LogsPath)
   publishTaskPrefix: '1ES.'
+  enableInternalFeeds: false
 
 stages:
 - stage: IntegrationTests
@@ -33,6 +34,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           buildConfig: ${{ parameters.buildConfig }}
           repoLogPath: ${{ parameters.repoLogPath }}
+          enableInternalFeeds: ${{ parameters.enableInternalFeeds }}
           # Skip Xcode provisioning for Android-only tests (RunOnAndroid category)
           # All other tests may build or run iOS/macOS targets and need Xcode
           skipXcode: ${{ eq(job.testCategory, 'RunOnAndroid') }}

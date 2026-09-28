@@ -115,7 +115,9 @@ extends:
             skipSimulatorSetup: true
             skipProvisioning: true
             skipXcode: false
-            base64Encode: true
+            skipInternalFeeds: false
+        - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml@self
+          parameters:
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
     - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
