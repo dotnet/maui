@@ -140,6 +140,7 @@ public class NativeAppleIconTargetsTests
 
 		using var emptyProject = new TestProject();
 		var emptyBundle = emptyProject.CreateIconBundle("Empty.icon");
+		emptyProject.WriteFile(Path.Combine("Empty.icon", "Assets", ".DS_Store"), "finder metadata");
 		emptyProject.WriteProject(CreateProject(emptyBundle, isApple: true));
 
 		var emptyResult = emptyProject.Run("Capture");

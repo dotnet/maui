@@ -98,7 +98,7 @@ public class ResizetizerTests : BaseBuildTest
 		File.WriteAllText(projectFile, originalProject);
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
 			$"Switching back to the ordinary MauiIcon failed for {framework}.");
-		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon", unexpectedIconName: "Distinctive");
 	}
 
 	[Theory]
@@ -885,7 +885,8 @@ public class ResizetizerTests : BaseBuildTest
 		string framework,
 		string configuration,
 		string expectedIconName,
-		bool requireComposerRenditions = false)
+		bool requireComposerRenditions = false,
+		string? unexpectedIconName = null)
 	{
 		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
 		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
@@ -894,6 +895,8 @@ public class ResizetizerTests : BaseBuildTest
 
 		var assetInfo = RunTool("xcrun", "assetutil", "--info", assetsCar);
 		Assert.Contains(expectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
+		if (unexpectedIconName is not null)
+			Assert.DoesNotContain(unexpectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
 		if (requireComposerRenditions)
 		{
 			Assert.Contains("IconGroup", assetInfo, StringComparison.Ordinal);

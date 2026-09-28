@@ -510,7 +510,9 @@
                  linked and project-reference bundles have one deterministic virtual path. -->
             <ImageAsset
                 Remove="$(_MauiNativeAppleIconDirectoryWithSlash)**\*;$(_MauiNativeAppleIconRelativeDirectory)\**\*" />
-            <_MauiNativeAppleIconAsset Include="$(_MauiNativeAppleIconDirectoryWithSlash)Assets\**\*" />
+            <_MauiNativeAppleIconAsset
+                Include="$(_MauiNativeAppleIconDirectoryWithSlash)Assets\**\*"
+                Exclude="$(_MauiNativeAppleIconDirectoryWithSlash)Assets\**\.DS_Store" />
             <_MauiNativeAppleIconChild
                 Include="$(_MauiNativeAppleIconDirectoryWithSlash)**\*"
                 Exclude="$(_MauiNativeAppleIconDirectoryWithSlash)**\.DS_Store" />
