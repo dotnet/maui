@@ -59,6 +59,12 @@ steps:
         expiryInHours: ${{ parameters.expiryInHours }}
         base64Encode: false
 
+# TEMPORARY: builds without internal feeds fall back to a public SDK while the pinned SDK is internal-only.
+- ${{ else }}:
+  - template: public-sdk-fallback.yml
+    parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
 ##################################################
 #               Provisioning macOS               #
 ##################################################
