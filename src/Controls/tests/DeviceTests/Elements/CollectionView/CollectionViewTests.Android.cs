@@ -671,5 +671,117 @@ namespace Microsoft.Maui.DeviceTests
 			{
 			}
 		}
+
+		public static TheoryData<bool, bool, bool, bool> GroupedSourceLayouts
+		{
+			get
+			{
+				var data = new TheoryData<bool, bool, bool, bool>();
+
+				foreach (var header in new[] { false, true })
+					foreach (var footer in new[] { false, true })
+						foreach (var groupHeader in new[] { false, true })
+							foreach (var groupFooter in new[] { false, true })
+								data.Add(header, footer, groupHeader, groupFooter);
+
+				return data;
+			}
+		}
+
+		[Theory(DisplayName = "ObservableGroupedSource resolves every position to the group that owns it")]
+		[MemberData(nameof(GroupedSourceLayouts))]
+		public async Task GroupedSourceGetGroupAndIndexMatchesGroupContents(bool hasHeader, bool hasFooter, bool hasGroupHeader, bool hasGroupFooter)
+		{
+			SetupBuilder();
+
+			// Uneven sizes and an empty group in the middle: the previous position-by-position walk
+			// returned the empty group's index for positions that belong to the group after it.
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new ObservableCollection<string> { "0.0", "0.1", "0.2" },
+				new ObservableCollection<string>(),
+				new ObservableCollection<string> { "2.0" },
+				new ObservableCollection<string> { "3.0", "3.1", "3.2", "3.3", "3.4" },
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var collectionView = new CollectionView
+				{
+					IsGrouped = true,
+					ItemsSource = groups,
+					GroupHeaderTemplate = hasGroupHeader ? new DataTemplate(() => new Label()) : null,
+					GroupFooterTemplate = hasGroupFooter ? new DataTemplate(() => new Label()) : null,
+				};
+
+				// The adapter flips these from the ItemsView's Header/Footer; set them directly here.
+				var source = new ObservableGroupedSource(collectionView, new MockCollectionChangedNotifier())
+				{
+					HasHeader = hasHeader,
+					HasFooter = hasFooter
+				};
+
+				var expected = ExpectedGroupedPositions(groups, hasHeader, hasFooter, hasGroupHeader, hasGroupFooter);
+
+				Assert.Equal(expected.Count, source.Count);
+
+				for (int position = 0; position < expected.Count; position++)
+				{
+					var (expectedGroup, expectedIndex, expectedItem, isGroupHeader, isGroupFooter) = expected[position];
+
+					if (source.IsHeader(position) || source.IsFooter(position))
+					{
+						continue;
+					}
+
+					var (group, index) = source.GetGroupAndIndex(position);
+
+					Assert.True(expectedGroup == group && expectedIndex == index,
+						$"Position {position}: expected ({expectedGroup}, {expectedIndex}) but got ({group}, {index})");
+					Assert.Equal(isGroupHeader, source.IsGroupHeader(position));
+					Assert.Equal(isGroupFooter, source.IsGroupFooter(position));
+					Assert.Same(expectedItem, source.GetItem(position));
+				}
+			});
+		}
+
+		// Brute-force reference: lays the adapter positions out in order, exactly as the RecyclerView sees them.
+		static List<(int group, int index, object item, bool isGroupHeader, bool isGroupFooter)> ExpectedGroupedPositions(
+			IList<ObservableCollection<string>> groups, bool hasHeader, bool hasFooter, bool hasGroupHeader, bool hasGroupFooter)
+		{
+			var positions = new List<(int, int, object, bool, bool)>();
+
+			if (hasHeader)
+			{
+				positions.Add((0, 0, null, false, false));
+			}
+
+			for (int g = 0; g < groups.Count; g++)
+			{
+				var index = 0;
+
+				if (hasGroupHeader)
+				{
+					positions.Add((g, index++, groups[g], true, false));
+				}
+
+				foreach (var item in groups[g])
+				{
+					positions.Add((g, index++, item, false, false));
+				}
+
+				if (hasGroupFooter)
+				{
+					positions.Add((g, index, groups[g], false, true));
+				}
+			}
+
+			if (hasFooter)
+			{
+				positions.Add((0, 0, null, false, false));
+			}
+
+			return positions;
+		}
 	}
 }
