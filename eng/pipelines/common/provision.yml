@@ -31,7 +31,7 @@ parameters:
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
-  skipInternalFeeds: false
+  skipInternalFeeds: true
   skipCertificates: false
 
 steps:
@@ -40,8 +40,10 @@ steps:
 #               Provisioning Feeds               #
 ##################################################
 
-- ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
+- ${{ if ne(parameters.skipInternalFeeds, 'true') }}:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
+    parameters:
+      legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
     parameters:
@@ -49,18 +51,6 @@ steps:
       outputVariableName: ${{ parameters.outputVariableName }}
       expiryInHours: ${{ parameters.expiryInHours }}
       base64Encode: ${{ parameters.base64Encode }}
-
-  # Cake needs raw SAS; Arcade's SDK bootstrap needs the base64 form.
-  - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
-    parameters:
-      federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
-      expiryInHours: ${{ parameters.expiryInHours }}
-      ${{ if eq(parameters.base64Encode, true) }}:
-        outputVariableName: dotnetbuilds-internal-container-read-token
-        base64Encode: false
-      ${{ else }}:
-        outputVariableName: dotnetbuilds-internal-container-read-token-base64
-        base64Encode: true
 
 ##################################################
 #               Provisioning macOS               #
@@ -589,18 +579,6 @@ steps:
     packageType: sdk
     version: $(DOTNET_VERSION)
     includePreviewVersions: true
-
-- ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
-  # Use the same installation stamp as Cake so later provisioning does not
-  # delete an SDK already in use by MSBuild.
-  - task: DotNetCoreCLI@2
-    displayName: Bootstrap private .NET SDK
-    inputs:
-      projects: ${{ parameters.checkoutDirectory }}/src/DotNet/DotNet.csproj
-      arguments: '-p:InstallWorkloadPacks=false'
-    env:
-      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
 
 - script: |
     dotnet --list-sdks

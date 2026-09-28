@@ -44,10 +44,6 @@ steps:
 
   - task: DotNetCoreCLI@2
     displayName: Install dotnet preview without workloads
-    env:
-      ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
-        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-        PRIVATE_BUILD: $(PrivateBuild)
     inputs:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
@@ -73,10 +69,6 @@ steps:
 - ${{ else }}:
   - task: DotNetCoreCLI@2
     displayName: Install dotnet preview
-    env:
-      ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
-        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-        PRIVATE_BUILD: $(PrivateBuild)
     inputs:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'

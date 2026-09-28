@@ -75,9 +75,8 @@ variables:
 
 - ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
-    - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      - name: PrivateBuild
-        value: true
+    - name: PrivateBuild
+      value: false
     - name: _RunAsPublic
       value: false
     - name: _RunAsInternal

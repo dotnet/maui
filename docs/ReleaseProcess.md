@@ -6,30 +6,25 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 
 `azure-pipelines-internal.yml` builds, signs, and packs .NET MAUI on the internal Azure DevOps mirror. It registers the resulting assets in Maestro's Build Asset Registry (BAR). The BAR record and source commit identify the immutable assets used by a release.
 
-## Private SDK dependency updates
+## SDK dependency updates
 
-When selecting an internal SDK build for a release branch, update the complete
+When selecting an SDK build for a release branch, update the complete
 dependency set with `darc update-dependencies --id <BAR ID>` (after a dry run),
 including the generated Arcade files. Keep `global.json`'s SDK version aligned
 with `eng/Versions.props` and preserve the producing repository and commit in
 `eng/Version.Details.xml`.
 
-Verify the selected assets' NuGet locations separately: Darc may update dependency
-metadata without updating `NuGet.config`. Internal package sources use disabled
-`darc-int-*` keys. Only non-PR `dotnet-maui` and `dotnet-maui-build` runs in the
-internal project enable them with `SetupNugetSources` and `NuGetAuthenticate`.
-The standalone Helix monitor needs the same setup before installing its tool.
+Verify exact package availability through the configured NuGet service indexes;
+BAR may list only build-container locations, and Darc may update dependency
+metadata without updating `NuGet.config`. SDK archives are separate from NuGet
+packages: verify the selected SDK's archives on the public download endpoint too.
+Public PR builds need both the SDK archives and the coherent package set to be
+available anonymously. Do not substitute a nearby Arcade version while leaving
+the rest of an unavailable SDK build pinned.
 
-SDK archives are separate from NuGet packages. Trusted builds bootstrap from
-`https://ci.dot.net/internal` with the existing short-lived SAS helper before
-restoring tools or provisioning platform SDKs. Arcade consumes base64 SAS;
-Cake and `src/DotNet/DotNet.csproj` consume raw `DOTNET_TOKEN` with `PRIVATE_BUILD`.
-Public and PR builds do not acquire these credentials and cannot build an
-internal-only SDK until its selected assets become publicly available.
-
-Validate on `dotnet-maui-build` using `eng/pipelines/ci.yml`, without publishing
-release assets. YAML expansion alone does not establish SDK restore or build
-success.
+Validate with `maui-pr` using `eng/pipelines/ci.yml`, without publishing release
+assets. Configuration checks and download availability do not establish build
+or test success.
 
 ## Canonical release pipeline
 
