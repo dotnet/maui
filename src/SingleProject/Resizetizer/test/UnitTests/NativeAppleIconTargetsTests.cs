@@ -180,9 +180,8 @@ public class NativeAppleIconTargetsTests
 		string? additionalMauiIcon = null,
 		string? appIcon = null)
 	{
-		var target = SecurityElement.Escape(FindRepositoryFile(
-			"src", "SingleProject", "Resizetizer", "src", "nuget", "buildTransitive",
-			"Microsoft.Maui.Resizetizer.After.targets"));
+		var target = SecurityElement.Escape(
+			Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Resizetizer.After.targets"));
 		var icon = SecurityElement.Escape(mauiIcon);
 		var additionalItem = additionalMauiIcon is null
 			? string.Empty
@@ -246,16 +245,6 @@ public class NativeAppleIconTargetsTests
 			  </Target>
 			</Project>
 			""";
-	}
-
-	static string FindRepositoryFile(params string[] path)
-	{
-		var directory = new DirectoryInfo(AppContext.BaseDirectory);
-		while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "Microsoft.Maui.sln")))
-			directory = directory.Parent;
-
-		Assert.NotNull(directory);
-		return Path.Combine([directory!.FullName, .. path]);
 	}
 
 	static string Normalize(string value) => value.Replace('\\', '/');

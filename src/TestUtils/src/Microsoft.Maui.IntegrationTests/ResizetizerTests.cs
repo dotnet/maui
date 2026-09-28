@@ -24,7 +24,7 @@ public class ResizetizerTests : BaseBuildTest
 	{
 		SetTestIdentifier(platform);
 
-		if (!TestEnvironment.IsMacOS || !SupportsAppleIconComposer())
+		if (!TestEnvironment.IsMacOS || !SupportsAppleIconComposer(platform))
 			return;
 
 		var projectDir = TestDirectory;
@@ -855,7 +855,7 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.NotEmpty(processedAssets);
 	}
 
-	static bool SupportsAppleIconComposer()
+	static bool SupportsAppleIconComposer(string platform)
 	{
 		if (!DotNetCurrent.StartsWith("net11.", StringComparison.OrdinalIgnoreCase))
 			return false;
@@ -864,7 +864,11 @@ public class ResizetizerTests : BaseBuildTest
 		if (!Directory.Exists(packsDirectory))
 			return false;
 
-		return Directory.GetDirectories(packsDirectory, "Microsoft.iOS.Sdk*")
+		var sdkPack = platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase)
+			? "Microsoft.MacCatalyst.Sdk*"
+			: "Microsoft.iOS.Sdk*";
+
+		return Directory.GetDirectories(packsDirectory, sdkPack)
 			.SelectMany(pack => Directory.GetDirectories(pack))
 			.Select(path => Path.GetFileName(path).Split('-', 2)[0])
 			.Any(version => Version.TryParse(version, out var parsed) && parsed >= new Version(26, 5, 11720));
