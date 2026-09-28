@@ -1,6 +1,6 @@
 # PAT Pool
 
-Selects a random Copilot PAT from a numbered pool of secrets. This addresses limitations that arise from having a single PAT shared across all agentic workflows, such as rate-limiting.
+Selects a random usable Copilot PAT from a numbered pool of secrets. For activated runs, the trusted pool job checks each non-empty token against the Copilot model API; expired or unauthorized tokens (HTTP 401/403) are skipped with a slot-number warning. Transient API/network failures and an empty usable pool fail the job explicitly instead of starting an agent with a bad token. This addresses limitations that arise from having a single PAT shared across all agentic workflows, such as rate-limiting.
 
 **This is a stop-gap workaround.** As soon as organization/enterprise billing is available to the dotnet org, this approach will be removed from our workflows.
 
@@ -54,6 +54,8 @@ Team members provide PATs into the pool with secret names matching the pattern o
 The **Token Name** _does not_ need to match the secret name and is only visible to the owner of the PAT. It's recommended to use a token name indicating the PAT is used for dotnet org agentic workflows. The **Description** is also only used for your own reference.
 
 Team members providing PATs for workflows should set weekly recurring reminders to regenerate and update their PATs in the PAT pool. With an 8-day expiration, renewal can be done on the same day each week.
+
+If a pool run warns that a slot cannot authenticate, its owner must renew that slot's environment secret. The check reports only slot numbers and HTTP statuses; it never prints token values or response bodies. A successful check confirms authentication, not access to every model chosen by a consuming workflow.
 
 ## PAT Pool Secrets
 

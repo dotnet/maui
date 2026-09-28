@@ -11,6 +11,7 @@ jobs:
     steps:
       - id: select-pat-number
         name: Select Copilot token from pool
+        if: needs.pre_activation.outputs.activated == 'true'
         env:
           COPILOT_PAT_0: ${{ github.aw.import-inputs.COPILOT_PAT_0 }}
           COPILOT_PAT_1: ${{ github.aw.import-inputs.COPILOT_PAT_1 }}
@@ -25,7 +26,7 @@ jobs:
           RANDOM_SEED: ${{ github.aw.import-inputs.random_seed }}
         shell: bash
         run: |
-          # Collect pool entries with non-empty secrets from COPILOT_PAT_0..COPILOT_PAT_9.
+          # Only select tokens that can authenticate with the Copilot model API.
           PAT_NUMBERS=()
           POOL_INDICATORS=(➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖)
 
@@ -33,19 +34,36 @@ jobs:
             var="COPILOT_PAT_${i}"
             val="${!var}"
             if [ -n "$val" ]; then
-              PAT_NUMBERS+=("$i")
-              POOL_INDICATORS[i]="🟪"
+              if ! status=$(curl --silent --show-error --proto '=https' \
+                --connect-timeout 5 --max-time 15 --retry 2 --retry-delay 2 \
+                --output /dev/null --write-out '%{http_code}' \
+                --header "Authorization: Bearer $val" \
+                --header 'Accept: application/json' \
+                https://api.githubcopilot.com/models); then
+                echo "::error::Could not verify Copilot PAT slot ${i}; token selection is unsafe."
+                exit 1
+              fi
+              case "$status" in
+                200)
+                  PAT_NUMBERS+=("$i")
+                  POOL_INDICATORS[i]="🟪"
+                  ;;
+                401|403)
+                  POOL_INDICATORS[i]="⚠️"
+                  echo "::warning::Copilot PAT slot ${i} cannot authenticate (HTTP ${status}); skipping it."
+                  ;;
+                *)
+                  echo "::error::Copilot PAT slot ${i} check returned HTTP ${status}; token selection is unsafe."
+                  exit 1
+                  ;;
+              esac
             fi
           done
 
-          # If none of the entries in the pool have values, emit a warning
-          # and do not set an output value. The consumer can fall back to
-          # using COPILOT_GITHUB_TOKEN.
+          # Never pass an empty or unauthenticated token to the agent.
           if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
-            warning_message="::warning::None of the PAT pool entries had values "
-            warning_message+="(checked COPILOT_PAT_0 through COPILOT_PAT_9)"
-            echo "$warning_message"
-            exit 0
+            echo "::error::No usable Copilot PATs in slots 0 through 9. Renew or replace a PAT before retrying."
+            exit 1
           fi
 
           # Select a random index using the seed if specified.
