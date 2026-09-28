@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -44,13 +45,14 @@ public class ResizetizerTests : BaseBuildTest
 
 		var bundleDir = Path.Combine(projectDir, "Native Icon Resources", "Distinctive.icon");
 		var assetsDir = Path.Combine(bundleDir, "Assets");
+		var frontAsset = Path.Combine(assetsDir, "front.png");
 		Directory.CreateDirectory(assetsDir);
 		File.Copy(
 			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon1024.png"),
 			Path.Combine(assetsDir, "back.png"));
 		File.Copy(
 			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon512.png"),
-			Path.Combine(assetsDir, "front.png"));
+			frontAsset);
 		WriteIconJson(bundleDir, "back.png", "front.png");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -67,6 +69,7 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
 			$"The native MauiIcon build failed for {framework}.");
 		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+		var nativeAssetsHash = GetAppleAssetsHash(projectDir, framework, config);
 		Assert.DoesNotContain(
 			Directory.GetFiles(Path.Combine(projectDir, "obj", config, framework), "*Distinctive*", SearchOption.AllDirectories),
 			path => path.Contains($"{Path.DirectorySeparatorChar}resizetizer{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
@@ -74,14 +77,18 @@ public class ResizetizerTests : BaseBuildTest
 		// No-op incremental build.
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
 			$"The native MauiIcon no-op build failed for {framework}.");
+		Assert.Equal(nativeAssetsHash, GetAppleAssetsHash(projectDir, framework, config));
 
 		// Content update, followed by a deletion/rename that changes the recursively collected item list.
+		var originalFrontWriteTime = File.GetLastWriteTimeUtc(frontAsset);
 		File.Copy(
 			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon256.png"),
-			Path.Combine(assetsDir, "front.png"),
+			frontAsset,
 			overwrite: true);
+		File.SetLastWriteTimeUtc(frontAsset, originalFrontWriteTime.AddMinutes(-1));
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
 			$"The native MauiIcon content-update build failed for {framework}.");
+		Assert.NotEqual(nativeAssetsHash, GetAppleAssetsHash(projectDir, framework, config));
 
 		File.Delete(Path.Combine(assetsDir, "back.png"));
 		File.Move(Path.Combine(assetsDir, "front.png"), Path.Combine(assetsDir, "renamed.png"));
@@ -916,6 +923,14 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.Contains(expectedIconName, plist, StringComparison.OrdinalIgnoreCase);
 		if (requireComposerRenditions)
 			Assert.DoesNotContain("XSAppIconAssets", plist, StringComparison.Ordinal);
+	}
+
+	static string GetAppleAssetsHash(string projectDirectory, string framework, string configuration)
+	{
+		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
+		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
+		var assetsCar = Directory.GetFiles(appDirectory, "Assets.car", SearchOption.AllDirectories).Single();
+		return Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assetsCar)));
 	}
 
 	static string RunTool(string fileName, params string[] arguments)

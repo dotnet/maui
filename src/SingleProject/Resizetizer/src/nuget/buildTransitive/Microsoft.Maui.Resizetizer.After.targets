@@ -531,13 +531,18 @@
             <_MauiNativeAppleIconActive>True</_MauiNativeAppleIconActive>
         </PropertyGroup>
 
-        <!-- WriteOnlyWhenDifferent makes child additions, deletions, and renames update the
-             manifest timestamp without invalidating no-op builds. File content changes are
-             already tracked by the Apple workload through @(ImageAsset). -->
+        <GetFileHash
+            Condition="'@(_MauiNativeAppleIcon)' != ''"
+            Files="@(_MauiNativeAppleIconChild)">
+            <Output TaskParameter="Items" ItemName="_MauiNativeAppleIconChildWithHashes" />
+        </GetFileHash>
+
+        <!-- WriteOnlyWhenDifferent avoids invalidating no-op builds. Persisting each child hash
+             detects content changes even when a copied file retains an older timestamp. -->
         <WriteLinesToFile
             Condition="'@(_MauiNativeAppleIcon)' != ''"
             File="$(_MauiNativeAppleIconInputsFile)"
-            Lines="@(_MauiNativeAppleIconChild->'%(FullPath)')"
+            Lines="@(_MauiNativeAppleIconChildWithHashes->'%(FullPath);%(FileHash)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 

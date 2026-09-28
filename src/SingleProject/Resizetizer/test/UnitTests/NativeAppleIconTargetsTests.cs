@@ -119,6 +119,35 @@ public class NativeAppleIconTargetsTests
 		AssertContains("appicon.svg;IsAppIcon=True", Normalize(ordinaryResult.Capture));
 	}
 
+	[Fact]
+	public void InvalidatesAppleCachesWhenBundleChildContentChanges()
+	{
+		using var project = new TestProject();
+		var bundle = project.CreateIconBundle("Distinctive.icon", "layer.png");
+		project.WriteProject(CreateProject(bundle, isApple: true));
+
+		var first = project.Run("Capture");
+		Assert.True(first.Success, first.Output);
+
+		var partialManifestCache = project.WriteFile(Path.Combine("obj", "actool-partial.plist"), "native");
+		var bundleResourceCache = project.WriteFile(Path.Combine("obj", "actool-bundle-items"), "native");
+
+		var noOp = project.Run("Capture");
+		Assert.True(noOp.Success, noOp.Output);
+		Assert.True(File.Exists(partialManifestCache));
+		Assert.True(File.Exists(bundleResourceCache));
+
+		var layer = Path.Combine(bundle, "Assets", "layer.png");
+		var originalWriteTime = File.GetLastWriteTimeUtc(layer);
+		File.WriteAllText(layer, "updated");
+		File.SetLastWriteTimeUtc(layer, originalWriteTime.AddMinutes(-1));
+
+		var updated = project.Run("Capture");
+		Assert.True(updated.Success, updated.Output);
+		Assert.False(File.Exists(partialManifestCache));
+		Assert.False(File.Exists(bundleResourceCache));
+	}
+
 	[Theory]
 	[InlineData("26.4.11514-net11-p4", "requires the .NET Apple workload version")]
 	[InlineData("26.5.11720-net11-p6", "must contain an icon.json file")]
