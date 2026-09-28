@@ -14,12 +14,15 @@ The pipeline accepts:
 
 - `ghOwner` and `ghRepo`: the GitHub owner and repository name used to resolve
   the BAR build. Keep `ghOwner: dotnet` and enter `ghRepo: android-libraries`
-  for an Android libraries release.
+  for an Android libraries release. For SkiaSharp, use `ghOwner: mono` and
+  `ghRepo: SkiaSharp`.
 - Workload behavior is inferred for `dotnet/android`, `dotnet/macios`, and
   `dotnet/maui`. Other enabled repositories use the ordinary NuGet package path.
 - `commitHash`: the source commit registered in BAR. The first matching build
   returned by Darc is used, preserving the existing workload-release behavior.
-  The default value, `skip`, prevents
+  SkiaSharp is registered with Maestro through a manual-frequency dependency
+  subscription, so it uses the same repository-and-commit lookup without
+  receiving automatic dependency updates. The default value, `skip`, prevents
   all preparation, approval, workload-channel, and NuGet publishing jobs.
 - `pushWorkloadSet`: adds the resolved BAR build to the matching .NET workload release channel.
 - `pushNugetOrg`: enables the NuGet.org release stages.
@@ -66,9 +69,27 @@ pushNugetOrg: true
 pushPackages: false
 ```
 
+For a SkiaSharp dry run, select `mono/SkiaSharp` and provide the source commit:
+
+```yaml
+ghOwner: mono
+ghRepo: SkiaSharp
+commitHash: <FULL_COMMIT_SHA>
+pushWorkloadSet: false
+pushNugetOrg: true
+pushPackages: false
+```
+
 ### Preparation
 
-The preparation stage resolves the BAR build once and runs one `darc gather-drop`, filtered to BAR NuGet package assets. Symbol and other path-based blob assets are not NuGet.org release inputs and are not downloaded. Workload releases gather fail-fast, apply the include and exclude filters, and require non-empty pack and manifest sets. Non-workload releases use the single package set described above; gathering continues on individual download errors, then preparation rejects every selected package that is neither gathered nor already available on NuGet.org.
+The preparation stage resolves the BAR build once from the repository and
+commit, then runs one `darc gather-drop`, filtered to BAR NuGet package assets.
+Symbol and other path-based blob assets are not NuGet.org release inputs and are
+not downloaded. Workload releases gather fail-fast, apply the include and
+exclude filters, and require non-empty pack and manifest sets. Non-workload
+releases use the single package set described above; gathering continues on
+individual download errors, then preparation rejects every selected package that
+is neither gathered nor already available on NuGet.org.
 
 For every gathered package, the stage reads the package ID and version from its nuspec. If a selected non-workload package was not gathered, its ID and version come from the BAR asset metadata and that exact identity must already be available on NuGet.org. The stage reports the selected identities and counts. Workload releases publish two 1ES pipeline outputs:
 

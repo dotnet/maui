@@ -157,7 +157,8 @@ extends:
                   'https://github.com/dotnet/maui',
                   'https://github.com/dotnet/android',
                   'https://github.com/dotnet/macios',
-                  'https://github.com/dotnet/android-libraries'
+                  'https://github.com/dotnet/android-libraries',
+                  'https://github.com/mono/skiasharp'
                 )
                 if ($sourceRepository -notin $allowedRepositories) {
                   throw "Repository '$sourceRepository' is not enabled for this release pipeline."
@@ -246,6 +247,9 @@ extends:
                 $repository = $repository.Replace('://www.github.com/', '://github.com/')
                 if ($repository -ne $sourceRepository) {
                   throw "BAR build '$($build.id)' belongs to '$repository', not '$sourceRepository'."
+                }
+                if ([string] $build.commit -ine $env:COMMIT_HASH) {
+                  throw "BAR build '$($build.id)' commit '$($build.commit)' does not match '$env:COMMIT_HASH'."
                 }
                 $barId = $build.id
 
