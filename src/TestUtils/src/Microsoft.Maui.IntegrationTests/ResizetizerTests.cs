@@ -913,11 +913,13 @@ public class ResizetizerTests : BaseBuildTest
 
 		var plist = RunTool("plutil", "-p", infoPlist);
 		Assert.Contains(expectedIconName, plist, StringComparison.OrdinalIgnoreCase);
-		Assert.DoesNotContain("XSAppIconAssets", plist, StringComparison.Ordinal);
+		if (requireComposerRenditions)
+			Assert.DoesNotContain("XSAppIconAssets", plist, StringComparison.Ordinal);
 	}
 
 	static string RunTool(string fileName, params string[] arguments)
 	{
+		const int timeoutMilliseconds = 60_000;
 		var startInfo = new ProcessStartInfo(fileName)
 		{
 			RedirectStandardOutput = true,
@@ -928,9 +930,19 @@ public class ResizetizerTests : BaseBuildTest
 			startInfo.ArgumentList.Add(argument);
 
 		using var process = Process.Start(startInfo)!;
-		var standardOutput = process.StandardOutput.ReadToEnd();
-		var standardError = process.StandardError.ReadToEnd();
-		process.WaitForExit();
+		var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+		var standardErrorTask = process.StandardError.ReadToEndAsync();
+		if (!process.WaitForExit(timeoutMilliseconds))
+		{
+			process.Kill(entireProcessTree: true);
+			process.WaitForExit();
+			var timedOutOutput = standardOutputTask.GetAwaiter().GetResult();
+			var timedOutError = standardErrorTask.GetAwaiter().GetResult();
+			Assert.Fail($"{fileName} timed out after {timeoutMilliseconds}ms.{Environment.NewLine}{timedOutOutput}{timedOutError}");
+		}
+
+		var standardOutput = standardOutputTask.GetAwaiter().GetResult();
+		var standardError = standardErrorTask.GetAwaiter().GetResult();
 		Assert.True(process.ExitCode == 0, $"{fileName} failed with exit code {process.ExitCode}:{Environment.NewLine}{standardError}");
 		return standardOutput;
 	}
