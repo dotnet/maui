@@ -832,7 +832,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void InsertViewController(int index, UIViewController viewController)
 		{
 			var navigationController = ActiveNavigationController();
-			if (!ReferenceEquals(navigationController, this))
+			if (!ReferenceEquals(navigationController, this) && index >= 0)
 			{
 				navigationController.ViewControllers = navigationController.ViewControllers.Insert(index, viewController);
 				return;
