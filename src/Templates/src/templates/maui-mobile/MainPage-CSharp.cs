@@ -11,12 +11,15 @@ public class MainPage : ContentPage
 
 		var logo = new Image
 		{
+			AutomationId = "BotImage",
 			Source = "dotnet_bot.png",
 			HeightRequest = 185,
+			MaximumWidthRequest = 190,
 			Margin = new Thickness(0, 20, 0, 0),
+			HorizontalOptions = LayoutOptions.Center,
 			Aspect = Aspect.AspectFit
 		};
-		SemanticProperties.SetDescription(logo, "dot net bot riding a rocket");
+		SemanticProperties.SetDescription(logo, "Two dot net bots with a rocket marked eleven.");
 
 		var headline = new Label
 		{
@@ -35,6 +38,7 @@ public class MainPage : ContentPage
 
 		_counterButton = new Button
 		{
+			AutomationId = "CounterBtn",
 			Text = "Click me",
 			HorizontalOptions = LayoutOptions.Fill
 		};

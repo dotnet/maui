@@ -56,16 +56,11 @@ public static class MauiProgram
 #endif
 			});
 
-//-:cnd:noEmit
+		//-:cnd:noEmit
 #if DEBUG
 		builder.Logging.AddDebug();
-//+:cnd:noEmit
-#if (UseSampleContent)
-		builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
-//-:cnd:noEmit
-#endif
-//+:cnd:noEmit
+		//+:cnd:noEmit
 
 #if (UseSampleContent)
 		builder.Services.AddSingleton<ProjectRepository>();

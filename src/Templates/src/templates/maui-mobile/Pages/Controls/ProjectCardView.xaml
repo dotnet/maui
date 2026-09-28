@@ -1,16 +1,12 @@
-<Border xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
-        xmlns:models="clr-namespace:MauiApp._1.Models"
-        xmlns:fonts="clr-namespace:Fonts"
-        xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
-        xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
+<Border xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         x:Class="MauiApp._1.Pages.Controls.ProjectCardView"
         SemanticProperties.Description="{Binding AccessibilityDescription}"
         Style="{StaticResource CardStyle}"
         MinimumHeightRequest="250"
-        x:DataType="models:Project">
+        x:DataType="Project">
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
-        IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
+        IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type MainPageModel}}, x:DataType=IProjectTaskPageModel}">
         <shimmer:SfShimmer.CustomView>
             <VerticalStackLayout Spacing="15">
                 <BoxView 
@@ -38,7 +34,7 @@
                     <Image.Source>
                         <FontImageSource 
                     Glyph="{Binding Icon}" 
-                    FontFamily="{x:Static fonts:FluentUI.FontFamily}" 
+                    FontFamily="{x:Static FluentUI.FontFamily}"
                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                     Size="{StaticResource IconSize}"/>
                     </Image.Source>
@@ -47,8 +43,8 @@
                 <Label Text="{Binding Description}" LineBreakMode="WordWrap"/>
                 <FlexLayout Wrap="Wrap" Direction="Row" AlignItems="Start" JustifyContent="Start" BindableLayout.ItemsSource="{Binding Tags}">
                     <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="models:Tag">
-                            <controls:TagView />
+                        <DataTemplate x:DataType="Tag">
+                            <TagView />
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </FlexLayout>

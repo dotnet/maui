@@ -7,19 +7,11 @@ namespace MauiApp._1.Data;
 /// <summary>
 /// Repository class for managing tasks in the database.
 /// </summary>
-public class TaskRepository
+/// <param name="logger">The logger instance.</param>
+public class TaskRepository(ILogger<TaskRepository> logger)
 {
 	private bool _hasBeenInitialized = false;
-	private readonly ILogger _logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="TaskRepository"/> class.
-	/// </summary>
-	/// <param name="logger">The logger instance.</param>
-	public TaskRepository(ILogger<TaskRepository> logger)
-	{
-		_logger = logger;
-	}
+	private readonly ILogger _logger = logger;
 
 	/// <summary>
 	/// Initializes the database connection and creates the Task table if it does not exist.
@@ -35,13 +27,14 @@ public class TaskRepository
 		try
 		{
 			var createTableCmd = connection.CreateCommand();
-			createTableCmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS Task (
-                ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                Title TEXT NOT NULL,
-                IsCompleted INTEGER NOT NULL,
-                ProjectID INTEGER NOT NULL
-            );";
+			createTableCmd.CommandText = """
+				CREATE TABLE IF NOT EXISTS Task (
+				    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+				    Title TEXT NOT NULL,
+				    IsCompleted INTEGER NOT NULL,
+				    ProjectID INTEGER NOT NULL
+				);
+				""";
 			await createTableCmd.ExecuteNonQueryAsync();
 		}
 		catch (Exception e)
@@ -65,7 +58,7 @@ public class TaskRepository
 
 		var selectCmd = connection.CreateCommand();
 		selectCmd.CommandText = "SELECT * FROM Task";
-		var tasks = new List<ProjectTask>();
+		List<ProjectTask> tasks = [];
 
 		await using var reader = await selectCmd.ExecuteReaderAsync();
 		while (await reader.ReadAsync())
@@ -96,7 +89,7 @@ public class TaskRepository
 		var selectCmd = connection.CreateCommand();
 		selectCmd.CommandText = "SELECT * FROM Task WHERE ProjectID = @projectId";
 		selectCmd.Parameters.AddWithValue("@projectId", projectId);
-		var tasks = new List<ProjectTask>();
+		List<ProjectTask> tasks = [];
 
 		await using var reader = await selectCmd.ExecuteReaderAsync();
 		while (await reader.ReadAsync())
@@ -157,14 +150,16 @@ public class TaskRepository
 		var saveCmd = connection.CreateCommand();
 		if (item.ID == 0)
 		{
-			saveCmd.CommandText = @"
-            INSERT INTO Task (Title, IsCompleted, ProjectID) VALUES (@title, @isCompleted, @projectId);
-            SELECT last_insert_rowid();";
+			saveCmd.CommandText = """
+				INSERT INTO Task (Title, IsCompleted, ProjectID) VALUES (@title, @isCompleted, @projectId);
+				SELECT last_insert_rowid();
+				""";
 		}
 		else
 		{
-			saveCmd.CommandText = @"
-            UPDATE Task SET Title = @title, IsCompleted = @isCompleted, ProjectID = @projectId WHERE ID = @id";
+			saveCmd.CommandText = """
+				UPDATE Task SET Title = @title, IsCompleted = @isCompleted, ProjectID = @projectId WHERE ID = @id
+				""";
 			saveCmd.Parameters.AddWithValue("@id", item.ID);
 		}
 

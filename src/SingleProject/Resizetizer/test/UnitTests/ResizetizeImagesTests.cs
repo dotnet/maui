@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
@@ -54,6 +55,47 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			protected ResizetizeImages GetNewTask(params ITaskItem[] items) =>
 				GetNewTask(Platform, items);
+
+			[Fact]
+			public void TemplateBotUsesDisplaySizedDensityImages()
+			{
+				var project = XDocument.Load("templates/MauiApp.1.csproj");
+				var image = project.Descendants("MauiImage").Single(item =>
+					(string)item.Attribute("Update") == @"Resources\Images\dotnet_bot.png");
+				var metadata = new Dictionary<string, string>
+				{
+					["Resize"] = (string)image.Attribute("Resize"),
+					["BaseSize"] = (string)image.Attribute("BaseSize"),
+				};
+				var expectedSizes = new Dictionary<decimal, SKSizeI>
+				{
+					[1m] = new(190, 185),
+					[1.25m] = new(237, 231),
+					[1.5m] = new(285, 278),
+					[2m] = new(380, 370),
+					[3m] = new(569, 555),
+					[4m] = new(759, 740),
+				};
+
+				using var source = SKBitmap.Decode("templates/dotnet_bot.png");
+				Assert.Equal(new SKSizeI(1108, 1080), source.Info.Size);
+				var task = GetNewTask(new TaskItem("templates/dotnet_bot.png", metadata));
+				Assert.True(task.Execute(), LogErrorEvents.FirstOrDefault()?.Message);
+
+				var densities = DpiPath.GetDpis(Platform);
+				Assert.Equal(densities.Length, task.CopiedResources.Length);
+				Assert.Equal(densities.Length, Directory.GetFiles(DestinationDirectory, "*.png", SearchOption.AllDirectories).Length);
+				foreach (var density in densities)
+				{
+					var path = Path.Combine(DestinationDirectory, density.Path, $"dotnet_bot{density.FileSuffix}.png");
+					Assert.Contains(task.CopiedResources, resource => resource.ItemSpec == Path.GetFullPath(path));
+					using var bitmap = SKBitmap.Decode(path);
+					Assert.NotNull(bitmap);
+					Assert.Equal(expectedSizes[density.Scale], bitmap.Info.Size);
+					Assert.Equal(0, bitmap.GetPixel(0, 0).Alpha);
+					Assert.Contains(bitmap.Pixels, pixel => pixel.Alpha > 0);
+				}
+			}
 
 			[Theory]
 			[InlineData("appicon.svg")]

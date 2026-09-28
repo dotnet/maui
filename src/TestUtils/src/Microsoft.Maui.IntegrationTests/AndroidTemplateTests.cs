@@ -28,7 +28,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (!TestAvd.AcceptLicenses(out var licenseOutput))
 				throw new Exception($"Failed to accept SDK licenses.\n{licenseOutput}");
-			
+
 			if (!TestAvd.InstallAvd(out var installOutput))
 				throw new Exception($"Failed to install Test AVD.\n{installOutput}");
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.IntegrationTests
 		private readonly AndroidEmulatorFixture _emulatorFixture;
 		private string testPackage = "";
 
-		public AndroidTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, AndroidEmulatorFixture emulatorFixture) 
+		public AndroidTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, AndroidEmulatorFixture emulatorFixture)
 			: base(fixture, output)
 		{
 			_emulatorFixture = emulatorFixture;
@@ -110,8 +110,16 @@ namespace Microsoft.Maui.IntegrationTests
 
 			AddInstrumentation(projectDir);
 
-			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps, output: _output),
+			var binlog = Path.Combine(projectDir, "install.binlog");
+			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: buildProps, binlogPath: binlog, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
+
+			if (!string.IsNullOrEmpty(trimMode))
+			{
+				BuildWarningsUtilities.AssertProjectProperties(binlog, projectFile, $"{framework}-android",
+					("TrimMode", trimMode), ("PublishTrimmed", "true"));
+				BuildWarningsUtilities.AssertTaskSucceeded(binlog, projectFile, "ILLink");
+			}
 
 			// Write xh-results to the log directory for artifact collection
 			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));

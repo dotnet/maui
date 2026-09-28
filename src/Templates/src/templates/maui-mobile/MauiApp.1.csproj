@@ -29,6 +29,7 @@
 
 <!--#if (UseSampleContent) -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
 <!--#endif -->
 
 		<!-- Display name -->
@@ -57,7 +58,7 @@
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 <!--#endif -->
 <!--#if (UseSampleContent) -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#17171a" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" MonochromeFile="Resources\AppIcon\appiconfg.svg" Color="#17171a" />
 <!--#endif -->
 
 		<!-- Splash Screen -->
@@ -65,13 +66,13 @@
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 <!--#endif -->
 <!--#if (UseSampleContent) -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#17171a" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F2F2F2" TintColor="#0D0D0D" DarkColor="#17171a" DarkTintColor="#C3C3C3" BaseSize="128,128" />
 <!--#endif -->
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
 <!--#if (!UseSampleContent) -->
-		<MauiImage Update="Resources\Images\dotnet_bot.png" BaseSize="222,185" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="true" BaseSize="190,185" />
 		
 <!--#endif -->
 		<!-- Custom Fonts -->
@@ -95,10 +96,10 @@
 <!--#if (UseSampleContent) -->
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="12.3.0" />
-		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.8" />
-		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
-		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.10" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
+		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="11.0.0-rc.1.26425.128" />
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
+		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.11" />
 	</ItemGroup>
 	
 <!--#endif -->

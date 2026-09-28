@@ -1,10 +1,8 @@
-<ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
-             xmlns:models="clr-namespace:MauiApp._1.Models"
-             xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+<ContentPage xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.ProjectListPage"
              x:Name="ProjectList"
-             x:DataType="pageModels:ProjectListPageModel"
+             AutomationId="ProjectsPage"
+             x:DataType="ProjectListPageModel"
              Title="Projects">
 
 
@@ -15,19 +13,20 @@
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
-    <Grid>
+    <Grid SafeAreaEdges="Container">
         <CollectionView ItemsSource="{Binding Projects}"
             Margin="{StaticResource LayoutPadding}"
             x:Name="ProjectsCollectionView"
+            AutomationId="ProjectsList"
             SelectionMode="Single"
             SelectedItem="{Binding SelectedProject}"
-            SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}"
+            SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type ProjectListPageModel}}, x:DataType=ProjectListPageModel}"
             SelectionChangedCommandParameter="{Binding SelectedProject}">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="7.5"/>
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Project">
+                <DataTemplate x:DataType="Project">
                     <Border 
                         Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"
                         SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
@@ -40,7 +39,8 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <controls:AddButton
+        <AddButton
+        AutomationId="AddProject"
         Command="{Binding AddProjectCommand}"
         SemanticProperties.Description="Add project" 
         ToolTipProperties.Text="Add project" />

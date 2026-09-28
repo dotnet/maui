@@ -7,24 +7,20 @@ using MauiApp._1.Services;
 
 namespace MauiApp._1.PageModels;
 
-public partial class ManageMetaPageModel : ObservableObject
+public partial class ManageMetaPageModel(
+	CategoryRepository categoryRepository,
+	TagRepository tagRepository,
+	SeedDataService seedDataService) : ObservableObject
 {
-	private readonly CategoryRepository _categoryRepository;
-	private readonly TagRepository _tagRepository;
-    private readonly SeedDataService _seedDataService;
+	private readonly CategoryRepository _categoryRepository = categoryRepository;
+	private readonly TagRepository _tagRepository = tagRepository;
+	private readonly SeedDataService _seedDataService = seedDataService;
 
 	[ObservableProperty]
 	public partial ObservableCollection<Category> Categories { get; set; } = [];
 
 	[ObservableProperty]
 	public partial ObservableCollection<Tag> Tags { get; set; } = [];
-
-	public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository, SeedDataService seedDataService)
-	{
-		_categoryRepository = categoryRepository;
-		_tagRepository = tagRepository;
-        _seedDataService = seedDataService;
-    }
 
 	private async Task LoadData()
 	{
@@ -104,8 +100,8 @@ public partial class ManageMetaPageModel : ObservableObject
 	private async Task Reset()
 	{
 		Preferences.Default.Remove("is_seeded");
-        await _seedDataService.LoadSeedDataAsync();
-        Preferences.Default.Set("is_seeded", true);
-        await Shell.Current.GoToAsync("//main");
+		await _seedDataService.LoadSeedDataAsync();
+		Preferences.Default.Set("is_seeded", true);
+		await Shell.Current.GoToAsync("//main");
 	}
 }

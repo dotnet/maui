@@ -36,7 +36,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	[ObservableProperty]
 	public partial List<Tag> AllTags { get; set; } = [];
 
-	public IList<object> SelectedTags { get; set; } = new List<object>();
+	public IList<object> SelectedTags { get; set; } = [];
 
 	[ObservableProperty]
 	public partial IconData Icon { get; set; } = null!;
@@ -48,8 +48,8 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	public partial bool IsCategoryPickerExpanded { get; set; }
 
 	[ObservableProperty]
-	public partial List<IconData> Icons { get; set; } = new List<IconData>
-	{
+	public partial List<IconData> Icons { get; set; } =
+	[
 		new IconData { Icon = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" },
 		new IconData { Icon = FluentUI.ribbon_star_24_regular, Description = "Ribbon Star Icon" },
 		new IconData { Icon = FluentUI.trophy_24_regular, Description = "Trophy Icon" },
@@ -57,7 +57,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		new IconData { Icon = FluentUI.book_24_regular, Description = "Book Icon" },
 		new IconData { Icon = FluentUI.people_24_regular, Description = "People Icon" },
 		new IconData { Icon = FluentUI.bot_24_regular, Description = "Bot Icon" }
-	};
+	];
 
 	[ObservableProperty]
 	public partial ProjectTask? SelectedTask { get; set; }
@@ -66,7 +66,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	[NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
 	public partial bool CanDelete { get; set; }
 
-    public bool HasCompletedTasks
+	public bool HasCompletedTasks
 		=> _project?.Tasks.Any(t => t.IsCompleted) ?? false;
 
 	public ProjectDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, CategoryRepository categoryRepository, TagRepository tagRepository, ModalErrorHandler errorHandler)
@@ -112,7 +112,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		if (_project.IsNullOrNew())
 		{
 			if (_project is not null)
-				Tasks = new(_project.Tasks);
+				Tasks = [.. _project.Tasks];
 
 			return;
 		}
@@ -161,7 +161,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 					SelectedTags.Add(tag);
 				}
 			}
-			AllTags = new(allTags);
+			AllTags = [.. allTags];
 		}
 		catch (Exception e)
 		{
@@ -171,7 +171,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		{
 			IsBusy = false;
 			CanDelete = !_project.IsNullOrNew();
-            OnPropertyChanged(nameof(HasCompletedTasks));
+			OnPropertyChanged(nameof(HasCompletedTasks));
 		}
 	}
 
@@ -182,7 +182,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		OnPropertyChanged(nameof(HasCompletedTasks));
 	}
 
-	partial void  OnIsCategoryPickerExpandedChanged(bool value)
+	partial void OnIsCategoryPickerExpandedChanged(bool value)
 	{
 		if (value)
 		{
@@ -286,7 +286,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			}
 		}
 
-		AllTags = new(AllTags);
+		AllTags = [.. AllTags];
 		SemanticScreenReader.Announce($"{tag.Title} {(tag.IsSelected ? "selected" : "unselected")}");
 	}
 
@@ -306,7 +306,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			Tasks.Remove(task);
 		}
 
-		Tasks = new(Tasks);
+		Tasks = [.. Tasks];
 		OnPropertyChanged(nameof(HasCompletedTasks));
 		await AppShell.DisplayToastAsync("All cleaned up!");
 	}

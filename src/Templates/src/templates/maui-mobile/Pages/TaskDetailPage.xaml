@@ -1,12 +1,12 @@
 <ContentPage xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
-             xmlns:pageModel="clr-namespace:MauiApp._1.PageModels"
-             xmlns:models="clr-namespace:MauiApp._1.Models"
-             x:DataType="pageModel:TaskDetailPageModel"
+             x:DataType="TaskDetailPageModel"
              x:Class="MauiApp._1.Pages.TaskDetailPage"
+             AutomationId="TaskDetailPage"
              Title="Task">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem
+            AutomationId="DeleteTask"
             Text="Delete"
             Command="{Binding DeleteCommand}"
             Order="Primary"
@@ -15,17 +15,19 @@
             SemanticProperties.Description="Delete Task" />
     </ContentPage.ToolbarItems>        
 
-    <Grid>
-        <ScrollView>
-            <VerticalStackLayout Spacing="{StaticResource LayoutSpacing}" Padding="{StaticResource LayoutPadding}">
+    <Grid SafeAreaEdges="All">
+        <ScrollView SafeAreaEdges="None">
+            <VerticalStackLayout SafeAreaEdges="None" Spacing="{StaticResource LayoutSpacing}" Padding="{StaticResource LayoutPadding}">
                 <sf:SfTextInputLayout Hint="Task">
                     <Entry
+                        AutomationId="TaskTitle"
                         Text="{Binding Title}"
                         SemanticProperties.Description="Task" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout Hint="Completed">
                     <CheckBox
+                        AutomationId="TaskCompleted"
                         HorizontalOptions="End"
                         IsChecked="{Binding IsCompleted}"
                         SemanticProperties.Description="Completed"
@@ -36,8 +38,9 @@
                     IsVisible="{Binding IsExistingProject}"
                     Hint="Project">
                     <Picker 
+                        AutomationId="TaskProject"
                         ItemsSource="{Binding Projects}"
-                        ItemDisplayBinding="{Binding Name, x:DataType=models:Project}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=Project}"
                         SelectedItem="{Binding Project}"
                         SelectedIndex="{Binding SelectedProjectIndex}"
                         IsOpen="{Binding IsProjectPickerExpanded, Mode=TwoWay}"
@@ -45,9 +48,13 @@
                 </sf:SfTextInputLayout>
 
                 <Button 
-                    MinimumHeightRequest="{OnIdiom 44, Desktop=60}"
+                    AutomationId="SaveTask"
                     Text="Save"
-                    Command="{Binding SaveCommand}"/>
+                    Command="{Binding SaveCommand}">
+                    <Button.MinimumHeightRequest>
+                        <OnIdiom x:TypeArguments="x:Double" Default="44" Desktop="60" />
+                    </Button.MinimumHeightRequest>
+                </Button>
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

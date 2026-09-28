@@ -171,12 +171,12 @@
     <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
     <!-- Additional packages for cgmanifest.json -->
-    <SyncfusionMauiToolkitPackageVersion>1.0.4</SyncfusionMauiToolkitPackageVersion>
-    <MicrosoftDataSqliteCorePackageVersion>8.0.8</MicrosoftDataSqliteCorePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>2.1.10</SQLitePCLRawBundleGreenPackageVersion>
-    <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
+    <SyncfusionMauiToolkitPackageVersion>1.0.11</SyncfusionMauiToolkitPackageVersion>
+    <MicrosoftDataSqliteCorePackageVersion>11.0.0-rc.1.26425.128</MicrosoftDataSqliteCorePackageVersion>
+    <SQLitePCLRawBundleESqlite3PackageVersion>3.0.5</SQLitePCLRawBundleESqlite3PackageVersion>
+    <CommunityToolkitMauiPackageVersion>15.0.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
-    <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
+    <CommunityToolkitMvvmPackageVersion>8.4.2</CommunityToolkitMvvmPackageVersion>
     <AvaloniaControlsMauiPackageVersion>11.0.0-preview.7.26224.328</AvaloniaControlsMauiPackageVersion>
   </PropertyGroup>
   <PropertyGroup>

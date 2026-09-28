@@ -10,40 +10,16 @@ public class Tag
 	public string Color { get; set; } = "#FF0000";
 
 	[JsonIgnore]
-	public Brush ColorBrush
-	{
-		get
-		{
-			return new SolidColorBrush(Microsoft.Maui.Graphics.Color.FromArgb(Color));
-		}
-	}
+	public Brush ColorBrush => new SolidColorBrush(Microsoft.Maui.Graphics.Color.FromArgb(Color));
 
 	[JsonIgnore]
-	public Color DisplayColor
-	{
-		get
-		{
-			return Microsoft.Maui.Graphics.Color.FromArgb(Color);
-		}
-	}
+	public Color DisplayColor => Microsoft.Maui.Graphics.Color.FromArgb(Color);
 
 	[JsonIgnore]
-	public Color DisplayDarkColor
-	{
-		get
-		{
-			return DisplayColor.WithBlackKey(0.8);
-		}
-	}
+	public Color DisplayDarkColor => DisplayColor.WithBlackKey(0.8);
 
 	[JsonIgnore]
-	public Color DisplayLightColor
-	{
-		get
-		{
-			return DisplayColor.WithBlackKey(0.2);
-		}
-	}
+	public Color DisplayLightColor => DisplayColor.WithBlackKey(0.2);
 
 	[JsonIgnore]
 	public bool IsSelected { get; set; }

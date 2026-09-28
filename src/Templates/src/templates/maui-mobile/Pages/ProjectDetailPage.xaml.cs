@@ -10,4 +10,10 @@ public partial class ProjectDetailPage : ContentPage
 
 		BindingContext = model;
 	}
+
+	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		AppShell.UpdateBackButtonAccessibility(this);
+	}
 }

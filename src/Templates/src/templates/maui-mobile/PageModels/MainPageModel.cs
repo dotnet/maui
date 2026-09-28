@@ -4,15 +4,20 @@ using MauiApp._1.Models;
 
 namespace MauiApp._1.PageModels;
 
-public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
+public partial class MainPageModel(
+	SeedDataService seedDataService,
+	ProjectRepository projectRepository,
+	TaskRepository taskRepository,
+	CategoryRepository categoryRepository,
+	ModalErrorHandler errorHandler) : ObservableObject, IProjectTaskPageModel
 {
 	private bool _isNavigatedTo;
 	private bool _dataLoaded;
-	private readonly ProjectRepository _projectRepository;
-	private readonly TaskRepository _taskRepository;
-	private readonly CategoryRepository _categoryRepository;
-	private readonly ModalErrorHandler _errorHandler;
-	private readonly SeedDataService _seedDataService;
+	private readonly ProjectRepository _projectRepository = projectRepository;
+	private readonly TaskRepository _taskRepository = taskRepository;
+	private readonly CategoryRepository _categoryRepository = categoryRepository;
+	private readonly ModalErrorHandler _errorHandler = errorHandler;
+	private readonly SeedDataService _seedDataService = seedDataService;
 
 	[ObservableProperty]
 	public partial List<CategoryChartData> TodoCategoryData { get; set; } = [];
@@ -44,16 +49,6 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 	public bool HasCompletedTasks
 		=> Tasks?.Any(t => t.IsCompleted) ?? false;
 
-	public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
-		TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
-	{
-		_projectRepository = projectRepository;
-		_taskRepository = taskRepository;
-		_categoryRepository = categoryRepository;
-		_errorHandler = errorHandler;
-		_seedDataService = seedDataService;
-	}
-
 	private async Task LoadData()
 	{
 		try
@@ -62,8 +57,8 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 
 			Projects = await _projectRepository.ListAsync();
 
-			var chartData = new List<CategoryChartData>();
-			var chartColors = new List<Brush>();
+			List<CategoryChartData> chartData = [];
+			List<Brush> chartColors = [];
 
 			var categories = await _categoryRepository.ListAsync();
 			foreach (var category in categories)
@@ -172,7 +167,7 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 		}
 
 		OnPropertyChanged(nameof(HasCompletedTasks));
-		Tasks = new(Tasks);
+		Tasks = [.. Tasks];
 		await AppShell.DisplayToastAsync("All cleaned up!");
 	}
 }

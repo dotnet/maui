@@ -7,19 +7,11 @@ namespace MauiApp._1.Data;
 /// <summary>
 /// Repository class for managing tags in the database.
 /// </summary>
-public class TagRepository
+/// <param name="logger">The logger instance.</param>
+public class TagRepository(ILogger<TagRepository> logger)
 {
 	private bool _hasBeenInitialized = false;
-	private readonly ILogger _logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="TagRepository"/> class.
-	/// </summary>
-	/// <param name="logger">The logger instance.</param>
-	public TagRepository(ILogger<TagRepository> logger)
-	{
-		_logger = logger;
-	}
+	private readonly ILogger _logger = logger;
 
 	/// <summary>
 	/// Initializes the database connection and creates the Tag and ProjectsTags tables if they do not exist.
@@ -35,20 +27,22 @@ public class TagRepository
 		try
 		{
 			var createTableCmd = connection.CreateCommand();
-			createTableCmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS Tag (
-                ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                Title TEXT NOT NULL,
-                Color TEXT NOT NULL
-            );";
+			createTableCmd.CommandText = """
+				CREATE TABLE IF NOT EXISTS Tag (
+				    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+				    Title TEXT NOT NULL,
+				    Color TEXT NOT NULL
+				);
+				""";
 			await createTableCmd.ExecuteNonQueryAsync();
 
-			createTableCmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS ProjectsTags (
-                ProjectID INTEGER NOT NULL,
-                TagID INTEGER NOT NULL,
-                PRIMARY KEY(ProjectID, TagID)
-            );";
+			createTableCmd.CommandText = """
+				CREATE TABLE IF NOT EXISTS ProjectsTags (
+				    ProjectID INTEGER NOT NULL,
+				    TagID INTEGER NOT NULL,
+				    PRIMARY KEY(ProjectID, TagID)
+				);
+				""";
 			await createTableCmd.ExecuteNonQueryAsync();
 		}
 		catch (Exception e)
@@ -72,7 +66,7 @@ public class TagRepository
 
 		var selectCmd = connection.CreateCommand();
 		selectCmd.CommandText = "SELECT * FROM Tag";
-		var tags = new List<Tag>();
+		List<Tag> tags = [];
 
 		await using var reader = await selectCmd.ExecuteReaderAsync();
 		while (await reader.ReadAsync())
@@ -100,14 +94,15 @@ public class TagRepository
 		await connection.OpenAsync();
 
 		var selectCmd = connection.CreateCommand();
-		selectCmd.CommandText = @"
-        SELECT t.*
-        FROM Tag t
-        JOIN ProjectsTags pt ON t.ID = pt.TagID
-        WHERE pt.ProjectID = @ProjectID";
+		selectCmd.CommandText = """
+			SELECT t.*
+			FROM Tag t
+			JOIN ProjectsTags pt ON t.ID = pt.TagID
+			WHERE pt.ProjectID = @ProjectID
+			""";
 		selectCmd.Parameters.AddWithValue("ProjectID", projectID);
 
-		var tags = new List<Tag>();
+		List<Tag> tags = [];
 
 		await using var reader = await selectCmd.ExecuteReaderAsync();
 		while (await reader.ReadAsync())
@@ -166,14 +161,16 @@ public class TagRepository
 		var saveCmd = connection.CreateCommand();
 		if (item.ID == 0)
 		{
-			saveCmd.CommandText = @"
-            INSERT INTO Tag (Title, Color) VALUES (@Title, @Color);
-            SELECT last_insert_rowid();";
+			saveCmd.CommandText = """
+				INSERT INTO Tag (Title, Color) VALUES (@Title, @Color);
+				SELECT last_insert_rowid();
+				""";
 		}
 		else
 		{
-			saveCmd.CommandText = @"
-            UPDATE Tag SET Title = @Title, Color = @Color WHERE ID = @ID";
+			saveCmd.CommandText = """
+				UPDATE Tag SET Title = @Title, Color = @Color WHERE ID = @ID
+				""";
 			saveCmd.Parameters.AddWithValue("@ID", item.ID);
 		}
 
@@ -210,8 +207,9 @@ public class TagRepository
 		await connection.OpenAsync();
 
 		var saveCmd = connection.CreateCommand();
-		saveCmd.CommandText = @"
-        INSERT INTO ProjectsTags (ProjectID, TagID) VALUES (@projectID, @tagID)";
+		saveCmd.CommandText = """
+			INSERT INTO ProjectsTags (ProjectID, TagID) VALUES (@projectID, @tagID)
+			""";
 		saveCmd.Parameters.AddWithValue("@projectID", projectID);
 		saveCmd.Parameters.AddWithValue("@tagID", item.ID);
 
@@ -233,9 +231,10 @@ public class TagRepository
 
 		// First check if the association already exists
 		var checkCmd = connection.CreateCommand();
-		checkCmd.CommandText = @"
-			SELECT COUNT(*) FROM ProjectsTags 
-			WHERE ProjectID = @projectID AND TagID = @tagID";
+		checkCmd.CommandText = """
+			SELECT COUNT(*) FROM ProjectsTags
+			WHERE ProjectID = @projectID AND TagID = @tagID
+			""";
 		checkCmd.Parameters.AddWithValue("@projectID", projectID);
 		checkCmd.Parameters.AddWithValue("@tagID", item.ID);
 
