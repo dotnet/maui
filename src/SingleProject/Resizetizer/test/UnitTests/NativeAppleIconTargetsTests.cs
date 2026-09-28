@@ -383,7 +383,7 @@ public class NativeAppleIconTargetsTests
 		public (bool Success, string Output, string Capture) Run(string target, string projectFile = "Test.proj")
 		{
 			const int timeoutMilliseconds = 60_000;
-			var startInfo = new ProcessStartInfo("dotnet")
+			var startInfo = new ProcessStartInfo(GetDotNetHost())
 			{
 				WorkingDirectory = Directory,
 				RedirectStandardOutput = true,
@@ -413,6 +413,15 @@ public class NativeAppleIconTargetsTests
 			var capturePath = Path.Combine(Directory, Path.GetDirectoryName(projectFile) ?? string.Empty, "capture.txt");
 			var capture = File.Exists(capturePath) ? File.ReadAllText(capturePath) : string.Empty;
 			return (process.ExitCode == 0, combinedOutput, capture);
+		}
+
+		static string GetDotNetHost()
+		{
+			var dotnetHost = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+
+			return !string.IsNullOrWhiteSpace(dotnetHost) && File.Exists(dotnetHost)
+				? dotnetHost
+				: "dotnet";
 		}
 
 		public void Dispose()
