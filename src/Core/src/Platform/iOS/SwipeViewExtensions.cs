@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SwipeViewExtensions
 	{
-		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection)
+		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, double executeModeItemWidth=0)
 		{
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
 			if (items == null)
@@ -19,11 +20,14 @@ namespace Microsoft.Maui.Platform
 			{
 				if (swipeItem is ISwipeItemMenuItem)
 				{
-					return new Size(
-						items.Mode == SwipeMode.Execute
-							? contentWidth / items.Count
-							: SwipeItemWidth,
-						contentHeight);
+					if (items.Mode == SwipeMode.Execute)
+					{
+						return new Size(
+							executeModeItemWidth>0 ? executeModeItemWidth : SwipeItemWidth,
+							contentHeight);
+					}
+
+					return new Size(SwipeItemWidth, contentHeight);
 				}
 
 				if (swipeItem is ISwipeItemView horizontalSwipeItemView)
@@ -58,6 +62,37 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return Size.Zero;
+		}
+
+		internal static double GetExecuteModeItemWidth(
+			this ISwipeView swipeView,
+			UIView contentView,
+			SwipeDirection? swipeDirection,
+			IReadOnlyList<UIView> platformItems)
+		{
+			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
+			if (items?.Mode != SwipeMode.Execute || !swipeDirection.IsHorizontalSwipe())
+				return SwipeItemWidth;
+
+			double totalWidth = 0;
+			int visibleItemCount = 0;
+
+			for (int i = 0; i < platformItems.Count; i++)
+			{
+				var platformItem = platformItems[i];
+				if (platformItem.Hidden)
+					continue;
+
+				totalWidth += platformItem.SizeThatFits(contentView.Bounds.Size).Width;
+				visibleItemCount++;
+			}
+
+			if (visibleItemCount == 0)
+				return SwipeItemWidth;
+
+			return totalWidth > contentView.Bounds.Width
+				? contentView.Bounds.Width / visibleItemCount
+				: totalWidth / visibleItemCount;
 		}
 
 		internal static double GetSwipeItemHeight(this ISwipeView swipeView, SwipeDirection? swipeDirection, UIView contentView)
