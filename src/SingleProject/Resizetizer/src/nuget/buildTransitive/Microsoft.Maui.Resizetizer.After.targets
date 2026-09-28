@@ -86,6 +86,7 @@
         <_ResizetizerInputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
         <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
+        <_MauiNativeAppleIconInputsFile>$(_ResizetizerIntermediateOutputPath)mauinativeappleicon.inputs</_MauiNativeAppleIconInputsFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiFontOutputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.outputs</_MauiFontOutputsFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
@@ -119,6 +120,14 @@
         <EnableMauiSplashScreenProcessing Condition=" '$(EnableMauiSplashScreenProcessing)' == '' ">true</EnableMauiSplashScreenProcessing>
         <EnableMauiFontProcessing Condition=" '$(EnableMauiFontProcessing)' == '' ">true</EnableMauiFontProcessing>
         <EnableMauiImageProcessing Condition=" '$(EnableMauiImageProcessing)' == '' ">true</EnableMauiImageProcessing>
+
+        <!-- Icon Composer support was added in the .NET 11 Preview 6 Apple workload. -->
+        <_MauiNativeAppleIconMinimumWorkloadVersion>26.5.11720</_MauiNativeAppleIconMinimumWorkloadVersion>
+        <_MauiAppleWorkloadVersion>$([System.Text.RegularExpressions.Regex]::Match('$(_ShortPackageVersion)', '^\d+\.\d+\.\d+').Value)</_MauiAppleWorkloadVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_MauiAppleWorkloadVersion)' != ''">
+        <_MauiNativeAppleIconSupported Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(_MauiAppleWorkloadVersion)', '$(_MauiNativeAppleIconMinimumWorkloadVersion)'))">True</_MauiNativeAppleIconSupported>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -190,6 +199,7 @@
         <CompileImageAssetsDependsOn>
             $(CompileImageAssetsDependsOn);
             ResizetizeCollectItems;
+            _CollectMauiNativeAppleIcon;
         </CompileImageAssetsDependsOn>
 
         <ResizetizeAfterTargets>
@@ -285,6 +295,8 @@
         <ItemGroup>
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
+            <_MauiIconComposer Include="@(MauiIcon->WithMetadataValue('Extension', '.icon'))" Condition="'$(_ResizetizerPlatformIsiOS)' == 'True' Or '$(_ResizetizerPlatformIsMacCatalyst)' == 'True'" />
+            <MauiItem Include="@(_MauiIconComposer)" ItemGroupName="MauiIcon" Condition="'%(_MauiIconComposer.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != '' and '%(MauiIcon.MonochromeFile)' == ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
             <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != '' and '%(MauiIcon.MonochromeFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" MonochromeFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.MonochromeFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
@@ -362,7 +374,15 @@
 
         <!-- Map @(MauiIcon) to @(MauiImage IsAppIcon=true) -->
         <ItemGroup>
-            <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
+            <MauiImage
+                Include="@(MauiIcon)"
+                IsAppIcon="True"
+                Condition="'$(_ResizetizerIsiOSApp)' != 'True'" />
+            <MauiImage
+                Include="@(MauiIcon)"
+                Exclude="@(MauiIcon->WithMetadataValue('Extension', '.icon'))"
+                IsAppIcon="True"
+                Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
         </ItemGroup>
 
         <!-- Add a hash to the splash screen so we can use it later -->
@@ -443,6 +463,106 @@
         BeforeTargets="ResizetizeImages"
         DependsOnTargets="ResizetizeCollectItems;ProcessMauiSplashScreens;_ReadResizetizeImagesOutputs"
         Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
+
+    <Target Name="_CollectMauiNativeAppleIcon"
+        Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '$(DesignTimeBuild)' != 'true'"
+        BeforeTargets="_ReadAppManifest;_BeforeCoreCompileImageAssets;_SetResourceMetadata"
+        DependsOnTargets="ResizetizeCollectItems">
+
+        <ItemGroup>
+            <_MauiNativeAppleIcon
+                Include="@(MauiIcon->WithMetadataValue('Extension', '.icon'))" />
+            <_MauiNonNativeAppleIcon
+                Include="@(MauiIcon)"
+                Exclude="@(_MauiNativeAppleIcon)" />
+        </ItemGroup>
+
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '$(_MauiNativeAppleIconSupported)' != 'True'"
+            Text="The MauiIcon '%(_MauiNativeAppleIcon.Identity)' uses an Apple Icon Composer .icon bundle, which requires the .NET Apple workload version $(_MauiNativeAppleIconMinimumWorkloadVersion) or newer. The current workload version is '$(_ShortPackageVersion)'." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon->Count())' &gt; '1'"
+            Text="Only one Apple Icon Composer .icon bundle can be specified as MauiIcon for iOS or Mac Catalyst. Found: @(_MauiNativeAppleIcon, ', ')." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '@(_MauiNonNativeAppleIcon)' != ''"
+            Text="An Apple Icon Composer .icon bundle cannot be combined with another MauiIcon for the same iOS or Mac Catalyst target. Remove the additional MauiIcon item(s): @(_MauiNonNativeAppleIcon, ', ')." />
+
+        <PropertyGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <_MauiNativeAppleIconDirectory>%(_MauiNativeAppleIcon.FullPath)</_MauiNativeAppleIconDirectory>
+            <_MauiNativeAppleIconDirectoryWithSlash>$([MSBuild]::EnsureTrailingSlash('$(_MauiNativeAppleIconDirectory)'))</_MauiNativeAppleIconDirectoryWithSlash>
+            <_MauiNativeAppleIconRelativeDirectory>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(_MauiNativeAppleIconDirectory)'))</_MauiNativeAppleIconRelativeDirectory>
+            <_MauiNativeAppleIconName>%(_MauiNativeAppleIcon.Filename)</_MauiNativeAppleIconName>
+            <_MauiExistingAppIcon>$(AppIcon)</_MauiExistingAppIcon>
+        </PropertyGroup>
+
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And !$([System.IO.Directory]::Exists('$(_MauiNativeAppleIconDirectory)'))"
+            Text="The MauiIcon '$(_MauiNativeAppleIconDirectory)' is an Apple Icon Composer .icon bundle, but the directory does not exist." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And !Exists('$(_MauiNativeAppleIconDirectoryWithSlash)icon.json')"
+            Text="The Apple Icon Composer bundle '$(_MauiNativeAppleIconDirectory)' must contain an icon.json file at its root." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '$(_MauiExistingAppIcon)' != '' And '$(_MauiExistingAppIcon)' != '$(_MauiNativeAppleIconName)'"
+            Text="The AppIcon property '$(_MauiExistingAppIcon)' does not match the MauiIcon bundle name '$(_MauiNativeAppleIconName)'. Remove AppIcon or set it to '$(_MauiNativeAppleIconName)'." />
+
+        <ItemGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <!-- New Apple workloads include .icon children by default. Replace those items so
+                 linked and project-reference bundles have one deterministic virtual path. -->
+            <ImageAsset
+                Remove="$(_MauiNativeAppleIconDirectoryWithSlash)**\*;$(_MauiNativeAppleIconRelativeDirectory)\**\*" />
+            <_MauiNativeAppleIconAsset Include="$(_MauiNativeAppleIconDirectoryWithSlash)Assets\**\*" />
+            <_MauiNativeAppleIconChild
+                Include="$(_MauiNativeAppleIconDirectoryWithSlash)**\*"
+                Exclude="$(_MauiNativeAppleIconDirectoryWithSlash)**\.DS_Store" />
+            <ImageAsset Include="@(_MauiNativeAppleIconChild)">
+                <Link>$(_MauiNativeAppleIconName).icon\%(_MauiNativeAppleIconChild.RecursiveDir)%(_MauiNativeAppleIconChild.Filename)%(_MauiNativeAppleIconChild.Extension)</Link>
+                <Visible>false</Visible>
+            </ImageAsset>
+        </ItemGroup>
+
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '@(_MauiNativeAppleIconAsset)' == ''"
+            Text="The Apple Icon Composer bundle '$(_MauiNativeAppleIconDirectory)' must contain at least one file in its Assets directory." />
+
+        <PropertyGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <AppIcon>$(_MauiNativeAppleIconName)</AppIcon>
+            <_MauiNativeAppleIconActive>True</_MauiNativeAppleIconActive>
+        </PropertyGroup>
+
+        <!-- WriteOnlyWhenDifferent makes child additions, deletions, and renames update the
+             manifest timestamp without invalidating no-op builds. File content changes are
+             already tracked by the Apple workload through @(ImageAsset). -->
+        <WriteLinesToFile
+            Condition="'@(_MauiNativeAppleIcon)' != ''"
+            File="$(_MauiNativeAppleIconInputsFile)"
+            Lines="@(_MauiNativeAppleIconChild->'%(FullPath)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <ItemGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <FileWrites Include="$(_MauiNativeAppleIconInputsFile)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_InvalidateMauiNativeAppleIconCache"
+        Condition="'$(_MauiNativeAppleIconActive)' == 'True'"
+        BeforeTargets="_BeforeCoreCompileImageAssets"
+        DependsOnTargets="_CollectMauiNativeAppleIcon"
+        Inputs="$(_MauiNativeAppleIconInputsFile)"
+        Outputs="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache)">
+        <Delete Files="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache)" />
+    </Target>
+
+    <Target Name="_ClearMauiNativeAppleIconManifestSelection"
+        Condition="'$(_MauiNativeAppleIconActive)' == 'True'"
+        AfterTargets="_ReadAppManifest">
+        <!-- MAUI templates historically select Assets.xcassets/appicon.appiconset in
+             Info.plist. AppIcon is the supported selector for .icon bundles, so clear only
+             the parsed private property and leave the user's Info.plist untouched. -->
+        <PropertyGroup>
+            <_XSAppIconAssets></_XSAppIconAssets>
+        </PropertyGroup>
+    </Target>
 
     <Target Name="ProcessMauiAssets"
         Condition="'$(EnableMauiAssetProcessing)' == 'true'"
