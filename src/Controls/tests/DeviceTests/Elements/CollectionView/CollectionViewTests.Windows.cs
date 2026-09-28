@@ -172,7 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 400,
 				ItemsLayout = itemsLayout,
 				ItemsSource = new[] { "First", "Second" },
-				ItemTemplate = new DataTemplate(() =>
+				ItemTemplate = new Controls.DataTemplate(() =>
 				{
 					var label = new Label { WidthRequest = 80, HeightRequest = 40 };
 					label.SetBinding(Label.TextProperty, ".");
@@ -234,12 +234,12 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 400,
 				ItemsLayout = itemsLayout,
 				ItemsSource = new[] { "First", "Second", "Third", "Fourth" },
-				ItemTemplate = new DataTemplate(() =>
+				ItemTemplate = new Controls.DataTemplate(() =>
 				{
 					var label = new Label
 					{
 						WidthRequest = orientation == ItemsLayoutOrientation.Horizontal ? 80 : -1,
-						HeightRequest = orientation == ItemsLayoutOrientation.Vertical ? 40 : -1
+						HeightRequest = orientation == ItemsLayoutOrientation.Vertical ? 80 : -1
 					};
 					label.SetBinding(Label.TextProperty, ".");
 					labels.Add(label);
