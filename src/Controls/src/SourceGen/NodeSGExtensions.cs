@@ -540,6 +540,9 @@ static class NodeSGExtensions
 
 	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue)
 	{
+		if (node.IsOnPlatformDefaultValue)
+			return false;
+
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
 
@@ -626,7 +629,12 @@ static class NodeSGExtensions
 	/// </summary>
 	public static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
 	{
-		var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+		if (node is not ElementNode elementNode
+			|| !elementNode.Properties.TryGetValue("TargetType", out var ttnode))
+		{
+			return null;
+		}
+
 		//it's either a value
 		if (ttnode is ValueNode { Value: string tt })
 			return XmlTypeExtensions.GetTypeSymbol(tt, context, node);

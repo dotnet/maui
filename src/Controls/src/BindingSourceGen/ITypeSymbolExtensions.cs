@@ -20,6 +20,15 @@ public static class ITypeSymbolExtensions
 		return typeInfo.IsNullableValueType() || typeInfo.IsNullableReferenceType();
 	}
 
+	/// <summary>
+	/// Determines whether a value of this type can be <see langword="null"/> at runtime, ignoring
+	/// nullable reference type annotations. Reference types can always be null at runtime regardless
+	/// of their annotation, so intermediate members of a binding path must use null-conditional
+	/// access to remain null-tolerant (matching the behavior of runtime and XamlC compiled bindings).
+	/// </summary>
+	public static bool CanBeNullAtRuntime(this ITypeSymbol typeInfo) =>
+		typeInfo.IsTypeNullable(enabledNullable: false);
+
 	public static TypeDescription CreateTypeDescription(this ITypeSymbol typeSymbol, bool enabledNullable)
 	{
 		var isNullable = IsTypeNullable(typeSymbol, enabledNullable);

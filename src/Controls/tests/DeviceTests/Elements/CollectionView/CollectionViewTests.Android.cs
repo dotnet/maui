@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
 
@@ -103,6 +104,132 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(header.Height > 0, "Header should be arranged");
 					Assert.True(footer.Height > 0, "Footer should be arranged");
 				});
+		}
+
+		[Fact]
+		public async Task DisconnectingWhileEmptyViewLayoutIsQueuedDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var host = new Grid();
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(host, async _ =>
+			{
+				var collectionView = new CollectionView
+				{
+					ItemsSource = System.Array.Empty<string>(),
+					EmptyView = new Label { Text = "Empty" }
+				};
+
+				host.Add(collectionView);
+
+				var handler = Assert.IsType<CollectionViewHandler>(collectionView.Handler);
+				var platformView = handler.PlatformView;
+
+				Assert.True(platformView.IsAttachedToWindow);
+				Assert.IsType<EmptyViewAdapter>(platformView.GetAdapter());
+				Assert.Null(platformView.FindViewHolderForAdapterPosition(0));
+
+				handler.GetDesiredSize(317, 241);
+
+				host.Remove(collectionView);
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Null(((IElementHandler)handler).PlatformView);
+
+				var nextLooperTurn = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				MauiContext.Context.GetActivity().Window.DecorView.Post(() => nextLooperTurn.SetResult(true));
+				await nextLooperTurn.Task.WaitAsync(System.TimeSpan.FromSeconds(5));
+			});
+		}
+
+		[Fact]
+		public async Task GroupedCollectionViewEmptyViewTracksOuterGroupCount()
+		{
+			SetupBuilder();
+
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new()
+			};
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				EmptyView = new Label { Text = "Empty" }
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+
+				groups.Add(new());
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is not EmptyViewAdapter);
+
+				groups[0].Add("Item 1");
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 1);
+
+				groups[0].RemoveAt(0);
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+					handler.PlatformView.GetAdapter().ItemCount == 0);
+
+				groups.Add(new() { "Item 1", "Item 2" });
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
+
+				groups.RemoveAt(1);
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+					handler.PlatformView.GetAdapter().ItemCount == 0);
+
+				groups.Add(new() { "Item 1", "Item 2" });
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
+
+				groups.RemoveAt(0);
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+					handler.PlatformView.GetAdapter().ItemCount == 2);
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+			});
+		}
+
+		[Fact]
+		public async Task GroupedCollectionViewWithHeaderEmptyViewTracksOuterGroupCount()
+		{
+			SetupBuilder();
+
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new()
+			};
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				GroupHeaderTemplate = new DataTemplate(() => new Label { Text = "Group" }),
+				ItemsSource = groups,
+				EmptyView = new Label { Text = "Empty" }
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				await AssertEventually(() =>
+				{
+					var adapter = handler.PlatformView.GetAdapter();
+					return adapter is not EmptyViewAdapter && adapter.ItemCount == 1;
+				});
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+			});
 		}
 
 		//src/Compatibility/Core/tests/Android/RendererTests.cs
@@ -670,6 +797,118 @@ namespace Microsoft.Maui.DeviceTests
 			public TestRecyclerEmptyView(Context context) : base(context)
 			{
 			}
+		}
+
+		public static TheoryData<bool, bool, bool, bool> GroupedSourceLayouts
+		{
+			get
+			{
+				var data = new TheoryData<bool, bool, bool, bool>();
+
+				foreach (var header in new[] { false, true })
+					foreach (var footer in new[] { false, true })
+						foreach (var groupHeader in new[] { false, true })
+							foreach (var groupFooter in new[] { false, true })
+								data.Add(header, footer, groupHeader, groupFooter);
+
+				return data;
+			}
+		}
+
+		[Theory(DisplayName = "ObservableGroupedSource resolves every position to the group that owns it")]
+		[MemberData(nameof(GroupedSourceLayouts))]
+		public async Task GroupedSourceGetGroupAndIndexMatchesGroupContents(bool hasHeader, bool hasFooter, bool hasGroupHeader, bool hasGroupFooter)
+		{
+			SetupBuilder();
+
+			// Uneven sizes and an empty group in the middle: the previous position-by-position walk
+			// returned the empty group's index for positions that belong to the group after it.
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new ObservableCollection<string> { "0.0", "0.1", "0.2" },
+				new ObservableCollection<string>(),
+				new ObservableCollection<string> { "2.0" },
+				new ObservableCollection<string> { "3.0", "3.1", "3.2", "3.3", "3.4" },
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var collectionView = new CollectionView
+				{
+					IsGrouped = true,
+					ItemsSource = groups,
+					GroupHeaderTemplate = hasGroupHeader ? new DataTemplate(() => new Label()) : null,
+					GroupFooterTemplate = hasGroupFooter ? new DataTemplate(() => new Label()) : null,
+				};
+
+				// The adapter flips these from the ItemsView's Header/Footer; set them directly here.
+				var source = new ObservableGroupedSource(collectionView, new MockCollectionChangedNotifier())
+				{
+					HasHeader = hasHeader,
+					HasFooter = hasFooter
+				};
+
+				var expected = ExpectedGroupedPositions(groups, hasHeader, hasFooter, hasGroupHeader, hasGroupFooter);
+
+				Assert.Equal(expected.Count, source.Count);
+
+				for (int position = 0; position < expected.Count; position++)
+				{
+					var (expectedGroup, expectedIndex, expectedItem, isGroupHeader, isGroupFooter) = expected[position];
+
+					if (source.IsHeader(position) || source.IsFooter(position))
+					{
+						continue;
+					}
+
+					var (group, index) = source.GetGroupAndIndex(position);
+
+					Assert.True(expectedGroup == group && expectedIndex == index,
+						$"Position {position}: expected ({expectedGroup}, {expectedIndex}) but got ({group}, {index})");
+					Assert.Equal(isGroupHeader, source.IsGroupHeader(position));
+					Assert.Equal(isGroupFooter, source.IsGroupFooter(position));
+					Assert.Same(expectedItem, source.GetItem(position));
+				}
+			});
+		}
+
+		// Brute-force reference: lays the adapter positions out in order, exactly as the RecyclerView sees them.
+		static List<(int group, int index, object item, bool isGroupHeader, bool isGroupFooter)> ExpectedGroupedPositions(
+			IList<ObservableCollection<string>> groups, bool hasHeader, bool hasFooter, bool hasGroupHeader, bool hasGroupFooter)
+		{
+			var positions = new List<(int, int, object, bool, bool)>();
+
+			if (hasHeader)
+			{
+				positions.Add((0, 0, null, false, false));
+			}
+
+			for (int g = 0; g < groups.Count; g++)
+			{
+				var index = 0;
+
+				if (hasGroupHeader)
+				{
+					positions.Add((g, index++, groups[g], true, false));
+				}
+
+				foreach (var item in groups[g])
+				{
+					positions.Add((g, index++, item, false, false));
+				}
+
+				if (hasGroupFooter)
+				{
+					positions.Add((g, index, groups[g], false, true));
+				}
+			}
+
+			if (hasFooter)
+			{
+				positions.Add((0, 0, null, false, false));
+			}
+
+			return positions;
 		}
 	}
 }

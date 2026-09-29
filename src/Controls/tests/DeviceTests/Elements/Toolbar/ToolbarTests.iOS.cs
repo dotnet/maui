@@ -65,8 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 				IsEnabled = true,
 				Text = "Toolbar Item"
 			};
-			AutomationProperties.SetHelpText(toolbarItem, "Help");
-			AutomationProperties.SetName(toolbarItem, "Accessible Name");
 			var page = new ContentPage
 			{
 				ToolbarItems =
@@ -256,7 +254,12 @@ namespace Microsoft.Maui.DeviceTests
 				UIAction GetSecondaryAction()
 				{
 					var menuButton = Assert.Single(navigationItem.RightBarButtonItems);
-					return Assert.IsType<UIAction>(Assert.Single(menuButton.Menu.Children));
+					var menu = useShell
+						? Assert.IsType<UIButton>(menuButton.CustomView).Menu
+						: menuButton.Menu;
+
+					Assert.NotNull(menu);
+					return Assert.IsType<UIAction>(Assert.Single(menu.Children));
 				}
 			});
 		}
