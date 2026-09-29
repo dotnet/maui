@@ -725,7 +725,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_effects?.Count > 0)
 			{
-				var args = new PropertyChangedEventArgs(propertyName);
+				var args = ChangedEventArgsFor(propertyName);
 				foreach (Effect effect in _effects)
 				{
 					effect?.SendOnElementPropertyChanged(args);
