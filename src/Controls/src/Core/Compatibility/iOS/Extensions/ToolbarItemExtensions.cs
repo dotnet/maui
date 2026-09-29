@@ -59,13 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 			});
 
-			action.Image = item.IconImageSource?.GetPlatformMenuImage(item.FindMauiContext());
-			action.UpdateIsEnabled(item.IsEnabled);
-
-			if (!string.IsNullOrEmpty(item.AutomationId))
-				action.AccessibilityIdentifier = item.AutomationId;
-
-			return action;
+			return new SecondarySubToolbarItem(item, action);
 		}
 
 		static UIImage ScaleImageToSystemDefaults(ImageSource imageSource, UIImage uIImage)
