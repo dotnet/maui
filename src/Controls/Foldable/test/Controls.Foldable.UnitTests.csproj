@@ -23,5 +23,6 @@
     <Compile Include="FoldableRegionHelperTests.cs" />
     <Compile Include="FoldableMonitorRegistryTests.cs" />
     <Compile Include="TwoPaneViewLayoutGuideTests.cs" />
+    <Compile Include="WindowSpanModeStateTriggerTests.cs" />
   </ItemGroup>
 </Project>

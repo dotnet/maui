@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Controls.Foldable
 	/// </summary>
 	public sealed class WindowSpanModeStateTrigger : StateTriggerBase
 	{
+		VisualElement _visualElement;
+		DualScreenInfo _info;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="WindowSpanModeStateTrigger"/> class.
 		/// </summary>
@@ -44,8 +47,8 @@ namespace Microsoft.Maui.Controls.Foldable
 
 			if (!DesignMode.IsDesignModeEnabled)
 			{
+				AttachToVisualElement();
 				UpdateState();
-				DualScreenInfo.Current.PropertyChanged += OnDualScreenInfoPropertyChanged;
 			}
 		}
 
@@ -53,7 +56,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 			base.OnDetached();
 
-			DualScreenInfo.Current.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+			_info?.PropertyChanged -= OnDualScreenInfoPropertyChanged;
 		}
 
 		void OnDualScreenInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -63,7 +66,8 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		void UpdateState()
 		{
-			var spanMode = DualScreenInfo.Current.SpanMode;
+			AttachToVisualElement();
+			var spanMode = _info?.SpanMode ?? DualScreenInfo.Current.SpanMode;
 
 			switch (SpanMode)
 			{
@@ -77,6 +81,21 @@ namespace Microsoft.Maui.Controls.Foldable
 					SetActive(spanMode == TwoPaneViewMode.Wide);
 					break;
 			}
+		}
+
+		void AttachToVisualElement()
+		{
+			var visualElement = VisualState?.VisualStateGroup?.VisualElement;
+			if (visualElement == null || visualElement == _visualElement)
+				return;
+
+			_info?.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+
+			_visualElement = visualElement;
+			_info = new DualScreenInfo(visualElement);
+
+			if (IsAttached)
+				_info.PropertyChanged += OnDualScreenInfoPropertyChanged;
 		}
 	}
 }
