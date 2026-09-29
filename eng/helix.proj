@@ -19,6 +19,45 @@
   </PropertyGroup>
 
   <!--
+    Helix's AddDotNetSdk target only probes public feeds. Trusted internal CI passes the internal
+    container and a raw SAS through the environment so internal-only SDK builds can be downloaded.
+    Read the SAS via GetEnvironmentVariable so MSBuild does not unescape its percent-encoded values.
+  -->
+  <PropertyGroup Condition="'$(MAUI_HELIX_DOTNET_CLI_INTERNAL_FEED)' != '' and '$(MAUI_HELIX_DOTNET_CLI_INTERNAL_FEED_SAS)' != ''">
+    <_MauiUseInternalDotNetCli>true</_MauiUseInternalDotNetCli>
+    <_MauiInternalDotNetCliFeedSas>$([System.Environment]::GetEnvironmentVariable('MAUI_HELIX_DOTNET_CLI_INTERNAL_FEED_SAS'))</_MauiInternalDotNetCliFeedSas>
+    <IncludeDotNetCli>false</IncludeDotNetCli>
+  </PropertyGroup>
+
+  <Target Name="AddMauiInternalDotNetSdk"
+          Condition="'$(_MauiUseInternalDotNetCli)' == 'true' and '$(HelixTargetQueue)' != ''"
+          BeforeTargets="CoreTest">
+    <ItemGroup>
+      <_MauiInternalDotNetCliFeed Include="$(MAUI_HELIX_DOTNET_CLI_INTERNAL_FEED)" SasToken="$(_MauiInternalDotNetCliFeedSas)" />
+    </ItemGroup>
+    <FindDotNetCliPackage Version="$(DotNetCliVersion)" Runtime="$(DotNetCliRuntime)" PackageType="$(DotNetCliPackageType)" Channel="$(DotNetCliChannel)" AdditionalFeeds="@(_MauiInternalDotNetCliFeed)">
+      <Output TaskParameter="PackageUri" PropertyName="DotNetCliPackageUri" />
+    </FindDotNetCliPackage>
+    <ItemGroup>
+      <HelixCorrelationPayload Include="dotnet-cli">
+        <Uri>$(DotNetCliPackageUri)</Uri>
+        <Destination>$(DotNetCliDestination)</Destination>
+      </HelixCorrelationPayload>
+    </ItemGroup>
+    <!-- Keep in sync with AddDotNetSdk in Microsoft.DotNet.Helix.Sdk/tools/dotnet-cli/DotNetCli.targets. -->
+    <PropertyGroup>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export PATH=$HELIX_CORRELATION_PAYLOAD/$(DotNetCliDestination):$PATH</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set PATH=%HELIX_CORRELATION_PAYLOAD%\$(DotNetCliDestination)%3B%PATH%</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/$(DotNetCliDestination);export DOTNET_CLI_TELEMETRY_OPTOUT=1</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\$(DotNetCliDestination);set DOTNET_CLI_TELEMETRY_OPTOUT=1</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export DOTNET_CLI_HOME=$HELIX_WORKITEM_ROOT/.dotnet</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set DOTNET_CLI_HOME=%HELIX_WORKITEM_ROOT%\.dotnet</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export NUGET_PACKAGES=$HELIX_WORKITEM_ROOT/.nuget</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set NUGET_PACKAGES=%HELIX_WORKITEM_ROOT%\.nuget</HelixPreCommands>
+    </PropertyGroup>
+  </Target>
+
+  <!--
     XAML Incremental Hot Reload E2E tests (SourceGen.UnitTests) apply real metadata deltas via
     MetadataUpdater.ApplyUpdate. On CoreCLR MetadataUpdater.IsSupported is only true when the
     process is launched with DOTNET_MODIFIABLE_ASSEMBLIES=debug (VS sets it automatically when
