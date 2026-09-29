@@ -423,7 +423,6 @@ public class NativeAppleIconTargetsTests
 			startInfo.ArgumentList.Add(projectFile);
 			startInfo.ArgumentList.Add($"-t:{target}");
 			startInfo.ArgumentList.Add("-v:minimal");
-			startInfo.ArgumentList.Add("-nodeReuse:false");
 
 			using var process = Process.Start(startInfo)!;
 			var standardOutputTask = process.StandardOutput.ReadToEndAsync();

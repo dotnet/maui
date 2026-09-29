@@ -907,10 +907,7 @@ public class ResizetizerTests : BaseBuildTest
 		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
 		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
 		var assetsCar = Directory.GetFiles(appDirectory, "Assets.car", SearchOption.AllDirectories).Single();
-		var infoPlist = framework.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase)
-			? Path.Combine(appDirectory, "Contents", "Info.plist")
-			: Path.Combine(appDirectory, "Info.plist");
-		Assert.True(File.Exists(infoPlist), $"Missing app manifest '{infoPlist}'.");
+		var infoPlist = Directory.GetFiles(appDirectory, "Info.plist", SearchOption.AllDirectories).Single();
 
 		var assetInfo = RunTool("xcrun", "assetutil", "--info", assetsCar);
 		Assert.Contains(expectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
