@@ -13,7 +13,7 @@ public class Issue38276 : _IssuesUITest
 	public override string Issue => "CollectionView does not update its rendered height after ItemsSource changes";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void CollectionViewHeightUpdatesAfterItemsSourceChanges()
 	{
 		App.WaitForElement("LargeItemsButton");
