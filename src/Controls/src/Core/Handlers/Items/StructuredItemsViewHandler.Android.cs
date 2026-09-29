@@ -65,9 +65,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			? DoesHeaderOrFooterExist(adapter, position: 0, ItemViewType.Header)
 			: DoesHeaderOrFooterExist(adapter, position: adapter.ItemCount - 1, ItemViewType.Footer);
 
-			bool templateChanged = isHeader
-			? _headerTemplateSeen && !ReferenceEquals(_lastHeaderTemplate, currentTemplate)
-			: _footerTemplateSeen && !ReferenceEquals(_lastFooterTemplate, currentTemplate);
+			// Seen-before guard: on the very first mapper pass there's no prior snapshot to compare against,
+			// so a preconfigured template/content must not be mistaken for a change and trigger a rebuild.
+			bool seenBefore = isHeader ? _headerTemplateSeen : _footerTemplateSeen;
+
+			bool templateChanged = seenBefore && !ReferenceEquals(isHeader ? _lastHeaderTemplate : _lastFooterTemplate, currentTemplate);
 
 			if (isHeader)
 			{
@@ -90,8 +92,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// The template itself changed - the existing ViewHolder type may no longer apply.
 				recyclerView.UpdateAdapter();
 			}
+			else if (hasHeaderOrFooter && exists && currentTemplate is null && seenBefore)
+			{
+				// No template: header/footer content is baked into a SimpleViewHolder at creation time and
+				// OnBindViewHolder never rebinds it, so a content-only change still needs a full rebuild.
+				recyclerView.UpdateAdapter();
+			}
 
-			// Otherwise this is a content-only change (same template, header/footer already present);
+			// Otherwise this is a content-only change on a templated header/footer;
 			// StructuredItemsViewAdapter.ItemsViewPropertyChanged already rebinds just that position.
 		}
 
