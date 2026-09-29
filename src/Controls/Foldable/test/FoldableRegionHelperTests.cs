@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -77,6 +78,31 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		public void HingeAnglesAreConvertedFromRadians(double radians, double degrees)
 		{
 			Assert.Equal(degrees, FoldableRegionHelper.RadiansToDegrees(radians), 10);
+		}
+
+		[Fact]
+		public async Task InitialHingeAngleWaitsForFirstUpdate()
+		{
+			var state = new FoldableHingeAngleState();
+			var angleTask = state.GetAngleAsync();
+
+			Assert.False(angleTask.IsCompleted);
+
+			state.SetAngle(180);
+
+			Assert.Equal(180, await angleTask);
+			Assert.Equal(180, await state.GetAngleAsync());
+		}
+
+		[Fact]
+		public async Task UnavailableHingeCompletesInitialRequestWithZero()
+		{
+			var state = new FoldableHingeAngleState();
+			var angleTask = state.GetAngleAsync();
+
+			state.SetAngle(0);
+
+			Assert.Equal(0, await angleTask);
 		}
 	}
 }

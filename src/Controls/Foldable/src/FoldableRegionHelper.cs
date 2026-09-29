@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Foldable
@@ -14,6 +15,44 @@ namespace Microsoft.Maui.Foldable
 
 		public Rect Bounds { get; }
 		public bool IsActive { get; }
+	}
+
+	internal sealed class FoldableHingeAngleState
+	{
+		readonly object _lock = new object();
+		TaskCompletionSource<int> _pendingAngle;
+		double _angle;
+		bool _hasValue;
+
+		public Task<int> GetAngleAsync()
+		{
+			lock (_lock)
+			{
+				if (_hasValue)
+					return Task.FromResult((int)Math.Round(_angle));
+
+				_pendingAngle ??= new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+				return _pendingAngle.Task;
+			}
+		}
+
+		public bool SetAngle(double angle)
+		{
+			TaskCompletionSource<int> pendingAngle;
+			bool changed;
+
+			lock (_lock)
+			{
+				changed = !_hasValue || _angle != angle;
+				_angle = angle;
+				_hasValue = true;
+				pendingAngle = _pendingAngle;
+				_pendingAngle = null;
+			}
+
+			pendingAngle?.TrySetResult((int)Math.Round(angle));
+			return changed;
+		}
 	}
 
 	internal static class FoldableRegionHelper
@@ -88,6 +127,12 @@ namespace Microsoft.Maui.Foldable
 
 			_disposeMonitor(monitor);
 			return true;
+		}
+
+		public void ForEach(Action<TMonitor> action)
+		{
+			foreach (var monitor in _monitors.Values)
+				action(monitor);
 		}
 
 		public void Dispose()

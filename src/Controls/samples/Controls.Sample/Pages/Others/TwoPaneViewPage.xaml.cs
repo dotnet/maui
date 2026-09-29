@@ -24,6 +24,8 @@
 			PanePriority.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewPriority));
 			TallModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewTallModeConfiguration));
 			WideModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewWideModeConfiguration));
+			twoPaneView.Loaded += OnTwoPaneViewLoaded;
+			twoPaneView.Unloaded += OnTwoPaneViewUnloaded;
 
 			OnReset(null, EventArgs.Empty);
 		}
@@ -34,16 +36,11 @@
 			twoPaneView.Pane2Length = new GridLength(Pane2Length.Value, GridUnitType.Star);
 		}
 
-		protected override async void OnAppearing()
+		async void OnTwoPaneViewLoaded(object? sender, EventArgs e)
 		{
-			base.OnAppearing();
 			_dualScreenInfo ??= new DualScreenInfo(twoPaneView);
 			_dualScreenInfo.HingeAngleChanged += OnHingeAngleChanged;
 			twoPaneView.ModeChanged += OnTwoPaneViewModeChanged;
-
-			PanePriority.SelectedIndex = 0;
-			TallModeConfiguration.SelectedIndex = 1;
-			WideModeConfiguration.SelectedIndex = 1;
 
 			UpdateFoldableInfo();
 			hingeAngleLabel.Text = $"Hinge angle: {await _dualScreenInfo.GetHingeAngleAsync()}°";
@@ -54,13 +51,10 @@
 			UpdateFoldableInfo();
 		}
 
-		protected override void OnDisappearing()
+		void OnTwoPaneViewUnloaded(object? sender, EventArgs e)
 		{
 			_dualScreenInfo?.HingeAngleChanged -= OnHingeAngleChanged;
-
 			twoPaneView.ModeChanged -= OnTwoPaneViewModeChanged;
-
-			base.OnDisappearing();
 		}
 
 		void OnHingeAngleChanged(object? sender, HingeAngleChangedEventArgs e)

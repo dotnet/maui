@@ -49,5 +49,18 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			Assert.Equal(2, disposed);
 			Assert.Equal(0, registry.Count);
 		}
+
+		[Fact]
+		public void VisitsEveryMonitor()
+		{
+			using var registry = new FoldableMonitorRegistry<object, object>(_ => { });
+			registry.GetOrAdd(new object(), () => new object());
+			registry.GetOrAdd(new object(), () => new object());
+			var visited = 0;
+
+			registry.ForEach(_ => visited++);
+
+			Assert.Equal(2, visited);
+		}
 	}
 }

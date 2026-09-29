@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
@@ -18,9 +19,9 @@ namespace Microsoft.Maui.Foldable
 		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 		readonly FoldableMonitorRegistry<VisualElement, ViewMonitor> _monitors;
+		readonly FoldableHingeAngleState _hingeAngleState = new FoldableHingeAngleState();
 		UIWindow _window;
 		ViewMonitor _windowMonitor;
-		double _hingeAngle;
 
 		public FoldableService()
 		{
@@ -52,7 +53,12 @@ namespace Microsoft.Maui.Foldable
 
 		public Size ScaledScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 
-		public Task<int> GetHingeAngleAsync() => Task.FromResult((int)Math.Round(_hingeAngle));
+		public Task<int> GetHingeAngleAsync()
+		{
+			var angleTask = _hingeAngleState.GetAngleAsync();
+			MainThread.BeginInvokeOnMainThread(RefreshHingeState);
+			return angleTask;
+		}
 
 		public Rect GetHinge() => Rect.Zero;
 
@@ -140,6 +146,7 @@ namespace Microsoft.Maui.Foldable
 				return;
 			}
 
+			_monitors.Remove(visualElement);
 			_monitors.GetOrAdd(visualElement, () =>
 			{
 				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
@@ -191,13 +198,26 @@ namespace Microsoft.Maui.Foldable
 			return new ViewMonitor(interactionView, interaction, updateHandler);
 		}
 
+		void RefreshHingeState()
+		{
+			if (_windowMonitor != null)
+				RefreshMonitor(_windowMonitor);
+
+			_monitors.ForEach(RefreshMonitor);
+		}
+
+		static void RefreshMonitor(ViewMonitor monitor)
+		{
+			monitor.Interaction.Enabled = false;
+			monitor.Interaction.Enabled = true;
+		}
+
 		void OnHingeUpdated(UIHingeInteraction interaction, UIHingeInteractionUpdate update)
 		{
 			var hinge = update.Hinge;
 			var newAngle = hinge == null ? 0d : FoldableRegionHelper.RadiansToDegrees((double)hinge.Angle);
-			if (_hingeAngle != newAngle)
+			if (_hingeAngleState.SetAngle(newAngle))
 			{
-				_hingeAngle = newAngle;
 				_hingeAngleChangedEventManager.HandleEvent(
 					this,
 					new FoldableHingeAngleChangedEventArgs(newAngle),

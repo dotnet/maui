@@ -259,7 +259,12 @@ namespace Microsoft.Maui.Foldable
 		/// Query the current hinge angle of the foldable device.
 		/// </summary>
 		/// <returns>Hinge angle between 0 and 360 degrees.</returns>
-		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
+		public Task<int> GetHingeAngleAsync()
+		{
+			var service = FoldableService;
+			service?.StartMonitoring(Element);
+			return service?.GetHingeAngleAsync() ?? Task.FromResult(0);
+		}
 
 		void ProcessHingeAngleSubscriberCount(int newCount)
 		{
@@ -267,6 +272,7 @@ namespace Microsoft.Maui.Foldable
 			{
 				if (newCount == 1)
 				{
+					FoldableService?.StartMonitoring(Element);
 					FoldableService?.HingeAngleChanged += OnHingeAngleChanged;
 				}
 				else if (newCount == 0)
