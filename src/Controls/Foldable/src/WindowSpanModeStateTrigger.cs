@@ -48,6 +48,8 @@ namespace Microsoft.Maui.Controls.Foldable
 			if (!DesignMode.IsDesignModeEnabled)
 			{
 				AttachToVisualElement();
+				_info?.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+				_info?.PropertyChanged += OnDualScreenInfoPropertyChanged;
 				UpdateState();
 			}
 		}

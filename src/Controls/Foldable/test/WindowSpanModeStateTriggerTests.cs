@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Foldable;
@@ -29,6 +31,24 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			Assert.NotNull(infoField);
 			var info = Assert.IsType<DualScreenInfo>(infoField.GetValue(trigger));
 			Assert.Same(element, info.Element);
+
+			var propertyChangedField = typeof(DualScreenInfo).GetField("PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(propertyChangedField);
+			Assert.Contains(
+				((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
+				handler => ReferenceEquals(handler.Target, trigger));
+
+			trigger.SendDetached();
+
+			var detachedHandlers = propertyChangedField.GetValue(info) as PropertyChangedEventHandler;
+			Assert.True(detachedHandlers == null ||
+				!detachedHandlers.GetInvocationList().Any(handler => ReferenceEquals(handler.Target, trigger)));
+
+			trigger.SendAttached();
+
+			Assert.Single(
+				((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
+				handler => ReferenceEquals(handler.Target, trigger));
 		}
 	}
 }

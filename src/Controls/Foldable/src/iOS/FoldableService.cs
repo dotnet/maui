@@ -55,6 +55,12 @@ namespace Microsoft.Maui.Foldable
 
 		public Task<int> GetHingeAngleAsync()
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+			{
+				_hingeAngleState.SetAngle(0);
+				return Task.FromResult(0);
+			}
+
 			var angleTask = _hingeAngleState.GetAngleAsync();
 			MainThread.BeginInvokeOnMainThread(RefreshHingeState);
 			return angleTask;
@@ -126,9 +132,14 @@ namespace Microsoft.Maui.Foldable
 
 		public void StartMonitoring(VisualElement visualElement)
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+			{
+				_hingeAngleState.SetAngle(0);
+				return;
+			}
+
 			if (GetPlatformView(visualElement) is not UIView platformView ||
-				platformView.Window == null ||
-				!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+				platformView.Window == null)
 			{
 				return;
 			}

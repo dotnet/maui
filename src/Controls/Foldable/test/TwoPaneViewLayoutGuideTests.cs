@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Graphics;
@@ -208,6 +210,23 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		}
 
 		[Fact]
+		public void ElementScopedInfoRebindsServiceWhenHandlerContextChanges()
+		{
+			var layout = new Grid();
+			var firstService = new TestFoldableService();
+			var secondService = new TestFoldableService();
+			layout.Handler = new TestElementHandler(firstService);
+			var info = new DualScreenInfo(layout);
+
+			Assert.Equal(1, firstService.StartMonitoringCount);
+
+			layout.Handler = new TestElementHandler(secondService);
+
+			Assert.Equal(1, firstService.StopMonitoringCount);
+			Assert.Equal(1, secondService.StartMonitoringCount);
+		}
+
+		[Fact]
 		public void CurrentUsesAssignedWindowScopedService()
 		{
 			var service = new TestFoldableService
@@ -304,6 +323,52 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			public void StopMonitoring(VisualElement visualElement)
 			{
 				StopMonitoringCount++;
+			}
+		}
+
+		sealed class TestElementHandler : IViewHandler
+		{
+			public TestElementHandler(IFoldableService service)
+			{
+				var services = new ServiceCollection()
+					.AddSingleton(service)
+					.BuildServiceProvider();
+				MauiContext = new MauiContext(services);
+			}
+
+			public object PlatformView => null;
+			public object ContainerView => null;
+			public IView VirtualView { get; private set; }
+			IElement IElementHandler.VirtualView => VirtualView;
+			public IMauiContext MauiContext { get; private set; }
+			public bool HasContainer { get; set; }
+
+			public void DisconnectHandler()
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+				MauiContext = mauiContext;
+			}
+
+			public void SetVirtualView(IElement view)
+			{
+				VirtualView = (IView)view;
+			}
+
+			public void UpdateValue(string property)
+			{
+			}
+
+			public Size GetDesiredSize(double widthConstraint, double heightConstraint) => Size.Zero;
+
+			public void PlatformArrange(Rect frame)
+			{
 			}
 		}
 	}

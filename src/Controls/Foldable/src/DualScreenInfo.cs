@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Foldable;
 using Microsoft.Maui.Graphics;
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Foldable
 			}
 			else
 			{
-				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, FoldableService); // get if null
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, dualScreenService);
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
 			}
 		}
@@ -259,11 +260,14 @@ namespace Microsoft.Maui.Foldable
 		/// Query the current hinge angle of the foldable device.
 		/// </summary>
 		/// <returns>Hinge angle between 0 and 360 degrees.</returns>
-		public Task<int> GetHingeAngleAsync()
+		public async Task<int> GetHingeAngleAsync()
 		{
 			var service = FoldableService;
-			service?.StartMonitoring(Element);
-			return service?.GetHingeAngleAsync() ?? Task.FromResult(0);
+			if (service == null)
+				return 0;
+
+			await MainThread.InvokeOnMainThreadAsync(() => service.StartMonitoring(Element));
+			return await service.GetHingeAngleAsync().ConfigureAwait(false);
 		}
 
 		void ProcessHingeAngleSubscriberCount(int newCount)
@@ -272,8 +276,19 @@ namespace Microsoft.Maui.Foldable
 			{
 				if (newCount == 1)
 				{
-					FoldableService?.StartMonitoring(Element);
-					FoldableService?.HingeAngleChanged += OnHingeAngleChanged;
+					MainThread.BeginInvokeOnMainThread(() =>
+					{
+						lock (hingeAngleLock)
+						{
+							if (Volatile.Read(ref subscriberCount) <= 0)
+								return;
+
+							var service = FoldableService;
+							service?.StartMonitoring(Element);
+							service?.HingeAngleChanged -= OnHingeAngleChanged;
+							service?.HingeAngleChanged += OnHingeAngleChanged;
+						}
+					});
 				}
 				else if (newCount == 0)
 				{
