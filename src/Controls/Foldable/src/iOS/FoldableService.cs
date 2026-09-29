@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Foldable
 		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 		readonly FoldableMonitorRegistry<VisualElement, ViewMonitor> _monitors;
+		UIWindow _window;
+		ViewMonitor _windowMonitor;
 		double _hingeAngle;
 
 		public FoldableService()
@@ -56,7 +58,7 @@ namespace Microsoft.Maui.Foldable
 
 		public Rect GetHinge(VisualElement visualElement)
 		{
-			var platformView = visualElement?.Handler?.PlatformView as UIView;
+			var platformView = GetPlatformView(visualElement);
 			if (platformView?.Window == null || !OperatingSystem.IsIOSVersionAtLeast(27, 1))
 				return Rect.Zero;
 
@@ -90,7 +92,7 @@ namespace Microsoft.Maui.Foldable
 
 		public bool IsLandscapeFor(VisualElement visualElement)
 		{
-			var window = (visualElement?.Handler?.PlatformView as UIView)?.Window;
+			var window = GetPlatformView(visualElement)?.Window ?? _window;
 			if (window == null)
 				return IsLandscape;
 
@@ -99,7 +101,7 @@ namespace Microsoft.Maui.Foldable
 
 		public Size GetScaledScreenSize(VisualElement visualElement)
 		{
-			var window = (visualElement?.Handler?.PlatformView as UIView)?.Window;
+			var window = GetPlatformView(visualElement)?.Window ?? _window;
 			if (window == null)
 				return ScaledScreenSize;
 
@@ -108,7 +110,7 @@ namespace Microsoft.Maui.Foldable
 
 		public Point? GetLocationOnScreen(VisualElement visualElement)
 		{
-			var platformView = visualElement?.Handler?.PlatformView as UIView;
+			var platformView = GetPlatformView(visualElement);
 			if (platformView?.Window == null)
 				return null;
 
@@ -118,33 +120,75 @@ namespace Microsoft.Maui.Foldable
 
 		public void StartMonitoring(VisualElement visualElement)
 		{
-			if (visualElement?.Handler?.PlatformView is not UIView platformView ||
+			if (GetPlatformView(visualElement) is not UIView platformView ||
 				platformView.Window == null ||
 				!OperatingSystem.IsIOSVersionAtLeast(27, 1))
 			{
 				return;
 			}
 
+			if (visualElement == null)
+			{
+				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
+				if (ReferenceEquals(_windowMonitor?.View, interactionView))
+					return;
+
+				if (_windowMonitor != null)
+					DisposeMonitor(_windowMonitor);
+
+				_windowMonitor = CreateMonitor(interactionView);
+				return;
+			}
+
 			_monitors.GetOrAdd(visualElement, () =>
 			{
 				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
-				UIHingeInteractionUpdateHandler updateHandler = OnHingeUpdated;
-				var interaction = new UIHingeInteraction(updateHandler);
-				interactionView.AddInteraction(interaction);
-				return new ViewMonitor(interactionView, interaction, updateHandler);
+				return CreateMonitor(interactionView);
 			});
 		}
 
 		public void StopMonitoring(VisualElement visualElement)
 		{
-			if (visualElement != null)
-				_monitors.Remove(visualElement);
+			if (visualElement == null)
+			{
+				if (_windowMonitor != null)
+					DisposeMonitor(_windowMonitor);
+
+				_windowMonitor = null;
+				return;
+			}
+
+			_monitors.Remove(visualElement);
 		}
 
 		public void Dispose()
 		{
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 			_monitors.Dispose();
+
+			if (_windowMonitor != null)
+				DisposeMonitor(_windowMonitor);
+
+			_windowMonitor = null;
+		}
+
+		internal void SetWindow(UIWindow window)
+		{
+			_window = window;
+		}
+
+		UIView GetPlatformView(VisualElement visualElement)
+		{
+			return visualElement?.Handler?.PlatformView as UIView ??
+				_window?.RootViewController?.View;
+		}
+
+		ViewMonitor CreateMonitor(UIView interactionView)
+		{
+			UIHingeInteractionUpdateHandler updateHandler = OnHingeUpdated;
+			var interaction = new UIHingeInteraction(updateHandler);
+			interactionView.AddInteraction(interaction);
+			return new ViewMonitor(interactionView, interaction, updateHandler);
 		}
 
 		void OnHingeUpdated(UIHingeInteraction interaction, UIHingeInteractionUpdate update)

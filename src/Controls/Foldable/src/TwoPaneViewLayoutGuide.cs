@@ -101,10 +101,18 @@ namespace Microsoft.Maui.Controls.Foldable
 
 			_dualScreenService = foldableService;
 
-			if (_layout?.Handler != null)
+			if (_layout == null || _layout.Handler != null)
 				ConnectToService();
 
-			UpdateLayouts();
+			if (_layout == null)
+			{
+				var size = DualScreenService.GetScaledScreenSize(null);
+				UpdateLayouts(size.Width, size.Height);
+			}
+			else
+			{
+				UpdateLayouts();
+			}
 		}
 
 		internal void ConnectToService()

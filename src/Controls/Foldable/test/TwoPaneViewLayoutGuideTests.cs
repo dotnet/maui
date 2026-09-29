@@ -207,6 +207,22 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			Assert.Equal(0, service.LayoutSubscriberCount);
 		}
 
+		[Fact]
+		public void CurrentUsesAssignedWindowScopedService()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+			};
+
+			DualScreenInfo.Current.SetFoldableService(service);
+
+			Assert.Equal(TwoPaneViewMode.Wide, DualScreenInfo.Current.SpanMode);
+			Assert.Equal(service.Hinge, DualScreenInfo.Current.HingeBounds);
+			Assert.Equal(2, DualScreenInfo.Current.SpanningBounds.Length);
+			Assert.Equal(1, service.StartMonitoringCount);
+		}
+
 		static TwoPaneView CreateTwoPaneView(TestFoldableService service)
 		{
 			var pane1 = new BoxView { IsPlatformEnabled = true };
