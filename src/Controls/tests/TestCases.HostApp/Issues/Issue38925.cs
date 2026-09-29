@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -108,7 +107,6 @@ public class Issue38925 : TestContentPage
 					FontSize = 11
 				};
 				label.SetBinding(Label.TextProperty, ".");
-				label.SetBinding(Label.AutomationIdProperty, ".");
 
 				return new Grid
 				{
@@ -157,7 +155,7 @@ public class Issue38925 : TestContentPage
 		Dispatcher.Dispatch(() =>
 		{
 			stopwatch.Stop();
-			_timingLabel.Text = stopwatch.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture);
+			_timingLabel.Text = $"{status}: UI thread blocked {stopwatch.ElapsedMilliseconds} ms";
 			_statusLabel.Text = status;
 		});
 	}
