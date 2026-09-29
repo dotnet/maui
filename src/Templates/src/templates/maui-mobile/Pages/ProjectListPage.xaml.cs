@@ -1,3 +1,4 @@
+using MauiApp._1.Behaviors;
 namespace MauiApp._1.Pages;
 
 public partial class ProjectListPage : ContentPage
@@ -6,5 +7,8 @@ public partial class ProjectListPage : ContentPage
 	{
 		BindingContext = model;
 		InitializeComponent();
+#if WINDOWS
+		ProjectsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
+#endif
 	}
 }

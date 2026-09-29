@@ -4,13 +4,13 @@ using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WItemsViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.ItemsViewSelectionChangedEventArgs;
-#endif
+
 
 namespace MauiApp._1.Behaviors;
 
 public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionView>
 {
-#if WINDOWS
+
     CollectionView? _collectionView;
     UIElement? _platformView;
     WItemsView? _platformItemsView;
@@ -18,34 +18,25 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
     bool _restrictSelection;
     bool _restoringSelection;
     object? _selectedItem;
-#endif
 
 	protected override void OnAttachedTo(CollectionView bindable)
 	{
 		base.OnAttachedTo(bindable);
-
-#if WINDOWS
         _collectionView = bindable;
         bindable.HandlerChanged += OnHandlerChanged;
         AttachPlatformView(bindable);
-#endif
 	}
 
 	protected override void OnDetachingFrom(CollectionView bindable)
 	{
-#if WINDOWS
-        bindable.HandlerChanged -= OnHandlerChanged;
-
+        bindable.HandlerChanged -= OnHandlerChanged;s
         DetachPlatformView();
         ClearRestriction();
-
         _collectionView = null;
-#endif
-
 		base.OnDetachingFrom(bindable);
 	}
 
-#if WINDOWS
+
 
     void OnHandlerChanged(object? sender, EventArgs e)
     {
@@ -200,6 +191,5 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
 
         return false;
     }
-
-#endif
 }
+#endif

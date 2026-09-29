@@ -1,7 +1,6 @@
 <ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
              xmlns:models="clr-namespace:MauiApp._1.Models"
              xmlns:pages="clr-namespace:MauiApp._1.Pages"
-             xmlns:behaviors="clr-namespace:MauiApp._1.Behaviors"
              xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
              xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
              xmlns:fonts="clr-namespace:Fonts"
@@ -22,19 +21,19 @@
     <Grid>
         <ScrollView>
             <VerticalStackLayout Padding="{StaticResource LayoutPadding}"
-                                 Spacing="{StaticResource LayoutSpacing}">
+                    Spacing="{StaticResource LayoutSpacing}">
                 <sf:SfTextInputLayout
                     Hint="Name">
                     <Entry
                         Text="{Binding Name}"
-                        SemanticProperties.Description="Name"/>
+                            SemanticProperties.Description="Name"/>
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout
                     Hint="Description">
                     <Entry
                         Text="{Binding Description}"
-                        SemanticProperties.Description="Description"/>
+                            SemanticProperties.Description="Description"/>
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout
@@ -51,7 +50,8 @@
                     Style="{StaticResource Title2}"/>
                 <CollectionView
                     HeightRequest="44"
-                    Margin="0,0,0,15"
+                        Margin="0,0,0,15"
+                    x:Name="IconsCollectionView"
                     SelectionMode="Single"
                     SelectedItem="{Binding Icon}"
                     SelectionChangedCommand="{Binding IconSelectedCommand}"
@@ -60,7 +60,7 @@
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:IconData">
                             <Grid RowDefinitions="Auto,4"
-                                  RowSpacing="{StaticResource size60}"
+                                    RowSpacing="{StaticResource size60}"
                                   SemanticProperties.Description="{Binding Description}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -96,16 +96,16 @@
                                     HorizontalOptions="Center"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator"
-                                         Color="{StaticResource Primary}"
-                                         HeightRequest="4"
-                                         HorizontalOptions="Fill"
-                                         Grid.Row="1"/>
+                                        Color="{StaticResource Primary}"
+                                        HeightRequest="4"
+                                        HorizontalOptions="Fill"
+                                        Grid.Row="1"/>
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Horizontal"
-                                           ItemSpacing="{StaticResource LayoutSpacing}"/>
+                                ItemSpacing="{StaticResource LayoutSpacing}"/>
                     </CollectionView.ItemsLayout>
                 </CollectionView>
 
@@ -119,16 +119,14 @@
                     SelectionMode="Multiple"
                     HeightRequest="44"
                     Margin="0,0,0,15"
+                    x:Name="TagsCollectionView"
                     SemanticProperties.Description="Tags Collection"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
                     SelectionChangedCommandParameter="{Binding SelectedTags}">
-                    <CollectionView.Behaviors>
-                        <behaviors:SingleSelectionKeyboardGuardBehavior/>
-                    </CollectionView.Behaviors>
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Horizontal"
-                                           ItemSpacing="{StaticResource LayoutSpacing}"/>
+                                ItemSpacing="{StaticResource LayoutSpacing}"/>
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Tag">
@@ -198,9 +196,6 @@
                                 SelectedItem="{Binding SelectedTask}"
                                 SelectionChangedCommand="{Binding NavigateToTaskCommand}"
                                 SelectionChangedCommandParameter="{Binding SelectedTask}">
-                    <CollectionView.Behaviors>
-                        <behaviors:SingleSelectionKeyboardGuardBehavior/>
-                    </CollectionView.Behaviors>
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical"
                                            ItemSpacing="{StaticResource LayoutSpacing}"/>

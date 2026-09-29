@@ -1,5 +1,6 @@
 ﻿using MauiApp._1.Models;
 using MauiApp._1.PageModels;
+using MauiApp._1.Behaviors;
 
 namespace MauiApp._1.Pages;
 
@@ -9,5 +10,9 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = model;
+#if WINDOWS
+		ProjectsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
+		TasksCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
+#endif
 	}
 }

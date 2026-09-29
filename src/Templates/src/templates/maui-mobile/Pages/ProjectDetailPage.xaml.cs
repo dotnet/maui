@@ -9,5 +9,10 @@ public partial class ProjectDetailPage : ContentPage
 		InitializeComponent();
 
 		BindingContext = model;
+#if WINDOWS
+		TagsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
+		ProjectTasksCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
+		IconsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
+#endif
 	}
 }
