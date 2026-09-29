@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WAccessibilityView = Microsoft.UI.Xaml.Automation.Peers.AccessibilityView;
+using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -109,6 +112,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				view.BindingContext = (templateContext.IsHeader || templateContext.IsFooter)
 					? (templateContext.Item ?? _view.BindingContext)
 					: templateContext.Item;
+				wrapper.UpdateAccessibilityView();
 				_view.AddLogicalChild(view);
 
 				// Sync the CommonStates VSM group to match actual selection state on every
@@ -146,13 +150,40 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// Must be set every time to handle recycled containers correctly.
 			if (wrapper is not null)
 			{
+				var isHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
+				container.IsTabStop = true;
+
+				if (wrapper.VirtualView is View semanticView)
+				{
+					RefreshContainerAutomationProperties(container, semanticView);
+
+					// Live-refresh automation metadata (and the wrapper's AccessibilityView) when
+					// the item's semantics change after binding — e.g. a bound
+					// SemanticProperties.Description updates via INotifyPropertyChanged. Subscribed
+					// once per wrapper; wrapper/container pairs are recycled together for their
+					// lifetime, so the captured `container` stays valid for as long as `semanticView`
+					// (the wrapper's persistent VirtualView) is alive.
+					if (wrapper.TryAttachSemanticsRefresh())
+					{
+						semanticView.PropertyChanged += (_, e) =>
+						{
+							if (e.Is(SemanticProperties.DescriptionProperty) ||
+								e.Is(SemanticProperties.HintProperty) ||
+								e.Is(SemanticProperties.HeadingLevelProperty))
+							{
+								RefreshContainerAutomationProperties(container, semanticView);
+								wrapper.UpdateAccessibilityView();
+							}
+						};
+					}
+				}
+
 				// Refresh the flag from the current context for both new and recycled wrappers.
 				// The pool is keyed by DataTemplate, so a recycled container can be reused for
 				// different purposes (header vs. item) if they share the same template. Without
 				// refreshing, the wrapper keeps its original role, causing incorrect template or
 				// selectability behavior.
-				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+				wrapper.IsHeaderOrFooter = isHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
 					// Cache the default template once for later restoration
@@ -234,6 +265,23 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	}
 
 	/// <summary>
+	/// Refreshes the WinUI automation Name/HelpText/HeadingLevel on <paramref name="container"/>
+	/// from <paramref name="semanticView"/>'s current <see cref="SemanticProperties"/> values.
+	/// Called both when a container is bound/recycled and whenever those semantics change later.
+	/// </summary>
+	static void RefreshContainerAutomationProperties(ItemContainer container, View semanticView)
+	{
+		container.ClearValue(WAutomationProperties.NameProperty);
+		container.ClearValue(WAutomationProperties.HelpTextProperty);
+		container.ClearValue(WAutomationProperties.HeadingLevelProperty);
+		container.UpdateSemantics(semanticView);
+		if (string.IsNullOrWhiteSpace(((IView)semanticView).Semantics?.Description))
+		{
+			WAutomationProperties.SetName(container, semanticView.BindingContext?.ToString() ?? string.Empty);
+		}
+	}
+
+	/// <summary>
 	/// Clears the recycle pool and removes logical children held by pooled elements.
 	/// Must be called when the items source changes or when the handler disconnects
 	/// to prevent memory leaks from pooled ItemContainers holding strong references.
@@ -279,6 +327,24 @@ internal partial class ElementWrapper : ContentControl
 	// Stored so RecycleElement can unsubscribe without a flag — mirrors iOS prepareForReuse.
 	SizeChangedEventHandler? _contentSizeChangedHandler;
 	FrameworkElement? _observedContent;
+	WAccessibilityView? _defaultAccessibilityView;
+	bool _semanticsRefreshAttached;
+
+	/// <summary>
+	/// Returns true only the first time it's called for this wrapper instance, so callers can
+	/// guard a one-time semantics-changed subscription against being registered again on every
+	/// recycle/rebind of the same wrapper.
+	/// </summary>
+	internal bool TryAttachSemanticsRefresh()
+	{
+		if (_semanticsRefreshAttached)
+		{
+			return false;
+		}
+
+		_semanticsRefreshAttached = true;
+		return true;
+	}
 
 	/// <summary>
 	/// Unsubscribes the first-item SizeChanged observer wired during MeasureOverride.
@@ -297,6 +363,7 @@ internal partial class ElementWrapper : ContentControl
 	public ElementWrapper(IMauiContext context)
 	{
 		_context = context;
+		IsTabStop = false;
 	}
 
 	/// <summary>
@@ -333,8 +400,26 @@ internal partial class ElementWrapper : ContentControl
 			}
 
 			var platformView = VirtualView.ToPlatform(_context);
+			_defaultAccessibilityView = WAutomationProperties.GetAccessibilityView(platformView);
 			Content = platformView;
+			UpdateAccessibilityView();
 		}
+	}
+
+	internal void UpdateAccessibilityView()
+	{
+		if (Content is not FrameworkElement platformView || VirtualView is not Element element)
+		{
+			return;
+		}
+
+		var semantics = VirtualView.Semantics;
+		var accessibilityView = !string.IsNullOrWhiteSpace(semantics?.Description) ||
+			!string.IsNullOrWhiteSpace(semantics?.Hint)
+				? WAccessibilityView.Raw
+				: _defaultAccessibilityView;
+
+		platformView.SetAutomationPropertiesAccessibilityView(element, accessibilityView);
 	}
 
 	void OnLoadedCreatePlatformView(object sender, RoutedEventArgs e)
