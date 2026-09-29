@@ -111,6 +111,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 			return;
 		}
 
+		PlatformView.EditText?.UpdateKeyboard(VirtualView);
 		PlatformView.EditText?.UpdateReturnType(VirtualView);
 	}
 
