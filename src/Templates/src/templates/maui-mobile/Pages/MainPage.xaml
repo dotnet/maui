@@ -1,6 +1,7 @@
-﻿<ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"             
+﻿<ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
              xmlns:models="clr-namespace:MauiApp._1.Models"
              xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
+             xmlns:behaviors="clr-namespace:MauiApp._1.Behaviors"
              xmlns:pullToRefresh="clr-namespace:Syncfusion.Maui.Toolkit.PullToRefresh;assembly=Syncfusion.Maui.Toolkit"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.MainPage"
@@ -10,22 +11,22 @@
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
-                BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
-                EventName="NavigatedTo"
-                Command="{Binding NavigatedToCommand}" />
+            BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
+            EventName="NavigatedTo"
+            Command="{Binding NavigatedToCommand}"/>
         <toolkit:EventToCommandBehavior
-                BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
-                EventName="NavigatedFrom"
-                Command="{Binding NavigatedFromCommand}" />
+            BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
+            EventName="NavigatedFrom"
+            Command="{Binding NavigatedFromCommand}"/>
         <toolkit:EventToCommandBehavior
-                BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
-                EventName="Appearing"                
-                Command="{Binding AppearingCommand}" />
+            BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
+            EventName="Appearing"
+            Command="{Binding AppearingCommand}"/>
     </ContentPage.Behaviors>
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -35,20 +36,28 @@
             RefreshCommand="{Binding RefreshCommand}">
             <pullToRefresh:SfPullToRefresh.PullableContent>
                 <ScrollView>
-                    <Grid Padding="{StaticResource LayoutPadding}" RowSpacing="{StaticResource LayoutSpacing}">
+                    <Grid Padding="{StaticResource LayoutPadding}"
+                          RowSpacing="{StaticResource LayoutSpacing}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Label Grid.Row="0" Text="Task Categories" Style="{StaticResource Title2}" SemanticProperties.HeadingLevel="Level1"/>
-                        <controls:CategoryChart Grid.Row="1" />
-                        <Label Grid.Row="2" Text="Projects" Style="{StaticResource Title2}" SemanticProperties.HeadingLevel="Level1"/>
-                        <CollectionView Grid.Row="3" ItemsSource="{Binding Projects}"
+                        <Label Grid.Row="0"
+                               Text="Task Categories"
+                               Style="{StaticResource Title2}"
+                               SemanticProperties.HeadingLevel="Level1"/>
+                        <controls:CategoryChart Grid.Row="1"/>
+                        <Label Grid.Row="2"
+                               Text="Projects"
+                               Style="{StaticResource Title2}"
+                               SemanticProperties.HeadingLevel="Level1"/>
+                        <CollectionView Grid.Row="3"
+                                        ItemsSource="{Binding Projects}"
                                         Margin="-7.5,0"
                                         MinimumHeightRequest="250"
                                         x:Name="ProjectsCollectionView"
@@ -56,18 +65,26 @@
                                         SelectedItem="{Binding SelectedProject}"
                                         SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:MainPageModel}"
                                         SelectionChangedCommandParameter="{Binding SelectedProject}">
+                            <CollectionView.Behaviors>
+                                <behaviors:SingleSelectionKeyboardGuardBehavior/>
+                            </CollectionView.Behaviors>
                             <CollectionView.ItemsLayout>
-                                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="7.5"/>
+                                <LinearItemsLayout Orientation="Horizontal"
+                                                   ItemSpacing="7.5"/>
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Project">
-                                    <controls:ProjectCardView WidthRequest="200" />
+                                    <controls:ProjectCardView WidthRequest="200"/>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
-                        <Grid Grid.Row="4" MinimumHeightRequest="44">
-                            <Label Text="Tasks" Style="{StaticResource Title2}" VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1"/>
-                            <ImageButton 
+                        <Grid Grid.Row="4"
+                              MinimumHeightRequest="44">
+                            <Label Text="Tasks"
+                                   Style="{StaticResource Title2}"
+                                   VerticalOptions="Center"
+                                   SemanticProperties.HeadingLevel="Level1"/>
+                            <ImageButton
                                 Source="{StaticResource IconClean}"
                                 HorizontalOptions="End"
                                 VerticalOptions="Center"
@@ -76,7 +93,7 @@
                                 WidthRequest="44"
                                 IsVisible="{Binding HasCompletedTasks}"
                                 Command="{Binding CleanTasksCommand}"
-                                SemanticProperties.Description="Clean tasks" />
+                                SemanticProperties.Description="Clean tasks"/>
                         </Grid>
                         <CollectionView ItemsSource="{Binding Tasks}"
                                         Grid.Row="5"
@@ -100,10 +117,10 @@
             </pullToRefresh:SfPullToRefresh.PullableContent>
         </pullToRefresh:SfPullToRefresh>
 
-        <controls:AddButton 
+        <controls:AddButton
             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
             Command="{Binding AddTaskCommand}"
             ToolTipProperties.Text="Add task"
-            SemanticProperties.Description="Add task" />
+            SemanticProperties.Description="Add task"/>
     </Grid>
 </ContentPage>
