@@ -22,7 +22,6 @@ public class Issue37323 : _IssuesUITest
 		var contentBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
 
 		App.Tap("Padding");
-		Thread.Sleep(2000);
 
 		var contentAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
 
