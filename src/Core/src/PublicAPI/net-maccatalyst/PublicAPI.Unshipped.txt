@@ -19,3 +19,4 @@ override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.PerformAction(UIKit.UIWindowScene! windowScene, UIKit.UIApplicationShortcutItem! shortcutItem, System.Action<bool>! completionHandler) -> void
+override Microsoft.Maui.Platform.PlatformTouchGraphicsView.MovedToWindow() -> void

@@ -2,6 +2,7 @@ using System;
 using CoreAnimation;
 using Foundation;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -23,6 +24,36 @@ namespace Microsoft.Maui.Platform
 
 		/// <summary>
 		/// Detaches this behavior from the current layer and stops observing
+		/// </summary>
+		[Export("detach")]
+		void Detach();
+	}
+
+	/// <summary>
+	/// Observes a closed set of KVO-compliant properties through Swift's <c>NSKeyValueObservation</c>,
+	/// whose registrations cannot outlive their observer.
+	/// Use <c>KeyValueObservation</c> rather than this type directly: the handler is retained natively,
+	/// so it must not keep this object reachable.
+	/// </summary>
+	[BaseType(typeof(NSObject), Name = "MauiKeyValueObserver")]
+	[Internal]
+	interface MauiKeyValueObserver
+	{
+		[Export("observeBoundsOfLayer:handler:")]
+		void ObserveBounds(CALayer layer, Action handler);
+
+		[Export("observeFrameOfView:handler:")]
+		void ObserveFrame(UIView view, Action handler);
+
+		[Export("observeContentOffsetOfScrollView:handler:")]
+		void ObserveContentOffset(UIScrollView scrollView, Action handler);
+
+		[iOS(16, 0), MacCatalyst(16, 0)]
+		[Export("observeEffectiveGeometryOfWindowScene:handler:")]
+		void ObserveEffectiveGeometry(UIWindowScene windowScene, Action handler);
+
+		/// <summary>
+		/// Stops every observation started by this instance and releases their handlers.
 		/// </summary>
 		[Export("detach")]
 		void Detach();
