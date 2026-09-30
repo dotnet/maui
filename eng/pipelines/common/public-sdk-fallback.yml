@@ -1,15 +1,16 @@
 # TEMPORARY WORKAROUND for release/11.0.1xx-rc2.
 #
-# The branch pins the final RC2 SDK 11.0.100-rc.2.26475.136 (BAR 334091), which is published only
+# The branch pins RC2 SDK 11.0.100-rc.2.26478.115 (BAR 334412), which is published only
 # to internal locations. Builds that cannot use the internal feeds (public maui-pr and other
 # untrusted pipelines) would fail with HTTP 404 while provisioning it.
 #
 # While the pinned SDK is not publicly downloadable, this step switches the local checkout's
-# global.json and eng/Versions.props to the equivalent public RC2 build (BAR 334092) so those
+# global.json and eng/Versions.props to an older public RC2 build (BAR 334092) so those
 # pipelines can still validate changes. Its net10 workload manifests reference unreleased .NET
 # 10.0.13 packs, so the step also adds the public release/10.0.1xx build feed (BAR 333293) that
 # contains them. Trusted internal builds never include this template and always build with the
-# pinned SDK and internal 10.0.13 packs. The step becomes a no-op as soon as the pinned SDK is public.
+# pinned SDK and internal 10.0.13 packs. Public CI does not validate the pinned internal SDK.
+# The step becomes a no-op as soon as the pinned SDK is public.
 #
 # Remove this template and its references once the pinned SDK is publicly available or the branch
 # moves to a public SDK.
