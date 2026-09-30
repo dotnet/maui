@@ -197,8 +197,18 @@ Because gh-aw slash commands match only the first command token, the workflow li
 
 The workflow uses one skill,
 [`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
-and comment formatting. The local runner uses that same skill. Both use GPT-6 Astra
-(`gpt-6-astra`), as do the offline attribution evaluations and their judge.
+and comment formatting. The local runner uses that same skill. The hosted workflow,
+like the other gh-aw workflows, uses GPT-6.1 Sol (`gpt-6.1-sol`) through the Responses
+API. The local runner and offline evaluations keep their independently configured
+models.
+
+The pinned gh-aw **v0.86.2** runtime does not yet include this model's pricing or
+wire-protocol metadata. Each workflow explicitly sets
+`COPILOT_PROVIDER_WIRE_API: responses` and imports
+[`shared/gpt-6.1-sol.md`](../workflows/shared/gpt-6.1-sol.md) for model-specific
+pricing, preserving AI-credit accounting without a fallback to another model.
+The per-token prices come from the
+[OpenAI model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
 It gathers evidence from:
 
