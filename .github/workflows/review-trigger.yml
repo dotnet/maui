@@ -548,13 +548,6 @@ jobs:
           if (-not $locked) {
             throw "Failed to apply s/agent-review-in-progress to PR #$($env:PR_NUMBER)."
           }
-          if ($labels -contains 's/agent-ready-for-rerun') {
-            if (Remove-Label -PRNumber $env:PR_NUMBER -LabelName 's/agent-ready-for-rerun' -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
-              Write-Host "  ✅ Removed stale queue label: s/agent-ready-for-rerun"
-            } else {
-              Write-Host "  ⚠️  Could not remove stale queue label: s/agent-ready-for-rerun" -ForegroundColor Yellow
-            }
-          }
           "locked=false" >> $env:GITHUB_OUTPUT
           "state=acquired" >> $env:GITHUB_OUTPUT
 
@@ -852,8 +845,8 @@ jobs:
           # never enter this job, leaving their comments fully visible.
           #
           # We MINIMIZE (hide as resolved) rather than delete so the command — and its
-          # --branch/--platform options — survives in the REST comment history that the rerun
-          # scanner replays. Minimized comments are still returned by the REST list endpoint;
+          # --branch/--platform options — survives in the REST comment history.
+          # Minimized comments are still returned by the REST list endpoint;
           # only collapsed in the web UI. A failed hide must never fail the review trigger.
           #
           # The rocket reaction and minimized state are durable idempotency
