@@ -125,10 +125,8 @@ stages:
       fetchDepth: 1
 
     - ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
+      - template: /eng/pipelines/common/internal-sdk.yml
       - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-    # TEMPORARY: builds without internal feeds fall back to a public SDK while the pinned SDK is internal-only.
-    - ${{ else }}:
-      - template: /eng/pipelines/common/public-sdk-fallback.yml
 
     - bash: |
         set -euo pipefail

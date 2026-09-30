@@ -1,0 +1,59 @@
+# TEMPORARY: select the internal RC2 SDK only after the caller's trusted-build gate.
+# Public/local builds use the public SDK recorded in global.json and eng/Versions.props.
+# Internal SDK: BAR 334412 from dotnet-dotnet.
+# Remove this template and its references once the requested SDK is publicly available.
+parameters:
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+  internalSdkVersion: 11.0.100-rc.2.26478.115
+  internalSdkCommit: 491b6df29d9d56266c00cfe7552f59c4f6da43e5
+
+steps:
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+
+    $root = '${{ parameters.checkoutDirectory }}'
+    $internalSdk = '${{ parameters.internalSdkVersion }}'
+    $globalJsonPath = Join-Path $root 'global.json'
+    $versionsPropsPath = Join-Path $root 'eng/Versions.props'
+    $publicSdk = (Get-Content -LiteralPath $globalJsonPath -Raw | ConvertFrom-Json).tools.dotnet
+
+    $replacements = @(
+      @{ Path = $globalJsonPath; Pattern = '("dotnet"\s*:\s*")' + [regex]::Escape($publicSdk) + '"'; Replacement = '${1}' + $internalSdk + '"' }
+      @{ Path = $versionsPropsPath; Pattern = '<MicrosoftNETSdkPackageVersion>' + [regex]::Escape($publicSdk) + '</MicrosoftNETSdkPackageVersion>'; Replacement = "<MicrosoftNETSdkPackageVersion>$internalSdk</MicrosoftNETSdkPackageVersion>" }
+    )
+    foreach ($item in $replacements) {
+      $content = [IO.File]::ReadAllText($item.Path)
+      $matchCount = [regex]::Matches($content, $item.Pattern).Count
+      if ($matchCount -ne 1) {
+        Write-Host "##vso[task.logissue type=error]Expected one SDK pin in $($item.Path), found $matchCount."
+        exit 1
+      }
+      [IO.File]::WriteAllText($item.Path, [regex]::Replace($content, $item.Pattern, $item.Replacement))
+    }
+
+    $versionDetailsPath = Join-Path $root 'eng/Version.Details.xml'
+    $versionDetails = New-Object xml
+    $versionDetails.PreserveWhitespace = $true
+    $versionDetails.Load($versionDetailsPath)
+    $sdkDependency = $versionDetails.SelectSingleNode("/Dependencies/ProductDependencies/Dependency[@Name='Microsoft.NET.Sdk']")
+    if ($null -eq $sdkDependency) {
+      throw "Microsoft.NET.Sdk dependency not found in $versionDetailsPath."
+    }
+    $sdkDependency.SetAttribute('Version', $internalSdk)
+    $sdkDependency.Uri = 'https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet'
+    $sdkDependency.Sha = '${{ parameters.internalSdkCommit }}'
+    $versionDetails.Save($versionDetailsPath)
+
+    # Do not mix the public SDK's servicing packs with authenticated internal packs.
+    $nugetConfigPath = Join-Path $root 'NuGet.config'
+    $nugetConfig = New-Object xml
+    $nugetConfig.PreserveWhitespace = $true
+    $nugetConfig.Load($nugetConfigPath)
+    $publicSdkFeed = $nugetConfig.SelectSingleNode("/configuration/packageSources/add[@key='temporary-darc-pub-dotnet-dotnet-e4bafa1e']")
+    if ($publicSdkFeed) {
+      $null = $publicSdkFeed.ParentNode.RemoveChild($publicSdkFeed)
+      $nugetConfig.Save($nugetConfigPath)
+    }
+
+    Write-Host "Using internal SDK $internalSdk for this trusted build."
+  displayName: 'Select internal RC2 SDK for trusted builds'

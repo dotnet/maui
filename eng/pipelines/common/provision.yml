@@ -41,6 +41,10 @@ steps:
 ##################################################
 
 - ${{ if and(ne(parameters.skipInternalFeeds, 'true'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.DefinitionName'], 'dotnet-maui', 'dotnet-maui-build')) }}:
+  - template: internal-sdk.yml
+    parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
       # Write the job's build service token into NuGet.config so `dotnet workload install` can
@@ -62,12 +66,6 @@ steps:
         outputVariableName: dotnetbuilds-internal-container-read-token
         expiryInHours: ${{ parameters.expiryInHours }}
         base64Encode: false
-
-# TEMPORARY: builds without internal feeds fall back to a public SDK while the pinned SDK is internal-only.
-- ${{ else }}:
-  - template: public-sdk-fallback.yml
-    parameters:
-      checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
 ##################################################
 #               Provisioning macOS               #
