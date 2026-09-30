@@ -29,3 +29,4 @@ override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEv
 override Microsoft.Maui.Platform.MauiPickerBase.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiAppCompatEditText.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiAppCompatEditText.PerformLongClick() -> bool
+override Microsoft.Maui.Platform.MauiAppCompatEditText.PerformAccessibilityAction(Android.Views.Accessibility.Action action, Android.OS.Bundle? arguments) -> bool

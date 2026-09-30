@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 
@@ -43,6 +44,20 @@ namespace Microsoft.Maui.Platform
 			try
 			{
 				return base.PerformLongClick();
+			}
+			finally
+			{
+				TouchEventFontDeferral.OnHandlingFinished(this);
+			}
+		}
+
+		public override bool PerformAccessibilityAction(global::Android.Views.Accessibility.Action action, Bundle? arguments)
+		{
+			TouchEventFontDeferral.OnHandlingStarted();
+
+			try
+			{
+				return base.PerformAccessibilityAction(action, arguments);
 			}
 			finally
 			{

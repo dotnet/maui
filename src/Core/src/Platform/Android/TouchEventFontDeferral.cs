@@ -3,15 +3,16 @@ using Android.Widget;
 namespace Microsoft.Maui.Platform
 {
 	/// <summary>
-	/// Postpones font changes that are requested while an EditText is handling a touch event or a long click
-	/// until TextView has finished handling it.
+	/// Postpones font changes that are requested while an EditText is handling a touch event, a long click or an
+	/// accessibility action until TextView has finished handling it.
 	/// </summary>
 	/// <remarks>
 	/// Changing the typeface or text size nulls the TextView's text layout. An EditText gains focus in the middle
-	/// of handling a tap (ACTION_UP) or a long click, so a font change made synchronously on focus (for example by
-	/// a trigger on IsFocused) would null the layout before TextView finishes, and TextView would then skip
-	/// everything it only does with a valid layout: cursor placement, word selection, the insertion handle and
-	/// the soft keyboard request (#38819). Applying the font right afterwards keeps the native handling intact.
+	/// of handling a tap (ACTION_UP), a long click or an accessibility click, so a font change made synchronously on
+	/// focus (for example by a trigger on IsFocused) would null the layout before TextView finishes, and TextView
+	/// would then skip everything it only does with a valid layout: cursor placement, word selection, the insertion
+	/// handle, and the choice between the autofill fill dialog and the soft keyboard (#38819). Applying the font
+	/// right afterwards keeps the native handling intact.
 	/// </remarks>
 	internal sealed class TouchEventFontDeferral
 	{

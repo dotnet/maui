@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
-			// A font change nulls the text layout that TextView still needs while it handles a touch event or long click
+			// A font change nulls the text layout that TextView still needs while it handles a touch or accessibility action
 			if (GetTouchEventFontDeferral(textView)?.TryDefer(textStyle, fontManager) is true)
 			{
 				return;
