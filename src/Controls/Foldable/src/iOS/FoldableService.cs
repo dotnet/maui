@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Foldable
 {
 	class FoldableService : IFoldableService, IDisposable
 	{
-		static readonly UIViewReservedRegionKind DivisionRegionKind = UIViewReservedRegionKind.CreateDivision();
 		readonly WeakEventManager _hingeAngleChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
@@ -74,7 +73,7 @@ namespace Microsoft.Maui.Foldable
 			if (platformView?.Window == null || !OperatingSystem.IsIOSVersionAtLeast(27, 1))
 				return Rect.Zero;
 
-			var regions = platformView.GetReservedRegions(DivisionRegionKind);
+			var regions = platformView.GetReservedRegions(UIViewReservedRegionKind.CreateDivision());
 			if (regions == null || regions.Length == 0)
 				return Rect.Zero;
 
