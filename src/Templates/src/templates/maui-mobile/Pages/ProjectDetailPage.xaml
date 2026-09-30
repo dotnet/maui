@@ -101,6 +101,7 @@
                     SelectionMode="Multiple"
                     HeightRequest="44"
                     Margin="0,0,0,15"
+                    SemanticProperties.Description="Tags Collection"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
                     SelectionChangedCommandParameter="{Binding SelectedTags}">
