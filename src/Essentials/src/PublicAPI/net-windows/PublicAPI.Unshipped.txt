@@ -52,3 +52,5 @@ static Microsoft.Maui.Authentication.Passkeys.CreateAsync(string! creationOption
 static Microsoft.Maui.Authentication.Passkeys.Default.get -> Microsoft.Maui.Authentication.IPasskeys!
 static Microsoft.Maui.Authentication.Passkeys.IsSupported.get -> bool
 Microsoft.Maui.Media.Locale.Locale(string? language, string? country, string? name, string? id) -> void
+Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.PreviewImage.get -> Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile?
+Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.PreviewImage.set -> void

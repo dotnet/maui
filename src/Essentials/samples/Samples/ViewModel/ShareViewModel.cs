@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using Samples.Helpers;
 
@@ -12,6 +14,7 @@ namespace Samples.ViewModel
 	{
 		bool shareText = true;
 		bool shareUri;
+		bool sharePreviewImage;
 		string text;
 		string uri;
 		string subject;
@@ -54,6 +57,12 @@ namespace Samples.ViewModel
 		{
 			get => text;
 			set => SetProperty(ref text, value);
+		}
+
+		public bool SharePreviewImage
+		{
+			get => sharePreviewImage;
+			set => SetProperty(ref sharePreviewImage, value);
 		}
 
 		public string Uri
@@ -129,8 +138,19 @@ namespace Samples.ViewModel
 				Text = ShareText ? Text : null,
 				Uri = ShareUri ? Uri : null,
 				Title = Title,
+				PreviewImage = SharePreviewImage ? await CreatePreviewImage() : null,
 				PresentationSourceBounds = element.GetAbsoluteBounds()
 			});
+
+		static async Task<ShareFile> CreatePreviewImage()
+		{
+			var screenshot = await Screenshot.CaptureAsync();
+			var file = Path.Combine(FileSystem.CacheDirectory, "SharePreview.png");
+			using (var source = await screenshot.OpenReadAsync(ScreenshotFormat.Png))
+			using (var destination = File.Create(file))
+				await source.CopyToAsync(destination);
+			return new ShareFile(file);
+		}
 
 		async void OnFileRequest(Microsoft.Maui.Controls.View element)
 		{
