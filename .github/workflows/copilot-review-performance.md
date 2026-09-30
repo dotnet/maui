@@ -29,7 +29,7 @@ on:
           if (context.eventName !== 'workflow_dispatch' ||
               context.ref !== 'refs/heads/kubaflo-performance-review-canary' ||
               String(context.payload.inputs?.suppress_output) !== 'true') {
-            core.setFailed('This secret-free canary accepts only an explicit dry-run dispatch on its dedicated branch.');
+            core.setFailed('This measurement-only canary accepts only an explicit dry-run dispatch on its dedicated branch.');
             return;
           }
           if (context.eventName === 'issue_comment') {
@@ -118,7 +118,7 @@ jobs:
           path: ${{ runner.temp }}/performance-context
       - name: Run isolated managed ABBA measurements
         # Evidence preparation must still report failed or timed-out measurements.
-        continue-on-error: true
+        continue-on-error: false
         env:
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
         run: |
@@ -137,6 +137,17 @@ jobs:
             ${{ runner.temp }}/performance-measurements/table.md
           retention-days: 7
           if-no-files-found: warn
+      - name: Upload measurement diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: performance-diagnostics-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/performance-measurements/run/results/*/*/build.log
+            ${{ runner.temp }}/performance-measurements/run/results/*/*/run*/benchmark.log
+            ${{ runner.temp }}/performance-measurements/run/results/*/prerequisites/build-tasks.log
+          retention-days: 7
+          if-no-files-found: ignore
   evidence:
     needs: [activation, measurements]
     if: ${{ !cancelled() && needs.activation.result == 'success' }}
@@ -176,7 +187,7 @@ jobs:
           if-no-files-found: error
   agent:
     needs: [evidence]
-    if: ${{ !cancelled() && needs.evidence.result == 'success' }}
+    if: ${{ false }}
   notify_failure:
     needs: [pre_activation, activation, measurements, evidence, agent, detection, safe_outputs]
     if: >-
@@ -305,7 +316,7 @@ steps:
       path: /tmp/gh-aw/agent/performance-evidence
 ---
 
-# Review PR Performance
+# Review Performance Measurement Canary
 
 Use **perf-analysis** for `${{ github.repository }}` PR
 `${{ github.event.issue.number || inputs.pr_number }}`. Follow its coverage and
