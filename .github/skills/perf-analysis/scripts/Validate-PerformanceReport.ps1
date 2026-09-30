@@ -236,10 +236,10 @@ if ($null -ne $decision) {
     $sampledProductFiles = @($selection.sampledProductFiles | Where-Object { $null -ne $_ })
     $staticOnlyProductFiles = @($selection.staticOnlyProductFiles | Where-Object { $null -ne $_ })
     $unsupportedDevicePath = $deviceScenarios.Count -gt 0
-    $summaryComplete = $null -ne $summary `
-        -and [bool](Get-PropertyValue $summary "coverageComplete") `
+    $executionComplete = $null -ne $summary `
         -and [bool](Get-PropertyValue $summary "executionComplete") `
         -and [bool](Get-PropertyValue $summary "benchmarkDataComplete")
+    $summaryComplete = $executionComplete -and [bool](Get-PropertyValue $summary "coverageComplete")
     $managedCount = $null
     $deviceCount = $null
     $productFileCount = Get-PropertyValue $coverage "productFileCount"
@@ -297,7 +297,7 @@ if ($null -ne $decision) {
     $hasMeasuredImprovement = $wholePrEvidenceComplete -and
         $null -ne $summary -and [string]$summary.verdict -eq "improvement"
 
-    $supportedMeasurementPath = -not $summaryComplete -and @(
+    $supportedMeasurementPath = -not $executionComplete -and @(
         $selection.suites | Where-Object { @($_.runnableFilters | Where-Object { $_ }).Count -gt 0 }
     ).Count -gt 0
     $hasCoverageGap = -not $wholePrEvidenceComplete `

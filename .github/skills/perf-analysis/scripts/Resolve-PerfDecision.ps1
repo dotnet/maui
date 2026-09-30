@@ -46,11 +46,11 @@ else {
 $coverage = $selection.coverage
 $deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
 
-$summaryComplete = $null -ne $summary `
-    -and [bool](Get-PropertyValue $summary "coverageComplete") `
+$executionComplete = $null -ne $summary `
     -and [bool](Get-PropertyValue $summary "executionComplete") `
     -and [bool](Get-PropertyValue $summary "benchmarkDataComplete")
-$supportedMeasurementPath = -not $summaryComplete -and @(
+$summaryComplete = $executionComplete -and [bool](Get-PropertyValue $summary "coverageComplete")
+$supportedMeasurementPath = -not $executionComplete -and @(
     $selection.suites | Where-Object { @($_.runnableFilters | Where-Object { $_ }).Count -gt 0 }
 ).Count -gt 0
 
@@ -119,10 +119,7 @@ $hasCoverageGap = -not $wholePrEvidenceComplete `
     -or $sampledFiles.Count -gt 0 `
     -or $staticFiles.Count -gt 0 `
     -or $deviceScenarios.Count -gt 0
-$executionIncomplete = $null -ne $summary -and (
-    -not [bool](Get-PropertyValue $summary "executionComplete") -or
-    -not [bool](Get-PropertyValue $summary "benchmarkDataComplete")
-)
+$executionIncomplete = $null -ne $summary -and -not $executionComplete
 $pureStaticOnly = $null -eq $summary `
     -and $deviceScenarios.Count -eq 0 `
     -and @($selection.suites | Where-Object { $null -ne $_ }).Count -eq 0 `
