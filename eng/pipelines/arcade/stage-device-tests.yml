@@ -1,4 +1,5 @@
 # Template for devicetests on dnceng
+# Public jobs with fresh checkouts need the RC2 SDK fallback before invoking .NET.
 parameters:
 - name: prepareSteps
   type: stepList
@@ -172,6 +173,11 @@ stages:
           fetchDepth: 1
           clean: true
 
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+            parameters:
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
           condition: succeeded()
@@ -223,6 +229,11 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
+
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+            parameters:
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
@@ -337,6 +348,11 @@ stages:
           fetchDepth: 1
           clean: true
 
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+            parameters:
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
           condition: succeeded()
@@ -388,6 +404,11 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
+
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+            parameters:
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
@@ -443,6 +464,11 @@ stages:
           fetchDepth: 1
           clean: true
 
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+            parameters:
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
           condition: succeeded()
@@ -497,6 +523,11 @@ stages:
             clean: true
 
           steps:
+          - ${{ if eq(parameters.runAsPublic, true) }}:
+            - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+              parameters:
+                checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
           # Restore dotnet tools (required for dotnet cake)
           - script: dotnet tool restore
             displayName: 'Restore .NET tools'
@@ -667,6 +698,11 @@ stages:
           - checkout: self
             fetchDepth: 1
             clean: true
+
+          - ${{ if eq(parameters.runAsPublic, true) }}:
+            - template: /eng/pipelines/common/public-sdk-fallback.yml@self
+              parameters:
+                checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download Build'
