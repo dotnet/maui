@@ -1,29 +1,13 @@
 ---
 description: Measure selected managed benchmarks and review performance coverage for an authorized PR.
 
-imports:
-  - uses: shared/pat_pool.md
-    with:
-      environment: copilot-pat-pool
-      random_seed: 0
-
-environment: copilot-pat-pool
-
 on:
-  # Registration only: the command gate rejects push events.
-  push:
-    branches: [kubaflo-performance-review-canary]
-  slash_command:
-    name: review
-    events: [pull_request_comment]
   roles: [admin, maintain, write]
-  skip-author-associations:
-    issue_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
   reaction: none
   status-comment: false
   permissions:
     contents: read
-    pull-requests: write
+    pull-requests: read
   workflow_dispatch:
     inputs:
       pr_number:
@@ -42,8 +26,10 @@ on:
       with:
         script: |
           core.setOutput('authorized', 'false');
-          if (context.ref !== `refs/heads/${context.payload.repository.default_branch}`) {
-            core.info('Performance review infrastructure must run from the default branch.');
+          if (context.eventName !== 'workflow_dispatch' ||
+              context.ref !== 'refs/heads/kubaflo-performance-review-canary' ||
+              String(context.payload.inputs?.suppress_output) !== 'true') {
+            core.setFailed('This secret-free canary accepts only an explicit dry-run dispatch on its dedicated branch.');
             return;
           }
           if (context.eventName === 'issue_comment') {
@@ -101,12 +87,11 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  copilot-requests: write
 
 model: gpt-5.6-sol
 engine:
   id: copilot
-  env:
-    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 skills:
   - .github/skills/perf-analysis
@@ -241,7 +226,7 @@ jobs:
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [evidence]
-  staged: ${{ github.event_name == 'workflow_dispatch' && inputs.suppress_output == true }}
+  staged: true
   data: true
   messages:
     body-header: "<!-- Performance Review -->\n<!-- review-performance-run:{run_url} -->"
