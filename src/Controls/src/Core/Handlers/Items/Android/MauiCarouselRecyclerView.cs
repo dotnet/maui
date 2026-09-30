@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_isInternalPositionUpdate = false;
 				return;
 			}
-			//var savedCurrentItem = Carousel.CurrentItem;
+
 			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
 			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
