@@ -5,8 +5,6 @@
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
     <UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug' and 
     ('$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' or 
-    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' or 
-    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' or 
     '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' or 
     '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen')">True</UseInterpreter>
   </PropertyGroup>
