@@ -613,7 +613,7 @@ internal static class LayoutFactory2
 				return false;
 			}
 
-			return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+			return true;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
