@@ -153,6 +153,9 @@ does not post a comment. Evidence, rendered reports, and separate SDK-install,
 build, and benchmark diagnostic artifacts are retained for seven days. Diagnostic
 logs are not admitted as measurement evidence. Failed automation posts a run link
 rather than a performance verdict; stale evidence is never published as a current report.
+Retry with a fresh dispatch or `/review performance` command, not **Re-run failed
+jobs**: repeated attempts can leave same-named gh-aw agent artifacts in one run,
+allowing a downstream job to download an earlier failed attempt's empty output.
 
 No new Azure pipeline, service connection, or secret is needed. The workflow uses
 the existing `copilot-pat-pool` environment for GPT interpretation and read-only
