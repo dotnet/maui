@@ -8,6 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 
 public class LabelFeatureTests : _GalleryUITest
 {
+	const string LongSampleText = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea";
 	public const string LabelFeatureMatrix = "Label Feature Matrix";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
@@ -867,7 +868,7 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.WaitForElement(MainLabel);
 		Assert.That(() => App.FindElement(MainLabel).GetText(),
-			Is.EqualTo("Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea").After(5000, 100));
+			Is.EqualTo(LongSampleText).After(5000, 100));
 		var previous = App.FindElement(MainLabel).GetRect();
 		Assert.That(() =>
 		{

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -15,6 +17,100 @@ public class ResizetizerTests : BaseBuildTest
 			<rect x="0" y="0" width="456" height="456" fill="#512BD4" />
 		</svg>
 		""";
+
+	[Theory]
+	[InlineData("ios")]
+	[InlineData("maccatalyst")]
+	public void BuildsAppleIconComposerMauiIconIncrementally(string platform)
+	{
+		SetTestIdentifier(platform);
+
+		if (!TestEnvironment.IsMacOS || !SupportsAppleIconComposer(platform))
+			return;
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var framework = $"{DotNetCurrent}-{platform}";
+		const string config = "Debug";
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		var originalProject = File.ReadAllText(projectFile);
+
+		// Establish the unchanged template baseline before switching to a native icon.
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The ordinary MauiIcon baseline failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon");
+
+		var bundleDir = Path.Combine(projectDir, "Native Icon Resources", "Distinctive.icon");
+		var assetsDir = Path.Combine(bundleDir, "Assets");
+		var frontAsset = Path.Combine(assetsDir, "front.png");
+		Directory.CreateDirectory(assetsDir);
+		File.Copy(
+			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon1024.png"),
+			Path.Combine(assetsDir, "back.png"));
+		File.Copy(
+			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon512.png"),
+			frontAsset);
+		WriteIconJson(bundleDir, "back.png", "front.png");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"</Project>",
+			"""
+			<ItemGroup>
+				<MauiIcon Remove="Resources\AppIcon\appicon.svg" />
+				<MauiIcon Include="Native Icon Resources\Distinctive.icon" />
+			</ItemGroup>
+			</Project>
+			""");
+		var nativeProject = File.ReadAllText(projectFile);
+
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon build failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+		var nativeAssetsHash = GetAppleAssetsHash(projectDir, framework, config);
+		Assert.DoesNotContain(
+			Directory.GetFiles(Path.Combine(projectDir, "obj", config, framework), "*Distinctive*", SearchOption.AllDirectories),
+			path => path.Contains($"{Path.DirectorySeparatorChar}resizetizer{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
+
+		// No-op incremental build.
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon no-op build failed for {framework}.");
+		Assert.Equal(nativeAssetsHash, GetAppleAssetsHash(projectDir, framework, config));
+
+		// Content update, followed by a deletion/rename that changes the recursively collected item list.
+		var originalFrontWriteTime = File.GetLastWriteTimeUtc(frontAsset);
+		File.Copy(
+			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon256.png"),
+			frontAsset,
+			overwrite: true);
+		File.SetLastWriteTimeUtc(frontAsset, originalFrontWriteTime.AddMinutes(-1));
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon content-update build failed for {framework}.");
+		Assert.NotEqual(nativeAssetsHash, GetAppleAssetsHash(projectDir, framework, config));
+
+		File.Delete(Path.Combine(assetsDir, "back.png"));
+		File.Move(Path.Combine(assetsDir, "front.png"), Path.Combine(assetsDir, "renamed.png"));
+		WriteIconJson(bundleDir, "renamed.png");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon delete/rename build failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+
+		// Switching back without Clean must invalidate native ACTool caches, restore the
+		// existing Resizetizer path, and restore the legacy manifest selection.
+		File.WriteAllText(projectFile, originalProject);
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"Switching back to the ordinary MauiIcon failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon", unexpectedIconName: "Distinctive");
+
+		File.WriteAllText(projectFile, nativeProject);
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "Clean", framework: framework, properties: BuildProps, output: _output),
+			$"Clean failed for {framework}.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon clean rebuild failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+	}
 
 	[Theory]
 	// windows unpackaged/exe
@@ -768,6 +864,106 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(File.Exists(assetsFile), $"Early opt-in asset output list was not created: {assetsFile}");
 		var processedAssets = File.ReadAllLines(assetsFile);
 		Assert.NotEmpty(processedAssets);
+	}
+
+	static bool SupportsAppleIconComposer(string platform)
+	{
+		if (!DotNetCurrent.StartsWith("net11.", StringComparison.OrdinalIgnoreCase))
+			return false;
+
+		var packsDirectory = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet", "packs");
+		if (!Directory.Exists(packsDirectory))
+			return false;
+
+		var sdkPackPrefix = platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase)
+			? "Microsoft.MacCatalyst.Sdk"
+			: "Microsoft.iOS.Sdk";
+		var sdkPack = $"{sdkPackPrefix}.{DotNetCurrent}_*";
+
+		return Directory.GetDirectories(packsDirectory, sdkPack)
+			.SelectMany(pack => Directory.GetDirectories(pack))
+			.Select(path => Path.GetFileName(path).Split('-', 2)[0])
+			.Any(version => Version.TryParse(version, out var parsed) && parsed >= new Version(26, 5, 11720));
+	}
+
+	static void WriteIconJson(string bundleDirectory, params string[] imageNames)
+	{
+		var layers = string.Join(
+			",",
+			imageNames.Select((imageName, index) => $$"""{"image-name":"{{imageName}}","name":"layer{{index}}"}"""));
+		File.WriteAllText(
+			Path.Combine(bundleDirectory, "icon.json"),
+			$$"""{"groups":[{"layers":[{{layers}}]}]}""");
+	}
+
+	static void AssertAppleAssets(
+		string projectDirectory,
+		string framework,
+		string configuration,
+		string expectedIconName,
+		bool requireComposerRenditions = false,
+		string? unexpectedIconName = null)
+	{
+		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
+		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
+		var assetsCar = Directory.GetFiles(appDirectory, "Assets.car", SearchOption.AllDirectories).Single();
+		var infoPlist = framework.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase)
+			? Path.Combine(appDirectory, "Contents", "Info.plist")
+			: Path.Combine(appDirectory, "Info.plist");
+		Assert.True(File.Exists(infoPlist), $"Missing app manifest '{infoPlist}'.");
+
+		var assetInfo = RunTool("xcrun", "assetutil", "--info", assetsCar);
+		Assert.Contains(expectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
+		if (unexpectedIconName is not null)
+			Assert.DoesNotContain(unexpectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
+		if (requireComposerRenditions)
+		{
+			Assert.Contains("IconGroup", assetInfo, StringComparison.Ordinal);
+			Assert.Contains("IconImageStack", assetInfo, StringComparison.Ordinal);
+		}
+
+		var plist = RunTool("plutil", "-p", infoPlist);
+		Assert.Contains(expectedIconName, plist, StringComparison.OrdinalIgnoreCase);
+		if (requireComposerRenditions)
+			Assert.DoesNotContain("XSAppIconAssets", plist, StringComparison.Ordinal);
+	}
+
+	static string GetAppleAssetsHash(string projectDirectory, string framework, string configuration)
+	{
+		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
+		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
+		var assetsCar = Directory.GetFiles(appDirectory, "Assets.car", SearchOption.AllDirectories).Single();
+		return Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assetsCar)));
+	}
+
+	static string RunTool(string fileName, params string[] arguments)
+	{
+		const int timeoutMilliseconds = 60_000;
+		var startInfo = new ProcessStartInfo(fileName)
+		{
+			RedirectStandardOutput = true,
+			RedirectStandardError = true,
+			UseShellExecute = false,
+		};
+		foreach (var argument in arguments)
+			startInfo.ArgumentList.Add(argument);
+
+		using var process = Process.Start(startInfo)!;
+		var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+		var standardErrorTask = process.StandardError.ReadToEndAsync();
+		if (!process.WaitForExit(timeoutMilliseconds))
+		{
+			process.Kill(entireProcessTree: true);
+			process.WaitForExit();
+			var timedOutOutput = standardOutputTask.GetAwaiter().GetResult();
+			var timedOutError = standardErrorTask.GetAwaiter().GetResult();
+			Assert.Fail($"{fileName} timed out after {timeoutMilliseconds}ms.{Environment.NewLine}{timedOutOutput}{timedOutError}");
+		}
+
+		var standardOutput = standardOutputTask.GetAwaiter().GetResult();
+		var standardError = standardErrorTask.GetAwaiter().GetResult();
+		Assert.True(process.ExitCode == 0, $"{fileName} failed with exit code {process.ExitCode}:{Environment.NewLine}{standardError}");
+		return standardOutput;
 	}
 
 	[Theory]
