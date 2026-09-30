@@ -187,5 +187,10 @@ metadata: `New-PerformanceReport.ps1` owns those fields, and
 `Validate-PerformanceReport.ps1` checks them independently. If execution failed,
 name the failed suite/build/run from the manifest; do not paste raw logs.
 
+The trusted renderer also owns the visible title, pinned author/commit notice,
+and Scope/Result/Commit badges. It puts all report content in two closed sections,
+**Performance Results** and **Findings & Follow-up**, even for static-only or
+incomplete evidence. Supply narrative text, not HTML or a replacement layout.
+
 Do not return `noop` merely because coverage is incomplete. Submit the same
 narrative in dry-run mode; staging suppresses publication, not validation.

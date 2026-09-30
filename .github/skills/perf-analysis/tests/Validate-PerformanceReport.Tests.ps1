@@ -98,11 +98,15 @@ function New-Decision(
     }
 }
 
-function Write-Report([string]$path, $decision, [bool]$concise = $false) {
+function Write-Report([string]$path, $decision, [bool]$concise, [bool]$hasEmpiricalEvidence) {
     $decisionJson = ConvertTo-Json -InputObject $decision -Depth 10 -Compress
     $verdict = (Get-Content $policy -Raw | ConvertFrom-Json).reportVerdicts |
         Where-Object { $_.id -eq $decision.verdictClass } |
-        Select-Object -ExpandProperty label -First 1
+        Select-Object -First 1
+    $scope = if ($hasEmpiricalEvidence) { "Managed benchmarks" } else { "Static review only" }
+    $scopeSegment = [uri]::EscapeDataString($scope)
+    $resultSegment = [uri]::EscapeDataString($verdict.badgeLabel)
+    $sha = "a" * 40
     $optionalSections = if ($concise) {
         ""
     } else {
@@ -122,20 +126,46 @@ test
 "@
     }
     @"
-## Performance analysis
+## Performance Review Summary
 
-**Verdict:** $verdict
+> @perf-author &#x2014; performance review for commit [``aaaaaaaaaaaa``](https://github.com/dotnet/maui/commit/$sha).
+
+<p align="left">
+  <img alt="Scope $scope" src="https://img.shields.io/badge/Scope-$scopeSegment-1f6feb?labelColor=30363d&amp;style=flat-square">
+  <img alt="Result $($verdict.badgeLabel)" src="https://img.shields.io/badge/Result-$resultSegment-$($verdict.badgeColor)?labelColor=30363d&amp;style=flat-square">
+  <img alt="Commit aaaaaaaaaaaa" src="https://img.shields.io/badge/Commit-aaaaaaaaaaaa-1f6feb?labelColor=30363d&amp;style=flat-square">
+</p>
+
+---
+
+<details>
+<summary><strong>Performance Results</strong></summary>
+
+**Verdict:** $($verdict.label)
+
+### Coverage
+
+test
+
+</details>
+
+---
+
+<details>
+<summary><strong>Findings &amp; Follow-up</strong></summary>
+
+### Static hot-path review
+
+test
 
 $optionalSections
 ### Recommended next action
 
 test
 
-### Coverage
-
-test
-
 > Automated analysis by the **perf-analysis** skill.
+
+</details>
 
 <!-- perf-analysis-decision: $decisionJson -->
 "@ | Set-Content $path -Encoding UTF8
@@ -147,7 +177,8 @@ function Invoke-Validation(
     $selection,
     $summary,
     [bool]$concise = $false,
-    $decisionBaseline = $null
+    $decisionBaseline = $null,
+    [scriptblock]$transform = $null
 ) {
     $caseRoot = Join-Path $testRoot $name
     New-Item -ItemType Directory -Force -Path $caseRoot | Out-Null
@@ -155,13 +186,18 @@ function Invoke-Validation(
     $selectionPath = Join-Path $caseRoot "selection.json"
     $summaryPath = Join-Path $caseRoot "summary.json"
     $validationPath = Join-Path $caseRoot "validation.json"
-    Write-Report $reportPath $decision $concise
+    Write-Report $reportPath $decision $concise ($null -ne $summary)
+    if ($null -ne $transform) {
+        (& $transform (Get-Content $reportPath -Raw).Replace("`r`n", "`n")) |
+            Set-Content $reportPath -Encoding UTF8
+    }
     Write-Json $selectionPath $selection
     if ($null -ne $summary) {
         Write-Json $summaryPath $summary
     }
 
     $arguments = @{
+        PrMetadataPath = $prMetadataPath
         ReportPath = $reportPath
         PolicyPath = $policy
         SelectionPath = $selectionPath
@@ -189,6 +225,12 @@ function Invoke-Validation(
 New-Item -ItemType Directory -Force -Path $testRoot | Out-Null
 
 try {
+    $prMetadataPath = Join-Path $testRoot "pr-resolved.json"
+    Write-Json $prMetadataPath @{
+        repository = "dotnet/maui"
+        headRefOid = "a" * 40
+        author = "perf-author"
+    }
     $clean = Invoke-Validation `
         "clean" `
         (New-Decision "not-applicable" "no_concerns" "clean") `
@@ -344,6 +386,36 @@ try {
         $true `
         $baseline
     Assert-Equal 0 $staticEscalation.ExitCode "Error-level static review may escalate the sealed baseline"
+
+    $invalidLayouts = [ordered]@{
+        flat = { param($text) $text -replace '(?m)^</?details>\n?', '' -replace '(?m)^<summary>.*</summary>\n?', '' }
+        expanded = { param($text) $text.Replace("<details>", "<details open>") }
+        nested = { param($text) $text.Replace("</details>`n`n---`n`n<details>", "<details>") }
+        extra = { param($text) $text.Replace("<!-- perf-analysis-decision:", "<details>`n<summary>Extra</summary>`n`nextra`n</details>`n`n<!-- perf-analysis-decision:") }
+        wrongTitle = { param($text) $text.Replace("Performance Results", "Results") }
+        visibleNarrative = { param($text) $text.Replace("<p align=", "Expanded narrative`n`n<p align=") }
+        betweenSections = { param($text) $text.Replace("</details>`n`n---", "</details>`n`nExpanded narrative`n`n---") }
+        afterSections = { param($text) $text.Replace("<!-- perf-analysis-decision:", "Expanded narrative`n`n<!-- perf-analysis-decision:") }
+        wrongAuthor = { param($text) $text.Replace("@perf-author", "@someone-else") }
+        wrongCommit = { param($text) $text.Replace(("a" * 40), ("b" * 40)) }
+        misleadingBadge = { param($text) $text.Replace("Coverage%20incomplete", "No%20blocker") }
+        missingBadge = { param($text) $text -replace '(?m)^  <img alt="Result.*\n', '' }
+    }
+    foreach ($case in $invalidLayouts.GetEnumerator()) {
+        $invalid = Invoke-Validation `
+            -name "layout-$($case.Key)" `
+            -decision (New-Decision "not-applicable" "no_perf_action_needed" "no-blocker-incomplete") `
+            -selection (New-Selection $false "" 1) `
+            -summary $null `
+            -concise $true `
+            -transform $case.Value
+        Assert-Equal 2 $invalid.ExitCode "Invalid layout '$($case.Key)' must be rejected"
+        if (@($invalid.Validation.errors | Where-Object {
+            $_ -match 'sections|Visible content|Expanded narrative|collapsed'
+        }).Count -eq 0) {
+            throw "Invalid layout '$($case.Key)' did not produce a layout-specific validation error."
+        }
+    }
 
     Write-Host "All performance report validator tests passed."
 }

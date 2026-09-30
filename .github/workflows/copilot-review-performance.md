@@ -252,6 +252,7 @@ safe-outputs:
   needs: [evidence]
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.suppress_output == true }}
   data: true
+  allowed-domains: [img.shields.io]
   messages:
     body-header: "<!-- Performance Review -->\n<!-- review-performance-run:{run_url} -->"
   add-comment:
