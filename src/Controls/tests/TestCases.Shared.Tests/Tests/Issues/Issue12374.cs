@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] iOS XF 5.0-pre1 crash with CollectionView when using EmptyView";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void Issue12374Test()
 		{
 			App.WaitForElement("TestReady");

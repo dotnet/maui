@@ -514,6 +514,13 @@ namespace Microsoft.Maui.Controls
 			return OnBackButtonPressed();
 		}
 
+		bool? _hasBackButtonPressedOverride;
+
+		internal bool HasBackButtonPressedOverride =>
+			_hasBackButtonPressedOverride ??=
+				new Func<bool>(OnBackButtonPressed).Method.DeclaringType is Type declaringType &&
+				declaringType.Assembly != typeof(Page).Assembly;
+
 		/// <summary>
 		/// Lays out the child elements when the layout is invalidated.
 		/// </summary>

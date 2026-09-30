@@ -18,6 +18,12 @@
     but do not throw or exit with error codes.
 #>
 
+$ghRetryHelper = Join-Path $PSScriptRoot 'Invoke-GhCommandWithRetry.ps1'
+if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
+    throw "Required GitHub retry helper not found: $ghRetryHelper"
+}
+. $ghRetryHelper
+
 # ============================================================
 # Label definitions
 # ============================================================
@@ -71,30 +77,38 @@ function Ensure-LabelExists {
     )
 
     try {
-        # Check if label exists
-        $existing = gh api "repos/$Owner/$Repo/labels/$([uri]::EscapeDataString($LabelName))" 2>$null | ConvertFrom-Json
-        if ($LASTEXITCODE -eq 0 -and $existing) {
+        $labelEndpoint = "repos/$Owner/$Repo/labels/$([uri]::EscapeDataString($LabelName))"
+        $existingJson = Invoke-GhCommandWithRetry `
+            -Arguments @('api', $labelEndpoint) `
+            -Description "read label '$LabelName'" `
+            -AllowNotFound
+        if ($null -ne $existingJson) {
+            $existing = $existingJson | ConvertFrom-Json
             # Label exists — update if description or color changed
             $needsUpdate = ($existing.description -ne $Description) -or ($existing.color -ne $Color)
             if ($needsUpdate) {
-                gh api "repos/$Owner/$Repo/labels/$([uri]::EscapeDataString($LabelName))" `
-                    --method PATCH `
-                    -f description="$Description" `
-                    -f color="$Color" 2>$null | Out-Null
+                Invoke-GhCommandWithRetry `
+                    -Arguments @(
+                        'api', $labelEndpoint,
+                        '--method', 'PATCH',
+                        '-f', "description=$Description",
+                        '-f', "color=$Color"
+                    ) `
+                    -Description "update label '$LabelName'" | Out-Null
                 Write-Host "  🏷️  Updated label: $LabelName" -ForegroundColor Gray
             }
         } else {
             # Label doesn't exist — create it
-            gh api "repos/$Owner/$Repo/labels" `
-                --method POST `
-                -f name="$LabelName" `
-                -f description="$Description" `
-                -f color="$Color" 2>$null | Out-Null
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "  🏷️  Created label: $LabelName" -ForegroundColor Green
-            } else {
-                Write-Host "  ⚠️  Failed to create label: $LabelName" -ForegroundColor Yellow
-            }
+            Invoke-GhCommandWithRetry `
+                -Arguments @(
+                    'api', "repos/$Owner/$Repo/labels",
+                    '--method', 'POST',
+                    '-f', "name=$LabelName",
+                    '-f', "description=$Description",
+                    '-f', "color=$Color"
+                ) `
+                -Description "create label '$LabelName'" | Out-Null
+            Write-Host "  🏷️  Created label: $LabelName" -ForegroundColor Green
         }
     }
     catch {
@@ -112,9 +126,15 @@ function Get-AgentLabels {
         [string]$Repo = 'maui'
     )
 
-    $labels = gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null
-    if ($LASTEXITCODE -ne 0) { return @() }
-    return @($labels | Where-Object { $_ -like 's/agent-*' })
+    try {
+        $labels = Invoke-GhCommandWithRetry `
+            -Arguments @('api', "repos/$Owner/$Repo/issues/$PRNumber/labels", '--jq', '.[].name') `
+            -Description "read labels for PR #$PRNumber"
+        return @(($labels -split "`n") | Where-Object { $_ -like 's/agent-*' })
+    } catch {
+        Write-Host "  ⚠️  Failed to read labels for PR #${PRNumber}: $($_.Exception.Message)" -ForegroundColor Yellow
+        return @()
+    }
 }
 
 # ============================================================
@@ -132,22 +152,16 @@ function Add-Label {
     try {
         $tmp = New-TemporaryFile
         @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
-        $output = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
-            --method POST `
-            --input $tmp 2>&1
-        $exitCode = $LASTEXITCODE
-        if ($exitCode -eq 0) {
-            return $true
-        }
-
-        $message = ($output | Out-String).Trim()
-        if ([string]::IsNullOrWhiteSpace($message)) {
-            $message = "gh api exited with code $exitCode."
-        } elseif ($message.Length -gt 1000) {
-            $message = $message.Substring(0, 1000) + '...'
-        }
-
-        Write-Host "  ⚠️  Failed to add label '$LabelName' to PR #$PRNumber (gh api exit code $exitCode): $message" -ForegroundColor Yellow
+        Invoke-GhCommandWithRetry `
+            -Arguments @(
+                'api', "repos/$Owner/$Repo/issues/$PRNumber/labels",
+                '--method', 'POST',
+                '--input', $tmp.FullName
+            ) `
+            -Description "add label '$LabelName' to PR #$PRNumber" | Out-Null
+        return $true
+    } catch {
+        Write-Host "  ⚠️  Failed to add label '$LabelName' to PR #${PRNumber}: $($_.Exception.Message)" -ForegroundColor Yellow
         return $false
     } finally {
         if ($tmp) {
@@ -167,9 +181,19 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 1>$null 2>$null
-    return $LASTEXITCODE -eq 0
+    try {
+        Invoke-GhCommandWithRetry `
+            -Arguments @(
+                'api', "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))",
+                '--method', 'DELETE'
+            ) `
+            -Description "remove label '$LabelName' from PR #$PRNumber" `
+            -AllowNotFound | Out-Null
+        return $true
+    } catch {
+        Write-Host "  ⚠️  Failed to remove label '$LabelName' from PR #${PRNumber}: $($_.Exception.Message)" -ForegroundColor Yellow
+        return $false
+    }
 }
 
 # ============================================================
@@ -285,6 +309,35 @@ function Test-AgentReviewInProgressIsStale {
     return $false
 }
 
+function Get-AgentReviewInProgressAppliedAt {
+    <#
+    .SYNOPSIS
+        Returns the DateTimeOffset the in-progress lock label was most recently
+        applied, or $null when it isn't applied / history is unavailable.
+
+    .DESCRIPTION
+        Used to dedupe the "a review is already running" skip notice so at most
+        one notice is posted per in-progress cycle (see review-trigger.yml): a
+        skip comment newer than this timestamp means the current lock already
+        has a notice and a repeat /review must stay silent.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $label = 's/agent-review-in-progress'
+    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$label`") | .created_at" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $createdAtValues.Count -eq 0) {
+        return $null
+    }
+
+    return ($createdAtValues | ForEach-Object {
+        [datetimeoffset]::Parse([string]$_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+    } | Sort-Object -Descending | Select-Object -First 1)
+}
+
 # ============================================================
 # Update-AgentOutcomeLabel
 # ============================================================
@@ -333,6 +386,30 @@ function Update-AgentOutcomeLabel {
         }
     } else {
         Write-Host "  ✅ Already present: $targetLabel" -ForegroundColor Green
+    }
+}
+
+# ============================================================
+# Clear-AgentOutcomeLabels
+# ============================================================
+function Clear-AgentOutcomeLabels {
+    <#
+    .SYNOPSIS
+        Removes all outcome labels when a completed report has no trustworthy
+        canonical recommendation.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $currentLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    foreach ($olName in $script:OutcomeLabels.Keys) {
+        if ($currentLabels -contains $olName) {
+            Write-Host "  🗑️  Removing stale outcome: $olName" -ForegroundColor Yellow
+            Remove-Label -PRNumber $PRNumber -LabelName $olName -Owner $Owner -Repo $Repo
+        }
     }
 }
 
@@ -391,6 +468,17 @@ function Update-AgentSignalLabels {
             Write-Host "  🗑️  Removed stale: s/agent-gate-passed" -ForegroundColor Yellow
         }
     }
+    else {
+        # SKIPPED / INCONCLUSIVE / TIMEDOUT produce no current gate signal. Remove
+        # either label from an older run so the PR does not keep advertising a stale
+        # pass or failure after the latest Gate was unable or not required to verify.
+        foreach ($staleLabel in @('s/agent-gate-passed', 's/agent-gate-failed')) {
+            if ($currentLabels -contains $staleLabel) {
+                Remove-Label -PRNumber $PRNumber -LabelName $staleLabel -Owner $Owner -Repo $Repo | Out-Null
+                Write-Host "  🗑️  Removed stale: $staleLabel" -ForegroundColor Yellow
+            }
+        }
+    }
 
     # --- Fix labels ---
     if ($FixResult -eq 'win') {
@@ -419,6 +507,16 @@ function Update-AgentSignalLabels {
         if ($currentLabels -contains 's/agent-fix-win') {
             Remove-Label -PRNumber $PRNumber -LabelName 's/agent-fix-win' -Owner $Owner -Repo $Repo | Out-Null
             Write-Host "  🗑️  Removed stale: s/agent-fix-win" -ForegroundColor Yellow
+        }
+    }
+    else {
+        # A missing/invalid winner means this run did not complete a trustworthy fix
+        # comparison. Clear both alternatives rather than retaining a previous run's winner.
+        foreach ($staleLabel in @('s/agent-fix-win', 's/agent-fix-pr-picked')) {
+            if ($currentLabels -contains $staleLabel) {
+                Remove-Label -PRNumber $PRNumber -LabelName $staleLabel -Owner $Owner -Repo $Repo | Out-Null
+                Write-Host "  🗑️  Removed stale: $staleLabel" -ForegroundColor Yellow
+            }
         }
     }
 }
@@ -455,6 +553,48 @@ function Update-AgentReviewedLabel {
 }
 
 # ============================================================
+# Get-OutcomeFromCodeReviewVerdict — fallback outcome source
+# ============================================================
+function Get-OutcomeFromCodeReviewVerdict {
+    <#
+    .SYNOPSIS
+        Derive an outcome label from the code-review Verdict when the Report phase
+        completed but omitted its canonical "Final Recommendation:" line.
+
+    .DESCRIPTION
+        The current reviewer writes its code-review verdict to
+        expert-pr-eval/content.md. Older runs may instead have a verdict in
+        pre-flight/code-review.md. Map any usable verdict to an outcome label so a
+        completed review whose Report omitted the recommendation line is not
+        mislabeled review-incomplete. Returns null when no usable verdict is present
+        so callers can clear stale outcome labels without inventing a recommendation.
+        Matches both "**Verdict:** LGTM" and "### Verdict: NEEDS_CHANGES".
+    #>
+    param([Parameter(Mandatory)] [string]$BaseDir)
+
+    foreach ($rel in @('expert-pr-eval/content.md', 'pre-flight/code-review.md')) {
+        $f = Join-Path $BaseDir $rel
+        if (-not (Test-Path $f)) { continue }
+        $c = Get-Content $f -Raw -ErrorAction SilentlyContinue
+        if (-not $c) { continue }
+        $verdict = $null
+        if ($c -match '(?im)Verdict:\s*\**\s*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)') {
+            $verdict = $matches[1]
+        }
+        elseif ($c -match '(?im)^[ \t]*#{1,6}[ \t]+(?:Initial[ \t]+)?Verdict[^\r\n]*(?:\r?\n[ \t]*)+\**[ \t]*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)\b') {
+            $verdict = $matches[1]
+        }
+        if ($verdict) {
+            switch -Regex ($verdict) {
+                '(?i)^(LGTM|APPROVE)' { return 'approved' }
+                default               { return 'changes-requested' }
+            }
+        }
+    }
+    return $null
+}
+
+# ============================================================
 # Parse-PhaseOutcomes — read content.md files to determine labels
 # ============================================================
 function Parse-PhaseOutcomes {
@@ -474,32 +614,37 @@ function Parse-PhaseOutcomes {
     #>
     param(
         [Parameter(Mandatory)] [string]$PRNumber,
-        [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null)
+        [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
+        [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+        [string]$TrustedGateResult = ''
     )
 
     $baseDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
     $result = @{
-        Outcome    = $null  # 'approved', 'changes-requested', 'review-incomplete'
+        Outcome    = $null  # 'approved', 'changes-requested', 'review-incomplete', or null
         GateResult = $null  # 'passed', 'failed'
         FixResult  = $null  # 'win', 'lose'
     }
 
-    # --- Gate result (authoritative: gate/gate-result.txt) ---
-    # The Gate phase writes the canonical verdict (PASSED|SKIPPED|FAILED) to gate-result.txt.
-    # SKIPPED means "no runnable tests were detected" — it is NOT a failure, so it maps to
-    # $null (no gate signal label). Fall back to the gate report header only if the file is
-    # missing (using the real "### Gate Result:" format, not the old broken "^Result:").
-    $gateVerdict = $null
-    $gateResultFile = Join-Path $baseDir "gate/gate-result.txt"
-    if (Test-Path $gateResultFile) {
-        $gateVerdict = (Get-Content $gateResultFile -Raw -ErrorAction SilentlyContinue)
-    }
-    if (-not $gateVerdict) {
-        $gateFile = Join-Path $baseDir "gate/content.md"
-        if (Test-Path $gateFile) {
-            $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
-            if ($gateContent -and $gateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(PASSED|FAILED|SKIPPED)') {
-                $gateVerdict = $matches[1]
+    # --- Gate result ---
+    # Stage 3 supplies the pipeline-frozen verdict whenever available. It must override
+    # gate-result.txt/content.md because those files cross the agent-writable artifact
+    # boundary. In particular, a timed-out Gate can leave partial FAILED-looking content
+    # even though no trusted verdict was produced (build 14878396 / PR #36698).
+    $gateVerdict = $TrustedGateResult
+    if ([string]::IsNullOrWhiteSpace($gateVerdict)) {
+        # Local/Task-3 fallback: use the Gate phase artifacts when no frozen value was passed.
+        $gateResultFile = Join-Path $baseDir "gate/gate-result.txt"
+        if (Test-Path $gateResultFile) {
+            $gateVerdict = (Get-Content $gateResultFile -Raw -ErrorAction SilentlyContinue)
+        }
+        if (-not $gateVerdict) {
+            $gateFile = Join-Path $baseDir "gate/content.md"
+            if (Test-Path $gateFile) {
+                $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
+                if ($gateContent -and $gateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(PASSED|FAILED|SKIPPED|INCONCLUSIVE|TIMEDOUT)') {
+                    $gateVerdict = $matches[1]
+                }
             }
         }
     }
@@ -511,41 +656,68 @@ function Parse-PhaseOutcomes {
 
     # --- Fix result (authoritative: winner.json) ---
     # winner.json is the machine-readable comparison verdict written by the Report phase.
-    #   isPRFix = $false (winner is a try-fix-* candidate) => an alternative beat the PR => 'win'
-    #   isPRFix = $true  (winner is pr / pr-plus-reviewer)  => the PR fix was best        => 'lose'
+    #   winner = try-fix-* (isPRFix = $false) => an alternative beat the PR      => 'win'
+    #   winner = pr-plus-reviewer             => the agent improved the PR fix   => 'win'
+    #   winner = pr (isPRFix = $true)         => the submitted PR fix was best   => 'lose'
+    # pr-plus-reviewer must NOT map to 'lose': that label ("AI could not beat the
+    # PR fix") would contradict the report contract, which treats a
+    # pr-plus-reviewer win as "the submitted PR still needs the winning changes".
     # A missing/invalid winner.json (e.g. review-incomplete) => $null (no fix signal label),
     # so we never guess a fix outcome the comparison did not actually produce.
+    $winnerName = $null
+    $winnerRequiresPRChanges = $false
     $winnerFile = Join-Path $baseDir "winner.json"
     if (Test-Path $winnerFile) {
         $winner = $null
         try { $winner = Get-Content $winnerFile -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop } catch { $winner = $null }
         if ($winner) {
             $winnerName = [string]$winner.winner
-            if ($null -ne $winner.isPRFix) {
-                $result.FixResult = if ($winner.isPRFix) { 'lose' } else { 'win' }
-            }
-            elseif ($winnerName -match '(?i)^try-fix') {
+            $winnerRequiresPRChanges =
+                ($winner.isPRFix -eq $false) -or
+                ($winnerName -match '(?i)^(pr-plus-reviewer|try-fix(?:-|$))')
+            if ($winnerName -match '(?i)^(try-fix(?:-|$)|pr-plus-reviewer$)') {
                 $result.FixResult = 'win'
             }
-            elseif ($winnerName -match '(?i)^(pr|pr-plus-reviewer)$') {
+            elseif ($winnerName -match '(?i)^pr$') {
                 $result.FixResult = 'lose'
+            }
+            elseif ($null -ne $winner.isPRFix) {
+                $result.FixResult = if ($winner.isPRFix) { 'lose' } else { 'win' }
             }
         }
     }
 
     # --- Parse report content.md for outcome ---
+    $reportCompleted = $false
     $reportFile = Join-Path $baseDir "report/content.md"
     if (Test-Path $reportFile) {
         $reportContent = Get-Content $reportFile -Raw -ErrorAction SilentlyContinue
-        if ($reportContent) {
-            if ($reportContent -match '(?i)Final\s+Recommendation:\s*APPROVE|✅\s*Final\s+Recommendation:\s*APPROVE') {
+        if (-not [string]::IsNullOrWhiteSpace($reportContent)) {
+            $reportCompleted = $true
+            if ($reportContent -match '(?im)^\s*(?:##\s*)?(?:✅\s*)?Final\s+Recommendation:\s*APPROVE\s*$') {
                 $result.Outcome = 'approved'
             }
-            elseif ($reportContent -match '(?i)Final\s+Recommendation:\s*REQUEST.CHANGES|⚠️\s*Final\s+Recommendation:\s*REQUEST.CHANGES') {
+            elseif ($reportContent -match '(?im)^\s*(?:##\s*)?(?:⚠️\s*)?Final\s+Recommendation:\s*REQUEST\s+CHANGES\s*$') {
                 $result.Outcome = 'changes-requested'
             }
             else {
-                $result.Outcome = 'review-incomplete'
+                # The Report phase ran to completion (report/content.md exists) but the
+                # LLM omitted the canonical "Final Recommendation: {APPROVE|REQUEST CHANGES}"
+                # line — it sometimes emits only a "Winning candidate" comparative section
+                # (observed on PR #36541, build 14698057, which mislabeled a NEEDS_CHANGES
+                # review as review-incomplete). A completed report is NOT review-incomplete:
+                # A winning alternative or pr-plus-reviewer candidate means the submitted
+                # PR still needs changes, regardless of whether a prose verdict was emitted.
+                # Otherwise fall back to the expert/legacy code-review Verdict. If neither
+                # exists, leave Outcome null so stale outcome labels are removed instead of
+                # misclassifying a completed review.
+                $result.Outcome = if ($winnerRequiresPRChanges) {
+                    'changes-requested'
+                } elseif ($winnerName -match '(?i)^pr$') {
+                    Get-OutcomeFromCodeReviewVerdict -BaseDir $baseDir
+                } else {
+                    $null
+                }
             }
         } else {
             $result.Outcome = 'review-incomplete'
@@ -555,12 +727,63 @@ function Parse-PhaseOutcomes {
         $result.Outcome = 'review-incomplete'
     }
 
+    # The submitted PR still needs changes whenever a modified PR candidate or
+    # independent try-fix wins. This is authoritative even if the prose report
+    # accidentally emits APPROVE.
+    if ($reportCompleted -and $winnerRequiresPRChanges) {
+        $result.Outcome = 'changes-requested'
+    }
+
+    # Keep labels aligned with the trusted validation verdict. The summary posting path
+    # already vetoes APPROVE over a failed/timed-out Gate; labels must not contradict it.
+    if ($result.Outcome -eq 'approved' -and (($gateVerdict ?? '').Trim() -match '(?i)^(FAILED|TIMEDOUT)$')) {
+        $result.Outcome = 'changes-requested'
+    }
+
+    # Same alignment for the expert code-review verdict: the summary path vetoes an APPROVE
+    # over a blocking expert verdict (Test-ExpertReviewIsBlocking in post-ai-summary-comment.ps1),
+    # so an 'approved' label over the same artifact would contradict the posted review event.
+    if ($result.Outcome -eq 'approved' -and (Get-OutcomeFromCodeReviewVerdict -BaseDir $baseDir) -eq 'changes-requested') {
+        $result.Outcome = 'changes-requested'
+    }
+
     return $result
 }
 
 # ============================================================
 # Apply-AgentLabels — main entry point
 # ============================================================
+function Test-AgentLabelHeadMatches {
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$ExpectedHeadSha = '',
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedHeadSha)) {
+        return $true
+    }
+
+    if ($ExpectedHeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Host "  ⚠️  Refusing to apply labels because the reviewed commit is invalid." -ForegroundColor Yellow
+        return $false
+    }
+
+    $currentHeadSha = gh api "repos/$Owner/$Repo/pulls/$PRNumber" --jq '.head.sha' 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($currentHeadSha)) {
+        Write-Host "  ⚠️  Could not verify the current PR head; leaving review labels unchanged." -ForegroundColor Yellow
+        return $false
+    }
+
+    if (-not ([string]$currentHeadSha).Trim().Equals($ExpectedHeadSha, [StringComparison]::OrdinalIgnoreCase)) {
+        Write-Host "  ⏭️  PR head advanced after this review snapshot; leaving review labels unchanged." -ForegroundColor Yellow
+        return $false
+    }
+
+    return $true
+}
+
 function Apply-AgentLabels {
     <#
     .SYNOPSIS
@@ -581,6 +804,9 @@ function Apply-AgentLabels {
     param(
         [Parameter(Mandatory)] [string]$PRNumber,
         [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
+        [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+        [string]$TrustedGateResult = '',
+        [string]$ExpectedHeadSha = '',
         [string]$Owner = 'dotnet',
         [string]$Repo = 'maui'
     )
@@ -588,8 +814,19 @@ function Apply-AgentLabels {
     Write-Host ""
     Write-Host "🏷️  Applying agent labels to PR #$PRNumber..." -ForegroundColor Cyan
 
+    if (-not (Test-AgentLabelHeadMatches `
+        -PRNumber $PRNumber `
+        -ExpectedHeadSha $ExpectedHeadSha `
+        -Owner $Owner `
+        -Repo $Repo)) {
+        return
+    }
+
     # Parse phase outcomes from content.md files
-    $outcomes = Parse-PhaseOutcomes -PRNumber $PRNumber -RepoRoot $RepoRoot
+    $outcomes = Parse-PhaseOutcomes `
+        -PRNumber $PRNumber `
+        -RepoRoot $RepoRoot `
+        -TrustedGateResult $TrustedGateResult
     Write-Host "  📊 Parsed outcomes:" -ForegroundColor Gray
     Write-Host "     Outcome:    $($outcomes.Outcome ?? '(none)')" -ForegroundColor Gray
     Write-Host "     Gate:       $($outcomes.GateResult ?? '(skipped)')" -ForegroundColor Gray
@@ -599,6 +836,11 @@ function Apply-AgentLabels {
         # 1. Apply outcome label (exactly one)
         if ($outcomes.Outcome) {
             Update-AgentOutcomeLabel -PRNumber $PRNumber -Outcome $outcomes.Outcome -Owner $Owner -Repo $Repo
+        } else {
+            # A non-empty report without a canonical recommendation completed all phases,
+            # but does not provide enough evidence for an outcome label. Remove stale labels
+            # from earlier runs rather than falsely applying review-incomplete.
+            Clear-AgentOutcomeLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
         }
 
         # 2. Apply signal labels

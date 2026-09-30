@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -9,8 +10,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract class DefaultCell : ItemsViewCell
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public UILabel Label { get; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected NSLayoutConstraint Constraint { get; set; }
 
 		[Export("initWithFrame:")]

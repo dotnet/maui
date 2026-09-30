@@ -87,9 +87,6 @@ namespace Microsoft.Maui.Resizetizer
 			using SKPaint paint = new SKPaint
 			{
 				IsAntialias = true,
-#pragma warning disable CS0618 // Type or member is obsolete
-				FilterQuality = SKFilterQuality.High
-#pragma warning restore CS0618 // Type or member is obsolete
 			};
 			var sampling = new SKSamplingOptions(SKCubicResampler.Mitchell);
 

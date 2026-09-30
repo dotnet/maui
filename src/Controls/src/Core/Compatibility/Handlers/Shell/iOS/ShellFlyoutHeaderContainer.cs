@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		Thickness _safearea = Thickness.Zero;
 
-		public ShellFlyoutHeaderContainer(View view) : base(view)
+		public ShellFlyoutHeaderContainer(View view) : base(view, ownsHandler: true)
 		{
 			UpdateSafeAreaMargin();
 		}

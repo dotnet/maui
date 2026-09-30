@@ -12,7 +12,7 @@ public class Issue29491 : _IssuesUITest
 	public override string Issue => "[CV2][CollectionView] Changing CollectionView's ItemsSource in runtime removes elements' parent seemingly random";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyDataTemplateParentIsNotNull()
 	{
 		App.WaitForElement("Button");

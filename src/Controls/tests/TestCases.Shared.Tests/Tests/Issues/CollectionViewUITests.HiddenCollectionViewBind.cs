@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// CollectionShouldInvalidateOnVisibilityChange (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13203.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
 			App.WaitForElement(Success);

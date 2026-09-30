@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>fetch-test</title>
+    <script>
+        // This document is served from https://appdir/, so its origin is
+        // https://appdir. Fetching another https://appdir/ file is therefore a
+        // same-origin request and is expected to succeed with the DenyCors mapping.
+        fetch('appdir-subresource-test.js')
+            .then(function (r) { return r.ok ? r.text() : Promise.reject('status'); })
+            .then(function () { document.title = 'same-origin-ok'; })
+            .catch(function () { document.title = 'same-origin-failed'; });
+    </script>
+</head>
+<body>
+    <p>same-origin fetch test</p>
+</body>
+</html>

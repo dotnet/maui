@@ -10,46 +10,34 @@ public class ButtonControlPage : NavigationPage
 
 public partial class ButtonControlMainPage : ContentPage
 {
-	public ButtonViewModal _viewModel;
+	public ButtonViewModel _viewModel;
 	public ButtonControlMainPage()
 	{
 		InitializeComponent();
-		BindingContext = _viewModel = new ButtonViewModal();
+		BindingContext = _viewModel = new ButtonViewModel();
 	}
 
 	public async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new ButtonViewModal();
-		ClickedEventLabel.Text = string.Empty;
-		PressedEventLabel.Text = string.Empty;
-		ReleasedEventLabel.Text = string.Empty;
+		_viewModel.Reset();
 		await Navigation.PushAsync(new ButtonOptionsPage(_viewModel));
 	}
 
 	public void OnButtonClicked(object sender, EventArgs e)
 	{
-		var button = sender as Button;
-		if (button != null)
-		{
-			ClickedEventLabel.Text = "Clicked Event Executed";
-		}
+		if (sender is Button)
+			_viewModel.ClickedEventLabelText = "Clicked Event Executed";
 	}
 
 	public void OnButtonPressed(object sender, EventArgs e)
 	{
-		var button = sender as Button;
-		if (button != null)
-		{
-			PressedEventLabel.Text = "Pressed Event Executed";
-		}
+		if (sender is Button)
+			_viewModel.PressedEventLabelText = "Pressed Event Executed";
 	}
 
 	public void OnButtonReleased(object sender, EventArgs e)
 	{
-		var button = sender as Button;
-		if (button != null)
-		{
-			ReleasedEventLabel.Text = "Released Event Executed";
-		}
+		if (sender is Button)
+			_viewModel.ReleasedEventLabelText = "Released Event Executed";
 	}
 }

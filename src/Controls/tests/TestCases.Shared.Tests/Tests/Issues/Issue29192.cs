@@ -12,7 +12,7 @@ public class Issue29192 : _IssuesUITest
 	public Issue29192(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void ShouldMeasureFirstItemInHorizontalLayouts()
 	{
 		App.WaitForElement("CollectionView");

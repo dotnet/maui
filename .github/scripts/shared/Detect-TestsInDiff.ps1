@@ -19,6 +19,14 @@
 .PARAMETER ChangedFiles
     Explicit list of changed file paths (skips PR/git detection).
 
+.PARAMETER DiffBase
+    Commit used as the local diff base. When provided, changed files and added
+    device-test methods are read from DiffBase..HEAD instead of the live PR.
+
+.PARAMETER Platform
+    Optional device-test platform used to exclude methods from partial files that do not
+    compile for that target (for example, Android methods from a Windows Gate run).
+
 .OUTPUTS
     Array of hashtables, each with:
     - Type:        UITest | UnitTest | XamlUnitTest | DeviceTest
@@ -51,10 +59,88 @@ param(
     [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
-    [string[]]$ChangedFiles
+    [string[]]$ChangedFiles,
+
+    [Parameter(Mandatory = $false)]
+    [string]$DiffBase,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Platform
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not [string]::IsNullOrWhiteSpace($DiffBase)) {
+    $resolvedDiffBase = git rev-parse --verify "$DiffBase^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($resolvedDiffBase)) {
+        throw "Diff base '$DiffBase' is not a valid commit."
+    }
+    $DiffBase = $resolvedDiffBase.Trim()
+}
+
+function Test-DeviceTestFileAppliesToPlatform {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [string]$TargetPlatform
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TargetPlatform)) {
+        return $true
+    }
+
+    $normalizedPlatform = $TargetPlatform.Trim().ToLowerInvariant()
+    if ($normalizedPlatform -eq 'catalyst') {
+        $normalizedPlatform = 'maccatalyst'
+    } elseif ($normalizedPlatform -in @('win', 'winui')) {
+        $normalizedPlatform = 'windows'
+    }
+
+    $normalizedPath = $Path.Replace('\', '/')
+    $fileName = [System.IO.Path]::GetFileName($normalizedPath)
+
+    if ($fileName -match '(?i)\.android\.cs$') {
+        return $normalizedPlatform -eq 'android'
+    }
+    if ($fileName -match '(?i)\.windows\.cs$') {
+        return $normalizedPlatform -eq 'windows'
+    }
+    if ($fileName -match '(?i)\.ios\.cs$') {
+        return $normalizedPlatform -in @('ios', 'maccatalyst')
+    }
+    if ($fileName -match '(?i)\.maccatalyst\.cs$') {
+        return $normalizedPlatform -eq 'maccatalyst'
+    }
+
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?Android/') {
+        return $normalizedPlatform -eq 'android'
+    }
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?Windows/') {
+        return $normalizedPlatform -eq 'windows'
+    }
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?iOS/') {
+        return $normalizedPlatform -in @('ios', 'maccatalyst')
+    }
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?MacCatalyst/') {
+        return $normalizedPlatform -eq 'maccatalyst'
+    }
+
+    return $true
+}
+
+function Test-DeviceTestPlatformPartial {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $normalizedPath = $Path.Replace('\', '/')
+    if ($normalizedPath -notmatch '(?i)(?:^|/)DeviceTests/') {
+        return $false
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($normalizedPath)
+    return (
+        $fileName -match '(?i)\.(?:android|windows|ios|maccatalyst)\.cs$' -or
+        $normalizedPath -match '(?i)/(?:Platforms?/)?(?:Android|Windows|iOS|MacCatalyst)/'
+    )
+}
 
 # ============================================================
 # Test type classification patterns (ordered by specificity)
@@ -127,8 +213,13 @@ $UnitTestProjectPaths = @{
 # Step 1: Get changed files
 # ============================================================
 
+$mergeBase = $null
 if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
-    if ($PRNumber) {
+    if ($DiffBase) {
+        # The review worktree is a committed snapshot. Prefer its exact diff so a
+        # force-push or new PR commit during a Gate retry cannot change selection.
+        $ChangedFiles = git diff $DiffBase HEAD --name-only 2>$null
+    } elseif ($PRNumber) {
         # Fetch from GitHub
         # Use paginated API to handle PRs with >30 changed files
         $prFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --jq '.[].filename' 2>$null
@@ -205,15 +296,615 @@ function Get-ClassNameFromFile {
             try {
                 $content = Get-Content $p -Raw -ErrorAction Stop
             } catch { continue }
-            # Match the first non-static, non-abstract `public class XXX` or
-            # `public partial class XXX` declaration — only concrete classes (skip
-            # `abstract`/`static`) so a base test class declared above the concrete
-            # test class isn't picked up and turned into a non-matching test filter.
-            $m = [regex]::Match($content, '(?m)^\s*public(?:\s+(?:partial|sealed))*\s+class\s+(\w+)')
-            if ($m.Success) { return $m.Groups[1].Value }
+            # A test file can declare concrete helper classes before its actual test
+            # class. Prefer the first concrete class that owns a test method
+            # attribute instead of blindly selecting the first public class.
+            # This keeps XHarness class isolation on the class that owns the tests
+            # (for example ShellHandlerTests_Shell, not StartupTrackingShellHandler).
+            $classMatches = @([regex]::Matches(
+                $content,
+                '(?m)^\s*public(?<modifiers>(?:\s+(?:partial|sealed|abstract|static))*)\s+class\s+(?<name>\w+)'
+            ))
+            $concreteClasses = @($classMatches | Where-Object {
+                $_.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b'
+            })
+            if ($concreteClasses.Count -eq 0) { continue }
+
+            $testAttributes = @([regex]::Matches(
+                $content,
+                '(?m)^\s*\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b'
+            ))
+            foreach ($testAttribute in $testAttributes) {
+                $testClass = $classMatches |
+                    Where-Object { $_.Index -lt $testAttribute.Index } |
+                    Select-Object -Last 1
+                if ($testClass -and
+                    $testClass.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b') {
+                    return $testClass.Groups['name'].Value
+                }
+            }
+
+            return $concreteClasses[0].Groups['name'].Value
         }
     }
     return $null
+}
+
+function Test-CsFileHasTestMethods {
+    <#
+    .SYNOPSIS
+        Returns $true only if a .cs file actually declares test methods.
+    .DESCRIPTION
+        Test-support files (helpers, base classes, fixtures, data builders) live under the
+        same test projects but contain NO [Fact]/[Test] methods. Detecting one as a "test"
+        (e.g. VisualStateTestHelpers.cs) makes the gate run a filter that matches zero tests;
+        the empty run is then scored as a failure and drags the whole gate to FAILED even when
+        the PR's real tests pass FAIL→PASS. Requiring at least one test-method attribute keeps
+        those support files out of the detected-test set.
+    #>
+    param([string]$RelativePath)
+    $candidates = @($RelativePath)
+    if ($RepoRootForRead) { $candidates += (Join-Path $RepoRootForRead $RelativePath) }
+    $foundExistingFile = $false
+    foreach ($p in $candidates) {
+        if (Test-Path -LiteralPath $p -PathType Leaf) {
+            $foundExistingFile = $true
+            try { $content = Get-Content $p -Raw -ErrorAction Stop } catch { continue }
+            # xUnit: [Fact] [Theory]; NUnit: [Test] [TestCase] [TestCaseSource]; MSTest: [TestMethod]
+            return ($content -match '(?m)\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b')
+        }
+    }
+    # Preserve the permissive fallback for an existing but unreadable file. A path absent
+    # from the committed PR snapshot is deleted and cannot contain a runnable test.
+    return $foundExistingFile
+}
+
+function Get-ChangedDeviceTestMethodsFromPatch {
+    <#
+    .SYNOPSIS
+        Returns changed methods that are explicitly marked as tests.
+    .DESCRIPTION
+        Device-test files often add public helper methods alongside [Fact]/[Test]
+        methods. Treating every added public void/Task as a test makes result
+        validation demand helpers that the runner will never execute, turning a
+        clean with-fix run into a false environment error. When the committed
+        source is available, changed lines are also mapped to existing test-method
+        scopes so body-only and attribute-only edits remain method-scoped.
+    #>
+    param(
+        [string]$Patch,
+        [string]$SourceContent
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Patch)) {
+        return @()
+    }
+
+    function New-CSharpAttributeState {
+        return @{
+            SquareDepth      = 0
+            ParenthesisDepth = 0
+            BraceDepth       = 0
+            InBlockComment   = $false
+            StringKind       = $null
+            EscapeNext       = $false
+            RawQuoteCount    = 0
+            Invalid          = $false
+            Text             = [System.Text.StringBuilder]::new()
+        }
+    }
+
+    function Read-CSharpAttributeFragment {
+        param(
+            [Parameter(Mandatory = $true)]
+            [hashtable]$State,
+
+            [Parameter(Mandatory = $true)]
+            [string]$Text,
+
+            [Parameter(Mandatory = $true)]
+            [int]$StartIndex
+        )
+
+        if ($State.Text.Length -gt 0) {
+            [void]$State.Text.Append("`n")
+        }
+
+        for ($index = $StartIndex; $index -lt $Text.Length; $index++) {
+            $character = $Text[$index]
+            [void]$State.Text.Append($character)
+
+            if ($State.InBlockComment) {
+                if ($character -eq '*' -and
+                    ($index + 1) -lt $Text.Length -and
+                    $Text[$index + 1] -eq '/') {
+                    [void]$State.Text.Append('/')
+                    $index++
+                    $State.InBlockComment = $false
+                }
+                continue
+            }
+
+            if ($State.StringKind -eq 'Raw') {
+                if ($character -eq '"') {
+                    $quoteCount = 1
+                    while (($index + $quoteCount) -lt $Text.Length -and
+                        $Text[$index + $quoteCount] -eq '"') {
+                        [void]$State.Text.Append('"')
+                        $quoteCount++
+                    }
+                    $index += $quoteCount - 1
+                    if ($quoteCount -ge $State.RawQuoteCount) {
+                        $State.StringKind = $null
+                        $State.RawQuoteCount = 0
+                    }
+                }
+                continue
+            }
+
+            if ($State.StringKind -eq 'Verbatim') {
+                if ($character -eq '"') {
+                    if (($index + 1) -lt $Text.Length -and $Text[$index + 1] -eq '"') {
+                        [void]$State.Text.Append('"')
+                        $index++
+                    } else {
+                        $State.StringKind = $null
+                    }
+                }
+                continue
+            }
+
+            if ($State.StringKind -eq 'Regular' -or $State.StringKind -eq 'Character') {
+                if ($State.EscapeNext) {
+                    $State.EscapeNext = $false
+                    continue
+                }
+                if ($character -eq '\') {
+                    $State.EscapeNext = $true
+                    continue
+                }
+                if (($State.StringKind -eq 'Regular' -and $character -eq '"') -or
+                    ($State.StringKind -eq 'Character' -and $character -eq "'")) {
+                    $State.StringKind = $null
+                }
+                continue
+            }
+
+            if ($character -eq '/' -and ($index + 1) -lt $Text.Length) {
+                if ($Text[$index + 1] -eq '/') {
+                    [void]$State.Text.Append($Text.Substring($index + 1))
+                    break
+                }
+                if ($Text[$index + 1] -eq '*') {
+                    [void]$State.Text.Append('*')
+                    $index++
+                    $State.InBlockComment = $true
+                    continue
+                }
+            }
+
+            if ($character -eq '"') {
+                $quoteCount = 1
+                while (($index + $quoteCount) -lt $Text.Length -and
+                    $Text[$index + $quoteCount] -eq '"') {
+                    [void]$State.Text.Append('"')
+                    $quoteCount++
+                }
+                $index += $quoteCount - 1
+                $prefix = $Text.Substring(0, $index - $quoteCount + 1)
+                $isVerbatim = $prefix -match '@\$*$'
+                if ($isVerbatim) {
+                    # One opening quote plus any doubled embedded quotes. An
+                    # even run also contains the closing quote; an odd run
+                    # leaves the verbatim literal open for following text.
+                    if (($quoteCount % 2) -ne 0) {
+                        $State.StringKind = 'Verbatim'
+                    }
+                } elseif ($quoteCount -ge 3) {
+                    $State.StringKind = 'Raw'
+                    $State.RawQuoteCount = $quoteCount
+                } elseif ($quoteCount -eq 1) {
+                    $State.StringKind = 'Regular'
+                }
+                continue
+            }
+
+            if ($character -eq "'") {
+                $State.StringKind = 'Character'
+                continue
+            }
+
+            switch ($character) {
+                '[' { $State.SquareDepth++ }
+                ']' {
+                    $State.SquareDepth--
+                    if ($State.SquareDepth -lt 0) {
+                        $State.Invalid = $true
+                    }
+                    if ($State.SquareDepth -eq 0) {
+                        if ($State.ParenthesisDepth -ne 0 -or $State.BraceDepth -ne 0) {
+                            $State.Invalid = $true
+                        }
+                        return [pscustomobject]@{
+                            Closed   = $true
+                            EndIndex = $index
+                            Invalid  = [bool]$State.Invalid
+                        }
+                    }
+                }
+                '(' { $State.ParenthesisDepth++ }
+                ')' {
+                    $State.ParenthesisDepth--
+                    if ($State.ParenthesisDepth -lt 0) {
+                        $State.Invalid = $true
+                    }
+                }
+                '{' { $State.BraceDepth++ }
+                '}' {
+                    $State.BraceDepth--
+                    if ($State.BraceDepth -lt 0) {
+                        $State.Invalid = $true
+                    }
+                }
+            }
+        }
+
+        if ($State.StringKind -eq 'Regular' -or $State.StringKind -eq 'Character') {
+            # Regular string and character literals cannot span physical lines.
+            # Keep consuming until the hunk boundary, but never accept the
+            # malformed attribute as a test marker.
+            $State.Invalid = $true
+        }
+
+        return [pscustomobject]@{
+            Closed   = $false
+            EndIndex = $Text.Length
+            Invalid  = [bool]$State.Invalid
+        }
+    }
+
+    $methods = [System.Collections.Generic.List[string]]::new()
+    $pendingTestAttribute = $false
+    $attributeState = $null
+    $inHunk = $false
+    $testAttributePattern = '(?is)^\s*\[\s*(?:global::)?(?:[A-Za-z_]\w*\s*\.\s*)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)(?:Attribute)?\b'
+
+    foreach ($rawLine in ($Patch -split "`n")) {
+        if ($rawLine -match '^@@') {
+            # Never carry a pending or malformed attribute into another diff
+            # hunk, where it could incorrectly mark an unrelated added method.
+            $pendingTestAttribute = $false
+            $attributeState = $null
+            $inHunk = $true
+            continue
+        }
+
+        $isAddedLine = $rawLine -match '^\+(?!\+\+)'
+        $isContextLine = $inHunk -and $rawLine.StartsWith(' ')
+        if (-not $isAddedLine -and -not $isContextLine) {
+            # Removed lines are absent from the new file. Diff metadata and the
+            # "\ No newline" marker are not C# source.
+            continue
+        }
+
+        $line = $rawLine.Substring(1).TrimEnd("`r")
+        $declaration = $line
+
+        while ($true) {
+            if ($null -eq $attributeState) {
+                $attributeStart = [regex]::Match($declaration, '^\s*\[')
+                if (-not $attributeStart.Success) {
+                    break
+                }
+                $attributeState = New-CSharpAttributeState
+                $startIndex = $attributeStart.Index + $attributeStart.Length - 1
+            } else {
+                $startIndex = 0
+            }
+
+            $attributeResult = Read-CSharpAttributeFragment `
+                -State $attributeState `
+                -Text $declaration `
+                -StartIndex $startIndex
+
+            if (-not $attributeResult.Closed) {
+                $declaration = ''
+                break
+            }
+
+            if ($attributeResult.Invalid) {
+                $pendingTestAttribute = $false
+            } elseif ($attributeState.Text.ToString() -match $testAttributePattern) {
+                $pendingTestAttribute = $true
+            }
+
+            $declaration = $declaration.Substring($attributeResult.EndIndex + 1)
+            $attributeState = $null
+        }
+
+        if ($null -ne $attributeState) {
+            continue
+        }
+
+        # Attribute-only, comment, preprocessor, and blank lines may legitimately
+        # sit between the test attribute and method declaration.
+        if ([string]::IsNullOrWhiteSpace($declaration) -or
+            $declaration -match '^\s*(?://|/\*|\*|#)') {
+            continue
+        }
+
+        if ($pendingTestAttribute -and
+            $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
+            $methodName = $matches[1]
+            if ($isAddedLine -and $methods -notcontains $methodName) {
+                $methods.Add($methodName)
+            }
+            $pendingTestAttribute = $false
+            continue
+        }
+
+        # A non-attribute declaration consumed the pending marker without defining
+        # a test method; do not let it leak to a later public helper.
+        $pendingTestAttribute = $false
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($SourceContent)) {
+        $changedLineNumbers = [System.Collections.Generic.HashSet[int]]::new()
+        $newLineNumber = 0
+        $inChangedHunk = $false
+
+        foreach ($rawLine in ($Patch -split "`n")) {
+            if ($rawLine -match '^@@ -\d+(?:,\d+)? \+(?<start>\d+)(?:,\d+)? @@') {
+                $newLineNumber = [int]$matches['start']
+                $inChangedHunk = $true
+                continue
+            }
+            if (-not $inChangedHunk) {
+                continue
+            }
+
+            if ($rawLine -match '^\+(?!\+\+)') {
+                [void]$changedLineNumbers.Add($newLineNumber)
+                $newLineNumber++
+            } elseif ($rawLine -match '^-(?!---)') {
+                # A removed line has no new-file line number. Associate it with
+                # the source line now occupying that position so deletion-only
+                # edits can still retain method scope.
+                [void]$changedLineNumbers.Add([Math]::Max(1, $newLineNumber))
+            } elseif ($rawLine.StartsWith(' ')) {
+                $newLineNumber++
+            }
+        }
+
+        function Get-CSharpMethodEndLine {
+            param(
+                [string[]]$Lines,
+                [int]$DeclarationIndex
+            )
+
+            $braceDepth = 0
+            $bodyStarted = $false
+            $expressionBodied = $false
+            $inBlockComment = $false
+            $stringKind = $null
+            $escapeNext = $false
+            $rawQuoteCount = 0
+
+            for ($lineIndex = $DeclarationIndex; $lineIndex -lt $Lines.Count; $lineIndex++) {
+                $line = $Lines[$lineIndex]
+                for ($characterIndex = 0; $characterIndex -lt $line.Length; $characterIndex++) {
+                    $character = $line[$characterIndex]
+
+                    if ($inBlockComment) {
+                        if ($character -eq '*' -and
+                            ($characterIndex + 1) -lt $line.Length -and
+                            $line[$characterIndex + 1] -eq '/') {
+                            $characterIndex++
+                            $inBlockComment = $false
+                        }
+                        continue
+                    }
+
+                    if ($stringKind -eq 'Raw') {
+                        if ($character -eq '"') {
+                            $quoteCount = 1
+                            while (($characterIndex + $quoteCount) -lt $line.Length -and
+                                $line[$characterIndex + $quoteCount] -eq '"') {
+                                $quoteCount++
+                            }
+                            $characterIndex += $quoteCount - 1
+                            if ($quoteCount -ge $rawQuoteCount) {
+                                $stringKind = $null
+                                $rawQuoteCount = 0
+                            }
+                        }
+                        continue
+                    }
+
+                    if ($stringKind -eq 'Verbatim') {
+                        if ($character -eq '"') {
+                            if (($characterIndex + 1) -lt $line.Length -and
+                                $line[$characterIndex + 1] -eq '"') {
+                                $characterIndex++
+                            } else {
+                                $stringKind = $null
+                            }
+                        }
+                        continue
+                    }
+
+                    if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
+                        if ($escapeNext) {
+                            $escapeNext = $false
+                            continue
+                        }
+                        if ($character -eq '\') {
+                            $escapeNext = $true
+                            continue
+                        }
+                        if (($stringKind -eq 'Regular' -and $character -eq '"') -or
+                            ($stringKind -eq 'Character' -and $character -eq "'")) {
+                            $stringKind = $null
+                        }
+                        continue
+                    }
+
+                    if ($character -eq '/' -and ($characterIndex + 1) -lt $line.Length) {
+                        if ($line[$characterIndex + 1] -eq '/') {
+                            break
+                        }
+                        if ($line[$characterIndex + 1] -eq '*') {
+                            $characterIndex++
+                            $inBlockComment = $true
+                            continue
+                        }
+                    }
+
+                    if ($character -eq '"') {
+                        $quoteCount = 1
+                        while (($characterIndex + $quoteCount) -lt $line.Length -and
+                            $line[$characterIndex + $quoteCount] -eq '"') {
+                            $quoteCount++
+                        }
+                        $prefix = $line.Substring(0, $characterIndex)
+                        $characterIndex += $quoteCount - 1
+                        if ($quoteCount -ge 3) {
+                            $stringKind = 'Raw'
+                            $rawQuoteCount = $quoteCount
+                        } elseif ($quoteCount -eq 2) {
+                            # Empty regular/verbatim string; both delimiters are
+                            # present in this run, so no string state remains open.
+                            $stringKind = $null
+                        } elseif ($prefix -match '@\$*$') {
+                            $stringKind = 'Verbatim'
+                        } else {
+                            $stringKind = 'Regular'
+                        }
+                        continue
+                    }
+
+                    if ($character -eq "'") {
+                        $stringKind = 'Character'
+                        continue
+                    }
+
+                    if (-not $bodyStarted -and
+                        $character -eq '=' -and
+                        ($characterIndex + 1) -lt $line.Length -and
+                        $line[$characterIndex + 1] -eq '>') {
+                        $expressionBodied = $true
+                        $characterIndex++
+                        continue
+                    }
+
+                    if ($expressionBodied -and $character -eq ';') {
+                        return $lineIndex + 1
+                    }
+
+                    if ($character -eq '{') {
+                        $bodyStarted = $true
+                        $braceDepth++
+                    } elseif ($bodyStarted -and $character -eq '}') {
+                        $braceDepth--
+                        if ($braceDepth -eq 0) {
+                            return $lineIndex + 1
+                        }
+                    }
+                }
+
+                if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
+                    $stringKind = $null
+                    $escapeNext = $false
+                }
+            }
+
+            return $Lines.Count
+        }
+
+        $sourceLines = @($SourceContent -split "`r?`n")
+        $pendingSourceTestAttribute = $false
+        $sourceAttributeState = $null
+        $sourceAttributeStartLine = $null
+
+        for ($sourceIndex = 0; $sourceIndex -lt $sourceLines.Count; $sourceIndex++) {
+            $declaration = $sourceLines[$sourceIndex]
+
+            while ($true) {
+                if ($null -eq $sourceAttributeState) {
+                    $attributeStart = [regex]::Match($declaration, '^\s*\[')
+                    if (-not $attributeStart.Success) {
+                        break
+                    }
+                    $sourceAttributeState = New-CSharpAttributeState
+                    if ($null -eq $sourceAttributeStartLine) {
+                        $sourceAttributeStartLine = $sourceIndex + 1
+                    }
+                    $startIndex = $attributeStart.Index + $attributeStart.Length - 1
+                } else {
+                    $startIndex = 0
+                }
+
+                $attributeResult = Read-CSharpAttributeFragment `
+                    -State $sourceAttributeState `
+                    -Text $declaration `
+                    -StartIndex $startIndex
+
+                if (-not $attributeResult.Closed) {
+                    $declaration = ''
+                    break
+                }
+
+                if ($attributeResult.Invalid) {
+                    $pendingSourceTestAttribute = $false
+                } elseif ($sourceAttributeState.Text.ToString() -match $testAttributePattern) {
+                    $pendingSourceTestAttribute = $true
+                }
+
+                $declaration = $declaration.Substring($attributeResult.EndIndex + 1)
+                $sourceAttributeState = $null
+            }
+
+            if ($null -ne $sourceAttributeState) {
+                continue
+            }
+
+            if ([string]::IsNullOrWhiteSpace($declaration) -or
+                $declaration -match '^\s*(?://|/\*|\*|#)') {
+                continue
+            }
+
+            if ($pendingSourceTestAttribute -and
+                $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
+                $methodName = $matches[1]
+                $methodStartLine = if ($null -ne $sourceAttributeStartLine) {
+                    [int]$sourceAttributeStartLine
+                } else {
+                    $sourceIndex + 1
+                }
+                $methodEndLine = Get-CSharpMethodEndLine `
+                    -Lines $sourceLines `
+                    -DeclarationIndex $sourceIndex
+
+                $methodChanged = $false
+                foreach ($changedLineNumber in $changedLineNumbers) {
+                    if ($changedLineNumber -ge $methodStartLine -and
+                        $changedLineNumber -le $methodEndLine) {
+                        $methodChanged = $true
+                        break
+                    }
+                }
+
+                if ($methodChanged -and $methods -notcontains $methodName) {
+                    $methods.Add($methodName)
+                }
+            }
+
+            $pendingSourceTestAttribute = $false
+            $sourceAttributeStartLine = $null
+        }
+    }
+
+    return @($methods)
 }
 
 foreach ($file in $ChangedFiles) {
@@ -224,6 +915,24 @@ foreach ($file in $ChangedFiles) {
     # Skip infrastructure files (MauiProgram.cs, Startup.cs, etc.)
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file) -replace '\.(iOS|Android|Windows|MacCatalyst)$', ''
     if ($baseName -in $IgnoredFileNames) { continue }
+
+    $isDeviceTestFile = $file.Replace('\', '/') -match '(?i)(?:^|/)DeviceTests/'
+    if ($isDeviceTestFile -and -not (Test-DeviceTestFileAppliesToPlatform -Path $file -TargetPlatform $Platform)) {
+        continue
+    }
+    $isDeviceTestPlatformPartial = $isDeviceTestFile -and (Test-DeviceTestPlatformPartial -Path $file)
+
+    # Skip test-support .cs files that contain NO test methods (helpers, base classes,
+    # fixtures, data builders). Detecting e.g. VisualStateTestHelpers.cs as a "test" makes
+    # the gate run a filter that matches nothing; that empty run is scored as a failure and
+    # drags the whole gate to FAILED even when the PR's real tests pass. HostApp companion
+    # pages, .xaml files, and platform partials whose shared DeviceTests class owns the test
+    # methods legitimately have no test attributes, so exempt them here.
+    if ($file -match '\.cs$' -and
+        $file -notmatch 'TestCases\.HostApp' -and
+        -not $isDeviceTestPlatformPartial) {
+        if (-not (Test-CsFileHasTestMethods -RelativePath $file)) { continue }
+    }
 
     foreach ($rule in $TestTypeRules) {
         if ($file -match $rule.PathPattern) {
@@ -358,90 +1067,134 @@ foreach ($key in @($testGroups.Keys)) {
 
 # ============================================================
 # Step 4: For device tests, extract specific test method names from the diff
-#         for display purposes, but keep the category-based filter
+#         for display and result scoping, but keep the category-based filter
 # ============================================================
 
 foreach ($key in @($testGroups.Keys)) {
     $group = $testGroups[$key]
     if ($group.Type -ne "DeviceTest") { continue }
 
-    # Try to find added [Fact] or [Test] methods from the diff
-    $addedMethods = @()
-    # Cache PR files API response once before the inner loop
-    if ($PRNumber -and -not $script:_cachedPRFiles) {
-        $script:_cachedPRFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate 2>$null | ConvertFrom-Json
+    # Find changed test methods from the diff. Never include public helpers: a
+    # missing helper result is otherwise misclassified as an environment error
+    # after all real tests pass.
+    $changedMethods = @()
+    # Cache PR files API response once before the inner loop.
+    # A failure here must NEVER abort the gate. The script runs under
+    # $ErrorActionPreference='Stop', so an unguarded parse error is terminating: `gh api`
+    # can return an HTML error page (rate-limit / transient 5xx) — as seen on PR #36572,
+    # where "ConvertFrom-Json: parsing value: <" crashed the gate to exit 3 / INCONCLUSIVE —
+    # and `--paginate` alone emits multiple concatenated JSON arrays for >30-file PRs, which
+    # also breaks ConvertFrom-Json. Fetch defensively: --slurp yields one well-formed array
+    # of pages, validate it's JSON, flatten one level, and swallow any error (degrading to
+    # no method-name display; the category-based filter is unaffected).
+    # `$script:_cachedPRFiles` alone cannot gate the fetch: an empty result is `@()`,
+    # and `-not @()` is `$true`, so every later device-test group would retry the same
+    # failing call. Track the fetch attempt with a separate sentinel.
+    if ($PRNumber -and -not $DiffBase -and -not $script:_prFilesFetchAttempted) {
+        $script:_prFilesFetchAttempted = $true
+        try {
+            $rawPRFiles = (gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
+            if ($rawPRFiles.StartsWith('[')) {
+                # --slurp wraps each page as one element ([[file,...],[file,...]]) — flatten a level.
+                $script:_cachedPRFiles = @(($rawPRFiles | ConvertFrom-Json) | ForEach-Object { $_ })
+            }
+        } catch {
+            Write-Host "  ℹ️  PR files fetch failed (non-fatal; skipping method-name display): $($_.Exception.Message)"
+        }
         if (-not $script:_cachedPRFiles) { $script:_cachedPRFiles = @() }
     }
-    $effectiveMergeBase = if ($mergeBase) { $mergeBase } else { "HEAD~1" }
+    $effectiveMergeBase = if ($DiffBase) { $DiffBase } elseif ($mergeBase) { $mergeBase } else { "HEAD~1" }
     foreach ($file in $group.Files) {
+        if (-not (Test-DeviceTestFileAppliesToPlatform -Path $file -TargetPlatform $Platform)) {
+            continue
+        }
+
         $patch = $null
-        if ($PRNumber -and $script:_cachedPRFiles) {
+        if ($DiffBase) {
+            $patch = ((git diff $effectiveMergeBase HEAD -- $file 2>$null) -join "`n")
+        } elseif ($PRNumber -and $script:_cachedPRFiles) {
             # Look up patch from cached API response
             $fileEntry = $script:_cachedPRFiles | Where-Object { $_.filename -eq $file } | Select-Object -First 1
             $patch = if ($fileEntry) { $fileEntry.patch } else { $null }
         } elseif (-not $PRNumber) {
             # Try from git diff
-            $patch = git diff $effectiveMergeBase HEAD -- $file 2>$null
+            $patch = ((git diff $effectiveMergeBase HEAD -- $file 2>$null) -join "`n")
         }
 
         if ($patch) {
-            $addedLines = $patch -split "`n" | Where-Object { $_ -match "^\+" }
-            foreach ($line in $addedLines) {
-                if ($line -match "public\s+async\s+Task\s+(\w+)\s*\(" -or
-                    $line -match "public\s+void\s+(\w+)\s*\(") {
-                    $methodName = $matches[1]
-                    if ($methodName -ne "Dispose" -and $methodName -ne "Setup" -and
-                        $addedMethods -notcontains $methodName) {
-                        $addedMethods += $methodName
-                    }
+            $sourceContent = $null
+            $sourceLines = @(git show "HEAD:$file" 2>$null)
+            if ($LASTEXITCODE -eq 0) {
+                $sourceContent = $sourceLines -join "`n"
+            }
+
+            foreach ($methodName in @(Get-ChangedDeviceTestMethodsFromPatch `
+                -Patch $patch `
+                -SourceContent $sourceContent)) {
+                if ($changedMethods -notcontains $methodName) {
+                    $changedMethods += $methodName
                 }
             }
         }
     }
 
-    # Extract method names for display, use Category= filter for the device test runner
-    if ($addedMethods.Count -gt 0) {
-        $group.TestName = "$($group.TestName) ($($addedMethods -join ', '))"
-        $group.Methods = $addedMethods
+    # Method names are optional display metadata and provide narrower result scoping when available.
+    if ($changedMethods.Count -gt 0) {
+        $group.TestName = "$($group.TestName) ($($changedMethods -join ', '))"
+        $group.Methods = $changedMethods
+    }
 
-        # Find [Category] attribute from the main (non-platform) test class file
-        $baseClassName = ($group.TestName -split ' \(')[0]
-        $repoRoot = git rev-parse --show-toplevel 2>$null
-        $categoryFilter = $null
+    # Find [Category] attribute (and the namespace, for a fully-qualified class filter)
+    # from the main (non-platform) test class file. This is independent of whether the
+    # diff adds a method: modified existing device-test bodies still require filtering.
+    $baseClassName = ($group.TestName -split ' \(')[0]
+    $repoRoot = git rev-parse --show-toplevel 2>$null
+    $categoryFilter = $null
+    $classNamespace = $null
 
-        foreach ($file in $group.Files) {
-            if ($file -match "\.cs$") {
-                # Try the main class file (without platform suffix)
-                $testDir = [System.IO.Path]::GetDirectoryName($file)
-                $mainFile = if ($repoRoot) { Join-Path $repoRoot "$testDir/$baseClassName.cs" } else { $null }
-                if ($mainFile -and (Test-Path $mainFile)) {
-                    $content = Get-Content $mainFile -Raw -ErrorAction SilentlyContinue
-                    # Match [Category(TestCategory.X)] or [Category("X")]
-                    if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    }
-                }
-                # Also check the changed file itself
-                $fullPath = if ($repoRoot) { Join-Path $repoRoot $file } else { $file }
-                if (Test-Path $fullPath) {
-                    $content = Get-Content $fullPath -Raw -ErrorAction SilentlyContinue
-                    if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    }
+    foreach ($file in $group.Files) {
+        if ($file -notmatch "\.cs$") { continue }
+
+        # Probe the main class file (without platform suffix) first, then the changed file.
+        $testDir = [System.IO.Path]::GetDirectoryName($file)
+        $candidates = @()
+        if ($repoRoot) { $candidates += (Join-Path $repoRoot "$testDir/$baseClassName.cs") }
+        $candidates += $(if ($repoRoot) { Join-Path $repoRoot $file } else { $file })
+
+        foreach ($candidate in $candidates) {
+            if (-not ($candidate -and (Test-Path $candidate))) { continue }
+            $content = Get-Content $candidate -Raw -ErrorAction SilentlyContinue
+            if (-not $content) { continue }
+
+            # Capture the namespace (block-scoped or file-scoped) once. $matches is read
+            # immediately, before the [Category] match below can overwrite it.
+            if (-not $classNamespace -and $content -match '(?m)^\s*namespace\s+([A-Za-z_][\w.]*)') {
+                $classNamespace = $matches[1]
+            }
+
+            # Match [Category(TestCategory.X)] or [Category("X")] once.
+            if (-not $categoryFilter) {
+                if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
+                    $categoryFilter = "Category=$($matches[1])"
+                } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
+                    $categoryFilter = "Category=$($matches[1])"
                 }
             }
         }
 
-        # Use Category filter if found, otherwise fall back to class name
-        $group.Filter = if ($categoryFilter) { $categoryFilter } else { $baseClassName }
+        if ($categoryFilter -and $classNamespace) { break }
+    }
+
+    # Use Category filter if found, otherwise fall back to class name.
+    $group.Filter = if ($categoryFilter) { $categoryFilter } else { $baseClassName }
+
+    # For device tests, also emit a fully-qualified class name so the gate can run ONLY the
+    # PR's test class (XHarness SkipClass include filter) instead of the whole Category. A
+    # single unrelated crashing test in the same category otherwise APP_CRASHes the run and
+    # turns the verdict INCONCLUSIVE (e.g. dotnet/maui#36616). Additive: $group.Filter still
+    # carries the whole-Category value for Windows + fallback, so existing behaviour is kept.
+    if ($group.Type -eq "DeviceTest" -and $baseClassName) {
+        $group.ClassFilter = if ($classNamespace) { "$classNamespace.$baseClassName" } else { $baseClassName }
     }
 }
 

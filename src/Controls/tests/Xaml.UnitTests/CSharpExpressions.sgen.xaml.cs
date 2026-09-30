@@ -10,6 +10,12 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+// Static helper class for xmlns prefix expression tests
+public static class ExprHelper
+{
+	public static string GetStaticValue() => "Xmlns Prefix Value";
+}
+
 // ViewModel classes for TypedBinding tests
 public class UserInfo : INotifyPropertyChanged
 {
@@ -53,6 +59,13 @@ public class SimpleViewModel : INotifyPropertyChanged
 	{
 		get => _quantity;
 		set { _quantity = value; OnPropertyChanged(); }
+	}
+
+	private Thickness _margin;
+	public Thickness Margin
+	{
+		get => _margin;
+		set { _margin = value; OnPropertyChanged(); }
 	}
 
 	public string GetDisplayName() => $"Display: {Name}";
@@ -817,6 +830,75 @@ public partial class CSharpExpressions : ContentPage
 
 				vm.Price = 25.75m;
 				Assert.Equal(25.75m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		// XMLNS PREFIX IN EXPRESSIONS TESTS
+
+		[Fact]
+		public void XmlnsPrefixStaticMethodCall()
+		{
+			// {local:ExprHelper.GetStaticValue()} should resolve local: to CLR namespace
+			// and call the static method, not be treated as a markup extension
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("Xmlns Prefix Value", page.xmlnsPrefixMethodLabel.Text);
+		}
+
+		// ATTACHED BINDABLE PROPERTY TESTS
+
+		[Fact]
+		public void AttachedProperty_FromNamedElement()
+		{
+			// {$'{gridChild.(Grid.Row)}'} should read Grid.Row from gridChild (which is set to 2)
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("2", page.abpNamedElementLabel.Text);
+		}
+
+		[Fact]
+		public void StructSubProperty_ThicknessTop_OneWayTargetUpdatesFromSource()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			try
+			{
+				var page = new CSharpExpressions(XamlInflator.SourceGen);
+				var vm = new SimpleViewModel { Margin = new Thickness(10, 47, 10, 34) };
+				page.BindingContext = vm;
+
+				// HeightRequest defaults to one-way, but the struct sub-property getter still updates.
+				Assert.Equal(47, page.thicknessSubGrid.HeightRequest);
+
+				// Replacing the entire Thickness fires INPC, which re-evaluates the getter
+				vm.Margin = new Thickness(10, 20, 10, 34);
+				Assert.Equal(20, page.thicknessSubGrid.HeightRequest);
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
+		public void StructSubProperty_ThicknessTop_TwoWayBindingWritesBackAndPreservesEdges()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			try
+			{
+				var page = new CSharpExpressions(XamlInflator.SourceGen);
+				var vm = new SimpleViewModel { Margin = new Thickness(10, 47, 20, 34) };
+				page.BindingContext = vm;
+
+				Assert.Equal(47d, page.marginTopSlider.Value);
+
+				page.marginTopSlider.SetValueFromRenderer(Slider.ValueProperty, 25d);
+
+				Assert.Equal(10d, vm.Margin.Left);
+				Assert.Equal(25d, vm.Margin.Top);
+				Assert.Equal(20d, vm.Margin.Right);
+				Assert.Equal(34d, vm.Margin.Bottom);
 			}
 			finally
 			{

@@ -18,15 +18,15 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IImage, IImageHandler> Mapper = new PropertyMapper<IImage, IImageHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__ || WINDOWS || TIZEN
-			[nameof(IImage.Background)] = MapBackground,
-#endif
 #if WINDOWS
 			[nameof(IImage.Height)] = MapHeight,
 			[nameof(IImage.Width)] = MapWidth,
 #endif
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,
+#if __ANDROID__ || __IOS__ || MACCATALYST || WINDOWS || TIZEN
+			[nameof(IImage.Background)] = MapBackground,
+#endif
 			[nameof(IImage.Source)] = MapSource,
 		};
 

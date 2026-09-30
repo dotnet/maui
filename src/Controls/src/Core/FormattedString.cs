@@ -23,8 +23,17 @@ namespace Microsoft.Maui.Controls
 			remove => _weakEventManager.RemoveEventHandler(value, nameof(SpansCollectionChanged));
 		}
 
+		// Subscribe to each Span's PropertyChanging/PropertyChanged via per-occurrence weak
+		// subscription tokens so that a shared or long-lived Span (e.g. one held by a view-model or
+		// App.Resources) does not keep this FormattedString alive through the event subscriptions.
+		readonly SpanSubscriptions _spanSubscriptions;
+
 		/// <summary>Initializes a new instance of the FormattedString class.</summary>
-		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
+		public FormattedString()
+		{
+			_spanSubscriptions = new SpanSubscriptions(this);
+			_spans.CollectionChanged += OnCollectionChanged;
+		}
 
 		protected override void OnBindingContextChanged()
 		{
@@ -53,8 +62,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						bo.Parent?.RemoveLogicalChild(bo);
-						bo.PropertyChanging -= OnItemPropertyChanging;
-						bo.PropertyChanged -= OnItemPropertyChanged;
+						_spanSubscriptions.Remove(bo);
 					}
 
 				}
@@ -68,8 +76,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						this.AddLogicalChild(bo);
-						bo.PropertyChanging += OnItemPropertyChanging;
-						bo.PropertyChanged += OnItemPropertyChanged;
+						_spanSubscriptions.Add(bo);
 					}
 
 				}
@@ -82,6 +89,98 @@ namespace Microsoft.Maui.Controls
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
 
 		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e) => OnPropertyChanging(nameof(Spans));
+
+		sealed class SpanSubscriptions
+		{
+			readonly WeakReference<FormattedString> _owner;
+			readonly List<SpanSubscription> _subscriptions = new();
+
+			public SpanSubscriptions(FormattedString owner) => _owner = new(owner);
+
+			~SpanSubscriptions() => Clear();
+
+			public void Add(Span span) => _subscriptions.Add(new SpanSubscription(_owner, span));
+
+			public void Remove(Span span)
+			{
+				for (int i = 0; i < _subscriptions.Count; i++)
+				{
+					if (_subscriptions[i].Span == span)
+					{
+						_subscriptions[i].Unsubscribe();
+						_subscriptions.RemoveAt(i);
+						return;
+					}
+				}
+			}
+
+			void Clear()
+			{
+				foreach (var subscription in _subscriptions)
+				{
+					subscription.Unsubscribe();
+				}
+
+				_subscriptions.Clear();
+			}
+		}
+
+		sealed class SpanSubscription
+		{
+			// The Span's event delegate holds a strong reference to this SpanSubscription, so the
+			// instance is kept alive until either the Span fires an event (which triggers self-cleanup
+			// via the weak-owner check in OnPropertyChanged/OnPropertyChanging) or the SpanSubscriptions
+			// finalizer runs. This is an accepted trade-off of weak-event cleanup: only these small
+			// tokens may linger briefly, while the owning FormattedString is free to be collected.
+			readonly WeakReference<FormattedString> _owner;
+			Span _span;
+
+			public SpanSubscription(WeakReference<FormattedString> owner, Span span)
+			{
+				_owner = owner;
+				_span = span;
+				_span.PropertyChanging += OnPropertyChanging;
+				_span.PropertyChanged += OnPropertyChanged;
+			}
+
+			public Span Span => _span;
+
+			public void Unsubscribe()
+			{
+				if (_span is null)
+				{
+					return;
+				}
+
+				_span.PropertyChanging -= OnPropertyChanging;
+				_span.PropertyChanged -= OnPropertyChanged;
+				_span = null;
+			}
+
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (_owner.TryGetTarget(out var owner))
+				{
+					owner.OnItemPropertyChanged(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			void OnPropertyChanging(object sender, PropertyChangingEventArgs e)
+			{
+				if (_owner.TryGetTarget(out var owner))
+				{
+					owner.OnItemPropertyChanging(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+		}
 
 		class SpanCollection : ObservableCollection<Span>
 		{
