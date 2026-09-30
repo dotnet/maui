@@ -149,6 +149,18 @@ jobs:
             ${{ runner.temp }}/performance-measurements/table.md
           retention-days: 7
           if-no-files-found: warn
+      - name: Upload measurement diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: performance-diagnostics-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/performance-measurements/run/diagnostics/*.log
+            ${{ runner.temp }}/performance-measurements/run/results/*/*/build.log
+            ${{ runner.temp }}/performance-measurements/run/results/*/*/run*/benchmark.log
+            ${{ runner.temp }}/performance-measurements/run/results/*/prerequisites/build-tasks.log
+          retention-days: 7
+          if-no-files-found: ignore
   evidence:
     needs: [activation, measurements]
     if: ${{ !cancelled() && needs.activation.result == 'success' }}

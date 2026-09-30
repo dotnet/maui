@@ -289,14 +289,14 @@ function New-LinuxExecutionContext {
     )
 
     $sideRoot = Join-Path $isolationRoot $Side
-    $home = Join-Path $sideRoot "home"
+    $userHome = Join-Path $sideRoot "home"
     $work = Join-Path $sideRoot "work"
 
     Invoke-Sudo @("mkdir", "-p", $sideRoot) | Out-Null
-    Invoke-Sudo @("useradd", "--system", "--create-home", "--home-dir", $home, "--shell", "/bin/bash", $UserName) | Out-Null
+    Invoke-Sudo @("useradd", "--system", "--create-home", "--home-dir", $userHome, "--shell", "/bin/bash", $UserName) | Out-Null
     $script:isolationUsers += $UserName
 
-    Invoke-Sudo @("mkdir", "-p", (Join-Path $home "tmp"), (Join-Path $home ".dotnet"), ([IO.Path]::Combine($home, ".nuget", "packages"))) | Out-Null
+    Invoke-Sudo @("mkdir", "-p", (Join-Path $userHome "tmp"), (Join-Path $userHome ".dotnet"), ([IO.Path]::Combine($userHome, ".nuget", "packages"))) | Out-Null
     # A standalone clone preserves Git metadata required by Arcade/versioning while
     # preventing either side from mutating the main repository or the sibling side.
     Invoke-Sudo @("git", "clone", "--quiet", "--no-hardlinks", $SourceWorktree, $work) | Out-Null
@@ -308,7 +308,7 @@ function New-LinuxExecutionContext {
         Side = $Side
         User = $UserName
         Root = $sideRoot
-        Home = $home
+        Home = $userHome
         Work = $work
     }
 }
@@ -491,13 +491,25 @@ function Ensure-DotNetSdk([string]$Version) {
 
         Ensure-Directory $sdkRoot
         $installDirectory = Join-Path $sdkRoot $Version
-        $installer = Join-Path $sdkRoot "dotnet-install.ps1"
+        $installerName = if ($IsWindows) { "dotnet-install.ps1" } else { "dotnet-install.sh" }
+        $installer = Join-Path $sdkRoot $installerName
         if (-not (Test-Path $installer)) {
-            Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile $installer -UseBasicParsing
+            Invoke-WebRequest "https://dot.net/v1/$installerName" -OutFile $installer -UseBasicParsing
         }
 
-        $installLog = Join-Path $sdkRoot "install-$($Version -replace '[^0-9A-Za-z_.-]', '_').log"
-        & $installer -Version $Version -InstallDir $installDirectory -NoPath *> $installLog
+        $installLog = Join-Path $OutputRoot "diagnostics/install-$($Version -replace '[^0-9A-Za-z_.-]', '_').log"
+        Ensure-Directory (Split-Path -Parent $installLog)
+        if ($IsWindows) {
+            & $installer -Version $Version -InstallDir $installDirectory -NoPath *> $installLog
+        }
+        else {
+            $exitCode = Invoke-LoggedCommand -FilePath "bash" -Arguments @(
+                $installer, "--version", $Version, "--install-dir", $installDirectory, "--no-path"
+            ) -WorkingDirectory $sdkRoot -LogPath $installLog -ScrubSecrets
+            if ($exitCode -ne 0) {
+                throw ".NET SDK $Version installation failed with exit code $exitCode. See '$installLog'."
+            }
+        }
 
         $executable = Join-Path $installDirectory $(if ($IsWindows) { "dotnet.exe" } else { "dotnet" })
         if (-not (Test-Path $executable)) {

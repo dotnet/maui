@@ -149,9 +149,10 @@ gh workflow run copilot-review-performance.lock.yml --repo dotnet/maui \
 ```
 
 `suppress_output=true` still performs measurements and validates the report, but
-does not post a comment. Evidence and rendered report artifacts are retained for
-seven days. Failed automation posts a run link rather than a performance verdict;
-stale evidence is never published as a current report.
+does not post a comment. Evidence, rendered reports, and separate SDK-install,
+build, and benchmark diagnostic artifacts are retained for seven days. Diagnostic
+logs are not admitted as measurement evidence. Failed automation posts a run link
+rather than a performance verdict; stale evidence is never published as a current report.
 
 No new Azure pipeline, service connection, or secret is needed. The workflow uses
 the existing `copilot-pat-pool` environment for GPT interpretation and read-only
