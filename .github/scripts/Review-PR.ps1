@@ -2290,7 +2290,7 @@ function Get-GateFallbackDetails {
     # (PR #35706 iOS: agent had zero usable runtimes; PR #36572 Android: xharness install failure.)
     $platLabel = if ($ReviewedPlatform) { $ReviewedPlatform } else { "device" }
     if ($Tail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)|No (?:preferred )?device (?:pre-installed|found)') {
-        $likely += "Could not boot the $platLabel simulator/emulator on the CI agent — the pool machine had no usable device runtime, so no test could run. Transient infra, not a problem with the PR; re-running the review (``/review rerun``) usually resolves it."
+        $likely += "Could not boot the $platLabel simulator/emulator on the CI agent — the pool machine had no usable device runtime, so no test could run. Transient infra, not a problem with the PR; re-running the review (``/review``) usually resolves it."
     }
     elseif ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)|Install failure|Test command cannot continue') {
         $likely += "Device/emulator setup failed (env error class)."
