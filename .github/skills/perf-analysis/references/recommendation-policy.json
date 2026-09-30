@@ -95,7 +95,7 @@
       ],
       "requires": [
         "whole-PR direct coverage is incomplete",
-        "every selected sampled benchmark or device family completed without a concern",
+        "every selected sampled managed benchmark completed without a concern",
         "no static performance concern is identified",
         "the report remains explicit about which paths were sampled versus directly measured"
       ]

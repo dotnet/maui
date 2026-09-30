@@ -1,7 +1,6 @@
 #!/usr/bin/env pwsh
 
 $ErrorActionPreference = "Stop"
-. (Join-Path $PSScriptRoot "DevicePerformance.Fixtures.ps1")
 
 $skillRoot = Split-Path -Parent $PSScriptRoot
 $resolver = Join-Path $skillRoot "scripts\Resolve-PerfDecision.ps1"
@@ -18,7 +17,7 @@ function Write-Json([string]$path, $value) {
     $value | ConvertTo-Json -Depth 10 | Set-Content $path -Encoding UTF8
 }
 
-function Resolve-Case([string]$name, $selection, $summary = $null, $device = $null) {
+function Resolve-Case([string]$name, $selection, $summary = $null) {
     $root = Join-Path $testRoot $name
     New-Item -ItemType Directory -Force -Path $root | Out-Null
     $selectionPath = Join-Path $root "selection.json"
@@ -33,11 +32,6 @@ function Resolve-Case([string]$name, $selection, $summary = $null, $device = $nu
         $summaryPath = Join-Path $root "summary.json"
         Write-Json $summaryPath $summary
         $arguments.SummaryPath = $summaryPath
-    }
-    if ($null -ne $device) {
-        $devicePath = Join-Path $root "device.json"
-        Write-Json $devicePath $device
-        $arguments.DeviceValidationPath = $devicePath
     }
 
     & $resolver @arguments
@@ -62,11 +56,7 @@ function New-Selection(
             benchmarkInputsChanged = $false
         }
         deviceScenarios = if ($device -gt 0) {
-            if ($automationStatus -eq "manual-local-ready") {
-                (New-DeviceSelectionFixture).deviceScenarios
-            } else {
-                @([PSCustomObject]@{ automationStatus = $automationStatus })
-            }
+            @([PSCustomObject]@{ automationStatus = $automationStatus })
         } else {
             @()
         }
@@ -152,53 +142,9 @@ try {
     $sampledAllocation = Resolve-Case "sampled-unconfirmed-allocation" $sampledSelection $unconfirmedAllocation
     Assert-Equal "needs_human_discussion" $sampledAllocation.nextAction "Unconfirmed allocation evidence must not be dismissed"
 
-    $deviceReady = Resolve-Case "device-ready" (New-Selection 0 1 0 "manual-local-ready")
-    Assert-Equal "device-required" $deviceReady.verdictClass "Device verdict"
-    Assert-Equal "run_more_measurements" $deviceReady.nextAction "Device action"
-
     $deviceUnsupported = Resolve-Case "device-unsupported" (New-Selection 0 1 0 "required-not-yet-automated")
+    Assert-Equal "device-required" $deviceUnsupported.verdictClass "Device verdict"
     Assert-Equal "needs_human_discussion" $deviceUnsupported.nextAction "Unsupported device action"
-
-    $localSelection = New-DeviceSelectionFixture
-    $localEvidence = New-DeviceValidationFixture $localSelection
-    $localClean = Resolve-Case "local-clean" $localSelection $null $localEvidence
-    Assert-Equal "clean" $localClean.verdictClass "Complete neutral local evidence"
-    $baselineFailed = Resolve-Case "baseline-failed" $localSelection $null (
-        New-DeviceValidationFixture $localSelection "neutral" $false
-    )
-    Assert-Equal "advisory" $baselineFailed.verdictClass "Failed baseline remains context, not missing HEAD evidence"
-    Assert-Equal "needs_human_discussion" $baselineFailed.nextAction "Non-equivalent baseline cannot grant clean clearance"
-
-    $headFailedEvidence = New-DeviceValidationFixture $localSelection
-    $headFailedEvidence.sealed = $false
-    $headFailedEvidence.errors = @("HEAD correctness failed.")
-    $headFailed = Resolve-Case "head-failed" $localSelection $null $headFailedEvidence
-    Assert-Equal "device-required" $headFailed.verdictClass "Unsealed evidence cannot be accepted"
-
-    $missingEvidence = New-DeviceValidationFixture $localSelection
-    $missingEvidence.acceptedMeasurements = @()
-    $missing = Resolve-Case "flags-without-results" $localSelection $null $missingEvidence
-    Assert-Equal "device-required" $missing.verdictClass "Completion flags alone cannot clear missing measurements"
-
-    $sampledDeviceSelection = New-DeviceSelectionFixture @("handler-property-update-windows")
-    $sampledDevice = Resolve-Case "sampled-local" $sampledDeviceSelection $null (
-        New-DeviceValidationFixture $sampledDeviceSelection "time-regression-advisory"
-    )
-    Assert-Equal "no-blocker-incomplete" $sampledDevice.verdictClass "Sampled native family never becomes whole-PR clean"
-    Assert-Equal "no_perf_action_needed" $sampledDevice.nextAction "Sampled native timing remains informational"
-
-    foreach ($invalidCase in @("old-validation", "wrong-request", "unsupported-verdict", "missing-statistics")) {
-        $invalidEvidence = New-DeviceValidationFixture $localSelection
-        switch ($invalidCase) {
-            "old-validation" { $invalidEvidence.schemaVersion = 1 }
-            "wrong-request" { $invalidEvidence.acceptedMeasurements[0].requestKey = "not-the-request" }
-            "unsupported-verdict" { $invalidEvidence.acceptedMeasurements[0].verdict = "improvement" }
-            "missing-statistics" { $invalidEvidence.acceptedMeasurements[0].head = $null }
-        }
-        $failed = $false
-        try { Resolve-Case $invalidCase $localSelection $null $invalidEvidence | Out-Null } catch { $failed = $true }
-        Assert-Equal $true $failed "Invalid local evidence '$invalidCase' must fail explicitly"
-    }
 
     Write-Host "Performance decision resolver tests passed."
 }

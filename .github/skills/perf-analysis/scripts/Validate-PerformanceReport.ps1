@@ -23,9 +23,6 @@ param(
     [string]$SummaryPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$DeviceValidationPath,
-
-    [Parameter(Mandatory = $false)]
     [string]$DecisionBaselinePath,
 
     [Parameter(Mandatory = $false)]
@@ -33,7 +30,6 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-. (Join-Path $PSScriptRoot "DevicePerformance.Local.ps1")
 $errors = New-Object System.Collections.Generic.List[string]
 
 function Add-ValidationError([string]$message) {
@@ -79,19 +75,13 @@ $summary = if ($SummaryPath -and (Test-Path $SummaryPath)) {
 } else {
     $null
 }
-$deviceValidation = if ($DeviceValidationPath) {
-    Get-Content -LiteralPath $DeviceValidationPath -Raw -ErrorAction Stop | ConvertFrom-Json
-} else {
-    $null
-}
 $decisionBaseline = if ($DecisionBaselinePath -and (Test-Path $DecisionBaselinePath)) {
     Get-Content $DecisionBaselinePath -Raw | ConvertFrom-Json
 } else {
     $null
 }
 
-$deviceState = Get-LocalDeviceEvidenceState $selection $deviceValidation
-$hasEmpiricalEvidence = $null -ne $summary -or $deviceState.hasEvidence
+$hasEmpiricalEvidence = $null -ne $summary
 
 $requiredHeadings = @(
     "## Performance analysis",
@@ -245,12 +235,11 @@ if ($null -ne $decision) {
     $deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
     $sampledProductFiles = @($selection.sampledProductFiles | Where-Object { $null -ne $_ })
     $staticOnlyProductFiles = @($selection.staticOnlyProductFiles | Where-Object { $null -ne $_ })
-    $unsupportedDevicePath = $deviceState.unsupportedPath
+    $unsupportedDevicePath = $deviceScenarios.Count -gt 0
     $summaryComplete = $null -ne $summary `
         -and [bool](Get-PropertyValue $summary "coverageComplete") `
         -and [bool](Get-PropertyValue $summary "executionComplete") `
         -and [bool](Get-PropertyValue $summary "benchmarkDataComplete")
-    $deviceEvidenceComplete = $deviceState.complete
     $managedCount = $null
     $deviceCount = $null
     $productFileCount = Get-PropertyValue $coverage "productFileCount"
@@ -266,12 +255,11 @@ if ($null -ne $decision) {
             -and -not [bool](Get-PropertyValue $coverage "benchmarkInputsChanged")
         $wholePrEvidenceComplete = $classificationComplete `
             -and ($managedCount -eq 0 -or $summaryComplete) `
-            -and ($deviceCount -eq 0 -or $deviceEvidenceComplete)
+            -and $deviceCount -eq 0
     } else {
         $wholePrEvidenceComplete =
             [bool](Get-PropertyValue $coverage "canClaimWholePrClean") -and $summaryComplete
     }
-    $deviceAdvisory = $deviceEvidenceComplete -and $deviceState.advisory
     $directManagedFilters = @(
         $selection.suites | Where-Object {
             @($_.directlyCoveredFiles | Where-Object { $null -ne $_ }).Count -gt 0
@@ -290,32 +278,33 @@ if ($null -ne $decision) {
     $managedTimingAdvisory = $null -ne $summary `
         -and [string]$summary.verdict -in @("time-regression-advisory", "time-improvement-advisory") `
         -and $hasDirectManagedTimingSignal
-    $advisoryOnly = $managedTimingAdvisory `
-        -or $deviceAdvisory
+    $advisoryOnly = $managedTimingAdvisory
     $managedEvidenceClean = if ($null -ne $managedCount) {
         $managedCount -eq 0 -or ($summaryComplete -and [bool](Get-PropertyValue $summary "canClaimClean"))
     } else {
         $summaryComplete -and [bool](Get-PropertyValue $summary "canClaimClean")
     }
     $deviceEvidenceClean = if ($null -ne $deviceCount) {
-        $deviceCount -eq 0 -or ($deviceEvidenceComplete -and -not $deviceAdvisory)
+        $deviceCount -eq 0
     } else {
-        $deviceScenarios.Count -eq 0 -or ($deviceEvidenceComplete -and -not $deviceAdvisory)
+        $deviceScenarios.Count -eq 0
     }
     $confirmedAllocationRegression = $null -ne $summary -and @(
         $summary.allocRegressions | Where-Object { $_.confirmed -eq $true }
     ).Count -gt 0
     $confirmedBlockingRegression = $confirmedAllocationRegression -or $staticFindingSeverity -eq "error"
     $confirmedMeasuredCost = $confirmedAllocationRegression
-    $hasMeasuredImprovement = $wholePrEvidenceComplete -and -not $deviceAdvisory -and
+    $hasMeasuredImprovement = $wholePrEvidenceComplete -and
         $null -ne $summary -and [string]$summary.verdict -eq "improvement"
 
-    $supportedMeasurementPath = $deviceState.supportedPath
+    $supportedMeasurementPath = -not $summaryComplete -and @(
+        $selection.suites | Where-Object { @($_.runnableFilters | Where-Object { $_ }).Count -gt 0 }
+    ).Count -gt 0
     $hasCoverageGap = -not $wholePrEvidenceComplete `
         -or [bool](Get-PropertyValue $coverage "benchmarkInputsChanged") `
         -or $sampledProductFiles.Count -gt 0 `
         -or $staticOnlyProductFiles.Count -gt 0 `
-        -or ($deviceScenarios.Count -gt 0 -and -not $deviceEvidenceComplete)
+        -or $deviceScenarios.Count -gt 0
 
     if ($verdictClass -eq "blocker" -and -not $confirmedBlockingRegression) {
         Add-ValidationError "verdictClass 'blocker' requires a confirmed regression or error-level static finding."
@@ -338,7 +327,7 @@ if ($null -ne $decision) {
         Add-ValidationError "verdictClass 'no-blocker-incomplete' requires incomplete coverage and no confirmed blocker."
     }
     elseif ($verdictClass -eq "device-required" -and (
-        $deviceScenarios.Count -eq 0 -or $deviceEvidenceComplete -or $confirmedBlockingRegression)) {
+        $deviceScenarios.Count -eq 0 -or $confirmedBlockingRegression)) {
         Add-ValidationError "verdictClass 'device-required' requires missing device evidence and no confirmed blocker."
     }
     elseif ($verdictClass -eq "inconclusive" -and (
@@ -392,7 +381,7 @@ if ($null -ne $decision) {
         -or $advisoryOnly `
         -or (@($selection.suites | Where-Object { $null -ne $_ }).Count -gt 0 -and
             (-not $summaryComplete -or @($summary.allocRegressions | Where-Object { $null -ne $_ }).Count -gt 0)) `
-        -or ($deviceScenarios.Count -gt 0 -and -not $deviceEvidenceComplete))) {
+        -or $deviceScenarios.Count -gt 0)) {
         Add-ValidationError "no_perf_action_needed requires incomplete direct coverage, clean completed sampled evidence, and no static concern."
     }
 

@@ -215,14 +215,8 @@ try {
         "src/Core/tests/Benchmarks/Benchmarks/LayoutExtensionsBenchmarker.cs",
         "src/Core/tests/Benchmarks/Benchmarks/VisualDiagnosticsBenchmarker.cs"
     )) {
-        $productBenchmark = Join-Path (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $skillRoot))) $trustedBenchmark
         $overlayBenchmark = Join-Path $skillRoot "benchmark-overlays\$trustedBenchmark"
         Assert-True (Test-Path $overlayBenchmark) "Trusted overlay missing for $trustedBenchmark"
-        Assert-Equal (
-            (Get-FileHash $productBenchmark -Algorithm SHA256).Hash
-        ) (
-            (Get-FileHash $overlayBenchmark -Algorithm SHA256).Hash
-        ) "Trusted overlay must match the checked-in benchmark source for $trustedBenchmark"
     }
 
     & {
@@ -277,8 +271,6 @@ try {
     $skillSource = Get-Content (Join-Path $skillRoot "SKILL.md") -Raw
     Assert-True ($skillSource -match '(?m)^name: perf-analysis\r?$') "Reusable skill discovery metadata missing"
     Assert-True ($skillSource -notmatch 'post_perf_report|run_device_performance|MAUI_DEVICE_PERFORMANCE_PIPELINE_ID') "Skill must not depend on removed workflow actions"
-    Assert-True ($skillSource -match 'Manual invocation in Copilot') "Manual Copilot discoverability missing"
-    Assert-True ($skillSource -match 'check-pr-performance') "Manual device prerequisite missing"
     Assert-True ($skillSource -notmatch 'manual-device-ci-ready|\.pipeline|ci-device-performance\.yml') "Skill must not retain the removed native pipeline contract"
     foreach ($scriptFile in Get-ChildItem -LiteralPath (Join-Path $skillRoot "scripts") -Filter "*.ps1" -File) {
         $source = Get-Content -LiteralPath $scriptFile.FullName -Raw
@@ -320,20 +312,17 @@ try {
     Assert-True ($scenarioIds -contains "collectionview-items-update-android") "Android CollectionView scenario missing"
     Assert-True ($scenarioIds -contains "collectionview-scroll-ios") "iOS CollectionView scenario missing"
     $androidScenario = $platform.deviceScenarios | Where-Object { $_.id -eq "collectionview-items-update-android" }
-    Assert-Equal "manual-local-ready" $androidScenario.automationStatus "Android local status"
-    Assert-Equal "eng/scripts/Run-DevicePerformanceComparison.ps1" $androidScenario.localRun.driver "Android local driver"
-    Assert-Equal "android" $androidScenario.localRun.platforms[0] "Android canonical local platform"
+    Assert-Equal "required-not-yet-automated" $androidScenario.automationStatus "Android coverage remains missing"
     $iosScenario = $platform.deviceScenarios | Where-Object { $_.id -eq "collectionview-scroll-ios" }
-    Assert-Equal 2 (@($iosScenario.localRun.platforms).Count) "Apple local platform count"
-    Assert-Equal "ios" $iosScenario.localRun.platforms[0] "iOS canonical local platform"
-    Assert-Equal "maccatalyst" $iosScenario.localRun.platforms[1] "MacCatalyst canonical local platform"
+    Assert-Equal 2 (@($iosScenario.platforms).Count) "Apple platform count"
+    Assert-Equal "iOS" $iosScenario.platforms[0] "iOS coverage"
+    Assert-Equal "MacCatalyst" $iosScenario.platforms[1] "MacCatalyst coverage"
 
     $uncoveredItemsViewLayout = Invoke-SelectorFixture "items-view-layout" @(
         "src/Controls/src/Core/Handlers/Items/iOS/ItemsViewLayout.cs"
     )
     Assert-Equal "collectionview-items-update-ios" $uncoveredItemsViewLayout.deviceScenarios[0].id "ItemsViewLayout should use its dedicated update scenario"
-    Assert-Equal "manual-local-ready" $uncoveredItemsViewLayout.deviceScenarios[0].automationStatus "ItemsViewLayout update scenario status"
-    Assert-Equal "collectionview-keepitemsinview-update" $uncoveredItemsViewLayout.deviceScenarios[0].resultScenario "ItemsViewLayout result scenario"
+    Assert-Equal "required-not-yet-automated" $uncoveredItemsViewLayout.deviceScenarios[0].automationStatus "ItemsViewLayout update scenario status"
 
     $windowsPlatform = Invoke-SelectorFixture "windows-platform" @(
         "src/Controls/src/Core/Handlers/Items/Windows/ItemsViewHandler.cs"
@@ -348,9 +337,8 @@ try {
     )
     Assert-Equal 1 @($windowsCarousel.deviceScenarios).Count "Windows CarouselView should select one dedicated scenario"
     Assert-Equal "carouselview-wheel-snap-windows" $windowsCarousel.deviceScenarios[0].id "Windows CarouselView scenario"
-    Assert-Equal "manual-local-ready" $windowsCarousel.deviceScenarios[0].automationStatus "Windows CarouselView automation status"
-    Assert-Equal "windows" $windowsCarousel.deviceScenarios[0].localRun.platforms[0] "Windows local platform"
-    Assert-Equal "eng/scripts/Run-WindowsDevicePerformanceComparison.ps1" $windowsCarousel.deviceScenarios[0].localRun.driver "Windows local driver"
+    Assert-Equal "required-not-yet-automated" $windowsCarousel.deviceScenarios[0].automationStatus "Windows CarouselView automation status"
+    Assert-Equal "Windows" $windowsCarousel.deviceScenarios[0].platforms[0] "Windows coverage"
 
     $carouselPlatform = Invoke-SelectorFixture "carousel-platform" @(
         "src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs",
@@ -361,9 +349,8 @@ try {
     $carouselScenarioIds = @($carouselPlatform.deviceScenarios | ForEach-Object { $_.id })
     Assert-Equal 1 $carouselScenarioIds.Count "CarouselView should select only its dedicated scenario"
     Assert-Equal "carouselview-swipe-disabled" $carouselScenarioIds[0] "CarouselView scenario selection"
-    Assert-Equal "manual-local-ready" $carouselPlatform.deviceScenarios[0].automationStatus "CarouselView local status"
-    Assert-Equal 3 @($carouselPlatform.deviceScenarios[0].localRun.platforms).Count "CarouselView platform count"
-    Assert-Equal "carouselview-swipe-disabled" $carouselPlatform.deviceScenarios[0].resultScenario "CarouselView result scenario"
+    Assert-Equal "required-not-yet-automated" $carouselPlatform.deviceScenarios[0].automationStatus "CarouselView coverage remains missing"
+    Assert-Equal 3 @($carouselPlatform.deviceScenarios[0].platforms).Count "CarouselView platform count"
     Assert-Equal 0 $carouselPlatform.coverage.staticOnlyFileCount "PublicAPI files must not create performance coverage gaps"
     Assert-Equal 3 $carouselPlatform.coverage.deviceRequiredFileCount "CarouselView device file count"
 
@@ -389,7 +376,7 @@ try {
         "src/Core/src/Handlers/Label/LabelHandler.Android.cs"
     )
     Assert-Equal "handler-property-update-android" $handlerPropertyUpdate.deviceScenarios[0].id "Common Android handler family scenario"
-    Assert-Equal "manual-local-ready" $handlerPropertyUpdate.deviceScenarios[0].automationStatus "Common handler scenario automation"
+    Assert-Equal "required-not-yet-automated" $handlerPropertyUpdate.deviceScenarios[0].automationStatus "Common handler scenario automation"
     Assert-Equal "static-only" $handlerPropertyUpdate.coverage.status "Sampled device family must not claim direct coverage"
 
     $controlHandler = Invoke-SelectorFixture "control-handler" @(

@@ -13,14 +13,7 @@
         "Android"
       ],
       "runner": "dedicated-device-or-emulator",
-      "automationStatus": "manual-local-ready",
-      "resultScenario": "collectionview-keepitemsinview-update",
-      "localRun": {
-        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
-        "platforms": [
-          "android"
-        ]
-      },
+      "automationStatus": "required-not-yet-automated",
       "rationale": "RecyclerView observer, recycling, scrolling, and layout-manager behavior only execute on Android.",
       "setup": [
         "Use the PR's functional reproduction page and the same data volume on base and head.",
@@ -51,15 +44,7 @@
         "MacCatalyst"
       ],
       "runner": "dedicated-simulator-or-device",
-      "automationStatus": "manual-local-ready",
-      "resultScenario": "collectionview-keepitemsinview-update",
-      "localRun": {
-        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
-        "platforms": [
-          "ios",
-          "maccatalyst"
-        ]
-      },
+      "automationStatus": "required-not-yet-automated",
       "rationale": "ItemsViewLayout scroll-offset preservation executes inside UIKit collection updates.",
       "setup": [
         "Use a fixed-size CollectionView with KeepItemsInView and identical data on base and head.",
@@ -92,15 +77,7 @@
         "MacCatalyst"
       ],
       "runner": "dedicated-simulator-or-device",
-      "automationStatus": "manual-local-ready",
-      "resultScenario": "collectionview-grouped-scrollto-makevisible",
-      "localRun": {
-        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
-        "platforms": [
-          "ios",
-          "maccatalyst"
-        ]
-      },
+      "automationStatus": "required-not-yet-automated",
       "rationale": "UICollectionView measurement, compositional-layout invalidation, and ScrollTo behavior require UIKit.",
       "setup": [
         "Use the PR's functional reproduction page with identical grouped data and cell sizes.",
@@ -140,16 +117,7 @@
         "MacCatalyst"
       ],
       "runner": "platform-matched-device",
-      "automationStatus": "manual-local-ready",
-      "resultScenario": "carouselview-swipe-disabled",
-      "localRun": {
-        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
-        "platforms": [
-          "android",
-          "ios",
-          "maccatalyst"
-        ]
-      },
+      "automationStatus": "required-not-yet-automated",
       "rationale": "Android disabled-swipe interception and UIKit's embedded orthogonal scroller require native CarouselView handlers.",
       "setup": [
         "Create a non-looping CarouselView with swipe and bounce disabled from initial construction.",
@@ -178,14 +146,7 @@
         "Windows"
       ],
       "runner": "dedicated-windows-host",
-      "automationStatus": "manual-local-ready",
-      "resultScenario": "carouselview-wheel-snap-windows",
-      "localRun": {
-        "driver": "eng/scripts/Run-WindowsDevicePerformanceComparison.ps1",
-        "platforms": [
-          "windows"
-        ]
-      },
+      "automationStatus": "required-not-yet-automated",
       "rationale": "WinUI ScrollViewer centering and realized CarouselView containers require Windows.",
       "setup": [
         "Use a non-looping horizontal CarouselView with mandatory center snap points.",
@@ -246,15 +207,8 @@
         "Android"
       ],
       "runner": "platform-matched-device",
-      "automationStatus": "manual-local-ready",
+      "automationStatus": "required-not-yet-automated",
       "coverageMode": "sampled",
-      "resultScenario": "handler-property-update-batch",
-      "localRun": {
-        "driver": "eng/scripts/Run-DevicePerformanceComparison.ps1",
-        "platforms": [
-          "android"
-        ]
-      },
       "rationale": "Repeated property mapping and layout invalidation execute through native handlers for representative common controls.",
       "setup": [
         "Create Label, Button, Entry, Picker, DatePicker, and TimePicker controls in one realized layout.",
@@ -282,15 +236,8 @@
         "Windows"
       ],
       "runner": "platform-matched-device",
-      "automationStatus": "manual-local-ready",
+      "automationStatus": "required-not-yet-automated",
       "coverageMode": "sampled",
-      "resultScenario": "handler-property-update-batch",
-      "localRun": {
-        "driver": "eng/scripts/Run-WindowsDevicePerformanceComparison.ps1",
-        "platforms": [
-          "windows"
-        ]
-      },
       "rationale": "Repeated property mapping and layout invalidation execute through WinUI handlers for representative common controls.",
       "setup": [
         "Create Label, Button, Entry, Picker, DatePicker, and TimePicker controls in one realized layout.",

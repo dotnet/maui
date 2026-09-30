@@ -136,8 +136,8 @@ validator. The job boundaries follow the issue-replication isolation pattern:
 
 Native scenarios **do not run in the hosted command**. Device-required, sampled,
 static-only, missing, and failed measurements remain explicit coverage gaps.
-Use `check-pr-performance` locally for supported device scenarios. Shared-host timing
-is advisory; no whole-PR clean verdict may be inferred from a passing managed subset.
+Native device tooling is outside this workflow's scope. Shared-host timing is
+advisory; no whole-PR clean verdict may be inferred from a passing managed subset.
 The command never approves, changes code or labels, queues the full review pipeline,
 or automatically starts native follow-ups.
 

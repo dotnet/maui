@@ -10,15 +10,11 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$SummaryPath,
 
-    [Parameter(Mandatory = $false)]
-    [string]$DeviceValidationPath,
-
     [Parameter(Mandatory = $true)]
     [string]$OutputPath
 )
 
 $ErrorActionPreference = "Stop"
-. (Join-Path $PSScriptRoot "DevicePerformance.Local.ps1")
 
 function Get-PropertyValue($object, [string]$name) {
     if ($null -eq $object) {
@@ -47,24 +43,16 @@ $summary = if ($SummaryPath -and (Test-Path $SummaryPath)) {
 else {
     $null
 }
-$deviceValidation = if ($DeviceValidationPath) {
-    Get-Content -LiteralPath $DeviceValidationPath -Raw -ErrorAction Stop | ConvertFrom-Json
-}
-else {
-    $null
-}
-
 $coverage = $selection.coverage
 $deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
-$deviceState = Get-LocalDeviceEvidenceState $selection $deviceValidation
-$unsupportedDevicePath = $deviceState.unsupportedPath
-$supportedMeasurementPath = $deviceState.supportedPath
 
 $summaryComplete = $null -ne $summary `
     -and [bool](Get-PropertyValue $summary "coverageComplete") `
     -and [bool](Get-PropertyValue $summary "executionComplete") `
     -and [bool](Get-PropertyValue $summary "benchmarkDataComplete")
-$deviceEvidenceComplete = $deviceState.complete
+$supportedMeasurementPath = -not $summaryComplete -and @(
+    $selection.suites | Where-Object { @($_.runnableFilters | Where-Object { $_ }).Count -gt 0 }
+).Count -gt 0
 
 $productFileCount = Get-PropertyValue $coverage "productFileCount"
 if ($null -ne $productFileCount) {
@@ -79,7 +67,7 @@ if ($null -ne $productFileCount) {
         -and -not [bool](Get-PropertyValue $coverage "benchmarkInputsChanged")
     $wholePrEvidenceComplete = $classificationComplete `
         -and ($managedCount -eq 0 -or $summaryComplete) `
-        -and ($deviceCount -eq 0 -or $deviceEvidenceComplete)
+        -and $deviceCount -eq 0
 }
 else {
     $managedCount = $null
@@ -88,7 +76,6 @@ else {
         [bool](Get-PropertyValue $coverage "canClaimWholePrClean") -and $summaryComplete
 }
 
-$deviceAdvisory = $deviceEvidenceComplete -and $deviceState.advisory
 $directManagedFilters = @(
     $selection.suites | Where-Object {
         @($_.directlyCoveredFiles | Where-Object { $null -ne $_ }).Count -gt 0
@@ -107,8 +94,7 @@ $hasDirectManagedTimingSignal = $null -ne $summary -and @(
 $managedTimingAdvisory = $null -ne $summary `
     -and [string]$summary.verdict -in @("time-regression-advisory", "time-improvement-advisory") `
     -and $hasDirectManagedTimingSignal
-$advisoryOnly = $managedTimingAdvisory `
-    -or $deviceAdvisory
+$advisoryOnly = $managedTimingAdvisory
 $managedEvidenceClean = if ($null -ne $managedCount) {
     $managedCount -eq 0 -or ($summaryComplete -and [bool](Get-PropertyValue $summary "canClaimClean"))
 }
@@ -116,15 +102,15 @@ else {
     $summaryComplete -and [bool](Get-PropertyValue $summary "canClaimClean")
 }
 $deviceEvidenceClean = if ($null -ne $deviceCount) {
-    $deviceCount -eq 0 -or ($deviceEvidenceComplete -and -not $deviceAdvisory)
+    $deviceCount -eq 0
 }
 else {
-    $deviceScenarios.Count -eq 0 -or ($deviceEvidenceComplete -and -not $deviceAdvisory)
+    $deviceScenarios.Count -eq 0
 }
 $confirmedAllocationRegression = $null -ne $summary -and @(
     $summary.allocRegressions | Where-Object { $_.confirmed -eq $true }
 ).Count -gt 0
-$hasMeasuredImprovement = $wholePrEvidenceComplete -and -not $deviceAdvisory -and
+$hasMeasuredImprovement = $wholePrEvidenceComplete -and
     $null -ne $summary -and [string]$summary.verdict -eq "improvement"
 $sampledFiles = @($selection.sampledProductFiles | Where-Object { $null -ne $_ })
 $staticFiles = @($selection.staticOnlyProductFiles | Where-Object { $null -ne $_ })
@@ -132,7 +118,7 @@ $hasCoverageGap = -not $wholePrEvidenceComplete `
     -or [bool](Get-PropertyValue $coverage "benchmarkInputsChanged") `
     -or $sampledFiles.Count -gt 0 `
     -or $staticFiles.Count -gt 0 `
-    -or ($deviceScenarios.Count -gt 0 -and -not $deviceEvidenceComplete)
+    -or $deviceScenarios.Count -gt 0
 $executionIncomplete = $null -ne $summary -and (
     -not [bool](Get-PropertyValue $summary "executionComplete") -or
     -not [bool](Get-PropertyValue $summary "benchmarkDataComplete")
@@ -148,7 +134,7 @@ $sampledEvidenceComplete = $hasCoverageGap `
         $summaryComplete -and
         @($summary.allocRegressions | Where-Object { $null -ne $_ }).Count -eq 0
     )) `
-    -and ($deviceScenarios.Count -eq 0 -or ($deviceEvidenceComplete -and -not $deviceAdvisory))
+    -and $deviceScenarios.Count -eq 0
 
 if ($confirmedAllocationRegression) {
     $verdictClass = "blocker"
@@ -175,10 +161,10 @@ elseif ($executionIncomplete) {
     $confidence = "low"
     $nextAction = if ($supportedMeasurementPath) { "run_more_measurements" } else { "needs_human_discussion" }
 }
-elseif ($deviceScenarios.Count -gt 0 -and -not $deviceEvidenceComplete) {
+elseif ($deviceScenarios.Count -gt 0) {
     $verdictClass = "device-required"
     $confidence = "low"
-    $nextAction = if ($supportedMeasurementPath) { "run_more_measurements" } else { "needs_human_discussion" }
+    $nextAction = "needs_human_discussion"
 }
 elseif ($pureStaticOnly) {
     $verdictClass = "no-blocker-incomplete"

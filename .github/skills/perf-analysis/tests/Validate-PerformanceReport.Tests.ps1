@@ -1,7 +1,6 @@
 #!/usr/bin/env pwsh
 
 $ErrorActionPreference = "Stop"
-. (Join-Path $PSScriptRoot "DevicePerformance.Fixtures.ps1")
 $skillRoot = Split-Path -Parent $PSScriptRoot
 $validator = [IO.Path]::Combine($skillRoot, "scripts", "Validate-PerformanceReport.ps1")
 $policy = [IO.Path]::Combine($skillRoot, "references", "recommendation-policy.json")
@@ -25,11 +24,7 @@ function New-Selection(
 ) {
     $deviceScenarios = @()
     if ($deviceStatus) {
-        $deviceScenarios = if ($deviceStatus -eq "manual-local-ready") {
-            (New-DeviceSelectionFixture).deviceScenarios
-        } else {
-            @([PSCustomObject]@{ id = "unsupported"; automationStatus = $deviceStatus })
-        }
+        $deviceScenarios = @([PSCustomObject]@{ id = "unsupported"; automationStatus = $deviceStatus })
     }
 
     return [PSCustomObject]@{
@@ -151,7 +146,6 @@ function Invoke-Validation(
     $decision,
     $selection,
     $summary,
-    $deviceValidation = $null,
     [bool]$concise = $false,
     $decisionBaseline = $null
 ) {
@@ -177,11 +171,6 @@ function Invoke-Validation(
         $arguments.SummaryPath = $summaryPath
     }
 
-    if ($null -ne $deviceValidation) {
-        $devicePath = Join-Path $caseRoot "device-validation.json"
-        Write-Json $devicePath $deviceValidation
-        $arguments.DeviceValidationPath = $devicePath
-    }
     if ($null -ne $decisionBaseline) {
         $baselinePath = Join-Path $caseRoot "decision-baseline.json"
         Write-Json $baselinePath $decisionBaseline
@@ -248,30 +237,23 @@ try {
     $partialNoConcerns = Invoke-Validation `
         "partial-no-concerns" `
         (New-Decision "not-applicable" "no_concerns" "no-blocker-incomplete") `
-        (New-Selection $false "manual-local-ready") `
+        (New-Selection $false "required-not-yet-automated") `
         (New-Summary "inconclusive" $false $false)
     Assert-Equal 2 $partialNoConcerns.ExitCode "Partial coverage must not report no concerns"
 
     $confirmedRegression = Invoke-Validation `
         "confirmed-regression" `
         (New-Decision "not-applicable" "optimize_before_merge" "blocker" "accidental") `
-        (New-Selection $false "manual-local-ready") `
+        (New-Selection $false "required-not-yet-automated") `
         (New-Summary "alloc-regression" $true $false $true)
     Assert-Equal 0 $confirmedRegression.ExitCode "Confirmed regression should override coverage gap"
 
     $confirmedRegressionDeferred = Invoke-Validation `
         "confirmed-regression-deferred" `
         (New-Decision "unclear" "run_more_measurements" "blocker" "accidental") `
-        (New-Selection $false "manual-local-ready") `
+        (New-Selection $false "required-not-yet-automated") `
         (New-Summary "alloc-regression" $true $false $true)
     Assert-Equal 2 $confirmedRegressionDeferred.ExitCode "Confirmed accidental regression must not be deferred"
-
-    $supportedMissing = Invoke-Validation `
-        "supported-missing" `
-        (New-Decision "unclear" "run_more_measurements" "device-required") `
-        (New-Selection $false "manual-local-ready") `
-        (New-Summary "inconclusive" $false $false)
-    Assert-Equal 0 $supportedMissing.ExitCode "Supported missing evidence should request measurement"
 
     $unsupportedMissing = Invoke-Validation `
         "unsupported-missing" `
@@ -287,70 +269,10 @@ try {
         (New-Summary "alloc-regression" $true $false $true)
     Assert-Equal 2 $unsupportedValidatedWorkaround.ExitCode "Unsupported validated workaround decisions must fail"
 
-    $deviceOnlySelection = New-DeviceSelectionFixture
-    $completeDeviceEvidence = New-DeviceValidationFixture $deviceOnlySelection "time-regression-advisory"
-    $deviceAdvisoryDiscussion = Invoke-Validation `
-        "device-advisory-discussion" `
-        (New-Decision "unclear" "needs_human_discussion" "advisory" "deliberate") `
-        $deviceOnlySelection `
-        (New-Summary "inconclusive" $false $false) `
-        $completeDeviceEvidence
-    Assert-Equal 0 $deviceAdvisoryDiscussion.ExitCode "Complete advisory device evidence should require discussion"
-
-    $deviceAdvisoryAccept = Invoke-Validation `
-        "device-advisory-accept" `
-        (New-Decision "likely-worth-it" "accept_tradeoff" "advisory" "deliberate" "none" "none" $true) `
-        $deviceOnlySelection `
-        (New-Summary "inconclusive" $false $false) `
-        $completeDeviceEvidence
-    Assert-Equal 2 $deviceAdvisoryAccept.ExitCode "Advisory device evidence must not accept a tradeoff"
-
-    $mixedSelection = [PSCustomObject]@{
-        coverage = [PSCustomObject]@{
-            productFileCount = 2
-            managedMeasuredFileCount = 1
-            managedSampledFileCount = 0
-            deviceRequiredFileCount = 1
-            staticOnlyFileCount = 0
-            canClaimWholePrClean = $false
-        }
-        deviceScenarios = $deviceOnlySelection.deviceScenarios
-        sampledProductFiles = @()
-        staticOnlyProductFiles = @()
-    }
-    $deviceAdvisoryNoConcerns = Invoke-Validation `
-        "device-advisory-no-concerns" `
-        (New-Decision "not-applicable" "no_concerns" "advisory") `
-        $mixedSelection `
-        (New-Summary) `
-        $completeDeviceEvidence
-    Assert-Equal 2 $deviceAdvisoryNoConcerns.ExitCode "Device advisory evidence must block no_concerns"
-
-    $cleanDeviceEvidence = New-DeviceValidationFixture $deviceOnlySelection
-    $deviceOnlyNoConcerns = Invoke-Validation `
-        "device-only-no-concerns" `
-        (New-Decision "not-applicable" "no_concerns" "clean") `
-        $deviceOnlySelection `
-        (New-Summary "inconclusive" $false $false) `
-        $cleanDeviceEvidence
-    Assert-Equal 0 $deviceOnlyNoConcerns.ExitCode "Clean device-only evidence should allow no_concerns"
-
-    $baselineContext = Invoke-Validation `
-        "baseline-context" `
-        (New-Decision "unclear" "needs_human_discussion" "advisory") `
-        $deviceOnlySelection $null (New-DeviceValidationFixture $deviceOnlySelection "neutral" $false)
-    Assert-Equal 0 $baselineContext.ExitCode "Valid HEAD with a failed baseline is advisory context"
-    $baselineClearance = Invoke-Validation `
-        "baseline-false-clearance" `
-        (New-Decision "not-applicable" "no_concerns" "clean") `
-        $deviceOnlySelection $null (New-DeviceValidationFixture $deviceOnlySelection "neutral" $false)
-    Assert-Equal 2 $baselineClearance.ExitCode "Failed baseline context cannot become equivalent-behavior clearance"
-
     $staticOnlyConcise = Invoke-Validation `
         "static-only-concise" `
         (New-Decision "unclear" "needs_human_discussion" "no-blocker-incomplete") `
         (New-Selection $false "" 1) `
-        $null `
         $null `
         $true
     Assert-Equal 0 $staticOnlyConcise.ExitCode "Static-only evidence should allow the concise report profile"
@@ -360,7 +282,6 @@ try {
         (New-Decision "not-applicable" "no_concerns" "clean") `
         (New-Selection $true) `
         (New-Summary) `
-        $null `
         $true
     Assert-Equal 2 $empiricalConcise.ExitCode "Empirical evidence must require the full report profile"
 
@@ -395,7 +316,6 @@ try {
         (New-Decision "unclear" "needs_human_discussion" "no-blocker-incomplete") `
         (New-Selection $false "" 1) `
         $null `
-        $null `
         $true `
         $baseline
     Assert-Equal 0 $matchingBaseline.ExitCode "Report should match the sealed decision baseline"
@@ -404,7 +324,6 @@ try {
         "mismatched-baseline" `
         (New-Decision "unclear" "run_more_measurements" "no-blocker-incomplete") `
         (New-Selection $false "" 1) `
-        $null `
         $null `
         $true `
         $baseline
@@ -421,7 +340,6 @@ try {
         "static-escalation" `
         $staticEscalationDecision `
         (New-Selection $false "" 1) `
-        $null `
         $null `
         $true `
         $baseline

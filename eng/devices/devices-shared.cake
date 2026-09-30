@@ -227,11 +227,7 @@ List<string> GetTestCategoriesToRunSeparately(string projectPath)
 	{
 		if (field.FieldType == typeof(string))
 		{
-			var category = (string)field.GetValue(null);
-			if (!category.StartsWith("Performance", StringComparison.Ordinal))
-			{
-				values.Add($"Category={category}");
-			}
+			values.Add($"Category={(string)field.GetValue(null)}");
 		}
 	}
 	
