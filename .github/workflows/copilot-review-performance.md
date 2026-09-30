@@ -10,6 +10,9 @@ imports:
 environment: copilot-pat-pool
 
 on:
+  # Registration only: the command gate rejects push events.
+  push:
+    branches: [kubaflo-performance-review-canary]
   slash_command:
     name: review
     events: [pull_request_comment]
