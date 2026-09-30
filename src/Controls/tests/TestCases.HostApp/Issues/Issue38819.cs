@@ -8,8 +8,8 @@ public class Issue38819 : ContentPage
 		var entry = new Entry
 		{
 			AutomationId = "FontChangeOnFocusEntry",
-			Text = "1234",
-			WidthRequest = 200,
+			Text = "1234567890",
+			WidthRequest = 300,
 			HorizontalOptions = LayoutOptions.Center,
 			FontAttributes = FontAttributes.Italic,
 		};
@@ -18,8 +18,8 @@ public class Issue38819 : ContentPage
 		var editor = new Editor
 		{
 			AutomationId = "FontChangeOnFocusEditor",
-			Text = "1234",
-			WidthRequest = 200,
+			Text = "1234567890",
+			WidthRequest = 300,
 			HeightRequest = 100,
 			HorizontalOptions = LayoutOptions.Center,
 			FontAttributes = FontAttributes.Italic,
@@ -35,16 +35,18 @@ public class Issue38819 : ContentPage
 				new Label
 				{
 					AutomationId = "InstructionsLabel",
-					Text = "Tap the Entry or the Editor once. The keyboard should appear on the first tap."
+					Text = "Tap or long press the Entry or the Editor once. The keyboard should appear, and the cursor or selection should be where you touched."
 				},
 				entry,
+				CreateSelectionLabel(entry, "EntrySelectionLabel"),
 				editor,
+				CreateSelectionLabel(editor, "EditorSelectionLabel"),
 			}
 		};
 	}
 
 	// Changing the font when the control gains focus invalidates the Android text layout
-	// in the middle of the touch event that focused it.
+	// in the middle of the tap or long press that focused it.
 	static Trigger CreateFontAttributesOnFocusTrigger(Type targetType, BindableProperty fontAttributesProperty)
 	{
 		var trigger = new Trigger(targetType)
@@ -54,5 +56,22 @@ public class Issue38819 : ContentPage
 		};
 		trigger.Setters.Add(new Setter { Property = fontAttributesProperty, Value = FontAttributes.None });
 		return trigger;
+	}
+
+	// Shows "CursorPosition,SelectionLength" so the tests can check where the touch placed the cursor or selection.
+	static Label CreateSelectionLabel(InputView inputView, string automationId)
+	{
+		var label = new Label { AutomationId = automationId };
+
+		void Update() => label.Text = $"{inputView.CursorPosition},{inputView.SelectionLength}";
+
+		inputView.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == nameof(InputView.CursorPosition) || e.PropertyName == nameof(InputView.SelectionLength))
+				Update();
+		};
+		Update();
+
+		return label;
 	}
 }

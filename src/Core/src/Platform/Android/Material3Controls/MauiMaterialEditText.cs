@@ -35,14 +35,34 @@ internal class MauiMaterialEditText : TextInputEditText
 		SelectionChanged?.Invoke(this, EventArgs.Empty);
 	}
 
+	internal TouchEventFontDeferral TouchEventFontDeferral { get; } = new();
+
 	public override bool OnTouchEvent(MotionEvent? e)
 	{
-		var hadLayoutBeforeTouch = Layout is not null;
-		var handled = base.OnTouchEvent(e);
+		TouchEventFontDeferral.OnHandlingStarted();
 
-		this.ShowSoftInputIfSkippedOnTouchUp(e, hadLayoutBeforeTouch);
+		try
+		{
+			return base.OnTouchEvent(e);
+		}
+		finally
+		{
+			TouchEventFontDeferral.OnHandlingFinished(this);
+		}
+	}
 
-		return handled;
+	public override bool PerformLongClick()
+	{
+		TouchEventFontDeferral.OnHandlingStarted();
+
+		try
+		{
+			return base.PerformLongClick();
+		}
+		finally
+		{
+			TouchEventFontDeferral.OnHandlingFinished(this);
+		}
 	}
 
 	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

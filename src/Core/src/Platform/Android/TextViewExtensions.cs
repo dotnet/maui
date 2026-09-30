@@ -78,6 +78,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
+			// A font change nulls the text layout that TextView still needs while it handles a touch event or long click
+			if (GetTouchEventFontDeferral(textView)?.TryDefer(textStyle, fontManager) is true)
+			{
+				return;
+			}
+
 			var font = textStyle.Font;
 
 			var tf = fontManager.GetTypeface(font);
@@ -86,6 +92,13 @@ namespace Microsoft.Maui.Platform
 			var fontSize = fontManager.GetFontSize(font);
 			textView.SetTextSize(fontSize.Unit, fontSize.Value);
 		}
+
+		static TouchEventFontDeferral? GetTouchEventFontDeferral(TextView textView) => textView switch
+		{
+			MauiAppCompatEditText editText => editText.TouchEventFontDeferral,
+			MauiMaterialEditText editText => editText.TouchEventFontDeferral,
+			_ => null,
+		};
 
 		public static void UpdateCharacterSpacing(this TextView textView, ITextStyle textStyle) =>
 			textView.LetterSpacing = textStyle.CharacterSpacing.ToEm();
