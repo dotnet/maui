@@ -17,13 +17,13 @@ End-to-end PR review workflow that orchestrates phases to explore independent fi
 ## Overview
 
 ```
-Gate (pre-run)    → Already completed by Review-PR.ps1 before this skill runs
+Gate (pre-run)    → Caller verifies tests using .github/pr-review/pr-gate.md
 Phase 1: Pre-Flight   → Gather context, classify files, code review     → .github/pr-review/pr-preflight.md
 Phase 2: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
 Phase 3: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
 
-> **Gate and Branch setup** are handled by `Review-PR.ps1` before this skill is invoked. The gate result is passed in the prompt. Do NOT re-run gate verification.
+> **Gate and branch setup** are the caller's responsibility. Follow `.github/pr-review/pr-gate.md` and pass the result in the prompt. Do NOT repeat completed gate verification. If no gate result is available, document that limitation rather than assuming it passed. This skill writes local reports only; there is no automatic posting, labeling, or rerun queue.
 
 **All phases write output to:** `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/{phase}/content.md`
 **Pre-Flight also writes:** `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/pre-flight/code-review.md`
@@ -96,7 +96,7 @@ Pre-Flight now has two parts:
 
 Even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
-> **⏱️ HARD TIME BUDGET — Phase 2 must finish within ~90 minutes.** Task 3 (this whole Copilot Review step) has a 180-minute safety cap. The pipeline preserves partial output when that cap is reached, but the review remains incomplete and can lose its final comparison — so reaching it is still unacceptable. Track wall-clock time from the moment you enter Phase 2. Order of work: (1) run each of the two models **once**, writing `try-fix/content.md` after each attempt; (2) select the best fix. In the CI split-step reviewer, skip cross-pollination entirely; direct interactive invocations may do one optional round only when comfortably under budget. The moment you approach ~90 minutes — or sooner if attempts stop making progress — **STOP immediately**, finalize `try-fix/content.md` with the results so far, and move to Phase 3. Never run open-ended "exhaustion", per-candidate deep-dive, repeated candidate repair loops, or repeated cross-pollination that can consume the whole budget.
+> **⏱️ HARD TIME BUDGET — Phase 2 must finish within ~90 minutes.** Track wall-clock time from the moment you enter Phase 2. Run each model once, writing `try-fix/content.md` after each attempt, then select the best fix. Do at most one optional cross-pollination round, only when comfortably under budget. As the budget approaches, or if attempts stop making progress, finalize the results so far and move to Phase 3. Never run open-ended exploration or repeated candidate repair loops.
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
@@ -114,7 +114,7 @@ The purpose is NOT to re-test the PR's fix, but to:
 - [ ] `try-fix/content.md` updated with attempt 1 result
 - [ ] Attempt 2 launched with gpt-5.6-sol
 - [ ] `try-fix/content.md` updated with attempt 2 result
-- [ ] Cross-pollination round completed (optional; always skipped by the CI split-step reviewer)
+- [ ] Cross-pollination round completed (optional, only when comfortably under budget)
 - [ ] Best fix selected with comparison table
 
 ### Round 1: Independent Exploration
@@ -161,7 +161,7 @@ prompt: |
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
-**📝 MANDATORY: Update `try-fix/content.md` after EVERY attempt.** Do not wait until all attempts are done. After each try-fix attempt completes (pass or fail), immediately write/update `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/try-fix/content.md` with all results so far. This ensures the PR comment always reflects the latest try-fix state, even if a later attempt times out or the agent is interrupted.
+**📝 MANDATORY: Update `try-fix/content.md` after EVERY attempt.** Do not wait until all attempts are done. After each try-fix attempt completes (pass or fail), immediately write/update `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/try-fix/content.md` with all results so far. This preserves the latest try-fix state even if a later attempt times out or the agent is interrupted.
 
 ### Round 2 (OPTIONAL — only if well under the 90-minute budget): Cross-Pollination
 
@@ -260,7 +260,7 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 
 | Phase | Instructions | Key Action | If Blocked |
 |-------|--------------|------------|------------|
-| Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
+| Gate (pre-run) | `pr-gate.md` | Caller verifies tests | Result passed in prompt — if missing, document and continue |
 | 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
 | 2. Try-Fix | `try-fix` skill (×2) | **2-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
 | 3. Report | `pr-report.md` | Write review recommendation | Never skip |

@@ -395,7 +395,7 @@ if ($Platform -eq "android") {
     }
 
     # Re-assert ANR/crash-dialog suppression right before dotnet test. The emulator-setup
-    # step sets `hide_error_dialogs` at boot, but the deep stage runs many categories on one
+    # step sets `hide_error_dialogs` at boot, but callers can run many categories on one
     # emulator and a mid-run "System UI isn't responding" ANR overlaying the HostApp is the
     # top "produced no results" cause — this global flag is idempotent, so re-assert it here.
     if ($settingsReady) {
@@ -635,8 +635,7 @@ try {
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
 
-    # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
-    # and Review-PR.ps1) can locate the authoritative results file regardless
+    # Surface the TRX path on a marker line so callers can locate the results regardless
     # of where the working directory was when this script ran.
     if (Test-Path $trxFilePath) {
         Write-Output ">>> TRX_RESULT_FILE: $trxFilePath"

@@ -184,7 +184,7 @@ function Test-FixIrrelevantToPlatform {
 # scriptblock that invokes PR-controlled code (dotnet test, MSBuild,
 # host-app, device tests). Trusted metadata fetches via `gh` CLI
 # (Detect-TestsInDiff, gh pr view) keep the token because they run
-# OUTSIDE this wrapper. See .github/instructions/ci-copilot-pipeline-security.instructions.md.
+# OUTSIDE this wrapper. See .github/instructions/automation-security.instructions.md.
 # ============================================================
 function Invoke-WithoutGhTokens {
     param([Parameter(Mandatory)][scriptblock]$ScriptBlock)
@@ -461,8 +461,8 @@ function Invoke-TestRun {
                     # A device/simulator that will not boot is a GATE-AGENT infrastructure
                     # failure: it happens BEFORE the PR's code is built or run, so it can NEVER
                     # be caused by the fix. Exit 3 (INCONCLUSIVE), NOT 1 (FAILED) — every other
-                    # environment failure in this script exits 3, and Review-PR.ps1 maps 3 →
-                    # INCONCLUSIVE deterministically. Relying on the caller's "missing report
+                    # environment failure in this script exits 3 for INCONCLUSIVE.
+                    # Relying on the caller's "missing report
                     # after a non-zero exit" heuristic (or a log-tail regex) to reclassify an
                     # exit-1 boot failure is fragile: a partial/prior report without the
                     # `ENV ERROR` marker would break the heuristic and surface a FALSE FAILED.
@@ -1754,9 +1754,8 @@ function Limit-ExpensiveGateTests {
         AzDO hard-kills the task → a "The task has timed out" FAILED verdict
         with no analysis (observed on build 14676353 / PR #36109: 11 device
         tests → 120-min timeout). This caps the expensive tests, prioritising
-        the PR's own newly-added (fix-authored) regression tests. Deep UI Tests
-        exercises the HostApp UI category matrix, but does not run DeviceTests;
-        any dropped device-test groups are persisted as an explicit coverage
+        the PR's own newly-added (fix-authored) regression tests.
+        Any dropped device/UI-test groups are persisted as an explicit coverage
         limitation in the gate report. Cheap unit/XAML tests are never capped
         (they are fast). Caps are env-overridable via GATE_MAX_DEVICE_TESTS /
         GATE_MAX_UI_TESTS.
@@ -1800,13 +1799,13 @@ function Limit-ExpensiveGateTests {
     }
     if ($droppedDevice.Count -gt 0) {
         $droppedDeviceNames = @($droppedDevice | ForEach-Object { $_.TestName }) -join ', '
-        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Deep UI Tests runs HostApp UI categories only and does not execute DeviceTests; separate device-test validation is required."
+        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Separate device-test validation is required."
         $script:GateCoverageLimitations += $deviceLimitation
         Write-Host "⚠️  $deviceLimitation" -ForegroundColor Yellow
     }
     if ($droppedUi.Count -gt 0) {
         $droppedUiNames = @($droppedUi | ForEach-Object { $_.TestName }) -join ', '
-        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Those UI categories are exercised separately by the Deep UI Tests stage, without the gate's before/after comparison."
+        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Separate UI-test validation is required; no automatic follow-up run is queued."
         $script:GateCoverageLimitations += $uiLimitation
         Write-Host "⚠️  $uiLimitation" -ForegroundColor Yellow
     }
@@ -2085,10 +2084,8 @@ if ($DetectedFixFiles.Count -eq 0) {
     New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
     $ValidationLog = Join-Path $OutputPath "verification-log.txt"
-    # Failure-only mode must ALSO write verification-report.md. Without it the caller
-    # (Review-PR.ps1) sees exit 0 and labels the gate "PASSED" while simultaneously
-    # warning "verify-tests-fail.ps1 exited before writing a verification report" — a
-    # confusing false-positive for test-only PRs. Define the path here and emit a report
+    # Failure-only mode must ALSO write verification-report.md so callers can distinguish
+    # successful verification from a missing report. Define the path here and emit a report
     # on every exit path below.
     $FailureOnlyReport = Join-Path $OutputPath "verification-report.md"
 
@@ -2130,7 +2127,7 @@ if ($DetectedFixFiles.Count -eq 0) {
             $lines += ""
             $lines += "</details>"
         }
-        # Machine-readable retry class (consumed by Review-PR.ps1's gate retry loop). A
+        # Machine-readable retry class for callers. A
         # missing snapshot baseline and an OS-incompatible NETSDK1178 workload pack are
         # DETERMINISTIC across retries on the same agent, so re-running can never flip the
         # outcome. Only TRANSIENT infra flakes (emulator/sim boot, ADB, Appium, XHarness
@@ -2884,7 +2881,7 @@ function Write-MarkdownReport {
     $lines += ""
     $lines += "</details>"
 
-    # Machine-readable retry class (consumed by Review-PR.ps1's gate retry loop). A PERMANENT
+    # Machine-readable retry class for callers. A PERMANENT
     # env error — missing snapshot baseline, cross-machine baseline residual/mismatch, an
     # OS-incompatible workload pack, or a fix that only touches a different platform — is
     # DETERMINISTIC across retries on the same agent, so re-running it up to 3× just burns
@@ -2944,21 +2941,9 @@ Write-Log ""
 # ─────────────────────────────────────────────────────────────────────────────
 # EXCLUDE CI-infrastructure fix files the gate cannot A/B-verify
 # ─────────────────────────────────────────────────────────────────────────────
-# For security the gate overlays TRUSTED (review-branch) copies of .github/scripts,
-# .github/skills and eng/scripts over the worktree (Review-PR.ps1 Restore-TrustedScripts),
-# so a PR that itself MODIFIES a file under those paths ALWAYS shows it as an uncommitted
-# worktree change (trusted content != the PR's committed content). The uncommitted-fix-files
-# guard below then aborted with a misleading "Uncommitted changes detected / run git add &&
-# commit" error that the caller treats as a missing-report infra failure and retries 3× before
-# a bare INCONCLUSIVE (build 14699515, #35156 catalyst: eng/scripts/{disable,enable}-notification-
-# center.sh). Worse, those files are force-restored to the SAME trusted version in BOTH the
-# without-fix and with-fix runs, so reverting them changes nothing — they are not A/B-testable.
-# The same holds for pipeline/workflow definitions (eng/pipelines, .github/workflows): the gate
-# runs on an already-checked-out pipeline, so editing those YAMLs in the worktree cannot alter
-# the gate's own execution. Drop all of these from the fix-file set. If real product/test fix
-# files remain, the A/B runs on those; if NONE remain the change is CI-infra-only and the gate
-# has no without-fix baseline it can build -> a deterministic, non-retried INCONCLUSIVE that
-# defers to the Deep UI Tests stage (which DOES exercise the pipeline/script change end-to-end).
+# Do not toggle the verification infrastructure while it is running. Workflow definitions
+# also cannot be A/B-verified by a local product test run. Keep product/test fixes in scope;
+# infrastructure-only changes require syntax/configuration checks and actual CI.
 $infraFixPrefixes = @('.github/scripts/', '.github/skills/', 'eng/scripts/', 'eng/pipelines/', '.github/workflows/')
 $infraFixFiles = @()
 $productFixFiles = @()
@@ -2969,7 +2954,7 @@ foreach ($f in $FixFiles) {
     if ($isInfra) { $infraFixFiles += $f } else { $productFixFiles += $f }
 }
 if ($infraFixFiles.Count -gt 0) {
-    Write-Log "Excluding $($infraFixFiles.Count) CI-infrastructure fix file(s) the gate force-restores or cannot toggle (not A/B-verifiable):"
+    Write-Log "Excluding $($infraFixFiles.Count) CI-infrastructure fix file(s) outside product-test A/B verification:"
     foreach ($f in $infraFixFiles) { Write-Log "  (excluded) $f" }
     $FixFiles = @($productFixFiles)
     Write-Log "Remaining product/test fix file(s) after infra exclusion: $($FixFiles.Count)"
@@ -2977,9 +2962,8 @@ if ($infraFixFiles.Count -gt 0) {
 
 if ($infraFixFiles.Count -gt 0 -and $FixFiles.Count -eq 0) {
     Write-Host ""
-    Write-Host "ℹ️  This PR only changes CI infrastructure (.github/scripts, .github/skills, eng/scripts, eng/pipelines, .github/workflows) that the gate force-restores to trusted versions or cannot toggle at run time. There is no without-fix baseline the gate can build for those paths (they are identical in both runs), so the change is not A/B-verifiable here — its impact is exercised by the Deep UI Tests stage. Reporting INCONCLUSIVE (deferred to Deep)." -ForegroundColor Yellow
-    # Write a minimal report WITHOUT the 'ENV ERROR' token so Review-PR.ps1's gate loop breaks
-    # immediately (no 3× retry) and classifies exit 3 as a clean, deterministic INCONCLUSIVE.
+    Write-Host "ℹ️  This PR only changes CI infrastructure, which is not A/B-verifiable by product tests. Validate it with syntax/configuration checks and actual CI. Reporting INCONCLUSIVE." -ForegroundColor Yellow
+    # This is a deterministic limitation, not a retryable environment error.
     try {
         if (-not (Test-Path $OutputPath)) { New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null }
         $infraReport = @()
@@ -2989,11 +2973,11 @@ if ($infraFixFiles.Count -gt 0 -and $FixFiles.Count -eq 0) {
         $infraReport += ""
         $infraReport += "**Platform:** $($Platform.ToUpper())"
         $infraReport += ""
-        $infraReport += "This PR only changes CI infrastructure the gate force-restores to trusted versions or cannot toggle at run time:"
+        $infraReport += "This PR only changes CI infrastructure outside product-test A/B verification:"
         $infraReport += ""
         foreach ($f in $infraFixFiles) { $infraReport += "- ``$f``" }
         $infraReport += ""
-        $infraReport += "These paths are identical (trusted) in both the without-fix and with-fix runs, so the gate cannot construct a without-fix baseline and the change is **not A/B-verifiable** here. Its behaviour is validated end-to-end by the **Deep UI Tests** stage."
+        $infraReport += "These changes are **not A/B-verifiable** by this product-test runner. Validate them with syntax/configuration checks and actual CI."
         Set-Content -Path (Join-Path $OutputPath "verification-report.md") -Value ($infraReport -join "`n") -Encoding UTF8
     } catch {
         Write-Host "  (could not write INCONCLUSIVE report: $_)" -ForegroundColor DarkGray

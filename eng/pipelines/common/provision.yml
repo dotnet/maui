@@ -222,8 +222,7 @@ steps:
           # Exit code 70 ("Unable to connect to simulator") means CoreSimulatorService is
           # WEDGED. Deleting + re-downloading against a wedged daemon leaves the runtimes
           # "Ready" on disk but NOT create-usable — `simctl create` then fails "Invalid
-          # runtime" for every runtime, which later dead-ends the iOS sim boot and (for the
-          # maui-copilot gate) degrades iOS verification to INCONCLUSIVE on a perfectly
+          # runtime" for every runtime, which later dead-ends the iOS sim boot on a perfectly
           # provisioned agent (PR #35706 build 14694271). Restart the daemon FIRST so the
           # delete + retry run against a HEALTHY CoreSimulator and the re-downloaded runtimes
           # enroll properly. Only runs in the already-failing retry branch (healthy agents
@@ -252,7 +251,7 @@ steps:
           # store (images.plist manifest + bundle dirs), every subsequent
           # `xcodebuild -downloadPlatform iOS` collides with the same-UUID "(Deleting)" image
           # and fails "Invalid runtime: null" — so the agent ends with 0 create-usable
-          # runtimes and the maui-copilot gate degrades to INCONCLUSIVE on a boot that finds
+          # runtimes and simulator boot fails when it finds
           # NO runtimes at all (PR #27153 build 14699070: exit-70 wedge -> delete never
           # drained -> two re-downloads both "Invalid runtime: null" -> "Found 1 runtime(s)
           # (0 Ready/create-usable)"). `simctl` can't fix this because the daemon itself is
@@ -418,7 +417,7 @@ steps:
         # non-"Ready" state) are NOT usable — `simctl create` fails "Invalid runtime" on them —
         # so they must not be reported as a successful install. They previously inflated the
         # count to a false "Found N simulator runtime(s)", masking a wedged agent whose iOS sim
-        # boot then silently degraded the maui-copilot gate to INCONCLUSIVE (PR #35706 14697148).
+        # boot then failed (PR #35706 14697148).
         if [[ "$RUNTIME_COUNT" == "0" ]]; then
           echo "##vso[task.logissue type=error]No simulator runtimes installed after download attempt"
           exit 1

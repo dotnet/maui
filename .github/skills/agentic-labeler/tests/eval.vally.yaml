@@ -736,17 +736,17 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
   # ───────────────────────────────────────────────────────────────────────
-  # 19 — AI review workflow -> area-ai-agents  (source: PR #35438)
+  # 19 — AI test-failure review workflow -> area-ai-agents
   # ───────────────────────────────────────────────────────────────────────
   - name: ai-review-workflow-area
-    tags: { source_pr: "35438", kind: ai-agents }
+    tags: { kind: ai-agents }
     prompt: |
       Your first action must be to invoke the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
-      A pull request titled "Fix /review trigger when comment has leading whitespace" changes
+      A pull request titled "Fix /review tests command handling" changes
       this file:
-        .github/workflows/review-trigger.yml
+        .github/workflows/copilot-review-tests.md
 
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
@@ -762,7 +762,7 @@ stimuli:
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
-      - area-ai-agents is applied because the /review trigger controls AI-assisted PR review.
+      - area-ai-agents is applied because the workflow controls AI-assisted test-failure review.
       - area-infrastructure is not applied; the agent behavior is the primary subject.
       - No platform/* label is applied.
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }

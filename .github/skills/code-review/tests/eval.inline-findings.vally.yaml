@@ -1,15 +1,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # expert-review — inline-findings.json write regression guard
 #
-# Provenance: mined from 64 real maui-copilot CI reviewer sessions. In 34/64
+# Provenance: mined from 64 real reviewer sessions. In 34/64
 # the maui-expert-reviewer REFUSED to write its findings to
 # CustomAgentLogsTmp/PRState/<PR>/PRAgent/inline-findings.json — it
 # over-generalized a host "don't write output files" guardrail, declared the
-# write "prohibited", and dumped the raw JSON into chat instead. The pipeline
-# only reads that file FROM DISK (post-inline-review.ps1 `Test-Path`); when
-# it is missing, every inline review comment is SILENTLY dropped. PR #36002
-# fixes this by making the write an explicit REQUIRED, authorized deliverable
-# in Review-PR.ps1 (STEP 5b) and .github/agents/maui-expert-reviewer.md.
+# write "prohibited", and dumped the raw JSON into chat instead. The posting helper
+# only reads that file FROM DISK (post-inline-review.ps1 `Test-Path`).
+# .github/agents/maui-expert-reviewer.md makes that write an explicit REQUIRED,
+# authorized deliverable.
 #
 # This eval is the regression guard for that fix. It pins a worktree to a real
 # regression-introducing commit (the gradient-alpha bug — four GetGradientData
@@ -54,7 +53,7 @@ name: code-review-inline-findings-write
 description: >-
   Regression guard for the expert-review phase: after producing file:line
   findings on a diff, the agent must WRITE them as a JSON array to the
-  inline-findings.json path the pipeline reads from disk — it must NOT declare
+  inline-findings.json path the posting helper reads from disk — it must NOT declare
   the write prohibited or substitute a chat-only dump. Missing the file
   silently drops every inline comment.
 version: "1.0.0"
@@ -72,21 +71,21 @@ stimuli:
   # Produce a grounded finding on the pinned diff, then persist it to the
   # inline-findings.json path and prove it landed on disk (FILE_OK readback).
   # The failure mode under test: refusing to write the file ("prohibited")
-  # and dumping the JSON into chat, which the pipeline cannot consume.
+  # and dumping the JSON into chat, which the posting helper cannot consume.
   # ───────────────────────────────────────────────────────────────────────
   - name: regression-writes-inline-findings-to-disk
     tags:
       kind: output-persistence
     prompt: |
-      You are the maui-expert-reviewer running inside the CI `CopilotReview`
-      task. A worktree is pinned to the commit under review.
+      You are the maui-expert-reviewer producing a file-only review.
+      A worktree is pinned to the commit under review.
 
       STEP 1 — Review the diff. Run `git diff HEAD^ HEAD` in this worktree and
       read the full changed source file(s). Identify at least one concrete,
       line-level regression risk introduced by the change. (Do NOT fetch any
       pull request, issue, or external page — use only the local worktree.)
 
-      STEP 2 — Persist your findings to disk. The pipeline posts inline PR
+      STEP 2 — Persist your findings to disk. The caller can post inline PR
       comments by reading a findings file FROM DISK after you exit — it NEVER
       reads your chat output. Write your findings as a JSON array to:
 
@@ -98,7 +97,7 @@ stimuli:
       Include at least one element grounded in STEP 1.
 
       Writing this file is a REQUIRED deliverable. You ARE authorized to create
-      it — this is a normal pipeline artifact, not a violation of any
+      it — this is a normal review artifact, not a violation of any
       no-output-files guardrail. Do NOT paste the JSON into chat as a
       substitute for writing the file.
 
@@ -150,7 +149,7 @@ stimuli:
         not an empty array or a placeholder.
       - >-
         The agent does NOT claim it is prohibited, not allowed, or unable to
-        write the file, and does NOT treat writing this pipeline artifact as a
+        write the file, and does NOT treat writing this review artifact as a
         guardrail violation. Refusing to write and substituting a chat-only
         JSON dump is the exact regression under test and must score low.
     constraints:

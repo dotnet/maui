@@ -2,8 +2,7 @@
 
 > **⛔ This phase MUST pass before continuing to Try-Fix. If it fails, stop and inform user.**
 
-> In CI (Review-PR.ps1), the gate runs `verify-tests-fail.ps1` directly as a script step.
-> For manual usage, you can invoke it yourself or via a task agent.
+> Run `verify-tests-fail.ps1` directly or via a task agent before invoking the standalone review skill.
 
 ---
 
@@ -41,8 +40,7 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
    pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 \
      -Platform {platform} -RequireFullVerification
    ```
-   In CI, `Review-PR.ps1` calls this script directly. For manual usage, you can also invoke
-   it via a task agent for isolation:
+   You can also invoke it via a task agent for isolation:
    ```
    Invoke the `task` agent with this prompt:
 

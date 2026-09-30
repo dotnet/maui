@@ -186,7 +186,7 @@ The script auto-detects which mode to use based on whether fix files are present
    - `CustomAgentLogsTmp/PRState/verification-report.md` - Validate section for agent
 9. Reports result
 
-**Note:** PR label management (`s/ai-reproduction-confirmed` / `s/ai-reproduction-failed`) is handled by `Review-PR.ps1`, not by this script.
+**Note:** This script reports verification results locally and does not apply PR labels.
 
 ## Output Files
 

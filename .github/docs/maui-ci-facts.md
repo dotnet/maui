@@ -109,7 +109,7 @@ GET https://helix.dot.net/api/2019-06-17/jobs/{correlationId}/workitems
 
 A work item **failed** when it `Finished` with a non-zero `ExitCode`, even when the AzDO
 build job is green. Always cross-check this for `maui-pr-devicetests` when a job is green
-but device-test failures are suspected (or the PR carries `s/agent-gate-failed`). If Helix
+but device-test failures are suspected. If Helix
 work-item data is absent, state that device-test hidden failures could not be verified —
 do not assume green = clean.
 

@@ -33,8 +33,8 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 # Helpers
 # ----------------------------------------------------------------------------
 
-# `task.setvariable` lines (or their absence) are the contract with both AzDO
-# pipelines (#35136) and Review-PR.ps1's Step 0.5 parser. Centralize emission
+# `task.setvariable` lines (or their absence) are the contract with AzDO
+# pipelines. Centralize emission
 # so every "run all" / "skip all" / "specific" exit goes through one path and
 # we don't accidentally drop the marker on a future fallback branch.
 function Write-CategoryListOutput {
@@ -83,7 +83,7 @@ function Test-UITestCategorySupportedOnPlatform {
 
     # The only Essentials UI test is Issue32989.cs, compiled under #if WINDOWS.
     # Selecting this category on Android/iOS/MacCatalyst creates a valid TRX with
-    # zero tests, which used to make the Deep stage look green without exercising
+    # zero tests, which can look green without exercising
     # anything (build 14907169). Remove it on unsupported platforms so Essentials
     # product changes fall through to the bounded cross-platform smoke set.
     if ($Category.Equals('Essentials', [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -91,20 +91,6 @@ function Test-UITestCategorySupportedOnPlatform {
     }
 
     return $true
-}
-
-# True when the current HEAD is already the prepared CI review worktree, i.e. the
-# squash-merge commit that Review-PR.ps1 STEP 1 creates ("PR #<n> squashed for
-# review"). In that state HEAD already contains the PR's changes vs the base, so
-# the manual-mode fork-head `git checkout` is BOTH redundant (the merge-base..HEAD
-# diff already reflects the PR) AND fails — the trusted-scripts overlay leaves
-# uncommitted changes, so the checkout aborts ("Your local changes would be
-# overwritten by checkout") and detection wrongly falls back to running ALL
-# categories (which then skips the deep UI test stage and publishes no UI results).
-function Test-PreparedReviewWorktreeSubject {
-    param([string]$HeadSubject, [string]$PrNumber)
-    if ([string]::IsNullOrWhiteSpace($HeadSubject) -or [string]::IsNullOrWhiteSpace($PrNumber)) { return $false }
-    return [bool]($HeadSubject.Trim() -match "^PR #$([regex]::Escape($PrNumber.Trim())) squashed for review\b")
 }
 
 # Native git commands don't throw on non-zero exit — and `try/catch` won't
@@ -126,10 +112,7 @@ if ([string]::IsNullOrWhiteSpace($buildReason)) {
 $isManualPrTest = -not [string]::IsNullOrWhiteSpace($PrNumber)
 
 # Track manual-PR-mode git state mutations so they can be undone on exit.
-# This script is invoked as a separate `pwsh` process by Review-PR.ps1, but the
-# git working tree is shared on disk — so a stray detached HEAD or leftover
-# `_detect_base` / `_detect_head` remote will be visible to subsequent steps
-# (e.g., the gate's `git diff`). Always clean up before returning.
+# A stray detached HEAD or leftover temporary remote would affect subsequent steps.
 $script:detectOriginalRef = $null
 $script:detectHeadMutated = $false
 
@@ -234,26 +217,8 @@ if ($isManualPrTest) {
             $script:detectOriginalRef = (& git rev-parse HEAD 2>$null)
         }
 
-        # Detect the prepared CI review worktree: when Review-PR.ps1 already
-        # squash-merged the PR (HEAD subject "PR #<n> squashed for review"), HEAD
-        # contains the PR changes and the fork-head checkout below is redundant and
-        # would abort on the trusted-scripts overlay. In that case use the current
-        # HEAD for the diff and skip the checkout. (See Test-PreparedReviewWorktreeSubject.)
-        #
-        # Inflight-targeted PRs (base 'inflight/current' / 'inflight/candidate') are NOT
-        # squash-merged — Review-PR.ps1 resets the review branch to the PR head as-is, so
-        # the subject is the PR's own commit, not "squashed for review". Detect that case
-        # by SHA: when the local HEAD already equals the PR head sha, the worktree is the
-        # PR and the fork-head checkout is likewise redundant.
-        $headSubject = (& git log -1 --format=%s HEAD 2>$null)
-        $alreadyOnPrWorktree = Test-PreparedReviewWorktreeSubject -HeadSubject $headSubject -PrNumber $PrNumber
-        if (-not $alreadyOnPrWorktree) {
-            $localHeadSha = (& git rev-parse HEAD 2>$null)
-            if ($localHeadSha -and $headSha -and ($localHeadSha.Trim() -eq $headSha.Trim())) {
-                Write-Host "Local HEAD ($localHeadSha) already equals the PR head sha — treating as prepared review worktree (inflight-targeted PR)." -ForegroundColor Cyan
-                $alreadyOnPrWorktree = $true
-            }
-        }
+        $localHeadSha = (& git rev-parse HEAD 2>$null)
+        $alreadyOnPrWorktree = $localHeadSha -and ($localHeadSha.Trim() -eq $headSha.Trim())
 
         try {
             # Use Invoke-Git so a silent non-zero exit (network drop, bad URL, missing
@@ -265,11 +230,7 @@ if ($isManualPrTest) {
             Invoke-Git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch
 
             if ($alreadyOnPrWorktree) {
-                # HEAD already reflects the PR (squash-merged by Review-PR.ps1). Do NOT
-                # check out the fork head — it is redundant and aborts on the overlay's
-                # uncommitted changes. The merge-base..HEAD diff below already captures
-                # the PR's changes, so detection produces specific categories instead of ALL.
-                Write-Host "Detected prepared review worktree (HEAD = '$headSubject'); using current HEAD for category diff and skipping the fork-head checkout." -ForegroundColor Cyan
+                Write-Host "Local HEAD already equals the PR head SHA; skipping the redundant checkout." -ForegroundColor Cyan
             } else {
                 # Standalone / manual run: HEAD is NOT the PR. Fetch the head commit
                 # (works for forks too) and check it out so the diff reflects the PR changes.
@@ -425,8 +386,7 @@ $pathToCategoryMap = @(
     # Core/Brush/ folder), so the `Core/Brush*` prefix above does NOT match
     # them (e.g. `Core/GradientBrush.cs` starts with `Core/G`, not `Core/Brush`).
     # Map them explicitly so brush PRs (e.g. #36521 GradientBrush leak-fix) get
-    # the specific 'Brush' category instead of falling through to the run-all
-    # path (which the deep stage skips → "No UI test results" warning).
+    # the specific 'Brush' category instead of falling through to a broader selection.
     @{ Pattern = 'src/Controls/src/Core/GradientBrush';       Category = 'Brush' }
     @{ Pattern = 'src/Controls/src/Core/LinearGradientBrush'; Category = 'Brush' }
     @{ Pattern = 'src/Controls/src/Core/RadialGradientBrush'; Category = 'Brush' }
@@ -441,8 +401,7 @@ $pathToCategoryMap = @(
     # etc.) drives EVERY animation, so a change here has broad blast radius but no
     # Controls-level file to key off — without this a PR that only touches
     # src/Core/src/Animations (e.g. #35846 Reduce-Motion accessibility on the ticker)
-    # detects NO category and the deep stage is SKIPPED, leaving the reviewer with
-    # zero UI-test coverage. Map it to the Animation category (5 tagged tests) so such
+    # detects no category. Map it to the Animation category (5 tagged tests) so such
     # PRs at least verify animations still run end-to-end.
     @{ Pattern = 'src/Core/src/Animations/';                  Category = 'Animation' }
     @{ Pattern = 'src/Essentials/';                           Category = 'Essentials' }
@@ -570,10 +529,8 @@ if ($tier2Categories.Count -gt 0) {
 # ============================================================================
 # TIER 3: AI-provided categories (from pre-flight reasoning)
 #
-# `-AiCategories` is populated either by the AzDO pipeline (#35136) or by
-# Review-PR.ps1, which re-invokes this script after pre-flight has written
-# `ai-categories.md`. When run from Step 0.5 of Review-PR.ps1 the parameter
-# is empty (Tier 3 is a no-op); the second invocation provides the AI list.
+# Callers can pass pre-flight category suggestions via `-AiCategories`.
+# An empty parameter leaves this tier as a no-op.
 # ============================================================================
 
 if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
@@ -616,7 +573,7 @@ if (-not [string]::IsNullOrWhiteSpace($Platform)) {
     foreach ($category in @($addedCategories)) {
         if (-not (Test-UITestCategorySupportedOnPlatform -Category $category -Platform $Platform)) {
             $addedCategories.Remove($category) | Out-Null
-            Write-Host "Category '$(ConvertTo-SafeConsoleCategoryText $category)' has no runnable tests on platform '$safePlatform'; removing it from the Deep UI selection." -ForegroundColor Yellow
+            Write-Host "Category '$(ConvertTo-SafeConsoleCategoryText $category)' has no runnable tests on platform '$safePlatform'; removing it from the UI test selection." -ForegroundColor Yellow
         }
     }
 }
@@ -632,10 +589,7 @@ if (-not [string]::IsNullOrWhiteSpace($Platform)) {
 #   2. Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
 #      eng/Versions.props, or darc-managed versions in eng/Version.Details.xml)
 #      that don't touch any specific control but CAN cause broad regressions.
-# In both cases running this bounded set is strictly better than falling back to
-# ALL — which the deep stage SKIPS (it can't finish the unfiltered suite in the
-# time budget), surfacing the "No UI test results were produced" warning. Keep
-# this set small and fast.
+# Keep this fallback small and fast rather than selecting the unfiltered suite.
 $dependencyInfraFiles = @('eng/Versions.props', 'eng/Version.Details.xml')
 $dependencyInfraChanged = @($allChangedFiles | Where-Object {
     $f = $_.Replace('\', '/')
@@ -647,14 +601,9 @@ if ($addedCategories.Count -eq 0) {
     if ($touchesControls) {
         # Changed files under src/Controls/Core/Essentials but couldn't map to a
         # specific category (e.g. broad binding / BindableObject / Element / brush
-        # infrastructure changes). Rather than emitting '' — which Review-PR.ps1
-        # maps to 'ALL' and the deep stage SKIPS (the unfiltered full suite can't
-        # finish within the task budget), surfacing the "No UI test results were
-        # produced" warning users complain about — run the same small, fixed,
-        # representative smoke set used for dependency/SDK bumps below. This
-        # GUARANTEES the deep stage always produces UI results for any product-code
-        # change, at a bounded cost (the per-category loop is time-budgeted).
-        Write-Host "Changed files touch Controls/Core/Essentials but no specific category mapped — running a representative UI smoke set ($([string]::Join(', ', $smokeCategories))) instead of ALL (which the deep stage skips) so UI results are always produced." -ForegroundColor Yellow
+        # infrastructure changes). Use the same bounded representative smoke set
+        # as dependency/SDK bumps rather than selecting the unfiltered suite.
+        Write-Host "Changed files touch Controls/Core/Essentials but no specific category mapped — running a representative UI smoke set ($([string]::Join(', ', $smokeCategories)))." -ForegroundColor Yellow
         Write-CategoryListOutput ([string]::Join(',', $smokeCategories))
         return
     } elseif ($dependencyInfraChanged) {
@@ -688,8 +637,7 @@ Write-Host "##vso[task.setvariable variable=UITestCategoryMatrix;isOutput=true]$
 Write-CategoryListOutput ([string]::Join(',', ($addedCategories | Sort-Object)))
 
 } finally {
-    # Restore the working tree to its pre-detection state so subsequent steps
-    # in Review-PR.ps1 (e.g., the gate's `git diff`) don't see a detached HEAD.
+    # Restore the working tree so subsequent steps do not inherit a detached HEAD.
     if ($script:detectHeadMutated -and -not [string]::IsNullOrWhiteSpace($script:detectOriginalRef)) {
         Write-Host "Restoring HEAD to '$script:detectOriginalRef' (was checked out for category detection)" -ForegroundColor DarkGray
         git checkout --quiet $script:detectOriginalRef 2>$null | Out-Null

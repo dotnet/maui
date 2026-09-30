@@ -33,13 +33,13 @@ Ensures PR title and description accurately reflect the implementation, and perf
 
 | Action | Allowed? | Why |
 |--------|----------|-----|
-| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
-| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr review --comment` | ❌ **NEVER** | Publication is a separate user-controlled step |
+| `gh pr comment` | ❌ **NEVER** | Publication is a separate user-controlled step |
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Correct workflow:**
 1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
-2. **Human-controlled follow-up**: PR finalization is not part of the automated `Review-PR.ps1` flow. Only post or use the summary when a user explicitly asks for PR finalization.
+2. **Human-controlled follow-up**: Only post or use the summary when a user explicitly asks for PR finalization.
 
 **Only humans control when comments are posted.** Your job is to analyze and present findings.
 
@@ -360,13 +360,13 @@ gh pr diff XXXXX -- path/to/file.cs
 
 | Action | Allowed? | Why |
 |--------|----------|-----|
-| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
-| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr review --comment` | ❌ **NEVER** | Publication is a separate user-controlled step |
+| `gh pr comment` | ❌ **NEVER** | Publication is a separate user-controlled step |
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Workflow:**
 1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
-2. **Human-controlled follow-up**: PR finalization is not part of the automated `Review-PR.ps1` flow. Only post or use the summary when a user explicitly asks for PR finalization.
+2. **Human-controlled follow-up**: Only post or use the summary when a user explicitly asks for PR finalization.
 
 The user controls when comments are posted. Your job is to analyze and present findings.
 

@@ -122,7 +122,7 @@ Describe 'Limit-ExpensiveGateTests coverage reporting' {
         $script:GateCoverageLimitations = @()
     }
 
-    It 'persists dropped device tests as uncovered while delegating only dropped UI tests to Deep UI' {
+    It 'persists dropped device and UI tests as uncovered and requiring separate validation' {
         $tests = @(
             @{ Type = 'DeviceTest'; TestName = 'NewDeviceTest'; Files = @('NewDeviceTests.cs') }
             @{ Type = 'DeviceTest'; TestName = 'ExistingDeviceTest'; Files = @('ExistingDeviceTests.cs') }
@@ -138,9 +138,9 @@ Describe 'Limit-ExpensiveGateTests coverage reporting' {
         @($kept.TestName) | Should -Be @('CheapUnitTest', 'NewDeviceTest', 'NewUiTest')
         @($script:GateCoverageLimitations).Count | Should -Be 2
         $script:GateCoverageLimitations[0] | Should -Match 'ExistingDeviceTest'
-        $script:GateCoverageLimitations[0] | Should -Match 'does not execute DeviceTests'
+        $script:GateCoverageLimitations[0] | Should -Match 'Separate device-test validation is required'
         $script:GateCoverageLimitations[1] | Should -Match 'ExistingUiTest'
-        $script:GateCoverageLimitations[1] | Should -Match 'exercised separately by the Deep UI Tests stage'
+        $script:GateCoverageLimitations[1] | Should -Match 'Separate UI-test validation is required; no automatic follow-up run is queued'
     }
 
     It 'writes the coverage limitation into the persisted Markdown report' {

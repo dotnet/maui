@@ -234,7 +234,7 @@ jobs:
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`;
             const runMarker = `<!-- review-tests-run:${runUrl} -->`;
             const failureMarker = '<!-- review-tests-failure -->';
-            // Same author allowlist as shared/Remove-StaleMauiBotComments.ps1.
+            // Only trusted automation authors can satisfy this run's notification dedupe.
             const trustedAuthors = new Set(['mauibot', 'maui-bot', 'maui-bot[bot]', 'github-actions[bot]']);
             for await (const { data } of github.paginate.iterator(github.rest.issues.listComments, {
               owner, repo, issue_number: prNumber, per_page: 100

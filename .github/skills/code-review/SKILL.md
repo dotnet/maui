@@ -184,7 +184,7 @@ format.
 
 **After the agent finishes:**
 
-- **If `COMMENTS_VIA_FILE=true`** (CI): Done. The pipeline calls `post-inline-review.ps1` to post findings using `GH_COMMENT_TOKEN`.
+- **If `COMMENTS_VIA_FILE=true`**: Return the findings path to the caller without posting.
 - **If `COMMENTS_VIA_FILE` is unset** (local): Post inline findings directly:
   ```bash
   COMMIT_SHA=$(gh pr view $PR_NUMBER --repo dotnet/maui --json headRefOid --jq .headRefOid)
@@ -408,13 +408,13 @@ A prose-only change — documentation or comments — **need not** carry the fam
 5. **Prior ❌ Error findings override.** If any prior review flagged an ❌ Error-level issue (using this skill's severity taxonomy) that remains unresolved in the current code, verdict must be `NEEDS_CHANGES` regardless of your own assessment. Confirm the finding still applies to the current diff before applying the override.
 6. **Never LGTM if CI is red, pending, or undetermined.** If required CI checks are failing, invoke `azdo-build-investigator` to determine whether failures are PR-caused. Do not post `LGTM` until CI passes or failures are confirmed PR-unrelated. If required checks are pending, skipping, or absent, use `NEEDS_DISCUSSION` — code review alone does not warrant LGTM when CI hasn't run. Even when failures are confirmed PR-unrelated, the Step 6 confidence cap still applies (max **low**).
 7. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
-8. **Findings handling depends on environment.** In CI (`COMMENTS_VIA_FILE=true`), the code-review agent does NOT have the GitHub comment token; the pipeline posts on its behalf. The `maui-expert-reviewer` sub-agent invoked in Step 2 is the *sole* producer of `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json` (structured file:line JSON in GitHub Review API shape), which `Review-PR.ps1` posts via `post-inline-review.ps1`; the code-review skill's wall-of-text summary is posted separately by `post-ai-summary-comment.ps1`. **Do NOT have the wall-of-text-producing code-review agent emit, overwrite, or merge into `inline-findings.json` itself** — overwriting that file with prose findings will corrupt its JSON schema and break `post-inline-review.ps1`. (When the orchestrator pipeline says "write inline findings to `inline-findings.json`", it means: ensure the Step 2 expert reviewer ran and produced that file — not that the wall-of-text agent should author the JSON directly.) In local invocation (no `COMMENTS_VIA_FILE`), the agent may post directly using its own `gh` credentials per the Step 2 `gh api ... reviews --method POST` command. In either mode, Rule #7 still applies: never `--approve` or `--request-changes`.
+8. **Honor file-only callers.** When `COMMENTS_VIA_FILE=true`, write findings to disk and leave publication to the caller. The `maui-expert-reviewer` sub-agent invoked in Step 2 is the *sole* producer of `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json` (structured file:line JSON in GitHub Review API shape). **Do NOT overwrite or merge prose into `inline-findings.json`** — that corrupts the schema consumed by `post-inline-review.ps1`. Without file-only mode, follow the user's publication instructions and Step 2. In either mode, Rule #7 still applies: never `--approve` or `--request-changes`.
 
 ---
 
 ## Posting the Review
 
-In CI mode (`COMMENTS_VIA_FILE=true`) the agent writes findings to disk and posting is done separately by `Review-PR.ps1`. In local invocation (no `COMMENTS_VIA_FILE`) the agent may post directly per Rule #8 / Step 2.
+In file-only mode (`COMMENTS_VIA_FILE=true`), return the report paths to the caller without posting. Otherwise, publish only as requested by the user per Rule #8 / Step 2.
 
 **Inline review comments** (preferred — findings at exact file:line):
 ```bash
@@ -424,14 +424,6 @@ pwsh .github/scripts/post-inline-review.ps1 -PRNumber <PR_NUMBER> -DryRun
 # Post when ready:
 pwsh .github/scripts/post-inline-review.ps1 -PRNumber <PR_NUMBER>
 ```
-
-**Wall-of-text summary** (phase content assembled into a PR review body):
-```bash
-# Called by Review-PR.ps1 automatically:
-pwsh .github/scripts/post-ai-summary-comment.ps1
-```
-
-In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-review.ps1` (for inline findings) and `post-ai-summary-comment.ps1` (for the wall-of-text from `{phase}/content.md` files), using `GH_COMMENT_TOKEN`. The trusted posting script may submit `APPROVE` or `REQUEST_CHANGES` from the final recommendation; the agent itself must not run review commands directly.
 
 ---
 

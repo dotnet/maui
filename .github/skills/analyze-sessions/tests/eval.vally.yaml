@@ -14,7 +14,7 @@
 #   S4  TRIGGER DISCIPLINE — a plain "how do handlers work?" question must be
 #       answered directly and must NOT kick off a session-analysis loop.
 #
-# House pattern (mirrors PR #36002 eval.gh-auth.vally.yaml): each stimulus pairs
+# House pattern: each stimulus pairs
 # a refutation-proof STRUCTURAL FLOOR (`output-matches` on a forced yes/no token
 # line — immune to "mentions the word" false-fails) with ONE LLM JUDGE
 # (scale_1_5, threshold 0.6) so the judge carries ~50% of every score.

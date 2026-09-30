@@ -6,16 +6,16 @@
 
 > ### ⚠️ Environment & Authentication — READ FIRST
 >
-> In the CI pipeline (the `CopilotReview` task) **all GitHub tokens are intentionally stripped** for security — `Review-PR.ps1` launches `copilot` with `--secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN`. Consequences:
+> Use the caller's prepared checkout. If the caller strips GitHub tokens from the agent environment, use local Git and public REST reads instead of repeatedly retrying authenticated commands:
 >
-> - **`gh` commands that require auth (`gh pr view`, `gh issue view`, `gh api`) WILL FAIL** with an authentication error. **This is expected — it is NOT an environment blocker.** Do not stop, do not record it as a blocker, and do **not** lower review confidence because of it.
+> - An authentication error from `gh` is not evidence about the PR. Try the public read-only alternatives below; report any evidence that remains inaccessible.
 > - The PR branch is **already checked out locally** — get the changed files, diff, and commit messages from local `git`, which needs no token.
 > - `dotnet/maui` is a **public** repo, so issue/PR text and comments are readable through the **unauthenticated** public REST API with `curl` (rate-limited to 60 req/hr — plenty for one review).
-> - The `gh` recipes below work unchanged in **local** `pr-review` runs where a token is present. In CI, use the `curl` / local-`git` equivalents shown first.
+> - The `gh` recipes below work when authentication is available. Otherwise, use the `curl` / local-`git` equivalents shown first.
 
 ## Part A: Context Gathering (Steps 1–6)
 
-1. **Read the issue** — full body + ALL comments (CI: unauthenticated `curl` recipe below; local runs: GitHub MCP / `gh`)
+1. **Read the issue** — full body + ALL comments (`gh` when authenticated, otherwise the public `curl` recipe below)
 2. **Find the PR** — read description, diff summary, review comments, inline feedback
 3. **Fetch PR discussion** — detect prior agent reviews, import findings if found
 4. **Classify files** — separate fix files from test files, identify test type (UI / Device / Unit)
@@ -24,7 +24,7 @@
 7. **Identify impacted UI test categories** — analyze which UI controls could be affected by this PR (see below)
 
 ```bash
-# ── Local-first (works in CI — NO token needed) ──
+# ── Local-first (NO token needed) ──
 # Changed files, diff, and commit messages — the PR branch is already checked out:
 git diff --name-status <base>..HEAD     # <base>: use the PR diff base; HEAD~1..HEAD for a squashed PR commit
 git log --oneline -20
@@ -37,7 +37,7 @@ curl -s "https://api.github.com/repos/dotnet/maui/issues/ISSUE_NUMBER/comments?p
 # Inline review comments (CRITICAL — often contains key technical feedback):
 curl -s "https://api.github.com/repos/dotnet/maui/pulls/XXXXX/comments?per_page=100"
 
-# ── gh equivalents (LOCAL runs only — these FAIL in CI where the token is stripped) ──
+# ── gh equivalents (when authentication is available) ──
 # Fetch PR metadata
 gh pr view XXXXX --json title,body,url,author,labels,files
 

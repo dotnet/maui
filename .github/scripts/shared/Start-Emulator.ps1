@@ -519,9 +519,9 @@ if ($Platform -eq "android") {
         # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
         # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
         #
-        # iOS-26-4 is pinned FIRST (ahead of the generic iOS-26): the deep stage's
-        # "Install iOS simulator runtimes" step installs the runtime matching the
-        # build SDK (26.5) so actool can compile — but that ALSO makes the generic
+        # iOS-26-4 is pinned FIRST (ahead of the generic iOS-26): provisioning can
+        # install the runtime matching the build SDK (26.5) so actool can compile,
+        # but that also makes the generic
         # "iOS-26" tier's descending sort prefer 26.5. The ios-26 visual baselines
         # were captured on iOS 26.4 (PR #35061), so rendering on 26.5 would produce
         # spurious pixel diffs. Selecting 26.4 explicitly keeps the RUN on the
@@ -623,9 +623,8 @@ if ($Platform -eq "android") {
                         # <that-runtime>` fails with "Invalid runtime" and we fall
                         # through to a wrong-size device (e.g. iPhone 17 Pro ->
                         # 1206px screenshots, which breaks every visual snapshot
-                        # test with "size differs"). This mirrors the gate stage's
-                        # proven boot logic (eng/pipelines/ci-copilot.yml), which
-                        # selects its runtime from `list runtimes available`.
+                        # test with "size differs"). Select the runtime from
+                        # `list runtimes available`.
                         $createRuntimeIds = @()
                         try {
                             $rtList = xcrun simctl list runtimes available --json | ConvertFrom-Json
@@ -726,16 +725,13 @@ if ($Platform -eq "android") {
             }
         }
         
-        # LAST-RESORT recovery — parity with the deep stage's "THIRD RECOVERY" in
-        # eng/pipelines/ci-copilot.yml. When every runtime from `simctl list runtimes
+        # LAST-RESORT recovery. When every runtime from `simctl list runtimes
         # available` rejected `simctl create` with "Invalid runtime" and no usable device
         # exists, the agent may still have a runtime DISK IMAGE that is "Ready" but not yet
         # enrolled in the legacy simruntime registry. The newer `simctl runtime list` shows
         # it, and `simctl create` accepts its runtimeIdentifier and mounts it on demand — so
         # recover a bootable sim here instead of dead-ending at "No iPhone simulator found"
-        # and degrading the gate to INCONCLUSIVE. Without this, the GATE iOS boot fails while
-        # the DEEP stage boots fine on the SAME agent (the gate boots via this script; the
-        # deep stage had its own recovery). If no runtime image is Ready this yields empty and
+        # and degrading verification to INCONCLUSIVE. If no runtime image is Ready this yields empty and
         # the existing fatal below still fires — strictly additive, no happy-path change.
         # (PR #35706 build 14680958: all runtimes "Invalid", gate went INCONCLUSIVE.)
         #
@@ -875,11 +871,9 @@ if ($Platform -eq "android") {
         # `simctl runtime list --json` shows 0 iOS images the agent was provisioned WITHOUT any
         # iOS runtime, so there is literally nothing to enroll and both recover to $null (build
         # 14699070, PR #27153: "0 iOS image(s) on disk" -> gate degraded to INCONCLUSIVE while
-        # asserting iOS "must work"). The ONLY recovery is to FETCH one — exactly as the deep
-        # stage's "Install iOS simulator runtimes" step does (eng/pipelines/ci-copilot.yml):
-        # `xcodebuild -downloadPlatform iOS -buildVersion <SDK>`. The gate stage
-        # (ReviewPR/CopilotReview) has NO such install step, so the gate boot must self-provision
-        # here or the iOS gate can never run on a runtime-less agent. Heavy (multi-GB, minutes)
+        # asserting iOS "must work"). The only recovery is to fetch one using
+        # `xcodebuild -downloadPlatform iOS -buildVersion <SDK>`.
+        # Heavy (multi-GB, minutes)
         # but only reached as the final resort before dead-ending — strictly additive, never on
         # the healthy path. Every xcodebuild download runs in its own bounded process tree so a
         # stalled Apple download returns control to the Gate's environment-retry path instead of
@@ -923,7 +917,7 @@ if ($Platform -eq "android") {
             try {
                 # CoreSimulator/runtime downloads are Xcode-version-specific — select the newest
                 # installed Xcode first so the SDK probe + download target the version the build
-                # will actually use (mirrors the deep stage's install step).
+                # will actually use.
                 $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
                 if ($newestXcode) {
                     $curDev = (& xcode-select -p 2>$null)
@@ -984,11 +978,7 @@ if ($Platform -eq "android") {
             # First pass: try to create on any Ready runtime as-is.
             $rescueResult = Invoke-IosReadyRuntimeRescue
 
-            # ENROLLMENT RECOVERY (parity with eng/pipelines/ci-copilot.yml ed34ffa; PR
-            # #35706 build 14694271): the GATE boots iOS via THIS script, but the
-            # CoreSimulatorService-restart enrollment fix only landed in ci-copilot.yml (the
-            # deep stage's boot), so the gate kept dead-ending at INCONCLUSIVE while the deep
-            # stage recovered on the SAME agent. When every create above failed "Invalid
+            # ENROLLMENT RECOVERY. When every create above failed "Invalid
             # runtime", the Ready iOS images are on disk but NOT enrolled in CoreSimulator's
             # registry (`simctl list runtimes available` is empty); restarting
             # CoreSimulatorService forces a re-scan that enrolls them. Retry the create loop
@@ -1021,7 +1011,7 @@ if ($Platform -eq "android") {
             # after restart/enroll — both dead-ended the iOS gate at INCONCLUSIVE). The rescue +
             # enroll passes only recover a runtime that is BOTH present as a Ready disk image AND
             # enrollable; this final resort fires whenever they still produced no bootable device
-            # and DOWNLOADS a fresh SDK-matching runtime (as the deep stage's install step does),
+            # and downloads a fresh SDK-matching runtime,
             # then retries the create loop once. It is reached only after every preferred-device
             # create, the multi-runtime rescue, the CoreSimulatorService restart, and the
             # `simctl runtime add` enroll have all failed — i.e. the agent is genuinely broken —

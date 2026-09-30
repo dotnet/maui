@@ -4,7 +4,7 @@
 # Deciding which tracking issues are stale is a deterministic set-difference over build
 # IDs; there is nothing for a language model to add, and a prompt-driven agent with
 # `issues: write` would be an injection target reachable from any CI log the scanner
-# reads. See `.github/instructions/ci-copilot-pipeline-security.instructions.md`.
+# reads. See `.github/instructions/automation-security.instructions.md`.
 #
 # ─── SAFETY MODEL ────────────────────────────────────────────────────────────────────
 #

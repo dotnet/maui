@@ -51,8 +51,7 @@ $BotLogins = @(
     # dotnet-bot, MauiBot and maui-bot are MAUI/dotnet automation accounts whose logins
     # do NOT carry the '[bot]' suffix, so classify them as bot actors for attempt accounting
     # and Track C response-marker filtering.
-    # The repo posts CI/review automation as 'maui-bot' / 'MauiBot' (see
-    # .github/scripts/shared/Remove-StaleMauiBotComments.ps1 and the ci-copilot pipeline);
+    # The repo posts CI/review automation as 'maui-bot' / 'MauiBot';
     # 'mauibot' covers 'MauiBot' case-insensitively, but the hyphenated 'maui-bot' login is
     # a distinct string and must be listed explicitly. Compared case-insensitively
     # (Test-IsHumanLogin lowercases the login first).

@@ -16,8 +16,7 @@
     Outputs (when -OutputDir is provided):
       - content.md       Markdown summary suitable for the wall-of-text PR review.
       - risks.json       Structured findings for downstream agents.
-      - result.txt       One token: CLEAN | OVERLAP | REVERT (used by Review-PR.ps1
-                         for branching).
+      - result.txt       One token: CLEAN | OVERLAP | REVERT for downstream callers.
       - inline-findings.json (only when -WriteInlineFindings is set and reverts found)
 
 .PARAMETER PRNumber

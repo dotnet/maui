@@ -15,8 +15,8 @@ latent signal into a repeatable improvement loop that any contributor can run in
 natural language — and turns recurring failures into **regression evals** so the
 loop ratchets forward instead of re-discovering the same problems.
 
-PR #36002 established the **emit-eval** half: a hand-written `vally` guard-eval
-(`eval.gh-auth.vally.yaml`) froze a fixed failure as a regression test. This skill
+The **emit-eval** half freezes a fixed failure as a hand-written `vally` guard-eval.
+The inline-findings guard is one example. This skill
 joins that guard-eval mechanism with analysis over the *whole fleet* of a
 contributor's local sessions.
 
@@ -121,8 +121,8 @@ into a single PowerShell core, `scripts/Get-SessionAnalysis.ps1`:
   contract, staying inside the AzDO-artifact boundary it already uses.
 
 **Why PowerShell:** it matches every other shipping skill script
-(`Get-ReleaseReadiness.ps1`, `query-issues.ps1`, the `run-*` skills) and the
-production reviewer pipeline (`Review-PR.ps1`); `pwsh` is already a repo
+(`Get-ReleaseReadiness.ps1`, `query-issues.ps1`, the `run-*` skills);
+`pwsh` is already a repo
 prerequisite. The Python CI prototype is the *reference algorithm*, not shipping
 code — CI reuse is unaffected because any job can shell out to the core's CLI.
 
@@ -169,6 +169,5 @@ regression test that fails if we regress tomorrow.
 ## References
 
 - `dotnet-replay` — <https://github.com/lewing/dotnet-replay>, NuGet `dotnet-replay` v0.9.1.
-- PR #36002 — the guard-eval house pattern this skill emits
-  (`eval.gh-auth.vally.yaml`, `eval.inline-findings.vally.yaml`).
+- `eval.inline-findings.vally.yaml` — an example of the guard-eval house pattern.
 - Zheng et al., *Judging LLM-as-a-Judge* — arXiv:2306.05685.

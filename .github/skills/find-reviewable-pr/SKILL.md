@@ -53,9 +53,6 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Categor
 # Find PRs in "Ready To Review" on the project board
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category ready-to-review
 
-# Find agent-reviewed PRs with merge summaries
-pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category agent-reviewed
-
 # Find recent PRs waiting for review
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category recent
 
@@ -73,7 +70,7 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
-| `-Category` | default, milestoned, priority, recent, partner, community, docs-maui, approved, ready-to-review, agent-reviewed, all | default | Filter by category. `default` shows only P/0 + milestoned, excluding changes-requested PRs. |
+| `-Category` | default, milestoned, priority, recent, partner, community, docs-maui, approved, ready-to-review, all | default | Filter by category. `default` shows only P/0 + milestoned, excluding changes-requested PRs. |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
 | `-Limit` | 1-100 | 100 | Max PRs per category (maui repo) |
 | `-RecentLimit` | 1-100 | 5 | Max recent PRs waiting for review from maui repo (minimum 5 enforced) |

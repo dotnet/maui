@@ -596,9 +596,9 @@ Rules:
     }
 
     $outputLines = New-Object System.Collections.Generic.List[string]
-    # --secret-env-vars: defense-in-depth (ci-copilot-pipeline-security rule 1) — strips
+    # --secret-env-vars: defense-in-depth (automation-security rule 1) — strips
     # the named tokens from copilot's model/tool/shell context even if they are present in
-    # this process's environment, matching Review-PR.ps1 / Analyze-UITestFailures.ps1.
+    # this process's environment.
     $copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model, "--context", "long_context", "--effort", "max", "--secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN", "--add-dir", $RunDirectory)
     if ($AllowAllTools) {
         $copilotArgs += "--allow-all"
