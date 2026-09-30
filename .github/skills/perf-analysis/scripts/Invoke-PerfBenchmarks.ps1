@@ -491,13 +491,25 @@ function Ensure-DotNetSdk([string]$Version) {
 
         Ensure-Directory $sdkRoot
         $installDirectory = Join-Path $sdkRoot $Version
-        $installer = Join-Path $sdkRoot "dotnet-install.ps1"
+        $installerName = if ($IsWindows) { "dotnet-install.ps1" } else { "dotnet-install.sh" }
+        $installer = Join-Path $sdkRoot $installerName
         if (-not (Test-Path $installer)) {
-            Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile $installer -UseBasicParsing
+            Invoke-WebRequest "https://dot.net/v1/$installerName" -OutFile $installer -UseBasicParsing
         }
 
-        $installLog = Join-Path $sdkRoot "install-$($Version -replace '[^0-9A-Za-z_.-]', '_').log"
-        & $installer -Version $Version -InstallDir $installDirectory -NoPath *> $installLog
+        $installLog = Join-Path $OutputRoot "diagnostics/install-$($Version -replace '[^0-9A-Za-z_.-]', '_').log"
+        Ensure-Directory (Split-Path -Parent $installLog)
+        if ($IsWindows) {
+            & $installer -Version $Version -InstallDir $installDirectory -NoPath *> $installLog
+        }
+        else {
+            $exitCode = Invoke-LoggedCommand -FilePath "bash" -Arguments @(
+                $installer, "--version", $Version, "--install-dir", $installDirectory, "--no-path"
+            ) -WorkingDirectory $sdkRoot -LogPath $installLog -ScrubSecrets
+            if ($exitCode -ne 0) {
+                throw ".NET SDK $Version installation failed with exit code $exitCode. See '$installLog'."
+            }
+        }
 
         $executable = Join-Path $installDirectory $(if ($IsWindows) { "dotnet.exe" } else { "dotnet" })
         if (-not (Test-Path $executable)) {
