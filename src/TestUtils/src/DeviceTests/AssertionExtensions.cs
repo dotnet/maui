@@ -24,6 +24,22 @@ namespace Microsoft.Maui.DeviceTests
 			GC.WaitForPendingFinalizers();
 			GC.Collect(2, GCCollectionMode.Forced, true);
 			await Task.Yield();
+#if IOS || MACCATALYST
+			// A finalized wrapper releases its native peer on the main thread (NSObject_Disposer), and a
+			// released view hands its layer to the pending Core Animation transaction, which frees it only
+			// when it commits. Each of those is what lets the next object in a native retain chain (a view's
+			// layer, the layer's sublayers) become collectable. Let the drain run and commit the transaction
+			// before the caller collects again: queued the same way the disposer queues itself, so it lands
+			// after the drain. Without this, on iOS 17 the collection loop outruns the commit and reports a
+			// leak that is only a pending release.
+			var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			Foundation.NSRunLoop.Main.BeginInvokeOnMainThread(() =>
+			{
+				CoreAnimation.CATransaction.Flush();
+				drained.TrySetResult();
+			});
+			await drained.Task;
+#endif
 		}
 
 
