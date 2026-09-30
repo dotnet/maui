@@ -75,8 +75,8 @@ jobs:
           fi
           # Match `/review` as the first non-whitespace token, optionally followed by args.
           # Allows arbitrary leading whitespace (spaces, tabs, newlines).
-          # `/review tests` is reserved for the gh-aw test-failure review workflow.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+tests([[:space:]]|$) ]]; then
+          # Subcommands are reserved for their focused gh-aw review workflows.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
@@ -99,7 +99,7 @@ jobs:
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
           }
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
@@ -861,7 +861,7 @@ jobs:
             is_recoverable_review_command() {
               NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
             }
 
             if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
