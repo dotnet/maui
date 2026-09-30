@@ -541,5 +541,28 @@ namespace Microsoft.Maui.Platform
 		{
 			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
 		}
+
+		/// <summary>
+		/// Shows the soft keyboard if <see cref="TextView"/> skipped it while handling a touch-up event.
+		/// </summary>
+		/// <remarks>
+		/// TextView only requests the soft keyboard on ACTION_UP while its text layout is valid.
+		/// The EditText gains focus inside that same event, so anything that runs synchronously on focus
+		/// and invalidates the layout (for example a trigger on IsFocused that changes FontAttributes)
+		/// makes TextView skip the request, and the keyboard only appears on the next tap (#38819).
+		/// Call this from an OnTouchEvent override after the base implementation has run.
+		/// </remarks>
+		internal static void ShowSoftInputIfSkippedOnTouchUp(this EditText editText, MotionEvent? e, bool hadLayoutBeforeTouch)
+		{
+			if (e?.ActionMasked != MotionEventActions.Up || !hadLayoutBeforeTouch || editText.Layout is not null)
+			{
+				return;
+			}
+
+			if (editText.IsFocused && editText.Enabled && editText.ShowSoftInputOnFocus && editText.OnCheckIsTextEditor())
+			{
+				editText.ShowSoftInput();
+			}
+		}
 	}
 }

@@ -35,6 +35,16 @@ internal class MauiMaterialEditText : TextInputEditText
 		SelectionChanged?.Invoke(this, EventArgs.Empty);
 	}
 
+	public override bool OnTouchEvent(MotionEvent? e)
+	{
+		var hadLayoutBeforeTouch = Layout is not null;
+		var handled = base.OnTouchEvent(e);
+
+		this.ShowSoftInputIfSkippedOnTouchUp(e, hadLayoutBeforeTouch);
+
+		return handled;
+	}
+
 	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
 		// Get the measure spec mode and size
