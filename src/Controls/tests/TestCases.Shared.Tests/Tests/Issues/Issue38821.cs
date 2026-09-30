@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CurrentItem is incorrect after removing an item from the CarouselView (Loop = false)";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CarouselView, shard: 1)]
+		[Category(UITestCategories.CarouselView)]
 		public void TestCurrentItemAfterRemoval()
 		{
 			App.WaitForElement("Item0");
