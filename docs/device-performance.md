@@ -89,7 +89,7 @@ test host; local results are machine-specific.
 | `comparison-summary.md` | Compact, comment-ready results with collapsed findings and follow-up |
 
 The Windows driver resolves output paths from the caller's PowerShell directory before
-launching a child in the app directory, and rejects nonpositive PR numbers before
+launching a child in the app directory, and rejects zero or negative PR numbers before
 discovery. Rebuild both Windows apps with the updated runner: each invocation receives
 a unique `MAUI_PERF_RUN_ID` and must finish with exit zero plus its matching
 `TestResults.xml.completed` sidecar and fresh, valid output. The opted-in performance
