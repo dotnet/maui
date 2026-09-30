@@ -148,6 +148,12 @@ general PR-review/try-fix workflow. It prepares isolated base/head apps and runs
 existing local comparison drivers; do not create or trigger a pipeline for this workflow.
 Checking performance alone does not authorize posting a comment.
 
+The explicit `/review performance` PR command is a separate hosted entrypoint:
+`copilot-review-performance.md` runs isolated managed benchmarks and calls
+`perf-analysis`, then renders and validates one gh-aw safe-output comment. It does
+not run native devices; keep those coverage gaps explicit. Do not route this
+subcommand through the full `/review` pipeline or missed-command recovery.
+
 When authorized to post performance results, follow the [device-performance comment format](../docs/device-performance.md#pr-comment-format).
 Use the generated `comparison-summary.md` and supply the actual PR author for the mention.
 Keep only the title, author/commit notification, and badges visible; use exactly two closed

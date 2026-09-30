@@ -5,6 +5,11 @@ pins its merge-base and head, independently reviews the harness revision, author
 execution, and controls the evidence directories. No pipeline, workflow, registration,
 remote build status, or publication is required.
 
+This contract remains the local/native path. The separate `/review performance`
+gh-aw caller runs managed measurements on an isolated hosted Linux job and publishes
+a validated interpretation through safe outputs. It does not upload, discover, or
+admit these local device bundles automatically, and reports missing native coverage.
+
 ## Entrypoints
 
 Use PowerShell 7 and trusted scripts from the reviewed tooling checkout:

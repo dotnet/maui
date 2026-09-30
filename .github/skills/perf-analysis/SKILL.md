@@ -1,19 +1,41 @@
 ---
 name: perf-analysis
-description: Manually interpret local managed and native performance evidence for a selected MAUI PR in Copilot. Produces a coverage-aware local report; never triggers workflows, runs device follow-ups automatically, or publishes.
+description: Interpret pinned managed and native performance evidence for a selected MAUI PR, locally or through the /review performance gh-aw caller. Produces narrative for a trusted coverage-aware report; never executes measurements or publishes directly.
 ---
 
 # Perf Analysis
 
-Review one manually selected, performance-suspicious PR and answer:
+Review one explicitly selected, performance-suspicious PR and answer:
 
 - Did selected managed benchmarks regress or improve?
 - Is a measured cost accidental or a deliberate tradeoff?
 - Which changed paths still require a platform/device scenario?
 
 This is a **reviewer**, not a fixer or trigger. Never edit product code, push, open a PR,
-post comments, or queue builds. The maintainer manually selects the PR and invokes the
-skill in Copilot; there is no calling workflow or registration prerequisite.
+post comments directly, or queue builds. The maintainer selects the PR either locally
+or by commenting `/review performance`. The hosted caller owns authorization,
+isolated managed measurements, report validation, and publication through gh-aw safe outputs.
+
+## Hosted invocation
+
+`.github/workflows/copilot-review-performance.md` is the trusted gh-aw caller.
+It accepts only an exact `/review performance` PR comment from a current
+write/maintain/admin collaborator, or a default-branch manual dispatch. It pins
+the merge-base, head, and harness before a separate disposable Linux job runs the
+existing managed ABBA runner with `LinuxUsers` isolation and no Copilot or posting
+credentials. Another fresh job prepares the evidence and decision baseline.
+
+The agent interprets that bundle without executing PR code. Instead of a local
+output file, submit the Phase 6 narrative object as `data.narrative` in the single
+`add_comment` safe output requested by the workflow. A fresh safe-output job
+independently downloads the evidence, recomputes the decision, renders and validates
+the report, and rechecks the caller and current PR revisions before publication.
+Dry runs still render and validate, but gh-aw stages the comment without posting.
+
+Native measurements remain a separate local operation. The hosted command does
+not queue device jobs or ingest author-provided artifacts as trusted measurements.
+State required native coverage as missing, with the supported local follow-up.
+See [the command guide](../../docs/pr-review-workflow.md#review-performance-performance-review).
 
 ## Manual invocation in Copilot
 
@@ -38,9 +60,10 @@ keys, native schemas, and the acquisition-to-interpretation handoff.
 
 ## Trust boundary
 
-The local maintainer owns authorization, PR selection, execution, and evidence storage.
-This skill adds no workflow, pipeline registration, OIDC exchange, automatic device
-follow-up, history-branch writer, or remote publication step.
+The caller owns authorization, PR selection, execution, and evidence storage.
+Local invocation requires no hosted registration. The hosted caller uses the existing
+gh-aw PAT pool for interpretation only; it adds no Azure pipeline, OIDC exchange,
+automatic device follow-up, or history-branch writer.
 
 Before asking the agent to interpret results, the caller must:
 
@@ -496,10 +519,11 @@ Use only policy values. Omit unsupported claims instead of inventing them. Do no
 Markdown headings, verdict labels, coverage counts, attribution text, recommendation
 sentinels, or `perf-analysis-decision` metadata; the trusted renderer owns those fields.
 
-This skill does not post the report. Keep the result local for the Copilot trial. If a
+This skill does not post the report directly. For local invocation, keep the result local. If a
 maintainer later requests publication separately, recheck the PR head and require successful
 report validation first. Neither writing a report file nor rendering it authorizes a
-GitHub mutation.
+GitHub mutation. The hosted workflow is the separately authorized publication
+caller and enforces the same renderer/validator contract in its safe-output job.
 
 If execution was incomplete, name the failed suite/build/run from the structured manifest.
 Do not paste raw logs.

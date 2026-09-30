@@ -521,7 +521,7 @@ foreach ($row in $rows) {
 
 if (-not $executionComplete) {
     [void]$markdownBuilder.AppendLine("")
-    [void]$markdownBuilder.AppendLine("Execution manifest is incomplete (`$executionStatus`); a clean verdict is not permitted.")
+    [void]$markdownBuilder.AppendLine("Execution manifest is incomplete (``$executionStatus``); a clean verdict is not permitted.")
 }
 if (-not $benchmarkSetsMatch) {
     [void]$markdownBuilder.AppendLine("")

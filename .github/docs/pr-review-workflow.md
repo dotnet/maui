@@ -4,6 +4,7 @@ This guide explains the automated review commands used in dotnet/maui pull reque
 
 - `/review`
 - `/review tests`
+- `/review performance`
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
 
@@ -14,6 +15,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
+| `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
@@ -61,7 +63,9 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 5. queues the DevDiv `maui-copilot` Azure DevOps pipeline;
 6. minimizes (collapses) the command comment as resolved once authorized.
 
-The workflow intentionally does not handle `/review tests`; that subcommand is reserved for the test-failure review workflow.
+The workflow intentionally does not handle `/review tests` or `/review performance`;
+those subcommands belong to their focused gh-aw workflows. The full-review
+missed-command recovery and rerun option parser also exclude both subcommands.
 
 GitHub Actions webhook deliveries can occasionally be delayed or dropped during an Actions incident. A deterministic scheduled fallback (`.github/workflows/review-trigger-recovery.yml`) polls recent commands, waits 25 minutes so both bounded trigger jobs have time to finish, rechecks the commenter's current repository permission, and dispatches the same trusted review workflow. The default-branch commit used by the first scheduled run is a permanent lower bound, preventing already-handled commands from being replayed when the fallback is introduced. Processed commands are marked so a delayed webhook cannot trigger a duplicate review.
 
@@ -97,6 +101,64 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 7. review labels.
 
 The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
+
+## `/review performance`: performance review
+
+Comment exactly `/review performance` on an open PR. Only newly created comments
+activate the command; editing a comment does not start another measurement run.
+Unauthorized comments, issues, other subcommands, closed PRs, and changes with no
+product files do not start measurements. Authorized command comments are minimized
+after the pinned context is ready. Runs for the same PR are serialized.
+
+The gh-aw source is `.github/workflows/copilot-review-performance.md`; commit its
+generated `.lock.yml` whenever it changes. Compile with the repository's pinned
+gh-aw **v0.86.2**:
+
+```bash
+gh aw compile copilot-review-performance --strict --actionlint
+```
+
+The trusted orchestration script, `.github/scripts/Review-Performance.ps1`, uses
+the existing `perf-analysis` selector, runner, comparator, policy, renderer, and
+validator. The job boundaries follow the issue-replication isolation pattern:
+
+1. **Intake:** authorize the caller, pin exact merge-base/head/harness commits,
+   and select coverage from the full changed-file list without executing PR code.
+2. **Measurements:** run managed Release benchmarks in ABBA order on a disposable
+   hosted Linux runner. Base/head use separate unprivileged users and an explicit
+   environment allowlist. No Copilot PAT or posting token is passed to measurements.
+3. **Evidence and interpretation:** a fresh job imports bounded structured evidence
+   and resolves the decision baseline. The GPT agent reads that bundle and the
+   pinned diff; it writes narrative only, with no measurement or publishing authority.
+4. **Publication:** a fresh gh-aw safe-output job downloads independent evidence,
+   recomputes the decision, renders and validates the narrative, and rechecks
+   authorization and live base/head identities. Only this job can publish the report.
+
+Native scenarios **do not run in the hosted command**. Device-required, sampled,
+static-only, missing, and failed measurements remain explicit coverage gaps.
+Use `check-pr-performance` locally for supported device scenarios. Shared-host timing
+is advisory; no whole-PR clean verdict may be inferred from a passing managed subset.
+The command never approves, changes code or labels, queues the full review pipeline,
+or automatically starts native follow-ups.
+
+Manual dispatch requires the default branch and a positive `pr_number`:
+
+```bash
+gh workflow run copilot-review-performance.lock.yml --repo dotnet/maui \
+  --ref main -f pr_number=12345 -f suppress_output=true
+```
+
+`suppress_output=true` still performs measurements and validates the report, but
+does not post a comment. Evidence and rendered report artifacts are retained for
+seven days. Failed automation posts a run link rather than a performance verdict;
+stale evidence is never published as a current report.
+
+No new Azure pipeline, service connection, or secret is needed. The workflow uses
+the existing `copilot-pat-pool` environment for GPT interpretation and read-only
+agent permissions. The workflow, skill, and trusted scripts must land on the
+default branch before slash commands can run. A default-branch dry-run canary is
+required before treating the hosted path as operational. There is no scheduled
+recovery for this command; request it again after resolving an automation failure.
 
 ## Automatic fresh reviews
 
