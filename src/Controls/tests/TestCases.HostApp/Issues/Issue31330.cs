@@ -25,7 +25,7 @@ public class Issue31330 : ContentPage
 		{
 			Text = "Test passes if:\n1. Green BoxView (height 1.2) is visible as a filled rectangle\n2. Blue Rectangle (height 1.2) is visible as a filled rectangle (not a thin line)\n3. Both should have similar appearance",
 			FontAttributes = FontAttributes.Bold,
-			AutomationId = "Instructions"
+			AutomationId = "Issue31330_label"
 		};
 		Grid.SetRow(instructions, 0);
 		grid.Children.Add(instructions);
@@ -42,7 +42,6 @@ public class Issue31330 : ContentPage
 			HeightRequest = 1.2,
 			HorizontalOptions = LayoutOptions.Start,
 			VerticalOptions = LayoutOptions.Start,
-			AutomationId = "TestBoxView"
 		};
 		Grid.SetRow(boxView, 1);
 		grid.Children.Add(boxView);
@@ -60,7 +59,6 @@ public class Issue31330 : ContentPage
 			Stroke = null, // Explicitly no stroke
 			HorizontalOptions = LayoutOptions.Start,
 			VerticalOptions = LayoutOptions.Start,
-			AutomationId = "TestRectangle"
 		};
 		Grid.SetRow(rectangle, 2);
 		grid.Children.Add(rectangle);
@@ -92,7 +90,6 @@ public class Issue31330 : ContentPage
 		var absRectangle = new Rectangle
 		{
 			BackgroundColor = Colors.Blue,
-			AutomationId = "BackgroundRectangle"
 		};
 		AbsoluteLayout.SetLayoutBounds(absRectangle, new Rect(
 			30,

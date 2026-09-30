@@ -16,9 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shape)]
 		public void RectangleWithSmallHeightRendersAsFilledShape()
 		{
-			App.WaitForElement("TestBoxView");
-			App.WaitForElement("TestRectangle");
-			App.WaitForElement("BackgroundRectangle");
+			App.WaitForElement("Issue31330_label");
 
 			// Verify both the documented Fill scenario and the original
 			// BackgroundColor reproduction render at a small height.

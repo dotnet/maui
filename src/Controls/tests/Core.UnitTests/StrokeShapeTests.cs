@@ -175,6 +175,58 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PolygonChangingStrokeFromNullToNonNullInvalidatesMeasure()
+		{
+			var polygon = new Polygon
+			{
+				Points = new PointCollection
+		{
+			new Point(0, 0),
+			new Point(100, 0),
+			new Point(100, 50),
+			new Point(0, 50)
+		},
+				StrokeThickness = 10,
+				Fill = Colors.Blue,
+				Stroke = null
+			};
+
+			bool measureInvalidated = false;
+
+			polygon.MeasureInvalidated += (_, _) => measureInvalidated = true;
+
+			polygon.Stroke = Colors.Black;
+
+			Assert.True(measureInvalidated);
+		}
+
+		[Fact]
+		public void PolygonChangingStrokeFromNonNullToNullInvalidatesMeasure()
+		{
+			var polygon = new Polygon
+			{
+				Points = new PointCollection
+		{
+			new Point(0, 0),
+			new Point(100, 0),
+			new Point(100, 50),
+			new Point(0, 50)
+		},
+				StrokeThickness = 10,
+				Fill = Colors.Blue,
+				Stroke = Colors.Black
+			};
+
+			bool measureInvalidated = false;
+
+			polygon.MeasureInvalidated += (_, _) => measureInvalidated = true;
+
+			polygon.Stroke = null;
+
+			Assert.True(measureInvalidated);
+		}
+
+		[Fact]
 		public void RectangleUsedAsBorderStrokeShapeRetainsPathInset()
 		{
 			var rectangle = new Rectangle();
