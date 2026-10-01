@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "maxChanges": 20,
+  "maxRemovals": 10,
+  "maxSources": 4,
+  "automationAuthors": ["MauiBot", "maui-bot", "dotnet-bot", "dotnet-maestro-bot"],
+  "categories": {
+    "content": {
+      "patterns": ["area-*", "platform/*", "version/*", "layout-*", "collectionview-*", "feature-blazor-*", "testing-*"],
+      "labels": ["t/bug", "t/enhancement ☀️", "t/enhancement", "t/docs 📝", "t/a11y", "t/desktop", "t/native-embedding", "t/housekeeping ♻︎", "t/use-newer-native-api", "Task", "s/question ?", "proposal/open", "potential-regression", "migration-compatibility", "custom-handler", "material3", "xsg", "external-tfm", "build", "t/build", "test-failure", "xharness", "has-workaround", "repro:device-only", "perf/general", "perf/startup-time", "perf/app-size", "perf/linker", "perf/debug", "perf/memory-leak 💦", "shell-flyout", "shell-search-handler", "nuget", "tutorials"]
+    },
+    "evidence": {
+      "patterns": ["regressed-in-*"],
+      "labels": ["s/verified", "i/regression", "s/no-repro", "not-regression", "s/triaged", "s/needs-info", "s/needs-repro", "s/needs-verification", "s/try-latest-version", "investigate", "blazor-webview2-regression"]
+    },
+    "maintainer": {
+      "patterns": ["p/*", "backport/*", "fixed-in-*", "proposal/*", "partner/*", "Cost:*", "Status:*", "a11y/*", "t/perf/*"],
+      "labels": ["s/not-a-bug", "s/duplicate 2️⃣", "s/not on roadmap", "partner", "external", "blocker", "blocked", "good first issue", "help wanted", "needs-prototype", "needs-breaking-change-doc-created", "labs-candidate", "delighter", "delighter-sc", "csi-new", "Epic", "Theme", "User Story", "t/breaking 💥", "i/great-reporter", "community ✨", "discussed", "a11y-resolved"]
+    }
+  },
+  "blocked": [
+    "s/agent-*", "s/ai-*", "ci-*", "report", "*report*", "daily-*",
+    "agentic-*", "copilot", "legacy-*", "area/infrastructure*",
+    "area-button", "area-collectionview", "area-shell", "area-webview",
+    "area-label", "area-picker", "area-progressbar", "area-refreshview",
+    "s/triaged]", "regresssed-*", "[*", "*]", "partner/syncfusion/review", "t/enhancement"
+  ],
+  "confirmation": ["s/verified", "i/regression"],
+  "removalOnly": ["s/needs-attention", "needs-area-label"],
+  "requests": ["s/needs-info", "s/needs-repro", "s/try-latest-version"],
+  "removalTransitions": {
+    "s/needs-info": ["s/verified"],
+    "s/needs-repro": ["s/verified"],
+    "s/needs-verification": ["s/verified"],
+    "s/needs-attention": ["s/triaged"],
+    "s/try-latest-version": ["s/verified", "s/no-repro"],
+    "investigate": ["s/verified", "s/triaged"],
+    "potential-regression": ["i/regression", "not-regression"],
+    "needs-area-label": ["area-*"]
+  }
+}
