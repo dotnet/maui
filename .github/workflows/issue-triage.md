@@ -149,6 +149,7 @@ network: defaults
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [pat_pool]
+  github-token: ${{ secrets.GITHUB_TOKEN }}
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.staged == true }}
   data: true
   messages:

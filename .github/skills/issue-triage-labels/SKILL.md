@@ -36,10 +36,14 @@ Quote exact source text supporting each proposed change.
   contributor suitability require an explicit existing maintainer decision.
   Do not convert impact or upvotes into a new release commitment. Evidence must
   explicitly name the exact label and the decision to add/remove it.
+  A decision for a longer label cannot authorize its prefix: for example,
+  `partner/syncfusion` does not authorize `partner`.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a
   newer positive confirmation or a later explicit maintainer re-add decision.
+- Later unsuccessful reproduction, confirmation, verification or validation
+  vetoes older positive evidence. Infrastructure-only failures are not no-repro.
 - Quote unquoted prose, not lazy blockquote continuations, indented/fenced code
   or inline code. Review/no-repro/version recommendations need the corresponding
   technical assessment, not merely a comment from an authorized author.

@@ -52,6 +52,8 @@ Read-only registered validators may supply reproduction evidence but **cannot**
 authorize priority, roadmap, backport or ownership commitments. Business decisions
 must explicitly name the exact label and an affirmative action in unquoted
 maintainer prose, for example `Apply p/1` or `Remove backport/approved`.
+Exact label token boundaries apply to approvals and superseding decisions:
+`Apply partner/syncfusion` does not also approve `partner`.
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
 Suggestions and tentative candidates are not approvals.
@@ -64,6 +66,10 @@ Newer opposite maintainer decisions or label events supersede earlier approvals;
 an old approval cannot silently undo a later manual removal.
 The same rule applies to confirmation labels: cite a newer positive confirmation
 or a later explicit maintainer re-add rather than reversing a newer removal.
+The confirmation gate and later-contrary-evidence veto share unsuccessful
+reproduce/confirm/verify/validate detection. The veto withholds confirmation;
+it does not turn an unsuccessful validation or infrastructure failure into
+`s/no-repro`.
 
 Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
@@ -113,7 +119,9 @@ contradictory evidence. Related issue/PR titles and bodies are fetched; their co
 archives and nested discussions are not executed or recursively expanded.
 References are extracted outside Markdown code with a full numeric token boundary.
 RGB/RGBA-shaped shorthand such as `#333333` requires explicit issue/PR wording;
-a full same-repository issue URL is unambiguous.
+ordinary `Fixes`, `Closes`, `Resolves`, `See` and related-reference wording also
+qualifies, including three-digit issue numbers. A full same-repository issue URL
+is unambiguous.
 Markdown handling uses the parser already bundled with PowerShell's
 `ConvertFrom-Markdown`; no additional package or runtime is installed.
 
@@ -129,6 +137,9 @@ independent context hash, and re-fetches/rechecks context and authority. It reje
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
 intents and unsafe transitions, then renders its own comment.
 Only built-in gh-aw add/remove/comment handlers perform writes.
+Safe-output publication explicitly uses the built-in `secrets.GITHUB_TOKEN`,
+consistently posting as `github-actions[bot]`; it does not select a configured
+`GH_AW_GITHUB_TOKEN` publisher. Retry-marker recognition uses that same identity.
 Their coarse family allowlists meet the compiler's 50-entry bound; the narrower
 machine policy and exact live-name checks are mandatory before those handlers.
 

@@ -224,7 +224,7 @@ function Get-Snapshot {
             '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)([1-9][0-9]{0,8})(?![\w])')) {
             # Ambiguous RGB/RGBA-shaped shorthand needs an explicit issue/PR context.
             if ($match.Value.StartsWith('#') -and $match.Groups[1].Length -in @(3, 6, 8) -and
-                $referenceText.Substring(0, $match.Index) -notmatch '(?i)\b(?:issue|PR|pull request|duplicate of)\s+$') {
+                $referenceText.Substring(0, $match.Index) -notmatch '(?i)\b(?:issue|PR|pull request|duplicate of|fix(?:es|ed)?|clos(?:e|es|ed)|resolv(?:e|es|ed)|see(?: also)?|refs?|references?|related to)\s+$') {
                 continue
             }
             $number = [int]$match.Groups[1].Value
@@ -322,7 +322,8 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         if ($paragraphs.Count -ne 1) { continue }
         $quote = $paragraphs[0]
-        $labelText = [regex]::Escape($Label)
+        $labelText = '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
+            '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
         $oppositeEvent = if ($Action -eq 'add') { 'unlabeled' } else { 'labeled' }
         $oppositeWords = if ($Action -eq 'add') {
             "remove|drop|withdraw|revoke|reject|decline|do not apply|don't apply|do not add|don't add"
@@ -334,7 +335,7 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             )
         })
         if ($superseded.Count -gt 0) { continue }
-        $withoutLabel = $quote.Replace($Label, 'LABEL')
+        $withoutLabel = [regex]::Replace($quote, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
         if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
             $quote -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
             $quote -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
@@ -345,6 +346,14 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
         if ($Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣' -and
             $quote -match '(?i)\bduplicate of\s+#([1-9][0-9]*)' -and
             $sourceMap.ContainsKey("related:$($Matches[1])")) { return $true }
+    }
+    return $false
+}
+
+function Test-NegativeValidation([string]$Prose) {
+    $pattern = "(?is)\b(not|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)\b.{0,30}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b"
+    foreach ($paragraph in ($Prose -split '\r?\n[ \t]*\r?\n')) {
+        if ($paragraph -match $pattern) { return $true }
     }
     return $false
 }
@@ -360,7 +369,7 @@ function Get-Confirmation($Evidence) {
         (Get-Prose $source.body) -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
         $paragraphs[0] -match '(?i)\b(reproduced|reproducible)\b|\b(confirmed|verified)\b.{0,50}\b(reported behavior|same behavior|bug on|issue on|regression on)\b|\btest\b.{0,50}\bcorrectly detect(s|ing)\b' -and
-        $paragraphs[0] -notmatch "(?i)\b(not|cannot|can't|unable to|failed to|couldn't|could not)\b.{0,30}\b(reproduce|reproduced|reproducible|confirm|confirmed|verify|verified|validate|validated)\b"
+        -not (Test-NegativeValidation $paragraphs[0])
     })
 }
 
@@ -454,7 +463,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             $latest = @($confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
             $contrary = @($Snapshot.sources | Where-Object {
                 $_.kind -eq 'comment' -and $_.isValidator -and $_.createdAt -gt $sourceMap[$latest.source].createdAt -and
-                (Get-Prose $_.body) -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b"
+                (Test-NegativeValidation (Get-Prose $_.body))
             })
             if ($contrary.Count -gt 0) { throw "Later contrary validation exists for $label; withhold the confirmation." }
             $laterRemovals = @($Snapshot.sources | Where-Object {
