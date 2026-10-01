@@ -80,3 +80,6 @@ available even though the author's sample is extracted outside the MAUI checkout
 Verification builds `Microsoft.Maui.BuildTasks.slnf` before compiling candidate
 tests or the HostApp. Feedback prioritizes compiler/assertion diagnostics over
 trailing device logs so the single revision can address the actual failure.
+TRX verification accepts NUnit's parameterized fixture names (for example
+`Issue37323(Android)`) while still requiring matching test IDs, execution counts,
+and command exit status.

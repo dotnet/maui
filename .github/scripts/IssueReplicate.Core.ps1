@@ -244,7 +244,7 @@ function Get-IssueReplicateTrxVerdict {
     $definitions = @($xml.SelectNodes("//*[local-name()='UnitTest']") | Where-Object {
         $method = $_.SelectSingleNode("*[local-name()='TestMethod']")
         $method -and $method.GetAttribute('className') -match
-            "(^|[.+])$([regex]::Escape($ClassName))([.+]|$)"
+            "(^|[.+])$([regex]::Escape($ClassName))([.+]|\(|$)"
     })
     $ids = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($definition in $definitions) {
