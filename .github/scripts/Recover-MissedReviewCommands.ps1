@@ -25,7 +25,7 @@ param(
 $notBeforeWasSpecified = $PSBoundParameters.ContainsKey('NotBefore')
 $ErrorActionPreference = 'Stop'
 
-. "$PSScriptRoot/Resolve-RerunEligibility.ps1" -Owner $Owner -Repo $Repo
+. "$PSScriptRoot/shared/ReviewCommandHelpers.ps1"
 
 $script:RecoveryMarker = 'rocket'
 $script:RecoveryMarkerActor = 'github-actions[bot]'
