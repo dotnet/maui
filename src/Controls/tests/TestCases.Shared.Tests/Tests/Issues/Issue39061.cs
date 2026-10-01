@@ -1,4 +1,4 @@
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST // Regression is specific to the iOS/Mac Catalyst compatibility NavigationRenderer and UIKit toolbar items.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
