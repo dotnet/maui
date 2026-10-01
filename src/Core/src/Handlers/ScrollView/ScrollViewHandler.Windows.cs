@@ -132,13 +132,17 @@ namespace Microsoft.Maui.Handlers
 		void QueueTemporaryTabStopRestore(ScrollViewer scrollViewer, bool restoreWhenLoaded)
 		{
 			var generation = ++_tabStopGeneration;
+			var handlerReference = new WeakReference<ScrollViewHandler>(this);
+			var platformViewReference = new WeakReference<ScrollViewer>(scrollViewer);
 			void RestoreIfCurrent()
 			{
-				if (generation == _tabStopGeneration &&
-					ReferenceEquals(_tabStopPlatformView, scrollViewer) &&
-					scrollViewer.IsLoaded == restoreWhenLoaded)
+				if (handlerReference.TryGetTarget(out var handler) &&
+					platformViewReference.TryGetTarget(out var platformView) &&
+					generation == handler._tabStopGeneration &&
+					ReferenceEquals(handler._tabStopPlatformView, platformView) &&
+					platformView.IsLoaded == restoreWhenLoaded)
 				{
-					RestoreIsTabStop(scrollViewer);
+					handler.RestoreIsTabStop(platformView);
 				}
 			}
 
