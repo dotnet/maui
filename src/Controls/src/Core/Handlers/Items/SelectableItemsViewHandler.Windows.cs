@@ -155,7 +155,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateVirtualSelection(ListViewBase platformView)
 		{
-			if (_ignorePlatformSelectionChange || ItemsView == null)
+			if (_ignorePlatformSelectionChange ||
+				!ReferenceEquals(((IElementHandler)this).PlatformView, platformView) ||
+				((IElementHandler)this).VirtualView is null)
 			{
 				return;
 			}
@@ -174,9 +176,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
-			var currentPlatformView = ((IElementHandler)this).PlatformView;
-
-			if (currentPlatformView is null)
+			if (!ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
 			{
 				return;
 			}
