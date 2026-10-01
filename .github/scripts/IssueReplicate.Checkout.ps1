@@ -22,5 +22,7 @@ if ($LASTEXITCODE -ne 0 -or (git -C $Destination rev-parse HEAD).Trim() -cne $ma
     throw 'The MAUI checkout does not match the pinned commit.'
 }
 $localExtraheader = & git -C $Destination config --local --get-regexp '^http\..*\.extraheader$' 2>$null
+if ($LASTEXITCODE -notin @(0, 1)) { throw 'Could not inspect the checkout credential configuration.' }
 if ($localExtraheader) { throw 'A credential was persisted in the execution checkout.' }
 Write-Host "Checked out the public MAUI revision $($manifest.targetSha) without credentials."
+exit 0
