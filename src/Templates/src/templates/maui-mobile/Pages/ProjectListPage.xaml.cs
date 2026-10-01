@@ -7,8 +7,10 @@ public partial class ProjectListPage : ContentPage
 	{
 		BindingContext = model;
 		InitializeComponent();
+//-:cnd:noEmit
 #if WINDOWS
 		ProjectsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
 #endif
+//+:cnd:noEmit
 	}
 }

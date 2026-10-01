@@ -29,7 +29,7 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
 
 	protected override void OnDetachingFrom(CollectionView bindable)
 	{
-        bindable.HandlerChanged -= OnHandlerChanged;s
+        bindable.HandlerChanged -= OnHandlerChanged;
         DetachPlatformView();
         ClearRestriction();
         _collectionView = null;

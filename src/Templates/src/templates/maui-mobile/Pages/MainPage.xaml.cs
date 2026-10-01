@@ -10,9 +10,11 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = model;
+//-:cnd:noEmit
 #if WINDOWS
 		ProjectsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
 		TasksCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
 #endif
+//+:cnd:noEmit
 	}
 }
