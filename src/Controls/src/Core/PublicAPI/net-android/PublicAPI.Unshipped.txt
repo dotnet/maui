@@ -1,14 +1,4 @@
 #nullable enable
-Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
-Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
-Microsoft.Maui.Controls.DropGestureRecognizer.SendDragLeave(Microsoft.Maui.Controls.DragEventArgs! args) -> void
-Microsoft.Maui.Controls.DropGestureRecognizer.SendDrop(Microsoft.Maui.Controls.DropEventArgs! args) -> System.Threading.Tasks.Task!
-Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerEntered(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerExited(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerMoved(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerPressed(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerReleased(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
-Microsoft.Maui.Controls.TapGestureRecognizer.SendTapped(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
 *REMOVED*override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.JavaFinalize() -> void
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
@@ -17,6 +7,10 @@ Microsoft.Maui.Controls.TapGestureRecognizer.SendTapped(Microsoft.Maui.Controls.
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
+Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
+Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
+Microsoft.Maui.Controls.DropGestureRecognizer.SendDragLeave(Microsoft.Maui.Controls.DragEventArgs! args) -> void
+Microsoft.Maui.Controls.DropGestureRecognizer.SendDrop(Microsoft.Maui.Controls.DropEventArgs! args) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment
 Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.ShellContentNavigationFragment() -> void
 Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.ShellContentNavigationFragment(Microsoft.Maui.Controls.ShellContent? shellContent, Microsoft.Maui.IMauiContext? mauiContext, Microsoft.Maui.Controls.Handlers.ShellSectionHandler? handler) -> void
@@ -37,6 +31,7 @@ Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebVie
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
+Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer
 Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
@@ -93,8 +88,22 @@ Microsoft.Maui.Controls.Platform.IModalNavigationPlatform.PopModalAsync(Microsof
 Microsoft.Maui.Controls.Platform.IModalNavigationPlatform.PushModalAsync(Microsoft.Maui.Controls.Page! modal, bool animated) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.Platform.IModalNavigationPlatformFactory
 Microsoft.Maui.Controls.Platform.IModalNavigationPlatformFactory.CreateModalNavigationPlatform(Microsoft.Maui.Controls.Platform.IModalNavigationHost! host) -> Microsoft.Maui.Controls.Platform.IModalNavigationPlatform?
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerEntered(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerExited(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerMoved(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerPressed(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerReleased(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.ShellContent.QueryString.get -> string?
+Microsoft.Maui.Controls.ShellContent.QueryString.set -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter
+Microsoft.Maui.Controls.ShellContentQueryParameter.Name.get -> string?
+Microsoft.Maui.Controls.ShellContentQueryParameter.Name.set -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter.ShellContentQueryParameter() -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter.Value.get -> object?
+Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
 Microsoft.Maui.Controls.Span.InvalidateStyle() -> void
 Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
+Microsoft.Maui.Controls.TapGestureRecognizer.SendTapped(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
 Microsoft.Maui.Controls.Window.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
@@ -181,8 +190,6 @@ override Microsoft.Maui.Controls.TextAlignmentConverter.CanConvertTo(System.Comp
 override Microsoft.Maui.Controls.TextAlignmentConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.TextAlignmentConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
-~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapItemsLayout(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
-~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapLoop(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlowDirection(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyout(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
@@ -203,8 +210,12 @@ static Microsoft.Maui.Controls.Handlers.ShellItemHandler.Mapper -> Microsoft.Mau
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! shellSection) -> void
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
+static Microsoft.Maui.Controls.Internals.DependencyResolver.ResetResolver() -> void
+static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonAccessibilityLabel(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonAccessibilityLabel(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.LayoutToAsync(this Microsoft.Maui.Controls.VisualElement! view, Microsoft.Maui.Graphics.Rect bounds, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.RelRotateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double drotation, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
@@ -227,6 +238,8 @@ static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProper
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDurationProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequiredProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.ValueProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateBottomNavViewAppearanceTracker(Microsoft.Maui.Controls.ShellItem! shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker!
@@ -277,14 +290,12 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedConte
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
 ~Microsoft.Maui.Controls.ShellAppearance.Background.get -> Microsoft.Maui.Controls.Brush
 ~Microsoft.Maui.Controls.ShellContent.QueryParameters.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.ShellContentQueryParameter>
-Microsoft.Maui.Controls.ShellContent.QueryString.get -> string?
-Microsoft.Maui.Controls.ShellContent.QueryString.set -> void
-Microsoft.Maui.Controls.ShellContentQueryParameter
-Microsoft.Maui.Controls.ShellContentQueryParameter.Name.get -> string?
-Microsoft.Maui.Controls.ShellContentQueryParameter.Name.set -> void
-Microsoft.Maui.Controls.ShellContentQueryParameter.ShellContentQueryParameter() -> void
-Microsoft.Maui.Controls.ShellContentQueryParameter.Value.get -> object?
-Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
+~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
+~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName) -> void
+~Microsoft.Maui.Controls.SwipeItem.IconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SwipeItem.IconColor.set -> void
+~Microsoft.Maui.Controls.SwipeItem.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SwipeItem.TextColor.set -> void
 ~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.get -> string
 ~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.set -> void
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
@@ -302,7 +313,6 @@ Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
-Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
@@ -312,6 +322,8 @@ Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapItemsLayout(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapLoop(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.ShellHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>
 ~static Microsoft.Maui.Controls.Handlers.ShellHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
@@ -319,6 +331,12 @@ Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler2 handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.Shell.GetBackground(Microsoft.Maui.Controls.BindableObject obj) -> Microsoft.Maui.Controls.Brush
 ~static Microsoft.Maui.Controls.Shell.SetBackground(Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Brush value) -> void
+~static Microsoft.Maui.Controls.TabbedPage.GetBadgeColor(Microsoft.Maui.Controls.BindableObject page) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.TabbedPage.GetBadgeText(Microsoft.Maui.Controls.BindableObject page) -> string
+~static Microsoft.Maui.Controls.TabbedPage.GetBadgeTextColor(Microsoft.Maui.Controls.BindableObject page) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.TabbedPage.SetBadgeColor(Microsoft.Maui.Controls.BindableObject page, Microsoft.Maui.Graphics.Color value) -> void
+~static Microsoft.Maui.Controls.TabbedPage.SetBadgeText(Microsoft.Maui.Controls.BindableObject page, string value) -> void
+~static Microsoft.Maui.Controls.TabbedPage.SetBadgeTextColor(Microsoft.Maui.Controls.BindableObject page, Microsoft.Maui.Graphics.Color value) -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 ~static Microsoft.Maui.Controls.VisualStateManager.InvalidateVisualStates(Microsoft.Maui.Controls.VisualElement visualElement) -> void
 ~static readonly Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -330,30 +348,14 @@ Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
-static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.ValueProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.ShellContent.QueryStringProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SwipeItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SwipeItem.TextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetColors(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Controls.Brush background, Microsoft.Maui.Graphics.Color title) -> void
-~Microsoft.Maui.Controls.SwipeItem.IconColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.SwipeItem.IconColor.set -> void
-~static readonly Microsoft.Maui.Controls.SwipeItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
-~Microsoft.Maui.Controls.SwipeItem.TextColor.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.SwipeItem.TextColor.set -> void
-~static readonly Microsoft.Maui.Controls.SwipeItem.TextColorProperty -> Microsoft.Maui.Controls.BindableProperty
-~static Microsoft.Maui.Controls.TabbedPage.GetBadgeColor(Microsoft.Maui.Controls.BindableObject page) -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.TabbedPage.GetBadgeText(Microsoft.Maui.Controls.BindableObject page) -> string
-~static Microsoft.Maui.Controls.TabbedPage.GetBadgeTextColor(Microsoft.Maui.Controls.BindableObject page) -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.TabbedPage.SetBadgeColor(Microsoft.Maui.Controls.BindableObject page, Microsoft.Maui.Graphics.Color value) -> void
-~static Microsoft.Maui.Controls.TabbedPage.SetBadgeText(Microsoft.Maui.Controls.BindableObject page, string value) -> void
-~static Microsoft.Maui.Controls.TabbedPage.SetBadgeTextColor(Microsoft.Maui.Controls.BindableObject page, Microsoft.Maui.Graphics.Color value) -> void
-~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
-static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
-static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
-static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?
-static Microsoft.Maui.Controls.Internals.DependencyResolver.ResetResolver() -> void
