@@ -43,10 +43,13 @@ edited comments, bots, extra arguments and other `/issue` subcommands are ignore
 The workflow rechecks the comment author's current `write`, `maintain`, or `admin`
 permission before collecting evidence or minimizing the authorized command.
 
-The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-5.6 Sol**,
+The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-6.1 Sol**,
 the existing `copilot-pat-pool`, and the dedicated
 `.github/skills/trace-regression/SKILL.md`. It requires no new secret. Changes to
-the workflow source must include its regenerated `.lock.yml`.
+the workflow source must include its regenerated `.lock.yml`. The pinned gh-aw
+runtime requires `COPILOT_PROVIDER_WIRE_API: responses` and the
+[`shared/gpt-6.1-sol.md`](../workflows/shared/gpt-6.1-sol.md) pricing import for
+this model's wire protocol and AI-credit accounting.
 
 The trusted collector freezes the issue, up to 100 latest comments, reported
 working/failing versions, exact release-tag SHAs, and a bounded release comparison.
