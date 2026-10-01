@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue362691 : _IssuesUITest
+public class Issue39061 : _IssuesUITest
 {
-	public Issue362691(TestDevice device) : base(device) { }
+	public Issue39061(TestDevice device) : base(device) { }
 
 	public override string Issue => "ToolbarItem custom TintColor is lost when IsEnabled changes on iOS";
 

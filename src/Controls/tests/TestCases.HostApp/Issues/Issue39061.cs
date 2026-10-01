@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 362691, "ToolbarItem custom TintColor is lost when IsEnabled changes on iOS", PlatformAffected.iOS)]
-	public class Issue362691 : NavigationPage
+	[Issue(IssueTracker.Github, 39061, "ToolbarItem custom TintColor is lost when IsEnabled changes on iOS", PlatformAffected.iOS)]
+	public class Issue39061 : NavigationPage
 	{
-		public Issue362691() : base(new MainPage())
+		public Issue39061() : base(new MainPage())
 		{
 		}
 
@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
 			public MainPage()
 			{
-				Title = "Issue 362691";
+				Title = "Issue 39061";
 
 				_saveItem = new ToolbarItem
 				{
