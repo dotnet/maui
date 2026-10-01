@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiAppCompatEditText CreatePlatformView()
 		{
-			var editText = new MauiAppCompatEditText(Context)
+			var editText = new FontDeferringAppCompatEditText(Context)
 			{
 				ImeOptions = ImeAction.Done,
 				TextAlignment = global::Android.Views.TextAlignment.ViewStart,

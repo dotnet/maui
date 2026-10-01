@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiAppCompatEditText CreatePlatformView()
 		{
-			var nativeEntry = new MauiAppCompatEditText(Context);
+			var nativeEntry = new FontDeferringAppCompatEditText(Context);
 			return nativeEntry;
 		}
 

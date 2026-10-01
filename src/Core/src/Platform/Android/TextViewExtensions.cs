@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Platform
 
 		static TouchEventFontDeferral? GetTouchEventFontDeferral(TextView textView) => textView switch
 		{
-			MauiAppCompatEditText editText => editText.TouchEventFontDeferral,
+			FontDeferringAppCompatEditText editText => editText.TouchEventFontDeferral,
 			MauiMaterialEditText editText => editText.TouchEventFontDeferral,
 			_ => null,
 		};
