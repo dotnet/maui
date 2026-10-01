@@ -199,9 +199,8 @@ stages:
           - pwsh: |
               $feedback = "$(Pipeline.Workspace)/Verified1/test.log"
               if (-not (Test-Path $feedback)) { throw 'The first test has no diagnostic feedback.' }
-              $content = Get-Content -LiteralPath $feedback -Tail 25
-              $content = ($content -join "`n")
-              if ($content.Length -gt 3500) { $content = $content.Substring($content.Length - 3500) }
+              . "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Core.ps1"
+              $content = Get-IssueReplicateFeedback -Path $feedback
               $path = "$(Agent.TempDirectory)/test-feedback.txt"
               Set-Content -LiteralPath $path -Value $content -Encoding utf8
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `

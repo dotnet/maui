@@ -78,4 +78,5 @@ SourceLink tooling does not support. Sample restore uses the pinned MAUI
 `NuGet.config` public feeds plus nuget.org, so servicing SDK dependencies remain
 available even though the author's sample is extracted outside the MAUI checkout.
 Verification builds `Microsoft.Maui.BuildTasks.slnf` before compiling candidate
-tests or the HostApp.
+tests or the HostApp. Feedback prioritizes compiler/assertion diagnostics over
+trailing device logs so the single revision can address the actual failure.
