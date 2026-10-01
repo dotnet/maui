@@ -12,7 +12,7 @@ if ($manifest.schemaVersion -ne 1 -or $manifest.targetRef -cnotmatch '^(main|net
     throw 'Invalid MAUI target revision.'
 }
 if (Test-Path -LiteralPath $Destination) { throw 'The target checkout directory already exists.' }
-& git clone --quiet --filter=blob:none --no-checkout --depth=1 --branch $manifest.targetRef `
+& git clone --quiet --no-checkout --depth=1 --branch $manifest.targetRef `
     https://github.com/dotnet/maui.git $Destination
 if ($LASTEXITCODE -ne 0) { throw 'Could not clone the public MAUI branch.' }
 & git -C $Destination fetch --quiet --depth=1 origin $manifest.targetSha
