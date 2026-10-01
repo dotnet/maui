@@ -42,8 +42,11 @@ check, which detects removal of earlier fixes.
 
 Post exactly `/issue trace-regression` as a standalone issue comment. PR comments,
 edited comments, bots, extra arguments and other `/issue` subcommands are ignored.
-The workflow rechecks the comment author's current `write`, `maintain`, or `admin`
-permission before collecting evidence or minimizing the authorized command.
+The workflow checks the comment author's current `write`, `maintain`, or `admin`
+permission before collecting evidence and again before activation or minimizing
+the authorized command. Private organization membership does not exclude an
+otherwise authorized commenter. The credential-bearing PAT-pool job runs only
+after the exact command and these permission checks succeed.
 
 The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-6.1 Sol**,
 the existing `copilot-pat-pool`, and the dedicated
@@ -55,6 +58,9 @@ this model's wire protocol and AI-credit accounting.
 
 The trusted collector freezes the issue, up to 100 latest comments, reported
 working/failing versions, exact release-tag SHAs, and a bounded release comparison.
+The collected context is mounted read-only in the agent sandbox. Duplicate
+version headings are ambiguous rather than silently selecting the first value;
+comment pages whose counts change during collection record an evidence gap.
 The agent narrows that history to affected code and verifies candidate diffs,
 platform applicability and shipped ancestry. API failures, missing versions,
 divergent branches and truncated history remain explicit evidence gaps.
@@ -68,7 +74,7 @@ automatically the first bad release.
 The command is **report-only**: it does not run reproduction code, builds, tests
 or bisects, change labels, or push a fix. When confirmation needs execution, it
 identifies the exact comparison to perform. Only the separate safe-output job
-posts the report, restricted to the triggering issue.
+posts the report, restricted to the triggering issue with issue-only write access.
 
 The comment follows `/review tests` styling: author/issue header, Scope/Range
 badges, closed **Regression Analysis** and **Follow-up** accordions, and linked

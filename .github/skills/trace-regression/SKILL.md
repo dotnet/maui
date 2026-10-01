@@ -61,6 +61,8 @@ leave it unknown. Never guess a tag or map a major version to its latest release
 Treat `comparison.isForwardRange == false` as a non-linear, reversed or identical
 range, not a valid good-to-bad interval; investigate servicing/backport ancestry.
 Even a forward comparison establishes code ancestry, not runtime causality.
+Duplicate version headings are also `ambiguous`; do not choose a value from the
+raw issue body to bypass that gap. Ask for one unambiguous reported version.
 
 ## 2. Trace the relevant implementation
 

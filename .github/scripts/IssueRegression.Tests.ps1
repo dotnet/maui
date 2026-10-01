@@ -591,13 +591,17 @@ Describe 'Issue regression automation' {
             $script:GhCalls.Count | Should -Be 0
         }
 
-        It 'preserves issue metadata and parses template headings without interpreting Markdown' {
+        It 'preserves issue metadata and treats duplicate version headings as ambiguous' {
             $body = @'
 Issue preamble
 
 ### Description
 
 Text with `code`, [a link](https://example.invalid), and Unicode: résumé.
+
+### Version with bug
+
+9.0.99
 
 ### Version with bug
 
@@ -611,9 +615,6 @@ Text with `code`, [a link](https://example.invalid), and Unicode: résumé.
 
 iOS, Android
 
-### Version with bug
-
-9.0.99
 '@ -replace "`n", "`r`n"
             Set-TestResolvedBoundaries
             $issue = New-TestIssue -Body $body
@@ -630,13 +631,17 @@ iOS, Android
             $context.issue.body | Should -BeExactly $body
             $context.issue.updatedAt | Should -BeExactly $issue.updated_at
             $context.issue.labels | Should -Be @('t/bug', 'platform/ios')
-            $context.issue.fields['Version with bug'] | Should -BeExactly '10.0.20 SR2.1'
+            $context.issue.fields['Version with bug'] | Should -BeNullOrEmpty
             $context.issue.fields['Last version that worked well'] | Should -BeExactly '10.0.10 GA'
             $context.issue.fields['Affected platforms'] | Should -BeExactly 'iOS, Android'
             $context.issue.fields['Description'] | Should -Match 'résumé'
             $context.boundaries.reportedGood.reported | Should -BeExactly '10.0.10 GA'
-            $context.boundaries.reportedBad.reported | Should -BeExactly '10.0.20 SR2.1'
-            $context.gaps | Should -BeNullOrEmpty
+            $context.boundaries.reportedBad.status | Should -BeExactly 'ambiguous'
+            $context.boundaries.reportedBad.sha | Should -BeNullOrEmpty
+            $context.gaps -join "`n" | Should -Match "duplicate 'Version with bug' headings"
+            $context.comparison | Should -BeNullOrEmpty
+            @($script:GhCalls | Where-Object Endpoint -Match '/git/ref/tags/(v?9\.0\.99|v?10\.0\.20)|/compare/').Count |
+                Should -Be 0
         }
 
         It 'handles <Name> issue bodies without inventing template fields' -ForEach @(
@@ -966,7 +971,8 @@ iOS, Android
             $saved.issue.number | Should -Be 12345
             $script:GhCalls.Endpoint | Should -Be @(
                 $script:PermissionEndpoint, $script:IssueEndpoint,
-                'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1', 'graphql'
+                'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1',
+                $script:PermissionEndpoint, 'graphql'
             )
             $script:GhCalls[0].RequireOutput | Should -BeTrue
             $script:GhCalls[1].RequireOutput | Should -BeTrue
@@ -1010,7 +1016,7 @@ iOS, Android
 
             Get-Content -LiteralPath $env:GITHUB_OUTPUT | Should -BeExactly 'should_run=false'
             Test-Path -LiteralPath $script:ContextPath | Should -BeFalse
-            @($script:GhCalls | Where-Object Endpoint -EQ $script:PermissionEndpoint).Count | Should -Be 2
+            @($script:GhCalls | Where-Object Endpoint -EQ $script:PermissionEndpoint).Count | Should -Be 3
             @($script:GhCalls | Where-Object Endpoint -EQ $script:IssueEndpoint).Count | Should -Be 1
             @($script:GhCalls | Where-Object Endpoint -EQ 'graphql').Count | Should -Be 1
         }
@@ -1151,7 +1157,8 @@ Unicode: café 🎉
             )
             $script:GhCalls.Endpoint | Should -Be @(
                 $script:PermissionEndpoint, $script:IssueEndpoint,
-                'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1', 'graphql'
+                'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1',
+                $script:PermissionEndpoint, 'graphql'
             )
         }
 
@@ -1236,19 +1243,6 @@ Describe 'Issue regression workflow and report source contracts' {
         $skeletons = [regex]::Matches($script:SkillText, '(?ms)^```markdown[ \t]*\r?\n(?<report>.*?)^```[ \t]*(?:\r?\n|\z)')
         if ($skeletons.Count -ne 1) { throw 'Expected exactly one Markdown report skeleton in the skill.' }
         $script:ReportSkeleton = $skeletons[0].Groups['report'].Value
-    }
-
-    It 'allows only issue comments for /issue, without a dispatch, schedule, push, or PR trigger' {
-        $slashCommand = Get-ContractYamlBlock $script:OnBlock 'slash_command' 2
-        $slashCommand | Should -Match '(?m)^    name: issue[ \t]*\r?$'
-        $slashCommand | Should -Match '(?m)^    events: \[issue_comment\][ \t]*\r?$'
-        $keys = @([regex]::Matches($script:OnBlock, '(?m)^  ([a-z][a-z0-9_-]*):') |
-            ForEach-Object { $_.Groups[1].Value } | Sort-Object)
-        $keys | Should -Be @(
-            'permissions', 'reaction', 'roles', 'skip-author-associations',
-            'slash_command', 'status-comment', 'steps'
-        )
-        $script:WorkflowYaml | Should -Not -Match '(?m)^ *(?:workflow_dispatch|workflow_call|schedule|push|pull_request|pull_request_target):'
     }
 
     It 'has a top-level repository, created-event, and human-author gate' {

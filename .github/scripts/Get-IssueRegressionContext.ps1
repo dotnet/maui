@@ -32,7 +32,9 @@ function Get-RegressionIssueFields {
     $matches = [regex]::Matches($Body, '(?ms)^### ([^\r\n]+)\r?\n(.*?)(?=^### |\z)')
     foreach ($match in $matches) {
         $heading = $match.Groups[1].Value.Trim()
-        if (-not $fields.Contains($heading)) {
+        if ($fields.Contains($heading)) {
+            $fields[$heading] = $null
+        } else {
             $fields[$heading] = $match.Groups[2].Value.Trim()
         }
     }
@@ -114,8 +116,9 @@ function Get-IssueRegressionContext {
                     'api', "repos/dotnet/maui/issues/$($Issue.number)/comments?per_page=100&page=$page"
                 ) -Description 'read issue comments' -RequireOutput
                 $pageComments = $response | ConvertFrom-Json -NoEnumerate
+                $expectedCount = [Math]::Min(100, [int]$Issue.comments - (($page - 1) * 100))
                 if ($pageComments -isnot [array] -or
-                    ($pageComments.Count -eq 0 -and [int]$Issue.comments -gt 0)) {
+                    $pageComments.Count -ne $expectedCount) {
                     throw 'Missing or invalid comment page; the issue history may have changed during collection.'
                 }
                 $pageComments | ForEach-Object {
@@ -141,6 +144,13 @@ function Get-IssueRegressionContext {
         @{ key = 'reportedGood'; heading = 'Last version that worked well' },
         @{ key = 'reportedBad'; heading = 'Version with bug' }
     )) {
+        if ($fields.Contains($boundary.heading) -and $null -eq $fields[$boundary.heading]) {
+            $context.boundaries[$boundary.key] = [pscustomobject]@{
+                reported = $null; status = 'ambiguous'; refs = @(); sha = $null
+            }
+            $context.gaps.Add("$($boundary.key) is ambiguous: duplicate '$($boundary.heading)' headings were reported.")
+            continue
+        }
         try {
             $context.boundaries[$boundary.key] = Resolve-RegressionVersion -Version ([string]$fields[$boundary.heading])
             if ($context.boundaries[$boundary.key].status -ne 'resolved') {
@@ -198,6 +208,23 @@ function Get-IssueRegressionContext {
     return [pscustomobject]$context
 }
 
+function Test-IssueRegressionPermission {
+    param([Parameter(Mandatory)][string]$Requester)
+
+    $permissionJson = Invoke-GhCommandWithRetry -Arguments @(
+        'api', "repos/dotnet/maui/collaborators/$Requester/permission"
+    ) -Description 'check command author permission' -AllowNotFound -RequireOutput
+    $permission = 'none'
+    if ($null -ne $permissionJson) {
+        $permission = ($permissionJson | ConvertFrom-Json).permission
+    }
+    if ($permission -notin @('admin', 'maintain', 'write')) {
+        Write-Host 'The command author is not an authorized collaborator; leaving the comment visible.'
+        return $false
+    }
+    return $true
+}
+
 function Invoke-IssueRegressionTrigger {
     param(
         [Parameter(Mandatory)]$Event,
@@ -208,11 +235,7 @@ function Invoke-IssueRegressionTrigger {
     $request = Get-IssueRegressionRequest -Event $Event
     if ($null -eq $request) { return }
 
-    $permissionJson = Invoke-GhCommandWithRetry -Arguments @(
-        'api', "repos/dotnet/maui/collaborators/$($request.requester)/permission"
-    ) -Description 'check command author permission' -RequireOutput
-    if (($permissionJson | ConvertFrom-Json).permission -notin @('admin', 'maintain', 'write')) {
-        Write-Host 'The command author is not an authorized collaborator; leaving the comment visible.'
+    if (-not (Test-IssueRegressionPermission -Requester $request.requester)) {
         return
     }
 
@@ -225,6 +248,9 @@ function Invoke-IssueRegressionTrigger {
     }
 
     $context = Get-IssueRegressionContext -Issue $issue
+    if (-not (Test-IssueRegressionPermission -Requester $request.requester)) {
+        return
+    }
     New-Item -ItemType Directory -Path (Split-Path -Parent $OutputPath) -Force | Out-Null
     $context | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $OutputPath -Encoding utf8
     "issue_number=$($request.issueNumber)" >> $env:GITHUB_OUTPUT
