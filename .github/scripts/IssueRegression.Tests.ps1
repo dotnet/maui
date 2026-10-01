@@ -59,7 +59,7 @@ BeforeAll {
             [int]$CommentCount = 0
         )
 
-        [pscustomobject]@{
+        $issue = [pscustomobject]@{
             number = $Number
             html_url = "https://github.com/dotnet/maui/issues/$Number"
             title = 'The control stopped working'
@@ -69,6 +69,8 @@ BeforeAll {
             labels = @([pscustomobject]@{ name = 't/bug' }, [pscustomobject]@{ name = 'platform/ios' })
             comments = $CommentCount
         }
+        $script:Snapshots["repos/dotnet/maui/issues/$Number"] = $issue
+        return $issue
     }
 
     function New-TestComment {
@@ -159,6 +161,7 @@ BeforeAll {
 Describe 'Issue regression automation' {
     BeforeEach {
         $script:Responses = @{}
+        $script:Snapshots = @{}
         $script:Failures = @{}
         $script:GhCalls = [System.Collections.Generic.List[object]]::new()
         $script:UnexpectedCalls = [System.Collections.Generic.List[string]]::new()
@@ -182,6 +185,9 @@ Describe 'Issue regression automation' {
                 # The shared wrapper suppresses failures only for an explicit AllowFailure.
                 if ($AllowFailure) { return $null }
                 throw $script:Failures[$endpoint]
+            }
+            if ($Description -eq 'revalidate issue comment snapshot' -and $script:Snapshots.ContainsKey($endpoint)) {
+                return ConvertTo-Json -InputObject $script:Snapshots[$endpoint] -Depth 30 -Compress
             }
             if ($script:Responses.ContainsKey($endpoint)) {
                 return $script:Responses[$endpoint]
@@ -646,7 +652,7 @@ iOS, Android
 
         It 'handles <Name> issue bodies without inventing template fields' -ForEach @(
             @{ Name = 'empty'; Body = '' }, @{ Name = 'null'; Body = $null },
-            @{ Name = 'free-form'; Body = 'It worked before, but I do not know the version.' }
+            @{ Name = 'free-form'; Body = "It worked before, but I do not know the version.`n~~~markdown`n### Version with bug`n0.1.0`n~~~" }
         ) {
             $context = Get-IssueRegressionContext (New-TestIssue -Body $Body)
             $context.issue.fields.Count | Should -Be 0
@@ -680,8 +686,8 @@ iOS, Android
 
             @($context.comments).Count | Should -Be ([Math]::Min(100, $Count))
             $context.commentsTruncated | Should -Be ($Count -gt 100)
-            $script:GhCalls.Endpoint | Should -Be $expectedEndpoints
-            $script:GhCalls.Count | Should -BeLessOrEqual 2
+            $script:GhCalls.Endpoint | Should -Be @($expectedEndpoints + 'repos/dotnet/maui/issues/12345')
+            $script:GhCalls.Count | Should -BeLessOrEqual 3
             foreach ($call in $script:GhCalls) {
                 $call.RequireOutput | Should -BeTrue
                 $call.Arguments | Should -Not -Contain '--paginate'
@@ -781,7 +787,7 @@ iOS, Android
             $context.boundaries.reportedBad.status | Should -BeExactly 'unresolved'
             $context.boundaries.reportedGood.status | Should -BeExactly 'unresolved'
             $context.gaps.Count | Should -BeGreaterThan 0
-            $script:GhCalls.Count | Should -Be 1
+            $script:GhCalls.Count | Should -Be 2
         }
 
         It 'records absent release tags as a gap and never compares guessed refs' {
@@ -972,7 +978,7 @@ iOS, Android
             $script:GhCalls.Endpoint | Should -Be @(
                 $script:PermissionEndpoint, $script:IssueEndpoint,
                 'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1',
-                $script:PermissionEndpoint, 'graphql'
+                $script:IssueEndpoint, $script:PermissionEndpoint
             )
             $script:GhCalls[0].RequireOutput | Should -BeTrue
             $script:GhCalls[1].RequireOutput | Should -BeTrue
@@ -1017,8 +1023,8 @@ iOS, Android
             Get-Content -LiteralPath $env:GITHUB_OUTPUT | Should -BeExactly 'should_run=false'
             Test-Path -LiteralPath $script:ContextPath | Should -BeFalse
             @($script:GhCalls | Where-Object Endpoint -EQ $script:PermissionEndpoint).Count | Should -Be 3
-            @($script:GhCalls | Where-Object Endpoint -EQ $script:IssueEndpoint).Count | Should -Be 1
-            @($script:GhCalls | Where-Object Endpoint -EQ 'graphql').Count | Should -Be 1
+            @($script:GhCalls | Where-Object Endpoint -EQ $script:IssueEndpoint).Count | Should -Be 2
+            @($script:GhCalls | Where-Object Endpoint -EQ 'graphql').Count | Should -Be 0
         }
 
         It 'fails closed when <Name> lookup fails' -ForEach @(
@@ -1158,7 +1164,7 @@ Unicode: café 🎉
             $script:GhCalls.Endpoint | Should -Be @(
                 $script:PermissionEndpoint, $script:IssueEndpoint,
                 'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1',
-                $script:PermissionEndpoint, 'graphql'
+                $script:IssueEndpoint, $script:PermissionEndpoint
             )
         }
 
@@ -1173,7 +1179,7 @@ Unicode: café 🎉
         It 'minimizes only the authorized command using a fixed mutation and a separate node ID variable' {
             $event = New-TestEvent
             $event.comment.node_id = 'IC_untrusted") { injected } #'
-            Invoke-IssueRegressionTrigger -Event $event -OutputPath $script:ContextPath
+            Complete-IssueRegressionRequest -Event $event -PublishedCommentId 123
             $minimize = $script:GhCalls[-1]
             $minimize.Arguments | Should -Be @(
                 'api', 'graphql', '-f',
@@ -1189,6 +1195,7 @@ Unicode: café 🎉
         It 'keeps a valid context and success outputs when best-effort minimization fails' {
             $script:Failures['graphql'] = 'HTTP 403: cannot minimize comment'
             { Invoke-IssueRegressionTrigger -Event (New-TestEvent) -OutputPath $script:ContextPath } | Should -Not -Throw
+            { Complete-IssueRegressionRequest -Event (New-TestEvent) -PublishedCommentId 123 } | Should -Not -Throw
             Test-Path -LiteralPath $script:ContextPath | Should -BeTrue
             (Get-Content -LiteralPath $env:GITHUB_OUTPUT)[-1] | Should -BeExactly 'should_run=true'
             $script:GhCalls[-1].Endpoint | Should -BeExactly 'graphql'
@@ -1202,6 +1209,7 @@ Unicode: café 🎉
             $event = New-TestEvent
             $event.comment.node_id = $NodeId
             Invoke-IssueRegressionTrigger -Event $event -OutputPath $script:ContextPath
+            Complete-IssueRegressionRequest -Event $event -PublishedCommentId 123
             Test-Path -LiteralPath $script:ContextPath | Should -BeTrue
             (Get-Content -LiteralPath $env:GITHUB_OUTPUT)[-1] | Should -BeExactly 'should_run=true'
             @($script:GhCalls | Where-Object Endpoint -EQ 'graphql').Count | Should -Be 0
@@ -1255,7 +1263,6 @@ Describe 'Issue regression workflow and report source contracts' {
     }
 
     It 'pins both collector and skill checkouts to github.sha without persisted credentials' {
-        $script:CheckoutSteps.Count | Should -Be 2
         foreach ($step in $script:CheckoutSteps) {
             $step | Should -Match '(?m)^ +ref: \$\{\{ github\.sha \}\}[ \t]*\r?$'
             $step | Should -Match '(?m)^ +persist-credentials: false[ \t]*\r?$'

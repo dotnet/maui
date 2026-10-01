@@ -29,13 +29,38 @@ function Get-RegressionIssueFields {
     param([AllowEmptyString()][string]$Body)
 
     $fields = [ordered]@{}
-    $matches = [regex]::Matches($Body, '(?ms)^### ([^\r\n]+)\r?\n(.*?)(?=^### |\z)')
-    foreach ($match in $matches) {
-        $heading = $match.Groups[1].Value.Trim()
+    $headings = [System.Collections.Generic.List[System.Text.RegularExpressions.Match]]::new()
+    $fenceCharacter = $null
+    $fenceLength = 0
+    foreach ($line in [regex]::Matches($Body, '(?m)^[^\r\n]*')) {
+        $fence = [regex]::Match($line.Value, '^ {0,3}(?<fence>`{3,}|~{3,})(?<suffix>.*)$')
+        if ($null -ne $fenceCharacter) {
+            if ($fence.Success -and $fence.Groups['fence'].Value[0] -eq $fenceCharacter -and
+                $fence.Groups['fence'].Value.Length -ge $fenceLength -and
+                [string]::IsNullOrWhiteSpace($fence.Groups['suffix'].Value)) {
+                $fenceCharacter = $null
+                $fenceLength = 0
+            }
+            continue
+        }
+        if ($fence.Success -and
+            ($fence.Groups['fence'].Value[0] -eq '~' -or -not $fence.Groups['suffix'].Value.Contains('`'))) {
+            $fenceCharacter = $fence.Groups['fence'].Value[0]
+            $fenceLength = $fence.Groups['fence'].Value.Length
+            continue
+        }
+        if ($line.Value -cmatch '\A### [^\r\n]+\z') {
+            $headings.Add($line)
+        }
+    }
+    for ($index = 0; $index -lt $headings.Count; $index++) {
+        $heading = $headings[$index].Value.Substring(4).Trim()
+        $start = $headings[$index].Index + $headings[$index].Length
+        $end = if ($index + 1 -lt $headings.Count) { $headings[$index + 1].Index } else { $Body.Length }
         if ($fields.Contains($heading)) {
             $fields[$heading] = $null
         } else {
-            $fields[$heading] = $match.Groups[2].Value.Trim()
+            $fields[$heading] = $Body.Substring($start, $end - $start).Trim()
         }
     }
     return $fields
@@ -134,8 +159,20 @@ function Get-IssueRegressionContext {
                 }
             }
         )
+        $issueJson = Invoke-GhCommandWithRetry -Arguments @(
+            'api', "repos/dotnet/maui/issues/$($Issue.number)"
+        ) -Description 'revalidate issue comment snapshot' -RequireOutput
+        $currentIssue = $issueJson | ConvertFrom-Json
+        if ($null -eq $currentIssue -or $currentIssue.number -ne $Issue.number -or
+            [string]::IsNullOrWhiteSpace([string]$currentIssue.updated_at) -or
+            [string]::IsNullOrWhiteSpace([string]$Issue.updated_at) -or
+            $currentIssue.comments -ne $Issue.comments -or
+            [DateTimeOffset]$currentIssue.updated_at -ne [DateTimeOffset]$Issue.updated_at) {
+            throw 'The issue changed during comment collection or its snapshot could not be revalidated.'
+        }
         $context.comments = @($comments | Select-Object -Last 100)
     } catch {
+        $context.commentsTruncated = $true
         $context.gaps.Add("Comments unavailable: $($_.Exception.Message)")
         Write-Warning 'Issue comments could not be collected; the context records this gap.'
     }
@@ -255,12 +292,23 @@ function Invoke-IssueRegressionTrigger {
     $context | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $OutputPath -Encoding utf8
     "issue_number=$($request.issueNumber)" >> $env:GITHUB_OUTPUT
     'should_run=true' >> $env:GITHUB_OUTPUT
+}
 
-    if (-not [string]::IsNullOrWhiteSpace($request.commentNodeId)) {
-        $null = Invoke-GhCommandWithRetry -Arguments @(
-            'api', 'graphql', '-f',
-            'query=mutation($id: ID!) { minimizeComment(input: {subjectId: $id, classifier: RESOLVED}) { minimizedComment { isMinimized } } }',
-            '-f', "id=$($request.commentNodeId)"
-        ) -Description 'hide authorized trace-regression command' -AllowFailure
-    }
+function Complete-IssueRegressionRequest {
+    param(
+        [Parameter(Mandatory)]$Event,
+        [Parameter(Mandatory)][long]$PublishedCommentId
+    )
+
+    if ($PublishedCommentId -le 0) { throw 'A published report comment ID is required.' }
+    $request = Get-IssueRegressionRequest -Event $Event
+    if ($null -eq $request -or [string]::IsNullOrWhiteSpace($request.commentNodeId)) { return }
+    if (-not (Test-IssueRegressionPermission -Requester $request.requester)) { return }
+
+    Write-Host "Report $PublishedCommentId was published; minimizing the authorized command."
+    $null = Invoke-GhCommandWithRetry -Arguments @(
+        'api', 'graphql', '-f',
+        'query=mutation($id: ID!) { minimizeComment(input: {subjectId: $id, classifier: RESOLVED}) { minimizedComment { isMinimized } } }',
+        '-f', "id=$($request.commentNodeId)"
+    ) -Description 'hide authorized trace-regression command after publication' -AllowFailure
 }

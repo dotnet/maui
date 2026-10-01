@@ -22,7 +22,7 @@ on:
   status-comment: false
   permissions:
     contents: read
-    issues: write
+    issues: read
   steps:
     - name: Checkout trusted issue-tracing scripts
       if: >-
@@ -68,6 +68,32 @@ jobs:
       issue_number: ${{ steps.context.outputs.issue_number }}
   activation:
     if: needs.pre_activation.outputs.should_run == 'true'
+  minimize_command:
+    needs: [pre_activation, activation, agent, safe_outputs]
+    if: >-
+      needs.pre_activation.outputs.should_run == 'true' &&
+      needs.safe_outputs.result == 'success' &&
+      needs.safe_outputs.outputs.comment_id != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout trusted command completion script
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Minimize the authorized command only after report publication
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT_COMMENT_ID: ${{ needs.safe_outputs.outputs.comment_id }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . .github/scripts/Get-IssueRegressionContext.ps1
+          $event = Get-Content -Raw -LiteralPath $env:GITHUB_EVENT_PATH | ConvertFrom-Json
+          Complete-IssueRegressionRequest -Event $event -PublishedCommentId $env:REPORT_COMMENT_ID
 
 permissions:
   contents: read
@@ -115,6 +141,7 @@ safe-outputs:
 
 concurrency:
   group: "issue-trace-regression-${{ github.event.issue.number }}"
+  queue: max
   cancel-in-progress: false
 
 timeout-minutes: 30

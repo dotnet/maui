@@ -43,10 +43,14 @@ check, which detects removal of earlier fixes.
 Post exactly `/issue trace-regression` as a standalone issue comment. PR comments,
 edited comments, bots, extra arguments and other `/issue` subcommands are ignored.
 The workflow checks the comment author's current `write`, `maintain`, or `admin`
-permission before collecting evidence and again before activation or minimizing
-the authorized command. Private organization membership does not exclude an
-otherwise authorized commenter. The credential-bearing PAT-pool job runs only
-after the exact command and these permission checks succeed.
+permission before collecting evidence and again before activation. The command
+stays visible until the safe-output job has actually published a report; a separate
+trusted completion job rechecks permission before minimizing it. Downstream failures
+therefore cannot make an unanswered command appear resolved. Private organization
+membership does not exclude an otherwise authorized commenter. The credential-bearing PAT-pool job runs only
+after the exact command and these permission checks succeed. Per-issue concurrency
+uses the maximum pending queue, so unrelated comments or edits cannot replace
+an already pending authorized request.
 
 The gh-aw workflow `.github/workflows/issue-trace-regression.md` uses **GPT-6.1 Sol**,
 the existing `copilot-pat-pool`, and the dedicated
@@ -60,8 +64,11 @@ The trusted collector freezes the issue, up to 100 latest comments, reported
 working/failing versions, exact release-tag SHAs, and a bounded release comparison.
 The collected context is mounted read-only in the agent sandbox. A failed context
 download stops the agent before inference; no report is published without that
-snapshot. Duplicate version headings are ambiguous rather than silently selecting the first value;
+snapshot. Only headings outside backtick or tilde fences are parsed as form fields.
+Duplicate version headings are ambiguous rather than silently selecting the first value;
 comment pages whose counts change during collection record an evidence gap.
+The collector also revalidates the issue's comment count and update marker after
+pagination; concurrent changes or a failed revalidation make the comment evidence incomplete.
 The agent narrows that history to affected code and verifies candidate diffs,
 platform applicability and shipped ancestry. API failures, missing versions,
 divergent branches and truncated history remain explicit evidence gaps.

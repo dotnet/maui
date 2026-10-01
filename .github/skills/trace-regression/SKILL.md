@@ -63,6 +63,8 @@ range, not a valid good-to-bad interval; investigate servicing/backport ancestry
 Even a forward comparison establishes code ancestry, not runtime causality.
 Duplicate version headings are also `ambiguous`; do not choose a value from the
 raw issue body to bypass that gap. Ask for one unambiguous reported version.
+Headings inside fenced examples are not form fields. Respect the collector's
+comment-snapshot revalidation gaps rather than treating a short list as complete.
 
 ## 2. Trace the relevant implementation
 
