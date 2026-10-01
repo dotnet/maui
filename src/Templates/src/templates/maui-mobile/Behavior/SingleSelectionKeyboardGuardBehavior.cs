@@ -1,4 +1,7 @@
+//-:cnd:noEmit
 #if WINDOWS
+//+:cnd:noEmit
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
@@ -192,4 +195,6 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
         return false;
     }
 }
+//-:cnd:noEmit
 #endif
+//+:cnd:noEmit
