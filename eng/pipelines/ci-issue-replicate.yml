@@ -131,7 +131,8 @@ stages:
           - pwsh: |
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Sample.ps1" `
                 -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
-                -OutputDirectory "$(Pipeline.Workspace)/SampleOutput"
+                -OutputDirectory "$(Pipeline.Workspace)/SampleOutput" `
+                -NuGetConfigPath "$(Pipeline.Workspace)/maui/NuGet.config"
               if ($LASTEXITCODE -ne 0) { throw 'Author sample build failed (inconclusive).' }
             displayName: 'Build author sample without credentials'
             timeoutInMinutes: 35

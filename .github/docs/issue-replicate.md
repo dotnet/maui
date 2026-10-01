@@ -72,3 +72,10 @@ bounded artifacts, and never receive the Copilot or issue-posting tokens. The
 generator uses GPT with tools disabled and never executes sample or generated
 code. A public pipeline alone is **not** a security boundary: do not grant
 execution jobs privileged access or reuse the trusted job agents for them.
+
+Execution checkouts are shallow, without partial-clone extensions that the pinned
+SourceLink tooling does not support. Sample restore uses the pinned MAUI
+`NuGet.config` public feeds plus nuget.org, so servicing SDK dependencies remain
+available even though the author's sample is extracted outside the MAUI checkout.
+Verification builds `Microsoft.Maui.BuildTasks.slnf` before compiling candidate
+tests or the HostApp.

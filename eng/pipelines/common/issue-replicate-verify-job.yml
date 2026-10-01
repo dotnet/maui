@@ -61,6 +61,12 @@ jobs:
         timeoutInMinutes: 50
       - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
         displayName: 'Use pinned SDK'
+      - pwsh: |
+          dotnet build Microsoft.Maui.BuildTasks.slnf -c Debug -p:BuildTaskOnlyBuild=true --nologo --verbosity quiet
+          if ($LASTEXITCODE -ne 0) { throw 'Could not build the pinned MAUI build tasks.' }
+        workingDirectory: $(Pipeline.Workspace)/maui
+        displayName: 'Build MAUI tasks before compiling generated tests'
+        timeoutInMinutes: 30
       - task: UseNode@1
         inputs:
           version: "24.x"
