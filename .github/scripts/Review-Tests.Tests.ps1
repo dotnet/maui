@@ -82,8 +82,8 @@ Describe 'Review tests workflow contract' {
         $workflow | Should -Match 'add-comment:\r?\n    max: 1'
         $workflow | Should -Match 'roles: \[admin, maintain, write\]'
         $workflow | Should -Match 'persist-credentials: false'
-        $workflow | Should -Match '(?m)^model: gpt-6-astra\r?$'
-        $workflowLock | Should -Match 'COPILOT_MODEL: gpt-6-astra'
+        $workflow | Should -Match '(?m)^model: gpt-5.6-sol\r?$'
+        $workflowLock | Should -Match 'COPILOT_MODEL: gpt-5.6-sol'
         $evalSpec = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../skills/review-test-failures/tests/eval.vally.yaml') -Raw
         $evalSpec | Should -Match '(?m)^  model: gpt-6-astra\r?$'
         $evalSpec | Should -Match '(?m)^  judge_model: gpt-6-astra\r?$'
@@ -118,13 +118,13 @@ Describe 'Review tests workflow contract' {
     }
 
     It 'preserves the marker and allows badges and failure links through compiled safe outputs' {
-        $workflow | Should -Match 'body-header: "<!-- Tests Failure -->"'
+        $workflow | Should -Match 'body-header: "<!-- Tests Failure -->\\n<!-- review-tests-run:\{run_url\} -->"'
         $workflow | Should -Match '(?m)^    - img\.shields\.io$'
         $messageSettings = [regex]::Matches($workflowLock, '(?m)^\s+GH_AW_SAFE_OUTPUT_MESSAGES: (?<json>"[^\r\n]+")')
         $messageSettings.Count | Should -BeGreaterThan 0
         foreach ($setting in $messageSettings) {
             $messages = $setting.Groups['json'].Value | ConvertFrom-Json | ConvertFrom-Json
-            $messages.bodyHeader | Should -Be '<!-- Tests Failure -->'
+            $messages.bodyHeader | Should -Be "<!-- Tests Failure -->`n<!-- review-tests-run:{run_url} -->"
         }
         $domainSettings = [regex]::Matches($workflowLock, '(?m)^\s+GH_AW_ALLOWED_DOMAINS: "(?<domains>[^"]+)"')
         $domainSettings.Count | Should -BeGreaterThan 0

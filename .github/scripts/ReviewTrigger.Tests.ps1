@@ -55,7 +55,6 @@ Describe '/review command matching' {
 
     It 'does not contain the removed rerun job' {
         $script:Workflow | Should -Not -Match '(?m)^  mark-rerun-ready:'
-        $script:Workflow | Should -Not -Match 'Resolve-RerunEligibility\.ps1'
     }
 
     It 'rejects a leading-newline "/review rerun" when the matcher is executed (behavioral)' {

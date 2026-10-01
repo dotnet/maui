@@ -13,6 +13,15 @@ Use this skill for `/review tests` and its local runner. Analyze evidence and
 produce one short comment. Do not run other review skills, change code, execute
 PR scripts, rerun CI, apply labels, approve, or merge.
 
+The hosted gh-aw workflow uses `gpt-6.1-sol` through the Responses API
+(`COPILOT_PROVIDER_WIRE_API: responses`); the local runner and evaluation models
+are configured independently.
+If the agent or publication job fails before posting, a separate trusted job
+posts a fixed failure notice with the workflow-run link (not a CI verdict).
+It never reads agent artifacts, stays silent for dry runs and rejected commands,
+and deduplicates reports/notices for the same run across reruns. Notification API
+errors fail that job rather than silently discarding the notice.
+
 ## Check for results first
 
 Read the supplied `context.json` before doing any investigation.
