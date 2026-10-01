@@ -58,8 +58,9 @@ this model's wire protocol and AI-credit accounting.
 
 The trusted collector freezes the issue, up to 100 latest comments, reported
 working/failing versions, exact release-tag SHAs, and a bounded release comparison.
-The collected context is mounted read-only in the agent sandbox. Duplicate
-version headings are ambiguous rather than silently selecting the first value;
+The collected context is mounted read-only in the agent sandbox. A failed context
+download stops the agent before inference; no report is published without that
+snapshot. Duplicate version headings are ambiguous rather than silently selecting the first value;
 comment pages whose counts change during collection record an evidence gap.
 The agent narrows that history to affected code and verifies candidate diffs,
 platform applicability and shipped ancestry. API failures, missing versions,
