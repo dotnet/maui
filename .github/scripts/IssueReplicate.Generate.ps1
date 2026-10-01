@@ -48,6 +48,7 @@ For UI tests, use a HostApp page with an [Issue] attribute and AutomationIds and
 HostApp pattern: namespace Maui.Controls.Sample.Issues; [Issue(IssueTracker.Github, $($manifest.issueNumber), "short description", PlatformAffected.$(if ($manifest.platform -eq 'ios') { 'iOS' } else { 'Android' }))] public class Issue$($manifest.issueNumber) : ContentPage { public Issue$($manifest.issueNumber)() { Content = new Label { AutomationId = "Result" }; } }
 UI test pattern: namespace Microsoft.Maui.TestCases.Tests.Issues; public class Issue$($manifest.issueNumber) : _IssuesUITest { public Issue$($manifest.issueNumber)(TestDevice device) : base(device) {} public override string Issue => "short description"; }. Add a [Test] method that uses App.WaitForElement("Result") and asserts the issue-specific expected behavior. Import NUnit.Framework, UITest.Appium, UITest.Core as appropriate.
 Read rendered bounds with App.WaitForElement("automationId").GetRect() and text with App.WaitForElement("automationId").GetText(); there is no App.GetElementRect API. After changing UI state, wait for the changed text with App.WaitForTextToBePresentInElement("automationId", "expected text") rather than waiting again for an element that was already visible. For native rendering bugs, assert the rendered result, not just the managed property value.
+For Grid children, use grid.Add(view) with Grid.SetRow(view, row) and Grid.SetColumn(view, column). Do not use Xamarin.Forms-style three-argument Children.Add calls or collection initializers.
 
 ISSUE (untrusted):
 $($manifest.issueText)
