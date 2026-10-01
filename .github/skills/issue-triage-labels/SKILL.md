@@ -6,9 +6,10 @@ description: Full manual-label policy for the maintainer-only /issue triage comm
 # Full issue-label triage
 
 Read the prepared `context.json` and `references/label-policy.json`. Use only
-labels in `context.eligibleLabels`, with their exact current names. Never create
-labels. The policy's categories also govern removals; do not replace the whole
-label set.
+labels in `context.eligibleLabels` for additions and `context.removableLabels`
+for removals, with their exact current names. The latter includes removal-only
+attention/area placeholders, not permission to add them. Never create labels or
+replace the whole label set.
 
 ## Evidence and authority
 
@@ -37,6 +38,11 @@ Quote exact source text supporting each proposed change.
   explicitly name the exact label and the decision to add/remove it.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
+- A newer maintainer removal supersedes older confirmation. Re-adding needs a
+  newer positive confirmation or a later explicit maintainer re-add decision.
+- Quote unquoted prose, not lazy blockquote continuations, indented/fenced code
+  or inline code. Review/no-repro/version recommendations need the corresponding
+  technical assessment, not merely a comment from an authorized author.
 
 ## Label selection
 
@@ -45,9 +51,9 @@ Quote exact source text supporting each proposed change.
 | `area-*` | Choose the actual dominant subsystem, not incidental code or the reporter's suspected cause. Specific control/sub-area normally beats generic layout/navigation. Preserve justified existing secondary areas; add another only with independently supported scope. Use canonical control names, not short aliases. |
 | `platform/*` | Include explicitly affected platforms only. Do not label incidental test environments or explicitly unaffected platforms. Generic "all platforms" without a named list is insufficient. `platform/macos` covers Mac Catalyst. This full manual policy permits explicit Tizen/Linux reports; it does not change the automatic labeler's Tizen ban or imply official support. |
 | `t/*`, `Task`, `s/question ?` | Classify bugs, enhancement requests, docs, accessibility, desktop/native embedding or housekeeping from their actual subject. Preserve form-assigned types unless evidence warrants correction. |
-| `s/triaged`, `s/needs-verification`, `investigate` | Distinguish completed evidence-based review, pending empirical validation, and unresolved technical investigation. Do not mark verified merely because this command completed. |
+| `s/triaged`, `s/needs-verification`, `investigate` | Distinguish completed evidence-based review, pending empirical validation, and unresolved technical investigation. Triaged needs an affirmative authorized statement that the issue/reproduction was reviewed or triage completed. Do not mark verified merely because this command completed. |
 | `s/needs-info`, `s/needs-repro` | Ask for specific missing information or a usable reproduction. Adequate inline code or an attachment can be sufficient: an empty repository-link field alone is not grounds for needs-repro. State a concrete question in the decision's `request`. These labels trigger policy replies and potential automatic closure. |
-| `s/try-latest-version`, `s/no-repro` | Cite the relevant newer published version/fix or adequate current-version validation. A timeout, inaccessible sample, or infrastructure failure is not no-repro. |
+| `s/try-latest-version`, `s/no-repro` | Cite an authorized instruction to try/update/retest a specific relevant newer published MAUI version, or explicit unsuccessful reproduction for no-repro. A timeout, inaccessible sample, or infrastructure failure is not no-repro. |
 | `s/duplicate 2️⃣`, `s/not-a-bug` | Require a maintainer disposition; duplicates also require a fetched canonical related issue with matching behavior/root cause. Similarity scores or a reporter's speculation alone are insufficient. Not-a-bug requires a technical explanation. Do not close the issue. |
 | `perf/*` | Identify runtime/startup/app-size/trimming problems or retained-object memory leaks. A crash is not automatically a leak. |
 | `version/*` | Apply relevant explicit OS/device version qualification, not every SDK version in logs. |

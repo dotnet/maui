@@ -31,6 +31,8 @@ The [full-triage skill](../skills/issue-triage-labels/SKILL.md) and its
 are authoritative. Label names are rediscovered, fully paginated, on each run.
 Use canonical exact names, including emoji; never create labels or normalize a
 typo into a new label.
+Prepared `eligibleLabels` governs additions; `removableLabels` lists eligible
+current labels, including removal-only `s/needs-attention`/`needs-area-label`.
 
 | Family | Required evidence |
 | --- | --- |
@@ -50,11 +52,18 @@ Read-only registered validators may supply reproduction evidence but **cannot**
 authorize priority, roadmap, backport or ownership commitments. Business decisions
 must explicitly name the exact label and an affirmative action in unquoted
 maintainer prose, for example `Apply p/1` or `Remove backport/approved`.
-Quoted requests, code fences, suggestions and tentative candidates are not
-approvals. An authoritative "expected behavior/by design" explanation or
+Markdown parsing excludes quoted requests (including lazy continuations),
+indented/fenced/inline code and HTML quote/code containers from decision prose.
+Suggestions and tentative candidates are not approvals.
+Technical-state labels require their specific affirmative review, reproduction
+outcome or version recommendation, not merely an authorized comment author.
+Try-latest recommendations must identify a concrete MAUI version.
+An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
 Newer opposite maintainer decisions or label events supersede earlier approvals;
 an old approval cannot silently undo a later manual removal.
+The same rule applies to confirmation labels: cite a newer positive confirmation
+or a later explicit maintainer re-add rather than reversing a newer removal.
 
 Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
@@ -102,6 +111,11 @@ comments, 600 events, 1,000 labels, eight related references, 60 authority looku
 and a 1 MiB context file. Exceeding them fails visibly rather than discarding later
 contradictory evidence. Related issue/PR titles and bodies are fetched; their code,
 archives and nested discussions are not executed or recursively expanded.
+References are extracted outside Markdown code with a full numeric token boundary.
+RGB/RGBA-shaped shorthand such as `#333333` requires explicit issue/PR wording;
+a full same-repository issue URL is unambiguous.
+Markdown handling uses the parser already bundled with PowerShell's
+`ConvertFrom-Markdown`; no additional package or runtime is installed.
 
 One GPT-6.1 Sol/Copilot analysis reads prepared evidence and the declared local
 skill. Shell and GitHub tools are disabled. It has read-only repository

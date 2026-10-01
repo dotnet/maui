@@ -30,6 +30,10 @@ $validators = @([regex]::Matches($validatorRules[0], '(?m)^            user: ([A
     ForEach-Object { $_.Groups[1].Value })
 if ($validators.Count -eq 0) { throw 'The trusted validator identity policy is empty or its format changed.' }
 $permissions = @{}
+$null = ConvertFrom-Markdown -InputObject ' '
+$markdownBuilder = [Markdig.MarkdownPipelineBuilder]::new()
+$markdownBuilder.PreciseSourceLocation = $true
+$markdownPipeline = $markdownBuilder.Build()
 
 function Get-Timestamp($Value) {
     return ([DateTimeOffset]$Value).ToUniversalTime().ToString('o')
@@ -215,7 +219,14 @@ function Get-Snapshot {
     }
     $references = [Collections.Generic.HashSet[int]]::new()
     foreach ($source in $sources) {
-        foreach ($match in [regex]::Matches($source.body, '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)([1-9][0-9]{0,8})')) {
+        $referenceText = Get-MarkdownText $source.body -IncludeQuotes
+        foreach ($match in [regex]::Matches($referenceText,
+            '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)([1-9][0-9]{0,8})(?![\w])')) {
+            # Ambiguous RGB/RGBA-shaped shorthand needs an explicit issue/PR context.
+            if ($match.Value.StartsWith('#') -and $match.Groups[1].Length -in @(3, 6, 8) -and
+                $referenceText.Substring(0, $match.Index) -notmatch '(?i)\b(?:issue|PR|pull request|duplicate of)\s+$') {
+                continue
+            }
             $number = [int]$match.Groups[1].Value
             if ($number -ne $IssueNumber) { $null = $references.Add($number) }
         }
@@ -243,6 +254,9 @@ function Get-Snapshot {
         labels = $labels; labelCatalog = $labelDefinitions
         eligibleLabels = @($labelDefinitions | Where-Object { $_.category -notin @('preserve', 'removal-only') } |
             ForEach-Object { $_.name })
+        removableLabels = @($labelDefinitions | Where-Object {
+            $_.category -cne 'preserve' -and $labels -ccontains $_.name
+        } | ForEach-Object { $_.name })
         sources = $sources.ToArray()
     }
     $snapshot.contextHash = Get-Hash $snapshot
@@ -266,18 +280,37 @@ function Assert-Text($Text, [int]$Min = 1, [int]$Max = 800) {
     }
 }
 
-function Get-Prose([string]$Body) {
-    $lines = [Collections.Generic.List[string]]::new()
-    $fence = ''
-    foreach ($line in ($Body -split '\r?\n')) {
-        if ($line -match '^\s*(`{3,}|~{3,})') {
-            if (-not $fence) { $fence = $Matches[1].Substring(0, 1) }
-            elseif ($line.TrimStart().StartsWith($fence)) { $fence = '' }
-            continue
+function Get-MarkdownText([string]$Body, [switch]$IncludeQuotes) {
+    $document = [Markdig.Markdown]::Parse($Body, $markdownPipeline, $null)
+    $ranges = [Collections.Generic.List[object]]::new()
+    foreach ($node in [Markdig.Syntax.MarkdownObjectExtensions]::Descendants($document)) {
+        if ($node -is [Markdig.Syntax.CodeBlock] -or
+            $node -is [Markdig.Syntax.Inlines.CodeInline] -or
+            $node -is [Markdig.Syntax.HtmlBlock] -or
+            $node -is [Markdig.Syntax.Inlines.HtmlInline] -or
+            (-not $IncludeQuotes -and $node -is [Markdig.Syntax.QuoteBlock])) {
+            $ranges.Add(@{ start = $node.Span.Start; end = $node.Span.End })
         }
-        if (-not $fence -and $line -notmatch '^\s*>') { $lines.Add($line) }
     }
-    return ($lines -join "`n") -replace '(?s)<!--.*?-->', ''
+    foreach ($match in [regex]::Matches($Body,
+        '(?is)<(blockquote|pre|code|script|style|textarea)\b[^>]*>.*?(?:</\1\s*>|\z)',
+        [Text.RegularExpressions.RegexOptions]::None, [TimeSpan]::FromSeconds(2))) {
+        $ranges.Add(@{ start = $match.Index; end = $match.Index + $match.Length - 1 })
+    }
+    $text = [Text.StringBuilder]::new($Body)
+    $next = 0
+    foreach ($range in @($ranges | Sort-Object start, end)) {
+        $end = [Math]::Min($range.end, $Body.Length - 1)
+        for ($index = [Math]::Max($range.start, $next); $index -le $end; $index++) {
+            if ($Body[$index] -notin @("`r", "`n")) { $text[$index] = ' ' }
+        }
+        $next = [Math]::Max($next, $end + 1)
+    }
+    return $text.ToString()
+}
+
+function Get-Prose([string]$Body) {
+    return Get-MarkdownText $Body
 }
 
 function Test-Decision($Evidence, [string]$Label, [string]$Action) {
@@ -324,10 +357,46 @@ function Get-Confirmation($Evidence) {
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         $source.isValidator -and $source.kind -ceq 'comment' -and
         (Get-Prose $source.body).Contains($reference.quote, [StringComparison]::Ordinal) -and
-        $source.body -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
+        (Get-Prose $source.body) -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
         $paragraphs[0] -match '(?i)\b(reproduced|reproducible)\b|\b(confirmed|verified)\b.{0,50}\b(reported behavior|same behavior|bug on|issue on|regression on)\b|\btest\b.{0,50}\bcorrectly detect(s|ing)\b' -and
         $paragraphs[0] -notmatch "(?i)\b(not|cannot|can't|unable to|failed to|couldn't|could not)\b.{0,30}\b(reproduce|reproduced|reproducible|confirm|confirmed|verify|verified|validate|validated)\b"
+    })
+}
+
+function Get-TechnicalAssessment($Evidence, [string]$Label) {
+    return @($Evidence | Where-Object {
+        $reference = $_
+        $source = $sourceMap[$reference.source]
+        if (-not $source.isValidator -or $source.kind -cne 'comment') { return $false }
+        $prose = Get-Prose $source.body
+        $paragraphs = @($prose -split '\r?\n[ \t]*\r?\n' |
+            Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
+        if ($paragraphs.Count -ne 1) { return $false }
+        $paragraph = $paragraphs[0]
+        switch ($Label) {
+            's/triaged' {
+                $paragraph -match '(?i)\b(reviewed|triaged|investigated)\b.{0,50}\b(issue|report|reproduction|sample|behavior)\b|\b(completed|finished)\b.{0,30}\b(triage|review|investigation)\b' -and
+                $paragraph -notmatch "(?i)\b(not|cannot|can't|unable to|could not|do not|don't)\b.{0,30}\b(review|reviewed|triage|triaged|investigate|investigated|complete|completed|finish|finished)\b"
+            }
+            's/try-latest-version' {
+                $paragraph -match '(?i)\bMAUI\b.{0,60}\b\d+\.\d+(?:\.\d+)?\b|\b\d+\.\d+(?:\.\d+)?\b.{0,60}\bMAUI\b' -and
+                $paragraph -match '(?i)\b(try|retest|test|verify|update|upgrade)\b.{0,80}\b(latest|newer|version|\d+\.\d+)\b' -and
+                $paragraph -notmatch "(?i)\b(not|cannot|can't|do not|don't)\b.{0,30}\b(try|retest|test|verify|update|upgrade)\b"
+            }
+            's/no-repro' {
+                $paragraph -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b"
+            }
+            'not-regression' {
+                $paragraph -match '(?i)\bnot (?:a )?regression\b|\bsame (?:behavior|issue|problem)\b.{0,80}\b(?:older|previous|earlier)\b'
+            }
+            'blazor-webview2-regression' {
+                $paragraph -match '(?i)\bWebView2\b' -and
+                $paragraph -match '(?i)\b(regression|regressed)\b' -and
+                @(Get-Confirmation @($reference)).Count -gt 0
+            }
+            default { throw "Unsupported technical assessment: $Label" }
+        }
     })
 }
 
@@ -388,6 +457,18 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                 (Get-Prose $_.body) -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b"
             })
             if ($contrary.Count -gt 0) { throw "Later contrary validation exists for $label; withhold the confirmation." }
+            $laterRemovals = @($Snapshot.sources | Where-Object {
+                $_.isMaintainer -and $_.kind -ceq 'unlabeled' -and $_.body -ceq "unlabeled: $label" -and
+                $_.createdAt -ge $sourceMap[$latest.source].createdAt
+            } | Sort-Object createdAt)
+            if ($laterRemovals.Count -gt 0) {
+                $readdEvidence = @($Decision.evidence | Where-Object {
+                    $sourceMap[$_.source].createdAt -gt $laterRemovals[-1].createdAt
+                })
+                if (-not (Test-Decision $readdEvidence $label 'add')) {
+                    throw "A later maintainer removal supersedes confirmation for $label; cite a newer confirmation or explicit re-add."
+                }
+            }
         }
         if ($label.StartsWith('regressed-in-')) {
             $version = $label.Substring('regressed-in-'.Length)
@@ -399,14 +480,10 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                 $_.quote -match "(?i)\b(first bad|from|since|introduced|starting|regressed).{0,80}\b$versionPattern\b"
             }).Count -eq 0) { throw "No first-bad-version evidence supports $label." }
         }
-        if ($label -in @('s/triaged', 's/no-repro', 'not-regression', 's/try-latest-version', 'blazor-webview2-regression') -and
-            $validatorEvidence.Count -eq 0) { throw "An authorized technical assessment is required for $label." }
-        if ($label -eq 's/no-repro' -and @($validatorEvidence | Where-Object {
-            $_.quote -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b"
-        }).Count -eq 0) { throw 'No-repro needs an explicit authorized unsuccessful reproduction, not a general comment.' }
-        if ($label -eq 'not-regression' -and @($validatorEvidence | Where-Object {
-            $_.quote -match '(?i)\bnot (?:a )?regression\b|\bsame (?:behavior|issue|problem)\b.{0,80}\b(?:older|previous|earlier)\b'
-        }).Count -eq 0) { throw 'Not-regression needs an explicit authorized version comparison or disposition.' }
+        if ($policy.technicalAssessment -ccontains $label -and
+            @(Get-TechnicalAssessment $Decision.evidence $label).Count -eq 0) {
+            throw "An affirmative, label-specific authorized technical assessment is required for $label."
+        }
         if ($label -eq 's/duplicate 2️⃣' -and
             @($Decision.evidence | Where-Object { $sourceMap[$_.source].kind -eq 'related' }).Count -eq 0) {
             throw 'A duplicate decision must cite the fetched canonical related issue.'
@@ -417,15 +494,22 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             $name = $_
             @($transition | Where-Object { Test-Pattern $name $_ }).Count -gt 0
         })
-        $confirmedTransition = $replacement.Count -gt 0 -and $validatorEvidence.Count -gt 0
-        if ($replacement -ccontains 's/verified' -and @(Get-Confirmation $Decision.evidence).Count -eq 0) {
-            $confirmedTransition = $false
+        $transitionEvidence = @()
+        foreach ($replacementLabel in $replacement) {
+            if ($policy.confirmation -ccontains $replacementLabel) {
+                $transitionEvidence += @(Get-Confirmation $Decision.evidence)
+            } elseif ($policy.technicalAssessment -ccontains $replacementLabel) {
+                $transitionEvidence += @(Get-TechnicalAssessment $Decision.evidence $replacementLabel)
+            } else {
+                $transitionEvidence += $validatorEvidence
+            }
         }
+        $confirmedTransition = $transitionEvidence.Count -gt 0
         $lastRequest = @($Snapshot.sources | Where-Object {
             $_.kind -ceq 'labeled' -and $_.body -ceq "labeled: $label"
         } | Sort-Object createdAt | Select-Object -Last 1)
         if ($confirmedTransition -and $lastRequest.Count -gt 0 -and
-            @($validatorEvidence | Where-Object {
+            @($transitionEvidence | Where-Object {
                 $source = $sourceMap[$_.source]
                 $source.updatedAt -ge $lastRequest[0].createdAt
             }).Count -eq 0) {
