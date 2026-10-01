@@ -5,10 +5,12 @@
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
     <UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug' and '$(UseMonoRuntime)' == 'true' and
     ('$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' or 
-    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' or 
-    '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' or 
     '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' or 
     '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen')">True</UseInterpreter>
+		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug' and
+			$([MSBuild]::VersionLessThan($(TargetFrameworkVersion), 11.0)) and
+			('$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' or
+			'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst')">True</UseInterpreter>
   </PropertyGroup>
 
 	<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
