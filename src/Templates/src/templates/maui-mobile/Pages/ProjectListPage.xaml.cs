@@ -1,4 +1,8 @@
+//-:cnd:noEmit
+#if WINDOWS
 using MauiApp._1.Behaviors;
+#endif
+//+:cnd:noEmit
 namespace MauiApp._1.Pages;
 
 public partial class ProjectListPage : ContentPage

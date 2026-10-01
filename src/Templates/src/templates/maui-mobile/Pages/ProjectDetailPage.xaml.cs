@@ -1,5 +1,9 @@
 using MauiApp._1.Models;
+//-:cnd:noEmit
+#if WINDOWS
 using MauiApp._1.Behaviors;
+#endif
+//+:cnd:noEmit
 
 namespace MauiApp._1.Pages;
 
@@ -12,7 +16,6 @@ public partial class ProjectDetailPage : ContentPage
 		BindingContext = model;
 //-:cnd:noEmit
 #if WINDOWS
-		TagsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
 		ProjectTasksCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
 		IconsCollectionView.Behaviors.Add(new SingleSelectionKeyboardGuardBehavior());
 #endif
