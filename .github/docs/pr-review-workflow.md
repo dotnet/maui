@@ -134,6 +134,15 @@ validator. The job boundaries follow the issue-replication isolation pattern:
    recomputes the decision, renders and validates the narrative, and rechecks
    authorization and live base/head identities. Only this job can publish the report.
 
+The comment keeps **Performance Review Summary**, the actual PR author and pinned
+commit notification, and truthful Scope/Result/Commit badges visible. Everything
+else is inside exactly two closed sibling sections: **Performance Results**
+(verdict, coverage, and any benchmark table) and **Findings & Follow-up**
+(static findings, recommendations, and next action). Static-only and failed or
+incomplete measurement reports use the same layout without implying measured
+coverage. The trusted validator rejects flat, expanded, or extra sections and
+checks the visible author, commit, and badges against the pinned evidence.
+
 Native scenarios **do not run in the hosted command**. Device-required, sampled,
 static-only, missing, and failed measurements remain explicit coverage gaps.
 Native device tooling is outside this workflow's scope. Shared-host timing is

@@ -204,7 +204,8 @@ switch ($Stage) {
             Set-Content -LiteralPath "$OutputDirectory/narrative.json" -Encoding utf8
         Resolve-Decision
         $common = @('-SelectionPath', "$OutputDirectory/selection.json", '-PolicyPath', $policy,
-            '-DecisionBaselinePath', "$OutputDirectory/decision-baseline.json")
+            '-DecisionBaselinePath', "$OutputDirectory/decision-baseline.json",
+            '-PrMetadataPath', "$OutputDirectory/pr-resolved.json")
         if (Test-Path -LiteralPath "$OutputDirectory/summary.json") {
             $common += @('-SummaryPath', "$OutputDirectory/summary.json")
         }
@@ -217,11 +218,10 @@ switch ($Stage) {
         Invoke-Checked pwsh (@('-NoProfile', '-File', "$scripts/Validate-PerformanceReport.ps1") + $common +
             @('-ReportPath', "$OutputDirectory/report.md", '-JsonOut', "$OutputDirectory/report-validation.json")) | Out-Host
         $report = Get-Content -LiteralPath "$OutputDirectory/report.md" -Raw
-        $header = "Reviewed commit [$($pr.headRefOid.Substring(0, 12))](https://github.com/$Repository/commit/$($pr.headRefOid))."
-        if (($header.Length + $report.Length) -gt 60000) {
+        if ($report.Length -gt 60000) {
             throw 'The validated performance report exceeds the GitHub comment limit; inspect the workflow artifacts.'
         }
-        $items[0].body = "$header`n`n$report"
+        $items[0].body = $report
         $items[0].PSObject.Properties.Remove('data')
         $payload | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $AgentOutputPath -Encoding utf8
     }

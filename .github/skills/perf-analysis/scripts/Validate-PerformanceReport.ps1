@@ -11,6 +11,9 @@
 
 param(
     [Parameter(Mandatory = $true)]
+    [string]$PrMetadataPath,
+
+    [Parameter(Mandatory = $true)]
     [string]$ReportPath,
 
     [Parameter(Mandatory = $true)]
@@ -58,7 +61,7 @@ function Get-PropertyValue($object, [string]$name) {
     return $property.Value
 }
 
-foreach ($path in @($ReportPath, $PolicyPath, $SelectionPath)) {
+foreach ($path in @($PrMetadataPath, $ReportPath, $PolicyPath, $SelectionPath)) {
     if (-not (Test-Path $path)) {
         throw "Required validation input does not exist: $path"
     }
@@ -67,7 +70,14 @@ foreach ($path in @($ReportPath, $PolicyPath, $SelectionPath)) {
     }
 }
 
-$report = Get-Content $ReportPath -Raw
+$report = (Get-Content $ReportPath -Raw).Replace("`r`n", "`n")
+$pr = Get-Content $PrMetadataPath -Raw | ConvertFrom-Json
+$validMetadata = $pr.repository -cmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' -and
+    $pr.headRefOid -cmatch '^[0-9a-f]{40}$' -and
+    $pr.author -cmatch '^[A-Za-z0-9][A-Za-z0-9-]*(?:\[bot\])?$'
+if (-not $validMetadata) {
+    Add-ValidationError "Report metadata requires a valid repository, full commit SHA, and actual PR author."
+}
 $policy = Get-Content $PolicyPath -Raw | ConvertFrom-Json
 $selection = Get-Content $SelectionPath -Raw | ConvertFrom-Json
 $summary = if ($SummaryPath -and (Test-Path $SummaryPath)) {
@@ -84,7 +94,8 @@ $decisionBaseline = if ($DecisionBaselinePath -and (Test-Path $DecisionBaselineP
 $hasEmpiricalEvidence = $null -ne $summary
 
 $requiredHeadings = @(
-    "## Performance analysis",
+    "## Performance Review Summary",
+    "### Static hot-path review",
     "### Recommended next action",
     "### Coverage"
 )
@@ -121,6 +132,38 @@ if ($decisionMatches.Count -ne 1) {
     } catch {
         Add-ValidationError "perf-analysis-decision metadata is invalid JSON: $($_.Exception.Message)"
         $decision = $null
+    }
+}
+
+$sections = [regex]::Matches(
+    $report,
+    '(?ms)^<details>\n<summary><strong>(?<title>[^<]+)</strong></summary>\n\n(?<body>.*?)\n</details>$')
+$validLayout = $sections.Count -eq 2 -and
+    $sections[0].Groups["title"].Value -ceq "Performance Results" -and
+    $sections[1].Groups["title"].Value -ceq "Findings &amp; Follow-up" -and
+    [regex]::Matches($report, '(?i)</?(?:details|summary)\b[^>]*>').Count -eq 8
+if (-not $validLayout) {
+    Add-ValidationError "Report must contain exactly two closed sibling sections: Performance Results and Findings & Follow-up."
+}
+else {
+    $between = $report.Substring(
+        $sections[0].Index + $sections[0].Length,
+        $sections[1].Index - $sections[0].Index - $sections[0].Length).Trim()
+    if ($between -cne "---") {
+        Add-ValidationError "Expanded narrative is not allowed between report sections."
+    }
+    $suffix = $report.Substring($sections[1].Index + $sections[1].Length).Trim()
+    if ($decisionMatches.Count -ne 1 -or $suffix -cne $decisionMatches[0].Value.Trim()) {
+        Add-ValidationError "Only decision metadata may follow the collapsed report sections."
+    }
+    if ($sections[0].Groups["body"].Value -notmatch '(?m)^### Coverage$' -or
+        $sections[0].Groups["body"].Value -notmatch '(?m)^\*\*Verdict:\*\* ') {
+        Add-ValidationError "Performance Results must contain the verdict and coverage."
+    }
+    foreach ($heading in @("### Static hot-path review", "### Recommended next action")) {
+        if ($sections[1].Groups["body"].Value -notmatch "(?m)^$([regex]::Escape($heading))$") {
+            Add-ValidationError "Findings & Follow-up must contain: $heading"
+        }
     }
 }
 
@@ -221,6 +264,29 @@ if ($null -ne $decision) {
         $expectedVerdict = [string]$verdictPolicy.label
         if ($report -notmatch "(?m)^\*\*Verdict:\*\*\s+$([regex]::Escape($expectedVerdict))\s*$") {
             Add-ValidationError "Verdict text must match verdictClass '$verdictClass': $expectedVerdict"
+        }
+        if ($validLayout -and $validMetadata) {
+            $shortSha = $pr.headRefOid.Substring(0, 12)
+            $scope = if ($hasEmpiricalEvidence) { "Managed benchmarks" } else { "Static review only" }
+            $header = @(
+                "## Performance Review Summary", "",
+                "> @$($pr.author) &#x2014; performance review for commit [``$shortSha``](https://github.com/$($pr.repository)/commit/$($pr.headRefOid)).",
+                "", '<p align="left">'
+            )
+            foreach ($badge in @(
+                @{ label = "Scope"; value = $scope; color = "1f6feb" },
+                @{ label = "Result"; value = $verdictPolicy.badgeLabel; color = $verdictPolicy.badgeColor },
+                @{ label = "Commit"; value = $shortSha; color = "1f6feb" }
+            )) {
+                $label = [uri]::EscapeDataString($badge.label).Replace("-", "--").Replace("_", "__")
+                $value = [uri]::EscapeDataString($badge.value).Replace("-", "--").Replace("_", "__")
+                $alt = [System.Net.WebUtility]::HtmlEncode("$($badge.label) $($badge.value)")
+                $header += "  <img alt=`"$alt`" src=`"https://img.shields.io/badge/$label-$value-$($badge.color)`?labelColor=30363d&amp;style=flat-square`">"
+            }
+            $header += @("</p>", "", "---")
+            if ($report.Substring(0, $sections[0].Index).Trim() -cne ($header -join "`n")) {
+                Add-ValidationError "Visible content must be the title, pinned author/commit notice, and truthful Scope/Result/Commit badges."
+            }
         }
     }
 
