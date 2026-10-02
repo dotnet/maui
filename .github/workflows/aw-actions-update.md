@@ -66,6 +66,42 @@ concurrency:
 
 timeout-minutes: 15
 
+# `gh extension install` is denied to the agent by gh-aw's command security policy, so the
+# CLI has to be provisioned at the workflow level instead. Invoking `gh aw` from a custom
+# step makes gh-aw inject its own `Install gh-aw extension` step (setup-cli, SHA-pinned to
+# the same compiler_version as this workflow's lock), which keeps the CLI and the compiled
+# locks on exactly one version and is re-pinned automatically on every recompile.
+#
+# Doing the install in the prompt instead made the agent report `missing_tool` and fail
+# closed with `exit 0`, so the weekly refresh silently stopped producing PRs after #37127
+# (2026-08-05) while every run still reported success. Verify hard here so that a broken
+# refresher surfaces as a red run instead of masquerading as a green no-op.
+steps:
+  - name: Verify the lock-pinned gh-aw CLI
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      set -euo pipefail
+      LOCK_FILE=".github/workflows/aw-actions-update.lock.yml"
+      if [ ! -f "$LOCK_FILE" ]; then
+        echo "::error::$LOCK_FILE not found; cannot determine the pinned gh-aw version."
+        exit 1
+      fi
+      # `gh aw update` caps native action-pin resolution at the CLI's own version, so a CLI
+      # newer than the compiled lock would rewrite actions-lock.json inconsistently. Bumping
+      # gh-aw is the separate `aw-version-update` runbook's job, not this refresher's.
+      PINNED="$(sed -nE '1s/^# gh-aw-metadata: .*"compiler_version":"([^"]+)".*$/\1/p' "$LOCK_FILE")"
+      if ! printf '%s\n' "$PINNED" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "::error::Could not read a valid gh-aw compiler_version from $LOCK_FILE (got '$PINNED')."
+        exit 1
+      fi
+      INSTALLED="$(gh aw --version)"
+      echo "gh-aw: $INSTALLED (lock pins $PINNED)"
+      case "$INSTALLED" in
+        *"$PINNED"*) ;;
+        *) echo "::error::gh-aw reports '$INSTALLED', expected the lock-pinned $PINNED."; exit 1 ;;
+      esac
+
 network:
   allowed:
     - defaults
@@ -120,40 +156,31 @@ creating another PR. Mention the existing PR in the run output only. (The `--aut
 the check to this workflow's own bot-created PRs — safe-outputs opens them as `app/github-actions` —
 so an unrelated user-opened PR with a colliding title cannot suppress the refresh.)
 
-## Step 1 — Ensure the gh-aw CLI is available at the committed lock version
+## Step 1 — Confirm the gh-aw CLI is the committed lock version
 
-The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. Read this workflow's required version from the `compiler_version` metadata in its
-committed lock file. `gh aw update` caps native action-pin resolution at the CLI's own version, so
-a newer CLI would refresh `actions-lock.json` in a way that no longer matches the compiled lock
-(version skew). Bumping gh-aw is a deliberate, coordinated change handled by the separate
-`aw-version-update` runbook — not something this weekly pin-refresher should do implicitly.
+The `gh aw` command comes from the `github/gh-aw` gh extension. **You do not install it** —
+`gh extension install` is denied to you by the command security policy. The workflow installs
+it before you run: gh-aw's own `Install gh-aw extension` setup step provisions the extension
+SHA-pinned to the `compiler_version` recorded in this workflow's committed lock file, and the
+`Verify the lock-pinned gh-aw CLI` step then fails the run outright if the active version does
+not match. Do not attempt to install, remove, upgrade, or re-pin the extension yourself; if
+`gh aw` is somehow unavailable, stop without creating a PR.
 
-Remove any pre-installed copy, then install the pinned tag. **Fail closed** (log and exit without
-creating a PR) if the lock metadata is invalid or the pinned install does not succeed — never
-silently continue on a stale or wrong-version CLI. The workflow sets `GH_TOKEN` from its
-read-only GitHub Actions token so the GitHub CLI can remove a preinstalled extension and install
-the lock-pinned release without using the Copilot inference PAT.
+The version matters because `gh aw update` caps native action-pin resolution at the CLI's own
+version, so a newer CLI would refresh `actions-lock.json` in a way that no longer matches the
+compiled lock (version skew). Bumping gh-aw is a deliberate, coordinated change handled by the
+separate `aw-version-update` runbook — not something this weekly pin-refresher should do
+implicitly.
+
+Verify, and **fail closed** (log and exit without creating a PR) if the CLI is missing:
 
 ```bash
-GH_AW_LOCK_FILE=".github/workflows/aw-actions-update.lock.yml"
-GH_AW_PINNED_VERSION="$(sed -nE '1s/^# gh-aw-metadata: .*"compiler_version":"([^"]+)".*$/\1/p' "$GH_AW_LOCK_FILE")"
-if ! printf '%s\n' "$GH_AW_PINNED_VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-  echo "Could not read a valid gh-aw compiler_version from $GH_AW_LOCK_FILE; not creating a PR."
-  exit 0
-fi
-
-gh extension remove gh-aw 2>/dev/null || true
-if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
-  echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."
-  exit 0
-fi
 INSTALLED_VERSION="$(gh aw --version 2>/dev/null || true)"
 echo "gh-aw: $INSTALLED_VERSION"
-case "$INSTALLED_VERSION" in
-  *"$GH_AW_PINNED_VERSION"*) : ;;   # good — pinned version is active
-  *) echo "gh-aw is not the pinned $GH_AW_PINNED_VERSION; not creating a PR."; exit 0 ;;
-esac
+if [ -z "$INSTALLED_VERSION" ]; then
+  echo "gh aw is unavailable despite the setup step; not creating a PR."
+  exit 0
+fi
 ```
 
 ## Step 2 — Run the update command
