@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Drawing;
+using OpenQA.Selenium;
 using UITest.Core;
 
 namespace UITest.Appium;
@@ -9,6 +12,7 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 	const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
 
 	readonly AppiumApp _appiumApp;
+	Size? _windowedSize;
 
 	readonly List<string> _commands = new()
 	{
@@ -40,34 +44,68 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 
 	CommandResponse EnterFullScreen(IDictionary<string, object> parameters)
 	{
-		try
-		{
-			_appiumApp.Driver.Manage().Window.FullScreen();
-
-			return CommandResponse.SuccessEmptyResponse;
-		}
-		catch
-		{
-			return CommandResponse.FailedEmptyResponse;
-		}
+		var windowedSize = GetWindowSize();
+		_windowedSize = windowedSize;
+		_appiumApp.Driver.Manage().Window.FullScreen();
+		MovePointerAwayFromWindowControls(WaitForWindowSize(size => size != windowedSize, "enter full screen"));
+		return CommandResponse.SuccessEmptyResponse;
 	}
 
 	CommandResponse ExitFullScreen(IDictionary<string, object> parameters)
 	{
-		try
-		{
-			string[] keys = ["XCUIKeyboardKeyEscape"];
-			_appiumApp.Driver.ExecuteScript("macos: keys", new Dictionary<string, object>
-			{
-				{ "keys", keys },
-			});
+		var windowedSize = _windowedSize
+			?? throw new InvalidOperationException("EnterFullScreen must capture the window size before exiting full screen.");
 
-			return CommandResponse.SuccessEmptyResponse;
-		}
-		catch
+		string[] keys = ["XCUIKeyboardKeyEscape"];
+		_appiumApp.Driver.ExecuteScript("macos: keys", new Dictionary<string, object>
 		{
-			return CommandResponse.FailedEmptyResponse;
+			{ "keys", keys },
+		});
+
+		// macOS persists full-screen state on termination, so wait before the fixture closes the app.
+		MovePointerAwayFromWindowControls(WaitForWindowSize(size => size == windowedSize, "restore its windowed size"));
+		_windowedSize = null;
+		return CommandResponse.SuccessEmptyResponse;
+	}
+
+	Size GetWindowSize() =>
+		_appiumApp.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect().Size;
+
+	void MovePointerAwayFromWindowControls(Rectangle window)
+	{
+		// Keep the green-button hover menu out of this and subsequent fixtures.
+		_appiumApp.Driver.ExecuteScript("macos: hover", new Dictionary<string, object>
+		{
+			{ "x", window.X + window.Width / 2.0 },
+			{ "y", window.Y + window.Height / 2.0 },
+		});
+	}
+
+	Rectangle WaitForWindowSize(Func<Size, bool> condition, string transition)
+	{
+		var stopwatch = Stopwatch.StartNew();
+		Size? size = null;
+		StaleElementReferenceException? lastStale = null;
+		do
+		{
+			try
+			{
+				var window = _appiumApp.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+				size = window.Size;
+				if (condition(size.Value))
+					return window;
+			}
+			catch (StaleElementReferenceException ex)
+			{
+				// macOS replaces the native window while moving between full-screen spaces.
+				lastStale = ex;
+			}
+
+			Thread.Sleep(100);
 		}
+		while (stopwatch.Elapsed < TimeSpan.FromSeconds(15));
+
+		throw new TimeoutException($"Mac app did not {transition}; its last measured window size is {size}.", lastStale);
 	}
 
 	CommandResponse ToggleSystemAnimations(IDictionary<string, object> parameters)

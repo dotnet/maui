@@ -36,6 +36,7 @@ public class Issue33038_SignInPage : ContentPage
 
 		Content = new VerticalStackLayout
 		{
+			AutomationId = "SignInLayout",
 			Spacing = 16,
 			Padding = new Thickness(20),
 			Children =

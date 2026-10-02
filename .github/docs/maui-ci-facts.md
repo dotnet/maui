@@ -353,7 +353,16 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | Helix monitor cannot use `NetCore-Svc-Public` | `maui-pr` release branches | The monitor must use the pipeline's selected Helix submission pool, with its Linux image demand, rather than independently selecting an unauthorized pool from the branch name. |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
+| `device unauthorized` during `uitest-prepare` | `maui-pr-uitests` Android bootstrap | Check host ADB key changes during boot before investigating tests; no TRX means the suite did not execute. |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+
+Android Cake preparation must preserve the host ADB private key throughout emulator
+boot. `EnsureAdbKeys` generates a missing pair with `adb keygen`, restores a missing
+public key with `adb pubkey`, and sets `ADB_VENDOR_KEYS` to the **private** key.
+It does not push keys to an unbooted/unauthorized device or restart `adbd`.
+A missing private key alongside an existing public key is an explicit setup error,
+not permission to rotate the identity. An empty `adb devices` list is a separate
+failure: inspect emulator startup evidence rather than assuming authorization.
 
 ## Merge-readiness criteria
 

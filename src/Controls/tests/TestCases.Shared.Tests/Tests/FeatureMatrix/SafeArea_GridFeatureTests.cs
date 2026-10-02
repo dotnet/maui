@@ -1997,60 +1997,77 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SafeAreaAllButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			var insets = GetSafeAreaInsets();
-			var (_, screenHeight) = GetScreenSize();
+			System.Drawing.Rectangle topPortraitRect = default;
+			System.Drawing.Rectangle bottomPortraitRect = default;
 
-			// ── Record portrait positions ──
-			var topPortraitRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			var bottomPortraitRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			App.RetryAssert(() =>
+			{
+				Assert.That(App.GetOrientation(), Is.EqualTo(OpenQA.Selenium.ScreenOrientation.Portrait));
+				var (screenWidth, screenHeight) = GetScreenSize();
+				Assert.That(screenHeight, Is.GreaterThan(screenWidth));
+				var insets = GetSafeAreaInsets();
+				topPortraitRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+				bottomPortraitRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 
-			Assert.That(Math.Abs(topPortraitRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
-				$"Portrait: top label Y ({topPortraitRect.Y}) should be equal to insets.Top ({insets.Top})");
-			Assert.That(Math.Abs(bottomPortraitRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom).Within(PixelTolerance),
-				$"Portrait: bottom label Bottom ({bottomPortraitRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+				Assert.That(Math.Abs(topPortraitRect.Y), Is.EqualTo(insets.Top).Within(PixelTolerance),
+					$"Portrait: top label Y ({topPortraitRect.Y}) should be equal to insets.Top ({insets.Top})");
+				Assert.That(Math.Abs(bottomPortraitRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom).Within(PixelTolerance),
+					$"Portrait: bottom label Bottom ({bottomPortraitRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+			});
 
-			// ── Rotate to landscape ──
-			App.SetOrientationLandscape();
-			App.WaitForElement("SafeAreaEdgesValueLabel");
+			try
+			{
+				App.SetOrientationLandscape();
 
-			var (screenWidthLandscape, screenHeightLandscape) = GetScreenSize();
-			var insetsLandscape = GetSafeAreaInsets();
+				// Orientation acknowledgement precedes the final safe-area layout.
+				App.RetryAssert(() =>
+				{
+					Assert.That(App.GetOrientation(), Is.EqualTo(OpenQA.Selenium.ScreenOrientation.Landscape));
+					var (screenWidthLandscape, screenHeightLandscape) = GetScreenSize();
+					Assert.That(screenWidthLandscape, Is.GreaterThan(screenHeightLandscape));
+					var insetsLandscape = GetSafeAreaInsets();
 
-			var topLandscapeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topLandscapeRect.Y), Is.EqualTo(insetsLandscape.Top).Within(PixelTolerance),
-				$"Landscape: top label Y ({topLandscapeRect.Y}) should be equal to insetsLandscape.Top ({insetsLandscape.Top})");
+					var topLandscapeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+					Assert.That(Math.Abs(topLandscapeRect.Y), Is.EqualTo(insetsLandscape.Top).Within(PixelTolerance),
+						$"Landscape: top label Y ({topLandscapeRect.Y}) should be equal to insetsLandscape.Top ({insetsLandscape.Top})");
 
-			var leftLandscapeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(leftLandscapeRect.X), Is.EqualTo(insetsLandscape.Left).Within(PixelTolerance),
-				$"Landscape: left X ({leftLandscapeRect.X}) should be equal to insetsLandscape.Left ({insetsLandscape.Left})");
+					var leftLandscapeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+					Assert.That(Math.Abs(leftLandscapeRect.X), Is.EqualTo(insetsLandscape.Left).Within(PixelTolerance),
+						$"Landscape: left X ({leftLandscapeRect.X}) should be equal to insetsLandscape.Left ({insetsLandscape.Left})");
 
-			var rightLandscapeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
-			var rightLandscapeEdge = rightLandscapeRect.X + rightLandscapeRect.Width;
-			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
-			Assert.That(Math.Abs(rightLandscapeEdge), Is.EqualTo(screenWidthLandscape - expectedRight).Within(PixelTolerance),
-				$"Landscape: right edge ({rightLandscapeEdge}) should be equal to screenWidth - expectedRight - 0 ({screenWidthLandscape - expectedRight - 0})");
+					var rightLandscapeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
+					var rightLandscapeEdge = rightLandscapeRect.X + rightLandscapeRect.Width;
+					var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
+					Assert.That(Math.Abs(rightLandscapeEdge), Is.EqualTo(screenWidthLandscape - expectedRight).Within(PixelTolerance),
+						$"Landscape: right edge ({rightLandscapeEdge}) should be equal to screenWidth - expectedRight - 0 ({screenWidthLandscape - expectedRight - 0})");
+				});
 
-			// ── Rotate back to portrait ──
-			App.SetOrientationPortrait();
-			App.WaitForElement("SafeAreaEdgesValueLabel");
+				App.SetOrientationPortrait();
+				App.RetryAssert(() =>
+				{
+					Assert.That(App.GetOrientation(), Is.EqualTo(OpenQA.Selenium.ScreenOrientation.Portrait));
+					var (screenWidthAfter, screenHeightAfter) = GetScreenSize();
+					Assert.That(screenHeightAfter, Is.GreaterThan(screenWidthAfter));
+					var insetsAfter = GetSafeAreaInsets();
 
-			var insetsAfter = GetSafeAreaInsets();
-			var (_, screenHeightAfter) = GetScreenSize();
+					var topAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+					Assert.That(Math.Abs(topAfterRect.Y), Is.EqualTo(insetsAfter.Top).Within(PixelTolerance),
+						$"After roundtrip: top label Y ({topAfterRect.Y}) should be equal to insets.Top + 0 ({insetsAfter.Top + 0})");
 
-			var topAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(topAfterRect.Y), Is.EqualTo(insetsAfter.Top).Within(PixelTolerance),
-				$"After roundtrip: top label Y ({topAfterRect.Y}) should be equal to insets.Top + 0 ({insetsAfter.Top + 0})");
+					var bottomAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+					Assert.That(Math.Abs(bottomAfterRect.Bottom), Is.EqualTo(screenHeightAfter - insetsAfter.Bottom).Within(PixelTolerance),
+						$"After roundtrip: bottom label Bottom ({bottomAfterRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeightAfter - insetsAfter.Bottom - 0})");
 
-			var bottomAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(bottomAfterRect.Bottom), Is.EqualTo(screenHeightAfter - insetsAfter.Bottom).Within(PixelTolerance),
-				$"After roundtrip: bottom label Bottom ({bottomAfterRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeightAfter - insetsAfter.Bottom - 0})");
-
-			// Verify positions match the original portrait positions
-			Assert.That(topAfterRect.Y, Is.EqualTo(topPortraitRect.Y).Within(PixelTolerance),
-				$"After roundtrip: top label Y ({topAfterRect.Y}) should match original portrait ({topPortraitRect.Y})");
-
-			Assert.That(bottomAfterRect.Bottom, Is.EqualTo(bottomPortraitRect.Bottom).Within(PixelTolerance),
-				$"After roundtrip: bottom label Bottom ({bottomAfterRect.Bottom}) should match original portrait ({bottomPortraitRect.Bottom})");
+					Assert.That(topAfterRect.Y, Is.EqualTo(topPortraitRect.Y).Within(PixelTolerance),
+						$"After roundtrip: top label Y ({topAfterRect.Y}) should match original portrait ({topPortraitRect.Y})");
+					Assert.That(bottomAfterRect.Bottom, Is.EqualTo(bottomPortraitRect.Bottom).Within(PixelTolerance),
+						$"After roundtrip: bottom label Bottom ({bottomAfterRect.Bottom}) should match original portrait ({bottomPortraitRect.Bottom})");
+				});
+			}
+			finally
+			{
+				App.SetOrientationPortrait();
+			}
 		}
 	}
 }

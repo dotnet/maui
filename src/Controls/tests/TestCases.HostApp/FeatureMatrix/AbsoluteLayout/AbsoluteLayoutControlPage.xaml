@@ -9,24 +9,34 @@
                      Clicked="NavigateToOptionsPage_Clicked"
                      AutomationId="Options"/>
     </ContentPage.ToolbarItems>
-    <AbsoluteLayout AutomationId="MainLayout"
-                    FlowDirection="{Binding FlowDirection}"
-                    BackgroundColor="{Binding BackgroundColor}"
-                    IsVisible="{Binding IsVisible}">
-        <BoxView Color="Blue"
-                 x:Name="AbsoluteLayoutBoxView"
-                 AutomationId="BlueBox"
-                 AbsoluteLayout.LayoutBounds="{Binding Bounds}"
-                 AbsoluteLayout.LayoutFlags="{Binding LayoutFlags}"/>
-        <Label Text="Fixed Label"
-               AutomationId="FixedLabel"
-               TextColor="Red"
-               FontSize="18"
-               AbsoluteLayout.LayoutBounds="0.5,0,AutoSize,AutoSize"
-               AbsoluteLayout.LayoutFlags="PositionProportional"/>
-        <Button Text="Click Me"
-                AutomationId="ClickMeButton"
-                AbsoluteLayout.LayoutBounds="0.5,0.99,AutoSize,AutoSize"
-                AbsoluteLayout.LayoutFlags="PositionProportional"/>
-    </AbsoluteLayout>
+    <!-- Keep safe-area padding outside the layout whose native frame is under test. -->
+    <Grid SafeAreaEdges="Container"
+          BackgroundColor="{Binding BackgroundColor}">
+        <Grid.Triggers>
+            <DataTrigger TargetType="Grid" Binding="{Binding IsVisible}" Value="False">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+            </DataTrigger>
+        </Grid.Triggers>
+        <AbsoluteLayout AutomationId="MainLayout"
+                        SafeAreaEdges="None"
+                        FlowDirection="{Binding FlowDirection}"
+                        BackgroundColor="{Binding BackgroundColor}"
+                        IsVisible="{Binding IsVisible}">
+            <BoxView Color="Blue"
+                     x:Name="AbsoluteLayoutBoxView"
+                     AutomationId="BlueBox"
+                     AbsoluteLayout.LayoutBounds="{Binding Bounds}"
+                     AbsoluteLayout.LayoutFlags="{Binding LayoutFlags}"/>
+            <Label Text="Fixed Label"
+                   AutomationId="FixedLabel"
+                   TextColor="Red"
+                   FontSize="18"
+                   AbsoluteLayout.LayoutBounds="0.5,0,AutoSize,AutoSize"
+                   AbsoluteLayout.LayoutFlags="PositionProportional"/>
+            <Button Text="Click Me"
+                    AutomationId="ClickMeButton"
+                    AbsoluteLayout.LayoutBounds="0.5,0.99,AutoSize,AutoSize"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"/>
+        </AbsoluteLayout>
+    </Grid>
 </ContentPage>

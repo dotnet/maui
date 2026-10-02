@@ -213,6 +213,8 @@ namespace Microsoft.Maui.Handlers
 
 				if (platformImage is not null)
 				{
+					// Resource drawables can share tint state with images outside this SwipeItem.
+					platformImage = platformImage.Mutate();
 					var iconSize = GetIconSize(Handler);
 					// Drawable.ColorFilter is not authoritative because the base Android
 					// Drawable implementation always returns null.

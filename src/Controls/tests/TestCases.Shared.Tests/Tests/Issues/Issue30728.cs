@@ -18,12 +18,16 @@ public class Issue30728 : _IssuesUITest
 	{
 		App.WaitForElement("Tab 1");
 		App.Tap("Tab 1");
+		App.WaitForElement("Issue30728Content_t1");
 		App.WaitForElement("Tab 2");
 		App.Tap("Tab 2");
+		App.WaitForElement("Issue30728Content_t2");
 		App.WaitForElement("Tab 3");
 		App.Tap("Tab 3");
+		App.WaitForElement("Issue30728Content_t3");
 		App.WaitForElement("Tab 1");
 		App.Tap("Tab 1");
+		App.WaitForElement("Issue30728Content_t1");
 
 		VerifyScreenshot();
 	}

@@ -9,8 +9,13 @@ public partial class Issue7045 : Shell
 	public Issue7045()
 	{
 		InitializeComponent();
-		NavigateButton.Clicked += async (s, e) => await Current.GoToAsync($"//DetialPage");
-		;
-		DetailPage.BindingContext = this;
+		var detailPage = (ContentPage)Resources["DetailPage"];
+		BackCommand = new Command(async () =>
+		{
+			await Navigation.PopAsync();
+			NavigateButton.Text = "Back command executed";
+		});
+		NavigateButton.Clicked += async (s, e) => await Navigation.PushAsync(detailPage);
+		detailPage.BindingContext = this;
 	}
 }

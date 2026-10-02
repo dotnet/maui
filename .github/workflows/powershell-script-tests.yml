@@ -31,6 +31,7 @@ on:
       - 'eng/helix.proj'
       - 'eng/pipelines/arcade/stage-helix-tests.yml'
       - 'eng/pipelines/ci.Tests.ps1'
+      - 'eng/devices/android.cake'
       - 'eng/pipelines/ci-copilot.yml'
       - 'eng/pipelines/ci-official.yml'
       - 'eng/pipelines/ci-official.Tests.ps1'

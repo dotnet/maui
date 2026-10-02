@@ -18,8 +18,15 @@ public class Issue26864 : _IssuesUITest
 	public void ShellContentTitleNotRendering()
 	{
 		App.WaitForElement("Settings");
-		App.EnterFullScreen();
-		VerifyScreenshot();
+		try
+		{
+			App.EnterFullScreen();
+			VerifyScreenshot();
+		}
+		finally
+		{
+			App.ExitFullScreen();
+		}
 	}
 }
 #endif

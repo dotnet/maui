@@ -17,6 +17,52 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	{
 	}
 
+	IQuery MenuItemQuery(string text) => Device == TestDevice.Mac
+		? AppiumQuery.ByXPath($"//*[self::XCUIElementTypeMenuBarItem or self::XCUIElementTypeMenuItem][@title='{text}' or @label='{text}' or @name='{text}']")
+		: AppiumQuery.ByName(text);
+
+	void TapMenuItem(string text)
+	{
+		var query = MenuItemQuery(text);
+		App.WaitForElement(query);
+		Assert.That(() =>
+		{
+			var bounds = App.FindElement(query).GetRect();
+			return bounds.Width > 0 && bounds.Height > 0;
+		}, Is.True.After(5000, 100), $"Menu item '{text}' must be open before it can be selected.");
+		App.Tap(query);
+	}
+
+	void ResetLocations()
+	{
+		// Earlier menu-appearance tests leave a native menu open. Dismiss it without executing an item.
+		App.WaitForElement("ViewMenuBarItem");
+		App.Tap("ViewMenuBarItem");
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+		AssertText("StatusMessageLabel", "Application state has been reset.");
+		AssertText("CurrentLocationLabel", "Not set");
+		App.WaitForNoElement("LocationEntry");
+	}
+
+	void AssertText(string automationId, string text)
+	{
+		App.WaitForElement(automationId);
+		Assert.That(() => App.FindElement(automationId).GetText(), Is.EqualTo(text).After(5000, 100));
+	}
+
+	void AddLocation(string location)
+	{
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Add Location");
+		App.WaitForElement("LocationEntry");
+		App.ClearText("LocationEntry");
+		App.EnterText("LocationEntry", location);
+		App.Tap("ConfirmButton");
+		App.WaitForNoElement("LocationEntry");
+		AssertText("StatusMessageLabel", $"Added location: {location}");
+	}
+
 
 #if WINDOWS
 	[Test, Order(1)]
@@ -88,125 +134,61 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	[Test, Order(5)]
 	public void MenuBarItem_LocationsMenuChangeLocation()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Verify initial location
-		var locationLabel = App.FindElement("CurrentLocationLabel");
-		Assert.That(locationLabel.GetText(), Is.EqualTo("Not set"));
-
-		// Open Locations menu
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-
-		// Open Change Location submenu
-		App.WaitForElement("Change Location");
-		App.Tap("Change Location");
-
-		// Select first location (Redmond, USA)
-		// Note: Dynamic menu items may not have AutomationIds, need to tap by text
-		App.WaitForElement("Redmond, USA");
-		App.Tap("Redmond, USA");
-
-		// Verify location changed
-		var updatedLocation = App.FindElement("CurrentLocationLabel");
-		Assert.That(updatedLocation.GetText(), Is.EqualTo("Redmond, USA"));
-
+		ResetLocations();
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Change Location");
+		TapMenuItem("Redmond, USA");
+		AssertText("CurrentLocationLabel", "Redmond, USA");
+		AssertText("StatusMessageLabel", "Location changed to: Redmond, USA");
 	}
 
 	[Test, Order(6)]
 	public void MenuBarItem_LocationsMenuAddLocation()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open Locations menu
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-
-		// Click Add Location
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
-		App.WaitForElement("LocationEntry");
-		App.ClearText("LocationEntry");
-		App.EnterText("LocationEntry", "Tokyo, JP");
-
-		App.WaitForElement("ConfirmButton");
-		App.Tap("ConfirmButton");
-
-		// Verify new location added to collection
-		App.FindElementByText("Tokyo, JP");
-
+		ResetLocations();
+		AddLocation("Tokyo, JP");
+		AssertText("LocationName_3", "Tokyo, JP");
 	}
 
 	[Test, Order(7)]
 	public void MenuBarItem_LocationsMenuEditLocation()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
+		ResetLocations();
 		App.WaitForElement("LocationCheckBox_0");
 		App.Tap("LocationCheckBox_0"); // Select Redmond, USA
-
-		// Open Locations menu
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-
-		// Click Edit Location
-		App.WaitForElement("Edit Location");
-		App.Tap("Edit Location");
-
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Edit Location");
 		App.WaitForElement("LocationEntry");
 		App.ClearText("LocationEntry");
 		App.EnterText("LocationEntry", "Seattle, USA");
-
 		App.WaitForElement("ConfirmButton");
 		App.Tap("ConfirmButton");
-
-		App.FindElementByText("Seattle, USA");
-
+		App.WaitForNoElement("LocationEntry");
+		AssertText("LocationName_0", "Seattle, USA");
+		AssertText("StatusMessageLabel", "Updated 'Redmond, USA' to 'Seattle, USA'");
 	}
 
 	[Test, Order(8)]
 	public void MenuBarItem_LocationsMenuRemoveLocation()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
+		ResetLocations();
 		App.WaitForElement("LocationCheckBox_2");
 		App.Tap("LocationCheckBox_2"); // Select Berlin, DE
-
-		// Open Locations menu
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-
-		// Click Remove Location
-		App.WaitForElement("Remove Location");
-		App.Tap("Remove Location");
-
-		var locationLabel = App.FindElement("StatusMessageLabel");
-		Assert.That(locationLabel.GetText(), Is.EqualTo("Removed location: Berlin, DE"));
-
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Remove Location");
+		AssertText("StatusMessageLabel", "Removed location: Berlin, DE");
+		App.WaitForNoElement("LocationName_2");
+		AssertText("LocationName_0", "Redmond, USA");
+		AssertText("LocationName_1", "London, UK");
 	}
 
 	[Test, Order(9)]
 	public void MenuBarItem_ViewMenuRefreshCommand()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open View menu
-		App.WaitForElement("ViewMenuBar");
-		App.Tap("ViewMenuBar");
-
-		// Click Refresh
-		App.WaitForElement("RefreshMenuBarFlyoutItem");
-		App.Tap("RefreshMenuBarFlyoutItem");
-
-		// Verify status message shows timestamp
-		var statusLabel = App.FindElement("StatusMessageLabel");
-		Assert.That(statusLabel.GetText(), Does.Contain("Refreshed"));
+		ResetLocations();
+		TapMenuItem("ViewMenuBar");
+		TapMenuItem("RefreshMenuBarFlyoutItem");
+		AssertText("StatusMessageLabel", "Refreshed");
 	}
 
 #if TEST_FAILS_ON_CATALYST //For more info, see: https://github.com/dotnet/maui/issues/34038
@@ -308,27 +290,14 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	[Test, Order(14)]
 	public void MenuBarItem_DynamicLocationMenuItems()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open Locations menu and Change Location submenu
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-
-		App.WaitForElement("Change Location");
-		App.Tap("Change Location");
-
-		// Verify all three default locations exist
-		App.WaitForElement("Redmond, USA");
-		App.WaitForElement("London, UK");
-		App.WaitForElement("Berlin, DE");
-
-		// Select one location
-		App.Tap("London, UK");
-
-		// Verify location changed
-		var locationLabel = App.FindElement("CurrentLocationLabel");
-		Assert.That(locationLabel.GetText(), Is.EqualTo("London, UK"));
+		ResetLocations();
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Change Location");
+		App.WaitForElement(MenuItemQuery("Redmond, USA"));
+		App.WaitForElement(MenuItemQuery("London, UK"));
+		App.WaitForElement(MenuItemQuery("Berlin, DE"));
+		TapMenuItem("London, UK");
+		AssertText("CurrentLocationLabel", "London, UK");
 	}
 
 	[Test, Order(15)]
@@ -359,85 +328,39 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	[Test, Order(16)]
 	public void MenuBarItem_AddMultipleLocations()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Add first location
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
-		App.WaitForElement("LocationEntry");
-		App.ClearText("LocationEntry");
-		App.EnterText("LocationEntry", "Tokyo, JP");
-		App.Tap("ConfirmButton");
-
-		// Add second location
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
-		App.WaitForElement("LocationEntry");
-		App.ClearText("LocationEntry");
-		App.EnterText("LocationEntry", "Paris, FR");
-		App.Tap("ConfirmButton");
-
-		// Verify both locations added
-		App.WaitForElement("Tokyo, JP");
-		App.WaitForElement("Paris, FR");
+		ResetLocations();
+		AddLocation("Tokyo, JP");
+		AssertText("LocationName_3", "Tokyo, JP");
+		AddLocation("Paris, FR");
+		AssertText("LocationName_3", "Tokyo, JP");
+		AssertText("LocationName_4", "Paris, FR");
 	}
 
 	[Test, Order(17)]
 	public void MenuBarItem_CancelAddLocation()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Start adding location
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
-		// Enter text but cancel
+		ResetLocations();
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Add Location");
 		App.WaitForElement("LocationEntry");
 		App.EnterText("LocationEntry", "Cancelled Location");
 		App.Tap("CancelButton");
-
-		// Verify location was not added
-		App.WaitForElement("Operation cancelled");
+		AssertText("StatusMessageLabel", "Operation cancelled");
+		App.WaitForNoElement("LocationEntry");
+		App.WaitForNoElement("LocationName_3");
 	}
 
 	[Test, Order(18)]
 	public void MenuBarItem_ResetRestoresDefaultLocations()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Add a new location
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
-		App.WaitForElement("LocationEntry");
-		App.EnterText("LocationEntry", "Custom Location");
-		App.Tap("ConfirmButton");
-
-		// Verify custom location was added
-		var locationsCollection = App.WaitForElement("LocationsCollectionView");
-		App.WaitForElement("Custom Location");
-
-		// Reset
-		App.Tap("ResetButton");
-
-		// Verify only default locations remain
-		App.WaitForElement("Redmond, USA");
-		App.WaitForElement("London, UK");
-		App.WaitForElement("Berlin, DE");
-		App.WaitForNoElement("Custom Location");
+		ResetLocations();
+		AddLocation("Custom Location");
+		AssertText("LocationName_3", "Custom Location");
+		ResetLocations();
+		AssertText("LocationName_0", "Redmond, USA");
+		AssertText("LocationName_1", "London, UK");
+		AssertText("LocationName_2", "Berlin, DE");
+		App.WaitForNoElement("LocationName_3");
 	}
 
 	[Test, Order(19)]
@@ -490,47 +413,31 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	[Test, Order(21)]
 	public void MenuBarItem_EntryVisibilityToggling()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open Add Location (should make entry visible)
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
-		// Verify entry is visible
+		ResetLocations();
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Add Location");
 		App.WaitForElement("LocationEntry");
 		App.WaitForElement("ConfirmButton");
 		App.WaitForElement("CancelButton");
-
-		// Cancel (should hide entry)
 		App.Tap("CancelButton");
-
-		// Note: Entry visibility check would require checking if element is displayed
-		// The entry should be hidden after cancel
+		AssertText("StatusMessageLabel", "Operation cancelled");
 		App.WaitForNoElement("LocationEntry");
+		App.WaitForNoElement("ConfirmButton");
+		App.WaitForNoElement("CancelButton");
 	}
 
 	[Test, Order(22)]
 	public void MenuBarItem_AddEmptyLocationValidation()
 	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Try to add empty location
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-		App.WaitForElement("Add Location");
-		App.Tap("Add Location");
-
+		ResetLocations();
+		TapMenuItem("LocationsMenuBar");
+		TapMenuItem("Add Location");
 		App.WaitForElement("LocationEntry");
-		// Don't enter any text, just confirm
+		App.ClearText("LocationEntry");
 		App.Tap("ConfirmButton");
-
-		// Verify validation message
-		var statusLabel = App.FindElement("StatusMessageLabel");
-		Assert.That(statusLabel.GetText(), Does.Contain("cannot be empty").Or.Contain("empty"));
+		AssertText("StatusMessageLabel", "Location name cannot be empty");
+		App.WaitForElement("LocationEntry");
+		App.WaitForNoElement("LocationName_3");
 	}
 }
 #endif

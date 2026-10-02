@@ -13,10 +13,33 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override string GalleryPageName => CollectionViewFeatureMatrix;
 		protected override string GallerySubPageButton => "EmptyViewButton";
+		protected override bool ResetAfterEachTest => true;
 
 		public CollectionView_EmptyViewFeatureTests(TestDevice device)
 			: base(device)
 		{
+		}
+
+		void ConfigureOptions(params string[] options)
+		{
+			CollectionViewFeatureTestActions.OpenOptions(App);
+			foreach (var option in options)
+				CollectionViewFeatureTestActions.SelectOption(App, option, "EmptyViewNone");
+			CollectionViewFeatureTestActions.ApplyOptions(App);
+		}
+
+		void AssertSizedEmptyViewTemplate()
+		{
+			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
+			App.WaitForNoElement("Custom Empty View (Sized)");
+			if (Device == TestDevice.Android)
+			{
+				var density = App.GetDisplayDensity();
+				Assert.That(() => App.WaitForElement("EmptyViewTemplateLabel").GetRect().Width,
+					Is.EqualTo(300 * density).Within(1).After(5000, 100));
+				Assert.That(() => App.WaitForElement("EmptyViewTemplateLabel").GetRect().Height,
+					Is.EqualTo(200 * density).Within(1).After(5000, 100));
+			}
 		}
 
 		[Test]
@@ -559,45 +582,26 @@ namespace Microsoft.Maui.TestCases.Tests
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndEmptyViewTemplate()
 		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewCustomSize");
-			App.Tap("EmptyViewCustomSize");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
+			ConfigureOptions("EmptyViewCustomSize", "EmptyViewTemplateGrid");
 			App.WaitForElement("No Template Items Available(Grid View)");
+			App.WaitForNoElement("Custom Empty View (Sized)");
 		}
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndCustomEmptyViewTemplateSize()
 		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewCustomSize");
-			App.Tap("EmptyViewCustomSize");
-			App.WaitForElement("EmptyViewTemplateCustomSize");
-			App.Tap("EmptyViewTemplateCustomSize");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
+			ConfigureOptions("EmptyViewCustomSize", "EmptyViewTemplateCustomSize");
+			AssertSizedEmptyViewTemplate();
 		}
 
 		[Test]
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void ValidateEmptyViewStringDisplayed_AndBasicItemTemplateSetFirst()
 		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
+			ConfigureOptions("ItemTemplateBasic", "EmptyViewString");
 			App.WaitForElement("No Items Available(String)");
+			App.WaitForNoElement("No Items Available(Grid View)");
 		}
 
 		[Test]
@@ -634,15 +638,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void ValidateCustomEmptyViewDisplayedSetFirst_WhenBasicItemTemplate()
 		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
+			ConfigureOptions("EmptyViewGrid", "ItemTemplateBasic");
 			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForNoElement("No Items Available(String)");
 		}
 
 		[Test]
@@ -1064,15 +1062,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void ValidateCustomSizeEmptyViewTemplateDisplayed_AndCustomEmptyView()
 		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewTemplateCustomSize");
-			App.Tap("EmptyViewTemplateCustomSize");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
+			ConfigureOptions("EmptyViewTemplateCustomSize", "EmptyViewGrid");
+			AssertSizedEmptyViewTemplate();
+			App.WaitForNoElement("No Items Available(Grid View)");
 		}
 
 		[Test]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,9 +18,22 @@ public partial class AbsoluteLayoutOptionsPage : ContentPage
 		BindingContext = _viewModel;
 	}
 
-	private void ApplyButton_Clicked(object sender, EventArgs e)
+	private async void ApplyButton_Clicked(object sender, EventArgs e)
 	{
-		Navigation.PopAsync();
+		if (!double.TryParse(XEntry.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
+			|| !double.TryParse(YEntry.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
+			|| !double.TryParse(WidthEntry.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var width)
+			|| !double.TryParse(HeightEntry.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
+		{
+			await DisplayAlertAsync("Invalid layout bounds", "Enter numeric bounds using a dot as the decimal separator.", "OK");
+			return;
+		}
+
+		_viewModel.X = x;
+		_viewModel.Y = y;
+		_viewModel.Width = width;
+		_viewModel.Height = height;
+		await Navigation.PopAsync(animated: false);
 	}
 
 	private void OnLayoutFlagCheckedChanged(object sender, CheckedChangedEventArgs e)

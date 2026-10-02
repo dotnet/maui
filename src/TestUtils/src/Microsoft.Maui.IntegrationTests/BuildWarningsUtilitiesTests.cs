@@ -110,7 +110,7 @@ public class BuildWarningsUtilitiesTests : IDisposable
 		info.ArgumentList.Add("-v:diag");
 		info.ArgumentList.Add($"-bl:{binlog}");
 		var output = ToolRunner.Run(info, out var exitCode, timeoutInSeconds: 60, output: _output);
-		Assert.Equal(1, exitCode);
+		Assert.True(exitCode == 1, $"Expected the fixture build to exit with code 1, but got {exitCode}.{Environment.NewLine}{output}");
 		Assert.True(File.Exists(binlog), output);
 		return binlog;
 	}

@@ -8,7 +8,7 @@
                      Clicked="ApplyButton_Clicked"
                      AutomationId="Apply"/>
     </ContentPage.ToolbarItems>
-    <ScrollView>
+    <ScrollView AutomationId="OptionsScrollView">
         <Grid Padding="1"
               RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
             <StackLayout Grid.Row="1"
