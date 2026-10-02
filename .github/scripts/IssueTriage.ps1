@@ -434,7 +434,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     if ((Test-Interrogative $withoutLabel) -or
-        (Test-ConditionalEvidence $withoutLabel -Decision)) { return $false }
+        ((Test-ConditionalEvidence $withoutLabel -Decision) -and -not $prohibited)) { return $false }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
         $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
     }

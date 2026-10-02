@@ -64,6 +64,9 @@ substitutes for current original issue/comment evidence.
   authorize neither the change nor a later reversal. Withhold mixed/ambiguous
   paragraphs and require a separate unconditional decision; do not infer that
   later evidence activated a prior conditional commitment.
+  Directed prohibitions remain conservative vetoes on older authority: "Do not
+  apply p/1 until validation is complete" cannot revive an earlier approval.
+  That veto does not authorize a new removal or treat the condition as completed.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a

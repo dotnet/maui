@@ -63,6 +63,9 @@ not a current priority commitment, nor is "Remove p/1 once validation is complet
 a completed revocation. Ambiguous mixed paragraphs are withheld; cite a separate
 unconditional decision rather than inferring that later evidence activated a
 previous condition.
+Directed prohibitions retain the existing conservative veto on older authority:
+"Do not apply p/1 until validation is complete" still blocks an older approval.
+It does not authorize a new removal or prove completion of the condition.
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
 Link destinations, titles, reference definitions and image metadata cannot
