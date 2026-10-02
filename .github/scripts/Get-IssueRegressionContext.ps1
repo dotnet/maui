@@ -294,15 +294,67 @@ function Invoke-IssueRegressionTrigger {
     'should_run=true' >> $env:GITHUB_OUTPUT
 }
 
+function Assert-IssueRegressionOutputTarget {
+    param(
+        [Parameter(Mandatory)]$Output,
+        [Parameter(Mandatory)][ValidateRange(1, [int]::MaxValue)][int]$IssueNumber,
+        [ValidatePattern('\A[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\z')][string]$Repository = 'dotnet/maui'
+    )
+
+    if ($null -eq $Output -or $Output.items -isnot [array]) {
+        throw 'The report output must contain an items array.'
+    }
+    foreach ($item in $Output.items) {
+        if ($item.type -cne 'add_comment') {
+            if ($item.type -cnotin @('noop', 'missing_data', 'missing_tool', 'report_incomplete')) {
+                throw 'The report output contains an unsupported operation.'
+            }
+            continue
+        }
+        foreach ($field in @('item_number', 'issue_number', 'pr-number',
+                'pull_request_number', 'pr_number', 'pr', 'pull_number', 'discussion_number')) {
+            $property = $item.PSObject.Properties[$field]
+            if ($null -eq $property -or $null -eq $property.Value) { continue }
+            $number = 0
+            if (-not [int]::TryParse([string]$property.Value, [ref]$number) -or $number -ne $IssueNumber) {
+                throw "Report target '$field' does not match the triggering issue."
+            }
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$item.repo) -and
+            ([string]$item.repo).Trim() -cne $Repository -and
+            ([string]$item.repo).Trim() -cne ($Repository -split '/')[1]) {
+            throw 'The report repository does not match the triggering repository.'
+        }
+        foreach ($field in @('comment_id', 'commentId', 'comment-id', 'target')) {
+            if ($null -ne $item.PSObject.Properties[$field].Value) {
+                throw 'A regression report must create a new comment, not edit an existing comment.'
+            }
+        }
+    }
+}
+
 function Complete-IssueRegressionRequest {
     param(
         [Parameter(Mandatory)]$Event,
-        [Parameter(Mandatory)][long]$PublishedCommentId
+        [Parameter(Mandatory)][long]$PublishedCommentId,
+        [ValidatePattern('\A[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\z')][string]$Repository = 'dotnet/maui'
     )
 
     if ($PublishedCommentId -le 0) { throw 'A published report comment ID is required.' }
     $request = Get-IssueRegressionRequest -Event $Event
     if ($null -eq $request -or [string]::IsNullOrWhiteSpace($request.commentNodeId)) { return }
+    $commentJson = Invoke-GhCommandWithRetry -Arguments @(
+        'api', "repos/$Repository/issues/comments/$PublishedCommentId"
+    ) -Description 'verify published regression report scope' -RequireOutput
+    $comment = $commentJson | ConvertFrom-Json
+    if ($null -eq $comment -or $comment.id -ne $PublishedCommentId -or
+        [string]::IsNullOrWhiteSpace([string]$comment.issue_url)) {
+        throw 'The published report comment could not be verified.'
+    }
+    if ($comment.issue_url -cne "https://api.github.com/repos/$Repository/issues/$($request.issueNumber)") {
+        Write-Warning 'The published report is outside the triggering issue; leaving the command visible.'
+        return
+    }
     if (-not (Test-IssueRegressionPermission -Requester $request.requester)) { return }
 
     Write-Host "Report $PublishedCommentId was published; minimizing the authorized command."

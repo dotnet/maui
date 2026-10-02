@@ -45,7 +45,8 @@ edited comments, bots, extra arguments and other `/issue` subcommands are ignore
 The workflow checks the comment author's current `write`, `maintain`, or `admin`
 permission before collecting evidence and again before activation. The command
 stays visible until the safe-output job has actually published a report; a separate
-trusted completion job rechecks permission before minimizing it, including when
+trusted completion job fetches the published comment, requires its exact triggering
+issue URL, and rechecks permission before minimizing it, including when
 the non-cancelled agent job failed after producing the published output. Cancellation
 or a missing publication receipt skips completion. Downstream failures therefore
 cannot make an unanswered command appear resolved. Private organization
@@ -85,6 +86,11 @@ The command is **report-only**: it does not run reproduction code, builds, tests
 or bisects, change labels, or push a fix. When confirmation needs execution, it
 identifies the exact comparison to perform. Only the separate safe-output job
 posts the report, restricted to the triggering issue with issue-only write access.
+A trusted pre-publication step checks the bounded regular output file and rejects
+cross-issue target aliases, repository overrides, and existing-comment edits before
+the native handler runs. This is required because the pinned handler prioritizes
+an explicit `item_number` over `target: triggering`; configuration alone is not
+the publication boundary.
 Both agent-failure and custom failed-job issue reporters are disabled, so a failed
 completion job cannot open an untargeted repository issue.
 

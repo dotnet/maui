@@ -123,6 +123,26 @@ network:
     - img.shields.io
 
 safe-outputs:
+  steps:
+    - name: Checkout trusted report-scope validation
+      uses: actions/checkout@v7.0.1
+      with:
+        ref: ${{ github.sha }}
+        persist-credentials: false
+    - name: Validate report scope before any publication
+      shell: pwsh
+      env:
+        AGENT_OUTPUT_PATH: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+        TRIGGERING_ISSUE_NUMBER: ${{ github.event.issue.number }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        . .github/scripts/Get-IssueRegressionContext.ps1
+        . .github/scripts/shared/Copy-BoundedDiagnosticFile.ps1
+        $path = Join-Path $env:RUNNER_TEMP 'issue-regression-publication/agent_output.json'
+        $copy = Copy-BoundedDiagnosticFile -Source $env:AGENT_OUTPUT_PATH -Destination $path -MaxBytes 1MB
+        if ($copy.Truncated) { throw 'The report output exceeds the publication validation limit.' }
+        $output = Get-Content -Raw -LiteralPath $path | ConvertFrom-Json
+        Assert-IssueRegressionOutputTarget -Output $output -IssueNumber $env:TRIGGERING_ISSUE_NUMBER
   messages:
     body-header: "<!-- Issue Regression Trace -->"
   add-comment:

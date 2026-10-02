@@ -960,6 +960,9 @@ iOS, Android
             Set-TestResponse $script:PermissionEndpoint @{ permission = 'write' }
             Set-TestResponse $script:IssueEndpoint (New-TestIssue)
             Set-TestResponse 'repos/dotnet/maui/issues/12345/comments?per_page=100&page=1' @()
+            Set-TestResponse 'repos/dotnet/maui/issues/comments/123' @{
+                id = 123; issue_url = 'https://api.github.com/repos/dotnet/maui/issues/12345'
+            }
             Set-TestResponse 'graphql' @{ data = @{ minimizeComment = @{ minimizedComment = @{ isMinimized = $true } } } }
         }
 
