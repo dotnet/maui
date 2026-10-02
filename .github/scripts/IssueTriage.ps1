@@ -332,50 +332,66 @@ function Get-Prose([string]$Body) {
     return Get-MarkdownText $Body -ExcludeLinkMetadata
 }
 
+function Test-Interrogative([string]$Prose) {
+    return $Prose.Contains('?') -or
+        $Prose -match '(?i)\b(can|could|should|would|will|may|might|is|are|was|were|does|do|did|has|have)\s+(we|i|you|they|he|she|this|it|that|LABEL|the (?:issue|report|behavior))\b'
+}
+
+function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence, [switch]$Superseding) {
+    $labelText = '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
+        '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
+    $addVerbs = 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized'
+    $removeVerbs = 'remove|drop|clear|withdraw|revoke|reject|decline'
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|rather than)\b).){0,80}'
+    $candidate = $Paragraph
+    $prohibited = $false
+    if ($Superseding) {
+        $negatedVerbs = if ($Action -eq 'remove') { $addVerbs } else { $removeVerbs }
+        $prohibition = "(?i)\b(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=$gap$labelText)"
+        $prohibited = [regex]::IsMatch($candidate, $prohibition)
+        $candidate = [regex]::Replace($candidate, $prohibition, $Action)
+    }
+    $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if (Test-Interrogative $withoutLabel) { return $false }
+    if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
+        $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
+    }
+    if ($withoutLabel -match "(?i)\b(not|no|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|do not|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
+    if ($prohibited) { return $true }
+    if ($Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
+        $canonical = @([regex]::Matches($candidate,
+            '(?i)\bduplicate of\s+(?:#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
+            ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
+        if ($canonical.Count -ne 1 -or -not $sourceMap.ContainsKey($canonical[0]) -or
+            (-not $Superseding -and @($Evidence | Where-Object { $_.source -ceq $canonical[0] }).Count -eq 0)) { return $false }
+        return $true
+    }
+    if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
+        $candidate -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
+        $candidate -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
+    $verbs = if ($Action -eq 'add') { $addVerbs } else { $removeVerbs }
+    return $candidate -match "(?i)\b(?:$verbs)\b$gap$labelText"
+}
+
 function Test-Decision($Evidence, [string]$Label, [string]$Action) {
     foreach ($reference in $Evidence) {
         $source = $sourceMap[$reference.source]
-        if (-not $source.isMaintainer -or $source.kind -cne 'comment' -or
-            -not (Get-Prose $source.body).Contains($reference.quote, [StringComparison]::Ordinal)) { continue }
-        $paragraphs = @((Get-Prose $source.body) -split '\r?\n[ \t]*\r?\n' |
+        if (-not $source.isMaintainer -or $source.kind -cne 'comment') { continue }
+        $prose = Get-Prose $source.body
+        $paragraphs = @($prose -split '\r?\n[ \t]*\r?\n' |
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
-        if ($paragraphs.Count -ne 1) { continue }
-        $quote = $paragraphs[0]
-        $labelText = '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
-            '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
+        if ($paragraphs.Count -ne 1 -or
+            -not (Test-DecisionParagraph $paragraphs[0] $Label $Action $Evidence)) { continue }
+        $oppositeAction = if ($Action -eq 'add') { 'remove' } else { 'add' }
         $oppositeEvent = if ($Action -eq 'add') { 'unlabeled' } else { 'labeled' }
-        $oppositeWords = if ($Action -eq 'add') {
-            "remove|drop|withdraw|revoke|reject|decline|do not apply|don't apply|do not add|don't add"
-        } else { "add|apply|set|approve|accept|do not remove|don't remove" }
         $superseded = @($sourceMap.Values | Where-Object {
             $_.isMaintainer -and (Get-SupersessionTime $_) -gt $source.createdAt -and (
                 ($_.kind -ceq $oppositeEvent -and $_.body -ceq "${oppositeEvent}: $Label") -or
-                ($_.kind -ceq 'comment' -and (Get-Prose $_.body) -match "(?i)\b(?:$oppositeWords)\b.{0,80}$labelText")
+                ($_.kind -ceq 'comment' -and @((Get-Prose $_.body) -split '\r?\n[ \t]*\r?\n' |
+                    Where-Object { Test-DecisionParagraph $_ $Label $oppositeAction @() -Superseding }).Count -gt 0)
             )
         })
-        if ($superseded.Count -gt 0) { continue }
-        $withoutLabel = [regex]::Replace($quote, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
-        if ($Action -eq 'add' -and $Label -in @('s/not-a-bug', 's/duplicate 2️⃣') -and
-            ($quote.Contains('?') -or
-                $quote -match '(?i)\b(is|are|was|were|does|do|did|has|have)\s+(this|it|that|the (?:issue|report|behavior))\b')) { continue }
-        if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
-            $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
-        }
-        if ($withoutLabel -match "(?i)\b(not|no|don't|do not|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { continue }
-        if ($Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
-            $canonical = @([regex]::Matches($quote,
-                '(?i)\bduplicate of\s+(?:#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
-                ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
-            if ($canonical.Count -ne 1 -or -not $sourceMap.ContainsKey($canonical[0]) -or
-                @($Evidence | Where-Object { $_.source -ceq $canonical[0] }).Count -eq 0) { continue }
-            return $true
-        }
-        if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
-            $quote -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
-            $quote -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
-        $verbs = if ($Action -eq 'add') { 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized' }
-            else { 'remove|drop|clear|withdraw|revoke' }
-        if ($quote -match "(?i)\b(?:$verbs)\b.{0,80}$labelText") { return $true }
+        if ($superseded.Count -eq 0) { return $true }
     }
     return $false
 }
@@ -404,7 +420,49 @@ function Test-PositiveValidation([string]$Paragraph) {
         $Paragraph -match "(?i)\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b"
 }
 
-function Get-Confirmation($Evidence) {
+function Get-FrameworkVersion([string]$Text) {
+    $match = [regex]::Match($Text, '(?i)^(\d+(?:\.\d+){0,3})(?:[- .]*(preview|rc)[- .]*(\d+))?$')
+    if (-not $match.Success) { return $null }
+    $parts = @($match.Groups[1].Value -split '\.')
+    while ($parts.Count -lt 4) { $parts += '0' }
+    $core = $null
+    if (-not [Version]::TryParse(($parts -join '.'), [ref]$core)) { return $null }
+    $number = 0
+    if ($match.Groups[3].Success -and -not [int]::TryParse($match.Groups[3].Value, [ref]$number)) { return $null }
+    $phase = switch ($match.Groups[2].Value.ToLowerInvariant()) { 'preview' { 0 }; 'rc' { 1 }; default { 2 } }
+    return @{ core = $core; phase = $phase; number = $number }
+}
+
+function Test-RegressionValidation([string]$Paragraph) {
+    $framework = '(?:\.NET(?:\s+MAUI)?|MAUI)'
+    $version = '\d+(?:\.\d+){0,3}(?:[- .]*(?:preview|rc)[- .]*\d+)?(?![\w.])'
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|not|never|cannot|didn.t|isn.t|wasn.t|maybe|perhaps|possibly|probably|likely|suspect|assume)\b).){0,80}'
+    $earlier = "\b(?:older|previous|earlier|prior)\s+$framework\b"
+    $working = '\b(?:reported behavior|same behavior|behavior|scenario|feature)\s+(?:(?:was|is)\s+)?(?:worked|working|works)\b'
+    if ($Paragraph -match "(?i)$working$gap$earlier|$earlier$gap$working") { return $true }
+    $versions = @([regex]::Matches($Paragraph,
+        "(?i)(?<![\w])$framework\s+(?:versions?\s+)?(?<versions>$version(?:\s*(?:,|and|or|vs\.?|versus|to)\s*$version)*)") |
+        ForEach-Object { [regex]::Matches($_.Groups['versions'].Value, $version) } |
+        ForEach-Object { $_.Value } | Sort-Object -Unique)
+    if ($versions.Count -lt 2) { return $false }
+    if ($Paragraph -notmatch "(?i)\b(?:tested|validated|verified|checked|compared)\b$gap(?<![\w])$framework\s+(?:versions?\s+)?$version|(?<![\w])$framework\s+(?:versions?\s+)?$version$gap\b(?:tested|validated|verified|checked|compared)\b") {
+        return $false
+    }
+    $testedVersions = @($versions | ForEach-Object { Get-FrameworkVersion $_ } | Where-Object { $null -ne $_ })
+    foreach ($boundary in [regex]::Matches($Paragraph,
+        "(?i)\b(?:from|since|introduced(?: in| with)?|starting(?: in| with)?|first bad(?: version)?(?: is|:)?|regressed (?:in|since|from))\s+(?:$framework\s+(?:version\s+)?)?(?<version>$version)")) {
+        if ($versions -notcontains $boundary.Groups['version'].Value) { continue }
+        $firstBad = Get-FrameworkVersion $boundary.Groups['version'].Value
+        if ($null -eq $firstBad) { continue }
+        if (@($testedVersions | Where-Object {
+            $_.core -lt $firstBad.core -or ($_.core -eq $firstBad.core -and
+                ($_.phase -lt $firstBad.phase -or ($_.phase -eq $firstBad.phase -and $_.number -lt $firstBad.number)))
+        }).Count -gt 0) { return $true }
+    }
+    return $false
+}
+
+function Get-Confirmation($Evidence, [switch]$RequireRegression) {
     return @($Evidence | Where-Object {
         $reference = $_
         $source = $sourceMap[$reference.source]
@@ -415,10 +473,19 @@ function Get-Confirmation($Evidence) {
         $prose.Contains($reference.quote, [StringComparison]::Ordinal) -and
         $prose -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
+        -not (Test-Interrogative $paragraphs[0]) -and
         (Test-PositiveValidation $paragraphs[0]) -and
+        (-not $RequireRegression -or (Test-RegressionValidation $paragraphs[0])) -and
         $paragraphs[0] -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
         -not (Test-NegativeValidation $prose)
     })
+}
+
+function Test-BlockedValidation([string]$Prose) {
+    $resource = '(?:sample|repro(?:duction)?|repo(?:sitory)?|link|attachment|archive)'
+    $blocked = '(?:inaccessible|unavailable|expired|missing|broken|not found|404|403|unauthorized|forbidden)'
+    return $Prose -match "(?i)\b$resource\b.{0,60}\b$blocked\b|\b$blocked\b.{0,60}\b$resource\b" -or
+        $Prose -match '(?i)\b(?:timed out|timeout|permission denied|authentication failed|authorization failed|network failure|infrastructure failure|build failed|failed to (?:download|clone|build|compile|install)|cannot (?:download|clone|build|compile|install))\b'
 }
 
 function Get-TechnicalAssessment($Evidence, [string]$Label) {
@@ -431,6 +498,7 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         if ($paragraphs.Count -ne 1) { return $false }
         $paragraph = $paragraphs[0]
+        if (Test-Interrogative $paragraph) { return $false }
         switch ($Label) {
             's/triaged' {
                 $paragraph -match '(?i)\b(reviewed|triaged|investigated)\b.{0,50}\b(issue|report|reproduction|sample|behavior)\b|\b(completed|finished)\b.{0,30}\b(triage|review|investigation)\b' -and
@@ -442,10 +510,12 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
                 $paragraph -notmatch "(?i)\b(not|cannot|can't|do not|don't)\b.{0,30}\b(try|retest|test|verify|update|upgrade)\b"
             }
             's/no-repro' {
-                $paragraph -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b"
+                $paragraph -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b" -and
+                -not (Test-BlockedValidation $prose)
             }
             'not-regression' {
-                $paragraph -match '(?i)\bnot (?:a )?regression\b|\bsame (?:behavior|issue|problem)\b.{0,80}\b(?:older|previous|earlier)\b'
+                $paragraph -match '(?i)\bnot (?:a )?regression\b|\bsame (?:behavior|issue|problem)\b.{0,80}\b(?:older|previous|earlier)\b' -and
+                $paragraph -notmatch "(?i)\b(not|never|no longer|isn.t|wasn.t|doesn.t)\s+(?:(?:the|exactly|quite|really|actually|necessarily|at all|even)\s+){0,3}same (?:behavior|issue|problem)\b|\b(not|isn.t|wasn.t)\s+not (?:a )?regression\b"
             }
             'blazor-webview2-regression' {
                 $paragraph -match '(?i)\bWebView2\b' -and
@@ -464,8 +534,9 @@ function Assert-Evidence($Decision) {
         Assert-Keys $reference @('source', 'quote')
         if ($reference.source -isnot [string] -or -not $sourceMap.ContainsKey($reference.source) -or
             $reference.quote -isnot [string] -or $reference.quote.Length -lt 12 -or $reference.quote.Length -gt 1500 -or
-            -not $sourceMap[$reference.source].body.Contains($reference.quote, [StringComparison]::Ordinal)) {
-            throw "Invalid or fabricated evidence for $($Decision.label)."
+            -not $sourceMap[$reference.source].body.Contains($reference.quote, [StringComparison]::Ordinal) -or
+            -not (Get-Prose $sourceMap[$reference.source].body).Contains($reference.quote, [StringComparison]::Ordinal)) {
+            throw "Invalid, fabricated or non-prose evidence for $($Decision.label)."
         }
     }
     if (@($Decision.evidence | Where-Object {
@@ -506,7 +577,8 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
     }
     if ($Action -eq 'add') {
         if ($label -in $policy.confirmation -or $label.StartsWith('regressed-in-')) {
-            $confirmations = @(Get-Confirmation $Decision.evidence)
+            $requireRegression = $label -ceq 'i/regression' -or $label.StartsWith('regressed-in-')
+            $confirmations = @(Get-Confirmation $Decision.evidence -RequireRegression:$requireRegression)
             if ($confirmations.Count -eq 0) { throw "No positive authorized validation supports $label." }
             $latest = @($confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
             $contrary = @($Snapshot.sources | Where-Object {
@@ -534,7 +606,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             if ($version -match '^(\d+)-(preview|rc)(\d+)$') {
                 $versionPattern = "$($Matches[1])(?:\.0(?:\.0)?)?[- .]*$($Matches[2])[- .]*$($Matches[3])"
             }
-            if ($version -notmatch '^\d' -or @($Decision.evidence | Where-Object {
+            if ($version -notmatch '^\d' -or @($confirmations | Where-Object {
                 $_.quote -match "(?i)\b(first bad|from|since|introduced|starting|regressed).{0,80}\b$versionPattern\b"
             }).Count -eq 0) { throw "No first-bad-version evidence supports $label." }
         }
@@ -555,7 +627,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         $transitionEvidence = @()
         foreach ($replacementLabel in $replacement) {
             if ($policy.confirmation -ccontains $replacementLabel) {
-                $transitionEvidence += @(Get-Confirmation $Decision.evidence)
+                $transitionEvidence += @(Get-Confirmation $Decision.evidence -RequireRegression:($replacementLabel -ceq 'i/regression'))
             } elseif ($policy.technicalAssessment -ccontains $replacementLabel) {
                 $transitionEvidence += @(Get-TechnicalAssessment $Decision.evidence $replacementLabel)
             } elseif ((Get-Category $replacementLabel) -ceq 'content') {

@@ -33,15 +33,23 @@ Quote exact source text supporting each proposed change.
   Reproduction must concern the reported issue/behavior, not merely running its
   sample. A postposed "but not the reported behavior" negates confirmation too.
 - `potential-regression` records a plausible reported regression, not proof.
-  `i/regression` requires confirmation. `regressed-in-*` records the demonstrated
+  `i/regression` requires authorized change-of-behavior evidence, not just
+  reproduction: an earlier working .NET/MAUI release or a demonstrated boundary
+  across explicitly tested framework versions. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
   MAUI regressions from OS changes and Xamarin.Forms migration differences.
+  Boundary evidence includes a tested version before the first bad version;
+  generic build success does not establish earlier working behavior.
+  Its exact first-bad-version citation must come from authorized regression evidence.
 - Priority, roadmap/proposal acceptance, backport approval, release claims and
   contributor suitability require an explicit existing maintainer decision.
   Do not convert impact or upvotes into a new release commitment. Evidence must
   explicitly name the exact label and the decision to add/remove it.
   A decision for a longer label cannot authorize its prefix: for example,
   `partner/syncfusion` does not authorize `partner`.
+  Questions cannot authorize any label or either action. The same affirmative
+  polarity check applies to later reversals: "Do not remove p/1" and "Should we
+  remove p/1?" do not revoke "Apply p/1"; an explicit "Do not apply p/1" does.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a
@@ -56,9 +64,14 @@ Quote exact source text supporting each proposed change.
   supply a fresh confirmation or explicit maintainer decision instead.
 - Quote unquoted prose, not lazy blockquote continuations, indented/fenced code
   or inline code, link destinations/titles/reference definitions or image metadata.
+  Every citation, including content labels and narrow removals, must survive
+  prose filtering. Samples/code may inform analysis but are not authority quotes.
   Only a link's visible prose can support a decision.
   Review/no-repro/version recommendations need the corresponding technical
   assessment, not merely a comment from an authorized author.
+  No-repro cannot be established by an inaccessible sample, failed build/download,
+  authentication/network failure or timeout. A negated same-behavior comparison
+  cannot support not-regression.
 
 ## Label selection
 

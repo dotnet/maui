@@ -54,16 +54,25 @@ must explicitly name the exact label and an affirmative action in unquoted
 maintainer prose, for example `Apply p/1` or `Remove backport/approved`.
 Exact label token boundaries apply to approvals and superseding decisions:
 `Apply partner/syncfusion` does not also approve `partner`.
+All label decisions and both actions share non-question and affirmative-polarity
+checks with their supersession scan. "Do not remove p/1" and "Should we remove
+p/1?" cannot revoke "Apply p/1"; a directed "Do not apply p/1" can veto it.
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
 Link destinations, titles, reference definitions and image metadata cannot
 authorize decisions; link text remains visible prose. Reference intake separately
 retains link targets so canonical same-repository issue links are still fetched.
+Every evidence quote must survive the same prose filter, including content labels
+and narrow removals. Code/samples can inform analysis but cannot serve as
+authority quotations.
 Suggestions and tentative candidates are not approvals.
 Tentative validation such as "should be reproducible on Android" is not an
 observed reproduction and cannot support confirmation labels.
 Technical-state labels require their specific affirmative review, reproduction
 outcome or version recommendation, not merely an authorized comment author.
+Technical-assessment questions are rejected. No-repro is withheld when the cited
+comment reports resource access, build/download, authentication/network failure or
+timeout; not-regression cannot use a negated same-behavior comparison.
 Try-latest recommendations must identify a concrete MAUI version.
 An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
@@ -87,6 +96,13 @@ are conservatively withheld until a fresh unambiguous confirmation is supplied.
 Positive reproduction must concern the reported issue/behavior, not merely
 running the sample. Postposed negation of that outcome also vetoes confirmation
 and participates in the later-contrary-evidence scan.
+Regression confirmation additionally requires an earlier working .NET/MAUI
+release or a demonstrated boundary across explicitly tested framework versions.
+Boundary evidence must include a tested version preceding the first bad version;
+preview and RC ordering is recognized, and generic build success is insufficient.
+Generic reproduction on a platform/OS version is not proof of regression.
+This gate also applies to suspected-to-confirmed transitions and first-bad-version
+labels, whose exact version citation must come from authorized regression evidence.
 Contrary comment edits use their last-modified time; immutable label events use
 their creation time. Affirmative support retains its original creation time so a
 cosmetic edit cannot revive an old approval or confirmation after a later
