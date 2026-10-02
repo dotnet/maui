@@ -41,15 +41,23 @@ substitutes for current original issue/comment evidence.
   the keyboard was visible" is distinct from a contingent outcome.
   Reproduction must concern the reported issue/behavior, not merely running its
   sample. A postposed "but not the reported behavior" negates confirmation too.
+  Use an explicit target such as "this issue" or "the reported behavior".
+  Bare issue/bug/problem mentions and another/different/unrelated outcomes
+  cannot establish confirmation, even if the selected quote omits the qualifier.
 - `potential-regression` records a plausible reported regression, not proof.
   `i/regression` requires authorized change-of-behavior evidence, not just
-  reproduction: an earlier working .NET/MAUI release or a demonstrated boundary
-  across explicitly tested framework versions. `regressed-in-*` records the demonstrated
+  reproduction: explicit working behavior tied to an earlier named .NET/MAUI
+  version and failing/reproducing behavior tied to a later named version.
+  Merely listing tested versions or asserting "regressed from" proves neither
+  their outcomes nor the boundary. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
   MAUI regressions from OS changes and Xamarin.Forms migration differences.
   Boundary evidence includes a tested version before the first bad version;
   generic build success does not establish earlier working behavior.
   Its exact first-bad-version citation must come from authorized regression evidence.
+  The citation must include both outcomes and the explicit first-bad boundary;
+  it cannot select another failing version or hide contradictory results.
+  Ambiguous/unrecognized wording is withheld, not inferred as passing behavior.
 - Priority, roadmap/proposal acceptance, backport approval, release claims and
   contributor suitability require an explicit existing maintainer decision.
   Do not convert impact or upvotes into a new release commitment. Evidence must
@@ -89,6 +97,9 @@ substitutes for current original issue/comment evidence.
   No-repro cannot be established by an inaccessible sample, failed build/download,
   authentication/network failure or timeout. A negated same-behavior comparison
   cannot support not-regression.
+  Not-regression also needs an unconditional, non-tentative assessment.
+  "Probably not a regression" and conditional comparisons cannot add the label
+  or remove potential-regression through that transition.
   Technical assessments must also remain current: later removals (including Policy
   Service removals), contrary state labels, authorized outcomes/retractions or
   explicit maintainer revocations supersede older support. A later non-maintainer

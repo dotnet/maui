@@ -136,10 +136,21 @@ are conservatively withheld until a fresh unambiguous confirmation is supplied.
 Positive reproduction must concern the reported issue/behavior, not merely
 running the sample. Postposed negation of that outcome also vetoes confirmation
 and participates in the later-contrary-evidence scan.
-Regression confirmation additionally requires an earlier working .NET/MAUI
-release or a demonstrated boundary across explicitly tested framework versions.
-Boundary evidence must include a tested version preceding the first bad version;
-preview and RC ordering is recognized, and generic build success is insufficient.
+Explicit target wording such as "this issue" or "the reported behavior" is
+required. A bare issue/bug/problem mention or reproduction of another, different
+or unrelated outcome cannot establish confirmation. The cited paragraph is
+checked, so an affirmative-looking quote cannot hide such a qualifier.
+Not-regression assessments must also be unconditional and non-tentative:
+"This is probably not a regression" cannot supply a definitive disposition or
+remove potential-regression through that transition.
+Regression confirmation additionally requires explicit working behavior tied
+to an earlier named .NET/MAUI version and failing/reproducing behavior tied to a
+later named version. Lists of tested versions do not establish their outcomes.
+The first-bad citation must include both results and the explicit boundary
+matching that label, with no earlier contradictory failing outcome; merely
+asserting "regressed from" does not establish earlier passing behavior.
+Preview and RC ordering is recognized; generic build success is insufficient.
+Unknown or ambiguous outcome/version bindings are conservatively withheld.
 Generic reproduction on a platform/OS version is not proof of regression.
 This gate also applies to suspected-to-confirmed transitions and first-bad-version
 labels, whose exact version citation must come from authorized regression evidence.
@@ -177,7 +188,7 @@ cases illustrate why content, confirmation and product decisions are separate:
 | Issue | Observed distinction |
 | --- | --- |
 | [#37281](https://github.com/dotnet/maui/issues/37281) | A presumed CollectionView regression was traced to shadows/drawing; area correction followed root-cause investigation. |
-| [#38925](https://github.com/dotnet/maui/issues/38925) | A partner validator tested 10.0.90, 10.0.100 and 10.0.110 and reproduced the Android issue from 10.0.100; confirmed regression is not just a reporter's claim. |
+| [#38925](https://github.com/dotnet/maui/issues/38925) | A partner validator tested 10.0.90, 10.0.100 and 10.0.110 and reproduced the Android issue from 10.0.100. This is authorized reproduction, but the tested-version list alone does not explicitly establish a working 10.0.90 outcome for the stricter regression gate. |
 | [#39017](https://github.com/dotnet/maui/issues/39017) | Verification across versions and later Syncfusion collaboration are separate facts; the reporter need not be a partner. |
 | [#35965](https://github.com/dotnet/maui/issues/35965) | Unsuccessful reproduction and a concrete sample request preceded feedback/staleness handling. |
 | [#37275](https://github.com/dotnet/maui/issues/37275) | Verified observed behavior was subsequently explained as not-a-bug: those labels are not necessarily contradictory. |

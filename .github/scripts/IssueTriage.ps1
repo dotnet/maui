@@ -418,6 +418,11 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
     return $Paragraph -match "(?i)$condition$clause\b$outcome"
 }
 
+function Test-TentativeEvidence([string]$Paragraph) {
+    $candidate = [regex]::Replace($Paragraph, '(?i)\bas\s+expected\b', '')
+    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|suggest(?:s|ed)?|uncertain|tentative)\b'
+}
+
 function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence, [switch]$Superseding) {
     $labelText = '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
         '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
@@ -493,13 +498,14 @@ function Test-NegativeValidation([string]$Prose) {
 
 function Test-PositiveValidation([string]$Paragraph) {
     if (Test-ConditionalEvidence $Paragraph) { return $false }
-    $outcome = '(?:reported behavior|same behavior|issue|bug|regression|problem)'
+    if ($Paragraph -match '(?i)\b(?:(?:completely|entirely|totally)\s+)?(?:another|different|unrelated|separate|other)\s+(?:(?:reported|actual|original)\s+){0,2}(?:behavior|issue|bug|regression|problem)\b') { return $false }
+    $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b).){0,50}'
     if ($Paragraph -match "(?i)\b$outcome\b$clause\b$reproduction\b|\b$reproduction\b$clause\b$outcome\b|\b(?:confirmed|verified)\b$clause\b$outcome\b|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause\b$outcome\b") {
         return $true
     }
-    return $Paragraph -match "(?i)^\s*(?:(?:this|the|reported|same)\s+)?$outcome\b" -and
+    return $Paragraph -match "(?i)^\s*$outcome\b" -and
         $Paragraph -match "(?i)\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b"
 }
 
@@ -563,28 +569,53 @@ function Test-NewerPublishedVersionRequest([string]$Paragraph, [string]$Quote) {
     return (Compare-FrameworkVersion $target $baseline) -gt 0
 }
 
-function Test-RegressionValidation([string]$Paragraph) {
+function Test-RegressionValidation([string]$Paragraph, [string]$FirstBadVersion = '') {
+    if ((Test-ConditionalEvidence $Paragraph) -or (Test-TentativeEvidence $Paragraph)) { return $false }
     $framework = '(?:\.NET(?:\s+MAUI)?|MAUI)'
-    $version = '\d+(?:\.\d+){0,3}(?:[- .]*(?:preview|rc)[- .]*\d+)?(?![\w.])'
-    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|not|never|cannot|didn.t|isn.t|wasn.t|maybe|perhaps|possibly|probably|likely|suspect|assume)\b).){0,80}'
-    $earlier = "\b(?:older|previous|earlier|prior)\s+$framework\b"
-    $working = '\b(?:reported behavior|same behavior|behavior|scenario|feature)\s+(?:(?:was|is)\s+)?(?:worked|working|works)\b'
-    if ($Paragraph -match "(?i)$working$gap$earlier|$earlier$gap$working") { return $true }
-    $versions = @([regex]::Matches($Paragraph,
-        "(?i)(?<![\w])$framework\s+(?:versions?\s+)?(?<versions>$version(?:\s*(?:,|and|or|vs\.?|versus|to)\s*$version)*)") |
-        ForEach-Object { [regex]::Matches($_.Groups['versions'].Value, $version) } |
-        ForEach-Object { $_.Value } | Sort-Object -Unique)
-    if ($versions.Count -lt 2) { return $false }
-    if ($Paragraph -notmatch "(?i)\b(?:tested|validated|verified|checked|compared)\b$gap(?<![\w])$framework\s+(?:versions?\s+)?$version|(?<![\w])$framework\s+(?:versions?\s+)?$version$gap\b(?:tested|validated|verified|checked|compared)\b") {
+    $version = '\d+(?:\.\d+){0,3}(?:[- .]*(?:preview|rc)[- .]*\d+(?:\.\d+)*)?(?![\w-]|\.(?=\w))'
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|not|never|cannot|didn.t|isn.t|wasn.t|MAUI)\b|(?<![\w])\.NET\b|\b\d).){0,80}'
+    $target = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}'
+    $working = "\b$target(?:behavior|scenario|feature)\s+(?:(?:was|is|has(?: been)?)\s+)?(?:worked|working|works|passed)\b"
+    $namedVersion = "(?<![\w])$framework\s+(?:versions?\s+)?(?<version>$version)"
+    $workingVersions = @([regex]::Matches($Paragraph,
+        "(?i)$working$gap$namedVersion|$namedVersion$gap$working") |
+        ForEach-Object { Get-FrameworkVersion $_.Groups['version'].Value } |
+        Where-Object { $null -ne $_ })
+    if ($workingVersions.Count -eq 0) { return $false }
+    $outcome = "$target(?:behavior|issue|bug|regression|problem)"
+    $reproduction = '(?:reproduced|reproducible|can reproduce)'
+    $failing = "(?:\b$outcome\b$gap\b(?:$reproduction|fails|failed)\b|\b$reproduction\b$gap\b$outcome\b|\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b)"
+    $boundary = "\b(?:from|since|introduced(?: in| with)?|starting(?: in| with)?|first bad(?: version)?(?: is|:)?|regressed (?:in|since|from))\s+(?:$framework\s+(?:version\s+)?)?(?<version>$version)"
+    $failingVersions = @([regex]::Matches($Paragraph,
+        "(?i)$failing$gap(?:$namedVersion|$boundary)|$namedVersion$gap$failing") |
+        ForEach-Object { Get-FrameworkVersion $_.Groups['version'].Value } |
+        Where-Object { $null -ne $_ })
+    if ($failingVersions.Count -eq 0) { return $false }
+    foreach ($workingVersion in $workingVersions) {
+        if (@($failingVersions | Where-Object {
+            (Compare-FrameworkVersion $_ $workingVersion) -eq 0
+        }).Count -gt 0) { return $false }
+    }
+    if (-not $FirstBadVersion) {
+        foreach ($workingVersion in $workingVersions) {
+            if (@($failingVersions | Where-Object {
+                (Compare-FrameworkVersion $_ $workingVersion) -le 0
+            }).Count -eq 0) { return $true }
+        }
         return $false
     }
-    $testedVersions = @($versions | ForEach-Object { Get-FrameworkVersion $_ } | Where-Object { $null -ne $_ })
-    foreach ($boundary in [regex]::Matches($Paragraph,
-        "(?i)\b(?:from|since|introduced(?: in| with)?|starting(?: in| with)?|first bad(?: version)?(?: is|:)?|regressed (?:in|since|from))\s+(?:$framework\s+(?:version\s+)?)?(?<version>$version)")) {
-        if ($versions -notcontains $boundary.Groups['version'].Value) { continue }
-        $firstBad = Get-FrameworkVersion $boundary.Groups['version'].Value
-        if ($null -eq $firstBad) { continue }
-        if (@($testedVersions | Where-Object {
+    $requested = Get-FrameworkVersion $FirstBadVersion
+    if ($null -eq $requested) { return $false }
+    foreach ($boundaryMatch in [regex]::Matches($Paragraph,
+        "(?i)$boundary")) {
+        $firstBad = Get-FrameworkVersion $boundaryMatch.Groups['version'].Value
+        if ($null -eq $firstBad -or (Compare-FrameworkVersion $firstBad $requested) -ne 0) { continue }
+        if (@($failingVersions | Where-Object {
+            (Compare-FrameworkVersion $_ $firstBad) -eq 0
+        }).Count -eq 0 -or @($failingVersions | Where-Object {
+            (Compare-FrameworkVersion $_ $firstBad) -lt 0
+        }).Count -gt 0) { continue }
+        if (@($workingVersions | Where-Object {
             (Compare-FrameworkVersion $_ $firstBad) -lt 0
         }).Count -gt 0) { return $true }
     }
@@ -706,6 +737,8 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
                 -not (Test-BlockedValidation $prose)
             }
             'not-regression' {
+                -not (Test-ConditionalEvidence $paragraph -Decision) -and
+                -not (Test-TentativeEvidence $paragraph) -and
                 $paragraph -match '(?i)\bnot (?:a )?regression\b|\bsame (?:behavior|issue|problem)\b.{0,80}\b(?:older|previous|earlier)\b' -and
                 $paragraph -notmatch "(?i)\b(not|never|no longer|isn.t|wasn.t|doesn.t)\s+(?:(?:the|exactly|quite|really|actually|necessarily|at all|even)\s+){0,3}same (?:behavior|issue|problem)\b|\b(not|isn.t|wasn.t)\s+not (?:a )?regression\b"
             }
@@ -772,7 +805,12 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         if ($label -in $policy.confirmation -or $label.StartsWith('regressed-in-')) {
             $requireRegression = $label -ceq 'i/regression' -or $label.StartsWith('regressed-in-')
             $confirmations = @(Get-Confirmation $Decision.evidence -RequireRegression:$requireRegression)
-            if ($confirmations.Count -eq 0) { throw "No positive authorized validation supports $label." }
+            if ($confirmations.Count -eq 0) {
+                if ($requireRegression) {
+                    throw "No authorized target-specific validation with explicit earlier working and later failing framework outcomes supports $label."
+                }
+                throw "No positive authorized target-specific validation supports $label."
+            }
             $latest = @($confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
             $contrary = @($Snapshot.sources | Where-Object {
                 $_.kind -eq 'comment' -and $_.isValidator -and
@@ -795,12 +833,8 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         }
         if ($label.StartsWith('regressed-in-')) {
             $version = $label.Substring('regressed-in-'.Length)
-            $versionPattern = [regex]::Escape($version)
-            if ($version -match '^(\d+)-(preview|rc)(\d+)$') {
-                $versionPattern = "$($Matches[1])(?:\.0(?:\.0)?)?[- .]*$($Matches[2])[- .]*$($Matches[3])"
-            }
             if ($version -notmatch '^\d' -or @($confirmations | Where-Object {
-                $_.quote -match "(?i)\b(first bad|from|since|introduced|starting|regressed).{0,80}\b$versionPattern\b"
+                Test-RegressionValidation $_.quote $version
             }).Count -eq 0) { throw "No first-bad-version evidence supports $label." }
         }
         if ($policy.technicalAssessment -ccontains $label -and
