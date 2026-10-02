@@ -82,6 +82,13 @@ substitutes for current original issue/comment evidence.
   reply from the issue author completes the version-feedback wait under existing
   Policy Service rules; do not reapply an old try-latest recommendation.
   Re-adding needs a fresh qualifying assessment after the superseding evidence.
+  A try-latest request must bind its instruction to one concrete MAUI version,
+  cite that version, and match `context.publishedMauiReleases`. The target must
+  be strictly newer than the report's unambiguous `Version with bug` field and
+  any higher named MAUI version in the author's prose. Downgrades, equal versions,
+  multiple targets, unestablished baselines and versions outside the bounded
+  published release window are withheld. Preview/RC ordering is recognized;
+  another build of the same preview/RC iteration is not a newer release.
 
 ## Label selection
 

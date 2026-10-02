@@ -30,6 +30,7 @@ $validators = @([regex]::Matches($validatorRules[0], '(?m)^            user: ([A
     ForEach-Object { $_.Groups[1].Value })
 if ($validators.Count -eq 0) { throw 'The trusted validator identity policy is empty or its format changed.' }
 $permissions = @{}
+$frameworkVersionPattern = '(?<![\w.-])\d+\.\d+\.\d+(?:\.\d+)?(?:-(?:preview|rc)\.\d+(?:\.\d+)*)?(?![\w.-])'
 $null = ConvertFrom-Markdown -InputObject ' '
 $markdownBuilder = [Markdig.MarkdownPipelineBuilder]::new()
 $markdownBuilder.PreciseSourceLocation = $true
@@ -102,6 +103,43 @@ function Get-Api([string]$Endpoint, [switch]$AllowNotFound) {
     if ($null -eq $raw) { return $null }
     if ([Text.Encoding]::UTF8.GetByteCount($raw) -gt 2MB) { throw "API response exceeds 2 MiB: $Endpoint" }
     return $raw | ConvertFrom-Json -AsHashtable
+}
+
+function Get-PublishedMauiReleases {
+    $releases = @(Get-Api "repos/$Repository/releases?per_page=20")
+    if ($releases.Count -gt 20) { throw 'The published release window exceeds its bound.' }
+    return @($releases | Where-Object { -not $_.draft -and $_.published_at } | ForEach-Object {
+        $release = $_
+        $versionPattern = $frameworkVersionPattern
+        $heading = [regex]::Match([string]$release.body,
+            "(?im)^#\s+\.NET MAUI\s+(?<version>$versionPattern)")
+        $linkedVersions = @([regex]::Matches([string]$release.body,
+            "(?i)https://www\.nuget\.org/packages/Microsoft\.Maui\.Controls/(?<version>$versionPattern)") |
+            ForEach-Object { $_.Groups['version'].Value })
+        $version = if ($heading.Success) { $heading.Groups['version'].Value }
+            elseif ($linkedVersions -icontains $release.tag_name) { [string]$release.tag_name }
+            else { '' }
+        $parsed = Get-FrameworkVersion $version
+        $versions = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+        if ($null -eq $parsed) {
+            Write-Warning "Published release $($release.tag_name) has no recognized MAUI framework version; it cannot support a version request."
+        } else {
+            $null = $versions.Add($version)
+            $null = $versions.Add(($version -replace '(?i)(-(?:preview|rc)\.\d+)(?:\.\d+)+$', '$1'))
+            $packageVersions = $linkedVersions + @([string]$release.tag_name)
+            foreach ($packageVersion in $packageVersions) {
+                $package = Get-FrameworkVersion $packageVersion
+                if ($null -ne $package -and (Compare-FrameworkVersion $package $parsed) -eq 0) {
+                    $null = $versions.Add($packageVersion)
+                }
+            }
+            if ($versions.Count -gt 20) { throw 'A published release has too many framework version aliases.' }
+        }
+        [ordered]@{
+            id = $release.id; tag = $release.tag_name; publishedAt = Get-Timestamp $release.published_at
+            versions = @($versions | Sort-Object -CaseSensitive); url = $release.html_url
+        }
+    })
 }
 
 function Get-Pages([string]$Endpoint, [int]$MaxItems) {
@@ -193,6 +231,7 @@ function Get-Snapshot {
     $comments = @(Get-Pages "repos/$Repository/issues/$IssueNumber/comments" 200)
     $events = @(Get-Pages "repos/$Repository/issues/$IssueNumber/events" 600)
     $catalog = @(Get-Pages "repos/$Repository/labels" 1000 | Sort-Object name -CaseSensitive)
+    $publishedMauiReleases = @(Get-PublishedMauiReleases)
     if ($CommandCommentId -gt 0) {
         $command = Get-Api "repos/$Repository/issues/comments/$CommandCommentId"
         if ($command.user.login -cne $Actor -or
@@ -295,6 +334,7 @@ function Get-Snapshot {
         } | ForEach-Object { $_.name })
         sources = $sources.ToArray()
         resultComments = $resultComments.ToArray()
+        publishedMauiReleases = $publishedMauiReleases
     }
     $snapshot.contextHash = Get-Hash $snapshot
     return $snapshot
@@ -449,7 +489,7 @@ function Test-PositiveValidation([string]$Paragraph) {
 }
 
 function Get-FrameworkVersion([string]$Text) {
-    $match = [regex]::Match($Text, '(?i)^(\d+(?:\.\d+){0,3})(?:[- .]*(preview|rc)[- .]*(\d+))?$')
+    $match = [regex]::Match($Text, '(?i)^(\d+(?:\.\d+){0,3})(?:[- .]*(preview|rc)[- .]*(\d+)(?:\.\d+)*)?$')
     if (-not $match.Success) { return $null }
     $parts = @($match.Groups[1].Value -split '\.')
     while ($parts.Count -lt 4) { $parts += '0' }
@@ -459,6 +499,53 @@ function Get-FrameworkVersion([string]$Text) {
     if ($match.Groups[3].Success -and -not [int]::TryParse($match.Groups[3].Value, [ref]$number)) { return $null }
     $phase = switch ($match.Groups[2].Value.ToLowerInvariant()) { 'preview' { 0 }; 'rc' { 1 }; default { 2 } }
     return @{ core = $core; phase = $phase; number = $number }
+}
+
+function Compare-FrameworkVersion($Left, $Right) {
+    foreach ($field in @('core', 'phase', 'number')) {
+        $comparison = $Left[$field].CompareTo($Right[$field])
+        if ($comparison -ne 0) { return $comparison }
+    }
+    return 0
+}
+
+function Test-NewerPublishedVersionRequest([string]$Paragraph, [string]$Quote) {
+    $versionPattern = $frameworkVersionPattern
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|MAUI)\b|\b\d+\.\d+).){0,80}'
+    $requested = @([regex]::Matches($Paragraph,
+        "(?i)\b(?:try|retest|test|verify|update|upgrade)\b$gap\bMAUI\s+(?:versions?\s+)?(?<versions>$versionPattern(?:\s*(?:,|and|or|vs\.?|versus|to|as well as)\s*(?:(?:\.NET\s+)?MAUI\s+(?:versions?\s+)?|versions?\s+)?$versionPattern)*)") |
+        ForEach-Object { [regex]::Matches($_.Groups['versions'].Value, $versionPattern) } |
+        ForEach-Object { $_.Value } | Sort-Object -Unique)
+    if ($requested.Count -ne 1 -or
+        @([regex]::Matches($Quote, $versionPattern) | Where-Object { $_.Value -ieq $requested[0] }).Count -eq 0 -or
+        $Paragraph -match "(?i)\b(not|cannot|can't|do not|don't)\b.{0,30}\b(try|retest|test|verify|update|upgrade)\b") { return $false }
+    if (@($current.publishedMauiReleases | Where-Object {
+        $_.versions -icontains $requested[0]
+    }).Count -eq 0) { return $false }
+    $target = Get-FrameworkVersion $requested[0]
+    if ($null -eq $target) { return $false }
+    $issue = $sourceMap["issue:$IssueNumber"]
+    $sections = @([regex]::Matches((Get-Prose $issue.body),
+        '(?ims)^###[ \t]+Version with bug[ \t]*\r?\n(?<value>.*?)(?=^#{1,6}[ \t]|\z)'))
+    if ($sections.Count -ne 1) { return $false }
+    $reported = @([regex]::Matches($sections[0].Groups['value'].Value, $versionPattern) |
+        ForEach-Object { $_.Value } | Sort-Object -Unique)
+    if ($reported.Count -ne 1) { return $false }
+    $baseline = Get-FrameworkVersion $reported[0]
+    if ($null -eq $baseline) { return $false }
+    foreach ($source in $sourceMap.Values) {
+        if ($source.kind -notin @('issue', 'comment') -or $source.author -cne $issue.author) { continue }
+        foreach ($match in [regex]::Matches((Get-Prose $source.body),
+            "(?i)\bMAUI\s+(?:versions?\s+)?(?<versions>$versionPattern(?:\s*(?:,|and|or|vs\.?|versus|to)\s*$versionPattern)*)")) {
+            foreach ($version in [regex]::Matches($match.Groups['versions'].Value, $versionPattern)) {
+                $reportedVersion = Get-FrameworkVersion $version.Value
+                if ($null -ne $reportedVersion -and (Compare-FrameworkVersion $reportedVersion $baseline) -gt 0) {
+                    $baseline = $reportedVersion
+                }
+            }
+        }
+    }
+    return (Compare-FrameworkVersion $target $baseline) -gt 0
 }
 
 function Test-RegressionValidation([string]$Paragraph) {
@@ -483,8 +570,7 @@ function Test-RegressionValidation([string]$Paragraph) {
         $firstBad = Get-FrameworkVersion $boundary.Groups['version'].Value
         if ($null -eq $firstBad) { continue }
         if (@($testedVersions | Where-Object {
-            $_.core -lt $firstBad.core -or ($_.core -eq $firstBad.core -and
-                ($_.phase -lt $firstBad.phase -or ($_.phase -eq $firstBad.phase -and $_.number -lt $firstBad.number)))
+            (Compare-FrameworkVersion $_ $firstBad) -lt 0
         }).Count -gt 0) { return $true }
     }
     return $false
@@ -598,9 +684,7 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
                 -not (Test-TriageRetraction $paragraph)
             }
             's/try-latest-version' {
-                $paragraph -match '(?i)\bMAUI\b.{0,60}\b\d+\.\d+(?:\.\d+)?\b|\b\d+\.\d+(?:\.\d+)?\b.{0,60}\bMAUI\b' -and
-                $paragraph -match '(?i)\b(try|retest|test|verify|update|upgrade)\b.{0,80}\b(latest|newer|version|\d+\.\d+)\b' -and
-                $paragraph -notmatch "(?i)\b(not|cannot|can't|do not|don't)\b.{0,30}\b(try|retest|test|verify|update|upgrade)\b"
+                Test-NewerPublishedVersionRequest $paragraph $reference.quote
             }
             's/no-repro' {
                 $paragraph -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b" -and
@@ -706,6 +790,9 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         }
         if ($policy.technicalAssessment -ccontains $label -and
             @(Get-TechnicalAssessment $Decision.evidence $label).Count -eq 0) {
+            if ($label -ceq 's/try-latest-version') {
+                throw 'A current authorized request for one exactly cited, published MAUI version strictly newer than the unambiguous reported baseline is required for s/try-latest-version.'
+            }
             throw "A current affirmative, label-specific authorized technical assessment is required for $label."
         }
         if ($label -eq 's/duplicate 2️⃣' -and

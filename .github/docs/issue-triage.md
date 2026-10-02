@@ -85,7 +85,19 @@ reply ends a try-latest feedback wait, matching existing Policy Service behavior
 Old recommendations cannot restart that wait; re-adding needs a fresh qualifying
 assessment. Contrary edits use last-modified time, while affirmative support keeps
 its original creation time. Mixed assessment/retraction comments are withheld.
-Try-latest recommendations must identify a concrete MAUI version.
+Try-latest recommendations must bind the instruction to one concrete MAUI version
+and quote that version. The target must be present in the prepared published
+release window and strictly newer than the report's unambiguous `Version with
+bug` field, considering any higher named MAUI version in the author's prose.
+An absent/ambiguous baseline, downgrade/equal version, multiple targets or an
+unestablished publication cannot activate the feedback/closure policy.
+Version comparison includes numeric core, preview/RC/stable phase and iteration;
+build variants within the same preview/RC iteration are not treated as upgrades.
+Short preview/RC names and exact package builds are accepted only when backed by
+the release's framework heading or same-family Controls package links. A bare
+release tag without either a recognized framework heading or a matching Controls
+package link cannot establish the framework version. Workload-set tags are not
+substituted for framework package versions.
 An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
 Expected-behavior and duplicate dispositions must be affirmative, not tentative
@@ -173,6 +185,12 @@ comments, 600 events, 1,000 labels, eight related references, 60 authority looku
 and a 1 MiB context file. Exceeding them fails visibly rather than discarding later
 contradictory evidence. Related issue/PR titles and bodies are fetched; their code,
 archives and nested discussions are not executed or recursively expanded.
+Trusted intake also reads a fixed 20-record window of official GitHub releases
+and retains published, non-draft framework version metadata in
+`publishedMauiReleases`, not in authority evidence. The window is explicitly
+bounded, not a complete release/support-lifecycle catalog; unlisted targets are
+withheld. It is re-fetched and hashed at publication like the other context.
+Request/API failures propagate rather than inventing a latest release.
 References are extracted outside Markdown code with a full numeric token boundary.
 Three/four/six/eight-digit color-shaped shorthand, including `#3333` and `#333333`,
 requires explicit issue/PR wording;
