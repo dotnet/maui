@@ -65,6 +65,10 @@ retains link targets so canonical same-repository issue links are still fetched.
 Every evidence quote must survive the same prose filter, including content labels
 and narrow removals. Code/samples can inform analysis but cannot serve as
 authority quotations.
+Marker-bearing result comments from this workflow's publisher are excluded from
+evidence sources and related-reference intake. They remain in `resultComments`
+for context hashing and retry reconciliation only. Generated report reasons
+cannot become fresh facts after the original evidence is edited or removed.
 Suggestions and tentative candidates are not approvals.
 Tentative validation such as "should be reproducible on Android" is not an
 observed reproduction and cannot support confirmation labels.
@@ -120,6 +124,9 @@ Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
 root-cause area, disputed-workaround and device-to-simulator transitions. At most
 one dominant area is removed and two independently supported areas added.
+Root-cause area corrections need a maintainer comment created after the latest
+assignment of the removed area, or a current explicit removal decision.
+Cosmetic edits cannot revive an older correction after a newer assignment.
 The `needs-area-label` placeholder can be cleared using issue/comment evidence
 from an area addition validated in the same proposal. Current report content can
 predate the initial placeholder event; that transition does not require a newer
@@ -215,8 +222,17 @@ result rather than interpreting the absence of a comment as success.
 Label/comment APIs are **not an atomic transaction**: inspect the Actions result
 for actual application, particularly after a partial failure. The explanation
 describes a validated requested delta, not an unconditional delivery claim.
-Rerun all jobs (or post a fresh command) to gather current state and reconcile
-remaining deltas. Retrying the same command does not add another result comment.
+Rerun all jobs to gather current state and reconcile remaining deltas. Each
+rendered decision carries a canonical fingerprint of its action, label,
+reason, exact evidence and request. Retrying the same invocation suppresses a
+duplicate comment only when every remaining decision exactly matches one in its
+original report. Decision/evidence ordering and changing context hashes do not
+prevent an otherwise identical partial retry.
+A changed/new decision or a legacy report without matching fingerprints fails
+before publication and requires a fresh command or manual dispatch, rather than
+applying a different delta under an old explanation. Multiple reports for one
+invocation also fail visibly. The original report remains a historical requested
+plan; the workflow result records the actual remaining application.
 Rerunning only a failed publication job after partial writes intentionally fails
 the stale-context check.
 

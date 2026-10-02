@@ -49,6 +49,24 @@ function Get-Hash($Value) {
     return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes))
 }
 
+function Test-TriageResultComment([string]$Body, [string]$Author) {
+    return $Author -ceq 'github-actions[bot]' -and
+        $Body -cmatch '(?m)^<!-- issue-triage-(?:command:[1-9][0-9]*|run:[1-9][0-9]*|local:[A-F0-9]{64}) -->\r?$'
+}
+
+function Get-DecisionFingerprint($Decision, [string]$Action) {
+    $evidence = @(if ($Action -cne 'withheld') {
+        $Decision.evidence | Sort-Object source, quote -CaseSensitive | ForEach-Object {
+            [ordered]@{ source = $_.source; quote = $_.quote }
+        }
+    })
+    $request = if ($Decision.ContainsKey('request')) { $Decision.request } else { '' }
+    return Get-Hash ([ordered]@{
+        action = $Action; label = $Decision.label; reason = $Decision.reason
+        evidence = $evidence; request = $request
+    })
+}
+
 function Assert-RegularPath([string]$Path, [switch]$Directory) {
     $full = [IO.Path]::GetFullPath($Path)
     if ($full -eq $root -or $full.StartsWith("$root$([IO.Path]::DirectorySeparatorChar)", [StringComparison]::Ordinal)) {
@@ -192,6 +210,7 @@ function Get-Snapshot {
         }
     }
     $sources = [Collections.Generic.List[object]]::new()
+    $resultComments = [Collections.Generic.List[object]]::new()
     $sources.Add([ordered]@{
         id = "issue:$IssueNumber"; kind = 'issue'; author = $issue.user.login
         isMaintainer = $false; isValidator = $false; createdAt = Get-Timestamp $issue.created_at
@@ -199,6 +218,14 @@ function Get-Snapshot {
     })
     foreach ($comment in @($comments | Sort-Object created_at, id)) {
         if ($comment.id -eq $CommandCommentId) { continue }
+        if (Test-TriageResultComment $comment.body $comment.user.login) {
+            $resultComments.Add([ordered]@{
+                id = $comment.id; author = $comment.user.login
+                createdAt = Get-Timestamp $comment.created_at
+                updatedAt = Get-Timestamp $comment.updated_at; body = [string]$comment.body
+            })
+            continue
+        }
         $maintainer = $comment.user.type -eq 'User' -and $policy.automationAuthors -notcontains $comment.user.login -and
             (Get-Permission $comment.user.login) -in @('write', 'maintain', 'admin')
         $sources.Add([ordered]@{
@@ -267,6 +294,7 @@ function Get-Snapshot {
             $_.category -cne 'preserve' -and $labels -ccontains $_.name
         } | ForEach-Object { $_.name })
         sources = $sources.ToArray()
+        resultComments = $resultComments.ToArray()
     }
     $snapshot.contextHash = Get-Hash $snapshot
     return $snapshot
@@ -717,7 +745,11 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         }
         $areaCorrection = $label.StartsWith('area-') -and
             @($proposal.additions | Where-Object { $_.label.StartsWith('area-') }).Count -gt 0 -and
-            @($maintainerEvidence | Where-Object { $_.quote -match '(?i)\b(root cause|caused|due to|instead|rather than|actually)\b' }).Count -gt 0
+            @($maintainerEvidence | Where-Object {
+                $_.quote -match '(?i)\b(root cause|caused|due to|instead|rather than|actually)\b' -and
+                ($lastRequest.Count -eq 0 -or
+                    $sourceMap[$_.source].createdAt -gt $lastRequest[0].createdAt)
+            }).Count -gt 0
         $contradictedFacet = $label -in @('has-workaround', 'repro:device-only') -and
             @($Decision.evidence | Where-Object {
                 $source = $sourceMap[$_.source]
@@ -852,10 +884,12 @@ Assert-Actor
 $marker = if ($CommandCommentId -gt 0) { "issue-triage-command:$CommandCommentId" }
     elseif ($env:GITHUB_RUN_ID) { "issue-triage-run:$($env:GITHUB_RUN_ID)" }
     else { "issue-triage-local:$($current.contextHash)" }
-$existing = @($current.sources | Where-Object {
-    $_.kind -eq 'comment' -and $_.author -ceq 'github-actions[bot]' -and $_.body.Contains("<!-- $marker -->")
+$existing = @($current.resultComments | Where-Object {
+    $_.body.Contains("<!-- $marker -->")
 })
+if ($existing.Count -gt 1) { throw 'Multiple triage reports exist for this invocation; use a fresh command or manual dispatch.' }
 $report = [Collections.Generic.List[string]]::new()
+$decisionMarkers = [Collections.Generic.List[string]]::new()
 $report.Add("<!-- $marker -->")
 $report.Add('**Issue triage: validated label proposal**')
 $report.Add('')
@@ -863,6 +897,9 @@ $report.Add('The label handlers apply the delta below. Their final outcome is re
 foreach ($action in @('add', 'remove', 'withheld')) {
     $decisions = @(switch ($action) { 'add' { $proposal.additions }; 'remove' { $proposal.removals }; 'withheld' { $proposal.withheld } })
     foreach ($decision in $decisions) {
+        $decisionMarker = "<!-- issue-triage-decision:${action}:$(Get-DecisionFingerprint $decision $action) -->"
+        $decisionMarkers.Add($decisionMarker)
+        $report.Add($decisionMarker)
         $reason = [Net.WebUtility]::HtmlEncode($decision.reason) -replace '([\\`*_{}\[\]|])', '\$1'
         $report.Add("- **${action}:** ``$($decision.label)`` - $reason")
         if ($action -ne 'withheld') {
@@ -887,12 +924,17 @@ if ($env:GITHUB_RUN_ID) {
 }
 $body = $report -join "`n"
 if ($body.Length -gt 50000) { throw 'The rendered comment exceeds its limit.' }
+if ($existing.Count -eq 1 -and @($decisionMarkers | Where-Object {
+    -not $existing[0].body.Contains($_, [StringComparison]::Ordinal)
+}).Count -gt 0) {
+    throw 'The prior triage report does not cover this proposal; use a fresh command or manual dispatch before applying changed decisions.'
+}
 Set-Content -LiteralPath (Join-Path $OutputDirectory 'report.md') -Value $body -Encoding utf8
 Write-Json 'decision.json' $proposal
 Write-Json 'validation.json' @{ status = 'validated'; contextHash = $current.contextHash; existingComment = $existing.Count -gt 0 }
 $comment.body = $body
 $comment.Remove('data')
-# A retry reconciles the label delta without creating another result comment.
+# A retry can complete unchanged decisions from the original report without another comment.
 if ($existing.Count -gt 0) { $payload.items = @($items | Where-Object { $_.type -cne 'add_comment' }) }
 $payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $AgentOutputPath -Encoding utf8
 Write-Host "Validated $($proposal.additions.Count) additions and $($proposal.removals.Count) removals for issue $IssueNumber."

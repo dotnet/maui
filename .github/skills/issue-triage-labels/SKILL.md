@@ -21,6 +21,10 @@ trusted code. Validators include the named Syncfusion identities in the existing
 Policy Service configuration; read-only validators cannot make priority or
 approval commitments.
 Quote exact source text supporting each proposed change.
+Prior marker-bearing reports from this workflow are retained in
+`context.resultComments` only for retry reconciliation. They are not evidence
+sources; do not cite their generated reasons or follow their evidence links as
+substitutes for current original issue/comment evidence.
 
 - Content labels describe reported facts; a label request in the report is not
   evidence that the label fits.
@@ -110,7 +114,10 @@ policy transition. Explain each removal separately:
 - Replace a suspected regression with a confirmed regression or supported
   not-regression disposition.
 - Correct the dominant area only with an authoritative root-cause explanation
-  and a supported replacement. Do not delete unrelated secondary areas.
+  and a supported replacement. The correction comment must have been created
+  after the latest assignment of the removed area; cosmetic edits cannot revive
+  old support. Otherwise cite a current explicit removal or withhold the correction.
+  Do not delete unrelated secondary areas.
 - Clear `needs-area-label` when this proposal adds a validated area using current
   issue/comment evidence. Initial report evidence can predate the placeholder;
   unrelated existing area membership alone does not justify this transition.
