@@ -62,8 +62,23 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         "| MAUI revision | [$commit](https://github.com/dotnet/maui/commit/$($manifest.targetSha)) |",
         "| Repro ZIP SHA-256 | ``$($manifest.sampleSha256)`` |"
     ) -join "`n"
+    if ($manifest.sourceUrl) {
+        $source = Get-IssueReplicateSource -AuthorTexts @("[repro.zip]($($manifest.sourceUrl))")
+        if ($source.Url -cne $manifest.sourceUrl -or $source.Type -cne $manifest.sourceType) {
+            throw 'The repro link does not match a supported GitHub source.'
+        }
+        $sourceLabel = if ($source.Type -eq 'repository') { 'Author repro repository' } else { 'Download author repro ZIP' }
+        $details += "`n| Original repro | [$sourceLabel]($($source.Url)) |"
+    } else {
+        $details += "`n| Original repro | Source link unavailable in this intake artifact. |"
+    }
+    $details += "`n| Issue context | [View the associated issue comment](https://github.com/dotnet/maui/issues/$IssueNumber#issuecomment-$CommentId) |"
     if ($manifest.sourceType -eq 'repository') {
-        $details += "`n| Author repository commit | ``$($manifest.sourceCommit)`` |"
+        $sourceCommit = $manifest.sourceCommit
+        $commitLink = if ($manifest.sourceUrl) {
+            "[$($sourceCommit.Substring(0, 7))]($($manifest.sourceUrl)/tree/$sourceCommit)"
+        } else { "``$sourceCommit``" }
+        $details += "`n| Pinned author repro revision | $commitLink |"
     }
     $resultPath = Join-Path $ResultsDirectory 'result.json'
     if (Test-Path -LiteralPath $resultPath -PathType Leaf) {

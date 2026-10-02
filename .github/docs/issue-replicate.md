@@ -40,6 +40,10 @@ the same expandable-section style as `/review tests`: **Reproduction evidence**,
 hash-checked diff is embedded in the comment so it can be reviewed without
 downloading artifacts. Oversized diffs are explicitly linked in full rather than
 truncated; passing, unsupported, and inconclusive results do not publish a patch.
+Evidence includes direct links to the author's original repro ZIP or public
+repository, the immutable repository revision when applicable, and the issue
+comment associated with the run. Repro links are validated against the supported
+GitHub source formats before publication.
 Results are updated idempotently per run. Publication failures also produce an
 expandable follow-up notice, without claiming a verified outcome.
 
