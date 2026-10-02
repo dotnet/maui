@@ -81,6 +81,15 @@ Execution checkouts are shallow, without partial-clone extensions that the pinne
 SourceLink tooling does not support. Sample restore uses the pinned MAUI
 `NuGet.config` public feeds plus nuget.org, so servicing SDK dependencies remain
 available even though the author's sample is extracted outside the MAUI checkout.
+The sample job installs a separate copy of the exact public SDK distribution from
+the pinned `global.json`, retaining its stock MAUI manifests and installing the
+selected platform's public MAUI workload without manifest updates. Repository-native
+provisioning alone removes those manifests and cannot supply template samples'
+`$(MauiVersion)` defaults. No package version is injected into the author's project.
+Restore is restricted to its selected, existing platform TFM rather than requiring
+unrequested Android or MacCatalyst workloads. The sample's bundled public MAUI
+version may differ from the issue's reported version; it is not the framework under
+test. Verification retains its own source-pinned SDK and native workloads.
 Verification builds `Microsoft.Maui.BuildTasks.slnf` before compiling candidate
 tests or the HostApp. Feedback prioritizes compiler/assertion diagnostics over
 trailing device logs so the single revision can address the actual failure.

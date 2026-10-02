@@ -124,10 +124,18 @@ stages:
               skipAndroidCreateAvds: true
           - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
             workingDirectory: $(Pipeline.Workspace)/maui
-            displayName: 'Install pinned public MAUI SDK/workloads'
+            displayName: 'Install pinned public native SDK/workloads'
             timeoutInMinutes: 50
-          - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
-            displayName: 'Use pinned SDK'
+          - pwsh: |
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.ProvisionSample.ps1" `
+                -RepoRoot "$(Pipeline.Workspace)/maui" `
+                -InstallDirectory "$(Agent.TempDirectory)/issue-sample-dotnet" `
+                -Platform '${{ parameters.Platform }}'
+              if ($LASTEXITCODE -ne 0) { throw 'Public author sample workload preparation failed.' }
+            displayName: 'Install isolated public MAUI author sample workload'
+            timeoutInMinutes: 35
+          - bash: echo "##vso[task.prependpath]$(Agent.TempDirectory)/issue-sample-dotnet"
+            displayName: 'Use isolated author sample SDK'
           - pwsh: |
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Sample.ps1" `
                 -InputDirectory "$(Pipeline.Workspace)/IssueInput" `

@@ -27,7 +27,8 @@ if (-not $tfm) { throw "The sample project does not target $($manifest.platform)
 
 $log = Join-Path $OutputDirectory 'sample-build.log'
 $redacted = [System.Collections.Generic.List[string]]::new()
-$buildArguments = @('build', $project.FullName, '-c', 'Debug', '-f', $tfm, '--nologo', '--verbosity', 'quiet')
+$buildArguments = @('build', $project.FullName, '-c', 'Debug', '-f', $tfm, "-p:TargetFrameworks=$tfm",
+    '--nologo', '--verbosity', 'quiet')
 if ($NuGetConfigPath) {
     $config = Get-Item -LiteralPath $NuGetConfigPath -ErrorAction Stop
     if ($config.PSIsContainer -or $config.Attributes -band [IO.FileAttributes]::ReparsePoint) {
