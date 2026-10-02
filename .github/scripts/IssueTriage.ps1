@@ -424,9 +424,13 @@ function Test-TentativeEvidence([string]$Paragraph) {
     return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|suggest(?:s|ed)?|uncertain|tentative)\b'
 }
 
-function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence, [switch]$Superseding) {
-    $labelText = '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
+function Get-LabelPattern([string]$Label) {
+    return '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
         '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
+}
+
+function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence, [switch]$Superseding) {
+    $labelText = Get-LabelPattern $Label
     $addVerbs = 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized'
     $removeVerbs = 'remove|drop|clear|withdraw|revoke|reject|decline'
     $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|rather than)\b).){0,80}'
@@ -535,6 +539,80 @@ function Compare-FrameworkVersion($Left, $Right) {
     return 0
 }
 
+function Get-VersionScope([string]$Text, [switch]$Heading) {
+    $name = ([regex]::Replace($Text, '[*_]', '')).Trim()
+    if ($name -match '(?i)\bMAUI\b|^(?:Version with bug|Last version that worked well)$') { return 'maui' }
+    if ($name -match '(?i)\b(?:SDK|runtime|Visual Studio|VS|Xcode|iOS|Android|Windows|macOS|MacCatalyst|Mac Catalyst|OS|operating system|platforms?)\b') {
+        if (-not $Heading -or $name -match '(?i)\b(?:versions?|SDK|runtime|Visual Studio|VS|Xcode|operating system|affected platforms?)\b') {
+            return 'other'
+        }
+    }
+    return 'unknown'
+}
+
+function Get-AuthorVersionCandidates([string]$Prose) {
+    $versionPattern = $frameworkVersionPattern
+    $named = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($match in [regex]::Matches($Prose,
+        "(?i)\bMAUI(?:\s+versions?)?\s*(?:[:=]\s*)?(?<versions>$versionPattern(?:\s*(?:,|and|or|vs\.?|versus|to)\s*$versionPattern)*)")) {
+        foreach ($version in [regex]::Matches($match.Groups['versions'].Value, $versionPattern)) {
+            $null = $named.Add($version.Value)
+        }
+    }
+    $scoped = [Collections.Generic.List[string]]::new()
+    $unscoped = [Collections.Generic.List[string]]::new()
+    $sectionScope = 'unknown'
+    $tableScopes = @()
+    $lines = @($Prose -split '\r?\n')
+    for ($lineIndex = 0; $lineIndex -lt $lines.Count; $lineIndex++) {
+        $line = $lines[$lineIndex]
+        $heading = [regex]::Match($line, '^#{1,6}[ \t]+(?<name>.*)')
+        if ($heading.Success) { $sectionScope = Get-VersionScope $heading.Groups['name'].Value -Heading }
+        $units = [Collections.Generic.List[object]]::new()
+        if ($line.Contains('|')) {
+            $cells = @($line.Trim().Trim('|').Split('|'))
+            $separator = @(if ($lineIndex + 1 -lt $lines.Count) {
+                $lines[$lineIndex + 1].Trim().Trim('|').Split('|')
+            })
+            if ($tableScopes.Count -eq 0 -and $separator.Count -eq $cells.Count -and
+                @($separator | Where-Object { $_ -notmatch '^\s*:?-+:?\s*$' }).Count -eq 0) {
+                $tableScopes = @($cells | ForEach-Object { Get-VersionScope $_ })
+            }
+            if ($tableScopes.Count -gt 0) {
+                $rowScope = Get-VersionScope $cells[0]
+                for ($index = 0; $index -lt $cells.Count; $index++) {
+                    $scope = if ($tableScopes.Count -eq $cells.Count) { $tableScopes[$index] } else { 'unknown' }
+                    if ($scope -eq 'unknown') {
+                        $scope = if ($rowScope -ne 'unknown') { $rowScope } else { $sectionScope }
+                    }
+                    $units.Add(@{ text = $cells[$index]; scope = $scope })
+                }
+            }
+        } else {
+            $tableScopes = @()
+        }
+        if ($units.Count -eq 0) { $units.Add(@{ text = $line; scope = $sectionScope }) }
+        foreach ($unit in $units) {
+            $other = @([regex]::Matches($unit.text,
+                "(?i)\b(?:SDK|runtime|Visual Studio(?:\s+Insiders)?|VS|Xcode|iOS|Android|Windows|macOS|MacCatalyst|Mac Catalyst|OS)(?:\s+versions?)?\s*[:=]?\s*(?<versions>$versionPattern(?:\s*(?:,|and|or|vs\.?|versus|to)\s*$versionPattern)*)") |
+                ForEach-Object { [regex]::Matches($_.Groups['versions'].Value, $versionPattern) } |
+                ForEach-Object { $_.Value })
+            foreach ($match in [regex]::Matches($unit.text, $versionPattern)) {
+                if ($named.Contains($match.Value)) {
+                    $scoped.Add($match.Value)
+                } elseif ($unit.scope -eq 'other' -or $other -icontains $match.Value) {
+                    continue
+                } elseif ($unit.scope -eq 'maui') {
+                    $scoped.Add($match.Value)
+                } else {
+                    $unscoped.Add($match.Value)
+                }
+            }
+        }
+    }
+    return @{ scoped = $scoped.ToArray(); unscoped = $unscoped.ToArray() }
+}
+
 function Test-NewerPublishedVersionRequest([string]$Paragraph, [string]$Quote) {
     $versionPattern = $frameworkVersionPattern
     $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|MAUI)\b|\b\d+\.\d+).){0,80}'
@@ -559,18 +637,24 @@ function Test-NewerPublishedVersionRequest([string]$Paragraph, [string]$Quote) {
     if ($reported.Count -ne 1) { return $false }
     $baseline = Get-FrameworkVersion $reported[0]
     if ($null -eq $baseline) { return $false }
+    $unscopedVersions = [Collections.Generic.List[object]]::new()
     foreach ($source in $sourceMap.Values) {
         if ($source.kind -notin @('issue', 'comment') -or $source.author -cne $issue.author) { continue }
-        foreach ($match in [regex]::Matches((Get-Prose $source.body),
-            "(?i)\bMAUI\s+(?:versions?\s+)?(?<versions>$versionPattern(?:\s*(?:,|and|or|vs\.?|versus|to)\s*$versionPattern)*)")) {
-            foreach ($version in [regex]::Matches($match.Groups['versions'].Value, $versionPattern)) {
-                $reportedVersion = Get-FrameworkVersion $version.Value
-                if ($null -ne $reportedVersion -and (Compare-FrameworkVersion $reportedVersion $baseline) -gt 0) {
-                    $baseline = $reportedVersion
-                }
+        $candidates = Get-AuthorVersionCandidates (Get-Prose $source.body)
+        foreach ($version in $candidates.scoped) {
+            $reportedVersion = Get-FrameworkVersion $version
+            if ($null -eq $reportedVersion) { return $false }
+            if ((Compare-FrameworkVersion $reportedVersion $baseline) -gt 0) {
+                $baseline = $reportedVersion
             }
         }
+        foreach ($version in $candidates.unscoped) {
+            $reportedVersion = Get-FrameworkVersion $version
+            if ($null -eq $reportedVersion) { return $false }
+            $unscopedVersions.Add($reportedVersion)
+        }
     }
+    if (@($unscopedVersions | Where-Object { (Compare-FrameworkVersion $_ $baseline) -gt 0 }).Count -gt 0) { return $false }
     return (Compare-FrameworkVersion $target $baseline) -gt 0
 }
 
@@ -649,6 +733,42 @@ function Get-Confirmation($Evidence, [switch]$RequireRegression) {
         (-not $RequireRegression -or (Test-RegressionValidation $paragraphs[0])) -and
         -not (Test-NegativeValidation $prose)
     })
+}
+
+function Test-CurrentConfirmation($Confirmations, $Evidence, [string]$Label, $Snapshot) {
+    if ($Confirmations.Count -eq 0) { return $false }
+    $latest = @($Confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
+    if (@($Snapshot.sources | Where-Object {
+        $_.kind -ceq 'comment' -and $_.isValidator -and
+        (Get-SupersessionTime $_) -gt $sourceMap[$latest.source].createdAt -and
+        (Test-NegativeValidation (Get-Prose $_.body))
+    }).Count -gt 0) { return $false }
+    $laterRemovals = @($Snapshot.sources | Where-Object {
+        $_.isMaintainer -and $_.kind -ceq 'unlabeled' -and $_.body -ceq "unlabeled: $Label" -and
+        $_.createdAt -ge $sourceMap[$latest.source].createdAt
+    } | Sort-Object createdAt)
+    if ($laterRemovals.Count -gt 0) {
+        $readdEvidence = @($Evidence | Where-Object {
+            $sourceMap[$_.source].createdAt -gt $laterRemovals[-1].createdAt
+        })
+        if (-not (Test-Decision $readdEvidence $Label 'add')) { return $false }
+    }
+    return $true
+}
+
+function Test-AreaCause([string]$Paragraph, [string]$Quote, [string]$ReplacementLabel) {
+    $labelText = Get-LabelPattern $ReplacementLabel
+    $candidate = [regex]::Replace($Paragraph, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if ((Test-Interrogative $candidate) -or (Test-ConditionalEvidence $candidate -Decision) -or
+        (Test-TentativeEvidence $candidate) -or
+        $candidate -match "(?i)\b(?:not|never|no longer|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|another|different|unrelated|separate|other)\b") {
+        return $false
+    }
+    $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
+    $cause = "(?:\broot cause of\s+$outcome\s+(?:is|was)\s+(?:(?:in|within)\s+)?$labelText|" +
+        "\b$outcome(?:['\u2019]s)?\s+root cause\s+(?:is|was)\s+(?:(?:in|within)\s+)?$labelText|" +
+        "\b$outcome\s+(?:is|was)\s+(?:caused by|due to)\s+$labelText)"
+    return $Paragraph -match "(?i)$cause" -and $Quote -match "(?i)$cause"
 }
 
 function Test-BlockedValidation([string]$Prose) {
@@ -816,24 +936,8 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                 }
                 throw "No positive authorized target-specific validation supports $label."
             }
-            $latest = @($confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
-            $contrary = @($Snapshot.sources | Where-Object {
-                $_.kind -eq 'comment' -and $_.isValidator -and
-                (Get-SupersessionTime $_) -gt $sourceMap[$latest.source].createdAt -and
-                (Test-NegativeValidation (Get-Prose $_.body))
-            })
-            if ($contrary.Count -gt 0) { throw "Later contrary validation exists for $label; withhold the confirmation." }
-            $laterRemovals = @($Snapshot.sources | Where-Object {
-                $_.isMaintainer -and $_.kind -ceq 'unlabeled' -and $_.body -ceq "unlabeled: $label" -and
-                $_.createdAt -ge $sourceMap[$latest.source].createdAt
-            } | Sort-Object createdAt)
-            if ($laterRemovals.Count -gt 0) {
-                $readdEvidence = @($Decision.evidence | Where-Object {
-                    $sourceMap[$_.source].createdAt -gt $laterRemovals[-1].createdAt
-                })
-                if (-not (Test-Decision $readdEvidence $label 'add')) {
-                    throw "A later maintainer removal supersedes confirmation for $label; cite a newer confirmation or explicit re-add."
-                }
+            if (-not (Test-CurrentConfirmation $confirmations $Decision.evidence $label $Snapshot)) {
+                throw "Later contrary validation or maintainer removal supersedes confirmation for $label; cite current evidence."
             }
         }
         if ($label.StartsWith('regressed-in-')) {
@@ -862,7 +966,10 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         $transitionEvidence = @()
         foreach ($replacementLabel in $replacement) {
             if ($policy.confirmation -ccontains $replacementLabel) {
-                $transitionEvidence += @(Get-Confirmation $Decision.evidence -RequireRegression:($replacementLabel -ceq 'i/regression'))
+                $confirmations = @(Get-Confirmation $Decision.evidence -RequireRegression:($replacementLabel -ceq 'i/regression'))
+                if (Test-CurrentConfirmation $confirmations $Decision.evidence $replacementLabel $Snapshot) {
+                    $transitionEvidence += $confirmations
+                }
             } elseif ($policy.technicalAssessment -ccontains $replacementLabel) {
                 $transitionEvidence += @(Get-TechnicalAssessment $Decision.evidence $replacementLabel)
             } elseif ((Get-Category $replacementLabel) -ceq 'content') {
@@ -880,16 +987,25 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         if ($confirmedTransition -and $label -cne 'needs-area-label' -and $lastRequest.Count -gt 0 -and
             @($transitionEvidence | Where-Object {
                 $source = $sourceMap[$_.source]
-                (Get-SupersessionTime $source) -ge $lastRequest[0].createdAt
+                $source.createdAt -ge $lastRequest[0].createdAt
             }).Count -eq 0) {
             $confirmedTransition = $false
         }
         $areaCorrection = $label.StartsWith('area-') -and
-            @($proposal.additions | Where-Object { $_.label.StartsWith('area-') }).Count -gt 0 -and
-            @($maintainerEvidence | Where-Object {
-                $_.quote -match '(?i)\b(root cause|caused|due to|instead|rather than|actually)\b' -and
-                ($lastRequest.Count -eq 0 -or
-                    $sourceMap[$_.source].createdAt -gt $lastRequest[0].createdAt)
+            @($proposal.additions | Where-Object {
+                $addition = $_
+                $addition.label.StartsWith('area-') -and @($maintainerEvidence | Where-Object {
+                    $reference = $_
+                    $source = $sourceMap[$reference.source]
+                    $paragraphs = @((Get-Prose $source.body) -split '\r?\n[ \t]*\r?\n' |
+                        Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
+                    $paragraphs.Count -eq 1 -and
+                    (Test-AreaCause $paragraphs[0] $reference.quote $addition.label) -and
+                    @($addition.evidence | Where-Object {
+                        $_.source -ceq $reference.source -and $_.quote -ceq $reference.quote
+                    }).Count -gt 0 -and
+                    ($lastRequest.Count -eq 0 -or $source.createdAt -gt $lastRequest[0].createdAt)
+                }).Count -gt 0
             }).Count -gt 0
         $contradictedFacet = $label -in @('has-workaround', 'repro:device-only') -and
             @($Decision.evidence | Where-Object {

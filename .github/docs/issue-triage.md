@@ -80,6 +80,13 @@ retains link targets so canonical same-repository issue links are still fetched.
 Every evidence quote must survive the same prose filter, including content labels
 and narrow removals. Code/samples can inform analysis but cannot serve as
 authority quotations.
+Automatic area correction requires a fresh unconditional maintainer explanation
+of this reported issue's cause naming the exact replacement area. The removal
+and that specific addition must cite the same source and exact quotation.
+Negated, tentative, unrelated or mixed explanations and an independently cited
+area addition cannot justify deleting an existing area. If that narrow gate
+cannot establish the correction, preserve it or cite a current explicit
+maintainer removal. Unrelated secondary areas remain protected.
 Marker-bearing result comments from this workflow's publisher are excluded from
 evidence sources and related-reference intake. They remain in `resultComments`
 for context hashing and retry reconciliation only. Generated report reasons
@@ -115,7 +122,11 @@ label through that assessment. Re-adding needs fresh qualifying evidence.
 Try-latest recommendations must bind the instruction to one concrete MAUI version
 and quote that version. The target must be present in the prepared published
 release window and strictly newer than the report's unambiguous `Version with
-bug` field, considering any higher named MAUI version in the author's prose.
+bug` field, considering higher MAUI versions in the author's prose. Bare values
+in explicitly MAUI-scoped headings, fields and table columns/rows participate;
+explicit OS, SDK and tool versions do not. An unqualified higher version makes
+the baseline ambiguous and withholds the request rather than being silently
+ignored as unrelated.
 An absent/ambiguous baseline, downgrade/equal version, multiple targets or an
 unestablished publication cannot activate the feedback/closure policy.
 Version comparison includes numeric core, preview/RC/stable phase and iteration;
@@ -139,6 +150,11 @@ The confirmation gate and later-contrary-evidence veto share unsuccessful
 reproduce/confirm/verify/validate detection. The veto withholds confirmation;
 it does not turn an unsuccessful validation or infrastructure failure into
 `s/no-repro`.
+Confirmation-based removal transitions use the same freshness gate as additions,
+even when s/verified is already present. Later contrary validation or a newer
+maintainer removal cannot be bypassed to clear pending information/reproduction
+labels. Affirmative transition support also keeps its creation time when compared
+with the latest request assignment; cosmetic edits cannot revive older support.
 Negation must grammatically modify a validation verb, with bounded intervening
 auxiliaries/adverbs; an unrelated "not a duplicate" clause cannot negate a
 following successful verification. The full cited comment is checked for contrary

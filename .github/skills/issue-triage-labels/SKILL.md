@@ -90,6 +90,9 @@ substitutes for current original issue/comment evidence.
   newer positive confirmation or a later explicit maintainer re-add decision.
 - Later unsuccessful reproduction, confirmation, verification or validation
   vetoes older positive evidence. Infrastructure-only failures are not no-repro.
+  The same current-confirmation gate applies when positive evidence removes
+  pending information/reproduction/verification labels. Existing s/verified
+  membership cannot bypass later contrary evidence or maintainer removals.
   Contrary validation elsewhere in the cited comment also vetoes confirmation;
   quote selection cannot hide a retraction. An unrelated negation, such as
   "not a duplicate", does not negate a following positive verification.
@@ -122,7 +125,11 @@ substitutes for current original issue/comment evidence.
   A try-latest request must bind its instruction to one concrete MAUI version,
   cite that version, and match `context.publishedMauiReleases`. The target must
   be strictly newer than the report's unambiguous `Version with bug` field and
-  any higher named MAUI version in the author's prose. Downgrades, equal versions,
+  any higher MAUI version in the author's prose, including bare values in
+  explicitly MAUI-scoped headings, fields or table columns/rows. Explicit OS,
+  SDK and tool versions are not framework baselines. A higher unqualified
+  version makes the baseline ambiguous and withholds the request rather than
+  assuming it is unrelated. Downgrades, equal versions,
   multiple targets, unestablished baselines and versions outside the bounded
   published release window are withheld. Preview/RC ordering is recognized;
   another build of the same preview/RC iteration is not a newer release.
@@ -158,10 +165,16 @@ policy transition. Explain each removal separately:
 - Replace a suspected regression with a confirmed regression or supported
   not-regression disposition.
 - Correct the dominant area only with an authoritative root-cause explanation
-  and a supported replacement. The correction comment must have been created
+  about this reported issue that affirmatively names the exact replacement
+  area. Both the removal and that addition must cite the same source and
+  quotation containing the cause and replacement. Negated, conditional,
+  tentative, unrelated or mixed explanations cannot authorize correction.
+  The correction comment must have been created
   after the latest assignment of the removed area; cosmetic edits cannot revive
   old support. Otherwise cite a current explicit removal or withhold the correction.
   Do not delete unrelated secondary areas.
+- Affirmative transition evidence retains its original creation time; cosmetic
+  edits cannot override a newer information/reproduction request.
 - Clear `needs-area-label` when this proposal adds a validated area using current
   issue/comment evidence. Initial report evidence can predate the placeholder;
   unrelated existing area membership alone does not justify this transition.
