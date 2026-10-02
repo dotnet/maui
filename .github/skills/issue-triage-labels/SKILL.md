@@ -220,6 +220,9 @@ policy transition. Explain each removal separately:
 - A changed state must not leave verified/no-repro, suspected/confirmed
   regression, or not-regression/regression states active together. Include
   separately justified permitted removals or withhold the incompatible change.
+  A changed first-bad boundary must leave at most one `regressed-in-*` label
+  active. Replacing a boundary requires an independently authorized removal;
+  otherwise withhold the new boundary rather than accumulating versions.
   Do not clean up unrelated pre-existing conflicts.
 
 ## Structured output

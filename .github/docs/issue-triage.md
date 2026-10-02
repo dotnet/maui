@@ -241,7 +241,9 @@ predate the initial placeholder event; that transition does not require a newer
 validator comment. Existing area membership alone is not sufficient.
 Priority changes cannot leave conflicting priorities. Changes to status states
 cannot leave verified/no-repro, suspected/confirmed regression or
-not-regression/regression states active together. Every necessary removal still
+not-regression/regression states active together. A first-bad-boundary change
+must leave at most one `regressed-in-*` label active, not accumulate differing
+boundaries. Every necessary removal still
 requires its own permitted authority or transition; otherwise withhold the
 change. Unrelated pre-existing conflicts are preserved, not silently cleaned up.
 Preserve unrelated manual labels, Policy Service staleness tags,

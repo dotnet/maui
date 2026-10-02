@@ -1218,6 +1218,10 @@ if (@($allDecisions | Where-Object { $_.label.StartsWith('p/') }).Count -gt 0 -a
     @($effectiveLabels | Where-Object { $_.StartsWith('p/') }).Count -gt 1) {
     throw 'A priority change must not leave conflicting priority commitments.'
 }
+if (@($names | Where-Object { Test-Pattern $_ 'regressed-in-*' }).Count -gt 0 -and
+    @($effectiveLabels | Where-Object { Test-Pattern $_ 'regressed-in-*' }).Count -gt 1) {
+    throw 'A regression boundary change must not leave multiple regressed-in-* labels active; propose supported removals or withhold the change.'
+}
 $incompatibleStates = @(
     @{ label = 's/no-repro'; contrary = @('s/verified') }
     @{ label = 'not-regression'; contrary = @('potential-regression', 'i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
