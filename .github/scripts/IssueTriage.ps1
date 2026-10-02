@@ -464,17 +464,17 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $prohibited = $false
     if ($Superseding) {
         $negatedVerbs = if ($Action -eq 'remove') { $addVerbs } else { $removeVerbs }
-        $prohibition = "(?i)\b(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=$gap$labelText)"
+        $prohibition = "(?i)(?<prefix>(?:^|[.!;]\s+)\s*(?:please\s+)?)(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=$gap$labelText)"
         $prohibited = [regex]::IsMatch($candidate, $prohibition)
-        $candidate = [regex]::Replace($candidate, $prohibition, $Action)
+        $candidate = [regex]::Replace($candidate, $prohibition, '${prefix}' + $Action)
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
         $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
     }
     if ((Test-Interrogative $withoutLabel) -or
-        (((Test-ConditionalEvidence $withoutLabel -Decision) -or
-            (Test-TentativeEvidence $withoutLabel)) -and -not $prohibited)) { return $false }
+        (Test-TentativeEvidence $withoutLabel) -or
+        ((Test-ConditionalEvidence $withoutLabel -Decision) -and -not $prohibited)) { return $false }
     $allowedReferencePattern = ''
     if (-not $prohibited -and $Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
         $canonical = @([regex]::Matches($candidate,
@@ -1084,7 +1084,14 @@ function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = 
     }
     $negative = "(?:not|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
     $gap = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|can|$negative)\b).){0,80}"
-    if ($Paragraph -match "(?i)\bworkarounds?\b$gap\b(?:works?|fixed|resolves?|helps?|succeeds?)\b") { return $false }
+    $positive = '(?:work(?:s|ed|ing)?|fix(?:es|ed|ing)?|resolv(?:e[ds]?|ing)|help(?:s|ed|ing)?|succeed(?:s|ed|ing)?)'
+    $separator = '(?i)[,;!?\r\n]|\.(?:\s|$)|\b(?:and|but|however|although|except|yet|instead)\b'
+    # Continued clauses can inherit the workaround subject.
+    $continuation = '^\s*(?:(?:then|it|is|was|does|did|has|been|now|currently|still|actually|successfully)\s+){0,6}'
+    if ($Paragraph -match "(?i)\bworkarounds?\b$gap\b$positive\b" -or
+        @($Paragraph -split $separator | Where-Object {
+            $_ -match "(?i)$continuation$positive\b"
+        }).Count -gt 0) { return $false }
     return $Paragraph -match "(?i)\bworkarounds?\b$gap\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b"
 }
 
@@ -1224,7 +1231,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                 $source = $sourceMap[$_.source]
                 $recent = $source.kind -in @('issue', 'comment') -and
                     ($lastRequest.Count -eq 0 -or
-                        ($source.kind -eq 'comment' -and (Get-SupersessionTime $source) -ge $lastRequest[0].createdAt))
+                        ($source.kind -eq 'comment' -and (Get-SupersessionTime $source) -gt $lastRequest[0].createdAt))
                 $prose = Get-Prose $source.body
                 $referenceContext = Get-MarkdownText $source.body
                 $quote = $_.quote

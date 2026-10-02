@@ -65,6 +65,10 @@ unconditional decision rather than inferring that later evidence activated a
 previous condition.
 Directed prohibitions retain the existing conservative veto on older authority:
 "Do not apply p/1 until validation is complete" still blocks an older approval.
+The prohibition must begin an imperative sentence or clause, optionally with
+"please". Embedded hypothetical negations such as "If we do not apply p/1"
+are not directed vetoes. Tentative prohibitions such as "Maybe do not apply p/1"
+remain withheld; the directed-veto exception never bypasses uncertainty.
 Explanatory negation such as "this is not ready" or "we cannot commit" does not
 cancel a recognized directed veto. Questions remain non-decisions.
 It does not authorize a new removal or prove completion of the condition.
@@ -263,6 +267,9 @@ one dominant area is removed and two independently supported areas added.
 Failed-workaround transitions require an unconditional, non-tentative observed
 failure in one enclosing paragraph and in the selected quote. Questions,
 conditional advice and mixed working/failing outcomes are not such observations.
+Positive continued clauses remain visible even when they omit the workaround
+subject: "The workaround failed initially, but now works" is mixed evidence,
+not authority to remove the label.
 "Suggested workaround" names the attempted workaround, not a tentative failure;
 uncertainty about the outcome still withholds the transition.
 Device-to-simulator transitions require affirmative, unconditional, non-tentative
@@ -270,6 +277,9 @@ reproduction of the reported issue on a simulator in both the quote and enclosin
 paragraph. Questions and unsuccessful attempts are not contradictory evidence;
 a device reproduction followed by "but not on the simulator" is not sufficient.
 Contrary validation elsewhere in the cited comment also vetoes this transition.
+Workaround/device-only contradiction evidence must be strictly later than the
+latest assignment when that event is available. An equal-second observation
+cannot authorize removal because its order relative to the assignment is unknown.
 Root-cause area corrections need a maintainer comment created after the latest
 assignment of the removed area, or a current explicit removal decision.
 Cosmetic edits cannot revive an older correction after a newer assignment.

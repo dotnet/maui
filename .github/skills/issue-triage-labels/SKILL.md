@@ -104,6 +104,9 @@ substitutes for current original issue/comment evidence.
   later evidence activated a prior conditional commitment.
   Directed prohibitions remain conservative vetoes on older authority: "Do not
   apply p/1 until validation is complete" cannot revive an earlier approval.
+  Require an imperative sentence/clause opening, optionally with "please".
+  "If we do not apply p/1" is hypothetical, not a directed veto. "Maybe do not
+  apply p/1" is tentative; the exception never bypasses uncertainty.
   That veto does not authorize a new removal or treat the condition as completed.
   Explanations such as "this is not ready" do not cancel the directed veto.
   Check the entire cited comment for a qualifying opposite decision or directed
@@ -244,6 +247,8 @@ policy transition. Explain each removal separately:
   non-tentative failed-workaround observation in both the quote and one enclosing
   paragraph. Questions, conditional advice and mixed working/failing outcomes
   cannot authorize that transition.
+  Inspect continued clauses that inherit the workaround subject: "The workaround
+  failed initially, but now works" cannot authorize removal.
   "Suggested workaround" identifies the attempted workaround; it does not make
   an otherwise definitive failure tentative. Outcome uncertainty still vetoes it.
 - Removing `repro:device-only` through simulator evidence requires an affirmative,
@@ -256,6 +261,9 @@ policy transition. Explain each removal separately:
   issue/comment evidence. Initial report evidence can predate the placeholder;
   unrelated existing area membership alone does not justify this transition.
 - Remove a workaround/device-only tag when later direct evidence contradicts it.
+  When the assignment event is available, contradiction evidence must be
+  strictly later. Equal-second evidence has unknown ordering and cannot
+  authorize the removal.
 - Change priority/approval/ownership/release decisions only with explicit
   maintainer authority, never by inferring a new business decision.
 - A changed state must not leave verified/no-repro, suspected/confirmed
