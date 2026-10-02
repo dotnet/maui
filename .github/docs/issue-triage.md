@@ -89,6 +89,10 @@ Negated, tentative, unrelated or mixed explanations and an independently cited
 area addition cannot justify deleting an existing area. If that narrow gate
 cannot establish the correction, preserve it or cite a current explicit
 maintainer removal. Unrelated secondary areas remain protected.
+Cause-only correction requires exactly one area in the freshly fetched current
+labels. Multiple current areas require an explicit current maintainer removal
+decision; counting proposed effective labels would allow removals to authorize
+themselves and is not permitted.
 Marker-bearing result comments from this workflow's publisher are excluded from
 evidence sources and related-reference intake. They remain in `resultComments`
 for context hashing and retry reconciliation only. Generated report reasons
@@ -130,6 +134,10 @@ Factual "could not" and "couldn't" reproduction/replication failures share the
 same narrow normalization before tentative classification, including straight
 and curly apostrophes. The original outcome, target, resource-failure,
 conditional, uncertainty and mixed-result checks remain required.
+No-repro uses the observation-oriented conditional gate, so completed
+post-update or post-rebuild test context is not mistaken for a pending decision.
+Questions remain withheld, but auxiliary/subject wording must begin a clause:
+declarative "I have this issue" does not turn a factual reproduction into a question.
 All technical assessments share chronology checks for additions and removal
 transitions. Later label removals, including automated Policy Service removals,
 contrary state labels, authorized contrary outcomes/retractions and explicit

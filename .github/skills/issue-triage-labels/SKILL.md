@@ -145,6 +145,9 @@ substitutes for current original issue/comment evidence.
   outcomes, not speculation. The contraction accepts straight/curly apostrophes.
   Only factual failed reproduction/replication wording is normalized for the
   tentative check; questions, conditions and other uncertainty remain rejected.
+  Completed post-update or post-rebuild test context is not a pending decision:
+  use the observation-oriented conditional gate for no-repro outcomes.
+  Declarative "I have this issue" wording is not an auxiliary-led question.
   Mixed failed/successful validation is withheld, including an initial failure
   followed by reproduction in the same paragraph. Positive outcomes elsewhere
   in the cited comment also veto no-repro; do not hide them by quote selection.
@@ -219,7 +222,10 @@ policy transition. Explain each removal separately:
   The correction comment must have been created
   after the latest assignment of the removed area; cosmetic edits cannot revive
   old support. Otherwise cite a current explicit removal or withhold the correction.
-  Do not delete unrelated secondary areas.
+  Cause-only correction is permitted only when the current issue has exactly
+  one area label. With multiple current areas, require a current explicit
+  maintainer removal decision; proposed removals cannot reduce that count to
+  establish their own authority. Do not delete unrelated secondary areas.
 - Affirmative transition evidence retains its original creation time; cosmetic
   edits cannot override a newer information/reproduction request.
 - Removing `has-workaround` through failure evidence requires an unconditional,

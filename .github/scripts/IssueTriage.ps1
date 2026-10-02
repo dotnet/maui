@@ -427,7 +427,7 @@ function Get-Prose([string]$Body) {
 
 function Test-Interrogative([string]$Prose) {
     return $Prose.Contains('?') -or
-        $Prose -match '(?i)\b(can|could|should|would|will|may|might|is|are|was|were|does|do|did|has|have)\s+(we|i|you|they|he|she|this|it|that|LABEL|the (?:issue|report|behavior))\b'
+        $Prose -match '(?i)(?:^|[.!;:,]|\r?\n[ \t]*\r?\n)\s*(?:please\s+)?(can|could|should|would|will|may|might|is|are|was|were|does|do|did|has|have)\s+(we|i|you|they|he|she|this|it|that|LABEL|the (?:issue|report|behavior))\b'
 }
 
 function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
@@ -892,7 +892,7 @@ function Test-NoReproductionParagraph([string]$Paragraph, [string]$ReferenceCont
     $modifiers = '(?:(?:successfully|reliably|consistently|actually|locally|independently)\s+){0,3}'
     $pastNegative = "\b(?:could\s+not|couldn['\u2019]t)\s+(?=(?:be\s+)?$modifiers(?:reproduce|replicate)d?\b)"
     $candidate = [regex]::Replace($Paragraph, "(?i)$pastNegative", 'not ')
-    if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
+    if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph) -or
         (Test-TentativeEvidence $candidate) -or (Test-PositiveValidation $Paragraph $ReferenceContext) -or
         $Paragraph -match "(?i)\b(?:please|do not|don['\u2019]t|never|avoid|should not|must not|asked|instruct(?:ed|ion)?|recommend(?:ed|ation)?)\b") {
         return $false
@@ -1150,6 +1150,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             $confirmedTransition = $false
         }
         $areaCorrection = $label.StartsWith('area-') -and
+            @($Snapshot.labels | Where-Object { $_.StartsWith('area-') }).Count -eq 1 -and
             @($proposal.additions | Where-Object {
                 $addition = $_
                 $addition.label.StartsWith('area-') -and @($maintainerEvidence | Where-Object {
