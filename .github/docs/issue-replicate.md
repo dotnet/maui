@@ -21,7 +21,7 @@ limited to 10 MiB compressed, 40 MiB expanded, 512 safe entries, and one
 platform-targeting `.csproj`. A repro with multiple project files, external
 downloads, non-GitHub attachments, or an inaccessible dependency may be
 inconclusive. **Do not include credentials or private data in a public repro,
-issue comment, or generated artifact.**
+issue comment, or generated candidate.**
 
 The sample is *built*, not driven through the reported interaction. A generated
 unit/XAML/UI test runs against the pinned MAUI commit in a separate credential-free
@@ -50,7 +50,7 @@ Results are updated idempotently per run. Publication failures also produce an
 expandable follow-up notice, without claiming a verified outcome.
 
 For a read-only preview, pass `-OutputPath` to `IssueReplicate.Post.ps1`; this
-validates the same artifacts and writes the comment without calling GitHub.
+validates the same result data and writes the comment without calling GitHub.
 Authorized fork canaries can use `-GitHubRunId` and `-GitHubRepository` instead
 of `-BuildId` to link their actual GitHub Actions evidence, without pretending
 they ran in Azure. Normal production publication still uses the isolated Azure
@@ -101,7 +101,7 @@ unsupported generated candidate cannot rule out the reported behavior.
    `ISSUE_REPRO_COMMENT_TOKEN` (issue-comment-only publication). Scope them to
    their respective intake, generator, and posting tasks; do not import a
    shared MAUI secret group. Review whether your token policy permits public
-   artifact metadata and issue comment posting.
+   issue/repository reads, Copilot access, and issue-comment posting.
 4. Confirm `ubuntu-22.04` and `macOS-15-arm64` are **fresh Microsoft-hosted
    agents**, with Android KVM, Appium, appropriate Xcode/simulator, and workloads
    on the chosen MAUI branches. Do not enable iOS on a persistent/shared macOS
