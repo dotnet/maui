@@ -12,8 +12,12 @@ parameters:
 
 jobs:
   - job: ${{ parameters.name }}
-    dependsOn: ${{ parameters.dependsOn }}
+    dependsOn: [Intake, Sample, '${{ parameters.dependsOn }}']
     condition: ${{ parameters.condition }}
+    variables:
+      reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+      reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
+      reproCandidate: $[ dependencies.${{ parameters.dependsOn }}.outputs['candidate.payload'] ]
     ${{ if eq(parameters.platform, 'android') }}:
       pool:
         vmImage: ubuntu-22.04
@@ -23,14 +27,19 @@ jobs:
     timeoutInMinutes: 180
     steps:
       - checkout: none
-      - download: current
-        artifact: IssueTools
-      - download: current
-        artifact: IssueInput
-      - download: current
-        artifact: SampleOutput
-      - download: current
-        artifact: ${{ parameters.proposal }}
+      - template: issue-replicate-tools.yml
+      - pwsh: |
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+            -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+            -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Candidate `
+            -Encoded $env:REPRO_CANDIDATE -Directory "$(Pipeline.Workspace)/${{ parameters.proposal }}"
+        displayName: 'Restore bounded verification data without downloading artifacts'
+        env:
+          REPRO_INPUT: $(reproInput)
+          REPRO_SAMPLE: $(reproSample)
+          REPRO_CANDIDATE: $(reproCandidate)
       - pwsh: |
           & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
             -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
@@ -143,6 +152,9 @@ jobs:
         name: verify
         displayName: 'Freeze fixed verification status'
         condition: succeededOrFailed()
-      - publish: '$(Pipeline.Workspace)/IssueVerified'
-        artifact: Verified${{ replace(parameters.name, 'Verify', '') }}
+      - pwsh: |
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Verified `
+            -Directory "$(Pipeline.Workspace)/IssueVerified" -Provider Azure
+        name: transfer
+        displayName: 'Transfer bounded result and feedback through job outputs'
         condition: succeededOrFailed()

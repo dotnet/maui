@@ -28,9 +28,9 @@ unit/XAML/UI test runs against the pinned MAUI commit in a separate credential-f
 job, with at most one feedback-driven revision. A passing test means only
 `not-reproduced-on-tested-revision`. A test that fails at an assertion on two
 runs is reported as a **verified failing test candidate**, not proof that the
-author's scenario was exercised or the issue is confirmed. The `Verified1` or
-`Verified2` public build artifact contains a `test.patch` only for that outcome.
-The patch is untrusted code: inspect its assertions, test scope, and provenance
+author's scenario was exercised or the issue is confirmed. Only that outcome
+publishes the complete generated candidate diff in the issue comments.
+The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
@@ -38,8 +38,10 @@ The result is posted **under the originating issue**, with a concise outcome and
 the same expandable-section style as `/review tests`: **Reproduction evidence**,
 **Generated test candidate**, and **Follow-up**. A verified failing candidate's
 hash-checked diff is embedded in the comment so it can be reviewed without
-downloading artifacts. Oversized diffs are explicitly linked in full rather than
-truncated; passing, unsupported, and inconclusive results do not publish a patch.
+downloading anything. Oversized diffs are split across bounded continuation
+comments linked from the main report, with the full patch hash and ordered code
+blocks; no code is truncated. Passing, unsupported, and inconclusive results do
+not publish a patch.
 Evidence includes direct links to the author's original repro ZIP or public
 repository, the immutable repository revision when applicable, and the issue
 comment associated with the run. Repro links are validated against the supported
@@ -54,26 +56,29 @@ of `-BuildId` to link their actual GitHub Actions evidence, without pretending
 they ran in Azure. Normal production publication still uses the isolated Azure
 Post job and its separately scoped issue-comment token.
 
-### Artifact storage and cleanup
+### Comments-only output
 
-`SampleOutput` publishes only `sample-result.json` and `sample-build.log`, not
-the extracted sample, `bin`/`obj` directories, compiled apps, or installed SDKs.
-Keep native evidence limited to the verification result, bounded test log, patch,
-and the selected test's TRX rather than uploading the entire test working directory.
+Neither the production pipeline nor fork canaries upload artifacts, even for
+cross-job transfer. Comments are the only published reproduction output; normal
+execution logs remain available on the run page. Local sample archives, SDKs,
+build outputs, TRX files, and patches exist only in disposable job workspaces.
 
-Fork canaries retain input snapshots, proposals, and verified evidence for seven
-days, so posting and feedback-driven revisions remain possible. Transient tools
-and sample-build evidence have a one-day expiration fallback and are deleted by
-an isolated, always-running cleanup job after all their consumers finish, including
-failed runs. Cleanup receives `actions: write` only in that no-checkout job;
-sample and test execution never receive a writable GitHub token. Delete only the
-current run's explicitly named transient artifacts, and surface cleanup failures.
-The canary's `cleanup_only` dispatch checks that storage accepts an upload and
-immediately deletes that check artifact without running a sample or GPT.
+Jobs exchange bounded gzip/base64 data through named job outputs. The transport
+accepts only a fixed set of data filenames, checks per-file sizes and SHA-256,
+limits decompression, and cannot overwrite existing files. It never transfers
+scripts, extracted samples, compiled apps, or installed tools. Each isolated job
+fetches trusted scripts from the immutable public pipeline commit. Jobs needing
+the sample re-download its pinned public source and require the original ZIP hash.
+If the source changes or disappears, the attempt is explicitly inconclusive.
 
-The hash-checked diff and repro links in the issue comment survive artifact
-expiration. Deleting artifacts reduces current storage and future hourly usage,
-but does not erase storage already accrued in the current billing cycle.
+The isolated posting job imports only the snapshot and verified result, validates
+the existing issue/revision/patch contracts, and publishes the expandable report.
+The full diff and original repro links are preserved in comments without artifact
+retention or storage charges. Fork publication requires a separately configured
+issue-comment credential: the fork's built-in token cannot post to `dotnet/maui`.
+Never repurpose the Copilot credential or expose a posting credential to native
+execution. An unconfigured publisher fails explicitly rather than pretending a
+comment was posted.
 
 iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
@@ -113,7 +118,7 @@ unsupported generated candidate cannot rule out the reported behavior.
 
 The GitHub gate and Azure intake/posting check out trusted `main` without
 persisting Git credentials. Sample and test jobs use `checkout: none`, receive
-bounded artifacts, and never receive the Copilot or issue-posting tokens. The
+bounded job data, and never receive the Copilot or issue-posting tokens. The
 generator uses GPT with tools disabled and never executes sample or generated
 code. A public pipeline alone is **not** a security boundary: do not grant
 execution jobs privileged access or reuse the trusted job agents for them.

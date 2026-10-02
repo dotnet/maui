@@ -1,0 +1,20 @@
+steps:
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      if ($env:TOOLS_SHA -cnotmatch '^[0-9a-f]{40}$') { throw 'The trusted tools revision is not pinned.' }
+      $source = "$(Agent.TempDirectory)/issue-tools-source"
+      $tools = "$(Pipeline.Workspace)/IssueTools"
+      git init --quiet $source
+      if ($LASTEXITCODE -ne 0) { throw 'Could not prepare trusted tool checkout.' }
+      git -c credential.helper= -c http.extraheader= -C $source fetch --quiet --no-tags --depth=1 `
+        https://github.com/dotnet/maui.git $env:TOOLS_SHA
+      if ($LASTEXITCODE -ne 0) { throw 'Could not fetch the public trusted tools revision.' }
+      git -C $source checkout --quiet --detach FETCH_HEAD
+      if ($LASTEXITCODE -ne 0 -or (git -C $source rev-parse HEAD).Trim() -cne $env:TOOLS_SHA) {
+        throw 'The public tools checkout differs from the pipeline revision.'
+      }
+      New-Item -ItemType Directory -Path $tools -Force | Out-Null
+      Copy-Item "$source/.github/scripts/IssueReplicate*.ps1" $tools
+    displayName: 'Fetch immutable public tools without a checkout credential'
+    env:
+      TOOLS_SHA: $(Build.SourceVersion)

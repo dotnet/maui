@@ -60,10 +60,7 @@ stages:
               if ($env:TARGET_REF -cnotmatch '^(main|net[0-9]+\.0)$') {
                 throw 'Only main and netN.0 MAUI targets are supported.'
               }
-              $tools = "$(Build.ArtifactStagingDirectory)/IssueTools"
-              New-Item -ItemType Directory -Path $tools -Force | Out-Null
-              Copy-Item .github/scripts/IssueReplicate*.ps1 $tools
-              & pwsh -NoProfile -File "$tools/IssueReplicate.Intake.ps1" `
+              & pwsh -NoProfile -File .github/scripts/IssueReplicate.Intake.ps1 `
                 -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
                 -Platform $env:PLATFORM -TargetRef $env:TARGET_REF `
                 -OutputDirectory "$(Pipeline.Workspace)/IssueInput"
@@ -75,16 +72,17 @@ stages:
               PLATFORM: ${{ parameters.Platform }}
               TARGET_REF: ${{ parameters.TargetRef }}
               GH_READ_TOKEN: $(ISSUE_REPRO_READ_TOKEN)
-          - publish: '$(Build.ArtifactStagingDirectory)/IssueTools'
-            artifact: IssueTools
-            condition: succeededOrFailed()
-          - publish: '$(Pipeline.Workspace)/IssueInput'
-            artifact: IssueInput
-            condition: succeeded()
+          - pwsh: |
+              & .github/scripts/IssueReplicate.Transport.ps1 -Mode Export -Kind Input `
+                -Directory "$(Pipeline.Workspace)/IssueInput" -Provider Azure
+            name: snapshot
+            displayName: 'Transfer bounded snapshot through job outputs'
 
       - job: Sample
         dependsOn: Intake
         condition: succeeded('Intake')
+        variables:
+          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
         ${{ if eq(parameters.Platform, 'android') }}:
           pool:
             vmImage: ubuntu-22.04
@@ -94,10 +92,15 @@ stages:
         timeoutInMinutes: 120
         steps:
           - checkout: none
-          - download: current
-            artifact: IssueTools
-          - download: current
-            artifact: IssueInput
+          - template: common/issue-replicate-tools.yml
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+                -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
+                -Directory "$(Pipeline.Workspace)/IssueInput"
+            displayName: 'Restore snapshot and re-fetch hash-checked author sample'
+            env:
+              REPRO_INPUT: $(reproInput)
           - pwsh: |
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
                 -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
@@ -144,31 +147,32 @@ stages:
               if ($LASTEXITCODE -ne 0) { throw 'Author sample build failed (inconclusive).' }
             displayName: 'Build author sample without credentials'
             timeoutInMinutes: 35
-          - task: CopyFiles@2
-            displayName: 'Stage sample build evidence without compiled app outputs'
-            condition: succeededOrFailed()
-            inputs:
-              SourceFolder: '$(Pipeline.Workspace)/SampleOutput'
-              Contents: |
-                sample-result.json
-                sample-build.log
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/SampleOutput'
-          - publish: '$(Build.ArtifactStagingDirectory)/SampleOutput'
-            artifact: SampleOutput
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Sample `
+                -Directory "$(Pipeline.Workspace)/SampleOutput" -Provider Azure
+            name: sample
+            displayName: 'Transfer bounded sample result without uploading files'
             condition: succeededOrFailed()
 
       - job: Generate1
-        dependsOn: Sample
+        dependsOn: [Intake, Sample]
         condition: succeeded('Sample')
+        variables:
+          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 35
         steps:
           - checkout: none
-          - download: current
-            artifact: IssueTools
-          - download: current
-            artifact: IssueInput
+          - template: common/issue-replicate-tools.yml
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+                -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
+                -Directory "$(Pipeline.Workspace)/IssueInput"
+            displayName: 'Restore immutable generation inputs'
+            env:
+              REPRO_INPUT: $(reproInput)
           - task: UseNode@1
             inputs:
               version: "24.x"
@@ -182,9 +186,11 @@ stages:
             displayName: 'Draft test without executable tools'
             env:
               COPILOT_GITHUB_TOKEN: $(ISSUE_REPRO_COPILOT_TOKEN)
-          - publish: '$(Pipeline.Workspace)/Proposal1'
-            artifact: Proposal1
-            condition: succeeded()
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Candidate `
+                -Directory "$(Pipeline.Workspace)/Proposal1" -Provider Azure
+            name: candidate
+            displayName: 'Transfer bounded candidate through job outputs'
 
       - template: common/issue-replicate-verify-job.yml
         parameters:
@@ -195,26 +201,35 @@ stages:
           platform: ${{ parameters.Platform }}
 
       - job: Generate2
-        dependsOn: Verify1
+        dependsOn: [Intake, Verify1]
         condition: eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive')
+        variables:
+          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          reproFeedback: $[ dependencies.Verify1.outputs['transfer.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 35
         steps:
           - checkout: none
-          - download: current
-            artifact: IssueTools
-          - download: current
-            artifact: IssueInput
-          - download: current
-            artifact: Verified1
+          - template: common/issue-replicate-tools.yml
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+                -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
+                -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
+                -Encoded $env:REPRO_FEEDBACK -Directory "$(Pipeline.Workspace)/Verified1"
+            displayName: 'Restore bounded snapshot and verification feedback'
+            env:
+              REPRO_INPUT: $(reproInput)
+              REPRO_FEEDBACK: $(reproFeedback)
           - task: UseNode@1
             inputs:
               version: "24.x"
           - bash: npm install -g @github/copilot && copilot --version
             displayName: 'Install Copilot CLI'
           - pwsh: |
-              $feedback = "$(Pipeline.Workspace)/Verified1/test.log"
+              $feedback = "$(Pipeline.Workspace)/Verified1/feedback.txt"
               if (-not (Test-Path $feedback)) { throw 'The first test has no diagnostic feedback.' }
               . "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Core.ps1"
               $content = Get-IssueReplicateFeedback -Path $feedback
@@ -227,9 +242,11 @@ stages:
             displayName: 'Revise test from bounded feedback'
             env:
               COPILOT_GITHUB_TOKEN: $(ISSUE_REPRO_COPILOT_TOKEN)
-          - publish: '$(Pipeline.Workspace)/Proposal2'
-            artifact: Proposal2
-            condition: succeeded()
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Candidate `
+                -Directory "$(Pipeline.Workspace)/Proposal2" -Provider Azure
+            name: candidate
+            displayName: 'Transfer revised candidate through job outputs'
 
       - template: common/issue-replicate-verify-job.yml
         parameters:
@@ -242,6 +259,10 @@ stages:
       - job: Post
         dependsOn: [Intake, Sample, Generate1, Verify1, Generate2, Verify2]
         condition: always()
+        variables:
+          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          reproVerified1: $[ dependencies.Verify1.outputs['transfer.payload'] ]
+          reproVerified2: $[ dependencies.Verify2.outputs['transfer.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 20
@@ -249,15 +270,6 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: false
-          - download: current
-            artifact: IssueInput
-            continueOnError: true
-          - download: current
-            artifact: Verified1
-            continueOnError: true
-          - download: current
-            artifact: Verified2
-            continueOnError: true
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
@@ -267,10 +279,19 @@ stages:
               $issue = [int]$env:ISSUE_NUMBER
               $comment = [long]$env:COMMENT_ID
               $result = "$(Pipeline.Workspace)/Verified1"
-              if (Test-Path -LiteralPath "$(Pipeline.Workspace)/Verified2/result.json") {
-                $result = "$(Pipeline.Workspace)/Verified2"
-              }
               try {
+                if ($env:REPRO_INPUT -and $env:REPRO_INPUT -notmatch '^\$\(') {
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Input `
+                    -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+                }
+                if ($env:REPRO_VERIFIED2 -and $env:REPRO_VERIFIED2 -notmatch '^\$\(') {
+                  $result = "$(Pipeline.Workspace)/Verified2"
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
+                    -Encoded $env:REPRO_VERIFIED2 -Directory $result
+                } elseif ($env:REPRO_VERIFIED1 -and $env:REPRO_VERIFIED1 -notmatch '^\$\(') {
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
+                    -Encoded $env:REPRO_VERIFIED1 -Directory $result
+                }
                 & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
                   -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
                   -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result
@@ -302,3 +323,6 @@ stages:
               GH_TOKEN: $(ISSUE_REPRO_COMMENT_TOKEN)
               ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               COMMENT_ID: ${{ parameters.CommentId }}
+              REPRO_INPUT: $(reproInput)
+              REPRO_VERIFIED1: $(reproVerified1)
+              REPRO_VERIFIED2: $(reproVerified2)

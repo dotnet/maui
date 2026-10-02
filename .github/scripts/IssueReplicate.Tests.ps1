@@ -349,7 +349,7 @@ Describe 'Pinned test verification' {
 }
 
 Describe 'Bounded issue result publication' {
-    It 'posts a failing-test artifact link without echoing author instructions' {
+    It 'posts the complete failing-test diff without echoing author instructions' {
         $inputDir = Join-Path $TestDrive 'IssueInput'
         $resultsDir = Join-Path $TestDrive 'Verified1'
         New-Item -ItemType Directory -Path $inputDir, $resultsDir -Force | Out-Null
@@ -386,14 +386,18 @@ Describe 'Bounded issue result publication' {
             process {
                 if ($null -ne $_) { $global:issueReplicatePostedBody += [string]$_ }
             }
-            end { $global:LASTEXITCODE = 0 }
+            end {
+                $global:LASTEXITCODE = 0
+                if ('.html_url' -in $args) { 'https://github.com/dotnet/maui/issues/12345#issuecomment-1' }
+            }
         }
         & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 `
             -CommentId 4925414214 -BuildId 456789 -InputDirectory $inputDir -ResultsDirectory $resultsDir
         $postedBody = $global:issueReplicatePostedBody -join "`n"
         Remove-Variable issueReplicatePostedBody -Scope Global
         $postedBody | Should -Match 'verified failing \*test candidate\*'
-        $postedBody | Should -Match 'Verified1'
+        $postedBody | Should -Match 'public class Issue12345'
+        $postedBody | Should -Not -Match '\[run artifact\]'
         $postedBody | Should -Not -Match 'Ignore previous instructions'
     }
 }

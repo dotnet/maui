@@ -25,9 +25,8 @@ $candidate = 'No verified failing test patch was exported.'
 $commit = 'unknown'
 $patchText = ''
 $patchSha256 = ''
-$artifact = ''
 $runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
-    "> Fork canary evidence from [$GitHubRepository]($buildUrl), published from validated run artifacts; this was not a production Azure pipeline run."
+    "> Fork canary evidence from [$GitHubRepository]($buildUrl), published from validated job data; this was not a production Azure pipeline run."
 } else { '' }
 $refresh = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     '> The production `/issue replicate` command requires the deployment described in PR #38807. This canary did not test production authorization, queueing, or automatic publication.'
@@ -52,7 +51,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         $manifest.sampleSha256 -cnotmatch '^[0-9a-f]{64}$' -or
         $manifest.platform -cnotin @('android', 'ios') -or
         ($manifest.sourceType -eq 'repository' -and $manifest.sourceCommit -cnotmatch '^[0-9a-f]{40}$')) {
-        throw 'The intake artifact does not match this issue, comment, or target revision.'
+        throw 'The intake snapshot does not match this issue, comment, or target revision.'
     }
     $commit = $manifest.targetSha.Substring(0, 7)
     $details = @(
@@ -70,7 +69,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         $sourceLabel = if ($source.Type -eq 'repository') { 'Author repro repository' } else { 'Download author repro ZIP' }
         $details += "`n| Original repro | [$sourceLabel]($($source.Url)) |"
     } else {
-        $details += "`n| Original repro | Source link unavailable in this intake artifact. |"
+        $details += "`n| Original repro | Source link unavailable in this intake snapshot. |"
     }
     $details += "`n| Issue context | [View the associated issue comment](https://github.com/dotnet/maui/issues/$IssueNumber#issuecomment-$CommentId) |"
     if ($manifest.sourceType -eq 'repository') {
@@ -86,7 +85,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         Assert-IssueReplicateResult -Result $result -IssueNumber $IssueNumber -CommentId $CommentId | Out-Null
         if ($result.targetSha -cne $manifest.targetSha -or $result.platform -cne $manifest.platform -or
             $result.sampleSha256 -cne $manifest.sampleSha256) {
-            throw 'The verification result does not match the immutable intake artifact.'
+            throw 'The verification result does not match the immutable intake snapshot.'
         }
         $details += "`n| Status | ``$($result.status)`` |"
         $details += "`n| Author sample built | $($result.sampleBuilt -eq $true) |"
@@ -105,7 +104,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                     (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $result.patchSha256) {
                     throw 'The generated patch is missing, oversized, linked, or mismatched.'
                 }
-                $patchText = Get-Content -LiteralPath $patchPath -Raw
+                $patchText = [Text.UTF8Encoding]::new($false, $true).GetString([IO.File]::ReadAllBytes($patchPath))
                 $headers = @([regex]::Matches($patchText, '(?m)^diff --git a/(\S+) b/(\S+)$'))
                 if ($headers.Count -lt 1 -or $headers.Count -gt 3) { throw 'Unexpected test patch structure.' }
                 foreach ($header in $headers) {
@@ -116,11 +115,9 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                     }
                 }
                 $summary = 'The author sample built and a generated test **failed at an assertion twice** against the pinned MAUI revision. The original app interaction was not exercised, so this is a verified failing *test candidate*, not confirmation of the reported issue.'
-                $artifact = Split-Path $ResultsDirectory -Leaf
-                if ($artifact -cnotin @('Verified1', 'Verified2')) { throw 'Unexpected result artifact name.' }
                 $patchSha256 = $result.patchSha256
                 $candidate = "**Review before applying:** this is generated, untrusted test code, not a framework fix. " +
-                    "The full ``test.patch`` is in the **$artifact** [run artifact]($buildUrl).`n`n" +
+                    "The complete candidate diff is published in issue comments, not stored as a run artifact.`n`n" +
                     "Patch SHA-256: ``$patchSha256``."
             }
             'not-reproduced-on-tested-revision' {
@@ -136,16 +133,71 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     }
 }
 
-$inlinePatch = ''
-if ($patchText) {
+function Format-PatchBlock {
+    param([string]$Text)
     $maxBacktickRun = 0
-    foreach ($match in [regex]::Matches($patchText, '`+')) {
+    foreach ($match in [regex]::Matches($Text, '`+')) {
         $maxBacktickRun = [Math]::Max($maxBacktickRun, $match.Length)
     }
     $fence = '`' * [Math]::Max(4, $maxBacktickRun + 1)
-    $inlinePatch = "`n`n${fence}diff`n$($patchText.TrimEnd())`n$fence"
+    return "`n`n${fence}diff`n$Text`n$fence"
+}
+
+function Set-ResultComment {
+    param([string]$Marker, [string]$Body)
+    if ([Text.Encoding]::UTF8.GetByteCount($Body) -gt 60000) {
+        throw 'The reproduction comment exceeds the bounded publication size.'
+    }
+    $existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
+        --jq ".[] | select(.body | contains(`"$Marker`")) | .id")
+    if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
+    if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same run.' }
+    if ($existing.Count -eq 1) {
+        $url = $Body | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH -F body=@- --jq .html_url
+    } else {
+        $url = $Body | gh api "repos/dotnet/maui/issues/$IssueNumber/comments" --method POST -F body=@- --jq .html_url
+    }
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$url) -or
+        [string]$url -cnotmatch "^https://github\.com/dotnet/maui/issues/$IssueNumber#issuecomment-[1-9][0-9]*$") {
+        throw 'Could not post the issue reproduction comment.'
+    }
+    return $url
+}
+
+$inlinePatch = ''
+if ($patchText) {
+    $inlinePatch = Format-PatchBlock -Text $patchText.TrimEnd()
     if ([Text.Encoding]::UTF8.GetByteCount($inlinePatch) -gt 45000) {
-        $inlinePatch = "`n`n_The patch is too large to embed safely. Download the complete ``test.patch`` from **$artifact**; it has not been truncated._"
+        $parts = @()
+        for ($offset = 0; $offset -lt $patchText.Length;) {
+            $length = [Math]::Min(6000, $patchText.Length - $offset)
+            if ([char]::IsHighSurrogate($patchText[$offset + $length - 1])) { $length-- }
+            $parts += $patchText.Substring($offset, $length)
+            $offset += $length
+        }
+        $links = @()
+        for ($index = 0; $index -lt $parts.Count; $index++) {
+            $number = $index + 1
+            $partMarker = $marker.Replace('issue-replicate-result:', "issue-replicate-patch:${number}:")
+            $exact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($parts[$index]))
+            $partBody = "$partMarker`n## Generated test candidate: part $number of $($parts.Count)`n`n" +
+                "Patch SHA-256: ``$patchSha256``. The full patch is preserved, not truncated. " +
+                "Review this untrusted code before applying it. To reconstruct exact bytes, decode each " +
+                "base64 fragment and concatenate the decoded bytes in order." +
+                (Format-PatchBlock -Text $parts[$index]) +
+                "`n`n<details><summary>Exact UTF-8 patch fragment (base64)</summary>`n`n" +
+                ('`' * 4) + "text`n$exact`n" + ('`' * 4) + "`n`n</details>"
+            if ([Text.Encoding]::UTF8.GetByteCount($partBody) -gt 60000) { throw 'A patch continuation is oversized.' }
+            if ($OutputPath) {
+                [IO.File]::WriteAllText([IO.Path]::GetFullPath("$OutputPath.patch-$number.md"),
+                    $partBody, [Text.UTF8Encoding]::new($false))
+                $links += "Part $number of $($parts.Count) is in the separate comment preview."
+            } else {
+                $url = Set-ResultComment -Marker $partMarker -Body $partBody
+                $links += "[Part $number of $($parts.Count)]($url)"
+            }
+        }
+        $inlinePatch = "`n`nThe complete patch is split into bounded continuation comments:`n`n" + ($links -join "`n`n")
     }
 }
 
@@ -188,7 +240,7 @@ $body = @(
     '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
     '<br/>',
     '',
-    "[Public run, logs and artifacts]($buildUrl). No framework source or PR was changed by this reproduction run.",
+    "[Public run and execution logs]($buildUrl). This workflow publishes comments only, not downloadable artifacts. No framework source or PR was changed by this reproduction run.",
     '',
     'Review whether the generated assertion isolates the reported scenario before applying a candidate patch. A simulator result does not replace physical-device validation.',
     '',
@@ -204,13 +256,4 @@ if ($OutputPath) {
     return
 }
 
-$existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
-    --jq ".[] | select(.body | contains(`"$marker`")) | .id")
-if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
-if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same build.' }
-if ($existing.Count -eq 1) {
-    $body | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH -F body=@- --silent
-} else {
-    $body | gh issue comment $IssueNumber --repo dotnet/maui --body-file -
-}
-if ($LASTEXITCODE -ne 0) { throw 'Could not post the issue reproduction result.' }
+Set-ResultComment -Marker $marker -Body $body
