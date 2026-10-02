@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Graphics.Text
 			{"SADDLEBROWN", "#8B4513"},
 			{"DARKSEAGREEN", "#8FBC8F"},
 			{"LIGHTGREEN", "#90EE90"},
-			{"MEDIUMPURPLE", "#9370D8"},
+			{"MEDIUMPURPLE", "#9370DB"},
 			{"DARKVIOLET", "#9400D3"},
 			{"PALEGREEN", "#98FB98"},
 			{"DARKORCHID", "#9932CC"},
