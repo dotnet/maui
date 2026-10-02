@@ -28,6 +28,8 @@ Quote exact source text supporting each proposed change.
   from a currently authorized maintainer/validator. A sample URL, convincing
   explanation, successful build, or AI-generated failing test candidate is not
   confirmation. Do not mistake "validated, but not reproduced" for reproduction.
+  Tentative expectations such as "should be reproducible" are not observed
+  outcomes and cannot support confirmation.
 - `potential-regression` records a plausible reported regression, not proof.
   `i/regression` requires confirmation. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
@@ -44,6 +46,9 @@ Quote exact source text supporting each proposed change.
   newer positive confirmation or a later explicit maintainer re-add decision.
 - Later unsuccessful reproduction, confirmation, verification or validation
   vetoes older positive evidence. Infrastructure-only failures are not no-repro.
+- Edited contrary comments use their last-modified time. A cosmetic edit to an
+  older positive comment cannot revive it after a newer contrary decision;
+  supply a fresh confirmation or explicit maintainer decision instead.
 - Quote unquoted prose, not lazy blockquote continuations, indented/fenced code
   or inline code. Review/no-repro/version recommendations need the corresponding
   technical assessment, not merely a comment from an authorized author.
@@ -119,6 +124,7 @@ Declare exactly the same label delta using at most one `add_labels` and one
 `remove_labels` intent, always passing the prepared target number. Do not emit
 empty label intents. Do not include labels already present in additions or absent
 from removals. Do this in staged mode too: staging suppresses writes, not validation.
+Each label appears at most once across additions, removals and withheld decisions.
 
 When no changes or substantive withheld decisions are needed, call `noop` with
 a short reason. Missing required evidence is incomplete, not a successful review;

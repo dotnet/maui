@@ -57,6 +57,8 @@ Exact label token boundaries apply to approvals and superseding decisions:
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
 Suggestions and tentative candidates are not approvals.
+Tentative validation such as "should be reproducible on Android" is not an
+observed reproduction and cannot support confirmation labels.
 Technical-state labels require their specific affirmative review, reproduction
 outcome or version recommendation, not merely an authorized comment author.
 Try-latest recommendations must identify a concrete MAUI version.
@@ -70,6 +72,10 @@ The confirmation gate and later-contrary-evidence veto share unsuccessful
 reproduce/confirm/verify/validate detection. The veto withholds confirmation;
 it does not turn an unsuccessful validation or infrastructure failure into
 `s/no-repro`.
+Contrary comment edits use their last-modified time; immutable label events use
+their creation time. Affirmative support retains its original creation time so a
+cosmetic edit cannot revive an old approval or confirmation after a later
+revocation. Supply a fresh affirmative comment when that chronology is ambiguous.
 
 Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
@@ -136,12 +142,22 @@ bounded regular JSON outside the checkout, binds it to the preparation job's
 independent context hash, and re-fetches/rechecks context and authority. It rejects
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
 intents and unsafe transitions, then renders its own comment.
+Withheld labels must be unique and cannot overlap the proposed label delta.
+The final authorization clears the permission cache and rechecks both the
+original command actor and any rerun actor, rather than reusing intake permissions.
 Only built-in gh-aw add/remove/comment handlers perform writes.
 Safe-output publication explicitly uses the built-in `secrets.GITHUB_TOKEN`,
 consistently posting as `github-actions[bot]`; it does not select a configured
 `GH_AW_GITHUB_TOKEN` publisher. Retry-marker recognition uses that same identity.
 Their coarse family allowlists meet the compiler's 50-entry bound; the narrower
 machine policy and exact live-name checks are mandatory before those handlers.
+
+**Known permission limitation:** gh-aw v0.86.2's generic `remove-labels` handler
+adds `pull-requests: write` to publication jobs and has no issue-only permission
+switch. Exact issue-type/target checks constrain reachability but do not narrow
+that credential. This PR does not upgrade repository-wide compiler tooling or
+introduce a custom write handler; review this remaining least-privilege limitation
+before apply-mode deployment.
 
 Each run permits at most 20 total label changes, ten removals and one result
 comment. Per-issue concurrency does not cancel an in-progress publication.

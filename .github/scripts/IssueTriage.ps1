@@ -39,6 +39,11 @@ function Get-Timestamp($Value) {
     return ([DateTimeOffset]$Value).ToUniversalTime().ToString('o')
 }
 
+function Get-SupersessionTime($Source) {
+    if ($Source.kind -ceq 'comment') { return $Source.updatedAt }
+    return $Source.createdAt
+}
+
 function Get-Hash($Value) {
     $bytes = [Text.Encoding]::UTF8.GetBytes(($Value | ConvertTo-Json -Depth 30 -Compress))
     return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes))
@@ -329,7 +334,7 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             "remove|drop|withdraw|revoke|reject|decline|do not apply|don't apply|do not add|don't add"
         } else { "add|apply|set|approve|accept|do not remove|don't remove" }
         $superseded = @($sourceMap.Values | Where-Object {
-            $_.isMaintainer -and $_.createdAt -gt $source.createdAt -and (
+            $_.isMaintainer -and (Get-SupersessionTime $_) -gt $source.createdAt -and (
                 ($_.kind -ceq $oppositeEvent -and $_.body -ceq "${oppositeEvent}: $Label") -or
                 ($_.kind -ceq 'comment' -and (Get-Prose $_.body) -match "(?i)\b(?:$oppositeWords)\b.{0,80}$labelText")
             )
@@ -369,6 +374,7 @@ function Get-Confirmation($Evidence) {
         (Get-Prose $source.body) -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
         $paragraphs[0] -match '(?i)\b(reproduced|reproducible)\b|\b(confirmed|verified)\b.{0,50}\b(reported behavior|same behavior|bug on|issue on|regression on)\b|\btest\b.{0,50}\bcorrectly detect(s|ing)\b' -and
+        $paragraphs[0] -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
         -not (Test-NegativeValidation $paragraphs[0])
     })
 }
@@ -462,7 +468,8 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             if ($confirmations.Count -eq 0) { throw "No positive authorized validation supports $label." }
             $latest = @($confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
             $contrary = @($Snapshot.sources | Where-Object {
-                $_.kind -eq 'comment' -and $_.isValidator -and $_.createdAt -gt $sourceMap[$latest.source].createdAt -and
+                $_.kind -eq 'comment' -and $_.isValidator -and
+                (Get-SupersessionTime $_) -gt $sourceMap[$latest.source].createdAt -and
                 (Test-NegativeValidation (Get-Prose $_.body))
             })
             if ($contrary.Count -gt 0) { throw "Later contrary validation exists for $label; withhold the confirmation." }
@@ -520,7 +527,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         if ($confirmedTransition -and $lastRequest.Count -gt 0 -and
             @($transitionEvidence | Where-Object {
                 $source = $sourceMap[$_.source]
-                $source.updatedAt -ge $lastRequest[0].createdAt
+                (Get-SupersessionTime $source) -ge $lastRequest[0].createdAt
             }).Count -eq 0) {
             $confirmedTransition = $false
         }
@@ -530,7 +537,8 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         $contradictedFacet = $label -in @('has-workaround', 'repro:device-only') -and
             @($Decision.evidence | Where-Object {
                 $source = $sourceMap[$_.source]
-                $recent = $lastRequest.Count -eq 0 -or ($source.kind -eq 'comment' -and $source.updatedAt -ge $lastRequest[0].createdAt)
+                $recent = $lastRequest.Count -eq 0 -or
+                    ($source.kind -eq 'comment' -and (Get-SupersessionTime $source) -ge $lastRequest[0].createdAt)
                 $recent -and (
                     ($label -eq 'has-workaround' -and $_.quote -match "(?i)\bworkarounds?\b.{0,80}\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b") -or
                     ($label -eq 'repro:device-only' -and $_.quote -match '(?i)\b(reproduced|reproducible)\b.{0,80}\bsimulator\b')
@@ -642,6 +650,7 @@ foreach ($action in @('add', 'remove')) {
         }
     }
 }
+$withheldNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach ($decision in $proposal.withheld) {
     Assert-Keys $decision @('label', 'reason')
     Assert-Text $decision.label 1 100
@@ -649,8 +658,11 @@ foreach ($decision in $proposal.withheld) {
     if (@($current.labelCatalog | Where-Object { $_.name -ceq $decision.label }).Count -ne 1) {
         throw "A withheld label must name an exact live label: $($decision.label)"
     }
+    if (-not $withheldNames.Add($decision.label) -or $names -ccontains $decision.label) {
+        throw 'Withheld labels must be unique and cannot overlap additions or removals.'
+    }
 }
-$permissions.Remove($Actor)
+$permissions.Clear()
 Assert-Actor
 
 $marker = if ($CommandCommentId -gt 0) { "issue-triage-command:$CommandCommentId" }
