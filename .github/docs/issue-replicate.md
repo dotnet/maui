@@ -93,6 +93,10 @@ test. Verification retains its own source-pinned SDK and native workloads.
 Verification builds `Microsoft.Maui.BuildTasks.slnf` before compiling candidate
 tests or the HostApp. Feedback prioritizes compiler/assertion diagnostics over
 trailing device logs so the single revision can address the actual failure.
+Generation guidance preserves the repro's relevant layout and content size and
+requires observing transient gesture behavior rather than only its settled position.
+These instructions do not prove candidate adequacy: inspect whether the assertion
+isolates the reported bug instead of ordinary scrolling or overscroll.
 TRX verification accepts NUnit's parameterized fixture names (for example
 `Issue37323(Android)`) while still requiring matching test IDs, execution counts,
 and command exit status.
