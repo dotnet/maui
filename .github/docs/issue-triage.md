@@ -66,7 +66,9 @@ previous condition.
 Directed prohibitions retain the existing conservative veto on older authority:
 "Do not apply p/1 until validation is complete" still blocks an older approval.
 The prohibition must begin an imperative sentence or clause, optionally with
-"please". Embedded hypothetical negations such as "If we do not apply p/1"
+"please". Markdown unordered/ordered list prefixes do not hide that opening,
+including list items following other prose on a new line.
+Embedded hypothetical negations such as "If we do not apply p/1"
 are not directed vetoes. Tentative prohibitions such as "Maybe do not apply p/1"
 remain withheld; the directed-veto exception never bypasses uncertainty.
 Explanatory negation such as "this is not ready" or "we cannot commit" does not
@@ -137,7 +139,11 @@ duplicate" and "looks like expected behavior" cannot supply definitive
 dispositions.
 Technical-assessment questions are rejected. No-repro is withheld when the cited
 comment reports resource access, build/download, authentication/network failure or
-timeout; not-regression cannot use a negated same-behavior comparison.
+timeout that prevented testing. A historical setup failure is not itself no-repro.
+It can be discharged only by an explicit resolution followed by a completed
+target-specific test and unsuccessful outcome in the same supporting paragraph.
+Every blocker must qualify; unresolved blockers elsewhere still withhold no-repro.
+Not-regression cannot use a negated same-behavior comparison.
 Factual "could not" and "couldn't" reproduction/replication failures share the
 same narrow normalization before tentative classification, including straight
 and curly apostrophes. The original outcome, target, resource-failure,
@@ -243,6 +249,15 @@ negative-outcome gate cannot hide that counterevidence.
 Regression confirmation additionally requires explicit working behavior tied
 to an earlier named .NET/MAUI version and failing/reproducing behavior tied to a
 later named version. Lists of tested versions do not establish their outcomes.
+Explicit fails/failed outcomes need not also say reproduced/confirmed/verified.
+A directly continued "worked in MAUI X and fails starting in MAUI Y" statement
+can retain its subject; the version/outcome, scope and uncertainty guards remain.
+The same regression confirmation supersedes older no-repro/not-regression
+assessments and supports suspected-to-confirmed transitions.
+WebView2-regression assessment requires an affirmative assertion concerning this
+issue, not merely both keywords in a reproduction comment. An explicit current
+negative WebView2 classification also supersedes older support; quote selection
+cannot hide it elsewhere in the cited comment.
 The first-bad citation must include both results and the explicit boundary
 matching that label, with no earlier contradictory failing outcome; merely
 asserting "regressed from" does not establish earlier passing behavior.
@@ -270,6 +285,9 @@ conditional advice and mixed working/failing outcomes are not such observations.
 Positive continued clauses remain visible even when they omit the workaround
 subject: "The workaround failed initially, but now works" is mixed evidence,
 not authority to remove the label.
+Bind success to the workaround subject or a directly inherited/pronominal
+continuation. Unrelated "Working with the author", "Fixed the sample link" or
+"Helped the author collect logs" sentences are activities, not workaround efficacy.
 "Suggested workaround" names the attempted workaround, not a tentative failure;
 uncertainty about the outcome still withholds the transition.
 Device-to-simulator transitions require affirmative, unconditional, non-tentative

@@ -75,6 +75,13 @@ substitutes for current original issue/comment evidence.
   `i/regression` requires authorized change-of-behavior evidence, not just
   reproduction: explicit working behavior tied to an earlier named .NET/MAUI
   version and failing/reproducing behavior tied to a later named version.
+  Explicit fails/failed outcomes do not need additional confirmation vocabulary.
+  A directly continued working-version statement can retain its subject in
+  "and fails starting in MAUI Y". Keep all outcome/version, scope and uncertainty
+  guards, including for transitions and superseding older no-repro/not-regression.
+  WebView2-regression classification must affirmatively concern this issue;
+  reproduction plus a negative classification cannot establish it. A later
+  current negative classification supersedes earlier WebView2-regression support.
   Merely listing tested versions or asserting "regressed from" proves neither
   their outcomes nor the boundary. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
@@ -105,6 +112,8 @@ substitutes for current original issue/comment evidence.
   Directed prohibitions remain conservative vetoes on older authority: "Do not
   apply p/1 until validation is complete" cannot revive an earlier approval.
   Require an imperative sentence/clause opening, optionally with "please".
+  Markdown unordered/ordered list prefixes, including subsequent list lines,
+  do not hide a directed veto.
   "If we do not apply p/1" is hypothetical, not a directed veto. "Maybe do not
   apply p/1" is tentative; the exception never bypasses uncertainty.
   That veto does not authorize a new removal or treat the condition as completed.
@@ -167,7 +176,11 @@ substitutes for current original issue/comment evidence.
   followed by reproduction in the same paragraph. Positive outcomes elsewhere
   in the cited comment also veto no-repro; do not hide them by quote selection.
   No-repro cannot be established by an inaccessible sample, failed build/download,
-  authentication/network failure or timeout. A negated same-behavior comparison
+  authentication/network failure or timeout that prevented testing. Discharge
+  a historical setup blocker only when the same supporting paragraph explicitly
+  resolves it, then records a completed target-specific test and failed outcome.
+  Every blocker must qualify; unresolved blockers elsewhere remain disqualifying.
+  A negated same-behavior comparison
   cannot support not-regression.
   Not-regression also needs an unconditional, non-tentative assessment.
   "Probably not a regression" and conditional comparisons cannot add the label
@@ -249,6 +262,8 @@ policy transition. Explain each removal separately:
   cannot authorize that transition.
   Inspect continued clauses that inherit the workaround subject: "The workaround
   failed initially, but now works" cannot authorize removal.
+  Require that subject or a directly inherited/pronominal continuation. Unrelated
+  working, fixing or helping activity in a new sentence is not workaround success.
   "Suggested workaround" identifies the attempted workaround; it does not make
   an otherwise definitive failure tentative. Outcome uncertainty still vetoes it.
 - Removing `repro:device-only` through simulator evidence requires an affirmative,
