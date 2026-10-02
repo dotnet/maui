@@ -8,13 +8,21 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter
+	// Lets Android layout helpers reach the items source without knowing the adapter's generic arguments.
+	internal interface IItemsViewAdapter
+	{
+		IItemsViewSource ItemsSource { get; }
+	}
+
+	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter, IItemsViewAdapter
 		where TItemsView : ItemsView
 		where TItemsViewSource : IItemsViewSource
 	{
 		protected readonly TItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		protected internal TItemsViewSource ItemsSource;
+
+		IItemsViewSource IItemsViewAdapter.ItemsSource => ItemsSource;
 
 		bool _disposed;
 		bool _usingItemTemplate = false;

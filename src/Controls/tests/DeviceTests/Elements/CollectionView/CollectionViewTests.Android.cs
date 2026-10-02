@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Widget;
 using AndroidX.Core.View;
+using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -909,6 +910,134 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return positions;
+		}
+
+		public static TheoryData<bool, bool, bool, bool, int> SpanLookupLayouts
+		{
+			get
+			{
+				var data = new TheoryData<bool, bool, bool, bool, int>();
+
+				foreach (var grouped in new[] { false, true })
+					foreach (var header in new[] { false, true })
+						foreach (var footer in new[] { false, true })
+							foreach (var groupHeaderFooter in new[] { false, true })
+								foreach (var span in new[] { 1, 2, 3, 4 })
+									data.Add(grouped, header, footer, groupHeaderFooter, span);
+
+				return data;
+			}
+		}
+
+		[Theory(DisplayName = "GridLayoutSpanSizeLookup answers span index and row exactly like GridLayoutManager's greedy assignment")]
+		[MemberData(nameof(SpanLookupLayouts))]
+		public async Task GridSpanLookupMatchesGreedySpanAssignment(bool grouped, bool hasHeader, bool hasFooter, bool hasGroupHeaderFooter, int span)
+		{
+			SetupBuilder();
+
+			// Uneven group sizes (including an empty one) so runs end mid-row and rows straddle full-span items.
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new ObservableCollection<string>(Enumerable.Range(0, 7).Select(i => $"0.{i}")),
+				new ObservableCollection<string>(),
+				new ObservableCollection<string> { "2.0" },
+				new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => $"3.{i}")),
+			};
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = grouped,
+				ItemsSource = grouped ? groups : groups.SelectMany(g => g).ToList(),
+				ItemsLayout = new GridItemsLayout(span, ItemsLayoutOrientation.Vertical),
+				Header = hasHeader ? "Header" : null,
+				Footer = hasFooter ? "Footer" : null,
+				GroupHeaderTemplate = hasGroupHeaderFooter ? new DataTemplate(() => new Label()) : null,
+				GroupFooterTemplate = hasGroupHeaderFooter ? new DataTemplate(() => new Label()) : null,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var layoutManager = Assert.IsType<GridLayoutManager>(handler.PlatformView.GetLayoutManager());
+				var lookup = layoutManager.GetSpanSizeLookup();
+				var itemCount = handler.PlatformView.GetAdapter().ItemCount;
+
+				Assert.True(itemCount > 0);
+
+				// Reference: the greedy assignment GridLayoutManager performs from GetSpanSize alone.
+				var spanUsed = 0;
+				var row = 0;
+
+				for (int position = 0; position < itemCount; position++)
+				{
+					var size = lookup.GetSpanSize(position);
+
+					if (spanUsed + size > span)
+					{
+						spanUsed = 0;
+						row++;
+					}
+
+					Assert.True(lookup.GetSpanIndex(position, span) == spanUsed,
+						$"span index at {position}: expected {spanUsed}, got {lookup.GetSpanIndex(position, span)}");
+					Assert.True(lookup.GetSpanGroupIndex(position, span) == row,
+						$"row at {position}: expected {row}, got {lookup.GetSpanGroupIndex(position, span)}");
+
+					spanUsed += size;
+
+					if (spanUsed == span)
+					{
+						spanUsed = 0;
+						row++;
+					}
+				}
+
+				collectionView.Handler = null;
+			});
+		}
+
+		[Fact(DisplayName = "GridLayoutSpanSizeLookup follows data changes made to a grouped source")]
+		public async Task GridSpanLookupTracksGroupedSourceChanges()
+		{
+			SetupBuilder();
+
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new ObservableCollection<string> { "0.0", "0.1", "0.2" },
+				new ObservableCollection<string> { "1.0", "1.1" },
+			};
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical),
+				GroupHeaderTemplate = new DataTemplate(() => new Label()),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var lookup = ((GridLayoutManager)handler.PlatformView.GetLayoutManager()).GetSpanSizeLookup();
+
+				// [H0][0.0 0.1][0.2 _][H1][1.0 1.1] → position 4 (H1) is on row 3
+				Assert.Equal(3, lookup.GetSpanGroupIndex(4, 2));
+
+				groups[0].Add("0.3");
+				await Task.Yield();
+
+				// [H0][0.0 0.1][0.2 0.3][H1][1.0 1.1] → H1 moved to position 5, still row 3; 0.3 at position 4, span index 1
+				Assert.Equal(3, lookup.GetSpanGroupIndex(5, 2));
+				Assert.Equal(1, lookup.GetSpanIndex(4, 2));
+
+				groups.Insert(0, new ObservableCollection<string> { "n.0" });
+				await Task.Yield();
+
+				// [Hn][n.0 _][H0]... → H0 at position 2, row 2
+				Assert.Equal(2, lookup.GetSpanGroupIndex(2, 2));
+
+				collectionView.Handler = null;
+			});
 		}
 	}
 }
