@@ -144,7 +144,16 @@ stages:
               if ($LASTEXITCODE -ne 0) { throw 'Author sample build failed (inconclusive).' }
             displayName: 'Build author sample without credentials'
             timeoutInMinutes: 35
-          - publish: '$(Pipeline.Workspace)/SampleOutput'
+          - task: CopyFiles@2
+            displayName: 'Stage sample build evidence without compiled app outputs'
+            condition: succeededOrFailed()
+            inputs:
+              SourceFolder: '$(Pipeline.Workspace)/SampleOutput'
+              Contents: |
+                sample-result.json
+                sample-build.log
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/SampleOutput'
+          - publish: '$(Build.ArtifactStagingDirectory)/SampleOutput'
             artifact: SampleOutput
             condition: succeededOrFailed()
 

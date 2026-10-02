@@ -54,6 +54,27 @@ of `-BuildId` to link their actual GitHub Actions evidence, without pretending
 they ran in Azure. Normal production publication still uses the isolated Azure
 Post job and its separately scoped issue-comment token.
 
+### Artifact storage and cleanup
+
+`SampleOutput` publishes only `sample-result.json` and `sample-build.log`, not
+the extracted sample, `bin`/`obj` directories, compiled apps, or installed SDKs.
+Keep native evidence limited to the verification result, bounded test log, patch,
+and the selected test's TRX rather than uploading the entire test working directory.
+
+Fork canaries retain input snapshots, proposals, and verified evidence for seven
+days, so posting and feedback-driven revisions remain possible. Transient tools
+and sample-build evidence have a one-day expiration fallback and are deleted by
+an isolated, always-running cleanup job after all their consumers finish, including
+failed runs. Cleanup receives `actions: write` only in that no-checkout job;
+sample and test execution never receive a writable GitHub token. Delete only the
+current run's explicitly named transient artifacts, and surface cleanup failures.
+The canary's `cleanup_only` dispatch checks that storage accepts an upload and
+immediately deletes that check artifact without running a sample or GPT.
+
+The hash-checked diff and repro links in the issue comment survive artifact
+expiration. Deleting artifacts reduces current storage and future hourly usage,
+but does not erase storage already accrued in the current billing cycle.
+
 iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
 unsupported generated candidate cannot rule out the reported behavior.
