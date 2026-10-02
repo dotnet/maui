@@ -14,6 +14,7 @@ description: |
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 imports:
+  - shared/gpt-6.1-sol.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
@@ -49,10 +50,11 @@ checkout:
 # Lets maintainers find every asset this workflow creates (PRs, comments).
 tracker-id: aw-actions-update
 
-model: gpt-5.6-sol
+model: gpt-6.1-sol
 engine:
   id: copilot
   env:
+    COPILOT_PROVIDER_WIRE_API: responses
     # Authenticate the agent's `gh` CLI commands with this workflow's read-only
     # GitHub Actions token, not the Copilot inference PAT.
     GH_TOKEN: ${{ github.token }}

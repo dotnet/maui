@@ -134,6 +134,15 @@ validator. The job boundaries follow the issue-replication isolation pattern:
    recomputes the decision, renders and validates the narrative, and rechecks
    authorization and live base/head identities. Only this job can publish the report.
 
+The comment keeps **Performance Review Summary**, the actual PR author and pinned
+commit notification, and truthful Scope/Result/Commit badges visible. Everything
+else is inside exactly two closed sibling sections: **Performance Results**
+(verdict, coverage, and any benchmark table) and **Findings & Follow-up**
+(static findings, recommendations, and next action). Static-only and failed or
+incomplete measurement reports use the same layout without implying measured
+coverage. The trusted validator rejects flat, expanded, or extra sections and
+checks the visible author, commit, and badges against the pinned evidence.
+
 Native scenarios **do not run in the hosted command**. Device-required, sampled,
 static-only, missing, and failed measurements remain explicit coverage gaps.
 Native device tooling is outside this workflow's scope. Shared-host timing is
@@ -188,8 +197,18 @@ Because gh-aw slash commands match only the first command token, the workflow li
 
 The workflow uses one skill,
 [`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
-and comment formatting. The local runner uses that same skill. Both use GPT-6 Astra
-(`gpt-6-astra`), as do the offline attribution evaluations and their judge.
+and comment formatting. The local runner uses that same skill. The hosted workflow,
+like the other gh-aw workflows, uses GPT-6.1 Sol (`gpt-6.1-sol`) through the Responses
+API. The local runner and offline evaluations keep their independently configured
+models.
+
+The pinned gh-aw **v0.86.2** runtime does not yet include this model's pricing or
+wire-protocol metadata. Each workflow explicitly sets
+`COPILOT_PROVIDER_WIRE_API: responses` and imports
+[`shared/gpt-6.1-sol.md`](../workflows/shared/gpt-6.1-sol.md) for model-specific
+pricing, preserving AI-credit accounting without a fallback to another model.
+The per-token prices come from the
+[OpenAI model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
 It gathers evidence from:
 

@@ -39,31 +39,45 @@
   "reportVerdicts": [
     {
       "id": "blocker",
-      "label": "🟥 Confirmed performance regression"
+      "label": "🟥 Confirmed performance regression",
+      "badgeLabel": "Regression",
+      "badgeColor": "d1242f"
     },
     {
       "id": "advisory",
-      "label": "🟧 Advisory timing regression"
+      "label": "🟧 Advisory timing regression",
+      "badgeLabel": "Advisory",
+      "badgeColor": "bf8700"
     },
     {
       "id": "improvement",
-      "label": "🟩 Measured improvement — whole-PR evidence complete"
+      "label": "🟩 Measured improvement — whole-PR evidence complete",
+      "badgeLabel": "Improvement",
+      "badgeColor": "1a7f37"
     },
     {
       "id": "clean",
-      "label": "✅ No performance blocker found — whole-PR evidence complete"
+      "label": "✅ No performance blocker found — whole-PR evidence complete",
+      "badgeLabel": "No blocker",
+      "badgeColor": "1a7f37"
     },
     {
       "id": "no-blocker-incomplete",
-      "label": "🟢 No performance blocker found; coverage incomplete"
+      "label": "🟢 No performance blocker found; coverage incomplete",
+      "badgeLabel": "Coverage incomplete",
+      "badgeColor": "bf8700"
     },
     {
       "id": "device-required",
-      "label": "🟡 Partial/inconclusive — device measurement required"
+      "label": "🟡 Partial/inconclusive — device measurement required",
+      "badgeLabel": "Device measurement required",
+      "badgeColor": "bf8700"
     },
     {
       "id": "inconclusive",
-      "label": "⚠️ Inconclusive — execution or coverage incomplete"
+      "label": "⚠️ Inconclusive — execution or coverage incomplete",
+      "badgeLabel": "Inconclusive",
+      "badgeColor": "6e7781"
     }
   ],
   "recommendationEvidence": [

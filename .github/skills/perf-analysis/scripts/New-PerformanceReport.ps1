@@ -2,6 +2,9 @@
 
 param(
     [Parameter(Mandatory = $true)]
+    [string]$PrMetadataPath,
+
+    [Parameter(Mandatory = $true)]
     [string]$SelectionPath,
 
     [Parameter(Mandatory = $true)]
@@ -51,6 +54,7 @@ function Read-OptionalJson([string]$path) {
 function ConvertTo-SafeNarrativeText($value) {
     $text = [string]$value
     $text = $text.Replace("<!--", "[comment-open]").Replace("-->", "[comment-close]")
+    $text = $text.Replace("<", "&lt;").Replace(">", "&gt;")
     $lines = @(
         $text -split "`r?`n" | ForEach-Object {
             if ($_ -match '^\s*\*\*Verdict:\*\*') {
@@ -58,6 +62,9 @@ function ConvertTo-SafeNarrativeText($value) {
             }
             elseif ($_ -match '^\s*#{1,6}\s+') {
                 $_ -replace '^\s*#{1,6}\s+', ''
+            }
+            elseif ($_ -match '^\s*(?:`{3,}|~{3,})') {
+                $_.Replace('`', '\`').Replace('~', '\~')
             }
             else {
                 $_
@@ -67,12 +74,26 @@ function ConvertTo-SafeNarrativeText($value) {
     return $lines -join [Environment]::NewLine
 }
 
-foreach ($path in @($SelectionPath, $PolicyPath, $DecisionBaselinePath, $NarrativePath)) {
+function New-StatusChip([string]$label, [string]$value, [string]$color) {
+    $labelSegment = [uri]::EscapeDataString($label).Replace("-", "--").Replace("_", "__")
+    $valueSegment = [uri]::EscapeDataString($value).Replace("-", "--").Replace("_", "__")
+    $alt = [System.Net.WebUtility]::HtmlEncode("$label $value")
+    return "  <img alt=`"$alt`" src=`"https://img.shields.io/badge/$labelSegment-$valueSegment-$color`?labelColor=30363d&amp;style=flat-square`">"
+}
+
+foreach ($path in @($PrMetadataPath, $SelectionPath, $PolicyPath, $DecisionBaselinePath, $NarrativePath)) {
     if (-not (Test-Path $path)) {
         throw "Required report input does not exist: $path"
     }
 }
 
+$pr = Get-Content $PrMetadataPath -Raw | ConvertFrom-Json
+if ($pr.repository -cnotmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' -or
+    $pr.headRefOid -cnotmatch '^[0-9a-f]{40}$' -or
+    $pr.author -cnotmatch '^[A-Za-z0-9][A-Za-z0-9-]*(?:\[bot\])?$') {
+    throw "Report metadata requires a valid repository, full commit SHA, and actual PR author."
+}
+$shortSha = $pr.headRefOid.Substring(0, 12)
 $selection = Get-Content $SelectionPath -Raw | ConvertFrom-Json
 $policy = Get-Content $PolicyPath -Raw | ConvertFrom-Json
 $baseline = Get-Content $DecisionBaselinePath -Raw | ConvertFrom-Json
@@ -157,15 +178,32 @@ $decision = [ordered]@{
     recommendations = $recommendations
 }
 
-$verdictLabel = @(
+$verdictPolicy = @(
     $policy.reportVerdicts | Where-Object { $_.id -eq $verdictClass }
-)[0].label
-if ([string]::IsNullOrWhiteSpace([string]$verdictLabel)) {
-    throw "No policy label exists for verdict '$verdictClass'."
+)[0]
+$verdictLabel = $verdictPolicy.label
+if ([string]::IsNullOrWhiteSpace([string]$verdictLabel) -or
+    [string]::IsNullOrWhiteSpace([string]$verdictPolicy.badgeLabel) -or
+    $verdictPolicy.badgeColor -cnotmatch '^[0-9a-f]{6}$') {
+    throw "No valid policy label and badge exist for verdict '$verdictClass'."
 }
 
 $lines = New-Object System.Collections.Generic.List[string]
-$lines.Add("## Performance analysis")
+$lines.Add("## Performance Review Summary")
+$lines.Add("")
+$lines.Add("> @$($pr.author) &#x2014; performance review for commit [``$shortSha``](https://github.com/$($pr.repository)/commit/$($pr.headRefOid)).")
+$lines.Add("")
+$lines.Add('<p align="left">')
+$scope = if ($hasEmpiricalEvidence) { "Managed benchmarks" } else { "Static review only" }
+$lines.Add((New-StatusChip "Scope" $scope "1f6feb"))
+$lines.Add((New-StatusChip "Result" $verdictPolicy.badgeLabel $verdictPolicy.badgeColor))
+$lines.Add((New-StatusChip "Commit" $shortSha "1f6feb"))
+$lines.Add("</p>")
+$lines.Add("")
+$lines.Add("---")
+$lines.Add("")
+$lines.Add("<details>")
+$lines.Add("<summary><strong>Performance Results</strong></summary>")
 $lines.Add("")
 $lines.Add("**Verdict:** $verdictLabel")
 $lines.Add("")
@@ -175,6 +213,48 @@ if ($summaryText) {
     $lines.Add("")
 }
 
+$coverage = $selection.coverage
+$lines.Add("### Coverage")
+$lines.Add("")
+if ($null -ne (Get-PropertyValue $coverage "productFileCount")) {
+    $lines.Add(
+        "Product files: $($coverage.productFileCount); directly managed-measured: $($coverage.managedMeasuredFileCount); " +
+        "device-required: $($coverage.deviceRequiredFileCount); static-reviewed: $($coverage.staticOnlyFileCount). " +
+        "Sampled subsets: managed $($coverage.managedSampledFileCount), device $([int](Get-PropertyValue $coverage 'deviceSampledFileCount' 0)).")
+}
+else {
+    $lines.Add("Coverage status: ``$([string](Get-PropertyValue $coverage "status" "unknown"))``.")
+}
+
+$deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
+if ($deviceScenarios.Count -gt 0) {
+    $lines.Add("")
+    $lines.Add("> Device measurement required: the supplied evidence does not cover the changed native handler path, so the whole PR cannot receive a clean performance verdict.")
+    foreach ($scenario in $deviceScenarios) {
+        $coverageMode = [string](Get-PropertyValue $scenario "coverageMode" "direct")
+        $lines.Add("")
+        $lines.Add("- ``$([string]$scenario.id)`` on $(@($scenario.platforms) -join ", "): $coverageMode coverage; ``$([string]$scenario.automationStatus)``.")
+        $lines.Add("  Operation: $(@($scenario.operations) -join " ")")
+        $lines.Add("  Correctness: $([string](Get-PropertyValue $scenario "rationale" "Scenario-specific correctness validation is required."))")
+    }
+}
+
+if ($TablePath -and (Test-Path $TablePath)) {
+    $table = (ConvertTo-SafeNarrativeText (Get-Content $TablePath -Raw)).Trim()
+    if ($table) {
+        $lines.Add("")
+        $lines.Add($table)
+    }
+}
+
+$lines.Add("")
+$lines.Add("</details>")
+$lines.Add("")
+$lines.Add("---")
+$lines.Add("")
+$lines.Add("<details>")
+$lines.Add("<summary><strong>Findings &amp; Follow-up</strong></summary>")
+$lines.Add("")
 $staticReview = ConvertTo-SafeNarrativeText (Get-PropertyValue $narrative "staticReview" "No error-level static hot-path finding was identified.")
 $lines.Add("### Static hot-path review")
 $lines.Add("")
@@ -220,42 +300,11 @@ if ($nextActionText) {
 }
 $lines.Add("")
 
-$coverage = $selection.coverage
-$lines.Add("### Coverage")
-$lines.Add("")
-if ($null -ne (Get-PropertyValue $coverage "productFileCount")) {
-    $lines.Add(
-        "Product files: $($coverage.productFileCount); directly managed-measured: $($coverage.managedMeasuredFileCount); " +
-        "device-required: $($coverage.deviceRequiredFileCount); static-reviewed: $($coverage.staticOnlyFileCount). " +
-        "Sampled subsets: managed $($coverage.managedSampledFileCount), device $([int](Get-PropertyValue $coverage 'deviceSampledFileCount' 0)).")
-}
-else {
-    $lines.Add("Coverage status: ``$([string](Get-PropertyValue $coverage "status" "unknown"))``.")
-}
-
-$deviceScenarios = @($selection.deviceScenarios | Where-Object { $null -ne $_ })
-if ($deviceScenarios.Count -gt 0) {
-    $lines.Add("")
-    $lines.Add("> Device measurement required: the supplied evidence does not cover the changed native handler path, so the whole PR cannot receive a clean performance verdict.")
-    foreach ($scenario in $deviceScenarios) {
-        $coverageMode = [string](Get-PropertyValue $scenario "coverageMode" "direct")
-        $lines.Add("")
-        $lines.Add("- ``$([string]$scenario.id)`` on $(@($scenario.platforms) -join ", "): $coverageMode coverage; ``$([string]$scenario.automationStatus)``.")
-        $lines.Add("  Operation: $(@($scenario.operations) -join " ")")
-        $lines.Add("  Correctness: $([string](Get-PropertyValue $scenario "rationale" "Scenario-specific correctness validation is required."))")
-    }
-}
-
-if ($TablePath -and (Test-Path $TablePath)) {
-    $table = (ConvertTo-SafeNarrativeText (Get-Content $TablePath -Raw)).Trim()
-    if ($table) {
-        $lines.Add("")
-        $lines.Add($table)
-    }
-}
-
+$lines.Add("> Maintainers: comment ``/review performance`` to refresh this report.")
 $lines.Add("")
 $lines.Add("> Automated analysis by the **perf-analysis** skill.")
+$lines.Add("")
+$lines.Add("</details>")
 $lines.Add("")
 $decisionJson = ConvertTo-Json -InputObject $decision -Depth 12 -Compress
 $lines.Add("<!-- perf-analysis-decision: $decisionJson -->")
