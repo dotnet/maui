@@ -99,4 +99,6 @@ These instructions do not prove candidate adequacy: inspect whether the assertio
 isolates the reported bug instead of ordinary scrolling or overscroll.
 TRX verification accepts NUnit's parameterized fixture names (for example
 `Issue37323(Android)`) while still requiring matching test IDs, execution counts,
-and command exit status.
+and command exit status. NUnit may omit assertion framework frames from TRX:
+comparison failures are also recognized by the NUnit executor's `Assert.That`,
+`Expected:`, and `But was:` diagnostics, not by generic failure text.

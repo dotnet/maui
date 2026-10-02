@@ -247,11 +247,16 @@ function Get-IssueReplicateTrxVerdict {
             "(^|[.+])$([regex]::Escape($ClassName))([.+]|\(|$)"
     })
     $ids = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $nunitIds = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($definition in $definitions) {
         if ([string]::IsNullOrWhiteSpace($definition.GetAttribute('id'))) {
             return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
         }
         [void]$ids.Add($definition.GetAttribute('id'))
+        $method = $definition.SelectSingleNode("*[local-name()='TestMethod']")
+        if ($method.GetAttribute('adapterTypeName') -eq 'executor://nunit3testexecutor/') {
+            [void]$nunitIds.Add($definition.GetAttribute('id'))
+        }
     }
     $results = @($xml.SelectNodes("//*[local-name()='UnitTestResult']"))
     $counters = $xml.SelectSingleNode("//*[local-name()='ResultSummary']/*[local-name()='Counters']")
@@ -276,8 +281,14 @@ function Get-IssueReplicateTrxVerdict {
         $failures.Count + $passed -eq $results.Count -and
         @($failures | Where-Object {
             $errorInfo = $_.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']")
+            $messageNode = if ($errorInfo) { $errorInfo.SelectSingleNode("*[local-name()='Message']") } else { $null }
+            $message = if ($messageNode) { $messageNode.InnerText } else { '' }
             $errorInfo -and
-                $errorInfo.InnerText -match '(?i)NUnit\.Framework\.AssertionException|Xunit\.(Sdk\.)?\w+Exception|AssertFailedException|at\s+.*\bAssert\.'
+                ($errorInfo.InnerText -match '(?i)NUnit\.Framework\.AssertionException|Xunit\.(Sdk\.)?\w+Exception|AssertFailedException|at\s+.*\bAssert\.' -or
+                    ($nunitIds.Contains($_.GetAttribute('testId')) -and
+                        $message -match '(?m)^\s*Assert\.That\(' -and
+                        $message -match '(?m)^\s*Expected:' -and
+                        $message -match '(?m)^\s*But was:'))
         }).Count -eq $failures.Count) {
         return [pscustomobject]@{ Status = 'AssertionFailed'; Names = $names }
     }
