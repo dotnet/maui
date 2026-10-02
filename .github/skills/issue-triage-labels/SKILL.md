@@ -76,12 +76,18 @@ substitutes for current original issue/comment evidence.
   reproduction: explicit working behavior tied to an earlier named .NET/MAUI
   version and failing/reproducing behavior tied to a later named version.
   Explicit fails/failed outcomes do not need additional confirmation vocabulary.
+  "Fails to reproduce/replicate" is unsuccessful validation, not a failing
+  reported behavior; it cannot authorize confirmed regression.
   A directly continued working-version statement can retain its subject in
-  "and fails starting in MAUI Y". Keep all outcome/version, scope and uncertainty
+  "and fails starting in MAUI Y". Version binding cannot cross an "and/or"
+  clause into a separate subject's outcome. Repeated-subject working/failing
+  clauses retain their own versions. Keep all outcome/version, scope and uncertainty
   guards, including for transitions and superseding older no-repro/not-regression.
   WebView2-regression classification must affirmatively concern this issue;
   reproduction plus a negative classification cannot establish it. A later
   current negative classification supersedes earlier WebView2-regression support.
+  Causal classifications such as "this issue is a regression caused by WebView2"
+  or "due to WebView2" share the same target and polarity requirements.
   Merely listing tested versions or asserting "regressed from" proves neither
   their outcomes nor the boundary. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
@@ -101,7 +107,8 @@ substitutes for current original issue/comment evidence.
   explicitly name the exact label and the decision to add/remove it.
   A decision for a longer label cannot authorize its prefix: for example,
   `partner/syncfusion` does not authorize `partner`.
-  Questions cannot authorize any label or either action. The same affirmative
+  Questions, including indirect "we discussed whether to apply p/1" inquiries,
+  cannot authorize any label or either action. The same affirmative
   polarity check applies to later reversals: "Do not remove p/1" and "Should we
   remove p/1?" do not revoke "Apply p/1"; an explicit "Do not apply p/1" does.
   Conditional or timing-contingent decision paragraphs, such as "Apply p/1 if
@@ -172,6 +179,10 @@ substitutes for current original issue/comment evidence.
   context remains eligible; waiting for a sample or inability "until" a
   prerequisite is fulfilled is not a completed unsuccessful test.
   Declarative "I have this issue" wording is not an auxiliary-led question.
+  Indirect "we discussed whether this issue was reproduced" is not validation.
+  Factual "this issue was reproduced whether or not X is enabled" remains
+  eligible; discussing/asking whether or not an outcome occurred is still an
+  inquiry, not an observed outcome.
   Mixed failed/successful validation is withheld, including an initial failure
   followed by reproduction in the same paragraph. Positive outcomes elsewhere
   in the cited comment also veto no-repro; do not hide them by quote selection.

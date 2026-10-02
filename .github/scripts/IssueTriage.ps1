@@ -428,8 +428,11 @@ function Get-Prose([string]$Body) {
 }
 
 function Test-Interrogative([string]$Prose) {
+    $inquiry = '(?:ask(?:s|ed|ing)?|discuss(?:es|ed|ing)?|wonder(?:s|ed|ing)?|question(?:s|ed|ing)?|debate(?:s|d)?|debating|determine(?:s|d)?|determining|check(?:s|ed|ing)?|know(?:s|n)?|knew)'
+    $gap = '(?:(?![;!?]|\.(?:\s|$)|\r?\n[ \t]*\r?\n|\b(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating)\b).){0,80}'
     return $Prose.Contains('?') -or
-        $Prose -match '(?i)(?:^|[.!;:,]|\r?\n[ \t]*\r?\n)\s*(?:please\s+)?(can|could|should|would|will|may|might|is|are|was|were|does|do|did|has|have)\s+(we|i|you|they|he|she|this|it|that|LABEL|the (?:issue|report|behavior))\b'
+        $Prose -match '(?i)(?:^|[.!;:,]|\r?\n[ \t]*\r?\n)\s*(?:please\s+)?(can|could|should|would|will|may|might|is|are|was|were|does|do|did|has|have)\s+(we|i|you|they|he|she|this|it|that|LABEL|the (?:issue|report|behavior))\b' -or
+        $Prose -match "(?is)\bwhether\b(?!\s+or\s+not\b)|\b$inquiry\b$gap\bwhether\b"
 }
 
 function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
@@ -532,7 +535,7 @@ function Get-SubjectNegativeValidationPattern([string]$ReferenceContext) {
     $subject = '(?:no(?:\s+|-)one|nobody|none|neither)(?:\s+of\s+(?:(?:the|these|those|our|their)\s+)?(?:us|them|tests?|testers?|validators?|developers?|maintainers?))?'
     $auxiliary = '(?:(?:has|have|had|is|are|was|were|can|could)\s+){0,2}'
     $modifiers = '(?:(?:be|been|being|able to|yet|ever|still|currently|successfully|reliably|consistently|actually|fully|independently|personally|locally)\s+){0,4}'
-    $verbs = '(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
+    $verbs = '(?:reproduce[ds]?|reproducing|reproducible|replicate[ds]?|replicating|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
     $gap = '(?:(?![,;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|and|or)\b).){0,50}?'
     $outcome = Get-ValidationOutcomePattern $ReferenceContext
     return "(?i)\b$subject\s+$auxiliary$modifiers$verbs\b$gap(?<![\w])$outcome(?![\w])"
@@ -540,9 +543,9 @@ function Get-SubjectNegativeValidationPattern([string]$ReferenceContext) {
 
 function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '') {
     if (-not $ReferenceContext) { $ReferenceContext = $Prose }
-    $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
+    $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|fail(?:s|ed)?\s+to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
     $modifiers = '(?:(?:be|been|being|able to|possible to|yet|ever|still|currently|at all|successfully|reliably|consistently|actually|fully|independently|definitively|personally|locally|readily|easily|immediately)\s+){0,4}'
-    $verbs = '(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
+    $verbs = '(?:reproduce[ds]?|reproducing|reproducible|replicate[ds]?|replicating|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
     $pattern = "(?i)\b$negative\s+$modifiers$verbs\b"
     $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
     $postposed = "(?i)\b$verbs\b(?:(?![;!?\r\n]|\.(?:\s|$)).){0,100}\b$negative\s+$outcome\b"
@@ -778,7 +781,7 @@ function Test-RegressionValidation([string]$Paragraph, [string]$FirstBadVersion 
     if ((Test-ConditionalEvidence $Paragraph) -or (Test-TentativeEvidence $Paragraph)) { return $false }
     $framework = '(?:\.NET(?:\s+MAUI)?|MAUI)'
     $version = '\d+(?:\.\d+){0,3}(?:[- .]*(?:preview|rc)[- .]*\d+(?:\.\d+)*)?(?![\w-]|\.(?=\w))'
-    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|not|never|cannot|didn.t|isn.t|wasn.t|regressed\s+from|MAUI)\b|(?<![\w])\.NET\b|\b\d).){0,80}'
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:and|or|but|however|not|never|cannot|didn.t|isn.t|wasn.t|regressed\s+from|MAUI)\b|(?<![\w])\.NET\b|\b\d).){0,80}'
     $target = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}'
     $working = "\b$target(?:behavior|scenario|feature)\s+(?:(?:was|is|has(?: been)?)\s+)?(?:worked|working|works|passed)\b"
     $namedVersion = "(?<![\w])$framework\s+(?:versions?\s+)?(?<version>$version)"
@@ -1024,7 +1027,7 @@ function Test-WebView2Regression([string]$Paragraph, [string]$ReferenceContext =
     $subject = Get-ValidationOutcomePattern $ReferenceContext
     if (-not (Test-ForeignIssueReference $ReferenceContext) -and
         -not (Test-ForeignOutcome $ReferenceContext)) { $subject = "(?:$subject|this|it)" }
-    $classification = '(?:(?:a|the)\s+)?(?:(?:confirmed|known)\s+)?(?:WebView2(?:\s+runtime)?\s+regression|regression\s+(?:in|within|from)\s+(?:the\s+)?WebView2(?:\s+runtime)?)\b'
+    $classification = '(?:(?:a|the)\s+)?(?:(?:confirmed|known)\s+)?(?:WebView2(?:\s+runtime)?\s+regression|regression\s+(?:in|within|from|caused by|due to)\s+(?:the\s+)?WebView2(?:\s+runtime)?)\b'
     $predicate = if ($Negative) {
         "(?:(?:is|was|has been)\s+(?:not|no longer)|isn['\u2019]t|wasn['\u2019]t)\s+"
     } else { '(?:is|was|has been)\s+' }

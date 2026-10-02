@@ -57,6 +57,7 @@ Exact label token boundaries apply to approvals and superseding decisions:
 All label decisions and both actions share non-question and affirmative-polarity
 checks with their supersession scan. "Do not remove p/1" and "Should we remove
 p/1?" cannot revoke "Apply p/1"; a directed "Do not apply p/1" can veto it.
+Indirect "we discussed whether to apply p/1" inquiries are not decisions either.
 Conditional/timing-contingent decision paragraphs cannot authorize additions,
 removals or superseding reversals. "Apply p/1 if the regression is confirmed" is
 not a current priority commitment, nor is "Remove p/1 once validation is complete"
@@ -156,6 +157,9 @@ comment veto no-repro, including inability "until" a prerequisite is fulfilled
 or waiting for a sample. This does not restore a blanket timing-word veto.
 Questions remain withheld, but auxiliary/subject wording must begin a clause:
 declarative "I have this issue" does not turn a factual reproduction into a question.
+Indirect "we discussed whether this issue was reproduced" is not validation.
+Factual "this issue was reproduced whether or not X is enabled" remains eligible;
+an inquiry about whether or not an outcome occurred is not an observation.
 All technical assessments share chronology checks for additions and removal
 transitions. Later label removals, including automated Policy Service removals,
 contrary state labels, authorized contrary outcomes/retractions and explicit
@@ -250,14 +254,20 @@ Regression confirmation additionally requires explicit working behavior tied
 to an earlier named .NET/MAUI version and failing/reproducing behavior tied to a
 later named version. Lists of tested versions do not establish their outcomes.
 Explicit fails/failed outcomes need not also say reproduced/confirmed/verified.
+"Fails to reproduce/replicate" describes unsuccessful validation, not a failing
+reported behavior, and cannot confirm a regression.
 A directly continued "worked in MAUI X and fails starting in MAUI Y" statement
 can retain its subject; the version/outcome, scope and uncertainty guards remain.
+Version/outcome binding cannot cross an "and/or" clause into a separate subject's
+outcome; explicit repeated-subject clauses keep their own working/failing versions.
 The same regression confirmation supersedes older no-repro/not-regression
 assessments and supports suspected-to-confirmed transitions.
 WebView2-regression assessment requires an affirmative assertion concerning this
 issue, not merely both keywords in a reproduction comment. An explicit current
 negative WebView2 classification also supersedes older support; quote selection
 cannot hide it elsewhere in the cited comment.
+"This issue is a regression caused by WebView2" and "due to WebView2" are causal
+classifications with the same current-target and affirmative/negative safeguards.
 The first-bad citation must include both results and the explicit boundary
 matching that label, with no earlier contradictory failing outcome; merely
 asserting "regressed from" does not establish earlier passing behavior.
