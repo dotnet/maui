@@ -88,7 +88,10 @@ identifies the exact comparison to perform. Only the separate safe-output job
 posts the report, restricted to the triggering issue with issue-only write access.
 A trusted pre-publication step checks the bounded regular output file and rejects
 cross-issue target aliases, repository overrides, and existing-comment edits before
-the native handler runs. This is required because the pinned handler prioritizes
+the native handler runs. A report intent must have a nonempty text body, and multiple
+report intents are rejected instead of allowing the native maximum to select one.
+No-report outcomes remain valid and cannot minimize the command without a verified
+publication receipt. This is required because the pinned handler prioritizes
 an explicit `item_number` over `target: triggering`; configuration alone is not
 the publication boundary.
 Both agent-failure and custom failed-job issue reporters are disabled, so a failed

@@ -304,12 +304,20 @@ function Assert-IssueRegressionOutputTarget {
     if ($null -eq $Output -or $Output.items -isnot [array]) {
         throw 'The report output must contain an items array.'
     }
+    $reportCount = 0
     foreach ($item in $Output.items) {
         if ($item.type -cne 'add_comment') {
             if ($item.type -cnotin @('noop', 'missing_data', 'missing_tool', 'report_incomplete')) {
                 throw 'The report output contains an unsupported operation.'
             }
             continue
+        }
+        if ($item.body -isnot [string] -or [string]::IsNullOrWhiteSpace($item.body)) {
+            throw 'A regression report requires a nonempty text body.'
+        }
+        $reportCount++
+        if ($reportCount -gt 1) {
+            throw 'The report output contains multiple report intents.'
         }
         foreach ($field in @('item_number', 'issue_number', 'pr-number',
                 'pull_request_number', 'pr_number', 'pr', 'pull_number', 'discussion_number')) {
