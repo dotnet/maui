@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		// UIKit's localized "Done" label, matching UIBarButtonSystemItem.Done so VoiceOver keeps reading
 		// the affordance in the user's language on the iOS 26+ glass button path.
 		static readonly string DoneAccessibilityLabel =
-			NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Done");
+			NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Done") ?? "Done";
 
 		// iOS 26 gives bars a translucent Liquid Glass background, so a full-width accessory looks empty
 		// and appears to let taps through to the field behind it (dotnet/maui#36412). On those versions

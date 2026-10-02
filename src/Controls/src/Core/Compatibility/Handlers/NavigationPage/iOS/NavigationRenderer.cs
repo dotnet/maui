@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -59,6 +60,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		bool _interactivePopGesturePending;
+		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
 		[Internals.Preserve(Conditional = true)]
@@ -100,8 +103,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+			_nativeNavigationRegistrations.Clear();
 			(this as IElementHandler).SetVirtualView(element);
 			_element = element is null ? null : new(element);
+			if (element is NavigationPage navigationPage)
+			{
+				_nativeNavigationRegistrations.Register(
+					navigationPage,
+					NavigationBar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.RealizedView);
+			}
 		}
 
 		public UIViewController ViewController
@@ -173,6 +185,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
 
 			base.ViewDidDisappear(animated);
@@ -249,11 +262,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(() => _uiRequestedPop = true);
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldBeginInteractivePop);
 
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
+		}
+
+		bool ShouldBeginInteractivePop()
+		{
+			_interactivePopGesturePending = ShouldPopCurrentPage();
+			return _interactivePopGesturePending;
+		}
+
+		bool ShouldPopCurrentPage()
+		{
+			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
+			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
+			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
+			// causing a UIKit VC / MAUI navigation stack desync.
+			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
+			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
+			// returns true for both "page handled it" and "SafePop handled it", making it
+			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
+
+			_uiRequestedPop = true;
+			return true;
 		}
 
 		class GestureDelegate : UIGestureRecognizerDelegate
@@ -283,6 +322,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				_nativeNavigationRegistrations.Clear();
 				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
@@ -1046,13 +1086,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetStatusBarStyle()
 		{
-			if (NavPage is null)
+			var navPage = NavPage;
+
+			if (navPage is null)
 			{
 				return;
 			}
 
-			var barTextColor = NavPage.BarTextColor;
-			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
+			var barTextColor = navPage.BarTextColor;
+			var statusBarColorMode = navPage.OnThisPlatform().GetStatusBarTextColorMode();
 
 #pragma warning disable CA1416, CA1422 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
@@ -1132,21 +1174,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
-			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
-			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
-			// causing a UIKit VC / MAUI navigation stack desync.
-			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
-			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
-			// returns true for both "page handled it" and "SafePop handled it", making it
-			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
-			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			// UIKit invokes ShouldBegin before ShouldPopItem for an interactive pop.
+			// The application back callback was already evaluated while admitting the gesture.
+			if (_interactivePopGesturePending)
 			{
-				_uiRequestedPop = false;
-				return false;
+				return true;
 			}
-			_uiRequestedPop = true;
-			return true;
+
+			return ShouldPopCurrentPage();
 		}
 
 		[Export("navigationBar:didPopItem:")]
@@ -1364,6 +1399,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
+					r._interactivePopGesturePending = false;
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
@@ -1398,6 +1434,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			readonly NativeElementRegistrationSet _nativeToolbarRegistrations = new NativeElementRegistrationSet();
 			bool _toolbarUpdatePending = false;
 
 			public ParentingViewController(NavigationRenderer navigation)
@@ -1587,6 +1624,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void Disconnect(bool dispose)
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
 
@@ -2040,6 +2078,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed by CleanToolbarItems before replacement and in Disconnect.")]
 			void UpdateToolbarItems()
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from previous toolbar item property changes
 				CleanToolbarItems();
 
@@ -2071,11 +2110,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+						var secondaryItem = item.ToSecondarySubToolbarItem().PlatformAction;
+						(secondaries ??= []).Add(secondaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							secondaryItem,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
 					}
 					else
 					{
-						(primaries ??= []).Add(item.ToUIBarButtonItem());
+						var primaryItem = item.ToUIBarButtonItem();
+						(primaries ??= []).Add(primaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							primaryItem,
+							NativeElementRoles.ToolbarItem,
+							NativeElementDiscriminators.LogicalModel);
 					}
 				}
 
@@ -2108,6 +2159,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries ??= [];
 
 					primaries.Insert(0, menuButton);
+					if (Child is Page child)
+					{
+						_nativeToolbarRegistrations.Register(
+							child,
+							menu,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+						_nativeToolbarRegistrations.Register(
+							child,
+							menuButton,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+					}
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
