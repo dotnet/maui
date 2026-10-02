@@ -57,6 +57,12 @@ Exact label token boundaries apply to approvals and superseding decisions:
 All label decisions and both actions share non-question and affirmative-polarity
 checks with their supersession scan. "Do not remove p/1" and "Should we remove
 p/1?" cannot revoke "Apply p/1"; a directed "Do not apply p/1" can veto it.
+Conditional/timing-contingent decision paragraphs cannot authorize additions,
+removals or superseding reversals. "Apply p/1 if the regression is confirmed" is
+not a current priority commitment, nor is "Remove p/1 once validation is complete"
+a completed revocation. Ambiguous mixed paragraphs are withheld; cite a separate
+unconditional decision rather than inferring that later evidence activated a
+previous condition.
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
 Link destinations, titles, reference definitions and image metadata cannot
@@ -72,6 +78,13 @@ cannot become fresh facts after the original evidence is edited or removed.
 Suggestions and tentative candidates are not approvals.
 Tentative validation such as "should be reproducible on Android" is not an
 observed reproduction and cannot support confirmation labels.
+Conditional outcomes such as "If the issue is reproduced on Android, collect
+logs" cannot supply observed confirmation, even when the citation omits the
+conditional prefix. The shared positive-evidence predicate applies to confirmation
+additions, removal transitions and contrary positive results. It distinguishes
+contingent outcomes from factual reproduction scenarios such as "I reproduced
+the issue when the keyboard was visible"; existing conservative negative-evidence
+vetoes are unchanged.
 Technical-state labels require their specific affirmative review, reproduction
 outcome or version recommendation, not merely an authorized comment author.
 Technical-assessment questions are rejected. No-repro is withheld when the cited

@@ -34,6 +34,11 @@ substitutes for current original issue/comment evidence.
   confirmation. Do not mistake "validated, but not reproduced" for reproduction.
   Tentative expectations such as "should be reproducible" are not observed
   outcomes and cannot support confirmation.
+  Conditional/hypothetical outcomes such as "If the issue is reproduced on
+  Android, collect logs" are not observations either. Do not hide the condition
+  by quoting only its affirmative-looking fragment. Cite a clear completed
+  result; a factual reproduction scenario such as "I reproduced the issue when
+  the keyboard was visible" is distinct from a contingent outcome.
   Reproduction must concern the reported issue/behavior, not merely running its
   sample. A postposed "but not the reported behavior" negates confirmation too.
 - `potential-regression` records a plausible reported regression, not proof.
@@ -54,6 +59,11 @@ substitutes for current original issue/comment evidence.
   Questions cannot authorize any label or either action. The same affirmative
   polarity check applies to later reversals: "Do not remove p/1" and "Should we
   remove p/1?" do not revoke "Apply p/1"; an explicit "Do not apply p/1" does.
+  Conditional or timing-contingent decision paragraphs, such as "Apply p/1 if
+  the regression is confirmed" or "Remove p/1 once validation is complete",
+  authorize neither the change nor a later reversal. Withhold mixed/ambiguous
+  paragraphs and require a separate unconditional decision; do not infer that
+  later evidence activated a prior conditional commitment.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a

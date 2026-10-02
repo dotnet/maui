@@ -405,6 +405,19 @@ function Test-Interrogative([string]$Prose) {
         $Prose -match '(?i)\b(can|could|should|would|will|may|might|is|are|was|were|does|do|did|has|have)\s+(we|i|you|they|he|she|this|it|that|LABEL|the (?:issue|report|behavior))\b'
 }
 
+function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
+    if ($Paragraph -match '(?i)\b(?:if|unless|provided that|providing that|assuming|supposing|as long as|on condition that|in case|in the event that|subject to|contingent (?:on|upon))\b') {
+        return $true
+    }
+    if ($Decision) {
+        return $Paragraph -match '(?i)\b(?:when|once|until|before|after|as soon as|pending)\b'
+    }
+    $condition = '\b(?:when|once|until|before|after|as soon as)\b'
+    $clause = '(?:(?![,;!?\r\n]|\.(?:\s|$)).){0,80}'
+    $outcome = '(?:is|are|has|have|can)\s+(?:(?:be|been|successfully|reliably|consistently)\s+){0,3}(?:reproduce[ds]?|reproducible|confirm(?:ed)?|verify|verified|validate[ds]?|correctly detect(?:s|ed)?)\b'
+    return $Paragraph -match "(?i)$condition$clause\b$outcome"
+}
+
 function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence, [switch]$Superseding) {
     $labelText = '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
         '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
@@ -420,7 +433,8 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         $candidate = [regex]::Replace($candidate, $prohibition, $Action)
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    if (Test-Interrogative $withoutLabel) { return $false }
+    if ((Test-Interrogative $withoutLabel) -or
+        (Test-ConditionalEvidence $withoutLabel -Decision)) { return $false }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
         $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
     }
@@ -478,6 +492,7 @@ function Test-NegativeValidation([string]$Prose) {
 }
 
 function Test-PositiveValidation([string]$Paragraph) {
+    if (Test-ConditionalEvidence $Paragraph) { return $false }
     $outcome = '(?:reported behavior|same behavior|issue|bug|regression|problem)'
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b).){0,50}'
