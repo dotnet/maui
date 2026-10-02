@@ -2146,8 +2146,10 @@ These look like permission errors but are physical:
 - OData `$top` must be encoded as `%24top` in URLs.
 - Each bash call runs in a fresh subshell. Persist state to
   `/tmp/gh-aw/agent/<file>`.
-- Bash allowlist per frontmatter `tools.bash`: no `gh`, no `pwsh`, no
-  `python`. Use `curl` + `jq` for all API calls.
+- Bash allowlist per frontmatter `tools.bash`: no `gh`, no `python`. Use
+  `curl` + `jq` for all API calls. `pwsh` **is** allowed, and is required for
+  the mandatory `.github/scripts/*.ps1` safe-output transport steps — do not
+  treat PowerShell as unavailable.
 
 ## Output discipline
 
