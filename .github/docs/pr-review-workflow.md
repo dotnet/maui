@@ -4,6 +4,7 @@ This guide explains the automated review commands used in dotnet/maui pull reque
 
 - `/review`
 - `/review tests`
+- `/review performance`
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
 
@@ -14,6 +15,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
+| `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
@@ -61,7 +63,9 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 5. queues the DevDiv `maui-copilot` Azure DevOps pipeline;
 6. minimizes (collapses) the command comment as resolved once authorized.
 
-The workflow intentionally does not handle `/review tests`; that subcommand is reserved for the test-failure review workflow.
+The workflow intentionally does not handle `/review tests` or `/review performance`;
+those subcommands belong to their focused gh-aw workflows. The full-review
+missed-command recovery and rerun option parser also exclude both subcommands.
 
 GitHub Actions webhook deliveries can occasionally be delayed or dropped during an Actions incident. A deterministic scheduled fallback (`.github/workflows/review-trigger-recovery.yml`) polls recent commands, waits 25 minutes so both bounded trigger jobs have time to finish, rechecks the commenter's current repository permission, and dispatches the same trusted review workflow. The default-branch commit used by the first scheduled run is a permanent lower bound, preventing already-handled commands from being replayed when the fallback is introduced. Processed commands are marked so a delayed webhook cannot trigger a duplicate review.
 
@@ -98,25 +102,76 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 
 The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
 
-## Automatic fresh reviews
+## `/review performance`: performance review
 
-After an AI Summary is posted, deterministic rerun automation can queue a fresh full review when it detects new **PR author activity**:
+Comment exactly `/review performance` on an open PR. Only newly created comments
+activate the command; editing a comment does not start another measurement run.
+Unauthorized comments, issues, other subcommands, closed PRs, and changes with no
+product files do not start measurements. Authorized command comments are minimized
+after the pinned context is ready. Runs for the same PR are serialized.
 
-- New commits (head SHA changed)
-- New non-command comments from the PR author
+The gh-aw source is `.github/workflows/copilot-review-performance.md`; commit its
+generated `.lock.yml` whenever it changes. Compile with the repository's pinned
+gh-aw **v0.86.2**:
 
-The automation applies the `s/agent-ready-for-rerun` label. An hourly scanner processes queued reruns and triggers them when appropriate. No comment command is required, and identical PR state cannot be re-queued.
+```bash
+gh aw compile copilot-review-performance --strict --actionlint
+```
 
-Reviewer or maintainer reminder comments do not satisfy the eligibility check. If an immediate review is needed, a maintainer can run `/review`.
+The trusted orchestration script, `.github/scripts/Review-Performance.ps1`, uses
+the existing `perf-analysis` selector, runner, comparator, policy, renderer, and
+validator. The job boundaries follow the issue-replication isolation pattern:
 
-The repository includes an hourly gh-aw workflow (`.github/workflows/rerun-review-scanner.md`) that:
+1. **Intake:** authorize the caller, pin exact merge-base/head/harness commits,
+   and select coverage from the full changed-file list without executing PR code.
+2. **Measurements:** run managed Release benchmarks in ABBA order on a disposable
+   hosted Linux runner. Base/head use separate unprivileged users and an explicit
+   environment allowlist. No Copilot PAT or posting token is passed to measurements.
+3. **Evidence and interpretation:** a fresh job imports bounded structured evidence
+   and resolves the decision baseline. The GPT agent reads that bundle and the
+   pinned diff; it writes narrative only, with no measurement or publishing authority.
+4. **Publication:** a fresh gh-aw safe-output job downloads independent evidence,
+   recomputes the decision, renders and validates the narrative, and rechecks
+   authorization and live base/head identities. Only this job can publish the report.
 
-1. Queries PRs labeled `s/agent-ready-for-rerun`
-2. Uses AI to decide `trigger` or `skip` for each PR
-3. Triggers approved reruns via Azure DevOps
-4. Cleans up queue labels and posts reactions
+The comment keeps **Performance Review Summary**, the actual PR author and pinned
+commit notification, and truthful Scope/Result/Commit badges visible. Everything
+else is inside exactly two closed sibling sections: **Performance Results**
+(verdict, coverage, and any benchmark table) and **Findings & Follow-up**
+(static findings, recommendations, and next action). Static-only and failed or
+incomplete measurement reports use the same layout without implying measured
+coverage. The trusted validator rejects flat, expanded, or extra sections and
+checks the visible author, commit, and badges against the pinned evidence.
 
-This ensures reruns are processed automatically without manual intervention.
+Native scenarios **do not run in the hosted command**. Device-required, sampled,
+static-only, missing, and failed measurements remain explicit coverage gaps.
+Native device tooling is outside this workflow's scope. Shared-host timing is
+advisory; no whole-PR clean verdict may be inferred from a passing managed subset.
+The command never approves, changes code or labels, queues the full review pipeline,
+or automatically starts native follow-ups.
+
+Manual dispatch requires the default branch and a positive `pr_number`:
+
+```bash
+gh workflow run copilot-review-performance.lock.yml --repo dotnet/maui \
+  --ref main -f pr_number=12345 -f suppress_output=true
+```
+
+`suppress_output=true` still performs measurements and validates the report, but
+does not post a comment. Evidence, rendered reports, and separate SDK-install,
+build, and benchmark diagnostic artifacts are retained for seven days. Diagnostic
+logs are not admitted as measurement evidence. Failed automation posts a run link
+rather than a performance verdict; stale evidence is never published as a current report.
+Retry with a fresh dispatch or `/review performance` command, not **Re-run failed
+jobs**: repeated attempts can leave same-named gh-aw agent artifacts in one run,
+allowing a downstream job to download an earlier failed attempt's empty output.
+
+No new Azure pipeline, service connection, or secret is needed. The workflow uses
+the existing `copilot-pat-pool` environment for GPT interpretation and read-only
+agent permissions. The workflow, skill, and trusted scripts must land on the
+default branch before slash commands can run. A default-branch dry-run canary is
+required before treating the hosted path as operational. There is no scheduled
+recovery for this command; request it again after resolving an automation failure.
 
 ## `/review tests`: test-failure review
 
@@ -142,8 +197,18 @@ Because gh-aw slash commands match only the first command token, the workflow li
 
 The workflow uses one skill,
 [`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
-and comment formatting. The local runner uses that same skill. Both use GPT-6 Astra
-(`gpt-6-astra`), as do the offline attribution evaluations and their judge.
+and comment formatting. The local runner uses that same skill. The hosted workflow,
+like the other gh-aw workflows, uses GPT-6.1 Sol (`gpt-6.1-sol`) through the Responses
+API. The local runner and offline evaluations keep their independently configured
+models.
+
+The pinned gh-aw **v0.86.2** runtime does not yet include this model's pricing or
+wire-protocol metadata. Each workflow explicitly sets
+`COPILOT_PROVIDER_WIRE_API: responses` and imports
+[`shared/gpt-6.1-sol.md`](../workflows/shared/gpt-6.1-sol.md) for model-specific
+pricing, preserving AI-credit accounting without a fallback to another model.
+The per-token prices come from the
+[OpenAI model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
 It gathers evidence from:
 
@@ -267,7 +332,7 @@ Do not treat `Insufficient data` as "unrelated." It means a human or a rerun wit
 
 ### AI Summary
 
-The full `/review` pipeline and automatic reruns post an `AI Summary` comment. It may include:
+The full `/review` pipeline posts an `AI Summary` comment. It may include:
 
 - gate status;
 - UI test results;
@@ -306,7 +371,7 @@ The canonical layout lives in the skill rather than a separate caller template.
 2. Run `/review` when a PR is ready for automated review.
 3. Read the `AI Summary` comment and check whether the review found actionable issues.
 4. If CI is red or ambiguous, run `/review tests` to get a focused failure-causality report.
-5. If the author pushes fixes or adds material context, allow the automatic rerun queue to process it or run `/review` for an immediate review.
+5. If the author pushes fixes or adds material context, run `/review` for a fresh review.
 6. Use human judgment for merge decisions. These workflows provide evidence and recommendations, not final approval authority.
 
 ## Recommended workflow for community contributors
@@ -316,7 +381,7 @@ The canonical layout lives in the skill rather than a separate caller template.
 3. If you need an automated review, ask a maintainer to run `/review`.
 4. If CI is red and you are unsure whether it is caused by your changes, ask a maintainer to run `/review tests`.
 5. When an automated comment is posted, read the summary first, then expand evidence sections for details.
-6. Push fixes or reply with clarifying information; eligible author activity is detected automatically for a fresh review.
+6. Push fixes or reply with clarifying information, then ask a maintainer to run `/review` for a fresh review.
 
 ## Safety and trust boundaries
 
@@ -326,7 +391,6 @@ Important safeguards:
 
 - `/review` requires repository write-level permissions and queues a trusted AzDO pipeline.
 - `/review tests` is comment-only and uses gh-aw safe outputs for PR comments.
-- Automatic reruns require deterministic new PR-author activity before the queue label is applied.
 - The full review pipeline keeps PR-controlled code separated from trusted scripts where possible.
 - Review comments should be treated as assistant-generated evidence, not as a substitute for human review.
 
@@ -337,7 +401,7 @@ Important safeguards:
 | `/review` does nothing | The commenter does not have write/maintain/admin access, the comment is not on a PR, or GitHub Actions delayed the webhook. | Authorized commands should be recovered automatically within about 35 minutes. Check GitHub Status if Actions is degraded. |
 | `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
-| The AI Summary looks stale | New commits or author comments landed after the last review. | Wait for the automatic rerun queue, or ask a maintainer to run `/review` for an immediate review. |
+| The AI Summary looks stale | New commits or author comments landed after the last review. | Ask a maintainer to run `/review` for a fresh review. |
 | There are multiple old AI Summary comments | Each comment holds only the latest session (keyed to its HEAD commit); previous review comments are minimized and hidden as outdated. | Expand the **Review Sessions** section in the newest comment — it reflects the current HEAD commit. |
 | Command comment is still visible | The commenter may lack authorization, or the command was malformed. | Check actor permissions and command syntax. Authorized commands are minimized after processing. |
 
@@ -346,13 +410,11 @@ Important safeguards:
 - `.github/workflows/review-trigger.yml` — GitHub comment trigger for `/review`.
 - `.github/workflows/review-trigger-recovery.yml` — scheduled fallback for missed `/review` webhooks.
 - `.github/scripts/Recover-MissedReviewCommands.ps1` — deterministic recovery and duplicate-prevention logic.
+- `.github/scripts/shared/ReviewCommandHelpers.ps1` — command parsing and authorization helpers for manual review recovery.
 - `eng/pipelines/ci-copilot.yml` — Azure DevOps PR review pipeline.
 - `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
 - `.github/workflows/copilot-review-tests.md` — gh-aw source for `/review tests`.
-- `.github/workflows/rerun-review-scanner.md` — gh-aw hourly scanner for automatically queued fresh reviews.
-- `.github/scripts/Resolve-RerunEligibility.ps1` — determines if a PR is eligible for rerun based on author activity.
-- `.github/scripts/Query-RerunReadyPRs.ps1` — queries PRs labeled `s/agent-ready-for-rerun`.
 - `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.
 - `.github/scripts/Review-Tests.ps1` — local runner for `/review tests`.
 - `.github/docs/trigger-azdo-pipeline-setup.md` — OIDC setup for triggering AzDO pipelines from GitHub Actions.
