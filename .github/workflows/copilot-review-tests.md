@@ -292,6 +292,11 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  # `report-failure-as-issue` only covers agent-level failures. Job-level
+  # failures are a separate reporter (`report-failed-jobs`, default true),
+  # so it has to be disabled explicitly or this workflow keeps filing
+  # `[aw] Failed jobs: ...` issues despite the line above.
+  report-failed-jobs: false
 
 tools:
   github:
