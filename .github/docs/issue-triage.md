@@ -107,6 +107,17 @@ the issue when the keyboard was visible"; existing conservative negative-evidenc
 vetoes are unchanged.
 Technical-state labels require their specific affirmative review, reproduction
 outcome or version recommendation, not merely an authorized comment author.
+Maintainer directives, technical assessments and failed-workaround observations
+are target-scoped. A paragraph about a foreign issue cannot authorize this
+issue's labels; foreign-reference context elsewhere in the comment requires an
+explicitly current-report supporting paragraph. Mixed-reference paragraphs are
+withheld rather than guessing which report an action concerns. A fetched
+canonical duplicate reference is permitted only as the bound "duplicate of"
+relationship, not as another action target.
+Deleted Markdown/HTML text is excluded from evidence, including strikethrough
+and nested or unclosed deletion markup. Adjective hedges such as "possible
+duplicate" and "looks like expected behavior" cannot supply definitive
+dispositions.
 Technical-assessment questions are rejected. No-repro is withheld when the cited
 comment reports resource access, build/download, authentication/network failure or
 timeout; not-regression cannot use a negated same-behavior comparison.
