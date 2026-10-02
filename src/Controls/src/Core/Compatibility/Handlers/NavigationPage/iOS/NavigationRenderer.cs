@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 		bool _interactivePopGesturePending;
+		bool _hasCompletedFirstAppearance;
+		CGSize _lastVisibleBoundsSize;
 		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
@@ -173,6 +175,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			base.ViewDidAppear(animated);
 
+			if (_hasCompletedFirstAppearance && View.Bounds.Size != _lastVisibleBoundsSize)
+				RepairLargeTitleLayoutAfterCoveredSizeChange();
+			else
+				_hasCompletedFirstAppearance = true;
+
+			_lastVisibleBoundsSize = View.Bounds.Size;
 			View.SetNeedsLayout();
 		}
 
@@ -187,6 +195,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
+			_lastVisibleBoundsSize = View.Bounds.Size;
 
 			base.ViewDidDisappear(animated);
 
@@ -195,6 +204,46 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_appeared = false;
 			PageController.SendDisappearing();
+		}
+
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
+				NavigationBar?.PrefersLargeTitles != true)
+				return;
+
+			// UIKit drops the large-title band when the navigation bar moves to a compact height
+			// class (iPhone landscape). Returning to a regular height class does not restore the
+			// expanded bar height on its own, which leaves the bar measuring as collapsed while it
+			// still draws the large title: the title slides up into the status bar and the page's
+			// top safe area stays short. Re-measuring the bar after the transition restores the
+			// height UIKit would have chosen for the new size class, and leaves an intentionally
+			// collapsed bar (because the content is scrolled) untouched.
+			coordinator.AnimateAlongsideTransition(_ => { }, _ =>
+			{
+				if (Handle != IntPtr.Zero && NavigationBar is { } navigationBar && navigationBar.Handle != IntPtr.Zero)
+					navigationBar.SizeToFit();
+			});
+		}
+
+		void RepairLargeTitleLayoutAfterCoveredSizeChange()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
+				Handle == IntPtr.Zero ||
+				NavigationBarHidden ||
+				NavigationBar is not { PrefersLargeTitles: true } navigationBar ||
+				navigationBar.Handle == IntPtr.Zero ||
+				TopViewController?.NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+			{
+				return;
+			}
+
+			// A full-screen controller can cover the navigation controller while its size changes.
+			// UIKit does not send the covered controller a size-transition callback, and can leave
+			// the bar measured for the previous size when it becomes visible again.
+			navigationBar.SizeToFit();
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -1703,7 +1752,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+				{
 					UpdateNavigationBarVisibility(true);
+				}
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
 					NavigationItem.Title = Child.Title;
 				else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
@@ -1711,7 +1762,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
 					UpdatePrefersStatusBarHidden();
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
+				{
 					UpdateLargeTitles();
+				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
