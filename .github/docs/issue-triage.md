@@ -65,6 +65,8 @@ unconditional decision rather than inferring that later evidence activated a
 previous condition.
 Directed prohibitions retain the existing conservative veto on older authority:
 "Do not apply p/1 until validation is complete" still blocks an older approval.
+Explanatory negation such as "this is not ready" or "we cannot commit" does not
+cancel a recognized directed veto. Questions remain non-decisions.
 It does not authorize a new removal or prove completion of the condition.
 The entire cited comment is also checked for a qualifying opposite decision or
 directed veto, not just the selected paragraph. "Apply p/1" and "Remove p/1" in
@@ -139,7 +141,9 @@ substituted for framework package versions.
 An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
 Expected-behavior and duplicate dispositions must be affirmative, not tentative
-or questions. Duplicate decisions identify exactly one canonical target via
+or questions. Categorical "expected behavior" is not a tentative expectation;
+qualifiers such as "maybe expected behavior" still withhold that disposition.
+Duplicate decisions identify exactly one canonical target via
 "duplicate of #N" or a full same-repository issue/PR URL and cite that exact
 fetched related source; an unrelated fetched reference is not sufficient.
 Newer opposite maintainer decisions or label events supersede earlier approvals;
@@ -173,6 +177,10 @@ checked, so an affirmative-looking quote cannot hide such a qualifier.
 Not-regression assessments must also be unconditional and non-tentative:
 "This is probably not a regression" cannot supply a definitive disposition or
 remove potential-regression through that transition.
+They must describe the current/reported issue or its same behavior on older
+versions. A foreign subject such as "the other issue" cannot supply the
+disposition or removal transition. The full cited comment is checked for
+foreign-outcome qualifiers, so selecting another paragraph cannot hide them.
 The same unconditional, non-tentative requirement applies to completed-review
 and no-repro assessments. No-repro requires an unsuccessful outcome for the
 reported issue, not "Do not reproduce this issue" or a hypothetical attempt.
@@ -321,8 +329,12 @@ for actual application, particularly after a partial failure. The explanation
 describes a validated requested delta, not an unconditional delivery claim.
 Job reruns are deliberately unsupported: the authorization step rejects them
 before exposing the Copilot pool, and the trusted validator rejects publication
-job reruns too. The pool and analysis jobs also explicitly require attempt one,
-including when rerunning only those jobs. The pinned compiler emits immutable,
+job reruns too. The pool and the compiled agent, detection and safe-output job
+conditions explicitly require attempt one, including partial failed-job reruns
+that reuse successful dependency outputs. Top-level workflow `if` gates
+activation, not each downstream job; additive built-in job conditions supply
+the downstream guards without replacing compiler checks.
+The pinned compiler emits immutable,
 fixed-name artifacts, so changing only this workflow's custom artifact names
 would not make reruns safe.
 Use a fresh `/issue triage` comment or manual dispatch to gather current state

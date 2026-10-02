@@ -79,6 +79,7 @@ substitutes for current original issue/comment evidence.
   Directed prohibitions remain conservative vetoes on older authority: "Do not
   apply p/1 until validation is complete" cannot revive an earlier approval.
   That veto does not authorize a new removal or treat the condition as completed.
+  Explanations such as "this is not ready" do not cancel the directed veto.
   Check the entire cited comment for a qualifying opposite decision or directed
   veto, including other paragraphs. A comment containing both "Apply p/1" and
   "Remove p/1" cannot authorize either action, even with equal timestamps.
@@ -120,6 +121,9 @@ substitutes for current original issue/comment evidence.
   Not-regression also needs an unconditional, non-tentative assessment.
   "Probably not a regression" and conditional comparisons cannot add the label
   or remove potential-regression through that transition.
+  Bind the assessment to this reported issue or its same behavior on older
+  versions. A foreign subject such as "the other issue" cannot change the
+  current issue's regression state, including through a selected paragraph.
   A later assignment of i/regression, potential-regression,
   blazor-webview2-regression or any regressed-in-* label supersedes an older
   not-regression assessment. A fresh qualifying assessment is required; the
@@ -152,7 +156,7 @@ substitutes for current original issue/comment evidence.
 | `s/triaged`, `s/needs-verification`, `investigate` | Distinguish completed evidence-based review, pending empirical validation, and unresolved technical investigation. Triaged needs an affirmative authorized statement that the issue/reproduction was reviewed or triage completed. Do not mark verified merely because this command completed. |
 | `s/needs-info`, `s/needs-repro` | Ask for specific missing information or a usable reproduction. Adequate inline code or an attachment can be sufficient: an empty repository-link field alone is not grounds for needs-repro. State a concrete question in the decision's `request`. These labels trigger policy replies and potential automatic closure. |
 | `s/try-latest-version`, `s/no-repro` | Cite an authorized instruction to try/update/retest a specific relevant newer published MAUI version, or explicit unsuccessful reproduction for no-repro. A timeout, inaccessible sample, or infrastructure failure is not no-repro. |
-| `s/duplicate 2️⃣`, `s/not-a-bug` | Require an affirmative, non-question maintainer disposition. A duplicate decision must identify exactly one canonical target using "duplicate of #N" or a full same-repository issue/PR URL, and cite that exact fetched related source with matching behavior/root cause. Another fetched reference is insufficient. Similarity scores or speculation are not dispositions. Not-a-bug requires an affirmative technical explanation. Do not close the issue. |
+| `s/duplicate 2️⃣`, `s/not-a-bug` | Require an affirmative, non-question maintainer disposition. A duplicate decision must identify exactly one canonical target using "duplicate of #N" or a full same-repository issue/PR URL, and cite that exact fetched related source with matching behavior/root cause. Another fetched reference is insufficient. Similarity scores or speculation are not dispositions. Not-a-bug requires an affirmative technical explanation; categorical "expected behavior" is eligible, but "maybe expected behavior" is not. Do not close the issue. |
 | `perf/*` | Identify runtime/startup/app-size/trimming problems or retained-object memory leaks. A crash is not automatically a leak. |
 | `version/*` | Apply relevant explicit OS/device version qualification, not every SDK version in logs. |
 | `partner`, `partner/*`, `external` | Require established ownership or actual partner collaboration supported by an authorized source. Do not infer identity from a name or equate platform/android with partner/android. |

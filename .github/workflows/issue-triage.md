@@ -106,6 +106,12 @@ skills:
   - .github/skills/issue-triage-labels
 
 jobs:
+  agent:
+    if: github.run_attempt == 1
+  detection:
+    if: github.run_attempt == 1
+  safe_outputs:
+    if: github.run_attempt == 1
   pre-activation:
     outputs:
       triage_ready: ${{ steps.context.outputs.ready }}

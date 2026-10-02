@@ -446,14 +446,14 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         $candidate = [regex]::Replace($candidate, $prohibition, $Action)
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
+        $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
+    }
     if ((Test-Interrogative $withoutLabel) -or
         (((Test-ConditionalEvidence $withoutLabel -Decision) -or
             (Test-TentativeEvidence $withoutLabel)) -and -not $prohibited)) { return $false }
-    if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
-        $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
-    }
-    if ($withoutLabel -match "(?i)\b(not|no|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|do not|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
     if ($prohibited) { return $true }
+    if ($withoutLabel -match "(?i)\b(not|no|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|do not|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
     if ($Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
         $canonical = @([regex]::Matches($candidate,
             '(?i)\bduplicate of\s+(?:#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
@@ -510,9 +510,12 @@ function Test-NegativeValidation([string]$Prose) {
     return $false
 }
 
+function Test-ForeignOutcome([string]$Paragraph) {
+    return $Paragraph -match '(?i)\b(?:(?:completely|entirely|totally)\s+)?(?:another|different|unrelated|separate|other)\s+(?:(?:reported|actual|original)\s+){0,2}(?:behavior|issue|bug|regression|problem)\b'
+}
+
 function Test-PositiveValidation([string]$Paragraph) {
-    if (Test-ConditionalEvidence $Paragraph) { return $false }
-    if ($Paragraph -match '(?i)\b(?:(?:completely|entirely|totally)\s+)?(?:another|different|unrelated|separate|other)\s+(?:(?:reported|actual|original)\s+){0,2}(?:behavior|issue|bug|regression|problem)\b') { return $false }
+    if ((Test-ConditionalEvidence $Paragraph) -or (Test-ForeignOutcome $Paragraph)) { return $false }
     $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b).){0,50}'
@@ -805,6 +808,20 @@ function Test-NoReproductionParagraph([string]$Paragraph) {
         $Paragraph -match "(?i)\b$outcome\s+(?:(?:is|was|has been)\s+not|cannot|can['\u2019]t|could not|couldn['\u2019]t)\s+(?:be\s+)?$modifiers(?:reproduced|replicated)\b"
 }
 
+function Test-NonRegressionValidation([string]$Paragraph, [string]$Prose) {
+    if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
+        (Test-TentativeEvidence $Paragraph) -or (Test-ForeignOutcome $Prose) -or
+        $Paragraph -match "(?i)\b(not|never|no longer|isn.t|wasn.t|doesn.t)\s+(?:(?:the|exactly|quite|really|actually|necessarily|at all|even)\s+){0,3}same (?:behavior|issue|problem)\b|\b(not|isn.t|wasn.t)\s+not (?:a )?regression\b") {
+        return $false
+    }
+    $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
+    $subject = "(?:$outcome|this|it)"
+    $clause = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot|isn['\u2019]t|wasn['\u2019]t|doesn['\u2019]t)\b).){0,80}"
+    $sameOutcome = '(?:(?:the|this|that|reported|actual|original)\s+){1,3}same (?:behavior|issue|problem)'
+    return $Paragraph -match "(?i)\b$subject\s+(?:is|was)\s+not\s+(?:a\s+)?regression\b" -or
+        $Paragraph -match "(?i)(?:\b$subject\b$clause\bsame (?:behavior|issue|problem)\b|\b$sameOutcome\b)$clause\b(?:older|previous|earlier)\b"
+}
+
 function Test-AssessmentSuperseded($Source, [string]$Label) {
     $contraryLabels = @(switch ($Label) {
         's/no-repro' { 's/verified'; 'i/regression'; 'blazor-webview2-regression' }
@@ -884,10 +901,7 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
                 -not (Test-BlockedValidation $prose)
             }
             'not-regression' {
-                -not (Test-ConditionalEvidence $paragraph -Decision) -and
-                -not (Test-TentativeEvidence $paragraph) -and
-                $paragraph -match '(?i)\bnot (?:a )?regression\b|\bsame (?:behavior|issue|problem)\b.{0,80}\b(?:older|previous|earlier)\b' -and
-                $paragraph -notmatch "(?i)\b(not|never|no longer|isn.t|wasn.t|doesn.t)\s+(?:(?:the|exactly|quite|really|actually|necessarily|at all|even)\s+){0,3}same (?:behavior|issue|problem)\b|\b(not|isn.t|wasn.t)\s+not (?:a )?regression\b"
+                Test-NonRegressionValidation $paragraph $prose
             }
             'blazor-webview2-regression' {
                 $paragraph -match '(?i)\bWebView2\b' -and
