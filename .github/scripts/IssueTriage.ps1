@@ -722,8 +722,18 @@ function Test-RegressionValidation([string]$Paragraph, [string]$FirstBadVersion 
 function Test-ConfirmationParagraph([string]$Paragraph) {
     return -not (Test-Interrogative $Paragraph) -and
         (Test-PositiveValidation $Paragraph) -and
-        $Paragraph -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
+        -not (Test-TentativeEvidence $Paragraph) -and
         -not (Test-NegativeValidation $Paragraph)
+}
+
+function Test-SimulatorReproduction([string]$Paragraph) {
+    if (-not (Test-ConfirmationParagraph $Paragraph)) { return $false }
+    $separator = '(?i)[;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet)\b'
+    $gap = '(?:(?!\b(?:not|never|cannot)\b).){0,80}'
+    return @($Paragraph -split $separator | Where-Object {
+        (Test-PositiveValidation $_) -and
+        $_ -match "(?i)\b(?:reproduced|reproducible|can reproduce)\b$gap\bsimulator\b"
+    }).Count -gt 0
 }
 
 function Get-Confirmation($Evidence, [switch]$RequireRegression, [string]$FirstBadVersion) {
@@ -1049,9 +1059,16 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                 $source = $sourceMap[$_.source]
                 $recent = $lastRequest.Count -eq 0 -or
                     ($source.kind -eq 'comment' -and (Get-SupersessionTime $source) -ge $lastRequest[0].createdAt)
+                $prose = Get-Prose $source.body
+                $quote = $_.quote
+                $paragraphs = @($prose -split '\r?\n[ \t]*\r?\n' |
+                    Where-Object { $_.Contains($quote, [StringComparison]::Ordinal) })
                 $recent -and (
                     ($label -eq 'has-workaround' -and $_.quote -match "(?i)\bworkarounds?\b.{0,80}\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b") -or
-                    ($label -eq 'repro:device-only' -and $_.quote -match '(?i)\b(reproduced|reproducible)\b.{0,80}\bsimulator\b')
+                    ($label -eq 'repro:device-only' -and $paragraphs.Count -eq 1 -and
+                        (Test-SimulatorReproduction $quote) -and
+                        (Test-SimulatorReproduction $paragraphs[0]) -and
+                        -not (Test-NegativeValidation $prose))
                 )
             }).Count -gt 0
         if (-not ($confirmedTransition -or $areaCorrection -or $contradictedFacet)) {

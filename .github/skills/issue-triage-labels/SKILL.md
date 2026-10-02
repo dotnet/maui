@@ -36,7 +36,9 @@ substitutes for current original issue/comment evidence.
   explanation, successful build, or AI-generated failing test candidate is not
   confirmation. Do not mistake "validated, but not reproduced" for reproduction.
   Tentative expectations such as "should be reproducible" are not observed
-  outcomes and cannot support confirmation.
+  outcomes and cannot support confirmation. The shared tentative-evidence gate
+  also rejects "I think I reproduced this issue" and "apparently reproduced";
+  the same gate applies to confirmation-based removal transitions.
   Conditional/hypothetical outcomes such as "If the issue is reproduced on
   Android, collect logs" are not observations either. Do not hide the condition
   by quoting only its affirmative-looking fragment. Cite a clear completed
@@ -187,6 +189,12 @@ policy transition. Explain each removal separately:
   Do not delete unrelated secondary areas.
 - Affirmative transition evidence retains its original creation time; cosmetic
   edits cannot override a newer information/reproduction request.
+- Removing `repro:device-only` through simulator evidence requires an affirmative,
+  unconditional, non-tentative reproduction of the reported issue on a simulator.
+  Questions, unsuccessful attempts and device-only results followed by a negated
+  simulator clause are not contradictions. Both the quote and its enclosing
+  paragraph must qualify; contrary validation elsewhere in the cited comment
+  vetoes the transition.
 - Clear `needs-area-label` when this proposal adds a validated area using current
   issue/comment evidence. Initial report evidence can predate the placeholder;
   unrelated existing area membership alone does not justify this transition.

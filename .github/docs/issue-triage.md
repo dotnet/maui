@@ -95,7 +95,9 @@ for context hashing and retry reconciliation only. Generated report reasons
 cannot become fresh facts after the original evidence is edited or removed.
 Suggestions and tentative candidates are not approvals.
 Tentative validation such as "should be reproducible on Android" is not an
-observed reproduction and cannot support confirmation labels.
+observed reproduction and cannot support confirmation labels. Confirmation uses
+the shared tentative-evidence gate, including "I think I reproduced this issue"
+and "apparently reproduced", for additions and confirmation-based removals.
 Conditional outcomes such as "If the issue is reproduced on Android, collect
 logs" cannot supply observed confirmation, even when the citation omits the
 conditional prefix. The shared positive-evidence predicate applies to confirmation
@@ -208,6 +210,11 @@ Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
 root-cause area, disputed-workaround and device-to-simulator transitions. At most
 one dominant area is removed and two independently supported areas added.
+Device-to-simulator transitions require affirmative, unconditional, non-tentative
+reproduction of the reported issue on a simulator in both the quote and enclosing
+paragraph. Questions and unsuccessful attempts are not contradictory evidence;
+a device reproduction followed by "but not on the simulator" is not sufficient.
+Contrary validation elsewhere in the cited comment also vetoes this transition.
 Root-cause area corrections need a maintainer comment created after the latest
 assignment of the removed area, or a current explicit removal decision.
 Cosmetic edits cannot revive an older correction after a newer assignment.
