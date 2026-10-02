@@ -34,6 +34,10 @@ The patch is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
+iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
+`repro:device-only` still need physical-device validation; a simulator pass or an
+unsupported generated candidate cannot rule out the reported behavior.
+
 ## Deployment and isolation
 
 1. Merge the trusted scripts, trigger, and pipeline YAML to `main`. Create a
