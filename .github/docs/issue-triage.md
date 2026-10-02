@@ -67,7 +67,10 @@ outcome or version recommendation, not merely an authorized comment author.
 Try-latest recommendations must identify a concrete MAUI version.
 An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
-Expected-behavior dispositions must be affirmative, not tentative or questions.
+Expected-behavior and duplicate dispositions must be affirmative, not tentative
+or questions. Duplicate decisions identify exactly one canonical target via
+"duplicate of #N" or a full same-repository issue/PR URL and cite that exact
+fetched related source; an unrelated fetched reference is not sufficient.
 Newer opposite maintainer decisions or label events supersede earlier approvals;
 an old approval cannot silently undo a later manual removal.
 The same rule applies to confirmation labels: cite a newer positive confirmation
@@ -81,6 +84,9 @@ auxiliaries/adverbs; an unrelated "not a duplicate" clause cannot negate a
 following successful verification. The full cited comment is checked for contrary
 validation, not just the selected paragraph. Mixed validation/retraction comments
 are conservatively withheld until a fresh unambiguous confirmation is supplied.
+Positive reproduction must concern the reported issue/behavior, not merely
+running the sample. Postposed negation of that outcome also vetoes confirmation
+and participates in the later-contrary-evidence scan.
 Contrary comment edits use their last-modified time; immutable label events use
 their creation time. Affirmative support retains its original creation time so a
 cosmetic edit cannot revive an old approval or confirmation after a later
@@ -90,6 +96,10 @@ Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
 root-cause area, disputed-workaround and device-to-simulator transitions. At most
 one dominant area is removed and two independently supported areas added.
+The `needs-area-label` placeholder can be cleared using issue/comment evidence
+from an area addition validated in the same proposal. Current report content can
+predate the initial placeholder event; that transition does not require a newer
+validator comment. Existing area membership alone is not sufficient.
 Priority changes cannot leave conflicting priorities. Preserve unrelated manual
 labels, Policy Service staleness tags, release/automation outcomes, legacy names
 and unknown labels. Uncertain decisions are withheld with an explanation.
@@ -133,10 +143,15 @@ and a 1 MiB context file. Exceeding them fails visibly rather than discarding la
 contradictory evidence. Related issue/PR titles and bodies are fetched; their code,
 archives and nested discussions are not executed or recursively expanded.
 References are extracted outside Markdown code with a full numeric token boundary.
-RGB/RGBA-shaped shorthand such as `#333333` requires explicit issue/PR wording;
+Three/four/six/eight-digit color-shaped shorthand, including `#3333` and `#333333`,
+requires explicit issue/PR wording;
 ordinary `Fixes`, `Closes`, `Resolves`, `See` and related-reference wording also
 qualifies, including three-digit issue numbers. A full same-repository issue URL
 is unambiguous.
+Nonexistent/inaccessible referenced items produce a warning and no related
+evidence instead of aborting otherwise valid triage. A missing canonical source
+still cannot authorize a duplicate disposition. Authentication, rate-limit and
+server failures retain the normal retry/failure behavior rather than being skipped.
 Markdown handling uses the parser already bundled with PowerShell's
 `ConvertFrom-Markdown`; no additional package or runtime is installed.
 

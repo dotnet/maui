@@ -30,6 +30,8 @@ Quote exact source text supporting each proposed change.
   confirmation. Do not mistake "validated, but not reproduced" for reproduction.
   Tentative expectations such as "should be reproducible" are not observed
   outcomes and cannot support confirmation.
+  Reproduction must concern the reported issue/behavior, not merely running its
+  sample. A postposed "but not the reported behavior" negates confirmation too.
 - `potential-regression` records a plausible reported regression, not proof.
   `i/regression` requires confirmation. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
@@ -68,7 +70,7 @@ Quote exact source text supporting each proposed change.
 | `s/triaged`, `s/needs-verification`, `investigate` | Distinguish completed evidence-based review, pending empirical validation, and unresolved technical investigation. Triaged needs an affirmative authorized statement that the issue/reproduction was reviewed or triage completed. Do not mark verified merely because this command completed. |
 | `s/needs-info`, `s/needs-repro` | Ask for specific missing information or a usable reproduction. Adequate inline code or an attachment can be sufficient: an empty repository-link field alone is not grounds for needs-repro. State a concrete question in the decision's `request`. These labels trigger policy replies and potential automatic closure. |
 | `s/try-latest-version`, `s/no-repro` | Cite an authorized instruction to try/update/retest a specific relevant newer published MAUI version, or explicit unsuccessful reproduction for no-repro. A timeout, inaccessible sample, or infrastructure failure is not no-repro. |
-| `s/duplicate 2️⃣`, `s/not-a-bug` | Require a maintainer disposition; duplicates also require a fetched canonical related issue with matching behavior/root cause. Similarity scores or a reporter's speculation alone are insufficient. Not-a-bug requires an affirmative technical explanation, not a tentative expected-behavior suggestion or question. Do not close the issue. |
+| `s/duplicate 2️⃣`, `s/not-a-bug` | Require an affirmative, non-question maintainer disposition. A duplicate decision must identify exactly one canonical target using "duplicate of #N" or a full same-repository issue/PR URL, and cite that exact fetched related source with matching behavior/root cause. Another fetched reference is insufficient. Similarity scores or speculation are not dispositions. Not-a-bug requires an affirmative technical explanation. Do not close the issue. |
 | `perf/*` | Identify runtime/startup/app-size/trimming problems or retained-object memory leaks. A crash is not automatically a leak. |
 | `version/*` | Apply relevant explicit OS/device version qualification, not every SDK version in logs. |
 | `partner`, `partner/*`, `external` | Require established ownership or actual partner collaboration supported by an authorized source. Do not infer identity from a name or equate platform/android with partner/android. |
@@ -90,6 +92,9 @@ policy transition. Explain each removal separately:
   not-regression disposition.
 - Correct the dominant area only with an authoritative root-cause explanation
   and a supported replacement. Do not delete unrelated secondary areas.
+- Clear `needs-area-label` when this proposal adds a validated area using current
+  issue/comment evidence. Initial report evidence can predate the placeholder;
+  unrelated existing area membership alone does not justify this transition.
 - Remove a workaround/device-only tag when later direct evidence contradicts it.
 - Change priority/approval/ownership/release decisions only with explicit
   maintainer authority, never by inferring a new business decision.

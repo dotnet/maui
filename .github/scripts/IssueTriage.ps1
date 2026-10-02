@@ -227,8 +227,8 @@ function Get-Snapshot {
         $referenceText = Get-MarkdownText $source.body -IncludeQuotes
         foreach ($match in [regex]::Matches($referenceText,
             '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)([1-9][0-9]{0,8})(?![\w])')) {
-            # Ambiguous RGB/RGBA-shaped shorthand needs an explicit issue/PR context.
-            if ($match.Value.StartsWith('#') -and $match.Groups[1].Length -in @(3, 6, 8) -and
+            # Color-shaped shorthand needs an explicit issue/PR context.
+            if ($match.Value.StartsWith('#') -and $match.Groups[1].Length -in @(3, 4, 6, 8) -and
                 $referenceText.Substring(0, $match.Index) -notmatch '(?i)\b(?:issue|PR|pull request|duplicate of|fix(?:es|ed)?|clos(?:e|es|ed)|resolv(?:e|es|ed)|see(?: also)?|refs?|references?|related to)\s+$') {
                 continue
             }
@@ -238,7 +238,11 @@ function Get-Snapshot {
     }
     if ($references.Count -gt 8) { throw 'More than eight related issue references; refusing to omit potentially contrary context.' }
     foreach ($number in @($references | Sort-Object)) {
-        $related = Get-Api "repos/$Repository/issues/$number"
+        $related = Get-Api "repos/$Repository/issues/$number" -AllowNotFound
+        if ($null -eq $related) {
+            Write-Warning "Referenced issue/PR #$number was not found or is inaccessible; it cannot supply related evidence."
+            continue
+        }
         $sources.Add([ordered]@{
             id = "related:$number"; kind = 'related'; author = $related.user.login
             isMaintainer = $false; isValidator = $false; createdAt = Get-Timestamp $related.created_at
@@ -351,20 +355,27 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
         })
         if ($superseded.Count -gt 0) { continue }
         $withoutLabel = [regex]::Replace($quote, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        if ($Action -eq 'add' -and $Label -in @('s/not-a-bug', 's/duplicate 2️⃣') -and
+            ($quote.Contains('?') -or
+                $quote -match '(?i)\b(is|are|was|were|does|do|did|has|have)\s+(this|it|that|the (?:issue|report|behavior))\b')) { continue }
         if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
             $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
-            if ($quote.Contains('?')) { continue }
         }
         if ($withoutLabel -match "(?i)\b(not|no|don't|do not|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { continue }
+        if ($Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
+            $canonical = @([regex]::Matches($quote,
+                '(?i)\bduplicate of\s+(?:#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
+                ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
+            if ($canonical.Count -ne 1 -or -not $sourceMap.ContainsKey($canonical[0]) -or
+                @($Evidence | Where-Object { $_.source -ceq $canonical[0] }).Count -eq 0) { continue }
+            return $true
+        }
         if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
             $quote -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
             $quote -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
         $verbs = if ($Action -eq 'add') { 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized' }
             else { 'remove|drop|clear|withdraw|revoke' }
         if ($quote -match "(?i)\b(?:$verbs)\b.{0,80}$labelText") { return $true }
-        if ($Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣' -and
-            $quote -match '(?i)\bduplicate of\s+#([1-9][0-9]*)' -and
-            $sourceMap.ContainsKey("related:$($Matches[1])")) { return $true }
     }
     return $false
 }
@@ -374,10 +385,23 @@ function Test-NegativeValidation([string]$Prose) {
     $modifiers = '(?:(?:be|been|being|able to|possible to|yet|ever|still|currently|at all|successfully|reliably|consistently|actually|fully|independently|definitively|personally|locally|readily|easily|immediately)\s+){0,4}'
     $verbs = '(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
     $pattern = "(?i)\b$negative\s+$modifiers$verbs\b"
+    $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
+    $postposed = "(?i)\b$verbs\b(?:(?![;!?\r\n]|\.(?:\s|$)).){0,100}\b$negative\s+$outcome\b"
     foreach ($paragraph in ($Prose -split '\r?\n[ \t]*\r?\n')) {
-        if ($paragraph -match $pattern) { return $true }
+        if ($paragraph -match $pattern -or $paragraph -match $postposed) { return $true }
     }
     return $false
+}
+
+function Test-PositiveValidation([string]$Paragraph) {
+    $outcome = '(?:reported behavior|same behavior|issue|bug|regression|problem)'
+    $reproduction = '(?:reproduced|reproducible)'
+    $clause = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b).){0,50}'
+    if ($Paragraph -match "(?i)\b$outcome\b$clause\b$reproduction\b|\b$reproduction\b$clause\b$outcome\b|\b(?:confirmed|verified)\b$clause\b$outcome\b|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause\b$outcome\b") {
+        return $true
+    }
+    return $Paragraph -match "(?i)^\s*(?:(?:this|the|reported|same)\s+)?$outcome\b" -and
+        $Paragraph -match "(?i)\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b"
 }
 
 function Get-Confirmation($Evidence) {
@@ -391,7 +415,7 @@ function Get-Confirmation($Evidence) {
         $prose.Contains($reference.quote, [StringComparison]::Ordinal) -and
         $prose -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
-        $paragraphs[0] -match '(?i)\b(reproduced|reproducible)\b|\b(confirmed|verified)\b.{0,50}\b(reported behavior|same behavior|bug on|issue on|regression on)\b|\btest\b.{0,50}\bcorrectly detect(s|ing)\b' -and
+        (Test-PositiveValidation $paragraphs[0]) -and
         $paragraphs[0] -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
         -not (Test-NegativeValidation $prose)
     })
@@ -534,6 +558,10 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                 $transitionEvidence += @(Get-Confirmation $Decision.evidence)
             } elseif ($policy.technicalAssessment -ccontains $replacementLabel) {
                 $transitionEvidence += @(Get-TechnicalAssessment $Decision.evidence $replacementLabel)
+            } elseif ((Get-Category $replacementLabel) -ceq 'content') {
+                $transitionEvidence += @($proposal.additions | Where-Object { $_.label -ceq $replacementLabel } |
+                    ForEach-Object { $_.evidence } |
+                    Where-Object { $sourceMap[$_.source].kind -in @('issue', 'comment') })
             } else {
                 $transitionEvidence += $validatorEvidence
             }
@@ -542,7 +570,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         $lastRequest = @($Snapshot.sources | Where-Object {
             $_.kind -ceq 'labeled' -and $_.body -ceq "labeled: $label"
         } | Sort-Object createdAt | Select-Object -Last 1)
-        if ($confirmedTransition -and $lastRequest.Count -gt 0 -and
+        if ($confirmedTransition -and $label -cne 'needs-area-label' -and $lastRequest.Count -gt 0 -and
             @($transitionEvidence | Where-Object {
                 $source = $sourceMap[$_.source]
                 (Get-SupersessionTime $source) -ge $lastRequest[0].createdAt
