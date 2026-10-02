@@ -98,6 +98,8 @@ Tentative validation such as "should be reproducible on Android" is not an
 observed reproduction and cannot support confirmation labels. Confirmation uses
 the shared tentative-evidence gate, including "I think I reproduced this issue"
 and "apparently reproduced", for additions and confirmation-based removals.
+Explicit "unsure" wording also withholds confirmation and maintainer approvals;
+quoting an affirmative-looking fragment cannot hide the enclosing uncertainty.
 Conditional outcomes such as "If the issue is reproduced on Android, collect
 logs" cannot supply observed confirmation, even when the citation omits the
 conditional prefix. The shared positive-evidence predicate applies to confirmation
@@ -124,6 +126,10 @@ dispositions.
 Technical-assessment questions are rejected. No-repro is withheld when the cited
 comment reports resource access, build/download, authentication/network failure or
 timeout; not-regression cannot use a negated same-behavior comparison.
+Factual "could not" and "couldn't" reproduction/replication failures share the
+same narrow normalization before tentative classification, including straight
+and curly apostrophes. The original outcome, target, resource-failure,
+conditional, uncertainty and mixed-result checks remain required.
 All technical assessments share chronology checks for additions and removal
 transitions. Later label removals, including automated Policy Service removals,
 contrary state labels, authorized contrary outcomes/retractions and explicit

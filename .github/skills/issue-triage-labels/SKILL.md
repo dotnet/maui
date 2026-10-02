@@ -51,6 +51,8 @@ substitutes for current original issue/comment evidence.
   outcomes and cannot support confirmation. The shared tentative-evidence gate
   also rejects "I think I reproduced this issue" and "apparently reproduced";
   the same gate applies to confirmation-based removal transitions.
+  Explicit uncertainty such as "I am unsure" also withholds confirmation and
+  maintainer approvals; an affirmative-looking fragment cannot hide it.
   Conditional/hypothetical outcomes such as "If the issue is reproduced on
   Android, collect logs" are not observations either. Do not hide the condition
   by quoting only its affirmative-looking fragment. Cite a clear completed
@@ -139,7 +141,10 @@ substitutes for current original issue/comment evidence.
   Completed review and no-repro assessments must be unconditional and
   non-tentative. No-repro needs an observed unsuccessful outcome concerning
   this reported issue, not an instruction to avoid reproduction. Factual
-  "could not reproduce this issue" is an outcome, not speculation.
+  "could not reproduce this issue" and "couldn't reproduce this issue" are
+  outcomes, not speculation. The contraction accepts straight/curly apostrophes.
+  Only factual failed reproduction/replication wording is normalized for the
+  tentative check; questions, conditions and other uncertainty remain rejected.
   Mixed failed/successful validation is withheld, including an initial failure
   followed by reproduction in the same paragraph. Positive outcomes elsewhere
   in the cited comment also veto no-repro; do not hide them by quote selection.

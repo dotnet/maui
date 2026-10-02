@@ -445,7 +445,7 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
 
 function Test-TentativeEvidence([string]$Paragraph) {
     $candidate = [regex]::Replace($Paragraph, '(?i)\bas\s+expected\b', '')
-    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibl(?:e|y)|probabl(?:e|y)|likely|potential(?:ly)?|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|look(?:s|ed)?\s+like|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|uncertain(?:ty)?|tentative(?:ly)?)\b'
+    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibl(?:e|y)|probabl(?:e|y)|likely|potential(?:ly)?|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|look(?:s|ed)?\s+like|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|unsure|uncertain(?:ty)?|tentative(?:ly)?)\b'
 }
 
 function Get-LabelPattern([string]$Label) {
@@ -890,7 +890,7 @@ function Test-NoReproductionParagraph([string]$Paragraph, [string]$ReferenceCont
     if (-not $ReferenceContext) { $ReferenceContext = $Paragraph }
     $outcome = Get-ValidationOutcomePattern $ReferenceContext
     $modifiers = '(?:(?:successfully|reliably|consistently|actually|locally|independently)\s+){0,3}'
-    $pastNegative = "\bcould\s+not\s+(?=(?:be\s+)?$modifiers(?:reproduce|reproduced)\b)"
+    $pastNegative = "\b(?:could\s+not|couldn['\u2019]t)\s+(?=(?:be\s+)?$modifiers(?:reproduce|replicate)d?\b)"
     $candidate = [regex]::Replace($Paragraph, "(?i)$pastNegative", 'not ')
     if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
         (Test-TentativeEvidence $candidate) -or (Test-PositiveValidation $Paragraph $ReferenceContext) -or
