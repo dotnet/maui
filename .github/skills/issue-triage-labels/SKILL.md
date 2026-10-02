@@ -74,6 +74,8 @@ substitutes for current original issue/comment evidence.
   their outcomes nor the boundary. `regressed-in-*` records the demonstrated
   first bad version, not every failing version or the last good version. Distinguish
   MAUI regressions from OS changes and Xamarin.Forms migration differences.
+  "Regressed from" and bare "from" are not first-bad boundaries. Do not bridge
+  a failing outcome across "regressed from" to misclassify its baseline as bad.
   Boundary evidence includes a tested version before the first bad version;
   generic build success does not establish earlier working behavior.
   Its exact first-bad-version citation must come from authorized regression evidence.

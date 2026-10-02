@@ -220,6 +220,8 @@ later named version. Lists of tested versions do not establish their outcomes.
 The first-bad citation must include both results and the explicit boundary
 matching that label, with no earlier contradictory failing outcome; merely
 asserting "regressed from" does not establish earlier passing behavior.
+Neither "regressed from" nor bare "from" establishes the first bad version;
+outcome/version binding cannot bridge a "regressed from" baseline as failure.
 The full enclosing cited paragraph is checked for that boundary; a selected
 quote cannot hide an earlier failing version.
 Preview and RC ordering is recognized; generic build success is insufficient.

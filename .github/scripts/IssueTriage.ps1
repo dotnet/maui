@@ -752,7 +752,7 @@ function Test-RegressionValidation([string]$Paragraph, [string]$FirstBadVersion 
     if ((Test-ConditionalEvidence $Paragraph) -or (Test-TentativeEvidence $Paragraph)) { return $false }
     $framework = '(?:\.NET(?:\s+MAUI)?|MAUI)'
     $version = '\d+(?:\.\d+){0,3}(?:[- .]*(?:preview|rc)[- .]*\d+(?:\.\d+)*)?(?![\w-]|\.(?=\w))'
-    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|not|never|cannot|didn.t|isn.t|wasn.t|MAUI)\b|(?<![\w])\.NET\b|\b\d).){0,80}'
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|not|never|cannot|didn.t|isn.t|wasn.t|regressed\s+from|MAUI)\b|(?<![\w])\.NET\b|\b\d).){0,80}'
     $target = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}'
     $working = "\b$target(?:behavior|scenario|feature)\s+(?:(?:was|is|has(?: been)?)\s+)?(?:worked|working|works|passed)\b"
     $namedVersion = "(?<![\w])$framework\s+(?:versions?\s+)?(?<version>$version)"
@@ -764,7 +764,7 @@ function Test-RegressionValidation([string]$Paragraph, [string]$FirstBadVersion 
     $outcome = "$target(?:behavior|issue|bug|regression|problem)"
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $failing = "(?:\b$outcome\b$gap\b(?:$reproduction|fails|failed)\b|\b$reproduction\b$gap\b$outcome\b|\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b)"
-    $boundary = "\b(?:from|since|introduced(?: in| with)?|starting(?: in| with)?|first bad(?: version)?(?: is|:)?|regressed (?:in|since|from))\s+(?:$framework\s+(?:version\s+)?)?(?<version>$version)"
+    $boundary = "\b(?:since|introduced(?: in| with)?|starting(?: in| with)?|first bad(?: version)?(?: is|:)?|regressed (?:in|since))\s+(?:$framework\s+(?:version\s+)?)?(?<version>$version)"
     $failingVersions = @([regex]::Matches($Paragraph,
         "(?i)$failing$gap(?:$namedVersion|$boundary)|$namedVersion$gap$failing") |
         ForEach-Object { Get-FrameworkVersion $_.Groups['version'].Value } |
