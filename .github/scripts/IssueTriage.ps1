@@ -285,7 +285,7 @@ function Assert-Text($Text, [int]$Min = 1, [int]$Max = 800) {
     }
 }
 
-function Get-MarkdownText([string]$Body, [switch]$IncludeQuotes) {
+function Get-MarkdownText([string]$Body, [switch]$IncludeQuotes, [switch]$ExcludeLinkMetadata) {
     $document = [Markdig.Markdown]::Parse($Body, $markdownPipeline, $null)
     $ranges = [Collections.Generic.List[object]]::new()
     foreach ($node in [Markdig.Syntax.MarkdownObjectExtensions]::Descendants($document)) {
@@ -293,8 +293,18 @@ function Get-MarkdownText([string]$Body, [switch]$IncludeQuotes) {
             $node -is [Markdig.Syntax.Inlines.CodeInline] -or
             $node -is [Markdig.Syntax.HtmlBlock] -or
             $node -is [Markdig.Syntax.Inlines.HtmlInline] -or
-            (-not $IncludeQuotes -and $node -is [Markdig.Syntax.QuoteBlock])) {
+            (-not $IncludeQuotes -and $node -is [Markdig.Syntax.QuoteBlock]) -or
+            ($ExcludeLinkMetadata -and (
+                $node -is [Markdig.Syntax.LinkReferenceDefinition] -or
+                $node -is [Markdig.Syntax.LinkReferenceDefinitionGroup]))) {
             $ranges.Add(@{ start = $node.Span.Start; end = $node.Span.End })
+        } elseif ($ExcludeLinkMetadata -and $node -is [Markdig.Syntax.Inlines.LinkInline]) {
+            if ($node.IsImage -or $null -eq $node.FirstChild -or $null -eq $node.LastChild) {
+                $ranges.Add(@{ start = $node.Span.Start; end = $node.Span.End })
+            } else {
+                $ranges.Add(@{ start = $node.Span.Start; end = $node.FirstChild.Span.Start - 1 })
+                $ranges.Add(@{ start = $node.LastChild.Span.End + 1; end = $node.Span.End })
+            }
         }
     }
     foreach ($match in [regex]::Matches($Body,
@@ -315,7 +325,7 @@ function Get-MarkdownText([string]$Body, [switch]$IncludeQuotes) {
 }
 
 function Get-Prose([string]$Body) {
-    return Get-MarkdownText $Body
+    return Get-MarkdownText $Body -ExcludeLinkMetadata
 }
 
 function Test-Decision($Evidence, [string]$Label, [string]$Action) {
@@ -341,10 +351,14 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
         })
         if ($superseded.Count -gt 0) { continue }
         $withoutLabel = [regex]::Replace($quote, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
+            $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
+            if ($quote.Contains('?')) { continue }
+        }
+        if ($withoutLabel -match "(?i)\b(not|no|don't|do not|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { continue }
         if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
             $quote -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
             $quote -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
-        if ($withoutLabel -match "(?i)\b(not|no|don't|do not|should|could|maybe|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { continue }
         $verbs = if ($Action -eq 'add') { 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized' }
             else { 'remove|drop|clear|withdraw|revoke' }
         if ($quote -match "(?i)\b(?:$verbs)\b.{0,80}$labelText") { return $true }
@@ -356,7 +370,10 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
 }
 
 function Test-NegativeValidation([string]$Prose) {
-    $pattern = "(?is)\b(not|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)\b.{0,30}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b"
+    $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
+    $modifiers = '(?:(?:be|been|being|able to|possible to|yet|ever|still|currently|at all|successfully|reliably|consistently|actually|fully|independently|definitively|personally|locally|readily|easily|immediately)\s+){0,4}'
+    $verbs = '(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
+    $pattern = "(?i)\b$negative\s+$modifiers$verbs\b"
     foreach ($paragraph in ($Prose -split '\r?\n[ \t]*\r?\n')) {
         if ($paragraph -match $pattern) { return $true }
     }
@@ -367,15 +384,16 @@ function Get-Confirmation($Evidence) {
     return @($Evidence | Where-Object {
         $reference = $_
         $source = $sourceMap[$reference.source]
-        $paragraphs = @((Get-Prose $source.body) -split '\r?\n[ \t]*\r?\n' |
+        $prose = Get-Prose $source.body
+        $paragraphs = @($prose -split '\r?\n[ \t]*\r?\n' |
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         $source.isValidator -and $source.kind -ceq 'comment' -and
-        (Get-Prose $source.body).Contains($reference.quote, [StringComparison]::Ordinal) -and
-        (Get-Prose $source.body) -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
+        $prose.Contains($reference.quote, [StringComparison]::Ordinal) -and
+        $prose -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
         $paragraphs[0] -match '(?i)\b(reproduced|reproducible)\b|\b(confirmed|verified)\b.{0,50}\b(reported behavior|same behavior|bug on|issue on|regression on)\b|\btest\b.{0,50}\bcorrectly detect(s|ing)\b' -and
         $paragraphs[0] -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
-        -not (Test-NegativeValidation $paragraphs[0])
+        -not (Test-NegativeValidation $prose)
     })
 }
 

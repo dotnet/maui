@@ -46,12 +46,17 @@ Quote exact source text supporting each proposed change.
   newer positive confirmation or a later explicit maintainer re-add decision.
 - Later unsuccessful reproduction, confirmation, verification or validation
   vetoes older positive evidence. Infrastructure-only failures are not no-repro.
+  Contrary validation elsewhere in the cited comment also vetoes confirmation;
+  quote selection cannot hide a retraction. An unrelated negation, such as
+  "not a duplicate", does not negate a following positive verification.
 - Edited contrary comments use their last-modified time. A cosmetic edit to an
   older positive comment cannot revive it after a newer contrary decision;
   supply a fresh confirmation or explicit maintainer decision instead.
 - Quote unquoted prose, not lazy blockquote continuations, indented/fenced code
-  or inline code. Review/no-repro/version recommendations need the corresponding
-  technical assessment, not merely a comment from an authorized author.
+  or inline code, link destinations/titles/reference definitions or image metadata.
+  Only a link's visible prose can support a decision.
+  Review/no-repro/version recommendations need the corresponding technical
+  assessment, not merely a comment from an authorized author.
 
 ## Label selection
 
@@ -63,7 +68,7 @@ Quote exact source text supporting each proposed change.
 | `s/triaged`, `s/needs-verification`, `investigate` | Distinguish completed evidence-based review, pending empirical validation, and unresolved technical investigation. Triaged needs an affirmative authorized statement that the issue/reproduction was reviewed or triage completed. Do not mark verified merely because this command completed. |
 | `s/needs-info`, `s/needs-repro` | Ask for specific missing information or a usable reproduction. Adequate inline code or an attachment can be sufficient: an empty repository-link field alone is not grounds for needs-repro. State a concrete question in the decision's `request`. These labels trigger policy replies and potential automatic closure. |
 | `s/try-latest-version`, `s/no-repro` | Cite an authorized instruction to try/update/retest a specific relevant newer published MAUI version, or explicit unsuccessful reproduction for no-repro. A timeout, inaccessible sample, or infrastructure failure is not no-repro. |
-| `s/duplicate 2️⃣`, `s/not-a-bug` | Require a maintainer disposition; duplicates also require a fetched canonical related issue with matching behavior/root cause. Similarity scores or a reporter's speculation alone are insufficient. Not-a-bug requires a technical explanation. Do not close the issue. |
+| `s/duplicate 2️⃣`, `s/not-a-bug` | Require a maintainer disposition; duplicates also require a fetched canonical related issue with matching behavior/root cause. Similarity scores or a reporter's speculation alone are insufficient. Not-a-bug requires an affirmative technical explanation, not a tentative expected-behavior suggestion or question. Do not close the issue. |
 | `perf/*` | Identify runtime/startup/app-size/trimming problems or retained-object memory leaks. A crash is not automatically a leak. |
 | `version/*` | Apply relevant explicit OS/device version qualification, not every SDK version in logs. |
 | `partner`, `partner/*`, `external` | Require established ownership or actual partner collaboration supported by an authorized source. Do not infer identity from a name or equate platform/android with partner/android. |

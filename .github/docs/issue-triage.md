@@ -56,6 +56,9 @@ Exact label token boundaries apply to approvals and superseding decisions:
 `Apply partner/syncfusion` does not also approve `partner`.
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
+Link destinations, titles, reference definitions and image metadata cannot
+authorize decisions; link text remains visible prose. Reference intake separately
+retains link targets so canonical same-repository issue links are still fetched.
 Suggestions and tentative candidates are not approvals.
 Tentative validation such as "should be reproducible on Android" is not an
 observed reproduction and cannot support confirmation labels.
@@ -64,6 +67,7 @@ outcome or version recommendation, not merely an authorized comment author.
 Try-latest recommendations must identify a concrete MAUI version.
 An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
+Expected-behavior dispositions must be affirmative, not tentative or questions.
 Newer opposite maintainer decisions or label events supersede earlier approvals;
 an old approval cannot silently undo a later manual removal.
 The same rule applies to confirmation labels: cite a newer positive confirmation
@@ -72,6 +76,11 @@ The confirmation gate and later-contrary-evidence veto share unsuccessful
 reproduce/confirm/verify/validate detection. The veto withholds confirmation;
 it does not turn an unsuccessful validation or infrastructure failure into
 `s/no-repro`.
+Negation must grammatically modify a validation verb, with bounded intervening
+auxiliaries/adverbs; an unrelated "not a duplicate" clause cannot negate a
+following successful verification. The full cited comment is checked for contrary
+validation, not just the selected paragraph. Mixed validation/retraction comments
+are conservatively withheld until a fresh unambiguous confirmation is supplied.
 Contrary comment edits use their last-modified time; immutable label events use
 their creation time. Affirmative support retains its original creation time so a
 cosmetic edit cannot revive an old approval or confirmation after a later
