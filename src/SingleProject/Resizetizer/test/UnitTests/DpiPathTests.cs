@@ -44,14 +44,94 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Theory]
-			[InlineData("ANDROID123")]
-			[InlineData("Cars")]
-			[InlineData("123")]
-			public void ReturnsNullOnInvalidPlatform(string platform)
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void ReturnsFallbackForUnknownPlatform(string platform)
 			{
-				var paths = DpiPath.GetOriginal(platform);
+				var path = DpiPath.GetOriginal(platform);
 
-				Assert.Null(paths);
+				Assert.Equal("", path.Path);
+				Assert.Equal(1.0m, path.Scale);
+			}
+
+			[Fact]
+			public void ReturnsFallbackForNullPlatform()
+			{
+				var path = DpiPath.GetOriginal(null!);
+
+				Assert.Equal("", path.Path);
+				Assert.Equal(1.0m, path.Scale);
+			}
+		}
+
+		public class GetDpis
+		{
+			[Theory]
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void ReturnsGenericDesktopFallback(string platform)
+			{
+				var paths = DpiPath.GetDpis(platform);
+
+				Assert.Collection(paths,
+					path => Assert.Equal(1.0m, path.Scale),
+					path =>
+					{
+						Assert.Equal(2.0m, path.Scale);
+						Assert.Equal("@2x", path.ScaleSuffix);
+					});
+			}
+
+			[Fact]
+			public void ReturnsGenericDesktopFallbackForNullPlatform()
+			{
+				var paths = DpiPath.GetDpis(null!);
+
+				Assert.Collection(paths,
+					path => Assert.Equal(1.0m, path.Scale),
+					path =>
+					{
+						Assert.Equal(2.0m, path.Scale);
+						Assert.Equal("@2x", path.ScaleSuffix);
+					});
+			}
+		}
+
+		public class GetAppIconDpis
+		{
+			[Theory]
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void ReturnsGenericDesktopFallback(string platform)
+			{
+				var paths = DpiPath.GetAppIconDpis(platform, "appicon");
+
+				Assert.Collection(paths,
+					path => Assert.Equal(16, path.Size!.Value.Width),
+					path => Assert.Equal(32, path.Size!.Value.Width),
+					path => Assert.Equal(48, path.Size!.Value.Width),
+					path => Assert.Equal(128, path.Size!.Value.Width),
+					path => Assert.Equal(256, path.Size!.Value.Width),
+					path => Assert.Equal(512, path.Size!.Value.Width),
+					path => Assert.Equal(1024, path.Size!.Value.Width));
+			}
+
+			[Fact]
+			public void ReturnsGenericDesktopFallbackForNullPlatform()
+			{
+				var paths = DpiPath.GetAppIconDpis(null!, "appicon");
+
+				Assert.Collection(paths,
+					path => Assert.Equal(16, path.Size!.Value.Width),
+					path => Assert.Equal(32, path.Size!.Value.Width),
+					path => Assert.Equal(48, path.Size!.Value.Width),
+					path => Assert.Equal(128, path.Size!.Value.Width),
+					path => Assert.Equal(256, path.Size!.Value.Width),
+					path => Assert.Equal(512, path.Size!.Value.Width),
+					path => Assert.Equal(1024, path.Size!.Value.Width));
 			}
 		}
 	}

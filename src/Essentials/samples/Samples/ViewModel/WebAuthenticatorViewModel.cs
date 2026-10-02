@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Authentication;
@@ -10,6 +11,9 @@ namespace Samples.ViewModel
 	public class WebAuthenticatorViewModel : BaseViewModel
 	{
 		const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
+		readonly object cancellationGate = new();
+		CancellationTokenSource authenticationCancellation;
+		string authenticationStatus = "Choose a provider to test browser authentication and callback delivery.";
 
 		public WebAuthenticatorViewModel()
 		{
@@ -17,6 +21,7 @@ namespace Samples.ViewModel
 			GoogleCommand = new Command(async () => await OnAuthenticate("Google"));
 			FacebookCommand = new Command(async () => await OnAuthenticate("Facebook"));
 			AppleCommand = new Command(async () => await OnAuthenticate("Apple"));
+			CancelCommand = new Command(CancelAuthentication);
 		}
 
 		public ICommand MicrosoftCommand { get; }
@@ -27,19 +32,29 @@ namespace Samples.ViewModel
 
 		public ICommand AppleCommand { get; }
 
-		string accessToken = string.Empty;
+		public ICommand CancelCommand { get; }
 
-		public string AuthToken
+		public string AuthenticationStatus
 		{
-			get => accessToken;
-			set => SetProperty(ref accessToken, value);
+			get => authenticationStatus;
+			set => SetProperty(ref authenticationStatus, value);
 		}
 
 		async Task OnAuthenticate(string scheme)
 		{
+			if (IsBusy)
+				return;
+
+			using var cancellation = new CancellationTokenSource();
+			lock (cancellationGate)
+				authenticationCancellation = cancellation;
+
+			IsBusy = true;
+			AuthenticationStatus = "Waiting for browser authentication...";
+
 			try
 			{
-				WebAuthenticatorResult r = null;
+				WebAuthenticatorResult result;
 
 				if (scheme.Equals("Apple", StringComparison.Ordinal)
 					&& DeviceInfo.Platform == DevicePlatform.iOS
@@ -52,37 +67,56 @@ namespace Samples.ViewModel
 						IncludeEmailScope = true,
 						IncludeFullNameScope = true,
 					};
-					r = await AppleSignInAuthenticator.AuthenticateAsync(options);
+					result = await AppleSignInAuthenticator.AuthenticateAsync(options);
+					cancellation.Token.ThrowIfCancellationRequested();
 				}
 				else
 				{
+					// This public broker keeps the sample immediately runnable. It demonstrates
+					// browser launch and callback delivery, not a production OAuth architecture.
 					var authUrl = new Uri(authenticationUrl + scheme);
 					var callbackUrl = new Uri("xamarinessentials://");
 
-					r = await WebAuthenticator.AuthenticateAsync(authUrl, callbackUrl);
+					result = await WebAuthenticator.AuthenticateAsync(authUrl, callbackUrl, cancellation.Token);
 				}
 
-				AuthToken = string.Empty;
-				if (r.Properties.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
-					AuthToken += $"Name: {name}{Environment.NewLine}";
-				if (r.Properties.TryGetValue("email", out var email) && !string.IsNullOrEmpty(email))
-					AuthToken += $"Email: {email}{Environment.NewLine}";
-				AuthToken += r?.AccessToken ?? r?.IdToken;
+				AuthenticationStatus = result is null
+					? "Authentication failed because no callback result was returned."
+					: "Authentication completed. The callback was received; token values are not displayed or logged.";
 			}
 			catch (OperationCanceledException)
 			{
-				Console.WriteLine("Login canceled.");
-
-				AuthToken = string.Empty;
-				await DisplayAlertAsync("Login canceled.");
+				AuthenticationStatus = "Authentication canceled.";
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Failed: {ex.Message}");
-
-				AuthToken = string.Empty;
-				await DisplayAlertAsync($"Failed: {ex.Message}");
+				// Provider responses can contain sensitive values, so log only the exception type.
+				Console.WriteLine($"Web authentication failed ({ex.GetType().Name}).");
+				AuthenticationStatus = "Authentication failed. The public sample service or provider may be unavailable.";
 			}
+			finally
+			{
+				lock (cancellationGate)
+				{
+					if (ReferenceEquals(authenticationCancellation, cancellation))
+						authenticationCancellation = null;
+				}
+
+				IsBusy = false;
+			}
+		}
+
+		void CancelAuthentication()
+		{
+			lock (cancellationGate)
+			{
+				if (authenticationCancellation is null || authenticationCancellation.IsCancellationRequested)
+					return;
+
+				authenticationCancellation.Cancel();
+			}
+
+			AuthenticationStatus = "Canceling authentication...";
 		}
 	}
 }

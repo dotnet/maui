@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			BindingContext = new SelectionSyncModel();
 		}
 
-		void SwitchSourceClicked(object sender, EventArgs e)
+		void SwitchSourceClicked(object? sender, EventArgs e)
 		{
 			var newSource = new List<string> { "Item -1", "Item 0", "Item 1", "Item 3", "Item 4", "Item 5" };
 			CVSwitchSource.ItemsSource = newSource;

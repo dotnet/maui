@@ -46,9 +46,9 @@ namespace Maui.Controls.Sample.Pages
 			IsOpenPicker.Closed -= IsOpenPickerClosed;
 		}
 
-		void OnSelectedIndexChanged(object sender, EventArgs e)
+		void OnSelectedIndexChanged(object? sender, EventArgs e)
 		{
-			string selectedCountry = (string)((Picker)sender).SelectedItem;
+			string selectedCountry = (string)((Picker)sender!).SelectedItem;
 			DisplayAlertAsync("SelectedIndexChanged", selectedCountry, "Ok");
 		}
 
@@ -61,12 +61,12 @@ namespace Maui.Controls.Sample.Pages
 
 		public string[] MorePickerItems { get; } = Enumerable.Range(1, 20).Select(i => $"Item {i}").ToArray();
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			UpdatePickerBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			BackgroundPicker.Background = null;
 		}
@@ -88,19 +88,19 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnClearItemsButtonClicked(object sender, EventArgs e)
+		void OnClearItemsButtonClicked(object? sender, EventArgs e)
 		{
 			DynamicItemsPicker.Items.Clear();
 		}
 
-		void OnAddItemsButtonClicked(object sender, EventArgs e)
+		void OnAddItemsButtonClicked(object? sender, EventArgs e)
 		{
 			DynamicItemsPicker.Items.Add("New Item 1");
 			DynamicItemsPicker.Items.Add("New Item 2");
 			DynamicItemsPicker.Items.Add("New Item 3");
 		}
 
-		void OnReplaceItemsButtonClicked(object sender, EventArgs e)
+		void OnReplaceItemsButtonClicked(object? sender, EventArgs e)
 		{
 			DynamicItemsPicker.Items.Clear();
 
@@ -109,12 +109,12 @@ namespace Maui.Controls.Sample.Pages
 			DynamicItemsPicker.Items.Add("Item Three");
 		}
 
-		void OnSetBindingContextClicked(object sender, EventArgs e)
+		void OnSetBindingContextClicked(object? sender, EventArgs e)
 		{
 			UpdatePickerBindingContext();
 		}
 
-		void OnRemoveBindingContextClicked(object sender, EventArgs e)
+		void OnRemoveBindingContextClicked(object? sender, EventArgs e)
 		{
 			BindingContextLayout.BindingContext = null;
 		}
@@ -134,13 +134,13 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
+		void OnUpdateHorizontalOptionsClicked(object? sender, EventArgs e)
 		{
 			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
 			UpdateIndex(ref _horizontalOptionsIndex);
 		}
 
-		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
+		void OnUpdateVerticalOptionsClicked(object? sender, EventArgs e)
 		{
 			AlignmentPicker.VerticalOptions = GetLayoutOptions(_verticalOptionsIndex);
 			UpdateIndex(ref _verticalOptionsIndex);
@@ -169,12 +169,12 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnOpenClicked(object sender, EventArgs e)
+		void OnOpenClicked(object? sender, EventArgs e)
 		{
 			IsOpenPicker.IsOpen = true;
 		}
 
-		void OnCloseClicked(object sender, EventArgs e)
+		void OnCloseClicked(object? sender, EventArgs e)
 		{
 			IsOpenPicker.IsOpen = false;
 		}

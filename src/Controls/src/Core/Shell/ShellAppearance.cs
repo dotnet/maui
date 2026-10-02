@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty[] s_ingestBrushArray = new[]
 		{
-			Shell.FlyoutBackdropProperty
+			Shell.FlyoutBackdropProperty,
+			Shell.BackgroundProperty
 		};
 
 		static readonly BindableProperty[] s_ingestDoubleArray = new[]
@@ -71,6 +72,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets the backdrop brush for the Shell flyout.</summary>
 		public Brush FlyoutBackdrop => _brushArray[0];
+
+		/// <summary>Gets the background brush of the Shell.</summary>
+		public Brush Background => _brushArray[1];
 		public double FlyoutWidth => _doubleArray[0];
 		public double FlyoutHeight => _doubleArray[1];
 
@@ -98,7 +102,11 @@ namespace Microsoft.Maui.Controls
 				_doubleArray[i] = -1;
 		}
 
-		/// <inheritdoc/>
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
+		/// <summary>Determines whether the specified object is equal to the current <see cref="ShellAppearance"/>.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is ShellAppearance appearance))
@@ -125,7 +133,9 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="object.GetHashCode"/>
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()
 		{
 			var hashCode = -1988429770;

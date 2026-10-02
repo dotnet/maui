@@ -240,4 +240,11 @@
     <value>Event handler '{0}' with correct signature not found in type '{1}'.</value>
     <comment>0 is handler name, 1 is type name</comment>
   </data>
+  <data name="DuplicatePropertyAssignmentTitle" xml:space="preserve">
+    <value>Property set multiple times</value>
+  </data>
+  <data name="DuplicatePropertyAssignmentMessage" xml:space="preserve">
+    <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
+    <comment>0 is a property name (e.g., "Border.Content", "Label.Text")</comment>
+  </data>
 </root>

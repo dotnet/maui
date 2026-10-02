@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnTerminateClicked(object sender, EventArgs e)
+		void OnTerminateClicked(object? sender, EventArgs e)
 		{
 			Application.Current!.Quit();
 		}

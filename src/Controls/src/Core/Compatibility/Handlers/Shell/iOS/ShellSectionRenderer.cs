@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, IDisconnectable
 	{
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> TopViewController;
+#endif
+
 		#region IShellContentRenderer
 
 		public bool IsInMoreTab { get; set; }
@@ -504,7 +509,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_trackers[page] = tracker;
 
-			InsertViewController(ActiveViewControllers().IndexOf(beforeRenderer.ViewController), renderer.ViewController);
+			InsertViewController(NavigationViewControllers().IndexOf(beforeRenderer.ViewController), renderer.ViewController);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSectionController.NavigationRequested subscription is removed in Disconnect before the shell section is released.")]
@@ -624,10 +629,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (viewController != null)
 			{
-				if (viewController == TopViewController)
+				if (viewController == ActiveNavigationController().TopViewController)
 				{
 					e.Animated = false;
 					OnPopRequested(e);
+					return;
 				}
 
 				RemoveViewController(viewController);
@@ -652,6 +658,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				ShellItemRenderer.UpdateTabBarItemBadge(TabBarItem, ShellSection);
 			});
 		}
 
@@ -659,7 +666,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_trackers.TryGetValue(page, out var tracker))
 			{
-				if (!calledFromDispose && tracker.ViewController != null && ActiveViewControllers().Contains(tracker.ViewController))
+				if (!calledFromDispose && tracker.ViewController != null && NavigationViewControllers().Contains(tracker.ViewController))
 				{
 					System.Diagnostics.Debug.Write($"Disposing {_trackers[page].ViewController.GetHashCode()}");
 					RemoveViewController(_trackers[page].ViewController);
@@ -736,7 +743,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
-				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				// UINavigationItem.BackAction requires iOS 16.0+; UIAction.Create requires iOS 14.0+.
+				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				{
+					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				}
 				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else
@@ -774,11 +785,43 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		UINavigationController ActiveNavigationController()
+		{
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				return tabBarController.MoreNavigationController;
+			}
+
+			return this;
+		}
+
+		UIViewController[] NavigationViewControllers()
+		{
+			var navigationController = ActiveNavigationController();
+			if (ReferenceEquals(navigationController, this))
+			{
+				return ActiveViewControllers();
+			}
+
+			return navigationController.ViewControllers;
+		}
+
 		UIViewController[] ActiveViewControllers() =>
 			_pendingViewControllers ?? base.ViewControllers;
 
 		void RemoveViewController(UIViewController viewController)
 		{
+			var navigationController = ActiveNavigationController();
+			if (!ReferenceEquals(navigationController, this))
+			{
+				if (navigationController.ViewControllers.Contains(viewController))
+				{
+					navigationController.ViewControllers = navigationController.ViewControllers.Remove(viewController);
+				}
+
+				return;
+			}
+
 			_pendingViewControllers = _pendingViewControllers ?? base.ViewControllers;
 			if (_pendingViewControllers.Contains(viewController))
 				_pendingViewControllers = _pendingViewControllers.Remove(viewController);
@@ -788,6 +831,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void InsertViewController(int index, UIViewController viewController)
 		{
+			var navigationController = ActiveNavigationController();
+			if (!ReferenceEquals(navigationController, this) && index >= 0)
+			{
+				navigationController.ViewControllers = navigationController.ViewControllers.Insert(index, viewController);
+				return;
+			}
+
 			_pendingViewControllers = _pendingViewControllers ?? base.ViewControllers;
 			_pendingViewControllers = _pendingViewControllers.Insert(index, viewController);
 			ViewControllers = _pendingViewControllers;

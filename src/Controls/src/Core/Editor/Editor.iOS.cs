@@ -3,8 +3,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
-		// TODO: Make this public in .NET 11
-		internal static void MapAutoSize(IEditorHandler handler, Editor editor)
+		/// <summary>
+		/// Maps the <see cref="AutoSize"/> property to the iOS or Mac Catalyst platform view.
+		/// </summary>
+		/// <param name="handler">The handler associated with the editor.</param>
+		/// <param name="editor">The editor whose automatic sizing behavior is being mapped.</param>
+		public static void MapAutoSize(IEditorHandler handler, Editor editor)
 		{
 			if (handler.PlatformView is Microsoft.Maui.Platform.MauiTextView textView)
 			{

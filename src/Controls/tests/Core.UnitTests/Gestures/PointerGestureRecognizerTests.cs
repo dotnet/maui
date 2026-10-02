@@ -15,6 +15,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SendPointerMethodsThrowForNullSender()
+		{
+			var pointer = new PointerGestureRecognizer();
+
+			Assert.Throws<ArgumentNullException>(() => pointer.SendPointerEntered(null, null));
+			Assert.Throws<ArgumentNullException>(() => pointer.SendPointerExited(null, null));
+			Assert.Throws<ArgumentNullException>(() => pointer.SendPointerMoved(null, null));
+			Assert.Throws<ArgumentNullException>(() => pointer.SendPointerPressed(null, null));
+			Assert.Throws<ArgumentNullException>(() => pointer.SendPointerReleased(null, null));
+		}
+
+		[Fact]
 		public void PointerOverVsmGestureIsOnlyPresentWithVsm()
 		{
 			var layout = new VerticalStackLayout();
@@ -365,4 +377,3 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 }
-

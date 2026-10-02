@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				//Edge to Edge enabled for Android API 30+
 				PlatformView.Window.ConfigureTranslucentSystemBars(PlatformView);
+				PlatformView.Window.UpdateStatusBarTheme(PlatformView, VirtualView.StatusBarTheme);
 			}
 			UpdateVirtualViewFrame(platformView);
 		}
@@ -62,6 +63,16 @@ namespace Microsoft.Maui.Handlers
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 		}
 
+		public static void MapStatusBarTheme(IWindowHandler handler, IWindow window)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				handler.PlatformView.Window?.UpdateStatusBarTheme(
+					handler.PlatformView,
+					window.StatusBarTheme);
+			}
+		}
+
 		private protected override void OnConnectHandler(object platformView)
 		{
 			base.OnConnectHandler(platformView);
@@ -76,7 +87,7 @@ namespace Microsoft.Maui.Handlers
 
 			DisconnectHandler(_rootManager);
 
-			if (_rootManager != null)
+			if (_rootManager is not null)
 				_rootManager.RootViewChanged -= OnRootViewChanged;
 
 			// The MauiCoordinatorLayout will automatically unregister from the static registry

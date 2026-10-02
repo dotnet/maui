@@ -143,6 +143,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return new PinchGestureHandler(recognizer);
 			if (recognizer is SwipeGestureRecognizer)
 				return new SwipeGestureHandler(recognizer);
+			if (recognizer is LongPressGestureRecognizer)
+				return new LongPressGestureHandler(recognizer);
 			return Registrar.Registered.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
 		}
 

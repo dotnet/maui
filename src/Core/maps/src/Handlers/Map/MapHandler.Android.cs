@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
@@ -18,9 +19,15 @@ using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
 using Microsoft.Maui.Platform;
+using ABitmap = Android.Graphics.Bitmap;
+using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
+using ACanvas = Android.Graphics.Canvas;
 using ACircle = Android.Gms.Maps.Model.Circle;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using APaint = Android.Graphics.Paint;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
+using ARect = Android.Graphics.Rect;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -33,11 +40,31 @@ namespace Microsoft.Maui.Maps.Handlers
 		MapSpan? _lastMoveToRegion;
 		List<Marker>? _markers;
 		IList? _pins;
+		IList? _elements;
 		List<APolyline>? _polylines;
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
 		Dictionary<string, IMapElement>? _trackedMapElements;
-		HashSet<IMapPin>? _subscribedPins;
+		bool _isClusteringEnabled;
+		List<MapCluster>? _clusters;
+		Dictionary<string, MapCluster>? _clusterMarkers;
+		const int MaxIconCacheSize = 64;
+
+		// Two caches, not one: a ClusterImageVersion bump must not drop the pin icons, and pin
+		// traffic past the capacity must not evict the cluster entries on every pass. The cost is
+		// that a pin and a cluster naming the same image decode twice.
+		readonly IconCache<BitmapDescriptor> _pinIconCache = new(MaxIconCacheSize);
+		readonly IconCache<BitmapDescriptor> _clusterIconCache = new(MaxIconCacheSize);
+		WeakReference<IMap>? _clusterImageOwner;
+		int _clusterImageVersion = int.MinValue;
+
+		CancellationTokenSource? _addPinsCts;
+
+		// Pins subscribed to PropertyChanged; tracked so DisconnectPins can unsubscribe pins already
+		// removed from VirtualView.Pins (the live collection no longer lists them). Uses reference
+		// equality because Pin.Equals/GetHashCode are value-based over mutable properties, which would
+		// otherwise collapse distinct-but-equal pins into a single tracked entry.
+		readonly HashSet<INotifyPropertyChanged> _subscribedPins = new(ReferenceEqualityComparer.Instance);
 
 		public GoogleMap? Map { get; private set; }
 
@@ -58,6 +85,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
+			_addPinsCts?.Cancel();
+			_addPinsCts?.Dispose();
+			_addPinsCts = null;
+
 			DisconnectPins();
 
 			base.DisconnectHandler(platformView);
@@ -79,9 +110,15 @@ namespace Microsoft.Maui.Maps.Handlers
 
 				map.TrafficEnabled = false;
 				map.SetOnCameraMoveListener(null);
+				map.SetOnCameraIdleListener(null);
+				map.SetOnPolygonClickListener(null);
+				map.SetOnCircleClickListener(null);
+				map.SetOnPolylineClickListener(null);
 				map.MarkerClick -= OnMarkerClick;
 				map.InfoWindowClick -= OnInfoWindowClick;
 				map.MapClick -= OnMapClick;
+				map.MapLongClick -= OnMapLongClick;
+				map.MyLocationChange -= OnMyLocationChange;
 			}
 
 			_mapReady?.Dispose();
@@ -97,9 +134,16 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_markers = null;
 			_pins = null;
+			_elements = null;
 			_polylines = null;
 			_polygons = null;
 			_circles = null;
+			_clusters?.Clear();
+			_clusterMarkers?.Clear();
+			_pinIconCache.Clear();
+			_clusterIconCache.Clear();
+			_clusterImageOwner = null;
+			_clusterImageVersion = int.MinValue;
 			_init = true;
 
 			platformView.OnPause();
@@ -146,11 +190,37 @@ namespace Microsoft.Maui.Maps.Handlers
 			googleMap?.UpdateIsZoomEnabled(map);
 		}
 
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
+			if (handler is MapHandler mapHandler)
+			{
+				mapHandler._isClusteringEnabled = map.IsClusteringEnabled;
+				if (!map.IsClusteringEnabled)
+				{
+					mapHandler._clusters?.Clear();
+					mapHandler._clusterMarkers?.Clear();
+				}
+				// Re-add pins to apply clustering changes
+				MapPins(handler, map);
+			}
+		}
+
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			googleMap?.UpdateMapStyle(map);
+		}
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
-			MapSpan? newRegion = arg as MapSpan;
-			if (newRegion != null)
+			if (arg is MoveToRegionRequest request && request.Region != null)
+			{
+				(handler as MapHandler)?.MoveToRegion(request.Region, request.Animated);
+			}
+			else if (arg is MapSpan newRegion)
+			{
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
+			}
 		}
 
 		public void UpdateMapElement(IMapElement element)
@@ -192,6 +262,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			nativePolygon.StrokeWidth = (float)mauiPolygon.StrokeThickness;
 			nativePolygon.Points = mauiPolygon.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+
+			if (mauiPolygon is IMapElement mapElement)
+			{
+				nativePolygon.Visible = mapElement.IsVisible;
+				nativePolygon.ZIndex = mapElement.ZIndex;
+			}
 		}
 
 		void PolylineOnPropertyChanged(IGeoPathMapElement mauiPolyline)
@@ -206,6 +282,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			nativePolyline.Width = (float)mauiPolyline.StrokeThickness;
 			nativePolyline.Points = mauiPolyline.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+
+			if (mauiPolyline is IMapElement mapElement)
+			{
+				nativePolyline.Visible = mapElement.IsVisible;
+				nativePolyline.ZIndex = mapElement.ZIndex;
+			}
 		}
 
 
@@ -232,6 +314,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			nativeCircle.Radius = mauiCircle.Radius.Meters;
 			nativeCircle.StrokeWidth = (float)mauiCircle.StrokeThickness;
 
+			if (mauiCircle is IMapElement mapElement)
+			{
+				nativeCircle.Visible = mapElement.IsVisible;
+				nativeCircle.ZIndex = mapElement.ZIndex;
+			}
 		}
 
 		protected APolyline? GetNativePolyline(IGeoPathMapElement polyline)
@@ -298,6 +385,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
+				mapHandler.UpdateClusterImageVersion(map);
 				mapHandler.DisconnectPins();
 
 				if (mapHandler._markers != null)
@@ -316,24 +404,102 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapElements(IMapHandler handler, IMap map)
 		{
-			if (handler is MapHandler mapHandler)
-			{
-				if (mapHandler.Map != null)
-				{
-					mapHandler.PlatformView?.Post(() =>
-					{
-						var currentView = ((IElementHandler)mapHandler).VirtualView as IMap;
-						if (mapHandler.Map == null || currentView == null || !ReferenceEquals(currentView, map))
-							return;
+			(handler as MapHandler)?.ClearMapElements();
+			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
+		}
 
-						mapHandler.SyncMapElements((IList)currentView.Elements);
-					});
-				}
-				else
+		void UpdateClusterImageVersion(IMap map)
+		{
+			var version = map is IMapClusterImageProvider imageProvider
+				? imageProvider.ClusterImageVersion
+				: int.MinValue;
+			var sameOwner = _clusterImageOwner?.TryGetTarget(out var owner) == true && ReferenceEquals(owner, map);
+
+			if (sameOwner && _clusterImageVersion == version)
+				return;
+
+			_clusterImageOwner = new WeakReference<IMap>(map);
+			_clusterImageVersion = version;
+			// Cluster entries only: a version bump says nothing about the pins' own ImageSources.
+			_clusterIconCache.Clear();
+		}
+
+		/// <summary>
+		/// Clusters pins based on their proximity using a simple grid-based algorithm.
+		/// </summary>
+		List<MapCluster> CreateClusters(IList<IMapPin> pins, float zoom)
+		{
+			var clusters = new List<MapCluster>();
+			if (pins == null || pins.Count == 0)
+				return clusters;
+
+			// Cluster radius in degrees, adjusted based on zoom level
+			// At zoom 0 (world view), cluster radius is large
+			// At zoom 21 (street level), cluster radius is tiny
+			// The divisor controls how aggressively pins cluster - smaller = less clustering
+			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+			// Base cluster radius in approximate screen pixels at zoom 0.
+			// Pins whose projected positions fall within this radius are clustered.
+			const double clusterRadiusBasePixels = 50.0;
+			double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
+
+			// Group pins by their clustering identifier
+			var pinsByIdentifier = new Dictionary<string, List<IMapPin>>();
+			foreach (var pin in pins)
+			{
+				var identifier = pin.ClusteringIdentifier ?? "maui_default_cluster";
+				if (!pinsByIdentifier.ContainsKey(identifier))
+					pinsByIdentifier[identifier] = new List<IMapPin>();
+				pinsByIdentifier[identifier].Add(pin);
+			}
+
+			// Create clusters for each group
+			foreach (var group in pinsByIdentifier.Values)
+			{
+				var remaining = new List<IMapPin>(group);
+
+				while (remaining.Count > 0)
 				{
-					mapHandler.SyncMapElements((IList)map.Elements);
+					var seed = remaining[0];
+					remaining.RemoveAt(0);
+
+					var cluster = new MapCluster(seed.Location.Latitude, seed.Location.Longitude);
+					cluster.Pins.Add(seed);
+
+					// Find all pins within radius
+					for (int i = remaining.Count - 1; i >= 0; i--)
+					{
+						var pin = remaining[i];
+						var deltaLat = pin.Location.Latitude - cluster.CenterLatitude;
+						var deltaLng = pin.Location.Longitude - cluster.CenterLongitude;
+						var centerLatRad = cluster.CenterLatitude * (Math.PI / 180.0);
+						var adjustedDeltaLng = deltaLng * Math.Cos(centerLatRad);
+						var distance = Math.Sqrt(
+							deltaLat * deltaLat +
+							adjustedDeltaLng * adjustedDeltaLng);
+
+						if (distance <= clusterRadius)
+						{
+							cluster.Pins.Add(pin);
+							remaining.RemoveAt(i);
+
+							// Update cluster center to be the centroid
+							double sumLat = 0, sumLng = 0;
+							foreach (var p in cluster.Pins)
+							{
+								sumLat += p.Location.Latitude;
+								sumLng += p.Location.Longitude;
+							}
+							cluster.CenterLatitude = sumLat / cluster.Pins.Count;
+							cluster.CenterLongitude = sumLng / cluster.Pins.Count;
+						}
+					}
+
+					clusters.Add(cluster);
 				}
 			}
+
+			return clusters;
 		}
 
 		internal void OnMapReady(GoogleMap map)
@@ -352,18 +518,48 @@ namespace Microsoft.Maui.Maps.Handlers
 			Map = map;
 
 			map.SetOnCameraMoveListener(_mapReady);
+			map.SetOnPolygonClickListener(_mapReady);
+			map.SetOnCircleClickListener(_mapReady);
+			map.SetOnPolylineClickListener(_mapReady);
+			map.SetOnCameraIdleListener(_mapReady);
 
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
+			map.MapLongClick += OnMapLongClick;
+
+			map.MyLocationChange += OnMyLocationChange;
 
 			map.UpdateMapType(virtualView);
 			map.UpdateIsShowingUser(virtualView, MauiContext);
 			map.UpdateIsScrollEnabled(virtualView);
 			map.UpdateIsTrafficEnabled(virtualView);
 			map.UpdateIsZoomEnabled(virtualView);
+			map.UpdateMapStyle(virtualView);
 
 			InitialUpdate();
+		}
+
+		/// <summary>
+		/// Recalculates clusters based on current zoom level.
+		/// Called when camera becomes idle after zooming.
+		/// </summary>
+		internal void ReclusterPins()
+		{
+			if (!_isClusteringEnabled || Map == null || VirtualView == null)
+				return;
+
+			// Clear existing markers
+			if (_markers != null)
+			{
+				for (int i = 0; i < _markers.Count; i++)
+					_markers[i].Remove();
+				_markers = null;
+			}
+			_clusterMarkers?.Clear();
+
+			// Re-add pins to trigger reclustering at new zoom level
+			AddPins((IList)VirtualView.Pins);
 		}
 
 		internal void UpdateVisibleRegion(LatLng pos)
@@ -401,10 +597,8 @@ namespace Microsoft.Maui.Maps.Handlers
 				MoveToRegion(_lastMoveToRegion, false);
 				if (_pins != null)
 					AddPins(_pins);
-				if (virtualView.Elements is IList elements && elements.Count > 0)
-				{
-					SyncMapElements(elements);
-				}
+				if (_elements != null)
+					AddMapElements(_elements);
 				_init = false;
 			}
 
@@ -442,6 +636,37 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMarkerClick(object? sender, GoogleMap.MarkerClickEventArgs e)
 		{
+			// Check if this is a cluster marker
+			if (_clusterMarkers != null && _clusterMarkers.TryGetValue(e.Marker.Id, out var cluster))
+			{
+				var location = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+				bool handled = VirtualView?.ClusterClicked(cluster.Pins, location) ?? false;
+
+				if (!handled && Map != null)
+				{
+					// Default behavior: zoom in to show cluster pins
+					var builder = new LatLngBounds.Builder();
+					foreach (var clusterPin in cluster.Pins)
+					{
+						builder.Include(new LatLng(clusterPin.Location.Latitude, clusterPin.Location.Longitude));
+					}
+
+					try
+					{
+						var bounds = builder.Build();
+						var update = CameraUpdateFactory.NewLatLngBounds(bounds, 100);
+						Map.AnimateCamera(update);
+					}
+					catch (IllegalStateException)
+					{
+						// Bounds couldn't be built
+					}
+				}
+
+				e.Handled = true;
+				return;
+			}
+
 			var pin = GetPinForMarker(e.Marker);
 
 			if (pin == null)
@@ -451,13 +676,18 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			// Setting e.Handled = true will prevent the info window from being presented
 			// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
-			bool handled = pin.SendMarkerClick();
-			e.Handled = handled;
+			bool markerHandled = pin.SendMarkerClick();
+			e.Handled = markerHandled;
 		}
 
 		void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
 		{
 			var marker = e.Marker;
+
+			// Cluster markers don't have info windows
+			if (_clusterMarkers != null && _clusterMarkers.ContainsKey(marker.Id))
+				return;
+
 			var pin = GetPinForMarker(marker);
 
 			if (pin == null)
@@ -481,36 +711,88 @@ namespace Microsoft.Maui.Maps.Handlers
 				virtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 		}
 
+		void OnMapLongClick(object? sender, GoogleMap.MapLongClickEventArgs e) =>
+			VirtualView.LongClicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+
+		void OnMyLocationChange(object? sender, GoogleMap.MyLocationChangeEventArgs e)
+		{
+			if (e.Location != null && VirtualView != null)
+			{
+				VirtualView.UserLocationUpdated(new Devices.Sensors.Location(e.Location.Latitude, e.Location.Longitude));
+			}
+		}
+
 		void AddPins(IList pins)
 		{
-			//Mapper could be called before we have a Map ready 
+			//Mapper could be called before we have a Map ready
 			_pins = pins;
 			if (Map == null || MauiContext == null)
 				return;
 
-			_markers ??= new List<Marker>();
+			// Cancel any previously running pin additions to avoid stale markers
+			_addPinsCts?.Cancel();
+			_addPinsCts?.Dispose();
+			_addPinsCts = new CancellationTokenSource();
+			var ct = _addPinsCts.Token;
 
+			if (_markers == null)
+				_markers = new List<Marker>();
+
+			if (_clusterMarkers == null)
+				_clusterMarkers = new Dictionary<string, MapCluster>();
+			else
+				_clusterMarkers.Clear();
+
+			// Convert to IMapPin list
+			var mapPins = new List<IMapPin>();
 			foreach (var p in pins)
 			{
-				IMapPin pin = (IMapPin)p;
-				Marker? marker;
+				mapPins.Add((IMapPin)p);
+			}
 
-				var pinHandler = pin.ToHandler(MauiContext);
-				if (pinHandler is IMapPinHandler iMapPinHandler)
+			// When clustering is enabled, create clusters
+			if (_isClusteringEnabled && mapPins.Count > 0)
+			{
+				float zoom = Map.CameraPosition?.Zoom ?? 10f;
+				_clusters = CreateClusters(mapPins, zoom);
+
+				foreach (var cluster in _clusters)
 				{
-					marker = Map.AddMarker(iMapPinHandler.PlatformView) ?? throw new System.Exception("Map.AddMarker returned null");
-					// associate pin with marker for later lookup in event handlers
-					pin.MarkerId = marker.Id;
-					_markers.Add(marker!);
+					if (cluster.Pins.Count == 1)
+					{
+						// Single pin - add as regular marker
+						AddRegularPin(cluster.Pins[0], ct);
+					}
+					else
+					{
+						// Multiple pins - create a cluster marker (custom image if provided, else default bubble).
+						AddClusterMarkerAsync(cluster, ct).FireAndForget(this);
+					}
 				}
 
-				_subscribedPins ??= new HashSet<IMapPin>(ReferenceEqualityComparer.Instance);
-				if (_subscribedPins.Add(pin) && pin is INotifyPropertyChanged observable)
-				{
-					observable.PropertyChanged += PinOnPropertyChanged;
-				}
+				_pins = null;
+				return;
+			}
+
+			// Normal non-clustered pins
+			foreach (var p in pins)
+			{
+				AddRegularPin((IMapPin)p, ct);
 			}
 			_pins = null;
+		}
+
+		void AddRegularPin(IMapPin pin, CancellationToken ct)
+		{
+			if (pin is INotifyPropertyChanged observable)
+			{
+				// -= before += because ReclusterPins re-runs AddPins on zoom without DisconnectPins.
+				observable.PropertyChanged -= PinOnPropertyChanged;
+				observable.PropertyChanged += PinOnPropertyChanged;
+				_subscribedPins.Add(observable);
+			}
+
+			AddPinAsync(pin, ct).FireAndForget();
 		}
 
 		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -553,24 +835,349 @@ namespace Microsoft.Maui.Maps.Handlers
 				case nameof(IMapPin.Address):
 					marker.Snippet = pin.Address;
 					break;
+				case nameof(IMapPin.ImageSource):
+					UpdatePinImageSourceAsync(pin, marker, _addPinsCts?.Token ?? CancellationToken.None).FireAndForget();
+					break;
 			}
 		}
 
 		void DisconnectPins()
 		{
-			if (_subscribedPins is not null)
-			{
-				foreach (var pin in _subscribedPins)
-				{
-					if (pin is INotifyPropertyChanged observable)
-					{
-						observable.PropertyChanged -= PinOnPropertyChanged;
-					}
+			// Unsubscribe every pin we actually subscribed to, including ones already removed from
+			// VirtualView.Pins, so a removed-but-subscribed pin can no longer keep this handler alive.
+			foreach (var observable in _subscribedPins)
+				observable.PropertyChanged -= PinOnPropertyChanged;
+			_subscribedPins.Clear();
 
-					pin?.Handler?.DisconnectHandler();
-				}
-				_subscribedPins = null;
+			if (VirtualView == null)
+				return;
+
+			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			{
+				VirtualView.Pins[i]?.Handler?.DisconnectHandler();
 			}
+		}
+
+		BitmapDescriptor? CreateClusterIcon(int count)
+		{
+			try
+			{
+				int size = 100; // pixels
+				var bitmap = ABitmap.CreateBitmap(size, size, ABitmap.Config.Argb8888!);
+				if (bitmap == null)
+					return null;
+
+				using var canvas = new ACanvas(bitmap);
+				using var paint = new APaint();
+
+				// Draw circle background
+				paint.AntiAlias = true;
+				paint.SetARGB(255, 66, 133, 244); // Google blue
+				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 2, paint);
+
+				// Draw border
+				paint.SetStyle(APaint.Style.Stroke);
+				paint.StrokeWidth = 4;
+				paint.SetARGB(255, 255, 255, 255); // White border
+				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 4, paint);
+
+				// Draw text
+				paint.SetStyle(APaint.Style.Fill);
+				paint.SetARGB(255, 255, 255, 255); // White text
+				paint.TextSize = count > 99 ? 28 : 36;
+				paint.TextAlign = APaint.Align.Center;
+
+				var text = count > 99 ? "99+" : count.ToString();
+				var textBounds = new ARect();
+				paint.GetTextBounds(text, 0, text.Length, textBounds);
+
+				float x = size / 2f;
+				float y = size / 2f + textBounds.Height() / 2f;
+				canvas.DrawText(text, x, y, paint);
+
+				return BitmapDescriptorFactory.FromBitmap(bitmap);
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		async Task AddPinAsync(IMapPin pin, CancellationToken ct)
+		{
+			if (Map == null || MauiContext == null)
+				return;
+
+			var pinHandler = pin.ToHandler(MauiContext);
+			if (pinHandler is not IMapPinHandler iMapPinHandler)
+				return;
+
+			var markerOptions = iMapPinHandler.PlatformView;
+
+			// Captured before the await: if ImageSource changes while the load is running, the write
+			// below has to be dropped rather than publish a marker with the older icon.
+			var requestedSource = pin.ImageSource;
+
+			if (requestedSource is null)
+			{
+				// The MarkerOptions are reused, so a cleared ImageSource has to take the previous
+				// icon off them - null is Android's "use the default marker".
+				markerOptions.SetIcon(null);
+			}
+			else
+			{
+				// Clustering re-runs AddPins on every zoom change, so without the cache the icon of
+				// every un-clustered pin is decoded and rescaled again on each pass.
+				var icon = await GetIconAsync(_pinIconCache, requestedSource, MauiContext, ct);
+
+				// Re-checked after the await: UpdatePinImageSourceAsync can have applied a newer
+				// source in the meantime, and it guards its own write the same way. Without this
+				// the two writers race and the marker can be published with the older icon while
+				// the change notification that would fix it has already been consumed.
+				if (icon != null && ReferenceEquals(pin.ImageSource, requestedSource))
+					markerOptions.SetIcon(icon);
+			}
+
+			// Re-check after async operation since handler may have been disconnected
+			if (ct.IsCancellationRequested || Map == null || MauiContext == null)
+				return;
+
+			var marker = Map.AddMarker(markerOptions);
+			if (marker == null)
+			{
+				throw new System.Exception("Map.AddMarker returned null");
+			}
+			// associate pin with marker for later lookup in event handlers
+			pin.MarkerId = marker.Id;
+
+			_markers ??= new List<Marker>();
+			_markers.Add(marker);
+		}
+
+		async Task UpdatePinImageSourceAsync(IMapPin pin, Marker marker, CancellationToken ct)
+		{
+			var mauiContext = MauiContext;
+
+			if (mauiContext == null || ct.IsCancellationRequested || (pin.MarkerId as string) != marker.Id)
+				return;
+
+			// Captured before the await; if ImageSource changes meanwhile, this stale load is dropped.
+			var requestedSource = pin.ImageSource;
+
+			BitmapDescriptor? icon = null;
+
+			if (requestedSource != null)
+			{
+				// Through the cache like AddPinAsync: switching many pins to one image coalesces
+				// into a single load, and the next recluster pass finds the entry. Note GetIconAsync
+				// drops ct for a keyable load, so this can outlive a pins reset - the guards below
+				// still discard the result.
+				icon = await GetIconAsync(_pinIconCache, requestedSource, mauiContext, ct);
+				// null means load failed/cancelled - leave the marker's current icon untouched.
+				if (icon == null)
+					return;
+			}
+
+			// icon is null here only when ImageSource was cleared, so SetIcon(null) resets to the default.
+			if (!ct.IsCancellationRequested && ReferenceEquals(pin.ImageSource, requestedSource) && (pin.MarkerId as string) == marker.Id)
+			{
+				marker.SetIcon(icon);
+
+				// The MarkerOptions are reused the next time this pin is added, so update them too -
+				// otherwise the next cluster pass would restore the previous icon. Reached through
+				// the non-throwing accessor: this resumes after an await, and the typed PlatformView
+				// throws once the handler has been disconnected.
+				if (pin.Handler is MapPinHandler mapPinHandler &&
+					((IElementHandler)mapPinHandler).PlatformView is MarkerOptions handlerOptions)
+				{
+					handlerOptions.SetIcon(icon);
+				}
+			}
+		}
+
+		// One decoded descriptor backs every marker naming the same image, so a recluster pass reuses
+		// it instead of decoding per marker. GetIconCacheKey returns null for a source that can't be
+		// keyed stably, or that opted out of caching - those load fresh every time, which is also why
+		// they keep this caller's ct: nobody else is waiting on them. A keyable load is shared, so it
+		// must not be cancelled by whichever caller happened to start it.
+		static Task<BitmapDescriptor?> GetIconAsync(IconCache<BitmapDescriptor> cache, IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
+		{
+			var cacheKey = GetIconCacheKey(imageSource);
+			var loadToken = cacheKey is null ? ct : CancellationToken.None;
+
+			return cache.GetOrCreateAsync(
+				cacheKey,
+				() => LoadPinIconAsync(imageSource, mauiContext, loadToken),
+				() => GetIconCacheExpiry(imageSource));
+		}
+
+		// Loads imageSource into a BitmapDescriptor
+		// Returns null on cancel/failure/no drawable.
+		static async Task<BitmapDescriptor?> LoadPinIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
+		{
+			IImageSourceServiceResult<ADrawable>? result = null;
+
+			try
+			{
+				result = await imageSource.GetPlatformImageAsync(mauiContext);
+				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
+					return null;
+
+				// Every DrawableToBitmap path returns a bitmap this handler owns, so nothing else
+				// reads it once the descriptor exists. Disposed rather than recycled: this drops
+				// the JNI peer and leaves the pixels to the Java GC, which stays correct even if
+				// FromBitmap retained the source rather than copying it. Recycling would not.
+				using var bitmap = DrawableToBitmap(drawable);
+				if (bitmap is null)
+					return null;
+
+				return BitmapDescriptorFactory.FromBitmap(bitmap);
+			}
+			catch (System.Exception ex)
+			{
+				TryLogWarning(mauiContext, ex, "Failed to load custom pin icon");
+				return null;
+			}
+			finally
+			{
+				// Guarded: the descriptor is already built by the time this runs, so a failing
+				// release must never be able to replace it with the default marker.
+				try
+				{
+					result?.Dispose();
+				}
+				catch (System.Exception ex)
+				{
+					TryLogWarning(mauiContext, ex, "Failed to release a custom pin icon image result");
+				}
+			}
+		}
+
+		// Resolving a logger throws once the scoped service provider has been disposed - the window
+		// closing while a pin image load is in flight is enough - and this runs on a path where the
+		// descriptor has often already been built. An exception escaping the catch faults the task,
+		// so AddPinAsync never reaches Map.AddMarker and the pin is missing rather than un-iconed;
+		// under FireAndForget that failure is silent. Failing to log must never cost more than the log.
+		static void TryLogWarning(IMauiContext mauiContext, System.Exception exception, string message)
+		{
+			try
+			{
+				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(exception, message);
+			}
+			catch
+			{
+			}
+		}
+
+		async Task AddClusterMarkerAsync(MapCluster cluster, CancellationToken ct)
+		{
+			var map = Map;
+			var mauiContext = MauiContext;
+			var virtualView = VirtualView;
+			if (map == null || mauiContext == null || virtualView == null)
+				return;
+
+			var center = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+
+			var options = new MarkerOptions();
+			options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
+			options.SetTitle($"{cluster.Pins.Count} items");
+			options.Anchor(0.5f, 0.5f);
+
+			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
+			IImageSource? image = null;
+			if (virtualView is IMapClusterImageProvider imageProvider)
+			{
+				try
+				{
+					image = imageProvider.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
+				}
+				catch (System.Exception ex)
+				{
+					TryLogWarning(mauiContext, ex, "Cluster image provider threw");
+				}
+			}
+
+			BitmapDescriptor? icon = null;
+			if (image != null)
+				icon = await GetIconAsync(_clusterIconCache, image, mauiContext, ct);
+
+			if (ct.IsCancellationRequested || !ReferenceEquals(Map, map))
+				return;
+
+			icon ??= CreateClusterIcon(cluster.Pins.Count);
+			if (icon != null)
+				options.SetIcon(icon);
+
+			var marker = map.AddMarker(options);
+			if (marker != null)
+			{
+				_markers ??= new List<Marker>();
+				_markers.Add(marker);
+				_clusterMarkers?[marker.Id] = cluster;
+			}
+		}
+
+		static ABitmap? DrawableToBitmap(ADrawable drawable)
+		{
+			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is ABitmap source)
+			{
+				var sized = ScaleBitmap(source, 64, 64);  // 64x64 pixels
+				if (!ReferenceEquals(sized, source))
+					return sized;
+
+				// Bitmap.createScaledBitmap hands an immutable source straight back when the image
+				// already fits - the size Pin.ImageSource documents for Android - so the descriptor
+				// would be built over pixels the image result owns, and releasing that result lets
+				// them go. Copy instead, and never fall back to the source: a failed copy has to
+				// mean the default marker, not a descriptor over foreign pixels.
+				//
+				// Always Argb8888 rather than preserving source.GetConfig(): at 64x64 a narrower
+				// config saves a few KB, which is not worth comparing Bitmap.Config values for.
+				// Those compare as JNI peers of a Java enum, and peer identity is not something the
+				// binding guarantees - a comparison that silently went false for a hardware bitmap
+				// would copy it as hardware, and BitmapDescriptorFactory cannot read those pixels
+				// back, which lands on the default marker this PR exists to prevent.
+				return source.Copy(ABitmap.Config.Argb8888!, false);
+			}
+
+			int width = drawable.IntrinsicWidth;
+			int height = drawable.IntrinsicHeight;
+
+			if (width <= 0 || height <= 0)
+			{
+				width = 64;
+				height = 64;
+			}
+
+			var bitmap = ABitmap.CreateBitmap(width, height, ABitmap.Config.Argb8888!);
+			if (bitmap == null)
+				return null;
+
+			var canvas = new ACanvas(bitmap);
+			drawable.SetBounds(0, 0, canvas.Width, canvas.Height);
+			drawable.Draw(canvas);
+			canvas.Dispose();
+
+			var scaled = ScaleBitmap(bitmap, 64, 64);
+			if (scaled != bitmap)
+				bitmap.Dispose();
+			return scaled;
+		}
+
+		static ABitmap ScaleBitmap(ABitmap source, int targetWidth, int targetHeight)
+		{
+			int width = source.Width;
+			int height = source.Height;
+
+			float widthRatio = (float)targetWidth / width;
+			float heightRatio = (float)targetHeight / height;
+			float ratio = Math.Min(widthRatio, heightRatio);
+
+			int newWidth = (int)(width * ratio);
+			int newHeight = (int)(height * ratio);
+
+			return ABitmap.CreateScaledBitmap(source, newWidth, newHeight, true)!;
 		}
 
 		protected IMapPin? GetPinForMarker(Marker marker)
@@ -596,98 +1203,80 @@ namespace Microsoft.Maui.Maps.Handlers
 			return targetPin;
 		}
 
-		void SyncMapElements(IList mapElements)
+		Marker? GetMarkerForPin(IMapPin pin)
 		{
+			if (_markers == null || pin.MarkerId is not string pinMarkerId)
+				return null;
+
+			for (int i = 0; i < _markers.Count; i++)
+			{
+				if (_markers[i].Id == pinMarkerId)
+					return _markers[i];
+			}
+
+			return null;
+		}
+
+		void ShowInfoWindow(IMapPin pin)
+		{
+			var marker = GetMarkerForPin(pin);
+			marker?.ShowInfoWindow();
+		}
+
+		void HideInfoWindow(IMapPin pin)
+		{
+			var marker = GetMarkerForPin(pin);
+			marker?.HideInfoWindow();
+		}
+
+		void ClearMapElements()
+		{
+			if (_polylines != null)
+			{
+				for (int i = 0; i < _polylines.Count; i++)
+				{
+					var polyline = _polylines[i];
+					ClearTrackedMapElementId(polyline.Id);
+					polyline.Remove();
+				}
+
+				_polylines = null;
+			}
+
+			if (_polygons != null)
+			{
+				for (int i = 0; i < _polygons.Count; i++)
+				{
+					var polygon = _polygons[i];
+					ClearTrackedMapElementId(polygon.Id);
+					polygon.Remove();
+				}
+
+				_polygons = null;
+			}
+
+			if (_circles != null)
+			{
+				for (int i = 0; i < _circles.Count; i++)
+				{
+					var circle = _circles[i];
+					ClearTrackedMapElementId(circle.Id);
+					circle.Remove();
+				}
+
+				_circles = null;
+			}
+		}
+
+		void AddMapElements(IList mapElements)
+		{
+			_elements = mapElements;
+
 			if (Map == null || MauiContext == null)
 				return;
 
-			// Build a set of element IDs from the new collection
-			var newElementIds = new HashSet<string>();
 			foreach (var element in mapElements)
 			{
-				if (element is IMapElement mapElement && mapElement.MapElementId is string id)
-				{
-					newElementIds.Add(id);
-				}
-			}
-
-			// Remove elements that are no longer in the collection
-			if (_polylines != null)
-			{
-				for (int i = _polylines.Count - 1; i >= 0; i--)
-				{
-					var polyline = _polylines[i];
-					if (polyline.Id is not null && !newElementIds.Contains(polyline.Id))
-					{
-						ClearTrackedMapElementId(polyline.Id);
-						polyline.Remove();
-						_polylines.RemoveAt(i);
-					}
-				}
-				if (_polylines.Count == 0)
-					_polylines = null;
-			}
-
-			if (_polygons != null)
-			{
-				for (int i = _polygons.Count - 1; i >= 0; i--)
-				{
-					var polygon = _polygons[i];
-					if (polygon.Id is not null && !newElementIds.Contains(polygon.Id))
-					{
-						ClearTrackedMapElementId(polygon.Id);
-						polygon.Remove();
-						_polygons.RemoveAt(i);
-					}
-				}
-				if (_polygons.Count == 0)
-					_polygons = null;
-			}
-
-			if (_circles != null)
-			{
-				for (int i = _circles.Count - 1; i >= 0; i--)
-				{
-					var circle = _circles[i];
-					if (circle.Id is not null && !newElementIds.Contains(circle.Id))
-					{
-						ClearTrackedMapElementId(circle.Id);
-						circle.Remove();
-						_circles.RemoveAt(i);
-					}
-				}
-				if (_circles.Count == 0)
-					_circles = null;
-			}
-
-			// Build a set of existing element IDs
-			var existingIds = new HashSet<string>();
-			if (_polylines != null)
-			{
-				foreach (var p in _polylines)
-					existingIds.Add(p.Id);
-			}
-			if (_polygons != null)
-			{
-				foreach (var p in _polygons)
-					existingIds.Add(p.Id);
-			}
-			if (_circles != null)
-			{
-				foreach (var c in _circles)
-					existingIds.Add(c.Id);
-			}
-
-			// Add only new elements
-			foreach (var element in mapElements)
-			{
-				if (element is IMapElement mapElement)
-				{
-					// Skip if already exists
-					if (mapElement.MapElementId is string id && existingIds.Contains(id))
-						continue;
-				}
-
 				if (element is IGeoPathMapElement geoPath)
 				{
 					if (element is IFilledMapElement)
@@ -699,11 +1288,12 @@ namespace Microsoft.Maui.Maps.Handlers
 						AddPolyline(geoPath);
 					}
 				}
-				else if (element is ICircleMapElement circle)
+				if (element is ICircleMapElement circle)
 				{
 					AddCircle(circle);
 				}
 			}
+			_elements = null;
 		}
 
 		void AddPolyline(IGeoPathMapElement polyline)
@@ -724,6 +1314,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				polyline.MapElementId = nativePolyline.Id;
 				TrackMapElement(nativePolyline.Id, polyline);
+				nativePolyline.Clickable = true;
+
+				if (polyline is IMapElement mapElement)
+				{
+					nativePolyline.Visible = mapElement.IsVisible;
+					nativePolyline.ZIndex = mapElement.ZIndex;
+				}
 
 				_polylines.Add(nativePolyline);
 			}
@@ -750,6 +1347,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			polygon.MapElementId = nativePolygon.Id;
 			TrackMapElement(nativePolygon.Id, polygon);
+			nativePolygon.Clickable = true;
+
+			if (polygon is IMapElement mapElement)
+			{
+				nativePolygon.Visible = mapElement.IsVisible;
+				nativePolygon.ZIndex = mapElement.ZIndex;
+			}
 
 			_polygons.Add(nativePolygon);
 		}
@@ -775,6 +1379,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			circle.MapElementId = nativeCircle.Id;
 			TrackMapElement(nativeCircle.Id, circle);
+			nativeCircle.Clickable = true;
+
+			if (circle is IMapElement mapElement)
+			{
+				nativeCircle.Visible = mapElement.IsVisible;
+				nativeCircle.ZIndex = mapElement.ZIndex;
+			}
 
 			_circles.Add(nativeCircle);
 		}
@@ -794,10 +1405,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 	}
 
-	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, GoogleMap.IOnCameraIdleListener, IOnMapReadyCallback, GoogleMap.IOnPolygonClickListener, GoogleMap.IOnCircleClickListener, GoogleMap.IOnPolylineClickListener
 	{
 		MapHandler? _handler;
 		GoogleMap? _googleMap;
+		float _lastClusterZoom = -1;
 
 		public MapCallbackHandler(MapHandler mapHandler)
 		{
@@ -824,6 +1436,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			_handler?.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
 		}
 
+		void GoogleMap.IOnCameraIdleListener.OnCameraIdle()
+		{
+			if (_googleMap == null || _handler == null)
+				return;
+
+			var currentZoom = _googleMap.CameraPosition.Zoom;
+			if (MapHandler.ShouldRecluster(currentZoom, _lastClusterZoom))
+			{
+				_lastClusterZoom = currentZoom;
+				_handler.ReclusterPins();
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -834,6 +1459,35 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			base.Dispose(disposing);
 		}
+
+		public void OnCircleClick(ACircle circle) => SendElementClickEvent(circle.Id);
+
+		public void OnPolygonClick(APolygon polygon) => SendElementClickEvent(polygon.Id);
+
+		public void OnPolylineClick(APolyline polyline) => SendElementClickEvent(polyline.Id);
+
+		void SendElementClickEvent(string elementId)
+		{
+			var element = _handler?.VirtualView.Elements.FirstOrDefault(x => x.MapElementId?.ToString() == elementId);
+			element?.Clicked();
+		}
+	}
+
+	/// <summary>
+	/// Represents a cluster of map pins.
+	/// </summary>
+	class MapCluster
+	{
+		public MapCluster(double lat, double lng)
+		{
+			CenterLatitude = lat;
+			CenterLongitude = lng;
+			Pins = new List<IMapPin>();
+		}
+
+		public double CenterLatitude { get; set; }
+		public double CenterLongitude { get; set; }
+		public List<IMapPin> Pins { get; }
 	}
 
 }

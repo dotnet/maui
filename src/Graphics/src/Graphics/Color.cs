@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,9 +11,15 @@ namespace Microsoft.Maui.Graphics
 	/// <summary>
 	/// Represents an RGBA color with floating-point components in the range of 0.0 to 1.0.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="Color"/> is a sealed record type, so equality (via <see cref="Equals(Color?)"/>, <c>==</c>, and <c>!=</c>)
+	/// is always value-based, comparing the underlying ARGB representation regardless of how the instance was created.
+	/// Sealing prevents subclassing, which guarantees this value-based equality can never be silently broken by a derived type.
+	/// </remarks>
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
-	public class Color
+	[ImmutableObject(true)]
+	public sealed record class Color
 	{
 		/// <summary>
 		/// The red component of the color, ranging from 0.0 to 1.0.
@@ -112,24 +119,20 @@ namespace Microsoft.Maui.Graphics
 			return $"[Color: Red={r}, Green={g}, Blue={b}, Alpha={a}]";
 		}
 
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hashcode = Red.GetHashCode();
-				hashcode = (hashcode * 397) ^ Green.GetHashCode();
-				hashcode = (hashcode * 397) ^ Blue.GetHashCode();
-				hashcode = (hashcode * 397) ^ Alpha.GetHashCode();
-				return hashcode;
-			}
-		}
+		public override int GetHashCode() => ToInt();
 
-		public override bool Equals(object obj)
+		/// <summary>
+		/// Determines whether the specified <see cref="Color"/> is equal to the current color using byte-precision comparison.
+		/// </summary>
+		public bool Equals(Color? other)
 		{
-			if (obj is Color other)
-				return ToInt() == other.ToInt();
+			if (other is null)
+				return false;
 
-			return base.Equals(obj);
+			if (EqualityContract != other.EqualityContract)
+				return false;
+
+			return ToInt() == other.ToInt();
 		}
 
 		[Obsolete("Use ToArgbHex instead.")]
@@ -457,11 +460,11 @@ namespace Microsoft.Maui.Graphics
 				return true;
 			}
 
-			color = GetNamedColor(value);
+			color = GetNamedColor(value)!;
 			return color is not null;
 		}
 
-		static Color GetNamedColor(ReadOnlySpan<char> value)
+		static Color? GetNamedColor(ReadOnlySpan<char> value)
 		{
 			// the longest built-in Color's name is much lower than this check, so we should not allocate here in a typical usage
 			Span<char> loweredValue = value.Length <= 128 ? stackalloc char[value.Length] : new char[value.Length];

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElementController
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this layout.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.Container.
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the layout should obey safe area insets.
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls
 			return new Thickness(0);
 		}
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Container;
 		}

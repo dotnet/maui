@@ -37,6 +37,26 @@ param (
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = "Stop"
 
+function Get-ScreenResolutionProbeAction {
+    param (
+        [int]$Result
+    )
+
+    if ($Result -eq -2) {
+        return "Reject"
+    }
+
+    return "Apply"
+}
+
+function Test-ScreenResolutionApplySucceeded {
+    param (
+        [int]$Result
+    )
+
+    return ($Result -eq 0 -or $Result -eq 1)
+}
+
 function Set-ScreenResolution {
     param (
         [int]$Width,
@@ -167,34 +187,35 @@ namespace DisplaySettings
         
         if ($testResult -ne [DisplaySettings.NativeMethods]::DISP_CHANGE_SUCCESSFUL) {
             Write-Warning "Resolution test returned code: $testResult"
-            
-            switch ($testResult) {
-                ([DisplaySettings.NativeMethods]::DISP_CHANGE_BADMODE) {
-                    Write-Error "The resolution ${Width}x${Height} is not supported by this display (BADMODE)"
-                    return $false
-                }
-                ([DisplaySettings.NativeMethods]::DISP_CHANGE_FAILED) {
-                    Write-Error "The resolution change test failed (FAILED)"
-                    return $false
-                }
-                default {
-                    Write-Warning "Unexpected test result, attempting to apply anyway..."
-                }
+
+            if ((Get-ScreenResolutionProbeAction -Result $testResult) -eq "Reject") {
+                Write-Error "The resolution ${Width}x${Height} is not supported by this display (BADMODE)"
+                return $false
+            }
+
+            if ($testResult -eq [DisplaySettings.NativeMethods]::DISP_CHANGE_FAILED) {
+                Write-Warning "CDS_TEST returned DISP_CHANGE_FAILED ($testResult) for target ${Width}x${Height}; attempting to apply the resolution anyway..."
+            }
+            else {
+                Write-Warning "Unexpected test result, attempting to apply anyway..."
             }
         }
         
         # Apply the resolution change
         $changeResult = [DisplaySettings.NativeMethods]::ChangeDisplaySettings([ref]$devMode, [DisplaySettings.NativeMethods]::CDS_UPDATEREGISTRY)
-        
-        switch ($changeResult) {
-            ([DisplaySettings.NativeMethods]::DISP_CHANGE_SUCCESSFUL) {
-                Write-Host "Successfully set screen resolution to ${Width}x${Height}"
-                return $true
-            }
-            ([DisplaySettings.NativeMethods]::DISP_CHANGE_RESTART) {
+
+        if (Test-ScreenResolutionApplySucceeded -Result $changeResult) {
+            if ($changeResult -eq [DisplaySettings.NativeMethods]::DISP_CHANGE_RESTART) {
                 Write-Host "Screen resolution set to ${Width}x${Height}. A restart may be required for some applications."
-                return $true
             }
+            else {
+                Write-Host "Successfully set screen resolution to ${Width}x${Height}"
+            }
+
+            return $true
+        }
+
+        switch ($changeResult) {
             ([DisplaySettings.NativeMethods]::DISP_CHANGE_BADMODE) {
                 Write-Error "The resolution ${Width}x${Height} is not supported by this display"
                 return $false

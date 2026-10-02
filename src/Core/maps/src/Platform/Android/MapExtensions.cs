@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Gms.Maps;
+using Android.Gms.Maps.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Maps.Handlers;
@@ -57,6 +58,28 @@ namespace Microsoft.Maui.Maps.Platform
 
 			googleMap.UiSettings.ZoomControlsEnabled = map.IsZoomEnabled;
 			googleMap.UiSettings.ZoomGesturesEnabled = map.IsZoomEnabled;
+		}
+
+		public static void UpdateMapStyle(this GoogleMap googleMap, IMap map)
+		{
+			if (googleMap == null)
+				return;
+
+			bool result;
+			if (string.IsNullOrEmpty(map.MapStyle))
+			{
+				result = googleMap.SetMapStyle(null);
+			}
+			else
+			{
+				var styleOptions = new MapStyleOptions(map.MapStyle);
+				result = googleMap.SetMapStyle(styleOptions);
+			}
+
+			if (!result)
+			{
+				System.Diagnostics.Debug.WriteLine("Failed to apply map style. The provided JSON style may be invalid.");
+			}
 		}
 
 		internal static async Task SetIsShowingUser(this GoogleMap googleMap, IMap map, IMauiContext? mauiContext)

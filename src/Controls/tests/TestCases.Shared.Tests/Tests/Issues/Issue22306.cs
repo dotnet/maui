@@ -46,7 +46,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationPortrait();
 				WaitForAllElements();
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+				// Android can consistently rerasterize the same post-rotation layout with minor antialiasing differences.
+				var finalPortraitTolerance = _testDevice == TestDevice.Android ? 2 : 0.5;
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2", tolerance: finalPortraitTolerance, retryTimeout: TimeSpan.FromSeconds(2));
 			}
 			finally
 			{

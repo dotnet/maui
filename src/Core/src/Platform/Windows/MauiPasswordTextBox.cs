@@ -339,8 +339,7 @@ namespace Microsoft.Maui.Platform
 			};
 	}
 
-	//TODO: Make it public in NET 11
-	internal partial class MauiPasswordTextBoxAutomationPeer : TextBoxAutomationPeer
+	public partial class MauiPasswordTextBoxAutomationPeer : TextBoxAutomationPeer
 	{
 		public MauiPasswordTextBoxAutomationPeer(MauiPasswordTextBox owner) : base(owner)
 		{

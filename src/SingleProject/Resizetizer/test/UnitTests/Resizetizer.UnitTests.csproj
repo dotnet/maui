@@ -26,6 +26,7 @@
     <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="testdata\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="imageresults\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\nuget\buildTransitive\Microsoft.Maui.Resizetizer.After.targets" Link="Microsoft.Maui.Resizetizer.After.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

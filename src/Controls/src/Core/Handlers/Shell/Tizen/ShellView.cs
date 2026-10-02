@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (e.PropertyName == "BackButtonVisible")
 				{
-					UpdateDrawerToggleVisible();
+					RefreshNavigationSlot();
 				}
 			};
 
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateFlyoutBehavior(FlyoutBehavior flyoutBehavior)
 		{
 			_navigationDrawer.DrawerBehavior = flyoutBehavior.ToPlatform();
-			UpdateDrawerToggleVisible();
+			RefreshNavigationSlot();
 
 			if (_navigationDrawer.DrawerBehavior == TDrawerBehavior.Drawer)
 				_ = _navigationDrawer.CloseAsync(false);
@@ -441,9 +441,10 @@ namespace Microsoft.Maui.Controls.Platform
 				IsOpened = true;
 		}
 
-		void UpdateDrawerToggleVisible()
+		// DrawerToggleVisible is computed and owned by ShellToolbar, which already accounts for
+		// FlyoutBehavior and the back button, so this only re-renders the navigation slot.
+		void RefreshNavigationSlot()
 		{
-			Element!.Toolbar.DrawerToggleVisible = ((Element!.Toolbar.DrawerToggleVisible) && (Element.FlyoutBehavior == FlyoutBehavior.Flyout));
 			_toolbar?.UpdateBackButton(Element!.Toolbar);
 		}
 

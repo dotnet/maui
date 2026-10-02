@@ -39,7 +39,7 @@ namespace Maui.Controls.Sample.Pages
 			Window.TitleBar = _customTitleBar;
 		}
 
-		private void SetIconCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void SetIconCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -51,7 +51,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void ColorButton_Clicked(object sender, EventArgs e)
+		private void ColorButton_Clicked(object? sender, EventArgs e)
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ColorTextBox.Text, out var color))
 			{
@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void ForegroundColorButton_Clicked(object sender, EventArgs e)
+		private void ForegroundColorButton_Clicked(object? sender, EventArgs e)
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ForegroundColorTextBox.Text, out var color))
 			{
@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void LeadingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void LeadingCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -82,7 +82,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void ContentCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void ContentCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void TrailingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void TrailingCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -127,7 +127,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void TallModeCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void TallModeCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -17,12 +19,106 @@ public class ResizetizerTests : BaseBuildTest
 		""";
 
 	[Theory]
+	[InlineData("ios")]
+	[InlineData("maccatalyst")]
+	public void BuildsAppleIconComposerMauiIconIncrementally(string platform)
+	{
+		SetTestIdentifier(platform);
+
+		if (!TestEnvironment.IsMacOS || !SupportsAppleIconComposer(platform))
+			return;
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var framework = $"{DotNetCurrent}-{platform}";
+		const string config = "Debug";
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		var originalProject = File.ReadAllText(projectFile);
+
+		// Establish the unchanged template baseline before switching to a native icon.
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The ordinary MauiIcon baseline failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon");
+
+		var bundleDir = Path.Combine(projectDir, "Native Icon Resources", "Distinctive.icon");
+		var assetsDir = Path.Combine(bundleDir, "Assets");
+		var frontAsset = Path.Combine(assetsDir, "front.png");
+		Directory.CreateDirectory(assetsDir);
+		File.Copy(
+			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon1024.png"),
+			Path.Combine(assetsDir, "back.png"));
+		File.Copy(
+			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon512.png"),
+			frontAsset);
+		WriteIconJson(bundleDir, "back.png", "front.png");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"</Project>",
+			"""
+			<ItemGroup>
+				<MauiIcon Remove="Resources\AppIcon\appicon.svg" />
+				<MauiIcon Include="Native Icon Resources\Distinctive.icon" />
+			</ItemGroup>
+			</Project>
+			""");
+		var nativeProject = File.ReadAllText(projectFile);
+
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon build failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+		var nativeAssetsHash = GetAppleAssetsHash(projectDir, framework, config);
+		Assert.DoesNotContain(
+			Directory.GetFiles(Path.Combine(projectDir, "obj", config, framework), "*Distinctive*", SearchOption.AllDirectories),
+			path => path.Contains($"{Path.DirectorySeparatorChar}resizetizer{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
+
+		// No-op incremental build.
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon no-op build failed for {framework}.");
+		Assert.Equal(nativeAssetsHash, GetAppleAssetsHash(projectDir, framework, config));
+
+		// Content update, followed by a deletion/rename that changes the recursively collected item list.
+		var originalFrontWriteTime = File.GetLastWriteTimeUtc(frontAsset);
+		File.Copy(
+			Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "src", "templates", "maui-multiproject", "MauiApp.1.Mac", "Assets.xcassets", "AppIcon.appiconset", "Icon256.png"),
+			frontAsset,
+			overwrite: true);
+		File.SetLastWriteTimeUtc(frontAsset, originalFrontWriteTime.AddMinutes(-1));
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon content-update build failed for {framework}.");
+		Assert.NotEqual(nativeAssetsHash, GetAppleAssetsHash(projectDir, framework, config));
+
+		File.Delete(Path.Combine(assetsDir, "back.png"));
+		File.Move(Path.Combine(assetsDir, "front.png"), Path.Combine(assetsDir, "renamed.png"));
+		WriteIconJson(bundleDir, "renamed.png");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon delete/rename build failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+
+		// Switching back without Clean must invalidate native ACTool caches, restore the
+		// existing Resizetizer path, and restore the legacy manifest selection.
+		File.WriteAllText(projectFile, originalProject);
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"Switching back to the ordinary MauiIcon failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "appicon", unexpectedIconName: "Distinctive");
+
+		File.WriteAllText(projectFile, nativeProject);
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "Clean", framework: framework, properties: BuildProps, output: _output),
+			$"Clean failed for {framework}.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, output: _output),
+			$"The native MauiIcon clean rebuild failed for {framework}.");
+		AssertAppleAssets(projectDir, framework, config, expectedIconName: "Distinctive", requireComposerRenditions: true);
+	}
+
+	[Theory]
 	// windows unpackaged/exe
 	[InlineData("maui", "classlib", true)] // net9.0
 	[InlineData("maui", "mauilib", true)] // net9.0-xxx
 	[InlineData("maui-blazor", "classlib", true)] // net9.0
 	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
-											   // windows packaged/msix
+												 // windows packaged/msix
 	[InlineData("maui", "classlib", false)] // net9.0
 	[InlineData("maui", "mauilib", false)] // net9.0-xxx
 	[InlineData("maui-blazor", "classlib", false)] // net9.0
@@ -32,7 +128,8 @@ public class ResizetizerTests : BaseBuildTest
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true)
+				return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -374,6 +471,501 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(executions >= minimumExecutionCount,
 			$"Expected target '{targetName}' to execute at least {minimumExecutionCount} times, but found {executions}. See binlog: {binlogPath}");
 	}
+
+	[Fact]
+	public void ChangingExternalBackendPlatformTypeInvalidatesImages()
+	{
+		SetTestIdentifier("external-backend-platform-invalidation");
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, "ExternalBackend.csproj");
+		var imageFile = Path.Combine(projectDir, "image.svg");
+
+		File.WriteAllText(imageFile, BlankSvgContents);
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <ResizetizerPlatformType>generic</ResizetizerPlatformType>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiImage Include="image.svg" />
+			  </ItemGroup>
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
+			"External backend project failed to process generic images. Check test output for errors.");
+
+		var intermediateDir = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent);
+		var outputsFile = Path.Combine(intermediateDir, "mauiimage.outputs");
+		var stampFile = Path.Combine(intermediateDir, "mauiimage.stamp");
+		Assert.True(File.Exists(outputsFile), $"Resizetizer output list does not exist: {outputsFile}");
+		Assert.True(File.Exists(stampFile), $"Resizetizer stamp does not exist: {stampFile}");
+
+		var genericImages = File.ReadAllLines(outputsFile);
+		Assert.Equal(2, genericImages.Length);
+		Assert.Contains(genericImages, path => path.EndsWith("image.png", StringComparison.OrdinalIgnoreCase));
+		Assert.Contains(genericImages, path => path.EndsWith("image@2x.png", StringComparison.OrdinalIgnoreCase));
+
+		File.WriteAllText(
+			projectFile,
+			File.ReadAllText(projectFile).Replace(
+				"<ResizetizerPlatformType>generic</ResizetizerPlatformType>",
+				"<ResizetizerPlatformType>android</ResizetizerPlatformType>",
+				StringComparison.Ordinal));
+		File.SetLastWriteTimeUtc(stampFile, DateTime.UtcNow.AddHours(1));
+		var invalidationSentinel = File.GetLastWriteTimeUtc(stampFile);
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
+			"External backend project failed after changing its platform type to android.");
+		Assert.True(File.GetLastWriteTimeUtc(stampFile) < invalidationSentinel,
+			"ResizetizeImages should rerun when only ResizetizerPlatformType changes.");
+
+		var androidImages = File.ReadAllLines(outputsFile);
+		Assert.Equal(5, androidImages.Length);
+		Assert.All(androidImages, path =>
+		{
+			Assert.StartsWith("drawable-", Path.GetFileName(Path.GetDirectoryName(path)), StringComparison.OrdinalIgnoreCase);
+			Assert.True(File.Exists(path), $"Processed Android image does not exist: {path}");
+		});
+		Assert.All(genericImages, path => Assert.False(File.Exists(path), $"Stale generic image still exists: {path}"));
+
+		File.SetLastWriteTimeUtc(stampFile, DateTime.UtcNow.AddMinutes(1));
+		var noOpSentinel = File.GetLastWriteTimeUtc(stampFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
+			"External backend project failed on an unchanged rebuild.");
+		Assert.Equal(noOpSentinel, File.GetLastWriteTimeUtc(stampFile));
+	}
+
+	[Fact]
+	public void CustomBackendProcessesImagesWithoutBuiltInOutputInjection()
+	{
+		SetTestIdentifier("custom-backend");
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, "CustomBackend.csproj");
+		var imageFile = Path.Combine(projectDir, "image.svg");
+
+		File.WriteAllText(imageFile, BlankSvgContents);
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <ResizetizerPlatformType>custom-backend</ResizetizerPlatformType>
+			    <ResizetizerAfterImageProcessingTargets>VerifyCustomBackendImages</ResizetizerAfterImageProcessingTargets>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiImage Include="image.svg" />
+			  </ItemGroup>
+			  <Target Name="VerifyCustomBackendImages">
+			    <Error Condition="'@(MauiImage)' != '' And '@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images." />
+			    <Error Condition="'@(ContentWithTargetPath)' != ''" Text="Custom backends must not receive built-in output injection." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)custom-backend.items" Lines="@(MauiProcessedImage)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ResizetizeImages" />
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			$"Custom backend project failed to process images. Check test output for errors.");
+
+		var outputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r", "custom-backend.items");
+		Assert.True(File.Exists(outputsFile), $"Custom backend output list was not created: {outputsFile}");
+		var processedImages = File.ReadAllLines(outputsFile);
+		Assert.Equal(2, processedImages.Length);
+		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
+
+		// A genuine no-op rebuild must skip ResizetizeImages and restore only the
+		// persisted Resizetizer output list, not backend-written files from the folder.
+		var resizetizerStampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.stamp");
+		Assert.True(File.Exists(resizetizerStampFile), $"Resizetizer stamp does not exist: {resizetizerStampFile}");
+		var originalStampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		File.SetLastWriteTimeUtc(resizetizerStampFile, DateTime.UtcNow.AddMinutes(1));
+		var noOpStampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		File.Delete(outputsFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed on incremental rebuild. Check test output for errors.");
+		Assert.Equal(noOpStampWriteTime, File.GetLastWriteTimeUtc(resizetizerStampFile));
+		File.SetLastWriteTimeUtc(resizetizerStampFile, originalStampWriteTime);
+
+		var processedImagesIncremental = File.ReadAllLines(outputsFile);
+		Assert.Equal(2, processedImagesIncremental.Length);
+		Assert.DoesNotContain(processedImagesIncremental, path => path.EndsWith(".items", StringComparison.OrdinalIgnoreCase));
+
+		// A partial cache restore can lose only the persisted output list while leaving
+		// the stamp and generated images. The missing list must invalidate the target,
+		// rerun image processing, and restore the processed-image contract.
+		var resizetizerOutputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.outputs");
+		Assert.True(File.Exists(resizetizerOutputsFile), $"Resizetizer output list does not exist: {resizetizerOutputsFile}");
+		File.SetLastWriteTimeUtc(resizetizerStampFile, DateTime.UtcNow.AddHours(1));
+		var invalidationSentinel = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		File.Delete(resizetizerOutputsFile);
+		File.Delete(outputsFile);
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed after deleting only the persisted image output list.");
+		Assert.True(File.GetLastWriteTimeUtc(resizetizerStampFile) < invalidationSentinel,
+			"ResizetizeImages should rerun when the persisted output list is missing.");
+		Assert.True(File.Exists(resizetizerOutputsFile), "Resizetizer output list was not restored.");
+		Assert.Equal(2, File.ReadAllLines(outputsFile).Length);
+
+		// Removing the final image must not restore the previous output list. The old
+		// generated files are deleted and no processed images flow to the backend.
+		File.WriteAllText(
+			projectFile,
+			File.ReadAllText(projectFile).Replace(
+				"""    <MauiImage Include="image.svg" />""",
+				string.Empty,
+				StringComparison.Ordinal));
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed after removing its final image. Check test output for errors.");
+
+		Assert.Empty(File.ReadAllLines(outputsFile));
+		Assert.All(processedImages, path => Assert.False(File.Exists(path), $"Stale processed image still exists: {path}"));
+	}
+
+	[Fact]
+	public void CustomBackendLateImportCollectsReferencedResourcesWithoutBuiltInOutputInjection()
+	{
+		SetTestIdentifier("custom-backend-late-import");
+		var projectDir = TestDirectory;
+
+		// A referenced library provides the MauiImage/MauiFont/MauiAsset items. These are only
+		// surfaced to the app through the ResizetizeCollectItems prerequisite, so the custom
+		// backend gets nothing unless the collection/input-output wiring runs.
+		var libDir = Path.Combine(projectDir, "ResLib");
+		Directory.CreateDirectory(libDir);
+		File.WriteAllText(Path.Combine(libDir, "lib_image.svg"), BlankSvgContents);
+		File.WriteAllText(Path.Combine(libDir, "lib_font.ttf"), "not-a-real-font");
+		File.WriteAllText(Path.Combine(libDir, "lib_asset.txt"), "asset-contents");
+		// The app and referenced library intentionally contribute the same font filename.
+		// The physical copy output and MauiProcessedFont contract must contain it only once.
+		File.WriteAllText(Path.Combine(projectDir, "lib_font.ttf"), "not-a-real-font");
+		File.WriteAllText(Path.Combine(libDir, "ResLib.csproj"),
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiImage Include="lib_image.svg" />
+			    <MauiFont Include="lib_font.ttf" />
+			    <MauiAsset Include="lib_asset.txt" LogicalName="lib_asset.txt" />
+			  </ItemGroup>
+			</Project>
+			""");
+
+		// The backend opts in by setting ResizetizerPlatformType from a targets file that is
+		// imported *after* the Resizetizer targets. At that point the evaluation-time
+		// dependency properties were already skipped, so processing relies on the
+		// execution-time _PrepareExternalMaui* fallback targets to run the prerequisites.
+		File.WriteAllText(Path.Combine(projectDir, "custom-backend.targets"),
+			"""
+			<Project>
+			  <PropertyGroup>
+			    <ResizetizerPlatformType>custom-backend</ResizetizerPlatformType>
+			    <ResizetizerAfterImageProcessingTargets>VerifyCustomBackendImages</ResizetizerAfterImageProcessingTargets>
+			    <ResizetizerAfterFontProcessingTargets>VerifyCustomBackendFonts</ResizetizerAfterFontProcessingTargets>
+			    <ResizetizerAfterAssetProcessingTargets>VerifyCustomBackendAssets</ResizetizerAfterAssetProcessingTargets>
+			  </PropertyGroup>
+			  <Target Name="VerifyCustomBackendImages">
+			    <Error Condition="'@(MauiProcessedImage)' == ''" Text="Custom backends must receive processed images collected from references." />
+			    <Error Condition="'@(ContentWithTargetPath)' != ''" Text="Custom backends must not receive built-in output injection." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.images" Lines="@(MauiProcessedImage)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendFonts">
+			    <Error Condition="'$(ExpectNoProcessedFonts)' != 'true' And '@(MauiProcessedFont)' == ''" Text="Custom backends must receive processed fonts collected from references." />
+			    <Error Condition="'$(ExpectNoProcessedFonts)' == 'true' And '@(MauiProcessedFont)' != ''" Text="Removed fonts must not remain in the processed font contract." />
+			    <Error Condition="'$(ExpectFontPlist)' == 'true' And '@(PartialAppManifest)' == ''" Text="iOS font processing must expose the generated partial app manifest." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.fonts" Lines="@(MauiProcessedFont)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendAssets">
+			    <Error Condition="'@(MauiProcessedAsset)' == ''" Text="Custom backends must receive processed assets collected from references." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.assets" Lines="@(MauiProcessedAsset)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets" />
+			</Project>
+			""");
+
+		// Use explicit SDK imports so the backend targets can be imported *after* the
+		// Resizetizer targets (a plain trailing <Import> still evaluates before the SDK's
+		// implicit package imports, which would opt in at evaluation time instead).
+		var projectFile = Path.Combine(projectDir, "CustomBackend.csproj");
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project>
+			  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <EnableDefaultItems>false</EnableDefaultItems>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <ProjectReference Include="ResLib\ResLib.csproj" />
+			    <MauiFont Include="lib_font.ttf" />
+			  </ItemGroup>
+			  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+			  <!-- Late import: this runs after the Resizetizer targets from the package. -->
+			  <Import Project="custom-backend.targets" />
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			$"Custom backend project failed to process late-imported resources. Check test output for errors.");
+
+		var intermediateDir = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r");
+
+		var imagesFile = Path.Combine(intermediateDir, "late-import.images");
+		Assert.True(File.Exists(imagesFile), $"Custom backend image output list was not created: {imagesFile}");
+		var processedImages = File.ReadAllLines(imagesFile);
+		Assert.NotEmpty(processedImages);
+		Assert.All(processedImages, path => Assert.True(File.Exists(path), $"Processed image does not exist: {path}"));
+
+		var fontsFile = Path.Combine(intermediateDir, "late-import.fonts");
+		Assert.True(File.Exists(fontsFile),
+			"Custom backend font output list was not created; referenced fonts were not collected.");
+		var processedFont = Assert.Single(File.ReadAllLines(fontsFile));
+		var processedFontPath = Path.IsPathRooted(processedFont)
+			? processedFont
+			: Path.Combine(projectDir, processedFont);
+		Assert.True(File.Exists(processedFontPath), $"Processed font does not exist: {processedFont}");
+
+		var fontOutputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauifont.outputs");
+		Assert.True(File.Exists(fontOutputsFile), $"Font output manifest does not exist: {fontOutputsFile}");
+		File.SetLastWriteTimeUtc(fontOutputsFile, DateTime.UtcNow.AddHours(1));
+		var noOpFontOutputsWriteTime = File.GetLastWriteTimeUtc(fontOutputsFile);
+		File.Delete(fontsFile);
+		// Enter through the always-run collection target as platform packaging does, while
+		// still executing the external backend hook after the incremental processing target.
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "_CollectMauiFontItems", properties: BuildProps, output: _output),
+			"Custom backend project failed on a no-op font rebuild. Check test output for errors.");
+		Assert.Equal(noOpFontOutputsWriteTime, File.GetLastWriteTimeUtc(fontOutputsFile));
+		Assert.True(File.Exists(fontsFile), "Custom backend font output list was not recreated on the no-op rebuild.");
+		Assert.Single(File.ReadAllLines(fontsFile));
+
+		// A partial cache restore can retain the future-dated manifest while losing a copied font.
+		// The guard must invalidate the manifest, rerun ProcessMauiFonts, and restore both the
+		// physical copy and the processed-font contract exposed to the backend.
+		File.Delete(processedFontPath);
+		File.Delete(fontsFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed after deleting only a copied processed font.");
+		Assert.True(File.GetLastWriteTimeUtc(fontOutputsFile) < noOpFontOutputsWriteTime,
+			"ProcessMauiFonts should rerun when an expected copied font is missing.");
+		Assert.True(File.Exists(processedFontPath), $"Missing processed font was not restored: {processedFontPath}");
+		Assert.Equal(processedFont, Assert.Single(File.ReadAllLines(fontsFile)));
+
+		// iOS font processing also records MauiInfo.plist in the output manifest.
+		// A partial cache restore that loses only this side artifact must invalidate the
+		// retained manifest and restore both the file and PartialAppManifest contract.
+		var iosFontBuildProps = BuildProps;
+		iosFontBuildProps.Add("_ResizetizerIsiOSApp=true");
+		iosFontBuildProps.Add("ExpectFontPlist=true");
+		File.Delete(fontOutputsFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: iosFontBuildProps, output: _output),
+			"Custom backend project failed to bootstrap simulated iOS font registration.");
+		var fontPlistFile = Path.Combine(Path.GetDirectoryName(processedFontPath)!, "MauiInfo.plist");
+		Assert.True(File.Exists(fontPlistFile), $"iOS font partial manifest was not created: {fontPlistFile}");
+
+		File.SetLastWriteTimeUtc(fontOutputsFile, DateTime.UtcNow.AddHours(1));
+		var plistRecoverySentinel = File.GetLastWriteTimeUtc(fontOutputsFile);
+		File.Delete(fontPlistFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: iosFontBuildProps, output: _output),
+			"Custom backend project failed after deleting only the iOS font partial manifest.");
+		Assert.True(File.GetLastWriteTimeUtc(fontOutputsFile) < plistRecoverySentinel,
+			"ProcessMauiFonts should rerun when the iOS font partial manifest is missing.");
+		Assert.True(File.Exists(fontPlistFile), $"Missing iOS font partial manifest was not restored: {fontPlistFile}");
+
+		File.WriteAllText(
+			projectFile,
+			File.ReadAllText(projectFile).Replace(
+				"""    <MauiFont Include="lib_font.ttf" />""",
+				string.Empty,
+				StringComparison.Ordinal));
+		var libProjectFile = Path.Combine(libDir, "ResLib.csproj");
+		File.WriteAllText(
+			libProjectFile,
+			File.ReadAllText(libProjectFile).Replace(
+				"""    <MauiFont Include="lib_font.ttf" />""",
+				string.Empty,
+				StringComparison.Ordinal));
+
+		var noFontBuildProps = BuildProps;
+		noFontBuildProps.Add("ExpectNoProcessedFonts=true");
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: noFontBuildProps, output: _output),
+			"Custom backend project failed after removing its final font. Check test output for errors.");
+		Assert.Empty(File.ReadAllLines(fontsFile));
+
+		Assert.True(File.Exists(Path.Combine(intermediateDir, "late-import.assets")),
+			"Custom backend asset output list was not created; referenced assets were not collected.");
+	}
+
+	[Fact]
+	public void CustomBackendEarlyOptInCollectsReferencedAssets()
+	{
+		SetTestIdentifier("custom-backend-early-optin");
+		var projectDir = TestDirectory;
+
+		// A referenced library provides MauiAsset items.  The items are surfaced to the app
+		// project only when ResizetizeCollectItems runs before ProcessMauiAssets.  For early
+		// opt-in backends (ResizetizerPlatformType set at evaluation time) the execution-time
+		// _PrepareExternalMauiAssets fallback is skipped because _ResizetizerIsCompatibleApp
+		// is already True; instead ProcessMauiAssetsDependsOnTargets must include
+		// ResizetizeCollectItems so that ProcessMauiAssets picks up the referenced items.
+		var libDir = Path.Combine(projectDir, "ResLib");
+		Directory.CreateDirectory(libDir);
+		File.WriteAllText(Path.Combine(libDir, "lib_asset.txt"), "asset-contents");
+		File.WriteAllText(Path.Combine(libDir, "ResLib.csproj"),
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiAsset Include="lib_asset.txt" LogicalName="lib_asset.txt" />
+			  </ItemGroup>
+			</Project>
+			""");
+
+		// Early opt-in: ResizetizerPlatformType is set directly in the project body so
+		// _ResizetizerIsCompatibleApp becomes True at evaluation time.
+		var projectFile = Path.Combine(projectDir, "CustomBackend.csproj");
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <EnableDefaultItems>false</EnableDefaultItems>
+			    <ResizetizerPlatformType>custom-backend</ResizetizerPlatformType>
+			    <ResizetizerAfterAssetProcessingTargets>VerifyCustomBackendAssets</ResizetizerAfterAssetProcessingTargets>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <ProjectReference Include="ResLib\ResLib.csproj" />
+			  </ItemGroup>
+			  <Target Name="VerifyCustomBackendAssets">
+			    <Error Condition="'@(MauiProcessedAsset)' == ''" Text="Early-opt-in backends must receive processed assets collected from project references." />
+			    <WriteLinesToFile File="$(_MauiIntermediateImages)early-optin.assets" Lines="@(MauiProcessedAsset)" Overwrite="true" />
+			  </Target>
+			  <Target Name="VerifyCustomBackendResources" DependsOnTargets="ProcessMauiAssets" />
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Early opt-in custom backend project failed to collect referenced assets. Check test output for errors.");
+
+		var assetsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "resizetizer", "r", "early-optin.assets");
+		Assert.True(File.Exists(assetsFile), $"Early opt-in asset output list was not created: {assetsFile}");
+		var processedAssets = File.ReadAllLines(assetsFile);
+		Assert.NotEmpty(processedAssets);
+	}
+
+	static bool SupportsAppleIconComposer(string platform)
+	{
+		if (!DotNetCurrent.StartsWith("net11.", StringComparison.OrdinalIgnoreCase))
+			return false;
+
+		var packsDirectory = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet", "packs");
+		if (!Directory.Exists(packsDirectory))
+			return false;
+
+		var sdkPackPrefix = platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase)
+			? "Microsoft.MacCatalyst.Sdk"
+			: "Microsoft.iOS.Sdk";
+		var sdkPack = $"{sdkPackPrefix}.{DotNetCurrent}_*";
+
+		return Directory.GetDirectories(packsDirectory, sdkPack)
+			.SelectMany(pack => Directory.GetDirectories(pack))
+			.Select(path => Path.GetFileName(path).Split('-', 2)[0])
+			.Any(version => Version.TryParse(version, out var parsed) && parsed >= new Version(26, 5, 11720));
+	}
+
+	static void WriteIconJson(string bundleDirectory, params string[] imageNames)
+	{
+		var layers = string.Join(
+			",",
+			imageNames.Select((imageName, index) => $$"""{"image-name":"{{imageName}}","name":"layer{{index}}"}"""));
+		File.WriteAllText(
+			Path.Combine(bundleDirectory, "icon.json"),
+			$$"""{"groups":[{"layers":[{{layers}}]}]}""");
+	}
+
+	static void AssertAppleAssets(
+		string projectDirectory,
+		string framework,
+		string configuration,
+		string expectedIconName,
+		bool requireComposerRenditions = false,
+		string? unexpectedIconName = null)
+	{
+		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
+		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
+		var assetsCar = Directory.GetFiles(appDirectory, "Assets.car", SearchOption.AllDirectories).Single();
+		var infoPlist = framework.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase)
+			? Path.Combine(appDirectory, "Contents", "Info.plist")
+			: Path.Combine(appDirectory, "Info.plist");
+		Assert.True(File.Exists(infoPlist), $"Missing app manifest '{infoPlist}'.");
+
+		var assetInfo = RunTool("xcrun", "assetutil", "--info", assetsCar);
+		Assert.Contains(expectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
+		if (unexpectedIconName is not null)
+			Assert.DoesNotContain(unexpectedIconName, assetInfo, StringComparison.OrdinalIgnoreCase);
+		if (requireComposerRenditions)
+		{
+			Assert.Contains("IconGroup", assetInfo, StringComparison.Ordinal);
+			Assert.Contains("IconImageStack", assetInfo, StringComparison.Ordinal);
+		}
+
+		var plist = RunTool("plutil", "-p", infoPlist);
+		Assert.Contains(expectedIconName, plist, StringComparison.OrdinalIgnoreCase);
+		if (requireComposerRenditions)
+			Assert.DoesNotContain("XSAppIconAssets", plist, StringComparison.Ordinal);
+	}
+
+	static string GetAppleAssetsHash(string projectDirectory, string framework, string configuration)
+	{
+		var binDirectory = Path.Combine(projectDirectory, "bin", configuration, framework);
+		var appDirectory = Directory.GetDirectories(binDirectory, "*.app", SearchOption.AllDirectories).First();
+		var assetsCar = Directory.GetFiles(appDirectory, "Assets.car", SearchOption.AllDirectories).Single();
+		return Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assetsCar)));
+	}
+
+	static string RunTool(string fileName, params string[] arguments)
+	{
+		const int timeoutMilliseconds = 60_000;
+		var startInfo = new ProcessStartInfo(fileName)
+		{
+			RedirectStandardOutput = true,
+			RedirectStandardError = true,
+			UseShellExecute = false,
+		};
+		foreach (var argument in arguments)
+			startInfo.ArgumentList.Add(argument);
+
+		using var process = Process.Start(startInfo)!;
+		var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+		var standardErrorTask = process.StandardError.ReadToEndAsync();
+		if (!process.WaitForExit(timeoutMilliseconds))
+		{
+			process.Kill(entireProcessTree: true);
+			process.WaitForExit();
+			var timedOutOutput = standardOutputTask.GetAwaiter().GetResult();
+			var timedOutError = standardErrorTask.GetAwaiter().GetResult();
+			Assert.Fail($"{fileName} timed out after {timeoutMilliseconds}ms.{Environment.NewLine}{timedOutOutput}{timedOutError}");
+		}
+
+		var standardOutput = standardOutputTask.GetAwaiter().GetResult();
+		var standardError = standardErrorTask.GetAwaiter().GetResult();
+		Assert.True(process.ExitCode == 0, $"{fileName} failed with exit code {process.ExitCode}:{Environment.NewLine}{standardError}");
+		return standardOutput;
+	}
+
 	[Theory]
 	[InlineData("maui", "mauilib", true)]
 	[InlineData("maui", "mauilib", false)]
@@ -382,7 +974,8 @@ public class ResizetizerTests : BaseBuildTest
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true)
+				return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -457,7 +1050,8 @@ public class ResizetizerTests : BaseBuildTest
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
+			if (true)
+				return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");

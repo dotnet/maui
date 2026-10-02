@@ -18,6 +18,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
 				"Display pages as a set of Tabs."),
 
+			new SectionModel(typeof(TabbedPageBadgePage), "TabbedPage Badges",
+				"Display numeric, text, dot, and colored badges on TabbedPage tabs."),
+
 			new SectionModel(typeof(AndExpandPage), "AndExpand",
 				"StackLayout with legacy AndExpand options"),
 		};

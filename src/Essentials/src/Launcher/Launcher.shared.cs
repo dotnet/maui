@@ -128,10 +128,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static ILauncher Default =>
-			defaultImplementation ??= new LauncherImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new LauncherImplementation());
 
 		internal static void SetDefault(ILauncher? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	partial class LauncherImplementation : ILauncher

@@ -42,6 +42,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabLayout.SetTabTextColors(unselectedArgb, titleArgb);
 			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
 			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
+			AndroidSystemChrome.UpdateTopChrome(
+				tabLayout,
+				new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor));
 		}
 
 		#region IDisposable

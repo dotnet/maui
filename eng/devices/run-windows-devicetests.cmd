@@ -165,18 +165,17 @@ if %IS_PACKAGED%==1 (
     
     echo Found MSIX: !MSIX_FILE!
     
-    REM Install dependencies
-    echo Installing dependencies...
-    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.msix" 2^>nul ^| findstr /i "Dependencies" ^| findstr /i "x64"') do (
-        echo Installing dependency: %%f
-        powershell -Command "Add-AppxPackage -Path '%%f'" 2>nul
-    )
-    
-    REM Install the app
-    echo Installing app package...
-    powershell -Command "Add-AppxPackage -Path '!MSIX_FILE!'"
+    REM Select dependency architecture by directory, not the x64 parent package name.
+    echo Installing app package and x64 dependencies...
+    powershell -NoProfile -Command ^
+        "$ErrorActionPreference = 'Stop';" ^
+        "$dependencies = @(Get-ChildItem -Path '%SCENARIO_DIR%' -Filter '*.msix' -Recurse | Where-Object { $_.Directory.Name -eq 'x64' -and $_.Directory.Parent.Name -eq 'Dependencies' } | ForEach-Object FullName);" ^
+        "$installParameters = @{ Path = '!MSIX_FILE!' };" ^
+        "if ($dependencies.Count -gt 0) { $installParameters.DependencyPath = $dependencies; $dependencies | ForEach-Object { Write-Host \"Dependency: $_\" } };" ^
+        "Add-AppxPackage @installParameters"
     if !ERRORLEVEL! NEQ 0 (
         echo ERROR: Failed to install app package
+        powershell -NoProfile -Command "Get-AppPackageLog -All | Select-Object -Last 50 | Format-List"
         exit /b 1
     )
     
@@ -319,6 +318,14 @@ if %IS_PACKAGED%==1 (
             
             echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
             start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
+            set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
+            echo App exited with code: !LAUNCH_ERRORLEVEL!
+            REM WinUI Application.Exit may return -1 on a successful run.
+            if !LAUNCH_ERRORLEVEL! NEQ 0 if !LAUNCH_ERRORLEVEL! NEQ -1 (
+                echo ERROR: Test process crashed for !CATEGORY_NAME! ^(exit !LAUNCH_ERRORLEVEL!^)
+                call :dump_diagnostics
+                set EXIT_CODE=1
+            )
             
             if not exist "!EXPECTED_RESULT_FILE!" (
                 echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
@@ -335,6 +342,11 @@ if %IS_PACKAGED%==1 (
         start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%"
         set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
         echo App exited with code: !LAUNCH_ERRORLEVEL!
+        if !LAUNCH_ERRORLEVEL! NEQ 0 if !LAUNCH_ERRORLEVEL! NEQ -1 (
+            echo ERROR: Test process crashed ^(exit !LAUNCH_ERRORLEVEL!^)
+            call :dump_diagnostics
+            set EXIT_CODE=1
+        )
         
         if not exist "%TEST_RESULTS_FILE%" (
             echo ERROR: Test results file was not created: %TEST_RESULTS_FILE%
@@ -435,33 +447,33 @@ echo Found %RESULT_COUNT% test result file(s)
 REM Merge results into testResults.xml for Helix
 echo Merging test results for Helix...
 powershell -Command ^
+    "$ErrorActionPreference = 'Stop';" ^
+    "$hasFailures = $false;" ^
     "$resultFiles = Get-ChildItem -Path '%TEST_RESULTS_DIR%' -Filter 'TestResults-*.xml';" ^
+    "$readerSettings = New-Object System.Xml.XmlReaderSettings;" ^
+    "$readerSettings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit;" ^
+    "$readerSettings.XmlResolver = $null;" ^
     "$mergedDoc = New-Object System.Xml.XmlDocument;" ^
     "$assembliesNode = $mergedDoc.CreateElement('assemblies');" ^
     "$mergedDoc.AppendChild($assembliesNode) | Out-Null;" ^
     "foreach ($file in $resultFiles) {" ^
     "    try {" ^
     "        $doc = New-Object System.Xml.XmlDocument;" ^
-    "        $doc.Load($file.FullName);" ^
-    "        $nodes = $doc.SelectNodes('//assembly');" ^
+    "        $reader = [System.Xml.XmlReader]::Create($file.FullName, $readerSettings);" ^
+    "        try { $doc.Load($reader) } finally { $reader.Dispose() };" ^
+    "        $nodes = $doc.SelectNodes('/assemblies/assembly');" ^
+    "        if ($nodes.Count -eq 0) { throw 'No xUnit assemblies found' };" ^
+    "        if ($doc.SelectSingleNode('/assemblies/assembly[@failed > 0 or @errors > 0]')) { Write-Host \"ERROR: Test failures in $($file.Name)\"; $hasFailures = $true };" ^
     "        foreach ($node in $nodes) {" ^
     "            $imported = $mergedDoc.ImportNode($node, $true);" ^
     "            $assembliesNode.AppendChild($imported) | Out-Null;" ^
     "        }" ^
-    "    } catch { Write-Host \"WARNING: Failed to parse $($file.Name): $_\" }" ^
+    "    } catch { Write-Host \"ERROR: Failed to parse $($file.Name): $_\"; $hasFailures = $true }" ^
     "}" ^
     "$mergedDoc.Save('%TEST_RESULTS_DIR%\testResults.xml');" ^
-    "Write-Host 'Created merged testResults.xml'"
-
-REM Check for test failures in result files
-for %%f in ("%TEST_RESULTS_DIR%\TestResults-*.xml") do (
-    powershell -Command ^
-        "$doc = New-Object System.Xml.XmlDocument;" ^
-        "$doc.Load('%%f');" ^
-        "$failed = $doc.SelectSingleNode('/assemblies/assembly[@failed > 0 or @errors > 0]/@failed');" ^
-        "if ($failed) { Write-Host 'ERROR: At least' $failed.Value 'test(s) failed in %%~nxf'; exit 1 }"
-    if !ERRORLEVEL! NEQ 0 set EXIT_CODE=1
-)
+    "Write-Host 'Created merged testResults.xml';" ^
+    "if ($hasFailures) { exit 1 }"
+if %ERRORLEVEL% NEQ 0 set EXIT_CODE=1
 
 :upload
 REM ========================================

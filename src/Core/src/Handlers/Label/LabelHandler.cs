@@ -28,13 +28,22 @@ namespace Microsoft.Maui.Handlers
 #if TIZEN
 			[nameof(ILabel.Shadow)] = MapShadow,
 #endif
+#if IOS || MACCATALYST
+			// Attributed-text formatting must run after Text creates the native attributed string.
+			[nameof(ILabel.Text)] = MapText,
+			[nameof(ITextStyle.Font)] = MapFont,
+			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
+#else
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
+#endif
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ILabel.LineHeight)] = MapLineHeight,
 			[nameof(ILabel.Padding)] = MapPadding,
+#if !IOS && !MACCATALYST
 			[nameof(ILabel.Text)] = MapText,
+#endif
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 #if ANDROID

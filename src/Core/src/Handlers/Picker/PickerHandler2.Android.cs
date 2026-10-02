@@ -7,8 +7,7 @@ using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers;
 
-// TODO: Material3 - make it public in .net 11
-internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
+public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 {
 	AppCompatAlertDialog? _dialog;
 

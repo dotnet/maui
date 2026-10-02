@@ -102,11 +102,37 @@ steps:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
-      if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
-        XCODE_VERSION=$(REQUIRED_XCODE)
+      # XCODE variable is in major.minor format (e.g., 26.1)
+      XCODE_MAJOR_MINOR=$(XCODE)
+      echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
+
+      # Parse major and minor versions
+      MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+      MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+      PREV_MINOR=$((MINOR - 1))
+
+      # First, check for a non-symlinked Xcode_major.minor.app (e.g., Xcode_26.2.app)
+      GENERIC_PATH="/Applications/Xcode_${MAJOR}.${MINOR}.app"
+      if [[ -d "$GENERIC_PATH" && ! -L "$GENERIC_PATH" ]]; then
+        echo "Found non-symlinked Xcode at ${GENERIC_PATH}"
+        XCODE_VERSION="${MAJOR}.${MINOR}"
+        XCODE_PATH="$GENERIC_PATH"
       else
-        XCODE_VERSION=$(XCODE)
+        # Try to find a matching Xcode_{major}.{minor}.*.app (e.g., Xcode_26.2.0.app)
+        MATCHED_PATHS=(/Applications/Xcode_${MAJOR}.${MINOR}.*.app)
+        if [[ -d "${MATCHED_PATHS[0]}" ]]; then
+          # If multiple, pick the highest version
+          HIGHEST_PATH=$(ls -1d /Applications/Xcode_${MAJOR}.${MINOR}.*.app 2>/dev/null | sort -V | tail -n 1)
+          if [[ -n "$HIGHEST_PATH" && -d "$HIGHEST_PATH" ]]; then
+            echo "Found Xcode with patch version at $HIGHEST_PATH"
+            XCODE_VERSION=$(basename "$HIGHEST_PATH" | sed 's/^Xcode_//;s/.app$//')
+            XCODE_PATH="$HIGHEST_PATH"
+          else
+            XCODE_VERSION=$(XCODE)
+          fi
+        else
+          XCODE_VERSION=$(XCODE)
+        fi
       fi
 
       # Check if the specified Xcode version exists, if not try fallbacks
@@ -143,19 +169,10 @@ steps:
       done
 
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "WARNING: No exact match for requested Xcode version ${ORIGINAL_VERSION}"
+        echo "##vso[task.logissue type=error]Required Xcode ${ORIGINAL_VERSION} is not installed on this agent. Update the macOS agent image before building with the pinned Apple SDK."
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        echo "Falling back to latest available Xcode on this agent..."
-        # Find the latest Xcode by sorting version numbers
-        LATEST_XCODE=$(ls -1d /Applications/Xcode_*.app 2>/dev/null | sed 's|/Applications/Xcode_||;s|\.app||' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
-        if [[ -n "$LATEST_XCODE" ]]; then
-          XCODE_VERSION="$LATEST_XCODE"
-          XCODE_PATH="/Applications/Xcode_${LATEST_XCODE}.app"
-          echo "Using latest available Xcode: ${XCODE_VERSION} at ${XCODE_PATH}"
-        else
-          echo "ERROR: No Xcode installations found in /Applications"
-          exit 1
-        fi
+        echo "Installed Xcode versions: ${XCODE_LIST[*]}"
+        exit 1
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
@@ -170,20 +187,34 @@ steps:
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+        xcrun simctl runtime list -v --json || true
+        xcrun simctl runtime match list -v --json || true
+        exit 0
+      displayName: Show pre simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
+
+    - script: |
         echo installing simulator runtimes...
-        # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
-        if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
-          XCODE_VERSION=$(REQUIRED_XCODE)
-        else
-          XCODE_VERSION=$(XCODE)
+        # XCODE variable is in major.minor format (e.g., 26.1)
+        XCODE_MAJOR_MINOR="$(XCODE)"
+        MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+        MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+
+        if [[ -z "$MAJOR" || -z "$MINOR" ]]; then
+          echo "##vso[task.logissue type=error]XCODE variable is malformed: '$XCODE_MAJOR_MINOR'"
+          exit 1
         fi
-        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
-        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
-          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
-        else
-          DOWNLOAD_ARGS="-downloadPlatform iOS"
+
+        RUNTIME_ARCHITECTURE=universal
+        if [[ "$(uname -m)" == "arm64" ]]; then
+          RUNTIME_ARCHITECTURE=arm64
         fi
+        # Keep recovery downloads pinned too: a runtime newer than Xcode can break actool/ibtool.
+        DOWNLOAD_ARGS=(-downloadPlatform iOS -architectureVariant "$RUNTIME_ARCHITECTURE" -buildVersion "${MAJOR}.${MINOR}")
 
         # `simctl runtime list --json` reports disk images (including stuck
         # "(Deleting)" images), unlike `simctl list runtimes -j`, which reports
@@ -215,8 +246,15 @@ steps:
           printf '%s\n' "${counts%%$'\t'*}"
         }
 
-        RC=0
-        sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
+        DOWNLOAD_LOG=$(mktemp) || exit 1
+        sudo xcodebuild "${DOWNLOAD_ARGS[@]}" 2>&1 | tee "$DOWNLOAD_LOG"
+        RC=${PIPESTATUS[0]}
+        if grep -Fq "is not available for download." "$DOWNLOAD_LOG"; then
+          rm -f "$DOWNLOAD_LOG"
+          echo "##vso[task.logissue type=error]iOS ${MAJOR}.${MINOR} (${RUNTIME_ARCHITECTURE}) is unavailable for download. Check the selected Xcode and runtime architecture; simulator recovery cannot fix an unavailable download."
+          exit 1
+        fi
+        rm -f "$DOWNLOAD_LOG"
         if [[ "$RC" != "0" ]]; then
           echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
           # Exit code 70 ("Unable to connect to simulator") means CoreSimulatorService is
@@ -323,7 +361,7 @@ steps:
             fi
           fi
           echo "Re-trying simulator runtime installation..."
-          sudo xcodebuild $DOWNLOAD_ARGS
+          sudo xcodebuild "${DOWNLOAD_ARGS[@]}"
 
           # KEEP TRYING until a runtime is actually create-usable — do NOT give up after a
           # fixed number of tries and let the iOS gate self-degrade to INCONCLUSIVE. A wedged
@@ -346,7 +384,7 @@ steps:
           smokeAttempt=0
           while : ; do
             smokeAttempt=$((smokeAttempt+1))
-            SMOKE_RT=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform=="iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
+            SMOKE_RT=$(xcrun simctl list runtimes -j | jq -r --arg req "${MAJOR}.${MINOR}" '[.runtimes[] | select(.platform=="iOS" and .isAvailable and ((.version | split(".")[0:2] | join(".")) == $req))] | sort_by(.version) | last | .identifier')
             SMOKE_DT=$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.productFamily=="iPhone")] | .[0].identifier')
             if [[ -n "$SMOKE_RT" && "$SMOKE_RT" != "null" && -n "$SMOKE_DT" && "$SMOKE_DT" != "null" ]]; then
               SMOKE_UDID=$(xcrun simctl create "copilot-runtime-smoketest" "$SMOKE_DT" "$SMOKE_RT" 2>&1)
@@ -402,7 +440,7 @@ steps:
             if [[ "$smokeAttempt" -ge 2 || "$C" != "0" ]]; then
               purge_wedged_sim_image_store
             fi
-            sudo xcodebuild $DOWNLOAD_ARGS
+            sudo xcodebuild "${DOWNLOAD_ARGS[@]}"
           done
         fi
 
@@ -427,6 +465,28 @@ steps:
           echo "##vso[task.logissue type=warning]$RUNTIME_COUNT simulator runtime image(s) present but 0 are 'Ready'/create-usable (likely stuck in '(Deleting)') — CoreSimulatorService is wedged on this AGENT. iOS sim boot will self-degrade to INCONCLUSIVE; this is agent infrastructure, not a PR problem."
         fi
         echo "Found $RUNTIME_COUNT simulator runtime(s) ($READY_COUNT Ready/create-usable)"
+
+        # Other installed runtimes must not mask a missing runtime matching the selected Xcode.
+        REQUIRED_RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.iOS-${MAJOR}-${MINOR}"
+        IOS_MATCH_COUNT=$(xcrun simctl runtime list -j | jq --arg id "$REQUIRED_RUNTIME_ID" --arg req "${MAJOR}.${MINOR}" '
+          [ .[]?
+            | select(type == "object")
+            | select(
+                ((.runtimeIdentifier // "") == $id)
+                or
+                (((.platformIdentifier // "") | contains("iphonesimulator"))
+                  and (((.version // "") | split(".")[0:2] | join(".")) == $req))
+              )
+            | select(.state == "Ready")
+          ] | length')
+
+        if [[ -z "$IOS_MATCH_COUNT" || "$IOS_MATCH_COUNT" == "0" ]]; then
+          echo "Full simulator runtime list (JSON) for diagnostics:"
+          xcrun simctl runtime list -j || true
+          echo "##vso[task.logissue type=error]Required iOS ${MAJOR}.${MINOR} simulator runtime (matching the selected Xcode SDK) is not installed or not Ready. See the runtime list above."
+          exit 1
+        fi
+        echo "Found $IOS_MATCH_COUNT usable iOS ${MAJOR}.${MINOR} simulator runtime(s)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       # 45 (was 30): the "keep trying until create-usable" retry loop above re-downloads the
@@ -436,6 +496,28 @@ steps:
       # (2100s) stops starting new downloads with >=10 min to spare so this timeout can never
       # kill a download mid-flight. Directive: iOS must work, keep trying as long as it works.
       timeoutInMinutes: 45
+
+    # Also install iOS 18.5 simulator for integration tests that require it
+    - script: |
+        echo "Installing iOS 18.5 simulator runtime for integration tests..."
+        sudo xcodebuild -downloadPlatform iOS -buildVersion 18.5 || {
+          echo "Warning: Failed to install iOS 18.5 simulator. Tests requiring this version may fail."
+        }
+      displayName: Install iOS 18.5 Simulator (for integration tests)
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 30
+
+    - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+        xcrun simctl runtime list -v --json || true
+        xcrun simctl runtime match list -v --json || true
+        exit 0
+      displayName: Show post simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
 
 # Provision Additional Software
 - ${{ if and(or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)), ne(parameters.skipCertificates, true)) }}:

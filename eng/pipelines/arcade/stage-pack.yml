@@ -69,7 +69,14 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        - script: $(_buildScriptMacOS) -restore -pack -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
+        - script: dotnet cake --target=dotnet --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Workloads
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
+        - script: $(_buildScriptMacOS) -restore -pack -configuration $(_BuildConfig) /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
           displayName: Pack
 
         - task: CopyFiles@2
@@ -136,18 +143,25 @@ stages:
             artifact: MacNativeArtifacts
             path: '$(Build.SourcesDirectory)/artifacts/bin'
 
+        - script: dotnet cake --target=dotnet --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Workloads
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
         # Run on public pipeline
         - ${{ if not(parameters.enableMicrobuild) }}:
-          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
 
         # Run on internal pipeline
         - ${{ if and(not(parameters.runAsPublic) , parameters.enableMicrobuild) }}:
-          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -pack -sign $(_SignArgs) -configuration $(_BuildConfig) /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack, Sign
 
           # only for workloads
-          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
+          - script: $(_buildScript) -restore -build -sign $(_SignArgs) -publish $(_PublishArgs) -configuration $(_BuildConfig) /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/build-workloads.binlog -projects src/Workload/workloads.csproj $(_OfficialBuildIdArgs)
             displayName: Build Workloads, Sign & Publish
 
         - task: CopyFiles@2

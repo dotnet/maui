@@ -541,6 +541,109 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Hello FOO 042 BAZ", bindable.GetValue(property));
 		}
 
+		[Fact]
+		public void ConverterCulturePassedToConvert()
+		{
+			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			var bindable = new MockBindable
+			{
+				BindingContext = new { foo = "FOO", bar = "BAR" }
+			};
+			var converter = new CultureReportingMultiConverter();
+			var culture = CultureInfo.GetCultureInfo("nl-NL");
+
+			bindable.SetBinding(property, new MultiBinding
+			{
+				Bindings =
+				{
+					new Binding("foo"),
+					new Binding("bar"),
+				},
+				Converter = converter,
+				ConverterCulture = culture,
+			});
+
+			Assert.Equal("nl-NL", bindable.GetValue(property));
+			Assert.Same(culture, converter.ConvertCulture);
+		}
+
+		[Fact]
+		public void ConverterCulturePassedToConvertBack()
+		{
+			var viewModel = new PersonViewModel
+			{
+				FirstName = "Jane",
+				MiddleName = "A.",
+				LastName = "Doe",
+			};
+			var label = new Label
+			{
+				BindingContext = viewModel
+			};
+			var converter = new CultureReportingMultiConverter();
+			var culture = CultureInfo.GetCultureInfo("nl-NL");
+
+			label.SetBinding(Label.TextProperty, new MultiBinding
+			{
+				Bindings =
+				{
+					new Binding(nameof(PersonViewModel.FirstName)),
+					new Binding(nameof(PersonViewModel.MiddleName)),
+					new Binding(nameof(PersonViewModel.LastName)),
+				},
+				Converter = converter,
+				ConverterCulture = culture,
+				Mode = BindingMode.TwoWay,
+			});
+
+			label.SetValueCore(Label.TextProperty, "John Q. Public", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.Default, SetterSpecificity.ManualValueSetter);
+
+			Assert.Same(culture, converter.ConvertBackCulture);
+			Assert.Equal("John", viewModel.FirstName);
+			Assert.Equal("Q.", viewModel.MiddleName);
+			Assert.Equal("Public", viewModel.LastName);
+		}
+
+		[Fact]
+		public void ClonePreservesExplicitConverterCulture()
+		{
+			var culture = CultureInfo.GetCultureInfo("nl-NL");
+			var binding = new MultiBinding
+			{
+				Bindings = { new Binding("foo") },
+				Converter = new CultureReportingMultiConverter(),
+				ConverterCulture = culture,
+			};
+
+			var clone = (MultiBinding)binding.Clone();
+
+			Assert.Same(culture, clone.ConverterCulture);
+		}
+
+		[Fact]
+		public void ClonePreservesDynamicDefaultConverterCulture()
+		{
+			var binding = new MultiBinding
+			{
+				Bindings = { new Binding("foo") },
+				Converter = new CultureReportingMultiConverter(),
+			};
+
+			var oldCulture = CultureInfo.CurrentUICulture;
+			try
+			{
+				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+				var clone = (MultiBinding)binding.Clone();
+				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("nl-NL");
+
+				Assert.Equal(CultureInfo.GetCultureInfo("nl-NL"), clone.ConverterCulture);
+			}
+			finally
+			{
+				CultureInfo.CurrentUICulture = oldCulture;
+			}
+		}
+
 		private Label GenerateNameLabel(string person, BindingMode mode)
 		{
 			var label = new Label();
@@ -701,6 +804,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						array[i] = Binding.DoNothing;
 				}
 				return array;
+			}
+		}
+
+		public class CultureReportingMultiConverter : IMultiValueConverter
+		{
+			public CultureInfo ConvertCulture { get; private set; }
+
+			public CultureInfo ConvertBackCulture { get; private set; }
+
+			public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+			{
+				ConvertCulture = culture;
+				return culture.Name;
+			}
+
+			public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+			{
+				ConvertBackCulture = culture;
+				return (value as string)?.Split(' ').Cast<object>().ToArray();
 			}
 		}
 

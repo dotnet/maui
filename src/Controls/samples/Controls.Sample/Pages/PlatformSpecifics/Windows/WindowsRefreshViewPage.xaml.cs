@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 			enumPicker.SelectedIndex = 0;
 		}
 
-		void OnSelectedIndexChanged(object sender, EventArgs e)
+		void OnSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			refreshView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetRefreshPullDirection((RefreshPullDirection)enumPicker.SelectedItem);
 		}

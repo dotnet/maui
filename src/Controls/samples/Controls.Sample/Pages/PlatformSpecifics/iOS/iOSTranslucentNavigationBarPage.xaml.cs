@@ -13,12 +13,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnTranslucentNavigationBarButtonClicked(object sender, EventArgs e)
+		void OnTranslucentNavigationBarButtonClicked(object? sender, EventArgs e)
 		{
 			(this.Window!.Page as Microsoft.Maui.Controls.NavigationPage)!.On<iOS>().SetIsNavigationBarTranslucent(!(this.Window!.Page as Microsoft.Maui.Controls.NavigationPage)!.On<iOS>().IsNavigationBarTranslucent());
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			Navigation.PopAsync();
 		}

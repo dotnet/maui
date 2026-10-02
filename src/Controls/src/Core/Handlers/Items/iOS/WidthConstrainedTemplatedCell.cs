@@ -5,7 +5,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	internal abstract class WidthConstrainedTemplatedCell : TemplatedCell
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void WebViewEvaluateJavaScriptReturnsCorrectResults()
 		{
 			// Test String Result
+			VerifyInternetConnectivity();
 			App.WaitForElement("TestStringButton");
 			App.Tap("TestStringButton");
 			App.WaitForElement("StringResult");

@@ -16,12 +16,12 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnToggleButtonClicked(object sender, EventArgs e)
+		void OnToggleButtonClicked(object? sender, EventArgs e)
 		{
 			_webView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetIsJavaScriptAlertEnabled(!_webView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().IsJavaScriptAlertEnabled());
 		}
 
-		void OnLoadLocalAssetWithHtmlSourceAndBaseUrl(object sender, EventArgs e)
+		void OnLoadLocalAssetWithHtmlSourceAndBaseUrl(object? sender, EventArgs e)
 		{
 			_webView.Source = new HtmlWebViewSource
 			{
@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnLoadLocalAssetWithUrlSource(object sender, EventArgs e)
+		void OnLoadLocalAssetWithUrlSource(object? sender, EventArgs e)
 		{
 			_webView.Source = new UrlWebViewSource
 			{

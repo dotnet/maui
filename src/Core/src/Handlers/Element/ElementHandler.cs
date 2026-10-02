@@ -141,6 +141,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (PlatformView != null && VirtualView != null)
 			{
+				// Give derived handlers a chance to tear down state that needs the platform view
+				// while it is still reachable through the PlatformView property.
+				OnDisconnecting();
+
 				// We set the PlatformView to null so no one outside of this handler tries to access
 				// PlatformView. PlatformView access should be isolated to the instance passed into
 				// DisconnectHandler
@@ -150,6 +154,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_handlerState = ElementHandlerState.Disconnected;
+		}
+
+		// Runs while PlatformView is still set, so overrides can use it to unwind platform state.
+		private protected virtual void OnDisconnecting()
+		{
 		}
 	}
 }

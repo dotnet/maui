@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 27711, "FlowDirection = `RightToLeft` doesn't work with CV1 & CV2", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 27711, "FlowDirection = `RightToLeft` doesn't work with CollectionView", PlatformAffected.iOS)]
 public partial class Issue27711 : ContentPage
 {
 	public Issue27711()

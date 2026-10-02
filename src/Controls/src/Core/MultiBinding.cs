@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	public sealed class MultiBinding : BindingBase
 	{
 		IMultiValueConverter _converter;
+		CultureInfo _converterCulture;
 		object _converterParameter;
 		IList<BindingBase> _bindings;
 		BindableProperty _targetProperty;
@@ -32,6 +34,20 @@ namespace Microsoft.Maui.Controls
 			{
 				ThrowIfApplied();
 				_converter = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the culture in which to evaluate the <see cref="Converter"/>.
+		/// </summary>
+		[TypeConverter(typeof(CultureInfoConverter))]
+		public CultureInfo ConverterCulture
+		{
+			get { return _converterCulture ?? CultureInfo.CurrentUICulture; }
+			set
+			{
+				ThrowIfApplied();
+				_converterCulture = value;
 			}
 		}
 
@@ -70,6 +86,7 @@ namespace Microsoft.Maui.Controls
 			var clone = new MultiBinding()
 			{
 				Converter = Converter,
+				ConverterCulture = _converterCulture,
 				ConverterParameter = ConverterParameter,
 				Bindings = bindingsclone,
 				FallbackValue = FallbackValue,
@@ -208,7 +225,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var valuearray = value as object[];
 			if (valuearray != null && Converter != null)
-				value = Converter.Convert(valuearray, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				value = Converter.Convert(valuearray, targetPropertyType, ConverterParameter, ConverterCulture);
 
 			if (valuearray != null && Converter == null && StringFormat != null && BindingBase.TryFormat(StringFormat, valuearray, out var formatted))
 				return formatted;
@@ -227,7 +244,7 @@ namespace Microsoft.Maui.Controls
 				var types = new Type[_bpProxies.Length];
 				for (var i = 0; i < _bpProxies.Length; i++)
 					types[i] = values[i]?.GetType() ?? typeof(object);
-				return Converter.ConvertBack(value, types, ConverterParameter, CultureInfo.CurrentUICulture);
+				return Converter.ConvertBack(value, types, ConverterParameter, ConverterCulture);
 			}
 
 			return base.GetTargetValue(value, sourcePropertyType);

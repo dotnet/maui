@@ -20,6 +20,12 @@
     "winui": {
       "longName": "windows",
       "shortName": ""
+    },
+    "avalonia": {
+      "shortName": ""
+    },
+    "avaloniaControlsMauiVersion": {
+      "isHidden": true
     }
   },
   "usageExamples": [

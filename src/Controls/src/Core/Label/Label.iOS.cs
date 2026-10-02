@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.LabelExtensions.UpdateText(handler.PlatformView, label);
 
-			MapFormatting(handler, label);
+			if (!handler.IsConnectingHandler())
+			{
+				MapFormatting(handler, label);
+			}
 		}
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label)

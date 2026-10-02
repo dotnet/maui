@@ -38,8 +38,20 @@ public class Issue16910 : _IssuesUITest
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		var scrollViewRect = App.WaitForElement("RefreshScrollView", timeout: TimeSpan.FromSeconds(45)).GetRect();
-		//In CI, using App.ScrollDown sometimes fails to trigger the refresh command, so here use DragCoordinates instead of the ScrollDown action in Appium.
-		App.DragCoordinates(scrollViewRect.CenterX(), scrollViewRect.Y + 50, scrollViewRect.CenterX(), scrollViewRect.Y + scrollViewRect.Height - 50);
+		void PullToRefresh() =>
+			App.DragCoordinates(scrollViewRect.CenterX(), scrollViewRect.Y + 50, scrollViewRect.CenterX(), scrollViewRect.Y + scrollViewRect.Height - 50);
+
+		// In CI, a single pull gesture occasionally does not trigger the refresh command.
+		PullToRefresh();
+		try
+		{
+			App.WaitForElement("IsRefreshing", timeout: TimeSpan.FromSeconds(10));
+		}
+		catch (TimeoutException)
+		{
+			PullToRefresh();
+		}
+
 		App.WaitForElement("IsRefreshing", timeout: TimeSpan.FromSeconds(45));
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing", timeout: TimeSpan.FromSeconds(45));

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Майкрософт",
   "name": "Приложение .NET MAUI Blazor Hybrid",
   "description": "Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst и WinUI с использованием Blazor Hybrid",
@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Включить примеры страниц",
   "symbols/IncludeSampleContent/description": "Настраивает, следует ли добавлять примеры страниц и стили для демонстрации базовых шаблонов использования.",
-  "symbols/Empty/description": "Настраивает, следует ли пропускать примеры страниц и стили, демонстрирующие базовые шаблоны использования."
+  "symbols/empty/description": "Настраивает, следует ли пропускать примеры страниц и стили, демонстрирующие базовые шаблоны использования."
 }

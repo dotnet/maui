@@ -74,7 +74,7 @@
     </EmbeddedResource>
   </ItemGroup>
  
-  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build" Condition="'$(BuildTaskOnlyBuild)' == 'true' or '$(TF_BUILD)' != 'true'">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)$(AssemblyName).dll" />
       <_CopyItems Include="$(TargetDir)$(AssemblyName).pdb" />

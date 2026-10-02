@@ -7,17 +7,20 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class AndroidAdaptiveIconGenerator
 	{
-		public AndroidAdaptiveIconGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, ILogger logger)
+		public AndroidAdaptiveIconGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, string inputsFile, ILogger logger)
 		{
 			Info = info;
 			Logger = logger;
 			IntermediateOutputPath = intermediateOutputPath;
 			AppIconName = appIconName;
+			InputsFile = inputsFile;
 		}
 
 		public ResizeImageInfo Info { get; }
 
 		public string IntermediateOutputPath { get; }
+
+		public string InputsFile { get; }
 
 		public ILogger Logger { get; private set; }
 
@@ -31,6 +34,16 @@ namespace Microsoft.Maui.Resizetizer
 	<monochrome android:drawable=""@mipmap/{name}_foreground"" />
 </adaptive-icon>";
 
+		const string AdaptiveIconDrawableWithMonochromeXml =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<adaptive-icon xmlns:android=""http://schemas.android.com/apk/res/android"">
+	<background android:drawable=""@mipmap/{name}_background""/>
+	<foreground android:drawable=""@mipmap/{name}_foreground""/>
+	<monochrome android:drawable=""@mipmap/{name}_monochrome"" />
+</adaptive-icon>";
+
+		bool HasMonochromeFile => !string.IsNullOrEmpty(Info.MonochromeFilename);
+
 		public IEnumerable<ResizedImageInfo> Generate()
 		{
 			var sw = new Stopwatch();
@@ -42,6 +55,8 @@ namespace Microsoft.Maui.Resizetizer
 
 			ProcessBackground(results, fullIntermediateOutputPath);
 			ProcessForeground(results, fullIntermediateOutputPath);
+			if (HasMonochromeFile)
+				ProcessMonochrome(results, fullIntermediateOutputPath);
 			ProcessAdaptiveIcon(results, fullIntermediateOutputPath);
 
 			sw.Stop();
@@ -53,7 +68,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessBackground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var backgroundFile = Info.Filename;
-			var (backgroundExists, backgroundModified) = Utils.FileExists(backgroundFile);
+			var (backgroundExists, _) = Utils.FileExists(backgroundFile);
 			var backgroundDestFilename = AppIconName + "_background.png";
 
 			if (backgroundExists)
@@ -65,12 +80,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, backgroundDestFilename);
-				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > backgroundModified)
+				if (Resizer.IsUpToDate(new[] { backgroundFile }, destination, InputsFile, Logger, backgroundFile))
 				{
-					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
@@ -80,7 +93,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (backgroundExists)
 				{
 					// resize the background
-					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Logger);
+					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Info.Quality, Logger);
 					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
 				}
 				else
@@ -97,7 +110,7 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessForeground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var foregroundFile = Info.ForegroundFilename;
-			var (foregroundExists, foregroundModified) = Utils.FileExists(foregroundFile);
+			var (foregroundExists, _) = Utils.FileExists(foregroundFile);
 			var foregroundDestFilename = AppIconName + "_foreground.png";
 
 			if (foregroundExists)
@@ -109,12 +122,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, foregroundDestFilename);
-				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > foregroundModified)
+				if (Resizer.IsUpToDate(new[] { foregroundFile }, destination, InputsFile, Logger, foregroundFile))
 				{
-					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
@@ -123,13 +134,53 @@ namespace Microsoft.Maui.Resizetizer
 
 				if (foregroundExists)
 				{
-					// resize the forground
-					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Logger);
+					// resize the foreground
+					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Info.Quality, Logger);
 					tools.Resize(dpi, destination, Info.ForegroundScale, dpiSizeIsAbsolute: true);
 				}
 				else
 				{
 					// manufacture
+					var tools = SkiaSharpTools.CreateImaginary(null, Logger);
+					tools.Resize(dpi, destination);
+				}
+
+				results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
+			}
+		}
+
+		void ProcessMonochrome(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
+		{
+			var monochromeFile = Info.MonochromeFilename;
+			var (monochromeExists, _) = Utils.FileExists(monochromeFile);
+			var monochromeDestFilename = AppIconName + "_monochrome.png";
+
+			if (monochromeExists)
+				Logger.Log("Converting Monochrome SVG to PNG: " + monochromeFile);
+			else
+				Logger.Log("Monochrome was not found (will manufacture): " + monochromeFile);
+
+			foreach (var dpi in DpiPath.Android.AppIconParts)
+			{
+				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
+				var destination = Path.Combine(dir, monochromeDestFilename);
+				Directory.CreateDirectory(dir);
+
+				if (Resizer.IsUpToDate(new[] { monochromeFile }, destination, InputsFile, Logger, monochromeFile))
+				{
+					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
+					continue;
+				}
+
+				Logger.Log($"App Icon Monochrome Part: " + destination);
+
+				if (monochromeExists)
+				{
+					var tools = SkiaSharpTools.Create(Info.MonochromeIsVector, Info.MonochromeFilename, dpi.Size, null, null, Info.Quality, Logger);
+					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
+				}
+				else
+				{
 					var tools = SkiaSharpTools.CreateImaginary(null, Logger);
 					tools.Resize(dpi, destination);
 				}
@@ -145,22 +196,22 @@ namespace Microsoft.Maui.Resizetizer
 			var adaptiveIconRoundDestination = Path.Combine(dir, AppIconName + "_round.xml");
 			Directory.CreateDirectory(dir);
 
-			if (File.Exists(adaptiveIconDestination) && File.Exists(adaptiveIconRoundDestination))
-			{
-				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
-				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
-				return;
-			}
-
-			var adaptiveIconXmlStr = AdaptiveIconDrawableXml
+			var adaptiveIconXmlStr = (HasMonochromeFile ? AdaptiveIconDrawableWithMonochromeXml : AdaptiveIconDrawableXml)
 				.Replace("{name}", AppIconName);
 
-			// Write out the adaptive icon xml drawables
-			File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
-			File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
+			// Only write when content changed to avoid unnecessary timestamp updates
+			WriteFileIfChanged(adaptiveIconDestination, adaptiveIconXmlStr);
+			WriteFileIfChanged(adaptiveIconRoundDestination, adaptiveIconXmlStr);
 
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
+		}
+
+		static void WriteFileIfChanged(string path, string content)
+		{
+			if (File.Exists(path) && File.ReadAllText(path) == content)
+				return;
+			File.WriteAllText(path, content);
 		}
 	}
 }

@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
-			id: "MAUIX2017",
+			id: "MAUIX2019",
 			title: "Lambda body is a method group reference",
 			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation.{1}",
 			category: "XamlParsing",
@@ -355,6 +355,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: "Value type property in path has no setter",
 			messageFormat: "Expression '{0}' contains a value type property without a setter, so two-way binding to '{1}' will be one-way. To enable two-way binding through a struct, add a setter to the intermediate property.",
 			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
+			id: "MAUIX2017",
+			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 

@@ -10,7 +10,11 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -25,36 +29,61 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Collection(RunInNewWindowCollection)]
 	[Category(TestCategory.CollectionView)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void RegisterCommonHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+			RegisterNavigationPageHandler(handlers);
+			handlers.AddHandler<Page, PageHandler>();
+			handlers.AddHandler<Window, WindowHandlerStub>();
+			handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+			handlers.AddHandler<Grid, LayoutHandler>();
+			handlers.AddHandler<Label, LabelHandler>();
+			handlers.AddHandler<Button, ButtonHandler>();
+			handlers.AddHandler<SwipeView, SwipeViewHandler>();
+			handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+		}
+
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
-
+					RegisterCommonHandlers(handlers);
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handlers.AddHandler<Grid, LayoutHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-					handlers.AddHandler<SwipeView, SwipeViewHandler>();
-					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
-#if IOS && !MACCATALYST
-					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
-#endif
 				});
 			});
+		}
+
+#if WINDOWS
+		protected virtual void SetupBuilderCollectionView2()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					RegisterCommonHandlers(handlers);
+					handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+				});
+			});
+		}
+#endif
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every CollectionViewTests test run against both the NavigationPage renderer and
+		// handler. See CollectionViewNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 		[Fact(
@@ -344,6 +373,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			}
 		}
 
+		// CollectionViewHandler2 does not yet implement the content-sizing behavior
+		// originally tracked by https://github.com/dotnet/maui/issues/9135 and
+		// https://github.com/dotnet/maui/issues/14966.
+#if !IOS && !MACCATALYST
 		[Theory]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
@@ -447,6 +480,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				}
 			});
 		}
+#endif
 
 		[Theory]
 		[InlineData(true, false, false)]
@@ -587,6 +621,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			});
 		}
 
+#if !IOS && !MACCATALYST
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
 		{
 			var layoutOptions = new LayoutOptions[] { LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End, LayoutOptions.Fill };
@@ -599,6 +634,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				yield return new object[] { new CollectionViewSizingTestCase(option, new LinearItemsLayout(ItemsLayoutOrientation.Vertical)) };
 			}
 		}
+#endif
 
 		static void GenerateItems(int count, ObservableCollection<string> data)
 		{

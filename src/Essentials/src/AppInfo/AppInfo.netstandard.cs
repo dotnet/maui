@@ -4,6 +4,8 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public string PackageName => throw ExceptionUtils.NotSupportedOrImplementedException;
 
+		internal static string GetDefaultPackageName() => string.Empty;
+
 		public string Name => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public System.Version Version => Utils.ParseVersion(VersionString);

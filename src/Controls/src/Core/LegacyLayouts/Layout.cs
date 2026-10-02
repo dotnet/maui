@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			SetNeedsLayout();
 			InvalidateMeasureCache();
 
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			OnChildMeasureInvalidated(child, InvalidationEventArgs.GetCached(trigger));
 
 			var propagatedTrigger = GetPropagatedTrigger(trigger);
 			InvokeMeasureInvalidated(propagatedTrigger);

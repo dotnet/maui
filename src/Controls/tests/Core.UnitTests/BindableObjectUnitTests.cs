@@ -76,6 +76,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class BindableObjectUnitTests : BaseTestFixture
 	{
 		[Fact]
+		public void TriggerSpecificityIsNotAllocatedWithoutTriggers()
+		{
+			var mock = new MockBindable();
+			Assert.Null(mock._triggerSpecificity);
+
+			mock.BindingContext = new object();
+			mock.Text = "updated";
+			Assert.Equal("updated", mock.Text);
+			Assert.Null(mock._triggerSpecificity);
+
+			mock.ClearValue(MockBindable.TextProperty);
+			Assert.Equal("default", mock.Text);
+			Assert.Empty(mock.Triggers);
+			Assert.Null(mock._triggerSpecificity);
+		}
+
+		[Fact]
 		public void BindingContext()
 		{
 			var mock = new MockBindable();

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// background, shape, padding, and more to create visually rich containers.
 	/// </remarks>
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElementController, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
 
@@ -66,12 +66,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this border.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.None (edge-to-edge).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the border should obey safe area insets.
 		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
-		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.Keyboard for keyboard-aware behavior.
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls
 		/// Provides the default value for the <see cref="SafeAreaEdges"/> property.
 		/// </summary>
 		/// <returns>The default safe area edges of <see cref="SafeAreaEdges.None"/>.</returns>
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.None;
 		}
