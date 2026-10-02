@@ -66,6 +66,12 @@ previous condition.
 Directed prohibitions retain the existing conservative veto on older authority:
 "Do not apply p/1 until validation is complete" still blocks an older approval.
 It does not authorize a new removal or prove completion of the condition.
+The entire cited comment is also checked for a qualifying opposite decision or
+directed veto, not just the selected paragraph. "Apply p/1" and "Remove p/1" in
+the same comment authorize neither action, including when creation and update
+timestamps are equal. The command does not infer which paragraph was intended
+to win; require a fresh unambiguous maintainer comment. The same exact-label,
+polarity, conditional and Markdown rules govern the opposite-decision check.
 Markdown parsing excludes quoted requests (including lazy continuations),
 indented/fenced/inline code and HTML quote/code containers from decision prose.
 Link destinations, titles, reference definitions and image metadata cannot

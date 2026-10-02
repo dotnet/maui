@@ -465,12 +465,16 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
         $source = $sourceMap[$reference.source]
         if (-not $source.isMaintainer -or $source.kind -cne 'comment') { continue }
         $prose = Get-Prose $source.body
-        $paragraphs = @($prose -split '\r?\n[ \t]*\r?\n' |
+        $sourceParagraphs = @($prose -split '\r?\n[ \t]*\r?\n')
+        $paragraphs = @($sourceParagraphs |
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         if ($paragraphs.Count -ne 1 -or
             -not (Test-DecisionParagraph $paragraphs[0] $Label $Action $Evidence)) { continue }
         $oppositeAction = if ($Action -eq 'add') { 'remove' } else { 'add' }
         $oppositeEvent = if ($Action -eq 'add') { 'unlabeled' } else { 'labeled' }
+        if (@($sourceParagraphs | Where-Object {
+            Test-DecisionParagraph $_ $Label $oppositeAction @() -Superseding
+        }).Count -gt 0) { continue }
         $superseded = @($sourceMap.Values | Where-Object {
             $_.isMaintainer -and (Get-SupersessionTime $_) -gt $source.createdAt -and (
                 ($_.kind -ceq $oppositeEvent -and $_.body -ceq "${oppositeEvent}: $Label") -or

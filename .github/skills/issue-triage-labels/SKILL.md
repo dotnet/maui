@@ -75,6 +75,12 @@ substitutes for current original issue/comment evidence.
   Directed prohibitions remain conservative vetoes on older authority: "Do not
   apply p/1 until validation is complete" cannot revive an earlier approval.
   That veto does not authorize a new removal or treat the condition as completed.
+  Check the entire cited comment for a qualifying opposite decision or directed
+  veto, including other paragraphs. A comment containing both "Apply p/1" and
+  "Remove p/1" cannot authorize either action, even with equal timestamps.
+  Quote selection or paragraph order cannot resolve that ambiguity; require a
+  fresh unambiguous maintainer comment. Quoted/code/non-decision text remains
+  excluded by the shared authority rules.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a
