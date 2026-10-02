@@ -173,6 +173,9 @@ function Assert-Actor {
         throw 'The command requester does not currently have write/maintain/admin permission.'
     }
     if ($env:GITHUB_ACTIONS -eq 'true') {
+        if ($env:GITHUB_RUN_ATTEMPT -cne '1') {
+            throw 'Issue triage does not support job reruns. Inspect the retained report and request a fresh command or manual dispatch.'
+        }
         if ($env:GITHUB_REPOSITORY -cne $Repository -or $env:GITHUB_ACTOR -cne $Actor) {
             throw 'The invocation does not match the repository/requester.'
         }
@@ -421,7 +424,7 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
 
 function Test-TentativeEvidence([string]$Paragraph) {
     $candidate = [regex]::Replace($Paragraph, '(?i)\bas\s+expected\b', '')
-    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|suggest(?:s|ed)?|uncertain|tentative)\b'
+    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|uncertain(?:ty)?|tentative(?:ly)?)\b'
 }
 
 function Get-LabelPattern([string]$Label) {
@@ -444,7 +447,8 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     if ((Test-Interrogative $withoutLabel) -or
-        ((Test-ConditionalEvidence $withoutLabel -Decision) -and -not $prohibited)) { return $false }
+        (((Test-ConditionalEvidence $withoutLabel -Decision) -or
+            (Test-TentativeEvidence $withoutLabel)) -and -not $prohibited)) { return $false }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
         $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\bnot a bug\b', 'DISPOSITION')
     }
@@ -481,7 +485,8 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             Test-DecisionParagraph $_ $Label $oppositeAction @() -Superseding
         }).Count -gt 0) { continue }
         $superseded = @($sourceMap.Values | Where-Object {
-            $_.isMaintainer -and (Get-SupersessionTime $_) -gt $source.createdAt -and (
+            $_.id -cne $source.id -and $_.isMaintainer -and
+            (Get-SupersessionTime $_) -ge $source.createdAt -and (
                 ($_.kind -ceq $oppositeEvent -and $_.body -ceq "${oppositeEvent}: $Label") -or
                 ($_.kind -ceq 'comment' -and @((Get-Prose $_.body) -split '\r?\n[ \t]*\r?\n' |
                     Where-Object { Test-DecisionParagraph $_ $Label $oppositeAction @() -Superseding }).Count -gt 0)
@@ -718,7 +723,7 @@ function Test-ConfirmationParagraph([string]$Paragraph) {
         -not (Test-NegativeValidation $Paragraph)
 }
 
-function Get-Confirmation($Evidence, [switch]$RequireRegression) {
+function Get-Confirmation($Evidence, [switch]$RequireRegression, [string]$FirstBadVersion) {
     return @($Evidence | Where-Object {
         $reference = $_
         $source = $sourceMap[$reference.source]
@@ -730,7 +735,7 @@ function Get-Confirmation($Evidence, [switch]$RequireRegression) {
         $prose -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
         (Test-ConfirmationParagraph $paragraphs[0]) -and
-        (-not $RequireRegression -or (Test-RegressionValidation $paragraphs[0])) -and
+        (-not $RequireRegression -or (Test-RegressionValidation $paragraphs[0] $FirstBadVersion)) -and
         -not (Test-NegativeValidation $prose)
     })
 }
@@ -740,7 +745,7 @@ function Test-CurrentConfirmation($Confirmations, $Evidence, [string]$Label, $Sn
     $latest = @($Confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
     if (@($Snapshot.sources | Where-Object {
         $_.kind -ceq 'comment' -and $_.isValidator -and
-        (Get-SupersessionTime $_) -gt $sourceMap[$latest.source].createdAt -and
+        (Get-SupersessionTime $_) -ge $sourceMap[$latest.source].createdAt -and
         (Test-NegativeValidation (Get-Prose $_.body))
     }).Count -gt 0) { return $false }
     $laterRemovals = @($Snapshot.sources | Where-Object {
@@ -785,6 +790,21 @@ function Test-TriageRetraction([string]$Paragraph) {
         $Paragraph -match '(?i)\b(triage|review|investigation)\s+(?:is|was|remains)\s+(incomplete|unfinished)\b'
 }
 
+function Test-NoReproductionParagraph([string]$Paragraph) {
+    $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
+    $modifiers = '(?:(?:successfully|reliably|consistently|actually|locally|independently)\s+){0,3}'
+    $pastNegative = "\bcould\s+not\s+(?=(?:be\s+)?$modifiers(?:reproduce|reproduced)\b)"
+    $candidate = [regex]::Replace($Paragraph, "(?i)$pastNegative", 'not ')
+    if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
+        (Test-TentativeEvidence $candidate) -or
+        $Paragraph -match "(?i)\b(?:please|do not|don['\u2019]t|never|avoid|should not|must not|asked|instruct(?:ed|ion)?|recommend(?:ed|ation)?)\b") {
+        return $false
+    }
+    $negative = "(?:cannot|can['\u2019]t|could not|couldn['\u2019]t|(?:was|were|have been)\s+unable to|unable to|did not|didn['\u2019]t)"
+    return $Paragraph -match "(?i)\b$negative\s+$modifiers(?:reproduce|replicate)\s+$outcome\b" -or
+        $Paragraph -match "(?i)\b$outcome\s+(?:(?:is|was|has been)\s+not|cannot|can['\u2019]t|could not|couldn['\u2019]t)\s+(?:be\s+)?$modifiers(?:reproduced|replicated)\b"
+}
+
 function Test-AssessmentSuperseded($Source, [string]$Label) {
     $contraryLabels = @(switch ($Label) {
         's/no-repro' { 's/verified'; 'i/regression'; 'blazor-webview2-regression' }
@@ -799,7 +819,7 @@ function Test-AssessmentSuperseded($Source, [string]$Label) {
             @($contraryLabels | Where-Object { Test-Pattern $candidate.body "labeled: $_" }).Count -gt 0) { return $true }
         if ($candidate.kind -cne 'comment') { continue }
         $sameSource = $candidate.id -ceq $Source.id
-        if (-not $sameSource -and (Get-SupersessionTime $candidate) -le $Source.createdAt) { continue }
+        if (-not $sameSource -and (Get-SupersessionTime $candidate) -lt $Source.createdAt) { continue }
         if ($Label -ceq 's/try-latest-version' -and -not $sameSource -and
             $candidate.author -ceq $sourceMap["issue:$IssueNumber"].author -and -not $candidate.isMaintainer -and
             $candidate.author -match '^[A-Za-z0-9_-]+$' -and
@@ -851,6 +871,8 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
         if (Test-Interrogative $paragraph) { return $false }
         $assessed = switch ($Label) {
             's/triaged' {
+                -not (Test-ConditionalEvidence $paragraph -Decision) -and
+                -not (Test-TentativeEvidence $paragraph) -and
                 $paragraph -match '(?i)\b(reviewed|triaged|investigated)\b.{0,50}\b(issue|report|reproduction|sample|behavior)\b|\b(completed|finished)\b.{0,30}\b(triage|review|investigation)\b' -and
                 -not (Test-TriageRetraction $paragraph)
             }
@@ -858,7 +880,7 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
                 Test-NewerPublishedVersionRequest $paragraph $reference.quote
             }
             's/no-repro' {
-                $paragraph -match "(?i)\b(cannot|can't|unable to|could not|not)\s+(?:be\s+)?reproduce(?:d)?\b" -and
+                (Test-NoReproductionParagraph $paragraph) -and
                 -not (Test-BlockedValidation $prose)
             }
             'not-regression' {
@@ -942,9 +964,10 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         }
         if ($label.StartsWith('regressed-in-')) {
             $version = $label.Substring('regressed-in-'.Length)
-            if ($version -notmatch '^\d' -or @($confirmations | Where-Object {
-                Test-RegressionValidation $_.quote $version
-            }).Count -eq 0) { throw "No first-bad-version evidence supports $label." }
+            if ($version -notmatch '^\d' -or
+                @(Get-Confirmation $Decision.evidence -RequireRegression -FirstBadVersion $version).Count -eq 0) {
+                throw "No full-paragraph first-bad-version evidence supports $label."
+            }
         }
         if ($policy.technicalAssessment -ccontains $label -and
             @(Get-TechnicalAssessment $Decision.evidence $label).Count -eq 0) {
@@ -987,7 +1010,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         if ($confirmedTransition -and $label -cne 'needs-area-label' -and $lastRequest.Count -gt 0 -and
             @($transitionEvidence | Where-Object {
                 $source = $sourceMap[$_.source]
-                $source.createdAt -ge $lastRequest[0].createdAt
+                $source.createdAt -gt $lastRequest[0].createdAt
             }).Count -eq 0) {
             $confirmedTransition = $false
         }
@@ -1112,6 +1135,25 @@ if (@($proposal.removals | Where-Object { $_.label.StartsWith('area-') }).Count 
 if (@($allDecisions | Where-Object { $_.label.StartsWith('p/') }).Count -gt 0 -and
     @($effectiveLabels | Where-Object { $_.StartsWith('p/') }).Count -gt 1) {
     throw 'A priority change must not leave conflicting priority commitments.'
+}
+$incompatibleStates = @(
+    @{ label = 's/no-repro'; contrary = @('s/verified') }
+    @{ label = 'not-regression'; contrary = @('potential-regression', 'i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
+    @{ label = 'potential-regression'; contrary = @('i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
+)
+foreach ($state in $incompatibleStates) {
+    $family = @($state.label) + $state.contrary
+    $changed = @($names | Where-Object {
+        $name = $_
+        @($family | Where-Object { Test-Pattern $name $_ }).Count -gt 0
+    })
+    $contrary = @($effectiveLabels | Where-Object {
+        $name = $_
+        @($state.contrary | Where-Object { Test-Pattern $name $_ }).Count -gt 0
+    })
+    if ($changed.Count -gt 0 -and $effectiveLabels -ccontains $state.label -and $contrary.Count -gt 0) {
+        throw "A status change must not leave $($state.label) active with $($contrary -join ', '); propose supported removals or withhold the change."
+    }
 }
 foreach ($action in @('add', 'remove')) {
     $decisions = @(if ($action -eq 'add') { $proposal.additions } else { $proposal.removals })

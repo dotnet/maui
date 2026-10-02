@@ -39,6 +39,10 @@ on:
       with:
         script: |
           core.setOutput('authorized', 'false');
+          if (Number(process.env.GITHUB_RUN_ATTEMPT) !== 1) {
+            core.setFailed('Issue triage requires a fresh command or manual dispatch, not a job rerun.');
+            return;
+          }
           if (context.payload.repository.full_name !== 'dotnet/maui' ||
               context.ref !== `refs/heads/${context.payload.repository.default_branch}`) {
             core.info('Issue triage runs only on dotnet/maui default-branch infrastructure.');
@@ -85,7 +89,7 @@ on:
         path: ${{ runner.temp }}/issue-triage-context/context.json
         retention-days: 7
         if-no-files-found: error
-if: needs.pre_activation.outputs.triage_ready == 'true'
+if: needs.pre_activation.outputs.triage_ready == 'true' && github.run_attempt == 1
 
 permissions:
   contents: read
@@ -110,7 +114,7 @@ jobs:
   # v0.86.2 replaces imported jobs rather than merging individual fields.
   # Keep the pool contract, but gate the complete job before exposing its secrets.
   pat_pool:
-    if: needs.pre_activation.outputs.triage_ready == 'true'
+    if: needs.pre_activation.outputs.triage_ready == 'true' && github.run_attempt == 1
     needs: [pre_activation]
     environment: copilot-pat-pool
     runs-on: ubuntu-slim

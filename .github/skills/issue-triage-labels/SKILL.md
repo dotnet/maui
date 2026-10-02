@@ -60,6 +60,7 @@ substitutes for current original issue/comment evidence.
   Its exact first-bad-version citation must come from authorized regression evidence.
   The citation must include both outcomes and the explicit first-bad boundary;
   it cannot select another failing version or hide contradictory results.
+  The full enclosing cited paragraph is validated, not just the selected quote.
   Ambiguous/unrecognized wording is withheld, not inferred as passing behavior.
 - Priority, roadmap/proposal acceptance, backport approval, release claims and
   contributor suitability require an explicit existing maintainer decision.
@@ -84,6 +85,9 @@ substitutes for current original issue/comment evidence.
   Quote selection or paragraph order cannot resolve that ambiguity; require a
   fresh unambiguous maintainer comment. Quoted/code/non-decision text remains
   excluded by the shared authority rules.
+  Tentative/uncertain approvals, including "tentatively approve", are not
+  definitive decisions. An opposite decision or event in the same timestamp
+  second also supersedes support; do not assume ordering within that second.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a
@@ -106,6 +110,10 @@ substitutes for current original issue/comment evidence.
   Only a link's visible prose can support a decision.
   Review/no-repro/version recommendations need the corresponding technical
   assessment, not merely a comment from an authorized author.
+  Completed review and no-repro assessments must be unconditional and
+  non-tentative. No-repro needs an observed unsuccessful outcome concerning
+  this reported issue, not an instruction to avoid reproduction. Factual
+  "could not reproduce this issue" is an outcome, not speculation.
   No-repro cannot be established by an inaccessible sample, failed build/download,
   authentication/network failure or timeout. A negated same-behavior comparison
   cannot support not-regression.
@@ -181,6 +189,10 @@ policy transition. Explain each removal separately:
 - Remove a workaround/device-only tag when later direct evidence contradicts it.
 - Change priority/approval/ownership/release decisions only with explicit
   maintainer authority, never by inferring a new business decision.
+- A changed state must not leave verified/no-repro, suspected/confirmed
+  regression, or not-regression/regression states active together. Include
+  separately justified permitted removals or withhold the incompatible change.
+  Do not clean up unrelated pre-existing conflicts.
 
 ## Structured output
 

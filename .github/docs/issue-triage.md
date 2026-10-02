@@ -144,6 +144,9 @@ or questions. Duplicate decisions identify exactly one canonical target via
 fetched related source; an unrelated fetched reference is not sufficient.
 Newer opposite maintainer decisions or label events supersede earlier approvals;
 an old approval cannot silently undo a later manual removal.
+Equal-second contrary evidence is also superseding because GitHub timestamps
+cannot reliably establish its order. A fresh affirmative comment must follow
+the contrary evidence, not merely share its timestamp.
 The same rule applies to confirmation labels: cite a newer positive confirmation
 or a later explicit maintainer re-add rather than reversing a newer removal.
 The confirmation gate and later-contrary-evidence veto share unsuccessful
@@ -170,12 +173,19 @@ checked, so an affirmative-looking quote cannot hide such a qualifier.
 Not-regression assessments must also be unconditional and non-tentative:
 "This is probably not a regression" cannot supply a definitive disposition or
 remove potential-regression through that transition.
+The same unconditional, non-tentative requirement applies to completed-review
+and no-repro assessments. No-repro requires an unsuccessful outcome for the
+reported issue, not "Do not reproduce this issue" or a hypothetical attempt.
+Factual "I could not reproduce this issue" remains eligible, subject to the
+existing authority, infrastructure and freshness checks.
 Regression confirmation additionally requires explicit working behavior tied
 to an earlier named .NET/MAUI version and failing/reproducing behavior tied to a
 later named version. Lists of tested versions do not establish their outcomes.
 The first-bad citation must include both results and the explicit boundary
 matching that label, with no earlier contradictory failing outcome; merely
 asserting "regressed from" does not establish earlier passing behavior.
+The full enclosing cited paragraph is checked for that boundary; a selected
+quote cannot hide an earlier failing version.
 Preview and RC ordering is recognized; generic build success is insufficient.
 Unknown or ambiguous outcome/version bindings are conservatively withheld.
 Generic reproduction on a platform/OS version is not proof of regression.
@@ -197,9 +207,14 @@ The `needs-area-label` placeholder can be cleared using issue/comment evidence
 from an area addition validated in the same proposal. Current report content can
 predate the initial placeholder event; that transition does not require a newer
 validator comment. Existing area membership alone is not sufficient.
-Priority changes cannot leave conflicting priorities. Preserve unrelated manual
-labels, Policy Service staleness tags, release/automation outcomes, legacy names
-and unknown labels. Uncertain decisions are withheld with an explanation.
+Priority changes cannot leave conflicting priorities. Changes to status states
+cannot leave verified/no-repro, suspected/confirmed regression or
+not-regression/regression states active together. Every necessary removal still
+requires its own permitted authority or transition; otherwise withhold the
+change. Unrelated pre-existing conflicts are preserved, not silently cleaned up.
+Preserve unrelated manual labels, Policy Service staleness tags,
+release/automation outcomes, legacy names and unknown labels.
+Uncertain decisions are withheld with an explanation.
 
 **Feedback side effects:** needs-info/repro/try-latest-version participate in
 Policy Service replies, staleness reminders and potential automatic closure.
@@ -304,19 +319,26 @@ result rather than interpreting the absence of a comment as success.
 Label/comment APIs are **not an atomic transaction**: inspect the Actions result
 for actual application, particularly after a partial failure. The explanation
 describes a validated requested delta, not an unconditional delivery claim.
-Rerun all jobs to gather current state and reconcile remaining deltas. Each
-rendered decision carries a canonical fingerprint of its action, label,
-reason, exact evidence and request. Retrying the same invocation suppresses a
-duplicate comment only when every remaining decision exactly matches one in its
-original report. Decision/evidence ordering and changing context hashes do not
-prevent an otherwise identical partial retry.
-A changed/new decision or a legacy report without matching fingerprints fails
-before publication and requires a fresh command or manual dispatch, rather than
-applying a different delta under an old explanation. Multiple reports for one
-invocation also fail visibly. The original report remains a historical requested
-plan; the workflow result records the actual remaining application.
-Rerunning only a failed publication job after partial writes intentionally fails
-the stale-context check.
+Job reruns are deliberately unsupported: the authorization step rejects them
+before exposing the Copilot pool, and the trusted validator rejects publication
+job reruns too. The pool and analysis jobs also explicitly require attempt one,
+including when rerunning only those jobs. The pinned compiler emits immutable,
+fixed-name artifacts, so changing only this workflow's custom artifact names
+would not make reruns safe.
+Use a fresh `/issue triage` comment or manual dispatch to gather current state
+and assess remaining deltas. Each rendered decision carries a canonical
+fingerprint of its action, label, reason, exact evidence and request.
+Duplicate-report protection remains
+defensive: a report for the same invocation can suppress a new comment only
+when it covers all decisions exactly; changed decisions or multiple reports
+fail visibly. This is not a supported job-rerun recovery mechanism.
+The validated `report.md`, `decision.json` and `validation.json` are retained
+before any label/comment handler runs. If comment publication fails while
+labels succeed, retrieve that report artifact for the historical explanation.
+A fresh invocation proposes only remaining changes and may legitimately use
+`noop`; it does not reconstruct or automatically repost the missing historical
+comment. Inspect the original run and retained report for actual partial
+publication, rather than treating the new no-op as proof of prior delivery.
 
 ## Deployment and staged operation
 
