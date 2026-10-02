@@ -71,6 +71,7 @@ jobs:
   minimize_command:
     needs: [pre_activation, activation, agent, safe_outputs]
     if: >-
+      !cancelled() &&
       needs.pre_activation.outputs.should_run == 'true' &&
       needs.safe_outputs.result == 'success' &&
       needs.safe_outputs.outputs.comment_id != ''
@@ -138,6 +139,7 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  report-failed-jobs: false
 
 concurrency:
   group: "issue-trace-regression-${{ github.event.issue.number }}"
