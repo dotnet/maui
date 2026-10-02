@@ -75,7 +75,7 @@ function Get-BoundedGitHubContent {
 function Get-GitHubJson {
     param([string]$Route)
 
-    if ($Route -cnotmatch '^repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/') {
+    if ($Route -cnotmatch '^repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/|$)') {
         throw 'Invalid GitHub API route.'
     }
     $content = Get-BoundedGitHubContent -Url ([uri]"https://api.github.com/$Route") -MaxBytes 2MB
@@ -107,7 +107,7 @@ $source = Get-IssueReplicateSource -AuthorTexts $authorTexts.ToArray()
 $sourceCommit = ''
 if ($source.Type -eq 'repository') {
     $repoPath = ([uri]$source.Url).AbsolutePath.TrimStart('/')
-    $repo = Get-GitHubJson "repos/$repoPath/"
+    $repo = Get-GitHubJson "repos/$repoPath"
     if ($repo.private -or $repo.disabled -or $repo.archived) {
         throw 'The linked repro repository must be public, enabled, and active.'
     }
