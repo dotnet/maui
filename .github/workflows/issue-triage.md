@@ -322,6 +322,10 @@ For a genuinely empty result, use `noop`; for missing required evidence, use
 `report_incomplete`. In staged mode, emit the same proposal: only the trusted
 safe-output handlers suppress writes.
 
+Use the exposed safeoutputs MCP tools directly, with `data.triage` on the
+`add_comment` tool. Do not run a safeoutputs CLI or shell-based schema probe:
+shell is disabled, and the MCP tools already expose the required schemas.
+
 The separate safe-output job re-fetches context, reauthorizes the requester,
 checks evidence provenance and policy, rejects stale/unsupported proposals,
 renders its own explanatory comment and then permits the built-in label handlers.

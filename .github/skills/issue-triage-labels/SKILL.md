@@ -184,8 +184,15 @@ policy transition. Explain each removal separately:
 
 ## Structured output
 
+For this workflow, use the exposed **safeoutputs MCP tools directly**.
+Shell access is disabled: do not run `safeoutputs --help`, shell pipelines,
+CLI wrappers or schema probes. The available MCP tools provide their schemas;
+they are the supported output path even if generic runtime guidance describes
+a CLI transport. Do not manufacture a missing-tool signal for an unnecessary
+CLI path. Missing required evidence/tools still uses `report_incomplete`.
+
 Emit one `add_comment` intent with placeholder body `Triage proposal ready for
-trusted validation.` and `data.triage` of this shape:
+trusted validation.` and that comment tool's `data.triage` of this shape:
 
 ```json
 {
@@ -218,6 +225,10 @@ Declare exactly the same label delta using at most one `add_labels` and one
 empty label intents. Do not include labels already present in additions or absent
 from removals. Do this in staged mode too: staging suppresses writes, not validation.
 Each label appears at most once across additions, removals and withheld decisions.
+Do not supply a temporary target or temporary ID. The pinned runtime may attach
+an automatically generated comment `temporary_id`; the trusted validator checks
+its transport-only format and discards it before publication. The numeric
+prepared issue remains the only permitted target.
 
 When no changes or substantive withheld decisions are needed, call `noop` with
 a short reason. Missing required evidence is incomplete, not a successful review;

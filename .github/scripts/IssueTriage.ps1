@@ -1067,7 +1067,13 @@ foreach ($item in $items) {
     if ($item.type -cnotin @('add_comment', 'add_labels', 'remove_labels')) { throw "Unexpected safe-output type: $($item.type)" }
     $keys = if ($item.type -eq 'add_comment') { @('type', 'item_number', 'body', 'data') }
         else { @('type', 'item_number', 'labels') }
-    Assert-Keys $item $keys @('secrecy', 'integrity')
+    $optionalKeys = @('secrecy', 'integrity')
+    if ($item.type -ceq 'add_comment') { $optionalKeys += 'temporary_id' }
+    Assert-Keys $item $keys $optionalKeys
+    if ($item.ContainsKey('temporary_id') -and
+        ($item.temporary_id -isnot [string] -or $item.temporary_id -cnotmatch '^aw_[A-Za-z0-9]{8}$')) {
+        throw 'Unexpected generated comment temporary ID.'
+    }
     foreach ($annotation in @('secrecy', 'integrity')) {
         if ($item.ContainsKey($annotation)) { Assert-Text $item[$annotation] 1 40 }
     }
@@ -1191,6 +1197,7 @@ Write-Json 'decision.json' $proposal
 Write-Json 'validation.json' @{ status = 'validated'; contextHash = $current.contextHash; existingComment = $existing.Count -gt 0 }
 $comment.body = $body
 $comment.Remove('data')
+$comment.Remove('temporary_id')
 # A retry can complete unchanged decisions from the original report without another comment.
 if ($existing.Count -gt 0) { $payload.items = @($items | Where-Object { $_.type -cne 'add_comment' }) }
 $payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $AgentOutputPath -Encoding utf8

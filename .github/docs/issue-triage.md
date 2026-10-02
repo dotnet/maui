@@ -261,6 +261,12 @@ Markdown handling uses the parser already bundled with PowerShell's
 One GPT-6.1 Sol/Copilot analysis reads prepared evidence and the declared local
 skill. Shell and GitHub tools are disabled. It has read-only repository
 permissions and does not receive the publication job's write token.
+It declares final intents through the exposed safeoutputs MCP tools, not shell
+CLI/schema probes. Structured triage data belongs to the comment tool.
+The pinned runtime automatically attaches an `aw_` plus eight-alphanumeric
+comment temporary ID; the validator accepts only that known transport shape and
+discards it before publication. Numeric target, evidence and incomplete-output
+checks remain mandatory; a mixed missing-tool/label proposal is still rejected.
 Known automation accounts are excluded from both maintainer and validator
 authority even when GitHub reports their account type as `User`, including the
 write collaborator `vs-mobiletools-engineering-service2`. The explicit denylist
@@ -356,3 +362,32 @@ recognized. Other diagnostics can still be checked without editing the lock:
 actionlint -ignore 'unexpected key "queue" for "concurrency" section' \
   .github/workflows/issue-triage.lock.yml
 ```
+
+### Real hosted fork canaries
+
+Two GPT-6.1 Sol dispatches on an isolated `kubaflo/maui` feature branch completed
+successfully; their original model outputs also passed this trusted validator
+locally against freshly re-fetched upstream evidence and authority.
+
+| Upstream issue | Hosted run | Validated proposed delta |
+| --- | --- | --- |
+| [#38925](https://github.com/dotnet/maui/issues/38925) | [37004775466](https://github.com/kubaflo/maui/actions/runs/37004775466) | Add `perf/general`, `has-workaround`, `version/android-16`. |
+| [#37440](https://github.com/dotnet/maui/issues/37440) | [37004775679](https://github.com/kubaflo/maui/actions/runs/37004775679) | Add `material3`, `version/android-14`, `potential-regression`; remove `has-workaround`. |
+
+The runs exercised actual source quotations, conflicting reproduction/version
+evidence, an ineffective workaround, preservation of existing areas and
+withholding unsupported priority/confirmed-regression decisions. Initial hosted
+proposals exposed unnecessary blocked shell probes and automatic comment-ID
+metadata; they were rejected rather than sanitized into success. Native MCP
+guidance and narrow transport-ID handling were corrected before both reruns
+passed. No pipeline test files or synthetic evidence were introduced.
+
+This was **split validation**, not production end-to-end authorization. Both
+fork credentials returned HTTP 403 on upstream collaborator-permission reads.
+The existing local CLI login therefore performed real Gather and final Validate
+GETs; its credential was never copied into Actions. Bounded compressed dispatch
+data was independently hashed, and downloaded hosted context matched the
+prepared bytes. The fork used its existing Copilot secret only for inference,
+and literal staged handlers made no label/comment writes. Both issue states and
+the fork's default branch were unchanged. Production default-branch/slash-command
+gates, PAT-pool selection and apply-mode delivery remain unexercised.
