@@ -20,6 +20,9 @@ The supplied source IDs and `isMaintainer`/`isValidator` flags were collected by
 trusted code. Validators include the named Syncfusion identities in the existing
 Policy Service configuration; read-only validators cannot make priority or
 approval commitments.
+Known automation authors, including the User-typed write collaborator
+`vs-mobiletools-engineering-service2`, cannot supply maintainer or validator
+authority. Their label events remain chronology facts, not human approvals.
 Quote exact source text supporting each proposed change.
 Prior marker-bearing reports from this workflow are retained in
 `context.resultComments` only for retry reconciliation. They are not evidence
@@ -106,6 +109,10 @@ substitutes for current original issue/comment evidence.
   Not-regression also needs an unconditional, non-tentative assessment.
   "Probably not a regression" and conditional comparisons cannot add the label
   or remove potential-regression through that transition.
+  A later assignment of i/regression, potential-regression,
+  blazor-webview2-regression or any regressed-in-* label supersedes an older
+  not-regression assessment. A fresh qualifying assessment is required; the
+  older comment cannot undo that newer regression state.
   Technical assessments must also remain current: later removals (including Policy
   Service removals), contrary state labels, authorized outcomes/retractions or
   explicit maintainer revocations supersede older support. A later non-maintainer

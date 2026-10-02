@@ -107,6 +107,11 @@ reply ends a try-latest feedback wait, matching existing Policy Service behavior
 Old recommendations cannot restart that wait; re-adding needs a fresh qualifying
 assessment. Contrary edits use last-modified time, while affirmative support keeps
 its original creation time. Mixed assessment/retraction comments are withheld.
+A later i/regression, potential-regression, blazor-webview2-regression or
+regressed-in-* assignment supersedes an older not-regression assessment.
+The shared pattern check includes the entire first-bad-version family and
+applies both to adding not-regression and to removing a suspected-regression
+label through that assessment. Re-adding needs fresh qualifying evidence.
 Try-latest recommendations must bind the instruction to one concrete MAUI version
 and quote that version. The target must be present in the prepared published
 release window and strictly newer than the report's unambiguous `Version with
@@ -240,8 +245,12 @@ Markdown handling uses the parser already bundled with PowerShell's
 One GPT-6.1 Sol/Copilot analysis reads prepared evidence and the declared local
 skill. Shell and GitHub tools are disabled. It has read-only repository
 permissions and does not receive the publication job's write token.
-Known automation accounts are excluded from maintainer decision evidence even
-when GitHub reports their account type as `User`.
+Known automation accounts are excluded from both maintainer and validator
+authority even when GitHub reports their account type as `User`, including the
+write collaborator `vs-mobiletools-engineering-service2`. The explicit denylist
+also guards the registered-validator path; account type or write access alone
+cannot establish human evidence. Their label events remain chronology facts,
+not approvals.
 
 The separate safe-output job checks out the exact trusted revision, imports only
 bounded regular JSON outside the checkout, binds it to the preparation job's

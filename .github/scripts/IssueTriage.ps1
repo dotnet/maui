@@ -265,12 +265,13 @@ function Get-Snapshot {
             })
             continue
         }
-        $maintainer = $comment.user.type -eq 'User' -and $policy.automationAuthors -notcontains $comment.user.login -and
+        $humanAuthor = $comment.user.type -eq 'User' -and $policy.automationAuthors -notcontains $comment.user.login
+        $maintainer = $humanAuthor -and
             (Get-Permission $comment.user.login) -in @('write', 'maintain', 'admin')
         $sources.Add([ordered]@{
             id = "comment:$($comment.id)"; kind = 'comment'; author = $comment.user.login
             isMaintainer = $maintainer
-            isValidator = $maintainer -or ($comment.user.type -eq 'User' -and $validators -contains $comment.user.login)
+            isValidator = $humanAuthor -and ($maintainer -or $validators -contains $comment.user.login)
             createdAt = Get-Timestamp $comment.created_at
             updatedAt = Get-Timestamp $comment.updated_at; body = [string]$comment.body
             url = "https://github.com/$Repository/issues/$IssueNumber#issuecomment-$($comment.id)"
@@ -667,7 +668,7 @@ function Test-TriageRetraction([string]$Paragraph) {
 function Test-AssessmentSuperseded($Source, [string]$Label) {
     $contraryLabels = @(switch ($Label) {
         's/no-repro' { 's/verified'; 'i/regression'; 'blazor-webview2-regression' }
-        'not-regression' { 'i/regression' }
+        'not-regression' { 'i/regression'; 'potential-regression'; 'blazor-webview2-regression'; 'regressed-in-*' }
         's/try-latest-version' { 's/verified'; 's/no-repro' }
     })
     $completedResponse = '(?i)\b(tested|retested|updated|upgraded|verified)\b(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|please|try|retest|test|verify|update|upgrade)\b).){0,80}\b(latest|requested|recommended)\b'
@@ -675,7 +676,7 @@ function Test-AssessmentSuperseded($Source, [string]$Label) {
         if ($candidate.kind -ceq 'unlabeled' -and $candidate.body -ceq "unlabeled: $Label" -and
             $candidate.createdAt -ge $Source.createdAt) { return $true }
         if ($candidate.kind -ceq 'labeled' -and $candidate.createdAt -ge $Source.createdAt -and
-            @($contraryLabels | Where-Object { $candidate.body -ceq "labeled: $_" }).Count -gt 0) { return $true }
+            @($contraryLabels | Where-Object { Test-Pattern $candidate.body "labeled: $_" }).Count -gt 0) { return $true }
         if ($candidate.kind -cne 'comment') { continue }
         $sameSource = $candidate.id -ceq $Source.id
         if (-not $sameSource -and (Get-SupersessionTime $candidate) -le $Source.createdAt) { continue }
