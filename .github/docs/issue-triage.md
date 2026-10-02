@@ -114,6 +114,10 @@ concern the current report: failed reproduction of a foreign issue cannot invali
 confirmation, simulator reproduction or technical assessments. The full comment
 is still scanned for current-report negative outcomes, including repeated
 paragraphs; metadata-only foreign references remain scope constraints.
+Subject-negated outcomes such as "no one reproduced this issue" and
+"nobody verified this issue" share negative-evidence handling and cannot
+become positive validation. Only those negative spans are masked for positive
+matching, so separate positive outcomes still block mixed-result no-repro claims.
 Technical-state labels require their specific affirmative review, reproduction
 outcome or version recommendation, not merely an authorized comment author.
 Maintainer directives, technical assessments and failed-workaround observations
@@ -136,6 +140,10 @@ and curly apostrophes. The original outcome, target, resource-failure,
 conditional, uncertainty and mixed-result checks remain required.
 No-repro uses the observation-oriented conditional gate, so completed
 post-update or post-rebuild test context is not mistaken for a pending decision.
+Explicit lack of attempts, untested samples and pending prerequisites are not
+unsuccessful completed tests. Current-report qualifiers anywhere in the cited
+comment veto no-repro, including inability "until" a prerequisite is fulfilled
+or waiting for a sample. This does not restore a blanket timing-word veto.
 Questions remain withheld, but auxiliary/subject wording must begin a clause:
 declarative "I have this issue" does not turn a factual reproduction into a question.
 All technical assessments share chronology checks for additions and removal
@@ -271,7 +279,9 @@ predate the initial placeholder event; that transition does not require a newer
 validator comment. Existing area membership alone is not sufficient.
 Priority changes cannot leave conflicting priorities. Changes to status states
 cannot leave verified/no-repro, suspected/confirmed regression or
-not-regression/regression states active together. A first-bad-boundary change
+not-regression/regression states active together. No-repro also conflicts with `i/regression`,
+`blazor-webview2-regression` or any `regressed-in-*` label. These families
+also supersede older no-repro assessments. A first-bad-boundary change
 must leave at most one `regressed-in-*` label active, not accumulate differing
 boundaries. Every necessary removal still
 requires its own permitted authority or transition; otherwise withhold the
@@ -330,6 +340,10 @@ requires explicit issue/PR wording;
 ordinary `Fixes`, `Closes`, `Resolves`, `See` and related-reference wording also
 qualifies, including three-digit issue numbers. A full same-repository issue URL
 is unambiguous.
+The same color-aware classification is shared with validation scope and
+positive-outcome matching; numeric colors are not foreign-issue references.
+Explicit issue/PR wording, repository-qualified references and full URLs still
+constrain the target.
 Nonexistent/inaccessible referenced items produce a warning and no related
 evidence instead of aborting otherwise valid triage. A missing canonical source
 still cannot authorize a duplicate disposition. Authentication, rate-limit and

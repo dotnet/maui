@@ -34,6 +34,9 @@ must explicitly identify the current report. Mixed-reference paragraphs are
 withheld; use separate current-report evidence. A duplicate's fetched canonical
 reference is a relationship, not a foreign action target, only when bound to
 the definitive "duplicate of" disposition.
+Numeric color-shaped shorthand uses the same classification in intake and
+validation: `#333333` is not a foreign issue without explicit issue/PR context.
+Repository-qualified references and full issue/PR URLs remain unambiguous.
 Adjective hedges such as "possible duplicate" and "looks like expected behavior"
 are not definitive dispositions.
 Prior marker-bearing reports from this workflow are retained in
@@ -128,6 +131,10 @@ substitutes for current original issue/comment evidence.
   outcomes too, and mixed-reference paragraphs remain withheld.
   An unrelated negation, such as
   "not a duplicate", does not negate a following positive verification.
+  Subject-negative outcomes such as "no one reproduced this issue" or
+  "nobody verified this issue" are not positive validation. They veto
+  confirmation without hiding separately stated positive outcomes from
+  mixed-result/no-repro checks.
 - Edited contrary comments use their last-modified time. A cosmetic edit to an
   older positive comment cannot revive it after a newer contrary decision;
   supply a fresh confirmation or explicit maintainer decision instead.
@@ -147,6 +154,11 @@ substitutes for current original issue/comment evidence.
   tentative check; questions, conditions and other uncertainty remain rejected.
   Completed post-update or post-rebuild test context is not a pending decision:
   use the observation-oriented conditional gate for no-repro outcomes.
+  Explicit non-attempts, untested samples and pending reproduction prerequisites
+  cannot establish no-repro. Inspect the cited comment, not just the selected
+  quote, for current-report qualifiers. Completed post-update/post-rebuild
+  context remains eligible; waiting for a sample or inability "until" a
+  prerequisite is fulfilled is not a completed unsuccessful test.
   Declarative "I have this issue" wording is not an auxiliary-led question.
   Mixed failed/successful validation is withheld, including an initial failure
   followed by reproduction in the same paragraph. Positive outcomes elsewhere
@@ -249,6 +261,8 @@ policy transition. Explain each removal separately:
 - A changed state must not leave verified/no-repro, suspected/confirmed
   regression, or not-regression/regression states active together. Include
   separately justified permitted removals or withhold the incompatible change.
+  No-repro also conflicts with `i/regression`, `blazor-webview2-regression`
+  and every `regressed-in-*` label, for changes in either direction.
   A changed first-bad boundary must leave at most one `regressed-in-*` label
   active. Replacing a boundary requires an independently authorized removal;
   otherwise withhold the new boundary rather than accumulating versions.

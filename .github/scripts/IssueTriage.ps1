@@ -214,6 +214,12 @@ function Test-Pattern([string]$Name, [string]$Pattern) {
     return $Name -cmatch ('^' + [regex]::Escape($Pattern).Replace('\*', '.*') + '$')
 }
 
+function Test-IssueReferenceMatch([Text.RegularExpressions.Match]$Match, [string]$Text) {
+    # Color-shaped shorthand needs an explicit issue/PR context.
+    return -not ($Match.Value.StartsWith('#') -and $Match.Groups['number'].Length -in @(3, 4, 6, 8) -and
+        $Text.Substring(0, $Match.Index) -notmatch '(?i)\b(?:issue|PR|pull request|duplicate of|fix(?:es|ed)?|clos(?:e|es|ed)|resolv(?:e|es|ed)|see(?: also)?|refs?|references?|related to)\s+$')
+}
+
 function Get-Category([string]$Label) {
     foreach ($pattern in $policy.blocked) {
         if (Test-Pattern $Label $pattern) { return 'preserve' }
@@ -303,13 +309,9 @@ function Get-Snapshot {
     foreach ($source in $sources) {
         $referenceText = Get-MarkdownText $source.body -IncludeQuotes
         foreach ($match in [regex]::Matches($referenceText,
-            '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)([1-9][0-9]{0,8})(?![\w])')) {
-            # Color-shaped shorthand needs an explicit issue/PR context.
-            if ($match.Value.StartsWith('#') -and $match.Groups[1].Length -in @(3, 4, 6, 8) -and
-                $referenceText.Substring(0, $match.Index) -notmatch '(?i)\b(?:issue|PR|pull request|duplicate of|fix(?:es|ed)?|clos(?:e|es|ed)|resolv(?:e|es|ed)|see(?: also)?|refs?|references?|related to)\s+$') {
-                continue
-            }
-            $number = [int]$match.Groups[1].Value
+            '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)(?<number>[1-9][0-9]{0,8})(?![\w])')) {
+            if (-not (Test-IssueReferenceMatch $match $referenceText)) { continue }
+            $number = [int]$match.Groups['number'].Value
             if ($number -ne $IssueNumber) { $null = $references.Add($number) }
         }
     }
@@ -524,6 +526,16 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
     return $false
 }
 
+function Get-SubjectNegativeValidationPattern([string]$ReferenceContext) {
+    $subject = '(?:no(?:\s+|-)one|nobody|none|neither)(?:\s+of\s+(?:(?:the|these|those|our|their)\s+)?(?:us|them|tests?|testers?|validators?|developers?|maintainers?))?'
+    $auxiliary = '(?:(?:has|have|had|is|are|was|were|can|could)\s+){0,2}'
+    $modifiers = '(?:(?:be|been|being|able to|yet|ever|still|currently|successfully|reliably|consistently|actually|fully|independently|personally|locally)\s+){0,4}'
+    $verbs = '(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
+    $gap = '(?:(?![,;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|and|or)\b).){0,50}?'
+    $outcome = Get-ValidationOutcomePattern $ReferenceContext
+    return "(?i)\b$subject\s+$auxiliary$modifiers$verbs\b$gap(?<![\w])$outcome(?![\w])"
+}
+
 function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '') {
     if (-not $ReferenceContext) { $ReferenceContext = $Prose }
     $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
@@ -532,12 +544,13 @@ function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '')
     $pattern = "(?i)\b$negative\s+$modifiers$verbs\b"
     $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
     $postposed = "(?i)\b$verbs\b(?:(?![;!?\r\n]|\.(?:\s|$)).){0,100}\b$negative\s+$outcome\b"
+    $subjectNegative = Get-SubjectNegativeValidationPattern $ReferenceContext
     $paragraphs = @($Prose -split '\r?\n[ \t]*\r?\n')
     $position = 0
     # Repeated paragraphs retain their own reference-metadata positions.
     foreach ($paragraph in [regex]::Split((Get-Prose $ReferenceContext), '(\r?\n[ \t]*\r?\n)')) {
         if ($paragraph -cin $paragraphs -and
-            ($paragraph -match $pattern -or $paragraph -match $postposed) -and
+            ($paragraph -match $pattern -or $paragraph -match $postposed -or $paragraph -match $subjectNegative) -and
             (Test-CurrentIssueScope $paragraph $ReferenceContext -ReferenceStart $position)) { return $true }
         $position += $paragraph.Length
     }
@@ -551,8 +564,9 @@ function Test-ForeignOutcome([string]$Paragraph) {
 function Test-ForeignIssueReference([string]$Text) {
     $references = [regex]::Matches($Text, $validationReferencePattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     return @($references | Where-Object {
-        [int]$_.Groups['number'].Value -ne $IssueNumber -or
-        ($_.Groups['repository'].Success -and $_.Groups['repository'].Value -ine $Repository)
+        (Test-IssueReferenceMatch $_ $Text) -and (
+            [int]$_.Groups['number'].Value -ne $IssueNumber -or
+            ($_.Groups['repository'].Success -and $_.Groups['repository'].Value -ine $Repository))
     }).Count -gt 0
 }
 
@@ -595,16 +609,26 @@ function Test-PositiveValidation([string]$Paragraph, [string]$ReferenceContext =
     if ((Test-ConditionalEvidence $Paragraph) -or (Test-ForeignOutcome $Paragraph)) { return $false }
     if (-not $ReferenceContext) { $ReferenceContext = $Paragraph }
     if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext)) { return $false }
+    $candidate = [regex]::Replace($Paragraph, $validationReferencePattern, {
+        param($match)
+        if (Test-IssueReferenceMatch $match $Paragraph) { return $match.Value }
+        return ' ' * $match.Length
+    }, [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    # Mask only subject-negative outcomes, retaining separate positive outcomes.
+    $candidate = [regex]::Replace($candidate, (Get-SubjectNegativeValidationPattern $ReferenceContext), {
+        param($match)
+        return [regex]::Replace($match.Value, '\S', ' ')
+    })
     $outcome = Get-ValidationOutcomePattern $ReferenceContext
     $target = "(?<![\w])$outcome(?![\w])"
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b|$validationReferencePattern).){0,50}"
-    if ($Paragraph -match "(?i)$target$clause\b$reproduction\b|\b$reproduction\b$clause$target|\b(?:confirmed|verified)\b$clause$target|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause$target") {
+    if ($candidate -match "(?i)$target$clause\b$reproduction\b|\b$reproduction\b$clause$target|\b(?:confirmed|verified)\b$clause$target|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause$target") {
         return $true
     }
     if ((Test-ForeignIssueReference $ReferenceContext) -or (Test-ForeignOutcome $ReferenceContext)) { return $false }
-    return $Paragraph -match "(?i)^\s*$outcome\b" -and
-        $Paragraph -match "(?i)\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b"
+    return $candidate -match "(?i)^\s*$outcome\b" -and
+        $candidate -match "(?i)\bit\s+(?:can be|is|was|has been)\s+(?:(?:successfully|reliably|consistently)\s+)?$reproduction\b"
 }
 
 function Get-FrameworkVersion([string]$Text) {
@@ -886,20 +910,48 @@ function Test-TriageRetraction([string]$Paragraph) {
         $Paragraph -match '(?i)\b(triage|review|investigation)\s+(?:is|was|remains)\s+(incomplete|unfinished)\b'
 }
 
+function Get-NoReproductionOutcomePattern([string]$ReferenceContext) {
+    $outcome = Get-ValidationOutcomePattern $ReferenceContext
+    $modifiers = '(?:(?:successfully|reliably|consistently|actually|locally|independently)\s+){0,3}'
+    $negative = "(?:cannot|can['\u2019]t|could not|couldn['\u2019]t|(?:was|were|have been)\s+unable to|unable to|did not|didn['\u2019]t)"
+    return "(?:\b$negative\s+$modifiers(?:reproduce|replicate)\s+$outcome\b|\b$outcome\s+(?:(?:is|was|has been)\s+not|cannot|can['\u2019]t|could not|couldn['\u2019]t)\s+(?:be\s+)?$modifiers(?:reproduced|replicated)\b)"
+}
+
+function Test-UnobservedReproduction([string]$Prose, [string]$ReferenceContext = '') {
+    if (-not $ReferenceContext) { $ReferenceContext = $Prose }
+    $outcome = Get-ValidationOutcomePattern $ReferenceContext
+    $negative = "(?:did not|didn['\u2019]t|have not|haven['\u2019]t|has not|hasn['\u2019]t|had not|hadn['\u2019]t|never)"
+    $modifiers = '(?:(?:actually|yet|ever|even|personally|locally)\s+){0,3}'
+    $object = "(?:it|$outcome|(?:(?:the|this|your|provided)\s+)?(?:sample|repro(?:duction)?|project))"
+    $nonAttempt = "(?i)\b$negative\s+$modifiers(?:try|tried|test|tested|attempt(?:ed)?|run|ran|execute[ds]?)\b(?:\s+$object\b|\s*(?=[.;!?\r\n]|$))"
+    $untested = "(?i)(?<![\w])$object\s+(?:is|was|remains)\s+(?:untested|not\s+(?:yet\s+)?tested|never\s+tested)\b"
+    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet)\b).){0,60}'
+    $pendingOutcome = "(?i)(?:$(Get-NoReproductionOutcomePattern $ReferenceContext))$gap\b(?:until|pending|while\s+(?:awaiting|waiting\s+(?:for|on)))\b"
+    $pendingResource = '(?i)\b(?:pending|awaiting|waiting\s+(?:for|on))\s+(?:(?:a|an|the|your|their|requested|usable|working|minimal)\s+){0,3}(?:sample|repro(?:duction)?|project|access|permission|build|download)\b'
+    $paragraphs = @($Prose -split '\r?\n[ \t]*\r?\n')
+    $position = 0
+    foreach ($paragraph in [regex]::Split((Get-Prose $ReferenceContext), '(\r?\n[ \t]*\r?\n)')) {
+        if ($paragraph -cin $paragraphs -and
+            ($paragraph -match $nonAttempt -or $paragraph -match $untested -or
+                $paragraph -match $pendingOutcome -or $paragraph -match $pendingResource) -and
+            (Test-CurrentIssueScope $paragraph $ReferenceContext -ReferenceStart $position)) { return $true }
+        $position += $paragraph.Length
+    }
+    return $false
+}
+
 function Test-NoReproductionParagraph([string]$Paragraph, [string]$ReferenceContext = '') {
     if (-not $ReferenceContext) { $ReferenceContext = $Paragraph }
-    $outcome = Get-ValidationOutcomePattern $ReferenceContext
     $modifiers = '(?:(?:successfully|reliably|consistently|actually|locally|independently)\s+){0,3}'
     $pastNegative = "\b(?:could\s+not|couldn['\u2019]t)\s+(?=(?:be\s+)?$modifiers(?:reproduce|replicate)d?\b)"
     $candidate = [regex]::Replace($Paragraph, "(?i)$pastNegative", 'not ')
     if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph) -or
         (Test-TentativeEvidence $candidate) -or (Test-PositiveValidation $Paragraph $ReferenceContext) -or
+        (Test-UnobservedReproduction $Paragraph $ReferenceContext) -or
         $Paragraph -match "(?i)\b(?:please|do not|don['\u2019]t|never|avoid|should not|must not|asked|instruct(?:ed|ion)?|recommend(?:ed|ation)?)\b") {
         return $false
     }
-    $negative = "(?:cannot|can['\u2019]t|could not|couldn['\u2019]t|(?:was|were|have been)\s+unable to|unable to|did not|didn['\u2019]t)"
-    return $Paragraph -match "(?i)\b$negative\s+$modifiers(?:reproduce|replicate)\s+$outcome\b" -or
-        $Paragraph -match "(?i)\b$outcome\s+(?:(?:is|was|has been)\s+not|cannot|can['\u2019]t|could not|couldn['\u2019]t)\s+(?:be\s+)?$modifiers(?:reproduced|replicated)\b"
+    return $Paragraph -match "(?i)$(Get-NoReproductionOutcomePattern $ReferenceContext)"
 }
 
 function Test-NonRegressionValidation([string]$Paragraph, [string]$Prose, [string]$ReferenceContext = '') {
@@ -926,7 +978,7 @@ function Test-NonRegressionValidation([string]$Paragraph, [string]$Prose, [strin
 
 function Test-AssessmentSuperseded($Source, [string]$Label) {
     $contraryLabels = @(switch ($Label) {
-        's/no-repro' { 's/verified'; 'i/regression'; 'blazor-webview2-regression' }
+        's/no-repro' { 's/verified'; 'i/regression'; 'blazor-webview2-regression'; 'regressed-in-*' }
         'not-regression' { 'i/regression'; 'potential-regression'; 'blazor-webview2-regression'; 'regressed-in-*' }
         's/try-latest-version' { 's/verified'; 's/no-repro' }
     })
@@ -1005,7 +1057,8 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
             }
             's/no-repro' {
                 (Test-NoReproductionParagraph $paragraph $referenceContext) -and
-                -not (Test-BlockedValidation $prose)
+                -not (Test-BlockedValidation $prose) -and
+                -not (Test-UnobservedReproduction $prose $referenceContext)
             }
             'not-regression' {
                 Test-NonRegressionValidation $paragraph $prose $referenceContext
@@ -1288,7 +1341,7 @@ if (@($names | Where-Object { Test-Pattern $_ 'regressed-in-*' }).Count -gt 0 -a
     throw 'A regression boundary change must not leave multiple regressed-in-* labels active; propose supported removals or withhold the change.'
 }
 $incompatibleStates = @(
-    @{ label = 's/no-repro'; contrary = @('s/verified') }
+    @{ label = 's/no-repro'; contrary = @('s/verified', 'i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
     @{ label = 'not-regression'; contrary = @('potential-regression', 'i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
     @{ label = 'potential-regression'; contrary = @('i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
 )
