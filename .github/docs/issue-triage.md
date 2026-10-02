@@ -176,11 +176,19 @@ Explicit target wording such as "this issue" or "the reported behavior" is
 required. A bare issue/bug/problem mention or reproduction of another, different
 or unrelated outcome cannot establish confirmation. The cited paragraph is
 checked, so an affirmative-looking quote cannot hide such a qualifier.
+When the cited comment references a foreign issue/PR, its validation must bind
+the outcome explicitly to the current report, using current-issue wording or
+the current issue's exact reference. "That issue" cannot carry confirmation
+from the referenced report. This shared target gate also applies to simulator
+transitions and contrary positive outcomes; reference metadata is a conservative
+scope check, not affirmative authority.
 Not-regression assessments must also be unconditional and non-tentative:
 "This is probably not a regression" cannot supply a definitive disposition or
 remove potential-regression through that transition.
 They must describe the current/reported issue or its same behavior on older
-versions. A foreign subject such as "the other issue" cannot supply the
+explicitly named .NET/MAUI versions or releases. Older devices/OS versions or
+unqualified "earlier" wording cannot establish prior framework behavior.
+A foreign subject such as "the other issue" cannot supply the
 disposition or removal transition. The full cited comment is checked for
 foreign-outcome qualifiers, so selecting another paragraph cannot hide them.
 The same unconditional, non-tentative requirement applies to completed-review
@@ -188,6 +196,10 @@ and no-repro assessments. No-repro requires an unsuccessful outcome for the
 reported issue, not "Do not reproduce this issue" or a hypothetical attempt.
 Factual "I could not reproduce this issue" remains eligible, subject to the
 existing authority, infrastructure and freshness checks.
+Mixed unsuccessful/successful validation cannot establish no-repro, including
+an initial failure followed by reproduction in the same paragraph. Positive
+outcomes elsewhere in the same cited comment also veto the assessment; the
+negative-outcome gate cannot hide that counterevidence.
 Regression confirmation additionally requires explicit working behavior tied
 to an earlier named .NET/MAUI version and failing/reproducing behavior tied to a
 later named version. Lists of tested versions do not establish their outcomes.
@@ -210,6 +222,11 @@ Corrections are deltas, never whole-label replacement. Allow explicit maintainer
 removals and narrowly supported pending-to-validated, suspected-to-confirmed,
 root-cause area, disputed-workaround and device-to-simulator transitions. At most
 one dominant area is removed and two independently supported areas added.
+Failed-workaround transitions require an unconditional, non-tentative observed
+failure in one enclosing paragraph and in the selected quote. Questions,
+conditional advice and mixed working/failing outcomes are not such observations.
+"Suggested workaround" names the attempted workaround, not a tentative failure;
+uncertainty about the outcome still withholds the transition.
 Device-to-simulator transitions require affirmative, unconditional, non-tentative
 reproduction of the reported issue on a simulator in both the quote and enclosing
 paragraph. Questions and unsuccessful attempts are not contradictory evidence;

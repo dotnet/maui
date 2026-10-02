@@ -49,6 +49,11 @@ substitutes for current original issue/comment evidence.
   Use an explicit target such as "this issue" or "the reported behavior".
   Bare issue/bug/problem mentions and another/different/unrelated outcomes
   cannot establish confirmation, even if the selected quote omits the qualifier.
+  If the cited comment references another issue/PR, bind validation explicitly
+  to the current report using current-issue wording or its exact issue reference.
+  "That issue" cannot import the referenced report's confirmation. Reference
+  metadata constrains scope; it is not affirmative authority. The same target
+  gate applies to simulator transitions and contrary positive evidence.
 - `potential-regression` records a plausible reported regression, not proof.
   `i/regression` requires authorized change-of-behavior evidence, not just
   reproduction: explicit working behavior tied to an earlier named .NET/MAUI
@@ -117,6 +122,9 @@ substitutes for current original issue/comment evidence.
   non-tentative. No-repro needs an observed unsuccessful outcome concerning
   this reported issue, not an instruction to avoid reproduction. Factual
   "could not reproduce this issue" is an outcome, not speculation.
+  Mixed failed/successful validation is withheld, including an initial failure
+  followed by reproduction in the same paragraph. Positive outcomes elsewhere
+  in the cited comment also veto no-repro; do not hide them by quote selection.
   No-repro cannot be established by an inaccessible sample, failed build/download,
   authentication/network failure or timeout. A negated same-behavior comparison
   cannot support not-regression.
@@ -124,7 +132,9 @@ substitutes for current original issue/comment evidence.
   "Probably not a regression" and conditional comparisons cannot add the label
   or remove potential-regression through that transition.
   Bind the assessment to this reported issue or its same behavior on older
-  versions. A foreign subject such as "the other issue" cannot change the
+  explicitly named .NET/MAUI versions or releases. Older devices/OS versions and
+  unqualified "earlier" wording do not establish earlier framework behavior.
+  A foreign subject such as "the other issue" cannot change the
   current issue's regression state, including through a selected paragraph.
   A later assignment of i/regression, potential-regression,
   blazor-webview2-regression or any regressed-in-* label supersedes an older
@@ -189,6 +199,12 @@ policy transition. Explain each removal separately:
   Do not delete unrelated secondary areas.
 - Affirmative transition evidence retains its original creation time; cosmetic
   edits cannot override a newer information/reproduction request.
+- Removing `has-workaround` through failure evidence requires an unconditional,
+  non-tentative failed-workaround observation in both the quote and one enclosing
+  paragraph. Questions, conditional advice and mixed working/failing outcomes
+  cannot authorize that transition.
+  "Suggested workaround" identifies the attempted workaround; it does not make
+  an otherwise definitive failure tentative. Outcome uncertainty still vetoes it.
 - Removing `repro:device-only` through simulator evidence requires an affirmative,
   unconditional, non-tentative reproduction of the reported issue on a simulator.
   Questions, unsuccessful attempts and device-only results followed by a negated
