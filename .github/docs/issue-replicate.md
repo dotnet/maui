@@ -115,6 +115,9 @@ tests or the HostApp. Feedback prioritizes compiler/assertion diagnostics over
 trailing device logs so the single revision can address the actual failure.
 Generation guidance preserves the repro's relevant layout and content size and
 requires observing transient gesture behavior rather than only its settled position.
+Initial-state assertions must observe live control or binding state, not a label
+hardcoded to the expected value; diagnostic labels track real changes, and the
+test must verify that a guarded issue interaction actually ran.
 These instructions do not prove candidate adequacy: inspect whether the assertion
 isolates the reported bug instead of ordinary scrolling or overscroll.
 TRX verification accepts NUnit's parameterized fixture names (for example
