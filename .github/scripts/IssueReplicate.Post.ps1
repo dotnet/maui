@@ -1,19 +1,37 @@
 #!/usr/bin/env pwsh
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Azure')]
 param(
     [Parameter(Mandatory)][ValidateRange(1, [int]::MaxValue)][int]$IssueNumber,
     [Parameter(Mandatory)][ValidateRange(1, [long]::MaxValue)][long]$CommentId,
-    [Parameter(Mandatory)][ValidateRange(1, [int]::MaxValue)][int]$BuildId,
+    [Parameter(Mandatory, ParameterSetName = 'Azure')][ValidateRange(1, [int]::MaxValue)][int]$BuildId,
+    [Parameter(Mandatory, ParameterSetName = 'GitHub')][ValidateRange(1, [long]::MaxValue)][long]$GitHubRunId,
+    [Parameter(ParameterSetName = 'GitHub')][ValidateSet('dotnet/maui', 'kubaflo/maui')][string]$GitHubRepository = 'kubaflo/maui',
     [Parameter(Mandatory)][string]$InputDirectory,
-    [Parameter(Mandatory)][string]$ResultsDirectory
+    [Parameter(Mandatory)][string]$ResultsDirectory,
+    [string]$OutputPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
-$buildUrl = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$BuildId"
-$marker = "<!-- issue-replicate-result:$BuildId -->"
+$buildUrl = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
+    "https://github.com/$GitHubRepository/actions/runs/$GitHubRunId"
+} else { "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$BuildId" }
+$marker = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
+    "<!-- issue-replicate-result:github:$($GitHubRepository):$GitHubRunId -->"
+} else { "<!-- issue-replicate-result:$BuildId -->" }
 $summary = 'The public pipeline could not complete a verified reproduction. See the build log; this is not evidence that the issue is invalid.'
-$details = ''
+$details = "No validated intake or test result is available. [Inspect the run log]($buildUrl)."
+$candidate = 'No verified failing test patch was exported.'
+$commit = 'unknown'
+$patchText = ''
+$patchSha256 = ''
+$artifact = ''
+$runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
+    "> Fork canary evidence from [$GitHubRepository]($buildUrl), published from validated run artifacts; this was not a production Azure pipeline run."
+} else { '' }
+$refresh = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
+    '> The production `/issue replicate` command requires the deployment described in PR #38807. This canary did not test production authorization, queueing, or automatic publication.'
+} else { '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.' }
 
 function Read-BoundedJson {
     param([string]$Path, [int]$MaxBytes = 16384)
@@ -36,10 +54,16 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         ($manifest.sourceType -eq 'repository' -and $manifest.sourceCommit -cnotmatch '^[0-9a-f]{40}$')) {
         throw 'The intake artifact does not match this issue, comment, or target revision.'
     }
-    $details = "MAUI revision: ``$($manifest.targetSha)`` on **$($manifest.platform)**; " +
-        "repro ZIP SHA-256: ``$($manifest.sampleSha256)``. "
+    $commit = $manifest.targetSha.Substring(0, 7)
+    $details = @(
+        "| Evidence | Value |",
+        "|---|---|",
+        "| Platform | $($manifest.platform) |",
+        "| MAUI revision | [$commit](https://github.com/dotnet/maui/commit/$($manifest.targetSha)) |",
+        "| Repro ZIP SHA-256 | ``$($manifest.sampleSha256)`` |"
+    ) -join "`n"
     if ($manifest.sourceType -eq 'repository') {
-        $details += "Author repository commit: ``$($manifest.sourceCommit)``. "
+        $details += "`n| Author repository commit | ``$($manifest.sourceCommit)`` |"
     }
     $resultPath = Join-Path $ResultsDirectory 'result.json'
     if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
@@ -49,9 +73,13 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             $result.sampleSha256 -cne $manifest.sampleSha256) {
             throw 'The verification result does not match the immutable intake artifact.'
         }
+        $details += "`n| Status | ``$($result.status)`` |"
+        $details += "`n| Author sample built | $($result.sampleBuilt -eq $true) |"
+        $details += "`n| Generated test executed | $($result.testExecuted -eq $true) |"
+        $details += "`n| Matching assertion failures verified twice | $($result.assertionFailed -eq $true) |"
         if ($result.testKind -cin @('unit', 'xaml', 'ui') -and $result.testExecuted -eq $true) {
             $class = if ($result.testKind -eq 'xaml') { "Maui$IssueNumber" } else { "Issue$IssueNumber" }
-            $details += "Executed $($result.testKind) test class ``$class``. "
+            $details += "`n| Executed test | $($result.testKind) class ``$class`` |"
         }
         switch ($result.status) {
             'candidate-failed' {
@@ -62,7 +90,8 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                     (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $result.patchSha256) {
                     throw 'The generated patch is missing, oversized, linked, or mismatched.'
                 }
-                $headers = @([regex]::Matches((Get-Content -LiteralPath $patchPath -Raw), '(?m)^diff --git a/(\S+) b/(\S+)$'))
+                $patchText = Get-Content -LiteralPath $patchPath -Raw
+                $headers = @([regex]::Matches($patchText, '(?m)^diff --git a/(\S+) b/(\S+)$'))
                 if ($headers.Count -lt 1 -or $headers.Count -gt 3) { throw 'Unexpected test patch structure.' }
                 foreach ($header in $headers) {
                     if ($header.Groups[1].Value -cne $header.Groups[2].Value -or
@@ -74,7 +103,10 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                 $summary = 'The author sample built and a generated test **failed at an assertion twice** against the pinned MAUI revision. The original app interaction was not exercised, so this is a verified failing *test candidate*, not confirmation of the reported issue.'
                 $artifact = Split-Path $ResultsDirectory -Leaf
                 if ($artifact -cnotin @('Verified1', 'Verified2')) { throw 'Unexpected result artifact name.' }
-                $details += "A review-before-apply ``test.patch`` is in the **$artifact** build artifact."
+                $patchSha256 = $result.patchSha256
+                $candidate = "**Review before applying:** this is generated, untrusted test code, not a framework fix. " +
+                    "The full ``test.patch`` is in the **$artifact** [run artifact]($buildUrl).`n`n" +
+                    "Patch SHA-256: ``$patchSha256``."
             }
             'not-reproduced-on-tested-revision' {
                 $summary = 'The generated test ran and passed on this revision. That does **not** prove the reported bug never occurs; it may require a different version or setup.'
@@ -89,17 +121,73 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     }
 }
 
+$inlinePatch = ''
+if ($patchText) {
+    $maxBacktickRun = 0
+    foreach ($match in [regex]::Matches($patchText, '`+')) {
+        $maxBacktickRun = [Math]::Max($maxBacktickRun, $match.Length)
+    }
+    $fence = '`' * [Math]::Max(4, $maxBacktickRun + 1)
+    $inlinePatch = "`n`n${fence}diff`n$($patchText.TrimEnd())`n$fence"
+    if ([Text.Encoding]::UTF8.GetByteCount($inlinePatch) -gt 45000) {
+        $inlinePatch = "`n`n_The patch is too large to embed safely. Download the complete ``test.patch`` from **$artifact**; it has not been truncated._"
+    }
+}
+
 $body = @(
     $marker,
-    '> [!NOTE]',
-    '> ### `/issue replicate` result',
-    '>',
-    "> $summary",
-    '>',
-    "> $details",
-    '>',
-    "> [Public build and artifacts]($buildUrl). No source or PR was changed; generated tests require human review."
+    '## Issue Reproduction Analysis',
+    '',
+    $summary,
+    '',
+    $runNote,
+    '',
+    '<p align="left">',
+    '  <img alt="Scope issue reproduction" src="https://img.shields.io/badge/Scope-issue%20reproduction-1f6feb?labelColor=30363d&amp;style=flat-square">',
+    "  <img alt=`"Commit $commit`" src=`"https://img.shields.io/badge/Commit-$commit-1f6feb?labelColor=30363d&amp;style=flat-square`">",
+    '</p>',
+    '',
+    '---',
+    '',
+    '<details>',
+    '<summary><strong>&#x1F9EA; Reproduction evidence</strong> &#x2014; click to expand</summary>',
+    '<br/>',
+    '',
+    $details,
+    '',
+    '</details>',
+    '',
+    '---',
+    '',
+    '<details>',
+    '<summary><strong>&#x1F4DD; Generated test candidate</strong> &#x2014; review code</summary>',
+    '<br/>',
+    '',
+    ($candidate + $inlinePatch),
+    '',
+    '</details>',
+    '',
+    '---',
+    '',
+    '<details>',
+    '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
+    '<br/>',
+    '',
+    "[Public run, logs and artifacts]($buildUrl). No framework source or PR was changed by this reproduction run.",
+    '',
+    'Review whether the generated assertion isolates the reported scenario before applying a candidate patch. A simulator result does not replace physical-device validation.',
+    '',
+    $refresh,
+    '',
+    '</details>'
 ) -join "`n"
+if ([Text.Encoding]::UTF8.GetByteCount($body) -gt 60000) {
+    throw 'The reproduction comment exceeds the bounded publication size.'
+}
+if ($OutputPath) {
+    [IO.File]::WriteAllText([IO.Path]::GetFullPath($OutputPath), $body, [Text.UTF8Encoding]::new($false))
+    return
+}
 
 $existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
     --jq ".[] | select(.body | contains(`"$marker`")) | .id")

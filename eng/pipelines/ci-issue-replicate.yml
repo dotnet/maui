@@ -268,7 +268,22 @@ stages:
                 if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
               } catch {
                 $url = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$(Build.BuildId)"
-                $message = "> [!WARNING]`n> ``/issue replicate`` was inconclusive: the public build could not publish a validated result. [Build log]($url). This is not evidence against the issue."
+                $message = @(
+                  '## Issue Reproduction Analysis',
+                  '',
+                  '> [!WARNING]',
+                  '> `/issue replicate` was inconclusive: the public build could not publish a validated result. This is not evidence against the issue.',
+                  '',
+                  '<details>',
+                  '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
+                  '<br/>',
+                  '',
+                  "[Inspect the public build log]($url). No verified test candidate is being published.",
+                  '',
+                  '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.',
+                  '',
+                  '</details>'
+                ) -join "`n"
                 $message | gh issue comment $issue --repo dotnet/maui --body-file -
                 if ($LASTEXITCODE -ne 0) { throw 'Could not publish the incomplete notice.' }
                 throw

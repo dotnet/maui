@@ -34,6 +34,22 @@ The patch is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
+The result is posted **under the originating issue**, with a concise outcome and
+the same expandable-section style as `/review tests`: **Reproduction evidence**,
+**Generated test candidate**, and **Follow-up**. A verified failing candidate's
+hash-checked diff is embedded in the comment so it can be reviewed without
+downloading artifacts. Oversized diffs are explicitly linked in full rather than
+truncated; passing, unsupported, and inconclusive results do not publish a patch.
+Results are updated idempotently per run. Publication failures also produce an
+expandable follow-up notice, without claiming a verified outcome.
+
+For a read-only preview, pass `-OutputPath` to `IssueReplicate.Post.ps1`; this
+validates the same artifacts and writes the comment without calling GitHub.
+Authorized fork canaries can use `-GitHubRunId` and `-GitHubRepository` instead
+of `-BuildId` to link their actual GitHub Actions evidence, without pretending
+they ran in Azure. Normal production publication still uses the isolated Azure
+Post job and its separately scoped issue-comment token.
+
 iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
 unsupported generated candidate cannot rule out the reported behavior.
