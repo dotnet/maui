@@ -197,6 +197,10 @@ function Assert-Actor {
                 throw 'The invocation is not a new comment on the exact target issue.'
             }
         } elseif ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+            if ($event.inputs.ContainsKey('aw_context') -and
+                $null -ne $event.inputs.aw_context -and [string]$event.inputs.aw_context -cne '') {
+                throw 'Issue triage does not accept caller workspace context.'
+            }
             if ([string]$event.inputs.issue_number -cne [string]$IssueNumber -or $CommandCommentId -ne 0) {
                 throw 'The invocation does not match the manual target.'
             }
@@ -520,15 +524,22 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
     return $false
 }
 
-function Test-NegativeValidation([string]$Prose) {
+function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '') {
+    if (-not $ReferenceContext) { $ReferenceContext = $Prose }
     $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
     $modifiers = '(?:(?:be|been|being|able to|possible to|yet|ever|still|currently|at all|successfully|reliably|consistently|actually|fully|independently|definitively|personally|locally|readily|easily|immediately)\s+){0,4}'
     $verbs = '(?:reproduce[ds]?|reproducing|reproducible|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
     $pattern = "(?i)\b$negative\s+$modifiers$verbs\b"
     $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
     $postposed = "(?i)\b$verbs\b(?:(?![;!?\r\n]|\.(?:\s|$)).){0,100}\b$negative\s+$outcome\b"
-    foreach ($paragraph in ($Prose -split '\r?\n[ \t]*\r?\n')) {
-        if ($paragraph -match $pattern -or $paragraph -match $postposed) { return $true }
+    $paragraphs = @($Prose -split '\r?\n[ \t]*\r?\n')
+    $position = 0
+    # Repeated paragraphs retain their own reference-metadata positions.
+    foreach ($paragraph in [regex]::Split((Get-Prose $ReferenceContext), '(\r?\n[ \t]*\r?\n)')) {
+        if ($paragraph -cin $paragraphs -and
+            ($paragraph -match $pattern -or $paragraph -match $postposed) -and
+            (Test-CurrentIssueScope $paragraph $ReferenceContext -ReferenceStart $position)) { return $true }
+        $position += $paragraph.Length
     }
     return $false
 }
@@ -555,12 +566,16 @@ function Get-ValidationOutcomePattern([string]$ReferenceContext) {
     return "(?:$current|$reference)"
 }
 
-function Test-CurrentIssueScope([string]$Paragraph, [string]$ReferenceContext = '', [string]$AllowedReferencePattern = '') {
+function Test-CurrentIssueScope([string]$Paragraph, [string]$ReferenceContext = '',
+    [string]$AllowedReferencePattern = '', [int]$ReferenceStart = -1) {
     if (-not $ReferenceContext) { $ReferenceContext = $Paragraph }
     $referenceProse = Get-Prose $ReferenceContext
-    $start = $referenceProse.IndexOf($Paragraph, [StringComparison]::Ordinal)
-    if ($start -lt 0 -or
-        $referenceProse.IndexOf($Paragraph, $start + $Paragraph.Length, [StringComparison]::Ordinal) -ge 0) {
+    $start = if ($ReferenceStart -ge 0) { $ReferenceStart }
+        else { $referenceProse.IndexOf($Paragraph, [StringComparison]::Ordinal) }
+    if ($start -lt 0 -or $start + $Paragraph.Length -gt $referenceProse.Length -or
+        $referenceProse.Substring($start, $Paragraph.Length) -cne $Paragraph -or
+        ($ReferenceStart -lt 0 -and
+            $referenceProse.IndexOf($Paragraph, $start + $Paragraph.Length, [StringComparison]::Ordinal) -ge 0)) {
         return $false
     }
     $referenceParagraph = $ReferenceContext.Substring($start, $Paragraph.Length)
@@ -579,6 +594,7 @@ function Test-CurrentIssueScope([string]$Paragraph, [string]$ReferenceContext = 
 function Test-PositiveValidation([string]$Paragraph, [string]$ReferenceContext = '') {
     if ((Test-ConditionalEvidence $Paragraph) -or (Test-ForeignOutcome $Paragraph)) { return $false }
     if (-not $ReferenceContext) { $ReferenceContext = $Paragraph }
+    if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext)) { return $false }
     $outcome = Get-ValidationOutcomePattern $ReferenceContext
     $target = "(?<![\w])$outcome(?![\w])"
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
@@ -789,7 +805,7 @@ function Test-ConfirmationParagraph([string]$Paragraph, [string]$ReferenceContex
     return -not (Test-Interrogative $Paragraph) -and
         (Test-PositiveValidation $Paragraph $ReferenceContext) -and
         -not (Test-TentativeEvidence $Paragraph) -and
-        -not (Test-NegativeValidation $Paragraph)
+        -not (Test-NegativeValidation $Paragraph $ReferenceContext)
 }
 
 function Test-SimulatorReproduction([string]$Paragraph, [string]$ReferenceContext = '') {
@@ -816,7 +832,7 @@ function Get-Confirmation($Evidence, [switch]$RequireRegression, [string]$FirstB
         $paragraphs.Count -eq 1 -and
         (Test-ConfirmationParagraph $paragraphs[0] (Get-MarkdownText $source.body)) -and
         (-not $RequireRegression -or (Test-RegressionValidation $paragraphs[0] $FirstBadVersion)) -and
-        -not (Test-NegativeValidation $prose)
+        -not (Test-NegativeValidation $prose (Get-MarkdownText $source.body))
     })
 }
 
@@ -826,7 +842,7 @@ function Test-CurrentConfirmation($Confirmations, $Evidence, [string]$Label, $Sn
     if (@($Snapshot.sources | Where-Object {
         $_.kind -ceq 'comment' -and $_.isValidator -and
         (Get-SupersessionTime $_) -ge $sourceMap[$latest.source].createdAt -and
-        (Test-NegativeValidation (Get-Prose $_.body))
+        (Test-NegativeValidation (Get-Prose $_.body) (Get-MarkdownText $_.body))
     }).Count -gt 0) { return $false }
     $laterRemovals = @($Snapshot.sources | Where-Object {
         $_.isMaintainer -and $_.kind -ceq 'unlabeled' -and $_.body -ceq "unlabeled: $Label" -and
@@ -945,7 +961,7 @@ function Test-AssessmentSuperseded($Source, [string]$Label) {
                         (Test-RegressionValidation $paragraph)) { return $true }
                 }
                 'blazor-webview2-regression' {
-                    if (Test-NegativeValidation $paragraph) { return $true }
+                    if (Test-NegativeValidation $paragraph $referenceContext) { return $true }
                 }
                 's/triaged' {
                     if ((Test-CurrentIssueScope $paragraph $referenceContext) -and
@@ -955,7 +971,7 @@ function Test-AssessmentSuperseded($Source, [string]$Label) {
                     if (-not $sameSource -and
                         (Test-CurrentIssueScope $paragraph $referenceContext) -and
                         $paragraph -match $completedResponse -and
-                        -not (Test-NegativeValidation $paragraph) -and
+                        -not (Test-NegativeValidation $paragraph $referenceContext) -and
                         -not (Test-BlockedValidation $prose)) { return $true }
                 }
             }
@@ -1167,7 +1183,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                     ($label -eq 'repro:device-only' -and $paragraphs.Count -eq 1 -and
                         (Test-SimulatorReproduction $quote $referenceContext) -and
                         (Test-SimulatorReproduction $paragraphs[0] $referenceContext) -and
-                        -not (Test-NegativeValidation $prose))
+                        -not (Test-NegativeValidation $prose $referenceContext))
                 )
             }).Count -gt 0
         if (-not ($confirmedTransition -or $areaCorrection -or $contradictedFacet)) {

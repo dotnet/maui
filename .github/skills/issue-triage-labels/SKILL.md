@@ -117,8 +117,12 @@ substitutes for current original issue/comment evidence.
   The same current-confirmation gate applies when positive evidence removes
   pending information/reproduction/verification labels. Existing s/verified
   membership cannot bypass later contrary evidence or maintainer removals.
-  Contrary validation elsewhere in the cited comment also vetoes confirmation;
-  quote selection cannot hide a retraction. An unrelated negation, such as
+  Contrary current-report validation elsewhere in the cited comment also vetoes
+  confirmation; quote selection cannot hide a retraction. Failed reproduction
+  of a foreign issue cannot veto current-issue confirmation, simulator
+  reproduction or technical assessments. Reference metadata constrains negative
+  outcomes too, and mixed-reference paragraphs remain withheld.
+  An unrelated negation, such as
   "not a duplicate", does not negate a following positive verification.
 - Edited contrary comments use their last-modified time. A cosmetic edit to an
   older positive comment cannot revive it after a newer contrary decision;

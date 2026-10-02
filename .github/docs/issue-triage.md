@@ -103,8 +103,11 @@ logs" cannot supply observed confirmation, even when the citation omits the
 conditional prefix. The shared positive-evidence predicate applies to confirmation
 additions, removal transitions and contrary positive results. It distinguishes
 contingent outcomes from factual reproduction scenarios such as "I reproduced
-the issue when the keyboard was visible"; existing conservative negative-evidence
-vetoes are unchanged.
+the issue when the keyboard was visible". Negative-evidence vetoes must also
+concern the current report: failed reproduction of a foreign issue cannot invalidate current-issue
+confirmation, simulator reproduction or technical assessments. The full comment
+is still scanned for current-report negative outcomes, including repeated
+paragraphs; metadata-only foreign references remain scope constraints.
 Technical-state labels require their specific affirmative review, reproduction
 outcome or version recommendation, not merely an authorized comment author.
 Maintainer directives, technical assessments and failed-workaround observations
@@ -413,6 +416,10 @@ and retains `issue-triage-context-*` and `issue-triage-report-*` artifacts for
 seven days, but built-in handlers suppress label and comment writes.
 Omitting `issue_number` is rejected, even though gh-aw requires the dispatch
 input itself to be declared non-required for slash-command compatibility.
+The compiler-added `aw_context` input must be empty. Authorization rejects
+caller workspace context before trusted checkout, intake or PAT selection, and
+both trusted script stages independently enforce the same dispatch constraint.
+It cannot select an unrelated PR checkout for issue analysis.
 Use `staged=false` only for intentional application; `/issue triage` comments
 are apply-mode commands. New workflows are not dispatchable until recognized
 on the default branch, so local compilation is not end-to-end hosted validation.

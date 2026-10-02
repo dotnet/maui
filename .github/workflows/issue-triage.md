@@ -43,6 +43,11 @@ on:
             core.setFailed('Issue triage requires a fresh command or manual dispatch, not a job rerun.');
             return;
           }
+          if (context.eventName === 'workflow_dispatch' &&
+              (context.payload.inputs?.aw_context ?? '') !== '') {
+            core.setFailed('Issue triage does not accept caller workspace context.');
+            return;
+          }
           if (context.payload.repository.full_name !== 'dotnet/maui' ||
               context.ref !== `refs/heads/${context.payload.repository.default_branch}`) {
             core.info('Issue triage runs only on dotnet/maui default-branch infrastructure.');
