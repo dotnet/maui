@@ -411,7 +411,7 @@ function Test-NegativeValidation([string]$Prose) {
 
 function Test-PositiveValidation([string]$Paragraph) {
     $outcome = '(?:reported behavior|same behavior|issue|bug|regression|problem)'
-    $reproduction = '(?:reproduced|reproducible)'
+    $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b).){0,50}'
     if ($Paragraph -match "(?i)\b$outcome\b$clause\b$reproduction\b|\b$reproduction\b$clause\b$outcome\b|\b(?:confirmed|verified)\b$clause\b$outcome\b|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause\b$outcome\b") {
         return $true
@@ -462,6 +462,13 @@ function Test-RegressionValidation([string]$Paragraph) {
     return $false
 }
 
+function Test-ConfirmationParagraph([string]$Paragraph) {
+    return -not (Test-Interrogative $Paragraph) -and
+        (Test-PositiveValidation $Paragraph) -and
+        $Paragraph -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
+        -not (Test-NegativeValidation $Paragraph)
+}
+
 function Get-Confirmation($Evidence, [switch]$RequireRegression) {
     return @($Evidence | Where-Object {
         $reference = $_
@@ -473,10 +480,8 @@ function Get-Confirmation($Evidence, [switch]$RequireRegression) {
         $prose.Contains($reference.quote, [StringComparison]::Ordinal) -and
         $prose -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
-        -not (Test-Interrogative $paragraphs[0]) -and
-        (Test-PositiveValidation $paragraphs[0]) -and
+        (Test-ConfirmationParagraph $paragraphs[0]) -and
         (-not $RequireRegression -or (Test-RegressionValidation $paragraphs[0])) -and
-        $paragraphs[0] -notmatch '(?is)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b.{0,50}\b(reproduce[ds]?|reproducible|confirm(?:ed|ing)?|verify|verified|validate[ds]?|validating|correctly detect(?:s|ing)?)\b' -and
         -not (Test-NegativeValidation $prose)
     })
 }
@@ -486,6 +491,66 @@ function Test-BlockedValidation([string]$Prose) {
     $blocked = '(?:inaccessible|unavailable|expired|missing|broken|not found|404|403|unauthorized|forbidden)'
     return $Prose -match "(?i)\b$resource\b.{0,60}\b$blocked\b|\b$blocked\b.{0,60}\b$resource\b" -or
         $Prose -match '(?i)\b(?:timed out|timeout|permission denied|authentication failed|authorization failed|network failure|infrastructure failure|build failed|failed to (?:download|clone|build|compile|install)|cannot (?:download|clone|build|compile|install))\b'
+}
+
+function Test-TriageRetraction([string]$Paragraph) {
+    $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|failed to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
+    $modifiers = '(?:(?:be|been|being|able to|yet|still|currently|successfully|actually|fully)\s+){0,4}'
+    return $Paragraph -match "(?i)\b$negative\s+$modifiers(?:review(?:ed)?|triage(?:d)?|investigate(?:d)?|complete(?:d)?|finish(?:ed)?)\b" -or
+        $Paragraph -match '(?i)\b(triage|review|investigation)\s+(?:is|was|remains)\s+(incomplete|unfinished)\b'
+}
+
+function Test-AssessmentSuperseded($Source, [string]$Label) {
+    $contraryLabels = @(switch ($Label) {
+        's/no-repro' { 's/verified'; 'i/regression'; 'blazor-webview2-regression' }
+        'not-regression' { 'i/regression' }
+        's/try-latest-version' { 's/verified'; 's/no-repro' }
+    })
+    $completedResponse = '(?i)\b(tested|retested|updated|upgraded|verified)\b(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|please|try|retest|test|verify|update|upgrade)\b).){0,80}\b(latest|requested|recommended)\b'
+    foreach ($candidate in $sourceMap.Values) {
+        if ($candidate.kind -ceq 'unlabeled' -and $candidate.body -ceq "unlabeled: $Label" -and
+            $candidate.createdAt -ge $Source.createdAt) { return $true }
+        if ($candidate.kind -ceq 'labeled' -and $candidate.createdAt -ge $Source.createdAt -and
+            @($contraryLabels | Where-Object { $candidate.body -ceq "labeled: $_" }).Count -gt 0) { return $true }
+        if ($candidate.kind -cne 'comment') { continue }
+        $sameSource = $candidate.id -ceq $Source.id
+        if (-not $sameSource -and (Get-SupersessionTime $candidate) -le $Source.createdAt) { continue }
+        if ($Label -ceq 's/try-latest-version' -and -not $sameSource -and
+            $candidate.author -ceq $sourceMap["issue:$IssueNumber"].author -and -not $candidate.isMaintainer -and
+            $candidate.author -match '^[A-Za-z0-9_-]+$' -and
+            $policy.automationAuthors -notcontains $candidate.author) { return $true }
+        if (-not $candidate.isValidator) { continue }
+        $prose = Get-Prose $candidate.body
+        foreach ($paragraph in ($prose -split '\r?\n[ \t]*\r?\n')) {
+            if ($candidate.isMaintainer -and
+                (Test-DecisionParagraph $paragraph $Label 'remove' @() -Superseding)) { return $true }
+            if (Test-Interrogative $paragraph) { continue }
+            if ($Label -notin @('s/no-repro', 'not-regression') -and
+                $paragraph -match '(?i)\b(should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect)\b') { continue }
+            switch ($Label) {
+                's/no-repro' {
+                    if (Test-ConfirmationParagraph $paragraph) { return $true }
+                }
+                'not-regression' {
+                    if ((Test-ConfirmationParagraph $paragraph) -and
+                        (Test-RegressionValidation $paragraph)) { return $true }
+                }
+                'blazor-webview2-regression' {
+                    if (Test-NegativeValidation $paragraph) { return $true }
+                }
+                's/triaged' {
+                    if (Test-TriageRetraction $paragraph) { return $true }
+                }
+                's/try-latest-version' {
+                    if (-not $sameSource -and
+                        $paragraph -match $completedResponse -and
+                        -not (Test-NegativeValidation $paragraph) -and
+                        -not (Test-BlockedValidation $prose)) { return $true }
+                }
+            }
+        }
+    }
+    return $false
 }
 
 function Get-TechnicalAssessment($Evidence, [string]$Label) {
@@ -499,10 +564,10 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
         if ($paragraphs.Count -ne 1) { return $false }
         $paragraph = $paragraphs[0]
         if (Test-Interrogative $paragraph) { return $false }
-        switch ($Label) {
+        $assessed = switch ($Label) {
             's/triaged' {
                 $paragraph -match '(?i)\b(reviewed|triaged|investigated)\b.{0,50}\b(issue|report|reproduction|sample|behavior)\b|\b(completed|finished)\b.{0,30}\b(triage|review|investigation)\b' -and
-                $paragraph -notmatch "(?i)\b(not|cannot|can't|unable to|could not|do not|don't)\b.{0,30}\b(review|reviewed|triage|triaged|investigate|investigated|complete|completed|finish|finished)\b"
+                -not (Test-TriageRetraction $paragraph)
             }
             's/try-latest-version' {
                 $paragraph -match '(?i)\bMAUI\b.{0,60}\b\d+\.\d+(?:\.\d+)?\b|\b\d+\.\d+(?:\.\d+)?\b.{0,60}\bMAUI\b' -and
@@ -524,6 +589,7 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
             }
             default { throw "Unsupported technical assessment: $Label" }
         }
+        return $assessed -and -not (Test-AssessmentSuperseded $source $Label)
     })
 }
 
@@ -612,7 +678,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
         }
         if ($policy.technicalAssessment -ccontains $label -and
             @(Get-TechnicalAssessment $Decision.evidence $label).Count -eq 0) {
-            throw "An affirmative, label-specific authorized technical assessment is required for $label."
+            throw "A current affirmative, label-specific authorized technical assessment is required for $label."
         }
         if ($label -eq 's/duplicate 2️⃣' -and
             @($Decision.evidence | Where-Object { $sourceMap[$_.source].kind -eq 'related' }).Count -eq 0) {

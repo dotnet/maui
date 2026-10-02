@@ -72,6 +72,12 @@ Quote exact source text supporting each proposed change.
   No-repro cannot be established by an inaccessible sample, failed build/download,
   authentication/network failure or timeout. A negated same-behavior comparison
   cannot support not-regression.
+  Technical assessments must also remain current: later removals (including Policy
+  Service removals), contrary state labels, authorized outcomes/retractions or
+  explicit maintainer revocations supersede older support. A later non-maintainer
+  reply from the issue author completes the version-feedback wait under existing
+  Policy Service rules; do not reapply an old try-latest recommendation.
+  Re-adding needs a fresh qualifying assessment after the superseding evidence.
 
 ## Label selection
 

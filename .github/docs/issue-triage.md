@@ -73,6 +73,14 @@ outcome or version recommendation, not merely an authorized comment author.
 Technical-assessment questions are rejected. No-repro is withheld when the cited
 comment reports resource access, build/download, authentication/network failure or
 timeout; not-regression cannot use a negated same-behavior comparison.
+All technical assessments share chronology checks for additions and removal
+transitions. Later label removals, including automated Policy Service removals,
+contrary state labels, authorized contrary outcomes/retractions and explicit
+maintainer revocations supersede old support. A later non-maintainer issue-author
+reply ends a try-latest feedback wait, matching existing Policy Service behavior.
+Old recommendations cannot restart that wait; re-adding needs a fresh qualifying
+assessment. Contrary edits use last-modified time, while affirmative support keeps
+its original creation time. Mixed assessment/retraction comments are withheld.
 Try-latest recommendations must identify a concrete MAUI version.
 An authoritative "expected behavior/by design" explanation or
 "duplicate of #..." disposition is also recognized for its respective label.
