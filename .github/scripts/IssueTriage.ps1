@@ -309,7 +309,9 @@ function Get-Snapshot {
     foreach ($source in $sources) {
         $referenceText = Get-MarkdownText $source.body -IncludeQuotes
         foreach ($match in [regex]::Matches($referenceText,
-            '(?:https://github\.com/dotnet/maui/(?:issues|pull)/|(?<![\w/])#)(?<number>[1-9][0-9]{0,8})(?![\w])')) {
+            $validationReferencePattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+            if ($match.Groups['repository'].Success -and
+                $match.Groups['repository'].Value -ine $Repository) { continue }
             if (-not (Test-IssueReferenceMatch $match $referenceText)) { continue }
             $number = [int]$match.Groups['number'].Value
             if ($number -ne $IssueNumber) { $null = $references.Add($number) }
@@ -483,12 +485,12 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $allowedReferencePattern = ''
     if (-not $prohibited -and $Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
         $canonical = @([regex]::Matches($candidate,
-            '(?i)\bduplicate of\s+(?:#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
+            '(?i)\bduplicate of\s+(?:#|dotnet/maui#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
             ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
         if ($canonical.Count -ne 1 -or -not $sourceMap.ContainsKey($canonical[0]) -or
             (-not $Superseding -and @($Evidence | Where-Object { $_.source -ceq $canonical[0] }).Count -eq 0)) { return $false }
         $canonicalNumber = $canonical[0].Substring('related:'.Length)
-        $allowedReferencePattern = "(?i)\bduplicate of\s+(?:#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)$canonicalNumber(?![\w/-]|\.(?=\w))"
+        $allowedReferencePattern = "(?i)\bduplicate of\s+(?:#|dotnet/maui#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)$canonicalNumber(?![\w/-]|\.(?=\w))"
     }
     if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext $allowedReferencePattern)) { return $false }
     if ($prohibited) { return $true }
@@ -1251,7 +1253,13 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             } elseif ((Get-Category $replacementLabel) -ceq 'content') {
                 $transitionEvidence += @($proposal.additions | Where-Object { $_.label -ceq $replacementLabel } |
                     ForEach-Object { $_.evidence } |
-                    Where-Object { $sourceMap[$_.source].kind -in @('issue', 'comment') })
+                    Where-Object {
+                        $reference = $_
+                        $sourceMap[$reference.source].kind -in @('issue', 'comment') -and
+                        @($Decision.evidence | Where-Object {
+                            $_.source -ceq $reference.source -and $_.quote -ceq $reference.quote
+                        }).Count -gt 0
+                    })
             } else {
                 $transitionEvidence += $validatorEvidence
             }

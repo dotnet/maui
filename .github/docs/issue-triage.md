@@ -315,6 +315,8 @@ The `needs-area-label` placeholder can be cleared using issue/comment evidence
 from an area addition validated in the same proposal. Current report content can
 predate the initial placeholder event; that transition does not require a newer
 validator comment. Existing area membership alone is not sufficient.
+The removal must cite at least one exact source/quote pair from that validated
+addition; a separate unrelated citation cannot stand in for its authority.
 Priority changes cannot leave conflicting priorities. Changes to status states
 cannot leave verified/no-repro, suspected/confirmed regression or
 not-regression/regression states active together. No-repro also conflicts with `i/regression`,
@@ -377,7 +379,10 @@ Three/four/six/eight-digit color-shaped shorthand, including `#3333` and `#33333
 requires explicit issue/PR wording;
 ordinary `Fixes`, `Closes`, `Resolves`, `See` and related-reference wording also
 qualifies, including three-digit issue numbers. A full same-repository issue URL
-is unambiguous.
+or `dotnet/maui#N` reference is unambiguous. Intake and validation use the same
+reference grammar; other repositories' qualified references are not fetched
+as dotnet/maui issues. A qualified canonical duplicate still needs the existing
+explicit maintainer disposition and exact fetched related source.
 The same color-aware classification is shared with validation scope and
 positive-outcome matching; numeric colors are not foreign-issue references.
 Explicit issue/PR wording, repository-qualified references and full URLs still
