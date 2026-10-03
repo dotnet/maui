@@ -316,6 +316,10 @@ conditional advice and mixed working/failing outcomes are not such observations.
 Failure to reproduce, replicate or trigger the issue with a workaround is not
 failure of the workaround. Such a paragraph cannot support failure-based
 removal, while observed failure to work or fix the issue remains eligible.
+Setup, build/download/install, network and infrastructure failures cannot supply
+workaround-efficacy evidence. A bound "failed to ..." must concern working,
+fixing, resolving or helping, not a different attempted operation; inspect the
+whole cited paragraph rather than borrowing a later failure word.
 Positive continued clauses remain visible even when they omit the workaround
 subject: "The workaround failed initially, but now works" is mixed evidence,
 not authority to remove the label.
@@ -342,7 +346,7 @@ validator comment. Existing area membership alone is not sufficient.
 The removal must cite at least one exact source/quote pair from that validated
 addition; a separate unrelated citation cannot stand in for its authority.
 Priority changes cannot leave conflicting priorities. Changes to status states
-cannot leave verified/no-repro, suspected/confirmed regression or
+cannot leave verified/needs-verification, verified/no-repro, suspected/confirmed regression or
 not-regression/regression states active together. No-repro also conflicts with `i/regression`,
 `blazor-webview2-regression` or any `regressed-in-*` label. These families
 also supersede older no-repro assessments. A first-bad-boundary change
@@ -350,6 +354,9 @@ must leave at most one `regressed-in-*` label active, not accumulate differing
 boundaries. Every necessary removal still
 requires its own permitted authority or transition; otherwise withhold the
 change. Unrelated pre-existing conflicts are preserved, not silently cleaned up.
+The verified/pending-verification pair is incompatible for changes in either
+direction. A later verification request cannot be cleared by stale confirmation;
+without independently valid removal evidence, withhold the conflicting change.
 Preserve unrelated manual labels, Policy Service staleness tags,
 release/automation outcomes, legacy names and unknown labels.
 Uncertain decisions are withheld with an explanation.

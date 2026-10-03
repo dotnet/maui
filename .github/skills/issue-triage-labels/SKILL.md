@@ -294,6 +294,10 @@ policy transition. Explain each removal separately:
   A workaround that failed to reproduce, replicate or trigger the reported issue
   is not an observed workaround failure. That paragraph cannot support
   failure-based removal; failing to work or fix the issue is distinct.
+  Setup, build/download/install, network and infrastructure failures are not
+  workaround-efficacy observations. A bound "failed to ..." must concern
+  working/fixing/resolving/helping, not another attempted operation. Inspect
+  the whole paragraph; do not borrow a later failure word.
   Inspect continued clauses that inherit the workaround subject: "The workaround
   failed initially, but now works" cannot authorize removal.
   Require that subject or a directly inherited/pronominal continuation. Unrelated
@@ -317,11 +321,14 @@ policy transition. Explain each removal separately:
   authorize the removal.
 - Change priority/approval/ownership/release decisions only with explicit
   maintainer authority, never by inferring a new business decision.
-- A changed state must not leave verified/no-repro, suspected/confirmed
+- A changed state must not leave verified/needs-verification, verified/no-repro, suspected/confirmed
   regression, or not-regression/regression states active together. Include
   separately justified permitted removals or withhold the incompatible change.
   No-repro also conflicts with `i/regression`, `blazor-webview2-regression`
   and every `regressed-in-*` label, for changes in either direction.
+  Verified and pending-verification conflict in either direction. If a newer
+  verification request cannot be removed with fresh qualifying evidence,
+  withhold the conflicting change rather than leaving both states active.
   A changed first-bad boundary must leave at most one `regressed-in-*` label
   active. Replacing a boundary requires an independently authorized removal;
   otherwise withhold the new boundary rather than accumulating versions.

@@ -1193,12 +1193,12 @@ function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = 
     $candidate = [regex]::Replace($Paragraph, '(?i)\bsuggested\s+(?=workarounds?\b)', '')
     if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
         (Test-TentativeEvidence $candidate) -or $candidate -match (Get-DeniedEvidencePattern) -or
-        (Test-ForeignOutcome $Paragraph) -or
+        (Test-ForeignOutcome $Paragraph) -or (Test-BlockedValidation $Paragraph) -or
         $Paragraph -match '(?i)\b(?:do|does|did|has|have|is|are|was|were)\s+(?:(?:the|this|that|suggested|my|your|our|their|a|any)\s+){0,3}workarounds?\b') {
         return $false
     }
     $negative = "(?:not|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
-    $gap = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|can|$negative)\b).){0,80}"
+    $gap = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|can|$negative)\b).){0,80}?"
     $positive = '(?:work(?:s|ed|ing)?|fix(?:es|ed|ing)?|resolv(?:e[ds]?|ing)|help(?:s|ed|ing)?|succeed(?:s|ed|ing)?)'
     $state = '(?:(?:is|was|are|were|has|have|had|been|does|did|now|currently|still|actually|successfully|reliably|consistently|again|finally)\s+){0,6}'
     $contrast = 'and|but|however|although|except|yet|instead'
@@ -1207,8 +1207,10 @@ function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = 
     # Inherited outcomes stay bound to the preceding workaround statement.
     $continuation = "\bworkarounds?\b$clause$connector(?:it\s+)?$state$positive\b"
     if ($Paragraph -match "(?i)\bworkarounds?\s+$state$positive\b|$continuation") { return $false }
-    $attempt = '(?:(?:successfully|reliably|consistently|actually|fully|independently|personally|locally|easily|immediately)\s+){0,4}(?:reproduce|replicate|trigger)\b'
-    if ($Paragraph -match "(?i)\bworkarounds?\b$gap\bfail(?:s|ed)?\s+to\s+$attempt") { return $false }
+    $attempt = '(?:(?:successfully|reliably|consistently|actually|fully|independently|personally|locally|easily|immediately)\s+){0,4}(?<outcome>[a-z]+)\b'
+    foreach ($failure in [regex]::Matches($Paragraph, "(?i)\bworkarounds?\b$gap\bfail(?:s|ed)?\s+to\s+$attempt")) {
+        if ($failure.Groups['outcome'].Value -notin @('work', 'fix', 'resolve', 'help')) { return $false }
+    }
     return $Paragraph -match "(?i)\bworkarounds?\b$gap\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b"
 }
 
@@ -1471,6 +1473,7 @@ if (@($names | Where-Object { Test-Pattern $_ 'regressed-in-*' }).Count -gt 0 -a
     throw 'A regression boundary change must not leave multiple regressed-in-* labels active; propose supported removals or withhold the change.'
 }
 $incompatibleStates = @(
+    @{ label = 's/needs-verification'; contrary = @('s/verified') }
     @{ label = 's/no-repro'; contrary = @('s/verified', 'i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
     @{ label = 'not-regression'; contrary = @('potential-regression', 'i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
     @{ label = 'potential-regression'; contrary = @('i/regression', 'blazor-webview2-regression', 'regressed-in-*') }
