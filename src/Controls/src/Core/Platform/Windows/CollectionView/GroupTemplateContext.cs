@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+	[Microsoft.UI.Xaml.Data.Bindable]
 	internal class GroupTemplateContext
 	{
 		public ItemTemplateContext HeaderItemTemplateContext { get; }

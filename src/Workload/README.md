@@ -166,6 +166,11 @@ that you run it under.
 
 ### CI for dotnet/maui
 
+`workloads.csproj` orchestrates MSI generation, signing, and Visual Studio
+manifests. It uses `Microsoft.Build.NoTargets`, like the workload pack projects,
+because it has no managed assembly to compile. Keep MSI generation before
+`SignFiles` and manifest packaging after `SignFiles`.
+
 On CI in order to test the workload, we download the `.nupkg` files to
 `artifacts` and provision a .NET 6 without mobile workload packs via
 `-p:InstallWorkloadPacks=false`:

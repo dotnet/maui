@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// The root element of a <see cref="TableView"/> that contains <see cref="TableSection"/> items.
 	/// </summary>
+#if WINDOWS
+	[Microsoft.UI.Xaml.Data.Bindable]
+#endif
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{
 		readonly WeakEventManager _weakEventManager = new();
