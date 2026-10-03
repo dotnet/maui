@@ -1,5 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -119,34 +122,87 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "Skipping this test on Windows due to WebView's OnNavigated event returning WebNavigationResult.Failure for URLs with non-Western characters. More information: https://github.com/dotnet/maui/issues/27425"
 #endif
 		)]
-		[InlineData("https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf")] // Non-ASCII character + space (%20) (Outside IRI range)
-		[InlineData("https://google.com/[]")] // Reserved set (`;/?:@&=+$,#[]!'()*%`)
-		[InlineData("https://example.com/test/%3Cvalue%3E")] // Escaped character from " <>`^{|} set (e.g., < >)
-		[InlineData("https://example.com/path/%09text")] // Escaped character from [0, 1F] range (e.g., tab %09)
-		[InlineData("https://example.com/test?query=%26value")] // Another escaped character from reserved set (e.g., & as %26)
-		public async Task WebViewShouldLoadEncodedUrl(string encodedUrl)
+		[InlineData("/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf")] // Non-ASCII character + space (%20) (Outside IRI range)
+		[InlineData("/[]")] // Reserved set (`;/?:@&=+$,#[]!'()*%`)
+		[InlineData("/test/%3Cvalue%3E")] // Escaped character from " <>`^{|} set (e.g., < >)
+		[InlineData("/path/%09text")] // Escaped character from [0, 1F] range (e.g., tab %09)
+		[InlineData("/test?query=%26value")] // Another escaped character from reserved set (e.g., & as %26)
+		public async Task WebViewShouldLoadEncodedUrl(string encodedPath)
 		{
-			if (await AssertionExtensions.SkipTestIfNoInternetConnection())
-			{
-				return;
-			}
+			var listener = new TcpListener(IPAddress.Loopback, 0);
+			listener.Start();
+
+			using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+			var requestTask = ServeWebViewRequest(listener, cancellation.Token);
+			var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+			var encodedUrl = $"http://localhost:{port}{encodedPath}";
 			var webView = new WebView();
-			var tcs = new TaskCompletionSource<WebNavigationResult>();
+			var tcs = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			webView.Navigated += (sender, args) =>
 			{
 				tcs.TrySetResult(args.Result);
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			try
 			{
-				var handler = CreateHandler<WebViewHandler>(webView);
-				(handler.PlatformView as IWebViewDelegate)?.LoadUrl(encodedUrl);
-			});
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var handler = CreateHandler<WebViewHandler>(webView);
+					Assert.IsAssignableFrom<IWebViewDelegate>(handler.PlatformView).LoadUrl(encodedUrl);
+				});
 
-			var navigationResult = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				await Task.WhenAll(requestTask, tcs.Task.WaitAsync(TimeSpan.FromSeconds(30)));
 
-			Assert.Equal(WebNavigationResult.Success, navigationResult);
+				Assert.Equal(WebNavigationResult.Success, await tcs.Task);
+				var requestedPath = await requestTask;
+				Assert.Equal(Uri.UnescapeDataString(encodedPath), Uri.UnescapeDataString(requestedPath));
+				Assert.Equal(new Uri(encodedUrl).Query, new Uri($"http://localhost:{port}{requestedPath}").Query);
+			}
+			finally
+			{
+				await cancellation.CancelAsync();
+
+				try
+				{
+					await requestTask;
+				}
+				catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+				{
+				}
+				finally
+				{
+					listener.Stop();
+				}
+			}
+		}
+
+		static async Task<string> ServeWebViewRequest(TcpListener listener, CancellationToken cancellationToken)
+		{
+			using var client = await listener.AcceptTcpClientAsync(cancellationToken);
+			using var stream = client.GetStream();
+			using var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, leaveOpen: true);
+			var requestLine = await reader.ReadLineAsync(cancellationToken);
+			Assert.NotNull(requestLine);
+			var request = requestLine.Split(' ');
+			Assert.Equal(3, request.Length);
+			Assert.Equal("GET", request[0]);
+
+			string header;
+			do
+			{
+				header = await reader.ReadLineAsync(cancellationToken);
+				Assert.NotNull(header);
+			}
+			while (header.Length > 0);
+
+			var body = Encoding.UTF8.GetBytes("<!doctype html><html><body>URL encoding test</body></html>");
+			var headers = Encoding.ASCII.GetBytes(
+				$"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {body.Length}\r\nConnection: close\r\n\r\n");
+			await stream.WriteAsync(headers, cancellationToken);
+			await stream.WriteAsync(body, cancellationToken);
+
+			return request[1];
 		}
 	}
 }
