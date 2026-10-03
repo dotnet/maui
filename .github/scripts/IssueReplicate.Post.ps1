@@ -9,6 +9,7 @@ param(
     [Parameter(Mandatory)][string]$InputDirectory,
     [Parameter(Mandatory)][string]$ResultsDirectory,
     [string]$SampleDirectory = '',
+    [string]$CandidateDirectory = '',
     [string]$OutputPath = ''
 )
 
@@ -22,7 +23,9 @@ $marker = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
 } else { "<!-- issue-replicate-result:$BuildId -->" }
 $summary = 'The public pipeline could not complete a verified reproduction. See the build log; this is not evidence that the issue is invalid.'
 $details = "No validated intake or test result is available. [Inspect the run log]($buildUrl)."
-$candidate = 'No verified failing test patch was exported.'
+$candidate = ''
+$candidateHeading = 'Generated test candidate'
+$followUp = 'Correct the reported build/environment blocker and run a fresh attempt. No reviewable test candidate is available.'
 $commit = 'unknown'
 $patchText = ''
 $patchSha256 = ''
@@ -42,7 +45,8 @@ function Read-BoundedJson {
         $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         throw 'A pipeline result is not a bounded regular file.'
     }
-    return Get-Content -Raw -LiteralPath $file.FullName | ConvertFrom-Json -Depth 10
+    return [Text.UTF8Encoding]::new($false, $true).GetString([IO.File]::ReadAllBytes($file.FullName)) |
+        ConvertFrom-Json -Depth 10
 }
 
 $manifestPath = Join-Path $InputDirectory 'manifest.json'
@@ -83,14 +87,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     }
     $sample = $null
     if ($SampleDirectory -and (Test-Path -LiteralPath (Join-Path $SampleDirectory 'sample-result.json') -PathType Leaf)) {
-        $sample = Read-BoundedJson -Path (Join-Path $SampleDirectory 'sample-result.json')
-        if ($sample.sampleSha256 -cne $manifest.sampleSha256 -or $sample.targetSha -cne $manifest.targetSha -or
-            $sample.buildSucceeded -isnot [bool] -or
-            $sample.targetFramework -cnotmatch "^net[0-9]+\.[0-9]+-$($manifest.platform)(?:[0-9]+(?:\.[0-9]+)*)?$" -or
-            ($null -ne $sample.diagnostic -and
-                ($sample.diagnostic -isnot [string] -or $sample.diagnostic.Length -gt 2048))) {
-            throw 'The author sample result does not match the immutable snapshot or bounded build contract.'
-        }
+        $sample = Read-IssueReplicateSampleResult -Path (Join-Path $SampleDirectory 'sample-result.json') -Manifest $manifest
         $details += "`n| Author sample built | $($sample.buildSucceeded) |"
         $details += "`n| Author target framework | ``$($sample.targetFramework)`` |"
         if (-not $sample.buildSucceeded) {
@@ -101,6 +98,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             $sampleDiagnostic = [string]$sample.diagnostic
         }
     }
+    $result = $null
     $resultPath = Join-Path $ResultsDirectory 'result.json'
     if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
         $result = Read-BoundedJson -Path $resultPath
@@ -154,6 +152,40 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             }
         }
     }
+    if ($CandidateDirectory) {
+        $draftPath = Join-Path $CandidateDirectory 'candidate.json'
+        $draft = Read-BoundedJson -Path $draftPath -MaxBytes 80000
+        $draftHash = (Get-FileHash -LiteralPath $draftPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($null -ne $result -and
+            ($result.candidateSha256 -cne $draftHash -or $result.testKind -cne $draft.kind)) {
+            throw 'The draft does not match the candidate used by native verification.'
+        }
+        if ($draft.kind -eq 'unsupported') {
+            if (@($draft.files).Count -ne 0) { throw 'Unsupported candidates cannot contain draft files.' }
+        } else {
+            Assert-IssueReplicateCandidate -Candidate $draft -IssueNumber $IssueNumber -Platform $manifest.platform | Out-Null
+            if (-not $patchText) {
+                $patchText = Get-IssueReplicateDraftPatch -Candidate $draft -IssueNumber $IssueNumber -Platform $manifest.platform
+                $patchSha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+                    [Text.Encoding]::UTF8.GetBytes($patchText))).ToLowerInvariant()
+                $candidateHeading = 'Draft test candidate (not verified failing)'
+                $execution = if ($null -ne $result -and $result.testExecuted) {
+                    'The test was executed, but matching assertion failures were not verified twice.'
+                } elseif ($null -ne $sample -and -not $sample.buildSucceeded) {
+                    'This draft has not been compiled or executed by the verifier because the author build was blocked.'
+                } else { 'No test-body execution has been verified for this draft; compilation or execution may be blocked.' }
+                $candidate = "**Unverified draft - review before using.** $execution " +
+                    "It is generated, untrusted test code, not a framework fix or evidence that the issue was reproduced.`n`n" +
+                    "Candidate JSON SHA-256: ``$draftHash``.`n`nPatch SHA-256: ``$patchSha256``."
+                $summary += ' A reviewable test draft is included below; it is not a verified failing test.'
+            }
+        }
+    }
+    if ($patchText) {
+        $followUp = 'Review whether the generated assertion isolates the reported scenario before applying a candidate patch. A simulator result does not replace physical-device validation.'
+    }
+} elseif ($CandidateDirectory) {
+    throw 'A draft cannot be published without its validated issue snapshot.'
 }
 
 function Format-PatchBlock {
@@ -210,7 +242,7 @@ if ($patchText) {
         $links = @()
         if (-not $OutputPath) {
             $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n" +
-                "**Candidate publication is incomplete.** The full verified patch is not yet available; " +
+                "**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
                 "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
                 "[Public run and execution logs]($buildUrl)."
             $pendingUrl = Set-ResultComment -Marker $marker -Body $pendingBody
@@ -242,6 +274,13 @@ if ($patchText) {
     }
 }
 
+$candidateSection = if ($patchText) {
+    @(
+        '---', '', '<details>',
+        "<summary><strong>&#x1F4DD; $candidateHeading</strong> &#x2014; review code</summary>",
+        '<br/>', '', ($candidate + $inlinePatch), '', '</details>', ''
+    ) -join "`n"
+} else { '' }
 $body = @(
     $marker,
     '## Issue Reproduction Analysis',
@@ -265,16 +304,7 @@ $body = @(
     '',
     '</details>',
     '',
-    '---',
-    '',
-    '<details>',
-    '<summary><strong>&#x1F4DD; Generated test candidate</strong> &#x2014; review code</summary>',
-    '<br/>',
-    '',
-    ($candidate + $inlinePatch),
-    '',
-    '</details>',
-    '',
+    $candidateSection,
     '---',
     '',
     '<details>',
@@ -283,7 +313,7 @@ $body = @(
     '',
     "[Public run and execution logs]($buildUrl). This workflow publishes comments only, not downloadable artifacts. No framework source or PR was changed by this reproduction run.",
     '',
-    'Review whether the generated assertion isolates the reported scenario before applying a candidate patch. A simulator result does not replace physical-device validation.',
+    $followUp,
     '',
     $refresh,
     '',

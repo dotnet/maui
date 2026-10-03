@@ -30,8 +30,11 @@ job, with at most one feedback-driven revision. A passing test means only
 `not-reproduced-on-tested-revision`. A test that fails at an assertion on two
 runs, with the same failing test, assertion diagnostic and source signature,
 is reported as a **verified failing test candidate**, not proof that the
-author's scenario was exercised or the issue is confirmed. Only that outcome
-publishes the complete generated candidate diff in the issue comments.
+author's scenario was exercised or the issue is confirmed. Only that outcome labels the complete generated candidate diff as verified failing.
+Tool-free drafting also runs when a completed, bounded author build record reports
+a failure. That does not bypass the author-build prerequisite for native verification:
+the unchanged sample's target and diagnostic remain in the report, and the draft
+is explicitly marked unexecuted and unverified.
 The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
@@ -42,8 +45,12 @@ the same expandable-section style as `/review tests`: **Reproduction evidence**,
 hash-checked diff is embedded in the comment so it can be reviewed without
 downloading anything. Oversized diffs are split across bounded continuation
 comments linked from the main report, with the full patch hash and ordered code
-blocks; no code is truncated. Passing, unsupported, and inconclusive results do
-not publish a patch.
+blocks; no code is truncated. Passing and inconclusive results can include the
+complete generated draft, clearly distinguished from a verified failing candidate.
+The publisher validates its path, platform envelope, bounds and candidate hash;
+when native evidence exists, that hash must match the actual verified input.
+Unsupported or missing drafts omit the code section rather than offering an empty
+“review code” section. A draft may need corrections before it compiles or runs.
 Evidence includes direct links to the author's original repro ZIP or public
 repository, the immutable repository revision when applicable, and the issue
 comment associated with the run. Repro links are validated against the supported

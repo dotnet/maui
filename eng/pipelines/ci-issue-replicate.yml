@@ -157,9 +157,10 @@ stages:
 
       - job: Generate1
         dependsOn: [Intake, Sample]
-        condition: succeeded('Sample')
+        condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
         variables:
           reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 35
@@ -171,9 +172,12 @@ stages:
                 -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
               & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
                 -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+                -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
             displayName: 'Restore immutable generation inputs'
             env:
               REPRO_INPUT: $(reproInput)
+              REPRO_SAMPLE: $(reproSample)
           - task: UseNode@1
             inputs:
               version: "24.x"
@@ -182,7 +186,8 @@ stages:
           - pwsh: |
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
                 -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
-                -OutputDirectory "$(Pipeline.Workspace)/Proposal1"
+                -OutputDirectory "$(Pipeline.Workspace)/Proposal1" `
+                -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json"
               if ($LASTEXITCODE -ne 0) { throw 'Copilot could not draft a test.' }
             displayName: 'Draft test without executable tools'
             env:
@@ -197,7 +202,7 @@ stages:
         parameters:
           name: Verify1
           dependsOn: Generate1
-          condition: succeeded('Generate1')
+          condition: and(succeeded('Generate1'), succeeded('Sample'))
           proposal: Proposal1
           platform: ${{ parameters.Platform }}
 
@@ -265,6 +270,8 @@ stages:
           reproVerified1: $[ dependencies.Verify1.outputs['verify.payload'] ]
           reproVerified2: $[ dependencies.Verify2.outputs['verify.payload'] ]
           reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
+          reproCandidate1: $[ dependencies.Generate1.outputs['candidate.payload'] ]
+          reproCandidate2: $[ dependencies.Generate2.outputs['candidate.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 20
@@ -285,6 +292,7 @@ stages:
               $issue = [int]$env:ISSUE_NUMBER
               $comment = [long]$env:COMMENT_ID
               $result = "$(Pipeline.Workspace)/Verified1"
+              $candidateDirectory = ''
               try {
                 if ($env:REPRO_INPUT -and $env:REPRO_INPUT -notmatch '^\$\(') {
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Input `
@@ -294,18 +302,29 @@ stages:
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Sample `
                     -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
                 }
+                $hasSecondCandidate = $env:REPRO_CANDIDATE2 -and $env:REPRO_CANDIDATE2 -notmatch '^\$\('
                 if ($env:REPRO_VERIFIED2 -and $env:REPRO_VERIFIED2 -notmatch '^\$\(') {
                   $result = "$(Pipeline.Workspace)/Verified2"
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
                     -Encoded $env:REPRO_VERIFIED2 -Directory $result
-                } elseif ($env:REPRO_VERIFIED1 -and $env:REPRO_VERIFIED1 -notmatch '^\$\(') {
+                } elseif (-not $hasSecondCandidate -and $env:REPRO_VERIFIED1 -and $env:REPRO_VERIFIED1 -notmatch '^\$\(') {
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
                     -Encoded $env:REPRO_VERIFIED1 -Directory $result
+                }
+                $candidateData = if ($hasSecondCandidate) {
+                  $env:REPRO_CANDIDATE2
+                } elseif ($env:REPRO_CANDIDATE1 -and $env:REPRO_CANDIDATE1 -notmatch '^\$\(') {
+                  $env:REPRO_CANDIDATE1
+                }
+                if ($candidateData) {
+                  $candidateDirectory = "$(Pipeline.Workspace)/DraftCandidate"
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Candidate `
+                    -Encoded $candidateData -Directory $candidateDirectory
                 }
                 & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
                   -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
                   -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result `
-                  -SampleDirectory "$(Pipeline.Workspace)/SampleOutput"
+                  -SampleDirectory "$(Pipeline.Workspace)/SampleOutput" -CandidateDirectory $candidateDirectory
                 if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
               } catch {
                 $url = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$(Build.BuildId)"
@@ -336,5 +355,7 @@ stages:
               COMMENT_ID: ${{ parameters.CommentId }}
               REPRO_INPUT: $(reproInput)
               REPRO_SAMPLE: $(reproSample)
+              REPRO_CANDIDATE1: $(reproCandidate1)
+              REPRO_CANDIDATE2: $(reproCandidate2)
               REPRO_VERIFIED1: $(reproVerified1)
               REPRO_VERIFIED2: $(reproVerified2)

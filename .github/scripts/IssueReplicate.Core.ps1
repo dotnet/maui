@@ -285,6 +285,56 @@ function Assert-IssueReplicateCandidate {
     return $true
 }
 
+function Read-IssueReplicateSampleResult {
+    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)]$Manifest)
+
+    $file = Get-Item -LiteralPath $Path -ErrorAction Stop
+    if ($file.PSIsContainer -or $file.Length -lt 1 -or $file.Length -gt 16384 -or
+        $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'The author sample result must be a bounded regular file.'
+    }
+    $sample = [Text.UTF8Encoding]::new($false, $true).GetString([IO.File]::ReadAllBytes($file.FullName)) |
+        ConvertFrom-Json -Depth 6
+    if ($sample.sampleSha256 -cne $Manifest.sampleSha256 -or $sample.targetSha -cne $Manifest.targetSha -or
+        $sample.buildSucceeded -isnot [bool] -or
+        $sample.targetFramework -cnotmatch "^net[0-9]+\.[0-9]+-$($Manifest.platform)(?:[0-9]+(?:\.[0-9]+)*)?$" -or
+        ($null -ne $sample.diagnostic -and
+            ($sample.diagnostic -isnot [string] -or $sample.diagnostic.Length -gt 2048))) {
+        throw 'The author sample result does not match the immutable snapshot or bounded build contract.'
+    }
+    return $sample
+}
+
+function Get-IssueReplicateDraftPatch {
+    param([Parameter(Mandatory)]$Candidate, [Parameter(Mandatory)][int]$IssueNumber,
+        [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform)
+
+    Assert-IssueReplicateCandidate -Candidate $Candidate -IssueNumber $IssueNumber -Platform $Platform | Out-Null
+    $root = Join-Path ([IO.Path]::GetTempPath()) "issue-replicate-draft-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $root | Out-Null
+    try {
+        & git init --quiet --template= $root
+        if ($LASTEXITCODE -ne 0) { throw 'Could not prepare the draft diff.' }
+        $paths = @()
+        foreach ($file in @($Candidate.files)) {
+            $path = Join-Path $root $file.path
+            New-Item -ItemType Directory -Path (Split-Path -Parent $path) -Force | Out-Null
+            [IO.File]::WriteAllText($path, $file.content, [Text.UTF8Encoding]::new($false))
+            $paths += $file.path
+        }
+        & git -C $root -c core.autocrlf=false add -N -- $paths
+        if ($LASTEXITCODE -ne 0) { throw 'Could not stage the draft text.' }
+        $patchPath = Join-Path $root 'candidate.patch'
+        & git -C $root -c core.autocrlf=false diff --no-ext-diff --no-textconv --binary "--output=$patchPath" -- $paths
+        if ($LASTEXITCODE -ne 0) { throw 'Could not render the complete draft diff.' }
+        $patch = Get-Item -LiteralPath $patchPath
+        if ($patch.Length -lt 1 -or $patch.Length -gt 100KB) { throw 'The draft diff is empty or too large.' }
+        return [Text.UTF8Encoding]::new($false, $true).GetString([IO.File]::ReadAllBytes($patchPath))
+    } finally {
+        Remove-Item -LiteralPath $root -Recurse -Force
+    }
+}
+
 function ConvertFrom-IssueReplicateCopilotOutput {
     param([Parameter(Mandatory)][string]$Path)
 

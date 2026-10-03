@@ -470,6 +470,191 @@ Describe 'Tool-free candidate generation' {
     }
 }
 
+Describe 'Drafts when author builds are blocked' {
+    BeforeEach {
+        $script:draftRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:draftInput = Join-Path $script:draftRoot 'draft-input'
+        $script:draftSample = Join-Path $script:draftRoot 'draft-sample'
+        $script:draftOutput = Join-Path $script:draftRoot 'draft-output'
+        New-Item -ItemType Directory -Path $script:draftInput, $script:draftSample, $script:draftOutput | Out-Null
+        $stream = [IO.File]::Create((Join-Path $script:draftInput 'sample.zip'))
+        $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $writer = [IO.StreamWriter]::new($zip.CreateEntry('Sample.cs').Open())
+        $writer.Write('public class Sample { }')
+        $writer.Dispose()
+        $zip.Dispose()
+        $stream.Dispose()
+        $script:draftManifest = @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214
+            targetRef = 'main'; targetSha = 'a' * 40; platform = 'ios'; sourceType = 'attachment'
+            issueText = 'Expected collection count after removal'
+            sampleSha256 = (Get-FileHash (Join-Path $script:draftInput 'sample.zip')).Hash.ToLowerInvariant()
+        }
+        $script:draftManifest | ConvertTo-Json | Set-Content (Join-Path $script:draftInput 'manifest.json')
+        $script:draftSampleRecord = @{
+            targetSha = $script:draftManifest.targetSha; sampleSha256 = $script:draftManifest.sampleSha256
+            buildSucceeded = $false; targetFramework = 'net10.0-ios27.0'
+            diagnostic = 'error NETSDK1140: 27.0 is not valid; 26.0 is available.'
+        }
+        $script:draftSampleRecord | ConvertTo-Json | Set-Content (Join-Path $script:draftSample 'sample-result.json')
+        $script:draftCandidate = @{
+            kind = 'unit'; files = @(@{
+                path = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
+                content = "public class Issue12345 { public string Observe() => `"sample`"; }`n"
+            })
+        }
+        $script:draftCandidate | ConvertTo-Json -Depth 6 -Compress |
+            Set-Content (Join-Path $script:draftOutput 'candidate.json')
+    }
+
+    It 'drafts from the unchanged source and bounded failed-build context with no executable tools' {
+        $global:issueReplicateDraftPrompt = ''
+        $global:issueReplicateDraftJson = $script:draftCandidate | ConvertTo-Json -Depth 6 -Compress
+        function copilot {
+            $args | Should -Contain 'none'
+            $global:issueReplicateDraftPrompt = $args[[array]::IndexOf($args, '-p') + 1]
+            $global:LASTEXITCODE = 0
+            @{ type = 'assistant.message'; data = @{
+                phase = 'final_answer'; toolRequests = @()
+                content = $global:issueReplicateDraftJson
+            } } | ConvertTo-Json -Depth 8 -Compress
+            '{"type":"result","exitCode":0}'
+        }
+        $generated = Join-Path $TestDrive 'generated-draft'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Generate.ps1') -InputDirectory $script:draftInput `
+            -OutputDirectory $generated -SampleResultPath (Join-Path $script:draftSample 'sample-result.json')
+        $global:issueReplicateDraftPrompt | Should -Match 'build succeeded: False'
+        $global:issueReplicateDraftPrompt | Should -Match 'NETSDK1140'
+        $global:issueReplicateDraftPrompt | Should -Match 'net10.0-ios27.0'
+        $global:issueReplicateDraftPrompt | Should -Match 'A build blocker alone is not a reason to return unsupported'
+        (Get-Content -Raw (Join-Path $generated 'candidate.json') | ConvertFrom-Json).kind | Should -Be 'unit'
+        (Get-FileHash (Join-Path $script:draftInput 'sample.zip')).Hash.ToLowerInvariant() |
+            Should -Be $script:draftManifest.sampleSha256
+        Remove-Variable issueReplicateDraftPrompt, issueReplicateDraftJson -Scope Global
+    }
+
+    It 'rejects mismatched build context before model invocation' {
+        $script:draftSampleRecord.targetSha = 'c' * 40
+        $script:draftSampleRecord | ConvertTo-Json | Set-Content (Join-Path $script:draftSample 'sample-result.json')
+        function copilot { throw 'Copilot must not be invoked.' }
+        { & (Join-Path $PSScriptRoot 'IssueReplicate.Generate.ps1') -InputDirectory $script:draftInput `
+            -OutputDirectory (Join-Path $TestDrive 'bad-context') `
+            -SampleResultPath (Join-Path $script:draftSample 'sample-result.json') } |
+            Should -Throw '*immutable snapshot*'
+    }
+
+    It 'publishes the full transported draft without claiming a failing test' {
+        $transport = Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1'
+        $encoded = & $transport -Mode Export -Kind Candidate -Directory $script:draftOutput
+        $imported = Join-Path $TestDrive 'imported-draft'
+        & $transport -Mode Import -Kind Candidate -Encoded $encoded -Directory $imported
+        $preview = Join-Path $TestDrive 'draft-comment.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory $script:draftInput -ResultsDirectory (Join-Path $TestDrive 'no-result') `
+            -SampleDirectory $script:draftSample -CandidateDirectory $imported -OutputPath $preview
+        $body = Get-Content -Raw $preview
+        $body | Should -Match 'Unverified draft'
+        $body | Should -Match 'not been compiled or executed'
+        $body | Should -Match 'public class Issue12345'
+        $body | Should -Match 'Generated test executed \| False'
+        $body | Should -Match 'Matching assertion failures verified twice \| False'
+        $body | Should -Match 'net10.0-ios27.0'
+        $body | Should -Not -Match 'verified failing \*test candidate\*|No verified failing test patch|System.Object\[\]'
+    }
+
+    It 'omits an empty review-code section for an unsupported draft' {
+        '{"kind":"unsupported","files":[]}' | Set-Content (Join-Path $script:draftOutput 'candidate.json')
+        $preview = Join-Path $TestDrive 'unsupported-comment.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory $script:draftInput -ResultsDirectory (Join-Path $TestDrive 'no-result') `
+            -SampleDirectory $script:draftSample -CandidateDirectory $script:draftOutput -OutputPath $preview
+        Get-Content -Raw $preview | Should -Not -Match 'review code|No verified failing test patch'
+    }
+
+    It 'rejects a draft different from the executed candidate' {
+        $results = Join-Path $TestDrive 'different-candidate'
+        New-Item -ItemType Directory $results | Out-Null
+        @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214; platform = 'ios'
+            targetSha = $script:draftManifest.targetSha; sampleSha256 = $script:draftManifest.sampleSha256
+            status = 'inconclusive'; testExecuted = $false; assertionFailed = $false
+            sampleBuilt = $false; testKind = 'unit'; candidateSha256 = 'f' * 64; patchSha256 = ''
+        } | ConvertTo-Json | Set-Content (Join-Path $results 'result.json')
+        { & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory $script:draftInput -ResultsDirectory $results `
+            -SampleDirectory $script:draftSample -CandidateDirectory $script:draftOutput `
+            -OutputPath (Join-Path $TestDrive 'mismatch.md') } | Should -Throw '*does not match the candidate*'
+    }
+
+    It 'keeps an executed passing candidate distinct from an unexecuted draft' {
+        $script:draftSampleRecord.buildSucceeded = $true
+        $script:draftSampleRecord.diagnostic = ''
+        $script:draftSampleRecord | ConvertTo-Json | Set-Content (Join-Path $script:draftSample 'sample-result.json')
+        $results = Join-Path $script:draftRoot 'passing'
+        New-Item -ItemType Directory $results | Out-Null
+        @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214; platform = 'ios'
+            targetSha = $script:draftManifest.targetSha; sampleSha256 = $script:draftManifest.sampleSha256
+            status = 'not-reproduced-on-tested-revision'; testExecuted = $true; assertionFailed = $false
+            sampleBuilt = $true; testKind = 'unit'; patchSha256 = ''
+            candidateSha256 = (Get-FileHash (Join-Path $script:draftOutput 'candidate.json')).Hash.ToLowerInvariant()
+        } | ConvertTo-Json | Set-Content (Join-Path $results 'result.json')
+        $preview = Join-Path $script:draftRoot 'passing.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory $script:draftInput -ResultsDirectory $results `
+            -SampleDirectory $script:draftSample -CandidateDirectory $script:draftOutput -OutputPath $preview
+        $body = Get-Content -Raw $preview
+        $body | Should -Match 'ran and passed'
+        $body | Should -Match 'The test was executed'
+        $body | Should -Not -Match 'not been compiled or executed|verified failing \*test candidate\*'
+    }
+
+    It 'preserves the complete oversized draft in bounded exact-byte continuation previews' {
+        $script:draftCandidate.files[0].content = "public class Issue12345 { } // " + ('漢' * 16000) + "`n"
+        $script:draftCandidate | ConvertTo-Json -Depth 6 -Compress |
+            Set-Content (Join-Path $script:draftOutput 'candidate.json')
+        $preview = Join-Path $script:draftRoot 'large.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory $script:draftInput -ResultsDirectory (Join-Path $script:draftRoot 'no-result') `
+            -SampleDirectory $script:draftSample -CandidateDirectory $script:draftOutput -OutputPath $preview
+        $parts = @(Get-ChildItem "$preview.patch-*.md" |
+            Sort-Object { [int]([regex]::Match($_.Name, '\.patch-(\d+)\.md$').Groups[1].Value) })
+        $parts.Count | Should -BeGreaterThan 1
+        $bytes = [IO.MemoryStream]::new()
+        try {
+            foreach ($part in $parts) {
+                $part.Length | Should -BeLessThan 60001
+                $body = Get-Content -Raw $part.FullName
+                $fragment = [regex]::Match($body,
+                    '(?s)Exact UTF-8 patch fragment \(base64\).*?`{4}text\n([A-Za-z0-9+/=]+)\n`{4}')
+                $fragment.Success | Should -BeTrue
+                $bytes.Write([Convert]::FromBase64String($fragment.Groups[1].Value))
+            }
+            $expected = Get-IssueReplicateDraftPatch -Candidate $script:draftCandidate -IssueNumber 12345 -Platform ios
+            [Text.Encoding]::UTF8.GetString($bytes.ToArray()) | Should -BeExactly $expected
+            Get-Content -Raw $preview | Should -Match 'Unverified draft'
+        } finally { $bytes.Dispose() }
+    }
+
+    It 'preserves exact draft bytes through Git diff/apply for <Name>' -TestCases @(
+        @{ Name = 'LF'; Content = "public class Issue12345 { }`n" },
+        @{ Name = 'CRLF'; Content = "public class Issue12345 {`r`n}`r`n" },
+        @{ Name = 'no final newline'; Content = 'public class Issue12345 { }' },
+        @{ Name = 'Unicode'; Content = "public class Issue12345 { } // 漢😀`n" }
+    ) {
+        param($Content)
+        $script:draftCandidate.files[0].content = $Content
+        $patch = Get-IssueReplicateDraftPatch -Candidate $script:draftCandidate -IssueNumber 12345 -Platform ios
+        $patchPath = Join-Path $TestDrive 'exact-draft.patch'
+        [IO.File]::WriteAllText($patchPath, $patch, [Text.UTF8Encoding]::new($false))
+        $applied = Join-Path $script:draftRoot 'applied'
+        New-Item -ItemType Directory $applied | Out-Null
+        & git -C $applied apply $patchPath
+        $LASTEXITCODE | Should -Be 0
+        [IO.File]::ReadAllText((Join-Path $applied $script:draftCandidate.files[0].path)) | Should -BeExactly $Content
+    }
+}
+
 Describe 'Native generator prompt budget' {
     It 'bounds the complete prompt for <Name>' -TestCases @(
         @{ Name = 'CJK below the byte limit'; Symbol = [string][char]0x754C; Bytes = 119999; Allowed = $true; FailureMessage = '' }
