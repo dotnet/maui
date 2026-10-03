@@ -404,6 +404,145 @@ Describe 'Tool-free candidate generation' {
     }
 }
 
+Describe 'UI candidate platform scope' {
+    BeforeAll {
+        function New-ScopedUiCandidate {
+            param([string]$Content)
+            @{
+                kind = 'ui'
+                files = @(
+                    @{ path = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'; content = 'public class Issue12345 { }' }
+                    @{ path = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'; content = $Content }
+                )
+            }
+        }
+    }
+
+    It 'rejects a UI fixture with <Scope> platform scope' -TestCases @(
+        @{ Scope = 'missing'; Content = 'public class Issue12345 { }' }
+        @{ Scope = 'wrong-platform'; Content = "#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'partial-file'; Content = "public class Issue12345 { }`n#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`n#endif" }
+        @{ Scope = 'else-escaping'; Content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`n#else`npublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'carriage-return-escaping'; Content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`r#else`rpublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'unicode-line-escaping'; Content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }$([char]0x2028)#else$([char]0x2028)public class Issue12345 { }`n#endif" }
+        @{ Scope = 'nested-conditional'; Content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`n#if ANDROID`npublic class Issue12345 { }`n#endif`n#endif" }
+        @{ Scope = 'symbol-redefinition'; Content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`n#define TEST_FAILS_ON_ANDROID`npublic class Issue12345 { }`n#endif" }
+    ) {
+        param($Scope, $Content)
+        $candidate = New-ScopedUiCandidate -Content $Content
+        { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 -Platform android } |
+            Should -Throw '*UI candidate*platform*'
+    }
+
+    It 'requires a verified platform even for an otherwise guarded UI fixture' {
+        $candidate = New-ScopedUiCandidate -Content "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`n#endif"
+        { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 } |
+            Should -Throw '*UI candidate*platform*'
+    }
+
+    It 'rejects a mismatched UI guard before native verification attempt <Attempt>' -TestCases @(
+        @{ Attempt = 1 }
+        @{ Attempt = 2 }
+    ) {
+        param($Attempt)
+        $inputDir = Join-Path $TestDrive "verify-scope-input-$Attempt"
+        $repo = Join-Path $TestDrive "verify-scope-repo-$Attempt"
+        $outputDir = Join-Path $TestDrive "verify-scope-output-$Attempt"
+        New-Item -ItemType Directory -Path $inputDir, $repo | Out-Null
+        & git -C $repo init -q
+        & git -C $repo -c user.name=Fixture -c user.email=fixture@example.invalid commit -q --allow-empty -m Fixture
+        $revision = (& git -C $repo rev-parse HEAD).Trim()
+        @{
+            schemaVersion = 1
+            issueNumber = 12345
+            commentId = 4925414214
+            targetSha = $revision
+            sampleSha256 = 'b' * 64
+            platform = 'ios'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $inputDir 'manifest.json')
+        @{
+            targetSha = $revision
+            sampleSha256 = 'b' * 64
+            buildSucceeded = $true
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $inputDir 'sample-result.json')
+        New-ScopedUiCandidate -Content "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`n#endif" |
+            ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $inputDir 'candidate.json')
+        {
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory $inputDir `
+                -SampleResultPath (Join-Path $inputDir 'sample-result.json') `
+                -CandidatePath (Join-Path $inputDir 'candidate.json') -RepoRoot $repo `
+                -OutputDirectory $outputDir -Attempt $Attempt
+        } | Should -Throw '*UI candidate*exclusive ios*platform guard*'
+        Test-Path -LiteralPath (Join-Path $outputDir 'result.json') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $outputDir 'test.patch') | Should -BeFalse
+    }
+
+    It 'generates a fixture that compiles only on the verified <Platform> platform' -TestCases @(
+        @{ Platform = 'android' }
+        @{ Platform = 'ios' }
+    ) {
+        param($Platform)
+        $inputDir = Join-Path $TestDrive "scope-input-$Platform"
+        $outputDir = Join-Path $TestDrive "scope-output-$Platform"
+        New-Item -ItemType Directory -Path $inputDir | Out-Null
+        $archivePath = Join-Path $inputDir 'sample.zip'
+        $stream = [IO.File]::Create($archivePath)
+        $archive = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $writer = [IO.StreamWriter]::new($archive.CreateEntry('Sample.cs').Open())
+        $writer.Write('public class Sample { }')
+        $writer.Dispose()
+        $archive.Dispose()
+        $stream.Dispose()
+        @{
+            schemaVersion = 1
+            issueNumber = 12345
+            targetRef = 'main'
+            targetSha = 'a' * 40
+            platform = $Platform
+            issueText = 'Expected one observable behavior'
+            sampleSha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $inputDir 'manifest.json')
+
+        function copilot {
+            $prompt = [string]$args[1]
+            $guard = @($prompt -split "`n" | Where-Object { $_.StartsWith('UI platform guard: #if ') })
+            $content = 'public class Issue12345 { }'
+            if ($guard.Count -eq 1) {
+                $content = "$($guard[0].Substring('UI platform guard: '.Length))`n$content`n#endif"
+            }
+            $candidate = New-ScopedUiCandidate -Content $content
+            $global:LASTEXITCODE = 0
+            @{ type = 'assistant.message'; data = @{
+                phase = 'final_answer'
+                content = ($candidate | ConvertTo-Json -Compress -Depth 6)
+                toolRequests = @()
+            } } | ConvertTo-Json -Compress -Depth 8
+            '{"type":"result","exitCode":0}'
+        }
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Generate.ps1') `
+            -InputDirectory $inputDir -OutputDirectory $outputDir
+        $candidate = Get-Content -Raw -LiteralPath (Join-Path $outputDir 'candidate.json') | ConvertFrom-Json
+        $fixture = $candidate.files | Where-Object { $_.path.Contains('TestCases.Shared.Tests/') }
+        $symbols = @{
+            android = 'ANDROID;TEST_FAILS_ON_IOS;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_WINDOWS'
+            ios = 'IOS;IOSUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_CATALYST'
+            catalyst = 'MACCATALYST;MACUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_IOS'
+            windows = 'WINDOWS;WINTEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_IOS'
+        }
+        foreach ($fixturePlatform in $symbols.Keys) {
+            $assemblyPath = Join-Path $TestDrive "scope-$Platform-$fixturePlatform.dll"
+            Add-Type -TypeDefinition $fixture.content -CompilerOptions "/define:$($symbols[$fixturePlatform])" `
+                -OutputAssembly $assemblyPath
+            $context = [Runtime.Loader.AssemblyLoadContext]::new("scope-$Platform-$fixturePlatform", $true)
+            try {
+                $assembly = $context.LoadFromAssemblyPath($assemblyPath)
+                ($null -ne $assembly.GetType('Issue12345')) |
+                    Should -Be ($fixturePlatform -eq $Platform) -Because "the fixture was verified only on $Platform"
+            } finally { $context.Unload() }
+        }
+    }
+}
+
 Describe 'Bounded data serialization' {
     BeforeAll {
         function New-TestEnvelope {

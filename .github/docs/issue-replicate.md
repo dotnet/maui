@@ -109,6 +109,15 @@ iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
 unsupported generated candidate cannot rule out the reported behavior.
 
+Generated shared NUnit fixtures are limited to the Android or iOS platform
+actually verified. The entire file must use the corresponding exclusion-symbol
+`#if` guard, with no other preprocessor directives; generation and both native
+verification attempts enforce the same contract without rewriting candidate code.
+`PlatformAffected` on the HostApp page is metadata, not a test-discovery filter.
+Unit and XAML candidates retain their existing scope. A reviewed UI candidate can
+be broadened later only after establishing its applicability on other platforms;
+the workflow does not claim that coverage.
+
 Repeated assertions run in separate fresh hosted jobs, each independently
 provisioning and checking out the same pinned source and candidate. First-attempt
 build outputs, ignored files, SDK directories and simulator state are never

@@ -56,7 +56,8 @@ if ($candidate.kind -eq 'unsupported') {
     if ($OnCompleted) { & $OnCompleted $result }
     exit 0
 }
-Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber $result.issueNumber | Out-Null
+Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber $result.issueNumber `
+    -Platform $result.platform | Out-Null
 $previous = $null
 if ($Attempt -eq 2) {
     $previousFile = Get-Item -LiteralPath $PreviousResultPath -ErrorAction Stop
