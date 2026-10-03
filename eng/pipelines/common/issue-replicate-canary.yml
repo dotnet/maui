@@ -114,10 +114,13 @@ stages:
                     }
                   }
                   $manifest = Get-Content -LiteralPath "$input/manifest.json" -Raw | ConvertFrom-Json
+                  $candidateDirectory = if (Test-Path -LiteralPath "$candidate/candidate.json" -PathType Leaf) {
+                    $candidate
+                  } else { '' }
                   $preview = "$(Agent.TempDirectory)/issue-canary-comment.txt"
                   & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Post.ps1" `
                     -IssueNumber $manifest.issueNumber -CommentId $manifest.commentId -BuildId "$(Build.BuildId)" `
-                    -InputDirectory $input -SampleDirectory $sample -CandidateDirectory $candidate `
+                    -InputDirectory $input -SampleDirectory $sample -CandidateDirectory $candidateDirectory `
                     -ResultsDirectory $verified -OutputPath $preview
                   if ($LASTEXITCODE -ne 0) { throw 'Could not render the validated canary comment preview.' }
                   Write-Host 'CANARY ONLY: reviewed historical inputs; no GPT generation or issue publication.'
