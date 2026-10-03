@@ -126,7 +126,15 @@ function Get-IssueReplicateSource {
                 FallbackUrl = $fallback
             }
         }
-        $sources = @($sources | Sort-Object Url -Unique)
+        $sourceKeys = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        $sources = @($sources | Where-Object {
+            $key = if ($_.Type -eq 'repository') {
+                "repository:$($_.Repository.ToLowerInvariant()):$($_.Ref)"
+            } else {
+                $_.Url.ToLowerInvariant()
+            }
+            $sourceKeys.Add($key)
+        })
         if ($sources.Count -gt 1) {
             throw 'The latest author repro contains multiple supported links; keep one ZIP or public repository link.'
         }

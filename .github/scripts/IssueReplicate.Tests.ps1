@@ -66,6 +66,32 @@ Describe 'Author repro source selection' {
             Should -BeNullOrEmpty
     }
 
+    It 'rejects case-distinct refs in either link order' -TestCases @(
+        @{ First = 'Foo'; Second = 'foo' }
+        @{ First = 'foo'; Second = 'Foo' }
+        @{ First = 'Fo%6F'; Second = 'foo' }
+    ) {
+        param($First, $Second)
+
+        { Get-IssueReplicateSource -AuthorTexts @(
+            "https://github.com/example/repro/tree/$First https://github.com/example/repro/tree/$Second") } |
+            Should -Throw '*multiple supported links*'
+    }
+
+    It 'deduplicates identical decoded refs and equivalent repository casing' -TestCases @(
+        @{ Links = 'https://github.com/example/repro/tree/Foo https://github.com/example/repro/tree/Foo'; Ref = 'Foo' }
+        @{ Links = 'https://github.com/example/repro/tree/Foo https://github.com/example/repro/tree/%46oo'; Ref = 'Foo' }
+        @{ Links = 'https://github.com/Example/Repro/tree/Foo https://github.com/example/repro/tree/Foo'; Ref = 'Foo' }
+        @{ Links = 'https://github.com/Example/Repro https://github.com/example/repro'; Ref = '' }
+    ) {
+        param($Links, $Ref)
+
+        $source = Get-IssueReplicateSource -AuthorTexts @($Links)
+        $source.Type | Should -Be 'repository'
+        $source.Ref | Should -BeExactly $Ref
+        $source.Url | Should -BeExactly $Links.Split(' ')[0]
+    }
+
     It 'ignores off-host, ambiguous, and nonsample attachments' {
         { Get-IssueReplicateSource -AuthorTexts @('https://evil.example/repro.zip') } | Should -Throw
         { Get-IssueReplicateSource -AuthorTexts @('https://github.com/user-attachments/assets/12345678-1234-1234-1234-123456789abc') } | Should -Throw

@@ -17,7 +17,10 @@ author-written comment: a public `https://github.com/owner/repo` URL,
 `https://github.com/owner/repo/tree/ref` (one URL-encoded ref segment), or a
 GitHub-hosted ZIP issue attachment (linked as `[repro.zip](...)`). The latest
 author comment containing a supported link takes precedence. The repository is
-pinned to the explicit ref or default-branch commit; an attachment is hashed. Archives are
+pinned to the explicit ref or default-branch commit; an attachment is hashed.
+Repeated links to the same repository and decoded ref count as one source:
+repository identity is case-insensitive, but refs are case-sensitive. Links to
+case-distinct refs are rejected as multiple repros. Archives are
 limited to 10 MiB compressed, 40 MiB expanded, 512 safe entries, and one
 platform-targeting `.csproj`. A repro with multiple project files, external
 downloads, non-GitHub attachments, or an inaccessible dependency may be
