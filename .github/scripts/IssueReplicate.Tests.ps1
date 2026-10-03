@@ -1155,8 +1155,9 @@ Describe 'Pinned test verification' {
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'CRLF'; Content = "public class Issue12345 {`r`n}`r`n" }
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'no-final-newline'; Content = "public class Issue12345 {`n}" }
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'Unicode'; Content = "public class Issue12345 { } // $([char]0x6F22)$([char]::ConvertFromUtf32(0x1F600))`n" }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'stale-report'; StaleReport = $true }
     ) {
-        param($Mutate, $Different, $TrackedMutation, $ContentName = 'single-line',
+        param($Mutate, $Different, $TrackedMutation, $ContentName = 'single-line', $StaleReport = $false,
             $Content = 'public class Issue12345 { }')
         $repo = Join-Path $TestDrive "maui-fixture-$Mutate-$Different-$TrackedMutation-$ContentName"
         $projectDir = Join-Path $repo 'src/Core/tests/UnitTests'
@@ -1198,6 +1199,7 @@ Describe 'Pinned test verification' {
         $global:issueReplicateFixtureMutate = $Mutate
         $global:issueReplicateFixtureDifferent = $Different
         $global:issueReplicateFixtureTrackedMutation = $TrackedMutation
+        $global:issueReplicateFixtureStaleReport = $StaleReport
         function dotnet {
             $parameters = @($args)
             $directory = $parameters[[array]::IndexOf($parameters, '--results-directory') + 1]
@@ -1228,7 +1230,15 @@ Describe 'Pinned test verification' {
             } elseif (Test-Path -LiteralPath 'bin/poison.dll') {
                 throw 'The second attempt reused first-attempt build output.'
             }
-            Set-Content -LiteralPath (Join-Path $directory $name) -Value $trx
+            $trxPath = Join-Path $directory $name
+            Set-Content -LiteralPath $trxPath -Value $trx
+            # Automatic Linux mtimes can precede UtcNow during an instantaneous stub run.
+            $timestamp = if ($global:issueReplicateFixtureStaleReport) {
+                [DateTime]::UtcNow.AddMinutes(-1)
+            } else {
+                [DateTime]::UtcNow.AddSeconds(1)
+            }
+            [IO.File]::SetLastWriteTimeUtc($trxPath, $timestamp)
             $global:LASTEXITCODE = 1
             'One assertion failed'
         }
@@ -1246,6 +1256,11 @@ Describe 'Pinned test verification' {
         Test-Path -LiteralPath (Join-Path $firstResults 'test.patch') | Should -BeFalse
         $first = Get-Content -Raw -LiteralPath (Join-Path $firstResults 'result.json') | ConvertFrom-Json
         $first.status | Should -Be 'inconclusive'
+        if ($StaleReport) {
+            $first.testExecuted | Should -BeFalse
+            $first.observedAssertion | Should -BeFalse
+            return
+        }
         $first.observedAssertion | Should -BeTrue
         $secondRepo = "$repo-second"
         & git clone --quiet --no-local $repo $secondRepo
@@ -1282,7 +1297,7 @@ Describe 'Pinned test verification' {
     }
 
     AfterEach {
-        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent, issueReplicateFixtureTrackedMutation `
+        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent, issueReplicateFixtureTrackedMutation, issueReplicateFixtureStaleReport `
             -Scope Global -ErrorAction SilentlyContinue
     }
 }
