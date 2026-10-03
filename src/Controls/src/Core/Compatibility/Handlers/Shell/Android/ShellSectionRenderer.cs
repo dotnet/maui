@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		AToolbar _toolbar;
 		IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
 		IShellToolbarTracker _toolbarTracker;
+		IDisposable _insetsRouter;
 		ViewPager2 _viewPager;
 		bool _disposed;
 		IShellController ShellController => _shellContext.Shell;
@@ -104,8 +105,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
-
-			MauiWindowInsetListener.SetupViewWithLocalListener(root);
+			_insetsRouter = MauiWindowInsetsScope.RegisterAppBarRouter(root, appbar);
 
 			int actionBarHeight = context.GetActionBarHeight();
 
@@ -219,11 +219,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_rootView != null)
 			{
-				// Clean up the coordinator layout and local listener first
-				if (_rootView is not null)
-				{
-					MauiWindowInsetListener.RemoveViewWithLocalListener(_rootView);
-				}
+				_insetsRouter?.Dispose();
+				_insetsRouter = null;
 
 				UnhookEvents();
 
