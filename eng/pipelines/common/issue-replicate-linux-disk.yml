@@ -21,12 +21,4 @@ steps:
       done
       echo 'Disk capacity available for isolated native SDKs:'
       df -h /
-      available_kib=$(df -Pk / | awk 'NR == 2 { print $4 }')
-      case "$available_kib" in
-        ''|*[!0-9]*) echo 'Could not read hosted Linux disk capacity.' >&2; exit 1 ;;
-      esac
-      if [ "$available_kib" -lt 25165824 ]; then
-        echo 'Native reproduction requires at least 24 GiB free before workload installation.' >&2
-        exit 1
-      fi
     displayName: 'Reserve disk capacity for isolated native SDKs'

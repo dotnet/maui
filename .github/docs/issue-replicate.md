@@ -226,9 +226,10 @@ still require review and are not tamper-proof evidence.
 Hosted Ubuntu sample and verification jobs reclaim named unused preinstalled
 .NET, Swift, Haskell, Go, Boost and CodeQL directories after installing the exact
 bootstrap SDK outside those directories. Android, Java, Node and PowerShell
-remain available. The jobs require at least 24 GiB free before installing native
-workloads, so insufficient capacity fails before a partially installed sample SDK
-can be mistaken for a completed author build.
+remain available. The jobs log actual disk capacity without requiring more free
+space than the hosted pool guarantees. Workload installation and author builds
+must actually complete; disk exhaustion is an explicit environment failure, not
+evidence that a generated test ran or that the reported issue is invalid.
 
 This mode does **not** enable production authorization, OIDC dispatch, credentialed
 GPT generation, the feedback-driven GPT revision, recovery or automatic publication.
