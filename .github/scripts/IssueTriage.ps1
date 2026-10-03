@@ -455,6 +455,17 @@ function Test-TentativeEvidence([string]$Paragraph) {
     return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibl(?:e|y)|probabl(?:e|y)|likely|potential(?:ly)?|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|look(?:s|ed)?\s+like|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|unsure|uncertain(?:ty)?|tentative(?:ly)?)\b'
 }
 
+function Get-DeniedEvidencePattern {
+    $negative = "(?:not|never|cannot|can['\u2019]t|unable to|could not|couldn['\u2019]t|(?:do|does|did|has|have|had)n['\u2019]t)"
+    $modifiers = '(?:(?:yet|actually|really|honestly|definitely|definitively|currently|reliably|with certainty)\s+)*'
+    $claim = '(?:say|state|assert|claim|conclude|establish|confirm|verify|validate|demonstrate|prove|know)'
+    $missing = '(?:no|without)\s+(?:(?:direct|clear|concrete|empirical|reliable|actual|definitive|conclusive)\s+)*(?:evidence|proof|confirmation)'
+    $denial = "(?:$negative\s+$modifiers$claim|$missing|(?:(?:is|was)\s+not|isn['\u2019]t|wasn['\u2019]t)\s+(?:true|established|demonstrated|proven))(?:\s+(?:yet|currently|so far))?"
+    $clause = '(?:(?![;!?]|\.(?:\s|$)|\r?\n[ \t]*\r?\n|\b(?:but|however|although|except|yet)\b).)'
+    $outcome = '(?:reproduce[ds]?|reproducing|reproducible|replicate[ds]?|replicating|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|worked|working|works|passed|fails|failed|review(?:ed)?|triage(?:d)?|investigate(?:d)?|completed|finished|regression|same\s+(?:behavior|issue|problem)|try|retest(?:ed)?|test(?:ed)?|update[ds]?|upgrade[ds]?)'
+    return "(?is)\b$denial\b(?=$clause*\b$outcome\b)$clause*"
+}
+
 function Get-LabelPattern([string]$Label) {
     return '(?<![\p{L}\p{N}\p{M}\p{S}_/.:-])' + [regex]::Escape($Label) +
         '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
@@ -557,7 +568,8 @@ function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '')
     # Repeated paragraphs retain their own reference-metadata positions.
     foreach ($paragraph in [regex]::Split((Get-Prose $ReferenceContext), '(\r?\n[ \t]*\r?\n)')) {
         if ($paragraph -cin $paragraphs -and
-            ($paragraph -match $pattern -or $paragraph -match $postposed -or $paragraph -match $subjectNegative) -and
+            ($paragraph -match $pattern -or $paragraph -match $postposed -or
+                $paragraph -match $subjectNegative -or $paragraph -match (Get-DeniedEvidencePattern)) -and
             (Test-CurrentIssueScope $paragraph $ReferenceContext -ReferenceStart $position)) { return $true }
         $position += $paragraph.Length
     }
@@ -621,8 +633,9 @@ function Test-PositiveValidation([string]$Paragraph, [string]$ReferenceContext =
         if (Test-IssueReferenceMatch $match $Paragraph) { return $match.Value }
         return ' ' * $match.Length
     }, [Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    # Mask only subject-negative outcomes, retaining separate positive outcomes.
-    $candidate = [regex]::Replace($candidate, (Get-SubjectNegativeValidationPattern $ReferenceContext), {
+    # Mask denied claims and subject-negative outcomes, retaining separate observations.
+    $negativeEvidence = "(?:$(Get-SubjectNegativeValidationPattern $ReferenceContext)|$(Get-DeniedEvidencePattern))"
+    $candidate = [regex]::Replace($candidate, $negativeEvidence, {
         param($match)
         return [regex]::Replace($match.Value, '\S', ' ')
     })
@@ -780,7 +793,8 @@ function Test-NewerPublishedVersionRequest([string]$Paragraph, [string]$Quote, [
 }
 
 function Test-RegressionValidation([string]$Paragraph, [string]$FirstBadVersion = '') {
-    if ((Test-ConditionalEvidence $Paragraph) -or (Test-TentativeEvidence $Paragraph)) { return $false }
+    if ((Test-ConditionalEvidence $Paragraph) -or (Test-TentativeEvidence $Paragraph) -or
+        $Paragraph -match (Get-DeniedEvidencePattern)) { return $false }
     $framework = '(?:\.NET(?:\s+MAUI)?|MAUI)'
     $version = '\d+(?:\.\d+){0,3}(?:[- .]*(?:preview|rc)[- .]*\d+(?:\.\d+)*)?(?![\w-]|\.(?=\w))'
     $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:and|or|but|however|not|never|cannot|didn.t|isn.t|wasn.t|regressed\s+from|MAUI)\b|(?<![\w])\.NET\b|\b\d).){0,80}'
@@ -1023,7 +1037,7 @@ function Test-NonRegressionValidation([string]$Paragraph, [string]$Prose, [strin
 
 function Test-WebView2Regression([string]$Paragraph, [string]$ReferenceContext = '', [switch]$Negative) {
     if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
-        (Test-TentativeEvidence $Paragraph) -or
+        (Test-TentativeEvidence $Paragraph) -or $Paragraph -match (Get-DeniedEvidencePattern) -or
         -not (Test-CurrentIssueScope $Paragraph $ReferenceContext)) { return $false }
     if (-not $ReferenceContext) { $ReferenceContext = $Paragraph }
     $subject = Get-ValidationOutcomePattern $ReferenceContext
@@ -1084,6 +1098,7 @@ function Test-AssessmentSuperseded($Source, [string]$Label) {
                     if (-not $sameSource -and
                         (Test-CurrentIssueScope $paragraph $referenceContext) -and
                         $paragraph -match $completedResponse -and
+                        $paragraph -notmatch (Get-DeniedEvidencePattern) -and
                         -not (Test-NegativeValidation $paragraph $referenceContext) -and
                         -not (Test-BlockedValidation $prose)) { return $true }
                 }
@@ -1105,6 +1120,7 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
         if ($paragraphs.Count -ne 1) { return $false }
         $paragraph = $paragraphs[0]
         if ((Test-Interrogative $paragraph) -or
+            $paragraph -match (Get-DeniedEvidencePattern) -or
             -not (Test-CurrentIssueScope $paragraph $referenceContext)) { return $false }
         $assessed = switch ($Label) {
             's/triaged' {
@@ -1138,7 +1154,8 @@ function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = 
     if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext)) { return $false }
     $candidate = [regex]::Replace($Paragraph, '(?i)\bsuggested\s+(?=workarounds?\b)', '')
     if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
-        (Test-TentativeEvidence $candidate) -or (Test-ForeignOutcome $Paragraph) -or
+        (Test-TentativeEvidence $candidate) -or $candidate -match (Get-DeniedEvidencePattern) -or
+        (Test-ForeignOutcome $Paragraph) -or
         $Paragraph -match '(?i)\b(?:do|does|did|has|have|is|are|was|were)\s+(?:(?:the|this|that|suggested|my|your|our|their|a|any)\s+){0,3}workarounds?\b') {
         return $false
     }

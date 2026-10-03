@@ -56,6 +56,13 @@ substitutes for current original issue/comment evidence.
   the same gate applies to confirmation-based removal transitions.
   Explicit uncertainty such as "I am unsure" also withholds confirmation and
   maintainer approvals; an affirmative-looking fragment cannot hide it.
+  Governing denials such as "I cannot say I reproduced this issue" or
+  "There is no evidence that this behavior worked in MAUI X and fails in MAUI Y"
+  are not affirmative outcomes. Inspect the enclosing claim, not just a
+  reproduced/worked/failed substring. The shared denial guard also applies to
+  technical assessments, workaround-failure transitions and superseding evidence.
+  Denied claims stop at sentence/paragraph or contrastive-clause boundaries;
+  separate observed results still count as positive counterevidence to no-repro.
   Conditional/hypothetical outcomes such as "If the issue is reproduced on
   Android, collect logs" are not observations either. Do not hide the condition
   by quoting only its affirmative-looking fragment. Cite a clear completed

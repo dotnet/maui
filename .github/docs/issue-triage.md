@@ -111,6 +111,13 @@ the shared tentative-evidence gate, including "I think I reproduced this issue"
 and "apparently reproduced", for additions and confirmation-based removals.
 Explicit "unsure" wording also withholds confirmation and maintainer approvals;
 quoting an affirmative-looking fragment cannot hide the enclosing uncertainty.
+The shared enclosing-claim denial guard rejects "I cannot say I reproduced this
+issue" and "There is no evidence that this behavior worked in MAUI X and fails in
+MAUI Y". These are neither reproduction nor demonstrated regression boundaries.
+The same guard covers technical assessments, failed-workaround transitions and
+superseding evidence. Denied claim spans stop at sentence/paragraph or contrastive
+clause boundaries; masking them cannot erase separate observed positive results
+that veto a mixed-result no-repro assessment.
 Conditional outcomes such as "If the issue is reproduced on Android, collect
 logs" cannot supply observed confirmation, even when the citation omits the
 conditional prefix. The shared positive-evidence predicate applies to confirmation
