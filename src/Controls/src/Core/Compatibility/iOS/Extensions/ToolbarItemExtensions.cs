@@ -31,6 +31,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal static SecondarySubToolbarItem ToSecondarySubToolbarItem(this ToolbarItem item)
 		{
+			return new SecondarySubToolbarItem(item, CreateSecondaryPlatformAction(item));
+		}
+
+		internal static UIAction CreateSecondaryPlatformAction(ToolbarItem item)
+		{
 			var weakItem = new WeakReference<ToolbarItem>(item);
 
 			var action = UIAction.Create(item.Text, null, null, _ =>
@@ -56,7 +61,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				});
 			}
 
-			return new SecondarySubToolbarItem(item, action);
+			action.UpdateIsEnabled(item.IsEnabled);
+
+			if (!string.IsNullOrEmpty(item.AutomationId))
+				action.AccessibilityIdentifier = item.AutomationId;
+
+			return action;
 		}
 
 		static UIImage ScaleImageToSystemDefaults(ImageSource imageSource, UIImage uIImage)
