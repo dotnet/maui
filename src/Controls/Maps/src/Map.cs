@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.Maps
 			propertyChanged: (b, o, n) => ((Map)b).OnRegionPropertyChanged((MapSpan?)n));
 
 		readonly ObservableCollection<Pin> _pins = new();
+		int _pinsBatchDepth;
 		readonly ObservableCollection<MapElement> _mapElements = new();
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
@@ -468,7 +469,30 @@ namespace Microsoft.Maui.Controls.Maps
 				}
 			}
 
-			Handler?.UpdateValue(nameof(IMap.Pins));
+			if (_pinsBatchDepth == 0)
+			{
+				Handler?.UpdateValue(nameof(IMap.Pins));
+			}
+		}
+
+		// The pins mapper rebuilds every native marker, so a bulk change that updated it once per pin
+		// was quadratic: building pins from an ItemsSource of 1000 items froze the UI for about a minute.
+		// The pins collection still raises its events; the handler is updated once, at the end.
+		void BatchPinChanges(Action change)
+		{
+			_pinsBatchDepth++;
+			try
+			{
+				change();
+			}
+			finally
+			{
+				_pinsBatchDepth--;
+				if (_pinsBatchDepth == 0)
+				{
+					Handler?.UpdateValue(nameof(IMap.Pins));
+				}
+			}
 		}
 
 		void MapElementsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -513,8 +537,7 @@ namespace Microsoft.Maui.Controls.Maps
 				ncc1.CollectionChanged += OnItemsSourceCollectionChanged;
 			}
 
-			_pins.Clear();
-			CreatePinItems();
+			RecreatePinItems();
 		}
 
 		void OnItemTemplatePropertyChanged(DataTemplate oldItemTemplate, DataTemplate newItemTemplate)
@@ -526,38 +549,38 @@ namespace Microsoft.Maui.Controls.Maps
 					$" Set the {nameof(Map)}.{ItemTemplateSelectorProperty.PropertyName} property instead to use a {nameof(DataTemplateSelector)}");
 			}
 
-			_pins.Clear();
-			CreatePinItems();
+			RecreatePinItems();
 		}
 
 		void OnItemTemplateSelectorPropertyChanged()
 		{
-			_pins.Clear();
-			CreatePinItems();
+			RecreatePinItems();
 		}
 
 		void OnItemsSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
-			e.Apply(
+			BatchPinChanges(() => e.Apply(
 				insert: (item, _, __) => CreatePin(item),
 				removeAt: (item, _) => RemovePin(item),
-				reset: () => _pins.Clear());
-			Handler?.UpdateValue(nameof(IMap.Pins));
+				reset: () => _pins.Clear()));
 		}
 
-		void CreatePinItems()
+		void RecreatePinItems()
 		{
-			if (ItemsSource is null || (ItemTemplate is null && ItemTemplateSelector is null))
+			BatchPinChanges(() =>
 			{
-				return;
-			}
+				_pins.Clear();
 
-			foreach (object item in ItemsSource)
-			{
-				CreatePin(item);
-			}
+				if (ItemsSource is null || (ItemTemplate is null && ItemTemplateSelector is null))
+				{
+					return;
+				}
 
-			Handler?.UpdateValue(nameof(IMap.Pins));
+				foreach (object item in ItemsSource)
+				{
+					CreatePin(item);
+				}
+			});
 		}
 
 		void CreatePin(object newItem)
