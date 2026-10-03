@@ -100,7 +100,7 @@ Cause-only correction requires exactly one area in the freshly fetched current
 labels. Multiple current areas require an explicit current maintainer removal
 decision; counting proposed effective labels would allow removals to authorize
 themselves and is not permitted.
-Marker-bearing result comments from this workflow's publisher are excluded from
+Identified result comments from this workflow's publisher are excluded from
 evidence sources and related-reference intake. They remain in `resultComments`
 for context hashing and retry reconciliation only. Generated report reasons
 cannot become fresh facts after the original evidence is edited or removed.
@@ -216,6 +216,9 @@ The confirmation gate and later-contrary-evidence veto share unsuccessful
 reproduce/confirm/verify/validate detection. The veto withholds confirmation;
 it does not turn an unsuccessful validation or infrastructure failure into
 `s/no-repro`.
+Denied regression history does not retract an independent current reproduction.
+Reproduction confirmation uses reproduction-specific claim denials; regression
+confirmation and first-bad decisions also retain the broader history-denial veto.
 Confirmation-based removal transitions use the same freshness gate as additions,
 even when s/verified is already present. Later contrary validation or a newer
 maintainer removal cannot be bypassed to clear pending information/reproduction
@@ -460,6 +463,13 @@ would not make reruns safe.
 Use a fresh `/issue triage` comment or manual dispatch to gather current state
 and assess remaining deltas. Each rendered decision carries a canonical
 fingerprint of its action, label, reason, exact evidence and request.
+Invocation identifiers and decision fingerprints are visible inline-code lines,
+not HTML comments removed by the pinned publisher's sanitizer. Intake recognizes
+these reports only from `github-actions[bot]` and never treats them as evidence.
+Legacy intact HTML identifiers remain readable. Legacy sanitized reports with
+the publisher-injected `Issue Triage` header and validated-proposal heading are
+also excluded from evidence, but missing invocation or decision identifiers
+cannot establish exact retry coverage.
 Duplicate-report protection remains
 defensive: a report for the same invocation can suppress a new comment only
 when it covers all decisions exactly; changed decisions or multiple reports

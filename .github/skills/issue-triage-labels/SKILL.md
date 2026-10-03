@@ -39,7 +39,7 @@ validation: `#333333` is not a foreign issue without explicit issue/PR context.
 Repository-qualified references and full issue/PR URLs remain unambiguous.
 Adjective hedges such as "possible duplicate" and "looks like expected behavior"
 are not definitive dispositions.
-Prior marker-bearing reports from this workflow are retained in
+Prior identified reports from this workflow are retained in
 `context.resultComments` only for retry reconciliation. They are not evidence
 sources; do not cite their generated reasons or follow their evidence links as
 substitutes for current original issue/comment evidence.
@@ -63,6 +63,8 @@ substitutes for current original issue/comment evidence.
   technical assessments, workaround-failure transitions and superseding evidence.
   Denied claims stop at sentence/paragraph or contrastive-clause boundaries;
   separate observed results still count as positive counterevidence to no-repro.
+  Missing regression-history proof does not retract an independent current
+  reproduction. Keep reproduction denials distinct from regression denials.
   Conditional/hypothetical outcomes such as "If the issue is reproduced on
   Android, collect logs" are not observations either. Do not hide the condition
   by quoting only its affirmative-looking fragment. Cite a clear completed
@@ -344,10 +346,13 @@ trusted validation.` and that comment tool's `data.triage` of this shape:
 ```
 
 Use the same decision shape for removals. Supply one to four evidence references
-per change. Quotes must be exact substrings (12-1500 characters) of the named
+per change. Quotes must be exact substrings (7-1500 characters) of the named
 prepared source; do not use ellipses or invented source IDs. Reasons/requests
 must be concise plain text, not Markdown commands, mentions or URLs. The trusted
 renderer supplies evidence links.
+The minimum permits complete short decisions such as "Set p/1"; source identity,
+current maintainer authority, target-label action and semantic evidence gates
+still apply. A short quote does not independently establish any of them.
 
 Declare exactly the same label delta using at most one `add_labels` and one
 `remove_labels` intent, always passing the prepared target number. Do not emit

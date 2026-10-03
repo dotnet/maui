@@ -55,7 +55,17 @@ function Get-Hash($Value) {
 
 function Test-TriageResultComment([string]$Body, [string]$Author) {
     return $Author -ceq 'github-actions[bot]' -and
-        $Body -cmatch '(?m)^<!-- issue-triage-(?:command:[1-9][0-9]*|run:[1-9][0-9]*|local:[A-F0-9]{64}) -->\r?$'
+        ($Body -cmatch '(?m)^Issue triage invocation: `issue-triage-(?:command:[1-9][0-9]*|run:[1-9][0-9]*|local:[A-F0-9]{64})`\r?$' -or
+            $Body -cmatch '(?m)^<!-- issue-triage-(?:command:[1-9][0-9]*|run:[1-9][0-9]*|local:[A-F0-9]{64}) -->\r?$' -or
+            ($Body -cmatch '(?m)^<!-- Issue Triage -->\r?$' -and
+                $Body -cmatch '(?m)^\*\*Issue triage: validated label proposal\*\*\r?$'))
+}
+
+function Test-TriageReportMarker([string]$Body, [string]$Marker,
+    [ValidateSet('invocation', 'decision')][string]$Kind) {
+    $token = [regex]::Escape($Marker)
+    return $Body -cmatch "(?m)^Issue triage ${Kind}: ``$token``\r?$" -or
+        $Body -cmatch "(?m)^<!-- $token -->\r?$"
 }
 
 function Get-DecisionFingerprint($Decision, [string]$Action) {
@@ -455,7 +465,7 @@ function Test-TentativeEvidence([string]$Paragraph) {
     return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibl(?:e|y)|probabl(?:e|y)|likely|potential(?:ly)?|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|look(?:s|ed)?\s+like|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|unsure|uncertain(?:ty)?|tentative(?:ly)?)\b'
 }
 
-function Get-DeniedEvidencePattern {
+function Get-DeniedEvidencePattern([switch]$ReproductionOnly) {
     $negative = "(?:not|never|cannot|can['\u2019]t|unable to|could not|couldn['\u2019]t|(?:do|does|did|has|have|had)n['\u2019]t)"
     $modifiers = '(?:(?:yet|actually|really|honestly|definitely|definitively|currently|reliably|with certainty)\s+)*'
     $claim = '(?:say|state|assert|claim|conclude|establish|confirm|verify|validate|demonstrate|prove|know)'
@@ -463,6 +473,9 @@ function Get-DeniedEvidencePattern {
     $denial = "(?:$negative\s+$modifiers$claim|$missing|(?:(?:is|was)\s+not|isn['\u2019]t|wasn['\u2019]t)\s+(?:true|established|demonstrated|proven))(?:\s+(?:yet|currently|so far))?"
     $clause = '(?:(?![;!?]|\.(?:\s|$)|\r?\n[ \t]*\r?\n|\b(?:but|however|although|except|yet)\b).)'
     $outcome = '(?:reproduce[ds]?|reproducing|reproducible|replicate[ds]?|replicating|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|worked|working|works|passed|fails|failed|review(?:ed)?|triage(?:d)?|investigate(?:d)?|completed|finished|regression|same\s+(?:behavior|issue|problem)|try|retest(?:ed)?|test(?:ed)?|update[ds]?|upgrade[ds]?)'
+    if ($ReproductionOnly) {
+        $outcome = '(?:reproduce[ds]?|reproducing|reproducible|replicate[ds]?|replicating|confirm(?:s|ed|ing)?|verify|verified|verifying|validate[ds]?|validating|correctly detect(?:s|ing)?)'
+    }
     return "(?is)\b$denial\b(?=$clause*\b$outcome\b)$clause*"
 }
 
@@ -554,7 +567,8 @@ function Get-SubjectNegativeValidationPattern([string]$ReferenceContext) {
     return "(?i)\b$subject\s+$auxiliary$modifiers$verbs\b$gap(?<![\w])$outcome(?![\w])"
 }
 
-function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '') {
+function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '',
+    [switch]$RequireRegression) {
     if (-not $ReferenceContext) { $ReferenceContext = $Prose }
     $negative = "(?:not|never|no longer|cannot|can['\u2019]t|unable to|fail(?:s|ed)?\s+to|couldn['\u2019]t|could not|did not|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
     $modifiers = '(?:(?:be|been|being|able to|possible to|yet|ever|still|currently|at all|successfully|reliably|consistently|actually|fully|independently|definitively|personally|locally|readily|easily|immediately)\s+){0,4}'
@@ -563,13 +577,14 @@ function Test-NegativeValidation([string]$Prose, [string]$ReferenceContext = '')
     $outcome = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
     $postposed = "(?i)\b$verbs\b(?:(?![;!?\r\n]|\.(?:\s|$)).){0,100}\b$negative\s+$outcome\b"
     $subjectNegative = Get-SubjectNegativeValidationPattern $ReferenceContext
+    $deniedEvidence = Get-DeniedEvidencePattern -ReproductionOnly:(-not $RequireRegression)
     $paragraphs = @($Prose -split '\r?\n[ \t]*\r?\n')
     $position = 0
     # Repeated paragraphs retain their own reference-metadata positions.
     foreach ($paragraph in [regex]::Split((Get-Prose $ReferenceContext), '(\r?\n[ \t]*\r?\n)')) {
         if ($paragraph -cin $paragraphs -and
             ($paragraph -match $pattern -or $paragraph -match $postposed -or
-                $paragraph -match $subjectNegative -or $paragraph -match (Get-DeniedEvidencePattern)) -and
+                $paragraph -match $subjectNegative -or $paragraph -match $deniedEvidence) -and
             (Test-CurrentIssueScope $paragraph $ReferenceContext -ReferenceStart $position)) { return $true }
         $position += $paragraph.Length
     }
@@ -867,7 +882,7 @@ function Test-ConfirmationParagraph([string]$Paragraph, [string]$ReferenceContex
     return -not (Test-Interrogative $Paragraph) -and
         $validated -and
         -not (Test-TentativeEvidence $Paragraph) -and
-        -not (Test-NegativeValidation $Paragraph $ReferenceContext)
+        -not (Test-NegativeValidation $Paragraph $ReferenceContext -RequireRegression:$RequireRegression)
 }
 
 function Test-SimulatorReproduction([string]$Paragraph, [string]$ReferenceContext = '') {
@@ -894,17 +909,18 @@ function Get-Confirmation($Evidence, [switch]$RequireRegression, [string]$FirstB
         $paragraphs.Count -eq 1 -and
         (Test-ConfirmationParagraph $paragraphs[0] (Get-MarkdownText $source.body) `
             -RequireRegression:$RequireRegression -FirstBadVersion $FirstBadVersion) -and
-        -not (Test-NegativeValidation $prose (Get-MarkdownText $source.body))
+        -not (Test-NegativeValidation $prose (Get-MarkdownText $source.body) -RequireRegression:$RequireRegression)
     })
 }
 
 function Test-CurrentConfirmation($Confirmations, $Evidence, [string]$Label, $Snapshot) {
     if ($Confirmations.Count -eq 0) { return $false }
+    $requireRegression = $Label -ceq 'i/regression' -or $Label -cmatch '^regressed-in-'
     $latest = @($Confirmations | Sort-Object { $sourceMap[$_.source].createdAt })[-1]
     if (@($Snapshot.sources | Where-Object {
         $_.kind -ceq 'comment' -and $_.isValidator -and
         (Get-SupersessionTime $_) -ge $sourceMap[$latest.source].createdAt -and
-        (Test-NegativeValidation (Get-Prose $_.body) (Get-MarkdownText $_.body))
+        (Test-NegativeValidation (Get-Prose $_.body) (Get-MarkdownText $_.body) -RequireRegression:$requireRegression)
     }).Count -gt 0) { return $false }
     $laterRemovals = @($Snapshot.sources | Where-Object {
         $_.isMaintainer -and $_.kind -ceq 'unlabeled' -and $_.body -ceq "unlabeled: $Label" -and
@@ -1178,7 +1194,7 @@ function Assert-Evidence($Decision) {
     foreach ($reference in $Decision.evidence) {
         Assert-Keys $reference @('source', 'quote')
         if ($reference.source -isnot [string] -or -not $sourceMap.ContainsKey($reference.source) -or
-            $reference.quote -isnot [string] -or $reference.quote.Length -lt 12 -or $reference.quote.Length -gt 1500 -or
+            $reference.quote -isnot [string] -or $reference.quote.Length -lt 7 -or $reference.quote.Length -gt 1500 -or
             -not $sourceMap[$reference.source].body.Contains($reference.quote, [StringComparison]::Ordinal) -or
             -not (Get-Prose $sourceMap[$reference.source].body).Contains($reference.quote, [StringComparison]::Ordinal)) {
             throw "Invalid, fabricated or non-prose evidence for $($Decision.label)."
@@ -1484,21 +1500,22 @@ $marker = if ($CommandCommentId -gt 0) { "issue-triage-command:$CommandCommentId
     elseif ($env:GITHUB_RUN_ID) { "issue-triage-run:$($env:GITHUB_RUN_ID)" }
     else { "issue-triage-local:$($current.contextHash)" }
 $existing = @($current.resultComments | Where-Object {
-    $_.body.Contains("<!-- $marker -->")
+    Test-TriageReportMarker $_.body $marker 'invocation'
 })
 if ($existing.Count -gt 1) { throw 'Multiple triage reports exist for this invocation; use a fresh command or manual dispatch.' }
 $report = [Collections.Generic.List[string]]::new()
 $decisionMarkers = [Collections.Generic.List[string]]::new()
-$report.Add("<!-- $marker -->")
+$report.Add("Issue triage invocation: ``$marker``")
+$report.Add('')
 $report.Add('**Issue triage: validated label proposal**')
 $report.Add('')
 $report.Add('The label handlers apply the delta below. Their final outcome is recorded in the workflow run; publication is not an atomic transaction.')
 foreach ($action in @('add', 'remove', 'withheld')) {
     $decisions = @(switch ($action) { 'add' { $proposal.additions }; 'remove' { $proposal.removals }; 'withheld' { $proposal.withheld } })
     foreach ($decision in $decisions) {
-        $decisionMarker = "<!-- issue-triage-decision:${action}:$(Get-DecisionFingerprint $decision $action) -->"
+        $decisionMarker = "issue-triage-decision:${action}:$(Get-DecisionFingerprint $decision $action)"
         $decisionMarkers.Add($decisionMarker)
-        $report.Add($decisionMarker)
+        $report.Add("Issue triage decision: ``$decisionMarker``")
         $reason = [Net.WebUtility]::HtmlEncode($decision.reason) -replace '([\\`*_{}\[\]|])', '\$1'
         $report.Add("- **${action}:** ``$($decision.label)`` - $reason")
         if ($action -ne 'withheld') {
@@ -1524,7 +1541,7 @@ if ($env:GITHUB_RUN_ID) {
 $body = $report -join "`n"
 if ($body.Length -gt 50000) { throw 'The rendered comment exceeds its limit.' }
 if ($existing.Count -eq 1 -and @($decisionMarkers | Where-Object {
-    -not $existing[0].body.Contains($_, [StringComparison]::Ordinal)
+    -not (Test-TriageReportMarker $existing[0].body $_ 'decision')
 }).Count -gt 0) {
     throw 'The prior triage report does not cover this proposal; use a fresh command or manual dispatch before applying changed decisions.'
 }
