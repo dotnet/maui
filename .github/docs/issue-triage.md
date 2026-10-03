@@ -217,6 +217,13 @@ an old approval cannot silently undo a later manual removal.
 Compounded decisions such as "Approve removing LABEL" or "Decline removal of LABEL"
 cannot authorize either action. Their label-bound action is not the outer approval
 verb; they conservatively veto stale support until an unambiguous decision is cited.
+Postposed rejection, denial, cancellation, withdrawal, revocation or "ruled out"
+bound directly to an exact label or its special disposition also cannot
+authorize an action. "The request to apply p/1 was rejected" is not an approval;
+"Duplicate of #N was ruled out" is not an affirmative duplicate disposition.
+Apply the same veto before accepting ordinary actions, canonical duplicates or
+expected-behavior explanations, including in the supersession scan. Do not
+borrow a rejection from a later unrelated clause.
 Equal-second contrary evidence is also superseding because GitHub timestamps
 cannot reliably establish its order. A fresh affirmative comment must follow
 the contrary evidence, not merely share its timestamp.

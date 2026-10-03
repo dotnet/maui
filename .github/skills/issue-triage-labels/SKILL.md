@@ -127,6 +127,13 @@ substitutes for current original issue/comment evidence.
   cannot authorize either action. Do not invert the bound action by matching
   only the outer approval verb; withhold these constructions and treat them
   as conservative vetoes on older support until an unambiguous decision is cited.
+  Postposed rejection, denial, cancellation, withdrawal, revocation or "ruled out"
+  bound directly to an exact label or its special disposition cannot authorize
+  an action either. "The request to apply p/1 was rejected" is not an approval;
+  "Duplicate of #N was ruled out" is not an affirmative duplicate disposition.
+  Apply that veto before accepting ordinary actions, canonical duplicates or
+  expected-behavior explanations, including in the supersession scan. Do not
+  borrow a rejection from a later unrelated clause.
   A decision for a longer label cannot authorize its prefix: for example,
   `partner/syncfusion` does not authorize `partner`.
   Questions, including indirect "we discussed whether to apply p/1" inquiries,

@@ -526,7 +526,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         $candidate = [regex]::Replace($candidate, $prohibition, '${prefix}' + $Action)
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    if ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
+    if (($Action -eq 'add' -or $Superseding) -and $Label -eq 's/not-a-bug') {
         $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
     }
     if ((Test-Interrogative $withoutLabel) -or
@@ -545,8 +545,17 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext $allowedReferencePattern)) { return $false }
     $approval = '(?:approv(?:e|ed|ing|al)|accept(?:ed|ance)?|reject(?:ed|ion)?|declin(?:e|ed|ing)|den(?:y|ied|ial))'
     $nestedAction = '(?:add(?:ed|ing|itions?)?|appl(?:y|ied|ying|ication)|set(?:ting)?|assign(?:ed|ing|ments?)?|remov(?:e|ed|ing|al)|drop(?:ped|ping)?|clear(?:ed|ing)?|withdraw(?:n|ing|al)?|revok(?:e|ed|ing)|revocation)'
-    # Compounded decisions veto stale support without authorizing either action.
+    # Compounded or rejected dispositions veto stale support without authorizing either action.
     if ($Paragraph -match "(?i)\b$approval\b$gap\b$nestedAction\b$gap$labelText") {
+        return [bool]$Superseding
+    }
+    $dispositionSubject = $labelText
+    if ($allowedReferencePattern) { $dispositionSubject += "|(?:$allowedReferencePattern)" }
+    if ($Label -eq 's/not-a-bug') {
+        $dispositionSubject += '|\b(?:expected behavior|by design|working as intended|not a bug)\b'
+    }
+    $rejected = '(?:(?:is|are|was|were|has|have|had|be|been|being|now|later|already|previously|explicitly|formally|ultimately|finally)\s+){0,6}(?:rejected|declined|denied|cancell?ed|withdrawn|revoked|ruled\s+out)\b'
+    if ($Paragraph -match "(?i)(?:$dispositionSubject)\s*(?:[,:\u2013\u2014]|--|\s-(?=\s|$))?\s+$rejected") {
         return [bool]$Superseding
     }
     if ($prohibited) { return $true }
