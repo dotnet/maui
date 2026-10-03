@@ -87,6 +87,11 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  # `report-failure-as-issue` only covers agent-level failures. Job-level
+  # failures are a separate reporter (`report-failed-jobs`, default true),
+  # so it has to be disabled explicitly or this workflow keeps filing
+  # `[aw] Failed jobs: ...` issues despite the line above.
+  report-failed-jobs: false
   # Note: `create-issue: false` is the canonical key for `missing-tool` /
   # `report-incomplete` and IS honored by the compiler (verified: removing
   # these blocks regresses GH_AW_*_CREATE_ISSUE back to "true" in the lock).
