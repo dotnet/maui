@@ -8,11 +8,13 @@ public class Issue32419 : _IssuesUITest
 {
 	public override string Issue => "[iOS, macOS] Shell menu and flyout items do not update correctly in RTL mode";
 
+	protected override bool ResetAfterEachTest => true;
+
 	public Issue32419(TestDevice device)
 	: base(device)
 	{ }
 
-	[Test, Order(1)]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellFlyoutContentAlignedInRTL()
 	{
@@ -20,7 +22,7 @@ public class Issue32419 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(2)]
+	[Test]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellMenuItemsAlignedInRTL()
 	{

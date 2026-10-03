@@ -22,7 +22,11 @@ public class Issue32219 : _IssuesUITest
 		App.WaitForElement("loginButton");
 		App.Tap("loginButton");
 		App.WaitForElement("homePageLabel");
-		App.TapShellFlyoutIcon();
+		App.WaitForElement("OpenReturnedFlyout");
+		App.Tap("OpenReturnedFlyout");
+		App.WaitForElement("Home Page");
+		App.WaitForElement("Login Page");
+		App.WaitForNoElement("OpenReturnedFlyout");
 		VerifyScreenshot();
 	}
 }

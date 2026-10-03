@@ -43,6 +43,7 @@ public class Issue35844 : ContentPage
 
 		Content = new VerticalStackLayout
 		{
+			AutomationId = "RotationContent",
 			Padding = new Thickness(20),
 			Spacing = 10,
 			Children =

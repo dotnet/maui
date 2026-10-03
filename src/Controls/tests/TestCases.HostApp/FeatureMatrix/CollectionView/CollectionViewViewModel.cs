@@ -853,6 +853,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center
 				};
+				stackLayout.SetBinding(Element.AutomationIdProperty, new Binding("Caption", stringFormat: "CollectionItem_{0}"));
 				label.SetBinding(Label.TextProperty, "Caption");
 				stackLayout.Children.Add(label);
 				return stackLayout;

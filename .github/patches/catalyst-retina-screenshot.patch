@@ -42,7 +42,7 @@ diff --git a/src/Controls/tests/TestCases.Shared.Tests/UITest.cs b/src/Controls/
 +		[DllImport(CoreGraphicsLibrary)]
 +		static extern NativeRectangle CGDisplayBounds(uint display);
 +
- 		byte[] TakeScreenshot()
+ 		protected byte[] TakeScreenshot()
  		{
  			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 @@ -664,25 +696,90 @@ namespace Microsoft.Maui.TestCases.Tests

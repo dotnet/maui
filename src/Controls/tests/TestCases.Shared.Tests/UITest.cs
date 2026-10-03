@@ -686,7 +686,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[DllImport(CoreGraphicsLibrary)]
 		static extern NativeRectangle CGDisplayBounds(uint display);
 
-		byte[] TakeScreenshot()
+		protected byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.

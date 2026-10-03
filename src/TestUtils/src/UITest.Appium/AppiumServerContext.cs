@@ -73,6 +73,13 @@ namespace UITest.Appium
 				arguments.AddArguments(new KeyValuePair<string, string>("--base-path", "/wd/hub"));
 
 				var logFile = Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ?? "appium.log";
+				if (File.Exists(logFile))
+				{
+					// Category retries must not overwrite the first attempt's failure evidence.
+					var previousLog = Path.Combine(Path.GetDirectoryName(logFile) ?? string.Empty,
+						$"{Path.GetFileNameWithoutExtension(logFile)}-{Guid.NewGuid():N}{Path.GetExtension(logFile)}");
+					File.Move(logFile, previousLog);
+				}
 
 				var service = new AppiumServiceBuilder()
 					.WithArguments(arguments)

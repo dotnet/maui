@@ -34,6 +34,7 @@ public class Bugzilla30353 : _IssuesUITest
 		App.Tap(FlyoutToggle);
 		App.WaitForElement(FlyoutInvisibleText);
 		App.SetOrientationPortrait();
+		App.WaitForElement(DetailToggle);
 		App.Tap(DetailToggle);
 		App.WaitForElement(FlyoutVisibleText);
 		App.Tap(FlyoutToggle);

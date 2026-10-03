@@ -21,7 +21,8 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             VerticalOptions="Center"/>
-                     <Entry Text="{Binding X}"
+                     <Entry x:Name="XEntry"
+                            Text="{Binding X, Mode=OneWay}"
                             Grid.Row="0"
                             Grid.Column="1"
                             AutomationId="XEntry"/>
@@ -29,7 +30,8 @@
                             Grid.Row="0"
                             Grid.Column="2"
                             VerticalOptions="Center"/>
-                     <Entry Text="{Binding Y}"
+                     <Entry x:Name="YEntry"
+                            Text="{Binding Y, Mode=OneWay}"
                             Grid.Row="0"
                             Grid.Column="3"
                             AutomationId="YEntry"/>
@@ -37,7 +39,8 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             VerticalOptions="Center"/>
-                     <Entry Text="{Binding Width}"
+                     <Entry x:Name="WidthEntry"
+                            Text="{Binding Width, Mode=OneWay}"
                             Grid.Row="1"
                             Grid.Column="1"
                             AutomationId="WidthEntry"/>
@@ -45,7 +48,8 @@
                             Grid.Row="1"
                             Grid.Column="2"
                             VerticalOptions="Center"/>
-                     <Entry Text="{Binding Height}"
+                     <Entry x:Name="HeightEntry"
+                            Text="{Binding Height, Mode=OneWay}"
                             Grid.Row="1"
                             Grid.Column="3"
                             AutomationId="HeightEntry"/>

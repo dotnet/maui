@@ -72,30 +72,27 @@ namespace Microsoft.Maui.TestCases.Tests
 		// will return a bool showing if the view is visible
 		internal static bool CheckIfViewAboveKeyboard(IApp app, string marked, bool isEditor)
 		{
-			var views = app.WaitForElement(marked);
+			app.WaitForElement(marked);
 
 			// if this view is not on the screen, the keyboard will not be
 			// showing and we can skip this view
 			if (!app.IsKeyboardShown())
 				return false;
 
-			ClassicAssert.NotNull(views);
-			var rect = views.GetRect();
-
-			var testApp = app as AppiumApp;
-			var keyboardPositionNullable = FindiOSKeyboardLocation(testApp?.Driver);
-			ClassicAssert.NotNull(keyboardPositionNullable);
-
-			var keyboardPosition = (System.Drawing.Point)keyboardPositionNullable!;
-			if (isEditor)
+			app.RetryAssert(() =>
 			{
-				// Until we can get the default Maui accessory view added on the editors,
-				// let's just use the default height added for the accessory view
-				var defaultSizeAccessoryView = 44;
-				keyboardPosition.Y -= defaultSizeAccessoryView;
+				var rect = app.WaitForElementAndGetRect(marked);
+				var keyboardPositionNullable = FindiOSKeyboardLocation((app as AppiumApp)?.Driver);
+				Assert.That(keyboardPositionNullable, Is.Not.Null);
+				var keyboardPosition = keyboardPositionNullable!.Value;
+				if (isEditor)
+				{
+					// The editor's accessory view sits above the keyboard.
+					keyboardPosition.Y -= 44;
+				}
 
-			}
-			ClassicAssert.Less(rect.CenterY(), keyboardPosition.Y);
+				Assert.That(rect.CenterY(), Is.LessThan(keyboardPosition.Y));
+			});
 
 			return true;
 		}
@@ -106,6 +103,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				CloseiOSEditorKeyboard(driver);
 			else
 				app.DismissKeyboard();
+
+			Assert.That(app.WaitForKeyboardToHide(), Is.True, "Keyboard dismissal must finish before the next scroll");
 		}
 
 		internal static System.Drawing.Point? FindiOSKeyboardLocation(AppiumDriver? driver)

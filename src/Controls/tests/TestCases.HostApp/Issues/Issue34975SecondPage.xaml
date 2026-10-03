@@ -9,8 +9,9 @@
     </Shell.TitleView>
 
     <VerticalStackLayout Padding="30,0" Spacing="25" VerticalOptions="Center">
-        <Label Text="Second Page — use the native back button to navigate back."
+        <Label Text="Second Page — tap Return to navigate back."
                AutomationId="SecondPageLabel"
                HorizontalOptions="Center"/>
+        <Button Text="Return" AutomationId="ReturnButton" Clicked="OnReturnClicked"/>
     </VerticalStackLayout>
 </ContentPage>

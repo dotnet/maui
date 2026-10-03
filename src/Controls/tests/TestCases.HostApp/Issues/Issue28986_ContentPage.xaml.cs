@@ -7,17 +7,35 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 28986, "Test SafeArea ContentPage for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 2)]
 public partial class Issue28986_ContentPage : ContentPage
 {
+#if ANDROID
+	Android.Views.Window _softInputWindow;
+	SoftInput _previousSoftInputMode;
+#endif
+
 	public Issue28986_ContentPage()
 	{
 		InitializeComponent();
 		UpdateCurrentSettingsLabel();
+	}
 
 #if ANDROID
-		// Set SoftInput.AdjustNothing - we have full control over insets (iOS-like behavior)
-		var window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window;
-		window?.SetSoftInputMode(SoftInput.AdjustNothing | SoftInput.StateUnspecified);
-#endif
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+		_softInputWindow = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window
+			?? throw new InvalidOperationException("The safe-area fixture requires an attached Android window.");
+		_previousSoftInputMode = (_softInputWindow.Attributes
+			?? throw new InvalidOperationException("The Android window has no layout attributes.")).SoftInputMode;
+		_softInputWindow.SetSoftInputMode(SoftInput.AdjustNothing | SoftInput.StateUnspecified);
 	}
+
+	protected override void OnDisappearing()
+	{
+		_softInputWindow?.SetSoftInputMode(_previousSoftInputMode);
+		_softInputWindow = null;
+		base.OnDisappearing();
+	}
+#endif
 
 	private void OnGridSetNoneClicked(object sender, EventArgs e)
 	{

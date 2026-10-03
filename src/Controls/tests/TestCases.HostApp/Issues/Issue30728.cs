@@ -11,7 +11,7 @@ public class Issue30728 : Shell
 		{
 			var content = new ShellContent
 			{
-				ContentTemplate = new DataTemplate(() => new Issue30728Page()),
+				ContentTemplate = new DataTemplate(() => new Issue30728Page("t1")),
 				Title = "Tab 1",
 				Route = "t1"
 			};
@@ -22,7 +22,7 @@ public class Issue30728 : Shell
 		{
 			var content = new ShellContent
 			{
-				ContentTemplate = new DataTemplate(() => new Issue30728Page()),
+				ContentTemplate = new DataTemplate(() => new Issue30728Page("t2")),
 				Title = "Tab 2",
 				Route = "t2"
 			};
@@ -33,7 +33,7 @@ public class Issue30728 : Shell
 		{
 			var content = new ShellContent
 			{
-				ContentTemplate = new DataTemplate(() => new Issue30728Page()),
+				ContentTemplate = new DataTemplate(() => new Issue30728Page("t3")),
 				Title = "Tab 3",
 				Route = "t3"
 			};
@@ -44,7 +44,7 @@ public class Issue30728 : Shell
 		{
 			var content = new ShellContent
 			{
-				ContentTemplate = new DataTemplate(() => new Issue30728Page()),
+				ContentTemplate = new DataTemplate(() => new Issue30728Page("t4")),
 				Title = "Tab 4",
 				Route = "t4"
 			};
@@ -59,7 +59,7 @@ public class Issue30728 : Shell
 
 class Issue30728Page : ContentPage
 {
-	public Issue30728Page()
+	public Issue30728Page(string route)
 	{
 		Shell.SetTabBarIsVisible(this, false);
 
@@ -71,6 +71,7 @@ class Issue30728Page : ContentPage
 			}
 		};
 
+		content.AutomationId = $"Issue30728Content_{route}";
 		Content = content;
 	}
 }
