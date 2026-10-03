@@ -313,6 +313,10 @@ one dominant area is removed and two independently supported areas added.
 Failed-workaround transitions require an unconditional, non-tentative observed
 failure in one enclosing paragraph and in the selected quote. Questions,
 conditional advice and mixed working/failing outcomes are not such observations.
+Workaround failures use the observation-oriented conditional gate: completed
+post-update or post-rebuild context is not mistaken for a deferred decision.
+A timing condition directly bound to a workaround-failure outcome is still
+hypothetical; failure advice cannot authorize removal.
 Failure to reproduce, replicate or trigger the issue with a workaround is not
 failure of the workaround. Such a paragraph cannot support failure-based
 removal, while observed failure to work or fix the issue remains eligible.

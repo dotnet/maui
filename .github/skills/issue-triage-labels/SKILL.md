@@ -291,6 +291,10 @@ policy transition. Explain each removal separately:
   non-tentative failed-workaround observation in both the quote and one enclosing
   paragraph. Questions, conditional advice and mixed working/failing outcomes
   cannot authorize that transition.
+  Completed post-update or post-rebuild context is not a deferred decision:
+  use the observation-oriented conditional gate for workaround-failure outcomes.
+  A timing condition directly bound to a workaround-failure outcome is still
+  hypothetical; failure advice cannot authorize removal.
   A workaround that failed to reproduce, replicate or trigger the reported issue
   is not an observed workaround failure. That paragraph cannot support
   failure-based removal; failing to work or fix the issue is distinct.

@@ -447,7 +447,8 @@ function Test-Interrogative([string]$Prose) {
         $Prose -match "(?is)\bwhether\b(?!\s+or\s+not\b)|\b$inquiry\b$gap\bwhether\b"
 }
 
-function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
+function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision,
+    [string]$ConditionalOutcomePattern = '') {
     if ($Paragraph -match '(?i)\b(?:if|unless|provided that|providing that|assuming|supposing|as long as|on condition that|in case|in the event that|subject to|contingent (?:on|upon))\b') {
         return $true
     }
@@ -457,7 +458,9 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision) {
     $condition = '\b(?:when|once|until|before|after|as soon as)\b'
     $clause = '(?:(?![,;!?\r\n]|\.(?:\s|$)).){0,80}'
     $outcome = '(?:is|are|has|have|can)\s+(?:(?:be|been|successfully|reliably|consistently)\s+){0,3}(?:reproduce[ds]?|reproducible|confirm(?:ed)?|verify|verified|validate[ds]?|correctly detect(?:s|ed)?)\b'
-    return $Paragraph -match "(?i)$condition$clause\b$outcome"
+    return $Paragraph -match "(?i)$condition$clause\b$outcome" -or
+        ($ConditionalOutcomePattern -and
+            $Paragraph -match "(?i)$condition\s+$ConditionalOutcomePattern")
 }
 
 function Test-TentativeEvidence([string]$Paragraph) {
@@ -1191,14 +1194,18 @@ function Get-TechnicalAssessment($Evidence, [string]$Label) {
 function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = '') {
     if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext)) { return $false }
     $candidate = [regex]::Replace($Paragraph, '(?i)\bsuggested\s+(?=workarounds?\b)', '')
-    if ((Test-Interrogative $Paragraph) -or (Test-ConditionalEvidence $Paragraph -Decision) -or
+    $negative = "(?:not|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
+    $gap = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|can|$negative)\b).){0,80}?"
+    $failureOutcome = '\bworkarounds?\b' + $gap +
+        '\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b'
+    $conditionalOutcome = '(?:(?:the|this|that|suggested|my|your|our|their|a|any)\s+){0,3}' + $failureOutcome
+    if ((Test-Interrogative $Paragraph) -or
+        (Test-ConditionalEvidence $Paragraph -ConditionalOutcomePattern $conditionalOutcome) -or
         (Test-TentativeEvidence $candidate) -or $candidate -match (Get-DeniedEvidencePattern) -or
         (Test-ForeignOutcome $Paragraph) -or (Test-BlockedValidation $Paragraph) -or
         $Paragraph -match '(?i)\b(?:do|does|did|has|have|is|are|was|were)\s+(?:(?:the|this|that|suggested|my|your|our|their|a|any)\s+){0,3}workarounds?\b') {
         return $false
     }
-    $negative = "(?:not|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t)"
-    $gap = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|can|$negative)\b).){0,80}?"
     $positive = '(?:work(?:s|ed|ing)?|fix(?:es|ed|ing)?|resolv(?:e[ds]?|ing)|help(?:s|ed|ing)?|succeed(?:s|ed|ing)?)'
     $state = '(?:(?:is|was|are|were|has|have|had|been|does|did|now|currently|still|actually|successfully|reliably|consistently|again|finally)\s+){0,6}'
     $contrast = 'and|but|however|although|except|yet|instead'
@@ -1211,7 +1218,7 @@ function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = 
     foreach ($failure in [regex]::Matches($Paragraph, "(?i)\bworkarounds?\b$gap\bfail(?:s|ed)?\s+to\s+$attempt")) {
         if ($failure.Groups['outcome'].Value -notin @('work', 'fix', 'resolve', 'help')) { return $false }
     }
-    return $Paragraph -match "(?i)\bworkarounds?\b$gap\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b"
+    return $Paragraph -match "(?i)$failureOutcome"
 }
 
 function Assert-Evidence($Decision) {
