@@ -1,0 +1,32 @@
+steps:
+  - bash: |
+      set -euo pipefail
+      test "$AGENT_OS" = Linux
+      echo 'Disk capacity before removing unused hosted tools:'
+      df -h /
+      for directory in \
+        /usr/share/dotnet \
+        /usr/share/swift \
+        /usr/local/share/boost \
+        /usr/local/.ghcup \
+        /opt/ghc \
+        /opt/hostedtoolcache/CodeQL \
+        /opt/hostedtoolcache/go; do
+        if [ -L "$directory" ]; then
+          echo "Leaving linked tool directory unchanged: $directory"
+        elif [ -d "$directory" ]; then
+          sudo du -sh -- "$directory"
+          sudo rm -rf -- "$directory"
+        fi
+      done
+      echo 'Disk capacity available for isolated native SDKs:'
+      df -h /
+      available_kib=$(df -Pk / | awk 'NR == 2 { print $4 }')
+      case "$available_kib" in
+        ''|*[!0-9]*) echo 'Could not read hosted Linux disk capacity.' >&2; exit 1 ;;
+      esac
+      if [ "$available_kib" -lt 33554432 ]; then
+        echo 'Native reproduction requires at least 32 GiB free before workload installation.' >&2
+        exit 1
+      fi
+    displayName: 'Reserve disk capacity for isolated native SDKs'
