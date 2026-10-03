@@ -279,6 +279,15 @@ generator uses GPT with tools disabled and never executes sample or generated
 code. A public pipeline alone is **not** a security boundary: do not grant
 execution jobs privileged access or reuse the trusted job agents for them.
 
+Both generation attempts install Copilot CLI **1.0.91**, the version observed in
+the successful tool-free generation run `37140665018`. The trusted tools checkout
+carries `.github/issue-replicate-cli/package.json` and its npm lockfile. `npm ci`
+uses exact locked versions and integrity hashes, including transitive and optional
+platform packages; install scripts are disabled. Only the subsequent generator
+task receives the Copilot credential. Do not install `latest` or use an unlocked
+global install. Update the manifest and lockfile together, deliberately review
+the dependency changes and revalidate generation before deploying a version bump.
+
 Execution checkouts are shallow, without partial-clone extensions that the pinned
 SourceLink tooling does not support. Before restoring tools, native jobs use the
 pinned checkout's Arcade bootstrap to install the exact `global.json` SDK from

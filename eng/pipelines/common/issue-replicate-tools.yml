@@ -15,6 +15,7 @@ steps:
       }
       New-Item -ItemType Directory -Path $tools -Force | Out-Null
       Copy-Item "$source/.github/scripts/IssueReplicate*.ps1" $tools
+      Copy-Item "$source/.github/issue-replicate-cli" (Join-Path $tools 'Cli') -Recurse
     displayName: 'Fetch immutable public tools without a checkout credential'
     env:
       TOOLS_SHA: $(Build.SourceVersion)

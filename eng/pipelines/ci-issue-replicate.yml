@@ -190,8 +190,13 @@ stages:
           - task: UseNode@1
             inputs:
               version: "24.x"
-          - bash: npm install -g @github/copilot && copilot --version
-            displayName: 'Install Copilot CLI'
+          - bash: |
+              set -euo pipefail
+              cli="$(Pipeline.Workspace)/IssueTools/Cli"
+              npm ci --prefix "$cli" --ignore-scripts --no-audit --no-fund
+              "$cli/node_modules/.bin/copilot" --version
+              echo "##vso[task.prependpath]$cli/node_modules/.bin"
+            displayName: 'Install lockfile-pinned Copilot CLI'
           - pwsh: |
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
                 -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
@@ -244,8 +249,13 @@ stages:
           - task: UseNode@1
             inputs:
               version: "24.x"
-          - bash: npm install -g @github/copilot && copilot --version
-            displayName: 'Install Copilot CLI'
+          - bash: |
+              set -euo pipefail
+              cli="$(Pipeline.Workspace)/IssueTools/Cli"
+              npm ci --prefix "$cli" --ignore-scripts --no-audit --no-fund
+              "$cli/node_modules/.bin/copilot" --version
+              echo "##vso[task.prependpath]$cli/node_modules/.bin"
+            displayName: 'Install lockfile-pinned Copilot CLI'
           - pwsh: |
               $feedback = "$(Pipeline.Workspace)/Verified1/feedback.txt"
               if (-not (Test-Path $feedback)) { throw 'The first test has no diagnostic feedback.' }
