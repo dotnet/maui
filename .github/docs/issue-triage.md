@@ -219,6 +219,8 @@ it does not turn an unsuccessful validation or infrastructure failure into
 Denied regression history does not retract an independent current reproduction.
 Reproduction confirmation uses reproduction-specific claim denials; regression
 confirmation and first-bad decisions also retain the broader history-denial veto.
+A later denial of a WebView2-regression assessment uses the broader veto too;
+it supersedes the assessment without retracting independent reproduction.
 Confirmation-based removal transitions use the same freshness gate as additions,
 even when s/verified is already present. Later contrary validation or a newer
 maintainer removal cannot be bypassed to clear pending information/reproduction
@@ -302,6 +304,9 @@ one dominant area is removed and two independently supported areas added.
 Failed-workaround transitions require an unconditional, non-tentative observed
 failure in one enclosing paragraph and in the selected quote. Questions,
 conditional advice and mixed working/failing outcomes are not such observations.
+Failure to reproduce, replicate or trigger the issue with a workaround is not
+failure of the workaround. Such a paragraph cannot support failure-based
+removal, while observed failure to work or fix the issue remains eligible.
 Positive continued clauses remain visible even when they omit the workaround
 subject: "The workaround failed initially, but now works" is mixed evidence,
 not authority to remove the label.
@@ -504,6 +509,8 @@ gh workflow run issue-triage.lock.yml --repo dotnet/maui --ref main \
 Manual dispatch defaults to staged mode. It performs normal proposal validation
 and retains `issue-triage-context-*` and `issue-triage-report-*` artifacts for
 seven days, but built-in handlers suppress label and comment writes.
+The retained report describes the validated requested delta, not completed
+writes. Check the run's staged mode and handler outcomes before claiming delivery.
 Omitting `issue_number` is rejected, even though gh-aw requires the dispatch
 input itself to be declared non-required for slash-command compatibility.
 The compiler-added `aw_context` input must be empty. Authorization rejects

@@ -65,6 +65,8 @@ substitutes for current original issue/comment evidence.
   separate observed results still count as positive counterevidence to no-repro.
   Missing regression-history proof does not retract an independent current
   reproduction. Keep reproduction denials distinct from regression denials.
+  A later denial of the WebView2-regression assessment supersedes that assessment
+  without independently retracting an observed current reproduction.
   Conditional/hypothetical outcomes such as "If the issue is reproduced on
   Android, collect logs" are not observations either. Do not hide the condition
   by quoting only its affirmative-looking fragment. Cite a clear completed
@@ -280,6 +282,9 @@ policy transition. Explain each removal separately:
   non-tentative failed-workaround observation in both the quote and one enclosing
   paragraph. Questions, conditional advice and mixed working/failing outcomes
   cannot authorize that transition.
+  A workaround that failed to reproduce, replicate or trigger the reported issue
+  is not an observed workaround failure. That paragraph cannot support
+  failure-based removal; failing to work or fix the issue is distinct.
   Inspect continued clauses that inherit the workaround subject: "The workaround
   failed initially, but now works" cannot authorize removal.
   Require that subject or a directly inherited/pronominal continuation. Unrelated

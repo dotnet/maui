@@ -1103,7 +1103,7 @@ function Test-AssessmentSuperseded($Source, [string]$Label) {
                     if (Test-ConfirmationParagraph $paragraph $referenceContext -RequireRegression) { return $true }
                 }
                 'blazor-webview2-regression' {
-                    if ((Test-NegativeValidation $paragraph $referenceContext) -or
+                    if ((Test-NegativeValidation $paragraph $referenceContext -RequireRegression) -or
                         (Test-WebView2Regression $paragraph $referenceContext -Negative)) { return $true }
                 }
                 's/triaged' {
@@ -1185,6 +1185,8 @@ function Test-WorkaroundFailure([string]$Paragraph, [string]$ReferenceContext = 
     # Inherited outcomes stay bound to the preceding workaround statement.
     $continuation = "\bworkarounds?\b$clause$connector(?:it\s+)?$state$positive\b"
     if ($Paragraph -match "(?i)\bworkarounds?\s+$state$positive\b|$continuation") { return $false }
+    $attempt = '(?:(?:successfully|reliably|consistently|actually|fully|independently|personally|locally|easily|immediately)\s+){0,4}(?:reproduce|replicate|trigger)\b'
+    if ($Paragraph -match "(?i)\bworkarounds?\b$gap\bfail(?:s|ed)?\s+to\s+$attempt") { return $false }
     return $Paragraph -match "(?i)\bworkarounds?\b$gap\b(?:(?:does(?:n.t| not)|do(?:n.t| not))\s+(?:work|fix|resolve|help)|fail(?:s|ed)?)\b"
 }
 
@@ -1509,7 +1511,7 @@ $report.Add("Issue triage invocation: ``$marker``")
 $report.Add('')
 $report.Add('**Issue triage: validated label proposal**')
 $report.Add('')
-$report.Add('The label handlers apply the delta below. Their final outcome is recorded in the workflow run; publication is not an atomic transaction.')
+$report.Add('This report describes the validated requested delta, not completed writes. Staged runs suppress writes; consult the workflow result for actual handler outcomes. Publication is not an atomic transaction.')
 foreach ($action in @('add', 'remove', 'withheld')) {
     $decisions = @(switch ($action) { 'add' { $proposal.additions }; 'remove' { $proposal.removals }; 'withheld' { $proposal.withheld } })
     foreach ($decision in $decisions) {
