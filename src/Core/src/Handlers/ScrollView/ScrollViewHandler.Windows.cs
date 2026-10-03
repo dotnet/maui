@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Windows.UI.Core;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
@@ -14,6 +15,13 @@ namespace Microsoft.Maui.Handlers
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollViewer>, ICrossPlatformLayout
 	{
 		const string ContentPanelTag = "MAUIScrollViewContentPanel";
+		object? _isTabStopLocalValue;
+		bool _isTabStopValue;
+		Binding? _isTabStopBinding;
+		Binding? _temporaryTabStopBinding;
+		ScrollViewer? _tabStopPlatformView;
+		int _tabStopGeneration;
+		bool _isTabStopTemporary;
 
 		// Stores a scroll request that arrived before the content was laid out.
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
@@ -36,7 +44,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);
+			platformView.Loading += OnPlatformViewLoading;
+			platformView.Loaded += OnPlatformViewLoaded;
+			platformView.Unloaded += OnPlatformViewUnloaded;
 			platformView.ViewChanged += ViewChanged;
+			_tabStopPlatformView = platformView;
 		}
 
 		protected override void DisconnectHandler(ScrollViewer platformView)
@@ -47,8 +59,14 @@ namespace Microsoft.Maui.Handlers
 			// causing a WinUI COM exception "Element already has a parent" (Issue #35277).
 			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
 			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
-			base.DisconnectHandler(platformView);
+			platformView.Loading -= OnPlatformViewLoading;
+			platformView.Loaded -= OnPlatformViewLoaded;
+			platformView.Unloaded -= OnPlatformViewUnloaded;
 			platformView.ViewChanged -= ViewChanged;
+			_tabStopPlatformView = null;
+			_tabStopGeneration++;
+			RestoreIsTabStop(platformView);
+			base.DisconnectHandler(platformView);
 
 			if (PendingScrollToRequest is not null)
 			{
@@ -60,6 +78,115 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.ScrollFinished();
 				PendingScrollToRequest = null;
 			}
+		}
+
+		void OnPlatformViewLoading(FrameworkElement sender, object args)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer))
+				return;
+
+			BeginTemporaryTabStop(scrollViewer);
+			QueueTemporaryTabStopRestore(scrollViewer, restoreWhenLoaded: false);
+		}
+
+		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer) || !_isTabStopTemporary)
+				return;
+
+			// WinUI's load focus pass completes before Loaded handlers return. Keep the
+			// transient target through Loaded, then restore it on the next dispatcher turn.
+			QueueTemporaryTabStopRestore(scrollViewer, restoreWhenLoaded: true);
+		}
+
+		void OnPlatformViewUnloaded(object sender, RoutedEventArgs e)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer))
+				return;
+
+			_tabStopGeneration++;
+			RestoreIsTabStop(scrollViewer);
+		}
+
+		void BeginTemporaryTabStop(ScrollViewer scrollViewer)
+		{
+			if (_isTabStopTemporary)
+				return;
+
+			// Preserve this ScrollViewer's customized state before giving its load-time
+			// focus pass a non-content target.
+			_isTabStopLocalValue = scrollViewer.ReadLocalValue(Control.IsTabStopProperty);
+			_isTabStopValue = scrollViewer.IsTabStop;
+			_isTabStopBinding = scrollViewer.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding;
+			_isTabStopTemporary = true;
+			// This binding both supplies the transient value and serves as an ownership
+			// token so restoration cannot overwrite a later native or mapper update.
+			_temporaryTabStopBinding = new Binding { Source = true };
+			scrollViewer.ClearValue(Control.IsTabStopProperty);
+			scrollViewer.SetBinding(Control.IsTabStopProperty, _temporaryTabStopBinding);
+		}
+
+		void QueueTemporaryTabStopRestore(ScrollViewer scrollViewer, bool restoreWhenLoaded)
+		{
+			var generation = ++_tabStopGeneration;
+			void RestoreIfCurrent()
+			{
+				if (generation == _tabStopGeneration &&
+					ReferenceEquals(_tabStopPlatformView, scrollViewer) &&
+					scrollViewer.IsLoaded == restoreWhenLoaded)
+				{
+					RestoreIsTabStop(scrollViewer);
+				}
+			}
+
+			var queued = restoreWhenLoaded
+				? scrollViewer.DispatcherQueue?.TryEnqueue(RestoreIfCurrent)
+				: scrollViewer.DispatcherQueue?.TryEnqueue(
+					Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+					RestoreIfCurrent);
+
+			if (queued != true && restoreWhenLoaded)
+			{
+				RestoreIsTabStop(scrollViewer);
+			}
+		}
+
+		void RestoreIsTabStop(ScrollViewer scrollViewer)
+		{
+			if (!_isTabStopTemporary)
+				return;
+
+			// A mapper or app may update the native property from a Loaded callback.
+			// Only restore state while the handler still owns the temporary binding.
+			if (!ReferenceEquals(
+				scrollViewer.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding,
+				_temporaryTabStopBinding))
+			{
+				ResetTemporaryTabStop();
+				return;
+			}
+
+			// Restore the effective value before removing the temporary binding.
+			// Clearing directly while focused makes WinUI re-route focus into the content.
+			scrollViewer.IsTabStop = _isTabStopValue;
+
+			if (_isTabStopBinding is not null)
+				scrollViewer.SetBinding(Control.IsTabStopProperty, _isTabStopBinding);
+			else if (_isTabStopLocalValue is not bool)
+				scrollViewer.ClearValue(Control.IsTabStopProperty);
+
+			ResetTemporaryTabStop();
+		}
+
+		void ResetTemporaryTabStop()
+		{
+			_isTabStopLocalValue = null;
+			_isTabStopBinding = null;
+			_temporaryTabStopBinding = null;
+			_isTabStopTemporary = false;
 		}
 
 		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)

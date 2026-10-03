@@ -415,7 +415,17 @@ namespace Microsoft.Maui.Controls
 		public VisualStateGroup this[int index]
 		{
 			get => _internalList[index];
-			set => _internalList[index] = value;
+			set
+			{
+				if (value == null)
+					throw new ArgumentNullException(nameof(value));
+
+				var oldGroup = _internalList[index];
+				oldGroup.StatesChanged -= ValidateAndNotify;
+				_internalList[index] = value;
+				value.StatesChanged += ValidateAndNotify;
+				ValidateAndNotify(_internalList);
+			}
 		}
 
 		WeakReference<VisualElement> _visualElement;
@@ -715,7 +725,7 @@ namespace Microsoft.Maui.Controls
 		public VisualState()
 		{
 			Setters = new ObservableCollection<Setter>();
-			StateTriggers = new WatchAddList<StateTriggerBase>(OnStateTriggersChanged);
+			StateTriggers = new WatchAddList<StateTriggerBase>(OnStateTriggersChanged, OnStateTriggersRemoved);
 		}
 
 		/// <summary>
@@ -765,6 +775,17 @@ namespace Microsoft.Maui.Controls
 			foreach (var stateTrigger in stateTriggers)
 			{
 				stateTrigger.VisualState = this;
+			}
+
+			VisualStateGroup?.UpdateStateTriggers();
+		}
+
+		void OnStateTriggersRemoved(IList<StateTriggerBase> stateTriggers)
+		{
+			foreach (var stateTrigger in stateTriggers)
+			{
+				stateTrigger.SendDetached();
+				stateTrigger.VisualState = null;
 			}
 
 			VisualStateGroup?.UpdateStateTriggers();
@@ -858,11 +879,13 @@ namespace Microsoft.Maui.Controls
 	internal class WatchAddList<T> : IList<T>
 	{
 		readonly Action<List<T>> _onAdd;
+		readonly Action<List<T>> _onRemove;
 		readonly List<T> _internalList;
 
-		public WatchAddList(Action<List<T>> onAdd)
+		public WatchAddList(Action<List<T>> onAdd, Action<List<T>> onRemove = null)
 		{
 			_onAdd = onAdd;
+			_onRemove = onRemove;
 			_internalList = new List<T>();
 		}
 
@@ -884,7 +907,12 @@ namespace Microsoft.Maui.Controls
 
 		public void Clear()
 		{
+			if (_internalList.Count == 0)
+				return;
+
+			_onRemove?.Invoke(_internalList);
 			_internalList.Clear();
+
 		}
 
 		public bool Contains(T item)
@@ -899,7 +927,12 @@ namespace Microsoft.Maui.Controls
 
 		public bool Remove(T item)
 		{
-			return _internalList.Remove(item);
+			if (!_internalList.Contains(item))
+				return false;
+
+			_internalList.Remove(item);
+			_onRemove?.Invoke(new List<T> { item });
+			return true;
 		}
 
 		public int Count => _internalList.Count;
@@ -919,7 +952,9 @@ namespace Microsoft.Maui.Controls
 
 		public void RemoveAt(int index)
 		{
+			var removedItem = _internalList[index];
 			_internalList.RemoveAt(index);
+			_onRemove?.Invoke(new List<T> { removedItem });
 		}
 
 		public T this[int index]
