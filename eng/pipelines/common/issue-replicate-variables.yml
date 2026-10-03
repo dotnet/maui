@@ -1,0 +1,13 @@
+variables:
+  - name: XCODE
+    value: 26.5
+  - name: REQUIRED_XCODE
+    value: 26.5
+  - name: __PWSH_LOGIN_CHECKED
+    value: '1'
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)/logs
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true

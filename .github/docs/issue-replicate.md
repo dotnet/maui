@@ -201,6 +201,32 @@ requires human fidelity review: an executed failure is not proof of the original
 
 ## Deployment and isolation
 
+### Manual Azure canary before deployment
+
+The existing `maui-pr-uitests` definition can run a credential-free canary from
+the PR branch without changing its registered YAML path. Manually select the
+branch and exact commit, set `IssueReplicateCanary=true`, and choose
+`IssueReplicateCase=all`, `android-carousel`, `android-scrollview`, or `ios-refresh`.
+The default is false: ordinary UI validation, pools, parameters and secret imports
+are unchanged. Canary mode excludes the shared MAUI variable group and all normal
+UI stages. It requires a manual run in `dnceng-public/public`.
+
+Canaries replay reviewed historical public snapshots and previously generated
+UI candidates stored in `.github/issue-replicate-canary`. Their framework commit,
+author archive hash and issue association remain explicit; this is not fresh
+intake or generation. The files are platform-scoped before execution, not rewritten
+by the verifier. They share the production sample job, native verifier, conditional
+fresh-agent confirmation, bounded transport and Linux forwarder. Microsoft-hosted
+agents avoid assuming shared pools are disposable. A missing matching SDK/Xcode,
+an unexecuted candidate or unmatched confirmation fails the canary explicitly.
+The report job renders the production comment preview into normal execution logs,
+without uploading artifacts or posting issue comments. Actual canary observations
+still require review and are not tamper-proof evidence.
+
+This mode does **not** enable production authorization, OIDC dispatch, credentialed
+GPT generation, the feedback-driven GPT revision, recovery or automatic publication.
+Those paths retain their production guards and deployment requirements below.
+
 **Production activation is blocked by the unresolved same-user evidence boundary.**
 Before enabling the trigger or registering an active production pipeline,
 isolate untrusted execution from the trusted collector with an enforced OS

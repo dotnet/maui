@@ -17,18 +17,7 @@ parameters:
 
 variables:
   # Never import the shared MAUI variable group into sample/test jobs.
-  - name: XCODE
-    value: 26.5
-  - name: REQUIRED_XCODE
-    value: 26.5
-  - name: __PWSH_LOGIN_CHECKED
-    value: '1'
-  - name: LogDirectory
-    value: $(Build.ArtifactStagingDirectory)/logs
-  - name: Codeql.Enabled
-    value: false
-  - name: Codeql.SkipTaskAutoInjection
-    value: true
+  - template: common/issue-replicate-variables.yml
 
 stages:
   - stage: Reproduce
@@ -97,69 +86,9 @@ stages:
         timeoutInMinutes: 120
         steps:
           - checkout: none
-          - template: common/issue-replicate-tools.yml
-          - pwsh: |
-              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
-                -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
-              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
-                -Directory "$(Pipeline.Workspace)/IssueInput"
-            displayName: 'Restore snapshot and re-fetch hash-checked author sample'
-            env:
-              REPRO_INPUT: $(reproInput)
-          - pwsh: |
-              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
-                -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
-                -Destination "$(Pipeline.Workspace)/maui"
-              if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
-            displayName: 'Fetch pinned public source without a checkout credential'
-          - template: common/issue-replicate-sdk.yml
-          - ${{ if eq(parameters.Platform, 'ios') }}:
-            - pwsh: |
-                & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
-                  -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
-              displayName: 'Require Xcode matching the pinned iOS SDK'
-          - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
-            displayName: 'Prepare local provisioning logs'
-          - ${{ if eq(parameters.Platform, 'android') }}:
-            - template: common/enable-kvm.yml
-          - template: common/provision.yml
+          - template: common/issue-replicate-sample-steps.yml
             parameters:
-              checkoutDirectory: $(Pipeline.Workspace)/maui
-              skipDotNetSdk: true
-              skipProvisionator: true
-              skipInternalFeeds: true
-              skipCertificates: true
-              skipGradleCache: true
-              skipXcode: ${{ eq(parameters.Platform, 'android') }}
-              skipSimulatorSetup: ${{ eq(parameters.Platform, 'android') }}
-              skipJdk: ${{ eq(parameters.Platform, 'ios') }}
-              skipAndroidCommonSdks: ${{ eq(parameters.Platform, 'ios') }}
-              skipAndroidPlatformApis: true
-              skipAndroidEmulatorImages: true
-              skipAndroidCreateAvds: true
-          - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
-            workingDirectory: $(Pipeline.Workspace)/maui
-            displayName: 'Install pinned public native SDK/workloads'
-            timeoutInMinutes: 50
-          - pwsh: |
-              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.ProvisionSample.ps1" `
-                -RepoRoot "$(Pipeline.Workspace)/maui" `
-                -InstallDirectory "$(Agent.TempDirectory)/issue-sample-dotnet" `
-                -Platform '${{ parameters.Platform }}'
-              if ($LASTEXITCODE -ne 0) { throw 'Public author sample workload preparation failed.' }
-            displayName: 'Install isolated public MAUI author sample workload'
-            timeoutInMinutes: 35
-          - bash: echo "##vso[task.prependpath]$(Agent.TempDirectory)/issue-sample-dotnet"
-            displayName: 'Use isolated author sample SDK'
-          - pwsh: |
-              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Run.ps1" -Mode Sample `
-                -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
-                -OutputDirectory "$(Pipeline.Workspace)/SampleOutput" `
-                -NuGetConfigPath "$(Pipeline.Workspace)/maui/NuGet.config" -Provider Azure
-              if ($LASTEXITCODE -ne 0) { throw 'Author sample build failed (inconclusive).' }
-            displayName: 'Build author sample without credentials'
-            timeoutInMinutes: 35
-            name: sample
+              platform: ${{ parameters.Platform }}
 
       - job: Generate1
         dependsOn: [Intake, Sample]

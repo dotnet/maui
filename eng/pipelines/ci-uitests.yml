@@ -46,9 +46,23 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
-  - template: /eng/pipelines/common/variables.yml@self
+  - ${{ if eq(parameters.IssueReplicateCanary, false) }}:
+    - template: /eng/pipelines/common/variables.yml@self
+  - ${{ else }}:
+    - template: /eng/pipelines/common/issue-replicate-variables.yml@self
 
 parameters:
+
+  - name: IssueReplicateCanary
+    displayName: 'Run credential-free issue reproduction canary instead of normal UI validation'
+    type: boolean
+    default: false
+
+  - name: IssueReplicateCase
+    displayName: 'Issue reproduction canary case'
+    type: string
+    default: all
+    values: [all, android-carousel, android-scrollview, ios-refresh]
 
   - name: BuildEverything
     type: boolean
@@ -148,41 +162,45 @@ parameters:
 
 stages:
 
-  - template: common/ui-tests.yml
-    parameters:
-      # Select pools based on pipeline - internal vs public
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        androidPool: ${{ parameters.androidPoolInternal }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
-        iosPool: ${{ parameters.iosPoolInternal }}
-        windowsPool: ${{ parameters.windowsPoolInternal }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
-        macosPool: ${{ parameters.macosPoolInternal }}
-      ${{ else }}:
-        androidPool: ${{ parameters.androidPoolPublic }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
-        iosPool: ${{ parameters.iosPoolPublic }}
-        windowsPool: ${{ parameters.windowsPoolPublic }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
-        macosPool: ${{ parameters.macosPoolPublic }}
-      # BuildNativeAOT is false by default, but true in devdiv environment
-      BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
-      RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ '18.5', 'latest' ]
-      ${{ else }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ 'latest' ]
-      projects:
-        - name: controls
-          desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
-          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
-          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
-          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
+  - ${{ if eq(parameters.IssueReplicateCanary, true) }}:
+    - template: common/issue-replicate-canary.yml
+      parameters:
+        scenario: ${{ parameters.IssueReplicateCase }}
+  - ${{ else }}:
+    - template: common/ui-tests.yml
+      parameters:
+        # Select pools based on pipeline - internal vs public
+        ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+          androidPool: ${{ parameters.androidPoolInternal }}
+          androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
+          iosPool: ${{ parameters.iosPoolInternal }}
+          windowsPool: ${{ parameters.windowsPoolInternal }}
+          windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
+          macosPool: ${{ parameters.macosPoolInternal }}
+        ${{ else }}:
+          androidPool: ${{ parameters.androidPoolPublic }}
+          androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
+          iosPool: ${{ parameters.iosPoolPublic }}
+          windowsPool: ${{ parameters.windowsPoolPublic }}
+          windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
+          macosPool: ${{ parameters.macosPoolPublic }}
+        # BuildNativeAOT is false by default, but true in devdiv environment
+        BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
+        RunNativeAOT: ${{ parameters.RunNativeAOT }}
+        ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+          androidApiLevels: [ 30 ]
+          iosVersions: [ '18.5', 'latest' ]
+        ${{ else }}:
+          androidApiLevels: [ 30 ]
+          iosVersions: [ 'latest' ]
+        projects:
+          - name: controls
+            desc: Controls
+            androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+            android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
+            app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+            iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+            ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
+            winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
+            mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
 

@@ -1,0 +1,151 @@
+parameters:
+  - name: scenario
+    type: string
+    default: all
+  - name: cases
+    type: object
+    default:
+      - name: AndroidCarousel
+        scenario: android-carousel
+        platform: android
+      - name: AndroidScrollView
+        scenario: android-scrollview
+        platform: android
+      - name: IosRefresh
+        scenario: ios-refresh
+        platform: ios
+
+stages:
+  - ${{ each case in parameters.cases }}:
+    - ${{ if or(eq(parameters.scenario, 'all'), eq(parameters.scenario, case.scenario)) }}:
+      - stage: IssueRepro${{ case.name }}
+        displayName: 'Issue reproduction canary: ${{ case.scenario }}'
+        dependsOn: []
+        jobs:
+          - job: Intake
+            pool:
+              vmImage: ubuntu-22.04
+            timeoutInMinutes: 15
+            steps:
+              - checkout: none
+              - pwsh: |
+                  if ($env:SYSTEM_COLLECTIONURI -notmatch '^https://dev\.azure\.com/dnceng-public/' -or
+                      $env:SYSTEM_TEAMPROJECT -cne 'public' -or $env:BUILD_REASON -cne 'Manual') {
+                    throw 'Issue reproduction canaries require a manual dnceng-public/public run.'
+                  }
+                displayName: 'Require explicitly queued public canary'
+              - template: issue-replicate-tools.yml
+              - pwsh: |
+                  & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Canary.ps1" -Mode Input `
+                    -Scenario '${{ case.scenario }}' `
+                    -DataRoot "$(Agent.TempDirectory)/issue-tools-source/.github/issue-replicate-canary" `
+                    -OutputDirectory "$(Pipeline.Workspace)/IssueInput"
+                  & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
+                    -Directory "$(Pipeline.Workspace)/IssueInput"
+                  & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Input `
+                    -Directory "$(Pipeline.Workspace)/IssueInput" -Provider Azure
+                name: snapshot
+                displayName: 'Restore reviewed snapshot and verify original author archive'
+
+          - template: issue-replicate-sample-job.yml
+            parameters:
+              platform: ${{ case.platform }}
+
+          - job: Generate1
+            displayName: 'Use reviewed previously generated candidate (no model credential)'
+            dependsOn: [Intake, Sample]
+            condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
+            pool:
+              vmImage: ubuntu-22.04
+            timeoutInMinutes: 15
+            steps:
+              - checkout: none
+              - template: issue-replicate-tools.yml
+              - pwsh: |
+                  & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Canary.ps1" -Mode Candidate `
+                    -Scenario '${{ case.scenario }}' `
+                    -DataRoot "$(Agent.TempDirectory)/issue-tools-source/.github/issue-replicate-canary" `
+                    -OutputDirectory "$(Pipeline.Workspace)/Proposal1"
+                  & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Candidate `
+                    -Directory "$(Pipeline.Workspace)/Proposal1" -Provider Azure
+                name: candidate
+                displayName: 'Validate platform-scoped candidate and export exact bytes'
+
+          - template: issue-replicate-verify-jobs.yml
+            parameters:
+              name: Verify1
+              dependsOn: Generate1
+              condition: and(succeeded('Generate1'), succeeded('Sample'))
+              proposal: Proposal1
+              platform: ${{ case.platform }}
+
+          - job: Report
+            dependsOn: [Intake, Sample, Generate1, Verify1First, Verify1Confirm, Verify1]
+            condition: always()
+            pool:
+              vmImage: ubuntu-22.04
+            timeoutInMinutes: 15
+            variables:
+              reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+              reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
+              reproCandidate: $[ dependencies.Generate1.outputs['candidate.payload'] ]
+              reproVerified: $[ dependencies.Verify1.outputs['verify.payload'] ]
+              firstStatus: $[ dependencies.Verify1First.result ]
+              confirmStatus: $[ dependencies.Verify1Confirm.result ]
+            steps:
+              - checkout: none
+              - template: issue-replicate-tools.yml
+              - pwsh: |
+                  $ErrorActionPreference = 'Stop'
+                  $input = "$(Pipeline.Workspace)/IssueInput"
+                  $sample = "$(Pipeline.Workspace)/SampleOutput"
+                  $candidate = "$(Pipeline.Workspace)/Proposal1"
+                  $verified = "$(Pipeline.Workspace)/IssueVerified"
+                  & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+                    -Encoded $env:REPRO_INPUT -Directory $input
+                  foreach ($entry in @(
+                    @{ Value = $env:REPRO_SAMPLE; Kind = 'Sample'; Directory = $sample },
+                    @{ Value = $env:REPRO_CANDIDATE; Kind = 'Candidate'; Directory = $candidate },
+                    @{ Value = $env:REPRO_VERIFIED; Kind = 'Verified'; Directory = $verified }
+                  )) {
+                    if ($entry.Value -and $entry.Value -notmatch '^\$\(') {
+                      & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import `
+                        -Kind $entry.Kind -Encoded $entry.Value -Directory $entry.Directory
+                    }
+                  }
+                  $manifest = Get-Content -LiteralPath "$input/manifest.json" -Raw | ConvertFrom-Json
+                  $preview = "$(Agent.TempDirectory)/issue-canary-comment.txt"
+                  & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Post.ps1" `
+                    -IssueNumber $manifest.issueNumber -CommentId $manifest.commentId -BuildId "$(Build.BuildId)" `
+                    -InputDirectory $input -SampleDirectory $sample -CandidateDirectory $candidate `
+                    -ResultsDirectory $verified -OutputPath $preview
+                  if ($LASTEXITCODE -ne 0) { throw 'Could not render the validated canary comment preview.' }
+                  Write-Host 'CANARY ONLY: reviewed historical inputs; no GPT generation or issue publication.'
+                  Write-Host "Native first job: $env:FIRST_STATUS; confirmation job: $env:CONFIRM_STATUS."
+                  Get-Content -LiteralPath $preview | ForEach-Object {
+                    Write-Host ($_.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
+                  }
+                  if (-not (Test-Path -LiteralPath "$verified/result.json" -PathType Leaf)) {
+                    throw 'No completed native result: the canary did not verify execution or routing.'
+                  }
+                  $result = Get-Content -LiteralPath "$verified/result.json" -Raw | ConvertFrom-Json
+                  if ($result.testExecuted -ne $true) { throw 'The reviewed native UI candidate did not execute.' }
+                  if ($result.observedAssertion -eq $true) {
+                    if ($env:CONFIRM_STATUS -cnotin @('Succeeded', 'SucceededWithIssues') -or
+                        $result.attempt -ne 2 -or $result.status -cne 'candidate-failed' -or
+                        $result.assertionFailed -ne $true) {
+                      throw 'The observed assertion did not produce matching fresh-job confirmation.'
+                    }
+                  } elseif ($env:CONFIRM_STATUS -cne 'Skipped' -or $result.attempt -ne 1 -or
+                      $result.status -cne 'not-reproduced-on-tested-revision') {
+                    throw 'The passing first attempt did not skip native confirmation and forward its result.'
+                  }
+                  Write-Host "CANARY_RESULT: ${{ case.scenario }} | $($result.status) | attempt=$($result.attempt)"
+                displayName: 'Inspect real routing and render comment preview without publishing'
+                env:
+                  REPRO_INPUT: $(reproInput)
+                  REPRO_SAMPLE: $(reproSample)
+                  REPRO_CANDIDATE: $(reproCandidate)
+                  REPRO_VERIFIED: $(reproVerified)
+                  FIRST_STATUS: $(firstStatus)
+                  CONFIRM_STATUS: $(confirmStatus)
