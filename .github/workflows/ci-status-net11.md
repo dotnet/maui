@@ -64,6 +64,11 @@ safe-outputs:
   # Keep this expression identical to GH_AW_SAFE_OUTPUTS_STAGED below; tests enforce it.
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
   report-failure-as-issue: false
+  # `report-failure-as-issue` only covers agent-level failures. Job-level
+  # failures are a separate reporter (`report-failed-jobs`, default true),
+  # so it has to be disabled explicitly or this workflow keeps filing
+  # `[aw] Failed jobs: ...` issues despite the line above.
+  report-failed-jobs: false
   noop:
     report-as-issue: false
   # The scanner manifest is derived from untrusted CI logs and, since it moved to
