@@ -314,6 +314,72 @@ Describe 'Observed test evidence' {
         $verdict.FailureIdentities | Should -BeNullOrEmpty
     }
 
+    It 'rejects xUnit lifecycle or non-body assertion call chains (<Lifecycle>)' -TestCases @(
+        @{ Lifecycle = 'initialize'; StackTrace = 'at Example.Issue12345.InitializeAsync() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'async-dispose'; StackTrace = 'at Example.Issue12345.DisposeAsync() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'dispose'; StackTrace = 'at Example.Issue12345.Dispose() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'explicit-initialize'; StackTrace = 'at Example.Issue12345.Xunit.IAsyncLifetime.InitializeAsync() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'explicit-async-dispose'; StackTrace = 'at Example.Issue12345.Xunit.IAsyncLifetime.DisposeAsync() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'explicit-dispose'; StackTrace = 'at Example.Issue12345.System.IDisposable.Dispose() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'async-initialize-state-machine'; StackTrace = 'at Example.Issue12345+<InitializeAsync>d__0.MoveNext() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'async-dispose-state-machine'; StackTrace = 'at Example.Issue12345.<DisposeAsync>d__0.MoveNext() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'initialize-helper'; StackTrace = "at Example.Issue12345.AssertInitialized() in /test/Issue12345.cs:line 12`nat Example.Issue12345.InitializeAsync() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'async-dispose-helper'; StackTrace = "at Example.Issue12345.AssertDisposed() in /test/Issue12345.cs:line 12`nat Example.Issue12345.DisposeAsync() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'dispose-helper'; StackTrace = "at Example.Issue12345.AssertDisposed() in /test/Issue12345.cs:line 12`nat Example.Issue12345.Dispose() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-during-initialize'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.Issue12345.InitializeAsync() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-during-dispose'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.Issue12345.System.IDisposable.Dispose() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-by-async-initialize'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.Issue12345+<InitializeAsync>d__0.MoveNext() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-by-async-dispose'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.Issue12345.<DisposeAsync>d__0.MoveNext() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-by-explicit-async-initialize'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.Issue12345+<Xunit.IAsyncLifetime.InitializeAsync>d__0.MoveNext() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-by-explicit-async-dispose'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.Issue12345.<Xunit.IAsyncLifetime.DisposeAsync>d__0.MoveNext() in /test/Issue12345.cs:line 20" },
+        @{ Lifecycle = 'body-called-by-base-lifecycle'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.BaseFixture.InitializeAsync() in /test/BaseFixture.cs:line 20" },
+        @{ Lifecycle = 'body-called-by-base-constructor'; StackTrace = "at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12`nat Example.BaseFixture..ctor() in /test/BaseFixture.cs:line 20" },
+        @{ Lifecycle = 'non-body-helper-only'; StackTrace = 'at Example.Issue12345.AssertObserved() in /test/Issue12345.cs:line 12' },
+        @{ Lifecycle = 'different-namespace-body'; StackTrace = 'at Other.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12' }
+    ) {
+        param($Lifecycle, $StackTrace)
+        $xml = $script:xml -replace 'NUnit.Framework.AssertionException', 'Xunit.Sdk.EqualException' `
+            -replace '(?s)<StackTrace>.*?</StackTrace>', "<StackTrace>$([Security.SecurityElement]::Escape($StackTrace))</StackTrace>"
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $verdict.Status | Should -Be 'Inconclusive'
+        $verdict.FailureIdentities | Should -BeNullOrEmpty
+    }
+
+    It 'accepts genuine xUnit assertion call chains (<Body>)' -TestCases @(
+        @{ Body = 'direct'; StackTrace = 'at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12' },
+        @{ Body = 'helper'; StackTrace = "at Example.Issue12345.AssertObserved() in /test/Issue12345.cs:line 12`nat Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 20" },
+        @{ Body = 'dispose-invoked-by-body'; StackTrace = "at Example.Issue12345.Dispose() in /test/Issue12345.cs:line 12`nat Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 20" },
+        @{ Body = 'async-state-machine'; StackTrace = 'at Example.Issue12345+<ChecksBehavior>d__0.MoveNext() in /test/Issue12345.cs:line 12' }
+    ) {
+        param($Body, $StackTrace)
+        $xml = $script:xml -replace 'NUnit.Framework.AssertionException', 'Xunit.Sdk.EqualException' `
+            -replace '(?s)<StackTrace>.*?</StackTrace>', "<StackTrace>$([Security.SecurityElement]::Escape($StackTrace))</StackTrace>"
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $first = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        Set-Content -LiteralPath $script:trxPath -Value ($xml -replace 'line 12', 'line 15')
+        $second = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $first.Status | Should -Be 'AssertionFailed'
+        $second.Status | Should -Be 'AssertionFailed'
+        $first.FailureIdentities.Count | Should -Be 1
+        $second.FailureIdentities.Count | Should -Be 1
+        $first.FailureIdentities[0] | Should -Not -Be $second.FailureIdentities[0]
+    }
+
+    It 'binds parameterized NUnit fixture assertions to their qualified body (<Fixture>)' -TestCases @(
+        @{ Fixture = 'Android' },
+        @{ Fixture = 'iOS' }
+    ) {
+        param($Fixture)
+        $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
+            -replace 'className="Example.Issue12345"', "className=`"Example.Issue12345($Fixture)`"" `
+            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $verdict.Status | Should -Be 'AssertionFailed'
+        $verdict.FailureIdentities.Count | Should -Be 1
+    }
+
     It 'binds NUnit constraint assertions to the matching candidate source frame' {
         $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
             -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"

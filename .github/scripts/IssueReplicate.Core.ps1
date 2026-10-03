@@ -360,12 +360,16 @@ function Get-IssueReplicateTrxVerdict {
     })
     $ids = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     $nunitIds = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $methods = [System.Collections.Generic.Dictionary[string, Xml.XmlElement]]::new([StringComparer]::Ordinal)
     foreach ($definition in $definitions) {
         if ([string]::IsNullOrWhiteSpace($definition.GetAttribute('id'))) {
             return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
         }
         [void]$ids.Add($definition.GetAttribute('id'))
         $method = $definition.SelectSingleNode("*[local-name()='TestMethod']")
+        if (-not $methods.TryAdd($definition.GetAttribute('id'), $method)) {
+            return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
+        }
         if ($method.GetAttribute('adapterTypeName') -eq 'executor://nunit3testexecutor/') {
             [void]$nunitIds.Add($definition.GetAttribute('id'))
         }
@@ -412,14 +416,34 @@ function Get-IssueReplicateTrxVerdict {
             $errorInfo = $failure.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']")
             $message = $errorInfo.SelectSingleNode("*[local-name()='Message']").InnerText.Replace("`r", '').Trim()
             $stack = $errorInfo.SelectSingleNode("*[local-name()='StackTrace']")
+            $stackFrames = @(if ($stack) { $stack.InnerText.Replace("`r", '') -split "`n" })
             $frames = @(
-                if ($stack) {
-                    $stack.InnerText.Replace("`r", '') -split "`n" | Where-Object {
-                        $_ -match "\b$([regex]::Escape($ClassName))([.(+])"
-                    }
+                $stackFrames | Where-Object {
+                    $_ -match "\b$([regex]::Escape($ClassName))([.(+])"
                 }
             )
             if ($frames.Count -eq 0 -or @($frames | Where-Object { $_ -match '\.c?ctor\b' }).Count -gt 0) {
+                return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
+            }
+            $method = $methods[$failure.GetAttribute('testId')]
+            if ([string]::IsNullOrWhiteSpace($method.GetAttribute('name'))) {
+                return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
+            }
+            $recordedClass = $method.GetAttribute('className')
+            if ($nunitIds.Contains($failure.GetAttribute('testId'))) {
+                $recordedClass = $recordedClass -replace '\([^\r\n]*\)$', ''
+            }
+            $declaringClass = [regex]::Escape($recordedClass)
+            $methodName = [regex]::Escape($method.GetAttribute('name'))
+            $bodyPattern = "\bat\s+$declaringClass(?:\.$methodName\s*(?:\(|\[|<)|[.+]<$methodName>)"
+            $bodyIndex = -1
+            for ($index = 0; $index -lt $stackFrames.Count; $index++) {
+                if ($stackFrames[$index] -cmatch $bodyPattern) { $bodyIndex = $index; break }
+            }
+            # A body can invoke Dispose itself; reject lifecycle callers outside that body instead.
+            if ($bodyIndex -lt 0 -or @($stackFrames | Select-Object -Skip $bodyIndex | Where-Object {
+                $_ -match '\.c?ctor\b|\.(?:InitializeAsync|DisposeAsync|Dispose)\s*\(|<(?:[^<>\r\n]+\.)?(?:InitializeAsync|DisposeAsync|Dispose)>'
+            }).Count -gt 0) {
                 return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
             }
             $source = $frames[0]

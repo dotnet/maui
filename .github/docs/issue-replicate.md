@@ -133,8 +133,16 @@ second job forwards its completed result and bounded UTF-8 feedback without
 rerunning it. An inconclusive result must retain that feedback for the one
 allowed GPT revision; missing, empty or invalid feedback fails explicitly.
 Every assertion identity requires a matching non-constructor candidate stack
-frame. NUnit constraint diagnostics without that frame are inconclusive; test
-names and assertion text alone cannot establish a matching repeated failure.
+frame and the fully qualified test method recorded in its TRX definition
+(including async state-machine frames). NUnit fixture display arguments such
+as `(Android)` are removed only for the NUnit adapter when binding that class;
+the namespace and method still have to match. Helper-only or different-namespace
+frames are inconclusive; test names and assertion text alone cannot establish a
+matching repeated failure. Lifecycle/constructor callers outside the recorded
+body, including inherited `InitializeAsync`, `DisposeAsync` and `Dispose`,
+invalidate the evidence even if they invoke that test method directly.
+Ordinary assertions in helpers, including disposal invoked by the actual body,
+remain eligible and retain the assertion-source identity.
 Candidate call chains containing instance or static constructors are also
 inconclusive, including assertions in helpers called during fixture initialization.
 Tracked framework and candidate files are hashed
