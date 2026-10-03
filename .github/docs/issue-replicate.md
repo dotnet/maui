@@ -51,6 +51,10 @@ The publisher validates its path, platform envelope, bounds and candidate hash;
 when native evidence exists, that hash must match the actual verified input.
 Unsupported or missing drafts omit the code section rather than offering an empty
 “review code” section. A draft may need corrections before it compiles or runs.
+OS-setting scenarios must use the real setting change, not injected notifications
+or controller trait overrides. The generator requires an observed initial state,
+separate confirmation that the setting changed, component-scoped native observations,
+and restoration of modified settings. Generation guidance is not execution evidence.
 Evidence includes direct links to the author's original repro ZIP or public
 repository, the immutable repository revision when applicable, and the issue
 comment associated with the run. Repro links are validated against the supported
@@ -100,7 +104,7 @@ its detached processes from replacing evidence. Current native reports are
 observations requiring review, not tamper-proof verification.
 
 The isolated posting job imports only the snapshot, bounded sample build record,
-and verified result, validates
+candidate draft and verified result when available, validates
 the existing issue/revision/patch contracts, and publishes the expandable report.
 The full diff and original repro links are preserved in comments without artifact
 retention or storage charges. Fork publication requires a separately configured
@@ -110,7 +114,9 @@ execution. An unconfigured publisher fails explicitly rather than pretending a
 comment was posted.
 If the unchanged author sample cannot build, the report preserves its exact target
 framework and a bounded build diagnostic as untrusted log text. It explicitly
-states that no generated test ran and publishes no candidate or assertion claim.
+states that no generated test ran and makes no verified-failure or assertion claim.
+An available draft is published separately as unexecuted and unverified, not as a
+verified failing candidate or an assertion claim.
 
 iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
