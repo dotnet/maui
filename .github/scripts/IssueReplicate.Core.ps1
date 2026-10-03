@@ -217,7 +217,10 @@ function Test-IssueReplicateCandidatePath {
 }
 
 function Get-IssueReplicateUiPlatformCondition {
-    param([Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform)
+    param([Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
+        [switch]$HostApp)
+
+    if ($HostApp) { return $Platform.ToUpperInvariant() }
 
     switch ($Platform) {
         'android' { return 'TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST' }
@@ -247,14 +250,20 @@ function Assert-IssueReplicateCandidate {
         }
         if ($file.content -isnot [string] -or $file.content.Length -gt 30000 -or
             [string]::IsNullOrWhiteSpace($file.content)) { throw 'Candidate test file is empty or too large.' }
-        if ($Candidate.kind -eq 'ui' -and $path.Contains('TestCases.Shared.Tests/')) {
+        if ($Candidate.kind -eq 'ui') {
+            $condition = $uiCondition
+            $surface = 'NUnit'
+            if ($path.Contains('TestCases.HostApp/')) {
+                $condition = Get-IssueReplicateUiPlatformCondition -Platform $Platform -HostApp
+                $surface = 'HostApp'
+            }
             # C# recognizes line terminators beyond LF; none may hide an escaping directive.
             $source = [regex]::Replace($file.content, '\r\n|[\r\u0085\u2028\u2029]', "`n").Trim()
             $directives = [regex]::Matches($source, '^\s*#',
                 [Text.RegularExpressions.RegexOptions]::Multiline, [TimeSpan]::FromSeconds(1))
-            if (-not $source.StartsWith("#if $uiCondition`n", [StringComparison]::Ordinal) -or
+            if (-not $source.StartsWith("#if $condition`n", [StringComparison]::Ordinal) -or
                 -not $source.EndsWith("`n#endif", [StringComparison]::Ordinal) -or $directives.Count -ne 2) {
-                throw "A UI candidate must use the exclusive $Platform whole-file platform guard without other preprocessor directives."
+                throw "A UI candidate $surface file must use the exclusive $Platform whole-file platform guard without other preprocessor directives."
             }
         }
         $literal = '(?:true|false|null|0[xX][0-9A-Fa-f]+|[0-9]+(?:\.[0-9]+)?(?:[uUlLfFdDmM]+)?|"(?:\\.|[^"\\])*"|''(?:\\.|[^''\\])'')'

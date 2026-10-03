@@ -556,11 +556,12 @@ Describe 'Native generator prompt budget' {
 Describe 'UI candidate platform scope' {
     BeforeAll {
         function New-ScopedUiCandidate {
-            param([string]$Content)
+            param([string]$Content,
+                [string]$HostAppContent = "#if ANDROID`npublic class Issue12345 { }`n#endif")
             @{
                 kind = 'ui'
                 files = @(
-                    @{ path = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'; content = 'public class Issue12345 { }' }
+                    @{ path = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'; content = $HostAppContent }
                     @{ path = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'; content = $Content }
                 )
             }
@@ -580,7 +581,25 @@ Describe 'UI candidate platform scope' {
         param($Scope, $Content)
         $candidate = New-ScopedUiCandidate -Content $Content
         { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 -Platform android } |
-            Should -Throw '*UI candidate*platform*'
+            Should -Throw '*UI candidate*NUnit*platform*'
+    }
+
+    It 'rejects a HostApp file with <Scope> platform scope' -TestCases @(
+        @{ Scope = 'missing'; Content = 'public class Issue12345 { }' }
+        @{ Scope = 'wrong-platform'; Content = "#if IOS`npublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'broadened-platform'; Content = "#if ANDROID || IOS`npublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'partial-file'; Content = "public class Issue12345 { }`n#if ANDROID`n#endif" }
+        @{ Scope = 'else-escaping'; Content = "#if ANDROID`npublic class Issue12345 { }`n#else`npublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'carriage-return-escaping'; Content = "#if ANDROID`npublic class Issue12345 { }`r#else`rpublic class Issue12345 { }`n#endif" }
+        @{ Scope = 'unicode-line-escaping'; Content = "#if ANDROID`npublic class Issue12345 { }$([char]0x2028)#else$([char]0x2028)public class Issue12345 { }`n#endif" }
+        @{ Scope = 'nested-conditional'; Content = "#if ANDROID`n#if IOS`npublic class Issue12345 { }`n#endif`n#endif" }
+        @{ Scope = 'symbol-redefinition'; Content = "#if ANDROID`n#define IOS`npublic class Issue12345 { }`n#endif" }
+    ) {
+        param($Scope, $Content)
+        $candidate = New-ScopedUiCandidate -HostAppContent $Content `
+            -Content "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`n#endif"
+        { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 -Platform android } |
+            Should -Throw '*UI candidate*HostApp*platform*'
     }
 
     It 'requires a verified platform even for an otherwise guarded UI fixture' {
@@ -589,14 +608,16 @@ Describe 'UI candidate platform scope' {
             Should -Throw '*UI candidate*platform*'
     }
 
-    It 'rejects a mismatched UI guard before native verification attempt <Attempt>' -TestCases @(
-        @{ Attempt = 1 }
-        @{ Attempt = 2 }
+    It 'rejects a mismatched <Surface> guard before native verification attempt <Attempt>' -TestCases @(
+        @{ Attempt = 1; Surface = 'NUnit' }
+        @{ Attempt = 2; Surface = 'NUnit' }
+        @{ Attempt = 1; Surface = 'HostApp' }
+        @{ Attempt = 2; Surface = 'HostApp' }
     ) {
-        param($Attempt)
-        $inputDir = Join-Path $TestDrive "verify-scope-input-$Attempt"
-        $repo = Join-Path $TestDrive "verify-scope-repo-$Attempt"
-        $outputDir = Join-Path $TestDrive "verify-scope-output-$Attempt"
+        param($Attempt, $Surface)
+        $inputDir = Join-Path $TestDrive "verify-scope-input-$Surface-$Attempt"
+        $repo = Join-Path $TestDrive "verify-scope-repo-$Surface-$Attempt"
+        $outputDir = Join-Path $TestDrive "verify-scope-output-$Surface-$Attempt"
         New-Item -ItemType Directory -Path $inputDir, $repo | Out-Null
         & git -C $repo init -q
         & git -C $repo -c user.name=Fixture -c user.email=fixture@example.invalid commit -q --allow-empty -m Fixture
@@ -614,14 +635,21 @@ Describe 'UI candidate platform scope' {
             sampleSha256 = 'b' * 64
             buildSucceeded = $true
         } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $inputDir 'sample-result.json')
-        New-ScopedUiCandidate -Content "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`npublic class Issue12345 { }`n#endif" |
+        $hostCondition = if ($Surface -eq 'HostApp') { 'ANDROID' } else { 'IOS' }
+        $testCondition = if ($Surface -eq 'NUnit') {
+            'TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST'
+        } else {
+            'TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST'
+        }
+        New-ScopedUiCandidate -HostAppContent "#if $hostCondition`npublic class Issue12345 { }`n#endif" `
+            -Content "#if $testCondition`npublic class Issue12345 { }`n#endif" |
             ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $inputDir 'candidate.json')
         {
             & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory $inputDir `
                 -SampleResultPath (Join-Path $inputDir 'sample-result.json') `
                 -CandidatePath (Join-Path $inputDir 'candidate.json') -RepoRoot $repo `
                 -OutputDirectory $outputDir -Attempt $Attempt
-        } | Should -Throw '*UI candidate*exclusive ios*platform guard*'
+        } | Should -Throw "*UI candidate*$Surface*exclusive ios*platform guard*"
         Test-Path -LiteralPath (Join-Path $outputDir 'result.json') | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $outputDir 'test.patch') | Should -BeFalse
     }
@@ -659,7 +687,13 @@ Describe 'UI candidate platform scope' {
             if ($guard.Count -eq 1) {
                 $content = "$($guard[0].Substring('UI platform guard: '.Length))`n$content`n#endif"
             }
-            $candidate = New-ScopedUiCandidate -Content $content
+            $hostGuard = @($prompt -split "`n" | Where-Object { $_.StartsWith('HostApp platform guard: #if ') })
+            $nativeType = if ($guard[0] -match 'TEST_FAILS_ON_IOS') { 'Android.Views.View' } else { 'UIKit.UIView' }
+            $hostContent = "public class Issue12345 { public object NativeView { get; } = new $nativeType(); }"
+            if ($hostGuard.Count -eq 1) {
+                $hostContent = "$($hostGuard[0].Substring('HostApp platform guard: '.Length))`n$hostContent`n#endif"
+            }
+            $candidate = New-ScopedUiCandidate -Content $content -HostAppContent $hostContent
             $global:LASTEXITCODE = 0
             @{ type = 'assistant.message'; data = @{
                 phase = 'final_answer'
@@ -671,23 +705,26 @@ Describe 'UI candidate platform scope' {
         & (Join-Path $PSScriptRoot 'IssueReplicate.Generate.ps1') `
             -InputDirectory $inputDir -OutputDirectory $outputDir
         $candidate = Get-Content -Raw -LiteralPath (Join-Path $outputDir 'candidate.json') | ConvertFrom-Json
-        $fixture = $candidate.files | Where-Object { $_.path.Contains('TestCases.Shared.Tests/') }
         $symbols = @{
             android = 'ANDROID;TEST_FAILS_ON_IOS;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_WINDOWS'
             ios = 'IOS;IOSUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_CATALYST'
             catalyst = 'MACCATALYST;MACUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_IOS'
             windows = 'WINDOWS;WINTEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_IOS'
         }
-        foreach ($fixturePlatform in $symbols.Keys) {
-            $assemblyPath = Join-Path $TestDrive "scope-$Platform-$fixturePlatform.dll"
-            Add-Type -TypeDefinition $fixture.content -CompilerOptions "/define:$($symbols[$fixturePlatform])" `
-                -OutputAssembly $assemblyPath
-            $context = [Runtime.Loader.AssemblyLoadContext]::new("scope-$Platform-$fixturePlatform", $true)
-            try {
-                $assembly = $context.LoadFromAssemblyPath($assemblyPath)
-                ($null -ne $assembly.GetType('Issue12345')) |
-                    Should -Be ($fixturePlatform -eq $Platform) -Because "the fixture was verified only on $Platform"
-            } finally { $context.Unload() }
+        $sdkStubs = "#if ANDROID`nnamespace Android.Views { public class View { } }`n#endif`n#if IOS`nnamespace UIKit { public class UIView { } }`n#endif"
+        foreach ($file in $candidate.files) {
+            $surface = if ($file.path.Contains('TestCases.HostApp/')) { 'HostApp' } else { 'NUnit' }
+            foreach ($fixturePlatform in $symbols.Keys) {
+                $assemblyPath = Join-Path $TestDrive "scope-$surface-$Platform-$fixturePlatform.dll"
+                Add-Type -TypeDefinition "$sdkStubs`n$($file.content)" -CompilerOptions "/define:$($symbols[$fixturePlatform])" `
+                    -OutputAssembly $assemblyPath
+                $context = [Runtime.Loader.AssemblyLoadContext]::new("scope-$surface-$Platform-$fixturePlatform", $true)
+                try {
+                    $assembly = $context.LoadFromAssemblyPath($assemblyPath)
+                    ($null -ne $assembly.GetType('Issue12345')) |
+                        Should -Be ($fixturePlatform -eq $Platform) -Because "the $surface file was verified only on $Platform"
+                } finally { $context.Unload() }
+            }
         }
     }
 }
