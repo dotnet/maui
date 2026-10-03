@@ -244,7 +244,10 @@ execution jobs privileged access or reuse the trusted job agents for them.
 Execution checkouts are shallow, without partial-clone extensions that the pinned
 SourceLink tooling does not support. Before restoring tools, native jobs use the
 pinned checkout's Arcade bootstrap to install the exact `global.json` SDK from
-public feeds; the shared provisioner does not replace it with a hard-coded SDK.
+public feeds in a separate job-temporary bootstrap directory. Native provisioning
+replaces the checkout's `.dotnet` directory, so the bootstrap SDK running Cake and
+MSBuild must not live there. The shared provisioner does not replace the pinned
+version with a hard-coded SDK.
 Sample restore uses the pinned MAUI
 `NuGet.config` public feeds plus nuget.org, so servicing SDK dependencies remain
 available even though the author's sample is extracted outside the MAUI checkout.
