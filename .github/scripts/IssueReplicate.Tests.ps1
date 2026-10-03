@@ -635,8 +635,12 @@ Describe 'Drafts when author builds are blocked' {
         $body | Should -Not -Match 'not been compiled or executed|verified failing \*test candidate\*'
     }
 
-    It 'preserves the complete oversized draft in bounded exact-byte continuation previews' {
-        $script:draftCandidate.files[0].content = "public class Issue12345 { } // " + ('漢' * 16000) + "`n"
+    It 'preserves the complete draft in bounded exact-byte continuation previews for <Name>' -TestCases @(
+        @{ Name = 'oversized Unicode'; Content = "public class Issue12345 { } // " + ('漢' * 16000) + "`n" },
+        @{ Name = 'combined preview and payload budget'; Content = "public class Issue12345 { } // " + ('x' * 24000) + "`n" }
+    ) {
+        param($Content)
+        $script:draftCandidate.files[0].content = $Content
         $script:draftCandidate | ConvertTo-Json -Depth 6 -Compress |
             Set-Content (Join-Path $script:draftOutput 'candidate.json')
         $preview = Join-Path $script:draftRoot 'large.md'
@@ -662,22 +666,57 @@ Describe 'Drafts when author builds are blocked' {
         } finally { $bytes.Dispose() }
     }
 
-    It 'preserves exact draft bytes through Git diff/apply for <Name>' -TestCases @(
+    It 'preserves exact patch bytes through publication and Git apply for <Name>' -TestCases @(
         @{ Name = 'LF'; Content = "public class Issue12345 { }`n" },
         @{ Name = 'CRLF'; Content = "public class Issue12345 {`r`n}`r`n" },
         @{ Name = 'no final newline'; Content = 'public class Issue12345 { }' },
-        @{ Name = 'Unicode'; Content = "public class Issue12345 { } // 漢😀`n" }
+        @{ Name = 'Unicode'; Content = "public class Issue12345 { } // 漢😀`n" },
+        @{ Name = 'CRLF with trailing whitespace'; Content = "public class Issue12345 {`r`n} `t `r`n" },
+        @{ Name = 'verified CRLF with trailing whitespace'; Content = "public class Issue12345 {`r`n} `t `r`n"; Verified = $true }
     ) {
-        param($Content)
+        param($Content, $Verified = $false)
         $script:draftCandidate.files[0].content = $Content
+        $candidatePath = Join-Path $script:draftOutput 'candidate.json'
+        $script:draftCandidate | ConvertTo-Json -Depth 6 -Compress | Set-Content $candidatePath
         $patch = Get-IssueReplicateDraftPatch -Candidate $script:draftCandidate -IssueNumber 12345 -Platform ios
+        $expectedBytes = [Text.Encoding]::UTF8.GetBytes($patch)
+        $expectedHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($expectedBytes)).ToLowerInvariant()
+        $results = Join-Path $script:draftRoot 'publication-result'
+        if ($Verified) {
+            New-Item -ItemType Directory $results | Out-Null
+            [IO.File]::WriteAllBytes((Join-Path $results 'test.patch'), $expectedBytes)
+            $script:draftSampleRecord.buildSucceeded = $true
+            $script:draftSampleRecord.diagnostic = ''
+            $script:draftSampleRecord | ConvertTo-Json | Set-Content (Join-Path $script:draftSample 'sample-result.json')
+            @{
+                schemaVersion = 1; issueNumber = 12345; commentId = 4925414214; platform = 'ios'
+                targetSha = $script:draftManifest.targetSha; sampleSha256 = $script:draftManifest.sampleSha256
+                status = 'candidate-failed'; testExecuted = $true; assertionFailed = $true; sampleBuilt = $true
+                testKind = 'unit'; patchSha256 = $expectedHash
+                candidateSha256 = (Get-FileHash $candidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
+            } | ConvertTo-Json | Set-Content (Join-Path $results 'result.json')
+        }
+        $preview = Join-Path $script:draftRoot 'exact-comment.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory $script:draftInput -ResultsDirectory $results `
+            -SampleDirectory $script:draftSample -CandidateDirectory $script:draftOutput -OutputPath $preview
+        $body = Get-Content -Raw $preview
+        $exact = [regex]::Match($body,
+            '(?s)Exact UTF-8 patch \(base64\).*?`{4}text\n([A-Za-z0-9+/=]+)\n`{4}')
+        $exact.Success | Should -BeTrue
+        $bytes = [Convert]::FromBase64String($exact.Groups[1].Value)
+        [Convert]::ToBase64String($bytes) | Should -BeExactly ([Convert]::ToBase64String($expectedBytes))
+        [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant() |
+            Should -BeExactly $expectedHash
+        $body | Should -Match ([regex]::Escape("Patch SHA-256: ``$expectedHash``."))
         $patchPath = Join-Path $TestDrive 'exact-draft.patch'
-        [IO.File]::WriteAllText($patchPath, $patch, [Text.UTF8Encoding]::new($false))
+        [IO.File]::WriteAllBytes($patchPath, $bytes)
         $applied = Join-Path $script:draftRoot 'applied'
         New-Item -ItemType Directory $applied | Out-Null
-        & git -C $applied apply $patchPath
+        & git -C $applied apply --whitespace=nowarn $patchPath
         $LASTEXITCODE | Should -Be 0
-        [IO.File]::ReadAllText((Join-Path $applied $script:draftCandidate.files[0].path)) | Should -BeExactly $Content
+        [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $applied $script:draftCandidate.files[0].path))) |
+            Should -BeExactly ([Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Content)))
     }
 }
 

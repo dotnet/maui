@@ -230,7 +230,12 @@ function Set-ResultComment {
 
 $inlinePatch = ''
 if ($patchText) {
-    $inlinePatch = Format-PatchBlock -Text $patchText.TrimEnd()
+    $inlineExact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($patchText))
+    $inlinePatch = "`n`nReadable diff preview (use the exact-byte payload when applying):" +
+        (Format-PatchBlock -Text $patchText) +
+        "`n`n**Exact UTF-8 patch (base64)**. Decode this payload and verify the patch SHA-256 " +
+        "above before applying; rendered diff previews may normalize line endings." +
+        (Format-PatchBlock -Text $inlineExact -Language text)
     if ([Text.Encoding]::UTF8.GetByteCount($inlinePatch) -gt 45000) {
         $parts = @()
         for ($offset = 0; $offset -lt $patchText.Length;) {

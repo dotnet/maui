@@ -55,7 +55,11 @@ The result is posted **under the originating issue**, with a concise outcome and
 the same expandable-section style as `/review tests`: **Reproduction evidence**,
 **Generated test candidate**, and **Follow-up**. A verified failing candidate's
 hash-checked diff is embedded in the comment so it can be reviewed without
-downloading anything. Oversized diffs are split across bounded continuation
+downloading anything. Every patch includes a readable fenced preview and an
+exact UTF-8 base64 payload, including small patches. Decode the payload and
+verify the displayed patch SHA-256 before applying; rendered previews may
+normalize line endings. When the combined preview and payload exceed the inline
+budget, diffs are split across bounded continuation
 comments linked from the main report, with the full patch hash and ordered code
 blocks; no code is truncated. Passing and inconclusive results can include the
 complete generated draft, clearly distinguished from a verified failing candidate.
