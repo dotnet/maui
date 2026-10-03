@@ -310,6 +310,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
 
+            if (RuntimeFeature.IsMaterial3Enabled &&
+                _tabLayoutAppearanceTracker is ShellTabLayoutAppearanceTracker concreteTabLayoutAppearanceTracker)
+            {
+                concreteTabLayoutAppearanceTracker.CaptureNativeColors(_contentTabLayout);
+            }
+
             // Initial setup registers the appearance observer immediately afterward. When
             // setup was deferred, replay the appearance for the newly-created TabLayout.
             if (_registeredShell is not null && IsCurrentlyActiveSection() && VirtualView.CurrentItem is ShellContent currentContent)
