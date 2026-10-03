@@ -119,6 +119,8 @@ rerunning it. An inconclusive result must retain that feedback for the one
 allowed GPT revision; missing, empty or invalid feedback fails explicitly.
 Tracked framework and candidate files are hashed
 before execution and rechecked afterward; changes invalidate the attempt.
+NUnit setup/teardown assertion diagnostics and xUnit fixture errors are
+inconclusive, not verified test-body assertion evidence.
 Constant-only NUnit and xUnit assertions are rejected, but generated code still
 requires human fidelity review: an executed failure is not proof of the original bug.
 

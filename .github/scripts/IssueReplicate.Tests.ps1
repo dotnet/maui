@@ -272,6 +272,18 @@ Describe 'Observed test evidence' {
         $first.FailureIdentities[0] | Should -Not -Be $second.FailureIdentities[0]
     }
 
+    It 'rejects NUnit <Lifecycle> assertions as test-body evidence' -TestCases @(
+        @{ Lifecycle = 'OneTimeSetUp' }, @{ Lifecycle = 'SetUp' },
+        @{ Lifecycle = 'TearDown' }, @{ Lifecycle = 'OneTimeTearDown' }
+    ) {
+        param($Lifecycle)
+        $fixtureFailure = $script:xml -replace '<Message>', "<Message>$Lifecycle : "
+        Set-Content -LiteralPath $script:trxPath -Value $fixtureFailure
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $verdict.Status | Should -Be 'Inconclusive'
+        $verdict.FailureIdentities | Should -BeNullOrEmpty
+    }
+
     It 'returns only failing test identities and ignores prefix-colliding classes' {
         $xml = $script:xml -replace '</TestDefinitions>', '<UnitTest id="test-2"><TestMethod className="Example.Issue12345" name="OtherBehavior" /></UnitTest><UnitTest id="test-3"><TestMethod className="Example.Issue123450" name="Collision" /></UnitTest></TestDefinitions>' `
             -replace '</Results>', '<UnitTestResult testId="test-2" testName="OtherBehavior" outcome="Passed" /><UnitTestResult testId="test-3" testName="Collision" outcome="Passed" /></Results>' `

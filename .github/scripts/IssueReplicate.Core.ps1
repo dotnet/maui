@@ -375,6 +375,7 @@ function Get-IssueReplicateTrxVerdict {
             $message = if ($messageNode) { $messageNode.InnerText } else { '' }
             $errorInfo -and
                 $message -notmatch '(?i)Xunit\.Sdk\.TestClassException' -and
+                $message -notmatch '(?im)^\s*(?:OneTimeSetUp|SetUp|OneTimeTearDown|TearDown)\s*:' -and
                 ($errorInfo.InnerText -match '(?i)NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:True|False|Equal|NotEqual|StrictEqual|Null|NotNull|Empty|NotEmpty|Single|Collection|Contains|DoesNotContain|InRange|NotInRange|IsType|IsNotType|IsAssignableFrom|Throws|ThrowsAny|Same|NotSame|StartsWith|EndsWith|Matches|DoesNotMatch|All|Equivalent|Multiple|PropertyChanged)Exception\b|AssertFailedException|at\s+(?:Xunit|NUnit\.Framework)\.Assert\.' -or
                     ($nunitIds.Contains($_.GetAttribute('testId')) -and
                         $message -match '(?m)^\s*Assert\.That\(' -and
