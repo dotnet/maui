@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120">
+  <rect width="320" height="120" rx="16" fill="#0B6E4F" />
+  <text fill="#FFFFFF" font-family="Arial, sans-serif" font-size="42" font-weight="700">
+    <tspan x="42 88 134 180 226" y="76">CLICK</tspan>
+  </text>
+</svg>
