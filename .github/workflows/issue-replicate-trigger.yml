@@ -16,10 +16,14 @@ permissions: {}
 
 jobs:
   authorize:
+    # Filter unrelated comments without narrowing the parser's whitespace contract.
     if: >-
       github.repository == 'dotnet/maui' &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'workflow_dispatch' || github.event.issue.pull_request == null)
+      (github.event_name == 'workflow_dispatch' ||
+        (github.event.issue.pull_request == null &&
+          contains(github.event.comment.body, '/issue') &&
+          contains(github.event.comment.body, 'replicate')))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

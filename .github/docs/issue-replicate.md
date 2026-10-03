@@ -12,6 +12,12 @@ Pull requests and commands from users without current repository write access do
 not queue a run. The trigger replies with a link to the public Azure build; a
 second comment reports the result. A fresh command comment starts a fresh run.
 
+Issue comments missing either command marker (`/issue` and `replicate`) are
+filtered before allocating an authorization runner. This is only a coarse
+prefilter: the trusted parser still requires the command at the start after
+trimming whitespace, with whitespace allowed between its words. Manual dispatch
+and recovery still re-fetch and authorize the referenced command.
+
 Azure intake independently re-fetches the open issue and command comment,
 re-parses the command with the same GitHub-gate helpers, binds the queued platform
 and target branch to it, and checks the comment author's current write permission.
