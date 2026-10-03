@@ -236,6 +236,10 @@ remain available. The jobs log actual disk capacity without requiring more free
 space than the hosted pool guarantees. Workload installation and author builds
 must actually complete; disk exhaustion is an explicit environment failure, not
 evidence that a generated test ran or that the reported issue is invalid.
+Android verification pins a single `ANDROID_AVD_HOME` for AVD creation, emulator
+launch and the test runner, checks that the created AVD exists there, and limits
+its data partition to 2 GiB. Emulator startup is bounded; a failed startup prints
+the last 120 diagnostic lines in the task log without uploading an artifact.
 
 This mode does **not** enable production authorization, OIDC dispatch, credentialed
 GPT generation, the feedback-driven GPT revision, recovery or automatic publication.

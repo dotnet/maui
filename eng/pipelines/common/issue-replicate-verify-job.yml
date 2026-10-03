@@ -27,6 +27,8 @@ jobs:
       reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
       reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
       reproCandidate: $[ dependencies.${{ parameters.candidateJob }}.outputs['candidate.payload'] ]
+      ${{ if eq(parameters.platform, 'android') }}:
+        ANDROID_AVD_HOME: $(Pipeline.Workspace)/.android/avd
       ${{ if eq(parameters.attempt, 2) }}:
         reproPrevious: $[ dependencies.${{ parameters.dependsOn }}.outputs['verify.payload'] ]
     ${{ if eq(parameters.platform, 'android') }}:
@@ -121,7 +123,10 @@ jobs:
             if [ "$(jq -r .kind "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json")" != ui ]; then
               exit 0
             fi
+            emulator_log="$(Agent.TempDirectory)/issue-emulator.log"
+            trap 'status=$?; if [ "$status" -ne 0 ] && [ -f "$emulator_log" ]; then echo "Android emulator diagnostics:" >&2; tail -n 120 "$emulator_log" >&2; fi; exit "$status"' EXIT
             test -d "$ANDROID_SDK_ROOT"
+            mkdir -p "$ANDROID_AVD_HOME"
             for tool_dir in "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin; do
               if [ -x "$tool_dir/sdkmanager" ]; then
                 break
@@ -129,10 +134,21 @@ jobs:
             done
             test -x "$tool_dir/sdkmanager"
             "$tool_dir/sdkmanager" --install "system-images;android-30;google_apis;x86_64" "platforms;android-30"
-            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --package "system-images;android-30;google_apis;x86_64"
-            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -no-window -no-audio -no-snapshot -gpu swiftshader_indirect \
-              > "$(Agent.TempDirectory)/issue-emulator.log" 2>&1 &
+            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --device "Nexus 5X" --package "system-images;android-30;google_apis;x86_64"
+            test -f "$ANDROID_AVD_HOME/IssueRepro.ini"
+            avd_config="$ANDROID_AVD_HOME/IssueRepro.avd/config.ini"
+            test -f "$avd_config"
+            sed -i 's/^disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$avd_config"
+            grep -qx 'disk.dataPartition.size=2048m' "$avd_config"
+            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect -partition-size 2048 \
+              > "$emulator_log" 2>&1 &
+            emulator_pid=$!
             adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+            sleep 5
+            if ! kill -0 "$emulator_pid" 2>/dev/null; then
+              echo 'Android emulator exited before connecting to ADB.' >&2
+              exit 1
+            fi
             timeout 600 "$adb" wait-for-device
             for attempt in $(seq 1 120); do
               if [ "$("$adb" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
