@@ -23,7 +23,7 @@ jobs:
         vmImage: ubuntu-22.04
     ${{ else }}:
       pool:
-        vmImage: macOS-15-arm64
+        vmImage: macOS-26
     timeoutInMinutes: 180
     steps:
       - checkout: none
@@ -46,6 +46,11 @@ jobs:
             -Destination "$(Pipeline.Workspace)/maui"
           if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
         displayName: 'Fetch pinned public source without a checkout credential'
+      - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: |
+            & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
+              -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
+          displayName: 'Require Xcode matching the pinned iOS SDK'
       - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
         displayName: 'Prepare local provisioning logs'
       - ${{ if eq(parameters.platform, 'android') }}:

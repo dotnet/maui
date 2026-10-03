@@ -22,7 +22,7 @@ $projects = @(Get-ChildItem -LiteralPath $sampleDir -Filter *.csproj -File -Recu
 if ($projects.Count -ne 1) { throw 'The sample needs exactly one buildable .csproj.' }
 $project = $projects[0]
 $projectXml = Get-Content -LiteralPath $project.FullName -Raw
-$tfm = [regex]::Match($projectXml, "net[0-9]+\.[0-9]+-$($manifest.platform)\b").Value
+$tfm = [regex]::Match($projectXml, "net[0-9]+\.[0-9]+-$($manifest.platform)(?:[0-9]+(?:\.[0-9]+)*)?(?=[;\s<`"']|$)").Value
 if (-not $tfm) { throw "The sample project does not target $($manifest.platform)." }
 
 $log = Join-Path $OutputDirectory 'sample-build.log'

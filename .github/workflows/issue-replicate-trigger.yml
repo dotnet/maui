@@ -74,7 +74,16 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or $issue.state -ne 'open' -or $issue.pull_request) {
             throw 'The command is only supported on an open issue, not a pull request.'
           }
-          if ($issue.comments -gt 300) { throw 'This issue has too many comments for bounded repro discovery.' }
+          if ($issue.comments -gt 300) { throw 'This issue exceeds bounded repro discovery.' }
+          if ($issue.comments -eq 300) {
+            $existing = @(gh api --paginate --slurp "repos/$env:REPO/issues/$issueNumber/comments?per_page=100" |
+              ConvertFrom-Json | ForEach-Object { $_ } | Where-Object {
+                $_.user.login -eq 'github-actions[bot]' -and
+                  $_.body -clike "<!-- issue-replicate-start:${commentId}:pending -->*"
+              })
+            if ($LASTEXITCODE -ne 0) { throw 'Could not check acknowledgement headroom.' }
+            if ($existing.Count -eq 0) { throw 'This issue has no acknowledgement headroom for bounded repro discovery.' }
+          }
           $platform = Resolve-IssueReplicatePlatform -Labels @($issue.labels | ForEach-Object name) -Requested $command.Platform
           "proceed=true" >> $env:GITHUB_OUTPUT
           "issue=$issueNumber" >> $env:GITHUB_OUTPUT
@@ -111,11 +120,24 @@ jobs:
             echo "handled=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if gh api --paginate --slurp "repos/${REPO}/issues/${ISSUE}/comments?per_page=100" |
-             jq -e --arg marker "<!-- issue-replicate-start:${COMMENT}:" \
-               'any(.[][]; (.body // "") | startswith($marker))' >/dev/null; then
+          comments=$(gh api --paginate --slurp "repos/${REPO}/issues/${ISSUE}/comments?per_page=100")
+          if printf '%s' "$comments" |
+             jq -e --arg pattern "^<!-- issue-replicate-start:${COMMENT}:[1-9][0-9]* -->" \
+               'any(.[][]; .user.login == "github-actions[bot]" and ((.body // "") | test($pattern)))' >/dev/null; then
             echo "handled=true" >> "$GITHUB_OUTPUT"
             exit 0
+          fi
+          pending=$(printf '%s' "$comments" | jq -c --arg marker "<!-- issue-replicate-start:${COMMENT}:pending -->" \
+            '[.[][] | select(.user.login == "github-actions[bot]" and ((.body // "") | startswith($marker)))] | first // empty')
+          if [ -n "$pending" ]; then
+            updated=$(printf '%s' "$pending" | jq -er '.updated_at | fromdateiso8601')
+            if [ "$(( $(date +%s) - updated ))" -lt 2100 ]; then
+              echo "handled=true" >> "$GITHUB_OUTPUT"
+              echo "::notice::The trusted pending acknowledgement has an active 35-minute lease."
+              exit 0
+            fi
+            printf 'ack_id=%s\n' "$(printf '%s' "$pending" | jq -er .id)" >> "$GITHUB_OUTPUT"
+            printf 'reserved_at=%s\n' "$(printf '%s' "$pending" | jq -er .created_at)" >> "$GITHUB_OUTPUT"
           fi
           echo "handled=false" >> "$GITHUB_OUTPUT"
 
@@ -123,17 +145,27 @@ jobs:
         id: reserve
         if: steps.dedupe.outputs.handled == 'false'
         shell: bash
+        env:
+          EXISTING_ACK_ID: ${{ steps.dedupe.outputs.ack_id }}
+          RESERVED_AT: ${{ steps.dedupe.outputs.reserved_at }}
         run: |
           set -euo pipefail
           # shellcheck disable=SC2016
           body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is queueing a public reproduction build.\n' "$COMMENT")
-          ack_id=$(gh api "repos/${REPO}/issues/${ISSUE}/comments" --method POST \
-            -f body="$body" --jq .id)
+          ack_id="$EXISTING_ACK_ID"
+          if [ -n "$ack_id" ]; then
+            gh api "repos/${REPO}/issues/comments/${ack_id}" --method PATCH -f body="$body" --silent
+          else
+            acknowledgement=$(gh api "repos/${REPO}/issues/${ISSUE}/comments" --method POST -f body="$body")
+            ack_id=$(printf '%s' "$acknowledgement" | jq -er .id)
+            RESERVED_AT=$(printf '%s' "$acknowledgement" | jq -er .created_at)
+          fi
           if ! [[ "$ack_id" =~ ^[1-9][0-9]*$ ]]; then
             echo "::error::Could not reserve the command on the issue."
             exit 1
           fi
           echo "ack_id=${ack_id}" >> "$GITHUB_OUTPUT"
+          echo "reserved_at=${RESERVED_AT}" >> "$GITHUB_OUTPUT"
 
       - name: Queue public Azure pipeline
         id: queue
@@ -143,6 +175,7 @@ jobs:
           TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
           PIPELINE_ID: ${{ vars.ISSUE_REPLICATE_PIPELINE_ID }}
+          RESERVED_AT: ${{ steps.reserve.outputs.reserved_at }}
         run: |
           set -euo pipefail
           if ! [[ "$PIPELINE_ID" =~ ^[1-9][0-9]*$ ]]; then
@@ -162,6 +195,38 @@ jobs:
             --data-urlencode 'scope=499b84ac-1321-427f-aa17-267ca6975798/.default' | jq -er '.access_token')
           unset oidc
           echo "::add-mask::${token}"
+          runs=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${token}")
+          count=$(printf '%s' "$runs" | jq -er '.value | length')
+          if [ "$count" -ge 100 ] &&
+             printf '%s' "$runs" | jq -e --arg reserved "$RESERVED_AT" \
+               '([.value[].createdDate] | min) > $reserved' >/dev/null; then
+            echo "::error::The bounded Azure history cannot reconcile this reservation safely."
+            exit 1
+          fi
+          match_id=""
+          while IFS= read -r prior_id; do
+            if ! [[ "$prior_id" =~ ^[1-9][0-9]*$ ]]; then exit 1; fi
+            prior=$(curl --fail-with-body --silent --show-error --max-time 30 \
+              "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs/${prior_id}?api-version=7.1" \
+              -H "Authorization: Bearer ${token}")
+            if printf '%s' "$prior" | jq -e --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
+               '(.templateParameters.IssueNumber // 0 | tonumber) == $issue and
+                (.templateParameters.CommentId // 0 | tonumber) == $comment and
+                .resources.repositories.self.refName == "refs/heads/main"' >/dev/null; then
+              if [ -n "$match_id" ]; then
+                echo "::error::Multiple Azure runs exist for this command; refusing another dispatch."
+                exit 1
+              fi
+              match_id="$prior_id"
+            fi
+          done < <(printf '%s' "$runs" | jq -r '.value[:100][].id')
+          if [ -n "$match_id" ]; then
+            echo "run_id=${match_id}" >> "$GITHUB_OUTPUT"
+            unset token
+            exit 0
+          fi
           payload=$(jq -n --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
             --arg platform "$PLATFORM" --arg target "$TARGET_REF" \
             '{templateParameters:{IssueNumber:$issue,CommentId:$comment,Platform:$platform,TargetRef:$target},
@@ -205,4 +270,4 @@ jobs:
           gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH \
             -f body="<!-- issue-replicate-start:${COMMENT}:pending -->
           > [!WARNING]
-          > \`/issue replicate\` could not queue the public Azure pipeline. Check the [trigger run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) and use a new command to retry." --silent
+          > \`/issue replicate\` could not confirm the public Azure queue outcome. Check the [trigger run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}). Recovery can reconcile the expired reservation against Azure before retrying; do not assume a build was not queued." --silent

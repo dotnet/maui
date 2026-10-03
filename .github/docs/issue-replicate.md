@@ -13,10 +13,11 @@ not queue a run. The trigger replies with a link to the public Azure build; a
 second comment reports the result. A fresh command comment starts a fresh run.
 
 The issue author must provide exactly one repro in the issue body or an
-author-written comment: a public `https://github.com/owner/repo` URL or a
+author-written comment: a public `https://github.com/owner/repo` URL,
+`https://github.com/owner/repo/tree/ref` (one URL-encoded ref segment), or a
 GitHub-hosted ZIP issue attachment (linked as `[repro.zip](...)`). The latest
 author comment containing a supported link takes precedence. The repository is
-pinned to its default-branch commit; an attachment is hashed. Archives are
+pinned to the explicit ref or default-branch commit; an attachment is hashed. Archives are
 limited to 10 MiB compressed, 40 MiB expanded, 512 safe entries, and one
 platform-targeting `.csproj`. A repro with multiple project files, external
 downloads, non-GitHub attachments, or an inaccessible dependency may be
@@ -27,7 +28,8 @@ The sample is *built*, not driven through the reported interaction. A generated
 unit/XAML/UI test runs against the pinned MAUI commit in a separate credential-free
 job, with at most one feedback-driven revision. A passing test means only
 `not-reproduced-on-tested-revision`. A test that fails at an assertion on two
-runs is reported as a **verified failing test candidate**, not proof that the
+runs, with the same failing test, assertion diagnostic and source signature,
+is reported as a **verified failing test candidate**, not proof that the
 author's scenario was exercised or the issue is confirmed. Only that outcome
 publishes the complete generated candidate diff in the issue comments.
 The diff is untrusted code: inspect its assertions, test scope, and provenance
@@ -46,7 +48,12 @@ Evidence includes direct links to the author's original repro ZIP or public
 repository, the immutable repository revision when applicable, and the issue
 comment associated with the run. Repro links are validated against the supported
 GitHub source formats before publication.
-Results are updated idempotently per run. Publication failures also produce an
+Results are updated idempotently per run, using only the authenticated publisher's
+own comments; third-party markers cannot redirect or suppress publication.
+Multi-comment publication creates an explicitly incomplete main report before
+posting parts and finalizes it only when every part succeeds. A failed attempt
+can be retried without duplicating or presenting incomplete fragments as a complete patch.
+Publication failures also produce an
 expandable follow-up notice, without claiming a verified outcome.
 
 For a read-only preview, pass `-OutputPath` to `IssueReplicate.Post.ps1`; this
@@ -102,9 +109,11 @@ unsupported generated candidate cannot rule out the reported behavior.
    their respective intake, generator, and posting tasks; do not import a
    shared MAUI secret group. Review whether your token policy permits public
    issue/repository reads, Copilot access, and issue-comment posting.
-4. Confirm `ubuntu-22.04` and `macOS-15-arm64` are **fresh Microsoft-hosted
+4. Confirm `ubuntu-22.04` and `macOS-26` are **fresh Microsoft-hosted
    agents**, with Android KVM, Appium, appropriate Xcode/simulator, and workloads
-   on the chosen MAUI branches. Do not enable iOS on a persistent/shared macOS
+   on the chosen MAUI branches. Xcode is selected from the pinned branch's
+   declared iOS SDK; a missing matching installation fails rather than silently
+   using an incompatible version. Do not enable iOS on a persistent/shared macOS
    agent. Run an authorized test issue through the pipeline before announcing
    availability; YAML parsing alone does not validate Azure template expansion
    or image capabilities.
@@ -115,6 +124,16 @@ unsupported generated candidate cannot rule out the reported behavior.
    trusted workflow. Leave the variable unset to disable recovery; use
    `ISSUE_REPLICATE_RECOVERY_DISABLED=true` to pause it. This avoids replaying
    historical comments on first deployment.
+
+Durable command acknowledgements are trusted only from `github-actions[bot]`.
+Fresh commands reserve one comment of headroom in the three-page intake budget;
+retries reuse their existing acknowledgement. A pending acknowledgement is a
+35-minute lease, not a terminal success marker. Expired reservations are reconciled
+against bounded Azure run history and the original issue/comment parameters before
+queueing again. Incomplete history or multiple matching runs fail explicitly.
+Recovery's transient `eyes` reaction is cleared after dispatch and is never a
+terminal latch; only the bot's successful build marker or `rocket` acknowledgement
+completes recovery.
 
 The GitHub gate and Azure intake/posting check out trusted `main` without
 persisting Git credentials. Sample and test jobs use `checkout: none`, receive
@@ -132,7 +151,10 @@ the pinned `global.json`, retaining its stock MAUI manifests and installing the
 selected platform's public MAUI workload without manifest updates. Repository-native
 provisioning alone removes those manifests and cannot supply template samples'
 `$(MauiVersion)` defaults. No package version is injected into the author's project.
-Restore is restricted to its selected, existing platform TFM rather than requiring
+Stable SDKs use the installer's normal public feeds; prerelease SDKs use the public
+CI feed. Both historical `bin` and current `temp` installer layouts are supported.
+Restore is restricted to its selected, existing platform TFM, including an explicit
+platform-version suffix, rather than requiring
 unrequested Android or MacCatalyst workloads. The sample's bundled public MAUI
 version may differ from the issue's reported version; it is not the framework under
 test. Verification retains its own source-pinned SDK and native workloads.
@@ -151,3 +173,10 @@ TRX verification accepts NUnit's parameterized fixture names (for example
 and command exit status. NUnit may omit assertion framework frames from TRX:
 comparison failures are also recognized by the NUnit executor's `Assert.That`,
 `Expected:`, and `But was:` diagnostics, not by generic failure text.
+Setup exceptions such as `Xunit.Sdk.TestClassException` do not count as assertions.
+Prefix-colliding classes are excluded from the candidate's result set after
+validating whole-run counters. UI runners must report their authoritative
+`TRX_RESULT_FILE`; unsupported historical runners fail explicitly.
+Unit candidates contain exactly one file in one project. The verifier snapshots
+the bounded diff before execution, checks source hashes before and after each
+attempt, and never exports mutated source or a patch assembled after generated code ran.

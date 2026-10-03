@@ -88,7 +88,7 @@ stages:
             vmImage: ubuntu-22.04
         ${{ else }}:
           pool:
-            vmImage: macOS-15-arm64
+            vmImage: macOS-26
         timeoutInMinutes: 120
         steps:
           - checkout: none
@@ -107,6 +107,11 @@ stages:
                 -Destination "$(Pipeline.Workspace)/maui"
               if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
             displayName: 'Fetch pinned public source without a checkout credential'
+          - ${{ if eq(parameters.Platform, 'ios') }}:
+            - pwsh: |
+                & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
+                  -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
+              displayName: 'Require Xcode matching the pinned iOS SDK'
           - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
             displayName: 'Prepare local provisioning logs'
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -202,7 +207,7 @@ stages:
 
       - job: Generate2
         dependsOn: [Intake, Verify1]
-        condition: eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive')
+        condition: and(succeeded('Verify1'), eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive'))
         variables:
           reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
           reproFeedback: $[ dependencies.Verify1.outputs['transfer.payload'] ]

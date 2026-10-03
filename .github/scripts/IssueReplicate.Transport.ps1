@@ -42,7 +42,7 @@ if ($Mode -eq 'FetchSample') {
     $url = $source.Url
     if ($source.Type -eq 'repository') {
         if ($manifest.sourceCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'The sample revision is not pinned.' }
-        $repo = ([uri]$source.Url).AbsolutePath.TrimStart('/')
+        $repo = $source.Repository
         $url = "https://api.github.com/repos/$repo/zipball/$($manifest.sourceCommit)"
     }
     $bytes = Get-IssueReplicateDownload -Url ([uri]$url) -MaxBytes 10MB

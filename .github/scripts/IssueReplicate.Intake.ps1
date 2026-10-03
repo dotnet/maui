@@ -48,12 +48,24 @@ $source = Get-IssueReplicateSource -AuthorTexts $authorTexts.ToArray()
 
 $sourceCommit = ''
 if ($source.Type -eq 'repository') {
-    $repoPath = ([uri]$source.Url).AbsolutePath.TrimStart('/')
-    $repo = Get-GitHubJson "repos/$repoPath"
+    $repoPath = $source.Repository
+    try {
+        $repo = Get-GitHubJson "repos/$repoPath"
+    } catch {
+        $failure = $_.Exception
+        while ($failure.InnerException) { $failure = $failure.InnerException }
+        if (-not $source.FallbackUrl -or $failure -isnot [Net.Http.HttpRequestException] -or
+            $failure.StatusCode -ne [Net.HttpStatusCode]::NotFound) { throw }
+        $source = Get-IssueReplicateSource -AuthorTexts @($source.FallbackUrl)
+        $repoPath = $source.Repository
+        $repo = Get-GitHubJson "repos/$repoPath"
+    }
     if ($repo.private -or $repo.disabled -or $repo.archived) {
         throw 'The linked repro repository must be public, enabled, and active.'
     }
-    $sourceCommit = [string](Get-GitHubJson "repos/$repoPath/commits/$($repo.default_branch)").sha
+    $sourceRef = if ($source.Ref) { $source.Ref } else { [string]$repo.default_branch }
+    $escapedRef = [uri]::EscapeDataString($sourceRef)
+    $sourceCommit = [string](Get-GitHubJson "repos/$repoPath/commits/$escapedRef").sha
     if ($sourceCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'Could not pin the sample repository commit.' }
     $downloadUrl = [uri]"https://api.github.com/repos/$repoPath/zipball/$sourceCommit"
 } else {

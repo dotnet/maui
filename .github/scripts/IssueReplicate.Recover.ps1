@@ -50,25 +50,35 @@ for ($page = 1; $page -le 10; $page++) {
             ConvertFrom-Json | ForEach-Object { $_ })
         if ($LASTEXITCODE -ne 0) { throw 'Could not inspect recovery markers.' }
         if (@($reactions | Where-Object {
-            $_.user.login -eq 'github-actions[bot]' -and $_.content -in @('rocket', 'eyes')
+            $_.user.login -eq 'github-actions[bot]' -and $_.content -eq 'rocket'
         }).Count -gt 0) { continue }
-        $started = @(gh api --paginate --slurp "repos/dotnet/maui/issues/$issueNumber/comments?per_page=100" |
-            ConvertFrom-Json | ForEach-Object { $_ } | Where-Object {
-                $_.body -clike "<!-- issue-replicate-start:$($comment.id):*"
-            })
+        $acknowledgements = @(gh api --paginate --slurp "repos/dotnet/maui/issues/$issueNumber/comments?per_page=100" |
+            ConvertFrom-Json | ForEach-Object { $_ })
         if ($LASTEXITCODE -ne 0) { throw 'Could not inspect prior issue-repro dispatches.' }
+        $started = @($acknowledgements | Where-Object {
+                $_.user.login -eq 'github-actions[bot]' -and
+                    ($_.body -cmatch "^<!-- issue-replicate-start:$($comment.id):[1-9][0-9]* -->" -or
+                        ($_.body -clike "<!-- issue-replicate-start:$($comment.id):pending -->*" -and
+                            [datetimeoffset]::Parse($_.updated_at) -gt $newest))
+            })
         if ($started.Count -gt 0) { continue }
+        if ($issue.comments -eq 300 -and @($acknowledgements | Where-Object {
+            $_.user.login -eq 'github-actions[bot]' -and
+                $_.body -clike "<!-- issue-replicate-start:$($comment.id):pending -->*"
+        }).Count -eq 0) { continue }
 
         $reactionId = gh api "repos/dotnet/maui/issues/comments/$($comment.id)/reactions" `
             --method POST -f content=eyes --jq .id
         if ($LASTEXITCODE -ne 0 -or $reactionId -notmatch '^[1-9][0-9]*$') {
-            throw 'Could not reserve the missed command for recovery.'
+            throw 'Could not display the transient recovery acknowledgement.'
         }
-        gh workflow run issue-replicate-trigger.yml --repo dotnet/maui --ref main `
-            -f "issue_number=$issueNumber" -f "source_comment_id=$($comment.id)"
-        if ($LASTEXITCODE -ne 0) {
+        try {
+            gh workflow run issue-replicate-trigger.yml --repo dotnet/maui --ref main `
+                -f "issue_number=$issueNumber" -f "source_comment_id=$($comment.id)"
+            if ($LASTEXITCODE -ne 0) { throw 'Could not dispatch the trusted command workflow.' }
+        } finally {
             gh api "repos/dotnet/maui/issues/comments/$($comment.id)/reactions/$reactionId" --method DELETE --silent
-            throw 'Could not dispatch the trusted command workflow.'
+            if ($LASTEXITCODE -ne 0) { throw 'Could not clear the transient recovery acknowledgement.' }
         }
         Write-Host "Recovered command comment $($comment.id) on issue #$issueNumber."
         $dispatched++

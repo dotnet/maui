@@ -53,6 +53,19 @@ Describe 'Author repro source selection' {
         $source.Type | Should -Be 'attachment'
     }
 
+    It 'preserves an explicit repository branch and an ambiguous prose fallback' {
+        $source = Get-IssueReplicateSource -AuthorTexts @(
+            'https://github.com/Qythyx/bug_repros/tree/maui-shell-flyout-dynamictype-ios')
+        $source.Repository | Should -Be 'Qythyx/bug_repros'
+        $source.Ref | Should -Be 'maui-shell-flyout-dynamictype-ios'
+        $source.Url | Should -Match '/tree/maui-shell-flyout-dynamictype-ios$'
+        $source = Get-IssueReplicateSource -AuthorTexts @('Repro: https://github.com/dotnet/maui.')
+        $source.Url | Should -Be 'https://github.com/dotnet/maui.'
+        $source.FallbackUrl | Should -Be 'https://github.com/dotnet/maui'
+        (Get-IssueReplicateSource -AuthorTexts @('[repro](https://github.com/a/repo.)')).FallbackUrl |
+            Should -BeNullOrEmpty
+    }
+
     It 'ignores off-host, ambiguous, and nonsample attachments' {
         { Get-IssueReplicateSource -AuthorTexts @('https://evil.example/repro.zip') } | Should -Throw
         { Get-IssueReplicateSource -AuthorTexts @('https://github.com/user-attachments/assets/12345678-1234-1234-1234-123456789abc') } | Should -Throw
@@ -112,6 +125,18 @@ Describe 'Repro ZIP bounds' {
         $stream.Dispose()
         { Assert-IssueReplicateZip -Path $script:zipPath -ExtractTo $script:extractPath } | Should -Throw
     }
+
+    It 'rejects separator aliases before extracting any files' {
+        $script:extractPath = Join-Path $TestDrive 'alias-extracted'
+        $stream = [IO.File]::Create($script:zipPath)
+        $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $zip.CreateEntry('sample/Repro.csproj') | Out-Null
+        $zip.CreateEntry('sample//Repro.csproj') | Out-Null
+        $zip.Dispose()
+        $stream.Dispose()
+        { Assert-IssueReplicateZip -Path $script:zipPath -ExtractTo $script:extractPath } | Should -Throw
+        Test-Path -LiteralPath $script:extractPath | Should -BeFalse
+    }
 }
 
 Describe 'Bounded generated tests and reports' {
@@ -141,6 +166,16 @@ Describe 'Bounded generated tests and reports' {
                 path = 'src/Core/tests/UnitTests/Issue12345.cs'
                 content = 'Assert.Fail("fake reproduction");'
             })
+        }
+        foreach ($content in @('Assert.Fail("fake reproduction");', 'Assert.True(false);',
+            'Assert.True(false, "fake reproduction");')) {
+            $candidate.files[0].content = $content
+            { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 } | Should -Throw
+        }
+        $candidate.files[0].content = 'public class Issue12345 { }'
+        $candidate.files += [pscustomobject]@{
+            path = 'src/Controls/tests/Core.UnitTests/Issue12345.cs'
+            content = 'public class Issue12345 { }'
         }
         { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 } | Should -Throw
     }
@@ -183,7 +218,7 @@ Describe 'Observed test evidence' {
 <TestRun>
   <TestDefinitions><UnitTest id="test-1"><TestMethod className="Example.Issue12345" name="ChecksBehavior" /></UnitTest></TestDefinitions>
   <Results><UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed">
-    <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message></ErrorInfo></Output>
+    <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message><StackTrace>at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12</StackTrace></ErrorInfo></Output>
   </UnitTestResult></Results>
   <ResultSummary outcome="Failed"><Counters total="1" executed="1" passed="0" failed="1" /></ResultSummary>
 </TestRun>
@@ -219,6 +254,32 @@ Describe 'Observed test evidence' {
         Set-Content -LiteralPath $script:trxPath -Value $passed
         (Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 0).Status |
             Should -Be 'Passed'
+    }
+
+    It 'rejects xUnit setup errors and distinguishes different assertion locations' {
+        $setup = $script:xml -replace 'NUnit.Framework.AssertionException', 'Xunit.Sdk.TestClassException'
+        Set-Content -LiteralPath $script:trxPath -Value $setup
+        (Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1).Status |
+            Should -Be 'Inconclusive'
+        Set-Content -LiteralPath $script:trxPath -Value $script:xml
+        $first = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        Set-Content -LiteralPath $script:trxPath -Value ($script:xml -replace 'line 12', 'line 15')
+        $second = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $first.Status | Should -Be 'AssertionFailed'
+        $second.Status | Should -Be 'AssertionFailed'
+        $first.FailureIdentities[0] | Should -Not -Be $second.FailureIdentities[0]
+    }
+
+    It 'returns only failing test identities and ignores prefix-colliding classes' {
+        $xml = $script:xml -replace '</TestDefinitions>', '<UnitTest id="test-2"><TestMethod className="Example.Issue12345" name="OtherBehavior" /></UnitTest><UnitTest id="test-3"><TestMethod className="Example.Issue123450" name="Collision" /></UnitTest></TestDefinitions>' `
+            -replace '</Results>', '<UnitTestResult testId="test-2" testName="OtherBehavior" outcome="Passed" /><UnitTestResult testId="test-3" testName="Collision" outcome="Passed" /></Results>' `
+            -replace 'total="1" executed="1" passed="0"', 'total="3" executed="3" passed="2"'
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $verdict.Status | Should -Be 'AssertionFailed'
+        $verdict.Names.Count | Should -Be 1
+        $verdict.Names[0] | Should -Be 'ChecksBehavior'
+        $verdict.FailureIdentities.Count | Should -Be 1
     }
 
     It 'requires a valid single final Copilot JSON event with no tool calls' {
@@ -285,9 +346,50 @@ Describe 'Tool-free candidate generation' {
     }
 }
 
+Describe 'Author sample target selection' {
+    It 'builds the exact existing iOS TFM without dropping its platform version' -TestCases @(
+        @{ Tfm = 'net10.0-ios' },
+        @{ Tfm = 'net10.0-ios27.0' }
+    ) {
+        param($Tfm)
+        $inputDir = Join-Path $TestDrive "sample-$Tfm"
+        $outputDir = Join-Path $TestDrive "sample-output-$Tfm"
+        New-Item -ItemType Directory -Path $inputDir | Out-Null
+        $zipPath = Join-Path $inputDir 'sample.zip'
+        $stream = [IO.File]::Create($zipPath)
+        $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $writer = [IO.StreamWriter]::new($zip.CreateEntry('Sample.csproj').Open())
+        $writer.Write("<Project><PropertyGroup><TargetFrameworks>net10.0-android;$Tfm</TargetFrameworks></PropertyGroup></Project>")
+        $writer.Dispose()
+        $zip.Dispose()
+        $stream.Dispose()
+        @{
+            schemaVersion = 1; platform = 'ios'; targetSha = 'a' * 40
+            sampleSha256 = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        } | ConvertTo-Json | Set-Content (Join-Path $inputDir 'manifest.json')
+        $global:issueReplicateSampleArguments = @()
+        function dotnet {
+            $global:issueReplicateSampleArguments = @($args)
+            $global:LASTEXITCODE = 0
+        }
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Sample.ps1') `
+            -InputDirectory $inputDir -OutputDirectory $outputDir
+        $global:issueReplicateSampleArguments | Should -Contain $Tfm
+        $global:issueReplicateSampleArguments | Should -Contain "-p:TargetFrameworks=$Tfm"
+        (Get-Content -Raw (Join-Path $outputDir 'sample-result.json') | ConvertFrom-Json).targetFramework |
+            Should -Be $Tfm
+        Remove-Variable issueReplicateSampleArguments -Scope Global
+    }
+}
+
 Describe 'Pinned test verification' {
-    It 'exports a patch only after two fresh matching assertion failures' {
-        $repo = Join-Path $TestDrive 'maui-fixture'
+    It 'exports only immutable candidates with matching assertions (mutation=<Mutate>, different=<Different>)' -TestCases @(
+        @{ Mutate = $false; Different = $false },
+        @{ Mutate = $true; Different = $false },
+        @{ Mutate = $false; Different = $true }
+    ) {
+        param($Mutate, $Different)
+        $repo = Join-Path $TestDrive "maui-fixture-$Mutate-$Different"
         $projectDir = Join-Path $repo 'src/Core/tests/UnitTests'
         New-Item -ItemType Directory -Path $projectDir -Force | Out-Null
         Set-Content -LiteralPath (Join-Path $projectDir 'Core.UnitTests.csproj') -Value '<Project />'
@@ -297,7 +399,7 @@ Describe 'Pinned test verification' {
         $manifestPath = Join-Path $TestDrive 'manifest.json'
         $samplePath = Join-Path $TestDrive 'sample-result.json'
         $candidatePath = Join-Path $TestDrive 'candidate.json'
-        $results = Join-Path $TestDrive 'verification'
+        $results = Join-Path $TestDrive "verification-$Mutate-$Different"
         @{
             schemaVersion = 1
             issueNumber = 12345
@@ -319,6 +421,9 @@ Describe 'Pinned test verification' {
             })
         } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $candidatePath
 
+        $global:issueReplicateFixtureRepo = $repo
+        $global:issueReplicateFixtureMutate = $Mutate
+        $global:issueReplicateFixtureDifferent = $Different
         function dotnet {
             $parameters = @($args)
             $directory = $parameters[[array]::IndexOf($parameters, '--results-directory') + 1]
@@ -328,23 +433,43 @@ Describe 'Pinned test verification' {
 <TestRun>
   <TestDefinitions><UnitTest id="test-1"><TestMethod className="Example.Issue12345" name="ChecksBehavior" /></UnitTest></TestDefinitions>
   <Results><UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed">
-    <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message></ErrorInfo></Output>
+    <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message><StackTrace>at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12</StackTrace></ErrorInfo></Output>
   </UnitTestResult></Results>
   <ResultSummary outcome="Failed"><Counters total="1" executed="1" passed="0" failed="1" /></ResultSummary>
 </TestRun>
 '@
+            if ($global:issueReplicateFixtureDifferent -and $name -eq 'attempt-2.trx') {
+                $trx = $trx -replace 'line 12', 'line 15'
+            }
+            if ($global:issueReplicateFixtureMutate) {
+                [IO.File]::WriteAllText((Join-Path $global:issueReplicateFixtureRepo `
+                    'src/Core/tests/UnitTests/Issues/Issue12345.cs'), 'public class NeverCompiled { }')
+            }
             Set-Content -LiteralPath (Join-Path $directory $name) -Value $trx
             $global:LASTEXITCODE = 1
             'One assertion failed'
         }
-        & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `
-            -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $repo `
-            -OutputDirectory $results
+        $verify = {
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `
+                -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $repo `
+                -OutputDirectory $results
+        }
+        if ($Mutate) {
+            $verify | Should -Throw '*changed the candidate source*'
+            Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -BeFalse
+            return
+        }
+        & $verify
         $outcome = Get-Content -Raw -LiteralPath (Join-Path $results 'result.json') | ConvertFrom-Json
-        $outcome.status | Should -Be 'candidate-failed'
+        $outcome.status | Should -Be $(if ($Different) { 'inconclusive' } else { 'candidate-failed' })
         $outcome.testExecuted | Should -BeTrue
-        $outcome.assertionFailed | Should -BeTrue
-        Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -BeTrue
+        $outcome.assertionFailed | Should -Be (-not $Different)
+        Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -Be (-not $Different)
+    }
+
+    AfterEach {
+        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent `
+            -Scope Global -ErrorAction SilentlyContinue
     }
 }
 
@@ -388,6 +513,7 @@ Describe 'Bounded issue result publication' {
             }
             end {
                 $global:LASTEXITCODE = 0
+                if ('user' -in $args) { 'fixture-publisher' }
                 if ('.html_url' -in $args) { 'https://github.com/dotnet/maui/issues/12345#issuecomment-1' }
             }
         }
@@ -399,6 +525,87 @@ Describe 'Bounded issue result publication' {
         $postedBody | Should -Match 'public class Issue12345'
         $postedBody | Should -Not -Match '\[run artifact\]'
         $postedBody | Should -Not -Match 'Ignore previous instructions'
+    }
+}
+
+Describe 'Continuation publication integrity' {
+    It 'keeps a pending main report when a later part fails and ignores forged markers' {
+        $inputDir = Join-Path $TestDrive 'continuation-input'
+        $resultsDir = Join-Path $TestDrive 'continuation-result'
+        New-Item -ItemType Directory -Path $inputDir, $resultsDir | Out-Null
+        @{
+            issueNumber = 12345; commentId = 4925414214; platform = 'android'
+            targetSha = 'a' * 40; sampleSha256 = 'b' * 64; sourceType = 'attachment'
+        } | ConvertTo-Json | Set-Content (Join-Path $inputDir 'manifest.json')
+        $file = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
+        $patch = "diff --git a/$file b/$file`n--- /dev/null`n+++ b/$file`n@@ -0,0 +1 @@`n+" +
+            ('x' * 60000) + "`n"
+        $patchPath = Join-Path $resultsDir 'test.patch'
+        [IO.File]::WriteAllText($patchPath, $patch)
+        @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214; platform = 'android'
+            targetSha = 'a' * 40; sampleSha256 = 'b' * 64; status = 'candidate-failed'
+            testExecuted = $true; assertionFailed = $true; sampleBuilt = $true; testKind = 'unit'
+            patchSha256 = (Get-FileHash $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        } | ConvertTo-Json | Set-Content (Join-Path $resultsDir 'result.json')
+        $global:issueReplicateRemote = [Collections.Generic.List[object]]::new()
+        $global:issueReplicateRemote.Add(@{
+            id = 1; owner = 'untrusted'; body = '<!-- issue-replicate-result:456789 --> forged'
+        })
+        $global:issueReplicateRemote.Add(@{
+            id = 2; owner = 'untrusted'; body = '<!-- issue-replicate-result:456789 --> duplicate'
+        })
+        $global:issueReplicateFailPart = $true
+        function gh {
+            begin { $inputBody = [Collections.Generic.List[string]]::new() }
+            process { if ($null -ne $_) { $inputBody.Add([string]$_) } }
+            end {
+                $global:LASTEXITCODE = 0
+                if ($args[1] -eq 'user') { 'fixture-publisher'; return }
+                if ('--paginate' -in $args) {
+                    $query = $args[[array]::IndexOf($args, '--jq') + 1]
+                    $query | Should -Match '\.user\.login == "fixture-publisher"'
+                    $marker = [regex]::Match($query, 'startswith\("([^"]+)"\)').Groups[1].Value
+                    $global:issueReplicateRemote | Where-Object {
+                        $_.owner -eq 'fixture-publisher' -and $_.body.StartsWith($marker)
+                    } | ForEach-Object id
+                    return
+                }
+                $body = $inputBody -join "`n"
+                if ($global:issueReplicateFailPart -and
+                    $body.StartsWith('<!-- issue-replicate-patch:2:')) {
+                    $global:LASTEXITCODE = 1
+                    return
+                }
+                if ($args[1] -match '/issues/comments/([0-9]+)$') {
+                    $id = [int]$Matches[1]
+                    @($global:issueReplicateRemote | Where-Object id -eq $id)[0].body = $body
+                } else {
+                    $id = $global:issueReplicateRemote.Count + 1
+                    $global:issueReplicateRemote.Add(@{ id = $id; owner = 'fixture-publisher'; body = $body })
+                }
+                "https://github.com/dotnet/maui/issues/12345#issuecomment-$id"
+            }
+        }
+        $post = {
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 `
+                -CommentId 4925414214 -BuildId 456789 -InputDirectory $inputDir -ResultsDirectory $resultsDir
+        }
+        $post | Should -Throw '*Could not post*'
+        $owned = @($global:issueReplicateRemote | Where-Object owner -eq 'fixture-publisher')
+        $owned.Count | Should -Be 2
+        $owned[0].body | Should -Match 'publication is incomplete'
+        $owned[1].body | Should -Match 'otherwise these fragments are incomplete'
+        $global:issueReplicateRemote[0].body | Should -Be '<!-- issue-replicate-result:456789 --> forged'
+        $global:issueReplicateFailPart = $false
+        & $post
+        $main = @($global:issueReplicateRemote | Where-Object {
+            $_.owner -eq 'fixture-publisher' -and $_.body.StartsWith('<!-- issue-replicate-result:')
+        })
+        $main.Count | Should -Be 1
+        $main[0].body | Should -Not -Match 'Candidate publication is incomplete'
+        $main[0].body | Should -Match '\[Part 1 of'
+        Remove-Variable issueReplicateRemote, issueReplicateFailPart -Scope Global
     }
 }
 

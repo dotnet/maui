@@ -76,16 +76,37 @@ try {
         [IO.File]::WriteAllText($full, [string]$file.content, [Text.UTF8Encoding]::new($false))
         $written.Add($relative)
     }
+    & git add -N -- $written.ToArray()
+    if ($LASTEXITCODE -ne 0) { throw 'Could not stage the candidate for a bounded diff.' }
+    $patch = & git diff --no-ext-diff --no-textconv --binary -- $written.ToArray()
+    if ($LASTEXITCODE -ne 0) { throw 'Could not snapshot the candidate test patch.' }
+    $patchText = ($patch -join "`n") + "`n"
+    if ([Text.Encoding]::UTF8.GetByteCount($patchText) -gt 100KB -or $patchText.Length -le 1) {
+        throw 'The candidate patch is empty or too large.'
+    }
+    $sourceHashes = @{}
+    foreach ($relative in $written) {
+        $sourceHashes[$relative] = (Get-FileHash -LiteralPath (Join-Path $RepoRoot $relative) -Algorithm SHA256).Hash
+    }
     $log = Join-Path $OutputDirectory 'test.log'
     $testLines = [System.Collections.Generic.List[string]]::new()
     $filter = "FullyQualifiedName~$issueClass"
     $trxDirectory = Join-Path $OutputDirectory 'trx'
     New-Item -ItemType Directory -Path $trxDirectory -Force | Out-Null
-    $firstFailureNames = @()
+    $firstFailureIdentities = @()
     for ($attempt = 1; $attempt -le 2; $attempt++) {
+        foreach ($relative in $written) {
+            $path = Join-Path $RepoRoot $relative
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or
+                (Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -cne $sourceHashes[$relative]) {
+                throw 'Generated code changed the candidate source; it cannot be verified.'
+            }
+        }
+        $reportedTrx = [System.Collections.Generic.List[string]]::new()
         if ($candidate.kind -eq 'ui') {
             $uiTrxDirectory = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/TestResults'
-            $trxFile = Join-Path $uiTrxDirectory "FullyQualifiedName_$issueClass.trx"
+            $trxFile = Join-Path $uiTrxDirectory "$($filter -replace '[^A-Za-z0-9._-]', '_').trx"
             if (Test-Path -LiteralPath $trxFile) { Remove-Item -LiteralPath $trxFile -Force }
         } else {
             $trxFile = Join-Path $trxDirectory "attempt-$attempt.trx"
@@ -97,6 +118,7 @@ try {
             & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter 2>&1 |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+                    if ($line -match '^>>> TRX_RESULT_FILE: (.+)$') { $reportedTrx.Add($Matches[1]) }
                     if ($testLines.Count -lt 3000) { $testLines.Add($line) }
                     Write-Host $line
                 }
@@ -110,6 +132,22 @@ try {
                 }
         }
         $testExit = $LASTEXITCODE
+        if ($candidate.kind -eq 'ui') {
+            if ($reportedTrx.Count -ne 1) { throw 'The pinned UI runner must report one authoritative TRX_RESULT_FILE.' }
+            $trxFile = [IO.Path]::GetFullPath($reportedTrx[0])
+            $root = [IO.Path]::GetFullPath($RepoRoot).TrimEnd([IO.Path]::DirectorySeparatorChar) +
+                [IO.Path]::DirectorySeparatorChar
+            if (-not $trxFile.StartsWith($root, [StringComparison]::Ordinal) -or
+                [IO.Path]::GetExtension($trxFile) -cne '.trx') { throw 'The UI runner reported an unexpected result path.' }
+        }
+        foreach ($relative in $written) {
+            $path = Join-Path $RepoRoot $relative
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or
+                (Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -cne $sourceHashes[$relative]) {
+                throw 'Generated code changed the candidate source; no verified patch will be exported.'
+            }
+        }
         if (-not (Test-Path -LiteralPath $trxFile -PathType Leaf) -or
             (Get-Item -LiteralPath $trxFile).LastWriteTimeUtc -lt $started) { break }
         $verdict = Get-IssueReplicateTrxVerdict -Path $trxFile -ClassName $issueClass -ExitCode $testExit
@@ -120,24 +158,17 @@ try {
             break
         }
         if ($attempt -eq 1) {
-            $firstFailureNames = @($verdict.Names)
-        } elseif (($verdict.Names -join "`n") -ceq ($firstFailureNames -join "`n")) {
+            $firstFailureIdentities = @($verdict.FailureIdentities)
+        } elseif ($firstFailureIdentities.Count -gt 0 -and
+            ($verdict.FailureIdentities -join "`n") -ceq ($firstFailureIdentities -join "`n")) {
             $result.assertionFailed = $true
             $result.status = 'candidate-failed'
         }
     }
     $testLines | Set-Content -LiteralPath $log -Encoding utf8
     if ($result.status -eq 'candidate-failed') {
-        & git add -N -- $written.ToArray()
-        if ($LASTEXITCODE -ne 0) { throw 'Could not stage the candidate for a bounded diff.' }
-        $patch = & git diff --binary -- $written.ToArray()
-        if ($LASTEXITCODE -ne 0) { throw 'Could not generate the candidate test patch.' }
-        $patchText = $patch -join "`n"
-        if ([Text.Encoding]::UTF8.GetByteCount($patchText) -gt 100KB -or $patchText.Length -eq 0) {
-            throw 'The candidate patch is empty or too large.'
-        }
         $patchPath = Join-Path $OutputDirectory 'test.patch'
-        [IO.File]::WriteAllText($patchPath, $patchText + "`n", [Text.UTF8Encoding]::new($false))
+        [IO.File]::WriteAllText($patchPath, $patchText, [Text.UTF8Encoding]::new($false))
         $result.patchSha256 = (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
     }
     Assert-IssueReplicateResult -Result ([pscustomobject]$result) -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null

@@ -111,9 +111,20 @@ function Get-IssueReplicateSource {
         foreach ($match in [regex]::Matches($text, '(?i)\[[^\]\r\n]*\.zip\]\((https://github\.com/user-attachments/(?:assets/[a-f0-9-]{36}|files/[1-9][0-9]*/[a-z0-9_.-]+\.zip))\)')) {
             $sources += [pscustomobject]@{ Type = 'attachment'; Url = $match.Groups[1].Value }
         }
-        foreach ($match in [regex]::Matches($text, '(?i)https://github\.com/([a-z0-9][a-z0-9-]{0,38})/([a-z0-9_.-]+)(?=[\s)\]>,]|$)')) {
+        foreach ($match in [regex]::Matches($text, '(?i)https://github\.com/([a-z0-9][a-z0-9-]{0,38})/([a-z0-9_.-]+)(?:/tree/([a-z0-9_.%-]+))?(?=[\s)\]>,;]|$)')) {
             if ($match.Groups[1].Value -eq 'user-attachments') { continue }
-            $sources += [pscustomobject]@{ Type = 'repository'; Url = $match.Value }
+            $fallback = ''
+            if (-not $match.Groups[3].Success -and $match.Value.EndsWith('.') -and
+                ($match.Index -eq 0 -or $text[$match.Index - 1] -ne '(')) {
+                $fallback = $match.Value.TrimEnd('.')
+            }
+            $sources += [pscustomobject]@{
+                Type = 'repository'
+                Url = $match.Value
+                Repository = "$($match.Groups[1].Value)/$($match.Groups[2].Value)"
+                Ref = [uri]::UnescapeDataString($match.Groups[3].Value)
+                FallbackUrl = $fallback
+            }
         }
         $sources = @($sources | Sort-Object Url -Unique)
         if ($sources.Count -gt 1) {
@@ -123,6 +134,9 @@ function Get-IssueReplicateSource {
             return [pscustomobject]@{
                 Type = $sources[0].Type
                 Url = $sources[0].Url
+                Repository = $sources[0].Repository
+                Ref = $sources[0].Ref
+                FallbackUrl = $sources[0].FallbackUrl
                 Text = $text.Substring(0, [Math]::Min(8000, $text.Length))
             }
         }
@@ -151,7 +165,7 @@ function Assert-IssueReplicateZip {
             $expanded += $entry.Length
             $mode = ($entry.ExternalAttributes -shr 16) -band 0xF000
             if ($expanded -gt 40MB -or $entry.Length -gt 10MB -or
-                $name -match '\\|(^|/)\.{1,2}(/|$)|^/|^[A-Za-z]:|[\x00-\x1F]' -or
+                $name -match '\\|//|(^|/)\.{1,2}(/|$)|^/|^[A-Za-z]:|[\x00-\x1F]' -or
                 $mode -eq 0xA000 -or -not $seen.Add($name.TrimEnd('/'))) {
                 throw 'The sample ZIP contains an oversized, linked, repeated, or unsafe entry.'
             }
@@ -171,7 +185,7 @@ function Assert-IssueReplicateZip {
                 } else {
                     New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
                     $inputStream = $entry.Open()
-                    $outputStream = [IO.File]::Create($destination)
+                    $outputStream = [IO.File]::Open($destination, [IO.FileMode]::CreateNew)
                     try { $inputStream.CopyTo($outputStream) }
                     finally { $outputStream.Dispose(); $inputStream.Dispose() }
                 }
@@ -218,12 +232,13 @@ function Assert-IssueReplicateCandidate {
         }
         if ($file.content -isnot [string] -or $file.content.Length -gt 30000 -or
             [string]::IsNullOrWhiteSpace($file.content)) { throw 'Candidate test file is empty or too large.' }
-        if ($file.content -match '(?i)\bAssert\.(Fail|True\s*\(\s*false\s*\))\b') {
+        if ($file.content -match '(?i)\bAssert\.(Fail\b|True\s*\(\s*false\s*(?:,|\)))') {
             throw 'The generated test contains an unconditional failure.'
         }
         $total += $file.content.Length
     }
     if ($total -gt 60000) { throw 'Candidate test is too large.' }
+    if ($Candidate.kind -eq 'unit' -and $files.Count -ne 1) { throw 'Unit candidates must target exactly one test file and project.' }
     if ($Candidate.kind -eq 'ui' -and $files.Count -ne 2) { throw 'UI candidates need a HostApp page and an NUnit test.' }
     if ($Candidate.kind -eq 'xaml' -and $files.Count -ne 2) { throw 'XAML candidates need markup and code-behind.' }
     return $true
@@ -316,23 +331,26 @@ function Get-IssueReplicateTrxVerdict {
             [void]$nunitIds.Add($definition.GetAttribute('id'))
         }
     }
-    $results = @($xml.SelectNodes("//*[local-name()='UnitTestResult']"))
+    $allResults = @($xml.SelectNodes("//*[local-name()='UnitTestResult']"))
     $counters = $xml.SelectSingleNode("//*[local-name()='ResultSummary']/*[local-name()='Counters']")
-    $passed = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
-    $failures = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' })
-    if ($ids.Count -lt 1 -or $results.Count -lt 1 -or $null -eq $counters -or
-        [int]$counters.GetAttribute('total') -ne $results.Count -or
-        [int]$counters.GetAttribute('executed') -ne $results.Count -or
-        [int]$counters.GetAttribute('passed') -ne $passed -or
-        [int]$counters.GetAttribute('failed') -ne $failures.Count -or
-        @($results | Where-Object {
-            -not $ids.Contains($_.GetAttribute('testId')) -or
+    $allPassed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
+    $allFailures = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' }).Count
+    if ($ids.Count -lt 1 -or $allResults.Count -lt 1 -or $null -eq $counters -or
+        [int]$counters.GetAttribute('total') -ne $allResults.Count -or
+        [int]$counters.GetAttribute('executed') -ne $allResults.Count -or
+        [int]$counters.GetAttribute('passed') -ne $allPassed -or
+        [int]$counters.GetAttribute('failed') -ne $allFailures -or
+        @($allResults | Where-Object {
             [string]::IsNullOrWhiteSpace($_.GetAttribute('testName'))
         }).Count -gt 0) {
         return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
     }
+    $results = @($allResults | Where-Object { $ids.Contains($_.GetAttribute('testId')) })
+    if ($results.Count -lt 1) { return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() } }
+    $passed = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
+    $failures = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' })
     $names = @($results | ForEach-Object { $_.GetAttribute('testName') } | Sort-Object)
-    if ($passed -eq $results.Count -and $ExitCode -eq 0) {
+    if ($passed -eq $results.Count -and $ExitCode -eq 0 -and $allFailures -eq 0) {
         return [pscustomobject]@{ Status = 'Passed'; Names = $names }
     }
     if ($ExitCode -ne 0 -and $failures.Count -gt 0 -and
@@ -342,13 +360,35 @@ function Get-IssueReplicateTrxVerdict {
             $messageNode = if ($errorInfo) { $errorInfo.SelectSingleNode("*[local-name()='Message']") } else { $null }
             $message = if ($messageNode) { $messageNode.InnerText } else { '' }
             $errorInfo -and
-                ($errorInfo.InnerText -match '(?i)NUnit\.Framework\.AssertionException|Xunit\.(Sdk\.)?\w+Exception|AssertFailedException|at\s+.*\bAssert\.' -or
+                $message -notmatch '(?i)Xunit\.Sdk\.TestClassException' -and
+                ($errorInfo.InnerText -match '(?i)NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:True|False|Equal|NotEqual|StrictEqual|Null|NotNull|Empty|NotEmpty|Single|Collection|Contains|DoesNotContain|InRange|NotInRange|IsType|IsNotType|IsAssignableFrom|Throws|ThrowsAny|Same|NotSame|StartsWith|EndsWith|Matches|DoesNotMatch|All|Equivalent|Multiple|PropertyChanged)Exception\b|AssertFailedException|at\s+(?:Xunit|NUnit\.Framework)\.Assert\.' -or
                     ($nunitIds.Contains($_.GetAttribute('testId')) -and
                         $message -match '(?m)^\s*Assert\.That\(' -and
                         $message -match '(?m)^\s*Expected:' -and
                         $message -match '(?m)^\s*But was:'))
         }).Count -eq $failures.Count) {
-        return [pscustomobject]@{ Status = 'AssertionFailed'; Names = $names }
+        $identities = @()
+        foreach ($failure in $failures) {
+            $errorInfo = $failure.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']")
+            $message = $errorInfo.SelectSingleNode("*[local-name()='Message']").InnerText.Replace("`r", '').Trim()
+            $stack = $errorInfo.SelectSingleNode("*[local-name()='StackTrace']")
+            $source = if ($stack) {
+                @($stack.InnerText.Replace("`r", '') -split "`n" | Where-Object {
+                    $_ -match "\b$([regex]::Escape($ClassName))([.(+])" -and $_ -notmatch '\.ctor\b'
+                } | Select-Object -First 1) -join ''
+            } else { '' }
+            if (-not $source -and $message -notmatch '(?m)^\s*Assert\.That\(') {
+                return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
+            }
+            $identity = "$($failure.GetAttribute('testName'))`n$message`n$($source.Trim())"
+            $identities += [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+                [Text.Encoding]::UTF8.GetBytes($identity))).ToLowerInvariant()
+        }
+        return [pscustomobject]@{
+            Status = 'AssertionFailed'
+            Names = @($failures | ForEach-Object { $_.GetAttribute('testName') } | Sort-Object)
+            FailureIdentities = @($identities | Sort-Object)
+        }
     }
     return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
 }

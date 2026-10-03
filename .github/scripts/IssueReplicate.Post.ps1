@@ -75,7 +75,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     if ($manifest.sourceType -eq 'repository') {
         $sourceCommit = $manifest.sourceCommit
         $commitLink = if ($manifest.sourceUrl) {
-            "[$($sourceCommit.Substring(0, 7))]($($manifest.sourceUrl)/tree/$sourceCommit)"
+            "[$($sourceCommit.Substring(0, 7))](https://github.com/$($source.Repository)/tree/$sourceCommit)"
         } else { "``$sourceCommit``" }
         $details += "`n| Pinned author repro revision | $commitLink |"
     }
@@ -148,8 +148,12 @@ function Set-ResultComment {
     if ([Text.Encoding]::UTF8.GetByteCount($Body) -gt 60000) {
         throw 'The reproduction comment exceeds the bounded publication size.'
     }
+    $identity = gh api user --jq .login
+    if ($LASTEXITCODE -ne 0 -or [string]$identity -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
+        throw 'Could not identify the authenticated comment publisher.'
+    }
     $existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
-        --jq ".[] | select(.body | contains(`"$Marker`")) | .id")
+        --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$Marker`"))) | .id")
     if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
     if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same run.' }
     if ($existing.Count -eq 1) {
@@ -176,12 +180,21 @@ if ($patchText) {
             $offset += $length
         }
         $links = @()
+        if (-not $OutputPath) {
+            $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n" +
+                "**Candidate publication is incomplete.** The full verified patch is not yet available; " +
+                "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
+                "[Public run and execution logs]($buildUrl)."
+            $pendingUrl = Set-ResultComment -Marker $marker -Body $pendingBody
+        }
         for ($index = 0; $index -lt $parts.Count; $index++) {
             $number = $index + 1
             $partMarker = $marker.Replace('issue-replicate-result:', "issue-replicate-patch:${number}:")
             $exact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($parts[$index]))
             $partBody = "$partMarker`n## Generated test candidate: part $number of $($parts.Count)`n`n" +
-                "Patch SHA-256: ``$patchSha256``. The full patch is preserved, not truncated. " +
+                "Patch SHA-256: ``$patchSha256``. " +
+                $(if ($OutputPath) { 'The full patch is preserved across all preview parts. ' }
+                    else { "Publication is complete only when [the main report]($pendingUrl) links every part; otherwise these fragments are incomplete and must not be applied. " }) +
                 "Review this untrusted code before applying it. To reconstruct exact bytes, decode each " +
                 "base64 fragment and concatenate the decoded bytes in order." +
                 (Format-PatchBlock -Text $parts[$index]) +
