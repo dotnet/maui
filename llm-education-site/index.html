@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11130f" />
+    <meta
+      name="description"
+      content="A free, interactive field guide to large language models: tokens, transformers, training, prompting, RAG, evaluation, safety, and local models."
+    />
+    <title>LLM Field Guide — Learn how language models work</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to lesson</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="LLM Field Guide home">
+        <span class="brand-glyph" aria-hidden="true">λ</span>
+        <span>LLM FIELD GUIDE</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href="#anatomy">Anatomy</a>
+        <a href="#training">Training</a>
+        <a href="#labs">Labs</a>
+        <a href="#systems">Systems</a>
+        <a href="#path">Learning path</a>
+      </nav>
+      <div class="header-meta">
+        <span id="progressLabel">0% explored</span>
+        <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="overline">An interactive, evidence-linked primer</p>
+            <h1>Language models,<br /><em>taken apart.</em></h1>
+            <p class="hero-lede">
+              Learn what an LLM predicts, how a transformer moves information, why models hallucinate,
+              and how real systems use retrieval, tools, evaluation, and human judgment.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#anatomy">Open the field guide <span>↓</span></a>
+              <a class="button button-ghost" href="#labs">Jump to the labs</a>
+            </div>
+            <ul class="hero-facts" aria-label="Course facts">
+              <li><strong>8</strong><span>core ideas</span></li>
+              <li><strong>4</strong><span>interactive labs</span></li>
+              <li><strong>16</strong><span>trusted sources</span></li>
+            </ul>
+          </div>
+
+          <div class="hero-machine" aria-label="Animated next-token prediction example">
+            <div class="machine-head">
+              <span>LIVE INFERENCE TRACE</span>
+              <span class="status"><i></i> RUNNING</span>
+            </div>
+            <div class="machine-prompt">
+              <span class="machine-label">PROMPT</span>
+              <p>The capital of France is</p>
+            </div>
+            <div class="probability-list">
+              <div class="probability-row">
+                <code>Paris</code><span class="probability-bar"><i style="--value: 92%"></i></span><b>92%</b>
+              </div>
+              <div class="probability-row">
+                <code>the</code><span class="probability-bar"><i style="--value: 3%"></i></span><b>3%</b>
+              </div>
+              <div class="probability-row">
+                <code>located</code><span class="probability-bar"><i style="--value: 2%"></i></span><b>2%</b>
+              </div>
+              <div class="probability-row">
+                <code>beautiful</code><span class="probability-bar"><i style="--value: 1%"></i></span><b>1%</b>
+              </div>
+            </div>
+            <div class="machine-output">
+              <span class="machine-label">SAMPLED TOKEN</span>
+              <strong>Paris<span class="cursor">_</span></strong>
+            </div>
+            <p class="machine-note">
+              An LLM produces probabilities—not a database lookup or a guaranteed fact.
+            </p>
+          </div>
+        </div>
+        <div class="scroll-cue" aria-hidden="true">SCROLL TO DISASSEMBLE <span>↘</span></div>
+      </section>
+
+      <section class="chapter paper-section" id="anatomy" data-progress>
+        <div class="section-number">01 / ANATOMY</div>
+        <div class="chapter-heading">
+          <div>
+            <p class="overline dark">Begin with the mechanism</p>
+            <h2>What is an LLM,<br />actually?</h2>
+          </div>
+          <p class="chapter-intro">
+            A large language model is a neural network trained on sequences of tokens. During generation it repeatedly
+            estimates <em>what token is likely to come next</em>. Scale, attention, training data, and post-training make
+            this simple objective produce surprisingly general behavior.
+          </p>
+        </div>
+
+        <div class="concept-explorer">
+          <div class="concept-list" role="tablist" aria-label="Explore the parts of a language model">
+            <button class="concept-tab active" role="tab" aria-selected="true" aria-controls="conceptPanel" data-concept="tokens">
+              <span>01</span><strong>Tokens</strong><small>The pieces models read</small>
+            </button>
+            <button class="concept-tab" role="tab" aria-selected="false" aria-controls="conceptPanel" data-concept="embeddings">
+              <span>02</span><strong>Embeddings</strong><small>Meaning as coordinates</small>
+            </button>
+            <button class="concept-tab" role="tab" aria-selected="false" aria-controls="conceptPanel" data-concept="attention">
+              <span>03</span><strong>Attention</strong><small>Information routing</small>
+            </button>
+            <button class="concept-tab" role="tab" aria-selected="false" aria-controls="conceptPanel" data-concept="prediction">
+              <span>04</span><strong>Prediction</strong><small>One token at a time</small>
+            </button>
+          </div>
+          <article class="concept-panel" id="conceptPanel" role="tabpanel" tabindex="0" aria-live="polite">
+            <div class="concept-diagram" id="conceptDiagram" aria-hidden="true"></div>
+            <p class="concept-kicker" id="conceptKicker">THE INPUT LAYER</p>
+            <h3 id="conceptTitle">Tokens are not always words.</h3>
+            <p id="conceptBody">
+              A tokenizer converts text into integer IDs from a fixed vocabulary. Common words may be one token;
+              unusual words may split into several. Tokenization affects context limits, cost, speed, and how easily a
+              model handles different languages.
+            </p>
+            <p class="analogy" id="conceptAnalogy"><strong>Think of it like:</strong> movable type in a printing press.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="chapter ink-section" id="labs" data-progress>
+        <div class="section-number light">02 / LAB — TOKENIZER</div>
+        <div class="lab-heading">
+          <div>
+            <p class="overline">Try the mechanism</p>
+            <h2>Cut a sentence<br />into model-sized pieces.</h2>
+          </div>
+          <p>
+            Real tokenizers use learned vocabularies such as BPE or SentencePiece. This simplified lab demonstrates the
+            key idea: frequent fragments stay together, while punctuation and unfamiliar words split apart.
+          </p>
+        </div>
+
+        <div class="token-lab lab-card">
+          <label for="tokenInput">Enter text</label>
+          <div class="token-input-row">
+            <textarea id="tokenInput" rows="3">Unbelievable! Language models learn patterns, not truth.</textarea>
+            <button class="square-button" id="tokenizeButton" type="button" aria-label="Tokenize text">→</button>
+          </div>
+          <div class="lab-output">
+            <div class="output-meta">
+              <span>SIMULATED TOKENS</span>
+              <strong id="tokenCount">0 tokens</strong>
+            </div>
+            <div class="token-output" id="tokenOutput" aria-live="polite"></div>
+          </div>
+          <p class="lab-caveat">Illustrative only. Exact splits differ by model and tokenizer vocabulary.</p>
+        </div>
+      </section>
+
+      <section class="chapter paper-section" id="training" data-progress>
+        <div class="section-number">03 / TRAINING</div>
+        <div class="chapter-heading">
+          <div>
+            <p class="overline dark">From raw text to useful assistant</p>
+            <h2>Three different<br />jobs called “training.”</h2>
+          </div>
+          <p class="chapter-intro">
+            Pretraining builds broad language capability. Supervised fine-tuning teaches response patterns.
+            Preference optimization shapes behavior. They use different data, objectives, and amounts of compute.
+          </p>
+        </div>
+
+        <div class="training-stack">
+          <article>
+            <span class="stage-index">A</span>
+            <div>
+              <p class="stage-label">PRETRAINING</p>
+              <h3>Learn statistical structure</h3>
+              <p>Predict missing or next tokens across a large corpus. The model absorbs patterns in language, code, facts, and style.</p>
+            </div>
+            <div class="stage-data"><strong>INPUT</strong><span>Web, books, code, papers</span></div>
+            <div class="stage-data"><strong>OBJECTIVE</strong><span>Lower prediction error</span></div>
+          </article>
+          <article>
+            <span class="stage-index">B</span>
+            <div>
+              <p class="stage-label">SUPERVISED FINE-TUNING</p>
+              <h3>Learn to follow instructions</h3>
+              <p>Train on curated prompt-response examples so the base model answers in a useful conversational format.</p>
+            </div>
+            <div class="stage-data"><strong>INPUT</strong><span>Demonstrations</span></div>
+            <div class="stage-data"><strong>OBJECTIVE</strong><span>Imitate good answers</span></div>
+          </article>
+          <article>
+            <span class="stage-index">C</span>
+            <div>
+              <p class="stage-label">PREFERENCE OPTIMIZATION</p>
+              <h3>Shape choices and boundaries</h3>
+              <p>Use human or model preferences through methods such as RLHF or DPO to favor helpful and safer responses.</p>
+            </div>
+            <div class="stage-data"><strong>INPUT</strong><span>Ranked responses</span></div>
+            <div class="stage-data"><strong>OBJECTIVE</strong><span>Prefer desired behavior</span></div>
+          </article>
+        </div>
+
+        <aside class="myth">
+          <span>COMMON MISCONCEPTION</span>
+          <p><s>“The model stores a copy of the internet.”</s></p>
+          <p>
+            Training compresses statistical patterns into parameters. Models can memorize some examples, but they do not
+            normally retrieve a clean source document from their weights—and they can confidently reconstruct something false.
+          </p>
+        </aside>
+      </section>
+
+      <section class="chapter acid-section" id="sampling" data-progress>
+        <div class="section-number">04 / LAB — SAMPLING</div>
+        <div class="sampling-grid">
+          <div class="sampling-copy">
+            <p class="overline dark">Temperature is not creativity</p>
+            <h2>Change the<br />shape of chance.</h2>
+            <p>
+              Temperature rescales token probabilities before sampling. Lower values concentrate probability on likely
+              tokens; higher values flatten the distribution. The underlying knowledge does not improve—it only becomes
+              more or less predictable.
+            </p>
+            <label for="temperatureRange">Temperature: <strong id="temperatureValue">0.7</strong></label>
+            <input id="temperatureRange" type="range" min="0.1" max="2" value="0.7" step="0.1" />
+            <div class="temperature-labels"><span>Focused</span><span>Exploratory</span></div>
+          </div>
+          <div class="sampling-visual" aria-live="polite">
+            <p class="sample-prompt">“The robot opened the door and saw…”</p>
+            <div id="sampleBars" class="sample-bars"></div>
+            <button id="sampleButton" class="button button-dark" type="button">Sample next token</button>
+            <p class="sample-result">Selected: <strong id="sampleResult">a garden</strong></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter paper-section" id="systems" data-progress>
+        <div class="section-number">05 / SYSTEMS</div>
+        <div class="chapter-heading">
+          <div>
+            <p class="overline dark">The model is one component</p>
+            <h2>Useful AI is<br />a system, not a prompt.</h2>
+          </div>
+          <p class="chapter-intro">
+            Production applications surround the model with retrieval, tools, structured outputs, guardrails,
+            observability, and evaluation. The architecture depends on the problem—not on whichever technique is newest.
+          </p>
+        </div>
+
+        <div class="system-cards">
+          <article>
+            <span>01</span>
+            <h3>Prompting</h3>
+            <p>Best when the model already has the capability and needs clearer instructions, context, examples, or constraints.</p>
+            <b>Changes the input</b>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>RAG</h3>
+            <p>Retrieves relevant passages at request time, then asks the model to answer from that supplied evidence.</p>
+            <b>Changes the context</b>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Fine-tuning</h3>
+            <p>Adjusts model weights to teach a recurring behavior, format, vocabulary, or narrow task from examples.</p>
+            <b>Changes the model</b>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>Tool use</h3>
+            <p>Lets a model call calculators, search, databases, or application APIs instead of pretending to know the result.</p>
+            <b>Changes the capability</b>
+          </article>
+        </div>
+
+        <div class="rag-lab">
+          <div class="rag-copy">
+            <p class="overline dark">Mini RAG lab</p>
+            <h3>See retrieval change an answer.</h3>
+            <p>Choose a question. The retriever ranks the tiny document collection; the “model” then answers only from the best passage.</p>
+            <div class="rag-questions" role="group" aria-label="RAG example questions">
+              <button class="rag-question active" type="button" data-rag="context">What limits how much an LLM can read?</button>
+              <button class="rag-question" type="button" data-rag="rag">Does RAG retrain the model?</button>
+              <button class="rag-question" type="button" data-rag="hallucination">Why do models invent facts?</button>
+            </div>
+          </div>
+          <div class="rag-pipeline">
+            <div class="rag-step">
+              <span>1 · QUERY</span>
+              <p id="ragQuery">What limits how much an LLM can read?</p>
+            </div>
+            <div class="rag-arrow">↓ vector similarity</div>
+            <div class="rag-step retrieved">
+              <span>2 · RETRIEVED PASSAGE</span>
+              <p id="ragPassage"></p>
+              <b id="ragScore"></b>
+            </div>
+            <div class="rag-arrow">↓ grounded generation</div>
+            <div class="rag-step answer">
+              <span>3 · ANSWER</span>
+              <p id="ragAnswer"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter ink-section" id="prompt-lab" data-progress>
+        <div class="section-number light">06 / LAB — PROMPT DESIGN</div>
+        <div class="lab-heading">
+          <div>
+            <p class="overline">Build a stronger request</p>
+            <h2>Good prompts reduce<br />guesswork.</h2>
+          </div>
+          <p>
+            A useful prompt names the task, supplies necessary context, defines constraints, and makes success observable.
+            It cannot create missing knowledge or guarantee truth; pair prompting with evidence and evaluation.
+          </p>
+        </div>
+
+        <div class="prompt-builder lab-card">
+          <div class="prompt-controls">
+            <label for="goalSelect">Goal
+              <select id="goalSelect">
+                <option value="explain">Explain a concept</option>
+                <option value="summarize">Summarize material</option>
+                <option value="compare">Compare options</option>
+                <option value="critique">Critique a proposal</option>
+              </select>
+            </label>
+            <label for="audienceSelect">Audience
+              <select id="audienceSelect">
+                <option value="beginner">Curious beginner</option>
+                <option value="developer">Software developer</option>
+                <option value="leader">Technical leader</option>
+                <option value="expert">Domain expert</option>
+              </select>
+            </label>
+            <label for="formatSelect">Output
+              <select id="formatSelect">
+                <option value="lesson">Short lesson</option>
+                <option value="steps">Step-by-step guide</option>
+                <option value="table">Comparison table</option>
+                <option value="json">Structured JSON</option>
+              </select>
+            </label>
+            <label for="topicInput">Topic or material
+              <textarea id="topicInput" rows="5">Why retrieval-augmented generation can reduce unsupported claims</textarea>
+            </label>
+            <label class="check-label">
+              <input id="evidenceToggle" type="checkbox" checked />
+              <span>Require evidence and uncertainty notes</span>
+            </label>
+          </div>
+          <div class="prompt-output">
+            <div class="output-meta"><span>COMPOSED PROMPT</span><button id="copyPrompt" type="button">COPY</button></div>
+            <pre id="generatedPrompt" tabindex="0"></pre>
+            <p id="copyStatus" class="copy-status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter paper-section" id="limits" data-progress>
+        <div class="section-number">07 / LIMITS & EVALUATION</div>
+        <div class="chapter-heading">
+          <div>
+            <p class="overline dark">Fluency is not reliability</p>
+            <h2>Know where the<br />confidence ends.</h2>
+          </div>
+          <p class="chapter-intro">
+            LLM output should be treated as a proposal whose reliability depends on the model, task, evidence, and checks.
+            Evaluation must resemble the real use case and include failures—not just average benchmark scores.
+          </p>
+        </div>
+
+        <div class="risk-grid">
+          <article><span>HALLUCINATION</span><h3>Plausible ≠ true</h3><p>Generation optimizes likely continuation, not factual verification. Ask for citations, retrieve evidence, and verify consequential claims.</p></article>
+          <article><span>BIAS</span><h3>Data leaves fingerprints</h3><p>Training and feedback data encode social and selection biases. Test outcomes across groups and contexts, not just one happy path.</p></article>
+          <article><span>PROMPT INJECTION</span><h3>Instructions can conflict</h3><p>Untrusted text can attempt to override system instructions. Separate data from authority and constrain tools with least privilege.</p></article>
+          <article><span>DATA EXPOSURE</span><h3>Inputs may be sensitive</h3><p>Choose deployment and retention policies deliberately. Minimize data, redact secrets, and understand provider terms.</p></article>
+        </div>
+
+        <div class="evaluation-strip">
+          <div><strong>QUALITY</strong><span>Correctness · relevance · completeness</span></div>
+          <div><strong>SAFETY</strong><span>Refusals · bias · harmful behavior</span></div>
+          <div><strong>SYSTEM</strong><span>Latency · cost · tool success</span></div>
+          <div><strong>HUMANS</strong><span>Trust · usability · task completion</span></div>
+        </div>
+      </section>
+
+      <section class="chapter paper-section glossary-section" id="glossary" data-progress>
+        <div class="section-number">08 / GLOSSARY</div>
+        <div class="glossary-head">
+          <div>
+            <p class="overline dark">Decode the vocabulary</p>
+            <h2>Terms without<br />the fog.</h2>
+          </div>
+          <label class="search-box" for="glossarySearch">
+            <span>SEARCH TERMS</span>
+            <input id="glossarySearch" type="search" placeholder="Try “context” or “quantization”" />
+          </label>
+        </div>
+        <div id="glossaryGrid" class="glossary-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="chapter ink-section" id="path" data-progress>
+        <div class="section-number light">09 / LEARNING PATH</div>
+        <div class="lab-heading">
+          <div>
+            <p class="overline">What to learn next</p>
+            <h2>From curious reader<br />to careful builder.</h2>
+          </div>
+          <p>
+            Learn in layers. You do not need to train a foundation model to build responsibly with one, but you do need
+            enough mechanism, experimentation, and evaluation knowledge to recognize failure.
+          </p>
+        </div>
+
+        <ol class="learning-path">
+          <li><span>01</span><div><strong>Mechanics</strong><p>Tokens, embeddings, attention, context windows, next-token prediction.</p></div><b>1–2 days</b></li>
+          <li><span>02</span><div><strong>Use</strong><p>Prompt structure, structured output, APIs, local inference, model selection.</p></div><b>3–5 days</b></li>
+          <li><span>03</span><div><strong>Grounding</strong><p>Embeddings, chunking, retrieval, citations, tools, and permissions.</p></div><b>1 week</b></li>
+          <li><span>04</span><div><strong>Evaluation</strong><p>Test sets, rubrics, model graders, human review, safety, observability.</p></div><b>Ongoing</b></li>
+          <li><span>05</span><div><strong>Adaptation</strong><p>Fine-tuning, LoRA, preference optimization, quantization, serving.</p></div><b>As needed</b></li>
+        </ol>
+      </section>
+
+      <section class="chapter sources-section" id="sources" data-progress>
+        <div class="section-number">10 / SOURCE LIBRARY</div>
+        <div class="sources-heading">
+          <div>
+            <p class="overline dark">Go to the originals</p>
+            <h2>Continue with sources<br />worth your time.</h2>
+          </div>
+          <div class="source-filters" role="group" aria-label="Filter learning resources">
+            <button class="source-filter active" type="button" data-filter="all">All</button>
+            <button class="source-filter" type="button" data-filter="course">Courses</button>
+            <button class="source-filter" type="button" data-filter="paper">Papers</button>
+            <button class="source-filter" type="button" data-filter="guide">Guides</button>
+            <button class="source-filter" type="button" data-filter="tool">Tools</button>
+          </div>
+        </div>
+        <div class="source-grid" id="sourceGrid">
+          <a data-category="course" href="https://huggingface.co/learn/llm-course/chapter1/1" target="_blank" rel="noreferrer"><span>COURSE · HANDS-ON</span><h3>Hugging Face LLM Course</h3><p>Transformers, datasets, tokenizers, fine-tuning, demos, and modern open-source workflows.</p><b>huggingface.co ↗</b></a>
+          <a data-category="course" href="https://cme295.stanford.edu/" target="_blank" rel="noreferrer"><span>COURSE · THEORY + PRACTICE</span><h3>Stanford CME 295</h3><p>Clear visual notes on architectures, training, alignment, inference, evaluation, and agents.</p><b>stanford.edu ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer"><span>PAPER · FOUNDATIONAL</span><h3>Attention Is All You Need</h3><p>The 2017 paper that introduced the Transformer architecture.</p><b>arxiv.org ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noreferrer"><span>PAPER · RETRIEVAL</span><h3>Retrieval-Augmented Generation</h3><p>The original RAG paper combines parametric generation with retrieved external memory.</p><b>arxiv.org ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noreferrer"><span>PAPER · ALIGNMENT</span><h3>InstructGPT / RLHF</h3><p>A landmark description of supervised instruction tuning and reinforcement learning from human feedback.</p><b>arxiv.org ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/2305.18290" target="_blank" rel="noreferrer"><span>PAPER · ALIGNMENT</span><h3>Direct Preference Optimization</h3><p>A simpler preference-learning objective that avoids fitting a separate reward model.</p><b>arxiv.org ↗</b></a>
+          <a data-category="guide" href="https://developers.google.com/machine-learning/resources/intro-llms" target="_blank" rel="noreferrer"><span>GUIDE · BEGINNER</span><h3>Google: Introduction to LLMs</h3><p>Concise explanations of tokens, parameters, prompting, and tuning.</p><b>developers.google.com ↗</b></a>
+          <a data-category="course" href="https://www.deeplearning.ai/short-courses/" target="_blank" rel="noreferrer"><span>COURSES · APPLIED</span><h3>DeepLearning.AI short courses</h3><p>Focused practical courses on prompting, RAG, evaluation, agents, and model operations.</p><b>deeplearning.ai ↗</b></a>
+          <a data-category="guide" href="https://www.geeksforgeeks.org/deep-learning/large-language-model-llm-tutorial/" target="_blank" rel="noreferrer"><span>GUIDE · BEGINNER</span><h3>GeeksforGeeks LLM Tutorial</h3><p>A broad, approachable reference for terminology and common techniques.</p><b>geeksforgeeks.org ↗</b></a>
+          <a data-category="tool" href="https://github.com/mlabonne/llm-course" target="_blank" rel="noreferrer"><span>GITHUB · NOTEBOOKS</span><h3>mlabonne/llm-course</h3><p>A practical open-source curriculum spanning fundamentals, scientists, and engineering tracks.</p><b>github.com ↗</b></a>
+          <a data-category="tool" href="https://github.com/ollama/ollama" target="_blank" rel="noreferrer"><span>TOOL · LOCAL</span><h3>Ollama</h3><p>Run and experiment with supported open-weight models on your own computer.</p><b>github.com ↗</b></a>
+          <a data-category="tool" href="https://github.com/vllm-project/vllm" target="_blank" rel="noreferrer"><span>TOOL · SERVING</span><h3>vLLM</h3><p>A high-throughput inference and serving engine for open-weight language models.</p><b>github.com ↗</b></a>
+          <a data-category="guide" href="https://crfm.stanford.edu/helm/latest/" target="_blank" rel="noreferrer"><span>GUIDE · EVALUATION</span><h3>Stanford HELM</h3><p>Transparent, multi-metric evaluation across scenarios, models, and risk dimensions.</p><b>stanford.edu ↗</b></a>
+          <a data-category="guide" href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noreferrer"><span>GUIDE · SECURITY</span><h3>OWASP Top 10 for LLM Apps</h3><p>Threats and mitigations for prompt injection, data leakage, excessive agency, and more.</p><b>owasp.org ↗</b></a>
+          <a data-category="guide" href="https://huggingface.co/docs/transformers/index" target="_blank" rel="noreferrer"><span>DOCS · LIBRARY</span><h3>Transformers documentation</h3><p>Reference and tutorials for loading, training, evaluating, and serving open models.</p><b>huggingface.co ↗</b></a>
+          <a data-category="guide" href="https://github.com/NiuTrans/NLPBook" target="_blank" rel="noreferrer"><span>BOOK · OPEN</span><h3>Foundations of Large Language Models</h3><p>A free technical book covering language modeling, prompting, alignment, and inference.</p><b>github.com ↗</b></a>
+        </div>
+      </section>
+
+      <section class="chapter quiz-section" id="quiz" data-progress>
+        <div class="section-number light">11 / KNOWLEDGE CHECK</div>
+        <div class="quiz-layout">
+          <div>
+            <p class="overline">Six questions, no leaderboard</p>
+            <h2>Can you reason<br />about the system?</h2>
+            <p class="quiz-intro">The goal is not memorization. Each answer includes an explanation so a mistake becomes part of the lesson.</p>
+            <div class="quiz-score"><span id="quizCurrent">01</span><i></i><span>06</span></div>
+          </div>
+          <div class="quiz-card" id="quizCard">
+            <p class="quiz-topic" id="quizTopic">MECHANICS</p>
+            <h3 id="quizQuestion"></h3>
+            <div id="quizOptions" class="quiz-options"></div>
+            <div id="quizExplanation" class="quiz-explanation" aria-live="polite"></div>
+            <button id="nextQuestion" class="button button-primary" type="button" hidden>Next question →</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-mark">λ</div>
+      <div>
+        <strong>LLM FIELD GUIDE</strong>
+        <p>Built to replace hype with working mental models.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#top">Back to top ↑</a>
+        <a href="#sources">Sources</a>
+        <span>Updated October 2026</span>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
