@@ -12,6 +12,14 @@ Pull requests and commands from users without current repository write access do
 not queue a run. The trigger replies with a link to the public Azure build; a
 second comment reports the result. A fresh command comment starts a fresh run.
 
+Azure intake independently re-fetches the open issue and command comment,
+re-parses the command with the same GitHub-gate helpers, binds the queued platform
+and target branch to it, and checks the comment author's current write permission.
+Direct Azure queue access does not bypass this gate. The always-running publisher
+repeats these checks on its fresh trusted agent before importing results or entering
+the publication/fallback handler. Deleted or edited commands, revoked permissions,
+closed issues, or unavailable authorization metadata fail closed without publishing.
+
 The issue author must provide exactly one repro in the issue body or an
 author-written comment: a public `https://github.com/owner/repo` URL,
 `https://github.com/owner/repo/tree/ref` (one URL-encoded ref segment), or a
@@ -202,10 +210,11 @@ either predefined environment value is missing or belongs to another project.
    [OIDC setup](trigger-azdo-pipeline-setup.md)). Protect the pipeline, its
    `main`-branch definition, and its variables from arbitrary run edits.
 3. Provision three **separate protected secret variables** on this public
-   definition: `ISSUE_REPRO_READ_TOKEN` (GitHub issue/repo read),
+   definition: `ISSUE_REPRO_READ_TOKEN` (GitHub issue/repo and collaborator-permission read),
    `ISSUE_REPRO_COPILOT_TOKEN` (Copilot CLI GPT access), and
    `ISSUE_REPRO_COMMENT_TOKEN` (issue-comment-only publication). Scope them to
-   their respective intake, generator, and posting tasks; do not import a
+   their respective intake, generator, and posting tasks; the read credential is
+   also scoped to the publisher's independent authorization check. Do not import a
    shared MAUI secret group. Review whether your token policy permits public
    issue/repository reads, Copilot access, and issue-comment posting.
 4. Confirm `ubuntu-22.04` and `macOS-26` are **fresh Microsoft-hosted

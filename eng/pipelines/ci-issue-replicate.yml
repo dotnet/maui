@@ -59,12 +59,16 @@ stages:
               if ($env:TARGET_REF -cnotmatch '^(main|net[0-9]+\.0)$') {
                 throw 'Only main and netN.0 MAUI targets are supported.'
               }
+              & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
+                -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
+                -Platform $env:PLATFORM -TargetRef $env:TARGET_REF
+              if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for intake.' }
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Intake.ps1 `
                 -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
                 -Platform $env:PLATFORM -TargetRef $env:TARGET_REF `
                 -OutputDirectory "$(Pipeline.Workspace)/IssueInput"
               if ($LASTEXITCODE -ne 0) { throw 'Bounded intake failed.' }
-            displayName: 'Pin and bound the author repro'
+            displayName: 'Authorize command and pin bounded author repro'
             env:
               ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               COMMENT_ID: ${{ parameters.CommentId }}
@@ -289,8 +293,15 @@ stages:
                   (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
                 throw 'Posting code differs from the trusted pipeline revision.'
               }
+              if ($env:ISSUE_NUMBER -notmatch '^[1-9][0-9]*$' -or
+                  $env:COMMENT_ID -notmatch '^[1-9][0-9]*$') {
+                throw 'Issue and comment IDs must be positive integers.'
+              }
               $issue = [int]$env:ISSUE_NUMBER
               $comment = [long]$env:COMMENT_ID
+              & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
+                -IssueNumber $issue -CommentId $comment -Platform $env:PLATFORM -TargetRef $env:TARGET_REF
+              if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for publication.' }
               $result = "$(Pipeline.Workspace)/Verified1"
               $candidateDirectory = ''
               try {
@@ -351,8 +362,11 @@ stages:
             displayName: 'Post validated issue outcome on a clean agent'
             env:
               GH_TOKEN: $(ISSUE_REPRO_COMMENT_TOKEN)
+              GH_READ_TOKEN: $(ISSUE_REPRO_READ_TOKEN)
               ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               COMMENT_ID: ${{ parameters.CommentId }}
+              PLATFORM: ${{ parameters.Platform }}
+              TARGET_REF: ${{ parameters.TargetRef }}
               REPRO_INPUT: $(reproInput)
               REPRO_SAMPLE: $(reproSample)
               REPRO_CANDIDATE1: $(reproCandidate1)
