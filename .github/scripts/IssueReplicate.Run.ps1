@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Sample', 'Verify')][string]$Mode,
+    [Parameter(Mandatory)][ValidateSet('Sample', 'Verify', 'Forward')][string]$Mode,
     [Parameter(Mandatory)][string]$InputDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [string]$NuGetConfigPath = '',
@@ -39,7 +39,7 @@ if ($Mode -eq 'Sample') {
     $parameters.ManifestPath = Join-Path $InputDirectory 'manifest.json'
     $parameters.SampleResultPath = $SampleResultPath
     $parameters.CandidatePath = $CandidatePath
-    $parameters.RepoRoot = $RepoRoot
+    if ($Mode -eq 'Verify') { $parameters.RepoRoot = $RepoRoot }
     $parameters.Attempt = $Attempt
     $parameters.PreviousResultPath = $PreviousResultPath
 }
@@ -51,14 +51,20 @@ try {
 } finally {
     $kind = if ($Mode -eq 'Sample') { 'Sample' } else { 'Verified' }
     if ($null -ne $completedData.Result) {
-        if ($Mode -eq 'Verify') {
+        if ($Mode -ne 'Sample') {
             $result = $completedData.Result
             Assert-IssueReplicateResult -Result $result -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
+            if ($result.observedAssertion -isnot [bool]) { throw 'The completed assertion state must be a boolean.' }
+            $observedAssertion = $result.observedAssertion.ToString().ToLowerInvariant()
             switch ($Provider) {
-                'Azure' { Write-Host "##vso[task.setvariable variable=verdict;isOutput=true]$($result.status)" }
+                'Azure' {
+                    Write-Host "##vso[task.setvariable variable=verdict;isOutput=true]$($result.status)"
+                    Write-Host "##vso[task.setvariable variable=observedAssertion;isOutput=true]$observedAssertion"
+                }
                 'GitHub' {
                     if (-not $env:GITHUB_OUTPUT) { throw 'The GitHub job output file is unavailable.' }
-                    [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "verdict=$($result.status)`n")
+                    [IO.File]::AppendAllText($env:GITHUB_OUTPUT,
+                        "verdict=$($result.status)`nobservedAssertion=$observedAssertion`n")
                 }
             }
             $global:LASTEXITCODE = 0

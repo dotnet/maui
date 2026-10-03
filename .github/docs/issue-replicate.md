@@ -167,10 +167,18 @@ Repeated assertions run in separate fresh hosted jobs, each independently
 provisioning and checking out the same pinned source and candidate. First-attempt
 build outputs, ignored files, SDK directories and simulator state are never
 transferred to the second job. Only the bounded first-attempt identities and
-candidate hash are compared. When the first attempt observed no assertion, the
-second job forwards its completed result and bounded UTF-8 feedback without
-rerunning it. An inconclusive result must retain that feedback for the one
-allowed GPT revision; missing, empty or invalid feedback fails explicitly.
+candidate hash are compared. The first attempt exports an explicit boolean
+assertion routing state. Only an observed assertion schedules the second native
+job; passing, unsupported and non-assertion inconclusive outcomes skip that job.
+A credential-free Linux forwarding job validates the completed record against
+the same snapshot, successful sample build, candidate hash and attempt number,
+then forwards its result, bounded UTF-8 feedback and any hash-matching confirmed
+patch. It does not check out MAUI, install SDKs/workloads, build tasks, provision
+Appium or boot a device. It rejects missing routing state or missing required
+confirmation rather than accepting the first observed assertion as confirmed.
+This routing applies to both the initial and revised candidate. An inconclusive
+result must retain that feedback for the one allowed GPT revision; missing,
+empty or invalid feedback fails explicitly.
 Every assertion identity requires a matching non-constructor candidate stack
 frame and the fully qualified test method recorded in its TRX definition
 (including async state-machine frames). NUnit fixture display arguments such

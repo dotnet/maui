@@ -1381,15 +1381,16 @@ Describe 'Forwarded verification feedback' {
             candidateSha256 = (Get-FileHash $candidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
             attempt = 1; observedAssertion = $false; failureIdentities = @()
         } | ConvertTo-Json | Set-Content (Join-Path $script:feedbackFirst 'result.json')
-        Mock git { $global:LASTEXITCODE = 0; 'a' * 40 }
+        Mock git { throw 'Completed evidence forwarding must not check out framework source.' }
         Mock dotnet { throw 'A completed first attempt must not be rerun.' }
         $script:forwardVerification = {
-            & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify `
+            param([int]$Attempt = 1)
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Forward `
                 -InputDirectory $script:feedbackInput `
                 -SampleResultPath (Join-Path $script:feedbackInput 'sample-result.json') `
                 -CandidatePath (Join-Path $script:feedbackInput 'candidate.json') `
-                -RepoRoot $script:feedbackInput -OutputDirectory $script:feedbackOutput `
-                -Attempt 2 -PreviousResultPath (Join-Path $script:feedbackFirst 'result.json')
+                -OutputDirectory $script:feedbackOutput `
+                -Attempt $Attempt -PreviousResultPath (Join-Path $script:feedbackFirst 'result.json')
         }
     }
 
@@ -1408,6 +1409,7 @@ Describe 'Forwarded verification feedback' {
         $record.attempt | Should -Be 1
         $record.testExecuted | Should -BeFalse
         Test-Path (Join-Path $decoded 'test.patch') | Should -BeFalse
+        Should -Invoke git -Times 0
         Should -Invoke dotnet -Times 0
         function copilot {
             $global:issueReplicateForwardedPrompt = [string]$args[[array]::IndexOf($args, '-p') + 1]
@@ -1443,6 +1445,87 @@ Describe 'Forwarded verification feedback' {
             'invalid-utf8' { [IO.File]::WriteAllBytes($path, [byte[]]@(255)) }
         }
         $script:forwardVerification | Should -Throw
+        Should -Invoke git -Times 0
+        Should -Invoke dotnet -Times 0
+    }
+
+    It 'forwards a completed non-assertion outcome without framework tools (<Status>)' -TestCases @(
+        @{ Status = 'not-reproduced-on-tested-revision' },
+        @{ Status = 'unsupported' }
+    ) {
+        param($Status)
+        $path = Join-Path $script:feedbackFirst 'result.json'
+        $record = Get-Content -Raw $path | ConvertFrom-Json
+        $record.status = $Status
+        if ($Status -eq 'unsupported') {
+            $candidatePath = Join-Path $script:feedbackInput 'candidate.json'
+            '{"kind":"unsupported","files":[]}' | Set-Content $candidatePath
+            $record.testKind = 'unsupported'
+            $record.candidateSha256 = (Get-FileHash $candidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        } else {
+            $record.testExecuted = $true
+        }
+        $record | ConvertTo-Json | Set-Content $path
+        $encoded = & $script:forwardVerification
+        $decoded = Join-Path $TestDrive "completed-outcome-$Status"
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
+            -Directory $decoded -Encoded $encoded
+        (Get-Content -Raw (Join-Path $decoded 'result.json') | ConvertFrom-Json).status | Should -BeExactly $Status
+        Test-Path (Join-Path $decoded 'test.patch') | Should -BeFalse
+        Should -Invoke git -Times 0
+        Should -Invoke dotnet -Times 0
+    }
+
+    It 'rejects a mismatched or confirmation-requiring completed record (<Field>)' -TestCases @(
+        @{ Field = 'issueNumber'; Value = 54321 },
+        @{ Field = 'commentId'; Value = 4925414215 },
+        @{ Field = 'targetSha'; Value = 'b' * 40 },
+        @{ Field = 'candidateSha256'; Value = 'b' * 64 },
+        @{ Field = 'attempt'; Value = 2 },
+        @{ Field = 'observedAssertion'; Value = $true },
+        @{ Field = 'observedAssertion'; Value = 'false' }
+    ) {
+        param($Field, $Value)
+        [IO.File]::WriteAllText((Join-Path $script:feedbackFirst 'feedback.txt'), 'Compilation diagnostic.')
+        $path = Join-Path $script:feedbackFirst 'result.json'
+        $record = Get-Content -Raw $path | ConvertFrom-Json
+        $record.$Field = $Value
+        $record | ConvertTo-Json | Set-Content $path
+        $script:forwardVerification | Should -Throw
+        Should -Invoke git -Times 0
+        Should -Invoke dotnet -Times 0
+    }
+
+    It 'forwards exact hash-checked second-attempt patch bytes without native tools (corrupt=<Corrupt>)' -TestCases @(
+        @{ Corrupt = $false }, @{ Corrupt = $true }
+    ) {
+        param($Corrupt)
+        $patch = "diff --git a/test.cs b/test.cs`r`n+value $([char]0x6F22)`r`n"
+        $patchBytes = [Text.Encoding]::UTF8.GetBytes($patch)
+        $patchPath = Join-Path $script:feedbackFirst 'test.patch'
+        [IO.File]::WriteAllBytes($patchPath, $patchBytes)
+        $path = Join-Path $script:feedbackFirst 'result.json'
+        $record = Get-Content -Raw $path | ConvertFrom-Json
+        $record.attempt = 2
+        $record.status = 'candidate-failed'
+        $record.testExecuted = $true
+        $record.assertionFailed = $true
+        $record.observedAssertion = $true
+        $record.patchSha256 = (Get-FileHash $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $record | ConvertTo-Json | Set-Content $path
+        if ($Corrupt) {
+            [IO.File]::AppendAllText($patchPath, 'changed')
+            { & $script:forwardVerification -Attempt 2 } | Should -Throw
+        } else {
+            $encoded = & $script:forwardVerification -Attempt 2
+            $decoded = Join-Path $TestDrive 'confirmed-forwarded'
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
+                -Directory $decoded -Encoded $encoded
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $decoded 'test.patch'))) |
+                Should -BeExactly ([Convert]::ToBase64String($patchBytes))
+            (Get-Content -Raw (Join-Path $decoded 'result.json') | ConvertFrom-Json).attempt | Should -Be 2
+        }
+        Should -Invoke git -Times 0
         Should -Invoke dotnet -Times 0
     }
 }
