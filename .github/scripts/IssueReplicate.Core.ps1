@@ -392,7 +392,7 @@ function Get-IssueReplicateTrxVerdict {
                     $_ -match "\b$([regex]::Escape($ClassName))([.(+])" -and $_ -notmatch '\.ctor\b'
                 } | Select-Object -First 1) -join ''
             } else { '' }
-            if (-not $source -and $message -notmatch '(?m)^\s*Assert\.That\(') {
+            if ([string]::IsNullOrWhiteSpace($source)) {
                 return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
             }
             $identity = "$($failure.GetAttribute('testName'))`n$message`n$($source.Trim())"

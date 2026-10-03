@@ -117,6 +117,9 @@ candidate hash are compared. When the first attempt observed no assertion, the
 second job forwards its completed result and bounded UTF-8 feedback without
 rerunning it. An inconclusive result must retain that feedback for the one
 allowed GPT revision; missing, empty or invalid feedback fails explicitly.
+Every assertion identity requires a matching non-constructor candidate stack
+frame. NUnit constraint diagnostics without that frame are inconclusive; test
+names and assertion text alone cannot establish a matching repeated failure.
 Tracked framework and candidate files are hashed
 before execution and rechecked afterward; changes invalidate the attempt.
 NUnit setup/teardown assertion diagnostics and xUnit fixture errors are

@@ -284,6 +284,38 @@ Describe 'Observed test evidence' {
         $verdict.FailureIdentities | Should -BeNullOrEmpty
     }
 
+    It 'rejects NUnit constraint assertions with <Frame> source-frame evidence' -TestCases @(
+        @{ Frame = 'missing'; StackTrace = '' },
+        @{ Frame = 'empty'; StackTrace = '<StackTrace />' },
+        @{ Frame = 'whitespace-only'; StackTrace = "<StackTrace> `n </StackTrace>" },
+        @{ Frame = 'unrelated'; StackTrace = '<StackTrace>at Example.OtherFixture.ChecksBehavior() in /test/OtherFixture.cs:line 12</StackTrace>' },
+        @{ Frame = 'prefix-colliding'; StackTrace = '<StackTrace>at Example.Issue123450.ChecksBehavior() in /test/Issue123450.cs:line 12</StackTrace>' },
+        @{ Frame = 'constructor-only'; StackTrace = '<StackTrace>at Example.Issue12345..ctor() in /test/Issue12345.cs:line 12</StackTrace>' }
+    ) {
+        param($Frame, $StackTrace)
+        $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
+            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>" `
+            -replace '(?s)<StackTrace>.*?</StackTrace>', $StackTrace
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $verdict.Status | Should -Be 'Inconclusive'
+        $verdict.FailureIdentities | Should -BeNullOrEmpty
+    }
+
+    It 'binds NUnit constraint assertions to the matching candidate source frame' {
+        $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
+            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $first = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        Set-Content -LiteralPath $script:trxPath -Value ($xml -replace 'line 12', 'line 15')
+        $second = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $first.Status | Should -Be 'AssertionFailed'
+        $second.Status | Should -Be 'AssertionFailed'
+        $first.FailureIdentities.Count | Should -Be 1
+        $second.FailureIdentities.Count | Should -Be 1
+        $first.FailureIdentities[0] | Should -Not -Be $second.FailureIdentities[0]
+    }
+
     It 'returns only failing test identities and ignores prefix-colliding classes' {
         $xml = $script:xml -replace '</TestDefinitions>', '<UnitTest id="test-2"><TestMethod className="Example.Issue12345" name="OtherBehavior" /></UnitTest><UnitTest id="test-3"><TestMethod className="Example.Issue123450" name="Collision" /></UnitTest></TestDefinitions>' `
             -replace '</Results>', '<UnitTestResult testId="test-2" testName="OtherBehavior" outcome="Passed" /><UnitTestResult testId="test-3" testName="Collision" outcome="Passed" /></Results>' `
