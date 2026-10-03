@@ -132,12 +132,8 @@ try {
     }
     & git add -N -- $written.ToArray()
     if ($LASTEXITCODE -ne 0) { throw 'Could not stage the candidate for a bounded diff.' }
-    $patch = & git diff --no-ext-diff --no-textconv --binary -- $written.ToArray()
-    if ($LASTEXITCODE -ne 0) { throw 'Could not snapshot the candidate test patch.' }
-    $patchText = ($patch -join "`n") + "`n"
-    if ([Text.Encoding]::UTF8.GetByteCount($patchText) -gt 100KB -or $patchText.Length -le 1) {
-        throw 'The candidate patch is empty or too large.'
-    }
+    $patchText = Get-IssueReplicateDraftPatch -Candidate $candidate -IssueNumber $result.issueNumber `
+        -Platform $result.platform
     $sourceHashes = @{}
     $tracked = @(& git ls-files)
     if ($LASTEXITCODE -ne 0) { throw 'Could not snapshot the complete tracked source tree.' }

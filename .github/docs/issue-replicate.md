@@ -99,6 +99,10 @@ no later task re-reads executable scripts from the mutable native job workspace.
 Completed result, immutable patch and captured-feedback bytes remain in that
 parent's memory through validation and bounded export; it does not reopen
 sample/result/patch files after child execution.
+Both draft and native-verification patches snapshot the original candidate bytes
+before execution through the same isolated Git diff helper. File-based diff capture
+and the empty diff tree preserve CRLF, Unicode and missing final newlines without
+PowerShell line splitting or repository text-attribute normalization.
 This protects executable re-entry and finalized-record export, not evidence
 authenticity: author/generated code still runs as the same OS user and can write
 the TRX and CI job-output locations.

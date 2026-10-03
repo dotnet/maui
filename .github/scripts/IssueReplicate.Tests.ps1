@@ -1146,26 +1146,32 @@ Describe 'Author sample target selection' {
 }
 
 Describe 'Pinned test verification' {
-    It 'exports only immutable candidates with matching assertions (mutation=<Mutate>, different=<Different>)' -TestCases @(
-        @{ Mutate = $false; Different = $false; TrackedMutation = $false },
-        @{ Mutate = $true; Different = $false; TrackedMutation = $false },
-        @{ Mutate = $false; Different = $true; TrackedMutation = $false },
-        @{ Mutate = $false; Different = $false; TrackedMutation = $true }
+    It 'exports only immutable candidate bytes with matching assertions (mutation=<Mutate>, different=<Different>, content=<ContentName>)' -TestCases @(
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'single-line' },
+        @{ Mutate = $true; Different = $false; TrackedMutation = $false; ContentName = 'single-line' },
+        @{ Mutate = $false; Different = $true; TrackedMutation = $false; ContentName = 'single-line' },
+        @{ Mutate = $false; Different = $false; TrackedMutation = $true; ContentName = 'single-line' }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'LF'; Content = "public class Issue12345 {`n}`n" }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'CRLF'; Content = "public class Issue12345 {`r`n}`r`n" }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'no-final-newline'; Content = "public class Issue12345 {`n}" }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'Unicode'; Content = "public class Issue12345 { } // $([char]0x6F22)$([char]::ConvertFromUtf32(0x1F600))`n" }
     ) {
-        param($Mutate, $Different, $TrackedMutation)
-        $repo = Join-Path $TestDrive "maui-fixture-$Mutate-$Different-$TrackedMutation"
+        param($Mutate, $Different, $TrackedMutation, $ContentName = 'single-line',
+            $Content = 'public class Issue12345 { }')
+        $repo = Join-Path $TestDrive "maui-fixture-$Mutate-$Different-$TrackedMutation-$ContentName"
         $projectDir = Join-Path $repo 'src/Core/tests/UnitTests'
         New-Item -ItemType Directory -Path $projectDir -Force | Out-Null
         Set-Content -LiteralPath (Join-Path $projectDir 'Core.UnitTests.csproj') -Value '<Project />'
         & git -C $repo init -q
         Set-Content -LiteralPath (Join-Path $repo '.gitignore') -Value 'bin/'
+        Set-Content -LiteralPath (Join-Path $repo '.gitattributes') -Value '*.cs text'
         & git -C $repo add .
         & git -C $repo -c user.name=Fixture -c user.email=fixture@example.invalid commit -q -m Fixture
         $revision = (& git -C $repo rev-parse HEAD).Trim()
         $manifestPath = Join-Path $TestDrive 'manifest.json'
         $samplePath = Join-Path $TestDrive 'sample-result.json'
         $candidatePath = Join-Path $TestDrive 'candidate.json'
-        $results = Join-Path $TestDrive "verification-$Mutate-$Different-$TrackedMutation"
+        $results = Join-Path $TestDrive "verification-$Mutate-$Different-$TrackedMutation-$ContentName"
         $firstResults = "$results-first"
         @{
             schemaVersion = 1
@@ -1184,7 +1190,7 @@ Describe 'Pinned test verification' {
             kind = 'unit'
             files = @(@{
                 path = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
-                content = 'public class Issue12345 { }'
+                content = $Content
             })
         } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $candidatePath
 
@@ -1243,7 +1249,7 @@ Describe 'Pinned test verification' {
         $first.observedAssertion | Should -BeTrue
         $secondRepo = "$repo-second"
         & git clone --quiet --no-local $repo $secondRepo
-        $null = & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
+        $payload = & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
             -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $secondRepo `
             -OutputDirectory $results -Attempt 2 -PreviousResultPath (Join-Path $firstResults 'result.json')
         $outcome = Get-Content -Raw -LiteralPath (Join-Path $results 'result.json') | ConvertFrom-Json
@@ -1251,6 +1257,28 @@ Describe 'Pinned test verification' {
         $outcome.testExecuted | Should -BeTrue
         $outcome.assertionFailed | Should -Be (-not $Different)
         Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -Be (-not $Different)
+        if (-not $Different) {
+            $imported = "$results-imported"
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
+                -Directory $imported -Encoded $payload
+            $patchPath = Join-Path $imported 'test.patch'
+            (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant() |
+                Should -BeExactly $outcome.patchSha256
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes($patchPath)) |
+                Should -BeExactly ([Convert]::ToBase64String(
+                    [IO.File]::ReadAllBytes((Join-Path $results 'test.patch'))))
+            $applied = "$repo-applied"
+            & git clone --quiet --no-local $repo $applied
+            $LASTEXITCODE | Should -Be 0
+            & git -C $applied apply --whitespace=nowarn $patchPath
+            $LASTEXITCODE | Should -Be 0
+            $relative = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
+            $expected = [Text.Encoding]::UTF8.GetBytes($Content)
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $secondRepo $relative))) |
+                Should -BeExactly ([Convert]::ToBase64String($expected))
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $applied $relative))) |
+                Should -BeExactly ([Convert]::ToBase64String($expected))
+        }
     }
 
     AfterEach {
