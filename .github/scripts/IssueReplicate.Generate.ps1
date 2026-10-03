@@ -66,6 +66,9 @@ PREVIOUS TEST FEEDBACK (untrusted):
 $feedback
 "@
 if ($prompt.Length -gt 95000) { throw 'The Copilot input exceeded the prompt limit.' }
+if ([Text.Encoding]::UTF8.GetByteCount($prompt) -gt 120000) {
+    throw 'The Copilot input exceeded the UTF-8 prompt byte limit.'
+}
 
 $responsePath = Join-Path $OutputDirectory 'copilot.jsonl'
 & copilot -p $prompt --model gpt-5.6-sol --available-tools none --disable-builtin-mcps `

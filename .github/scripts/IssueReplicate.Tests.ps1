@@ -404,6 +404,89 @@ Describe 'Tool-free candidate generation' {
     }
 }
 
+Describe 'Native generator prompt budget' {
+    It 'bounds the complete prompt for <Name>' -TestCases @(
+        @{ Name = 'CJK below the byte limit'; Symbol = [string][char]0x754C; Bytes = 119999; Allowed = $true; FailureMessage = '' }
+        @{ Name = 'CJK at the byte limit'; Symbol = [string][char]0x754C; Bytes = 120000; Allowed = $true; FailureMessage = '' }
+        @{ Name = 'CJK above the byte limit'; Symbol = [string][char]0x754C; Bytes = 120001; Allowed = $false; FailureMessage = '*UTF-8*prompt*limit*' }
+        @{ Name = 'supplementary Unicode above the byte limit'; Symbol = [char]::ConvertFromUtf32(0x1F642); Bytes = 120001; Allowed = $false; FailureMessage = '*UTF-8*prompt*limit*' }
+        @{ Name = 'CJK above the Linux per-argument limit'; Symbol = [string][char]0x754C; Bytes = 131073; Allowed = $false; FailureMessage = '*UTF-8*prompt*limit*' }
+        @{ Name = 'ASCII above the character limit'; Symbol = 'a'; Bytes = 95001; Allowed = $false; FailureMessage = '*exceeded the prompt limit*' }
+    ) {
+        param($Name, $Symbol, $Bytes, $Allowed, $FailureMessage)
+        $inputDir = Join-Path $TestDrive "budget-input-$Name"
+        $probeDir = Join-Path $TestDrive "budget-probe-$Name"
+        $outputDir = Join-Path $TestDrive "budget-output-$Name"
+        New-Item -ItemType Directory -Path $inputDir | Out-Null
+        $archivePath = Join-Path $inputDir 'sample.zip'
+        $stream = [IO.File]::Create($archivePath)
+        $archive = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $sampleSymbol = if ($Symbol -eq 'a') { 'x' } else { [string][char]0x754C }
+        foreach ($index in 1..8) {
+            $writer = [IO.StreamWriter]::new($archive.CreateEntry("Sample$index.cs").Open())
+            $writer.Write("//$($sampleSymbol * 2500)`npublic class Sample$index { }")
+            $writer.Dispose()
+        }
+        $archive.Dispose()
+        $stream.Dispose()
+        $manifest = @{
+            schemaVersion = 1
+            issueNumber = 12345
+            targetRef = 'main'
+            targetSha = 'a' * 40
+            platform = 'android'
+            issueText = 'BudgetProbe'
+            sampleSha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        }
+        $manifestPath = Join-Path $inputDir 'manifest.json'
+        $manifest | ConvertTo-Json | Set-Content -LiteralPath $manifestPath
+        $global:issueReplicateBudgetCalls = 0
+        $global:issueReplicateBudgetPrompt = ''
+        function copilot {
+            $global:issueReplicateBudgetCalls++
+            $global:issueReplicateBudgetPrompt = [string]$args[1]
+            $global:LASTEXITCODE = 0
+            @{ type = 'assistant.message'; data = @{
+                phase = 'final_answer'
+                content = '{"kind":"unsupported","files":[]}'
+                toolRequests = @()
+            } } | ConvertTo-Json -Compress -Depth 6
+            '{"type":"result","exitCode":0}'
+        }
+        $generator = Join-Path $PSScriptRoot 'IssueReplicate.Generate.ps1'
+        & $generator -InputDirectory $inputDir -OutputDirectory $probeDir
+        $probe = $global:issueReplicateBudgetPrompt
+        $fixedBytes = [Text.Encoding]::UTF8.GetByteCount($probe) - [Text.Encoding]::UTF8.GetByteCount($manifest.issueText)
+        $remainingBytes = $Bytes - $fixedBytes
+        $symbolBytes = [Text.Encoding]::UTF8.GetByteCount($Symbol)
+        $issueText = ($Symbol * [int][Math]::Floor($remainingBytes / $symbolBytes)) +
+            ('a' * ($remainingBytes % $symbolBytes))
+        $expectedLength = $probe.Length - $manifest.issueText.Length + $issueText.Length
+        if ($Symbol -ne 'a') { $expectedLength | Should -BeLessOrEqual 95000 }
+        $manifest.issueText = $issueText
+        $manifest | ConvertTo-Json | Set-Content -LiteralPath $manifestPath
+        $global:issueReplicateBudgetCalls = 0
+        $global:issueReplicateBudgetPrompt = ''
+        if ($Allowed) {
+            & $generator -InputDirectory $inputDir -OutputDirectory $outputDir
+            $global:issueReplicateBudgetCalls | Should -Be 1
+            [Text.Encoding]::UTF8.GetByteCount($global:issueReplicateBudgetPrompt) | Should -Be $Bytes
+            $global:issueReplicateBudgetPrompt.Length | Should -Be $expectedLength
+            $global:issueReplicateBudgetPrompt.Contains($issueText) | Should -BeTrue
+            (Get-Content -Raw -LiteralPath (Join-Path $outputDir 'candidate.json') | ConvertFrom-Json).kind |
+                Should -Be 'unsupported'
+        } else {
+            { & $generator -InputDirectory $inputDir -OutputDirectory $outputDir } | Should -Throw $FailureMessage
+            $global:issueReplicateBudgetCalls | Should -Be 0
+            Test-Path -LiteralPath (Join-Path $outputDir 'candidate.json') | Should -BeFalse
+        }
+    }
+
+    AfterEach {
+        Remove-Variable issueReplicateBudgetCalls, issueReplicateBudgetPrompt -Scope Global -ErrorAction SilentlyContinue
+    }
+}
+
 Describe 'UI candidate platform scope' {
     BeforeAll {
         function New-ScopedUiCandidate {

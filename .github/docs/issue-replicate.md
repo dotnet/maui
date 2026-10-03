@@ -118,6 +118,12 @@ Unit and XAML candidates retain their existing scope. A reviewed UI candidate ca
 be broadened later only after establishing its applicability on other platforms;
 the workflow does not claim that coverage.
 
+The complete generator prompt, including issue text, sample snippets and revision
+feedback, is capped at 95,000 UTF-16 characters and 120,000 UTF-8 bytes before
+invoking Copilot. The byte budget leaves headroom below the hosted Linux
+per-argument limit for multibyte text. Oversized prompts fail explicitly before
+model invocation; text is not silently truncated to fit.
+
 Repeated assertions run in separate fresh hosted jobs, each independently
 provisioning and checking out the same pinned source and candidate. First-attempt
 build outputs, ignored files, SDK directories and simulator state are never
