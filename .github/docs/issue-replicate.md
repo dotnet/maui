@@ -226,7 +226,7 @@ still require review and are not tamper-proof evidence.
 Hosted Ubuntu sample and verification jobs reclaim named unused preinstalled
 .NET, Swift, Haskell, Go, Boost and CodeQL directories after installing the exact
 bootstrap SDK outside those directories. Android, Java, Node and PowerShell
-remain available. The jobs require at least 32 GiB free before installing native
+remain available. The jobs require at least 24 GiB free before installing native
 workloads, so insufficient capacity fails before a partially installed sample SDK
 can be mistaken for a completed author build.
 
