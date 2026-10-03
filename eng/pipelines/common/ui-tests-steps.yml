@@ -162,8 +162,7 @@ steps:
 
     Invoke-Expression $command  
   displayName: $(Agent.JobName)
-  ${{ if ne(parameters.platform, 'android')}}:
-    retryCountOnTaskFailure: 1
+  # Cake retries failed fixtures once, rather than repeating every passing test.
   env:
     APPIUM_HOME: $(APPIUM_HOME)
 
@@ -179,7 +178,9 @@ steps:
   condition: always()
   inputs:
     testResultsFormat: VSTest
-    testResultsFiles: '$(TestResultsDirectory)/*.trx'
+    testResultsFiles: |
+      $(TestResultsDirectory)/*.trx
+      !$(TestResultsDirectory)/*.retry.trx
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
 

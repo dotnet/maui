@@ -138,6 +138,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void BindingUpdatesFromProgrammaticRefresh()
+		{
+			var state = new RefreshState();
+			var refreshView = new RefreshView { BindingContext = state };
+			refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(RefreshState.IsRefreshing));
+
+			Assert.False(state.IsRefreshing);
+			Assert.False(refreshView.IsRefreshing);
+
+			refreshView.IsRefreshing = true;
+			Assert.True(state.IsRefreshing);
+
+			refreshView.IsRefreshing = false;
+			Assert.False(state.IsRefreshing);
+
+			state.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+
+			state.IsRefreshing = false;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Theory]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(false, false)]
+		public void DisabledRefreshDoesNotExecuteCommandOrRaiseRefreshing(bool isEnabled, bool isRefreshEnabled)
+		{
+			var commandCount = 0;
+			var refreshingCount = 0;
+			var refreshView = new RefreshView
+			{
+				Command = new Command(() => commandCount++),
+				IsEnabled = isEnabled,
+				IsRefreshEnabled = isRefreshEnabled
+			};
+			refreshView.Refreshing += (_, _) => refreshingCount++;
+
+			refreshView.IsRefreshing = true;
+
+			Assert.False(refreshView.IsRefreshing);
+			Assert.Equal(0, commandCount);
+			Assert.Equal(0, refreshingCount);
+
+			refreshView.IsEnabled = true;
+			refreshView.IsRefreshEnabled = true;
+			refreshView.IsRefreshing = true;
+
+			Assert.True(refreshView.IsRefreshing);
+			Assert.Equal(1, commandCount);
+			Assert.Equal(1, refreshingCount);
+		}
+
+		[Fact]
 		public void IsRefreshingStaysFalseWithDisabledRefreshView()
 		{
 			RefreshView refreshView = new RefreshView();
@@ -305,6 +359,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// The refresh should not be stopped by CanExecuteChanged when already refreshing
 			// This matches the behavior in the CanExecuteChanged method
 			Assert.True(refreshView.IsRefreshing);
+		}
+
+		class RefreshState : BindableObject
+		{
+			bool _isRefreshing;
+
+			public bool IsRefreshing
+			{
+				get => _isRefreshing;
+				set
+				{
+					if (_isRefreshing == value)
+						return;
+
+					_isRefreshing = value;
+					OnPropertyChanged();
+				}
+			}
 		}
 	}
 }

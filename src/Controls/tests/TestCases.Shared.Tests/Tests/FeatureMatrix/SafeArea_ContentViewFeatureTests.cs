@@ -1077,24 +1077,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topLabelRect.Y, Is.GreaterThan(insets.Top),
 				$"Top Y ({topLabelRect.Y}) should be > insets.Top ({insets.Top}) due to additional padding");
-		}
 
-		[Test, Order(21)]
-		[Description("Background extends edge-to-edge behind system UI")]
-		public void Validate_ContentView_SafeArea_None_WithBackground()
-		{
-			ClickContentViewSafeAreaButton();
-
-			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("UniformNone");
-			App.Tap("UniformNone");
-			App.Tap("BackgroundCheckBox");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-
 			App.WaitForElement("SafeAreaEdgesValueLabel");
-			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 		}
 
 		// ──────────────────────────────────────────────

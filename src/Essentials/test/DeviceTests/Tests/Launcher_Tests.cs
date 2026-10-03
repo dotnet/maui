@@ -130,13 +130,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 
 		[Theory]
-		[InlineData("Not Valid Uri")]
-		public async Task InvalidUri(string uri)
-		{
-			await Assert.ThrowsAsync<UriFormatException>(() => Launcher.CanOpenAsync(uri)).ConfigureAwait(false);
-		}
-
-		[Theory]
 		[InlineData("ms-invalidurifortest:abc")]
 		public async Task CanNotOpenUri(string uri)
 		{

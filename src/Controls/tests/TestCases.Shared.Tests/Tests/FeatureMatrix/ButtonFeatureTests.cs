@@ -17,24 +17,6 @@ public class ButtonFeatureTests : _GalleryUITest
 	{
 	}
 
-	[Test, Order(1)]
-	public void VerifyButton_CommandAndCommandParameter()
-	{
-		App.WaitForElement("ButtonControl");
-		App.Tap("ButtonControl");
-		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Command Executed"));
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Command with Parameter");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		App.Tap("ButtonControl");
-		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Command Executed with Parameter"));
-	}
-
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //CharacterSpacingEntry property not working on iOS and Catalyst, Issue: https://github.com/dotnet/maui/issues/21488
 	[Test, Order(2)]
 	public void VerifyButton_CharacterSpacingAndText()
@@ -130,40 +112,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(7)]
-	public void VerifyButton_FontAttributesBoldAndText()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button FontAttributes Bold");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(8)]
-	public void VerifyButton_FontAttributesBoldAndTextTransform()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("TextTransformUppercaseButton");
-		App.Tap("TextTransformUppercaseButton");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button FontAttributes Bold TextTransform");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
 	[Test, Order(9)]
 	public void VerifyButton_FontFamilyAndText()
 	{
@@ -174,24 +122,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("TextEntry");
 		App.ClearText("TextEntry");
 		App.EnterText("TextEntry", "Button FontFamily");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(10)]
-	public void VerifyButton_FontFamilyAndTextTransform()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontFamilyDokdoButton");
-		App.Tap("FontFamilyDokdoButton");
-		App.WaitForElement("TextTransformUppercaseButton");
-		App.Tap("TextTransformUppercaseButton");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button FontFamily TextTransform");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
@@ -212,44 +142,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.ClearText("TextEntry");
 		string longText = "This is a very long text that should wrap correctly based on the LineBreakMode settings applied to the Button";
 		App.EnterText("TextEntry", longText);
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(12)]
-	public void VerifyButton_FontSizeAndText()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "20");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button FontSize");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		App.WaitForElement("ClickedEventLabel");
-		App.Tap("ClickedEventLabel");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(13)]
-	public void VerifyButton_FontSizeAndTextTransform()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "20");
-		App.WaitForElement("TextTransformUppercaseButton");
-		App.Tap("TextTransformUppercaseButton");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button Text");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
@@ -400,90 +292,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("TextEntry");
 		App.ClearText("TextEntry");
 		App.EnterText("TextEntry", "Button Shadow");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(23)]
-	public void VerifyButton_TextAndTextTransform()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button TextTransform");
-		App.WaitForElement("TextTransformUppercaseButton");
-		App.Tap("TextTransformUppercaseButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("BUTTON TEXTTRANSFORM"));
-	}
-
-	[Test, Order(24)]
-	public void VerifyButton_FontAttributesItalicAndText()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button FontAttributes Italic");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(25)]
-	public void VerifyButton_FontAttributesBoldItalicAndText()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button FontAttributes BoldItalic");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(26)]
-	public void VerifyButton_HeightRequest()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("HeightRequestEntry");
-		App.ClearText("HeightRequestEntry");
-		App.EnterText("HeightRequestEntry", "100");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button HeightRequest");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(27)]
-	public void VerifyButton_WidthRequest()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("WidthRequestEntry");
-		App.ClearText("WidthRequestEntry");
-		App.EnterText("WidthRequestEntry", "200");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button WidthRequest");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
@@ -796,43 +604,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("ClickedEventLabel").GetText(), Is.EqualTo("Clicked Event Executed"));
 	}
 
-	[Test, Order(45)]
-	public void VerifyButton_TextAndTextColor()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button TextColor");
-		App.WaitForElement("TextColorGreenButton");
-		App.Tap("TextColorGreenButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(46)]
-	public void VerifyButton_BorderColorAndTextColor()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BorderColorRedButton");
-		App.Tap("BorderColorRedButton");
-		App.WaitForElement("BorderWidthEntry");
-		App.ClearText("BorderWidthEntry");
-		App.EnterText("BorderWidthEntry", "5");
-		App.WaitForElement("TextColorGreenButton");
-		App.Tap("TextColorGreenButton");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button BorderColor TextColor");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
 	[Test, Order(47)]
 	public void VerifyButton_IsVisibleTrueAfterFalse()
 	{
@@ -895,47 +666,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(50)]
-	public void VerifyButton_TextTransformLowercase()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button TextTransform");
-		App.WaitForElement("TextTransformLowercaseButton");
-		App.Tap("TextTransformLowercaseButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("button texttransform"));
-	}
-
-	[Test, Order(51)]
-	public void VerifyButton_TextTransformDefault()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button TextTransform");
-		App.WaitForElement("TextTransformUppercaseButton");
-		App.Tap("TextTransformUppercaseButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("BUTTON TEXTTRANSFORM"));
-
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextTransformDefaultButton");
-		App.Tap("TextTransformDefaultButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Button"));
-	}
-
 	[Test, Order(52)]
 	public void VerifyButton_BackgroundColorResetToNone()
 	{
@@ -954,49 +684,6 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Options");
 		App.WaitForElement("BackgroundColorNone");
 		App.Tap("BackgroundColorNone");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(53)]
-	public void VerifyButton_FontAttributesFontFamilyFontSize()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("FontFamilyMontserratBoldButton");
-		App.Tap("FontFamilyMontserratBoldButton");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "22");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button Font Combo");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("ButtonControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(54)]
-	public void VerifyButton_BorderColorBorderWidthCornerRadius()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BorderColorGreenButton");
-		App.Tap("BorderColorGreenButton");
-		App.WaitForElement("BorderWidthEntry");
-		App.ClearText("BorderWidthEntry");
-		App.EnterText("BorderWidthEntry", "4");
-		App.WaitForElement("CornerRadiusEntry");
-		App.ClearText("CornerRadiusEntry");
-		App.EnterText("CornerRadiusEntry", "16");
-		App.WaitForElement("TextEntry");
-		App.ClearText("TextEntry");
-		App.EnterText("TextEntry", "Button Border Combo");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");

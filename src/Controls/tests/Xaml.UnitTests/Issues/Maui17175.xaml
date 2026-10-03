@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui17175">
+    <ContentPage.Resources>
+        <Style x:Key="NormalStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="LightBlue" />
+            <Setter Property="TextColor" Value="Black" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style x:Key="SelectedStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Orange" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontAttributes" Value="Bold" />
+        </Style>
+        <Style x:Key="DisabledStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Gray" />
+            <Setter Property="TextColor" Value="DarkGray" />
+            <Setter Property="Text" Value="State: Disabled" />
+        </Style>
+    </ContentPage.Resources>
+    <Button x:Name="TestButton" Text="State: Normal" Style="{StaticResource NormalStyle}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup Name="CommonStates">
+                <VisualState Name="Normal">
+                    <VisualState.Setters>
+                        <Setter Property="Style" Value="{StaticResource NormalStyle}" />
+                        <Setter Property="Text" Value="State: Normal" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState Name="Selected">
+                    <VisualState.Setters>
+                        <Setter Property="Style" Value="{StaticResource SelectedStyle}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState Name="Disabled">
+                    <VisualState.Setters>
+                        <Setter Property="Style" Value="{StaticResource DisabledStyle}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Button>
+</ContentPage>
