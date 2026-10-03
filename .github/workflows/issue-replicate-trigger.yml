@@ -198,6 +198,7 @@ jobs:
           runs=$(curl --fail-with-body --silent --show-error --max-time 30 \
             "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1" \
             -H "Authorization: Bearer ${token}")
+          runs=$(printf '%s' "$runs" | jq -ec '{value: .value[:100]}')
           count=$(printf '%s' "$runs" | jq -er '.value | length')
           if [ "$count" -ge 100 ] &&
              printf '%s' "$runs" | jq -e --arg reserved "$RESERVED_AT" \
@@ -221,7 +222,7 @@ jobs:
               fi
               match_id="$prior_id"
             fi
-          done < <(printf '%s' "$runs" | jq -r '.value[:100][].id')
+          done < <(printf '%s' "$runs" | jq -r '.value[].id')
           if [ -n "$match_id" ]; then
             echo "run_id=${match_id}" >> "$GITHUB_OUTPUT"
             unset token

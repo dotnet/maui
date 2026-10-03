@@ -5,7 +5,9 @@ param(
     [Parameter(Mandatory)][string]$SampleResultPath,
     [Parameter(Mandatory)][string]$CandidatePath,
     [Parameter(Mandatory)][string]$RepoRoot,
-    [Parameter(Mandatory)][string]$OutputDirectory
+    [Parameter(Mandatory)][string]$OutputDirectory,
+    [ValidateRange(1, 2)][int]$Attempt = 1,
+    [string]$PreviousResultPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,6 +42,10 @@ $result = [ordered]@{
     sampleBuilt = $true
     testKind = [string]$candidate.kind
     patchSha256 = ''
+    candidateSha256 = (Get-FileHash -LiteralPath $CandidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    attempt = $Attempt
+    observedAssertion = $false
+    failureIdentities = @()
 }
 if ($candidate.kind -eq 'unsupported') {
     if (@($candidate.files).Count -ne 0) { throw 'Unsupported candidates cannot include test files.' }
@@ -48,6 +54,32 @@ if ($candidate.kind -eq 'unsupported') {
     exit 0
 }
 Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber $result.issueNumber | Out-Null
+$previous = $null
+if ($Attempt -eq 2) {
+    $previousFile = Get-Item -LiteralPath $PreviousResultPath -ErrorAction Stop
+    if ($previousFile.Length -gt 16384 -or $previousFile.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'The first-attempt result is not a bounded regular file.'
+    }
+    $previous = Get-Content -Raw -LiteralPath $previousFile.FullName | ConvertFrom-Json -Depth 6
+    Assert-IssueReplicateResult -Result $previous -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
+    if ($previous.targetSha -cne $result.targetSha -or $previous.sampleSha256 -cne $result.sampleSha256 -or
+        $previous.platform -cne $result.platform -or $previous.testKind -cne $result.testKind -or
+        $previous.candidateSha256 -cne $result.candidateSha256 -or $previous.attempt -ne 1 -or
+        $previous.observedAssertion -isnot [bool]) {
+        throw 'The first attempt does not match this immutable candidate and issue snapshot.'
+    }
+    if (-not $previous.observedAssertion) {
+        Copy-Item -LiteralPath $previousFile.FullName -Destination $resultPath
+        return
+    }
+    if ($previous.status -cne 'inconclusive' -or $previous.testExecuted -ne $true -or
+        @($previous.failureIdentities).Count -lt 1 -or
+        @($previous.failureIdentities | Where-Object { $_ -cnotmatch '^[0-9a-f]{64}$' }).Count) {
+        throw 'The first attempt does not contain a valid observed assertion identity.'
+    }
+} elseif ($PreviousResultPath) {
+    throw 'Only the second fresh-agent attempt can consume first-attempt evidence.'
+}
 
 $issueClass = if ($candidate.kind -eq 'xaml') { "Maui$($result.issueNumber)" } else { "Issue$($result.issueNumber)" }
 $project = switch ($candidate.kind) {
@@ -85,7 +117,9 @@ try {
         throw 'The candidate patch is empty or too large.'
     }
     $sourceHashes = @{}
-    foreach ($relative in $written) {
+    $tracked = @(& git ls-files)
+    if ($LASTEXITCODE -ne 0) { throw 'Could not snapshot the complete tracked source tree.' }
+    foreach ($relative in $tracked) {
         $sourceHashes[$relative] = (Get-FileHash -LiteralPath (Join-Path $RepoRoot $relative) -Algorithm SHA256).Hash
     }
     $log = Join-Path $OutputDirectory 'test.log'
@@ -93,14 +127,13 @@ try {
     $filter = "FullyQualifiedName~$issueClass"
     $trxDirectory = Join-Path $OutputDirectory 'trx'
     New-Item -ItemType Directory -Path $trxDirectory -Force | Out-Null
-    $firstFailureIdentities = @()
-    for ($attempt = 1; $attempt -le 2; $attempt++) {
-        foreach ($relative in $written) {
+    do {
+        foreach ($relative in $tracked) {
             $path = Join-Path $RepoRoot $relative
             if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or
-                (Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                (Get-Item -LiteralPath $path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint -or
                 (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -cne $sourceHashes[$relative]) {
-                throw 'Generated code changed the candidate source; it cannot be verified.'
+                throw 'Generated code changed the candidate source or tracked framework tree; it cannot be verified.'
             }
         }
         $reportedTrx = [System.Collections.Generic.List[string]]::new()
@@ -140,12 +173,12 @@ try {
             if (-not $trxFile.StartsWith($root, [StringComparison]::Ordinal) -or
                 [IO.Path]::GetExtension($trxFile) -cne '.trx') { throw 'The UI runner reported an unexpected result path.' }
         }
-        foreach ($relative in $written) {
+        foreach ($relative in $tracked) {
             $path = Join-Path $RepoRoot $relative
             if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or
-                (Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                (Get-Item -LiteralPath $path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint -or
                 (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -cne $sourceHashes[$relative]) {
-                throw 'Generated code changed the candidate source; no verified patch will be exported.'
+                throw 'Generated code changed the candidate source or tracked framework tree; no verified patch will be exported.'
             }
         }
         if (-not (Test-Path -LiteralPath $trxFile -PathType Leaf) -or
@@ -157,14 +190,14 @@ try {
             if ($attempt -eq 1) { $result.status = 'not-reproduced-on-tested-revision' }
             break
         }
-        if ($attempt -eq 1) {
-            $firstFailureIdentities = @($verdict.FailureIdentities)
-        } elseif ($firstFailureIdentities.Count -gt 0 -and
-            ($verdict.FailureIdentities -join "`n") -ceq ($firstFailureIdentities -join "`n")) {
+        $result.observedAssertion = $true
+        $result.failureIdentities = @($verdict.FailureIdentities)
+        if ($Attempt -eq 2 -and
+            ($verdict.FailureIdentities -join "`n") -ceq (@($previous.failureIdentities) -join "`n")) {
             $result.assertionFailed = $true
             $result.status = 'candidate-failed'
         }
-    }
+    } while ($false)
     $testLines | Set-Content -LiteralPath $log -Encoding utf8
     if ($result.status -eq 'candidate-failed') {
         $patchPath = Join-Path $OutputDirectory 'test.patch'

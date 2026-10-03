@@ -9,15 +9,26 @@ parameters:
     type: string
   - name: platform
     type: string
+  - name: candidateJob
+    type: string
+  - name: attempt
+    type: number
 
 jobs:
   - job: ${{ parameters.name }}
-    dependsOn: [Intake, Sample, '${{ parameters.dependsOn }}']
+    dependsOn:
+      - Intake
+      - Sample
+      - '${{ parameters.candidateJob }}'
+      - ${{ if ne(parameters.dependsOn, parameters.candidateJob) }}:
+        - '${{ parameters.dependsOn }}'
     condition: ${{ parameters.condition }}
     variables:
       reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
       reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
-      reproCandidate: $[ dependencies.${{ parameters.dependsOn }}.outputs['candidate.payload'] ]
+      reproCandidate: $[ dependencies.${{ parameters.candidateJob }}.outputs['candidate.payload'] ]
+      ${{ if eq(parameters.attempt, 2) }}:
+        reproPrevious: $[ dependencies.${{ parameters.dependsOn }}.outputs['transfer.payload'] ]
     ${{ if eq(parameters.platform, 'android') }}:
       pool:
         vmImage: ubuntu-22.04
@@ -35,11 +46,16 @@ jobs:
             -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
           & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Candidate `
             -Encoded $env:REPRO_CANDIDATE -Directory "$(Pipeline.Workspace)/${{ parameters.proposal }}"
+          if ($env:REPRO_PREVIOUS -and $env:REPRO_PREVIOUS -notmatch '^\$\(') {
+            & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
+              -Encoded $env:REPRO_PREVIOUS -Directory "$(Pipeline.Workspace)/FirstAttempt"
+          }
         displayName: 'Restore bounded verification data without downloading artifacts'
         env:
           REPRO_INPUT: $(reproInput)
           REPRO_SAMPLE: $(reproSample)
           REPRO_CANDIDATE: $(reproCandidate)
+          REPRO_PREVIOUS: $(reproPrevious)
       - pwsh: |
           & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
             -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
@@ -127,12 +143,14 @@ jobs:
           displayName: 'Boot unprivileged Android emulator for UI candidate'
           timeoutInMinutes: 25
       - pwsh: |
+          $previous = if (${{ parameters.attempt }} -eq 2) { @('-PreviousResultPath', "$(Pipeline.Workspace)/FirstAttempt/result.json") } else { @() }
           & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Verify.ps1" `
             -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
             -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
             -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
             -RepoRoot "$(Pipeline.Workspace)/maui" `
-            -OutputDirectory "$(Pipeline.Workspace)/IssueVerified"
+            -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" `
+            -Attempt ${{ parameters.attempt }} @previous
           if ($LASTEXITCODE -ne 0) { throw 'Generated test verification did not complete.' }
         displayName: 'Run generated test without credentials'
         timeoutInMinutes: 85

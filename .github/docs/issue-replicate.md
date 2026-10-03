@@ -95,6 +95,15 @@ iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
 unsupported generated candidate cannot rule out the reported behavior.
 
+Repeated assertions run in separate fresh hosted jobs, each independently
+provisioning and checking out the same pinned source and candidate. First-attempt
+build outputs, ignored files, SDK directories and simulator state are never
+transferred to the second job. Only the bounded first-attempt identities and
+candidate hash are compared. Tracked framework and candidate files are hashed
+before execution and rechecked afterward; changes invalidate the attempt.
+Constant-only NUnit and xUnit assertions are rejected, but generated code still
+requires human fidelity review: an executed failure is not proof of the original bug.
+
 ## Deployment and isolation
 
 1. Merge the trusted scripts, trigger, and pipeline YAML to `main`. Create a

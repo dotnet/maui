@@ -197,7 +197,7 @@ stages:
             name: candidate
             displayName: 'Transfer bounded candidate through job outputs'
 
-      - template: common/issue-replicate-verify-job.yml
+      - template: common/issue-replicate-verify-jobs.yml
         parameters:
           name: Verify1
           dependsOn: Generate1
@@ -253,7 +253,7 @@ stages:
             name: candidate
             displayName: 'Transfer revised candidate through job outputs'
 
-      - template: common/issue-replicate-verify-job.yml
+      - template: common/issue-replicate-verify-jobs.yml
         parameters:
           name: Verify2
           dependsOn: Generate2

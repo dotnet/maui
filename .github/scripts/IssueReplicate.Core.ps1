@@ -232,7 +232,14 @@ function Assert-IssueReplicateCandidate {
         }
         if ($file.content -isnot [string] -or $file.content.Length -gt 30000 -or
             [string]::IsNullOrWhiteSpace($file.content)) { throw 'Candidate test file is empty or too large.' }
-        if ($file.content -match '(?i)\bAssert\.(Fail\b|True\s*\(\s*false\s*(?:,|\)))') {
+        $literal = '(?:true|false|null|0[xX][0-9A-Fa-f]+|[0-9]+(?:\.[0-9]+)?(?:[uUlLfFdDmM]+)?|"(?:\\.|[^"\\])*"|''(?:\\.|[^''\\])'')'
+        $constant = "(?:$literal|\s|[()+*/%<>=!&|^~?:-])+"
+        $single = "Assert\.(?:That|True|False|Null|NotNull|IsTrue|IsFalse|IsNull|IsNotNull)\s*\(\s*$constant\s*(?:,|\))"
+        $pair = "Assert\.(?:Equal|NotEqual|AreEqual|AreNotEqual|Same|NotSame|AreSame|AreNotSame)\s*\(\s*$constant\s*,\s*$constant\s*(?:,|\))"
+        $constraint = "Is(?:\.Not)?\.(?:True|False|Null|NotNull|EqualTo\s*\(\s*$constant\s*\))"
+        $nunit = "Assert\.That\s*\(\s*$constant\s*,\s*$constraint\s*(?:,|\))"
+        if ([regex]::IsMatch($file.content, "\bAssert\.Fail\b|\b$single|\b$pair|\b$nunit",
+            [Text.RegularExpressions.RegexOptions]::IgnoreCase, [TimeSpan]::FromSeconds(1))) {
             throw 'The generated test contains an unconditional failure.'
         }
         $total += $file.content.Length
