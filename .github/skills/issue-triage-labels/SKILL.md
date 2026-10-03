@@ -295,6 +295,12 @@ policy transition. Explain each removal separately:
   use the observation-oriented conditional gate for workaround-failure outcomes.
   A timing condition directly bound to a workaround-failure outcome is still
   hypothetical; failure advice cannot authorize removal.
+  Intervening prospective confirmation does not establish an observation:
+  "Once we confirm the workaround does not work" remains deferred evidence.
+  A trailing "until", "before", "pending" or waiting prerequisite bound to
+  that failure is not unconditional efficacy evidence either. Do not confuse
+  such prerequisites with completed "after updating" or "after rebuilding"
+  context.
   A workaround that failed to reproduce, replicate or trigger the reported issue
   is not an observed workaround failure. That paragraph cannot support
   failure-based removal; failing to work or fix the issue is distinct.

@@ -458,9 +458,13 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision,
     $condition = '\b(?:when|once|until|before|after|as soon as)\b'
     $clause = '(?:(?![,;!?\r\n]|\.(?:\s|$)).){0,80}'
     $outcome = '(?:is|are|has|have|can)\s+(?:(?:be|been|successfully|reliably|consistently)\s+){0,3}(?:reproduce[ds]?|reproducible|confirm(?:ed)?|verify|verified|validate[ds]?|correctly detect(?:s|ed)?)\b'
-    return $Paragraph -match "(?i)$condition$clause\b$outcome" -or
-        ($ConditionalOutcomePattern -and
-            $Paragraph -match "(?i)$condition\s+$ConditionalOutcomePattern")
+    if ($Paragraph -match "(?i)$condition$clause\b$outcome") { return $true }
+    if (-not $ConditionalOutcomePattern) { return $false }
+    $confirmation = '\b(?:confirms?|verif(?:y|ies)|validates?|checks?|establish(?:es)?|determines?|finds?|knows?)\b\s+(?:that\s+)?'
+    $prerequisite = '\b(?:until|before|pending|while\s+(?:awaiting|waiting\s+(?:for|on)))\b'
+    return $Paragraph -match "(?i)$condition\s+$ConditionalOutcomePattern" -or
+        $Paragraph -match "(?i)$condition$clause$confirmation$ConditionalOutcomePattern" -or
+        $Paragraph -match "(?i)$ConditionalOutcomePattern$clause(?:,\s*)?$prerequisite"
 }
 
 function Test-TentativeEvidence([string]$Paragraph) {

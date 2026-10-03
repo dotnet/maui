@@ -317,6 +317,11 @@ Workaround failures use the observation-oriented conditional gate: completed
 post-update or post-rebuild context is not mistaken for a deferred decision.
 A timing condition directly bound to a workaround-failure outcome is still
 hypothetical; failure advice cannot authorize removal.
+Intervening prospective confirmation does not establish an observation:
+"Once we confirm the workaround does not work" remains deferred evidence.
+A trailing "until", "before", "pending" or waiting prerequisite bound to the
+failure is not unconditional efficacy evidence either. These prerequisites are
+distinct from completed "after updating" or "after rebuilding" context.
 Failure to reproduce, replicate or trigger the issue with a workaround is not
 failure of the workaround. Such a paragraph cannot support failure-based
 removal, while observed failure to work or fix the issue remains eligible.
