@@ -164,6 +164,12 @@ jobs:
           RESERVED_AT: ${{ steps.dedupe.outputs.reserved_at }}
         run: |
           set -euo pipefail
+          main_sha=$(gh api "repos/${REPO}/git/ref/heads/main" --jq .object.sha)
+          if ! [[ "$TRUSTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]] ||
+             [ "$main_sha" != "$TRUSTED_MAIN_SHA" ]; then
+            echo "::error::Trusted main changed after authorization; refusing stale infrastructure."
+            exit 1
+          fi
           # shellcheck disable=SC2016
           body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is queueing a public reproduction build.\n' "$COMMENT")
           ack_id="$EXISTING_ACK_ID"
@@ -190,17 +196,10 @@ jobs:
           CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
           PIPELINE_ID: ${{ vars.ISSUE_REPLICATE_PIPELINE_ID }}
           RESERVED_AT: ${{ steps.reserve.outputs.reserved_at }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if ! [[ "$PIPELINE_ID" =~ ^[1-9][0-9]*$ ]]; then
             echo "::error::ISSUE_REPLICATE_PIPELINE_ID must identify the dnceng-public/public pipeline."
-            exit 1
-          fi
-          main_sha=$(gh api "repos/${REPO}/git/ref/heads/main" --jq .object.sha)
-          if ! [[ "$TRUSTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]] ||
-             [ "$main_sha" != "$TRUSTED_MAIN_SHA" ]; then
-            echo "::error::Trusted main changed after authorization; refusing stale infrastructure."
             exit 1
           fi
           oidc=$(curl --fail-with-body --silent --show-error --max-time 30 \
