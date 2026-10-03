@@ -8,6 +8,7 @@ param(
     [Parameter(ParameterSetName = 'GitHub')][ValidateSet('dotnet/maui', 'kubaflo/maui')][string]$GitHubRepository = 'kubaflo/maui',
     [Parameter(Mandatory)][string]$InputDirectory,
     [Parameter(Mandatory)][string]$ResultsDirectory,
+    [string]$SampleDirectory = '',
     [string]$OutputPath = ''
 )
 
@@ -25,6 +26,7 @@ $candidate = 'No verified failing test patch was exported.'
 $commit = 'unknown'
 $patchText = ''
 $patchSha256 = ''
+$sampleDiagnostic = ''
 $runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "> Fork canary evidence from [$GitHubRepository]($buildUrl), published from validated job data; this was not a production Azure pipeline run."
 } else { '' }
@@ -79,16 +81,37 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         } else { "``$sourceCommit``" }
         $details += "`n| Pinned author repro revision | $commitLink |"
     }
+    $sample = $null
+    if ($SampleDirectory -and (Test-Path -LiteralPath (Join-Path $SampleDirectory 'sample-result.json') -PathType Leaf)) {
+        $sample = Read-BoundedJson -Path (Join-Path $SampleDirectory 'sample-result.json')
+        if ($sample.sampleSha256 -cne $manifest.sampleSha256 -or $sample.targetSha -cne $manifest.targetSha -or
+            $sample.buildSucceeded -isnot [bool] -or
+            $sample.targetFramework -cnotmatch "^net[0-9]+\.[0-9]+-$($manifest.platform)(?:[0-9]+(?:\.[0-9]+)*)?$" -or
+            ($null -ne $sample.diagnostic -and
+                ($sample.diagnostic -isnot [string] -or $sample.diagnostic.Length -gt 2048))) {
+            throw 'The author sample result does not match the immutable snapshot or bounded build contract.'
+        }
+        $details += "`n| Author sample built | $($sample.buildSucceeded) |"
+        $details += "`n| Author target framework | ``$($sample.targetFramework)`` |"
+        if (-not $sample.buildSucceeded) {
+            $summary = 'The unchanged author sample failed to build on the pinned public toolchain. No generated test was executed, so reproduction is inconclusive and the issue has not been ruled out.'
+            $details += "`n| Status | ``inconclusive`` |"
+            $details += "`n| Generated test executed | False |"
+            $details += "`n| Matching assertion failures verified twice | False |"
+            $sampleDiagnostic = [string]$sample.diagnostic
+        }
+    }
     $resultPath = Join-Path $ResultsDirectory 'result.json'
     if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
         $result = Read-BoundedJson -Path $resultPath
         Assert-IssueReplicateResult -Result $result -IssueNumber $IssueNumber -CommentId $CommentId | Out-Null
         if ($result.targetSha -cne $manifest.targetSha -or $result.platform -cne $manifest.platform -or
-            $result.sampleSha256 -cne $manifest.sampleSha256) {
+            $result.sampleSha256 -cne $manifest.sampleSha256 -or
+            ($null -ne $sample -and $sample.buildSucceeded -ne $result.sampleBuilt)) {
             throw 'The verification result does not match the immutable intake snapshot.'
         }
         $details += "`n| Status | ``$($result.status)`` |"
-        $details += "`n| Author sample built | $($result.sampleBuilt -eq $true) |"
+        if ($null -eq $sample) { $details += "`n| Author sample built | $($result.sampleBuilt -eq $true) |" }
         $details += "`n| Generated test executed | $($result.testExecuted -eq $true) |"
         $details += "`n| Matching assertion failures verified twice | $($result.assertionFailed -eq $true) |"
         if ($result.testKind -cin @('unit', 'xaml', 'ui') -and $result.testExecuted -eq $true) {
@@ -134,13 +157,18 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
 }
 
 function Format-PatchBlock {
-    param([string]$Text)
+    param([string]$Text, [ValidateSet('diff', 'text')][string]$Language = 'diff')
     $maxBacktickRun = 0
     foreach ($match in [regex]::Matches($Text, '`+')) {
         $maxBacktickRun = [Math]::Max($maxBacktickRun, $match.Length)
     }
     $fence = '`' * [Math]::Max(4, $maxBacktickRun + 1)
-    return "`n`n${fence}diff`n$Text`n$fence"
+    return "`n`n$fence$Language`n$Text`n$fence"
+}
+
+if ($sampleDiagnostic) {
+    $details += "`n`nAuthor sample build diagnostic (untrusted log text):" +
+        (Format-PatchBlock -Text $sampleDiagnostic -Language text)
 }
 
 function Set-ResultComment {

@@ -268,6 +268,7 @@ stages:
           reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
           reproVerified1: $[ dependencies.Verify1.outputs['transfer.payload'] ]
           reproVerified2: $[ dependencies.Verify2.outputs['transfer.payload'] ]
+          reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 20
@@ -289,6 +290,10 @@ stages:
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Input `
                     -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
                 }
+                if ($env:REPRO_SAMPLE -and $env:REPRO_SAMPLE -notmatch '^\$\(') {
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Sample `
+                    -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+                }
                 if ($env:REPRO_VERIFIED2 -and $env:REPRO_VERIFIED2 -notmatch '^\$\(') {
                   $result = "$(Pipeline.Workspace)/Verified2"
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
@@ -299,7 +304,8 @@ stages:
                 }
                 & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
                   -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
-                  -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result
+                  -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result `
+                  -SampleDirectory "$(Pipeline.Workspace)/SampleOutput"
                 if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
               } catch {
                 $url = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$(Build.BuildId)"
@@ -329,5 +335,6 @@ stages:
               ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               COMMENT_ID: ${{ parameters.CommentId }}
               REPRO_INPUT: $(reproInput)
+              REPRO_SAMPLE: $(reproSample)
               REPRO_VERIFIED1: $(reproVerified1)
               REPRO_VERIFIED2: $(reproVerified2)

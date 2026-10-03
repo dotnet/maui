@@ -78,7 +78,8 @@ fetches trusted scripts from the immutable public pipeline commit. Jobs needing
 the sample re-download its pinned public source and require the original ZIP hash.
 If the source changes or disappears, the attempt is explicitly inconclusive.
 
-The isolated posting job imports only the snapshot and verified result, validates
+The isolated posting job imports only the snapshot, bounded sample build record,
+and verified result, validates
 the existing issue/revision/patch contracts, and publishes the expandable report.
 The full diff and original repro links are preserved in comments without artifact
 retention or storage charges. Fork publication requires a separately configured
@@ -86,6 +87,9 @@ issue-comment credential: the fork's built-in token cannot post to `dotnet/maui`
 Never repurpose the Copilot credential or expose a posting credential to native
 execution. An unconfigured publisher fails explicitly rather than pretending a
 comment was posted.
+If the unchanged author sample cannot build, the report preserves its exact target
+framework and a bounded build diagnostic as untrusted log text. It explicitly
+states that no generated test ran and publishes no candidate or assertion claim.
 
 iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an

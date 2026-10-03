@@ -45,11 +45,18 @@ if ($NuGetConfigPath) {
     }
 $exitCode = $LASTEXITCODE
 $redacted | Set-Content -LiteralPath $log -Encoding utf8
+$diagnostic = ($redacted | Where-Object { $_ -match '\berror [A-Z]+[0-9]+:' } |
+    Select-Object -First 2) -join "`n"
+if ($diagnostic.Length -gt 2048) {
+    $length = if ([char]::IsHighSurrogate($diagnostic[2047])) { 2047 } else { 2048 }
+    $diagnostic = $diagnostic.Substring(0, $length)
+}
 @{
     sampleSha256 = $manifest.sampleSha256
     targetSha = $manifest.targetSha
     buildSucceeded = ($exitCode -eq 0)
     sampleProject = $project.Name
     targetFramework = $tfm
+    diagnostic = $diagnostic
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'sample-result.json') -Encoding utf8
 if ($exitCode -ne 0) { throw 'The author sample did not build; reproduction is inconclusive.' }

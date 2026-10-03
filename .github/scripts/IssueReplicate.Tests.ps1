@@ -348,12 +348,13 @@ Describe 'Tool-free candidate generation' {
 
 Describe 'Author sample target selection' {
     It 'builds the exact existing iOS TFM without dropping its platform version' -TestCases @(
-        @{ Tfm = 'net10.0-ios' },
-        @{ Tfm = 'net10.0-ios27.0' }
+        @{ Tfm = 'net10.0-ios'; ExitCode = 0 },
+        @{ Tfm = 'net10.0-ios27.0'; ExitCode = 0 },
+        @{ Tfm = 'net10.0-ios27.0'; ExitCode = 1 }
     ) {
-        param($Tfm)
-        $inputDir = Join-Path $TestDrive "sample-$Tfm"
-        $outputDir = Join-Path $TestDrive "sample-output-$Tfm"
+        param($Tfm, $ExitCode)
+        $inputDir = Join-Path $TestDrive "sample-$Tfm-$ExitCode"
+        $outputDir = Join-Path $TestDrive "sample-output-$Tfm-$ExitCode"
         New-Item -ItemType Directory -Path $inputDir | Out-Null
         $zipPath = Join-Path $inputDir 'sample.zip'
         $stream = [IO.File]::Create($zipPath)
@@ -368,17 +369,29 @@ Describe 'Author sample target selection' {
             sampleSha256 = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
         } | ConvertTo-Json | Set-Content (Join-Path $inputDir 'manifest.json')
         $global:issueReplicateSampleArguments = @()
+        $global:issueReplicateSampleExit = $ExitCode
         function dotnet {
             $global:issueReplicateSampleArguments = @($args)
-            $global:LASTEXITCODE = 0
+            $global:LASTEXITCODE = $global:issueReplicateSampleExit
+            if ($global:issueReplicateSampleExit) {
+                'sample.csproj: error NETSDK1140: 27.0 is not a valid TargetPlatformVersion for iOS.'
+            }
         }
-        & (Join-Path $PSScriptRoot 'IssueReplicate.Sample.ps1') `
-            -InputDirectory $inputDir -OutputDirectory $outputDir
+        if ($ExitCode) {
+            { & (Join-Path $PSScriptRoot 'IssueReplicate.Sample.ps1') `
+                -InputDirectory $inputDir -OutputDirectory $outputDir } | Should -Throw '*did not build*'
+        } else {
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Sample.ps1') `
+                -InputDirectory $inputDir -OutputDirectory $outputDir
+        }
         $global:issueReplicateSampleArguments | Should -Contain $Tfm
         $global:issueReplicateSampleArguments | Should -Contain "-p:TargetFrameworks=$Tfm"
-        (Get-Content -Raw (Join-Path $outputDir 'sample-result.json') | ConvertFrom-Json).targetFramework |
-            Should -Be $Tfm
+        $record = Get-Content -Raw (Join-Path $outputDir 'sample-result.json') | ConvertFrom-Json
+        $record.targetFramework | Should -Be $Tfm
+        $record.buildSucceeded | Should -Be ($ExitCode -eq 0)
+        if ($ExitCode) { $record.diagnostic | Should -Match 'error NETSDK1140' }
         Remove-Variable issueReplicateSampleArguments -Scope Global
+        Remove-Variable issueReplicateSampleExit -Scope Global
     }
 }
 
@@ -474,6 +487,41 @@ Describe 'Pinned test verification' {
 }
 
 Describe 'Bounded issue result publication' {
+    It 'reports the actual failed sample target and diagnostic without inventing test execution' {
+        $inputDir = Join-Path $TestDrive 'failed-sample-input'
+        $sampleDir = Join-Path $TestDrive 'failed-sample-result'
+        $resultsDir = Join-Path $TestDrive 'absent-verification'
+        New-Item -ItemType Directory -Path $inputDir, $sampleDir | Out-Null
+        @{
+            issueNumber = 12345; commentId = 4925414214
+            targetSha = 'a' * 40; sampleSha256 = 'b' * 64
+            platform = 'ios'; sourceType = 'attachment'
+        } | ConvertTo-Json | Set-Content (Join-Path $inputDir 'manifest.json')
+        $sample = @{
+            targetSha = 'a' * 40; sampleSha256 = 'b' * 64
+            buildSucceeded = $false; targetFramework = 'net10.0-ios27.0'
+            diagnostic = 'error NETSDK1140: 27.0 is not valid. Untrusted fence: ````'
+        }
+        $sample | ConvertTo-Json | Set-Content (Join-Path $sampleDir 'sample-result.json')
+        $preview = Join-Path $TestDrive 'failed-sample-comment.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 `
+            -CommentId 4925414214 -BuildId 456789 -InputDirectory $inputDir -ResultsDirectory $resultsDir `
+            -SampleDirectory $sampleDir -OutputPath $preview
+        $body = Get-Content -Raw $preview
+        $body | Should -Match 'unchanged author sample failed to build'
+        $body | Should -Match 'net10.0-ios27.0'
+        $body | Should -Match 'Generated test executed \| False'
+        $body | Should -Match 'Matching assertion failures verified twice \| False'
+        $body | Should -Match '`````text'
+        $body | Should -Match 'error NETSDK1140'
+        $body | Should -Not -Match 'verified failing \*test candidate\*'
+        $sample.sampleSha256 = 'c' * 64
+        $sample | ConvertTo-Json | Set-Content (Join-Path $sampleDir 'sample-result.json')
+        { & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 `
+            -CommentId 4925414214 -BuildId 456789 -InputDirectory $inputDir -ResultsDirectory $resultsDir `
+            -SampleDirectory $sampleDir -OutputPath $preview } | Should -Throw '*immutable snapshot*'
+    }
+
     It 'posts the complete failing-test diff without echoing author instructions' {
         $inputDir = Join-Path $TestDrive 'IssueInput'
         $resultsDir = Join-Path $TestDrive 'Verified1'
