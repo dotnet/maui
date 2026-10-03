@@ -474,11 +474,12 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision,
     $confirmation = '\b(?:confirms?|verif(?:y|ies)|validates?|checks?|establish(?:es)?|determines?|finds?|knows?)\b\s+(?:that\s+)?'
     $prerequisite = '\b(?:until|before|pending|while\s+(?:awaiting|waiting\s+(?:for|on)))\b'
     $predicateClause = '(?:(?![,;:!?()\r\n\u2013\u2014]|\.(?:\s|$)|--|\s-(?:\s|$)).){0,80}'
+    $prerequisiteSeparator = '(?:[,;:(\u2013\u2014]|--|\s-(?=\s|$))\s*'
     $efficacyStep = '\b(?:confirm(?:ation)?|verify|verification|validate|validation|(?:re)?test(?:ing)?|reproduce|reproduction|(?:re)?build(?:ing)?|setup|install(?:ation)?|download(?:ing)?|apply|applying|use|using|enable|enabling|disable|disabling|configure|configuration|update|updating|upgrade|upgrading|restart|reset)\b'
     return $Paragraph -match "(?i)$condition\s+$ConditionalOutcomePattern" -or
         $Paragraph -match "(?i)$condition$clause$confirmation$ConditionalOutcomePattern" -or
         $Paragraph -match "(?i)$ConditionalOutcomePattern$predicateClause(?:$prerequisite|,\s*\buntil\b)" -or
-        $Paragraph -match "(?i)$ConditionalOutcomePattern$predicateClause,\s*$prerequisite$predicateClause$efficacyStep"
+        $Paragraph -match "(?i)$ConditionalOutcomePattern$predicateClause$prerequisiteSeparator$prerequisite$predicateClause$efficacyStep"
 }
 
 function Test-TentativeEvidence([string]$Paragraph) {

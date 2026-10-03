@@ -317,9 +317,12 @@ policy transition. Explain each removal separately:
   "pending a proper fix, I reverted the change" is still observed failure.
   A comma can introduce a bound "until" prerequisite; it does not bind arbitrary
   "before" or "pending" discourse back to the efficacy outcome.
-  Comma-separated deferred confirmation/testing or application/setup steps
-  still qualify as unfinished prerequisites. Do not borrow that step from
-  a later aside or follow-up clause.
+  Deferred confirmation/testing or application/setup steps immediately introduced
+  by a comma, semicolon, colon, opening parenthesis or dash still qualify as
+  unfinished prerequisites: "The workaround does not work: pending validation"
+  and "The workaround does not work (pending validation)" are not observed
+  efficacy failures. Keep the prerequisite and its step within the same bounded
+  clause; do not borrow that step from a later aside or follow-up clause.
   A workaround that failed to reproduce, replicate or trigger the reported issue
   is not an observed workaround failure. That paragraph cannot support
   failure-based removal; failing to work or fix the issue is distinct.
