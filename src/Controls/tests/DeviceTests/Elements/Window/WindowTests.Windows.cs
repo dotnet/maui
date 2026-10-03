@@ -383,6 +383,87 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task RestoringSameShellPreservesContentAndTitleBar()
+		{
+			SetupBuilder();
+
+			var content = new Label { Text = "Issue 38619" };
+			var shellPage = new ContentPage { Content = content };
+			var shell = new Shell { CurrentItem = shellPage };
+			var titleBar = new TitleBar { Title = "Retained Shell" };
+			var window = new Window(shell) { TitleBar = titleBar };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(content);
+				var shellView = Assert.IsAssignableFrom<RootNavigationView>(shell.Handler.PlatformView);
+				var shellContent = shellView.Content;
+				Assert.NotNull(shellContent);
+
+				for (int i = 0; i < 2; i++)
+				{
+					var replacement = new ContentPage { Content = new Label { Text = "Replacement" } };
+					window.Page = replacement;
+					await OnLoadedAsync(replacement);
+					await OnUnloadedAsync(content);
+
+					window.Page = shell;
+
+					// Disconnect must not clear the handler-owned ShellView's content.
+					Assert.Same(shellView, shell.Handler.PlatformView);
+					Assert.Same(shellContent, shellView.Content);
+					await OnLoadedAsync(shellPage);
+					await OnLoadedAsync(content);
+
+					var rootView = GetWindowRootView(handler);
+					var platformContent = content.ToPlatform(handler.MauiContext);
+					Assert.Same(shellView, rootView.Content);
+					Assert.True(platformContent.IsLoaded);
+					Assert.Same(rootView.XamlRoot, platformContent.XamlRoot);
+					await AssertEventually(() => platformContent.ActualWidth > 0 && platformContent.ActualHeight > 0);
+
+					Assert.Same(titleBar, rootView.TitleBar);
+					await OnLoadedAsync(titleBar);
+					Assert.True(titleBar.ToPlatform(handler.MauiContext).IsLoaded);
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task DisconnectOnlyClearsManagerCreatedNavigationView(bool useExistingNavigationView)
+		{
+			SetupBuilder();
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new ContentPage(), handler =>
+			{
+				var manager = new NavigationRootManager(handler.PlatformView);
+				var content = new Microsoft.UI.Xaml.Controls.Border();
+				var rootView = Assert.IsType<WindowRootView>(manager.RootView);
+
+				try
+				{
+					manager.Connect(useExistingNavigationView ? new RootNavigationView { Content = content } : content);
+					var navigationView = Assert.IsType<RootNavigationView>(rootView.Content);
+					Assert.Same(content, navigationView.Content);
+
+					manager.Disconnect();
+
+					Assert.Null(rootView.Content);
+					if (useExistingNavigationView)
+						Assert.Same(content, navigationView.Content);
+					else
+						Assert.Null(navigationView.Content);
+				}
+				finally
+				{
+					manager.Disconnect();
+				}
+			});
+		}
+
 		// MinimizeAndThenMaximizingWorks test moved to UI tests (Issue14142) because 
 		// window activation events don't fire reliably on Helix VMs which run in 
 		// non-interactive Windows sessions.
