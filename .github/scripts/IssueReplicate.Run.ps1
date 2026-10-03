@@ -1,0 +1,72 @@
+#!/usr/bin/env pwsh
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory)][ValidateSet('Sample', 'Verify')][string]$Mode,
+    [Parameter(Mandatory)][string]$InputDirectory,
+    [Parameter(Mandatory)][string]$OutputDirectory,
+    [string]$NuGetConfigPath = '',
+    [string]$SampleResultPath = '',
+    [string]$CandidatePath = '',
+    [string]$RepoRoot = '',
+    [ValidateRange(1, 2)][int]$Attempt = 1,
+    [string]$PreviousResultPath = '',
+    [ValidateSet('None', 'Azure', 'GitHub')][string]$Provider = 'None'
+)
+
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+$execute = [scriptblock]::Create([IO.File]::ReadAllText((Join-Path $PSScriptRoot "IssueReplicate.$Mode.ps1")))
+$export = [scriptblock]::Create([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1')))
+$completedData = @{ Result = $null; Files = @{} }
+$parameters = @{
+    OutputDirectory = $OutputDirectory
+    CoreLoaded = $true
+    OnCompleted = {
+        param($Record, [string]$PatchText = '', [string]$Feedback = '')
+        if ($null -ne $completedData.Result) { throw 'Execution completed more than once.' }
+        $json = $Record | ConvertTo-Json -Depth 6
+        $completedData.Result = $json | ConvertFrom-Json -Depth 6
+        $name = if ($Mode -eq 'Sample') { 'sample-result.json' } else { 'result.json' }
+        $completedData.Files[$name] = [Text.Encoding]::UTF8.GetBytes($json)
+        if ($PatchText) { $completedData.Files['test.patch'] = [Text.Encoding]::UTF8.GetBytes($PatchText) }
+        if ($Feedback) { $completedData.Files['feedback.txt'] = [Text.Encoding]::UTF8.GetBytes($Feedback) }
+    }
+}
+if ($Mode -eq 'Sample') {
+    $parameters.InputDirectory = $InputDirectory
+    $parameters.NuGetConfigPath = $NuGetConfigPath
+} else {
+    $parameters.ManifestPath = Join-Path $InputDirectory 'manifest.json'
+    $parameters.SampleResultPath = $SampleResultPath
+    $parameters.CandidatePath = $CandidatePath
+    $parameters.RepoRoot = $RepoRoot
+    $parameters.Attempt = $Attempt
+    $parameters.PreviousResultPath = $PreviousResultPath
+}
+
+$completed = $false
+try {
+    & $execute @parameters
+    $completed = $true
+} finally {
+    $kind = if ($Mode -eq 'Sample') { 'Sample' } else { 'Verified' }
+    if ($null -ne $completedData.Result) {
+        if ($Mode -eq 'Verify') {
+            $result = $completedData.Result
+            Assert-IssueReplicateResult -Result $result -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
+            switch ($Provider) {
+                'Azure' { Write-Host "##vso[task.setvariable variable=verdict;isOutput=true]$($result.status)" }
+                'GitHub' {
+                    if (-not $env:GITHUB_OUTPUT) { throw 'The GitHub job output file is unavailable.' }
+                    [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "verdict=$($result.status)`n")
+                }
+            }
+            $global:LASTEXITCODE = 0
+        }
+        & $export -Mode Export -Kind $kind -Directory $OutputDirectory -Provider $Provider `
+            -FileBytes $completedData.Files -CoreLoaded
+    } else {
+        $message = 'Execution did not produce a completed bounded result; no job data can be exported.'
+        if ($completed) { throw $message } else { Write-Warning $message }
+    }
+}

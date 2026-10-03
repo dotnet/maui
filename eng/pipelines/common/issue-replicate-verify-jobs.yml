@@ -1,0 +1,31 @@
+parameters:
+  - name: name
+    type: string
+  - name: dependsOn
+    type: string
+  - name: condition
+    type: string
+  - name: proposal
+    type: string
+  - name: platform
+    type: string
+
+jobs:
+  - template: issue-replicate-verify-job.yml
+    parameters:
+      name: ${{ parameters.name }}First
+      dependsOn: ${{ parameters.dependsOn }}
+      candidateJob: ${{ parameters.dependsOn }}
+      condition: ${{ parameters.condition }}
+      proposal: ${{ parameters.proposal }}
+      platform: ${{ parameters.platform }}
+      attempt: 1
+  - template: issue-replicate-verify-job.yml
+    parameters:
+      name: ${{ parameters.name }}
+      dependsOn: ${{ parameters.name }}First
+      candidateJob: ${{ parameters.dependsOn }}
+      condition: succeeded('${{ parameters.name }}First')
+      proposal: ${{ parameters.proposal }}
+      platform: ${{ parameters.platform }}
+      attempt: 2

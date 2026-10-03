@@ -1,0 +1,162 @@
+parameters:
+  - name: name
+    type: string
+  - name: dependsOn
+    type: string
+  - name: condition
+    type: string
+  - name: proposal
+    type: string
+  - name: platform
+    type: string
+  - name: candidateJob
+    type: string
+  - name: attempt
+    type: number
+
+jobs:
+  - job: ${{ parameters.name }}
+    dependsOn:
+      - Intake
+      - Sample
+      - '${{ parameters.candidateJob }}'
+      - ${{ if ne(parameters.dependsOn, parameters.candidateJob) }}:
+        - '${{ parameters.dependsOn }}'
+    condition: ${{ parameters.condition }}
+    variables:
+      reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+      reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
+      reproCandidate: $[ dependencies.${{ parameters.candidateJob }}.outputs['candidate.payload'] ]
+      ${{ if eq(parameters.attempt, 2) }}:
+        reproPrevious: $[ dependencies.${{ parameters.dependsOn }}.outputs['verify.payload'] ]
+    ${{ if eq(parameters.platform, 'android') }}:
+      pool:
+        vmImage: ubuntu-22.04
+    ${{ else }}:
+      pool:
+        vmImage: macOS-26
+    timeoutInMinutes: 180
+    steps:
+      - checkout: none
+      - template: issue-replicate-tools.yml
+      - pwsh: |
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+            -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+            -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Candidate `
+            -Encoded $env:REPRO_CANDIDATE -Directory "$(Pipeline.Workspace)/${{ parameters.proposal }}"
+          if ($env:REPRO_PREVIOUS -and $env:REPRO_PREVIOUS -notmatch '^\$\(') {
+            & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
+              -Encoded $env:REPRO_PREVIOUS -Directory "$(Pipeline.Workspace)/FirstAttempt"
+          }
+        displayName: 'Restore bounded verification data without downloading artifacts'
+        env:
+          REPRO_INPUT: $(reproInput)
+          REPRO_SAMPLE: $(reproSample)
+          REPRO_CANDIDATE: $(reproCandidate)
+          REPRO_PREVIOUS: $(reproPrevious)
+      - pwsh: |
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
+            -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
+            -Destination "$(Pipeline.Workspace)/maui"
+          if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
+        displayName: 'Fetch pinned public source without a checkout credential'
+      - template: issue-replicate-sdk.yml
+      - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: |
+            & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
+              -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
+          displayName: 'Require Xcode matching the pinned iOS SDK'
+      - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
+        displayName: 'Prepare local provisioning logs'
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - template: enable-kvm.yml
+      - template: provision.yml
+        parameters:
+          checkoutDirectory: $(Pipeline.Workspace)/maui
+          skipDotNetSdk: true
+          skipProvisionator: true
+          skipInternalFeeds: true
+          skipCertificates: true
+          skipGradleCache: true
+          skipXcode: ${{ eq(parameters.platform, 'android') }}
+          skipSimulatorSetup: ${{ eq(parameters.platform, 'android') }}
+          skipJdk: ${{ eq(parameters.platform, 'ios') }}
+          skipAndroidCommonSdks: ${{ eq(parameters.platform, 'ios') }}
+          skipAndroidPlatformApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+      - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+        workingDirectory: $(Pipeline.Workspace)/maui
+        displayName: 'Install pinned public MAUI SDK/workloads'
+        timeoutInMinutes: 50
+      - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
+        displayName: 'Use pinned SDK'
+      - pwsh: |
+          dotnet build Microsoft.Maui.BuildTasks.slnf -c Debug -p:BuildTaskOnlyBuild=true --nologo --verbosity quiet
+          if ($LASTEXITCODE -ne 0) { throw 'Could not build the pinned MAUI build tasks.' }
+        workingDirectory: $(Pipeline.Workspace)/maui
+        displayName: 'Build MAUI tasks before compiling generated tests'
+        timeoutInMinutes: 30
+      - task: UseNode@1
+        inputs:
+          version: "24.x"
+        displayName: 'Install Node.js for Appium'
+      - pwsh: |
+          $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+            ConvertFrom-Json -Depth 6
+          if ($candidate.kind -ne 'ui') { exit 0 }
+          $repo = "$(Pipeline.Workspace)/maui"
+          dotnet build "$repo/src/Provisioning/Provisioning.csproj" -t:ProvisionAppium -p:SkipAppiumDoctor=true
+          if ($LASTEXITCODE -ne 0) { throw 'Could not provision Appium for UI tests.' }
+        displayName: 'Provision Appium only for UI candidates'
+        env:
+          APPIUM_HOME: $(Pipeline.Workspace)/.appium
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - bash: |
+            set -euo pipefail
+            if [ "$(jq -r .kind "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json")" != ui ]; then
+              exit 0
+            fi
+            test -d "$ANDROID_SDK_ROOT"
+            for tool_dir in "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin; do
+              if [ -x "$tool_dir/sdkmanager" ]; then
+                break
+              fi
+            done
+            test -x "$tool_dir/sdkmanager"
+            "$tool_dir/sdkmanager" --install "system-images;android-30;google_apis;x86_64" "platforms;android-30"
+            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --package "system-images;android-30;google_apis;x86_64"
+            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -no-window -no-audio -no-snapshot -gpu swiftshader_indirect \
+              > "$(Agent.TempDirectory)/issue-emulator.log" 2>&1 &
+            adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+            timeout 600 "$adb" wait-for-device
+            for attempt in $(seq 1 120); do
+              if [ "$("$adb" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+                exit 0
+              fi
+              sleep 5
+            done
+            echo 'Android emulator could not boot' >&2
+            exit 1
+          displayName: 'Boot unprivileged Android emulator for UI candidate'
+          timeoutInMinutes: 25
+      - pwsh: |
+          $previous = if (${{ parameters.attempt }} -eq 2) { @('-PreviousResultPath', "$(Pipeline.Workspace)/FirstAttempt/result.json") } else { @() }
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Run.ps1" -Mode Verify `
+            -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+            -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
+            -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
+            -RepoRoot "$(Pipeline.Workspace)/maui" `
+            -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" `
+            -Attempt ${{ parameters.attempt }} -Provider Azure @previous
+          if ($LASTEXITCODE -ne 0) { throw 'Generated test verification did not complete.' }
+        displayName: 'Run generated test without credentials'
+        name: verify
+        timeoutInMinutes: 85
+        continueOnError: true
+        env:
+          APPIUM_HOME: $(Pipeline.Workspace)/.appium

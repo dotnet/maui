@@ -4,6 +4,7 @@ parameters:
   skipSimulatorSetup: false
   # .NET NuGet caches
   clearCaches: true
+  skipDotNetSdk: false
   # Android - JDK
   skipJdk: false
   # Android - SDK Packages
@@ -33,6 +34,7 @@ parameters:
   base64Encode: false
   skipInternalFeeds: true
   skipCertificates: false
+  skipGradleCache: false
 
 steps:
 
@@ -476,12 +478,13 @@ steps:
 ##################################################
 
 # Provisioning .NET - .NET SDK
-- task: UseDotNet@2
-  displayName: 'Use .NET SDK $(DOTNET_VERSION)'
-  inputs:
-    packageType: sdk
-    version: $(DOTNET_VERSION)
-    includePreviewVersions: true
+- ${{ if ne(parameters.skipDotNetSdk, true) }}:
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+    inputs:
+      packageType: sdk
+      version: $(DOTNET_VERSION)
+      includePreviewVersions: true
 
 - script: |
     dotnet --list-sdks
@@ -499,6 +502,7 @@ steps:
 - script: |
     dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
+  workingDirectory: ${{ parameters.checkoutDirectory }}
 
 ##################################################
 #              Provisioning Android              #
@@ -662,6 +666,7 @@ steps:
 
 # Cache Gradle downloads to avoid transient network failures during Android binding builds
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
-  - template: /eng/pipelines/common/cache-gradle.yml@self
-    parameters:
-      checkoutDirectory: ${{ parameters.checkoutDirectory }}
+  - ${{ if ne(parameters.skipGradleCache, true) }}:
+    - template: /eng/pipelines/common/cache-gradle.yml@self
+      parameters:
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
