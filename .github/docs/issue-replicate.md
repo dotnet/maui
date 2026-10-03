@@ -15,11 +15,14 @@ second comment reports the result. A fresh command comment starts a fresh run.
 Azure intake independently re-fetches the open issue and command comment,
 re-parses the command with the same GitHub-gate helpers, binds the queued platform
 and target branch to it, and checks the comment author's current write permission.
-Direct Azure queue access does not bypass this gate. The always-running publisher
+It also requires the infrastructure checkout to match GitHub's current `main` SHA,
+not merely the requested Azure repository version. On this pipeline revision,
+direct Azure queue access does not bypass these gates. The always-running publisher
 repeats these checks on its fresh trusted agent before importing results or entering
 the publication/fallback handler. Deleted commands, edits that invalidate the command
 or change its requested parameters, revoked permissions, closed issues, or unavailable
-authorization metadata fail closed without publishing.
+authorization metadata fail closed without publishing. If `main` advances during a
+run, publication from the older infrastructure revision also fails closed.
 
 The issue author must provide exactly one repro in the issue body or an
 author-written comment: a public `https://github.com/owner/repo` URL,
@@ -200,6 +203,19 @@ native execution on both supported platforms, including detached-writer attempts
 the current fresh-job split does not establish this boundary. Do not treat the
 steps below as permission to deploy before that requirement is implemented.
 
+**Historical YAML replay also requires an external enforced boundary.** New
+guards do not retroactively protect older pipeline YAML. Before releasing any
+credentials, a mandatory server-side protected-resource check outside the
+selected YAML must compare the run's `self` repository ref and exact version with
+GitHub's current `dotnet/maui` `main` commit and reject historical or unavailable
+metadata. Apply this check to every dedicated credential-bearing variable group;
+deny unapproved pipeline/group edits and queue-time variable overrides. Do not
+place these secrets on the pipeline definition or in root variables: older YAML
+can inherit those without requesting a checked resource. Verify direct API
+queues against old revisions are rejected before any credentialed work. This
+check has not been configured or exercised; production remains blocked until it
+and the native evidence boundary are enforced.
+
 Intake and the always-running posting job independently require the
 `dnceng-public` collection and `System.TeamProject` exactly equal to `public`.
 Both fail closed before intake or publication, including fallback notices, when
@@ -214,13 +230,16 @@ either predefined environment value is missing or belongs to another project.
    allow **Queue builds** on the new pipeline (see
    [OIDC setup](trigger-azdo-pipeline-setup.md)). Protect the pipeline, its
    `main`-branch definition, and its variables from arbitrary run edits.
-3. Provision three **separate protected secret variables** on this public
-   definition: `ISSUE_REPRO_READ_TOKEN` (GitHub issue/repo and collaborator-permission read),
-   `ISSUE_REPRO_COPILOT_TOKEN` (Copilot CLI GPT access), and
-   `ISSUE_REPRO_COMMENT_TOKEN` (issue-comment-only publication). Scope them to
-   their respective intake, generator, and posting tasks; the read credential is
-   also scoped to the publisher's independent authorization check. Do not import a
-   shared MAUI secret group. Review whether your token policy permits public
+3. Provision three **separate protected secret variable groups** with the
+   mandatory external revision check above: `issue-replicate-read` containing
+   `ISSUE_REPRO_READ_TOKEN` (GitHub issue/repo and collaborator-permission read),
+   `issue-replicate-copilot` containing `ISSUE_REPRO_COPILOT_TOKEN` (Copilot CLI GPT
+   access), and `issue-replicate-comment` containing `ISSUE_REPRO_COMMENT_TOKEN`
+   (issue-comment-only publication). The YAML imports them only in their
+   respective intake, generator, and posting jobs; the read group is also
+   required by the publisher's independent authorization check. Sample/native
+   test jobs import none. Keep task-level token mapping; do not add definition-level
+   copies or a shared MAUI secret group. Review whether your token policy permits public
    issue/repository reads, Copilot access, and issue-comment posting.
 4. Confirm `ubuntu-22.04` and `macOS-26` are **fresh Microsoft-hosted
    agents**, with Android KVM, Appium, appropriate Xcode/simulator, and workloads
@@ -243,7 +262,12 @@ Fresh commands reserve one comment of headroom in the three-page intake budget;
 retries reuse their existing acknowledgement. A pending acknowledgement is a
 35-minute lease, not a terminal success marker. Expired reservations are reconciled
 against bounded Azure run history and the exact issue/comment/platform/target-ref parameters before
-queueing again. Incomplete history or multiple matching runs fail explicitly.
+queueing again. The GitHub gate binds its current `main` checkout SHA to dispatch;
+dispatch rechecks it before requesting an explicit `self.version` and validates
+the returned run's ref and version. Reconciliation accepts only that exact
+repository version. A matching command with an older/different infrastructure
+version fails explicitly instead of being adopted or silently queued again.
+Incomplete history or multiple matching runs also fail explicitly.
 Recovery's transient `eyes` reaction is cleared after dispatch and is never a
 terminal latch; only the bot's successful build marker or `rocket` acknowledgement
 completes recovery.

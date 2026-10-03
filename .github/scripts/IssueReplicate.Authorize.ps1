@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory)][ValidateRange(1, [int]::MaxValue)][int]$IssueNumber,
     [Parameter(Mandatory)][ValidateRange(1, [long]::MaxValue)][long]$CommentId,
     [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
-    [Parameter(Mandatory)][string]$TargetRef
+    [Parameter(Mandatory)][string]$TargetRef,
+    [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$PipelineRevision
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,6 +22,12 @@ function Get-AuthorizationMetadata {
     $bytes = Get-IssueReplicateDownload -Url ([uri]"https://api.github.com/repos/dotnet/maui/$Route") `
         -MaxBytes 512KB
     return [Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json -Depth 15
+}
+
+$main = Get-AuthorizationMetadata 'git/ref/heads/main'
+if ($main.ref -cne 'refs/heads/main' -or $main.object.type -cne 'commit' -or
+    $main.object.sha -cnotmatch '^[0-9a-f]{40}$' -or $main.object.sha -cne $PipelineRevision) {
+    throw 'The pipeline revision is not the current trusted main commit.'
 }
 
 $issue = Get-AuthorizationMetadata "issues/$IssueNumber"

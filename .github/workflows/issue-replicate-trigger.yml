@@ -31,6 +31,7 @@ jobs:
       comment: ${{ steps.gate.outputs.comment }}
       platform: ${{ steps.gate.outputs.platform }}
       branch: ${{ steps.gate.outputs.branch }}
+      infrastructure_sha: ${{ steps.gate.outputs.infrastructure_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -49,6 +50,14 @@ jobs:
           INPUT_COMMENT: ${{ inputs.source_comment_id }}
         run: |
           $ErrorActionPreference = 'Stop'
+          $main = gh api "repos/$env:REPO/git/ref/heads/main" --jq .object.sha
+          if ($LASTEXITCODE -ne 0 -or $main -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'Could not resolve the current trusted main commit.'
+          }
+          $checkout = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $checkout -cne $main) {
+            throw 'Command authorization must use the current trusted main checkout.'
+          }
           . .github/scripts/IssueReplicate.Core.ps1
           $issueNumber = if ($env:EVENT_NAME -eq 'issue_comment') { $env:EVENT_ISSUE } else { $env:INPUT_ISSUE }
           $commentId = if ($env:EVENT_NAME -eq 'issue_comment') { $env:EVENT_COMMENT } else { $env:INPUT_COMMENT }
@@ -90,6 +99,7 @@ jobs:
           "comment=$commentId" >> $env:GITHUB_OUTPUT
           "platform=$platform" >> $env:GITHUB_OUTPUT
           "branch=$($command.Branch)" >> $env:GITHUB_OUTPUT
+          "infrastructure_sha=$main" >> $env:GITHUB_OUTPUT
 
   dispatch:
     needs: authorize
@@ -100,6 +110,7 @@ jobs:
       group: issue-replicate-${{ needs.authorize.outputs.issue }}
       cancel-in-progress: false
     permissions:
+      contents: read
       id-token: write
       issues: write
     env:
@@ -108,6 +119,7 @@ jobs:
       COMMENT: ${{ needs.authorize.outputs.comment }}
       PLATFORM: ${{ needs.authorize.outputs.platform }}
       TARGET_REF: ${{ needs.authorize.outputs.branch }}
+      TRUSTED_MAIN_SHA: ${{ needs.authorize.outputs.infrastructure_sha }}
     steps:
       - name: Check durable acknowledgement
         id: dedupe
@@ -178,10 +190,17 @@ jobs:
           CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
           PIPELINE_ID: ${{ vars.ISSUE_REPLICATE_PIPELINE_ID }}
           RESERVED_AT: ${{ steps.reserve.outputs.reserved_at }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if ! [[ "$PIPELINE_ID" =~ ^[1-9][0-9]*$ ]]; then
             echo "::error::ISSUE_REPLICATE_PIPELINE_ID must identify the dnceng-public/public pipeline."
+            exit 1
+          fi
+          main_sha=$(gh api "repos/${REPO}/git/ref/heads/main" --jq .object.sha)
+          if ! [[ "$TRUSTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]] ||
+             [ "$main_sha" != "$TRUSTED_MAIN_SHA" ]; then
+            echo "::error::Trusted main changed after authorization; refusing stale infrastructure."
             exit 1
           fi
           oidc=$(curl --fail-with-body --silent --show-error --max-time 30 \
@@ -219,8 +238,13 @@ jobs:
                '(.templateParameters.IssueNumber // 0 | tonumber) == $issue and
                 (.templateParameters.CommentId // 0 | tonumber) == $comment and
                 .templateParameters.Platform == $platform and
-                .templateParameters.TargetRef == $target and
-                .resources.repositories.self.refName == "refs/heads/main"' >/dev/null; then
+                .templateParameters.TargetRef == $target' >/dev/null; then
+              if ! printf '%s' "$prior" | jq -e --arg sha "$TRUSTED_MAIN_SHA" \
+                '.resources.repositories.self.refName == "refs/heads/main" and
+                 .resources.repositories.self.version == $sha' >/dev/null; then
+                echo "::error::A matching command has an untrusted or stale repository version; refusing adoption or redispatch."
+                exit 1
+              fi
               if [ -n "$match_id" ]; then
                 echo "::error::Multiple Azure runs exist for this command; refusing another dispatch."
                 exit 1
@@ -234,9 +258,9 @@ jobs:
             exit 0
           fi
           payload=$(jq -n --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
-            --arg platform "$PLATFORM" --arg target "$TARGET_REF" \
+            --arg platform "$PLATFORM" --arg target "$TARGET_REF" --arg sha "$TRUSTED_MAIN_SHA" \
             '{templateParameters:{IssueNumber:$issue,CommentId:$comment,Platform:$platform,TargetRef:$target},
-              resources:{repositories:{self:{refName:"refs/heads/main"}}}}')
+              resources:{repositories:{self:{refName:"refs/heads/main",version:$sha}}}}')
           response=$(curl --fail-with-body --silent --show-error --max-time 45 -X POST \
             "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1" \
             -H "Authorization: Bearer ${token}" -H 'Content-Type: application/json' -d "$payload")
@@ -244,6 +268,12 @@ jobs:
           run_id=$(printf '%s' "$response" | jq -er '.id')
           if ! [[ "$run_id" =~ ^[1-9][0-9]*$ ]]; then
             echo "::error::Azure returned an invalid run ID."
+            exit 1
+          fi
+          if ! printf '%s' "$response" | jq -e --arg sha "$TRUSTED_MAIN_SHA" \
+            '.resources.repositories.self.refName == "refs/heads/main" and
+             .resources.repositories.self.version == $sha' >/dev/null; then
+            echo "::error::The queued Azure run does not confirm the requested trusted repository version."
             exit 1
           fi
           echo "run_id=${run_id}" >> "$GITHUB_OUTPUT"

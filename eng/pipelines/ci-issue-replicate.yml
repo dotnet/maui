@@ -35,6 +35,8 @@ stages:
     displayName: 'Reproduce public issue'
     jobs:
       - job: Intake
+        variables:
+          - group: issue-replicate-read
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 20
@@ -61,7 +63,7 @@ stages:
               }
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
                 -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
-                -Platform $env:PLATFORM -TargetRef $env:TARGET_REF
+                -Platform $env:PLATFORM -TargetRef $env:TARGET_REF -PipelineRevision "$(Build.SourceVersion)"
               if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for intake.' }
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Intake.ps1 `
                 -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
@@ -163,8 +165,11 @@ stages:
         dependsOn: [Intake, Sample]
         condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
         variables:
-          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-          reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
+          - group: issue-replicate-copilot
+          - name: reproInput
+            value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: reproSample
+            value: $[ dependencies.Sample.outputs['sample.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 35
@@ -214,8 +219,11 @@ stages:
         dependsOn: [Intake, Verify1]
         condition: and(succeeded('Verify1'), eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive'))
         variables:
-          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-          reproFeedback: $[ dependencies.Verify1.outputs['verify.payload'] ]
+          - group: issue-replicate-copilot
+          - name: reproInput
+            value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: reproFeedback
+            value: $[ dependencies.Verify1.outputs['verify.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 35
@@ -270,12 +278,20 @@ stages:
         dependsOn: [Intake, Sample, Generate1, Verify1, Generate2, Verify2]
         condition: always()
         variables:
-          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-          reproVerified1: $[ dependencies.Verify1.outputs['verify.payload'] ]
-          reproVerified2: $[ dependencies.Verify2.outputs['verify.payload'] ]
-          reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
-          reproCandidate1: $[ dependencies.Generate1.outputs['candidate.payload'] ]
-          reproCandidate2: $[ dependencies.Generate2.outputs['candidate.payload'] ]
+          - group: issue-replicate-read
+          - group: issue-replicate-comment
+          - name: reproInput
+            value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: reproVerified1
+            value: $[ dependencies.Verify1.outputs['verify.payload'] ]
+          - name: reproVerified2
+            value: $[ dependencies.Verify2.outputs['verify.payload'] ]
+          - name: reproSample
+            value: $[ dependencies.Sample.outputs['sample.payload'] ]
+          - name: reproCandidate1
+            value: $[ dependencies.Generate1.outputs['candidate.payload'] ]
+          - name: reproCandidate2
+            value: $[ dependencies.Generate2.outputs['candidate.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 20
@@ -300,7 +316,8 @@ stages:
               $issue = [int]$env:ISSUE_NUMBER
               $comment = [long]$env:COMMENT_ID
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
-                -IssueNumber $issue -CommentId $comment -Platform $env:PLATFORM -TargetRef $env:TARGET_REF
+                -IssueNumber $issue -CommentId $comment -Platform $env:PLATFORM -TargetRef $env:TARGET_REF `
+                -PipelineRevision "$(Build.SourceVersion)"
               if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for publication.' }
               $result = "$(Pipeline.Workspace)/Verified1"
               $candidateDirectory = ''
