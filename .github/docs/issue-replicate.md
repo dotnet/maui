@@ -17,8 +17,9 @@ re-parses the command with the same GitHub-gate helpers, binds the queued platfo
 and target branch to it, and checks the comment author's current write permission.
 Direct Azure queue access does not bypass this gate. The always-running publisher
 repeats these checks on its fresh trusted agent before importing results or entering
-the publication/fallback handler. Deleted or edited commands, revoked permissions,
-closed issues, or unavailable authorization metadata fail closed without publishing.
+the publication/fallback handler. Deleted commands, edits that invalidate the command
+or change its requested parameters, revoked permissions, closed issues, or unavailable
+authorization metadata fail closed without publishing.
 
 The issue author must provide exactly one repro in the issue body or an
 author-written comment: a public `https://github.com/owner/repo` URL,
