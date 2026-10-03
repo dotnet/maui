@@ -418,7 +418,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				carouselPosition = 0;
+				if (!removingCurrentElement)
+				{
+					carouselPosition = 0;
+				}
 			}
 
 			Carousel.
@@ -517,7 +520,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
 				ScrollToPosition(loopedPosition);
 			}
-			else	
+			else
 			{
 				ScrollToPosition(currentPosition);
 			}
