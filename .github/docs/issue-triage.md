@@ -92,6 +92,9 @@ authority quotations.
 Automatic area correction requires a fresh unconditional maintainer explanation
 of this reported issue's cause naming the exact replacement area. The removal
 and that specific addition must cite the same source and exact quotation.
+The cause paragraph is checked against the full comment's issue-reference
+context. A foreign-target explanation cannot correct this issue; references in
+another paragraph require the cause paragraph to explicitly identify this report.
 Negated, tentative, unrelated or mixed explanations and an independently cited
 area addition cannot justify deleting an existing area. If that narrow gate
 cannot establish the correction, preserve it or cite a current explicit
@@ -148,6 +151,10 @@ dispositions.
 Technical-assessment questions are rejected. No-repro is withheld when the cited
 comment reports resource access, build/download, authentication/network failure or
 timeout that prevented testing. A historical setup failure is not itself no-repro.
+Noun-first failures such as "Setup failed" and contextual failures such as
+"The workaround failed during setup" are blocked setup evidence, not observed
+product or workaround outcomes. Operation/failure binding is checked in both
+directions; unrelated successful setup wording does not establish a blocker.
 It can be discharged only by an explicit resolution followed by a completed
 target-specific test and unsuccessful outcome in the same supporting paragraph.
 Every blocker must qualify; unresolved blockers elsewhere still withhold no-repro.
@@ -265,6 +272,8 @@ and no-repro assessments. No-repro requires an unsuccessful outcome for the
 reported issue, not "Do not reproduce this issue" or a hypothetical attempt.
 Factual "I could not reproduce this issue" remains eligible, subject to the
 existing authority, infrastructure and freshness checks.
+Factual "failed to reproduce/replicate" and "fails to reproduce/replicate" are
+also unsuccessful outcomes, not a bare imperative to avoid reproduction.
 Mixed unsuccessful/successful validation cannot establish no-repro, including
 an initial failure followed by reproduction in the same paragraph. Positive
 outcomes elsewhere in the same cited comment also veto the assessment; the
@@ -442,6 +451,10 @@ still cannot authorize a duplicate disposition. Authentication, rate-limit and
 server failures retain the normal retry/failure behavior rather than being skipped.
 Markdown handling uses the parser already bundled with PowerShell's
 `ConvertFrom-Markdown`; no additional package or runtime is installed.
+Issues, comments and related reports can retain a null author after account
+deletion. Intake emits a warning and records an empty, non-authoritative login
+instead of failing strict-mode property access. Such comments cannot acquire
+maintainer/validator authority; a source command without an author is rejected.
 
 One GPT-6.1 Sol/Copilot analysis reads prepared evidence and the declared local
 skill. Shell and GitHub tools are disabled. It has read-only repository

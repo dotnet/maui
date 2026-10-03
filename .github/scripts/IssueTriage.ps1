@@ -53,6 +53,14 @@ function Get-Hash($Value) {
     return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes))
 }
 
+function Get-UserLogin([AllowNull()][Collections.IDictionary]$User, [string]$Source) {
+    if ($null -eq $User) {
+        Write-Warning "$Source has no author account; its empty login cannot establish authority."
+        return ''
+    }
+    return [string]$User.login
+}
+
 function Test-TriageResultComment([string]$Body, [string]$Author) {
     return $Author -ceq 'github-actions[bot]' -and
         ($Body -cmatch '(?m)^Issue triage invocation: `issue-triage-(?:command:[1-9][0-9]*|run:[1-9][0-9]*|local:[A-F0-9]{64})`\r?$' -or
@@ -260,7 +268,8 @@ function Get-Snapshot {
     $publishedMauiReleases = @(Get-PublishedMauiReleases)
     if ($CommandCommentId -gt 0) {
         $command = Get-Api "repos/$Repository/issues/comments/$CommandCommentId"
-        if ($command.user.login -cne $Actor -or
+        $commandAuthor = Get-UserLogin $command.user "command:$CommandCommentId"
+        if ($commandAuthor -cne $Actor -or
             $command.issue_url -cne "https://api.github.com/repos/$Repository/issues/$IssueNumber" -or
             $command.body -cnotmatch '\A/issue triage[ \t\r\n]*\z' -or
             @($comments | Where-Object { $_.id -eq $CommandCommentId }).Count -ne 1) {
@@ -277,27 +286,29 @@ function Get-Snapshot {
     $sources = [Collections.Generic.List[object]]::new()
     $resultComments = [Collections.Generic.List[object]]::new()
     $sources.Add([ordered]@{
-        id = "issue:$IssueNumber"; kind = 'issue'; author = $issue.user.login
+        id = "issue:$IssueNumber"; kind = 'issue'; author = Get-UserLogin $issue.user "issue:$IssueNumber"
         isMaintainer = $false; isValidator = $false; createdAt = Get-Timestamp $issue.created_at
         body = "$($issue.title)`n$($issue.body)"; url = "https://github.com/$Repository/issues/$IssueNumber"
     })
     foreach ($comment in @($comments | Sort-Object created_at, id)) {
         if ($comment.id -eq $CommandCommentId) { continue }
-        if (Test-TriageResultComment $comment.body $comment.user.login) {
+        $commentAuthor = Get-UserLogin $comment.user "comment:$($comment.id)"
+        if (Test-TriageResultComment $comment.body $commentAuthor) {
             $resultComments.Add([ordered]@{
-                id = $comment.id; author = $comment.user.login
+                id = $comment.id; author = $commentAuthor
                 createdAt = Get-Timestamp $comment.created_at
                 updatedAt = Get-Timestamp $comment.updated_at; body = [string]$comment.body
             })
             continue
         }
-        $humanAuthor = $comment.user.type -eq 'User' -and $policy.automationAuthors -notcontains $comment.user.login
+        $humanAuthor = $commentAuthor -and $null -ne $comment.user -and
+            $comment.user.type -eq 'User' -and $policy.automationAuthors -notcontains $commentAuthor
         $maintainer = $humanAuthor -and
-            (Get-Permission $comment.user.login) -in @('write', 'maintain', 'admin')
+            (Get-Permission $commentAuthor) -in @('write', 'maintain', 'admin')
         $sources.Add([ordered]@{
-            id = "comment:$($comment.id)"; kind = 'comment'; author = $comment.user.login
+            id = "comment:$($comment.id)"; kind = 'comment'; author = $commentAuthor
             isMaintainer = $maintainer
-            isValidator = $humanAuthor -and ($maintainer -or $validators -contains $comment.user.login)
+            isValidator = $humanAuthor -and ($maintainer -or $validators -contains $commentAuthor)
             createdAt = Get-Timestamp $comment.created_at
             updatedAt = Get-Timestamp $comment.updated_at; body = [string]$comment.body
             url = "https://github.com/$Repository/issues/$IssueNumber#issuecomment-$($comment.id)"
@@ -335,7 +346,7 @@ function Get-Snapshot {
             continue
         }
         $sources.Add([ordered]@{
-            id = "related:$number"; kind = 'related'; author = $related.user.login
+            id = "related:$number"; kind = 'related'; author = Get-UserLogin $related.user "related:$number"
             isMaintainer = $false; isValidator = $false; createdAt = Get-Timestamp $related.created_at
             updatedAt = Get-Timestamp $related.updated_at; state = $related.state
             body = "$($related.title)`n$($related.body)"; url = "https://github.com/$Repository/issues/$number"
@@ -967,7 +978,9 @@ function Test-CurrentConfirmation($Confirmations, $Evidence, [string]$Label, $Sn
     return $true
 }
 
-function Test-AreaCause([string]$Paragraph, [string]$Quote, [string]$ReplacementLabel) {
+function Test-AreaCause([string]$Paragraph, [string]$Quote, [string]$ReplacementLabel,
+    [string]$ReferenceContext = '') {
+    if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext)) { return $false }
     $labelText = Get-LabelPattern $ReplacementLabel
     $candidate = [regex]::Replace($Paragraph, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     if ((Test-Interrogative $candidate) -or (Test-ConditionalEvidence $candidate -Decision) -or
@@ -986,9 +999,14 @@ function Test-BlockedValidation([string]$Prose, [string]$CompletedReproduction =
     [string]$ReferenceContext = '') {
     $resource = '(?:sample|repro(?:duction)?|repo(?:sitory)?|link|attachment|archive)'
     $blocked = '(?:inaccessible|unavailable|expired|missing|broken|not found|404|403|unauthorized|forbidden)'
+    $operation = '(?:setup|build(?:ing)?(?!\s+(?:\d|#))|compil(?:e|ation|ing)|download(?:ing|s)?|install(?:ation|ing)?|clon(?:e|ing)|network|infrastructure|authentication|authorization)'
+    $operationFailure = '(?:fail(?:s|ed|ing|ures?)?|errors?|blocked|broken|unavailable|inaccessible|unsuccessful|timed out|timeout)'
+    $state = '(?:(?:is|was|are|were|has|have|had|been|still|already|repeatedly|kept)\s+){0,4}'
+    $failureContext = '(?:during|in|at|for|while\s+(?:running|performing|attempting))\s+(?:(?:the|this|that|my|our|a|an)\s+){0,2}'
     $failures = [regex]::Matches($Prose,
         "(?i)\b$resource\b.{0,60}\b$blocked\b|\b$blocked\b.{0,60}\b$resource\b|" +
-        "\b(?:timed out|timeout|permission denied|authentication failed|authorization failed|network failure|infrastructure failure|build failed|failed to (?:download|clone|build|compile|install)|cannot (?:download|clone|build|compile|install))\b")
+        "\b$operation\b\s+$state$operationFailure\b|\b$operationFailure\b\s+$failureContext$operation\b|" +
+        "\b(?:timed out|timeout|permission denied|failed to (?:download|clone|build|compile|install)|cannot (?:download|clone|build|compile|install))\b")
     if ($failures.Count -eq 0) { return $false }
     if (-not $CompletedReproduction -or
         -not (Test-CurrentIssueScope $CompletedReproduction $ReferenceContext)) { return $true }
@@ -1020,7 +1038,7 @@ function Test-TriageRetraction([string]$Paragraph) {
 function Get-NoReproductionOutcomePattern([string]$ReferenceContext) {
     $outcome = Get-ValidationOutcomePattern $ReferenceContext
     $modifiers = '(?:(?:successfully|reliably|consistently|actually|locally|independently)\s+){0,3}'
-    $negative = "(?:cannot|can['\u2019]t|could not|couldn['\u2019]t|(?:was|were|have been)\s+unable to|unable to|did not|didn['\u2019]t)"
+    $negative = "(?:cannot|can['\u2019]t|could not|couldn['\u2019]t|(?:was|were|have been)\s+unable to|unable to|did not|didn['\u2019]t|fail(?:s|ed)\s+to)"
     return "(?:\b$negative\s+$modifiers(?:reproduce|replicate)\s+$outcome\b|\b$outcome\s+(?:(?:is|was|has been)\s+not|cannot|can['\u2019]t|could not|couldn['\u2019]t)\s+(?:be\s+)?$modifiers(?:reproduced|replicated)\b)"
 }
 
@@ -1358,7 +1376,7 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
                     $paragraphs = @((Get-Prose $source.body) -split '\r?\n[ \t]*\r?\n' |
                         Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
                     $paragraphs.Count -eq 1 -and
-                    (Test-AreaCause $paragraphs[0] $reference.quote $addition.label) -and
+                    (Test-AreaCause $paragraphs[0] $reference.quote $addition.label (Get-MarkdownText $source.body)) -and
                     @($addition.evidence | Where-Object {
                         $_.source -ceq $reference.source -and $_.quote -ceq $reference.quote
                     }).Count -gt 0 -and

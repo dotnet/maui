@@ -23,6 +23,8 @@ approval commitments.
 Known automation authors, including the User-typed write collaborator
 `vs-mobiletools-engineering-service2`, cannot supply maintainer or validator
 authority. Their label events remain chronology facts, not human approvals.
+Deleted-account sources retain an empty author login and cannot establish
+maintainer or validator authority. Missing command authors are not authorized.
 Quote exact source text supporting each proposed change.
 Deleted Markdown/HTML text is not authoritative evidence, including strikethrough
 and nested or unclosed deletion markup.
@@ -189,6 +191,8 @@ substitutes for current original issue/comment evidence.
   this reported issue, not an instruction to avoid reproduction. Factual
   "could not reproduce this issue" and "couldn't reproduce this issue" are
   outcomes, not speculation. The contraction accepts straight/curly apostrophes.
+  Factual "failed to reproduce/replicate" and "fails to reproduce/replicate"
+  also qualify; a bare imperative is not an observed failed attempt.
   Only factual failed reproduction/replication wording is normalized for the
   tentative check; questions, conditions and other uncertainty remain rejected.
   Completed post-update or post-rebuild test context is not a pending decision:
@@ -207,9 +211,12 @@ substitutes for current original issue/comment evidence.
   followed by reproduction in the same paragraph. Positive outcomes elsewhere
   in the cited comment also veto no-repro; do not hide them by quote selection.
   No-repro cannot be established by an inaccessible sample, failed build/download,
-  authentication/network failure or timeout that prevented testing. Discharge
-  a historical setup blocker only when the same supporting paragraph explicitly
-  resolves it, then records a completed target-specific test and failed outcome.
+  authentication/network failure or timeout that prevented testing.
+  Noun-first "Setup failed" and contextual "workaround failed during setup"
+  describe setup failures, not product or workaround efficacy. Inspect both
+  operation/failure directions without borrowing an unrelated failure word.
+  Discharge a historical setup blocker only when the same supporting paragraph
+  explicitly resolves it, then records a completed target-specific test and failed outcome.
   Every blocker must qualify; unresolved blockers elsewhere remain disqualifying.
   A negated same-behavior comparison
   cannot support not-regression.
@@ -278,6 +285,9 @@ policy transition. Explain each removal separately:
   area. Both the removal and that addition must cite the same source and
   quotation containing the cause and replacement. Negated, conditional,
   tentative, unrelated or mixed explanations cannot authorize correction.
+  Apply current-issue scope to the cause paragraph using the full comment
+  context. Foreign references elsewhere require an explicitly current-report
+  explanation; the shared correction quote cannot hide a foreign target.
   The correction comment must have been created
   after the latest assignment of the removed area; cosmetic edits cannot revive
   old support. Otherwise cite a current explicit removal or withhold the correction.
