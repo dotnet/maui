@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
@@ -45,6 +46,30 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = service.GetCachedFileName(new UriImageSourceStub { Uri = new Uri(uri) });
 
 			Assert.Equal(expected, filename);
+		}
+
+		[Fact]
+		public void CachedImageHonorsCacheValidity()
+		{
+			var service = new UriImageSourceService();
+			var path = Path.Combine(UriImageSourceService.CacheDirectory, $"{Guid.NewGuid():N}.png");
+			Directory.CreateDirectory(UriImageSourceService.CacheDirectory);
+			File.WriteAllBytes(path, [1, 2, 3]);
+
+			try
+			{
+				Assert.True(service.IsImageCached(path, TimeSpan.FromMinutes(1)));
+
+				File.SetLastWriteTimeUtc(path, DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(2)));
+
+				Assert.False(service.IsImageCached(path, TimeSpan.FromMinutes(1)));
+				Assert.False(service.IsImageCached(path, TimeSpan.Zero));
+				Assert.True(service.IsImageCached(path, TimeSpan.MaxValue));
+			}
+			finally
+			{
+				File.Delete(path);
+			}
 		}
 	}
 }
