@@ -207,6 +207,9 @@ Duplicate decisions identify exactly one canonical target via
 fetched related source; an unrelated fetched reference is not sufficient.
 Newer opposite maintainer decisions or label events supersede earlier approvals;
 an old approval cannot silently undo a later manual removal.
+Compounded decisions such as "Approve removing LABEL" or "Decline removal of LABEL"
+cannot authorize either action. Their label-bound action is not the outer approval
+verb; they conservatively veto stale support until an unambiguous decision is cited.
 Equal-second contrary evidence is also superseding because GitHub timestamps
 cannot reliably establish its order. A fresh affirmative comment must follow
 the contrary evidence, not merely share its timestamp.
@@ -226,9 +229,13 @@ even when s/verified is already present. Later contrary validation or a newer
 maintainer removal cannot be bypassed to clear pending information/reproduction
 labels. Affirmative transition support also keeps its creation time when compared
 with the latest request assignment; cosmetic edits cannot revive older support.
-Negation must grammatically modify a validation verb, with bounded intervening
-auxiliaries/adverbs; an unrelated "not a duplicate" clause cannot negate a
-following successful verification. The full cited comment is checked for contrary
+Negation must grammatically modify a validation verb or the reported-outcome
+predicate, with bounded intervening auxiliaries/adverbs; an unrelated
+"not a duplicate" clause cannot negate a following successful verification.
+Confirming that this issue is fixed/resolved or no longer occurs/fails does not
+confirm reproduction. Such outcomes veto stale confirmation without independently
+authorizing no-repro or blocking a legitimate completed try-latest response.
+The full cited comment is checked for contrary
 validation, not just the selected paragraph. Mixed validation/retraction comments
 are conservatively withheld until a fresh unambiguous confirmation is supplied.
 Positive reproduction must concern the reported issue/behavior, not merely
@@ -268,6 +275,8 @@ later named version. Lists of tested versions do not establish their outcomes.
 Explicit fails/failed outcomes need not also say reproduced/confirmed/verified.
 "Fails to reproduce/replicate" describes unsuccessful validation, not a failing
 reported behavior, and cannot confirm a regression.
+Negated failures such as "no longer fails", "doesn't fail" or "can't reproduce"
+cannot supply a failing framework version or first-bad boundary.
 A directly continued "worked in MAUI X and fails starting in MAUI Y" statement
 can retain its subject; the version/outcome, scope and uncertainty guards remain.
 Version/outcome binding cannot cross an "and/or" clause into a separate subject's

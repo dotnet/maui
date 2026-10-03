@@ -74,6 +74,9 @@ substitutes for current original issue/comment evidence.
   the keyboard was visible" is distinct from a contingent outcome.
   Reproduction must concern the reported issue/behavior, not merely running its
   sample. A postposed "but not the reported behavior" negates confirmation too.
+  Confirming that this issue is fixed/resolved or no longer occurs/fails is not
+  reproduction. Check the predicate after the reported target; such outcomes
+  veto stale confirmation without independently authorizing no-repro.
   Use an explicit target such as "this issue" or "the reported behavior".
   Bare issue/bug/problem mentions and another/different/unrelated outcomes
   cannot establish confirmation, even if the selected quote omits the qualifier.
@@ -89,6 +92,8 @@ substitutes for current original issue/comment evidence.
   Explicit fails/failed outcomes do not need additional confirmation vocabulary.
   "Fails to reproduce/replicate" is unsuccessful validation, not a failing
   reported behavior; it cannot authorize confirmed regression.
+  "No longer fails", "doesn't fail" and "can't reproduce" cannot establish a
+  failing framework version or first-bad boundary.
   A directly continued working-version statement can retain its subject in
   "and fails starting in MAUI Y". Version binding cannot cross an "and/or"
   clause into a separate subject's outcome. Repeated-subject working/failing
@@ -116,6 +121,10 @@ substitutes for current original issue/comment evidence.
   contributor suitability require an explicit existing maintainer decision.
   Do not convert impact or upvotes into a new release commitment. Evidence must
   explicitly name the exact label and the decision to add/remove it.
+  Compounded wording such as "Approve removing p/1" or "Decline removal of p/1"
+  cannot authorize either action. Do not invert the bound action by matching
+  only the outer approval verb; withhold these constructions and treat them
+  as conservative vetoes on older support until an unambiguous decision is cited.
   A decision for a longer label cannot authorize its prefix: for example,
   `partner/syncfusion` does not authorize `partner`.
   Questions, including indirect "we discussed whether to apply p/1" inquiries,
