@@ -75,6 +75,26 @@ public class QualifiedHelpers
     }
 }
 
+Describe 'Detect-TestsInDiff Foldable unit tests' {
+    It 'maps Foldable tests to the current unit test project' {
+        $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..' '..' '..')
+        $changedFile = 'src/Controls/Foldable/test/FoldableRegionHelperTests.cs'
+
+        Push-Location $repoRoot
+        try {
+            $tests = @(& $scriptPath -ChangedFiles $changedFile)
+        } finally {
+            Pop-Location
+        }
+
+        $test = $tests | Select-Object -First 1
+        $test.Type | Should -Be 'UnitTest'
+        $test.Project | Should -Be 'Controls.Foldable.UnitTests'
+        $test.ProjectPath | Should -Be 'src/Controls/Foldable/test/Controls.Foldable.UnitTests.csproj'
+        $test.Runner | Should -Be 'dotnet-test'
+    }
+}
+
 Describe 'Detect-TestsInDiff device-test filtering' {
     It 'sets class and category filters when a device-test diff has no added method signatures' {
         $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..' '..' '..')

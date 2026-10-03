@@ -316,7 +316,7 @@ namespace Maui.Controls.Sample
 					}
 				});
 
-			// Adapt to dual-screen and foldable Android devices like Surface Duo, includes TwoPaneView layout control
+			// Adapt to dual-screen and foldable devices, including automatic TwoPaneView layout.
 			appBuilder.UseFoldable();
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it

@@ -7,8 +7,8 @@ namespace Microsoft.Maui.Foldable
 	/// </summary>
 	public static partial class HostBuilderExtensions
 	{
-		// see Android/HostBuilderExtension.cs for the real implementation
-#if !ANDROID
+		// Platform implementations register their service in platform-specific files.
+#if !ANDROID && !IOS_DUO_BINDINGS
 		/// <summary>
 		/// Configures the app to detect and respond to foldable device hinge positions and screen configurations.
 		/// </summary>
