@@ -213,8 +213,11 @@ jobs:
               "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs/${prior_id}?api-version=7.1" \
               -H "Authorization: Bearer ${token}")
             if printf '%s' "$prior" | jq -e --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
+               --arg platform "$PLATFORM" --arg target "$TARGET_REF" \
                '(.templateParameters.IssueNumber // 0 | tonumber) == $issue and
                 (.templateParameters.CommentId // 0 | tonumber) == $comment and
+                .templateParameters.Platform == $platform and
+                .templateParameters.TargetRef == $target and
                 .resources.repositories.self.refName == "refs/heads/main"' >/dev/null; then
               if [ -n "$match_id" ]; then
                 echo "::error::Multiple Azure runs exist for this command; refusing another dispatch."

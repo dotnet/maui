@@ -82,6 +82,11 @@ The trusted execution wrapper loads the validator, executor and bounded exporter
 into its parent process before launching an author build or generated test.
 It exports in that same process, including bounded failed-build diagnostics;
 no later task re-reads executable scripts from the mutable native job workspace.
+This protects executable re-entry, not evidence authenticity: author/generated
+code still runs as the same OS user and can write the TRX, result and patch files.
+Fresh agents, source hashing and a preloaded exporter do not prevent that code or
+its detached processes from replacing evidence. Current native reports are
+observations requiring review, not tamper-proof verification.
 
 The isolated posting job imports only the snapshot, bounded sample build record,
 and verified result, validates
@@ -110,6 +115,16 @@ Constant-only NUnit and xUnit assertions are rejected, but generated code still
 requires human fidelity review: an executed failure is not proof of the original bug.
 
 ## Deployment and isolation
+
+**Production activation is blocked by the unresolved same-user evidence boundary.**
+Before enabling the trigger or registering an active production pipeline,
+isolate untrusted execution from the trusted collector with an enforced OS
+security boundary. Generated code and its descendants must not be able to write
+trusted result/output locations, and the collector must receive runner-owned
+results through a channel unavailable to that code. Validate this with real
+native execution on both supported platforms, including detached-writer attempts;
+the current fresh-job split does not establish this boundary. Do not treat the
+steps below as permission to deploy before that requirement is implemented.
 
 1. Merge the trusted scripts, trigger, and pipeline YAML to `main`. Create a
    **separate public Azure pipeline** in `dnceng-public/public` with
@@ -147,7 +162,7 @@ Durable command acknowledgements are trusted only from `github-actions[bot]`.
 Fresh commands reserve one comment of headroom in the three-page intake budget;
 retries reuse their existing acknowledgement. A pending acknowledgement is a
 35-minute lease, not a terminal success marker. Expired reservations are reconciled
-against bounded Azure run history and the original issue/comment parameters before
+against bounded Azure run history and the exact issue/comment/platform/target-ref parameters before
 queueing again. Incomplete history or multiple matching runs fail explicitly.
 Recovery's transient `eyes` reaction is cleared after dispatch and is never a
 terminal latch; only the bot's successful build marker or `rocket` acknowledgement

@@ -617,7 +617,7 @@ Describe 'Pinned test verification' {
         }
         if ($Mutate -or $TrackedMutation) {
             $verify | Should -Throw '*changed the candidate source*'
-            Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -BeFalse
+            Test-Path -LiteralPath (Join-Path $firstResults 'test.patch') | Should -BeFalse
             return
         }
         & $verify
