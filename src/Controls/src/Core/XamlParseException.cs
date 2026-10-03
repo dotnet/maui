@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Controls.Xaml
 	public class XamlParseException : Exception
 	{
 		readonly string _unformattedMessage;
+		readonly XamlLineInfo _xamlInfo;
+		IXmlLineInfo _xmlInfo;
 
 		/// <summary>For internal use by the XAML engine.</summary>
 		public XamlParseException()
@@ -46,29 +48,50 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 		}
 
+		internal XamlParseException(string message, XamlLineInfo xamlInfo, Exception innerException = null)
+			: base(FormatMessage(message, xamlInfo), innerException)
+		{
+			_unformattedMessage = message;
+			_xamlInfo = xamlInfo;
+		}
+
 		/// <summary>For internal use by the XAML engine.</summary>
 		/// <param name="message">The exception message.</param>
 		/// <param name="xmlInfo">Line information for the error location.</param>
 		/// <param name="innerException">The inner exception.</param>
 		public XamlParseException(string message, IXmlLineInfo xmlInfo, Exception innerException = null)
-			: base(FormatMessage(message, xmlInfo), innerException)
+			: this(message, xmlInfo == null ? null : new XamlLineInfo(xmlInfo.LineNumber, xmlInfo.LinePosition), innerException)
 		{
-			_unformattedMessage = message;
-			XmlInfo = xmlInfo;
+			_xmlInfo = xmlInfo;
 		}
 
 		/// <summary>Gets line information about the condition that caused the exception.</summary>
-		public IXmlLineInfo XmlInfo { get; private set; }
+		public IXmlLineInfo XmlInfo => _xmlInfo ??= _xamlInfo == null ? null : new XamlToXmlLineInfoAdapter(_xamlInfo);
+
+		/// <summary>Gets XAML line information about the condition that caused the exception.</summary>
+		public XamlLineInfo XamlInfo => _xamlInfo;
+
 		internal string UnformattedMessage => _unformattedMessage ?? Message;
 
-		static string FormatMessage(string message, IXmlLineInfo xmlinfo)
+		static string FormatMessage(string message, XamlLineInfo xamlInfo)
 		{
-			if (xmlinfo == null || !xmlinfo.HasLineInfo())
+			if (xamlInfo == null || !xamlInfo.HasLineInfo())
 				return message;
-			return string.Format("Position {0}:{1}. {2}", xmlinfo.LineNumber, xmlinfo.LinePosition, message);
+			return string.Format("Position {0}:{1}. {2}", xamlInfo.LineNumber, xamlInfo.LinePosition, message);
 		}
 
-		static IXmlLineInfo GetLineInfo(IServiceProvider serviceProvider)
-			=> (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
+		static XamlLineInfo GetLineInfo(IServiceProvider serviceProvider)
+			=> serviceProvider.GetService(typeof(XamlLineInfo)) as XamlLineInfo ?? new XamlLineInfo();
+
+		sealed class XamlToXmlLineInfoAdapter : IXmlLineInfo
+		{
+			readonly XamlLineInfo _lineInfo;
+
+			public XamlToXmlLineInfoAdapter(XamlLineInfo lineInfo) => _lineInfo = lineInfo;
+
+			public bool HasLineInfo() => _lineInfo.HasLineInfo();
+			public int LineNumber => _lineInfo.LineNumber;
+			public int LinePosition => _lineInfo.LinePosition;
+		}
 	}
 }
