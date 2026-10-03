@@ -120,6 +120,8 @@ allowed GPT revision; missing, empty or invalid feedback fails explicitly.
 Every assertion identity requires a matching non-constructor candidate stack
 frame. NUnit constraint diagnostics without that frame are inconclusive; test
 names and assertion text alone cannot establish a matching repeated failure.
+Candidate call chains containing instance or static constructors are also
+inconclusive, including assertions in helpers called during fixture initialization.
 Tracked framework and candidate files are hashed
 before execution and rechecked afterward; changes invalidate the attempt.
 NUnit setup/teardown assertion diagnostics and xUnit fixture errors are

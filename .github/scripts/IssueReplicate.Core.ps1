@@ -387,14 +387,17 @@ function Get-IssueReplicateTrxVerdict {
             $errorInfo = $failure.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']")
             $message = $errorInfo.SelectSingleNode("*[local-name()='Message']").InnerText.Replace("`r", '').Trim()
             $stack = $errorInfo.SelectSingleNode("*[local-name()='StackTrace']")
-            $source = if ($stack) {
-                @($stack.InnerText.Replace("`r", '') -split "`n" | Where-Object {
-                    $_ -match "\b$([regex]::Escape($ClassName))([.(+])" -and $_ -notmatch '\.ctor\b'
-                } | Select-Object -First 1) -join ''
-            } else { '' }
-            if ([string]::IsNullOrWhiteSpace($source)) {
+            $frames = @(
+                if ($stack) {
+                    $stack.InnerText.Replace("`r", '') -split "`n" | Where-Object {
+                        $_ -match "\b$([regex]::Escape($ClassName))([.(+])"
+                    }
+                }
+            )
+            if ($frames.Count -eq 0 -or @($frames | Where-Object { $_ -match '\.c?ctor\b' }).Count -gt 0) {
                 return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
             }
+            $source = $frames[0]
             $identity = "$($failure.GetAttribute('testName'))`n$message`n$($source.Trim())"
             $identities += [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
                 [Text.Encoding]::UTF8.GetBytes($identity))).ToLowerInvariant()

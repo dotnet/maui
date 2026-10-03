@@ -290,12 +290,24 @@ Describe 'Observed test evidence' {
         @{ Frame = 'whitespace-only'; StackTrace = "<StackTrace> `n </StackTrace>" },
         @{ Frame = 'unrelated'; StackTrace = '<StackTrace>at Example.OtherFixture.ChecksBehavior() in /test/OtherFixture.cs:line 12</StackTrace>' },
         @{ Frame = 'prefix-colliding'; StackTrace = '<StackTrace>at Example.Issue123450.ChecksBehavior() in /test/Issue123450.cs:line 12</StackTrace>' },
-        @{ Frame = 'constructor-only'; StackTrace = '<StackTrace>at Example.Issue12345..ctor() in /test/Issue12345.cs:line 12</StackTrace>' }
+        @{ Frame = 'constructor-only'; StackTrace = '<StackTrace>at Example.Issue12345..ctor() in /test/Issue12345.cs:line 12</StackTrace>' },
+        @{ Frame = 'static-constructor-only'; StackTrace = '<StackTrace>at Example.Issue12345..cctor() in /test/Issue12345.cs:line 12</StackTrace>' },
+        @{ Frame = 'instance-constructor-with-helper'; StackTrace = "<StackTrace>at Example.Issue12345.AssertInitialized() in /test/Issue12345.cs:line 10`nat Example.Issue12345..ctor() in /test/Issue12345.cs:line 12</StackTrace>" },
+        @{ Frame = 'static-constructor-with-helper'; StackTrace = "<StackTrace>at Example.Issue12345.AssertInitialized() in /test/Issue12345.cs:line 10`nat Example.Issue12345..cctor() in /test/Issue12345.cs:line 12</StackTrace>" }
     ) {
         param($Frame, $StackTrace)
         $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
             -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>" `
             -replace '(?s)<StackTrace>.*?</StackTrace>', $StackTrace
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $verdict.Status | Should -Be 'Inconclusive'
+        $verdict.FailureIdentities | Should -BeNullOrEmpty
+    }
+
+    It 'rejects NUnit static fixture initialization assertions' {
+        $xml = $script:xml -replace '<Message>', '<Message>System.TypeInitializationException: fixture initialization failed. ' `
+            -replace 'ChecksBehavior\(\)', '.cctor()'
         Set-Content -LiteralPath $script:trxPath -Value $xml
         $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
         $verdict.Status | Should -Be 'Inconclusive'
