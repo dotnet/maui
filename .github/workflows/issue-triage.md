@@ -293,6 +293,7 @@ safe-outputs:
 concurrency:
   group: issue-triage-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
   cancel-in-progress: false
+  queue: max
 
 timeout-minutes: 20
 

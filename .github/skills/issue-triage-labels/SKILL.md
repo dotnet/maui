@@ -301,6 +301,15 @@ policy transition. Explain each removal separately:
   that failure is not unconditional efficacy evidence either. Do not confuse
   such prerequisites with completed "after updating" or "after rebuilding"
   context.
+  Bind that trailing condition within the failure predicate, not across
+  an unrelated aside or follow-up clause. A categorical failure followed by
+  "before I forget, the repro logs are attached" or a dash-separated
+  "pending a proper fix, I reverted the change" is still observed failure.
+  A comma can introduce a bound "until" prerequisite; it does not bind arbitrary
+  "before" or "pending" discourse back to the efficacy outcome.
+  Comma-separated deferred confirmation/testing or application/setup steps
+  still qualify as unfinished prerequisites. Do not borrow that step from
+  a later aside or follow-up clause.
   A workaround that failed to reproduce, replicate or trigger the reported issue
   is not an observed workaround failure. That paragraph cannot support
   failure-based removal; failing to work or fix the issue is distinct.

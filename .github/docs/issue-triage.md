@@ -322,6 +322,15 @@ Intervening prospective confirmation does not establish an observation:
 A trailing "until", "before", "pending" or waiting prerequisite bound to the
 failure is not unconditional efficacy evidence either. These prerequisites are
 distinct from completed "after updating" or "after rebuilding" context.
+Bind the trailing condition within the failure predicate, not across an unrelated
+aside or follow-up clause. A categorical failure followed by
+"before I forget, the repro logs are attached" or a dash-separated
+"pending a proper fix, I reverted the change" is still observed failure.
+A comma can introduce a bound "until" prerequisite; it does not bind arbitrary
+"before" or "pending" discourse back to the efficacy outcome.
+Comma-separated deferred confirmation/testing or application/setup steps still
+qualify as unfinished prerequisites. Do not borrow that step from a later aside
+or follow-up clause.
 Failure to reproduce, replicate or trigger the issue with a workaround is not
 failure of the workaround. Such a paragraph cannot support failure-based
 removal, while observed failure to work or fix the issue remains eligible.
@@ -474,6 +483,12 @@ before apply-mode deployment.
 
 Each run permits at most 20 total label changes, ten removals and one result
 comment. Per-issue concurrency does not cancel an in-progress publication.
+The workflow-level `queue: max` retains up to 100 pending runs per issue rather
+than allowing an ordinary or edited comment to replace the single pending
+triage command before authorization. Job-level queues do not protect this slot.
+The queue remains bounded: additional runs are canceled when it is full, and
+dispatch-order processing is not guaranteed. Inspect the Actions run before
+assuming a command was processed; use a fresh invocation for a canceled command.
 A genuine no-change result uses `noop` and leaves the issue untouched. Missing
 required evidence is incomplete, not a successful review; inspect the Actions
 result rather than interpreting the absence of a comment as success.
