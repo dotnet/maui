@@ -1307,8 +1307,18 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
     if ($Action -eq 'add') {
         if ($label -in $policy.confirmation -or $label.StartsWith('regressed-in-')) {
             $requireRegression = $label -ceq 'i/regression' -or $label.StartsWith('regressed-in-')
-            $confirmations = @(Get-Confirmation $Decision.evidence -RequireRegression:$requireRegression)
+            $firstBadVersion = ''
+            if ($label.StartsWith('regressed-in-')) {
+                $firstBadVersion = $label.Substring('regressed-in-'.Length)
+                if ($firstBadVersion -notmatch '^\d') {
+                    throw "No full-paragraph first-bad-version evidence supports $label."
+                }
+            }
+            $confirmations = @(Get-Confirmation $Decision.evidence -RequireRegression:$requireRegression -FirstBadVersion $firstBadVersion)
             if ($confirmations.Count -eq 0) {
+                if ($label.StartsWith('regressed-in-')) {
+                    throw "No full-paragraph first-bad-version evidence supports $label."
+                }
                 if ($requireRegression) {
                     throw "No authorized target-specific validation with explicit earlier working and later failing framework outcomes supports $label."
                 }
@@ -1316,13 +1326,6 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
             }
             if (-not (Test-CurrentConfirmation $confirmations $Decision.evidence $label $Snapshot)) {
                 throw "Later contrary validation or maintainer removal supersedes confirmation for $label; cite current evidence."
-            }
-        }
-        if ($label.StartsWith('regressed-in-')) {
-            $version = $label.Substring('regressed-in-'.Length)
-            if ($version -notmatch '^\d' -or
-                @(Get-Confirmation $Decision.evidence -RequireRegression -FirstBadVersion $version).Count -eq 0) {
-                throw "No full-paragraph first-bad-version evidence supports $label."
             }
         }
         if ($policy.technicalAssessment -ccontains $label -and

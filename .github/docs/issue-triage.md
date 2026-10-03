@@ -312,6 +312,11 @@ Neither "regressed from" nor bare "from" establishes the first bad version;
 outcome/version binding cannot bridge a "regressed from" baseline as failure.
 The full enclosing cited paragraph is checked for that boundary; a selected
 quote cannot hide an earlier failing version.
+The same exact-first-bad-version confirmations supply the creation-time
+freshness and later contrary-validation/removal checks. A newer generic
+regression confirmation or one for another boundary cannot lend recency to
+older exact-version evidence. The existing strictly newer positive-confirmation
+or explicit later maintainer re-add alternative is unchanged.
 Preview and RC ordering is recognized; generic build success is insufficient.
 Unknown or ambiguous outcome/version bindings are conservatively withheld.
 Generic reproduction on a platform/OS version is not proof of regression.

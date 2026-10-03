@@ -118,6 +118,11 @@ substitutes for current original issue/comment evidence.
   The citation must include both outcomes and the explicit first-bad boundary;
   it cannot select another failing version or hide contradictory results.
   The full enclosing cited paragraph is validated, not just the selected quote.
+  Use those same exact-first-bad-version confirmations for creation-time
+  freshness and later contrary-validation/removal checks. A newer generic
+  regression confirmation or one for another boundary cannot lend recency to
+  older exact-version evidence. Keep the existing strictly newer positive
+  confirmation or explicit later maintainer re-add alternative.
   Ambiguous/unrecognized wording is withheld, not inferred as passing behavior.
 - Priority, roadmap/proposal acceptance, backport approval, release claims and
   contributor suitability require an explicit existing maintainer decision.
