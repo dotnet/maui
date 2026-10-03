@@ -7,11 +7,12 @@ param(
     [Parameter(Mandatory)][string]$RepoRoot,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [ValidateRange(1, 2)][int]$Attempt = 1,
-    [string]$PreviousResultPath = ''
+    [string]$PreviousResultPath = '',
+    [switch]$CoreLoaded
 )
 
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+if (-not $CoreLoaded) { . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1') }
 $manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
 $sample = Get-Content -Raw -LiteralPath $SampleResultPath | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1 -or $manifest.targetSha -cnotmatch '^[0-9a-f]{40}$' -or

@@ -28,7 +28,7 @@ jobs:
       reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
       reproCandidate: $[ dependencies.${{ parameters.candidateJob }}.outputs['candidate.payload'] ]
       ${{ if eq(parameters.attempt, 2) }}:
-        reproPrevious: $[ dependencies.${{ parameters.dependsOn }}.outputs['transfer.payload'] ]
+        reproPrevious: $[ dependencies.${{ parameters.dependsOn }}.outputs['verify.payload'] ]
     ${{ if eq(parameters.platform, 'android') }}:
       pool:
         vmImage: ubuntu-22.04
@@ -144,40 +144,17 @@ jobs:
           timeoutInMinutes: 25
       - pwsh: |
           $previous = if (${{ parameters.attempt }} -eq 2) { @('-PreviousResultPath', "$(Pipeline.Workspace)/FirstAttempt/result.json") } else { @() }
-          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Verify.ps1" `
-            -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Run.ps1" -Mode Verify `
+            -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
             -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
             -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
             -RepoRoot "$(Pipeline.Workspace)/maui" `
             -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" `
-            -Attempt ${{ parameters.attempt }} @previous
+            -Attempt ${{ parameters.attempt }} -Provider Azure @previous
           if ($LASTEXITCODE -ne 0) { throw 'Generated test verification did not complete.' }
         displayName: 'Run generated test without credentials'
+        name: verify
         timeoutInMinutes: 85
         continueOnError: true
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
-      - pwsh: |
-          $status = 'inconclusive'
-          $path = "$(Pipeline.Workspace)/IssueVerified/result.json"
-          if (Test-Path -LiteralPath $path) {
-            try {
-              $result = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
-              if ($result.status -cin @('candidate-failed', 'not-reproduced-on-tested-revision', 'inconclusive', 'unsupported')) {
-                $status = $result.status
-              }
-            } catch {
-              Write-Host 'Verification result was unreadable; recording inconclusive.'
-            }
-          }
-          Write-Host "##vso[task.setvariable variable=verdict;isOutput=true]$status"
-          New-Item -ItemType Directory -Path "$(Pipeline.Workspace)/IssueVerified" -Force | Out-Null
-        name: verify
-        displayName: 'Freeze fixed verification status'
-        condition: succeededOrFailed()
-      - pwsh: |
-          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Verified `
-            -Directory "$(Pipeline.Workspace)/IssueVerified" -Provider Azure
-        name: transfer
-        displayName: 'Transfer bounded result and feedback through job outputs'
-        condition: succeededOrFailed()

@@ -78,6 +78,11 @@ fetches trusted scripts from the immutable public pipeline commit. Jobs needing
 the sample re-download its pinned public source and require the original ZIP hash.
 If the source changes or disappears, the attempt is explicitly inconclusive.
 
+The trusted execution wrapper loads the validator, executor and bounded exporter
+into its parent process before launching an author build or generated test.
+It exports in that same process, including bounded failed-build diagnostics;
+no later task re-reads executable scripts from the mutable native job workspace.
+
 The isolated posting job imports only the snapshot, bounded sample build record,
 and verified result, validates
 the existing issue/revision/patch contracts, and publishes the expandable report.

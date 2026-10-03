@@ -427,6 +427,60 @@ Describe 'Bounded data serialization' {
 }
 
 Describe 'Author sample target selection' {
+    It 'exports with preloaded trusted code even when the child replaces scripts (exit=<ExitCode>)' -TestCases @(
+        @{ ExitCode = 0 }, @{ ExitCode = 1 }
+    ) {
+        param($ExitCode)
+        $tools = Join-Path $TestDrive "protected-tools-$ExitCode"
+        $inputDir = Join-Path $TestDrive "protected-input-$ExitCode"
+        $outputDir = Join-Path $TestDrive "protected-output-$ExitCode"
+        New-Item -ItemType Directory -Path $tools, $inputDir | Out-Null
+        foreach ($name in @('Core', 'Sample', 'Transport', 'Run')) {
+            Copy-Item -LiteralPath (Join-Path $PSScriptRoot "IssueReplicate.$name.ps1") -Destination $tools
+        }
+        $zipPath = Join-Path $inputDir 'sample.zip'
+        $stream = [IO.File]::Create($zipPath)
+        $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $writer = [IO.StreamWriter]::new($zip.CreateEntry('Sample.csproj').Open())
+        $writer.Write('<Project><PropertyGroup><TargetFramework>net10.0-ios27.0</TargetFramework></PropertyGroup></Project>')
+        $writer.Dispose()
+        $zip.Dispose()
+        $stream.Dispose()
+        @{
+            schemaVersion = 1; platform = 'ios'; targetSha = 'a' * 40
+            sampleSha256 = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        } | ConvertTo-Json | Set-Content (Join-Path $inputDir 'manifest.json')
+        $global:issueReplicatePoisonedTools = $tools
+        $global:issueReplicateChildExit = $ExitCode
+        function dotnet {
+            foreach ($name in @('Core', 'Transport')) {
+                Set-Content (Join-Path $global:issueReplicatePoisonedTools "IssueReplicate.$name.ps1") `
+                    'throw "Mutable exporter was executed after child code."'
+            }
+            $global:LASTEXITCODE = $global:issueReplicateChildExit
+            if ($global:issueReplicateChildExit) { 'error NETSDK1140: Unsupported iOS target.' }
+        }
+        $priorOutput = $env:GITHUB_OUTPUT
+        $env:GITHUB_OUTPUT = Join-Path $TestDrive "protected-github-output-$ExitCode"
+        try {
+            $run = {
+                & (Join-Path $tools 'IssueReplicate.Run.ps1') -Mode Sample -InputDirectory $inputDir `
+                    -OutputDirectory $outputDir -Provider GitHub
+            }
+            if ($ExitCode) { $run | Should -Throw '*did not build*' } else { & $run }
+            $encoded = (Get-Content -Raw $env:GITHUB_OUTPUT).Trim().Substring('payload='.Length)
+            $decoded = Join-Path $TestDrive "protected-decoded-$ExitCode"
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Sample `
+                -Directory $decoded -Encoded $encoded
+            $record = Get-Content -Raw (Join-Path $decoded 'sample-result.json') | ConvertFrom-Json
+            $record.buildSucceeded | Should -Be ($ExitCode -eq 0)
+            $record.targetFramework | Should -Be 'net10.0-ios27.0'
+        } finally {
+            $env:GITHUB_OUTPUT = $priorOutput
+            Remove-Variable issueReplicatePoisonedTools, issueReplicateChildExit -Scope Global
+        }
+    }
+
     It 'builds the exact existing iOS TFM without dropping its platform version' -TestCases @(
         @{ Tfm = 'net10.0-ios'; ExitCode = 0 },
         @{ Tfm = 'net10.0-ios27.0'; ExitCode = 0 },
@@ -557,7 +611,7 @@ Describe 'Pinned test verification' {
             'One assertion failed'
         }
         $verify = {
-            & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `
+            $null = & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
                 -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $repo `
                 -OutputDirectory $firstResults -Attempt 1
         }
@@ -573,7 +627,7 @@ Describe 'Pinned test verification' {
         $first.observedAssertion | Should -BeTrue
         $secondRepo = "$repo-second"
         & git clone --quiet --no-local $repo $secondRepo
-        & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `
+        $null = & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
             -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $secondRepo `
             -OutputDirectory $results -Attempt 2 -PreviousResultPath (Join-Path $firstResults 'result.json')
         $outcome = Get-Content -Raw -LiteralPath (Join-Path $results 'result.json') | ConvertFrom-Json

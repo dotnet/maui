@@ -5,11 +5,12 @@ param(
     [ValidateSet('Input', 'Sample', 'Candidate', 'Verified')][string]$Kind,
     [Parameter(Mandatory)][string]$Directory,
     [string]$Encoded = '',
-    [ValidateSet('None', 'Azure', 'GitHub')][string]$Provider = 'None'
+    [ValidateSet('None', 'Azure', 'GitHub')][string]$Provider = 'None',
+    [switch]$CoreLoaded
 )
 
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+if (-not $CoreLoaded) { . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1') }
 $utf8 = [Text.UTF8Encoding]::new($false, $true)
 $limits = switch ($Kind) {
     'Input' { @{ 'manifest.json' = 50000 } }

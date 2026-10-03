@@ -145,19 +145,14 @@ stages:
           - bash: echo "##vso[task.prependpath]$(Agent.TempDirectory)/issue-sample-dotnet"
             displayName: 'Use isolated author sample SDK'
           - pwsh: |
-              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Sample.ps1" `
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Run.ps1" -Mode Sample `
                 -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
                 -OutputDirectory "$(Pipeline.Workspace)/SampleOutput" `
-                -NuGetConfigPath "$(Pipeline.Workspace)/maui/NuGet.config"
+                -NuGetConfigPath "$(Pipeline.Workspace)/maui/NuGet.config" -Provider Azure
               if ($LASTEXITCODE -ne 0) { throw 'Author sample build failed (inconclusive).' }
             displayName: 'Build author sample without credentials'
             timeoutInMinutes: 35
-          - pwsh: |
-              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Sample `
-                -Directory "$(Pipeline.Workspace)/SampleOutput" -Provider Azure
             name: sample
-            displayName: 'Transfer bounded sample result without uploading files'
-            condition: succeededOrFailed()
 
       - job: Generate1
         dependsOn: [Intake, Sample]
@@ -210,7 +205,7 @@ stages:
         condition: and(succeeded('Verify1'), eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive'))
         variables:
           reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-          reproFeedback: $[ dependencies.Verify1.outputs['transfer.payload'] ]
+          reproFeedback: $[ dependencies.Verify1.outputs['verify.payload'] ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 35
@@ -266,8 +261,8 @@ stages:
         condition: always()
         variables:
           reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-          reproVerified1: $[ dependencies.Verify1.outputs['transfer.payload'] ]
-          reproVerified2: $[ dependencies.Verify2.outputs['transfer.payload'] ]
+          reproVerified1: $[ dependencies.Verify1.outputs['verify.payload'] ]
+          reproVerified2: $[ dependencies.Verify2.outputs['verify.payload'] ]
           reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
         pool:
           vmImage: ubuntu-22.04

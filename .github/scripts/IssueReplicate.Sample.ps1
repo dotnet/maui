@@ -3,11 +3,12 @@
 param(
     [Parameter(Mandatory)][string]$InputDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
-    [string]$NuGetConfigPath = ''
+    [string]$NuGetConfigPath = '',
+    [switch]$CoreLoaded
 )
 
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+if (-not $CoreLoaded) { . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1') }
 $manifest = Get-Content -Raw -LiteralPath (Join-Path $InputDirectory 'manifest.json') | ConvertFrom-Json
 $zip = Join-Path $InputDirectory 'sample.zip'
 if ($manifest.schemaVersion -ne 1 -or
