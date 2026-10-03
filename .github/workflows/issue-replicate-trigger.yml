@@ -103,7 +103,6 @@ jobs:
       id-token: write
       issues: write
     env:
-      GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
       ISSUE: ${{ needs.authorize.outputs.issue }}
       COMMENT: ${{ needs.authorize.outputs.comment }}
@@ -113,6 +112,8 @@ jobs:
       - name: Check durable acknowledgement
         id: dedupe
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if gh api --paginate --slurp "repos/${REPO}/issues/comments/${COMMENT}/reactions?per_page=100" |
@@ -146,6 +147,7 @@ jobs:
         if: steps.dedupe.outputs.handled == 'false'
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
           EXISTING_ACK_ID: ${{ steps.dedupe.outputs.ack_id }}
           RESERVED_AT: ${{ steps.dedupe.outputs.reserved_at }}
         run: |
@@ -250,6 +252,7 @@ jobs:
         if: steps.queue.outcome == 'success'
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.queue.outputs.run_id }}
           ACK_ID: ${{ steps.reserve.outputs.ack_id }}
         run: |
@@ -269,6 +272,7 @@ jobs:
         if: always() && steps.reserve.outcome == 'success' && steps.queue.outcome == 'failure'
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
           ACK_ID: ${{ steps.reserve.outputs.ack_id }}
         run: |
           gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH \

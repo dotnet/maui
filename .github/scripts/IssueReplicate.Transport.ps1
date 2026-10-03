@@ -6,10 +6,14 @@ param(
     [Parameter(Mandatory)][string]$Directory,
     [string]$Encoded = '',
     [ValidateSet('None', 'Azure', 'GitHub')][string]$Provider = 'None',
+    [hashtable]$FileBytes,
     [switch]$CoreLoaded
 )
 
 $ErrorActionPreference = 'Stop'
+if ($null -ne $FileBytes -and $Mode -ne 'Export') {
+    throw 'In-memory bytes are accepted only for export.'
+}
 if (-not $CoreLoaded) { . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1') }
 $utf8 = [Text.UTF8Encoding]::new($false, $true)
 $limits = switch ($Kind) {
@@ -63,7 +67,14 @@ $required = switch ($Kind) {
     'Verified' { 'result.json' }
 }
 if ($Mode -eq 'Export') {
-    if ($Kind -eq 'Verified' -and (Test-Path -LiteralPath (Join-Path $Directory 'test.log') -PathType Leaf)) {
+    if ($null -ne $FileBytes) {
+        foreach ($name in $FileBytes.Keys) {
+            if (@($limits.Keys) -cnotcontains $name -or $FileBytes[$name] -isnot [byte[]] -or
+                $FileBytes[$name].Length -lt 1 -or $FileBytes[$name].Length -gt $limits[$name]) {
+                throw 'In-memory job data must contain only bounded approved byte arrays.'
+            }
+        }
+    } elseif ($Kind -eq 'Verified' -and (Test-Path -LiteralPath (Join-Path $Directory 'test.log') -PathType Leaf)) {
         $feedback = Get-IssueReplicateFeedback -Path (Join-Path $Directory 'test.log')
         if (-not [string]::IsNullOrWhiteSpace($feedback)) {
             [IO.File]::WriteAllText((Join-Path $Directory 'feedback.txt'), $feedback, $utf8)
@@ -71,12 +82,20 @@ if ($Mode -eq 'Export') {
     }
     $files = @()
     foreach ($name in @($limits.Keys | Sort-Object)) {
-        $path = Join-Path $Directory $name
-        if (-not (Test-Path -LiteralPath $path)) {
-            if ($name -ceq $required) { throw "Required job data is missing: $name." }
-            continue
+        if ($null -ne $FileBytes) {
+            if (-not $FileBytes.ContainsKey($name)) {
+                if ($name -ceq $required) { throw "Required job data is missing: $name." }
+                continue
+            }
+            $bytes = $FileBytes[$name]
+        } else {
+            $path = Join-Path $Directory $name
+            if (-not (Test-Path -LiteralPath $path)) {
+                if ($name -ceq $required) { throw "Required job data is missing: $name." }
+                continue
+            }
+            $bytes = Read-RegularBytes -Path $path -MaxBytes $limits[$name]
         }
-        $bytes = Read-RegularBytes -Path $path -MaxBytes $limits[$name]
         $files += @{
             name = $name
             sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()

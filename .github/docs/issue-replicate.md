@@ -82,8 +82,12 @@ The trusted execution wrapper loads the validator, executor and bounded exporter
 into its parent process before launching an author build or generated test.
 It exports in that same process, including bounded failed-build diagnostics;
 no later task re-reads executable scripts from the mutable native job workspace.
-This protects executable re-entry, not evidence authenticity: author/generated
-code still runs as the same OS user and can write the TRX, result and patch files.
+Completed result, immutable patch and captured-feedback bytes remain in that
+parent's memory through validation and bounded export; it does not reopen
+sample/result/patch files after child execution.
+This protects executable re-entry and finalized-record export, not evidence
+authenticity: author/generated code still runs as the same OS user and can write
+the TRX and CI job-output locations.
 Fresh agents, source hashing and a preloaded exporter do not prevent that code or
 its detached processes from replacing evidence. Current native reports are
 observations requiring review, not tamper-proof verification.
@@ -176,7 +180,10 @@ code. A public pipeline alone is **not** a security boundary: do not grant
 execution jobs privileged access or reuse the trusted job agents for them.
 
 Execution checkouts are shallow, without partial-clone extensions that the pinned
-SourceLink tooling does not support. Sample restore uses the pinned MAUI
+SourceLink tooling does not support. Before restoring tools, native jobs use the
+pinned checkout's Arcade bootstrap to install the exact `global.json` SDK from
+public feeds; the shared provisioner does not replace it with a hard-coded SDK.
+Sample restore uses the pinned MAUI
 `NuGet.config` public feeds plus nuget.org, so servicing SDK dependencies remain
 available even though the author's sample is extracted outside the MAUI checkout.
 The sample job installs a separate copy of the exact public SDK distribution from

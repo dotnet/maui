@@ -284,18 +284,25 @@ function ConvertFrom-IssueReplicateCopilotOutput {
 }
 
 function Get-IssueReplicateFeedback {
-    param([Parameter(Mandatory)][string]$Path)
+    [CmdletBinding(DefaultParameterSetName = 'File')]
+    param(
+        [Parameter(Mandatory, ParameterSetName = 'File')][string]$Path,
+        [Parameter(Mandatory, ParameterSetName = 'Memory')][AllowEmptyCollection()][string[]]$Lines
+    )
 
-    $file = Get-Item -LiteralPath $Path -ErrorAction Stop
-    if ($file.PSIsContainer -or $file.Length -gt 4MB -or
-        $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-        throw 'Test feedback must be a bounded regular log file.'
+    if ($PSCmdlet.ParameterSetName -eq 'File') {
+        $file = Get-Item -LiteralPath $Path -ErrorAction Stop
+        if ($file.PSIsContainer -or $file.Length -gt 4MB -or
+            $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Test feedback must be a bounded regular log file.'
+        }
+        $Lines = @(Get-Content -LiteralPath $file.FullName)
     }
-    $diagnostics = @(Get-Content -LiteralPath $file.FullName | Where-Object {
+    $diagnostics = @($Lines | Where-Object {
         $_ -match '(?i):\s*error\s+[A-Z]+[0-9]+:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:)|AssertionException'
     } | Select-Object -Last 25)
     $content = if ($diagnostics.Count -gt 0) { $diagnostics -join "`n" }
-        else { (Get-Content -LiteralPath $file.FullName -Tail 25) -join "`n" }
+        else { ($Lines | Select-Object -Last 25) -join "`n" }
     $bytes = [Text.Encoding]::UTF8.GetBytes($content)
     if ($bytes.Length -gt 3500) {
         $content = [Text.Encoding]::UTF8.GetString($bytes, $bytes.Length - 3500, 3500)

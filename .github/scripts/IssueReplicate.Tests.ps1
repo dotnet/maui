@@ -424,10 +424,26 @@ Describe 'Bounded data serialization' {
         }
         Test-Path (Join-Path $TestDrive 'overflow') | Should -BeFalse
     }
+
+    It 'exports finalized parent bytes without opening a poisoned output directory' {
+        $source = Join-Path $TestDrive 'poisoned-output'
+        $target = Join-Path $TestDrive 'parent-bytes'
+        New-Item -ItemType Directory $source | Out-Null
+        Set-Content (Join-Path $source 'result.json') '{"status":"forged"}'
+        $bytes = [Text.Encoding]::UTF8.GetBytes('{"status":"inconclusive"}')
+        $encoded = & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') `
+            -Mode Export -Kind Verified -Directory $source -FileBytes @{ 'result.json' = $bytes }
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') `
+            -Mode Import -Kind Verified -Directory $target -Encoded $encoded
+        [IO.File]::ReadAllText((Join-Path $target 'result.json')) | Should -Be '{"status":"inconclusive"}'
+        { & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') `
+            -Mode Export -Kind Verified -Directory $source -FileBytes @{ 'result.json' = [byte[]]::new(16385) } } |
+            Should -Throw '*bounded*'
+    }
 }
 
 Describe 'Author sample target selection' {
-    It 'exports with preloaded trusted code even when the child replaces scripts (exit=<ExitCode>)' -TestCases @(
+    It 'exports parent memory despite replaced scripts and poisoned result writes (exit=<ExitCode>)' -TestCases @(
         @{ ExitCode = 0 }, @{ ExitCode = 1 }
     ) {
         param($ExitCode)
@@ -454,20 +470,28 @@ Describe 'Author sample target selection' {
         $global:issueReplicateChildExit = $ExitCode
         function dotnet {
             foreach ($name in @('Core', 'Transport')) {
-                Set-Content (Join-Path $global:issueReplicatePoisonedTools "IssueReplicate.$name.ps1") `
-                    'throw "Mutable exporter was executed after child code."'
+                [IO.File]::WriteAllText((Join-Path $global:issueReplicatePoisonedTools "IssueReplicate.$name.ps1"), `
+                    'throw "Mutable exporter was executed after child code."')
             }
             $global:LASTEXITCODE = $global:issueReplicateChildExit
             if ($global:issueReplicateChildExit) { 'error NETSDK1140: Unsupported iOS target.' }
         }
         $priorOutput = $env:GITHUB_OUTPUT
         $env:GITHUB_OUTPUT = Join-Path $TestDrive "protected-github-output-$ExitCode"
+        Mock Set-Content -MockWith {
+            $path = [string]$LiteralPath[0]
+            $text = if ($path.EndsWith('sample-result.json')) { '{"buildSucceeded":"forged"}' }
+                else { $Value -join "`n" }
+            [IO.File]::WriteAllText($path, $text)
+        }
         try {
             $run = {
                 & (Join-Path $tools 'IssueReplicate.Run.ps1') -Mode Sample -InputDirectory $inputDir `
                     -OutputDirectory $outputDir -Provider GitHub
             }
             if ($ExitCode) { $run | Should -Throw '*did not build*' } else { & $run }
+            [IO.File]::ReadAllText((Join-Path $outputDir 'sample-result.json')) |
+                Should -Be '{"buildSucceeded":"forged"}'
             $encoded = (Get-Content -Raw $env:GITHUB_OUTPUT).Trim().Substring('payload='.Length)
             $decoded = Join-Path $TestDrive "protected-decoded-$ExitCode"
             & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Sample `

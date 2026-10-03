@@ -62,6 +62,7 @@ jobs:
             -Destination "$(Pipeline.Workspace)/maui"
           if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
         displayName: 'Fetch pinned public source without a checkout credential'
+      - template: issue-replicate-sdk.yml
       - ${{ if eq(parameters.platform, 'ios') }}:
         - pwsh: |
             & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
@@ -74,6 +75,7 @@ jobs:
       - template: provision.yml
         parameters:
           checkoutDirectory: $(Pipeline.Workspace)/maui
+          skipDotNetSdk: true
           skipProvisionator: true
           skipInternalFeeds: true
           skipCertificates: true

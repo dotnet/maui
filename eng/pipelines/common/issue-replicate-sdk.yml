@@ -1,0 +1,13 @@
+steps:
+  - bash: |
+      set -euo pipefail
+      export ci=true
+      export use_installed_dotnet_cli=false
+      source "$(Pipeline.Workspace)/maui/eng/common/tools.sh"
+      ReadGlobalVersion dotnet
+      if [[ "$_ReadGlobalVersion" == *-* ]]; then
+        export runtime_source_feed=https://ci.dot.net/public
+      fi
+      InitializeDotNetCli true
+    displayName: 'Bootstrap the exact pinned SDK before restoring tools'
+    timeoutInMinutes: 20

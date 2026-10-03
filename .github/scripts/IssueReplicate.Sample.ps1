@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$InputDirectory,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [string]$NuGetConfigPath = '',
+    [scriptblock]$OnCompleted,
     [switch]$CoreLoaded
 )
 
@@ -52,12 +53,14 @@ if ($diagnostic.Length -gt 2048) {
     $length = if ([char]::IsHighSurrogate($diagnostic[2047])) { 2047 } else { 2048 }
     $diagnostic = $diagnostic.Substring(0, $length)
 }
-@{
+$result = @{
     sampleSha256 = $manifest.sampleSha256
     targetSha = $manifest.targetSha
     buildSucceeded = ($exitCode -eq 0)
     sampleProject = $project.Name
     targetFramework = $tfm
     diagnostic = $diagnostic
-} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'sample-result.json') -Encoding utf8
+}
+$result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'sample-result.json') -Encoding utf8
+if ($OnCompleted) { & $OnCompleted $result }
 if ($exitCode -ne 0) { throw 'The author sample did not build; reproduction is inconclusive.' }

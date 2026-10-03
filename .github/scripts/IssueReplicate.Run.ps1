@@ -17,7 +17,21 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
 $execute = [scriptblock]::Create([IO.File]::ReadAllText((Join-Path $PSScriptRoot "IssueReplicate.$Mode.ps1")))
 $export = [scriptblock]::Create([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1')))
-$parameters = @{ OutputDirectory = $OutputDirectory; CoreLoaded = $true }
+$completedData = @{ Result = $null; Files = @{} }
+$parameters = @{
+    OutputDirectory = $OutputDirectory
+    CoreLoaded = $true
+    OnCompleted = {
+        param($Record, [string]$PatchText = '', [string]$Feedback = '')
+        if ($null -ne $completedData.Result) { throw 'Execution completed more than once.' }
+        $json = $Record | ConvertTo-Json -Depth 6
+        $completedData.Result = $json | ConvertFrom-Json -Depth 6
+        $name = if ($Mode -eq 'Sample') { 'sample-result.json' } else { 'result.json' }
+        $completedData.Files[$name] = [Text.Encoding]::UTF8.GetBytes($json)
+        if ($PatchText) { $completedData.Files['test.patch'] = [Text.Encoding]::UTF8.GetBytes($PatchText) }
+        if ($Feedback) { $completedData.Files['feedback.txt'] = [Text.Encoding]::UTF8.GetBytes($Feedback) }
+    }
+}
 if ($Mode -eq 'Sample') {
     $parameters.InputDirectory = $InputDirectory
     $parameters.NuGetConfigPath = $NuGetConfigPath
@@ -36,15 +50,9 @@ try {
     $completed = $true
 } finally {
     $kind = if ($Mode -eq 'Sample') { 'Sample' } else { 'Verified' }
-    $name = if ($Mode -eq 'Sample') { 'sample-result.json' } else { 'result.json' }
-    $path = Join-Path $OutputDirectory $name
-    if (Test-Path -LiteralPath $path -PathType Leaf) {
+    if ($null -ne $completedData.Result) {
         if ($Mode -eq 'Verify') {
-            $file = Get-Item -LiteralPath $path
-            if ($file.Length -gt 16384 -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-                throw 'The verification result is not a bounded regular file.'
-            }
-            $result = Get-Content -Raw -LiteralPath $path | ConvertFrom-Json -Depth 6
+            $result = $completedData.Result
             Assert-IssueReplicateResult -Result $result -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
             switch ($Provider) {
                 'Azure' { Write-Host "##vso[task.setvariable variable=verdict;isOutput=true]$($result.status)" }
@@ -55,7 +63,8 @@ try {
             }
             $global:LASTEXITCODE = 0
         }
-        & $export -Mode Export -Kind $kind -Directory $OutputDirectory -Provider $Provider -CoreLoaded
+        & $export -Mode Export -Kind $kind -Directory $OutputDirectory -Provider $Provider `
+            -FileBytes $completedData.Files -CoreLoaded
     } else {
         $message = 'Execution did not produce a completed bounded result; no job data can be exported.'
         if ($completed) { throw $message } else { Write-Warning $message }

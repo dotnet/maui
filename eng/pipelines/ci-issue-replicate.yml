@@ -17,8 +17,6 @@ parameters:
 
 variables:
   # Never import the shared MAUI variable group into sample/test jobs.
-  - name: DOTNET_VERSION
-    value: 10.0.100
   - name: XCODE
     value: 26.5
   - name: REQUIRED_XCODE
@@ -107,6 +105,7 @@ stages:
                 -Destination "$(Pipeline.Workspace)/maui"
               if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
             displayName: 'Fetch pinned public source without a checkout credential'
+          - template: common/issue-replicate-sdk.yml
           - ${{ if eq(parameters.Platform, 'ios') }}:
             - pwsh: |
                 & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
@@ -119,6 +118,7 @@ stages:
           - template: common/provision.yml
             parameters:
               checkoutDirectory: $(Pipeline.Workspace)/maui
+              skipDotNetSdk: true
               skipProvisionator: true
               skipInternalFeeds: true
               skipCertificates: true

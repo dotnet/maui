@@ -8,6 +8,7 @@ param(
     [Parameter(Mandatory)][string]$OutputDirectory,
     [ValidateRange(1, 2)][int]$Attempt = 1,
     [string]$PreviousResultPath = '',
+    [scriptblock]$OnCompleted,
     [switch]$CoreLoaded
 )
 
@@ -52,6 +53,7 @@ if ($candidate.kind -eq 'unsupported') {
     if (@($candidate.files).Count -ne 0) { throw 'Unsupported candidates cannot include test files.' }
     $result.status = 'unsupported'
     $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
+    if ($OnCompleted) { & $OnCompleted $result }
     exit 0
 }
 Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber $result.issueNumber | Out-Null
@@ -71,6 +73,7 @@ if ($Attempt -eq 2) {
     }
     if (-not $previous.observedAssertion) {
         Copy-Item -LiteralPath $previousFile.FullName -Destination $resultPath
+        if ($OnCompleted) { & $OnCompleted $previous }
         return
     }
     if ($previous.status -cne 'inconclusive' -or $previous.testExecuted -ne $true -or
@@ -202,9 +205,14 @@ try {
     $testLines | Set-Content -LiteralPath $log -Encoding utf8
     if ($result.status -eq 'candidate-failed') {
         $patchPath = Join-Path $OutputDirectory 'test.patch'
-        [IO.File]::WriteAllText($patchPath, $patchText, [Text.UTF8Encoding]::new($false))
-        $result.patchSha256 = (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $patchBytes = [Text.Encoding]::UTF8.GetBytes($patchText)
+        [IO.File]::WriteAllBytes($patchPath, $patchBytes)
+        $result.patchSha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($patchBytes)).ToLowerInvariant()
     }
     Assert-IssueReplicateResult -Result ([pscustomobject]$result) -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
     $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
+    if ($OnCompleted) {
+        $candidatePatch = if ($result.status -eq 'candidate-failed') { $patchText } else { '' }
+        & $OnCompleted $result $candidatePatch (Get-IssueReplicateFeedback -Lines $testLines.ToArray())
+    }
 } finally { Pop-Location }
