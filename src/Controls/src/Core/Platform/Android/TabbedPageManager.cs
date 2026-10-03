@@ -562,6 +562,13 @@ public class TabbedPageManager
 			_bottomNavigationView,
 			Element.FindMauiContext());
 
+		// SetupMenu recreates the BottomNavigationItemView instances after clearing the children and adding new items at runtime,
+		// which resets the per-item icon tint. Reapply the icon colors when the tab item style has already been loaded.
+		if (_tabItemStyleLoaded)
+		{
+			UpdateItemIconColor();
+		}
+
 		if (Element.CurrentPage == null && Element.Children.Count > 0)
 			Element.CurrentPage = Element.Children[0];
 	}
