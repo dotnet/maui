@@ -164,6 +164,11 @@ native execution on both supported platforms, including detached-writer attempts
 the current fresh-job split does not establish this boundary. Do not treat the
 steps below as permission to deploy before that requirement is implemented.
 
+Intake and the always-running posting job independently require the
+`dnceng-public` collection and `System.TeamProject` exactly equal to `public`.
+Both fail closed before intake or publication, including fallback notices, when
+either predefined environment value is missing or belongs to another project.
+
 1. Merge the trusted scripts, trigger, and pipeline YAML to `main`. Create a
    **separate public Azure pipeline** in `dnceng-public/public` with
    `eng/pipelines/ci-issue-replicate.yml` as its YAML path. This is not `/review`:

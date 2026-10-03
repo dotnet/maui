@@ -44,8 +44,9 @@ stages:
             persistCredentials: false
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              if ("$(System.CollectionUri)" -notmatch '^https://dev\.azure\.com/dnceng-public/') {
-                throw 'The issue reproduction pipeline must run in dnceng-public.'
+              if ($env:SYSTEM_COLLECTIONURI -notmatch '^https://dev\.azure\.com/dnceng-public/' -or
+                  $env:SYSTEM_TEAMPROJECT -cne 'public') {
+                throw 'The issue reproduction pipeline must run in dnceng-public/public.'
               }
               if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
                   (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
@@ -273,6 +274,10 @@ stages:
             persistCredentials: false
           - pwsh: |
               $ErrorActionPreference = 'Stop'
+              if ($env:SYSTEM_COLLECTIONURI -notmatch '^https://dev\.azure\.com/dnceng-public/' -or
+                  $env:SYSTEM_TEAMPROJECT -cne 'public') {
+                throw 'The issue reproduction publisher must run in dnceng-public/public.'
+              }
               if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
                   (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
                 throw 'Posting code differs from the trusted pipeline revision.'
