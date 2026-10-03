@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#11130f" />
+    <meta name="theme-color" content="#f7f8fc" />
     <meta
       name="description"
       content="A free, interactive field guide to large language models: tokens, transformers, training, prompting, RAG, evaluation, safety, and local models."
     />
-    <title>LLM Field Guide — Learn how language models work</title>
+    <title>Model Atlas — Learn how language models work</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -23,8 +23,8 @@
 
     <header class="site-header">
       <a class="brand" href="#top" aria-label="LLM Field Guide home">
-        <span class="brand-glyph" aria-hidden="true">λ</span>
-        <span>LLM FIELD GUIDE</span>
+        <span class="brand-glyph" aria-hidden="true">M</span>
+        <span>MODEL ATLAS</span>
       </a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href="#anatomy">Anatomy</a>
@@ -43,15 +43,15 @@
       <section class="hero" id="top">
         <div class="hero-grid">
           <div class="hero-copy">
-            <p class="overline">An interactive, evidence-linked primer</p>
-            <h1>Language models,<br /><em>taken apart.</em></h1>
+            <p class="overline">Your visual guide to modern AI</p>
+            <h1>Understand language models, <em>one idea at a time.</em></h1>
             <p class="hero-lede">
-              Learn what an LLM predicts, how a transformer moves information, why models hallucinate,
-              and how real systems use retrieval, tools, evaluation, and human judgment.
+              Explore how LLMs learn, generate, and sometimes fail through clear explanations,
+              playful simulations, and practical examples you can try yourself.
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="#anatomy">Open the field guide <span>↓</span></a>
-              <a class="button button-ghost" href="#labs">Jump to the labs</a>
+              <a class="button button-primary" href="#anatomy">Start exploring <span>↓</span></a>
+              <a class="button button-ghost" href="#labs">Try an interactive lab</a>
             </div>
             <ul class="hero-facts" aria-label="Course facts">
               <li><strong>8</strong><span>core ideas</span></li>
@@ -92,7 +92,7 @@
             </p>
           </div>
         </div>
-        <div class="scroll-cue" aria-hidden="true">SCROLL TO DISASSEMBLE <span>↘</span></div>
+        <div class="scroll-cue" aria-hidden="true">Keep scrolling to build your mental model <span>↓</span></div>
       </section>
 
       <section class="chapter paper-section" id="anatomy" data-progress>
@@ -455,22 +455,22 @@
           </div>
         </div>
         <div class="source-grid" id="sourceGrid">
-          <a data-category="course" href="https://huggingface.co/learn/llm-course/chapter1/1" target="_blank" rel="noreferrer"><span>COURSE · HANDS-ON</span><h3>Hugging Face LLM Course</h3><p>Transformers, datasets, tokenizers, fine-tuning, demos, and modern open-source workflows.</p><b>huggingface.co ↗</b></a>
-          <a data-category="course" href="https://cme295.stanford.edu/" target="_blank" rel="noreferrer"><span>COURSE · THEORY + PRACTICE</span><h3>Stanford CME 295</h3><p>Clear visual notes on architectures, training, alignment, inference, evaluation, and agents.</p><b>stanford.edu ↗</b></a>
-          <a data-category="paper" href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer"><span>PAPER · FOUNDATIONAL</span><h3>Attention Is All You Need</h3><p>The 2017 paper that introduced the Transformer architecture.</p><b>arxiv.org ↗</b></a>
-          <a data-category="paper" href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noreferrer"><span>PAPER · RETRIEVAL</span><h3>Retrieval-Augmented Generation</h3><p>The original RAG paper combines parametric generation with retrieved external memory.</p><b>arxiv.org ↗</b></a>
-          <a data-category="paper" href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noreferrer"><span>PAPER · ALIGNMENT</span><h3>InstructGPT / RLHF</h3><p>A landmark description of supervised instruction tuning and reinforcement learning from human feedback.</p><b>arxiv.org ↗</b></a>
-          <a data-category="paper" href="https://arxiv.org/abs/2305.18290" target="_blank" rel="noreferrer"><span>PAPER · ALIGNMENT</span><h3>Direct Preference Optimization</h3><p>A simpler preference-learning objective that avoids fitting a separate reward model.</p><b>arxiv.org ↗</b></a>
-          <a data-category="guide" href="https://developers.google.com/machine-learning/resources/intro-llms" target="_blank" rel="noreferrer"><span>GUIDE · BEGINNER</span><h3>Google: Introduction to LLMs</h3><p>Concise explanations of tokens, parameters, prompting, and tuning.</p><b>developers.google.com ↗</b></a>
-          <a data-category="course" href="https://www.deeplearning.ai/short-courses/" target="_blank" rel="noreferrer"><span>COURSES · APPLIED</span><h3>DeepLearning.AI short courses</h3><p>Focused practical courses on prompting, RAG, evaluation, agents, and model operations.</p><b>deeplearning.ai ↗</b></a>
-          <a data-category="guide" href="https://www.geeksforgeeks.org/deep-learning/large-language-model-llm-tutorial/" target="_blank" rel="noreferrer"><span>GUIDE · BEGINNER</span><h3>GeeksforGeeks LLM Tutorial</h3><p>A broad, approachable reference for terminology and common techniques.</p><b>geeksforgeeks.org ↗</b></a>
-          <a data-category="tool" href="https://github.com/mlabonne/llm-course" target="_blank" rel="noreferrer"><span>GITHUB · NOTEBOOKS</span><h3>mlabonne/llm-course</h3><p>A practical open-source curriculum spanning fundamentals, scientists, and engineering tracks.</p><b>github.com ↗</b></a>
-          <a data-category="tool" href="https://github.com/ollama/ollama" target="_blank" rel="noreferrer"><span>TOOL · LOCAL</span><h3>Ollama</h3><p>Run and experiment with supported open-weight models on your own computer.</p><b>github.com ↗</b></a>
-          <a data-category="tool" href="https://github.com/vllm-project/vllm" target="_blank" rel="noreferrer"><span>TOOL · SERVING</span><h3>vLLM</h3><p>A high-throughput inference and serving engine for open-weight language models.</p><b>github.com ↗</b></a>
-          <a data-category="guide" href="https://crfm.stanford.edu/helm/latest/" target="_blank" rel="noreferrer"><span>GUIDE · EVALUATION</span><h3>Stanford HELM</h3><p>Transparent, multi-metric evaluation across scenarios, models, and risk dimensions.</p><b>stanford.edu ↗</b></a>
-          <a data-category="guide" href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noreferrer"><span>GUIDE · SECURITY</span><h3>OWASP Top 10 for LLM Apps</h3><p>Threats and mitigations for prompt injection, data leakage, excessive agency, and more.</p><b>owasp.org ↗</b></a>
-          <a data-category="guide" href="https://huggingface.co/docs/transformers/index" target="_blank" rel="noreferrer"><span>DOCS · LIBRARY</span><h3>Transformers documentation</h3><p>Reference and tutorials for loading, training, evaluating, and serving open models.</p><b>huggingface.co ↗</b></a>
-          <a data-category="guide" href="https://github.com/NiuTrans/NLPBook" target="_blank" rel="noreferrer"><span>BOOK · OPEN</span><h3>Foundations of Large Language Models</h3><p>A free technical book covering language modeling, prompting, alignment, and inference.</p><b>github.com ↗</b></a>
+          <a data-category="course" href="https://huggingface.co/learn/llm-course/chapter1/1" rel="noreferrer"><span>COURSE · HANDS-ON</span><h3>Hugging Face LLM Course</h3><p>Transformers, datasets, tokenizers, fine-tuning, demos, and modern open-source workflows.</p><b>huggingface.co ↗</b></a>
+          <a data-category="course" href="https://cme295.stanford.edu/" rel="noreferrer"><span>COURSE · THEORY + PRACTICE</span><h3>Stanford CME 295</h3><p>Clear visual notes on architectures, training, alignment, inference, evaluation, and agents.</p><b>stanford.edu ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/1706.03762" rel="noreferrer"><span>PAPER · FOUNDATIONAL</span><h3>Attention Is All You Need</h3><p>The 2017 paper that introduced the Transformer architecture.</p><b>arxiv.org ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/2005.14165" rel="noreferrer"><span>PAPER · RETRIEVAL</span><h3>Retrieval-Augmented Generation</h3><p>The original RAG paper combines parametric generation with retrieved external memory.</p><b>arxiv.org ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/2203.02155" rel="noreferrer"><span>PAPER · ALIGNMENT</span><h3>InstructGPT / RLHF</h3><p>A landmark description of supervised instruction tuning and reinforcement learning from human feedback.</p><b>arxiv.org ↗</b></a>
+          <a data-category="paper" href="https://arxiv.org/abs/2305.18290" rel="noreferrer"><span>PAPER · ALIGNMENT</span><h3>Direct Preference Optimization</h3><p>A simpler preference-learning objective that avoids fitting a separate reward model.</p><b>arxiv.org ↗</b></a>
+          <a data-category="guide" href="https://developers.google.com/machine-learning/resources/intro-llms" rel="noreferrer"><span>GUIDE · BEGINNER</span><h3>Google: Introduction to LLMs</h3><p>Concise explanations of tokens, parameters, prompting, and tuning.</p><b>developers.google.com ↗</b></a>
+          <a data-category="course" href="https://www.deeplearning.ai/short-courses/" rel="noreferrer"><span>COURSES · APPLIED</span><h3>DeepLearning.AI short courses</h3><p>Focused practical courses on prompting, RAG, evaluation, agents, and model operations.</p><b>deeplearning.ai ↗</b></a>
+          <a data-category="guide" href="https://www.geeksforgeeks.org/deep-learning/large-language-model-llm-tutorial/" rel="noreferrer"><span>GUIDE · BEGINNER</span><h3>GeeksforGeeks LLM Tutorial</h3><p>A broad, approachable reference for terminology and common techniques.</p><b>geeksforgeeks.org ↗</b></a>
+          <a data-category="tool" href="https://github.com/mlabonne/llm-course" rel="noreferrer"><span>GITHUB · NOTEBOOKS</span><h3>mlabonne/llm-course</h3><p>A practical open-source curriculum spanning fundamentals, scientists, and engineering tracks.</p><b>github.com ↗</b></a>
+          <a data-category="tool" href="https://github.com/ollama/ollama" rel="noreferrer"><span>TOOL · LOCAL</span><h3>Ollama</h3><p>Run and experiment with supported open-weight models on your own computer.</p><b>github.com ↗</b></a>
+          <a data-category="tool" href="https://github.com/vllm-project/vllm" rel="noreferrer"><span>TOOL · SERVING</span><h3>vLLM</h3><p>A high-throughput inference and serving engine for open-weight language models.</p><b>github.com ↗</b></a>
+          <a data-category="guide" href="https://crfm.stanford.edu/helm/latest/" rel="noreferrer"><span>GUIDE · EVALUATION</span><h3>Stanford HELM</h3><p>Transparent, multi-metric evaluation across scenarios, models, and risk dimensions.</p><b>stanford.edu ↗</b></a>
+          <a data-category="guide" href="https://genai.owasp.org/llm-top-10/" rel="noreferrer"><span>GUIDE · SECURITY</span><h3>OWASP Top 10 for LLM Apps</h3><p>Threats and mitigations for prompt injection, data leakage, excessive agency, and more.</p><b>owasp.org ↗</b></a>
+          <a data-category="guide" href="https://huggingface.co/docs/transformers/index" rel="noreferrer"><span>DOCS · LIBRARY</span><h3>Transformers documentation</h3><p>Reference and tutorials for loading, training, evaluating, and serving open models.</p><b>huggingface.co ↗</b></a>
+          <a data-category="guide" href="https://github.com/NiuTrans/NLPBook" rel="noreferrer"><span>BOOK · OPEN</span><h3>Foundations of Large Language Models</h3><p>A free technical book covering language modeling, prompting, alignment, and inference.</p><b>github.com ↗</b></a>
         </div>
       </section>
 
@@ -495,10 +495,10 @@
     </main>
 
     <footer>
-      <div class="footer-mark">λ</div>
+      <div class="footer-mark">M</div>
       <div>
-        <strong>LLM FIELD GUIDE</strong>
-        <p>Built to replace hype with working mental models.</p>
+        <strong>MODEL ATLAS</strong>
+        <p>A calm, practical guide to understanding modern language models.</p>
       </div>
       <div class="footer-links">
         <a href="#top">Back to top ↑</a>

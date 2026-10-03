@@ -4,28 +4,28 @@ const conceptContent = {
     title: 'Tokens are not always words.',
     body: 'A tokenizer converts text into integer IDs from a fixed vocabulary. Common words may be one token; unusual words may split into several. Tokenization affects context limits, cost, speed, and how easily a model handles different languages.',
     analogy: 'movable type in a printing press.',
-    gradient: 'linear-gradient(90deg, #ff6534 0 17%, transparent 17% 21%, #4f6fff 21% 50%, transparent 50% 54%, #11130f 54% 78%, transparent 78% 82%, #d7ff3f 82%)'
+    gradient: 'linear-gradient(90deg, #f4bf55 0 17%, transparent 17% 21%, #4967e8 21% 50%, transparent 50% 54%, #17213d 54% 78%, transparent 78% 82%, #55c8cf 82%)'
   },
   embeddings: {
     kicker: 'THE REPRESENTATION LAYER',
     title: 'Meaning becomes geometry.',
     body: 'Each token ID maps to a learned vector: a long list of numbers. During processing, those representations become contextual—so “bank” near “river” differs from “bank” near “loan.” Similar patterns occupy related regions of a high-dimensional space.',
     analogy: 'placing ideas on a map where distance carries meaning.',
-    gradient: 'radial-gradient(circle at 18% 30%, #4f6fff 0 8%, transparent 9%), radial-gradient(circle at 60% 72%, #ff6534 0 7%, transparent 8%), radial-gradient(circle at 83% 25%, #11130f 0 6%, transparent 7%), linear-gradient(135deg, transparent 0 42%, #d7ff3f 43% 48%, transparent 49%)'
+    gradient: 'radial-gradient(circle at 18% 30%, #4967e8 0 8%, transparent 9%), radial-gradient(circle at 60% 72%, #f2755b 0 7%, transparent 8%), radial-gradient(circle at 83% 25%, #17213d 0 6%, transparent 7%), linear-gradient(135deg, transparent 0 42%, #55c8cf 43% 48%, transparent 49%)'
   },
   attention: {
     kicker: 'THE ROUTING LAYER',
     title: 'Every token asks what matters.',
     body: 'Self-attention computes how strongly each position should draw information from other positions. Multiple attention heads can track different relationships, such as syntax, reference, or local patterns. It is dynamic information routing, not human attention.',
     analogy: 'a meeting where every word chooses whom to listen to.',
-    gradient: 'repeating-conic-gradient(from 20deg at 50% 50%, #11130f 0deg 7deg, transparent 8deg 28deg), radial-gradient(circle, #ff6534 0 9%, transparent 10% 100%)'
+    gradient: 'repeating-conic-gradient(from 20deg at 50% 50%, #4967e8 0deg 7deg, transparent 8deg 28deg), radial-gradient(circle, #f4bf55 0 9%, transparent 10% 100%)'
   },
   prediction: {
     kicker: 'THE OUTPUT LAYER',
     title: 'Generation is a repeated wager.',
     body: 'The network produces a score for every vocabulary token. Those scores become probabilities, a decoding strategy selects one token, and the cycle repeats with the new token added to the context. A fluent answer is therefore a chain of local predictions.',
     analogy: 'autocomplete looping faster and with a much richer model of context.',
-    gradient: 'linear-gradient(135deg, #11130f 0 18%, transparent 18% 25%, #4f6fff 25% 43%, transparent 43% 50%, #ff6534 50% 68%, transparent 68% 75%, #d7ff3f 75%)'
+    gradient: 'linear-gradient(135deg, #17213d 0 18%, transparent 18% 25%, #4967e8 25% 43%, transparent 43% 50%, #f2755b 50% 68%, transparent 68% 75%, #55c8cf 75%)'
   }
 };
 
@@ -61,7 +61,7 @@ conceptTabs.forEach((tab, index) => {
 const tokenInput = document.getElementById('tokenInput');
 const tokenOutput = document.getElementById('tokenOutput');
 const tokenCount = document.getElementById('tokenCount');
-const tokenColors = ['#d7ff3f', '#ff6534', '#8aa0ff', '#f0ba60', '#8ce3b2'];
+const tokenColors = ['#aee8e9', '#ffd4c9', '#cdd5ff', '#ffe2a8', '#d7eadf'];
 
 function simulatedTokenize(text) {
   const pieces = text.match(/[A-Za-z]+(?:'[A-Za-z]+)?|\d+|[^\s\w]/g) || [];
