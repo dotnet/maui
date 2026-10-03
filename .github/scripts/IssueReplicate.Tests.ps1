@@ -667,6 +667,112 @@ Describe 'Pinned test verification' {
     }
 }
 
+Describe 'Forwarded verification feedback' {
+    BeforeEach {
+        $root = Join-Path $TestDrive ("forwarded-" + [guid]::NewGuid().ToString('N'))
+        $script:feedbackInput = Join-Path $root 'input'
+        $script:feedbackFirst = Join-Path $root 'first'
+        $script:feedbackOutput = Join-Path $root 'output'
+        New-Item -ItemType Directory -Path $script:feedbackInput, $script:feedbackFirst | Out-Null
+        $zipPath = Join-Path $script:feedbackInput 'sample.zip'
+        $stream = [IO.File]::Create($zipPath)
+        $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
+        $writer = [IO.StreamWriter]::new($zip.CreateEntry('Sample.cs').Open())
+        $writer.Write('public class Sample { }')
+        $writer.Dispose()
+        $zip.Dispose()
+        $stream.Dispose()
+        $sampleHash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214
+            targetSha = 'a' * 40; sampleSha256 = $sampleHash; platform = 'android'
+            targetRef = 'main'; issueText = 'Fixture issue'
+        } | ConvertTo-Json | Set-Content (Join-Path $script:feedbackInput 'manifest.json')
+        @{
+            targetSha = 'a' * 40; sampleSha256 = $sampleHash; buildSucceeded = $true
+        } | ConvertTo-Json | Set-Content (Join-Path $script:feedbackInput 'sample-result.json')
+        $candidatePath = Join-Path $script:feedbackInput 'candidate.json'
+        @{
+            kind = 'unit'
+            files = @(@{
+                path = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
+                content = 'public class Issue12345 { }'
+            })
+        } | ConvertTo-Json -Depth 4 | Set-Content $candidatePath
+        @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214
+            targetSha = 'a' * 40; sampleSha256 = $sampleHash; platform = 'android'
+            status = 'inconclusive'; sampleBuilt = $true; testKind = 'unit'
+            testExecuted = $false; assertionFailed = $false; patchSha256 = ''
+            candidateSha256 = (Get-FileHash $candidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
+            attempt = 1; observedAssertion = $false; failureIdentities = @()
+        } | ConvertTo-Json | Set-Content (Join-Path $script:feedbackFirst 'result.json')
+        Mock git { $global:LASTEXITCODE = 0; 'a' * 40 }
+        Mock dotnet { throw 'A completed first attempt must not be rerun.' }
+        $script:forwardVerification = {
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify `
+                -InputDirectory $script:feedbackInput `
+                -SampleResultPath (Join-Path $script:feedbackInput 'sample-result.json') `
+                -CandidatePath (Join-Path $script:feedbackInput 'candidate.json') `
+                -RepoRoot $script:feedbackInput -OutputDirectory $script:feedbackOutput `
+                -Attempt 2 -PreviousResultPath (Join-Path $script:feedbackFirst 'result.json')
+        }
+    }
+
+    It 'preserves compile-error feedback through parent export and a tool-free revision' {
+        $feedback = "source.cs: error CS0001: Candidate did not compile.`nAdditional diagnostic."
+        [IO.File]::WriteAllText((Join-Path $script:feedbackFirst 'feedback.txt'), $feedback,
+            [Text.UTF8Encoding]::new($false))
+        $encoded = & $script:forwardVerification
+        $decoded = Join-Path $TestDrive 'forwarded-decoded'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
+            -Directory $decoded -Encoded $encoded
+        $feedbackPath = Join-Path $decoded 'feedback.txt'
+        [IO.File]::ReadAllText($feedbackPath) | Should -BeExactly $feedback
+        $record = Get-Content -Raw (Join-Path $decoded 'result.json') | ConvertFrom-Json
+        $record.status | Should -Be 'inconclusive'
+        $record.attempt | Should -Be 1
+        $record.testExecuted | Should -BeFalse
+        Test-Path (Join-Path $decoded 'test.patch') | Should -BeFalse
+        Should -Invoke dotnet -Times 0
+        function copilot {
+            $global:issueReplicateForwardedPrompt = [string]$args[[array]::IndexOf($args, '-p') + 1]
+            $global:LASTEXITCODE = 0
+            @{
+                type = 'assistant.message'
+                data = @{
+                    phase = 'final_answer'; content = '{"kind":"unsupported","files":[]}'
+                    toolRequests = @()
+                }
+            } | ConvertTo-Json -Depth 5 -Compress
+            @{ type = 'result'; exitCode = 0 } | ConvertTo-Json -Compress
+        }
+        try {
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Generate.ps1') `
+                -InputDirectory $script:feedbackInput -OutputDirectory (Join-Path $TestDrive 'revision') `
+                -FeedbackPath $feedbackPath
+            $global:issueReplicateForwardedPrompt | Should -Match ([regex]::Escape($feedback))
+        } finally {
+            Remove-Variable issueReplicateForwardedPrompt -Scope Global -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'rejects unavailable or invalid forwarded feedback (<Invalid>)' -TestCases @(
+        @{ Invalid = 'missing' }, @{ Invalid = 'empty' },
+        @{ Invalid = 'oversized' }, @{ Invalid = 'invalid-utf8' }
+    ) {
+        param($Invalid)
+        $path = Join-Path $script:feedbackFirst 'feedback.txt'
+        switch ($Invalid) {
+            'empty' { [IO.File]::WriteAllBytes($path, [byte[]]::new(0)) }
+            'oversized' { [IO.File]::WriteAllBytes($path, [byte[]]::new(4097)) }
+            'invalid-utf8' { [IO.File]::WriteAllBytes($path, [byte[]]@(255)) }
+        }
+        $script:forwardVerification | Should -Throw
+        Should -Invoke dotnet -Times 0
+    }
+}
+
 Describe 'Bounded issue result publication' {
     It 'reports the actual failed sample target and diagnostic without inventing test execution' {
         $inputDir = Join-Path $TestDrive 'failed-sample-input'

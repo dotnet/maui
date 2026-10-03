@@ -72,8 +72,25 @@ if ($Attempt -eq 2) {
         throw 'The first attempt does not match this immutable candidate and issue snapshot.'
     }
     if (-not $previous.observedAssertion) {
+        $previousFeedback = ''
+        $feedbackBytes = $null
+        $feedbackPath = Join-Path $previousFile.DirectoryName 'feedback.txt'
+        if (Test-Path -LiteralPath $feedbackPath) {
+            $feedbackFile = Get-Item -LiteralPath $feedbackPath -ErrorAction Stop
+            if ($feedbackFile.PSIsContainer -or $feedbackFile.Length -lt 1 -or $feedbackFile.Length -gt 4096 -or
+                $feedbackFile.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw 'The first-attempt feedback is not a bounded regular file.'
+            }
+            $feedbackBytes = [IO.File]::ReadAllBytes($feedbackFile.FullName)
+            $previousFeedback = [Text.UTF8Encoding]::new($false, $true).GetString($feedbackBytes)
+        } elseif ($previous.status -eq 'inconclusive') {
+            throw 'The inconclusive first attempt is missing its revision feedback.'
+        }
         Copy-Item -LiteralPath $previousFile.FullName -Destination $resultPath
-        if ($OnCompleted) { & $OnCompleted $previous }
+        if ($null -ne $feedbackBytes) {
+            [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'feedback.txt'), $feedbackBytes)
+        }
+        if ($OnCompleted) { & $OnCompleted $previous '' $previousFeedback }
         return
     }
     if ($previous.status -cne 'inconclusive' -or $previous.testExecuted -ne $true -or

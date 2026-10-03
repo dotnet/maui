@@ -113,7 +113,11 @@ Repeated assertions run in separate fresh hosted jobs, each independently
 provisioning and checking out the same pinned source and candidate. First-attempt
 build outputs, ignored files, SDK directories and simulator state are never
 transferred to the second job. Only the bounded first-attempt identities and
-candidate hash are compared. Tracked framework and candidate files are hashed
+candidate hash are compared. When the first attempt observed no assertion, the
+second job forwards its completed result and bounded UTF-8 feedback without
+rerunning it. An inconclusive result must retain that feedback for the one
+allowed GPT revision; missing, empty or invalid feedback fails explicitly.
+Tracked framework and candidate files are hashed
 before execution and rechecked afterward; changes invalidate the attempt.
 Constant-only NUnit and xUnit assertions are rejected, but generated code still
 requires human fidelity review: an executed failure is not proof of the original bug.
