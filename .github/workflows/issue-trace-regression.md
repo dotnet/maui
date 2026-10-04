@@ -201,6 +201,12 @@ steps:
 First select the task from the trusted frozen preflight mode:
 `${{ needs.pre_activation.outputs.preflight_mode }}`.
 
+In every mode, keep public reports free of credentials, signed download URLs,
+internal links and unrelated personal data, including when summarizing frozen
+issue/comment text or gaps. Omit sensitive values rather than quoting them.
+Escape dynamic HTML and badge URL components; never copy untrusted markup into
+report structure. These rules also apply when the investigation skill is skipped.
+
 For `boundary-only`, this is **preflight reporting, not a regression
 investigation**. Do not load the investigation skill or search source/history.
 Read identity, body/form fields, preflight, boundaries, gaps, diagnostics and human

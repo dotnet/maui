@@ -114,7 +114,11 @@ selection includes shared, Android, iOS and Windows handlers; source presence at
 the exact release remains explicit, not proof that each platform is affected.
 
 Inline logs/code and author corrections are analyzed before requesting more
-evidence. Inventory uses the issue body and human (`authorType: User`) comments,
+evidence. Every report mode, including boundary-only without the skill, excludes
+credentials, signed URLs, internal links and unrelated personal data and escapes
+dynamic HTML/badge components. These are prompt constraints, not proof of
+deterministic redaction.
+Inventory uses the issue body and human (`authorType: User`) comments,
 not bot reports. Public GitHub attachment links retain their originating
 comment; the twenty-mention cap retains the earliest ten and latest ten so a
 later correction can reach image selection. An inventory alone is **not
