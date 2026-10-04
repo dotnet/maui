@@ -37,6 +37,41 @@ function New-IssueReplicateIOSSimulator {
     return $udid
 }
 
+function Initialize-IssueReplicateIOSWebDriverAgent {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][string]$SimulatorUdid
+    )
+
+    if (-not $IsMacOS) { throw 'WebDriverAgent preparation requires a macOS simulator host.' }
+    $sdk = Get-IssueReplicateIOSSdkVersion -RepoRoot $RepoRoot
+    $runtimeId = "com.apple.CoreSimulator.SimRuntime.iOS-$($sdk.Replace('.', '-'))"
+    $json = & xcrun simctl list devices available --json
+    if ($LASTEXITCODE -ne 0) { throw 'Could not enumerate the owned iOS verification simulator.' }
+    $inventory = ($json -join "`n") | ConvertFrom-Json
+    $devices = @($inventory.devices.$runtimeId | Where-Object { $_.udid -ceq $SimulatorUdid })
+    if ($devices.Count -ne 1 -or $devices[0].name -cnotmatch '^issue-replicate-[0-9a-f]{32}$') {
+        throw 'WebDriverAgent preparation requires the uniquely owned simulator on the pinned iOS runtime.'
+    }
+    $appium = Get-Command appium -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
+
+    Write-Host "Prebuilding the installed WebDriverAgent for pinned iOS $sdk ($SimulatorUdid); ten-minute build deadline."
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    $build = Invoke-ProcessWithTimeout -FilePath $appium.Source -TimeoutSeconds 600 `
+        -ArgumentList @('driver', 'run', 'xcuitest', 'build-wda', '--', "--name=$($devices[0].name)", "--sdk=$sdk")
+    foreach ($row in @($build.Output | Select-Object -Last 80)) {
+        $line = $row.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+        if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
+        Write-Host $line
+    }
+    if ($build.TimedOut) { throw 'WebDriverAgent prebuilding exceeded its ten-minute deadline; the candidate did not execute.' }
+    if ($build.OutputDrainTimedOut -or $build.ExitCode -ne 0) {
+        throw "WebDriverAgent prebuilding failed (exit $($build.ExitCode)); the candidate did not execute."
+    }
+    Write-Host "WebDriverAgent build completed in $([Math]::Ceiling($timer.Elapsed.TotalSeconds)) seconds; the pinned runner and its launch timeout remain unchanged."
+}
+
 function Get-IssueReplicateDownload {
     param([Parameter(Mandatory)][uri]$Url, [Parameter(Mandatory)][long]$MaxBytes)
 

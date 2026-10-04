@@ -233,6 +233,15 @@ runtime declared by the pinned iOS SDK and passes its UDID explicitly to the
 unchanged pinned UI runner. Missing or unavailable matching runtimes fail
 explicitly; visual-test preferences must not silently select a newer runtime
 than the matching Xcode. The owned simulator is deleted after verification.
+Before adding or executing the candidate, the verifier runs the installed
+XCUITest driver's `build-wda` command for that uniquely named simulator and the
+pinned SDK version. This separates a cold WebDriverAgent build from the unchanged
+pinned runner's session-launch timeout. Preparation has a ten-minute process
+deadline, emits a bounded diagnostic tail, and fails explicitly on a build error,
+timeout, or incomplete output capture; none is a candidate assertion. It does not
+change the pinned framework, Appium package versions, or launch capabilities.
+Successful prebuilding alone is not evidence that WebDriverAgent starts or that
+the test body executes.
 Appium context retains the last 80 non-system-log rows in at most 128 KiB from
 a fixed 64 MiB tail scan with a hard reader deadline. Omitted context is labeled;
 these diagnostics are not assertion evidence and do not create artifacts.

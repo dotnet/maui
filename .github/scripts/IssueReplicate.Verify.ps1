@@ -140,6 +140,7 @@ Push-Location $RepoRoot
 try {
     if ($candidate.kind -eq 'ui' -and $manifest.platform -eq 'ios') {
         $iosSimulator = New-IssueReplicateIOSSimulator -RepoRoot $RepoRoot
+        Initialize-IssueReplicateIOSWebDriverAgent -RepoRoot $RepoRoot -SimulatorUdid $iosSimulator
     }
     $written = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @($candidate.files)) {
