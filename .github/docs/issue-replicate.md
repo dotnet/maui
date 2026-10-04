@@ -251,7 +251,12 @@ launch and the test runner, checks that the created AVD exists there, and limits
 its data partition to 2 GiB. Emulator startup is bounded; a failed startup prints
 the last 120 diagnostic lines in the task log without uploading an artifact.
 The Android screen stays awake and unlocked while the HostApp builds, and window
-animations are disabled before UI execution. Native verification prints a bounded,
+animations are disabled before UI execution. The existing CI `hide_error_dialogs`
+setting is applied and checked at boot, before the lengthy HostApp compilation:
+applying it only in the pinned runner's pre-test warmup does not remove a SystemUI
+ANR dialog already covering the app. This prevents system error overlays, not test
+failures; crashes, setup failures and missing execution still cannot qualify as
+assertion evidence. Native verification prints a bounded,
 sanitized Appium log tail and the latest existing UI hierarchy text for startup
 diagnosis, using the pinned runner's actual log directory. The hierarchy's start
 and end are limited to 16,000 characters including the truncation marker.

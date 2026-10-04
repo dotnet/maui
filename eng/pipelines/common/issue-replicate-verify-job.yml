@@ -155,6 +155,8 @@ jobs:
                 for setting in window_animation_scale transition_animation_scale animator_duration_scale; do
                   timeout 20 "$adb" shell settings put global "$setting" 0.0
                 done
+                timeout 20 "$adb" shell settings put global hide_error_dialogs 1
+                test "$(timeout 20 "$adb" shell settings get global hide_error_dialogs | tr -d '\r')" = 1
                 timeout 20 "$adb" shell settings put system screen_off_timeout 2147483647
                 timeout 20 "$adb" shell svc power stayon true
                 timeout 20 "$adb" shell input keyevent KEYCODE_WAKEUP
