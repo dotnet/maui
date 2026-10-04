@@ -66,6 +66,11 @@ Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber $result.issueN
 $previous = $null
 $recordingSession = ''
 $recordingBytes = [byte[]]@()
+$recordingStarts = 0
+$recordingStops = 0
+$recordingStartMethod = ''
+$recordingStopMethod = ''
+$recordingValidated = $false
 if ($RecordVideo -and $candidate.kind -eq 'ui') {
     $result.recording = @{ status = 'not-started'; diagnostic = 'The native test did not reach its start marker.' }
 }
@@ -180,8 +185,12 @@ try {
             & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter 2>&1 |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+                    if ($RecordVideo -and $line -match '^>>>>> .+ (?<method>\S+) Start$') {
+                        $recordingStarts = [Math]::Min(2, $recordingStarts + 1)
+                        if ($recordingStarts -eq 1) { $recordingStartMethod = $Matches['method'] }
+                    }
                     if ($RecordVideo -and $result.recording.status -eq 'not-started' -and
-                        $line -match '^>>>>> .+ Start$') {
+                        $recordingStarts -eq 1 -and $line -match '^>>>>> .+ Start$') {
                         try {
                             $recordingSession = Start-IssueReplicateRecording -Platform $manifest.platform `
                                 -LogPath (Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/appium.log')
@@ -197,7 +206,12 @@ try {
                             Write-Warning "Native recording failed: $($result.recording.diagnostic)"
                         }
                     }
-                    if ($recordingSession -and $line -match '^>>>>> .+ Stop$') {
+                    $isStopMarker = $line -match '^>>>>> .+ (?<method>\S+) Stop$'
+                    if ($RecordVideo -and $isStopMarker) {
+                        $recordingStops = [Math]::Min(2, $recordingStops + 1)
+                        $recordingStopMethod = $Matches['method']
+                    }
+                    if ($recordingSession -and $isStopMarker) {
                         try {
                             $recordingBytes = Stop-IssueReplicateRecording -SessionId $recordingSession
                             $result.recording = @{
@@ -246,8 +260,29 @@ try {
         }
         if (-not (Test-Path -LiteralPath $trxFile -PathType Leaf) -or
             (Get-Item -LiteralPath $trxFile).LastWriteTimeUtc -lt $started) { break }
-        $verdict = Get-IssueReplicateTrxVerdict -Path $trxFile -ClassName $issueClass -ExitCode $testExit
+        $verdictParameters = @{ Path = $trxFile; ClassName = $issueClass; ExitCode = $testExit }
+        if ($RecordVideo -and $candidate.kind -eq 'ui' -and $recordingStartMethod) {
+            $verdictParameters.SingleTestMethod = $recordingStartMethod
+        }
+        $verdict = Get-IssueReplicateTrxVerdict @verdictParameters
+        if ($RecordVideo -and $candidate.kind -eq 'ui' -and
+            ($recordingStarts -gt 0 -or $verdict.Status -ne 'Inconclusive') -and
+            ($recordingStarts -ne 1 -or $recordingStops -ne 1 -or
+             $recordingStartMethod -cne $recordingStopMethod -or
+             $result.recording.status -ne 'available' -or $verdict.Status -eq 'Inconclusive')) {
+            $diagnostic = if ($verdict.Diagnostic) { $verdict.Diagnostic } elseif ($result.recording.status -eq 'failed') {
+                $result.recording.diagnostic
+            } else {
+                'A recorded UI candidate needs one matching Start/Stop pair and exactly one named TRX test body.'
+            }
+            $result.recording = @{ status = 'failed'; diagnostic = $diagnostic }
+            $recordingBytes = [byte[]]@()
+            $testLines.Add("Native recording failed: $diagnostic")
+            Write-Warning $diagnostic
+            break
+        }
         if ($verdict.Status -eq 'Inconclusive') { break }
+        if ($RecordVideo -and $candidate.kind -eq 'ui') { $recordingValidated = $true }
         $result.testExecuted = $true
         if ($verdict.Status -eq 'Passed') {
             if ($attempt -eq 1) { $result.status = 'not-reproduced-on-tested-revision' }
@@ -261,12 +296,21 @@ try {
             $result.status = 'candidate-failed'
         }
     } while ($false)
-    $testLines | Set-Content -LiteralPath $log -Encoding utf8
     if ($recordingSession) {
         $result.recording.status = 'failed'
         $result.recording.diagnostic = 'The native test did not emit its completion marker before the session ended.'
         Write-Warning $result.recording.diagnostic
     }
+    if ($RecordVideo -and $candidate.kind -eq 'ui' -and
+        $result.recording.status -eq 'available' -and -not $recordingValidated) {
+        $result.recording = @{
+            status = 'failed'; diagnostic = 'The recording could not be bound to a completed named TRX test body.'
+        }
+        $recordingBytes = [byte[]]@()
+        $testLines.Add("Native recording failed: $($result.recording.diagnostic)")
+        Write-Warning $result.recording.diagnostic
+    }
+    $testLines | Set-Content -LiteralPath $log -Encoding utf8
     if ($recordingBytes.Length) {
         [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'recording.mp4'), $recordingBytes)
     }

@@ -404,7 +404,7 @@ function Get-IssueReplicateFeedback {
 
 function Get-IssueReplicateTrxVerdict {
     param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$ClassName,
-        [Parameter(Mandatory)][int]$ExitCode)
+        [Parameter(Mandatory)][int]$ExitCode, [string]$SingleTestMethod = '')
 
     $file = Get-Item -LiteralPath $Path -ErrorAction Stop
     if ($file.PSIsContainer -or $file.Length -lt 1 -or $file.Length -gt 1MB) {
@@ -457,6 +457,14 @@ function Get-IssueReplicateTrxVerdict {
     }
     $results = @($allResults | Where-Object { $ids.Contains($_.GetAttribute('testId')) })
     if ($results.Count -lt 1) { return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() } }
+    if ($SingleTestMethod -and
+        ($allResults.Count -ne 1 -or $results.Count -ne 1 -or
+         $methods[$results[0].GetAttribute('testId')].GetAttribute('name') -cne $SingleTestMethod)) {
+        return [pscustomobject]@{
+            Status = 'Inconclusive'; Names = @()
+            Diagnostic = 'A recorded UI candidate must execute exactly one test matching its recording markers.'
+        }
+    }
     $passed = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
     $failures = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' })
     $names = @($results | ForEach-Object { $_.GetAttribute('testName') } | Sort-Object)
