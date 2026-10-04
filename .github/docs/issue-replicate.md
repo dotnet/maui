@@ -243,6 +243,10 @@ Android verification pins a single `ANDROID_AVD_HOME` for AVD creation, emulator
 launch and the test runner, checks that the created AVD exists there, and limits
 its data partition to 2 GiB. Emulator startup is bounded; a failed startup prints
 the last 120 diagnostic lines in the task log without uploading an artifact.
+The Android screen stays awake and unlocked while the HostApp builds, and window
+animations are disabled before UI execution. Native verification prints a bounded,
+sanitized Appium log tail for startup diagnosis; those logs are not assertion
+evidence and are never uploaded as artifacts.
 
 This mode does **not** enable production authorization, OIDC dispatch, credentialed
 GPT generation, the feedback-driven GPT revision, recovery or automatic publication.

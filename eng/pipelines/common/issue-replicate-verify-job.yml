@@ -152,6 +152,14 @@ jobs:
             timeout 600 "$adb" wait-for-device
             for attempt in $(seq 1 120); do
               if [ "$("$adb" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+                for setting in window_animation_scale transition_animation_scale animator_duration_scale; do
+                  timeout 20 "$adb" shell settings put global "$setting" 0.0
+                done
+                timeout 20 "$adb" shell settings put system screen_off_timeout 2147483647
+                timeout 20 "$adb" shell svc power stayon true
+                timeout 20 "$adb" shell input keyevent KEYCODE_WAKEUP
+                timeout 20 "$adb" shell wm dismiss-keyguard
+                timeout 20 "$adb" shell input keyevent KEYCODE_MENU
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
                 exit 0
@@ -178,3 +186,23 @@ jobs:
         continueOnError: true
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
+          APPIUM_LOG_FILE: $(Agent.TempDirectory)/issue-appium.log
+      - pwsh: |
+          $path = "$(Agent.TempDirectory)/issue-appium.log"
+          if (-not (Test-Path -LiteralPath $path)) {
+            Write-Host 'No Appium log was created; native execution may not have started.'
+            exit 0
+          }
+          $file = Get-Item -LiteralPath $path -Force
+          if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+              $file.Length -gt 64MB) {
+            throw 'Appium diagnostics must be a bounded regular log file.'
+          }
+          Write-Host 'Appium diagnostics (last 80 lines; diagnostic context only, not assertion evidence):'
+          Get-Content -LiteralPath $path -Tail 80 | ForEach-Object {
+            $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+            if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
+            Write-Host $line
+          }
+        displayName: 'Show bounded Appium diagnostics without uploading an artifact'
+        condition: always()
