@@ -61,6 +61,9 @@ Unsuccessful actions such as "I couldn't apply p/1", "we were unable to apply
 p/1" and "we failed to remove p/1" cannot authorize either action or supersede
 an older affirmative decision. The final polarity gate uses the shared
 negative-outcome vocabulary for ordinary and canonical dispositions.
+"Neither" and "nor" likewise withhold decisions before canonical acceptance:
+"This is neither duplicate of #N nor expected behavior" approves neither label.
+The positive "not a bug" disposition remains recognized.
 Exact label token boundaries apply to approvals and superseding decisions:
 `Apply partner/syncfusion` does not also approve `partner`.
 All label decisions and both actions share non-question and affirmative-polarity
@@ -254,6 +257,9 @@ Postposed rejection, denial, cancellation, withdrawal, revocation or "ruled out"
 bound directly to an exact label or its special disposition also cannot
 authorize an action. "The request to apply p/1 was rejected" is not an approval;
 "Duplicate of #N was ruled out" is not an affirmative duplicate disposition.
+Directly bound "false", "incorrect", "inaccurate", "untrue" and "wrong"
+assessments use the same rejection gate. "Duplicate of #N is false" and
+"Expected behavior is incorrect" cannot authorize their canonical labels.
 The same directly bound veto covers coordinated review predicates such as "was
 reviewed and rejected" and "was considered and then declined", with bounded
 disposition modifiers. An embedded "apply" verb cannot authorize the rejected

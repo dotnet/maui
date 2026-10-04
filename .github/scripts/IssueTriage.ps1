@@ -568,7 +568,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     }
     $dispositionState = '(?:is|are|was|were|has|have|had|be|been|being|now|later|already|previously|explicitly|formally|ultimately|finally)'
     $reviewState = '(?:reviewed|considered|discussed|evaluated)'
-    $rejected = "(?:$dispositionState\s+){0,6}(?:$reviewState\s+(?:and(?:\s+then)?|then)\s+(?:$dispositionState\s+){0,6}){0,2}(?:rejected|declined|denied|cancell?ed|withdrawn|revoked|ruled\s+out)\b"
+    $rejected = "(?:$dispositionState\s+){0,6}(?:$reviewState\s+(?:and(?:\s+then)?|then)\s+(?:$dispositionState\s+){0,6}){0,2}(?:rejected|declined|denied|cancell?ed|withdrawn|revoked|ruled\s+out|false|incorrect|inaccurate|untrue|wrong)\b"
     if ($Paragraph -match "(?i)(?:$dispositionSubject)\s*(?:[,:\u2013\u2014]|--|\s-(?=\s|$))?\s+$rejected") {
         return [bool]$Superseding
     }
@@ -577,7 +577,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $confirmation = "(?i)(?<prefix>$opening)(?:i|we)\s+can\s+confirm\b"
     $polarityText = [regex]::Replace($withoutLabel, $confirmation, '${prefix}CONFIRMATION')
     $negativeOutcome = Get-NegativeOutcomePattern
-    if ($polarityText -match "(?i)\b(?:$negativeOutcome|no|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
+    if ($polarityText -match "(?i)\b(?:$negativeOutcome|no|neither|nor|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
     if ($allowedReferencePattern) { return $true }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
         $candidate -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and

@@ -148,6 +148,9 @@ substitutes for current original issue/comment evidence.
   bound directly to an exact label or its special disposition cannot authorize
   an action either. "The request to apply p/1 was rejected" is not an approval;
   "Duplicate of #N was ruled out" is not an affirmative duplicate disposition.
+  Directly bound "false", "incorrect", "inaccurate", "untrue" and "wrong"
+  assessments use the same rejection gate. "Duplicate of #N is false" and
+  "Expected behavior is incorrect" cannot authorize their canonical labels.
   Directly bound coordinated review predicates such as "was reviewed and rejected"
   or "was considered and then declined" retain that veto, including bounded
   disposition modifiers. They cannot lend their inner "apply" verb authority.
@@ -202,6 +205,9 @@ substitutes for current original issue/comment evidence.
   p/1" and "we failed to remove p/1" authorize neither action. Use the shared
   negative-outcome guard before accepting ordinary or canonical dispositions;
   these failed attempts cannot supersede an older affirmative decision.
+  "Neither" and "nor" also withhold decisions before canonical acceptance:
+  "This is neither duplicate of #N nor expected behavior" approves neither
+  label. The positive "not a bug" disposition remains recognized.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a
