@@ -11,6 +11,7 @@ param(
     [string]$SampleDirectory = '',
     [string]$CandidateDirectory = '',
     [string]$RecordingPrefix = 'REPRO_VIDEO_',
+    [byte[]]$VideoBytes,
     [switch]$NativeCanary,
     [string]$OutputPath = ''
 )
@@ -220,7 +221,10 @@ function Get-RecordingSection {
         Assert-IssueReplicateRecording -Recording $result.recording
         $recordingText = ''
         if ($result.recording.status -eq 'available') {
-            $recordingBytes = Import-IssueReplicateRecording -Recording $result.recording -Prefix $RecordingPrefix
+            $recordingBytes = if ($null -ne $VideoBytes) { $VideoBytes } else {
+                Import-IssueReplicateRecording -Recording $result.recording -Prefix $RecordingPrefix
+            }
+            Export-IssueReplicateRecording -Bytes $recordingBytes -Recording $result.recording -Provider None | Out-Null
             $recordingText = "Bounded native UI recording from attempt $($result.attempt) (at most 30 seconds, no audio). " +
                 "This is visual context, not independent proof of the original issue or evidence authenticity.`n`n" +
                 "Video SHA-256: ``$($result.recording.sha256)``.`n`n"

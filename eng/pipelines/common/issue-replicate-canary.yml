@@ -150,6 +150,11 @@ stages:
                     throw 'The passing first attempt did not skip native confirmation and forward its result.'
                   }
                   Write-Host "CANARY_RESULT: ${{ case.scenario }} | $($result.status) | attempt=$($result.attempt)"
+                  . "$(Pipeline.Workspace)/IssueTools/IssueReplicate.CanaryData.ps1"
+                  Export-IssueReplicateCanaryPublicationData `
+                    -Directories @{ Input = $input; Sample = $sample; Candidate = $candidate; Verified = $verified } `
+                    -BuildId ([int]"$(Build.BuildId)") -PipelineSha "$(Build.SourceVersion)" `
+                    -Recording $result.recording | ForEach-Object { Write-Host $_ }
                 displayName: 'Inspect real routing and render comment preview without publishing'
                 env:
                   FIRST_STATUS: $(firstStatus)

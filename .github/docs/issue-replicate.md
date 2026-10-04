@@ -273,6 +273,18 @@ authorized local publisher importing the selected bounded outputs; it is labeled
 group to this branch-selectable canary to bypass the unresolved production resource
 checks. Actual canary observations still require review and are not tamper-proof
 evidence.
+After successful strict validation, the canary Report log also exposes a bounded
+`CANARY_PUBLICATION_` data packet. Azure suppresses ordinary output-variable
+logging, so this explicit normal-log packet is needed for the external publisher.
+`IssueReplicate.CanaryData.ps1` reuses the existing text and media transports,
+binds import to the selected build/infrastructure SHA, rejects missing/duplicate
+or oversized fields, and preserves the exact patch and recording bytes.
+It transfers data only, never executable files; no artifact upload is introduced.
+Pass the import's `RecordingBytes` directly to `IssueReplicate.Post.ps1 -VideoBytes`
+in the trusted publisher process. This avoids putting the full recording back in
+the local environment, where macOS has a much smaller aggregate process-argument
+limit than hosted Linux. The supplied bytes must still match the result's size
+and SHA-256 before preview or upload.
 
 Hosted Ubuntu sample and verification jobs reclaim named unused preinstalled
 .NET, Swift, Haskell, Go, Boost and CodeQL directories after installing the exact

@@ -276,6 +276,21 @@ with socket.socket() as server:
     }
 
     Describe 'Video comment publication' {
+        It 'accepts hash-bound video bytes in memory without inflating the local CLI environment' {
+            $fixture = New-RecordingFixture -Length 524288
+            $parameters = New-RecordingPostFixture $fixture.Recording
+            $preview = Join-Path $TestDrive 'in-memory-video.md'
+            function gh { throw 'A preview must not call GitHub.' }
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters -NativeCanary `
+                -VideoBytes $fixture.Bytes -OutputPath $preview
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes("$preview.recording.mp4")) |
+            Should -BeExactly ([Convert]::ToBase64String($fixture.Bytes))
+            [Environment]::GetEnvironmentVariable('REPRO_VIDEO_0') | Should -BeNullOrEmpty
+            $fixture.Bytes[20] = $fixture.Bytes[20] -bxor 1
+            { & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters `
+                    -VideoBytes $fixture.Bytes -OutputPath $preview } | Should -Throw '*completed result*'
+        }
+
         It 'renders an honest preview and preserves exact video bytes without calling GitHub' {
             $fixture = New-RecordingFixture
             Set-RecordingFixtureEnvironment $fixture
