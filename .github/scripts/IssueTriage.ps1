@@ -484,7 +484,9 @@ function Test-ConditionalEvidence([string]$Paragraph, [switch]$Decision,
 
 function Test-TentativeEvidence([string]$Paragraph) {
     $candidate = [regex]::Replace($Paragraph, '(?i)\bas\s+expected\b', '')
-    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibl(?:e|y)|probabl(?:e|y)|likely|potential(?:ly)?|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|look(?:s|ed)?\s+like|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|unsure|uncertain(?:ty)?|tentative(?:ly)?)\b'
+    $negatedCertainty = "(?:not|(?:is|are|was|were)n['\u2019]t)\s+(?:(?:at all|quite|really|fully|entirely|completely|very|absolutely)\s+){0,2}(?:sure|certain)"
+    return $candidate -match '(?i)\b(?:should|could|may|might|would|will|maybe|perhaps|possibl(?:e|y)|probabl(?:e|y)|likely|potential(?:ly)?|apparently|suspect(?:ed|s)?|assum(?:e|ed|ing)|expect(?:ed)?|seems?|appears?|look(?:s|ed)?\s+like|suggest(?:s|ed)?|think|thinks|thought|believe(?:d|s)?|unsure|uncertain(?:ty)?|tentative(?:ly)?)\b' -or
+        $candidate -match "(?i)\b$negatedCertainty\b"
 }
 
 function Get-NegativeOutcomePattern {

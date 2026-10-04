@@ -56,8 +56,12 @@ substitutes for current original issue/comment evidence.
   outcomes and cannot support confirmation. The shared tentative-evidence gate
   also rejects "I think I reproduced this issue" and "apparently reproduced";
   the same gate applies to confirmation-based removal transitions.
-  Explicit uncertainty such as "I am unsure" also withholds confirmation and
-  maintainer approvals; an affirmative-looking fragment cannot hide it.
+  Explicit uncertainty such as "I am unsure", "I am not sure" or "I am not
+  certain" also withholds confirmation and maintainer approvals, including
+  negative copula contractions and bounded certainty modifiers.
+  "I am not sure I reproduced this issue" is not an observed confirmation.
+  An affirmative-looking fragment cannot hide the enclosing uncertainty;
+  keep the existing paragraph-level gate.
   Governing denials such as "I cannot say I reproduced this issue" or
   "There is no evidence that this behavior worked in MAUI X and fails in MAUI Y"
   are not affirmative outcomes. Inspect the enclosing claim, not just a

@@ -112,8 +112,11 @@ Tentative validation such as "should be reproducible on Android" is not an
 observed reproduction and cannot support confirmation labels. Confirmation uses
 the shared tentative-evidence gate, including "I think I reproduced this issue"
 and "apparently reproduced", for additions and confirmation-based removals.
-Explicit "unsure" wording also withholds confirmation and maintainer approvals;
-quoting an affirmative-looking fragment cannot hide the enclosing uncertainty.
+Explicit "unsure", "not sure" and "not certain" wording also withholds
+confirmation and maintainer approvals, including negative copula contractions
+and bounded certainty modifiers. "I am not sure I reproduced this issue"
+is not an observed confirmation. Quoting an affirmative-looking fragment cannot
+hide the enclosing uncertainty; the existing paragraph-level gate is unchanged.
 The shared enclosing-claim denial guard rejects "I cannot say I reproduced this
 issue" and "There is no evidence that this behavior worked in MAUI X and fails in
 MAUI Y". These are neither reproduction nor demonstrated regression boundaries.
