@@ -98,7 +98,7 @@ stages:
         condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
         variables:
           - group: issue-replicate-copilot
-          - name: REPRO_INPUT
+          - name: reproInput
             value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
           - name: reproSample
             value: $[ dependencies.Sample.outputs['sample.payload'] ]
@@ -222,7 +222,7 @@ stages:
         variables:
           - group: issue-replicate-read
           - group: issue-replicate-comment
-          - name: reproInput
+          - name: REPRO_INPUT
             value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
           - name: REPRO_VERIFIED1
             value: $[ dependencies.Verify1.outputs['verify.payload'] ]
