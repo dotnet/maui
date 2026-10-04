@@ -176,7 +176,7 @@ jobs:
             exit 1
           fi
           # shellcheck disable=SC2016
-          body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is queueing a public reproduction build.\n' "$COMMENT")
+          body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is preparing the reproduction attempt.\n>\n> **Reproducible:** Not assessed. **Test catches the reported issue:** Not verified; execution is pending.\n>\n> **Reproduction confidence:** **0%% (unassessed evidence score, not evidence that the issue is invalid).**\n' "$COMMENT")
           ack_id="$EXISTING_ACK_ID"
           if [ -n "$ack_id" ]; then
             gh api "repos/${REPO}/issues/comments/${ack_id}" --method PATCH -f body="$body" --silent
@@ -282,7 +282,7 @@ jobs:
           fi
           echo "run_id=${run_id}" >> "$GITHUB_OUTPUT"
 
-      - name: Acknowledge and post build link
+      - name: Acknowledge pending reproduction
         if: steps.queue.outcome == 'success'
         shell: bash
         env:
@@ -297,7 +297,8 @@ jobs:
             printf '<!-- issue-replicate-start:%s:%s -->\n' "$COMMENT" "$RUN_ID"
             # shellcheck disable=SC2016
             printf '> [!NOTE]\n> `/issue replicate` started on **%s** (%s).\n>\n' "$PLATFORM" "$TARGET_REF"
-            printf '> [Public reproduction build %s](https://dev.azure.com/dnceng-public/public/_build/results?buildId=%s) is running. The result will be posted here.\n' "$RUN_ID" "$RUN_ID"
+            printf '> **Reproducible:** Not assessed yet. **Test catches the reported issue:** Not verified; execution is pending.\n>\n'
+            printf '> **Reproduction confidence:** **0%% (unassessed evidence score, not evidence that the issue is invalid).** The result will be posted here.\n'
           } > "$body"
           gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH -F body=@"$body" --silent
           gh api "repos/${REPO}/issues/comments/${COMMENT}/reactions" --method POST -f content=rocket --silent
@@ -312,4 +313,8 @@ jobs:
           gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH \
             -f body="<!-- issue-replicate-start:${COMMENT}:pending -->
           > [!WARNING]
-          > \`/issue replicate\` could not confirm the public Azure queue outcome. Check the [trigger run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}). Recovery can reconcile the expired reservation against Azure before retrying; do not assume a build was not queued." --silent
+          > \`/issue replicate\` could not confirm the queue outcome; do not assume an attempt was not started.
+          >
+          > **Reproducible:** Not determined. **Test catches the reported issue:** Not verified.
+          >
+          > **Reproduction confidence:** **0% (unassessed evidence score, not evidence that the issue is invalid).** Recovery can reconcile the expired reservation before retrying." --silent

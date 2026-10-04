@@ -602,6 +602,9 @@ Describe 'Drafts when author builds are blocked' {
         $body | Should -Match 'Generated test executed \| False'
         $body | Should -Match 'Matching assertion failures verified twice \| False'
         $body | Should -Match 'net10.0-ios27.0'
+        $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
+        $body | Should -Match '0% \(evidence score, not a statistical probability\)'
+        $body | Should -Not -Match 'dev\.azure\.com|/actions/runs/|Inspect the run log'
         $body | Should -Not -Match 'verified failing \*test candidate\*|No verified failing test patch|System.Object\[\]'
     }
 
@@ -649,6 +652,9 @@ Describe 'Drafts when author builds are blocked' {
         $body = Get-Content -Raw $preview
         $body | Should -Match 'ran and passed'
         $body | Should -Match 'The test was executed'
+        $body | Should -Match 'Generated test catches the reported issue:\*\* No on this revision'
+        $body | Should -Match '0% \(evidence score, not a statistical probability\)'
+        $body | Should -Not -Match 'dev\.azure\.com|/actions/runs/'
         $body | Should -Not -Match 'not been compiled or executed|verified failing \*test candidate\*'
     }
 
@@ -1548,6 +1554,66 @@ Describe 'Forwarded verification feedback' {
 }
 
 Describe 'Bounded issue result publication' {
+    It 'leads with an evidence-based verdict and observed error for <Status> (assertion=<Observed>)' -TestCases @(
+        @{ Status = 'candidate-failed'; Observed = $true; Executed = $true; Score = 75; Verdict = 'Not confirmed for the reported issue' },
+        @{ Status = 'not-reproduced-on-tested-revision'; Observed = $false; Executed = $true; Score = 0; Verdict = 'No on this revision' },
+        @{ Status = 'inconclusive'; Observed = $true; Executed = $true; Score = 25; Verdict = 'Not verified' },
+        @{ Status = 'inconclusive'; Observed = $false; Executed = $false; Score = 0; Verdict = 'Not verified' },
+        @{ Status = 'unsupported'; Observed = $false; Executed = $false; Score = 0; Verdict = 'Not verified' }
+    ) {
+        param($Status, $Observed, $Executed, $Score, $Verdict)
+        $inputDir = Join-Path $TestDrive "verdict-input-$Status-$Observed"
+        $resultsDir = Join-Path $TestDrive "verdict-result-$Status-$Observed"
+        New-Item -ItemType Directory -Path $inputDir, $resultsDir | Out-Null
+        @{
+            issueNumber = 12345; commentId = 4925414214; platform = 'android'
+            targetSha = 'a' * 40; sampleSha256 = 'b' * 64; sourceType = 'attachment'
+        } | ConvertTo-Json | Set-Content (Join-Path $inputDir 'manifest.json')
+        $kind = if ($Status -eq 'unsupported') { 'unsupported' } else { 'unit' }
+        $patchHash = ''
+        if ($Status -eq 'candidate-failed') {
+            $patch = "diff --git a/src/Core/tests/UnitTests/Issues/Issue12345.cs b/src/Core/tests/UnitTests/Issues/Issue12345.cs`n"
+            [IO.File]::WriteAllText((Join-Path $resultsDir 'test.patch'), $patch)
+            $patchHash = (Get-FileHash (Join-Path $resultsDir 'test.patch')).Hash.ToLowerInvariant()
+        }
+        @{
+            schemaVersion = 1; issueNumber = 12345; commentId = 4925414214; platform = 'android'
+            targetSha = 'a' * 40; sampleSha256 = 'b' * 64; sampleBuilt = $true
+            status = $Status; testExecuted = $Executed; assertionFailed = ($Status -eq 'candidate-failed')
+            observedAssertion = $Observed; testKind = $kind; candidateSha256 = 'c' * 64; patchSha256 = $patchHash
+        } | ConvertTo-Json | Set-Content (Join-Path $resultsDir 'result.json')
+        [IO.File]::WriteAllText((Join-Path $resultsDir 'feedback.txt'),
+            "Error Message:`n  Expected: `"Current: 2`"`n  But was:  `"Current: 0`"`n  Stack Trace: irrelevant")
+        $preview = Join-Path $TestDrive "verdict-comment-$Status-$Observed.md"
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -GitHubRunId 987654321 -InputDirectory $inputDir -ResultsDirectory $resultsDir -OutputPath $preview
+        $body = Get-Content -Raw $preview
+        $body.IndexOf('**Reproducible:**') | Should -BeLessThan $body.IndexOf('<details>')
+        $body | Should -Match ([regex]::Escape("Generated test catches the reported issue:** $Verdict"))
+        $body | Should -Match ([regex]::Escape("$Score% (evidence score, not a statistical probability)"))
+        $body | Should -Not -Match '100%|dev\.azure\.com|/actions/runs/|Public run and execution logs'
+        if ($Observed) {
+            $body | Should -Match 'Expected: "Current: 2"'
+            $body | Should -Match 'But was:  "Current: 0"'
+            $body | Should -Not -Match 'Stack Trace: irrelevant'
+        }
+        else {
+            $body | Should -Not -Match 'Observed assertion error'
+        }
+    }
+
+    It 'reports missing evidence as unassessed rather than a rejected issue' {
+        $preview = Join-Path $TestDrive 'missing-evidence.md'
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+            -BuildId 456789 -InputDirectory (Join-Path $TestDrive 'no-input') `
+            -ResultsDirectory (Join-Path $TestDrive 'no-result') -OutputPath $preview
+        $body = Get-Content -Raw $preview
+        $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
+        $body | Should -Match '0% \(evidence score, not a statistical probability\)'
+        $body | Should -Match 'not evidence that the issue is invalid'
+        $body | Should -Not -Match 'dev\.azure\.com|/actions/runs/'
+    }
+
     It 'reports the actual failed sample target and diagnostic without inventing test execution' {
         $inputDir = Join-Path $TestDrive 'failed-sample-input'
         $sampleDir = Join-Path $TestDrive 'failed-sample-result'

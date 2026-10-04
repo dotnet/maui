@@ -313,7 +313,6 @@ stages:
                   Write-Warning 'The owned run report already records the incomplete publication; no duplicate notice will be posted.'
                   throw
                 }
-                $url = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$(Build.BuildId)"
                 $message = @(
                   "<!-- issue-replicate-result:$(Build.BuildId) -->",
                   '## Issue Reproduction Analysis',
@@ -321,11 +320,17 @@ stages:
                   '> [!WARNING]',
                   '> `/issue replicate` was inconclusive: the public build could not publish a validated result. This is not evidence against the issue.',
                   '',
+                  '**Reproducible:** Not determined; validated results are unavailable.',
+                  '',
+                  '**Generated test catches the reported issue:** Not verified.',
+                  '',
+                  '**Confidence that the issue is reproduced:** **0% (unassessed evidence score, not a probability that the issue is invalid).**',
+                  '',
                   '<details>',
                   '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
                   '<br/>',
                   '',
-                  "[Inspect the public build log]($url). No verified test candidate is being published.",
+                  'No verified test candidate is being published. Correct the execution or publication blocker before retrying.',
                   '',
                   '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.',
                   '',

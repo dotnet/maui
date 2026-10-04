@@ -76,6 +76,19 @@ The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
+Every comment leads with **Reproducible**, **Generated test catches the reported
+issue**, and **Confidence that the issue is reproduced**. The percentage is a
+deterministic evidence score, not a calibrated probability that the issue is real:
+**0%** means no failing reproduction evidence (unassessed, blocked, unsupported,
+or a passing candidate), **25%** means an executed but unconfirmed assertion
+failure, and **75%** means two matching independent assertion failures. The score
+never claims certainty: the original author interaction and a bug-specific causal
+control have not been verified. A repeatably failing generated scenario does not
+automatically establish that its test catches the reported issue. Passing and
+blocked cases explicitly state that they do not invalidate the issue. Available
+expected/actual assertion text is included directly; no run or execution-log links
+are posted, including in pending, queue-failure and incomplete-publication notices.
+
 The result is posted **under the originating issue**, with a concise outcome and
 the same expandable-section style as `/review tests`: **Reproduction evidence**,
 **Generated test candidate**, and **Follow-up**. A verified failing candidate's
@@ -150,8 +163,9 @@ validates the same result data and writes the comment without calling GitHub.
 An available recording is saved beside the preview as `.recording.mp4`; previewing
 does not upload the recording or publish anything.
 Authorized fork canaries can use `-GitHubRunId` and `-GitHubRepository` instead
-of `-BuildId` to link their actual GitHub Actions evidence, without pretending
-they ran in Azure. Normal production publication still uses the isolated Azure
+of `-BuildId` to identify their provider in internal reconciliation markers,
+without posting operational run links or pretending they ran in Azure.
+Normal production publication still uses the isolated Azure
 Post job and its separately scoped issue-comment token.
 
 ### Comments-only output
