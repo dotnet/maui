@@ -177,6 +177,8 @@ Describe 'Native recording helpers' {
             @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = 'new session' },
             @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = 'same session' },
             @{ Fault = 'restart failed'; TestStarted = $true; Assertion = $false; Recovery = 'new session' },
+            @{ Fault = 'start failed'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'start failed'; TestStarted = $true; Assertion = $true; Recovery = '' },
             @{ Fault = 'later failure'; TestStarted = $true; Assertion = $false; Recovery = '' },
             @{ Fault = 'extra result'; TestStarted = $true; Assertion = $false; Recovery = '' },
             @{ Fault = 'repeated case'; TestStarted = $true; Assertion = $false; Recovery = '' },
@@ -229,6 +231,7 @@ Describe 'Native recording helpers' {
             Mock Invoke-IssueReplicateRecordingRequest {
                 $global:recordingRetryCalls.Add($Path)
                 if ($Path -like 'session/aaaaaaaa-*') { throw 'The first fixture session was discarded.' }
+                if ($global:recordingRetryFault -eq 'start failed') { throw 'Native recording returned HTTP 500.' }
                 if ($global:recordingRetryFault -eq 'restart failed' -and $Path -like 'session/cccccccc-*') {
                     throw 'The recreated session rejected recording startup.'
                 }
@@ -318,6 +321,7 @@ Describe 'Native recording helpers' {
                 $result = Get-Content -Raw (Join-Path $parameters.ResultsDirectory 'result.json') | ConvertFrom-Json
                 if ($Fault) {
                     $result.status | Should -BeExactly 'inconclusive'
+                    $result.testExecuted | Should -Be ($Fault -in @('start failed', 'restart failed'))
                     $result.assertionFailed | Should -BeFalse
                     $result.recording.status | Should -BeExactly 'failed'
                     $result.recording.diagnostic | Should -Not -BeNullOrEmpty
@@ -432,7 +436,11 @@ Describe 'Native recording helpers' {
     }
 
     Describe 'Bounded HTTP media responses' {
-        It 'sends a real loopback POST without session discovery or authentication' {
+        It 'sends a real loopback POST without session discovery or authentication (<Status>, <MessageLength>)' -ForEach @(
+            @{ Status = 200; MessageLength = 0 },
+            @{ Status = 500; MessageLength = 30 },
+            @{ Status = 500; MessageLength = 12000 }
+        ) {
             $python = Get-Command python3 -CommandType Application -ErrorAction Stop | Select-Object -First 1
             $code = @'
 import json,socket,sys
@@ -446,13 +454,17 @@ with socket.socket() as server:
         size=int(next(line.split(b":",1)[1] for line in header.split(b"\r\n") if line.lower().startswith(b"content-length:")))
         while len(body)<size: body+=client.recv(4096)
         print(json.dumps({"header":header.decode(),"body":json.loads(body)}),flush=True)
-        reply=b'{"value":""}'
-        client.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 12\r\nConnection: close\r\n\r\n"+reply)
+        status=int(sys.argv[1])
+        reply=json.dumps({"value":""} if status==200 else {"value":{"error":"unknown error",
+            "message":"FFmpeg recording failed.\r\n##vso[task.complete result=Succeeded;]"+"x"*int(sys.argv[2])}}).encode()
+        client.sendall(f"HTTP/1.1 {status} Response\r\nContent-Length: {len(reply)}\r\nConnection: close\r\n\r\n".encode()+reply)
 '@
             $start = [Diagnostics.ProcessStartInfo]::new($python.Source)
             $start.UseShellExecute = $false
             $start.RedirectStandardOutput = $true
-            foreach ($argument in @('-I', '-S', '-c', $code)) { $start.ArgumentList.Add($argument) }
+            foreach ($argument in @('-I', '-S', '-c', $code, [string]$Status, [string]$MessageLength)) {
+                $start.ArgumentList.Add($argument)
+            }
             $process = [Diagnostics.Process]::new()
             $process.StartInfo = $start
             $started = $false
@@ -462,9 +474,18 @@ with socket.socket() as server:
                 $portRead = $process.StandardOutput.ReadLineAsync()
                 if (-not $portRead.Wait(5000)) { throw 'The HTTP fixture did not become ready.' }
                 $port = [int]$portRead.Result
-                Invoke-IssueReplicateRecordingRequest -Method POST `
-                    -Path 'session/id/appium/start_recording_screen' -Body @{ options = @{ timeLimit = 30 } } `
-                    -ServerUri "http://127.0.0.1:$port/wd/hub/" | Should -BeExactly ''
+                $invoke = {
+                    Invoke-IssueReplicateRecordingRequest -Method POST `
+                        -Path 'session/id/appium/start_recording_screen' -Body @{ options = @{ timeLimit = 30 } } `
+                        -ServerUri "http://127.0.0.1:$port/wd/hub/"
+                }
+                if ($Status -eq 200) {
+                    & $invoke | Should -BeExactly ''
+                } else {
+                    $failure = { & $invoke } | Should -Throw -ExpectedMessage '*HTTP 500*FFmpeg recording failed*' -PassThru
+                    $failure.Exception.Message.Length | Should -BeLessOrEqual 1000
+                    $failure.Exception.Message | Should -Not -Match '##vso|\r|\n'
+                }
                 if (-not $process.WaitForExit(5000)) { throw 'The HTTP fixture did not complete.' }
                 $process.ExitCode | Should -Be 0
                 $request = $process.StandardOutput.ReadToEnd() | ConvertFrom-Json

@@ -175,6 +175,9 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                 $summary = 'Reproduction was inconclusive (missing assertion evidence or a test/build/environment error); the issue has not been ruled out.'
                 $reproducibility = 'Not determined; execution or confirmation was incomplete.'
                 $testCoverage = 'Not verified; no matching pair of assertion failures.'
+                if ($result.testExecuted -eq $true -and $result.recording -and $result.recording.status -eq 'failed') {
+                    $summary = 'The named generated test body executed, but its native recording failed. Verification and independent confirmation are incomplete; the issue has not been ruled out.'
+                }
                 if ($result.testExecuted -eq $true -and $result.observedAssertion -eq $true) {
                     $reproducibility = 'Not confirmed; an assertion failed, but matching independent confirmation is missing.'
                     $confidence = 25

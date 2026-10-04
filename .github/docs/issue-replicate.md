@@ -242,6 +242,15 @@ timeout, or incomplete output capture; none is a candidate assertion. It does no
 change the pinned framework, Appium package versions, or launch capabilities.
 Successful prebuilding alone is not evidence that WebDriverAgent starts or that
 the test body executes.
+Native iOS UI jobs also require FFmpeg with the `libx264` encoder before running
+the candidate. A missing binary is installed on that disposable hosted agent;
+installation, version and encoder checks fail explicitly. Recorder HTTP failures
+retain the bounded Appium error message rather than only its status code. Error
+bodies are limited to 16 KiB and published diagnostics to 1,000 characters.
+A fresh, matching named TRX body and Start/Stop pair establish test execution
+independently of video availability. If recording fails, the result honestly
+reports that the body executed but remains inconclusive: no assertion routing,
+verified patch, video evidence or successful strict canary packet is exported.
 Appium context retains the last 80 non-system-log rows in at most 128 KiB from
 a fixed 64 MiB tail scan with a hard reader deadline. Omitted context is labeled;
 these diagnostics are not assertion evidence and do not create artifacts.

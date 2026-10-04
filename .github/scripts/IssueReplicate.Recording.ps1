@@ -2,10 +2,15 @@ function Read-IssueReplicateHttpResponse {
     param(
         [Parameter(Mandatory)][Net.Http.HttpResponseMessage]$Response,
         [Parameter(Mandatory)][ValidateRange(1, 1048576)][int]$MaxBytes,
-        [Parameter(Mandatory)][Threading.CancellationToken]$CancellationToken
+        [Parameter(Mandatory)][Threading.CancellationToken]$CancellationToken,
+        [switch]$AppiumErrorResponse
     )
 
-    $Response.EnsureSuccessStatusCode() | Out-Null
+    if (-not $AppiumErrorResponse -or $Response.IsSuccessStatusCode) {
+        $Response.EnsureSuccessStatusCode() | Out-Null
+    } else {
+        $MaxBytes = [Math]::Min($MaxBytes, 16384)
+    }
     if ($Response.Content.Headers.ContentLength -gt $MaxBytes) { throw 'The HTTP response exceeds its bound.' }
     $stream = $Response.Content.ReadAsStreamAsync($CancellationToken).GetAwaiter().GetResult()
     try {
@@ -17,7 +22,19 @@ function Read-IssueReplicateHttpResponse {
             $count += $read
         }
         if ($count -gt $MaxBytes) { throw 'The HTTP response exceeds its bound.' }
-        return [Text.UTF8Encoding]::new($false, $true).GetString($bytes, 0, $count)
+        $text = [Text.UTF8Encoding]::new($false, $true).GetString($bytes, 0, $count)
+        if (-not $Response.IsSuccessStatusCode) {
+            $errorResponse = $text | ConvertFrom-Json -Depth 8
+            $status = [int]$Response.StatusCode
+            if ($errorResponse.value.message -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($errorResponse.value.message)) {
+                throw "Native Appium recording failed (HTTP $status) without an error message."
+            }
+            $message = $errorResponse.value.message -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
+            $message = $message.Substring(0, [Math]::Min(900, $message.Length))
+            throw "Native Appium recording failed (HTTP $status): $message"
+        }
+        return $text
     } finally { $stream.Dispose() }
 }
 
@@ -53,7 +70,7 @@ function Invoke-IssueReplicateRecordingRequest {
         $response = $client.SendAsync($request, [Net.Http.HttpCompletionOption]::ResponseHeadersRead,
             $deadline.Token).GetAwaiter().GetResult()
         $result = Read-IssueReplicateHttpResponse -Response $response -MaxBytes $MaxBytes `
-            -CancellationToken $deadline.Token |
+            -CancellationToken $deadline.Token -AppiumErrorResponse |
         ConvertFrom-Json -Depth 8
         if ('value' -cnotin @($result.PSObject.Properties.Name)) {
             throw 'Appium did not return a recording response envelope.'

@@ -295,7 +295,7 @@ try {
             ($recordingStarts -gt 0 -or $verdict.Status -ne 'Inconclusive') -and
             ($recordingStarts -ne 1 -or $recordingStops -ne 1 -or
              $recordingStartMethod -cne $recordingStopMethod -or
-             $result.recording.status -ne 'available' -or $verdict.Status -eq 'Inconclusive')) {
+             $verdict.Status -eq 'Inconclusive')) {
             $diagnostic = if ($verdict.Diagnostic) { $verdict.Diagnostic } elseif ($result.recording.status -eq 'failed') {
                 $result.recording.diagnostic
             } else {
@@ -308,8 +308,20 @@ try {
             break
         }
         if ($verdict.Status -eq 'Inconclusive') { break }
-        if ($RecordVideo -and $candidate.kind -eq 'ui') { $recordingValidated = $true }
         $result.testExecuted = $true
+        if ($RecordVideo -and $candidate.kind -eq 'ui') {
+            if ($result.recording.status -ne 'available') {
+                $diagnostic = if ($result.recording.status -eq 'failed') { $result.recording.diagnostic } else {
+                    'The named UI test body executed, but its native recording did not complete.'
+                }
+                $result.recording = @{ status = 'failed'; diagnostic = $diagnostic }
+                $recordingBytes = [byte[]]@()
+                $testLines.Add("Native recording failed: $diagnostic")
+                Write-Warning $diagnostic
+                break
+            }
+            $recordingValidated = $true
+        }
         if ($verdict.Status -eq 'Passed') {
             if ($attempt -eq 1) { $result.status = 'not-reproduced-on-tested-revision' }
             break

@@ -117,6 +117,26 @@ jobs:
         displayName: 'Provision Appium only for UI candidates'
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
+      - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+            $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+              ConvertFrom-Json -Depth 6
+            if ($candidate.kind -ne 'ui') { exit 0 }
+            if (-not (Get-Command ffmpeg -CommandType Application -ErrorAction SilentlyContinue)) {
+              & brew install ffmpeg
+              if ($LASTEXITCODE -ne 0) { throw 'Could not install FFmpeg for native iOS recording.' }
+            }
+            $ffmpeg = Get-Command ffmpeg -CommandType Application -ErrorAction Stop | Select-Object -First 1
+            $version = @(& $ffmpeg.Source -hide_banner -version)
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg could not report its version.' }
+            $version | Select-Object -First 1 | ForEach-Object { Write-Host $_ }
+            $encoders = @(& $ffmpeg.Source -hide_banner -encoders 2>&1)
+            if ($LASTEXITCODE -ne 0 -or -not ($encoders -match '\blibx264\b')) {
+              throw 'Native iOS recording requires the FFmpeg libx264 encoder.'
+            }
+          displayName: 'Require FFmpeg with libx264 for native iOS video'
+          timeoutInMinutes: 10
       - ${{ if eq(parameters.platform, 'android') }}:
         - bash: |
             set -euo pipefail
