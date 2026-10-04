@@ -187,21 +187,49 @@ jobs:
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
       - pwsh: |
-          $path = "$(Pipeline.Workspace)/maui/CustomAgentLogsTmp/UITests/appium.log"
-          if (-not (Test-Path -LiteralPath $path)) {
-            Write-Host 'No Appium log was created; native execution may not have started.'
+          $directory = "$(Pipeline.Workspace)/maui/CustomAgentLogsTmp/UITests"
+          if (-not (Test-Path -LiteralPath $directory)) {
+            Write-Host 'No native diagnostic directory was created; execution may not have started.'
             exit 0
           }
-          $file = Get-Item -LiteralPath $path -Force
-          if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint -or
-              $file.Length -gt 64MB) {
-            throw 'Appium diagnostics must be a bounded regular log file.'
+          $root = Get-Item -LiteralPath $directory -Force
+          if (-not $root.PSIsContainer -or $root.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Native diagnostics must be in a regular directory.'
           }
-          Write-Host 'Appium diagnostics (last 80 lines; diagnostic context only, not assertion evidence):'
-          Get-Content -LiteralPath $path -Tail 80 | ForEach-Object {
-            $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
-            if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
-            Write-Host $line
+          $path = Join-Path $directory 'appium.log'
+          if (Test-Path -LiteralPath $path) {
+            $file = Get-Item -LiteralPath $path -Force
+            if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                $file.Length -gt 64MB) {
+              throw 'Appium diagnostics must be a bounded regular log file.'
+            }
+            Write-Host 'Appium diagnostics (last 80 lines; context only, not assertion evidence):'
+            Get-Content -LiteralPath $path -Tail 80 | ForEach-Object {
+              $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+              if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
+              Write-Host $line
+            }
+          } else {
+            Write-Host 'No Appium log was created.'
           }
-        displayName: 'Show bounded Appium diagnostics without uploading an artifact'
+          $page = Get-ChildItem -LiteralPath $directory -File -Filter '*-PageSource-*.txt' |
+            Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if ($page) {
+            if ($page.Attributes -band [IO.FileAttributes]::ReparsePoint -or $page.Length -gt 1MB) {
+              throw 'UI hierarchy diagnostics must be a bounded regular text file.'
+            }
+            $text = (Get-Content -LiteralPath $page.FullName -Raw -Encoding utf8) -replace "`r", ''
+            $text = $text -replace '##vso\[[^]]*\]', ''
+            Write-Host 'Latest UI hierarchy (at most 16000 characters; context only, not assertion evidence):'
+            if ($text.Length -gt 16000) {
+              $marker = "`n[UI hierarchy diagnostic truncated]`n"
+              $text = $text.Substring(0, 8000) + $marker +
+                $text.Substring($text.Length - (8000 - $marker.Length))
+            }
+            Write-Host $text
+          } else {
+            Write-Host 'No UI hierarchy diagnostic was captured.'
+          }
+        displayName: 'Show bounded native diagnostics without uploading an artifact'
         condition: always()
+        continueOnError: true

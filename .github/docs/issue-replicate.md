@@ -252,8 +252,12 @@ its data partition to 2 GiB. Emulator startup is bounded; a failed startup print
 the last 120 diagnostic lines in the task log without uploading an artifact.
 The Android screen stays awake and unlocked while the HostApp builds, and window
 animations are disabled before UI execution. Native verification prints a bounded,
-sanitized Appium log tail for startup diagnosis; those logs are not assertion
-evidence and are never uploaded as artifacts.
+sanitized Appium log tail and the latest existing UI hierarchy text for startup
+diagnosis, using the pinned runner's actual log directory. The hierarchy's start
+and end are limited to 16,000 characters including the truncation marker.
+Unsafe or oversized diagnostics fail their optional task visibly without
+invalidating a completed verification record. These
+diagnostics are not assertion evidence and are never uploaded as artifacts.
 
 This mode does **not** enable production authorization, OIDC dispatch, credentialed
 GPT generation, the feedback-driven GPT revision, recovery or automatic publication.
