@@ -1,4 +1,7 @@
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,10 +26,21 @@ public class Issue37323 : _IssuesUITest
 		var initialVerticalInset = initialContentBounds.Y - scrollViewBounds.Y;
 		App.Tap("ApplyPadding");
 		App.WaitForTextToBePresentInElement("Status", "Padding: 40");
-		var updatedScrollViewBounds = App.WaitForElement("TestScrollView").GetRect();
-		var updatedContentBounds = App.WaitForElement("ScrollContent").GetRect();
-		var updatedHorizontalInset = updatedContentBounds.X - updatedScrollViewBounds.X;
-		var updatedVerticalInset = updatedContentBounds.Y - updatedScrollViewBounds.Y;
+		var layoutWait = Stopwatch.StartNew();
+		var updatedHorizontalInset = initialHorizontalInset;
+		var updatedVerticalInset = initialVerticalInset;
+		do
+		{
+			var updatedScrollViewBounds = App.WaitForElement("TestScrollView").GetRect();
+			var updatedContentBounds = App.WaitForElement("ScrollContent").GetRect();
+			updatedHorizontalInset = updatedContentBounds.X - updatedScrollViewBounds.X;
+			updatedVerticalInset = updatedContentBounds.Y - updatedScrollViewBounds.Y;
+			if ((updatedHorizontalInset > initialHorizontalInset + 10 &&
+				updatedVerticalInset > initialVerticalInset + 10) ||
+				layoutWait.Elapsed >= TimeSpan.FromSeconds(5))
+				break;
+			Task.Delay(TimeSpan.FromMilliseconds(200)).Wait();
+		} while (true);
 		Assert.Multiple(() =>
 		{
 			Assert.That(updatedHorizontalInset, Is.GreaterThan(initialHorizontalInset + 10),

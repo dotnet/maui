@@ -284,8 +284,10 @@ Canaries replay reviewed historical public snapshots and previously generated
 UI candidates stored in `.github/issue-replicate-canary`. Their framework commit,
 author archive hash and issue association remain explicit; this is not fresh
 intake or generation. The files are platform-scoped before execution, not rewritten
-by the verifier. They share the production sample job, native verifier, conditional
-fresh-agent confirmation, bounded transport and Linux forwarder. Microsoft-hosted
+by the verifier. The ScrollView candidate polls both rendered padding insets for up
+to five seconds after the status changes; the synchronous status text alone is
+not a layout-completion signal. They share the production sample job, native
+verifier, conditional fresh-agent confirmation, bounded transport and Linux forwarder. Microsoft-hosted
 agents avoid assuming shared pools are disposable. A missing matching SDK/Xcode,
 an unexecuted candidate or unmatched confirmation fails the canary explicitly.
 The report job requires an available, hash-checked native clip and renders the
