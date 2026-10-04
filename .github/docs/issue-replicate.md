@@ -184,7 +184,10 @@ Appium or boot a device. It rejects missing routing state or missing required
 confirmation rather than accepting the first observed assertion as confirmed.
 This routing applies to both the initial and revised candidate. An inconclusive
 result must retain that feedback for the one allowed GPT revision; missing,
-empty or invalid feedback fails explicitly.
+empty or invalid feedback fails explicitly. Captured native output can contain
+blank lines without preventing the completed record from being exported.
+Feedback retains fixture setup/teardown diagnostics, which remain inconclusive
+rather than being classified as test-body assertions.
 Every assertion identity requires a matching non-constructor candidate stack
 frame and the fully qualified test method recorded in its TRX definition
 (including async state-machine frames). NUnit fixture display arguments such

@@ -36,6 +36,23 @@ Describe '/issue replicate command' {
     }
 }
 
+Describe 'Verification feedback text' {
+    It 'preserves <Kind> diagnostics among blank native output lines' -TestCases @(
+        @{ Kind = 'compilation'; Diagnostic = 'source.cs: error CS0001: Candidate did not compile.' }
+        @{ Kind = 'setup'; Diagnostic = 'OneTimeSetUp: Unable to launch WebDriverAgent.' }
+    ) {
+        param($Kind, $Diagnostic)
+
+        $lines = @('', 'Native runner output', '', $Diagnostic, '', 'Additional context', '')
+        $path = Join-Path $TestDrive "$Kind.log"
+        $lines | Set-Content -LiteralPath $path -Encoding utf8
+        $fromFile = Get-IssueReplicateFeedback -Path $path
+        $fromMemory = Get-IssueReplicateFeedback -Lines $lines
+        $fromMemory | Should -BeExactly $Diagnostic
+        $fromMemory | Should -BeExactly $fromFile
+    }
+}
+
 Describe 'Author repro source selection' {
     It 'chooses the latest author-provided GitHub ZIP over earlier text' {
         $zip = 'https://github.com/user-attachments/assets/12345678-1234-1234-1234-123456789abc'

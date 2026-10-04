@@ -379,7 +379,7 @@ function Get-IssueReplicateFeedback {
     [CmdletBinding(DefaultParameterSetName = 'File')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'File')][string]$Path,
-        [Parameter(Mandatory, ParameterSetName = 'Memory')][AllowEmptyCollection()][string[]]$Lines
+        [Parameter(Mandatory, ParameterSetName = 'Memory')][AllowEmptyCollection()][AllowEmptyString()][string[]]$Lines
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'File') {
@@ -391,7 +391,7 @@ function Get-IssueReplicateFeedback {
         $Lines = @(Get-Content -LiteralPath $file.FullName)
     }
     $diagnostics = @($Lines | Where-Object {
-        $_ -match '(?i):\s*error\s+[A-Z]+[0-9]+:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:)|AssertionException'
+        $_ -match '(?i):\s*error\s+[A-Z]+[0-9]+:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
     } | Select-Object -Last 25)
     $content = if ($diagnostics.Count -gt 0) { $diagnostics -join "`n" }
         else { ($Lines | Select-Object -Last 25) -join "`n" }
