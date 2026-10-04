@@ -576,7 +576,8 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     # A clause-opening first-person confirmation is not a tentative label action.
     $confirmation = "(?i)(?<prefix>$opening)(?:i|we)\s+can\s+confirm\b"
     $polarityText = [regex]::Replace($withoutLabel, $confirmation, '${prefix}CONFIRMATION')
-    if ($polarityText -match "(?i)\b(not|no|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|do not|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
+    $negativeOutcome = Get-NegativeOutcomePattern
+    if ($polarityText -match "(?i)\b(?:$negativeOutcome|no|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
     if ($allowedReferencePattern) { return $true }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
         $candidate -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
@@ -728,7 +729,7 @@ function Test-PositiveValidation([string]$Paragraph, [string]$ReferenceContext =
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b|$validationReferencePattern).){0,50}"
     $confirmationModifiers = '(?:(?:successfully|reliably|consistently|actually|fully|independently|personally|locally)\s+){0,4}'
-    $environment = '(?:Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI|\.NET|devices?|simulators?|emulators?|samples?|repro(?:ducers?)?|VS(?:\s*Code)?|Visual\s+Studio|\d+\.\d+)\b'
+    $environment = '(?:Android|iOS|Windows|Mac\s*Catalyst|MacOS|Tizen|Linux|MAUI|\.NET|devices?|simulators?|emulators?|samples?|repro(?:ducers?)?|VS(?:\s*Code)?|Visual\s+Studio|\d+\.\d+)\b'
     $environmentPrefix = '(?:on|under|in|with|using|against)\s+(?:(?:the|an?|both|all|my|our|same|physical|virtual|attached|provided|minimal|custom)\s+){0,3}'
     $confirmation = "\b(?:confirmed|verified)\b\s+$confirmationModifiers$target(?=\s*(?:$|[.!?;]|$environmentPrefix$environment))"
     if ($candidate -match "(?i)$target$clause\b$reproduction\b|\b$reproduction\b$clause$target|$confirmation|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause$target") {
@@ -979,7 +980,7 @@ function Get-Confirmation($Evidence, [switch]$RequireRegression, [string]$FirstB
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         $source.isValidator -and $source.kind -ceq 'comment' -and
         $prose.Contains($reference.quote, [StringComparison]::Ordinal) -and
-        $prose -match '(?i)\b(Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
+        $prose -match '(?i)\b(Android|iOS|Windows|Mac\s*Catalyst|MacOS|Tizen|Linux|MAUI)\b|\.NET\s*\d+|\b\d+\.\d+' -and
         $paragraphs.Count -eq 1 -and
         (Test-ConfirmationParagraph $paragraphs[0] (Get-MarkdownText $source.body) `
             -RequireRegression:$RequireRegression -FirstBadVersion $FirstBadVersion) -and

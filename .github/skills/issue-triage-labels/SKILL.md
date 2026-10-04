@@ -93,7 +93,9 @@ substitutes for current original issue/comment evidence.
   gate applies to simulator transitions and contrary positive evidence.
   Generic "confirmed"/"verified" wording must directly govern the reported target,
   optionally with bounded observation modifiers, and end there or continue with a
-  recognized test environment. Checking the version in this issue or verifying
+  recognized test environment. "MacCatalyst" and "Mac Catalyst" name the same
+  environment in both the target-bound observation and authorized-source gates.
+  Checking the version in this issue or verifying
   this issue's title/state is metadata validation, not reproduction. Do not borrow
   a reported target across the verified property's description. Ambiguous generic
   continuations are withheld; explicit target-bound reproduction remains eligible.
@@ -196,6 +198,10 @@ substitutes for current original issue/comment evidence.
   wording such as "We can apply p/1", negation, uncertainty, conditions and
   questions remain withheld; reported/embedded confirmation wording does not
   receive this exception.
+  Unsuccessful actions such as "I couldn't apply p/1", "we were unable to apply
+  p/1" and "we failed to remove p/1" authorize neither action. Use the shared
+  negative-outcome guard before accepting ordinary or canonical dispositions;
+  these failed attempts cannot supersede an older affirmative decision.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a

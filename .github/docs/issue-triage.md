@@ -57,6 +57,10 @@ not a tentative label action. An exact-label directive or an authorized
 canonical duplicate/not-a-bug disposition is still required. "We can apply p/1",
 negation, uncertainty, conditions and questions remain withheld; embedded or
 reported confirmation wording does not receive this exception.
+Unsuccessful actions such as "I couldn't apply p/1", "we were unable to apply
+p/1" and "we failed to remove p/1" cannot authorize either action or supersede
+an older affirmative decision. The final polarity gate uses the shared
+negative-outcome vocabulary for ordinary and canonical dispositions.
 Exact label token boundaries apply to approvals and superseding decisions:
 `Apply partner/syncfusion` does not also approve `partner`.
 All label decisions and both actions share non-question and affirmative-polarity
@@ -147,7 +151,9 @@ contingent outcomes from factual reproduction scenarios such as "I reproduced
 the issue when the keyboard was visible".
 Generic "confirmed"/"verified" wording directly governs the reported target,
 optionally with bounded observation modifiers, and ends there or continues with
-a recognized test environment. Verifying the version in this issue or this
+a recognized test environment. "MacCatalyst" and "Mac Catalyst" name the same
+environment at both the target-bound observation and authorized-source gates.
+Verifying the version in this issue or this
 issue's title/state is metadata checking, not observed reproduction. The generic
 matcher cannot borrow its target across the verified property's description.
 Ambiguous generic continuations are withheld; the explicit target-bound
