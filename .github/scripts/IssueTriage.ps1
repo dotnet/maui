@@ -602,7 +602,8 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     if ($prohibited) { return $true }
     $verbs = if ($Action -eq 'add') { $addVerbs } else { $removeVerbs }
     $argument = '(?:(?:the|this)\s+)?(?:(?:label|priority)\s+)?(?:to\s+)?'
-    $directive = "(?:(?:please\s+)?(?:$verbs)|(?:i|we)\s+(?:(?:have|had)\s+)?(?:$verbs))\b\s+$argument$labelText"
+    $directiveEnd = '(?:\s+(?:now|immediately))?(?=\s*(?:$|[.!;]))'
+    $directive = "(?:(?:please\s+)?(?:$verbs)|(?:i|we)\s+(?:(?:have|had)\s+)?(?:$verbs))\b\s+$argument$labelText$directiveEnd"
     $predicateEnd = '(?=\s*(?:$|[.!;:\r\n]))'
     $labelState = "$labelText\s+(?:$dispositionState\s+){0,6}(?:$verbs)\b$predicateEnd"
     $claim = "(?:$directive|$labelState)"

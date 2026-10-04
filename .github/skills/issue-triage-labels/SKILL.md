@@ -182,6 +182,12 @@ substitutes for current original issue/comment evidence.
   authorize neither the change nor a later reversal. Withhold mixed/ambiguous
   paragraphs and require a separate unconditional decision; do not infer that
   later evidence activated a prior conditional commitment.
+  Direct action statements must finish their declarative clause after the exact
+  label, optionally with "now" or "immediately". "Apply p/1 later" and
+  "Remove p/1 tomorrow" are not current decisions. Do not discard a comma/colon
+  continuation or other unrecognized tail; put a reason in a separate sentence.
+  Apply the same completeness rule to first-person actions and supersession.
+  Existing directly stated label decisions and directed-veto rules are unchanged.
   Directed prohibitions remain conservative vetoes on older authority: "Do not
   apply p/1 until validation is complete" cannot revive an earlier approval.
   Require an imperative sentence/clause opening, optionally with "please".

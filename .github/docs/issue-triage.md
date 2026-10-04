@@ -59,6 +59,13 @@ an "Expected behavior:" field heading is not a disposition. Phrase
 proximity is insufficient: "The request to add p/1 remains open" is not an
 instruction, and "The reported result differs from the expected behavior" is
 not a not-a-bug disposition. Unrecognized wording remains withheld.
+Direct action statements must finish their declarative clause after the exact
+label, optionally with "now" or "immediately". "Apply p/1 later" and
+"Remove p/1 tomorrow" are not current decisions; a comma/colon continuation or
+other unrecognized tail cannot be discarded to turn them into one. Put a reason
+in a separate sentence rather than relying on an incomplete action prefix.
+The same completeness rule applies to first-person actions and supersession;
+existing directly stated label decisions and directed-veto rules are unchanged.
 Clause-opening "I can confirm" or "We can confirm" is affirmative only when it
 directly governs a recognized exact-label action or canonical disposition.
 "I can confirm: Apply p/1." is eligible; "I can confirm the previous comment
