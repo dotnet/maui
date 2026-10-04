@@ -76,6 +76,50 @@ The agent narrows that history to affected code and verifies candidate diffs,
 platform applicability and shipped ancestry. API failures, missing versions,
 divergent branches and truncated history remain explicit evidence gaps.
 
+Optional context extensions provide a cheap boundary preflight, a diagnostic
+inventory and a trusted bounded source/history snapshot. Ambiguous headings or
+two unmapped reported versions select `boundary-only`: the agent reads existing
+corrections/diagnostics and reports the missing exact installed versions without
+loading the full investigation skill or doing source/history searches. The
+trusted mode is exposed as a fixed workflow output, not inferred from issue
+instructions. The same native detection, report validation/publication and
+receipt/minimization guards still run. One exact boundary permits static leads,
+not regression attribution. Generic Preview/RC workload-set metadata is supplemental and does
+not verify the application's installed MAUI packages.
+Recoverable Preview/RC shorthand remains eligible for `metadata-resolution`
+(one 30-release list page and two matching published releases), rather than being
+discarded because its shorthand has no exact tag. Precise version values already
+provided in prose/tables are inventoried as supplemental, unverified leads;
+they never silently replace ambiguous form fields.
+
+The trusted collector reads only `dotnet/maui`, at exact resolved release SHAs,
+using symptom-selected **fixed paths**, not agent-supplied endpoints. Its budget
+is six paths, 64 KiB per source file, ten commits per path and six commit diffs
+with 8,000-character patches. Every source/history record includes revision/path
+and API provenance; capped lists, renames not followed, missing/oversized files
+and unavailable patches remain explicit. This deliberately limited read-only
+snapshot restores useful leads without changing the MCP DIFC
+`min-integrity: approved` policy, visibility rules or shell allowlist. Original
+hosted failures included integrity-filtered history and separate shell permission
+denials, not a demonstrated content-exclusion denial. No denied resource is
+retried through another surface; organization content exclusions still apply.
+
+Inline logs/code and author corrections are analyzed before requesting more
+evidence. Public GitHub attachment links are inventoried with their originating
+comment; an inventory alone is **not analysis**. For canonical
+`github.com/user-attachments/assets/<UUID>` images, the trusted collector can
+capture at most two PNGs (early evidence and latest correction), with no
+credentials/cookies, a 20-second transfer deadline, 512 KiB per image, 4 million
+pixels and at most two HTTPS redirects to GitHub's dedicated user-asset CDN.
+Byte signature, content type and dimensions are checked; signed redirect URLs
+are never retained. Image hashes/provenance and capture gaps accompany the
+read-only snapshot. The agent uses its native image viewer and distinguishes
+actually read screenshots from unavailable/inventoried evidence. Archives,
+repros and dumps are never downloaded/executed. If the viewer or image capture
+is unavailable, request only the missing discriminating text, not the existing
+attachment again. A first-chance debugger exception screenshot is not proof of
+an uncaught crash, runtime reproduction or a new introduction.
+
 The report distinguishes **Confirmed introduction**, **Likely introduction**,
 **Candidate**, and **Insufficient evidence**. Confirmation requires verifiable,
 linked same-environment parent/candidate runtime evidence; source inspection or a
@@ -99,7 +143,15 @@ completion job cannot open an untargeted repository issue.
 
 The comment follows `/review tests` styling: author/issue header, Scope/Range
 badges, closed **Regression Analysis** and **Follow-up** accordions, and linked
-candidate evidence. Rerun the command after supplying missing version or
+candidate evidence. **Verdict** and **Evidence** (including degraded coverage)
+remain visible above the accordions. A green run is not proof of healthy tooling:
+the pinned v0.86.2 detector compares raw result strings before normalizing JSON,
+so identical flags with omitted `reasons` versus `reasons: []` can cause a parser
+warning. The declarative detector prompt requests one complete final object and
+no delegation; it is prevention, not a parser fix or guarantee. Native verified
+tooling warnings remain visible and authoritative; a parser failure is not itself
+a detected threat. Detection and publication guards are unchanged.
+Rerun the command after supplying missing version or
 reproduction details; older reports are collapsed automatically.
 
 ## `/review`: full PR review
