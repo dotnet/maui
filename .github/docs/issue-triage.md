@@ -52,11 +52,25 @@ Read-only registered validators may supply reproduction evidence but **cannot**
 authorize priority, roadmap, backport or ownership commitments. Business decisions
 must explicitly name the exact label and an affirmative action in unquoted
 maintainer prose, for example `Apply p/1` or `Remove backport/approved`.
-Clause-opening first-person "I can confirm" or "We can confirm" is affirmative,
-not a tentative label action. An exact-label directive or an authorized
-canonical duplicate/not-a-bug disposition is still required. "We can apply p/1",
+Decisions require a clause-opening directive/first-person action, a directly
+stated label decision, or a current-target affirmative canonical predicate.
+A bare declarative canonical disposition at a clause opening is also eligible;
+an "Expected behavior:" field heading is not a disposition. Phrase
+proximity is insufficient: "The request to add p/1 remains open" is not an
+instruction, and "The reported result differs from the expected behavior" is
+not a not-a-bug disposition. Unrecognized wording remains withheld.
+Clause-opening "I can confirm" or "We can confirm" is affirmative only when it
+directly governs a recognized exact-label action or canonical disposition.
+"I can confirm: Apply p/1." is eligible; "I can confirm the previous comment
+says 'Apply p/1'." is not. Other modal wording such as "We can apply p/1",
 negation, uncertainty, conditions and questions remain withheld; embedded or
 reported confirmation wording does not receive this exception.
+Decision-only filtering excludes natural quoted commands/dispositions and
+unmatched quotation tails from actions and vetoes. Quoting only the exact label
+preserves a directive outside those quotes. Original paragraph-wide question,
+conditional and uncertainty checks remain, including raw qualifiers in a bound
+veto. The same quote filtering feeds canonical-target derivation and both
+supersession scans; factual validation rules are unchanged.
 Unsuccessful actions such as "I couldn't apply p/1", "we were unable to apply
 p/1" and "we failed to remove p/1" cannot authorize either action or supersede
 an older affirmative decision. The final polarity gate uses the shared
@@ -187,12 +201,17 @@ dispositions.
 Technical-assessment questions are rejected. No-repro is withheld when the cited
 comment reports resource access, build/download, authentication/network failure or
 timeout that prevented testing. A historical setup failure is not itself no-repro.
+An emulator/simulator or test runner/host that could not start, boot or connect
+is also a setup blocker, not an observed product outcome. Product app startup
+wording alone does not acquire this environment-specific blocker.
 Noun-first failures such as "Setup failed" and contextual failures such as
 "The workaround failed during setup" are blocked setup evidence, not observed
 product or workaround outcomes. Operation/failure binding is checked in both
 directions; unrelated successful setup wording does not establish a blocker.
 It can be discharged only by an explicit resolution followed by a completed
 target-specific test and unsuccessful outcome in the same supporting paragraph.
+That resolution can name the repaired environment; a negated repair does not
+discharge the blocker.
 Every blocker must qualify; unresolved blockers elsewhere still withhold no-repro.
 Not-regression cannot use a negated same-behavior comparison.
 Factual "could not" and "couldn't" reproduction/replication failures share the

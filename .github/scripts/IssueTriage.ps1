@@ -518,6 +518,20 @@ function Get-CanonicalDuplicateSources([string]$Paragraph) {
         ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
 }
 
+function Get-UnquotedDecisionText([string]$Paragraph, [string]$Label) {
+    $quoted = @'
+(?<![\p{L}\p{N}])(?:"(?<body>(?:\\.|[^"\\])*)(?<close>"|\z)|'(?<body>(?:\\.|(?<=[\p{L}\p{N}])'(?=[\p{L}\p{N}])|[^'\\])*)(?<close>'|\z)|\u201C(?<body>(?:\\.|[^\u201D\\])*)(?<close>\u201D|\z)|\u2018(?<body>(?:\\.|(?<=[\p{L}\p{N}])\u2019(?=[\p{L}\p{N}])|[^\u2019\\])*)(?<close>\u2019|\z))
+'@
+    return [regex]::Replace($Paragraph, $quoted.Trim(), [Text.RegularExpressions.MatchEvaluator]{
+        param([Text.RegularExpressions.Match]$match)
+        if ($match.Groups['close'].Length -gt 0 -and $match.Groups['body'].Value.Trim() -ieq $Label) {
+            # Quoting only a label does not quote an outside directive.
+            return ' ' + $match.Groups['body'].Value + ' '
+        }
+        return [regex]::Replace($match.Value, '[^\r\n]', ' ')
+    }, [Text.RegularExpressions.RegexOptions]::Singleline, [TimeSpan]::FromSeconds(2))
+}
+
 function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence,
     [string]$ReferenceContext = '', [string]$CanonicalSource = '', [switch]$Superseding) {
     $labelText = Get-LabelPattern $Label
@@ -527,7 +541,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $gap = "(?:(?!$clauseBoundary).){0,80}"
     $listMarker = '(?:[-*+]|\d{1,9}[.)])[ \t]+'
     $opening = "(?:(?:^|[.!;]\s+)\s*(?:$listMarker)?|(?:^|\r?\n)[ \t]*$listMarker)"
-    $candidate = $Paragraph
+    $candidate = Get-UnquotedDecisionText $Paragraph $Label
     $tentativeText = $Paragraph
     $prohibited = $false
     if ($Superseding) {
@@ -538,15 +552,19 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         $prohibited = $prohibitions.Count -gt 0
         if ($prohibited) {
             # Qualifiers in another clause do not weaken a categorical veto.
-            $tentativeText = @($prohibitions | ForEach-Object { $_.Groups['clause'].Value }) -join ' '
+            $tentativeText = @($prohibitions | ForEach-Object {
+                $clause = $_.Groups['clause']
+                $Paragraph.Substring($clause.Index, $clause.Length)
+            }) -join ' '
         }
         $candidate = [regex]::Replace($candidate, $prohibition, '${prefix}' + $Action)
     }
-    $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $withoutLabel = [regex]::Replace($Paragraph, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     $tentativeText = [regex]::Replace($tentativeText, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $notBugDisposition = '(?i)\b(?:expected behavior|not a bug)\b'
     if (($Action -eq 'add' -or $Superseding) -and $Label -eq 's/not-a-bug') {
-        $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
-        $tentativeText = [regex]::Replace($tentativeText, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
+        $withoutLabel = [regex]::Replace($withoutLabel, $notBugDisposition, 'DISPOSITION')
+        $tentativeText = [regex]::Replace($tentativeText, $notBugDisposition, 'DISPOSITION')
     }
     if ((Test-Interrogative $withoutLabel) -or
         (Test-TentativeEvidence $tentativeText) -or
@@ -567,7 +585,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $approval = '(?:approv(?:e|ed|ing|al)|accept(?:ed|ance)?|reject(?:ed|ion)?|declin(?:e|ed|ing)|den(?:y|ied|ial))'
     $nestedAction = '(?:add(?:ed|ing|itions?)?|appl(?:y|ied|ying|ication)|set(?:ting)?|assign(?:ed|ing|ments?)?|remov(?:e|ed|ing|al)|drop(?:ped|ping)?|clear(?:ed|ing)?|withdraw(?:n|ing|al)?|revok(?:e|ed|ing)|revocation)'
     # Compounded or rejected dispositions veto stale support without authorizing either action.
-    if ($Paragraph -match "(?i)\b$approval\b$gap\b$nestedAction\b$gap$labelText") {
+    if ($candidate -match "(?i)\b$approval\b$gap\b$nestedAction\b$gap$labelText") {
         return [bool]$Superseding
     }
     $dispositionSubject = $labelText
@@ -578,21 +596,45 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $dispositionState = '(?:is|are|was|were|has|have|had|be|been|being|now|later|already|previously|explicitly|formally|ultimately|finally)'
     $reviewState = '(?:reviewed|considered|discussed|evaluated)'
     $rejected = "(?:$dispositionState\s+){0,6}(?:$reviewState\s+(?:and(?:\s+then)?|then)\s+(?:$dispositionState\s+){0,6}){0,2}(?:rejected|declined|denied|cancell?ed|withdrawn|revoked|ruled\s+out|false|incorrect|inaccurate|untrue|wrong)\b"
-    if ($Paragraph -match "(?i)(?:$dispositionSubject)\s*(?:[,:\u2013\u2014]|--|\s-(?=\s|$))?\s+$rejected") {
+    if ($candidate -match "(?i)(?:$dispositionSubject)\s*(?:[,:\u2013\u2014]|--|\s-(?=\s|$))?\s+$rejected") {
         return [bool]$Superseding
     }
     if ($prohibited) { return $true }
-    # A clause-opening first-person confirmation is not a tentative label action.
-    $confirmation = "(?i)(?<prefix>$opening)(?:i|we)\s+can\s+confirm\b"
-    $polarityText = [regex]::Replace($withoutLabel, $confirmation, '${prefix}CONFIRMATION')
+    $verbs = if ($Action -eq 'add') { $addVerbs } else { $removeVerbs }
+    $argument = '(?:(?:the|this)\s+)?(?:(?:label|priority)\s+)?(?:to\s+)?'
+    $directive = "(?:(?:please\s+)?(?:$verbs)|(?:i|we)\s+(?:(?:have|had)\s+)?(?:$verbs))\b\s+$argument$labelText"
+    $predicateEnd = '(?=\s*(?:$|[.!;:\r\n]))'
+    $labelState = "$labelText\s+(?:$dispositionState\s+){0,6}(?:$verbs)\b$predicateEnd"
+    $claim = "(?:$directive|$labelState)"
+    $canonicalDisposition = ''
+    if ($Action -eq 'add' -and $allowedReferencePattern) {
+        $canonicalDisposition = "(?:$allowedReferencePattern)>?"
+    } elseif ($Action -eq 'add' -and $Label -eq 's/not-a-bug') {
+        $canonicalDisposition = '\b(?:expected behavior|by design|working as intended|not a bug)\b'
+    }
+    if ($canonicalDisposition) {
+        $decisionContext = if ($ReferenceContext) { $ReferenceContext } else { $Paragraph }
+        if ($allowedReferencePattern) {
+            $decisionContext = [regex]::Replace($decisionContext, $allowedReferencePattern, 'CANONICAL')
+        }
+        $target = Get-ValidationOutcomePattern $decisionContext -IncludeCurrent
+        if (-not (Test-ForeignIssueReference $decisionContext) -and -not (Test-ForeignOutcome $decisionContext)) {
+            $target = "(?:$target|this|it)"
+        }
+        $boundDisposition = "(?<![\w])$target\s+(?:is|are|was|were|has\s+been)\s+(?:an?\s+|the\s+)?$canonicalDisposition"
+        $canonicalEnd = '(?=\s*(?:$|[.!;]))'
+        $claim = "(?:$claim|$boundDisposition|(?:$canonicalDisposition)$canonicalEnd)"
+    }
+    # A first-person confirmation must directly govern a recognized decision.
+    $confirmation = "(?i)(?<prefix>$opening)(?:i|we)\s+(?:can\s+)?confirm(?:\s*:\s*|\s+(?:that\s+)?)(?=$claim)"
+    $decisionText = [regex]::Replace($candidate, $confirmation, '${prefix}')
+    $polarityText = [regex]::Replace($decisionText, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if (($Action -eq 'add' -or $Superseding) -and $Label -eq 's/not-a-bug') {
+        $polarityText = [regex]::Replace($polarityText, $notBugDisposition, 'DISPOSITION')
+    }
     $negativeOutcome = Get-NegativeOutcomePattern
     if ($polarityText -match "(?i)\b(?:$negativeOutcome|no|neither|nor|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
-    if ($allowedReferencePattern -and $Action -eq 'add') { return $true }
-    if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
-        $candidate -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
-        $candidate -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
-    $verbs = if ($Action -eq 'add') { $addVerbs } else { $removeVerbs }
-    return $candidate -match "(?i)\b(?:$verbs)\b$gap$labelText"
+    return $decisionText -match "(?i)$opening$claim"
 }
 
 function Test-Decision($Evidence, [string]$Label, [string]$Action) {
@@ -608,7 +650,7 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             -not (Test-DecisionParagraph $paragraphs[0] $Label $Action $Evidence -ReferenceContext $referenceContext)) { continue }
         $canonicalSource = ''
         if ($Label -eq 's/duplicate 2️⃣' -and $Action -eq 'add') {
-            $canonicalSource = @(Get-CanonicalDuplicateSources $paragraphs[0])[0]
+            $canonicalSource = @(Get-CanonicalDuplicateSources (Get-UnquotedDecisionText $paragraphs[0] $Label))[0]
         }
         $oppositeAction = if ($Action -eq 'add') { 'remove' } else { 'add' }
         $oppositeEvent = if ($Action -eq 'add') { 'unlabeled' } else { 'labeled' }
@@ -678,12 +720,14 @@ function Test-ForeignIssueReference([string]$Text) {
     }).Count -gt 0
 }
 
-function Get-ValidationOutcomePattern([string]$ReferenceContext) {
+function Get-ValidationOutcomePattern([string]$ReferenceContext, [switch]$IncludeCurrent) {
+    $current = '(?:(?:the|this)\s+)?current\s+(?:behavior|issue|bug|regression|problem|report)'
     if (-not (Test-ForeignIssueReference $ReferenceContext) -and
         -not (Test-ForeignOutcome $ReferenceContext)) {
-        return '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
+        $reported = '(?:(?:the|this|that|reported|same|actual|original)\s+){1,4}(?:behavior|issue|bug|regression|problem)'
+        if ($IncludeCurrent) { return "(?:$reported|$current)" }
+        return $reported
     }
-    $current = '(?:(?:the|this)\s+)?current\s+(?:behavior|issue|bug|regression|problem|report)'
     $reference = "(?<![\w/])(?:#|dotnet/maui#|https://github\.com/dotnet/maui/(?:issues|pull)/)${IssueNumber}(?![\w/-]|\.(?=\w))"
     return "(?:$current|$reference)"
 }
@@ -1048,17 +1092,23 @@ function Test-BlockedValidation([string]$Prose, [string]$CompletedReproduction =
     $operationFailure = '(?:fail(?:s|ed|ing|ures?)?|errors?|blocked|broken|unavailable|inaccessible|unsuccessful|timed out|timeout)'
     $state = '(?:(?:is|was|are|were|has|have|had|been|still|already|repeatedly|kept)\s+){0,4}'
     $failureContext = '(?:during|in|at|for|while\s+(?:running|performing|attempting))\s+(?:(?:the|this|that|my|our|a|an)\s+){0,2}'
+    $environment = '(?:emulator|simulator|test[ -](?:runner|host))'
+    $negative = "(?:$(Get-NegativeOutcomePattern)|hadn['\u2019]t|had not)"
+    $environmentOperation = '(?:(?:be|been|being|able to|successfully|actually|fully)\s+){0,3}(?:start(?:ed)?|boot(?:ed)?|launch(?:ed)?|connect(?:ed)?(?:\s+to)?|run)\b'
     $failures = [regex]::Matches($Prose,
         "(?i)\b$resource\b.{0,60}\b$blocked\b|\b$blocked\b.{0,60}\b$resource\b|" +
         "\b$operation\b\s+$state$operationFailure\b|\b$operationFailure\b\s+$failureContext$operation\b|" +
+        "\b$environment\b\s+$state$negative\s+$environmentOperation|" +
+        "\b$negative\s+$environmentOperation\s+(?:(?:the|this|that|our|my|a|an)\s+){0,2}$environment\b|" +
+        "\b$environment\s+(?:startup|boot|launch|connection)\s+$state$operationFailure\b|" +
         "\b(?:timed out|timeout|permission denied|failed to (?:download|clone|build|compile|install)|cannot (?:download|clone|build|compile|install))\b")
     if ($failures.Count -eq 0) { return $false }
     if (-not $CompletedReproduction -or
         -not (Test-CurrentIssueScope $CompletedReproduction $ReferenceContext)) { return $true }
     $start = $Prose.IndexOf($CompletedReproduction, [StringComparison]::Ordinal)
     $gap = '[\s\S]{0,160}?'
-    $object = '(?:it|(?:(?:the|this|that|sample)\s+){0,3}(?:build|setup|problem|failure|link|sample|repro(?:duction)?|access))'
-    if ($CompletedReproduction -match "(?i)\b(?:not|no longer|cannot|can['\u2019]t|didn['\u2019]t|hasn['\u2019]t|haven['\u2019]t)\s+(?:(?:actually|yet|fully|successfully)\s+){0,3}(?:fixed|fixing|resolved|resolving|corrected|correcting|repaired|repairing)\s+$object\b") {
+    $object = "(?:it|(?:(?:the|this|that|sample)\s+){0,3}(?:build|setup|problem|failure|link|sample|repro(?:duction)?|access|$environment))"
+    if ($CompletedReproduction -match "(?i)\b$negative\s+(?:(?:actually|yet|fully|successfully)\s+){0,3}(?:fixed|fixing|resolved|resolving|corrected|correcting|repaired|repairing)\s+$object\b") {
         return $true
     }
     $resolved = "\b(?:after\s+(?:fixing|resolving|correcting|repairing)\s+|(?:(?:I|we)\s+)?(?:fixed|resolved|corrected|repaired)\s+)$object\b"

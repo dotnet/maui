@@ -140,6 +140,13 @@ substitutes for current original issue/comment evidence.
   contributor suitability require an explicit existing maintainer decision.
   Do not convert impact or upvotes into a new release commitment. Evidence must
   explicitly name the exact label and the decision to add/remove it.
+  Recognize a clause-opening directive/first-person action, a directly stated
+  label decision, or a current-target affirmative canonical predicate. A bare
+  declarative canonical disposition at a clause opening is also eligible;
+  an "Expected behavior:" field heading is not a disposition. Phrase proximity
+  is insufficient: "The request to add p/1 remains open" is not an instruction,
+  and "The reported result differs from the expected behavior" is not a
+  not-a-bug disposition. Unrecognized wording remains withheld.
   Compounded wording such as "Approve removing p/1" or "Decline removal of p/1"
   cannot authorize either action. Do not invert the bound action by matching
   only the outer approval verb; withhold these constructions and treat them
@@ -203,11 +210,17 @@ substitutes for current original issue/comment evidence.
   definitive decisions. An opposite decision or event in the same timestamp
   second also supersedes support; do not assume ordering within that second.
   Clause-opening first-person "I can confirm" or "We can confirm" is affirmative
-  wording, not a tentative label action. It still needs an exact-label directive
-  or the authorized canonical duplicate/not-a-bug disposition. Other modal
-  wording such as "We can apply p/1", negation, uncertainty, conditions and
-  questions remain withheld; reported/embedded confirmation wording does not
-  receive this exception.
+  only when it directly governs a recognized exact-label action or canonical
+  disposition. "I can confirm: Apply p/1." is eligible; "I can confirm the
+  previous comment says 'Apply p/1'." is not. Other modal wording such as
+  "We can apply p/1", negation, uncertainty, conditions and questions remain
+  withheld; reported/embedded confirmation wording does not receive the exception.
+  Natural quoted commands/dispositions, including unmatched quotation tails,
+  cannot supply actions or vetoes. Quoting only the exact label preserves a
+  directive outside those quotes. Keep the original paragraph's question,
+  conditional and uncertainty checks, including raw qualifiers in a bound veto.
+  Use the same decision-only quote filtering in the original canonical-target
+  derivation and both supersession scans; factual validation rules are unchanged.
   Unsuccessful actions such as "I couldn't apply p/1", "we were unable to apply
   p/1" and "we failed to remove p/1" authorize neither action. Use the shared
   negative-outcome guard before accepting ordinary or canonical dispositions;
@@ -271,11 +284,16 @@ substitutes for current original issue/comment evidence.
   in the cited comment also veto no-repro; do not hide them by quote selection.
   No-repro cannot be established by an inaccessible sample, failed build/download,
   authentication/network failure or timeout that prevented testing.
+  Failed emulator/simulator or test runner/host startup, boot or connection
+  also blocks no-repro; product app startup wording alone is not this
+  environment-specific blocker.
   Noun-first "Setup failed" and contextual "workaround failed during setup"
   describe setup failures, not product or workaround efficacy. Inspect both
   operation/failure directions without borrowing an unrelated failure word.
   Discharge a historical setup blocker only when the same supporting paragraph
   explicitly resolves it, then records a completed target-specific test and failed outcome.
+  The resolution can name the repaired environment; negated repair wording
+  cannot discharge the blocker.
   Every blocker must qualify; unresolved blockers elsewhere remain disqualifying.
   A negated same-behavior comparison
   cannot support not-regression.
