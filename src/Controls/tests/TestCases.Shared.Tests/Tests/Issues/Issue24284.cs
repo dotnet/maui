@@ -16,8 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void FlyoutHeaderAdaptsToMinimumHeight()
 		{
 			var headerLabel = App.WaitForElement("HeaderLabel").GetRect();
+			var heightReferenceLabel = App.WaitForElement("HeightReferenceLabel").GetRect();
 
-			ClassicAssert.True(Math.Abs(headerLabel.Height - 30) < 0.2);
+			ClassicAssert.Greater(heightReferenceLabel.Height, 0, "The visible 30-DIP reference must have a positive height.");
+			ClassicAssert.True(Math.Abs(headerLabel.Height - heightReferenceLabel.Height) < 0.2,
+				$"Header height: {headerLabel.Height}; 30-DIP reference height: {heightReferenceLabel.Height} (Appium coordinates).");
 		}
 	}
 }
