@@ -86,12 +86,14 @@ stages:
               vmImage: ubuntu-22.04
             timeoutInMinutes: 15
             variables:
-              reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-              reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
-              reproCandidate: $[ dependencies.Generate1.outputs['candidate.payload'] ]
-              reproVerified: $[ dependencies.Verify1.outputs['verify.payload'] ]
+              REPRO_INPUT: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+              REPRO_SAMPLE: $[ dependencies.Sample.outputs['sample.payload'] ]
+              REPRO_CANDIDATE: $[ dependencies.Generate1.outputs['candidate.payload'] ]
+              REPRO_VERIFIED: $[ dependencies.Verify1.outputs['verify.payload'] ]
               firstStatus: $[ dependencies.Verify1First.result ]
               confirmStatus: $[ dependencies.Verify1Confirm.result ]
+              ${{ each index in split('0,1,2,3,4,5,6,7', ',') }}:
+                REPRO_VIDEO_${{ index }}: $[ dependencies.Verify1.outputs['verify.recording${{ index }}'] ]
             steps:
               - checkout: none
               - template: issue-replicate-tools.yml
@@ -121,7 +123,7 @@ stages:
                   & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Post.ps1" `
                     -IssueNumber $manifest.issueNumber -CommentId $manifest.commentId -BuildId "$(Build.BuildId)" `
                     -InputDirectory $input -SampleDirectory $sample -CandidateDirectory $candidateDirectory `
-                    -ResultsDirectory $verified -OutputPath $preview
+                    -ResultsDirectory $verified -NativeCanary -OutputPath $preview
                   if ($LASTEXITCODE -ne 0) { throw 'Could not render the validated canary comment preview.' }
                   Write-Host 'CANARY ONLY: reviewed historical inputs; no GPT generation or issue publication.'
                   Write-Host "Native first job: $env:FIRST_STATUS; confirmation job: $env:CONFIRM_STATUS."
@@ -133,6 +135,10 @@ stages:
                   }
                   $result = Get-Content -LiteralPath "$verified/result.json" -Raw | ConvertFrom-Json
                   if ($result.testExecuted -ne $true) { throw 'The reviewed native UI candidate did not execute.' }
+                  if ($result.recording.status -cne 'available' -or
+                      -not (Test-Path -LiteralPath "$preview.recording.mp4" -PathType Leaf)) {
+                    throw 'The native canary did not preserve its bounded video for publication.'
+                  }
                   if ($result.observedAssertion -eq $true) {
                     if ($env:CONFIRM_STATUS -cnotin @('Succeeded', 'SucceededWithIssues') -or
                         $result.attempt -ne 2 -or $result.status -cne 'candidate-failed' -or
@@ -146,9 +152,5 @@ stages:
                   Write-Host "CANARY_RESULT: ${{ case.scenario }} | $($result.status) | attempt=$($result.attempt)"
                 displayName: 'Inspect real routing and render comment preview without publishing'
                 env:
-                  REPRO_INPUT: $(reproInput)
-                  REPRO_SAMPLE: $(reproSample)
-                  REPRO_CANDIDATE: $(reproCandidate)
-                  REPRO_VERIFIED: $(reproVerified)
                   FIRST_STATUS: $(firstStatus)
                   CONFIRM_STATUS: $(confirmStatus)

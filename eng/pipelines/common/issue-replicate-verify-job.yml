@@ -180,7 +180,7 @@ jobs:
             -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
             -RepoRoot "$(Pipeline.Workspace)/maui" `
             -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" `
-            -Attempt ${{ parameters.attempt }} -Provider Azure @previous
+            -Attempt ${{ parameters.attempt }} -RecordVideo -Provider Azure @previous
           if ($LASTEXITCODE -ne 0) { throw 'Generated test verification did not complete.' }
         displayName: 'Run generated test without credentials'
         name: verify

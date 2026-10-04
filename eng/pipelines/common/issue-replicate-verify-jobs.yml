@@ -41,13 +41,15 @@ jobs:
       vmImage: ubuntu-22.04
     timeoutInMinutes: 15
     variables:
-      reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-      reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
-      reproCandidate: $[ dependencies.${{ parameters.dependsOn }}.outputs['candidate.payload'] ]
-      reproFirst: $[ dependencies.${{ parameters.name }}First.outputs['verify.payload'] ]
+      REPRO_INPUT: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+      REPRO_SAMPLE: $[ dependencies.Sample.outputs['sample.payload'] ]
+      REPRO_CANDIDATE: $[ dependencies.${{ parameters.dependsOn }}.outputs['candidate.payload'] ]
+      REPRO_FIRST: $[ dependencies.${{ parameters.name }}First.outputs['verify.payload'] ]
       observedAssertion: $[ dependencies.${{ parameters.name }}First.outputs['verify.observedAssertion'] ]
-      reproConfirmed: $[ dependencies.${{ parameters.name }}Confirm.outputs['verify.payload'] ]
+      REPRO_CONFIRMED: $[ dependencies.${{ parameters.name }}Confirm.outputs['verify.payload'] ]
       confirmStatus: $[ dependencies.${{ parameters.name }}Confirm.result ]
+      ${{ each index in split('0,1,2,3,4,5,6,7', ',') }}:
+        REPRO_VIDEO_${{ index }}: $[ iif(eq(variables.observedAssertion, 'true'), dependencies.${{ parameters.name }}Confirm.outputs['verify.recording${{ index }}'], dependencies.${{ parameters.name }}First.outputs['verify.recording${{ index }}']) ]
     steps:
       - checkout: none
       - template: issue-replicate-tools.yml
@@ -77,15 +79,11 @@ jobs:
             -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
             -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
             -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" -Attempt $attempt `
-            -PreviousResultPath "$(Pipeline.Workspace)/CompletedAttempt/result.json" -Provider Azure
+            -PreviousResultPath "$(Pipeline.Workspace)/CompletedAttempt/result.json" `
+            -Provider Azure
           if ($LASTEXITCODE -ne 0) { throw 'Completed verification forwarding did not finish.' }
         displayName: 'Forward validated completed evidence without native provisioning'
         name: verify
         env:
-          REPRO_INPUT: $(reproInput)
-          REPRO_SAMPLE: $(reproSample)
-          REPRO_CANDIDATE: $(reproCandidate)
-          REPRO_FIRST: $(reproFirst)
           OBSERVED_ASSERTION: $(observedAssertion)
-          REPRO_CONFIRMED: $(reproConfirmed)
           CONFIRM_STATUS: $(confirmStatus)

@@ -8,12 +8,17 @@ param(
     [Parameter(Mandatory)][string]$OutputDirectory,
     [ValidateRange(1, 2)][int]$Attempt = 1,
     [string]$PreviousResultPath = '',
+    [switch]$RecordVideo,
     [scriptblock]$OnCompleted,
     [switch]$CoreLoaded
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $CoreLoaded) { . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1') }
+if (-not $CoreLoaded) {
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Recording.ps1')
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Diagnostics.ps1')
+}
 $manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
 $sample = Get-Content -Raw -LiteralPath $SampleResultPath | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1 -or $manifest.targetSha -cnotmatch '^[0-9a-f]{40}$' -or
@@ -59,11 +64,17 @@ if ($candidate.kind -eq 'unsupported') {
 Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber $result.issueNumber `
     -Platform $result.platform | Out-Null
 $previous = $null
+$recordingSession = ''
+$recordingBytes = [byte[]]@()
+if ($RecordVideo -and $candidate.kind -eq 'ui') {
+    $result.recording = @{ status = 'not-started'; diagnostic = 'The native fixture did not reach recording startup.' }
+}
 if ($Attempt -eq 2) {
     $previousFile = Get-Item -LiteralPath $PreviousResultPath -ErrorAction Stop
     if ($previousFile.Length -gt 16384 -or $previousFile.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         throw 'The first-attempt result is not a bounded regular file.'
     }
+
     $previous = Get-Content -Raw -LiteralPath $previousFile.FullName | ConvertFrom-Json -Depth 6
     Assert-IssueReplicateResult -Result $previous -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
     if ($previous.targetSha -cne $result.targetSha -or $previous.sampleSha256 -cne $result.sampleSha256 -or
@@ -169,6 +180,40 @@ try {
             & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter 2>&1 |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+                    if ($RecordVideo -and $result.recording.status -eq 'not-started' -and
+                        $line -match '\bFixtureSetup for\b') {
+                        try {
+                            $recordingSession = Start-IssueReplicateRecording -Platform $manifest.platform `
+                                -LogPath (Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/appium.log')
+                            $result.recording.status = 'capturing'
+                            $result.recording.diagnostic = ''
+                            Write-Host 'Native fixture recording started (at most 30 seconds, no audio).'
+                        } catch {
+                            $result.recording.status = 'failed'
+                            $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
+                            if ($result.recording.diagnostic.Length -gt 1000) {
+                                $result.recording.diagnostic = $result.recording.diagnostic.Substring(0, 1000)
+                            }
+                            Write-Warning "Native recording failed: $($result.recording.diagnostic)"
+                        }
+                    }
+                    if ($recordingSession -and $line -match '^>>>>> .+ Stop$') {
+                        try {
+                            $recordingBytes = Stop-IssueReplicateRecording -SessionId $recordingSession
+                            $result.recording = @{
+                                status = 'available'; bytes = $recordingBytes.Length; diagnostic = ''
+                                sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($recordingBytes)).ToLowerInvariant()
+                            }
+                            Write-Host "Native recording captured: $($recordingBytes.Length) bytes."
+                        } catch {
+                            $result.recording.status = 'failed'
+                            $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
+                            if ($result.recording.diagnostic.Length -gt 1000) {
+                                $result.recording.diagnostic = $result.recording.diagnostic.Substring(0, 1000)
+                            }
+                            Write-Warning "Native recording failed: $($result.recording.diagnostic)"
+                        } finally { $recordingSession = '' }
+                    }
                     if ($line -match '^>>> TRX_RESULT_FILE: (.+)$') { $reportedTrx.Add($Matches[1]) }
                     if ($testLines.Count -lt 3000) { $testLines.Add($line) }
                     Write-Host $line
@@ -217,6 +262,14 @@ try {
         }
     } while ($false)
     $testLines | Set-Content -LiteralPath $log -Encoding utf8
+    if ($recordingSession) {
+        $result.recording.status = 'failed'
+        $result.recording.diagnostic = 'The native test did not emit its completion marker before the session ended.'
+        Write-Warning $result.recording.diagnostic
+    }
+    if ($recordingBytes.Length) {
+        [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'recording.mp4'), $recordingBytes)
+    }
     if ($result.status -eq 'candidate-failed') {
         $patchPath = Join-Path $OutputDirectory 'test.patch'
         $patchBytes = [Text.Encoding]::UTF8.GetBytes($patchText)
@@ -227,6 +280,6 @@ try {
     $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
     if ($OnCompleted) {
         $candidatePatch = if ($result.status -eq 'candidate-failed') { $patchText } else { '' }
-        & $OnCompleted $result $candidatePatch (Get-IssueReplicateFeedback -Lines $testLines.ToArray())
+        & $OnCompleted $result $candidatePatch (Get-IssueReplicateFeedback -Lines $testLines.ToArray()) $recordingBytes
     }
 } finally { Pop-Location }

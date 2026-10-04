@@ -7,12 +7,16 @@ param(
     [Parameter(Mandatory)][string]$OutputDirectory,
     [Parameter(Mandatory)][ValidateRange(1, 2)][int]$Attempt,
     [Parameter(Mandatory)][string]$PreviousResultPath,
+    [string]$RecordingPrefix = 'REPRO_VIDEO_',
     [scriptblock]$OnCompleted,
     [switch]$CoreLoaded
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $CoreLoaded) { . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1') }
+if (-not $CoreLoaded) {
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Recording.ps1')
+}
 $utf8 = [Text.UTF8Encoding]::new($false, $true)
 
 function Read-ForwardedBytes {
@@ -43,6 +47,7 @@ if ($candidate.kind -eq 'unsupported') {
         -Platform $manifest.platform | Out-Null
 }
 Assert-IssueReplicateResult -Result $result -IssueNumber $manifest.issueNumber -CommentId $manifest.commentId | Out-Null
+Assert-IssueReplicateResultRecording -Result $result
 $candidateHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($candidateBytes)).ToLowerInvariant()
 if ($result.targetSha -cne $manifest.targetSha -or $result.sampleSha256 -cne $manifest.sampleSha256 -or
     $result.platform -cne $manifest.platform -or $result.testKind -cne $candidate.kind -or
@@ -78,7 +83,15 @@ if ($result.status -eq 'candidate-failed') {
 }
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+$recordingBytes = [byte[]]@()
+if ($result.recording) {
+    Assert-IssueReplicateRecording -Recording $result.recording
+    if ($result.recording.status -eq 'available') {
+        $recordingBytes = Import-IssueReplicateRecording -Recording $result.recording -Prefix $RecordingPrefix
+        [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'recording.mp4'), $recordingBytes)
+    }
+}
 [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'result.json'), $resultBytes)
 if ($feedback) { [IO.File]::WriteAllText((Join-Path $OutputDirectory 'feedback.txt'), $feedback, $utf8) }
 if ($patch) { [IO.File]::WriteAllText((Join-Path $OutputDirectory 'test.patch'), $patch, $utf8) }
-if ($OnCompleted) { & $OnCompleted $result $patch $feedback }
+if ($OnCompleted) { & $OnCompleted $result $patch $feedback $recordingBytes }

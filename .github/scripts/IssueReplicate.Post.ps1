@@ -10,11 +10,14 @@ param(
     [Parameter(Mandatory)][string]$ResultsDirectory,
     [string]$SampleDirectory = '',
     [string]$CandidateDirectory = '',
+    [string]$RecordingPrefix = 'REPRO_VIDEO_',
+    [switch]$NativeCanary,
     [string]$OutputPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+. (Join-Path $PSScriptRoot 'IssueReplicate.Recording.ps1')
 $buildUrl = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "https://github.com/$GitHubRepository/actions/runs/$GitHubRunId"
 } else { "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$BuildId" }
@@ -33,9 +36,15 @@ $sampleDiagnostic = ''
 $runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "> Fork canary evidence from [$GitHubRepository]($buildUrl), published from validated job data; this was not a production Azure pipeline run."
 } else { '' }
+if ($NativeCanary) {
+    $runNote = '> Public Azure native canary: this run replays a reviewed historical test candidate, not live GPT generation or production dispatch.'
+}
 $refresh = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     '> The production `/issue replicate` command requires the deployment described in PR #38807. This canary did not test production authorization, queueing, or automatic publication.'
 } else { '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.' }
+if ($NativeCanary) {
+    $refresh = '> Production `/issue replicate` remains disabled pending the security boundaries described in PR #38807.'
+}
 
 function Read-BoundedJson {
     param([string]$Path, [int]$MaxBytes = 16384)
@@ -103,6 +112,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
         $result = Read-BoundedJson -Path $resultPath
         Assert-IssueReplicateResult -Result $result -IssueNumber $IssueNumber -CommentId $CommentId | Out-Null
+        Assert-IssueReplicateResultRecording -Result $result
         if ($result.targetSha -cne $manifest.targetSha -or $result.platform -cne $manifest.platform -or
             $result.sampleSha256 -cne $manifest.sampleSha256 -or
             ($null -ne $sample -and $sample.buildSucceeded -ne $result.sampleBuilt)) {
@@ -203,6 +213,66 @@ if ($sampleDiagnostic) {
         (Format-PatchBlock -Text $sampleDiagnostic -Language text)
 }
 
+function Get-RecordingSection {
+    $recordingSection = ''
+    $recordingFailure = ''
+    if ($null -ne $result -and $result.recording) {
+        Assert-IssueReplicateRecording -Recording $result.recording
+        $recordingText = ''
+        if ($result.recording.status -eq 'available') {
+            $recordingBytes = Import-IssueReplicateRecording -Recording $result.recording -Prefix $RecordingPrefix
+            $recordingText = "Bounded native UI recording from attempt $($result.attempt) (at most 30 seconds, no audio). " +
+                "This is visual context, not independent proof of the original issue or evidence authenticity.`n`n" +
+                "Video SHA-256: ``$($result.recording.sha256)``.`n`n"
+            if ($OutputPath) {
+                [IO.File]::WriteAllBytes([IO.Path]::GetFullPath("$OutputPath.recording.mp4"), $recordingBytes)
+                $recordingText += 'The recording is available to the publisher. This read-only preview does not upload media or post a comment.'
+            } else {
+                try {
+                    $identity = gh api user --jq .login
+                    if ($LASTEXITCODE -ne 0 -or "$identity" -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
+                        throw 'Could not identify the authenticated media publisher.'
+                    }
+                    $existingJson = gh api --paginate --slurp "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
+                        --jq "[.[][] | select(.user.login == `"$identity`" and (.body | startswith(`"$marker`"))) | {body}]" |
+                        Out-String
+                    if ($LASTEXITCODE -ne 0) {
+                        throw 'Could not reconcile the recording with the existing result comment.'
+                    }
+                    $existing = @($existingJson | ConvertFrom-Json -Depth 5)
+                    if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the recording.' }
+                    $mediaMarker = "<!-- issue-replicate-recording:$($result.recording.sha256) -->"
+                    $videoUrl = ''
+                    if ($existing.Count -eq 1) {
+                        $match = [regex]::Match([string]$existing[0].body,
+                            [regex]::Escape($mediaMarker) + '\s+(https://github\.com/user-attachments/assets/[a-fA-F0-9-]{36})(?:\s|$)')
+                        if ($match.Success) { $videoUrl = $match.Groups[1].Value }
+                    }
+                    if (-not $videoUrl) {
+                        $videoUrl = Publish-IssueReplicateRecording -Bytes $recordingBytes -IssueNumber $IssueNumber
+                    }
+                    $recordingText += "$mediaMarker`n$videoUrl"
+                } catch {
+                    $recordingFailure = $_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+                    if ($recordingFailure.Length -gt 1000) { $recordingFailure = $recordingFailure.Substring(0, 1000) }
+                    $recordingText += "**Video publication failed.** No playable recording is attached." +
+                        (Format-PatchBlock -Text $recordingFailure -Language text)
+                }
+            }
+        } else {
+            $recordingFailure = [string]$result.recording.diagnostic
+            $recordingText = "**Native recording unavailable:** ``$($result.recording.status)``. " +
+                'The test result is reported separately; no video evidence is claimed.' +
+                (Format-PatchBlock -Text $recordingFailure -Language text)
+        }
+        $recordingSection = @(
+            '---', '', '<details>', '<summary><strong>&#x1F3A5; Native recording</strong></summary>',
+            '<br/>', '', $recordingText, '', '</details>', ''
+        ) -join "`n"
+    }
+    return @{ Section = $recordingSection; Failure = $recordingFailure }
+}
+
 function Set-ResultComment {
     param([string]$Marker, [string]$Body)
     if ([Text.Encoding]::UTF8.GetByteCount($Body) -gt 60000) {
@@ -286,6 +356,7 @@ $candidateSection = if ($patchText) {
         '<br/>', '', ($candidate + $inlinePatch), '', '</details>', ''
     ) -join "`n"
 } else { '' }
+$recordingReport = Get-RecordingSection
 $body = @(
     $marker,
     '## Issue Reproduction Analysis',
@@ -310,6 +381,7 @@ $body = @(
     '</details>',
     '',
     $candidateSection,
+    $recordingReport.Section,
     '---',
     '',
     '<details>',
@@ -333,3 +405,6 @@ if ($OutputPath) {
 }
 
 Set-ResultComment -Marker $marker -Body $body
+if ($recordingReport.Failure) {
+    throw "The result comment was posted, but native video is incomplete: $($recordingReport.Failure)"
+}

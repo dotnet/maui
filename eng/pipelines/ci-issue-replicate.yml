@@ -98,7 +98,7 @@ stages:
         condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
         variables:
           - group: issue-replicate-copilot
-          - name: reproInput
+          - name: REPRO_INPUT
             value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
           - name: reproSample
             value: $[ dependencies.Sample.outputs['sample.payload'] ]
@@ -224,16 +224,19 @@ stages:
           - group: issue-replicate-comment
           - name: reproInput
             value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
-          - name: reproVerified1
+          - name: REPRO_VERIFIED1
             value: $[ dependencies.Verify1.outputs['verify.payload'] ]
-          - name: reproVerified2
+          - name: REPRO_VERIFIED2
             value: $[ dependencies.Verify2.outputs['verify.payload'] ]
-          - name: reproSample
+          - name: REPRO_SAMPLE
             value: $[ dependencies.Sample.outputs['sample.payload'] ]
-          - name: reproCandidate1
+          - name: REPRO_CANDIDATE1
             value: $[ dependencies.Generate1.outputs['candidate.payload'] ]
-          - name: reproCandidate2
+          - name: REPRO_CANDIDATE2
             value: $[ dependencies.Generate2.outputs['candidate.payload'] ]
+          - ${{ each index in split('0,1,2,3,4,5,6,7', ',') }}:
+            - name: REPRO_VIDEO_${{ index }}
+              value: $[ iif(ne(variables.REPRO_VERIFIED2, ''), dependencies.Verify2.outputs['verify.recording${{ index }}'], dependencies.Verify1.outputs['verify.recording${{ index }}']) ]
         pool:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 20
@@ -297,8 +300,22 @@ stages:
                   -SampleDirectory "$(Pipeline.Workspace)/SampleOutput" -CandidateDirectory $candidateDirectory
                 if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
               } catch {
+                $identity = gh api user --jq .login
+                if ($LASTEXITCODE -ne 0 -or "$identity" -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
+                  throw 'Could not identify the authenticated fallback publisher.'
+                }
+                $existing = @(gh api --paginate "repos/dotnet/maui/issues/$issue/comments?per_page=100" `
+                  --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"<!-- issue-replicate-result:$(Build.BuildId) -->`"))) | .id")
+                if ($LASTEXITCODE -ne 0 -or $existing.Count -gt 1) {
+                  throw 'Could not reconcile the incomplete result publication.'
+                }
+                if ($existing.Count -eq 1) {
+                  Write-Warning 'The owned run report already records the incomplete publication; no duplicate notice will be posted.'
+                  throw
+                }
                 $url = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$(Build.BuildId)"
                 $message = @(
+                  "<!-- issue-replicate-result:$(Build.BuildId) -->",
                   '## Issue Reproduction Analysis',
                   '',
                   '> [!WARNING]',
@@ -326,9 +343,3 @@ stages:
               COMMENT_ID: ${{ parameters.CommentId }}
               PLATFORM: ${{ parameters.Platform }}
               TARGET_REF: ${{ parameters.TargetRef }}
-              REPRO_INPUT: $(reproInput)
-              REPRO_SAMPLE: $(reproSample)
-              REPRO_CANDIDATE1: $(reproCandidate1)
-              REPRO_CANDIDATE2: $(reproCandidate2)
-              REPRO_VERIFIED1: $(reproVerified1)
-              REPRO_VERIFIED2: $(reproVerified2)

@@ -108,8 +108,21 @@ can be retried without duplicating or presenting incomplete fragments as a compl
 Publication failures also produce an
 expandable follow-up notice, without claiming a verified outcome.
 
+UI verification also records one bounded fixture/test span on the selected native
+attempt: at most 30 seconds, no audio, and at most 512 KiB of MP4 data. The trusted
+controller uses the live Appium session without enabling session discovery.
+The recording is visual context for the generated candidate, not proof of the
+author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
+do not record a UI video. Recorder or upload failures remain explicit in the
+report and fail publication rather than claiming a playable attachment exists.
+The isolated publisher uploads the validated bytes as a GitHub media attachment,
+then includes its player URL in an expandable **Native recording** section.
+Retries reuse the authenticated publisher's matching run/video marker.
+
 For a read-only preview, pass `-OutputPath` to `IssueReplicate.Post.ps1`; this
 validates the same result data and writes the comment without calling GitHub.
+An available recording is saved beside the preview as `.recording.mp4`; previewing
+does not upload the recording or publish anything.
 Authorized fork canaries can use `-GitHubRunId` and `-GitHubRepository` instead
 of `-BuildId` to link their actual GitHub Actions evidence, without pretending
 they ran in Azure. Normal production publication still uses the isolated Azure
@@ -121,6 +134,13 @@ Neither the production pipeline nor fork canaries upload artifacts, even for
 cross-job transfer. Comments are the only published reproduction output; normal
 execution logs remain available on the run page. Local sample archives, SDKs,
 build outputs, TRX files, and patches exist only in disposable job workspaces.
+An inline GitHub video attachment is comment media, not an Actions/Azure pipeline
+artifact. Recording bytes use eight fixed, independently bounded base64 outputs;
+the selected clip's byte count and SHA-256 are checked at forwarding and publication.
+Only the selected native attempt/candidate's clip enters the next job. Payload
+variables are injected once, avoiding duplicate full-size environment aliases.
+The optional GitHub output provider rejects recordings above 256 KiB to leave
+room for the text envelope within GitHub's UTF-16 job-output budget.
 
 Jobs exchange bounded gzip/base64 data through named job outputs. The transport
 accepts only a fixed set of data filenames, checks per-file sizes and SHA-256,
@@ -137,6 +157,7 @@ no later task re-reads executable scripts from the mutable native job workspace.
 Completed result, immutable patch and captured-feedback bytes remain in that
 parent's memory through validation and bounded export; it does not reopen
 sample/result/patch files after child execution.
+Captured recording bytes likewise remain in parent memory until bounded export.
 Both draft and native-verification patches snapshot the original candidate bytes
 before execution through the same isolated Git diff helper. File-based diff capture
 and the empty diff tree preserve CRLF, Unicode and missing final newlines without
@@ -244,9 +265,14 @@ by the verifier. They share the production sample job, native verifier, conditio
 fresh-agent confirmation, bounded transport and Linux forwarder. Microsoft-hosted
 agents avoid assuming shared pools are disposable. A missing matching SDK/Xcode,
 an unexecuted candidate or unmatched confirmation fails the canary explicitly.
-The report job renders the production comment preview into normal execution logs,
-without uploading artifacts or posting issue comments. Actual canary observations
-still require review and are not tamper-proof evidence.
+The report job requires an available, hash-checked native clip and renders the
+production comment preview into normal execution logs without uploading artifacts
+or posting issue comments. Actual publication can be tested separately with an
+authorized local publisher importing the selected bounded outputs; it is labeled
+`-NativeCanary` and is not automatic Azure publication. Never attach a credential
+group to this branch-selectable canary to bypass the unresolved production resource
+checks. Actual canary observations still require review and are not tamper-proof
+evidence.
 
 Hosted Ubuntu sample and verification jobs reclaim named unused preinstalled
 .NET, Swift, Haskell, Go, Boost and CodeQL directories after installing the exact
