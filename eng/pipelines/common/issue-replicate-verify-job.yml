@@ -201,12 +201,30 @@ jobs:
           $path = Join-Path $directory 'appium.log'
           if (Test-Path -LiteralPath $path) {
             $file = Get-Item -LiteralPath $path -Force
-            if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint -or
-                $file.Length -gt 64MB) {
-              throw 'Appium diagnostics must be a bounded regular log file.'
+            if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+              throw 'Appium diagnostics must be a regular log file.'
             }
-            Write-Host 'Appium diagnostics (last 80 lines; context only, not assertion evidence):'
-            Get-Content -LiteralPath $path -Tail 80 | ForEach-Object {
+            $stream = [IO.File]::Open($path, [IO.FileMode]::Open, [IO.FileAccess]::Read,
+              [IO.FileShare]::ReadWrite)
+            try {
+              if (-not $stream.CanSeek) { throw 'Appium diagnostics must support bounded tail reads.' }
+              $length = $stream.Length
+              $start = [Math]::Max(0L, $length - 128KB)
+              [void]$stream.Seek($start, [IO.SeekOrigin]::Begin)
+              $bytes = [byte[]]::new([int]($length - $start))
+              $count = 0
+              while ($count -lt $bytes.Length) {
+                $read = $stream.Read($bytes, $count, $bytes.Length - $count)
+                if ($read -eq 0) { break }
+                $count += $read
+              }
+              $tail = [Text.Encoding]::UTF8.GetString($bytes, 0, $count)
+            } finally {
+              $stream.Dispose()
+            }
+            Write-Host 'Appium diagnostics (last 80 lines within 128 KiB; context only, not assertion evidence):'
+            if ($start -gt 0) { Write-Host '[Earlier Appium log bytes omitted]' }
+            ($tail -split "`n" | Select-Object -Last 80) | ForEach-Object {
               $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
               if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
               Write-Host $line

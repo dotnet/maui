@@ -269,8 +269,11 @@ assertion evidence. Native verification prints a bounded,
 sanitized Appium log tail and the latest existing UI hierarchy text for startup
 diagnosis, using the pinned runner's actual log directory. The hierarchy's start
 and end are limited to 16,000 characters including the truncation marker.
-Unsafe or oversized diagnostics fail their optional task visibly without
-invalidating a completed verification record. These
+The Appium reader seeks within a regular file and reads at most its last 128 KiB,
+then prints at most 80 sanitized lines. Long startup logs do not suppress this
+bounded context; it never loads the entire file. Unsafe files or oversized UI
+hierarchies fail their optional task visibly without invalidating a completed
+verification record. These
 diagnostics are not assertion evidence and are never uploaded as artifacts.
 
 This mode does **not** enable production authorization, OIDC dispatch, credentialed
