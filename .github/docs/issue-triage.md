@@ -78,6 +78,10 @@ a separate explanatory clause. "Do not apply p/1; I am not sure this is a
 regression" still vetoes an older approval; "Do not apply p/1, maybe" does not.
 This scope is veto-only: affirmative decisions and factual evidence retain
 their paragraph-wide uncertainty checks.
+The pre-label gap and post-label capture share their punctuation and contrastive
+boundaries: "but", "however", "instead" and "rather than". "Do not apply p/1, but
+maybe apply p/2" retains the p/1 veto without approving p/2. A comma alone still
+retains a trailing qualifier such as "Do not apply p/1, maybe".
 Explanatory negation such as "this is not ready" or "we cannot commit" does not
 cancel a recognized directed veto. Questions remain non-decisions.
 It does not authorize a new removal or prove completion of the condition.

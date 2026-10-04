@@ -175,6 +175,10 @@ substitutes for current original issue/comment evidence.
   apply p/1; I am not sure this is a regression" does not weaken the prohibition.
   "Do not apply p/1, maybe" remains tentative. This narrower scope is veto-only;
   affirmative decisions and factual evidence retain their paragraph-wide checks.
+  Use the same punctuation and contrastive boundaries before and after the label:
+  "but", "however", "instead" and "rather than" separate the clause. "Do not apply
+  p/1, but maybe apply p/2" still vetoes p/1 without authorizing p/2. A comma alone
+  does not discard a trailing qualifier of the veto.
   That veto does not authorize a new removal or treat the condition as completed.
   Explanations such as "this is not ready" do not cancel the directed veto.
   Check the entire cited comment for a qualifying opposite decision or directed

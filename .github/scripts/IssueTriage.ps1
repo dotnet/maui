@@ -516,7 +516,8 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $labelText = Get-LabelPattern $Label
     $addVerbs = 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized'
     $removeVerbs = 'remove|drop|clear|withdraw|revoke|reject|decline'
-    $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|rather than)\b).){0,80}'
+    $clauseBoundary = '[;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|rather than)\b'
+    $gap = "(?:(?!$clauseBoundary).){0,80}"
     $candidate = $Paragraph
     $tentativeText = $Paragraph
     $prohibited = $false
@@ -524,7 +525,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         $negatedVerbs = if ($Action -eq 'remove') { $addVerbs } else { $removeVerbs }
         $listMarker = '(?:[-*+]|\d{1,9}[.)])[ \t]+'
         $opening = "(?:(?:^|[.!;]\s+)\s*(?:$listMarker)?|(?:^|\r?\n)[ \t]*$listMarker)"
-        $clauseTail = '(?:(?![;!?\r\n]|\.(?:\s|$)).)*'
+        $clauseTail = "(?:(?!$clauseBoundary).)*"
         $prohibition = "(?i)(?<prefix>$opening(?:please\s+)?)(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=(?<clause>$gap$labelText$clauseTail))"
         $prohibitions = [regex]::Matches($candidate, $prohibition)
         $prohibited = $prohibitions.Count -gt 0
