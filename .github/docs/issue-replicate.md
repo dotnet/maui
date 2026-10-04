@@ -20,8 +20,9 @@ Repository writers, maintainers, and administrators can comment on an **open iss
 `--platform android|ios` is optional only when exactly one supported `platform/android`
 or `platform/ios` issue label exists. `--branch main|netN.0` defaults to `main`.
 Pull requests and commands from users without current repository write access do
-not queue a run. The trigger replies with a link to the public Azure build; a
-second comment reports the result. A fresh command comment starts a fresh run.
+not queue a run. The trigger posts an unassessed status acknowledgement without
+operational run/log links; a second comment reports the result. A fresh command
+comment starts a fresh run.
 
 Issue comments missing either command marker (`/issue` and `replicate`) are
 filtered before allocating an authorization runner. This is only a coarse
@@ -227,6 +228,14 @@ verified failing candidate or an assertion claim.
 iOS UI execution uses a hosted simulator, not a physical iPhone. Reports labeled
 `repro:device-only` still need physical-device validation; a simulator pass or an
 unsupported generated candidate cannot rule out the reported behavior.
+Each native iOS verifier creates a fresh iPhone 11 Pro on the exact major/minor
+runtime declared by the pinned iOS SDK and passes its UDID explicitly to the
+unchanged pinned UI runner. Missing or unavailable matching runtimes fail
+explicitly; visual-test preferences must not silently select a newer runtime
+than the matching Xcode. The owned simulator is deleted after verification.
+Appium context retains the last 80 non-system-log rows in at most 128 KiB from
+a fixed 64 MiB tail scan with a hard reader deadline. Omitted context is labeled;
+these diagnostics are not assertion evidence and do not create artifacts.
 
 Generated UI files are limited to the Android or iOS platform actually verified.
 The entire shared NUnit file must use the corresponding exclusion-symbol `#if`

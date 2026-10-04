@@ -1,3 +1,42 @@
+function Get-IssueReplicateIOSSdkVersion {
+    param([Parameter(Mandatory)][string]$RepoRoot)
+
+    [xml]$details = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'eng/Version.Details.xml')
+    $versions = @($details.SelectNodes('//Dependency') | ForEach-Object {
+            if ($_.Name -cmatch '^Microsoft\.iOS\.Sdk\.net[0-9]+\.0_([0-9]+\.[0-9]+)$') {
+                [version]$Matches[1]
+            }
+        } | Sort-Object -Descending -Unique)
+    if ($versions.Count -lt 1) { throw 'The pinned branch does not declare a supported iOS SDK contract.' }
+    return $versions[0].ToString()
+}
+
+function New-IssueReplicateIOSSimulator {
+    param([Parameter(Mandatory)][string]$RepoRoot)
+
+    if (-not $IsMacOS) { throw 'Native iOS verification requires a macOS simulator host.' }
+    $sdk = Get-IssueReplicateIOSSdkVersion -RepoRoot $RepoRoot
+    $runtimeId = "com.apple.CoreSimulator.SimRuntime.iOS-$($sdk.Replace('.', '-'))"
+    $json = & xcrun simctl list runtimes available --json
+    if ($LASTEXITCODE -ne 0) { throw 'Could not enumerate installed iOS simulator runtimes.' }
+    $runtimes = ($json -join "`n") | ConvertFrom-Json
+    $matching = @($runtimes.runtimes | Where-Object {
+            $_.identifier -ceq $runtimeId -and $_.version -ceq $sdk -and $_.isAvailable -eq $true
+        })
+    if ($matching.Count -ne 1) {
+        throw "The fresh runner lacks the exact available iOS $sdk runtime required by the pinned SDK; refusing a newer runtime."
+    }
+    $name = "issue-replicate-$([guid]::NewGuid().ToString('N'))"
+    $created = & xcrun simctl create $name 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' $runtimeId
+    if ($LASTEXITCODE -ne 0) { throw "Could not create a fresh simulator on the pinned iOS $sdk runtime." }
+    $udid = ($created -join "`n").Trim()
+    if ($udid -cnotmatch '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$') {
+        throw 'Simulator creation did not return one valid device UDID.'
+    }
+    Write-Host "Pinned iOS SDK $sdk; created fresh iPhone 11 Pro on $runtimeId ($udid)."
+    return $udid
+}
+
 function Get-IssueReplicateDownload {
     param([Parameter(Mandatory)][uri]$Url, [Parameter(Mandatory)][long]$MaxBytes)
 

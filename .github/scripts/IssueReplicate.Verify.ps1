@@ -135,8 +135,12 @@ if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
     throw "The candidate's test project does not exist on this MAUI revision."
 }
 
+$iosSimulator = ''
 Push-Location $RepoRoot
 try {
+    if ($candidate.kind -eq 'ui' -and $manifest.platform -eq 'ios') {
+        $iosSimulator = New-IssueReplicateIOSSimulator -RepoRoot $RepoRoot
+    }
     $written = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @($candidate.files)) {
         $relative = [string]$file.path
@@ -182,7 +186,8 @@ try {
         $started = [DateTime]::UtcNow
         if ($candidate.kind -eq 'ui') {
             $runner = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
-            & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter 2>&1 |
+            $deviceArguments = if ($iosSimulator) { @('-DeviceUdid', $iosSimulator) } else { @() }
+            & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter @deviceArguments 2>&1 |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
                     if ($RecordVideo -and $line -match '^>>>>> .+ (?<method>\S+) Start$') {
@@ -346,4 +351,11 @@ try {
         $candidatePatch = if ($result.status -eq 'candidate-failed') { $patchText } else { '' }
         & $OnCompleted $result $candidatePatch (Get-IssueReplicateFeedback -Lines $testLines.ToArray()) $recordingBytes
     }
-} finally { Pop-Location }
+}
+finally {
+    Pop-Location
+    if ($iosSimulator) {
+        & xcrun simctl delete $iosSimulator
+        if ($LASTEXITCODE -ne 0) { Write-Warning "Could not delete the owned verification simulator $iosSimulator." }
+    }
+}

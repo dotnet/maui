@@ -176,7 +176,7 @@ jobs:
             exit 1
           fi
           # shellcheck disable=SC2016
-          body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is preparing the reproduction attempt.\n>\n> **Reproducible:** Not assessed. **Test catches the reported issue:** Not verified; execution is pending.\n>\n> **Reproduction confidence:** **0%% (unassessed evidence score, not evidence that the issue is invalid).**\n' "$COMMENT")
+          body=$(printf '<!-- issue-replicate-start:%s:pending -->\n> [!NOTE]\n> `/issue replicate` is preparing the reproduction attempt.\n>\n> **Reproducible:** Not assessed. **Generated test catches the reported issue:** Not verified; execution is pending.\n>\n> **Reproduction confidence:** **0%% (unassessed evidence score, not evidence that the issue is invalid).**\n' "$COMMENT")
           ack_id="$EXISTING_ACK_ID"
           if [ -n "$ack_id" ]; then
             gh api "repos/${REPO}/issues/comments/${ack_id}" --method PATCH -f body="$body" --silent
@@ -297,7 +297,7 @@ jobs:
             printf '<!-- issue-replicate-start:%s:%s -->\n' "$COMMENT" "$RUN_ID"
             # shellcheck disable=SC2016
             printf '> [!NOTE]\n> `/issue replicate` started on **%s** (%s).\n>\n' "$PLATFORM" "$TARGET_REF"
-            printf '> **Reproducible:** Not assessed yet. **Test catches the reported issue:** Not verified; execution is pending.\n>\n'
+            printf '> **Reproducible:** Not assessed yet. **Generated test catches the reported issue:** Not verified; execution is pending.\n>\n'
             printf '> **Reproduction confidence:** **0%% (unassessed evidence score, not evidence that the issue is invalid).** The result will be posted here.\n'
           } > "$body"
           gh api "repos/${REPO}/issues/comments/${ACK_ID}" --method PATCH -F body=@"$body" --silent
@@ -315,6 +315,6 @@ jobs:
           > [!WARNING]
           > \`/issue replicate\` could not confirm the queue outcome; do not assume an attempt was not started.
           >
-          > **Reproducible:** Not determined. **Test catches the reported issue:** Not verified.
+          > **Reproducible:** Not determined. **Generated test catches the reported issue:** Not verified.
           >
           > **Reproduction confidence:** **0% (unassessed evidence score, not evidence that the issue is invalid).** Recovery can reconcile the expired reservation before retrying." --silent

@@ -6,14 +6,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-[xml]$details = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'eng/Version.Details.xml')
-$versions = @($details.SelectNodes('//Dependency') | ForEach-Object {
-    if ($_.Name -cmatch '^Microsoft\.iOS\.Sdk\.net[0-9]+\.0_([0-9]+\.[0-9]+)$') {
-        [version]$Matches[1]
-    }
-} | Sort-Object -Descending -Unique)
-if ($versions.Count -lt 1) { throw 'The pinned branch does not declare a supported iOS SDK contract.' }
-$sdk = $versions[0].ToString()
+. (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+$sdk = Get-IssueReplicateIOSSdkVersion -RepoRoot $RepoRoot
 $choices = @(Get-ChildItem -LiteralPath /Applications -Directory -Filter 'Xcode_*.app' | ForEach-Object {
     if ($_.Name -cmatch "^Xcode_($([regex]::Escape($sdk))(?:\.[0-9]+)?)\.app$") {
         [pscustomobject]@{ Path = $_.FullName; Version = [version]$Matches[1] }

@@ -220,9 +220,9 @@ jobs:
             if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
               throw 'Appium diagnostics must be a regular log file.'
             }
-            $diagnostic = Read-IssueReplicateNativeDiagnostic -Path $path -MaxBytes 128KB -Tail
-            Write-Host 'Appium diagnostics (last 80 lines within 128 KiB; context only, not assertion evidence):'
-            if ($diagnostic.Omitted) { Write-Host '[Earlier Appium log bytes omitted]' }
+            $diagnostic = Read-IssueReplicateNativeDiagnostic -Path $path -MaxBytes 128KB -Tail -AppiumLog
+            Write-Host 'Appium diagnostics (last 80 non-syslog lines, at most 128 KiB, within a 64 MiB tail scan; context only, not assertion evidence):'
+            if ($diagnostic.Omitted) { Write-Host '[Earlier or oversized Appium log content omitted]' }
             ($diagnostic.Text -split "`n" | Select-Object -Last 80) | ForEach-Object {
               $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
               if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
