@@ -1,5 +1,8 @@
 # Public-only issue reproduction pipeline. Register this YAML as a separate
 # dnceng-public/public pipeline; it must never be reused in an internal project.
+# Keep that definition's queueStatus disabled until the documented external
+# activation/revision checks protect every credential-bearing variable group.
+# ISSUE_REPLICATE_ENABLED gates GitHub dispatch, not direct Azure API queues.
 trigger: none
 pr: none
 

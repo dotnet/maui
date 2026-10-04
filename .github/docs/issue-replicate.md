@@ -1,11 +1,15 @@
 # `/issue replicate` (public issue repro)
 
-Production is disabled by default. Both comment/manual processing and scheduled
-recovery require the repository variable `ISSUE_REPLICATE_ENABLED=true`; merging
-the workflows or configuring a pipeline ID alone does not authorize issue
-acknowledgements or queueing. Leave it unset until the deployment boundaries below
-are enforced and validated. The credential-free manual Azure canary is independent
-of this production gate.
+GitHub comment/manual processing and scheduled recovery are disabled by default
+and require the repository variable `ISSUE_REPLICATE_ENABLED=true`. Merging the
+workflows or configuring a pipeline ID alone does not enable GitHub
+acknowledgements or dispatch. This is not an Azure resource gate: someone with
+Queue builds permission can call Azure directly while the GitHub variable is
+unset. Keep the separate production definition's server-side `queueStatus`
+disabled until the external activation/revision checks below protect every
+credential-bearing resource. Leave the GitHub variable unset until all deployment
+boundaries are enforced and validated. The credential-free manual canary on the
+existing `maui-pr-uitests` definition is independent; do not disable that definition.
 
 Repository writers, maintainers, and administrators can comment on an **open issue**:
 
@@ -36,6 +40,11 @@ the publication/fallback handler. Deleted commands, edits that invalidate the co
 or change its requested parameters, revoked permissions, closed issues, or unavailable
 authorization metadata fail closed without publishing. If `main` advances during a
 run, publication from the older infrastructure revision also fails closed.
+
+Those checks authorize the command and revision, not production activation, and
+run after Azure imports the read group. They cannot prevent credential release
+on a direct queue. Activation must be enforced outside the selected YAML before
+any dedicated variable group is released, as described below.
 
 The issue author must provide exactly one repro in the issue body or an
 author-written comment: a public `https://github.com/owner/repo` URL,
@@ -283,13 +292,20 @@ guards do not retroactively protect older pipeline YAML. Before releasing any
 credentials, a mandatory server-side protected-resource check outside the
 selected YAML must compare the run's `self` repository ref and exact version with
 GitHub's current `dotnet/maui` `main` commit and reject historical or unavailable
-metadata. Apply this check to every dedicated credential-bearing variable group;
+metadata. It must also independently read the live repository activation variable
+and reject missing, false or unavailable activation before releasing a resource.
+Neither a queue-time parameter/variable nor a condition inside selected YAML is
+an acceptable substitute. Apply both checks to every dedicated credential-bearing variable group;
 deny unapproved pipeline/group edits and queue-time variable overrides. Do not
 place these secrets on the pipeline definition or in root variables: older YAML
 can inherit those without requesting a checked resource. Verify direct API
-queues against old revisions are rejected before any credentialed work. This
-check has not been configured or exercised; production remains blocked until it
-and the native evidence boundary are enforced.
+queues against old revisions are rejected before any credentialed work. Also
+verify a direct queue of current `main` with a valid maintainer command cannot
+release credentials while activation is unset or false. These external checks
+have not been configured or exercised; no separate production definition or
+credential groups have been provisioned. Production remains blocked. Keep the
+separate definition's server-side `queueStatus` disabled during configuration,
+and whenever activation is turned off; do not rely on GitHub workflow conditions.
 
 Intake and the always-running posting job independently require the
 `dnceng-public` collection and `System.TeamProject` exactly equal to `public`.
@@ -299,7 +315,10 @@ either predefined environment value is missing or belongs to another project.
 1. Keep `ISSUE_REPLICATE_ENABLED` unset while merging the trusted scripts, trigger,
    and pipeline YAML to `main` and configuring resources. Create a
    **separate public Azure pipeline** in `dnceng-public/public` with
-   `eng/pipelines/ci-issue-replicate.yml` as its YAML path. This is not `/review`:
+   `eng/pipelines/ci-issue-replicate.yml` as its YAML path and server-side
+   `queueStatus: disabled`. Verify direct API queues are rejected before granting
+   access or attaching credentials. This is not the existing canary definition
+   313 and is not `/review`:
    `/review` queues DevDiv/DevDiv pipeline 27723. Set the GitHub Actions
    repository variable `ISSUE_REPLICATE_PIPELINE_ID` to the new public ID.
 2. Give the GitHub OIDC identity Basic access in `dnceng-public` and explicitly
@@ -307,7 +326,7 @@ either predefined environment value is missing or belongs to another project.
    [OIDC setup](trigger-azdo-pipeline-setup.md)). Protect the pipeline, its
    `main`-branch definition, and its variables from arbitrary run edits.
 3. Provision three **separate protected secret variable groups** with the
-   mandatory external revision check above: `issue-replicate-read` containing
+   mandatory external activation and revision checks above: `issue-replicate-read` containing
    `ISSUE_REPRO_READ_TOKEN` (GitHub issue/repo and collaborator-permission read),
    `issue-replicate-copilot` containing `ISSUE_REPRO_COPILOT_TOKEN` (Copilot CLI GPT
    access), and `issue-replicate-comment` containing `ISSUE_REPRO_COMMENT_TOKEN`
@@ -322,12 +341,18 @@ either predefined environment value is missing or belongs to another project.
    on the chosen MAUI branches. Xcode is selected from the pinned branch's
    declared iOS SDK; a missing matching installation fails rather than silently
    using an incompatible version. Do not enable iOS on a persistent/shared macOS
-   agent. Run an authorized test issue through the pipeline before announcing
-   availability; YAML parsing alone does not validate Azure template expansion
-   or image capabilities.
-5. Only after both isolation boundaries and the production validation above pass,
-   set `ISSUE_REPLICATE_ENABLED=true` to activate comment/manual dispatch.
-   Leaving it unset or setting it to `false` disables both trigger and recovery.
+   agent. Validate native execution with the credential-free canary while
+   production stays disabled. Validate old-revision and activation-off direct
+   queues against the external resource checks before enabling production;
+   YAML parsing alone does not validate Azure resource enforcement or images.
+5. Only after the evidence boundary, both external resource checks and the
+   negative/native validations pass, set `ISSUE_REPLICATE_ENABLED=true` and enable
+   the separate production definition. Run an authorized production test issue
+   before announcing availability. If that validation fails, disable the
+   definition and unset the activation variable again.
+   Leaving it unset or setting it to `false` disables GitHub trigger/recovery;
+   the external checks must independently deny direct Azure credential release.
+   Disable the separate definition as well when pausing production.
    No activation variable is configured by this PR or its manual Azure canary.
    For scheduled missed-webhook recovery, also set
    `ISSUE_REPLICATE_RECOVERY_NOT_BEFORE` to the activation time in UTC
