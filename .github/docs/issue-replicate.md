@@ -1,5 +1,12 @@
 # `/issue replicate` (public issue repro)
 
+Production is disabled by default. Both comment/manual processing and scheduled
+recovery require the repository variable `ISSUE_REPLICATE_ENABLED=true`; merging
+the workflows or configuring a pipeline ID alone does not authorize issue
+acknowledgements or queueing. Leave it unset until the deployment boundaries below
+are enforced and validated. The credential-free manual Azure canary is independent
+of this production gate.
+
 Repository writers, maintainers, and administrators can comment on an **open issue**:
 
 ```text
@@ -280,7 +287,8 @@ Intake and the always-running posting job independently require the
 Both fail closed before intake or publication, including fallback notices, when
 either predefined environment value is missing or belongs to another project.
 
-1. Merge the trusted scripts, trigger, and pipeline YAML to `main`. Create a
+1. Keep `ISSUE_REPLICATE_ENABLED` unset while merging the trusted scripts, trigger,
+   and pipeline YAML to `main` and configuring resources. Create a
    **separate public Azure pipeline** in `dnceng-public/public` with
    `eng/pipelines/ci-issue-replicate.yml` as its YAML path. This is not `/review`:
    `/review` queues DevDiv/DevDiv pipeline 27723. Set the GitHub Actions
@@ -308,7 +316,11 @@ either predefined environment value is missing or belongs to another project.
    agent. Run an authorized test issue through the pipeline before announcing
    availability; YAML parsing alone does not validate Azure template expansion
    or image capabilities.
-5. For scheduled missed-webhook recovery, set
+5. Only after both isolation boundaries and the production validation above pass,
+   set `ISSUE_REPLICATE_ENABLED=true` to activate comment/manual dispatch.
+   Leaving it unset or setting it to `false` disables both trigger and recovery.
+   No activation variable is configured by this PR or its manual Azure canary.
+   For scheduled missed-webhook recovery, also set
    `ISSUE_REPLICATE_RECOVERY_NOT_BEFORE` to the activation time in UTC
    (`yyyy-MM-ddTHH:mm:ssZ`). The recovery workflow scans recent comments older
    than 35 minutes, rechecks current write permission, and dispatches the same

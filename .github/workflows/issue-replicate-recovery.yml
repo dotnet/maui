@@ -13,6 +13,7 @@ concurrency:
 jobs:
   recover:
     if: >-
+      vars.ISSUE_REPLICATE_ENABLED == 'true' &&
       github.repository == 'dotnet/maui' &&
       vars.ISSUE_REPLICATE_RECOVERY_NOT_BEFORE != '' &&
       vars.ISSUE_REPLICATE_RECOVERY_DISABLED != 'true'

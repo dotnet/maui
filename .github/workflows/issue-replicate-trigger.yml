@@ -18,6 +18,7 @@ jobs:
   authorize:
     # Filter unrelated comments without narrowing the parser's whitespace contract.
     if: >-
+      vars.ISSUE_REPLICATE_ENABLED == 'true' &&
       github.repository == 'dotnet/maui' &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
@@ -107,7 +108,7 @@ jobs:
 
   dispatch:
     needs: authorize
-    if: needs.authorize.outputs.proceed == 'true'
+    if: vars.ISSUE_REPLICATE_ENABLED == 'true' && needs.authorize.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:
