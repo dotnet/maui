@@ -1499,7 +1499,8 @@ if ($proposal.schemaVersion -ne 1 -or $proposal.issueNumber -ne $IssueNumber -or
 foreach ($field in @('additions', 'removals', 'withheld')) {
     if ($proposal[$field] -isnot [array]) { throw "$field must be an array." }
 }
-if ($proposal.additions.Count + $proposal.removals.Count -gt $policy.maxChanges -or
+if ($proposal.additions.Count -gt $policy.maxAdditions -or
+    $proposal.additions.Count + $proposal.removals.Count -gt $policy.maxChanges -or
     $proposal.removals.Count -gt $policy.maxRemovals -or $proposal.withheld.Count -gt 20) {
     throw 'The proposed triage exceeds its change/report bounds.'
 }

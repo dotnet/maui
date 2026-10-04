@@ -170,7 +170,7 @@ safe-outputs:
   messages:
     body-header: "<!-- Issue Triage -->"
   add-labels:
-    max: 20
+    max: 10
     target: ${{ github.event.issue.number || inputs.issue_number }}
     pull-requests: false
     allowed: &triage-labels
@@ -334,6 +334,7 @@ Use the skill's structured `data.triage` contract with one `add_comment` carryin
 `item_number` for this issue and a placeholder body. Emit matching plain-string
 `add_labels`/`remove_labels` deltas, at most one intent of each type. Always pass
 the prepared issue number explicitly. Do not use label objects or intent metadata.
+Propose at most 20 total changes, with at most ten additions and ten removals.
 For a genuinely empty result, use `noop`; for missing required evidence, use
 `report_incomplete`. In staged mode, emit the same proposal: only the trusted
 safe-output handlers suppress writes.

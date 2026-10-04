@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "maxChanges": 20,
+  "maxAdditions": 10,
   "maxRemovals": 10,
   "maxSources": 4,
   "automationAuthors": ["MauiBot", "maui-bot", "dotnet-bot", "dotnet-maestro-bot", "vs-mobiletools-engineering-service2"],

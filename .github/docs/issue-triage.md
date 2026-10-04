@@ -530,8 +530,12 @@ that credential. This PR does not upgrade repository-wide compiler tooling or
 introduce a custom write handler; review this remaining least-privilege limitation
 before apply-mode deployment.
 
-Each run permits at most 20 total label changes, ten removals and one result
-comment. Per-issue concurrency does not cancel an in-progress publication.
+Each run permits at most 20 total label changes, ten additions, ten removals and
+one result comment. The pinned add-label handler independently rejects arrays
+larger than ten labels before applying its configurable limit; increasing
+`max` cannot override that ceiling. The workflow, skill and trusted policy share
+the ten-addition cap, so oversized proposals fail validation rather than reaching
+that handler. Per-issue concurrency does not cancel an in-progress publication.
 The workflow-level `queue: max` retains up to 100 pending runs per issue rather
 than allowing an ordinary or edited comment to replace the single pending
 triage command before authorization. Job-level queues do not protect this slot.

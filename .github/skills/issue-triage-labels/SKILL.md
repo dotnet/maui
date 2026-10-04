@@ -434,6 +434,9 @@ still apply. A short quote does not independently establish any of them.
 
 Declare exactly the same label delta using at most one `add_labels` and one
 `remove_labels` intent, always passing the prepared target number. Do not emit
+more than ten additions or ten removals, or more than twenty total changes.
+These per-operation limits match the pinned native handlers; do not split a
+delta into extra intents to bypass them. Do not emit
 empty label intents. Do not include labels already present in additions or absent
 from removals. Do this in staged mode too: staging suppresses writes, not validation.
 Each label appears at most once across additions, removals and withheld decisions.
