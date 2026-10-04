@@ -260,6 +260,13 @@ authorize an action. "The request to apply p/1 was rejected" is not an approval;
 Directly bound "false", "incorrect", "inaccurate", "untrue" and "wrong"
 assessments use the same rejection gate. "Duplicate of #N is false" and
 "Expected behavior is incorrect" cannot authorize their canonical labels.
+A qualified "Duplicate of #N was revoked" also vetoes an older duplicate
+addition without repeating the label. The supersession exception is bound to
+the exact fetched canonical target in the original cited decision paragraph,
+not another related source elsewhere in its evidence. Both other paragraphs
+in that maintainer comment and later maintainer comments are checked.
+A positive canonical restatement is not a removal; this veto does not
+authorize an actual removal. Ordinary explicit label-removal rules are unchanged.
 The same directly bound veto covers coordinated review predicates such as "was
 reviewed and rejected" and "was considered and then declined", with bounded
 disposition modifiers. An embedded "apply" verb cannot authorize the rejected

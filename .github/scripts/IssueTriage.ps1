@@ -512,7 +512,14 @@ function Get-LabelPattern([string]$Label) {
         '(?![\p{L}\p{N}\p{M}\p{S}_/:-]|\.(?=[\p{L}\p{N}\p{M}\p{S}_/.:-]))'
 }
 
-function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence, [string]$ReferenceContext = '', [switch]$Superseding) {
+function Get-CanonicalDuplicateSources([string]$Paragraph) {
+    return @([regex]::Matches($Paragraph,
+        '(?i)\bduplicate of\s+(?:#|dotnet/maui#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
+        ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
+}
+
+function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Action, $Evidence,
+    [string]$ReferenceContext = '', [string]$CanonicalSource = '', [switch]$Superseding) {
     $labelText = Get-LabelPattern $Label
     $addVerbs = 'add|apply|set|assign|approve|approved|accept|accepted|mark|prioritize|prioritized'
     $removeVerbs = 'remove|drop|clear|withdraw|revoke|reject|decline'
@@ -545,14 +552,16 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         (Test-TentativeEvidence $tentativeText) -or
         ((Test-ConditionalEvidence $withoutLabel -Decision) -and -not $prohibited)) { return $false }
     $allowedReferencePattern = ''
-    if (-not $prohibited -and $Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
-        $canonical = @([regex]::Matches($candidate,
-            '(?i)\bduplicate of\s+(?:#|dotnet/maui#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)([1-9][0-9]{0,8})(?![\w])') |
-            ForEach-Object { "related:$($_.Groups[1].Value)" } | Sort-Object -Unique)
-        if ($canonical.Count -ne 1 -or -not $sourceMap.ContainsKey($canonical[0]) -or
-            (-not $Superseding -and @($Evidence | Where-Object { $_.source -ceq $canonical[0] }).Count -eq 0)) { return $false }
-        $canonicalNumber = $canonical[0].Substring('related:'.Length)
-        $allowedReferencePattern = "(?i)\bduplicate of\s+(?:#|dotnet/maui#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)$canonicalNumber(?![\w/-]|\.(?=\w))"
+    if (-not $prohibited -and $Label -eq 's/duplicate 2️⃣' -and
+        ($Action -eq 'add' -or ($Superseding -and $CanonicalSource))) {
+        $canonical = @(Get-CanonicalDuplicateSources $candidate)
+        $canonicalBound = $canonical.Count -eq 1 -and $sourceMap.ContainsKey($canonical[0])
+        if ($Action -eq 'add' -and (-not $canonicalBound -or
+            (-not $Superseding -and @($Evidence | Where-Object { $_.source -ceq $canonical[0] }).Count -eq 0))) { return $false }
+        if ($canonicalBound -and ($Action -eq 'add' -or $canonical[0] -ceq $CanonicalSource)) {
+            $canonicalNumber = $canonical[0].Substring('related:'.Length)
+            $allowedReferencePattern = "(?i)\bduplicate of\s+(?:#|dotnet/maui#|<?https://github\.com/dotnet/maui/(?:issues|pull)/)$canonicalNumber(?![\w/-]|\.(?=\w))"
+        }
     }
     if (-not (Test-CurrentIssueScope $Paragraph $ReferenceContext $allowedReferencePattern)) { return $false }
     $approval = '(?:approv(?:e|ed|ing|al)|accept(?:ed|ance)?|reject(?:ed|ion)?|declin(?:e|ed|ing)|den(?:y|ied|ial))'
@@ -578,7 +587,7 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $polarityText = [regex]::Replace($withoutLabel, $confirmation, '${prefix}CONFIRMATION')
     $negativeOutcome = Get-NegativeOutcomePattern
     if ($polarityText -match "(?i)\b(?:$negativeOutcome|no|neither|nor|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
-    if ($allowedReferencePattern) { return $true }
+    if ($allowedReferencePattern -and $Action -eq 'add') { return $true }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
         $candidate -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
         $candidate -notmatch "(?i)\b(not|isn.t)\s+(expected|by design|working as intended|not a bug)\b") { return $true }
@@ -597,10 +606,14 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             Where-Object { $_.Contains($reference.quote, [StringComparison]::Ordinal) })
         if ($paragraphs.Count -ne 1 -or
             -not (Test-DecisionParagraph $paragraphs[0] $Label $Action $Evidence -ReferenceContext $referenceContext)) { continue }
+        $canonicalSource = ''
+        if ($Label -eq 's/duplicate 2️⃣' -and $Action -eq 'add') {
+            $canonicalSource = @(Get-CanonicalDuplicateSources $paragraphs[0])[0]
+        }
         $oppositeAction = if ($Action -eq 'add') { 'remove' } else { 'add' }
         $oppositeEvent = if ($Action -eq 'add') { 'unlabeled' } else { 'labeled' }
         if (@($sourceParagraphs | Where-Object {
-            Test-DecisionParagraph $_ $Label $oppositeAction @() -ReferenceContext $referenceContext -Superseding
+            Test-DecisionParagraph $_ $Label $oppositeAction @() -ReferenceContext $referenceContext -CanonicalSource $canonicalSource -Superseding
         }).Count -gt 0) { continue }
         $superseded = @($sourceMap.Values | Where-Object {
             $candidateSource = $_
@@ -608,7 +621,7 @@ function Test-Decision($Evidence, [string]$Label, [string]$Action) {
             (Get-SupersessionTime $_) -ge $source.createdAt -and (
                 ($_.kind -ceq $oppositeEvent -and $_.body -ceq "${oppositeEvent}: $Label") -or
                 ($_.kind -ceq 'comment' -and @((Get-Prose $_.body) -split '\r?\n[ \t]*\r?\n' |
-                    Where-Object { Test-DecisionParagraph $_ $Label $oppositeAction @() -ReferenceContext (Get-MarkdownText $candidateSource.body) -Superseding }).Count -gt 0)
+                    Where-Object { Test-DecisionParagraph $_ $Label $oppositeAction @() -ReferenceContext (Get-MarkdownText $candidateSource.body) -CanonicalSource $canonicalSource -Superseding }).Count -gt 0)
             )
         })
         if ($superseded.Count -eq 0) { return $true }

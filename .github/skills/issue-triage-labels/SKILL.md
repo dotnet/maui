@@ -151,6 +151,13 @@ substitutes for current original issue/comment evidence.
   Directly bound "false", "incorrect", "inaccurate", "untrue" and "wrong"
   assessments use the same rejection gate. "Duplicate of #N is false" and
   "Expected behavior is incorrect" cannot authorize their canonical labels.
+  A qualified "Duplicate of #N was revoked" also vetoes an older duplicate
+  addition without repeating the label. Bind that supersession exception to
+  the exact fetched canonical target in the original cited decision paragraph,
+  not another related source elsewhere in its evidence. Check other paragraphs
+  in the same maintainer comment and later maintainer comments. A positive
+  canonical restatement is not a removal, and this veto does not authorize an
+  actual removal. Ordinary explicit label-removal decisions retain their rules.
   Directly bound coordinated review predicates such as "was reviewed and rejected"
   or "was considered and then declined" retain that veto, including bounded
   disposition modifiers. They cannot lend their inner "apply" verb authority.
