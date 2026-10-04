@@ -388,9 +388,31 @@ Describe 'Native recording helpers' {
             }
         }
 
-        It 'fails explicitly when no live session reference is present' {
+        It 'ignores backend proxy sessions when starting recording (<Platform>)' -ForEach @(
+            @{ Platform = 'android'; Driver = 'AndroidUiautomator2Driver'; Port = 8200; BasePath = '/wd/hub' },
+            @{ Platform = 'ios'; Driver = 'XCUITestDriver'; Port = 8100; BasePath = '' }
+        ) {
+            $log = Join-Path $TestDrive 'proxy-sessions.log'
+            [IO.File]::WriteAllText($log, @(
+                    '[AppiumDriver] New AndroidDriver session created successfully, session aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa added',
+                    "[HTTP] --> POST $BasePath/session/bba3a072-b34e-4205-b6db-0a2861b95056/element {}",
+                    "[$Driver] Proxying [POST /element] to [POST http://127.0.0.1:$Port/session/d4b4c973-b7e3-4cd6-87bd-2c24b89fc528/element] with body",
+                    "[$Driver] Got response with status 200: {`"sessionId`":`"d4b4c973-b7e3-4cd6-87bd-2c24b89fc528`"}"
+                ) -join "`n")
+            Mock Invoke-IssueReplicateRecordingRequest { '' }
+            Start-IssueReplicateRecording -Platform $Platform -LogPath $log |
+                Should -BeExactly 'bba3a072-b34e-4205-b6db-0a2861b95056'
+            Should -Invoke Invoke-IssueReplicateRecordingRequest -Times 1 -Exactly -ParameterFilter {
+                $Path -eq 'session/bba3a072-b34e-4205-b6db-0a2861b95056/appium/start_recording_screen'
+            }
+        }
+
+        It 'fails explicitly when no frontend session reference is present (<Text>)' -ForEach @(
+            @{ Text = 'WDA startup failed' },
+            @{ Text = '[AndroidUiautomator2Driver] Proxying [GET /source] to [GET http://127.0.0.1:8200/session/d4b4c973-b7e3-4cd6-87bd-2c24b89fc528/source]' }
+        ) {
             $log = Join-Path $TestDrive 'no-session.log'
-            [IO.File]::WriteAllText($log, 'WDA startup failed')
+            [IO.File]::WriteAllText($log, $Text)
             { Start-IssueReplicateRecording -Platform android -LogPath $log } | Should -Throw '*session identifier*'
         }
 

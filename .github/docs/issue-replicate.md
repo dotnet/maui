@@ -113,6 +113,9 @@ attempt: at most 30 seconds, no audio, and at most 512 KiB of MP4 data. Recordin
 starts at the test's `Start` marker, after one-time fixture setup and its session
 recreation retries have finished, and stops at its `Stop` marker. The trusted
 controller uses the live Appium session without enabling session discovery.
+It selects the frontend session from Appium's incoming HTTP command or top-level
+session-creation log entries, not the distinct UiAutomator2/WDA backend session
+UUIDs in proxy requests. Missing frontend evidence fails recording explicitly.
 Recorded UI candidates must execute exactly one named test: one matching
 `Start`/`Stop` pair and one TRX result whose method matches those markers.
 Multiple methods, repeated cases, missing markers or a mismatched TRX are
