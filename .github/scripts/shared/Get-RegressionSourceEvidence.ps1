@@ -190,7 +190,7 @@ function Get-RegressionDiagnosticInventory {
                 $entries.RemoveAt(10)
             }
             $entries.Add([pscustomobject]@{
-                url = $match.Value; mentionedAt = $text.url; status = 'linked-not-downloaded'
+                url = $match.Value.TrimEnd('.'); mentionedAt = $text.url; status = 'linked-not-downloaded'
             })
         }
     }

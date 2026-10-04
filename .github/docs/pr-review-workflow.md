@@ -117,7 +117,9 @@ Inline logs/code and author corrections are analyzed before requesting more
 evidence. Public GitHub attachment links are inventoried with their originating
 comment; the twenty-mention cap retains the earliest ten and latest ten so a
 later correction can reach image selection. An inventory alone is **not
-analysis**. Supplemental version tokens exclude sentence punctuation and do not
+analysis**. Trailing sentence periods are removed from inventoried attachment
+URLs; static capture still requires the exact canonical UUID URL.
+Supplemental version tokens exclude sentence punctuation and do not
 accept partial four-component stable versions. For canonical
 `github.com/user-attachments/assets/<UUID>` images, the trusted collector can
 capture at most two PNGs (early evidence and latest correction), with no
