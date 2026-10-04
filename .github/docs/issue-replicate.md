@@ -310,6 +310,9 @@ in the trusted publisher process. This avoids putting the full recording back in
 the local environment, where macOS has a much smaller aggregate process-argument
 limit than hosted Linux. The supplied bytes must still match the result's size
 and SHA-256 before preview or upload.
+The publisher reads one compact JSON record per matching owned report across
+all comment pages with `gh api --paginate --jq`. Do not combine `--slurp` with
+`--jq`; the CLI rejects that combination before media can be reconciled.
 
 Hosted Ubuntu sample and verification jobs reclaim named unused preinstalled
 .NET, Swift, Haskell, Go, Boost and CodeQL directories after installing the exact

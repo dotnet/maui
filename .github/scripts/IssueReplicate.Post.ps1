@@ -21,12 +21,10 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'IssueReplicate.Recording.ps1')
 $buildUrl = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "https://github.com/$GitHubRepository/actions/runs/$GitHubRunId"
-}
-else { "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$BuildId" }
+} else { "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$BuildId" }
 $marker = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "<!-- issue-replicate-result:github:$($GitHubRepository):$GitHubRunId -->"
-}
-else { "<!-- issue-replicate-result:$BuildId -->" }
+} else { "<!-- issue-replicate-result:$BuildId -->" }
 $summary = 'The public pipeline could not complete a verified reproduction. See the build log; this is not evidence that the issue is invalid.'
 $details = "No validated intake or test result is available. [Inspect the run log]($buildUrl)."
 $candidate = ''
@@ -38,15 +36,13 @@ $patchSha256 = ''
 $sampleDiagnostic = ''
 $runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "> Fork canary evidence from [$GitHubRepository]($buildUrl), published from validated job data; this was not a production Azure pipeline run."
-}
-else { '' }
+} else { '' }
 if ($NativeCanary) {
     $runNote = '> Public Azure native canary: this run replays a reviewed historical test candidate, not live GPT generation or production dispatch.'
 }
 $refresh = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     '> The production `/issue replicate` command requires the deployment described in PR #38807. This canary did not test production authorization, queueing, or automatic publication.'
-}
-else { '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.' }
+} else { '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.' }
 if ($NativeCanary) {
     $refresh = '> Production `/issue replicate` remains disabled pending the security boundaries described in PR #38807.'
 }
@@ -88,8 +84,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         }
         $sourceLabel = if ($source.Type -eq 'repository') { 'Author repro repository' } else { 'Download author repro ZIP' }
         $details += "`n| Original repro | [$sourceLabel]($($source.Url)) |"
-    }
-    else {
+    } else {
         $details += "`n| Original repro | Source link unavailable in this intake snapshot. |"
     }
     $details += "`n| Issue context | [View the associated issue comment](https://github.com/dotnet/maui/issues/$IssueNumber#issuecomment-$CommentId) |"
@@ -97,8 +92,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         $sourceCommit = $manifest.sourceCommit
         $commitLink = if ($manifest.sourceUrl) {
             "[$($sourceCommit.Substring(0, 7))](https://github.com/$($source.Repository)/tree/$sourceCommit)"
-        }
-        else { "``$sourceCommit``" }
+        } else { "``$sourceCommit``" }
         $details += "`n| Pinned author repro revision | $commitLink |"
     }
     $sample = $null
@@ -148,15 +142,15 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                 foreach ($header in $headers) {
                     if ($header.Groups[1].Value -cne $header.Groups[2].Value -or
                         -not (Test-IssueReplicateCandidatePath -Path $header.Groups[1].Value `
-                                -IssueNumber $IssueNumber -Kind $result.testKind)) {
+                            -IssueNumber $IssueNumber -Kind $result.testKind)) {
                         throw 'A generated patch modifies a path outside the permitted test files.'
                     }
                 }
                 $summary = 'The author sample built and a generated test **failed at an assertion twice** against the pinned MAUI revision. The original app interaction was not exercised, so this is a verified failing *test candidate*, not confirmation of the reported issue.'
                 $patchSha256 = $result.patchSha256
                 $candidate = "**Review before applying:** this is generated, untrusted test code, not a framework fix. " +
-                "The complete candidate diff is published in issue comments, not stored as a run artifact.`n`n" +
-                "Patch SHA-256: ``$patchSha256``."
+                    "The complete candidate diff is published in issue comments, not stored as a run artifact.`n`n" +
+                    "Patch SHA-256: ``$patchSha256``."
             }
             'not-reproduced-on-tested-revision' {
                 $summary = 'The generated test ran and passed on this revision. That does **not** prove the reported bug never occurs; it may require a different version or setup.'
@@ -179,24 +173,21 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         }
         if ($draft.kind -eq 'unsupported') {
             if (@($draft.files).Count -ne 0) { throw 'Unsupported candidates cannot contain draft files.' }
-        }
-        else {
+        } else {
             Assert-IssueReplicateCandidate -Candidate $draft -IssueNumber $IssueNumber -Platform $manifest.platform | Out-Null
             if (-not $patchText) {
                 $patchText = Get-IssueReplicateDraftPatch -Candidate $draft -IssueNumber $IssueNumber -Platform $manifest.platform
                 $patchSha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
-                        [Text.Encoding]::UTF8.GetBytes($patchText))).ToLowerInvariant()
+                    [Text.Encoding]::UTF8.GetBytes($patchText))).ToLowerInvariant()
                 $candidateHeading = 'Draft test candidate (not verified failing)'
                 $execution = if ($null -ne $result -and $result.testExecuted) {
                     'The test was executed, but matching assertion failures were not verified twice.'
-                }
-                elseif ($null -ne $sample -and -not $sample.buildSucceeded) {
+                } elseif ($null -ne $sample -and -not $sample.buildSucceeded) {
                     'This draft has not been compiled or executed by the verifier because the author build was blocked.'
-                }
-                else { 'No test-body execution has been verified for this draft; compilation or execution may be blocked.' }
+                } else { 'No test-body execution has been verified for this draft; compilation or execution may be blocked.' }
                 $candidate = "**Unverified draft - review before using.** $execution " +
-                "It is generated, untrusted test code, not a framework fix or evidence that the issue was reproduced.`n`n" +
-                "Candidate JSON SHA-256: ``$draftHash``.`n`nPatch SHA-256: ``$patchSha256``."
+                    "It is generated, untrusted test code, not a framework fix or evidence that the issue was reproduced.`n`n" +
+                    "Candidate JSON SHA-256: ``$draftHash``.`n`nPatch SHA-256: ``$patchSha256``."
                 $summary += ' A reviewable test draft is included below; it is not a verified failing test.'
             }
         }
@@ -204,8 +195,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     if ($patchText) {
         $followUp = 'Review whether the generated assertion isolates the reported scenario before applying a candidate patch. A simulator result does not replace physical-device validation.'
     }
-}
-elseif ($CandidateDirectory) {
+} elseif ($CandidateDirectory) {
     throw 'A draft cannot be published without its validated issue snapshot.'
 }
 
@@ -221,7 +211,7 @@ function Format-PatchBlock {
 
 if ($sampleDiagnostic) {
     $details += "`n`nAuthor sample build diagnostic (untrusted log text):" +
-    (Format-PatchBlock -Text $sampleDiagnostic -Language text)
+        (Format-PatchBlock -Text $sampleDiagnostic -Language text)
 }
 
 function Get-RecordingSection {
@@ -238,13 +228,12 @@ function Get-RecordingSection {
             }
             Export-IssueReplicateRecording -Bytes $recordingBytes -Recording $result.recording -Provider None | Out-Null
             $recordingText = "Bounded native UI recording from attempt $($result.attempt) (at most 30 seconds, no audio). " +
-            "This is visual context, not independent proof of the original issue or evidence authenticity.`n`n" +
-            "Video SHA-256: ``$($result.recording.sha256)``.`n`n"
+                "This is visual context, not independent proof of the original issue or evidence authenticity.`n`n" +
+                "Video SHA-256: ``$($result.recording.sha256)``.`n`n"
             if ($OutputPath) {
                 [IO.File]::WriteAllBytes([IO.Path]::GetFullPath("$OutputPath.recording.mp4"), $recordingBytes)
                 $recordingText += 'The recording is available to the publisher. This read-only preview does not upload media or post a comment.'
-            }
-            else {
+            } else {
                 try {
                     $publicationInterrupted = $true
                     $identity = gh api user --jq .login
@@ -252,7 +241,7 @@ function Get-RecordingSection {
                         throw 'Could not identify the authenticated media publisher.'
                     }
                     $existingJson = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
-                            --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$marker`"))) | {body} | @json")
+                        --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$marker`"))) | {body} | @json")
                     if ($LASTEXITCODE -ne 0) {
                         throw 'Could not reconcile the recording with the existing result comment.'
                     }
@@ -263,29 +252,27 @@ function Get-RecordingSection {
                         -Recording $result.recording -IssueNumber $IssueNumber -ExistingBody $existingBody -SaveCheckpoint {
                         param([string]$Checkpoint)
                         $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n$summary`n`n$runNote`n`n" +
-                        "**Media publication is incomplete.** A recording upload may have started. " +
-                        "If its receipt is missing, retries will not repeat the upload; an operator must reconcile it. " +
-                        "A recorded attachment URL below is a receipt, not a finalized reproduction report.`n`n" +
-                        "$Checkpoint`n`n[Public run and execution logs]($buildUrl)."
+                            "**Media publication is incomplete.** A recording upload may have started. " +
+                            "If its receipt is missing, retries will not repeat the upload; an operator must reconcile it. " +
+                            "A recorded attachment URL below is a receipt, not a finalized reproduction report.`n`n" +
+                            "$Checkpoint`n`n[Public run and execution logs]($buildUrl)."
                         Set-ResultComment -Marker $marker -Body $pendingBody | Out-Null
                     }
                     $checkpoint = $receipt.Checkpoint
                     $recordingText += $checkpoint
                     $publicationInterrupted = $false
-                }
-                catch {
+                } catch {
                     $recordingFailure = $_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
                     if ($recordingFailure.Length -gt 1000) { $recordingFailure = $recordingFailure.Substring(0, 1000) }
                     $recordingText += "**Video publication failed.** No playable recording is attached." +
-                    (Format-PatchBlock -Text $recordingFailure -Language text)
+                        (Format-PatchBlock -Text $recordingFailure -Language text)
                 }
             }
-        }
-        else {
+        } else {
             $recordingFailure = [string]$result.recording.diagnostic
             $recordingText = "**Native recording unavailable:** ``$($result.recording.status)``. " +
-            'The test result is reported separately; no video evidence is claimed.' +
-            (Format-PatchBlock -Text $recordingFailure -Language text)
+                'The test result is reported separately; no video evidence is claimed.' +
+                (Format-PatchBlock -Text $recordingFailure -Language text)
         }
         $recordingSection = @(
             '---', '', '<details>', '<summary><strong>&#x1F3A5; Native recording</strong></summary>',
@@ -308,13 +295,12 @@ function Set-ResultComment {
         throw 'Could not identify the authenticated comment publisher.'
     }
     $existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
-            --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$Marker`"))) | .id")
+        --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$Marker`"))) | .id")
     if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
     if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same run.' }
     if ($existing.Count -eq 1) {
         $url = $Body | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH -F body=@- --jq .html_url
-    }
-    else {
+    } else {
         $url = $Body | gh api "repos/dotnet/maui/issues/$IssueNumber/comments" --method POST -F body=@- --jq .html_url
     }
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$url) -or
@@ -332,13 +318,13 @@ $inlinePatch = ''
 if ($patchText) {
     $inlineExact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($patchText))
     $inlinePatch = "`n`nReadable diff preview (use the exact-byte payload when applying):" +
-    (Format-PatchBlock -Text $patchText) +
-    "`n`n**Exact UTF-8 patch (base64)**. Decode this payload and verify the patch SHA-256 " +
-    "above before applying; rendered diff previews may normalize line endings." +
-    (Format-PatchBlock -Text $inlineExact -Language text)
+        (Format-PatchBlock -Text $patchText) +
+        "`n`n**Exact UTF-8 patch (base64)**. Decode this payload and verify the patch SHA-256 " +
+        "above before applying; rendered diff previews may normalize line endings." +
+        (Format-PatchBlock -Text $inlineExact -Language text)
     if ([Text.Encoding]::UTF8.GetByteCount($inlinePatch) -gt 45000) {
         $parts = @()
-        for ($offset = 0; $offset -lt $patchText.Length; ) {
+        for ($offset = 0; $offset -lt $patchText.Length;) {
             $length = [Math]::Min(6000, $patchText.Length - $offset)
             if ([char]::IsHighSurrogate($patchText[$offset + $length - 1])) { $length-- }
             $parts += $patchText.Substring($offset, $length)
@@ -347,9 +333,9 @@ if ($patchText) {
         $links = @()
         if (-not $OutputPath) {
             $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n" +
-            "**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
-            "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
-            "[Public run and execution logs]($buildUrl).`n`n$($recordingReport.Checkpoint)"
+                "**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
+                "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
+                "[Public run and execution logs]($buildUrl).`n`n$($recordingReport.Checkpoint)"
             $pendingUrl = Set-ResultComment -Marker $marker -Body $pendingBody
         }
         for ($index = 0; $index -lt $parts.Count; $index++) {
@@ -357,21 +343,20 @@ if ($patchText) {
             $partMarker = $marker.Replace('issue-replicate-result:', "issue-replicate-patch:${number}:")
             $exact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($parts[$index]))
             $partBody = "$partMarker`n## Generated test candidate: part $number of $($parts.Count)`n`n" +
-            "Patch SHA-256: ``$patchSha256``. " +
-            $(if ($OutputPath) { 'The full patch is preserved across all preview parts. ' }
-                else { "Publication is complete only when [the main report]($pendingUrl) links every part; otherwise these fragments are incomplete and must not be applied. " }) +
-            "Review this untrusted code before applying it. To reconstruct exact bytes, decode each " +
-            "base64 fragment and concatenate the decoded bytes in order." +
-            (Format-PatchBlock -Text $parts[$index]) +
-            "`n`n<details><summary>Exact UTF-8 patch fragment (base64)</summary>`n`n" +
-            ('`' * 4) + "text`n$exact`n" + ('`' * 4) + "`n`n</details>"
+                "Patch SHA-256: ``$patchSha256``. " +
+                $(if ($OutputPath) { 'The full patch is preserved across all preview parts. ' }
+                    else { "Publication is complete only when [the main report]($pendingUrl) links every part; otherwise these fragments are incomplete and must not be applied. " }) +
+                "Review this untrusted code before applying it. To reconstruct exact bytes, decode each " +
+                "base64 fragment and concatenate the decoded bytes in order." +
+                (Format-PatchBlock -Text $parts[$index]) +
+                "`n`n<details><summary>Exact UTF-8 patch fragment (base64)</summary>`n`n" +
+                ('`' * 4) + "text`n$exact`n" + ('`' * 4) + "`n`n</details>"
             if ([Text.Encoding]::UTF8.GetByteCount($partBody) -gt 60000) { throw 'A patch continuation is oversized.' }
             if ($OutputPath) {
                 [IO.File]::WriteAllText([IO.Path]::GetFullPath("$OutputPath.patch-$number.md"),
                     $partBody, [Text.UTF8Encoding]::new($false))
                 $links += "Part $number of $($parts.Count) is in the separate comment preview."
-            }
-            else {
+            } else {
                 $url = Set-ResultComment -Marker $partMarker -Body $partBody
                 $links += "[Part $number of $($parts.Count)]($url)"
             }
@@ -386,8 +371,7 @@ $candidateSection = if ($patchText) {
         "<summary><strong>&#x1F4DD; $candidateHeading</strong> &#x2014; review code</summary>",
         '<br/>', '', ($candidate + $inlinePatch), '', '</details>', ''
     ) -join "`n"
-}
-else { '' }
+} else { '' }
 $body = @(
     $marker,
     '## Issue Reproduction Analysis',
