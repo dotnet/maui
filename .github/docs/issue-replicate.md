@@ -108,8 +108,10 @@ can be retried without duplicating or presenting incomplete fragments as a compl
 Publication failures also produce an
 expandable follow-up notice, without claiming a verified outcome.
 
-UI verification also records one bounded fixture/test span on the selected native
-attempt: at most 30 seconds, no audio, and at most 512 KiB of MP4 data. The trusted
+UI verification also records one bounded test span on the selected native
+attempt: at most 30 seconds, no audio, and at most 512 KiB of MP4 data. Recording
+starts at the test's `Start` marker, after one-time fixture setup and its session
+recreation retries have finished, and stops at its `Stop` marker. The trusted
 controller uses the live Appium session without enabling session discovery.
 The recording is visual context for the generated candidate, not proof of the
 author's exact app interaction or tamper-proof evidence. Unit/XAML candidates

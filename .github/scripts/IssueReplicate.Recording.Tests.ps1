@@ -137,6 +137,107 @@ Describe 'Native recording helpers' {
     }
 
     Describe 'Native Appium recording control' {
+        It 'waits through fixture session recreation before recording (test started=<TestStarted>)' -ForEach @(
+            @{ TestStarted = $true }, @{ TestStarted = $false }
+        ) {
+            . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+            $fixture = New-RecordingFixture
+            $parameters = New-RecordingPostFixture $fixture.Recording
+            $repo = Join-Path $parameters.InputDirectory 'repo'
+            $project = Join-Path $repo 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj'
+            New-Item -ItemType Directory -Path (Split-Path $project) -Force | Out-Null
+            Set-Content $project '<Project />'
+            & git -C $repo init -q
+            & git -C $repo add .
+            & git -C $repo -c user.name=Fixture -c user.email=fixture@example.invalid commit -q -m Fixture
+            $LASTEXITCODE | Should -Be 0
+            $revision = (& git -C $repo rev-parse HEAD).Trim()
+            $manifestPath = Join-Path $parameters.InputDirectory 'manifest.json'
+            $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+            $manifest.targetSha = $revision
+            $manifest | Add-Member -NotePropertyName schemaVersion -NotePropertyValue 1
+            $manifest | ConvertTo-Json | Set-Content $manifestPath
+            $samplePath = Join-Path $parameters.InputDirectory 'sample-result.json'
+            @{ targetSha = $revision; sampleSha256 = $manifest.sampleSha256; buildSucceeded = $true } |
+            ConvertTo-Json | Set-Content $samplePath
+            $candidatePath = Join-Path $parameters.InputDirectory 'candidate.json'
+            @{
+                kind = 'ui'; files = @(
+                    @{
+                        path = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'
+                        content = "#if ANDROID`nclass Issue12345 { }`n#endif"
+                    },
+                    @{
+                        path = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'
+                        content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`nclass Issue12345 { }`n#endif"
+                    }
+                )
+            } | ConvertTo-Json -Depth 5 | Set-Content $candidatePath
+            $global:recordingRetryLog = Join-Path $repo 'CustomAgentLogsTmp/UITests/appium.log'
+            New-Item -ItemType Directory -Path (Split-Path $global:recordingRetryLog) -Force | Out-Null
+            $global:recordingRetryTestStarted = $TestStarted
+            $global:recordingRetryCalls = [Collections.Generic.List[string]]::new()
+            Mock Invoke-IssueReplicateRecordingRequest {
+                $global:recordingRetryCalls.Add($Path)
+                if ($Path -like 'session/aaaaaaaa-*') { throw 'The first fixture session was discarded.' }
+                if ($Path.EndsWith('/stop_recording_screen')) {
+                    return [Convert]::ToBase64String($fixture.Bytes)
+                }
+                return ''
+            }
+            function pwsh {
+                [IO.File]::WriteAllText($global:recordingRetryLog,
+                    '[AppiumDriver] New AndroidDriver session created successfully, session aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa added')
+                '>>>>> 10/04/2026 12:00:00 FixtureSetup for ChecksBehavior'
+                '>>>>> 10/04/2026 12:00:00 Detected instrumentation crash, attempting session recreation...'
+                [IO.File]::AppendAllText($global:recordingRetryLog,
+                    "`n[AppiumDriver] New AndroidDriver session created successfully, session bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb added")
+                '>>>>> 10/04/2026 12:00:01 FixtureSetup for ChecksBehavior'
+                if ($global:recordingRetryTestStarted) {
+                    '>>>>> 10/04/2026 12:00:02 ChecksBehavior Start'
+                    '>>>>> 10/04/2026 12:00:03 ChecksBehavior Stop'
+                }
+                $trx = Join-Path (Split-Path $global:recordingRetryLog) 'TestResults/fixture.trx'
+                New-Item -ItemType Directory -Path (Split-Path $trx) -Force | Out-Null
+                $outcome = if ($global:recordingRetryTestStarted) { 'Passed' } else { 'NotExecuted' }
+                $executed = if ($global:recordingRetryTestStarted) { 1 } else { 0 }
+                [IO.File]::WriteAllText($trx, @"
+<TestRun>
+  <TestDefinitions><UnitTest id="test-1"><TestMethod className="Example.Issue12345" name="ChecksBehavior" /></UnitTest></TestDefinitions>
+  <Results><UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="$outcome" /></Results>
+  <ResultSummary outcome="$outcome"><Counters total="1" executed="$executed" passed="$executed" failed="0" /></ResultSummary>
+</TestRun>
+"@)
+                [IO.File]::SetLastWriteTimeUtc($trx, [DateTime]::UtcNow.AddSeconds(1))
+                $global:LASTEXITCODE = 0
+                ">>> TRX_RESULT_FILE: $trx"
+            }
+            try {
+                & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `
+                    -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $repo `
+                    -OutputDirectory $parameters.ResultsDirectory -RecordVideo -CoreLoaded
+                $result = Get-Content -Raw (Join-Path $parameters.ResultsDirectory 'result.json') | ConvertFrom-Json
+                if ($TestStarted) {
+                    $result.testExecuted | Should -BeTrue
+                    $result.recording.status | Should -BeExactly 'available'
+                    $global:recordingRetryCalls.Count | Should -Be 2
+                    $global:recordingRetryCalls[0] |
+                    Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/start_recording_screen'
+                    $global:recordingRetryCalls[1] |
+                    Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/stop_recording_screen'
+                    [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $parameters.ResultsDirectory 'recording.mp4'))) |
+                    Should -BeExactly ([Convert]::ToBase64String($fixture.Bytes))
+                } else {
+                    $result.testExecuted | Should -BeFalse
+                    $result.recording.status | Should -BeExactly 'not-started'
+                    $global:recordingRetryCalls.Count | Should -Be 0
+                    Test-Path (Join-Path $parameters.ResultsDirectory 'recording.mp4') | Should -BeFalse
+                }
+            } finally {
+                Remove-Variable recordingRetryLog, recordingRetryTestStarted, recordingRetryCalls -Scope Global
+            }
+        }
+
         It 'uses the latest bounded session reference without enabling session discovery' {
             $log = Join-Path $TestDrive 'sessions.log'
             [IO.File]::WriteAllText($log,

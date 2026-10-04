@@ -67,7 +67,7 @@ $previous = $null
 $recordingSession = ''
 $recordingBytes = [byte[]]@()
 if ($RecordVideo -and $candidate.kind -eq 'ui') {
-    $result.recording = @{ status = 'not-started'; diagnostic = 'The native fixture did not reach recording startup.' }
+    $result.recording = @{ status = 'not-started'; diagnostic = 'The native test did not reach its start marker.' }
 }
 if ($Attempt -eq 2) {
     $previousFile = Get-Item -LiteralPath $PreviousResultPath -ErrorAction Stop
@@ -181,13 +181,13 @@ try {
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
                     if ($RecordVideo -and $result.recording.status -eq 'not-started' -and
-                        $line -match '\bFixtureSetup for\b') {
+                        $line -match '^>>>>> .+ Start$') {
                         try {
                             $recordingSession = Start-IssueReplicateRecording -Platform $manifest.platform `
                                 -LogPath (Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/appium.log')
                             $result.recording.status = 'capturing'
                             $result.recording.diagnostic = ''
-                            Write-Host 'Native fixture recording started (at most 30 seconds, no audio).'
+                            Write-Host 'Native test recording started (at most 30 seconds, no audio).'
                         } catch {
                             $result.recording.status = 'failed'
                             $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
