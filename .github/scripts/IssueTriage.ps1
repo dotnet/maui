@@ -1573,9 +1573,6 @@ foreach ($decision in $proposal.withheld) {
         throw 'Withheld labels must be unique and cannot overlap additions or removals.'
     }
 }
-$permissions.Clear()
-Assert-Actor
-
 $marker = if ($CommandCommentId -gt 0) { "issue-triage-command:$CommandCommentId" }
     elseif ($env:GITHUB_RUN_ID) { "issue-triage-run:$($env:GITHUB_RUN_ID)" }
     else { "issue-triage-local:$($current.contextHash)" }
@@ -1624,6 +1621,10 @@ if ($existing.Count -eq 1 -and @($decisionMarkers | Where-Object {
     -not (Test-TriageReportMarker $existing[0].body $_ 'decision')
 }).Count -gt 0) {
     throw 'The prior triage report does not cover this proposal; use a fresh command or manual dispatch before applying changed decisions.'
+}
+$final = Get-Snapshot
+if ($final.contextHash -cne $current.contextHash) {
+    throw 'The issue, comments, labels, references, authority or catalog changed during proposal validation. Refusing stale publication; request a fresh run.'
 }
 Set-Content -LiteralPath (Join-Path $OutputDirectory 'report.md') -Value $body -Encoding utf8
 Write-Json 'decision.json' $proposal

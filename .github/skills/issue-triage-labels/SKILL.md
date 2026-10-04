@@ -442,6 +442,12 @@ an automatically generated comment `temporary_id`; the trusted validator checks
 its transport-only format and discards it before publication. The numeric
 prepared issue remains the only permitted target.
 
+After validation and report rendering, trusted code re-fetches the complete
+bounded snapshot, rechecks current authority and source-command/open-issue state,
+and requires an unchanged context hash before releasing native intents.
+Intervening changes require a fresh invocation, not a job rerun. This final
+freshness check does not make the later label/comment API writes atomic.
+
 When no changes or substantive withheld decisions are needed, call `noop` with
 a short reason. Missing required evidence is incomplete, not a successful review;
 report it using `report_incomplete` without requesting labels.

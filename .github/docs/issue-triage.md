@@ -510,8 +510,12 @@ independent context hash, and re-fetches/rechecks context and authority. It reje
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
 intents and unsafe transitions, then renders its own comment.
 Withheld labels must be unique and cannot overlap the proposed label delta.
-The final authorization clears the permission cache and rechecks both the
-original command actor and any rerun actor, rather than reusing intake permissions.
+After evidence validation and report rendering, the final gate re-fetches the
+complete bounded snapshot and requires its hash to match the validated context
+before writing the report or releasing native intents. This clears the permission
+cache, rechecks the original command actor and any rerun actor, verifies the source
+command and open issue again, and rejects intervening evidence, label, reference,
+authority or catalog changes. A stale proposal requires a fresh invocation.
 Only built-in gh-aw add/remove/comment handlers perform writes.
 Safe-output publication explicitly uses the built-in `secrets.GITHUB_TOKEN`,
 consistently posting as `github-actions[bot]`; it does not select a configured
@@ -540,6 +544,8 @@ result rather than interpreting the absence of a comment as success.
 Label/comment APIs are **not an atomic transaction**: inspect the Actions result
 for actual application, particularly after a partial failure. The explanation
 describes a validated requested delta, not an unconditional delivery claim.
+The final snapshot check detects changes during validation; it cannot lock GitHub
+state across the subsequent artifact upload or native handler/API calls.
 Job reruns are deliberately unsupported: the authorization step rejects them
 before exposing the Copilot pool, and the trusted validator rejects publication
 job reruns too. The pool and the compiled agent, detection and safe-output job
