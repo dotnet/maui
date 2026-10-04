@@ -102,11 +102,23 @@ snapshot restores useful leads without changing the MCP DIFC
 `min-integrity: approved` policy, visibility rules or shell allowlist. Original
 hosted failures included integrity-filtered history and separate shell permission
 denials, not a demonstrated content-exclusion denial. No denied resource is
-retried through another surface; organization content exclusions still apply.
+retried through another surface. Organization content exclusions must be honored,
+but their enforcement on pre-activation REST bytes subsequently supplied through
+the frozen artifact has not been verified. That integration requires
+platform-owner evidence or an authorized non-production policy test; the hosted
+public-repository acceptance runs do not establish it.
+
+HybridWebView/`EvaluateJavaScriptAsync` selects its shared and native handlers
+before other groups and excludes the legacy WebView group. Legacy WebView
+selection includes shared, Android, iOS and Windows handlers; source presence at
+the exact release remains explicit, not proof that each platform is affected.
 
 Inline logs/code and author corrections are analyzed before requesting more
 evidence. Public GitHub attachment links are inventoried with their originating
-comment; an inventory alone is **not analysis**. For canonical
+comment; the twenty-mention cap retains the earliest ten and latest ten so a
+later correction can reach image selection. An inventory alone is **not
+analysis**. Supplemental version tokens exclude sentence punctuation and do not
+accept partial four-component stable versions. For canonical
 `github.com/user-attachments/assets/<UUID>` images, the trusted collector can
 capture at most two PNGs (early evidence and latest correction), with no
 credentials/cookies, a 20-second transfer deadline, 512 KiB per image, 4 million

@@ -5,7 +5,14 @@ function Get-RegressionSourceEvidence {
 
     # Issue text selects fixed paths, never an API endpoint, ref, or executable.
     $text = "$($Context.issue.title)`n$($Context.issue.body)"
+    $hybridWebView = $text -match 'HybridWebView|EvaluateJavaScriptAsync'
     $groups = [ordered]@{
+        'HybridWebView|EvaluateJavaScriptAsync' = @(
+            'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.cs',
+            'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.Android.cs',
+            'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.iOS.cs',
+            'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.Windows.cs'
+        )
         'Material3|MauiMaterial|ThemeOverlay' = @(
             'src/Core/src/Platform/Android/MauiAppCompatActivity.cs',
             'src/Core/src/Platform/Android/Resources/values/styles-material3.xml',
@@ -27,13 +34,17 @@ function Get-RegressionSourceEvidence {
             'src/Core/src/Handlers/RefreshView/RefreshViewHandler.iOS.cs'
         )
         'WebView' = @(
+            'src/Core/src/Handlers/WebView/WebViewHandler.cs',
             'src/Core/src/Handlers/WebView/WebViewHandler.Android.cs',
+            'src/Core/src/Handlers/WebView/WebViewHandler.iOS.cs',
+            'src/Core/src/Handlers/WebView/WebViewHandler.Windows.cs',
             'src/Core/src/Platform/Android/MauiWebView.cs'
         )
         'TitleBar' = @('src/Controls/src/Core/TitleBar/TitleBar.Windows.cs')
     }
     $selected = @(
         foreach ($pattern in $groups.Keys) {
+            if ($hybridWebView -and $pattern -eq 'WebView') { continue }
             if ($text -match $pattern) { $groups[$pattern] }
         }
     ) | Select-Object -Unique
@@ -164,7 +175,7 @@ function Get-RegressionDiagnosticInventory {
     $truncated = $false
     foreach ($text in $texts) {
         foreach ($match in [regex]::Matches([string]$text.body,
-            '(?<![0-9A-Za-z.])v?\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?(?![0-9A-Za-z.])')) {
+            '(?<![0-9A-Za-z.])v?\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z-]*(?:\.[0-9A-Za-z-]+)*)?(?![0-9A-Za-z]|\.[0-9A-Za-z])')) {
             if ($versions.Count -ge 20) { $truncated = $true; break }
             $versions.Add([pscustomobject]@{
                 value = $match.Value; mentionedAt = $text.url; status = 'supplemental-unverified'
@@ -173,7 +184,11 @@ function Get-RegressionDiagnosticInventory {
         # Inventory only public GitHub attachment locations; never fetch a URL.
         foreach ($match in [regex]::Matches([string]$text.body,
             'https://(?:github\.com/(?:user-attachments/(?:assets|files)|dotnet/maui/files)/|user-images\.githubusercontent\.com/)[A-Za-z0-9/_.-]+')) {
-            if ($entries.Count -ge 20) { $truncated = $true; break }
+            if ($entries.Count -ge 20) {
+                $truncated = $true
+                # Preserve the earliest ten and latest ten mentions, including corrections.
+                $entries.RemoveAt(10)
+            }
             $entries.Add([pscustomobject]@{
                 url = $match.Value; mentionedAt = $text.url; status = 'linked-not-downloaded'
             })
