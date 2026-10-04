@@ -203,8 +203,17 @@ First select the task from the trusted frozen preflight mode:
 
 For `boundary-only`, this is **preflight reporting, not a regression
 investigation**. Do not load the investigation skill or search source/history.
-Read the frozen issue identity (`issue.author`), body/form fields, preflight,
-boundaries, gaps, diagnostics and human comments together with one `jq` selection.
+Read identity, body/form fields, preflight, boundaries, gaps, diagnostics and human
+comments together, using the known schema in one selection at the supplied path:
+
+```bash
+jq '{issue:(.issue|{number,url,author,title,body,fields}),preflight,boundaries,gaps,commentsTruncated,diagnostics,comments:[.comments[]|select(.authorType=="User")]}' "$RUNNER_TEMP/gh-aw/issue-regression-${{ github.run_id }}/context.json"
+```
+
+Use the native `add_comment` tool when available. If the runtime requires CLI
+schema discovery, follow that contract and invoke the registered CLI directly.
+Do not generate helper scripts, use another interpreter, or construct JSON
+pipelines to emit a report; the shell allowlist is not permission to do so.
 Summarize existing inline diagnosis/corrections conservatively; no static claim
 establishes an introducing change. Do not request a version or diagnostic already
 supplied as though it were absent. Clarify the role of supplemental versions
