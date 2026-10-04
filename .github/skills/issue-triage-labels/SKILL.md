@@ -170,6 +170,11 @@ substitutes for current original issue/comment evidence.
   do not hide a directed veto.
   "If we do not apply p/1" is hypothetical, not a directed veto. "Maybe do not
   apply p/1" is tentative; the exception never bypasses uncertainty.
+  For a recognized directed veto, check uncertainty in its label-bound imperative
+  clause, including trailing qualifiers. A separate explanation such as "Do not
+  apply p/1; I am not sure this is a regression" does not weaken the prohibition.
+  "Do not apply p/1, maybe" remains tentative. This narrower scope is veto-only;
+  affirmative decisions and factual evidence retain their paragraph-wide checks.
   That veto does not authorize a new removal or treat the condition as completed.
   Explanations such as "this is not ready" do not cancel the directed veto.
   Check the entire cited comment for a qualifying opposite decision or directed

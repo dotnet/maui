@@ -72,6 +72,12 @@ including list items following other prose on a new line.
 Embedded hypothetical negations such as "If we do not apply p/1"
 are not directed vetoes. Tentative prohibitions such as "Maybe do not apply p/1"
 remain withheld; the directed-veto exception never bypasses uncertainty.
+For a recognized directed veto, uncertainty is checked in its label-bound
+imperative clause, including trailing qualifiers, rather than borrowing it from
+a separate explanatory clause. "Do not apply p/1; I am not sure this is a
+regression" still vetoes an older approval; "Do not apply p/1, maybe" does not.
+This scope is veto-only: affirmative decisions and factual evidence retain
+their paragraph-wide uncertainty checks.
 Explanatory negation such as "this is not ready" or "we cannot commit" does not
 cancel a recognized directed veto. Questions remain non-decisions.
 It does not authorize a new removal or prove completion of the condition.

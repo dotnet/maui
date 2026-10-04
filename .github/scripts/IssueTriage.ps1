@@ -518,21 +518,30 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $removeVerbs = 'remove|drop|clear|withdraw|revoke|reject|decline'
     $gap = '(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|rather than)\b).){0,80}'
     $candidate = $Paragraph
+    $tentativeText = $Paragraph
     $prohibited = $false
     if ($Superseding) {
         $negatedVerbs = if ($Action -eq 'remove') { $addVerbs } else { $removeVerbs }
         $listMarker = '(?:[-*+]|\d{1,9}[.)])[ \t]+'
         $opening = "(?:(?:^|[.!;]\s+)\s*(?:$listMarker)?|(?:^|\r?\n)[ \t]*$listMarker)"
-        $prohibition = "(?i)(?<prefix>$opening(?:please\s+)?)(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=$gap$labelText)"
-        $prohibited = [regex]::IsMatch($candidate, $prohibition)
+        $clauseTail = '(?:(?![;!?\r\n]|\.(?:\s|$)).)*'
+        $prohibition = "(?i)(?<prefix>$opening(?:please\s+)?)(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=(?<clause>$gap$labelText$clauseTail))"
+        $prohibitions = [regex]::Matches($candidate, $prohibition)
+        $prohibited = $prohibitions.Count -gt 0
+        if ($prohibited) {
+            # Qualifiers in another clause do not weaken a categorical veto.
+            $tentativeText = @($prohibitions | ForEach-Object { $_.Groups['clause'].Value }) -join ' '
+        }
         $candidate = [regex]::Replace($candidate, $prohibition, '${prefix}' + $Action)
     }
     $withoutLabel = [regex]::Replace($candidate, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $tentativeText = [regex]::Replace($tentativeText, $labelText, 'LABEL', [Text.RegularExpressions.RegexOptions]::IgnoreCase)
     if (($Action -eq 'add' -or $Superseding) -and $Label -eq 's/not-a-bug') {
         $withoutLabel = [regex]::Replace($withoutLabel, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
+        $tentativeText = [regex]::Replace($tentativeText, '(?i)\b(?:expected behavior|not a bug)\b', 'DISPOSITION')
     }
     if ((Test-Interrogative $withoutLabel) -or
-        (Test-TentativeEvidence $withoutLabel) -or
+        (Test-TentativeEvidence $tentativeText) -or
         ((Test-ConditionalEvidence $withoutLabel -Decision) -and -not $prohibited)) { return $false }
     $allowedReferencePattern = ''
     if (-not $prohibited -and $Action -eq 'add' -and $Label -eq 's/duplicate 2️⃣') {
