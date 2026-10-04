@@ -273,6 +273,23 @@ function Assert-IssueReplicateCandidate {
                 -not $source.EndsWith("`n#endif", [StringComparison]::Ordinal) -or $directives.Count -ne 2) {
                 throw "A UI candidate $surface file must use the exclusive $Platform whole-file platform guard without other preprocessor directives."
             }
+            if ($surface -eq 'NUnit') {
+                $identifiers = [regex]::Replace($source, '\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})', {
+                    param($match)
+                    if ($match.Groups[1].Success) {
+                        return [string][char][Convert]::ToInt32($match.Groups[1].Value, 16)
+                    }
+                    $codePoint = [Convert]::ToInt64($match.Groups[2].Value, 16)
+                    if ($codePoint -gt 0x10FFFF -or ($codePoint -ge 0xD800 -and $codePoint -le 0xDFFF)) {
+                        throw 'The UI candidate contains an invalid Unicode identifier escape.'
+                    }
+                    return [char]::ConvertFromUtf32([int]$codePoint)
+                }, [Text.RegularExpressions.RegexOptions]::None, [TimeSpan]::FromSeconds(1))
+                $identifiers = [regex]::Replace($identifiers, '\p{Cf}', '')
+                if ($identifiers -match '\b(?:ResetAfterEachTest|FixtureSetup|FixtureOneTimeTearDown|TestSetup|TestTearDown|RecordTestSetup|RecordTestTeardown|InitialSetup|Reset|(?:SetUp|TearDown|OneTimeSetUp|OneTimeTearDown)(?:Attribute)?)\b') {
+                    throw 'A UI candidate must leave the default fixture lifecycle unchanged; lifecycle/reset hook references are unsupported.'
+                }
+            }
         }
         $literal = '(?:true|false|null|0[xX][0-9A-Fa-f]+|[0-9]+(?:\.[0-9]+)?(?:[uUlLfFdDmM]+)?|"(?:\\.|[^"\\])*"|''(?:\\.|[^''\\])'')'
         $constant = "(?:$literal|\s|[()+*/%<>=!&|^~?:-])+"

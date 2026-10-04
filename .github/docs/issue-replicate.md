@@ -118,6 +118,14 @@ Recorded UI candidates must execute exactly one named test: one matching
 Multiple methods, repeated cases, missing markers or a mismatched TRX are
 inconclusive; the clip is discarded instead of publishing an unrelated method's
 video alongside an assertion. Unit/XAML verification retains its multi-test support.
+The shared NUnit source must keep the inherited fixture lifecycle unchanged.
+Validation conservatively rejects lifecycle/reset hook names, including escaped
+identifiers and references in comments/literals, so candidates cannot enable
+per-test fixture resets after the base `Start` marker. Additional NUnit setup/teardown
+attributes are unsupported as well. Put issue-specific interaction
+in the one test body instead. If the framework's own setup recovery reports a
+successful session recreation, the controller restarts recording on that new
+session before the body completes. These checks are not an isolation boundary.
 The recording is visual context for the generated candidate, not proof of the
 author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
 do not record a UI video. Recorder or upload failures remain explicit in the

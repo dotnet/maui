@@ -69,17 +69,23 @@ function Invoke-IssueReplicateRecordingRequest {
     }
 }
 
+function Get-IssueReplicateRecordingSessionId {
+    param([Parameter(Mandatory)][string]$LogPath)
+
+    $log = Read-IssueReplicateNativeDiagnostic -Path $LogPath -MaxBytes 256KB -Tail
+    $matches = [regex]::Matches($log.Text,
+        '(?:/(?:wd/hub/)?session/|session created successfully, session )([a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12})')
+    if (-not $matches.Count) { throw 'The live Appium log contains no bounded session identifier.' }
+    return $matches[$matches.Count - 1].Groups[1].Value
+}
+
 function Start-IssueReplicateRecording {
     param(
         [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
         [Parameter(Mandatory)][string]$LogPath
     )
 
-    $log = Read-IssueReplicateNativeDiagnostic -Path $LogPath -MaxBytes 256KB -Tail
-    $matches = [regex]::Matches($log.Text,
-        '(?:/(?:wd/hub/)?session/|session created successfully, session )([a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12})')
-    if (-not $matches.Count) { throw 'The live Appium log contains no bounded session identifier.' }
-    $id = $matches[$matches.Count - 1].Groups[1].Value
+    $id = Get-IssueReplicateRecordingSessionId -LogPath $LogPath
     $options = @{ timeLimit = 30; forceRestart = $true }
     if ($Platform -eq 'android') {
         $options.bitRate = 100000

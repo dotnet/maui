@@ -206,6 +206,26 @@ try {
                             Write-Warning "Native recording failed: $($result.recording.diagnostic)"
                         }
                     }
+                    if ($RecordVideo -and $recordingSession -and $line -match '\bSession recreation successful\b') {
+                        try {
+                            $appiumLog = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/appium.log'
+                            $liveSession = Get-IssueReplicateRecordingSessionId -LogPath $appiumLog
+                            if ($liveSession -cne $recordingSession) {
+                                $recordingBytes = [byte[]]@()
+                                $recordingSession = ''
+                                $recordingSession = Start-IssueReplicateRecording -Platform $manifest.platform -LogPath $appiumLog
+                                Write-Host 'Native recording restarted on the recreated Appium session.'
+                            }
+                        } catch {
+                            $recordingSession = ''
+                            $result.recording.status = 'failed'
+                            $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
+                            if ($result.recording.diagnostic.Length -gt 1000) {
+                                $result.recording.diagnostic = $result.recording.diagnostic.Substring(0, 1000)
+                            }
+                            Write-Warning "Native recording failed: $($result.recording.diagnostic)"
+                        }
+                    }
                     $isStopMarker = $line -match '^>>>>> .+ (?<method>\S+) Stop$'
                     if ($RecordVideo -and $isStopMarker) {
                         $recordingStops = [Math]::Min(2, $recordingStops + 1)

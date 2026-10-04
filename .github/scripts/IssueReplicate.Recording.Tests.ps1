@@ -137,18 +137,54 @@ Describe 'Native recording helpers' {
     }
 
     Describe 'Native Appium recording control' {
-        It 'binds recording to one test after fixture retries (<Fault>, test started=<TestStarted>, assertion=<Assertion>)' -ForEach @(
-            @{ Fault = ''; TestStarted = $true; Assertion = $false },
-            @{ Fault = ''; TestStarted = $false; Assertion = $false },
-            @{ Fault = ''; TestStarted = $true; Assertion = $true },
-            @{ Fault = 'later failure'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'extra result'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'repeated case'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'wrong method'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'wrong stop'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'missing stop'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'stale TRX'; TestStarted = $true; Assertion = $false },
-            @{ Fault = 'missing TRX'; TestStarted = $true; Assertion = $false }
+        It 'rejects UI lifecycle/reset hooks before recording (<Hook>)' -ForEach @(
+            @{ Hook = 'protected override bool ResetAfterEachTest => true;' },
+            @{ Hook = 'protected override bool @ResetAfterEachTest => true;' },
+            @{ Hook = 'protected override bool ResetAfter\u0045achTest => true;' },
+            @{ Hook = 'protected override bool ResetAfter\U00000045achTest => true;' },
+            @{ Hook = 'protected override bool \u0052esetAfterEachTest => true;' },
+            @{ Hook = 'protected override bool ResetAfterEach\u200BTest => true;' },
+            @{ Hook = 'protected override void FixtureSetup() { base.FixtureSetup(); }' },
+            @{ Hook = 'public override void TestSetup() { base.TestSetup(); }' },
+            @{ Hook = '[NUnit.Framework.SetUp] public void ChangeSession() { }' },
+            @{ Hook = '[SetUpAttribute] public void ChangeSession() { }' },
+            @{ Hook = '[OneTimeSetUp] public void ChangeSession() { }' },
+            @{ Hook = '[TearDown] public void ChangeSession() { }' },
+            @{ Hook = 'public void ChangeSession() { Reset(); }' },
+            @{ Hook = '// ResetAfterEachTest must not be enabled here.' }
+        ) {
+            . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
+            $candidate = @{
+                kind = 'ui'; files = @(
+                    @{
+                        path = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'
+                        content = "#if ANDROID`nclass Issue12345 { }`n#endif"
+                    },
+                    @{
+                        path = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'
+                        content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`nclass Issue12345 {`n$Hook`n}`n#endif"
+                    }
+                )
+            }
+            { Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber 12345 -Platform android } |
+            Should -Throw '*default fixture lifecycle*'
+        }
+
+        It 'binds recording to one test after fixture retries (<Fault>, test started=<TestStarted>, assertion=<Assertion>, recovery=<Recovery>)' -ForEach @(
+            @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = ''; TestStarted = $false; Assertion = $false; Recovery = '' },
+            @{ Fault = ''; TestStarted = $true; Assertion = $true; Recovery = '' },
+            @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = 'new session' },
+            @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = 'same session' },
+            @{ Fault = 'restart failed'; TestStarted = $true; Assertion = $false; Recovery = 'new session' },
+            @{ Fault = 'later failure'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'extra result'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'repeated case'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'wrong method'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'wrong stop'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'missing stop'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'stale TRX'; TestStarted = $true; Assertion = $false; Recovery = '' },
+            @{ Fault = 'missing TRX'; TestStarted = $true; Assertion = $false; Recovery = '' }
         ) {
             . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
             $fixture = New-RecordingFixture
@@ -188,10 +224,14 @@ Describe 'Native recording helpers' {
             $global:recordingRetryTestStarted = $TestStarted
             $global:recordingRetryFault = $Fault
             $global:recordingRetryAssertion = [bool]$Assertion
+            $global:recordingRetryRecovery = $Recovery
             $global:recordingRetryCalls = [Collections.Generic.List[string]]::new()
             Mock Invoke-IssueReplicateRecordingRequest {
                 $global:recordingRetryCalls.Add($Path)
                 if ($Path -like 'session/aaaaaaaa-*') { throw 'The first fixture session was discarded.' }
+                if ($global:recordingRetryFault -eq 'restart failed' -and $Path -like 'session/cccccccc-*') {
+                    throw 'The recreated session rejected recording startup.'
+                }
                 if ($Path.EndsWith('/stop_recording_screen')) {
                     return [Convert]::ToBase64String($fixture.Bytes)
                 }
@@ -207,6 +247,13 @@ Describe 'Native recording helpers' {
                 '>>>>> 10/04/2026 12:00:01 FixtureSetup for ChecksBehavior'
                 if ($global:recordingRetryTestStarted) {
                     '>>>>> 10/04/2026 12:00:02 ChecksBehavior Start'
+                    if ($global:recordingRetryRecovery) {
+                        if ($global:recordingRetryRecovery -eq 'new session') {
+                            [IO.File]::AppendAllText($global:recordingRetryLog,
+                                "`n[AppiumDriver] New AndroidDriver session created successfully, session cccccccc-cccc-cccc-cccc-cccccccccccc added")
+                        }
+                        '>>>>> 10/04/2026 12:00:02 Session recreation successful in TestSetup'
+                    }
                     if ($global:recordingRetryFault -eq 'wrong stop') {
                         '>>>>> 10/04/2026 12:00:03 OtherBehavior Stop'
                     } elseif ($global:recordingRetryFault -ne 'missing stop') {
@@ -280,11 +327,19 @@ Describe 'Native recording helpers' {
                 } elseif ($TestStarted) {
                     $result.testExecuted | Should -BeTrue
                     $result.recording.status | Should -BeExactly 'available'
-                    $global:recordingRetryCalls.Count | Should -Be 2
                     $global:recordingRetryCalls[0] |
                     Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/start_recording_screen'
-                    $global:recordingRetryCalls[1] |
-                    Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/stop_recording_screen'
+                    if ($Recovery -eq 'new session') {
+                        $global:recordingRetryCalls.Count | Should -Be 3
+                        $global:recordingRetryCalls[1] |
+                        Should -BeExactly 'session/cccccccc-cccc-cccc-cccc-cccccccccccc/appium/start_recording_screen'
+                        $global:recordingRetryCalls[2] |
+                        Should -BeExactly 'session/cccccccc-cccc-cccc-cccc-cccccccccccc/appium/stop_recording_screen'
+                    } else {
+                        $global:recordingRetryCalls.Count | Should -Be 2
+                        $global:recordingRetryCalls[1] |
+                        Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/stop_recording_screen'
+                    }
                     [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $parameters.ResultsDirectory 'recording.mp4'))) |
                     Should -BeExactly ([Convert]::ToBase64String($fixture.Bytes))
                     if ($Assertion) {
@@ -315,7 +370,7 @@ Describe 'Native recording helpers' {
                 }
             } finally {
                 Remove-Variable recordingRetryLog, recordingRetryTestStarted, recordingRetryFault, recordingRetryAssertion,
-                    recordingRetryCalls -Scope Global
+                    recordingRetryRecovery, recordingRetryCalls -Scope Global
             }
         }
 
