@@ -214,6 +214,42 @@ function Import-IssueReplicateRecording {
     return ,$bytes
 }
 
+function Sync-IssueReplicateRecordingPublication {
+    param(
+        [Parameter(Mandatory)][byte[]]$Bytes,
+        [Parameter(Mandatory)]$Recording,
+        [Parameter(Mandatory)][ValidateRange(1, [int]::MaxValue)][int]$IssueNumber,
+        [AllowEmptyString()][string]$ExistingBody = '',
+        [Parameter(Mandatory)][scriptblock]$SaveCheckpoint
+    )
+
+    Export-IssueReplicateRecording -Bytes $Bytes -Recording $Recording -Provider None | Out-Null
+    if ([Text.Encoding]::UTF8.GetByteCount($ExistingBody) -gt 65000) {
+        throw 'The prior recording report exceeds its reconciliation bound.'
+    }
+    $mediaMarker = "<!-- issue-replicate-recording:$($Recording.sha256) -->"
+    $match = [regex]::Match($ExistingBody,
+        [regex]::Escape($mediaMarker) + '\s+(https://github\.com/user-attachments/assets/[a-fA-F0-9-]{36})(?:\s|$)')
+    if ($match.Success) {
+        $url = $match.Groups[1].Value
+        return @{ Url = $url; Checkpoint = "$mediaMarker`n$url" }
+    }
+    if ($ExistingBody.Contains('<!-- issue-replicate-recording-pending:') -or
+        $ExistingBody.Contains('<!-- issue-replicate-recording:')) {
+        throw 'A prior recording upload is unreconciled or mismatched. Reconcile its attachment receipt manually; an automatic retry will not upload again.'
+    }
+
+    & $SaveCheckpoint "<!-- issue-replicate-recording-pending:$($Recording.sha256) -->" | Out-Null
+    $url = Publish-IssueReplicateRecording -Bytes $Bytes -IssueNumber $IssueNumber
+    if ($url -cnotmatch '^https://github\.com/user-attachments/assets/[a-fA-F0-9-]{36}$') {
+        throw 'The upload returned no approved recording receipt; reconcile the pending report before retrying.'
+    }
+    $checkpoint = "$mediaMarker`n$url"
+    Write-Host "Native recording upload receipt ($($Recording.sha256)): $url"
+    & $SaveCheckpoint $checkpoint | Out-Null
+    return @{ Url = $url; Checkpoint = $checkpoint }
+}
+
 function Publish-IssueReplicateRecording {
     param(
         [Parameter(Mandatory)][byte[]]$Bytes,

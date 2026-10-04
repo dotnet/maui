@@ -132,7 +132,15 @@ do not record a UI video. Recorder or upload failures remain explicit in the
 report and fail publication rather than claiming a playable attachment exists.
 The isolated publisher uploads the validated bytes as a GitHub media attachment,
 then includes its player URL in an expandable **Native recording** section.
-Retries reuse the authenticated publisher's matching run/video marker.
+The publisher records a bot-owned pending report before uploading and checkpoints
+the returned attachment URL immediately afterward, before finalizing the report
+or publishing patch continuations. Retries reuse that matching run/video receipt;
+partial candidate reports retain it. If an upload may have started but its URL
+was not persisted, retries fail closed without uploading again or overwriting the
+pending report. An operator must reconcile the public upload receipt from the
+trusted publisher log; GitHub upload and comment writes are not one atomic operation.
+The clip is retained as a GitHub user attachment, independently of Azure/GitHub
+run-artifact retention. This workflow does not automatically delete uploaded clips.
 
 For a read-only preview, pass `-OutputPath` to `IssueReplicate.Post.ps1`; this
 validates the same result data and writes the comment without calling GitHub.

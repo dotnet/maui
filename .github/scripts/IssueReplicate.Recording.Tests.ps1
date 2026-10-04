@@ -513,6 +513,88 @@ with socket.socket() as server:
     }
 
     Describe 'Video comment publication' {
+        It 'checkpoints media side effects and refuses uncertain retries (<Fault>)' -ForEach @(
+            @{ Fault = '' }, @{ Fault = 'pending write' },
+            @{ Fault = 'upload' }, @{ Fault = 'receipt write' }
+        ) {
+            $fixture = New-RecordingFixture
+            $state = @{ Body = ''; Events = [Collections.Generic.List[string]]::new() }
+            $url = 'https://github.com/user-attachments/assets/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+            Mock Publish-IssueReplicateRecording {
+                $state.Body | Should -Match '^<!-- issue-replicate-recording-pending:'
+                [Convert]::ToBase64String($Bytes) | Should -BeExactly ([Convert]::ToBase64String($fixture.Bytes))
+                $state.Events.Add('upload')
+                if ($Fault -eq 'upload') { throw 'The upload response was lost.' }
+                return $url
+            }
+            $save = {
+                param([string]$Checkpoint)
+                $event = if ($Checkpoint.Contains('recording-pending:')) { 'pending write' } else { 'receipt write' }
+                $state.Events.Add($event)
+                if ($Fault -eq $event) { throw 'The comment write failed.' }
+                $state.Body = $Checkpoint
+            }
+            $publish = {
+                Sync-IssueReplicateRecordingPublication -Bytes $fixture.Bytes -Recording $fixture.Recording `
+                    -IssueNumber 12345 -ExistingBody $state.Body -SaveCheckpoint $save
+            }
+            if (-not $Fault) {
+                $receipt = & $publish
+                $receipt.Url | Should -BeExactly $url
+                ($state.Events -join ',') | Should -BeExactly 'pending write,upload,receipt write'
+                $state.Body | Should -BeExactly $receipt.Checkpoint
+                $again = & $publish
+                $again.Url | Should -BeExactly $url
+                $state.Events.Count | Should -Be 3
+                Should -Invoke Publish-IssueReplicateRecording -Times 1 -Exactly
+            } else {
+                $publish | Should -Throw
+                if ($Fault -eq 'pending write') {
+                    Should -Invoke Publish-IssueReplicateRecording -Times 0 -Exactly
+                    $state.Body | Should -BeExactly ''
+                } else {
+                    $state.Body | Should -Match '^<!-- issue-replicate-recording-pending:'
+                    $publish | Should -Throw '*automatic retry will not upload again*'
+                    Should -Invoke Publish-IssueReplicateRecording -Times 1 -Exactly
+                }
+            }
+        }
+
+        It 'does not repeat an uncertain upload or erase its owned pending report' {
+            $fixture = New-RecordingFixture
+            $parameters = New-RecordingPostFixture $fixture.Recording
+            $pending = "<!-- issue-replicate-result:456789 -->`nMedia publication is incomplete.`n" +
+                "<!-- issue-replicate-recording-pending:$($fixture.Recording.sha256) -->"
+            $global:recordingPendingBody = $pending
+            $global:recordingUploadAttempts = 0
+            function gh {
+                begin { $inputBody = [Collections.Generic.List[string]]::new() }
+                process { if ($null -ne $_) { $inputBody.Add([string]$_) } }
+                end {
+                    $global:LASTEXITCODE = 0
+                    if ($args[1] -eq 'user') { 'fixture-publisher'; return }
+                    if ('--slurp' -in $args) {
+                        ConvertTo-Json -InputObject @(@{ body = $global:recordingPendingBody }) -Compress
+                        return
+                    }
+                    if ($args[1] -eq 'repos/dotnet/maui') {
+                        $global:recordingUploadAttempts++
+                        $global:LASTEXITCODE = 1
+                        return
+                    }
+                    if ('--paginate' -in $args) { '7'; return }
+                    $global:recordingPendingBody = $inputBody -join "`n"
+                    'https://github.com/dotnet/maui/issues/12345#issuecomment-7'
+                }
+            }
+            try {
+                { & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters `
+                    -VideoBytes $fixture.Bytes } | Should -Throw
+                $global:recordingUploadAttempts | Should -Be 0
+                $global:recordingPendingBody | Should -BeExactly $pending
+            } finally { Remove-Variable recordingPendingBody, recordingUploadAttempts -Scope Global }
+        }
+
         It 'accepts hash-bound video bytes in memory without inflating the local CLI environment' {
             $fixture = New-RecordingFixture -Length 524288
             $parameters = New-RecordingPostFixture $fixture.Recording
@@ -625,6 +707,82 @@ with socket.socket() as server:
                 $global:recordingPostedBodies[0] | Should -Match 'https://github.com/user-attachments/assets/aaaaaaaa'
                 $global:recordingPostedBodies[0] | Should -Not -Match 'Video publication failed'
             } finally { Remove-Variable recordingExistingBody, recordingPostedBodies -Scope Global }
+        }
+
+        It 'preserves a recording receipt across failed patch continuation publication and retry' {
+            $fixture = New-RecordingFixture
+            $parameters = New-RecordingPostFixture $fixture.Recording
+            $paths = @(
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs',
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'
+            )
+            $patch = ($paths | ForEach-Object {
+                "diff --git a/$_ b/$_`n--- /dev/null`n+++ b/$_`n@@ -0,0 +1 @@`n+//" + ('x' * 24000) + "`n"
+            }) -join ''
+            $patchPath = Join-Path $parameters.ResultsDirectory 'test.patch'
+            [IO.File]::WriteAllText($patchPath, $patch)
+            $resultPath = Join-Path $parameters.ResultsDirectory 'result.json'
+            $result = Get-Content -Raw $resultPath | ConvertFrom-Json
+            $result.status = 'candidate-failed'
+            $result.assertionFailed = $true
+            $result | Add-Member -NotePropertyName patchSha256 -NotePropertyValue (
+                (Get-FileHash $patchPath -Algorithm SHA256).Hash.ToLowerInvariant())
+            $result | ConvertTo-Json -Depth 6 | Set-Content $resultPath
+            $url = 'https://github.com/user-attachments/assets/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+            $global:recordingContinuationRemote = [Collections.Generic.List[object]]::new()
+            $global:recordingContinuationRemote.Add(@{
+                id = 7; body = "<!-- issue-replicate-result:456789 -->`n" +
+                    "<!-- issue-replicate-recording:$($fixture.Recording.sha256) -->`n$url"
+            })
+            $global:recordingContinuationFail = $true
+            function gh {
+                begin { $inputBody = [Collections.Generic.List[string]]::new() }
+                process { if ($null -ne $_) { $inputBody.Add([string]$_) } }
+                end {
+                    $global:LASTEXITCODE = 0
+                    if ($args[1] -eq 'user') { 'fixture-publisher'; return }
+                    if ($args[1] -eq 'repos/dotnet/maui') { throw 'A receipt retry must not upload again.' }
+                    if ('--paginate' -in $args) {
+                        $query = $args[[array]::IndexOf($args, '--jq') + 1]
+                        $query | Should -Match '\.user\.login == "fixture-publisher"'
+                        $marker = [regex]::Match($query, 'startswith\("([^"]+)"\)').Groups[1].Value
+                        $items = @($global:recordingContinuationRemote | Where-Object { $_.body.StartsWith($marker) })
+                        if ('--slurp' -in $args) {
+                            ConvertTo-Json -InputObject @($items | ForEach-Object { @{ body = $_.body } }) -Compress
+                        } else { $items | ForEach-Object id }
+                        return
+                    }
+                    $body = $inputBody -join "`n"
+                    if ($global:recordingContinuationFail -and $body.StartsWith('<!-- issue-replicate-patch:2:')) {
+                        $global:LASTEXITCODE = 1
+                        return
+                    }
+                    if ($args[1] -match '/issues/comments/([0-9]+)$') {
+                        $id = [int]$Matches[1]
+                        @($global:recordingContinuationRemote | Where-Object id -eq $id)[0].body = $body
+                    } else {
+                        $id = 7 + $global:recordingContinuationRemote.Count
+                        $global:recordingContinuationRemote.Add(@{ id = $id; body = $body })
+                    }
+                    "https://github.com/dotnet/maui/issues/12345#issuecomment-$id"
+                }
+            }
+            $post = {
+                & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters -VideoBytes $fixture.Bytes
+            }
+            try {
+                $post | Should -Throw '*Could not post*'
+                $global:recordingContinuationRemote[0].body | Should -Match 'Candidate publication is incomplete'
+                $global:recordingContinuationRemote[0].body | Should -Match ([regex]::Escape($url))
+                $global:recordingContinuationFail = $false
+                & $post
+                $global:recordingContinuationRemote[0].body | Should -Not -Match 'publication is incomplete'
+                $global:recordingContinuationRemote[0].body | Should -Match 'Native recording'
+                $global:recordingContinuationRemote[0].body | Should -Match ([regex]::Escape($url))
+                @($global:recordingContinuationRemote | Where-Object {
+                    $_.body.StartsWith('<!-- issue-replicate-result:')
+                }).Count | Should -Be 1
+            } finally { Remove-Variable recordingContinuationRemote, recordingContinuationFail -Scope Global }
         }
 
         It 'posts one honest test report and then fails explicitly when recording is unavailable' {

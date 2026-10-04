@@ -217,6 +217,8 @@ if ($sampleDiagnostic) {
 function Get-RecordingSection {
     $recordingSection = ''
     $recordingFailure = ''
+    $checkpoint = ''
+    $publicationInterrupted = $false
     if ($null -ne $result -and $result.recording) {
         Assert-IssueReplicateRecording -Recording $result.recording
         $recordingText = ''
@@ -233,6 +235,7 @@ function Get-RecordingSection {
                 $recordingText += 'The recording is available to the publisher. This read-only preview does not upload media or post a comment.'
             } else {
                 try {
+                    $publicationInterrupted = $true
                     $identity = gh api user --jq .login
                     if ($LASTEXITCODE -ne 0 -or "$identity" -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
                         throw 'Could not identify the authenticated media publisher.'
@@ -245,17 +248,20 @@ function Get-RecordingSection {
                     }
                     $existing = @($existingJson | ConvertFrom-Json -Depth 5)
                     if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the recording.' }
-                    $mediaMarker = "<!-- issue-replicate-recording:$($result.recording.sha256) -->"
-                    $videoUrl = ''
-                    if ($existing.Count -eq 1) {
-                        $match = [regex]::Match([string]$existing[0].body,
-                            [regex]::Escape($mediaMarker) + '\s+(https://github\.com/user-attachments/assets/[a-fA-F0-9-]{36})(?:\s|$)')
-                        if ($match.Success) { $videoUrl = $match.Groups[1].Value }
+                    $existingBody = if ($existing.Count -eq 1) { [string]$existing[0].body } else { '' }
+                    $receipt = Sync-IssueReplicateRecordingPublication -Bytes $recordingBytes `
+                        -Recording $result.recording -IssueNumber $IssueNumber -ExistingBody $existingBody -SaveCheckpoint {
+                        param([string]$Checkpoint)
+                        $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n$summary`n`n$runNote`n`n" +
+                            "**Media publication is incomplete.** A recording upload may have started. " +
+                            "If its receipt is missing, retries will not repeat the upload; an operator must reconcile it. " +
+                            "A recorded attachment URL below is a receipt, not a finalized reproduction report.`n`n" +
+                            "$Checkpoint`n`n[Public run and execution logs]($buildUrl)."
+                        Set-ResultComment -Marker $marker -Body $pendingBody | Out-Null
                     }
-                    if (-not $videoUrl) {
-                        $videoUrl = Publish-IssueReplicateRecording -Bytes $recordingBytes -IssueNumber $IssueNumber
-                    }
-                    $recordingText += "$mediaMarker`n$videoUrl"
+                    $checkpoint = $receipt.Checkpoint
+                    $recordingText += $checkpoint
+                    $publicationInterrupted = $false
                 } catch {
                     $recordingFailure = $_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
                     if ($recordingFailure.Length -gt 1000) { $recordingFailure = $recordingFailure.Substring(0, 1000) }
@@ -274,7 +280,10 @@ function Get-RecordingSection {
             '<br/>', '', $recordingText, '', '</details>', ''
         ) -join "`n"
     }
-    return @{ Section = $recordingSection; Failure = $recordingFailure }
+    return @{
+        Section = $recordingSection; Failure = $recordingFailure
+        Checkpoint = $checkpoint; Interrupted = $publicationInterrupted
+    }
 }
 
 function Set-ResultComment {
@@ -302,6 +311,10 @@ function Set-ResultComment {
     return $url
 }
 
+$recordingReport = Get-RecordingSection
+if ($recordingReport.Interrupted) {
+    throw "Native video publication is incomplete; any owned pending report or upload receipt was preserved: $($recordingReport.Failure)"
+}
 $inlinePatch = ''
 if ($patchText) {
     $inlineExact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($patchText))
@@ -323,7 +336,7 @@ if ($patchText) {
             $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n" +
                 "**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
                 "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
-                "[Public run and execution logs]($buildUrl)."
+                "[Public run and execution logs]($buildUrl).`n`n$($recordingReport.Checkpoint)"
             $pendingUrl = Set-ResultComment -Marker $marker -Body $pendingBody
         }
         for ($index = 0; $index -lt $parts.Count; $index++) {
@@ -360,7 +373,6 @@ $candidateSection = if ($patchText) {
         '<br/>', '', ($candidate + $inlinePatch), '', '</details>', ''
     ) -join "`n"
 } else { '' }
-$recordingReport = Get-RecordingSection
 $body = @(
     $marker,
     '## Issue Reproduction Analysis',
