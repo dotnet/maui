@@ -114,7 +114,8 @@ selection includes shared, Android, iOS and Windows handlers; source presence at
 the exact release remains explicit, not proof that each platform is affected.
 
 Inline logs/code and author corrections are analyzed before requesting more
-evidence. Public GitHub attachment links are inventoried with their originating
+evidence. Inventory uses the issue body and human (`authorType: User`) comments,
+not bot reports. Public GitHub attachment links retain their originating
 comment; the twenty-mention cap retains the earliest ten and latest ten so a
 later correction can reach image selection. An inventory alone is **not
 analysis**. Trailing sentence periods are removed from inventoried attachment

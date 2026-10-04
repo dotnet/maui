@@ -171,7 +171,7 @@ function Get-RegressionDiagnosticInventory {
     $entries = [System.Collections.Generic.List[object]]::new()
     $versions = [System.Collections.Generic.List[object]]::new()
     $texts = @([pscustomobject]@{ url = $Context.issue.url; body = $Context.issue.body }) +
-        @($Context.comments)
+        @($Context.comments | Where-Object { $_.authorType -ceq 'User' })
     $truncated = $false
     foreach ($text in $texts) {
         foreach ($match in [regex]::Matches([string]$text.body,
