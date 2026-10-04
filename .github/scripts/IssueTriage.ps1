@@ -556,7 +556,9 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     if ($Label -eq 's/not-a-bug') {
         $dispositionSubject += '|\b(?:expected behavior|by design|working as intended|not a bug)\b'
     }
-    $rejected = '(?:(?:is|are|was|were|has|have|had|be|been|being|now|later|already|previously|explicitly|formally|ultimately|finally)\s+){0,6}(?:rejected|declined|denied|cancell?ed|withdrawn|revoked|ruled\s+out)\b'
+    $dispositionState = '(?:is|are|was|were|has|have|had|be|been|being|now|later|already|previously|explicitly|formally|ultimately|finally)'
+    $reviewState = '(?:reviewed|considered|discussed|evaluated)'
+    $rejected = "(?:$dispositionState\s+){0,6}(?:$reviewState\s+(?:and(?:\s+then)?|then)\s+(?:$dispositionState\s+){0,6}){0,2}(?:rejected|declined|denied|cancell?ed|withdrawn|revoked|ruled\s+out)\b"
     if ($Paragraph -match "(?i)(?:$dispositionSubject)\s*(?:[,:\u2013\u2014]|--|\s-(?=\s|$))?\s+$rejected") {
         return [bool]$Superseding
     }
@@ -712,7 +714,11 @@ function Test-PositiveValidation([string]$Paragraph, [string]$ReferenceContext =
     $target = "(?<![\w])$outcome(?![\w])"
     $reproduction = '(?:reproduced|reproducible|can reproduce)'
     $clause = "(?:(?![;!?\r\n]|\.(?:\s|$)|\b(?:but|however|although|except|yet|not|never|cannot)\b|$validationReferencePattern).){0,50}"
-    if ($candidate -match "(?i)$target$clause\b$reproduction\b|\b$reproduction\b$clause$target|\b(?:confirmed|verified)\b$clause$target|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause$target") {
+    $confirmationModifiers = '(?:(?:successfully|reliably|consistently|actually|fully|independently|personally|locally)\s+){0,4}'
+    $environment = '(?:Android|iOS|Windows|MacCatalyst|MacOS|Tizen|Linux|MAUI|\.NET|devices?|simulators?|emulators?|samples?|repro(?:ducers?)?|VS(?:\s*Code)?|Visual\s+Studio|\d+\.\d+)\b'
+    $environmentPrefix = '(?:on|under|in|with|using|against)\s+(?:(?:the|an?|both|all|my|our|same|physical|virtual|attached|provided|minimal|custom)\s+){0,3}'
+    $confirmation = "\b(?:confirmed|verified)\b\s+$confirmationModifiers$target(?=\s*(?:$|[.!?;]|$environmentPrefix$environment))"
+    if ($candidate -match "(?i)$target$clause\b$reproduction\b|\b$reproduction\b$clause$target|$confirmation|\btest\b$clause\bcorrectly detect(?:s|ing)\b$clause$target") {
         return $true
     }
     if ((Test-ForeignIssueReference $ReferenceContext) -or (Test-ForeignOutcome $ReferenceContext)) { return $false }

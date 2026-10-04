@@ -91,6 +91,12 @@ substitutes for current original issue/comment evidence.
   "That issue" cannot import the referenced report's confirmation. Reference
   metadata constrains scope; it is not affirmative authority. The same target
   gate applies to simulator transitions and contrary positive evidence.
+  Generic "confirmed"/"verified" wording must directly govern the reported target,
+  optionally with bounded observation modifiers, and end there or continue with a
+  recognized test environment. Checking the version in this issue or verifying
+  this issue's title/state is metadata validation, not reproduction. Do not borrow
+  a reported target across the verified property's description. Ambiguous generic
+  continuations are withheld; explicit target-bound reproduction remains eligible.
 - `potential-regression` records a plausible reported regression, not proof.
   `i/regression` requires authorized change-of-behavior evidence, not just
   reproduction: explicit working behavior tied to an earlier named .NET/MAUI
@@ -140,6 +146,9 @@ substitutes for current original issue/comment evidence.
   bound directly to an exact label or its special disposition cannot authorize
   an action either. "The request to apply p/1 was rejected" is not an approval;
   "Duplicate of #N was ruled out" is not an affirmative duplicate disposition.
+  Directly bound coordinated review predicates such as "was reviewed and rejected"
+  or "was considered and then declined" retain that veto, including bounded
+  disposition modifiers. They cannot lend their inner "apply" verb authority.
   Apply that veto before accepting ordinary actions, canonical duplicates or
   expected-behavior explanations, including in the supersession scan. Do not
   borrow a rejection from a later unrelated clause.

@@ -129,7 +129,16 @@ logs" cannot supply observed confirmation, even when the citation omits the
 conditional prefix. The shared positive-evidence predicate applies to confirmation
 additions, removal transitions and contrary positive results. It distinguishes
 contingent outcomes from factual reproduction scenarios such as "I reproduced
-the issue when the keyboard was visible". Negative-evidence vetoes must also
+the issue when the keyboard was visible".
+Generic "confirmed"/"verified" wording directly governs the reported target,
+optionally with bounded observation modifiers, and ends there or continues with
+a recognized test environment. Verifying the version in this issue or this
+issue's title/state is metadata checking, not observed reproduction. The generic
+matcher cannot borrow its target across the verified property's description.
+Ambiguous generic continuations are withheld; the explicit target-bound
+reproduction alternatives remain unchanged. This shared distinction also covers
+confirmation-based removals, simulator evidence and positive no-repro counterevidence.
+Negative-evidence vetoes must also
 concern the current report: failed reproduction of a foreign issue cannot invalidate current-issue
 confirmation, simulator reproduction or technical assessments. The full comment
 is still scanned for current-report negative outcomes, including repeated
@@ -224,6 +233,11 @@ Postposed rejection, denial, cancellation, withdrawal, revocation or "ruled out"
 bound directly to an exact label or its special disposition also cannot
 authorize an action. "The request to apply p/1 was rejected" is not an approval;
 "Duplicate of #N was ruled out" is not an affirmative duplicate disposition.
+The same directly bound veto covers coordinated review predicates such as "was
+reviewed and rejected" and "was considered and then declined", with bounded
+disposition modifiers. An embedded "apply" verb cannot authorize the rejected
+request. The predicate does not cross arbitrary intervening prose or borrow
+another subject's rejection.
 Apply the same veto before accepting ordinary actions, canonical duplicates or
 expected-behavior explanations, including in the supersession scan. Do not
 borrow a rejection from a later unrelated clause.
