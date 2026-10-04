@@ -186,9 +186,8 @@ jobs:
         continueOnError: true
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
-          APPIUM_LOG_FILE: $(Agent.TempDirectory)/issue-appium.log
       - pwsh: |
-          $path = "$(Agent.TempDirectory)/issue-appium.log"
+          $path = "$(Pipeline.Workspace)/maui/CustomAgentLogsTmp/UITests/appium.log"
           if (-not (Test-Path -LiteralPath $path)) {
             Write-Host 'No Appium log was created; native execution may not have started.'
             exit 0
