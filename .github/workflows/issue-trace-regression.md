@@ -211,10 +211,11 @@ supplied as though it were absent. Clarify the role of supplemental versions
 without replacing ambiguous form fields. Publish **Insufficient evidence** with
 the exact missing boundary and a discriminating next action, near 200 words.
 Use an author/issue header, two blue flat-square Scope/Range badges (unknown
-range), visible **Verdict** and investigation-access **Evidence** lines, then
-closed sibling Regression Analysis and Follow-up accordions. Nest Version
-boundary and Candidate changes inside Regression Analysis. Do not infer overall
-tooling health; the native later detection caution remains authoritative.
+range), visible **Verdict** and **Evidence: bounded snapshot; degraded boundary
+resolution** lines, then closed sibling Regression Analysis and Follow-up
+accordions. The Evidence line contains collection/usable-boundary facts only:
+state that no source/history reads were attempted, not detector/runtime health
+or predictions. Nest Version boundary and Candidate changes inside Regression Analysis.
 
 For all other modes, invoke **trace-regression** and follow
 `.github/skills/trace-regression/SKILL.md` for the investigation and single report.
