@@ -189,6 +189,7 @@ jobs:
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
       - pwsh: |
+          $ErrorActionPreference = 'Stop'
           $directory = "$(Pipeline.Workspace)/maui/CustomAgentLogsTmp/UITests"
           if (-not (Test-Path -LiteralPath $directory)) {
             Write-Host 'No native diagnostic directory was created; execution may not have started.'
@@ -198,33 +199,31 @@ jobs:
           if (-not $root.PSIsContainer -or $root.Attributes -band [IO.FileAttributes]::ReparsePoint) {
             throw 'Native diagnostics must be in a regular directory.'
           }
+          $revision = "$(Build.SourceVersion)"
+          if ($revision -cnotmatch '^[0-9a-f]{40}$') { throw 'The diagnostic helper revision is not pinned.' }
+          $handler = [Net.Http.HttpClientHandler]::new()
+          $handler.AllowAutoRedirect = $false
+          $client = [Net.Http.HttpClient]::new($handler)
+          $client.Timeout = [TimeSpan]::FromSeconds(15)
+          try {
+            $url = "https://raw.githubusercontent.com/dotnet/maui/$revision/.github/scripts/IssueReplicate.Diagnostics.ps1"
+            $helper = $client.GetByteArrayAsync($url).GetAwaiter().GetResult()
+            if ($helper.Length -gt 64KB) { throw 'The immutable diagnostic helper exceeds its bound.' }
+            . ([scriptblock]::Create([Text.UTF8Encoding]::new($false, $true).GetString($helper)))
+          } finally {
+            $client.Dispose()
+            $handler.Dispose()
+          }
           $path = Join-Path $directory 'appium.log'
           if (Test-Path -LiteralPath $path) {
             $file = Get-Item -LiteralPath $path -Force
             if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
               throw 'Appium diagnostics must be a regular log file.'
             }
-            $stream = [IO.File]::Open($path, [IO.FileMode]::Open, [IO.FileAccess]::Read,
-              [IO.FileShare]::ReadWrite)
-            try {
-              if (-not $stream.CanSeek) { throw 'Appium diagnostics must support bounded tail reads.' }
-              $length = $stream.Length
-              $start = [Math]::Max(0L, $length - 128KB)
-              [void]$stream.Seek($start, [IO.SeekOrigin]::Begin)
-              $bytes = [byte[]]::new([int]($length - $start))
-              $count = 0
-              while ($count -lt $bytes.Length) {
-                $read = $stream.Read($bytes, $count, $bytes.Length - $count)
-                if ($read -eq 0) { break }
-                $count += $read
-              }
-              $tail = [Text.Encoding]::UTF8.GetString($bytes, 0, $count)
-            } finally {
-              $stream.Dispose()
-            }
+            $diagnostic = Read-IssueReplicateNativeDiagnostic -Path $path -MaxBytes 128KB -Tail
             Write-Host 'Appium diagnostics (last 80 lines within 128 KiB; context only, not assertion evidence):'
-            if ($start -gt 0) { Write-Host '[Earlier Appium log bytes omitted]' }
-            ($tail -split "`n" | Select-Object -Last 80) | ForEach-Object {
+            if ($diagnostic.Omitted) { Write-Host '[Earlier Appium log bytes omitted]' }
+            ($diagnostic.Text -split "`n" | Select-Object -Last 80) | ForEach-Object {
               $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
               if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
               Write-Host $line
@@ -238,7 +237,8 @@ jobs:
             if ($page.Attributes -band [IO.FileAttributes]::ReparsePoint -or $page.Length -gt 1MB) {
               throw 'UI hierarchy diagnostics must be a bounded regular text file.'
             }
-            $text = (Get-Content -LiteralPath $page.FullName -Raw -Encoding utf8) -replace "`r", ''
+            $diagnostic = Read-IssueReplicateNativeDiagnostic -Path $page.FullName -MaxBytes 1MB
+            $text = $diagnostic.Text -replace "`r", ''
             $text = $text -replace '##vso\[[^]]*\]', ''
             Write-Host 'Latest UI hierarchy (at most 16000 characters; context only, not assertion evidence):'
             if ($text.Length -gt 16000) {
@@ -252,4 +252,5 @@ jobs:
           }
         displayName: 'Show bounded native diagnostics without uploading an artifact'
         condition: always()
+        timeoutInMinutes: 2
         continueOnError: true

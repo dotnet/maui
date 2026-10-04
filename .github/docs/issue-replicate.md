@@ -269,11 +269,16 @@ assertion evidence. Native verification prints a bounded,
 sanitized Appium log tail and the latest existing UI hierarchy text for startup
 diagnosis, using the pinned runner's actual log directory. The hierarchy's start
 and end are limited to 16,000 characters including the truncation marker.
-The Appium reader seeks within a regular file and reads at most its last 128 KiB,
-then prints at most 80 sanitized lines. Long startup logs do not suppress this
-bounded context; it never loads the entire file. Unsafe files or oversized UI
-hierarchies fail their optional task visibly without invalidating a completed
-verification record. These
+The Appium reader reads at most its last 128 KiB, then prints at most 80 sanitized
+lines. Both log and hierarchy readers use Python 3's nonblocking, no-follow Unix
+open and check the opened handle with `fstat` before reading. FIFOs, device files
+and symlinks cannot pass as regular files. Each reader has a hard 20-second process
+deadline and fixed output allocation; the optional task also has a two-minute
+deadline. The helper is re-fetched into parent memory from the exact public
+pipeline revision, not executed from a post-test mutable tools file. Long startup
+logs do not suppress bounded context; the entire Appium file is never loaded.
+Unsafe files, stalled readers or oversized hierarchies fail visibly without
+changing an already-completed verification record. These
 diagnostics are not assertion evidence and are never uploaded as artifacts.
 
 This mode does **not** enable production authorization, OIDC dispatch, credentialed
