@@ -190,6 +190,12 @@ substitutes for current original issue/comment evidence.
   Tentative/uncertain approvals, including "tentatively approve", are not
   definitive decisions. An opposite decision or event in the same timestamp
   second also supersedes support; do not assume ordering within that second.
+  Clause-opening first-person "I can confirm" or "We can confirm" is affirmative
+  wording, not a tentative label action. It still needs an exact-label directive
+  or the authorized canonical duplicate/not-a-bug disposition. Other modal
+  wording such as "We can apply p/1", negation, uncertainty, conditions and
+  questions remain withheld; reported/embedded confirmation wording does not
+  receive this exception.
 - Evaluate chronology and contrary evidence. Explain ambiguity in `withheld`;
   never manufacture validation, a release, ownership or approval.
 - A newer maintainer removal supersedes older confirmation. Re-adding needs a

@@ -52,6 +52,11 @@ Read-only registered validators may supply reproduction evidence but **cannot**
 authorize priority, roadmap, backport or ownership commitments. Business decisions
 must explicitly name the exact label and an affirmative action in unquoted
 maintainer prose, for example `Apply p/1` or `Remove backport/approved`.
+Clause-opening first-person "I can confirm" or "We can confirm" is affirmative,
+not a tentative label action. An exact-label directive or an authorized
+canonical duplicate/not-a-bug disposition is still required. "We can apply p/1",
+negation, uncertainty, conditions and questions remain withheld; embedded or
+reported confirmation wording does not receive this exception.
 Exact label token boundaries apply to approvals and superseding decisions:
 `Apply partner/syncfusion` does not also approve `partner`.
 All label decisions and both actions share non-question and affirmative-polarity

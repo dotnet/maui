@@ -518,13 +518,13 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
     $removeVerbs = 'remove|drop|clear|withdraw|revoke|reject|decline'
     $clauseBoundary = '[;!?\r\n]|\.(?:\s|$)|\b(?:but|however|instead|rather than)\b'
     $gap = "(?:(?!$clauseBoundary).){0,80}"
+    $listMarker = '(?:[-*+]|\d{1,9}[.)])[ \t]+'
+    $opening = "(?:(?:^|[.!;]\s+)\s*(?:$listMarker)?|(?:^|\r?\n)[ \t]*$listMarker)"
     $candidate = $Paragraph
     $tentativeText = $Paragraph
     $prohibited = $false
     if ($Superseding) {
         $negatedVerbs = if ($Action -eq 'remove') { $addVerbs } else { $removeVerbs }
-        $listMarker = '(?:[-*+]|\d{1,9}[.)])[ \t]+'
-        $opening = "(?:(?:^|[.!;]\s+)\s*(?:$listMarker)?|(?:^|\r?\n)[ \t]*$listMarker)"
         $clauseTail = "(?:(?!$clauseBoundary).)*"
         $prohibition = "(?i)(?<prefix>$opening(?:please\s+)?)(?:do\s+not|don['\u2019]t|never)\s+(?:$negatedVerbs)\b(?=(?<clause>$gap$labelText$clauseTail))"
         $prohibitions = [regex]::Matches($candidate, $prohibition)
@@ -573,7 +573,10 @@ function Test-DecisionParagraph([string]$Paragraph, [string]$Label, [string]$Act
         return [bool]$Superseding
     }
     if ($prohibited) { return $true }
-    if ($withoutLabel -match "(?i)\b(not|no|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|do not|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
+    # A clause-opening first-person confirmation is not a tentative label action.
+    $confirmation = "(?i)(?<prefix>$opening)(?:i|we)\s+can\s+confirm\b"
+    $polarityText = [regex]::Replace($withoutLabel, $confirmation, '${prefix}CONFIRMATION')
+    if ($polarityText -match "(?i)\b(not|no|never|cannot|can['\u2019]t|(?:do|does|did|is|was|were|has|have|are)n['\u2019]t|do not|can|should|could|may|might|would|will|maybe|perhaps|possibly|probably|likely|potentially|suspect|assume|expect|consider|candidate|asked|suggested|requested|evaluation|experiment|simulation)\b") { return $false }
     if ($allowedReferencePattern) { return $true }
     if ($Action -eq 'add' -and $Label -eq 's/not-a-bug' -and
         $candidate -match '(?i)\b(expected behavior|by design|working as intended|not a bug)\b' -and
