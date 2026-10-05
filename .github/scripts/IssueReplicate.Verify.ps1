@@ -367,7 +367,19 @@ try {
             $recordingValidated = $true
         }
         if ($verdict.Status -eq 'Passed') {
-            if ($attempt -eq 1) { $result.status = 'not-reproduced-on-tested-revision' }
+            if ($attempt -eq 1) {
+                $result.status = 'not-reproduced-on-tested-revision'
+            }
+            else {
+                $firstFeedback = Get-IssueReplicateFeedback -Path (Join-Path $previousFile.DirectoryName 'feedback.txt')
+                if ([string]::IsNullOrWhiteSpace($firstFeedback)) {
+                    throw 'The first-attempt assertion is missing its diagnostic feedback.'
+                }
+                $result.observedAssertion = $true
+                $result.failureIdentities = @($previous.failureIdentities)
+                foreach ($line in $firstFeedback.Split("`n")) { $testLines.Add($line) }
+                $testLines.Add('Failed first-attempt assertion was not repeated; the fresh confirmation passed.')
+            }
             break
         }
         $result.observedAssertion = $true

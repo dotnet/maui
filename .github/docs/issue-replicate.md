@@ -82,8 +82,10 @@ issue**, and **Confidence that the issue is reproduced**. The percentage is a
 deterministic evidence score, not a calibrated probability that the issue is real:
 **0%** means no failing reproduction evidence (unassessed, blocked, unsupported,
 or a passing candidate), **25%** means an executed but unconfirmed assertion
-failure, and **75%** means two matching independent assertion failures. The score
-never claims certainty: the original author interaction and a bug-specific causal
+failure, and **75%** means two matching independent assertion failures. A first
+assertion followed by a passing fresh confirmation retains **25%**; its result
+stays inconclusive and exports no verified failing patch. The score never claims
+certainty: the original author interaction and a bug-specific causal
 control have not been verified. A repeatably failing generated scenario does not
 automatically establish that its test catches the reported issue. Passing and
 blocked cases explicitly state that they do not invalidate the issue. Available

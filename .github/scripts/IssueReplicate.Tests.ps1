@@ -1208,7 +1208,7 @@ Describe 'Author sample target selection' {
 }
 
 Describe 'Pinned test verification' {
-    It 'exports only immutable candidate bytes with matching assertions (mutation=<Mutate>, different=<Different>, content=<ContentName>)' -TestCases @(
+    It 'exports only immutable candidate bytes with matching assertions (mutation=<Mutate>, different=<Different>, content=<ContentName>, confirmation passed=<ConfirmationPassed>)' -TestCases @(
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'single-line' },
         @{ Mutate = $true; Different = $false; TrackedMutation = $false; ContentName = 'single-line' },
         @{ Mutate = $false; Different = $true; TrackedMutation = $false; ContentName = 'single-line' },
@@ -1218,9 +1218,10 @@ Describe 'Pinned test verification' {
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'no-final-newline'; Content = "public class Issue12345 {`n}" }
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'Unicode'; Content = "public class Issue12345 { } // $([char]0x6F22)$([char]::ConvertFromUtf32(0x1F600))`n" }
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'stale-report'; StaleReport = $true }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'passing-confirmation'; ConfirmationPassed = $true }
     ) {
         param($Mutate, $Different, $TrackedMutation, $ContentName = 'single-line', $StaleReport = $false,
-            $Content = 'public class Issue12345 { }')
+            $Content = 'public class Issue12345 { }', $ConfirmationPassed = $false)
         $repo = Join-Path $TestDrive "maui-fixture-$Mutate-$Different-$TrackedMutation-$ContentName"
         $projectDir = Join-Path $repo 'src/Core/tests/UnitTests'
         New-Item -ItemType Directory -Path $projectDir -Force | Out-Null
@@ -1238,23 +1239,23 @@ Describe 'Pinned test verification' {
         $firstResults = "$results-first"
         @{
             schemaVersion = 1
-            issueNumber = 12345
-            commentId = 4925414214
-            targetSha = $revision
-            sampleSha256 = 'b' * 64
-            platform = 'android'
+            issueNumber   = 12345
+            commentId     = 4925414214
+            targetSha     = $revision
+            sampleSha256  = 'b' * 64
+            platform      = 'android'
         } | ConvertTo-Json | Set-Content -LiteralPath $manifestPath
         @{
-            targetSha = $revision
-            sampleSha256 = 'b' * 64
+            targetSha      = $revision
+            sampleSha256   = 'b' * 64
             buildSucceeded = $true
         } | ConvertTo-Json | Set-Content -LiteralPath $samplePath
         @{
-            kind = 'unit'
+            kind  = 'unit'
             files = @(@{
-                path = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
-                content = $Content
-            })
+                    path    = 'src/Core/tests/UnitTests/Issues/Issue12345.cs'
+                    content = $Content
+                })
         } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $candidatePath
 
         $global:issueReplicateFixtureRepo = $repo
@@ -1262,6 +1263,7 @@ Describe 'Pinned test verification' {
         $global:issueReplicateFixtureDifferent = $Different
         $global:issueReplicateFixtureTrackedMutation = $TrackedMutation
         $global:issueReplicateFixtureStaleReport = $StaleReport
+        $global:issueReplicateFixtureConfirmationPassed = $ConfirmationPassed
         function dotnet {
             $parameters = @($args)
             $directory = $parameters[[array]::IndexOf($parameters, '--results-directory') + 1]
@@ -1279,9 +1281,14 @@ Describe 'Pinned test verification' {
             if ($global:issueReplicateFixtureDifferent -and $name -eq 'attempt-2.trx') {
                 $trx = $trx -replace 'line 12', 'line 15'
             }
+            $passed = $global:issueReplicateFixtureConfirmationPassed -and $name -eq 'attempt-2.trx'
+            if ($passed) {
+                $trx = $trx -replace '<Output>.*?</Output>', '' -replace 'outcome="Failed"', 'outcome="Passed"' `
+                    -replace 'passed="0" failed="1"', 'passed="1" failed="0"'
+            }
             if ($global:issueReplicateFixtureMutate) {
                 [IO.File]::WriteAllText((Join-Path $global:issueReplicateFixtureRepo `
-                    'src/Core/tests/UnitTests/Issues/Issue12345.cs'), 'public class NeverCompiled { }')
+                            'src/Core/tests/UnitTests/Issues/Issue12345.cs'), 'public class NeverCompiled { }')
             }
             if ($global:issueReplicateFixtureTrackedMutation) {
                 Set-Content -LiteralPath 'src/Core/tests/UnitTests/Core.UnitTests.csproj' -Value '<Changed />'
@@ -1289,7 +1296,8 @@ Describe 'Pinned test verification' {
             if ($name -eq 'attempt-1.trx') {
                 New-Item -ItemType Directory -Path bin -Force | Out-Null
                 Set-Content -LiteralPath 'bin/poison.dll' -Value 'untrusted first-attempt output'
-            } elseif (Test-Path -LiteralPath 'bin/poison.dll') {
+            }
+            elseif (Test-Path -LiteralPath 'bin/poison.dll') {
                 throw 'The second attempt reused first-attempt build output.'
             }
             $trxPath = Join-Path $directory $name
@@ -1297,15 +1305,23 @@ Describe 'Pinned test verification' {
             # Automatic Linux mtimes can precede UtcNow during an instantaneous stub run.
             $timestamp = if ($global:issueReplicateFixtureStaleReport) {
                 [DateTime]::UtcNow.AddMinutes(-1)
-            } else {
+            }
+            else {
                 [DateTime]::UtcNow.AddSeconds(1)
             }
             [IO.File]::SetLastWriteTimeUtc($trxPath, $timestamp)
-            $global:LASTEXITCODE = 1
-            'One assertion failed'
+            $global:LASTEXITCODE = if ($passed) { 0 } else { 1 }
+            if ($passed) {
+                'Passed: 1'
+            }
+            else {
+                'Error Message:'
+                '  Expected: 1'
+                '  But was: 0'
+            }
         }
         $verify = {
-            $null = & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
                 -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $repo `
                 -OutputDirectory $firstResults -Attempt 1
         }
@@ -1314,7 +1330,7 @@ Describe 'Pinned test verification' {
             Test-Path -LiteralPath (Join-Path $firstResults 'test.patch') | Should -BeFalse
             return
         }
-        & $verify
+        $firstPayload = & $verify
         Test-Path -LiteralPath (Join-Path $firstResults 'test.patch') | Should -BeFalse
         $first = Get-Content -Raw -LiteralPath (Join-Path $firstResults 'result.json') | ConvertFrom-Json
         $first.status | Should -Be 'inconclusive'
@@ -1324,17 +1340,40 @@ Describe 'Pinned test verification' {
             return
         }
         $first.observedAssertion | Should -BeTrue
+        $firstImported = "$firstResults-imported"
+        & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
+            -Directory $firstImported -Encoded $firstPayload
         $secondRepo = "$repo-second"
         & git clone --quiet --no-local $repo $secondRepo
         $payload = & (Join-Path $PSScriptRoot 'IssueReplicate.Run.ps1') -Mode Verify -InputDirectory (Split-Path $manifestPath) `
             -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $secondRepo `
-            -OutputDirectory $results -Attempt 2 -PreviousResultPath (Join-Path $firstResults 'result.json')
+            -OutputDirectory $results -Attempt 2 -PreviousResultPath (Join-Path $firstImported 'result.json')
         $outcome = Get-Content -Raw -LiteralPath (Join-Path $results 'result.json') | ConvertFrom-Json
-        $outcome.status | Should -Be $(if ($Different) { 'inconclusive' } else { 'candidate-failed' })
+        $confirmed = -not ($Different -or $ConfirmationPassed)
+        $outcome.status | Should -Be $(if ($confirmed) { 'candidate-failed' } else { 'inconclusive' })
         $outcome.testExecuted | Should -BeTrue
-        $outcome.assertionFailed | Should -Be (-not $Different)
-        Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -Be (-not $Different)
-        if (-not $Different) {
+        $outcome.observedAssertion | Should -BeTrue
+        $outcome.assertionFailed | Should -Be $confirmed
+        Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -Be $confirmed
+        if ($ConfirmationPassed) {
+            ($outcome.failureIdentities -join "`n") | Should -BeExactly ($first.failureIdentities -join "`n")
+            $outcome.patchSha256 | Should -BeNullOrEmpty
+            $imported = "$results-imported"
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
+                -Directory $imported -Encoded $payload
+            Test-Path -LiteralPath (Join-Path $imported 'test.patch') | Should -BeFalse
+            $preview = Join-Path $TestDrive 'unconfirmed-assertion.md'
+            & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
+                -GitHubRunId 987654321 -InputDirectory (Split-Path $manifestPath) `
+                -ResultsDirectory $imported -OutputPath $preview
+            $body = Get-Content -Raw $preview
+            $body | Should -Match '25% \(evidence score, not a statistical probability\)'
+            $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
+            $body | Should -Match 'Expected: 1'
+            $body | Should -Match 'But was: 0'
+            $body | Should -Not -Match '75%|dev\.azure\.com|/actions/runs/'
+        }
+        elseif ($confirmed) {
             $imported = "$results-imported"
             & (Join-Path $PSScriptRoot 'IssueReplicate.Transport.ps1') -Mode Import -Kind Verified `
                 -Directory $imported -Encoded $payload
@@ -1343,7 +1382,7 @@ Describe 'Pinned test verification' {
                 Should -BeExactly $outcome.patchSha256
             [Convert]::ToBase64String([IO.File]::ReadAllBytes($patchPath)) |
                 Should -BeExactly ([Convert]::ToBase64String(
-                    [IO.File]::ReadAllBytes((Join-Path $results 'test.patch'))))
+                        [IO.File]::ReadAllBytes((Join-Path $results 'test.patch'))))
             $applied = "$repo-applied"
             & git clone --quiet --no-local $repo $applied
             $LASTEXITCODE | Should -Be 0
@@ -1359,7 +1398,7 @@ Describe 'Pinned test verification' {
     }
 
     AfterEach {
-        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent, issueReplicateFixtureTrackedMutation, issueReplicateFixtureStaleReport `
+        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent, issueReplicateFixtureTrackedMutation, issueReplicateFixtureStaleReport, issueReplicateFixtureConfirmationPassed `
             -Scope Global -ErrorAction SilentlyContinue
     }
 }
