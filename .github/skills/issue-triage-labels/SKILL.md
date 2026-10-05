@@ -293,6 +293,8 @@ substitutes for current original issue/comment evidence.
   Failed emulator/simulator or test runner/host startup, boot or connection
   also blocks no-repro; product app startup wording alone is not this
   environment-specific blocker.
+  Do not interpret the outcome phrase "run into" as an environment operation
+  failure; it does not itself prove no-repro or bypass other validation guards.
   Noun-first "Setup failed" and contextual "workaround failed during setup"
   describe setup failures, not product or workaround efficacy. Inspect both
   operation/failure directions without borrowing an unrelated failure word.

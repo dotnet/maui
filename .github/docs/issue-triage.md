@@ -211,6 +211,8 @@ timeout that prevented testing. A historical setup failure is not itself no-repr
 An emulator/simulator or test runner/host that could not start, boot or connect
 is also a setup blocker, not an observed product outcome. Product app startup
 wording alone does not acquire this environment-specific blocker.
+The outcome phrase "run into" is not an environment operation failure;
+it does not itself prove no-repro or bypass any other validation guard.
 Noun-first failures such as "Setup failed" and contextual failures such as
 "The workaround failed during setup" are blocked setup evidence, not observed
 product or workaround outcomes. Operation/failure binding is checked in both

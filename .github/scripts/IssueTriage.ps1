@@ -1095,7 +1095,7 @@ function Test-BlockedValidation([string]$Prose, [string]$CompletedReproduction =
     $failureContext = '(?:during|in|at|for|while\s+(?:running|performing|attempting))\s+(?:(?:the|this|that|my|our|a|an)\s+){0,2}'
     $environment = '(?:emulator|simulator|test[ -](?:runner|host))'
     $negative = "(?:$(Get-NegativeOutcomePattern)|hadn['\u2019]t|had not)"
-    $environmentOperation = '(?:(?:be|been|being|able to|successfully|actually|fully)\s+){0,3}(?:start(?:ed)?|boot(?:ed)?|launch(?:ed)?|connect(?:ed)?(?:\s+to)?|run)\b'
+    $environmentOperation = '(?:(?:be|been|being|able to|successfully|actually|fully)\s+){0,3}(?:start(?:ed)?|boot(?:ed)?|launch(?:ed)?|connect(?:ed)?(?:\s+to)?|run(?!\s+into\b))\b'
     $failures = [regex]::Matches($Prose,
         "(?i)\b$resource\b.{0,60}\b$blocked\b|\b$blocked\b.{0,60}\b$resource\b|" +
         "\b$operation\b\s+$state$operationFailure\b|\b$operationFailure\b\s+$failureContext$operation\b|" +
