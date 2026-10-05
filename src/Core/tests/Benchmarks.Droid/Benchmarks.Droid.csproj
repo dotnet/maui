@@ -11,7 +11,7 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <PublishTrimmed>false</PublishTrimmed>
     <PublishReadyToRun>false</PublishReadyToRun>
-    <RunAOTCompilation>false</RunAOTCompilation>
+    <RunAOTCompilation Condition="'$(UseMonoRuntime)' == 'true'">false</RunAOTCompilation>
     <!-- Physical device is recommended -->
     <RuntimeIdentifier>android-arm64</RuntimeIdentifier>
     <DisableTransitiveFrameworkReferenceDownloads>False</DisableTransitiveFrameworkReferenceDownloads>
