@@ -46,6 +46,100 @@ public class BuildWarningsUtilitiesTests : IDisposable
 	}
 
 	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(15)]
+	public void ReportsTruncatedAssemblyGuidWithoutReplacingBuildFailure(int guidBytes)
+	{
+		var binlog = CreateBinlog();
+		Record assembly;
+		using (var stream = File.OpenRead(binlog))
+			assembly = new BinLogReader().ReadRecords(stream)
+				.First(record => record.Kind == BinaryLogRecordKind.AssemblyLoad);
+		// The parser's Microsoft.Build.Framework dependency makes this event type internal.
+		var mvid = Assert.IsType<Guid>(assembly.Args.GetType().GetProperty("MVID")!.GetValue(assembly.Args));
+		Assert.NotEqual(Guid.Empty, mvid);
+
+		using var decompressed = new MemoryStream();
+		using (var stream = File.OpenRead(binlog))
+		using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
+			gzip.CopyTo(decompressed);
+
+		var guidStart = decompressed.GetBuffer().AsSpan(0, checked((int)decompressed.Length)).IndexOf(mvid.ToByteArray());
+		Assert.True(guidStart >= 0, "The fixture must contain the assembly MVID.");
+		decompressed.SetLength(guidStart + guidBytes);
+		decompressed.Position = 0;
+		using (var stream = File.Create(binlog))
+		using (var gzip = new GZipStream(stream, CompressionMode.Compress))
+			decompressed.CopyTo(gzip);
+
+		// Verify this cut exercises the short GUID read, rather than another truncation path.
+		var reader = new BinLogReader();
+		Exception? readException = null;
+		reader.OnException += exception => readException = exception;
+		reader.Replay(binlog);
+		var original = Assert.IsType<ArgumentException>(readException);
+		Assert.Equal("b", original.ParamName);
+		Assert.Contains("ReadGuid", original.StackTrace, StringComparison.Ordinal);
+
+		var output = new RecordingOutput();
+		BuildWarningsUtilities.OutputBuildErrorsFromBinLog(binlog, output: output);
+
+		Assert.Contains("Could not completely read binlog", output.Text, StringComparison.Ordinal);
+		Assert.Contains(binlog, output.Text, StringComparison.Ordinal);
+		Assert.Contains(original.Message, output.Text, StringComparison.Ordinal);
+		var strict = Assert.Throws<InvalidDataException>(() => BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog));
+		var inner = Assert.IsType<ArgumentException>(strict.InnerException);
+		Assert.Equal(original.Message, inner.Message);
+		Assert.Contains("ReadGuid", inner.StackTrace, StringComparison.Ordinal);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void DoesNotNormalizeEventCallbackFailures(bool shortGuid)
+	{
+		var binlog = CreateBinlog();
+		Exception? callbackFailure = null;
+
+		var exception = Assert.Throws<AggregateException>(() => BuildWarningsUtilities.ReadBuildEvents(binlog, args =>
+		{
+			try
+			{
+				if (shortGuid)
+					_ = new Guid(new byte[1]);
+				throw new ArgumentException("Callback failure", "b");
+			}
+			catch (ArgumentException failure)
+			{
+				callbackFailure = failure;
+				throw;
+			}
+		}));
+
+		Assert.NotNull(callbackFailure);
+		Assert.Same(callbackFailure, Assert.Single(exception.Flatten().InnerExceptions));
+	}
+
+	[Fact]
+	public void DoesNotNormalizeUnrelatedReadFailures()
+	{
+		Exception[] failures =
+		[
+			new ArgumentException("Unrelated argument", "b"),
+			new ArgumentNullException("b"),
+			new ArgumentOutOfRangeException("b"),
+			new IOException("Read failure"),
+			new InvalidDataException("Invalid data"),
+			new OutOfMemoryException("Out of memory")
+		];
+		foreach (var failure in failures)
+			Assert.Same(failure, BuildWarningsUtilities.NormalizeReadException(failure));
+
+		Assert.Throws<ArgumentNullException>(() => BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(null!));
+	}
+
+	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void RejectsTruncationAfterBuildFinished(bool completeImportArchive)
