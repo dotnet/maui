@@ -20,6 +20,7 @@ public class Issue35764 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleClearPlaceholderEnabled");
 		App.Tap("ToggleClearPlaceholderEnabled");
+		Assert.That(App.WaitForTextToBePresentInElement("ClearPlaceholderEnabledStatus", "ClearPlaceholderEnabled: False"), Is.True);
 		VerifyScreenshot();
 	}
 }

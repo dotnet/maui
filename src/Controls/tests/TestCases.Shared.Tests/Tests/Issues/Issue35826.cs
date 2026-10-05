@@ -1,5 +1,6 @@
 #if ANDROID
 using NUnit.Framework;
+using OpenQA.Selenium.Appium.Android;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +22,7 @@ public class Issue35826 : _IssuesUITest
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
 	// This test belongs to the Essentials category.
-    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
+	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
@@ -33,6 +34,7 @@ public class Issue35826 : _IssuesUITest
 		// (the guard in ActivityForResultRequest.Register() blocked it), so the task hung
 		// indefinitely and the result label stayed on "Picking...".
 		App.Tap(ChildActivityPickButton);
+		WaitForPhotoPicker();
 		App.Back();
 
 		// If the bug is present WaitForTextToBePresentInElement times out because the
@@ -42,12 +44,10 @@ public class Issue35826 : _IssuesUITest
 		var returned = App.WaitForTextToBePresentInElement(ChildActivityResultLabel, "Cancelled",
 			timeout: TimeSpan.FromSeconds(120));
 
-		var resultText = App.FindElement(ChildActivityResultLabel).GetText();
-
 		Assert.That(returned, Is.True,
-			$"PickPhotosAsync must return from a child activity as a cancellation result after backing out of the picker. " +
-			$"Actual result label: '{resultText}'. " +
-			$"If this fails the result label is still showing 'Picking...' after 120 seconds or an exception path was hit.");
+			"PickPhotosAsync must return from a child activity as a cancellation result after backing out of the picker.");
+
+		var resultText = App.WaitForElement(ChildActivityResultLabel).GetText();
 
 		Assert.That(resultText, Does.Not.Contain("Picking"),
 			"PickPhotosAsync must not hang in a child activity.");
@@ -62,7 +62,7 @@ public class Issue35826 : _IssuesUITest
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
 	// This test belongs to the Essentials category.
-    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
+	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void OverlappingPhotoPickerRequestsAreRejected()
@@ -70,6 +70,7 @@ public class Issue35826 : _IssuesUITest
 		OpenChildActivityAndRequirePhotoPicker();
 
 		App.Tap(ChildActivityOverlapButton);
+		WaitForPhotoPicker();
 		App.Back();
 
 		var rejected = App.WaitForTextToBePresentInElement(
@@ -87,7 +88,7 @@ public class Issue35826 : _IssuesUITest
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
 	// This test belongs to the Essentials category.
-    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
+	// Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void FinishingLaunchingActivityCancelsPendingPhotoPicker()
@@ -124,6 +125,13 @@ public class Issue35826 : _IssuesUITest
 
 		Assert.That(availability, Is.EqualTo("Photo Picker: Available"),
 			"The regression test must exercise the AndroidX Photo Picker launcher path changed by this PR.");
+	}
+
+	void WaitForPhotoPicker()
+	{
+		var driver = (AndroidDriver)((AppiumAndroidApp)App).Driver;
+		App.RetryAssert(() => Assert.That(driver.CurrentActivity, Does.Contain("photopicker").IgnoreCase,
+			"Wait for the system picker before pressing Back, otherwise Back closes the launching activity."));
 	}
 }
 #endif

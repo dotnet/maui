@@ -23,49 +23,56 @@ public class Issue9088 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void Issue9088SwipeViewConfictWithShellMenuSwipeInFromLeft()
 	{
-		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-		{
-			Assert.Ignore("Ignored the test on iOS 26 for now because it fails only in the iOS 26 CI");
-		}
 		App.WaitForElement(SwipeViewId);
+		var contentX = App.WaitForElementAndGetRect("SwipeContentLabel").X;
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("1"));
+		AssertSwipeCompleted(LeftCountLabelId, "1");
 
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 250);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("2"));
+		AssertSwipeCompleted(LeftCountLabelId, "2");
 
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 200);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("3"));
+		AssertSwipeCompleted(LeftCountLabelId, "3");
 
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 200);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("1"));
+		AssertSwipeCompleted(RightCountLabelId, "1");
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 250);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("2"));
+		AssertSwipeCompleted(RightCountLabelId, "2");
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 500);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("3"));
+		AssertSwipeCompleted(RightCountLabelId, "3");
 
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("4"));
+		AssertSwipeCompleted(LeftCountLabelId, "4");
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("4"));
+		AssertSwipeCompleted(RightCountLabelId, "4");
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("5"));
+		AssertSwipeCompleted(LeftCountLabelId, "5");
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("5"));
+		AssertSwipeCompleted(RightCountLabelId, "5");
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("6"));
+		AssertSwipeCompleted(RightCountLabelId, "6");
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("6"));
+		AssertSwipeCompleted(LeftCountLabelId, "6");
+
+		void AssertSwipeCompleted(string countLabel, string count)
+		{
+			App.RetryAssert(() =>
+			{
+				Assert.That(App.WaitForElement(countLabel).GetText(), Is.EqualTo(count));
+				Assert.That(App.WaitForElementAndGetRect("SwipeContentLabel").X,
+					Is.EqualTo(contentX).Within(1), "Wait for the closing animation before the next gesture.");
+			});
+		}
 	}
 }
 #endif

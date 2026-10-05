@@ -1,5 +1,9 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
+using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -9,6 +13,40 @@ namespace Microsoft.Maui.TestCases.Tests
 	public static class UtilExtensions
 	{
 		const string goToTestButtonId = "GoToTestButton";
+
+		public static void RetryAssert(
+			this IApp app,
+			Action assertToRetry,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			var deadline = timeout ?? TimeSpan.FromSeconds(15);
+			var interval = retryFrequency ?? TimeSpan.FromMilliseconds(500);
+			var stopwatch = Stopwatch.StartNew();
+
+			while (true)
+			{
+				try
+				{
+					// NUnit records assertion failures even when their exceptions are caught.
+					// Keep unsuccessful observations out of the enclosing test result.
+					using var context = new TestExecutionContext.IsolatedContext();
+					assertToRetry();
+					var result = TestExecutionContext.CurrentContext.CurrentResult;
+					if (result.AssertionResults.Any(assertion => assertion.Status == AssertionStatus.Failed))
+						throw new MultipleAssertException(result);
+					return;
+				}
+				catch (Exception exception) when (
+					(exception is AssertionException or MultipleAssertException or StaleElementReferenceException or NoSuchElementException)
+					&& stopwatch.Elapsed < deadline)
+				{
+					var remaining = deadline - stopwatch.Elapsed;
+					if (remaining > TimeSpan.Zero)
+						Thread.Sleep(interval < remaining ? interval : remaining);
+				}
+			}
+		}
 
 		public static void Back(this UITestContextBase testBase)
 		{

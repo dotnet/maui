@@ -17,11 +17,38 @@ internal class Issue29588 : _IssuesUITest
 	public void RemainingItemsThresholdReachedEventShouldTrigger()
 	{
 		App.WaitForElement("29588CollectionView");
-		for (int i = 0; i < 5; i++)
+		var thresholdLabel = App.WaitForElement("29588ThresholdLabel");
+		ScrollToVisibleItem("Item 20");
+		Assert.That(() => thresholdLabel.GetText(), Is.EqualTo("Threshold reached").After(5000, 200));
+		ScrollToVisibleItem("Loaded Item 30");
+		Assert.That(App.WaitForElement("Loaded Item 30").GetText(), Is.EqualTo("Loaded Item 30"));
+	}
+
+	void ScrollToVisibleItem(string text)
+	{
+		// Bound traversal by the fixture's 30 items, not native-driver round-trip time.
+		const int maxScrolls = 30;
+		for (int scrollCount = 0; scrollCount <= maxScrolls; scrollCount++)
 		{
-			App.ScrollDown("29588CollectionView", ScrollStrategy.Gesture, 0.8, 500);
+			var viewport = App.WaitForElementAndGetRect("29588CollectionView");
+			var item = App.FindElementByText(text);
+			if (item is not null)
+			{
+				var bounds = item.GetRect();
+				if (bounds.Width > 0 && bounds.Height > 0
+					&& bounds.Left >= viewport.Left && bounds.Right <= viewport.Right
+					&& bounds.Top >= viewport.Top && bounds.Bottom <= viewport.Bottom)
+					return;
+			}
+
+			if (scrollCount == maxScrolls)
+				break;
+
+			// Container scrolling uses the native macOS scroll action, unlike App.ScrollTo.
+			App.ScrollDown("29588CollectionView", ScrollStrategy.Gesture,
+				swipePercentage: App is AppiumWindowsApp or AppiumCatalystApp ? 0.8 : 0.5);
 		}
-		App.WaitForElement("29588ThresholdLabel");
-		Assert.That(App.FindElement("29588ThresholdLabel").GetText(), Is.EqualTo("Threshold reached"));
+
+		Assert.Fail($"'{text}' did not become fully visible inside 29588CollectionView after {maxScrolls} scrolls.");
 	}
 }

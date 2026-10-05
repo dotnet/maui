@@ -72,17 +72,18 @@ public class ActivityStateManagerRecreation_Tests
 		}
 		finally
 		{
-			recreatedActivity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
 			await MainThread.InvokeOnMainThreadAsync(() =>
 			{
+				recreatedActivity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
 				if (recreatedActivity is { IsFinishing: false })
 					recreatedActivity.Finish();
 				if (originalActivity is { IsDestroyed: false, IsFinishing: false })
 					originalActivity.Finish();
-			});
 
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				// Unregister and dispose between native lifecycle dispatches, not concurrently with one.
+				manager.Dispose();
+				ActivityResultRecreationState.Reset();
+			});
 		}
 	}
 
@@ -124,15 +125,15 @@ public class ActivityStateManagerRecreation_Tests
 		}
 		finally
 		{
-			activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
 			await MainThread.InvokeOnMainThreadAsync(() =>
 			{
+				activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
 				if (activity is { IsDestroyed: false, IsFinishing: false })
 					activity.Finish();
-			});
 
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				manager.Dispose();
+				ActivityResultRecreationState.Reset();
+			});
 		}
 	}
 
@@ -180,15 +181,15 @@ public class ActivityStateManagerRecreation_Tests
 		}
 		finally
 		{
-			activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
 			await MainThread.InvokeOnMainThreadAsync(() =>
 			{
+				activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
 				if (activity is { IsDestroyed: false, IsFinishing: false })
 					activity.FinishAndRemoveTask();
-			});
 
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				manager.Dispose();
+				ActivityResultRecreationState.Reset();
+			});
 		}
 	}
 

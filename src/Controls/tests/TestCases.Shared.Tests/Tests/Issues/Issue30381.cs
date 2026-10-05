@@ -18,28 +18,27 @@ public class Issue30381 : _IssuesUITest
     public void WebViewCanGoForwardShouldHaveValueAfterNavigation()
     {
         App.WaitForElement("ClickLinkButton");
-        // Wait for the WebView to load the initial content before clicking the link
-        Thread.Sleep(1000);
+        AssertNavigationState("initial", canGoBack: false, canGoForward: false);
 
-        // Click the link via JavaScript to navigate to external URL
         App.Tap("ClickLinkButton");
-        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True");
-        
-        App.Tap("UpdateStatusButton");
-        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True");
-        App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: False");
+        AssertNavigationState("target", canGoBack: true, canGoForward: false);
 
         App.Tap("GoBackButton");
-
-        App.Tap("UpdateStatusButton");
-        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: False");
-        App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: True");
+        AssertNavigationState("initial", canGoBack: false, canGoForward: true);
 
         App.Tap("GoForwardButton");
+        AssertNavigationState("target", canGoBack: true, canGoForward: false);
+    }
 
-        App.Tap("UpdateStatusButton");
-        Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: True"));
-        Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: False"));
+    void AssertNavigationState(string document, bool canGoBack, bool canGoForward)
+    {
+        App.RetryAssert(() =>
+        {
+            App.Tap("UpdateStatusButton");
+            Assert.That(App.WaitForElement("DocumentStatusLabel").GetText(), Is.EqualTo($"Document: {document}"));
+            Assert.That(App.WaitForElement("CanGoBackLabel").GetText(), Is.EqualTo($"CanGoBack: {canGoBack}"));
+            Assert.That(App.WaitForElement("CanGoForwardLabel").GetText(), Is.EqualTo($"CanGoForward: {canGoForward}"));
+        });
     }
 }
 #endif

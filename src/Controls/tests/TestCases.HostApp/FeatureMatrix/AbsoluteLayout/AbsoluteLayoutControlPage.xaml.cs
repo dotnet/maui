@@ -28,6 +28,6 @@ public partial class AbsoluteLayoutControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new AbsoluteLayoutViewModel();
-		await Navigation.PushAsync(new AbsoluteLayoutOptionsPage(_viewModel));
+		await Navigation.PushAsync(new AbsoluteLayoutOptionsPage(_viewModel), animated: false);
 	}
 }

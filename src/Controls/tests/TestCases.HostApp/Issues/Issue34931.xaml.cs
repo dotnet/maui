@@ -8,8 +8,7 @@ public partial class Issue34931 : TestShell
 
 	public Issue34931()
 	{
-		if (Application.Current is not null)
-			Application.Current.Resources["Primary"] = Color.FromArgb(InitialPrimaryColor);
+		Resources["Primary"] = Color.FromArgb(InitialPrimaryColor);
 
 		InitializeComponent();
 		IncreaseFlyoutItemsHeightSoUITestsCanClickOnThem();
@@ -77,16 +76,15 @@ public class Issue34931MainPage : ContentPage
 		};
 	}
 
-		void OnChangeColorClicked(object sender, EventArgs e)
-		{
-			_colorIndex = (_colorIndex + 1) % _colors.Length;
-			var colorValue = _colors[_colorIndex];
+	void OnChangeColorClicked(object sender, EventArgs e)
+	{
+		_colorIndex = (_colorIndex + 1) % _colors.Length;
+		var colorValue = _colors[_colorIndex];
 
-			if (Application.Current is not null)
-				Application.Current.Resources["Primary"] = Color.FromArgb(colorValue);
+		Shell.Current.Resources["Primary"] = Color.FromArgb(colorValue);
 
-			_currentColorLabel.Text = $"Current Primary: {colorValue}";
-		}
+		_currentColorLabel.Text = $"Current Primary: {colorValue}";
+	}
 }
 
 public class Issue34931SecondPage : ContentPage

@@ -9,6 +9,19 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 {
 	public const string ShellFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellFeatureMatrix;
+	bool IsIndependentEventTest => TestContext.CurrentContext.Test.MethodName is
+		nameof(NavEvents_ShellItemChanged_NavigatingEvent_SourceIsShellItemChanged) or
+		nameof(NavEvents_ShellItemChanged_NavigatedEvent_CurrentIsPage2PreviousIsMain) or
+		nameof(NavEvents_GoToAsyncAbsoluteRoute_NavigatingEvent_SourceIsShellItemChanged) or
+		nameof(NavEvents_GoToAsyncAbsoluteRoute_NavigatedEvent_SourceIsShellItemChanged);
+	protected override string? GallerySubPageButton => IsIndependentEventTest ? "ShellNavigationButton" : null;
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+		if (IsIndependentEventTest)
+			FixtureSetup();
+	}
 
 	public ShellNavigationFeatureTests(TestDevice device) : base(device) { }
 
@@ -545,14 +558,11 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	[Test, Order(30)]
 	public void NavEvents_ShellItemChanged_NavigatingEvent_SourceIsShellItemChanged()
 	{
-		App.WaitForElement("OptionsSubPage1IdentityLabel");
-		App.Tap("SubPopButton");
-		App.WaitForElement("OptionsPageIdentityLabel");
-		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
 
 		NavigateToPage2();
 		App.WaitForElement("Page2ContentA1PageLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Page2NavigatingSourceLabel", "ShellItemChanged"), Is.True);
 
 		Assert.That(App.FindElement("Page2NavigatingCurrentLabel").GetText(),
 			Is.EqualTo("ShellNavigation"));
@@ -566,7 +576,10 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	[Test, Order(31)]
 	public void NavEvents_ShellItemChanged_NavigatedEvent_CurrentIsPage2PreviousIsMain()
 	{
+		App.WaitForElement("MainPageIdentityLabel");
+		NavigateToPage2();
 		App.WaitForElement("Page2ContentA1PageLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Page2NavigatedSourceLabel", "ShellItemChanged"), Is.True);
 
 		Assert.That(App.FindElement("Page2NavigatedCurrentLabel").GetText(),
 			Is.EqualTo("Page2TabAContentA1"));
@@ -581,9 +594,12 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	[Test, Order(32)]
 	public void NavEvents_GoToAsyncAbsoluteRoute_NavigatingEvent_SourceIsShellItemChanged()
 	{
+		App.WaitForElement("MainPageIdentityLabel");
+		NavigateToPage2();
 		App.WaitForElement("Page2ContentA1PageLabel");
 		App.Tap("GoToMainButton");
 		App.WaitForElement("MainPageIdentityLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("OverrideNavigatingLabel", "Source=ShellItemChanged"), Is.True);
 
 		Assert.That(App.FindElement("OverrideNavigatingLabel").GetText(),
 			Does.Contain("Source=ShellItemChanged"));
@@ -594,6 +610,9 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	public void NavEvents_GoToAsyncAbsoluteRoute_NavigatedEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
+		NavigateToPage2();
+		GoBackToMain();
+		Assert.That(App.WaitForTextToBePresentInElement("OverrideNavigatedLabel", "Source=ShellItemChanged"), Is.True);
 
 		Assert.That(App.FindElement("OverrideNavigatedLabel").GetText(),
 			Does.Contain("Source=ShellItemChanged"));

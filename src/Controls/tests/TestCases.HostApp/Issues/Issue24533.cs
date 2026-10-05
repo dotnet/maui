@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
@@ -51,7 +52,8 @@ public class Issue24533 : ContentPage
 		}
 	}
 
-		int count;
+	int count;
+	readonly Label _itemsLoadedLabel = new() { AutomationId = "ItemsLoadedLabel" };
 
 	public Issue24533()
 	{
@@ -62,6 +64,7 @@ public class Issue24533 : ContentPage
 		// Create CollectionView
 		var collectionView = new CollectionView
 		{
+			AutomationId = "Items",
 			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new DataTemplate(() =>
 			{
@@ -74,10 +77,10 @@ public class Issue24533 : ContentPage
 		};
 		collectionView.Scrolled += CollectionView_Scrolled;
 
-		var btn = new Button { Text = "Load More", AutomationId="Footer", HeightRequest = 60 };
+		var btn = new Button { Text = "Load More", AutomationId = "Footer", HeightRequest = 60 };
 		btn.Clicked += Button_Clicked;
-		collectionView.Footer =	 btn;
-			
+		collectionView.Footer = btn;
+
 
 		// Bind ItemsSource
 		collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(Items));
@@ -97,11 +100,20 @@ public class Issue24533 : ContentPage
 		};
 		verticalOffsetLabel.SetBinding(Label.TextProperty, nameof(VerticalOffsetText));
 
-		Content = new StackLayout
+		Grid.SetRow(_itemsLoadedLabel, 1);
+		Grid.SetRow(refreshView, 2);
+		Content = new Grid
 		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
 			Children =
 			{
 				verticalOffsetLabel,
+				_itemsLoadedLabel,
 				refreshView
 			}
 		};
@@ -125,13 +137,14 @@ public class Issue24533 : ContentPage
 		{
 			Items.Add(value.ToString());
 		}
-		count += 20;
+		count += 25;
 
 		IsLoading = false;
+		_itemsLoadedLabel.Text = $"Loaded: {count}";
 	}
 
 	void CollectionView_Scrolled(object sender, ItemsViewScrolledEventArgs e)
 	{
-		VerticalOffsetText = $"VerticalOffset: {e.VerticalOffset:F2}";
+		VerticalOffsetText = $"VerticalOffset: {e.VerticalOffset.ToString("F2", CultureInfo.InvariantCulture)}";
 	}
 }
