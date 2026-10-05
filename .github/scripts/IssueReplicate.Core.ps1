@@ -53,13 +53,46 @@ function Initialize-IssueReplicateIOSWebDriverAgent {
     if ($devices.Count -ne 1 -or $devices[0].name -cnotmatch '^issue-replicate-[0-9a-f]{32}$') {
         throw 'WebDriverAgent preparation requires the uniquely owned simulator on the pinned iOS runtime.'
     }
-    $appium = Get-Command appium -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    $node = Get-Command node -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    if (-not $env:APPIUM_HOME -or -not [IO.Path]::IsPathFullyQualified($env:APPIUM_HOME)) {
+        throw 'WebDriverAgent preparation requires the provisioned absolute Appium home.'
+    }
+    $prebuild = @'
+const {createRequire} = require('node:module');
+const {isAbsolute, join} = require('node:path');
+const load = createRequire(join(process.env.APPIUM_HOME, 'node_modules/appium-xcuitest-driver/package.json'));
+const {WebDriverAgent} = load('appium-webdriveragent');
+const xcode = load('appium-xcode');
+const {getSimulator} = load('appium-ios-simulator');
+const [udid, sdk] = process.argv.slice(1);
+
+async function prepare() {
+    const device = await getSimulator(udid, {platform: 'iOS', checkExistence: true});
+    const wda = new WebDriverAgent(await xcode.getVersion(true), {
+        device,
+        iosSdkVersion: sdk,
+        platformVersion: sdk,
+        showXcodeLog: true,
+    });
+    const derivedDataPath = await wda.retrieveDerivedDataPath();
+    if (!derivedDataPath || !isAbsolute(derivedDataPath)) {
+        throw new Error('The installed driver did not resolve an absolute WebDriverAgent derived-data directory.');
+    }
+    await wda.xcodebuild.start(true);
+    console.log(`WebDriverAgent preparation used the installed driver derived-data directory: ${derivedDataPath}`);
+}
+
+prepare().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+});
+'@
     . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
 
     Write-Host "Prebuilding the installed WebDriverAgent for pinned iOS $sdk ($SimulatorUdid); ten-minute build deadline."
     $timer = [Diagnostics.Stopwatch]::StartNew()
-    $build = Invoke-ProcessWithTimeout -FilePath $appium.Source -TimeoutSeconds 600 `
-        -ArgumentList @('driver', 'run', 'xcuitest', 'build-wda', '--', "--name=$($devices[0].name)", "--sdk=$sdk")
+    $build = Invoke-ProcessWithTimeout -FilePath $node.Source -TimeoutSeconds 600 `
+        -ArgumentList @('-e', $prebuild, $SimulatorUdid, $sdk)
     foreach ($row in @($build.Output | Select-Object -Last 80)) {
         $line = $row.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
         if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
