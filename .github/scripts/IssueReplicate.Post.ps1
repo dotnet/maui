@@ -40,7 +40,7 @@ $runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "> Fork canary on ``$GitHubRepository``; this was not a production Azure pipeline run."
 } else { '' }
 if ($NativeCanary) {
-    $runNote = '> Public Azure native canary: this run replays a reviewed historical test candidate, not live GPT generation or production dispatch.'
+    $runNote = '> Public Azure native canary: this run replays a reviewed immutable test candidate, not live GPT generation or production dispatch.'
 }
 $refresh = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     '> The production `/issue replicate` command requires the deployment described in PR #38807. This canary did not test production authorization, queueing, or automatic publication.'

@@ -715,7 +715,7 @@ with socket.socket() as server:
             $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
             $visible | Should -Not -Match 'SHA-256|base64|[a-f0-9]{64}|\| Evidence \|'
             $body | Should -Match 'not independent proof'
-            $body | Should -Match 'replays a reviewed historical'
+            $body | Should -Match 'replays a reviewed immutable'
             $body | Should -Match 'remains disabled'
             $body | Should -Not -Match 'https://github.com/user-attachments/assets/'
             [Convert]::ToBase64String([IO.File]::ReadAllBytes("$preview.recording.mp4")) |
