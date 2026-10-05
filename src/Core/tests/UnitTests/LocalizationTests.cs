@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Resources;
 using System.Text;
 using System.Text.Json;
@@ -169,6 +170,7 @@ namespace Microsoft.Maui.UnitTests
 		/// This test compares the localized json translations with the standard json files and makes sure they are not equal.
 		/// This test will not be able to compare if both strings are still english but just different, so it is not a perfect test.
 		/// Template localization files are copied to the test output so the test also runs from an isolated Helix payload.
+		/// The packaged baseline count must match the source count captured in the test assembly at build time.
 		/// Strings that are not translated will be stored in a txt file for viewing:
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/JsonLocalizationTranslationsIncorrect_<locale>.txt
 		/// </summary>
@@ -193,6 +195,10 @@ namespace Microsoft.Maui.UnitTests
 
 			var jsonfiles = Directory.GetFiles(templateLocalizationRoot, "templatestrings.json", SearchOption.AllDirectories);
 			Assert.NotEmpty(jsonfiles);
+			var baselineCountMetadata = Assert.Single(
+				typeof(LocalizationTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>(),
+				attribute => attribute.Key == "TemplateLocalizationBaselineCount");
+			Assert.Equal(int.Parse(baselineCountMetadata.Value, CultureInfo.InvariantCulture), jsonfiles.Length);
 
 			var outputFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
 
