@@ -187,41 +187,41 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="11.0.0-beta.26504.105">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>820230c386db5b0106c5430b3e5aee92a7826bf5</Sha>
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="11.0.0-beta.26458.109">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>c65c25f0c9889e06a5d70e275c741d8430fa353a</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

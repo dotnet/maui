@@ -150,14 +150,14 @@
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <ExCSSPackageVersion>4.3.1</ExCSSPackageVersion>
     <SystemDrawingCommonPackageVersion>9.0.0</SystemDrawingCommonPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26504.105</MicrosoftDotNetBuildTasksFeedVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26504.105</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26504.105</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26504.105</MicrosoftDotNetHelixJobMonitorPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26504.105</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26458.109</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26458.109</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26458.109</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26458.109</MicrosoftDotNetHelixJobMonitorPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26458.109</MicrosoftDotNetHelixSdkPackageVersion>
     <MicroBuildPluginsSwixBuildDotnetPackageVersion>1.1.87-gba258badda</MicroBuildPluginsSwixBuildDotnetPackageVersion>
-    <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26504.105</MicrosoftDotNetRemoteExecutorPackageVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26504.105</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26458.109</MicrosoftDotNetRemoteExecutorPackageVersion>
+    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26458.109</MicrosoftDotNetXUnitExtensionsPackageVersion>
     <MicrosoftWixVersion>6.0.3-dotnet.4</MicrosoftWixVersion>
   </PropertyGroup>
   <PropertyGroup>
