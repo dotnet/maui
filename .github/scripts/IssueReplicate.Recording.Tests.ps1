@@ -249,6 +249,13 @@ Describe 'Native recording helpers' {
                     "`n[AppiumDriver] New AndroidDriver session created successfully, session bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb added")
                 '>>>>> 10/04/2026 12:00:01 FixtureSetup for ChecksBehavior'
                 if ($global:recordingRetryTestStarted) {
+                    $operation = [guid]::NewGuid().ToString('N')
+                    "ISSUE_REPLICATE_RECORDING_READY=$($env:ISSUE_REPLICATE_RECORDING_NONCE):$operation"
+                    if ([IO.File]::ReadAllText($env:ISSUE_REPLICATE_RECORDING_ACK) -cne "${operation}:started") {
+                        $global:recordingRetryTestStarted = $false
+                    }
+                }
+                if ($global:recordingRetryTestStarted) {
                     '>>>>> 10/04/2026 12:00:02 ChecksBehavior Start'
                     if ($global:recordingRetryRecovery) {
                         if ($global:recordingRetryRecovery -eq 'new session') {
@@ -321,7 +328,7 @@ Describe 'Native recording helpers' {
                 $result = Get-Content -Raw (Join-Path $parameters.ResultsDirectory 'result.json') | ConvertFrom-Json
                 if ($Fault) {
                     $result.status | Should -BeExactly 'inconclusive'
-                    $result.testExecuted | Should -Be ($Fault -in @('start failed', 'restart failed'))
+                    $result.testExecuted | Should -Be ($Fault -eq 'restart failed')
                     $result.assertionFailed | Should -BeFalse
                     $result.recording.status | Should -BeExactly 'failed'
                     $result.recording.diagnostic | Should -Not -BeNullOrEmpty

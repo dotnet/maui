@@ -9,6 +9,7 @@ param(
     [ValidateRange(1, 2)][int]$Attempt = 1,
     [string]$PreviousResultPath = '',
     [switch]$RecordVideo,
+    [string]$RecordingToolsDirectory = $PSScriptRoot,
     [scriptblock]$OnCompleted,
     [switch]$CoreLoaded
 )
@@ -71,6 +72,11 @@ $recordingStops = 0
 $recordingStartMethod = ''
 $recordingStopMethod = ''
 $recordingValidated = $false
+$recordingReadyCount = 0
+$recordingNonce = ''
+$recordingTimer = $null
+$recordingAcknowledgement = ''
+$recordingEnvironment = @{}
 if ($RecordVideo -and $candidate.kind -eq 'ui') {
     $result.recording = @{ status = 'not-started'; diagnostic = 'The native test did not reach its start marker.' }
 }
@@ -188,21 +194,48 @@ try {
         if ($candidate.kind -eq 'ui') {
             $runner = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
             $deviceArguments = if ($iosSimulator) { @('-DeviceUdid', $iosSimulator) } else { @() }
+            if ($RecordVideo) {
+                if ($env:CustomBeforeMicrosoftCommonTargets) {
+                    throw 'Native recording cannot replace an existing custom MSBuild targets import.'
+                }
+                $recordingTargets = Join-Path $RecordingToolsDirectory 'IssueReplicate.RecordingAction.targets'
+                $recordingAction = Join-Path $RecordingToolsDirectory 'IssueReplicate.RecordingAction.cs'
+                if (-not (Test-Path -LiteralPath $recordingTargets -PathType Leaf) -or
+                    -not (Test-Path -LiteralPath $recordingAction -PathType Leaf)) {
+                    throw 'The trusted native recording action is missing.'
+                }
+                $recordingNonce = [guid]::NewGuid().ToString('N')
+                $recordingAcknowledgement = Join-Path ([IO.Path]::GetTempPath()) "issue-recording-$recordingNonce.ack"
+                if (Test-Path -LiteralPath $recordingAcknowledgement) {
+                    throw 'The native recording acknowledgement path already exists.'
+                }
+                foreach ($name in @('CustomBeforeMicrosoftCommonTargets', 'ISSUE_REPLICATE_RECORDING_ACK',
+                        'ISSUE_REPLICATE_RECORDING_NONCE')) {
+                    $recordingEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
+                }
+                $env:CustomBeforeMicrosoftCommonTargets = [IO.Path]::GetFullPath($recordingTargets)
+                $env:ISSUE_REPLICATE_RECORDING_ACK = $recordingAcknowledgement
+                $env:ISSUE_REPLICATE_RECORDING_NONCE = $recordingNonce
+            }
             & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter @deviceArguments 2>&1 |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
-                    if ($RecordVideo -and $line -match '^>>>>> .+ (?<method>\S+) Start$') {
-                        $recordingStarts = [Math]::Min(2, $recordingStarts + 1)
-                        if ($recordingStarts -eq 1) { $recordingStartMethod = $Matches['method'] }
-                    }
-                    if ($RecordVideo -and $result.recording.status -eq 'not-started' -and
-                        $recordingStarts -eq 1 -and $line -match '^>>>>> .+ Start$') {
+                    $readyPattern = '^ISSUE_REPLICATE_RECORDING_READY=' + $recordingNonce + ':(?<operation>[0-9a-f]{32})$'
+                    if ($RecordVideo -and $line -cmatch $readyPattern) {
+                        $operation = $Matches['operation']
+                        $recordingReadyCount = [Math]::Min(2, $recordingReadyCount + 1)
+                        $acknowledgement = 'failed'
                         try {
+                            if ($recordingReadyCount -ne 1) {
+                                throw 'A native recording requires exactly one selected test body.'
+                            }
+                            $recordingTimer = [Diagnostics.Stopwatch]::StartNew()
                             $recordingSession = Start-IssueReplicateRecording -Platform $manifest.platform `
                                 -LogPath (Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/appium.log')
                             $result.recording.status = 'capturing'
                             $result.recording.diagnostic = ''
-                            Write-Host 'Native test recording started (at most 30 seconds, no audio).'
+                            $acknowledgement = 'started'
+                            Write-Host 'Native recording started before test setup; acknowledging the blocked test body.'
                         } catch {
                             $result.recording.status = 'failed'
                             $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
@@ -210,7 +243,13 @@ try {
                                 $result.recording.diagnostic = $result.recording.diagnostic.Substring(0, 1000)
                             }
                             Write-Warning "Native recording failed: $($result.recording.diagnostic)"
+                        } finally {
+                            [IO.File]::WriteAllText($recordingAcknowledgement, "${operation}:$acknowledgement")
                         }
+                    }
+                    if ($RecordVideo -and $line -match '^>>>>> .+ (?<method>\S+) Start$') {
+                        $recordingStarts = [Math]::Min(2, $recordingStarts + 1)
+                        if ($recordingStarts -eq 1) { $recordingStartMethod = $Matches['method'] }
                     }
                     if ($RecordVideo -and $recordingSession -and $line -match '\bSession recreation successful\b') {
                         try {
@@ -220,6 +259,7 @@ try {
                                 $recordingBytes = [byte[]]@()
                                 $recordingSession = ''
                                 $recordingSession = Start-IssueReplicateRecording -Platform $manifest.platform -LogPath $appiumLog
+                                $recordingTimer.Restart()
                                 Write-Host 'Native recording restarted on the recreated Appium session.'
                             }
                         } catch {
@@ -240,6 +280,10 @@ try {
                     if ($recordingSession -and $isStopMarker) {
                         try {
                             $recordingBytes = Stop-IssueReplicateRecording -SessionId $recordingSession
+                            if ($recordingReadyCount -ne 1 -or -not $recordingTimer -or
+                                $recordingTimer.Elapsed.TotalSeconds -gt 30) {
+                                throw 'The named test did not finish inside its acknowledged 30-second recording window.'
+                            }
                             $result.recording = @{
                                 status = 'available'; bytes = $recordingBytes.Length; diagnostic = ''
                                 sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($recordingBytes)).ToLowerInvariant()
@@ -293,13 +337,13 @@ try {
         $verdict = Get-IssueReplicateTrxVerdict @verdictParameters
         if ($RecordVideo -and $candidate.kind -eq 'ui' -and
             ($recordingStarts -gt 0 -or $verdict.Status -ne 'Inconclusive') -and
-            ($recordingStarts -ne 1 -or $recordingStops -ne 1 -or
+            ($recordingReadyCount -ne 1 -or $recordingStarts -ne 1 -or $recordingStops -ne 1 -or
              $recordingStartMethod -cne $recordingStopMethod -or
              $verdict.Status -eq 'Inconclusive')) {
             $diagnostic = if ($verdict.Diagnostic) { $verdict.Diagnostic } elseif ($result.recording.status -eq 'failed') {
                 $result.recording.diagnostic
             } else {
-                'A recorded UI candidate needs one matching Start/Stop pair and exactly one named TRX test body.'
+                'A recorded UI candidate needs one acknowledged recording action, one matching Start/Stop pair and exactly one named TRX test body.'
             }
             $result.recording = @{ status = 'failed'; diagnostic = $diagnostic }
             $recordingBytes = [byte[]]@()
@@ -366,6 +410,12 @@ try {
     }
 }
 finally {
+    foreach ($name in $recordingEnvironment.Keys) {
+        [Environment]::SetEnvironmentVariable($name, $recordingEnvironment[$name])
+    }
+    if ($recordingAcknowledgement -and (Test-Path -LiteralPath $recordingAcknowledgement -PathType Leaf)) {
+        Remove-Item -LiteralPath $recordingAcknowledgement -Force
+    }
     Pop-Location
     if ($iosSimulator) {
         & xcrun simctl delete $iosSimulator

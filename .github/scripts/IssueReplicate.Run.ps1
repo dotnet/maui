@@ -47,6 +47,7 @@ if ($Mode -eq 'Sample') {
     if ($Mode -eq 'Verify') {
         $parameters.RepoRoot = $RepoRoot
         $parameters.RecordVideo = $RecordVideo
+        $parameters.RecordingToolsDirectory = $PSScriptRoot
     } else { $parameters.RecordingPrefix = $RecordingPrefix }
     $parameters.Attempt = $Attempt
     $parameters.PreviousResultPath = $PreviousResultPath

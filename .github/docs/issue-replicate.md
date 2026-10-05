@@ -124,14 +124,23 @@ expandable follow-up notice, without claiming a verified outcome.
 
 UI verification also records one bounded test span on the selected native
 attempt: at most 30 seconds, no audio, and at most 512 KiB of MP4 data. Recording
-starts at the test's `Start` marker, after one-time fixture setup and its session
-recreation retries have finished, and stops at its `Stop` marker. The trusted
-controller uses the live Appium session without enabling session discovery.
+starts through a trusted assembly-level NUnit action after one-time fixture
+setup. The action blocks before per-test setup and the body until the controller
+acknowledges that Appium started recording. Merely reacting asynchronously to
+the `Start` log marker can miss a fast interaction while the recorder starts.
+The action is imported only into the Android/iOS test project from immutable
+tools, without changing the candidate or tracked framework files. Its fresh
+acknowledgement nonce and operation ID prevent stale replies; missing or failed
+acknowledgements stop the body after a bounded 25-second wait. The controller
+stops at the named `Stop` marker and rejects spans exceeding its conservative
+30-second deadline instead of exporting an automatically expired clip.
+The trusted controller uses the live Appium session without enabling session discovery.
 It selects the frontend session from Appium's incoming HTTP command or top-level
 session-creation log entries, not the distinct UiAutomator2/WDA backend session
 UUIDs in proxy requests. Missing frontend evidence fails recording explicitly.
 Recorded UI candidates must execute exactly one named test: one matching
-`Start`/`Stop` pair and one TRX result whose method matches those markers.
+`Start`/`Stop` pair, one acknowledged recording action and one TRX result whose
+method matches those markers.
 Multiple methods, repeated cases, missing markers or a mismatched TRX are
 inconclusive; the clip is discarded instead of publishing an unrelated method's
 video alongside an assertion. Unit/XAML verification retains its multi-test support.
@@ -253,8 +262,10 @@ retain the bounded Appium error message rather than only its status code. Error
 bodies are limited to 16 KiB and published diagnostics to 1,000 characters.
 A fresh, matching named TRX body and Start/Stop pair establish test execution
 independently of video availability. If recording fails, the result honestly
-reports that the body executed but remains inconclusive: no assertion routing,
-verified patch, video evidence or successful strict canary packet is exported.
+reports whether the body executed but remains inconclusive. Startup rejection
+now prevents the body, while a later recorder failure does not erase a completed
+body's evidence. Neither case exports assertion routing, a verified patch,
+video evidence or a successful strict canary packet.
 Appium context retains the last 80 non-system-log rows in at most 128 KiB from
 a fixed 64 MiB tail scan with a hard reader deadline. Omitted context is labeled;
 these diagnostics are not assertion evidence and do not create artifacts.
