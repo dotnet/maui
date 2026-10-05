@@ -79,12 +79,19 @@ az identity federated-credential create \
   --audiences "api://AzureADTokenExchange"
 ```
 
-> **Subject claim mapping:** The OIDC token's `sub` claim is what Azure AD matches
-> against the `--subject` parameter. For `issue_comment` events (like the `/review`
-> command), the workflow runs from the default branch, so the subject is
-> `repo:dotnet/maui:ref:refs/heads/main`. For `pull_request` events, the subject
-> would be `repo:dotnet/maui:pull_request`. This is why the case-sensitivity
-> warning above is critical — the `sub` claim value must match exactly.
+The trusted CI-fix validator deliberately runs from `main` and therefore reuses
+the branch-scoped credential above:
+
+- `pull_request_target` provides the immediate path for eligible PRs targeting
+  `main`;
+- `workflow_run` reconciles all eligible open CI-fix PR heads after either the
+  main or net11 fixer completes. This path covers PRs and pushes created with
+  `GITHUB_TOKEN`, whose normal PR events can be suppressed or approval-gated,
+  and covers net11 without granting OIDC trust to PR events or to `net11.0`.
+
+Do not add repository-wide `repo:dotnet/maui:pull_request` or net11 credentials
+for this automation. The privileged queue step always uses the existing
+`repo:dotnet/maui:ref:refs/heads/main` subject and trusted default-branch code.
 
 Add more federated credentials for other branches or trigger types as needed:
 
@@ -152,7 +159,7 @@ The identity needs **"Queue builds"** permission on the target pipeline(s):
 
 | AzDO Organization | Project | Example Pipelines |
 |---|---|---|
-| `dnceng-public` | `public` | 302 (maui-pr), 314 (maui-pr-devicetests) |
+| `dnceng-public` | `public` | 302 (maui-pr), 313 (maui-pr-uitests), 314 (maui-pr-devicetests) |
 | `DevDiv` | `DevDiv` | 27723 |
 
 ## Step 4: Set GitHub Repository Secrets
@@ -172,6 +179,24 @@ In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions*
 
 See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) for a ready-to-use workflow.
 
+Automated CI-fix PR validation is implemented separately by
+[`ci-fix-azdo-validation.yml`](../workflows/ci-fix-azdo-validation.yml). It:
+
+- runs only from trusted default/base-branch code via `pull_request_target` and
+  `workflow_run`;
+- never checks out or executes the PR head;
+- requires the exact same-repo CI-fix bot fingerprint;
+- queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
+- supplies the merge commit as `sourceVersion` and the PR head as
+  `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build
+  metadata so checks attach to the PR head;
+- deduplicates each pipeline by PR head SHA and reports partial failures.
+
+The workflow and script need to exist only on `main`. Before declaring net11
+coverage enabled, verify that the net11 fixer's compiled workflow name remains
+`CI Failure Fixer (net11.0)` so the main-branch `workflow_run` reconciliation
+fires after its create/push run.
+
 ## How It Works (Token Flow)
 
 ```
@@ -182,8 +207,9 @@ See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) fo
    (grant_type=client_credentials) for the managed identity's client_id
 4. Azure AD validates the JWT against the federated credential and returns
    a bearer token scoped to AzDO (resource: 499b84ac-1321-427f-aa17-267ca6975798)
-5. Step 3 calls POST dev.azure.com/{org}/{project}/_apis/pipelines/{id}/runs
-   with the bearer token
+5. Step 3 calls the appropriate Azure DevOps queue endpoint with the bearer
+   token: the Pipelines Runs API for `/review`, or the Build Queue API for
+   CI-fix PR validation
 6. AzDO validates the token, checks the identity's permissions, and queues the build
 ```
 

@@ -13,9 +13,10 @@ description: |
   caused by the fix itself, it pushes a fresh follow-up fix onto the SAME PR
   branch (never a second PR) — up to 10 attempts — then stops and defers to
   humans (the open tracking issue is the hand-off surface; a dedicated
-  [ci-fix][needs-human] PR is planned but currently deferred — see Step 6). CI on
-  the PR is kicked by a human `/azp run` for now; the loop watches, classifies,
-  and re-fixes autonomously between kicks. When the SPECIFIC test a PR fixed is
+  [ci-fix][needs-human] PR is planned but currently deferred — see Step 6). A
+  trusted base-branch workflow automatically queues all three MAUI Azure DevOps
+  validation pipelines when the PR is opened and after every pushed follow-up
+  fix; the loop watches, classifies, and re-fixes autonomously. When the SPECIFIC test a PR fixed is
   confirmed green in that PR's own CI, the loop marks the draft PR ready for review
   (a state transition only — it never approves or merges).
   Never mutes tests, but
@@ -280,8 +281,8 @@ safe-outputs:
     # were silently dropped, starving the workflow's #1 value (surfacing green PRs
     # for review). Sized to 6 (not 3) because a single green DRAFT PR that gets
     # flipped ready in one sweep spends TWO comment slots — the Step 3 ✅ surface
-    # comment (which still names the /azp-gated legs a human must kick, so it is NOT
-    # redundant with 🎯) AND the Step 3.6 T3 🎯 readiness comment. At max:3 the shared
+    # comment (which still names separately queued legs whose automatic run is
+    # missing, so it is NOT redundant with 🎯) AND the Step 3.6 T3 🎯 readiness comment. At max:3 the shared
     # bucket drained after ~1 draft flip and T3's atomicity pre-check then deferred
     # every further mark-ready even while the mark-ready/add_labels buckets (also 3)
     # sat idle; 6 lets ~3 draft flips (2 comments each) land per sweep, so the
@@ -652,8 +653,9 @@ where they are more specific.
     requested change ONLY if YOU independently confirm it is a correct, in-bounds
     improvement — never merely because a reviewer asked; (b) stay within the
     `src/**` + PublicAPI bounds (Step 5.3) and never mute or weaken a test
-    (Rule 4); (c) the result is a draft PR that still needs a human `/azp run` and
-    a human merge; (d) the ≤ 10 attempt cap; (e) the loop only ever touches PRs it
+    (Rule 4); (c) the result is a draft PR whose CI is queued by the trusted
+    base-branch validator and that still needs a human merge; (d) the ≤ 10 attempt
+    cap; (e) the loop only ever touches PRs it
     itself created. Bot reviews — including PAT-based **User**-type automation
     (`dotnet-bot` / `maui-bot` / `MauiBot`, which `user.type == "User"` does NOT
     exclude; the R1 login denylist does) — reviews whose association is outside that
@@ -1056,9 +1058,10 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    - **1b — Otherwise WAIT.** If the target test has not yet executed (pending/absent on
      its leg), or a completed red is (or may be) caused by the fix, or `C.dataComplete ==
      false`, or this PR has no identifiable target test → `skipped: PR #<P> CI pending /
-     target not yet validated on <C.headSha>; waiting` and stop. *(Round 1: this is where a
-     maintainer `/azp run` is awaited — the `/azp`-gated uitests/devicetests legs will not
-     have run until a human kicks them.)*
+     target not yet validated on <C.headSha>; waiting` and stop. The trusted
+     `ci-fix-azdo-validation` workflow queues the three validation pipelines; if no
+     matching run appears, treat that as an automation failure rather than asking a
+     maintainer to start CI.
 3. **Green → surface for review.** If `C.overallConclusion == "success"`: the
    checks that RAN are green. **Primary-gate check first:** the deterministic
    `success` verdict only certifies "at least one green check, nothing failing or
@@ -1068,9 +1071,9 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    `maui-pr` is absent, `neutral`, or `skipped` (e.g. only trivial checks like
    `license/cla` are green while the build produced no verdict), record `skipped: PR
    #<P> primary CI gate (maui-pr) not green on <C.headSha>; waiting` and stop — do NOT
-   surface. (The `/azp`-gated `maui-pr-uitests` (def 313) / `maui-pr-devicetests`
-   (def 314) legs MAY still be un-run — that is expected and is named below, not a
-   reason to withhold the surface.) **Comment idempotency + dry-run suppress the ✅
+   surface. (`maui-pr-uitests` (def 313) / `maui-pr-devicetests` (def 314) are
+   queued automatically for every eligible head; a missing run is named below and
+   treated as an automation gap.) **Comment idempotency + dry-run suppress the ✅
    comment ONLY — neither skips Step 3.6.** Scan the PR's existing comments for a prior
    bot `✅ … validated … on <C.headSha>` note for THIS head SHA; if one exists, set
    `SKIP_SURFACE_COMMENT = true`. Resolve the attempt number from `C.effectiveAttempt`
@@ -1084,14 +1087,14 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    - else `add_comment` on PR #<P>: `✅ Attempt <attempt>/10 validated — the fix's CI is
      green on <C.headSha>.<if C.isDraft == false: " Ready for human review."><if C.isDraft
      == true: " The cross-platform readiness gate then decides whether to flip this draft to
-     ready-for-review.">` naming any `/azp`-gated legs (uitests def 313 / devicetests def
-     314) that have not run and still need a maintainer `/azp run`; record `surfaced-green
+     ready-for-review.">` naming any separate legs (uitests def 313 / devicetests def
+     314) whose automatic run has not been observed; record `surfaced-green
      PR #<P> (attempt <attempt>/10)`. (Do NOT assert "ready for human review" on a PR that
      is still a draft — Step 3.6, not this comment, owns the draft→ready flip and posts its
      own 🎯 announcement when it fires.)
    Do NOT advance. Then — in ALL of the above cases — run **Step 3.6** (target-test
-   readiness gate) for this PR before stopping: its `/azp`-gated target legs may conclude
-   green on this SAME head SHA on a LATER sweep (an `/azp run` adds no commit), and Step
+   readiness gate) for this PR before stopping: its separately queued target legs may
+   conclude green on this SAME head SHA on a LATER sweep, and Step
    3.6 is the ONLY place the draft→ready flip happens, so it MUST re-evaluate every sweep —
    never `stop` here before it. *(This directly attacks the real bottleneck — no reviews —
    so it is the highest-value outcome.)*
@@ -1115,13 +1118,13 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
        burns the per-run comment budget other PRs need);
      - else `add_comment` on PR #<P>: `♻️ Attempt <attempt>/10: red is unrelated flake on
        leg(s) <X> (<evidence>) on <C.headSha>; the fix itself is not implicated. A
-       maintainer re-run (/azp run <pipeline>) should clear it.` record `annotated-flake
+       manual /azp rerun remains available if a maintainer wants to retry this same SHA.`
+       record `annotated-flake
        PR #<P> (head <C.headSha>)`.
      Then — in ALL of the above cases — run **Step 3.6** (target-test readiness gate) for
-     this PR before stopping: its `/azp`-gated target legs may conclude green on this SAME
+     this PR before stopping: its separately queued target legs may conclude green on this SAME
      head SHA on a LATER sweep, and Step 3.6 is the ONLY place the draft→ready flip
-     happens, so it MUST re-evaluate every sweep — never `stop` here before it. *(Round 1:
-     human re-runs; Round 2: auto re-trigger.)*
+     happens, so it MUST re-evaluate every sweep — never `stop` here before it.
    - **Caused by the fix** (a failed leg still matches the original target
      signature, or the fix introduced a NEW failure): advance an attempt.
      - **Attempt count.** `attempt = C.effectiveAttempt` — the authoritative
@@ -1189,12 +1192,12 @@ pending — the build is green on **every** platform, not just the originally-br
 cross-platform guard, applied to the build instead of a test). A build-only fix is undrafted
 ONLY on the strength of the auto-running `maui-pr` (def 302) whole-build green, which the
 loop CAN observe: if the PR's `[ci-scan]` issue signature or its own diff indicates the
-ORIGINATING failure was in a `/azp`-gated pipeline (`maui-pr-uitests` def 313 or
+ORIGINATING failure was in a separately queued pipeline (`maui-pr-uitests` def 313 or
 `maui-pr-devicetests` def 314) rather than `maui-pr` (def 302), do NOT undraft on
-`maui-pr`-green alone — those pipelines do not auto-run on this PR (GITHUB_TOKEN cannot
-trigger them), so a green `maui-pr` build is NOT evidence the gated build break is fixed;
-record `skipped: build-only fix PR #<P> targets gated pipeline (<pipeline>) not run —
-deferring to human` and stop this gate. Otherwise, set `TARGET := "the maui-pr build
+`maui-pr`-green alone — a green primary build is NOT evidence the separate pipeline break
+is fixed. Require the automatic matching run for that pipeline; if it is absent, record
+`skipped: build-only fix PR #<P> targets pipeline (<pipeline>) whose automatic run was not observed`
+and stop this gate. Otherwise, set `TARGET := "the maui-pr build
 (build-only fix — no single target test)"` and proceed to **T3** to mark ready. If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
 #<P> not yet whole-build green (leg(s) <legs> pending)` and stop this gate WITHOUT marking
 ready (a green subset is not enough — a still-pending build leg could yet fail).
@@ -1259,15 +1262,15 @@ device-test platform), require ALL of:
   platform's category leg must have CONCLUDED (`state == "completed"`) on `C.headSha`. If a
   platform simply has no leg for the target's category, the test does not run there — that is
   fine, not a gap. But if a platform's category leg has **not concluded** (`state` is
-  `inProgress` / pending, or an `/azp`-gated `maui-pr-uitests` / `maui-pr-devicetests` leg that
-  has not been kicked), the test's status on that platform is UNKNOWN → the fix is NOT yet
+  `inProgress` / pending, or a separately queued `maui-pr-uitests` / `maui-pr-devicetests` leg
+  whose automatic run was not observed), the test's status on that platform is UNKNOWN → the fix is NOT yet
   validated across platforms: record `skipped: target test <T> green on <platforms-so-far> but
-  not yet verified on <pending-platforms> (leg(s) <legs> pending / need /azp run) on PR #<P>`
+  not yet verified on <pending-platforms> (leg(s) <legs> pending / automatic run not observed) on PR #<P>`
   and stop this gate WITHOUT marking ready.
 
 A target test whose category leg never concluded on ANY platform (**not executed** anywhere —
-e.g. its `/azp`-gated pipeline has not been kicked) is likewise NOT validated: record `skipped:
-target test <T> not yet executed on PR #<P> (<pipeline> not run — needs /azp run)` and stop
+e.g. its automatic pipeline run was not observed) is likewise NOT validated: record `skipped:
+target test <T> not yet executed on PR #<P> (<pipeline> automatic run not observed)` and stop
 this gate WITHOUT marking ready. Do NOT overclaim — a green *sibling* leg (a different category
 on the same platform) is not the target's leg, and a green leg on one platform is not a pass on
 the others.
@@ -1543,7 +1546,7 @@ R1's idempotency guard treats this review as answered and never re-processes it.
   AI-generated, embed the `ci-fix-track-c-responded: <RID>` marker, and list, per
   finding, what you **applied**, and for each **PUSH BACK** state plainly why you did
   not change it (technical reason). In round 1, add the `A maintainer needs to
-  comment /azp run maui-pr …` reminder.
+  automatic validation queued for this head` reminder.
 - **If everything was PUSH BACK (no commit):** emit ONLY `add_comment` on `N`
   embedding the `ci-fix-track-c-responded: <RID>` marker and stating, per finding,
   why you did not change it. NO push, NO attempt-marker bump — a courteous decline
@@ -1892,9 +1895,9 @@ targeting `advance_pr` (the open PR number from Step 3.5):
 4. Register `add_comment`, then call it once
    (`pull_request_number: <advance_pr>`): a short
    `🔁 Attempt <next_attempt>/10: <one line — what this commit changes vs the prior
-   attempt, and why the previously-red signature should now clear>.` Then, in
-   round 1, `A maintainer needs to comment /azp run maui-pr (and the gated
-   uitests/devicetests legs if relevant) to exercise this commit.` Keep it under
+   attempt, and why the previously-red signature should now clear>. The trusted
+   CI-fix validator automatically queues maui-pr, uitests, and devicetests for
+   this commit.` Keep it under
    2,000 characters.
 
 > **Dry-run gate (Step 0):** if `dry_run == "true"`, emit NONE of the above.
@@ -1980,7 +1983,7 @@ Flake class: test-quality
 - Latest verified-failing build: https://dev.azure.com/dnceng-public/public/_build/results?buildId=<latest-from-step-4>
 
 ---
-Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix.md). This is the single PR for dotnet/maui#<N>: the workflow watches its own CI and pushes up to **10 attempts on this same PR** (it never opens a second PR). It advances only when the fix's own build settles red and that red is caused by the fix. Comments, reviews, and commits do not transfer ownership; the loop remains autonomous until this PR is closed. Eligible `CHANGES_REQUESTED` reviews are handled through Track C. After 10 attempts it stops and defers to humans. In round 1 a maintainer still needs to comment `/azp run maui-pr` (plus the gated uitests/devicetests legs when relevant) to exercise each new commit.
+Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix.md). This is the single PR for dotnet/maui#<N>: the workflow watches its own CI and pushes up to **10 attempts on this same PR** (it never opens a second PR). It advances only when the fix's own build settles red and that red is caused by the fix. Comments, reviews, and commits do not transfer ownership; the loop remains autonomous until this PR is closed. Eligible `CHANGES_REQUESTED` reviews are handled through Track C. After 10 attempts it stops and defers to humans. The trusted CI-fix validator automatically queues maui-pr, uitests, and devicetests for every new PR head.
 ````
 
 `Fixes #<N>` is intentionally NOT in the body. The tracking issue is locked
