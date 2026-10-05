@@ -69,6 +69,8 @@ job, with at most one feedback-driven revision. A passing test means only
 runs, with the same failing test, assertion diagnostic and source signature,
 is reported as a **verified failing test candidate**, not proof that the
 author's scenario was exercised or the issue is confirmed. Only that outcome labels the complete generated candidate diff as verified failing.
+Both drafting attempts import the same bounded author-build record and include
+its validated target framework, outcome and diagnostic in the GPT prompt.
 Tool-free drafting also runs when a completed, bounded author build record reports
 a failure. That does not bypass the author-build prerequisite for native verification:
 the unchanged sample's target and diagnostic remain in the report, and the draft
@@ -199,6 +201,8 @@ does not upload the recording or publish anything.
 Authorized fork canaries can use `-GitHubRunId` and `-GitHubRepository` instead
 of `-BuildId` to identify their provider in internal reconciliation markers,
 without posting operational run links or pretending they ran in Azure.
+`-GitHubRepository` is required with `-GitHubRunId`; publication never silently
+defaults to a fork or infers the run repository from the current checkout.
 Normal production publication still uses the isolated Azure
 Post job and its separately scoped issue-comment token.
 

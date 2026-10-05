@@ -153,12 +153,14 @@ stages:
           platform: ${{ parameters.Platform }}
 
       - job: Generate2
-        dependsOn: [Intake, Verify1]
-        condition: and(succeeded('Verify1'), eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive'))
+        dependsOn: [Intake, Sample, Verify1]
+        condition: and(succeeded('Verify1'), eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive'), ne(dependencies.Sample.outputs['sample.payload'], ''))
         variables:
           - group: issue-replicate-copilot
           - name: reproInput
             value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: reproSample
+            value: $[ dependencies.Sample.outputs['sample.payload'] ]
           - name: reproFeedback
             value: $[ dependencies.Verify1.outputs['verify.payload'] ]
         pool:
@@ -172,11 +174,14 @@ stages:
                 -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
               & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
                 -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+                -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
               & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
                 -Encoded $env:REPRO_FEEDBACK -Directory "$(Pipeline.Workspace)/Verified1"
-            displayName: 'Restore bounded snapshot and verification feedback'
+            displayName: 'Restore bounded snapshot, author build and verification feedback'
             env:
               REPRO_INPUT: $(reproInput)
+              REPRO_SAMPLE: $(reproSample)
               REPRO_FEEDBACK: $(reproFeedback)
           - task: UseNode@1
             inputs:
@@ -197,7 +202,8 @@ stages:
               Set-Content -LiteralPath $path -Value $content -Encoding utf8
               & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
                 -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
-                -OutputDirectory "$(Pipeline.Workspace)/Proposal2" -FeedbackPath $path
+                -OutputDirectory "$(Pipeline.Workspace)/Proposal2" -FeedbackPath $path `
+                -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json"
               if ($LASTEXITCODE -ne 0) { throw 'Copilot could not revise the test.' }
             displayName: 'Revise test from bounded feedback'
             env:

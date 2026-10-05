@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory)][ValidateRange(1, [long]::MaxValue)][long]$CommentId,
     [Parameter(Mandatory, ParameterSetName = 'Azure')][ValidateRange(1, [int]::MaxValue)][int]$BuildId,
     [Parameter(Mandatory, ParameterSetName = 'GitHub')][ValidateRange(1, [long]::MaxValue)][long]$GitHubRunId,
-    [Parameter(ParameterSetName = 'GitHub')][ValidateSet('dotnet/maui', 'kubaflo/maui')][string]$GitHubRepository = 'kubaflo/maui',
+    [Parameter(Mandatory, ParameterSetName = 'GitHub')][ValidateSet('dotnet/maui', 'kubaflo/maui')][string]$GitHubRepository,
     [Parameter(Mandatory)][string]$InputDirectory,
     [Parameter(Mandatory)][string]$ResultsDirectory,
     [string]$SampleDirectory = '',

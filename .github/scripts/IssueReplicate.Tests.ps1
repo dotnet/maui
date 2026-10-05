@@ -1396,7 +1396,7 @@ Describe 'Pinned test verification' {
             Test-Path -LiteralPath (Join-Path $imported 'test.patch') | Should -BeFalse
             $preview = Join-Path $TestDrive 'unconfirmed-assertion.md'
             & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
-                -GitHubRunId 987654321 -InputDirectory (Split-Path $manifestPath) `
+                -GitHubRunId 987654321 -GitHubRepository kubaflo/maui -InputDirectory (Split-Path $manifestPath) `
                 -ResultsDirectory $imported -OutputPath $preview
             $body = Get-Content -Raw $preview
             $body | Should -Match '25% \(not a probability\)'
@@ -1663,8 +1663,10 @@ Describe 'Bounded issue result publication' {
             "Error Message:`n  Expected: `"Current: 2`"`n  But was:  `"Current: 0`"`n  Stack Trace: irrelevant")
         $preview = Join-Path $TestDrive "verdict-comment-$Status-$Observed.md"
         & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
-            -GitHubRunId 987654321 -InputDirectory $inputDir -ResultsDirectory $resultsDir -OutputPath $preview
+            -GitHubRunId 987654321 -GitHubRepository kubaflo/maui `
+            -InputDirectory $inputDir -ResultsDirectory $resultsDir -OutputPath $preview
         $body = Get-Content -Raw $preview
+        $body | Should -Match '^<!-- issue-replicate-result:github:kubaflo/maui:987654321 -->'
         $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan 0
         $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan $body.IndexOf('<details>')
         $body | Should -Match '<summary><strong>&#x1F9EA; Reproduction analysis</strong> &#x2014; click to expand</summary>'
