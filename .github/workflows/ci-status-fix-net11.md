@@ -1075,7 +1075,7 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
      its leg), or a completed red is (or may be) caused by the fix, or `C.dataComplete ==
      false`, or this PR has no identifiable target test → `skipped: PR #<P> CI pending /
      target not yet validated on <C.headSha>; waiting` and stop. The trusted
-     `ci-fix-azdo-validation` workflow queues the three validation pipelines; if no
+     `CI-fix Azure DevOps validation` workflow queues the three validation pipelines; if no
      matching run appears, treat that as an automation failure rather than asking a
      maintainer to start CI.
 3. **Green → surface for review.** If `C.overallConclusion == "success"`: the
@@ -1561,8 +1561,8 @@ R1's idempotency guard treats this review as answered and never re-processes it.
   append a "previous approaches" row) + `add_comment`. The comment MUST be clearly
   AI-generated, embed the `ci-fix-track-c-responded: <RID>` marker, and list, per
   finding, what you **applied**, and for each **PUSH BACK** state plainly why you did
-  not change it (technical reason). In round 1, add the `A maintainer needs to
-  automatic validation queued for this head` reminder.
+  not change it (technical reason). In round 1, add the `Automatic validation is
+  queued for this head; wait for the matching CI results before continuing` reminder.
 - **If everything was PUSH BACK (no commit):** emit ONLY `add_comment` on `N`
   embedding the `ci-fix-track-c-responded: <RID>` marker and stating, per finding,
   why you did not change it. NO push, NO attempt-marker bump — a courteous decline

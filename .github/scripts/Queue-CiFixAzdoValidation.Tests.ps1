@@ -147,6 +147,8 @@ Describe 'trusted workflow configuration' {
         $workflow = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-fix-azdo-validation.yml')
 
         $workflow | Should -Match 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\.0\.1'
+        $workflow | Should -Match 'ref: \$\{\{ github\.sha \}\}'
+        $workflow | Should -Not -Match 'github\.event\.pull_request\.base\.sha'
         $workflow | Should -Match 'persist-credentials: false'
         $workflow | Should -Match 'id-token: write'
     }

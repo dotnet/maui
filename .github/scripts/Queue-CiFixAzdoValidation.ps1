@@ -593,7 +593,7 @@ $contexts = if ($EventName -ceq 'pull_request_target') {
 }
 elseif ($EventName -ceq 'workflow_run') {
     if (-not (Test-TrustedCiFixWorkflowRun -Event $event -Repository $Repository)) {
-        throw 'workflow_run did not originate from a trusted main-branch CI-fixer workflow.'
+        throw 'workflow_run did not originate from a trusted default-branch CI-fixer workflow.'
     }
     @(
         Get-OpenCiFixContexts `
