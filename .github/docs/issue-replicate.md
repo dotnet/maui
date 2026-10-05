@@ -358,16 +358,23 @@ requires human fidelity review: an executed failure is not proof of the original
 The existing `maui-pr-uitests` definition can run a credential-free canary from
 the PR branch without changing its registered YAML path. Manually select the
 branch and exact commit, set `IssueReplicateCanary=true`, and choose
-`IssueReplicateCase=all`, `android-carousel`, `android-scrollview`, or `ios-refresh`.
+`IssueReplicateCase=all`, `android-carousel`, `android-scrollview`, `ios-refresh`,
+or `ios-shell-navigation`.
 The default is false: ordinary UI validation, pools, parameters and secret imports
 are unchanged. Canary mode excludes the shared MAUI variable group and all normal
 UI stages. It requires a manual run in `dnceng-public/public`.
 
-Canaries replay reviewed historical public snapshots and previously generated
-UI candidates stored in `.github/issue-replicate-canary`. Their framework commit,
+Canaries replay reviewed public snapshots and UI candidates stored in
+`.github/issue-replicate-canary`. Their framework commit,
 author archive hash and issue association remain explicit; this is not fresh
 intake or generation. The files are platform-scoped before execution, not rewritten
-by the verifier. The ScrollView candidate polls both rendered padding insets for up
+by the verifier. Repository repros also require a full immutable source commit.
+The Shell navigation case uses issue #37360's author-owned repository and a newly
+reviewed iOS candidate. It runs a normal push/pop control before dismissing a modal
+and pushing a detail page inside `Shell.Navigated`, then observes the real root
+handler and root pop notifications. Its assertion is not proof of the original
+app's visual blank-page outcome.
+The ScrollView candidate polls both rendered padding insets for up
 to five seconds after the status changes; the synchronous status text alone is
 not a layout-completion signal. They share the production sample job, native
 verifier, conditional fresh-agent confirmation, bounded transport and Linux forwarder. Microsoft-hosted

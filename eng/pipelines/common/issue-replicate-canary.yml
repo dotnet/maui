@@ -14,6 +14,9 @@ parameters:
       - name: IosRefresh
         scenario: ios-refresh
         platform: ios
+      - name: IosShellNavigation
+        scenario: ios-shell-navigation
+        platform: ios
 
 stages:
   - ${{ each case in parameters.cases }}:
@@ -52,7 +55,7 @@ stages:
               platform: ${{ case.platform }}
 
           - job: Generate1
-            displayName: 'Use reviewed previously generated candidate (no model credential)'
+            displayName: 'Use reviewed candidate (no model credential)'
             dependsOn: [Intake, Sample]
             condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
             pool:
@@ -125,7 +128,7 @@ stages:
                     -InputDirectory $input -SampleDirectory $sample -CandidateDirectory $candidateDirectory `
                     -ResultsDirectory $verified -NativeCanary -OutputPath $preview
                   if ($LASTEXITCODE -ne 0) { throw 'Could not render the validated canary comment preview.' }
-                  Write-Host 'CANARY ONLY: reviewed historical inputs; no GPT generation or issue publication.'
+                  Write-Host 'CANARY ONLY: reviewed immutable inputs; no live GPT generation or automatic issue publication.'
                   Write-Host "Native first job: $env:FIRST_STATUS; confirmation job: $env:CONFIRM_STATUS."
                   Get-Content -LiteralPath $preview | ForEach-Object {
                     Write-Host ($_.Replace("`r", '') -replace '##vso\[[^]]*\]', '')

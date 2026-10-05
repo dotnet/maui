@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][ValidateSet('Input', 'Candidate')][string]$Mode,
-    [Parameter(Mandatory)][ValidateSet('android-carousel', 'android-scrollview', 'ios-refresh')][string]$Scenario,
+    [Parameter(Mandatory)][ValidateSet('android-carousel', 'android-scrollview', 'ios-refresh', 'ios-shell-navigation')][string]$Scenario,
     [Parameter(Mandatory)][string]$DataRoot,
     [Parameter(Mandatory)][string]$OutputDirectory
 )
@@ -29,12 +29,14 @@ if ($manifest.schemaVersion -ne 1 -or $manifest.issueNumber -lt 1 -or $manifest.
     $manifest.platform -cnotin @('android', 'ios') -or
     $manifest.targetRef -cnotmatch '^(main|net[0-9]+\.0)$' -or
     $manifest.targetSha -cnotmatch '^[0-9a-f]{40}$' -or
-    $manifest.sampleSha256 -cnotmatch '^[0-9a-f]{64}$' -or $manifest.sourceType -cne 'attachment') {
+    $manifest.sampleSha256 -cnotmatch '^[0-9a-f]{64}$' -or
+    $manifest.sourceType -cnotin @('attachment', 'repository') -or
+    ($manifest.sourceType -ceq 'repository' -and $manifest.sourceCommit -cnotmatch '^[0-9a-f]{40}$')) {
     throw 'The reviewed canary snapshot is not immutable.'
 }
 $source = Get-IssueReplicateSource -AuthorTexts @("[repro.zip]($($manifest.sourceUrl))")
 if ($source.Type -cne $manifest.sourceType -or $source.Url -cne $manifest.sourceUrl) {
-    throw 'The reviewed canary source is not an approved public attachment.'
+    throw 'The reviewed canary source is not an approved public GitHub repro.'
 }
 $name = 'manifest.json'
 $text = $manifestText
