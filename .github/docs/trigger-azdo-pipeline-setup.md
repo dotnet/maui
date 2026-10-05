@@ -189,6 +189,8 @@ Automated CI-fix PR validation is implemented separately by
 - reconciles every live eligible CI-fix head on each configured PR-target event,
   including unrelated PR events, so GitHub's single-pending-run concurrency
   behavior cannot strand an eligible head;
+- treats the live open-PR scan as authoritative so delayed webhook snapshots
+  cannot restore revoked eligibility or queue obsolete head/merge commits;
 - queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
 - supplies the merge commit as `sourceVersion` and the PR head as
   `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build

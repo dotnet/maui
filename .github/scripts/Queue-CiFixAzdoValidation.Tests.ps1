@@ -591,4 +591,58 @@ Describe 'full-script offline reconciliation' {
             Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It 'does not queue a stale event when live eligibility was revoked' {
+        $eventPath = [System.IO.Path]::GetTempFileName()
+        $pullRequestsPath = [System.IO.Path]::GetTempFileName()
+        try {
+            New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
+            @(
+                New-TestPullRequest -Labels @()
+            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+
+            $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -PullRequestsFixturePath $pullRequestsPath `
+                -DryRun
+
+            $LASTEXITCODE | Should -Be 0
+            @($output) | Should -Be @('No eligible automated CI-fix pull request heads require reconciliation.')
+        }
+        finally {
+            Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'uses the live head and merge SHAs instead of a stale event snapshot' {
+        $eventPath = [System.IO.Path]::GetTempFileName()
+        $pullRequestsPath = [System.IO.Path]::GetTempFileName()
+        try {
+            New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
+            @(
+                New-TestPullRequest `
+                    -HeadSha '3333333333333333333333333333333333333333' `
+                    -MergeSha '4444444444444444444444444444444444444444'
+            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+
+            $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -PullRequestsFixturePath $pullRequestsPath `
+                -DryRun
+
+            $LASTEXITCODE | Should -Be 0
+            $results = @($output -join [Environment]::NewLine | ConvertFrom-Json -Depth 20)
+            $results.Count | Should -Be 3
+            @($results.Request.triggerInfo.'pr.sourceSha' | Sort-Object -Unique) |
+                Should -Be @('3333333333333333333333333333333333333333')
+            @($results.Request.sourceVersion | Sort-Object -Unique) | Should -Be @('4444444444444444444444444444444444444444')
+        }
+        finally {
+            Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue
+        }
+    }
 }

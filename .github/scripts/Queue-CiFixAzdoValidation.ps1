@@ -570,21 +570,16 @@ if (-not [string]::IsNullOrWhiteSpace($PullRequestsFixturePath) -and -not $DryRu
 
 $event = Get-Content -Raw -LiteralPath $EventPath | ConvertFrom-Json -Depth 100
 $contexts = if ($EventName -ceq 'pull_request_target') {
-    $triggerContext = Get-CiFixEventContext -Event $event -Repository $Repository -EventName $EventName
+    [void](Get-CiFixEventContext -Event $event -Repository $Repository -EventName $EventName)
     # GitHub concurrency preserves only one pending run. Every configured
     # PR-target event therefore reconciles every live eligible head, even when
-    # its own PR is unrelated, so a displaced eligible run is recovered.
-    $liveContexts = @(
+    # its own PR is unrelated. The live scan is authoritative so a delayed
+    # webhook snapshot cannot restore revoked eligibility or queue an old SHA.
+    @(
         Get-OpenCiFixContexts `
             -Repository $Repository `
             -GitHubToken $env:GITHUB_TOKEN `
             -FixturePath $PullRequestsFixturePath
-    )
-    @(
-        @($triggerContext) + $liveContexts |
-            Where-Object { $null -ne $_ } |
-            Group-Object { "$($_.PullRequestNumber):$($_.HeadSha)" } |
-            ForEach-Object { $_.Group[0] }
     )
 }
 elseif ($EventName -ceq 'workflow_run') {
