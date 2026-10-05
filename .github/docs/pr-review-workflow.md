@@ -108,8 +108,10 @@ the frozen artifact has not been verified. That integration requires
 platform-owner evidence or an authorized non-production policy test; the hosted
 public-repository acceptance runs do not establish it.
 
-HybridWebView/`EvaluateJavaScriptAsync` selects its shared and native handlers
-before other groups and excludes the legacy WebView group. Legacy WebView
+An explicit HybridWebView name selects its shared and native handlers
+before other groups and excludes the legacy WebView group.
+`EvaluateJavaScriptAsync` is shared by both controls and does not independently
+select either group; method-only reports retain the unmatched-path gap. Legacy WebView
 selection includes shared, Android, iOS and Windows handlers; source presence at
 the exact release remains explicit, not proof that each platform is affected.
 

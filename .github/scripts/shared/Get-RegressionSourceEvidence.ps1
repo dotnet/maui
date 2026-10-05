@@ -5,9 +5,9 @@ function Get-RegressionSourceEvidence {
 
     # Issue text selects fixed paths, never an API endpoint, ref, or executable.
     $text = "$($Context.issue.title)`n$($Context.issue.body)"
-    $hybridWebView = $text -match 'HybridWebView|EvaluateJavaScriptAsync'
+    $hybridWebView = $text -match 'HybridWebView'
     $groups = [ordered]@{
-        'HybridWebView|EvaluateJavaScriptAsync' = @(
+        'HybridWebView' = @(
             'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.cs',
             'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.Android.cs',
             'src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.iOS.cs',
