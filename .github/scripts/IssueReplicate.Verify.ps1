@@ -77,6 +77,7 @@ $recordingNonce = ''
 $recordingTimer = $null
 $recordingAcknowledgement = ''
 $recordingEnvironment = @{}
+$firstFeedback = ''
 if ($RecordVideo -and $candidate.kind -eq 'ui') {
     $result.recording = @{ status = 'not-started'; diagnostic = 'The native test did not reach its start marker.' }
 }
@@ -94,21 +95,22 @@ if ($Attempt -eq 2) {
         $previous.observedAssertion -isnot [bool]) {
         throw 'The first attempt does not match this immutable candidate and issue snapshot.'
     }
-    if (-not $previous.observedAssertion) {
-        $previousFeedback = ''
-        $feedbackBytes = $null
-        $feedbackPath = Join-Path $previousFile.DirectoryName 'feedback.txt'
-        if (Test-Path -LiteralPath $feedbackPath) {
-            $feedbackFile = Get-Item -LiteralPath $feedbackPath -ErrorAction Stop
-            if ($feedbackFile.PSIsContainer -or $feedbackFile.Length -lt 1 -or $feedbackFile.Length -gt 4096 -or
-                $feedbackFile.Attributes -band [IO.FileAttributes]::ReparsePoint) {
-                throw 'The first-attempt feedback is not a bounded regular file.'
-            }
-            $feedbackBytes = [IO.File]::ReadAllBytes($feedbackFile.FullName)
-            $previousFeedback = [Text.UTF8Encoding]::new($false, $true).GetString($feedbackBytes)
-        } elseif ($previous.status -eq 'inconclusive') {
-            throw 'The inconclusive first attempt is missing its revision feedback.'
+    $previousFeedback = ''
+    $feedbackBytes = $null
+    $feedbackPath = Join-Path $previousFile.DirectoryName 'feedback.txt'
+    if (Test-Path -LiteralPath $feedbackPath) {
+        $feedbackFile = Get-Item -LiteralPath $feedbackPath -ErrorAction Stop
+        if ($feedbackFile.PSIsContainer -or $feedbackFile.Length -lt 1 -or $feedbackFile.Length -gt 4096 -or
+            $feedbackFile.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The first-attempt feedback is not a bounded regular file.'
         }
+        $feedbackBytes = [IO.File]::ReadAllBytes($feedbackFile.FullName)
+        $previousFeedback = [Text.UTF8Encoding]::new($false, $true).GetString($feedbackBytes)
+    }
+    elseif ($previous.status -eq 'inconclusive') {
+        throw 'The inconclusive first attempt is missing its revision feedback.'
+    }
+    if (-not $previous.observedAssertion) {
         Copy-Item -LiteralPath $previousFile.FullName -Destination $resultPath
         if ($null -ne $feedbackBytes) {
             [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'feedback.txt'), $feedbackBytes)
@@ -116,12 +118,22 @@ if ($Attempt -eq 2) {
         if ($OnCompleted) { & $OnCompleted $previous '' $previousFeedback }
         return
     }
-    if ($previous.status -cne 'inconclusive' -or $previous.testExecuted -ne $true -or
+    if ($previous.status -cne 'inconclusive' -or $previous.testExecuted -isnot [bool] -or
+        $previous.testExecuted -ne $true -or
         @($previous.failureIdentities).Count -lt 1 -or
         @($previous.failureIdentities | Where-Object { $_ -cnotmatch '^[0-9a-f]{64}$' }).Count) {
         throw 'The first attempt does not contain a valid observed assertion identity.'
     }
-} elseif ($PreviousResultPath) {
+    if ([string]::IsNullOrWhiteSpace($previousFeedback)) {
+        throw 'The first-attempt assertion is missing its diagnostic feedback.'
+    }
+    $firstFeedback = $previousFeedback
+    $result.testExecuted = $true
+    $result.observedAssertion = $true
+    $result.failureIdentities = @($previous.failureIdentities)
+    $result.confirmationTestExecuted = $false
+}
+elseif ($PreviousResultPath) {
     throw 'Only the second fresh-agent attempt can consume first-attempt evidence.'
 }
 
@@ -353,6 +365,7 @@ try {
         }
         if ($verdict.Status -eq 'Inconclusive') { break }
         $result.testExecuted = $true
+        if ($Attempt -eq 2) { $result.confirmationTestExecuted = $true }
         if ($RecordVideo -and $candidate.kind -eq 'ui') {
             if ($result.recording.status -ne 'available') {
                 $diagnostic = if ($result.recording.status -eq 'failed') { $result.recording.diagnostic } else {
@@ -371,13 +384,6 @@ try {
                 $result.status = 'not-reproduced-on-tested-revision'
             }
             else {
-                $firstFeedback = Get-IssueReplicateFeedback -Path (Join-Path $previousFile.DirectoryName 'feedback.txt')
-                if ([string]::IsNullOrWhiteSpace($firstFeedback)) {
-                    throw 'The first-attempt assertion is missing its diagnostic feedback.'
-                }
-                $result.observedAssertion = $true
-                $result.failureIdentities = @($previous.failureIdentities)
-                foreach ($line in $firstFeedback.Split("`n")) { $testLines.Add($line) }
                 $testLines.Add('Failed first-attempt assertion was not repeated; the fresh confirmation passed.')
             }
             break
@@ -404,7 +410,13 @@ try {
         $testLines.Add("Native recording failed: $($result.recording.diagnostic)")
         Write-Warning $result.recording.diagnostic
     }
+    if ($firstFeedback -and $result.status -eq 'inconclusive') {
+        $testLines.Add('Failed first-attempt assertion (retained without matching confirmation):')
+        foreach ($line in $firstFeedback.Split("`n")) { $testLines.Add($line) }
+    }
     $testLines | Set-Content -LiteralPath $log -Encoding utf8
+    $feedback = Get-IssueReplicateFeedback -Lines $testLines.ToArray()
+    [IO.File]::WriteAllText((Join-Path $OutputDirectory 'feedback.txt'), $feedback, [Text.UTF8Encoding]::new($false))
     if ($recordingBytes.Length) {
         [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'recording.mp4'), $recordingBytes)
     }
@@ -418,7 +430,7 @@ try {
     $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
     if ($OnCompleted) {
         $candidatePatch = if ($result.status -eq 'candidate-failed') { $patchText } else { '' }
-        & $OnCompleted $result $candidatePatch (Get-IssueReplicateFeedback -Lines $testLines.ToArray()) $recordingBytes
+        & $OnCompleted $result $candidatePatch $feedback $recordingBytes
     }
 }
 finally {

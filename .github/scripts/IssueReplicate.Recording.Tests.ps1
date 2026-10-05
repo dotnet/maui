@@ -170,10 +170,11 @@ Describe 'Native recording helpers' {
             Should -Throw '*default fixture lifecycle*'
         }
 
-        It 'binds recording to one test after fixture retries (<Fault>, test started=<TestStarted>, assertion=<Assertion>, recovery=<Recovery>)' -ForEach @(
+        It 'binds recording to one test after fixture retries (<Fault>, test started=<TestStarted>, assertion=<Assertion>, recovery=<Recovery>, confirmation fault=<ConfirmationFault>)' -ForEach @(
             @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = '' },
             @{ Fault = ''; TestStarted = $false; Assertion = $false; Recovery = '' },
             @{ Fault = ''; TestStarted = $true; Assertion = $true; Recovery = '' },
+            @{ Fault = ''; TestStarted = $true; Assertion = $true; Recovery = ''; ConfirmationFault = 'start failed' },
             @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = 'new session' },
             @{ Fault = ''; TestStarted = $true; Assertion = $false; Recovery = 'same session' },
             @{ Fault = 'restart failed'; TestStarted = $true; Assertion = $false; Recovery = 'new session' },
@@ -188,6 +189,7 @@ Describe 'Native recording helpers' {
             @{ Fault = 'stale TRX'; TestStarted = $true; Assertion = $false; Recovery = '' },
             @{ Fault = 'missing TRX'; TestStarted = $true; Assertion = $false; Recovery = '' }
         ) {
+            param($Fault, $TestStarted, $Assertion, $Recovery, $ConfirmationFault = '')
             . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
             $fixture = New-RecordingFixture
             $parameters = New-RecordingPostFixture $fixture.Recording
@@ -207,16 +209,16 @@ Describe 'Native recording helpers' {
             $manifest | ConvertTo-Json | Set-Content $manifestPath
             $samplePath = Join-Path $parameters.InputDirectory 'sample-result.json'
             @{ targetSha = $revision; sampleSha256 = $manifest.sampleSha256; buildSucceeded = $true } |
-            ConvertTo-Json | Set-Content $samplePath
+                ConvertTo-Json | Set-Content $samplePath
             $candidatePath = Join-Path $parameters.InputDirectory 'candidate.json'
             @{
                 kind = 'ui'; files = @(
                     @{
-                        path = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'
+                        path    = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345.cs'
                         content = "#if ANDROID`nclass Issue12345 { }`n#endif"
                     },
                     @{
-                        path = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'
+                        path    = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs'
                         content = "#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST`nclass Issue12345 { }`n#endif"
                     }
                 )
@@ -266,13 +268,15 @@ Describe 'Native recording helpers' {
                     }
                     if ($global:recordingRetryFault -eq 'wrong stop') {
                         '>>>>> 10/04/2026 12:00:03 OtherBehavior Stop'
-                    } elseif ($global:recordingRetryFault -ne 'missing stop') {
+                    }
+                    elseif ($global:recordingRetryFault -ne 'missing stop') {
                         '>>>>> 10/04/2026 12:00:03 ChecksBehavior Stop'
                     }
                     if ($global:recordingRetryFault -eq 'later failure') {
                         '>>>>> 10/04/2026 12:00:04 OtherBehavior Start'
                         '>>>>> 10/04/2026 12:00:05 OtherBehavior Stop'
-                    } elseif ($global:recordingRetryFault -eq 'repeated case') {
+                    }
+                    elseif ($global:recordingRetryFault -eq 'repeated case') {
                         '>>>>> 10/04/2026 12:00:04 ChecksBehavior Start'
                         '>>>>> 10/04/2026 12:00:05 ChecksBehavior Stop'
                     }
@@ -300,6 +304,11 @@ Describe 'Native recording helpers' {
 </UnitTestResult>
 '@)
                     $global:LASTEXITCODE = 1
+                    if ($global:recordingRetryTestStarted) {
+                        'Error Message:'
+                        '  Expected: 1'
+                        '  But was: 0'
+                    }
                 }
                 if ($global:recordingRetryFault -in @('later failure', 'extra result', 'repeated case')) {
                     $otherMethod = if ($global:recordingRetryFault -eq 'repeated case') { 'ChecksBehavior' } else { 'OtherBehavior' }
@@ -316,7 +325,8 @@ Describe 'Native recording helpers' {
                 [IO.File]::WriteAllText($trx, $xml)
                 $timestamp = if ($global:recordingRetryFault -eq 'stale TRX') {
                     [DateTime]::UtcNow.AddMinutes(-1)
-                } else { [DateTime]::UtcNow.AddSeconds(1) }
+                }
+                else { [DateTime]::UtcNow.AddSeconds(1) }
                 [IO.File]::SetLastWriteTimeUtc($trx, $timestamp)
                 if ($global:recordingRetryFault -eq 'missing TRX') { Remove-Item -LiteralPath $trx }
                 ">>> TRX_RESULT_FILE: $trx"
@@ -335,24 +345,26 @@ Describe 'Native recording helpers' {
                     $result.observedAssertion | Should -BeFalse
                     Test-Path (Join-Path $parameters.ResultsDirectory 'recording.mp4') | Should -BeFalse
                     Test-Path (Join-Path $parameters.ResultsDirectory 'test.patch') | Should -BeFalse
-                } elseif ($TestStarted) {
+                }
+                elseif ($TestStarted) {
                     $result.testExecuted | Should -BeTrue
                     $result.recording.status | Should -BeExactly 'available'
                     $global:recordingRetryCalls[0] |
-                    Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/start_recording_screen'
+                        Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/start_recording_screen'
                     if ($Recovery -eq 'new session') {
                         $global:recordingRetryCalls.Count | Should -Be 3
                         $global:recordingRetryCalls[1] |
-                        Should -BeExactly 'session/cccccccc-cccc-cccc-cccc-cccccccccccc/appium/start_recording_screen'
+                            Should -BeExactly 'session/cccccccc-cccc-cccc-cccc-cccccccccccc/appium/start_recording_screen'
                         $global:recordingRetryCalls[2] |
-                        Should -BeExactly 'session/cccccccc-cccc-cccc-cccc-cccccccccccc/appium/stop_recording_screen'
-                    } else {
+                            Should -BeExactly 'session/cccccccc-cccc-cccc-cccc-cccccccccccc/appium/stop_recording_screen'
+                    }
+                    else {
                         $global:recordingRetryCalls.Count | Should -Be 2
                         $global:recordingRetryCalls[1] |
-                        Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/stop_recording_screen'
+                            Should -BeExactly 'session/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/appium/stop_recording_screen'
                     }
                     [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $parameters.ResultsDirectory 'recording.mp4'))) |
-                    Should -BeExactly ([Convert]::ToBase64String($fixture.Bytes))
+                        Should -BeExactly ([Convert]::ToBase64String($fixture.Bytes))
                     if ($Assertion) {
                         $result.observedAssertion | Should -BeTrue
                         $secondRepo = "$repo-second"
@@ -361,27 +373,52 @@ Describe 'Native recording helpers' {
                         $global:recordingRetryLog = Join-Path $secondRepo 'CustomAgentLogsTmp/UITests/appium.log'
                         New-Item -ItemType Directory -Path (Split-Path $global:recordingRetryLog) -Force | Out-Null
                         $confirmation = Join-Path $parameters.InputDirectory 'confirmation'
+                        if ($ConfirmationFault) { $global:recordingRetryFault = $ConfirmationFault }
                         & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `
                             -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $secondRepo `
                             -OutputDirectory $confirmation -RecordVideo -CoreLoaded -Attempt 2 `
                             -PreviousResultPath (Join-Path $parameters.ResultsDirectory 'result.json')
                         $confirmed = Get-Content -Raw (Join-Path $confirmation 'result.json') | ConvertFrom-Json
+                        if ($ConfirmationFault) {
+                            $confirmed.status | Should -BeExactly 'inconclusive'
+                            $confirmed.observedAssertion | Should -BeTrue
+                            $confirmed.testExecuted | Should -BeTrue
+                            $confirmed.confirmationTestExecuted | Should -BeFalse
+                            $confirmed.assertionFailed | Should -BeFalse
+                            ($confirmed.failureIdentities -join "`n") | Should -BeExactly ($result.failureIdentities -join "`n")
+                            $confirmed.recording.status | Should -BeExactly 'failed'
+                            $confirmed.recording.diagnostic | Should -Match 'HTTP 500'
+                            Test-Path (Join-Path $confirmation 'recording.mp4') | Should -BeFalse
+                            Test-Path (Join-Path $confirmation 'test.patch') | Should -BeFalse
+                            $preview = Join-Path $parameters.InputDirectory 'failed-confirmation.md'
+                            & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters `
+                                -ResultsDirectory $confirmation -OutputPath $preview
+                            $body = Get-Content -Raw $preview
+                            $body | Should -Match '25% \(evidence score, not a statistical probability\)'
+                            $body | Should -Match 'Expected: 1'
+                            $body | Should -Match 'But was: 0'
+                            $body | Should -Match 'Fresh confirmation executed \| False'
+                            $body | Should -Not -Match '75%|https://github\.com/user-attachments/assets/'
+                            return
+                        }
                         $confirmed.status | Should -BeExactly 'candidate-failed'
                         $confirmed.recording.status | Should -BeExactly 'available'
                         $confirmed.assertionFailed | Should -BeTrue
                         [IO.File]::ReadAllBytes((Join-Path $confirmation 'recording.mp4')).Length |
-                        Should -Be $fixture.Bytes.Length
+                            Should -Be $fixture.Bytes.Length
                         Test-Path (Join-Path $confirmation 'test.patch') | Should -BeTrue
                     }
-                } else {
+                }
+                else {
                     $result.testExecuted | Should -BeFalse
                     $result.recording.status | Should -BeExactly 'not-started'
                     $global:recordingRetryCalls.Count | Should -Be 0
                     Test-Path (Join-Path $parameters.ResultsDirectory 'recording.mp4') | Should -BeFalse
                 }
-            } finally {
+            }
+            finally {
                 Remove-Variable recordingRetryLog, recordingRetryTestStarted, recordingRetryFault, recordingRetryAssertion,
-                    recordingRetryRecovery, recordingRetryCalls -Scope Global
+                recordingRetryRecovery, recordingRetryCalls -Scope Global
             }
         }
 

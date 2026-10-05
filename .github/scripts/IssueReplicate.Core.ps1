@@ -672,16 +672,23 @@ function Assert-IssueReplicateResult {
     }
     if ($Result.status -eq 'candidate-failed' -and
         ($Result.testExecuted -ne $true -or $Result.assertionFailed -ne $true -or
-         $Result.sampleBuilt -ne $true -or $Result.testKind -cnotin @('unit', 'xaml', 'ui') -or
-         $Result.patchSha256 -cnotmatch '^[a-fA-F0-9]{64}$')) {
+        $Result.sampleBuilt -ne $true -or $Result.testKind -cnotin @('unit', 'xaml', 'ui') -or
+        $Result.patchSha256 -cnotmatch '^[a-fA-F0-9]{64}$')) {
         throw 'A failing test candidate needs a built sample, repeated executed assertions, and a test patch.'
     }
     if ($Result.status -ne 'candidate-failed' -and $Result.patchSha256) {
         throw 'Only a verified failing test candidate can publish a patch.'
     }
+    if ($null -ne $Result.confirmationTestExecuted -and
+        ($Result.confirmationTestExecuted -isnot [bool] -or $Result.attempt -ne 2 -or
+        $Result.testExecuted -ne $true -or $Result.observedAssertion -ne $true -or
+        $Result.status -cnotin @('inconclusive', 'candidate-failed') -or
+        ($Result.status -eq 'candidate-failed' -and -not $Result.confirmationTestExecuted))) {
+        throw 'Fresh confirmation execution must match a second-attempt aggregate with observed assertion evidence.'
+    }
     if ($Result.status -eq 'not-reproduced-on-tested-revision' -and
         ($Result.testExecuted -ne $true -or $Result.assertionFailed -ne $false -or
-         $Result.sampleBuilt -ne $true)) {
+        $Result.sampleBuilt -ne $true)) {
         throw 'A passing verdict needs an executed test and a built sample.'
     }
     return $true

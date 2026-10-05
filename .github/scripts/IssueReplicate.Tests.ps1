@@ -1219,9 +1219,12 @@ Describe 'Pinned test verification' {
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'Unicode'; Content = "public class Issue12345 { } // $([char]0x6F22)$([char]::ConvertFromUtf32(0x1F600))`n" }
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'stale-report'; StaleReport = $true }
         @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'passing-confirmation'; ConfirmationPassed = $true }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'confirmation-setup-failure'; ConfirmationFault = 'setup' }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'confirmation-missing-trx'; ConfirmationFault = 'missing TRX' }
+        @{ Mutate = $false; Different = $false; TrackedMutation = $false; ContentName = 'confirmation-stale-trx'; ConfirmationFault = 'stale TRX' }
     ) {
         param($Mutate, $Different, $TrackedMutation, $ContentName = 'single-line', $StaleReport = $false,
-            $Content = 'public class Issue12345 { }', $ConfirmationPassed = $false)
+            $Content = 'public class Issue12345 { }', $ConfirmationPassed = $false, $ConfirmationFault = '')
         $repo = Join-Path $TestDrive "maui-fixture-$Mutate-$Different-$TrackedMutation-$ContentName"
         $projectDir = Join-Path $repo 'src/Core/tests/UnitTests'
         New-Item -ItemType Directory -Path $projectDir -Force | Out-Null
@@ -1264,6 +1267,7 @@ Describe 'Pinned test verification' {
         $global:issueReplicateFixtureTrackedMutation = $TrackedMutation
         $global:issueReplicateFixtureStaleReport = $StaleReport
         $global:issueReplicateFixtureConfirmationPassed = $ConfirmationPassed
+        $global:issueReplicateFixtureConfirmationFault = $ConfirmationFault
         function dotnet {
             $parameters = @($args)
             $directory = $parameters[[array]::IndexOf($parameters, '--results-directory') + 1]
@@ -1286,6 +1290,11 @@ Describe 'Pinned test verification' {
                 $trx = $trx -replace '<Output>.*?</Output>', '' -replace 'outcome="Failed"', 'outcome="Passed"' `
                     -replace 'passed="0" failed="1"', 'passed="1" failed="0"'
             }
+            $fault = if ($name -eq 'attempt-2.trx') { $global:issueReplicateFixtureConfirmationFault } else { '' }
+            if ($fault -eq 'setup') {
+                $trx = $trx.Replace('NUnit.Framework.AssertionException: Expected: 1 But was: 0',
+                    'OneTimeSetUp: System.InvalidOperationException: Fixture setup failed.')
+            }
             if ($global:issueReplicateFixtureMutate) {
                 [IO.File]::WriteAllText((Join-Path $global:issueReplicateFixtureRepo `
                             'src/Core/tests/UnitTests/Issues/Issue12345.cs'), 'public class NeverCompiled { }')
@@ -1301,9 +1310,14 @@ Describe 'Pinned test verification' {
                 throw 'The second attempt reused first-attempt build output.'
             }
             $trxPath = Join-Path $directory $name
+            if ($fault -eq 'missing TRX') {
+                $global:LASTEXITCODE = 1
+                'OneTimeSetUp: Fixture setup failed before a TRX result was produced.'
+                return
+            }
             Set-Content -LiteralPath $trxPath -Value $trx
             # Automatic Linux mtimes can precede UtcNow during an instantaneous stub run.
-            $timestamp = if ($global:issueReplicateFixtureStaleReport) {
+            $timestamp = if ($global:issueReplicateFixtureStaleReport -or $fault -eq 'stale TRX') {
                 [DateTime]::UtcNow.AddMinutes(-1)
             }
             else {
@@ -1313,6 +1327,9 @@ Describe 'Pinned test verification' {
             $global:LASTEXITCODE = if ($passed) { 0 } else { 1 }
             if ($passed) {
                 'Passed: 1'
+            }
+            elseif ($fault) {
+                'OneTimeSetUp: Fixture setup failed.'
             }
             else {
                 'Error Message:'
@@ -1349,13 +1366,23 @@ Describe 'Pinned test verification' {
             -SampleResultPath $samplePath -CandidatePath $candidatePath -RepoRoot $secondRepo `
             -OutputDirectory $results -Attempt 2 -PreviousResultPath (Join-Path $firstImported 'result.json')
         $outcome = Get-Content -Raw -LiteralPath (Join-Path $results 'result.json') | ConvertFrom-Json
-        $confirmed = -not ($Different -or $ConfirmationPassed)
+        $confirmed = -not ($Different -or $ConfirmationPassed -or $ConfirmationFault)
         $outcome.status | Should -Be $(if ($confirmed) { 'candidate-failed' } else { 'inconclusive' })
         $outcome.testExecuted | Should -BeTrue
         $outcome.observedAssertion | Should -BeTrue
+        $outcome.confirmationTestExecuted | Should -Be (-not [bool]$ConfirmationFault)
         $outcome.assertionFailed | Should -Be $confirmed
         Test-Path -LiteralPath (Join-Path $results 'test.patch') | Should -Be $confirmed
-        if ($ConfirmationPassed) {
+        $invalid = $outcome.PSObject.Copy()
+        $invalid.confirmationTestExecuted = 'false'
+        { Assert-IssueReplicateResult -Result $invalid -IssueNumber 12345 -CommentId 4925414214 } |
+            Should -Throw '*Fresh confirmation execution must match*'
+        if ($confirmed) {
+            $invalid.confirmationTestExecuted = $false
+            { Assert-IssueReplicateResult -Result $invalid -IssueNumber 12345 -CommentId 4925414214 } |
+                Should -Throw '*Fresh confirmation execution must match*'
+        }
+        if ($ConfirmationPassed -or $ConfirmationFault) {
             ($outcome.failureIdentities -join "`n") | Should -BeExactly ($first.failureIdentities -join "`n")
             $outcome.patchSha256 | Should -BeNullOrEmpty
             $imported = "$results-imported"
@@ -1371,6 +1398,10 @@ Describe 'Pinned test verification' {
             $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
             $body | Should -Match 'Expected: 1'
             $body | Should -Match 'But was: 0'
+            $body | Should -Match ([regex]::Escape("| Fresh confirmation executed | $(-not [bool]$ConfirmationFault) |"))
+            if ($ConfirmationFault) {
+                (Get-Content -Raw (Join-Path $imported 'feedback.txt')) | Should -Match 'OneTimeSetUp: Fixture setup failed'
+            }
             $body | Should -Not -Match '75%|dev\.azure\.com|/actions/runs/'
         }
         elseif ($confirmed) {
@@ -1398,7 +1429,7 @@ Describe 'Pinned test verification' {
     }
 
     AfterEach {
-        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent, issueReplicateFixtureTrackedMutation, issueReplicateFixtureStaleReport, issueReplicateFixtureConfirmationPassed `
+        Remove-Variable issueReplicateFixtureRepo, issueReplicateFixtureMutate, issueReplicateFixtureDifferent, issueReplicateFixtureTrackedMutation, issueReplicateFixtureStaleReport, issueReplicateFixtureConfirmationPassed, issueReplicateFixtureConfirmationFault `
             -Scope Global -ErrorAction SilentlyContinue
     }
 }

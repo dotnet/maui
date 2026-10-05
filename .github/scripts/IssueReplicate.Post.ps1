@@ -126,6 +126,9 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         $details += "`n| Status | ``$($result.status)`` |"
         if ($null -eq $sample) { $details += "`n| Author sample built | $($result.sampleBuilt -eq $true) |" }
         $details += "`n| Generated test executed | $($result.testExecuted -eq $true) |"
+        if ($null -ne $result.confirmationTestExecuted) {
+            $details += "`n| Fresh confirmation executed | $($result.confirmationTestExecuted) |"
+        }
         $details += "`n| Matching assertion failures verified twice | $($result.assertionFailed -eq $true) |"
         if ($result.testKind -cin @('unit', 'xaml', 'ui') -and $result.testExecuted -eq $true) {
             $class = if ($result.testKind -eq 'xaml') { "Maui$IssueNumber" } else { "Issue$IssueNumber" }
@@ -177,6 +180,9 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                 $testCoverage = 'Not verified; no matching pair of assertion failures.'
                 if ($result.testExecuted -eq $true -and $result.recording -and $result.recording.status -eq 'failed') {
                     $summary = 'The named generated test body executed, but its native recording failed. Verification and independent confirmation are incomplete; the issue has not been ruled out.'
+                }
+                if ($null -ne $result.confirmationTestExecuted -and -not $result.confirmationTestExecuted) {
+                    $summary = 'The first generated test body reached an assertion, but the fresh confirmation did not complete a qualifying named body. Its setup, recording or result evidence was inconclusive; the issue has not been ruled out.'
                 }
                 if ($result.testExecuted -eq $true -and $result.observedAssertion -eq $true) {
                     $reproducibility = 'Not confirmed; an assertion failed, but matching independent confirmation is missing.'

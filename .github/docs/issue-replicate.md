@@ -83,8 +83,11 @@ deterministic evidence score, not a calibrated probability that the issue is rea
 **0%** means no failing reproduction evidence (unassessed, blocked, unsupported,
 or a passing candidate), **25%** means an executed but unconfirmed assertion
 failure, and **75%** means two matching independent assertion failures. A first
-assertion followed by a passing fresh confirmation retains **25%**; its result
-stays inconclusive and exports no verified failing patch. The score never claims
+assertion followed by a passing or inconclusive fresh confirmation retains **25%**;
+its result stays inconclusive and exports no verified failing patch. The report
+distinguishes a test executed in either attempt from whether the fresh confirmation
+completed its named body; setup, recording and missing/stale-result failures do not
+claim a second execution. First-attempt assertion values remain visible. The score never claims
 certainty: the original author interaction and a bug-specific causal
 control have not been verified. A repeatably failing generated scenario does not
 automatically establish that its test catches the reported issue. Passing and
