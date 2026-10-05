@@ -410,6 +410,10 @@ Describe 'Native recording helpers' {
                     "[$Driver] Proxying [POST /element] to [POST http://127.0.0.1:$Port/session/d4b4c973-b7e3-4cd6-87bd-2c24b89fc528/element] with body",
                     "[$Driver] Got response with status 200: {`"sessionId`":`"d4b4c973-b7e3-4cd6-87bd-2c24b89fc528`"}"
                 ) -join "`n")
+            if ($Platform -eq 'ios') {
+                $syslog = "[IOS_SYSLOG_ROW] $('x' * 1000)`n"
+                [IO.File]::AppendAllText($log, "`n" + ($syslog * 400))
+            }
             Mock Invoke-IssueReplicateRecordingRequest { '' }
             Start-IssueReplicateRecording -Platform $Platform -LogPath $log |
                 Should -BeExactly 'bba3a072-b34e-4205-b6db-0a2861b95056'

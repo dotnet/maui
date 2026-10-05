@@ -138,6 +138,10 @@ The trusted controller uses the live Appium session without enabling session dis
 It selects the frontend session from Appium's incoming HTTP command or top-level
 session-creation log entries, not the distinct UiAutomator2/WDA backend session
 UUIDs in proxy requests. Missing frontend evidence fails recording explicitly.
+Selection reuses the bounded Appium reader: it scans at most the last 64 MiB and
+keeps the last 80 non-syslog rows, so an iOS system-log flood cannot hide a recent
+frontend command inside the ordinary 256 KiB tail. Its four-second deadline leaves
+room for the existing 20-second recording request within the NUnit wait.
 Recorded UI candidates must execute exactly one named test: one matching
 `Start`/`Stop` pair, one acknowledged recording action and one TRX result whose
 method matches those markers.

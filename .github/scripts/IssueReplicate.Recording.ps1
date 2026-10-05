@@ -89,7 +89,8 @@ function Invoke-IssueReplicateRecordingRequest {
 function Get-IssueReplicateRecordingSessionId {
     param([Parameter(Mandatory)][string]$LogPath)
 
-    $log = Read-IssueReplicateNativeDiagnostic -Path $LogPath -MaxBytes 256KB -Tail
+    $log = Read-IssueReplicateNativeDiagnostic -Path $LogPath -MaxBytes 256KB -Tail -AppiumLog `
+        -TimeoutSeconds 4
     $matches = [regex]::Matches($log.Text,
         '(?:\[HTTP\]\s+-->\s+(?:GET|POST|DELETE)\s+/(?:wd/hub/)?session/|\[AppiumDriver(?:@[^\]\r\n]+)?\]\s+New [^\r\n]+ session created successfully, session )([a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12})')
     if (-not $matches.Count) { throw 'The live Appium log contains no bounded frontend session identifier.' }
