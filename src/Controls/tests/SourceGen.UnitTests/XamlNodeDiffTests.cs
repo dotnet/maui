@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.Xaml;
@@ -1022,15 +1023,25 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XName_Changed_ReturnsNull()
+	public void XName_Changed_IsLocalRebuild_NotGlobalStructural()
 	{
-		// x:Name generates a field in code-behind → any change is structural
+		// x:Name generates a field in code-behind, so it can't be textually patched like a normal
+		// property — but that unpatchability must stay LOCAL to this one node (rebuilt in place,
+		// same id) rather than cascading the whole page to structural.
 		var old = Parse(Page("<Label x:Name=\"oldLabel\" Text=\"Hello\" />"));
 		var @new = Parse(Page("<Label x:Name=\"newLabel\" Text=\"Hello\" />"));
 
-		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+		var oldIds = NodeIdHelper.AssignIds(old);
+		var newIds = NodeIdHelper.AssignIds(@new);
+		var diff = XamlNodeDiff.ComputeDiff(old, @new, oldIds, newIds, out var effectiveNewIds);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		var entry = Assert.Single(change.NewChildren);
+		Assert.Equal(ChildChangeKind.Added, entry.Kind); // recreated...
+		var oldLabelId = oldIds[(ElementNode)old.CollectionItems[0]];
+		Assert.Equal(oldLabelId, entry.NewNodeId); // ...but re-registered under the SAME id
+		Assert.Empty(change.RemovedNodeIds); // never unregistered — would race the same-id re-add
 	}
 
 	[Fact]
@@ -2391,4 +2402,664 @@ public class XamlNodeDiffTests
 		Assert.Equal(PropertyDiffKind.Set, resProp.Kind);
 		Assert.NotNull(resProp.NewNode);
 	}
+
+	// ---------------------------------------------------------------------------
+	// Id lifecycle across a version chain — mirrors XamlGenerator.cs's own id
+	// bookkeeping exactly (fresh IDs assigned to the new tree starting at the
+	// previous NextNodeId, ComputeDiff threading oldIds/newIds/effectiveNewIds,
+	// and a full fresh-from-0 reassignment via NodeIdHelper.AssignIds(root, 0, ...)
+	// whenever ComputeDiff returns null — the "structural" branch).
+	// ---------------------------------------------------------------------------
+
+	/// <summary>
+	/// Applies one version transition the same way <c>XamlGenerator.cs</c> does: assigns fresh
+	/// ids to <paramref name="newRoot"/> starting at <paramref name="nextId"/>, diffs against
+	/// <paramref name="oldRoot"/>/<paramref name="oldIds"/>, and on a structural (null) result,
+	/// throws away all id continuity and reassigns fresh ids to <paramref name="newRoot"/>
+	/// starting back at 0 — exactly like the "structural change" branch in XamlGenerator.cs.
+	/// Returns the diff (null if structural) and the ids to carry into the next transition.
+	/// </summary>
+	static XamlTreeDiff? ApplyEdit(
+		ElementNode oldRoot, Dictionary<ElementNode, string> oldIds,
+		ElementNode newRoot, int nextId,
+		out Dictionary<ElementNode, string> idsForNextStep)
+	{
+		var newIds = NodeIdHelper.AssignIds(newRoot, nextId, out _);
+		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out var effectiveNewIds);
+		if (diff is null)
+		{
+			// Structural branch: fresh ids from 0, no continuity with oldIds whatsoever.
+			idsForNextStep = NodeIdHelper.AssignIds(newRoot, 0, out _);
+		}
+		else
+		{
+			idsForNextStep = effectiveNewIds!;
+		}
+		return diff;
+	}
+
+	[Fact]
+	public void StructuralResetMidReorder_NoLongerDesyncsIdsFromLiveApp()
+	{
+		// THE FIX: a reorder that coincides with a transient codegen-sensitive x:Name change (e.g.
+		// mid-keystroke while dragging a line) used to trip a GLOBAL "structural" fallback that
+		// reset every id in the page to a fresh DFS numbering of the NEW tree — discarding the old
+		// ids the LIVE running app had actually registered its objects under. A later ordinary
+		// property edit would then address the wrong live object (e.g. a Label instead of an
+		// Entry), producing the observed InvalidCastException.
+		//
+		// Now, a codegen-sensitive property change below the root is contained to just that one
+		// node (rebuilt under its SAME id) instead of cascading to a whole-page id reset — so ids
+		// stay in sync with the live app through the entire edit sequence below.
+		var seed = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+		// Transient: reordered AND x:Name momentarily missing (mid-keystroke state).
+		var transientNoName = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Static" />
+				<Entry Text="hello" />
+			</VerticalStackLayout>
+			"""));
+		// Settled: same reordered shape, x:Name restored.
+		var settled = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Static" />
+				<Entry x:Name="entry1" Text="hello" />
+			</VerticalStackLayout>
+			"""));
+		// Final: an ordinary property edit.
+		var finalEdit = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Static" />
+				<Entry x:Name="entry1" Text="hello" FontSize="20" />
+			</VerticalStackLayout>
+			"""));
+
+		var seedIds = NodeIdHelper.AssignIds(seed, 0, out var nextId);
+		// This is what the LIVE app actually has entry1 registered under — captured once, from the
+		// seed, and never revisited (the live app is never explicitly told about ids afterward —
+		// it should simply never need to be, because they stop drifting).
+		var liveEntryId = seedIds[FindFirstEntry(seed)];
+
+		var d1 = ApplyEdit(seed, seedIds, transientNoName, nextId, out var ids1);
+		// Removing x:Name is codegen-sensitive, but is now a LOCAL rebuild of just the Entry
+		// (same id, recreated) — not a page-wide structural reset.
+		Assert.NotNull(d1);
+
+		var d2 = ApplyEdit(transientNoName, ids1, settled, nextId, out var ids2);
+		// Restoring x:Name is likewise a local rebuild, not a cascade.
+		Assert.NotNull(d2);
+
+		var d3 = ApplyEdit(settled, ids2, finalEdit, nextId, out var ids3);
+		Assert.NotNull(d3); // plain FontSize change -> ordinary patchable diff
+
+		var entryFinalNode = FindFirstEntry(finalEdit);
+		var patchedId = ids3[entryFinalNode];
+
+		// THE FIX, VERIFIED: the id the final patch addresses for entry1 now matches what the live
+		// app actually registered entry1 under at the seed — no desync, despite the transient
+		// name-loss/restore and reorder in between.
+		Assert.Equal(liveEntryId, patchedId);
+	}
+
+	static ElementNode FindFirstEntry(ElementNode root) =>
+		TryFindFirstEntry(root) ?? throw new InvalidOperationException("No Entry found");
+
+	static ElementNode? TryFindFirstEntry(ElementNode node)
+	{
+		foreach (var item in node.CollectionItems)
+		{
+			if (item is not ElementNode el)
+				continue;
+			if (el.XmlType.Name == "Entry")
+				return el;
+			var found = TryFindFirstEntry(el);
+			if (found != null)
+				return found;
+		}
+		return null;
+	}
+
+	// ---------------------------------------------------------------------------
+	// Reparenting — current gap. An element identified by x:Name (or otherwise
+	// matchable) that moves to a DIFFERENT parent is not matched at all today:
+	// XamlNodeDiff's matching (MatchTypeGroupByCost) only runs within one parent's
+	// own child list (DiffChildrenWithMatching), so a moved node shows up as a
+	// plain remove-from-old-parent + add-to-new-parent, losing its id. These tests
+	// document the CURRENT (to-be-fixed) behavior as a baseline for the upcoming
+	// tree-global identity-matching change.
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void Reparenting_SameXName_DifferentParent_CurrentlyNotMatched()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Entry x:Name="entry1" Text="hello" />
+				</Border>
+				<Border x:Name="borderB" />
+			</VerticalStackLayout>
+			"""));
+		// entry1 moved from borderA to borderB — same x:Name, same type, just a different parent.
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA" />
+				<Border x:Name="borderB">
+					<Entry x:Name="entry1" Text="hello" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Current (buggy) behavior: two separate child-list changes, one per parent — entry1 is
+		// removed from borderA's list and a brand-new entry is added to borderB's list. It is NOT
+		// recognized as the same element, so it would get a fresh id instead of keeping its old one.
+		Assert.Equal(2, diff.ChildListChanges.Count);
+		var borderAChange = diff.ChildListChanges.First(c => c.RemovedNodeIds.Count > 0);
+		var borderBChange = diff.ChildListChanges.First(c => c.NewChildren.Any(e => e.Kind == ChildChangeKind.Added));
+		Assert.Single(borderAChange.RemovedNodeIds);
+		Assert.Contains(borderBChange.NewChildren, e => e.Kind == ChildChangeKind.Added);
+		// TODO once tree-global identity matching lands: this should instead be recognized as a
+		// single "moved" retained node carrying its original id into the new parent, with zero
+		// removed/added entries for entry1.
+	}
+
+	[Fact]
+	public void Reparenting_TypeChangeAtSamePosition_NeverMatches()
+	{
+		// Clarifies the companion invariant: even with identical x:Name reused at the same slot,
+		// a type change must NEVER be treated as the same element (Label -> Button is a new
+		// element, old id retired, new id allocated) — this must hold both today and after the
+		// upcoming tree-global identity-matching change.
+		var old = Parse(Page("""<Label x:Name="thing" Text="Hello" />"""));
+		var @new = Parse(Page("""<Button x:Name="thing" Text="Hello" />"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Single(change.RemovedNodeIds); // old Label retired, not reused
+		Assert.Equal(1, change.NewChildren.Count(e => e.Kind == ChildChangeKind.Added)); // new Button is fresh
+	}
+
+	[Fact]
+	public void Reparenting_UnnamedElement_CostMatchable_DifferentParent_CurrentlyNotMatched()
+	{
+		// No x:Name at all — only cost-based structural similarity could identify this as "the
+		// same" Entry across parents (identical properties). Today's matching never gets the
+		// chance because it's scoped per-parent, so this is lost even though it's a textbook
+		// case for cost-based matching to succeed were it given the opportunity.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Entry Text="hello" Placeholder="Search" />
+				</Border>
+				<Border x:Name="borderB" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA" />
+				<Border x:Name="borderB">
+					<Entry Text="hello" Placeholder="Search" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(2, diff.ChildListChanges.Count);
+		Assert.Contains(diff.ChildListChanges, c => c.RemovedNodeIds.Count > 0);
+		Assert.Contains(diff.ChildListChanges, c => c.NewChildren.Any(e => e.Kind == ChildChangeKind.Added));
+	}
+
+	[Fact]
+	public void Reparenting_WithSimultaneousPropertyChange_CurrentlyNotMatched()
+	{
+		// Moved AND edited in the same version — the common real-world case (drag a control to a
+		// different container, then also tweak a property before the next save).
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Entry x:Name="entry1" Text="hello" />
+				</Border>
+				<Border x:Name="borderB" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA" />
+				<Border x:Name="borderB">
+					<Entry x:Name="entry1" Text="hello world" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Current (buggy) behavior: the property edit is invisible — entry1 is simply removed
+		// and a brand-new Entry (with the edited Text already baked in) is added. There is no
+		// NodeDiff recording "Text changed", because the matcher never recognizes it's the same
+		// node to begin with.
+		Assert.Empty(diff.NodeChanges);
+		Assert.Equal(2, diff.ChildListChanges.Count);
+	}
+
+	[Fact]
+	public void Reparenting_AcrossDifferentNestingDepths_CurrentlyNotMatched()
+	{
+		// Moved from depth 3 to depth 1 — not just a different parent, but a different level
+		// entirely. Tree-global matching must not assume "same depth" as a precondition.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<VerticalStackLayout>
+						<Entry x:Name="entry1" Text="hello" />
+					</VerticalStackLayout>
+				</Border>
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+				<Border>
+					<VerticalStackLayout />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(2, diff.ChildListChanges.Count);
+		Assert.Contains(diff.ChildListChanges, c => c.RemovedNodeIds.Count > 0);
+		Assert.Contains(diff.ChildListChanges, c => c.NewChildren.Any(e => e.Kind == ChildChangeKind.Added));
+	}
+
+	[Fact]
+	public void Reparenting_IntoNewlyAddedParent_CurrentlyNotMatched()
+	{
+		// The destination parent doesn't exist in the old tree at all — it's added in the same
+		// edit as the move. A correct global matcher should still carry entry1's id forward.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="newBorder">
+					<Entry x:Name="entry1" Text="hello" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Only ONE child-list change is produced, at the root: Entry removed, Border added.
+		// Since Border is wholesale "Added", its own children (including entry1's replacement)
+		// are emitted as part of Border's creation code, not as an independently-diffed child
+		// list — so entry1 never gets a chance to be recognized as the same node either way.
+		var rootChange = Assert.Single(diff.ChildListChanges);
+		Assert.Single(rootChange.RemovedNodeIds);
+		var addedBorder = Assert.Single(rootChange.NewChildren, e => e.Kind == ChildChangeKind.Added);
+		Assert.NotNull(addedBorder.NewElement); // Border's whole subtree, including the "new" Entry, created fresh
+	}
+
+	[Fact]
+	public void Reparenting_SwapBetweenTwoParents_EachSideLocallyRebuilt_NoCascade()
+	{
+		// Two named elements cross-swap parents simultaneously. Each Border's child list has
+		// exactly one old Entry and one new Entry of the SAME type, so MatchTypeGroupByCost
+		// force-pairs them (the only candidates in that type group) even though their x:Name
+		// differs between old and new. FIXED: that mismatched pairing no longer trips a
+		// page-wide cascade — it's contained to a local rebuild of just that one Entry (within
+		// its own Border), same id, reused in place.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Entry x:Name="entry1" Text="A" />
+				</Border>
+				<Border x:Name="borderB">
+					<Entry x:Name="entry2" Text="B" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Entry x:Name="entry2" Text="B" />
+				</Border>
+				<Border x:Name="borderB">
+					<Entry x:Name="entry1" Text="A" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// One local rebuild per Border — neither cascades to the other, let alone the whole page.
+		Assert.Equal(2, diff.ChildListChanges.Count);
+		Assert.All(diff.ChildListChanges, c =>
+		{
+			var entry = Assert.Single(c.NewChildren);
+			Assert.Equal(ChildChangeKind.Added, entry.Kind);
+			Assert.Empty(c.RemovedNodeIds);
+		});
+	}
+
+	[Fact]
+	public void Reparenting_TypeChangedAlso_NeverMatchesEvenWithSameXName()
+	{
+		// Combines both constraints at once: reparented AND type-changed. Must never match,
+		// regardless of how permissive the future global matcher becomes about reparenting.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Label x:Name="thing" Text="hello" />
+				</Border>
+				<Border x:Name="borderB" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA" />
+				<Border x:Name="borderB">
+					<Button x:Name="thing" Text="hello" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var borderAChange = diff.ChildListChanges.First(c => c.RemovedNodeIds.Count > 0);
+		var borderBChange = diff.ChildListChanges.First(c => c.NewChildren.Any(e => e.Kind == ChildChangeKind.Added));
+		Assert.Single(borderAChange.RemovedNodeIds); // old Label retired
+		Assert.Contains(borderBChange.NewChildren, e => e.Kind == ChildChangeKind.Added); // new Button is fresh
+	}
+
+	[Fact]
+	public void Reparenting_OldParentAlsoRemoved_ChildStillLost()
+	{
+		// The source parent is itself deleted entirely (not just emptied) — the child moved out
+		// of it just before the parent vanished. Confirms the loss isn't an artifact of the old
+		// parent surviving; it's the move itself that's unmatched.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border x:Name="borderA">
+					<Entry x:Name="entry1" Text="hello" />
+				</Border>
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		// borderA (and with it, entry1) is reported wholesale-removed; entry1 is then re-created
+		// fresh at the root instead of being recognized as having moved up.
+		Assert.Equal(2, change.RemovedNodeIds.Count); // borderA + entry1 subtree
+		Assert.Single(change.NewChildren, e => e.Kind == ChildChangeKind.Added); // fresh Entry at root
+	}
+
+	// ---------------------------------------------------------------------------
+	// Cascading "blast radius" of a single structural trigger — demonstrates that
+	// ComputeDiff returning null is an ALL-OR-NOTHING signal for the whole page,
+	// not scoped to the subtree where the actual trigger occurred.
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void NestedXNameChange_IsLocalRebuild_UnrelatedSiblingEditStaysOrdinary()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<VerticalStackLayout>
+						<Label x:Name="deepLabel" Text="Hello" />
+					</VerticalStackLayout>
+				</Border>
+				<Label Text="Unrelated" />
+			</VerticalStackLayout>
+			"""));
+		// Two independent edits in the same version: a harmless property tweak on the completely
+		// unrelated sibling Label, AND an x:Name change buried three levels deep.
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<VerticalStackLayout>
+						<Label x:Name="renamedLabel" Text="Hello" />
+					</VerticalStackLayout>
+				</Border>
+				<Label Text="Also unrelated now" />
+			</VerticalStackLayout>
+			"""));
+
+		var oldIds = NodeIdHelper.AssignIds(old);
+		var newIds = NodeIdHelper.AssignIds(@new);
+		var diff = XamlNodeDiff.ComputeDiff(old, @new, oldIds, newIds, out _);
+
+		// FIXED: the deeply-nested x:Name change is contained to a local rebuild of just the
+		// innermost VerticalStackLayout's single child (same id, recreated) — it does NOT cascade.
+		// The completely unrelated sibling Label's property edit survives as an ordinary,
+		// independent, patchable NodeDiff.
+		Assert.NotNull(diff);
+		var childChange = Assert.Single(diff.ChildListChanges);
+		var rebuiltEntry = Assert.Single(childChange.NewChildren);
+		Assert.Equal(ChildChangeKind.Added, rebuiltEntry.Kind);
+		Assert.Empty(childChange.RemovedNodeIds);
+
+		var unrelatedChange = Assert.Single(diff.NodeChanges);
+		Assert.Equal("Also unrelated now", unrelatedChange.PropertyChanges[0].NewValue);
+	}
+
+	[Fact]
+	public void TypeChangeDeepInTree_IsLocalNotCascading()
+	{
+		// Contrast with the x:Name-change cascade above: a type change at a child position is
+		// NEVER passed into a type-mismatched DiffNode call to begin with — children are
+		// partitioned by type BEFORE any pairing/recursion happens (MatchTypeGroupByCost only
+		// ever matches within one type group), so a Label -> Button swap is simply "Label
+		// removed, Button added" scoped to Border's own child list. It does NOT cascade — the
+		// completely unrelated Entry's property edit is still reported as an ordinary,
+		// independent, patchable NodeDiff. DiffNode's own "type mismatch -> structural" check is
+		// only ever reachable at the root (see DifferentRootType_ReturnsNull).
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<Label Text="Hello" />
+				</Border>
+				<Entry Placeholder="Unrelated" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<Button Text="Hello" />
+				</Border>
+				<Entry Placeholder="Unrelated edit" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var childChange = Assert.Single(diff.ChildListChanges);
+		Assert.Single(childChange.RemovedNodeIds); // old Label retired
+		Assert.Single(childChange.NewChildren, e => e.Kind == ChildChangeKind.Added); // new Button
+		// The unrelated Entry's property edit survives as a normal, independent patch.
+		var entryChange = Assert.Single(diff.NodeChanges);
+		Assert.Equal("Unrelated edit", entryChange.PropertyChanges[0].NewValue);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Id-stability contrast: a structural reset does NOT always desync ids — only
+	// when it coincides with an actual shape change relative to what the live app
+	// has. These tests delineate the precise boundary of the bug reproduced above.
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void NoNameLossAndRestore_SameShape_IdsStayInSync()
+	{
+		// The x:Name is removed and then restored, but the tree SHAPE (declaration order) never
+		// actually changes in between. FIXED: both the removal and the restoration are now local
+		// rebuilds of just the Entry (same id, recreated) — not page-wide resets — so ids were
+		// never at risk of drifting here regardless of shape.
+		var seed = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+		var transientNoName = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Text="hello" />
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+		var settled = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+
+		var seedIds = NodeIdHelper.AssignIds(seed, 0, out var nextId);
+		var liveEntryId = seedIds[FindFirstEntry(seed)];
+
+		var d1 = ApplyEdit(seed, seedIds, transientNoName, nextId, out var ids1);
+		Assert.NotNull(d1); // x:Name removed -> local rebuild, not structural
+
+		var d2 = ApplyEdit(transientNoName, ids1, settled, nextId, out var ids2);
+		Assert.NotNull(d2); // x:Name restored -> local rebuild again
+
+		// The Entry's id is carried forward through both rebuilds — no desync.
+		Assert.Equal(liveEntryId, ids2[FindFirstEntry(settled)]);
+	}
+
+	[Fact]
+	public void NameLossDuringReorder_ThenRevertedToOriginalOrder_IdsStayInSync()
+	{
+		// A reorder happens mid-sequence (coinciding with a transient x:Name loss), but the user
+		// then undoes the reorder before the next save. FIXED: both edits are local rebuilds of
+		// just the Entry (same id, recreated) rather than page-wide resets, so the Label's id is
+		// never touched and the Entry's id is carried forward throughout, regardless of shape.
+		var seed = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+		// Reordered AND x:Name transiently missing (triggers a local rebuild of the Entry).
+		var reorderedNoName = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Static" />
+				<Entry Text="hello" />
+			</VerticalStackLayout>
+			"""));
+		// Undo: back to original order, x:Name restored (also a local rebuild of the Entry, since
+		// x:Name is being re-added relative to the previous — no-name — state).
+		var revertedToOriginal = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+
+		var seedIds = NodeIdHelper.AssignIds(seed, 0, out var nextId);
+		var liveEntryId = seedIds[FindFirstEntry(seed)];
+
+		var d1 = ApplyEdit(seed, seedIds, reorderedNoName, nextId, out var ids1);
+		Assert.NotNull(d1);
+
+		var d2 = ApplyEdit(reorderedNoName, ids1, revertedToOriginal, nextId, out var ids2);
+		Assert.NotNull(d2);
+
+		// The Entry's id survived both the reorder-with-rebuild and the revert — no desync.
+		Assert.Equal(liveEntryId, ids2[FindFirstEntry(revertedToOriginal)]);
+	}
+
+	[Fact]
+	public void TypeGroupMatching_PairsByType_NotByCoincidentalContentSimilarity()
+	{
+		// Both Label and Button exist on both sides here (just at swapped positions), so this is
+		// legitimately resolved as a type-correct reorder: old Label <-> new Label (even though
+		// its Text changed "Shared"->"Other"), old Button <-> new Button (even though its Text
+		// changed "Other"->"Shared", acquiring the content that used to belong to the Label).
+		// This guards against a naive content-similarity matcher being fooled into pairing
+		// old-Label-"Shared" with new-Button-"Shared" just because the text coincides — type
+		// partitioning happens first and is never crossed, regardless of content overlap.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Shared" FontSize="20" />
+				<Button Text="Other" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Button Text="Shared" FontSize="20" />
+				<Label Text="Other" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Both pairs are retained (type-matched) and recursively diffed for their property churn —
+		// nothing is removed or added, and type never crosses.
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Empty(change.RemovedNodeIds);
+		Assert.True(change.NewChildren.All(e => e.Kind == ChildChangeKind.Retained));
+		Assert.Equal(2, diff.NodeChanges.Count); // property churn recorded on each type-matched pair
+	}
+
+	[Fact]
+	public void XNameRename_SamePositionSameType_RetainsSameIdViaLocalRebuild()
+	{
+		// FIXED: this element never moved, never reparented, never changed type — only its
+		// x:Name changed. Patchability (can we emit incremental code) and identity (does this id
+		// carry forward) are two different questions. Renaming x:Name is still not a simple
+		// textual property patch (it affects a code-behind field), but it is no longer treated as
+		// "can never be the same element": the node is rebuilt in place under its SAME id, and
+		// nothing else in the page is touched.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry1" Text="hello" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry x:Name="entry2" Text="hello" />
+			</VerticalStackLayout>
+			"""));
+
+		var oldIds = NodeIdHelper.AssignIds(old);
+		var newIds = NodeIdHelper.AssignIds(@new);
+		var diff = XamlNodeDiff.ComputeDiff(old, @new, oldIds, newIds, out _);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		var entry = Assert.Single(change.NewChildren);
+		Assert.Equal(ChildChangeKind.Added, entry.Kind);
+		var oldEntryElement = (ElementNode)((ElementNode)old.CollectionItems[0]).CollectionItems[0];
+		Assert.Equal(oldIds[oldEntryElement], entry.NewNodeId); // same id retained
+		Assert.Empty(change.RemovedNodeIds);
+	}
+
 }

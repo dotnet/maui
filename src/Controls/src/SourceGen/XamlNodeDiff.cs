@@ -357,7 +357,10 @@ static class XamlNodeDiff
 		var nodeChanges = new List<NodeDiff>();
 		var childListChanges = new List<ChildListChangeDiff>();
 
-		if (!DiffNode(oldRoot, newRoot, oldIds, newIds, effective, 0, nodeChanges, childListChanges))
+		// Root-level codegen-sensitive changes (e.g. renaming x:Class) have no containing parent
+		// to attach a local rebuild to, so needsRebuild is intentionally discarded here — DiffNode
+		// already returns false directly for that case at depth 0.
+		if (!DiffNode(oldRoot, newRoot, oldIds, newIds, effective, 0, nodeChanges, childListChanges, forceBindingRefresh: false, insideTemplate: false, out _))
 		{
 			effectiveNewIds = null;
 			return null;
@@ -383,15 +386,35 @@ static class XamlNodeDiff
 	/// Matched new nodes inherit their old counterpart's ID in <paramref name="effective"/>.
 	/// </summary>
 	/// <param name="depth">Current depth in the tree (root = 0, children of root = 1, etc.).</param>
-	/// <returns><see langword="false"/> if a structural difference is detected.</returns>
+	/// <param name="needsRebuild">
+	/// Set to <see langword="true"/> when this specific node's own properties contain a
+	/// codegen-sensitive change (e.g. <c>x:Name</c> added/removed/changed) that can't be emitted
+	/// as an incremental property patch. The node's IDENTITY is still considered matched (its id
+	/// is carried forward — see <paramref name="effective"/>) — only its CONTENT must be fully
+	/// recreated. The caller (the immediate parent's child-list diff) is responsible for
+	/// recording this as a local, contained rebuild of just this one child, re-registering the
+	/// freshly-created instance under the SAME id. This deliberately does NOT cascade: an
+	/// unpatchable change at one node must never force the whole page (or even an unrelated
+	/// ancestor) into a full structural reload.
+	/// </param>
+	/// <returns>
+	/// <see langword="false"/> only for a genuine structural difference with no containing parent
+	/// to attach a local rebuild to (currently: a type mismatch at the tree root — see
+	/// <see cref="ComputeDiff(ElementNode, ElementNode, Dictionary{ElementNode, string}, Dictionary{ElementNode, string}, out Dictionary{ElementNode, string}?)"/>).
+	/// </returns>
 	static bool DiffNode(ElementNode oldNode, ElementNode newNode,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
-		bool forceBindingRefresh = false,
-		bool insideTemplate = false)
+		bool forceBindingRefresh, bool insideTemplate, out bool needsRebuild)
 	{
-		// Structural check: element type must match
+		needsRebuild = false;
+
+		// Structural check: element type must match. In practice this is only ever reachable at
+		// the root (depth == 0): children are grouped by type signature before any pairing is
+		// attempted (see DiffChildrenWithMatching), so a type-mismatched pair is never constructed
+		// below the root — a type change at depth > 0 is instead reported as a local
+		// remove+add in the parent's ChildListChangeDiff.
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
 			return false;
 
@@ -422,7 +445,17 @@ static class XamlNodeDiff
 		// Diff properties (simple value attributes)
 		var propDiffs = new List<PropertyDiff>();
 		if (!DiffProperties(oldNode, newNode, propDiffs, effectiveForce, templateContent, out var xDataTypeChanged))
-			return false;
+		{
+			// Codegen-sensitive property changed (e.g. x:Name). At the root there is no parent
+			// child-list to attach a local rebuild to, so this must remain a genuine full
+			// structural reload (matches a root type change). Below the root, contain the damage:
+			// signal the caller to rebuild just this node (same id, fresh subtree) instead of
+			// failing the entire diff.
+			if (depth == 0)
+				return false;
+			needsRebuild = true;
+			return true;
+		}
 
 		if (propDiffs.Count > 0)
 			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType, newNode));
@@ -440,7 +473,11 @@ static class XamlNodeDiff
 					&& XmlTypeEquals(oldElement.XmlType, newElement.XmlType)
 					&& ShouldDiffElementProperty(oldNode, property.Key, oldElement, newElement, templateContent))
 				{
-					if (!DiffNode(oldElement, newElement, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, childForceRefresh, templateContent))
+					// Element-valued properties (e.g. template content) have no containing child-list
+					// to attach a local rebuild to, so a codegen-sensitive change here still cascades
+					// as a full structural diff failure — unchanged from pre-existing behavior and
+					// consistent with the conservative template-content handling noted above.
+					if (!DiffNode(oldElement, newElement, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, childForceRefresh, templateContent, out bool propertyNeedsRebuild) || propertyNeedsRebuild)
 						return false;
 				}
 			}
@@ -575,7 +612,10 @@ static class XamlNodeDiff
 
 	/// <summary>
 	/// Fast-path: children match positionally by type (same count, same types in order).
-	/// Recursively diffs each matched pair.
+	/// Recursively diffs each matched pair. If any pair needs a local rebuild (its own
+	/// codegen-sensitive properties changed), that single child is reported as a contained
+	/// remove+re-register-same-id entry in a ChildListChangeDiff for THIS node — siblings and
+	/// the rest of the tree are entirely unaffected.
 	/// </summary>
 	static bool DiffChildrenPositional(
 		ElementNode oldNode, ElementNode newNode,
@@ -587,6 +627,10 @@ static class XamlNodeDiff
 		bool insideTemplate = false)
 	{
 		int count = oldNode.CollectionItems.Count;
+		// Lazily populated only when at least one child needs a local rebuild; otherwise no
+		// ChildListChangeDiff is emitted at all (pure property/descendant changes stay node-local).
+		List<ChildChangeEntry>? entries = null;
+
 		for (int i = 0; i < count; i++)
 		{
 			var oldChild = oldNode.CollectionItems[i];
@@ -594,8 +638,24 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate))
+				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate, out bool needsRebuild))
 					return false;
+
+				if (needsRebuild)
+				{
+					oldIds.TryGetValue(oldElem, out var sameId);
+					sameId ??= "";
+					effective[newElem] = sameId; // keep using the SAME id for future diffs too
+					entries ??= BuildUnchangedPositionalEntries(oldNode, newNode, i, oldIds, effective);
+					entries.Add(new ChildChangeEntry(ChildChangeKind.Added, sameId, newElem.XmlType, null, -1, newElem));
+				}
+				else if (entries != null)
+				{
+					// A later sibling needs rebuild, but this earlier one didn't — still needs a
+					// plain Retained entry so the reconstructed child list stays complete/ordered.
+					oldIds.TryGetValue(oldElem, out var retainedId);
+					entries.Add(new ChildChangeEntry(ChildChangeKind.Retained, retainedId ?? "", newElem.XmlType, retainedId ?? "", i, null));
+				}
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
 			{
@@ -613,8 +673,34 @@ static class XamlNodeDiff
 				return false;
 			}
 		}
+
+		if (entries != null)
+			childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, new List<string>(), new List<RemovedNameEntry>()));
+
 		return true;
 	}
+
+	/// <summary>
+	/// Backfills plain Retained entries for positions [0, uptoExclusive) once a later sibling is
+	/// discovered to need a local rebuild — so the resulting entries list covers the whole child
+	/// collection in order, as <see cref="ChildListChangeDiff"/> consumers expect.
+	/// </summary>
+	static List<ChildChangeEntry> BuildUnchangedPositionalEntries(
+		ElementNode oldNode, ElementNode newNode, int uptoExclusive,
+		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> effective)
+	{
+		var entries = new List<ChildChangeEntry>(oldNode.CollectionItems.Count);
+		for (int i = 0; i < uptoExclusive; i++)
+		{
+			if (oldNode.CollectionItems[i] is not ElementNode oldElem || newNode.CollectionItems[i] is not ElementNode newElem)
+				continue; // value-node content changes are tracked separately as NodeDiffs, not child-list entries
+			oldIds.TryGetValue(oldElem, out var id);
+			entries.Add(new ChildChangeEntry(ChildChangeKind.Retained, id ?? "", newElem.XmlType, id ?? "", i, null));
+		}
+		return entries;
+	}
+
+
 
 	/// <summary>
 	/// General-case: matches old and new children by type signature, handling additions,
@@ -705,15 +791,26 @@ static class XamlNodeDiff
 			}
 		}
 
-		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode)
+		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode).
+		// A pair whose own codegen-sensitive properties changed (needsRebuild) is NOT a diff
+		// failure — it's tracked so the entry-building step below re-creates just that one child
+		// under its SAME id, instead of patching properties on it.
+		var rebuildNewIndices = new HashSet<int>();
 		foreach (var (oldIdx, newIdx) in matched)
 		{
-			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate))
+			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate, out bool needsRebuild))
 				return false;
+			if (needsRebuild)
+			{
+				rebuildNewIndices.Add(newIdx);
+				// Keep using the SAME id for this node on future diffs — only its content changed.
+				oldIds.TryGetValue(oldChildren[oldIdx], out var sameId);
+				effective[newChildren[newIdx]] = sameId ?? "";
+			}
 		}
 
 		// Check if there's any actual child list change
-		bool hasChange = addedNewIndices.Count > 0 || removedOldIndices.Count > 0;
+		bool hasChange = addedNewIndices.Count > 0 || removedOldIndices.Count > 0 || rebuildNewIndices.Count > 0;
 		if (!hasChange)
 		{
 			foreach (var (oldIdx, newIdx) in matched)
@@ -747,12 +844,26 @@ static class XamlNodeDiff
 			else
 			{
 				var oldIdx = newToOld[newIdx];
-				// Retained node: OldNodeId = old tree's ID (for TryGet), NewNodeId = effective ID
 				oldIds.TryGetValue(oldChildren[oldIdx], out var retainedOldId);
-				effective.TryGetValue(newChildren[newIdx], out var retainedEffId);
-				entries.Add(new ChildChangeEntry(
-					ChildChangeKind.Retained, retainedEffId ?? retainedOldId ?? "", newChildren[newIdx].XmlType,
-					retainedOldId ?? "", oldIdx, null));
+
+				if (rebuildNewIndices.Contains(newIdx))
+				{
+					// This pair's own codegen-sensitive properties changed — recreate it, but
+					// reuse the SAME id so the registry entry is overwritten in place rather than
+					// orphaned. Deliberately NOT added to removedIds below: an explicit Unregister
+					// would race with (and clobber) this same-id re-registration.
+					entries.Add(new ChildChangeEntry(
+						ChildChangeKind.Added, retainedOldId ?? "", newChildren[newIdx].XmlType,
+						null, -1, newChildren[newIdx]));
+				}
+				else
+				{
+					// Retained node: OldNodeId = old tree's ID (for TryGet), NewNodeId = effective ID
+					effective.TryGetValue(newChildren[newIdx], out var retainedEffId);
+					entries.Add(new ChildChangeEntry(
+						ChildChangeKind.Retained, retainedEffId ?? retainedOldId ?? "", newChildren[newIdx].XmlType,
+						retainedOldId ?? "", oldIdx, null));
+				}
 			}
 		}
 
