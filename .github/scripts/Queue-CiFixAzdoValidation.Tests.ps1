@@ -558,4 +558,37 @@ Describe 'full-script offline reconciliation' {
             Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It 'makes an unrelated surviving pull_request_target event reconcile eligible heads' {
+        $eventPath = [System.IO.Path]::GetTempFileName()
+        $pullRequestsPath = [System.IO.Path]::GetTempFileName()
+        try {
+            New-TestEvent `
+                -Author contributor `
+                -HeadRef feature/unrelated `
+                -Title 'Unrelated PR' `
+                -Labels @() |
+                ConvertTo-Json -Depth 10 |
+                Set-Content -LiteralPath $eventPath
+            @(
+                (New-TestPullRequest -Number 123),
+                (New-TestPullRequest -Number 125 -Author contributor -HeadRef feature/unrelated -Labels @())
+            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+
+            $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -PullRequestsFixturePath $pullRequestsPath `
+                -DryRun
+
+            $LASTEXITCODE | Should -Be 0
+            $results = @($output -join [Environment]::NewLine | ConvertFrom-Json -Depth 20)
+            $results.Count | Should -Be 3
+            @($results.PullRequestNumber | Sort-Object -Unique) | Should -Be @(123)
+        }
+        finally {
+            Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue
+        }
+    }
 }

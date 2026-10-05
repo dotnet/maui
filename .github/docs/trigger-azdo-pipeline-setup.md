@@ -186,8 +186,9 @@ Automated CI-fix PR validation is implemented separately by
   `workflow_run`;
 - never checks out or executes the PR head;
 - requires the exact same-repo CI-fix bot fingerprint;
-- reconciles every live eligible CI-fix head on each accepted event so GitHub's
-  single-pending-run concurrency behavior cannot strand another PR;
+- reconciles every live eligible CI-fix head on each configured PR-target event,
+  including unrelated PR events, so GitHub's single-pending-run concurrency
+  behavior cannot strand an eligible head;
 - queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
 - supplies the merge commit as `sourceVersion` and the PR head as
   `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build

@@ -571,25 +571,21 @@ if (-not [string]::IsNullOrWhiteSpace($PullRequestsFixturePath) -and -not $DryRu
 $event = Get-Content -Raw -LiteralPath $EventPath | ConvertFrom-Json -Depth 100
 $contexts = if ($EventName -ceq 'pull_request_target') {
     $triggerContext = Get-CiFixEventContext -Event $event -Repository $Repository -EventName $EventName
-    if ($null -eq $triggerContext) {
-        @()
-    }
-    else {
-        # GitHub concurrency preserves only one pending run. Every accepted
-        # event therefore reconciles every live eligible head, so an event
-        # displaced while pending is recovered by the surviving run.
-        $liveContexts = @(
-            Get-OpenCiFixContexts `
-                -Repository $Repository `
-                -GitHubToken $env:GITHUB_TOKEN `
-                -FixturePath $PullRequestsFixturePath
-        )
-        @(
-            @($triggerContext) + $liveContexts |
-                Group-Object { "$($_.PullRequestNumber):$($_.HeadSha)" } |
-                ForEach-Object { $_.Group[0] }
-        )
-    }
+    # GitHub concurrency preserves only one pending run. Every configured
+    # PR-target event therefore reconciles every live eligible head, even when
+    # its own PR is unrelated, so a displaced eligible run is recovered.
+    $liveContexts = @(
+        Get-OpenCiFixContexts `
+            -Repository $Repository `
+            -GitHubToken $env:GITHUB_TOKEN `
+            -FixturePath $PullRequestsFixturePath
+    )
+    @(
+        @($triggerContext) + $liveContexts |
+            Where-Object { $null -ne $_ } |
+            Group-Object { "$($_.PullRequestNumber):$($_.HeadSha)" } |
+            ForEach-Object { $_.Group[0] }
+    )
 }
 elseif ($EventName -ceq 'workflow_run') {
     if (-not (Test-TrustedCiFixWorkflowRun -Event $event -Repository $Repository)) {
