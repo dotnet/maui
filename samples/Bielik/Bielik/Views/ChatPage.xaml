@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Bielik.ViewModels"
+    x:Class="Bielik.Views.ChatPage"
+    x:DataType="vm:ChatViewModel"
+    Style="{StaticResource AppPage}"
+    Title="Rozmowa"
+    SafeAreaEdges="All">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" RowSpacing="12" Padding="24,14,24,12" SafeAreaEdges="SoftInput">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Twoja rozmowa" FontFamily="Georgia" FontSize="28" SemanticProperties.HeadingLevel="Level1" />
+                <HorizontalStackLayout Spacing="6">
+                    <BoxView Color="{Binding State.StatusColor}" WidthRequest="6" HeightRequest="6" CornerRadius="3" VerticalOptions="Center" />
+                    <Label Text="{Binding State.ShortStatus}" Style="{StaticResource Eyebrow}" FontSize="8"
+                           CharacterSpacing="1.1" TextColor="{Binding State.StatusColor}" AutomationId="chat-connection-status" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <Button Grid.Column="1" Text="+" FontSize="24" Padding="0" WidthRequest="48" HeightRequest="48"
+                    Style="{StaticResource QuietButton}" Command="{Binding NewConversationCommand}"
+                    AutomationId="new-conversation" SemanticProperties.Description="Rozpocznij nową rozmowę" />
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <CollectionView x:Name="MessagesList" AutomationId="chat-messages" ItemsSource="{Binding Messages}"
+                            IsVisible="{Binding HasMessages}" SelectionMode="None" ItemSizingStrategy="MeasureAllItems">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MessageBubble">
+                        <Border Padding="17" Margin="0,5,20,8" StrokeThickness="0" AutomationId="{Binding AutomationId}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsUser}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Wine}" />
+                                    <Setter Property="Margin" Value="30,5,0,8" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="9">
+                                <Label Text="{Binding Status}" Style="{StaticResource Eyebrow}" FontSize="8"
+                                       CharacterSpacing="1" TextColor="{StaticResource Wine}" AutomationId="{Binding StatusAutomationId}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsUser}" Value="True">
+                                            <Setter Property="TextColor" Value="#E7CDD7" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DisplayText}" FontSize="15" LineHeight="1.3" AutomationId="{Binding TextAutomationId}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsUser}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource Paper}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <ScrollView IsVisible="{Binding IsEmpty}" AutomationId="chat-empty-state">
+                <VerticalStackLayout VerticalOptions="Center" Spacing="20" Padding="6,30,6,20">
+                    <Border BackgroundColor="{StaticResource Blush}" StrokeThickness="0" WidthRequest="72" HeightRequest="72"
+                            StrokeShape="RoundRectangle 24" HorizontalOptions="Center" Padding="16">
+                        <Image Source="bielik_mark.png" />
+                    </Border>
+                    <Label Text="Od czego&#10;zaczynamy?" Style="{StaticResource Display}" FontSize="36" HorizontalTextAlignment="Center"
+                           AutomationId="chat-welcome" />
+                    <Label Text="Jeden pomysł wystarczy.&#10;Bielik pomoże Ci nadać mu kształt."
+                           FontSize="13" TextColor="{StaticResource Muted}" HorizontalTextAlignment="Center" LineHeight="1.3" />
+                    <VerticalStackLayout Spacing="10" Margin="0,4,0,0">
+                        <Button Text="Wyjaśnij mi, jak działa AI   ↗︎" Style="{StaticResource QuietButton}"
+                                Clicked="OnIdeaClicked" CommandParameter="learn" AutomationId="chat-idea-learn" />
+                        <Button Text="Pomóż mi napisać dobry e-mail   ↗︎" Style="{StaticResource QuietButton}"
+                                Clicked="OnIdeaClicked" CommandParameter="write" AutomationId="chat-idea-write" />
+                        <Button Text="Pomyślmy razem w C#   ↗︎" Style="{StaticResource QuietButton}"
+                                Clicked="OnIdeaClicked" CommandParameter="code" AutomationId="chat-idea-code" />
+                    </VerticalStackLayout>
+                    <Label Text="Bielik 11B v2.6 · Q4_K_M&#10;Inferencja na Twoim Macu, nie na iPhonie."
+                           Style="{StaticResource Caption}" FontSize="10" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <Border IsVisible="{Binding HasError}" Padding="12" BackgroundColor="{StaticResource Blush}" StrokeThickness="0">
+                <Label Text="{Binding ErrorText}" TextColor="{StaticResource Error}" FontSize="12"
+                       AutomationId="chat-error" SemanticProperties.Description="{Binding ErrorText}" />
+            </Border>
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" WidthRequest="18" HeightRequest="18"
+                                   AutomationId="chat-generating" />
+                <Label Grid.Column="1" Text="Bielik pisze na Twoim Macu…" IsVisible="{Binding IsBusy}"
+                       FontSize="11" TextColor="{StaticResource Muted}" VerticalOptions="Center" Margin="8,0" />
+                <Button Grid.Column="2" Text="Zatrzymaj" Style="{StaticResource TextButton}" IsVisible="{Binding IsBusy}"
+                        Command="{Binding StopCommand}" AutomationId="stop-generation" />
+                <Button Grid.ColumnSpan="3" Text="Kopiuj odpowiedź" Style="{StaticResource TextButton}"
+                        Command="{Binding CopyReplyCommand}" IsVisible="{Binding HasMessages}" IsEnabled="{Binding IsNotBusy}"
+                        HorizontalOptions="Start" AutomationId="copy-reply">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsBusy}" Value="True">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+            </Grid>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="3" Spacing="9">
+            <Border Padding="12,6,7,6" StrokeShape="RoundRectangle 22">
+                <Grid ColumnDefinitions="*,48" ColumnSpacing="8">
+                    <Editor x:Name="Composer" Text="{Binding Draft}" Placeholder="Napisz do Bielika…"
+                            AutoSize="TextChanges" MaximumHeightRequest="120" MaxLength="2000"
+                            IsEnabled="{Binding IsNotBusy}" AutomationId="chat-input"
+                            SemanticProperties.Description="Wiadomość do lokalnego Bielika" />
+                    <Button Grid.Column="1" Text="↑" FontSize="24" Padding="0" WidthRequest="46" HeightRequest="46"
+                            VerticalOptions="End" Command="{Binding SendCommand}" Clicked="OnSendClicked"
+                            AutomationId="send-message" SemanticProperties.Description="Wyślij wiadomość" />
+                </Grid>
+            </Border>
+            <Label Text="Tylko lokalny Bielik. Odpowiedzi AI mogą zawierać błędy."
+                   Style="{StaticResource Caption}" FontSize="9" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

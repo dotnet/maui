@@ -1,0 +1,248 @@
+{
+  "recorded_at": "2026-10-05T12:43:32.907517+00:00",
+  "endpoint": "http://127.0.0.1:11434",
+  "ollama": {
+    "version": "0.32.14"
+  },
+  "model": {
+    "name": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+    "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+    "modified_at": "2026-10-05T14:32:06.490235475+02:00",
+    "size": 6724052244,
+    "digest": "7eb4bbe15c57c14e87ce5fa1132a01371ed1cc0b1626811c44667756e19359cc",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "llama",
+      "families": [
+        "llama"
+      ],
+      "parameter_size": "11.2B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 32768,
+      "embedding_length": 4096
+    },
+    "capabilities": [
+      "completion"
+    ]
+  },
+  "cloud_fallback": false,
+  "execution": "CPU (num_gpu=0), matching the app",
+  "temperature": 0.1,
+  "seed": 42,
+  "scope": "Small functional probes, not a benchmark or a general model-quality guarantee.",
+  "tests": [
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Odpowiedz wyłącznie liczbą. Ile wynosi 17 + 25?"
+        }
+      ],
+      "format": null,
+      "response": "42",
+      "wall_seconds": 0.811,
+      "load_seconds": 0.016,
+      "generation_tokens": 3,
+      "tokens_per_second": 34.45,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 810142792,
+        "load_duration": 15805375,
+        "prompt_eval_count": 78,
+        "prompt_eval_duration": 704222000,
+        "eval_count": 3,
+        "eval_duration": 87090000
+      },
+      "name": "arithmetic",
+      "status": "passed"
+    },
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Zwróć wyłącznie JSON z kluczami \"miasto\" i \"liczba\". Dane: miasto Gdańsk, liczba 3. Nie dodawaj Markdown ani żadnego wyjaśnienia."
+        }
+      ],
+      "format": null,
+      "response": "```json\n{\n  \"miasto\": \"Gdańsk\",\n  \"liczba\": 3\n}\n```",
+      "wall_seconds": 2.344,
+      "load_seconds": 0.016,
+      "generation_tokens": 31,
+      "tokens_per_second": 22.3,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2342654750,
+        "load_duration": 15740625,
+        "prompt_eval_count": 109,
+        "prompt_eval_duration": 933396000,
+        "eval_count": 31,
+        "eval_duration": 1390226000
+      },
+      "name": "json_instruction_only",
+      "status": "failed"
+    },
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Zwróć wyłącznie JSON z kluczami \"miasto\" i \"liczba\". Dane: miasto Gdańsk, liczba 3. Nie dodawaj Markdown ani żadnego wyjaśnienia."
+        }
+      ],
+      "format": {
+        "type": "object",
+        "properties": {
+          "miasto": {
+            "type": "string"
+          },
+          "liczba": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "miasto",
+          "liczba"
+        ],
+        "additionalProperties": false
+      },
+      "response": "{\"miasto\": \"Gdańsk\", \"liczba\": 3}",
+      "wall_seconds": 1.01,
+      "load_seconds": 0.017,
+      "generation_tokens": 18,
+      "tokens_per_second": 19.4,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1008885125,
+        "load_duration": 16683584,
+        "prompt_eval_count": 109,
+        "prompt_eval_duration": 61236000,
+        "eval_count": 18,
+        "eval_duration": 928061000
+      },
+      "name": "json_schema",
+      "status": "passed"
+    },
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hasło tej rozmowy to bursztyn. Zapamiętaj je i odpowiedz wyłącznie \"OK\"."
+        }
+      ],
+      "format": null,
+      "response": "OK",
+      "wall_seconds": 0.87,
+      "load_seconds": 0.016,
+      "generation_tokens": 2,
+      "tokens_per_second": 43.96,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 868880834,
+        "load_duration": 16203292,
+        "prompt_eval_count": 86,
+        "prompt_eval_duration": 803257000,
+        "eval_count": 2,
+        "eval_duration": 45492000
+      },
+      "name": "conversation_memory_setup",
+      "status": "passed"
+    },
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hasło tej rozmowy to bursztyn. Zapamiętaj je i odpowiedz wyłącznie \"OK\"."
+        },
+        {
+          "role": "assistant",
+          "content": "OK"
+        },
+        {
+          "role": "user",
+          "content": "Jakie jest hasło tej rozmowy? Odpowiedz wyłącznie hasłem."
+        }
+      ],
+      "format": null,
+      "response": "bursztyn",
+      "wall_seconds": 0.902,
+      "load_seconds": 0.016,
+      "generation_tokens": 6,
+      "tokens_per_second": 24.57,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 900747167,
+        "load_duration": 16463167,
+        "prompt_eval_count": 124,
+        "prompt_eval_duration": 636844000,
+        "eval_count": 6,
+        "eval_duration": 244213000
+      },
+      "name": "conversation_memory_recall",
+      "status": "passed"
+    },
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Wyjaśnij w dwóch krótkich zdaniach, czym różni się model językowy działający lokalnie od usługi AI w chmurze."
+        }
+      ],
+      "format": null,
+      "response": "Model językowy działający lokalnie jest uruchamiany na urządzeniu użytkownika (np. smartfonie, komputerze), co zapewnia szybkość i prywatność danych, ale wymaga większej mocy obliczeniowej. Usługa AI w chmurze wykorzystuje zdalne serwery dostawcy, co eliminuje potrzebę lokalnych zasobów, ale może spowalniać działanie i narażać na ryzyko przetwarzania danych poza kontrolą użytkownika.",
+      "wall_seconds": 9.388,
+      "load_seconds": 0.017,
+      "generation_tokens": 162,
+      "tokens_per_second": 19.16,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 9387165959,
+        "load_duration": 16964334,
+        "prompt_eval_count": 102,
+        "prompt_eval_duration": 912165000,
+        "eval_count": 162,
+        "eval_duration": 8453308000
+      },
+      "name": "polish_explanation",
+      "status": "manual_review"
+    },
+    {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Zwróć wyłącznie kompletny kod C# bez Markdown. Użyj `using System;` i publicznej klasy statycznej `Generated`. Napisz metodę `public static long SumEven(int[] values)`, która sumuje tylko parzyste liczby, także ujemne, używając long, aby uniknąć przepełnienia int. Dla null rzuć ArgumentNullException. Bez zależności zewnętrznych i bez kodu wejścia/wyjścia."
+        }
+      ],
+      "format": null,
+      "response": "```csharp\nusing System;\n\npublic static class Generated\n{\n    public static long SumEven(int[] values)\n    {\n        if (values == null)\n        {\n            throw new ArgumentNullException(nameof(values));\n        }\n\n        long sum = 0;\n        foreach (int value in values)\n        {\n            if (value % 2 == 0)\n            {\n                sum += value;\n            }\n        }\n\n        return sum;\n    }\n}\n```",
+      "wall_seconds": 8.843,
+      "load_seconds": 0.018,
+      "generation_tokens": 124,
+      "tokens_per_second": 18.8,
+      "raw_statistics": {
+        "model": "hf.co/speakleash/Bielik-11B-v2.6-Instruct-GGUF:Q4_K_M",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8841608542,
+        "load_duration": 17917625,
+        "prompt_eval_count": 184,
+        "prompt_eval_duration": 2218784000,
+        "eval_count": 124,
+        "eval_duration": 6595929000
+      },
+      "name": "csharp_generation",
+      "status": "manual_review"
+    }
+  ]
+}

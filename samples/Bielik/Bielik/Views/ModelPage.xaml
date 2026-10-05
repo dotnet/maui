@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Bielik.ViewModels"
+    x:Class="Bielik.Views.ModelPage"
+    x:DataType="vm:AppState"
+    Style="{StaticResource AppPage}"
+    Title="Model">
+    <ScrollView AutomationId="model-scroll">
+        <VerticalStackLayout Padding="24,18,24,24" Spacing="22">
+            <Label Text="POZNAJ SWOJEGO BIELIKA" Style="{StaticResource Eyebrow}" TextColor="{StaticResource Wine}" />
+            <Label Text="Polski język.&#10;Otwarty model." Style="{StaticResource Display}" FontSize="35"
+                   SemanticProperties.HeadingLevel="Level1" AutomationId="model-title" />
+            <Border Padding="23" BackgroundColor="{StaticResource Wine}" StrokeThickness="0" StrokeShape="RoundRectangle 24">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,70" RowSpacing="13">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="BIELIK 11B" Style="{StaticResource Eyebrow}" TextColor="#E3CBA4" FontSize="10" />
+                        <Label Text="Głos, który&#10;rozumie kontekst." FontFamily="Georgia" FontSize="26" TextColor="{StaticResource Paper}" />
+                    </VerticalStackLayout>
+                    <Image Grid.Column="1" Source="feather.png" HeightRequest="90" WidthRequest="64" />
+                    <Label Grid.Row="1" Grid.ColumnSpan="2" Text="v2.6 Instruct  /  Q4_K_M" FontFamily="AvenirNext-Medium"
+                           TextColor="#EADDE0" FontSize="12" />
+                    <Border Grid.Row="2" Grid.ColumnSpan="2" Padding="11,7" StrokeThickness="0" BackgroundColor="#88435D"
+                            StrokeShape="RoundRectangle 10" HorizontalOptions="Start">
+                        <Label Text="{Binding ShortStatus}" TextColor="{StaticResource Paper}" FontSize="8" CharacterSpacing="1.2"
+                               AutomationId="model-local-status" />
+                    </Border>
+                </Grid>
+            </Border>
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                <Border Padding="12" StrokeShape="RoundRectangle 16">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="11B" FontFamily="Georgia" FontSize="22" />
+                        <Label Text="parametrów" Style="{StaticResource Caption}" FontSize="9" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Padding="12" StrokeShape="RoundRectangle 16">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Q4" FontFamily="Georgia" FontSize="22" />
+                        <Label Text="kwantyzacja" Style="{StaticResource Caption}" FontSize="9" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="2" Padding="12" StrokeShape="RoundRectangle 16">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Apache" FontFamily="Georgia" FontSize="18" Margin="0,4,0,0" />
+                        <Label Text="licencja 2.0" Style="{StaticResource Caption}" FontSize="9" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Stworzony tutaj." Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
+                <Label Text="Bielik jest rozwijany przez Fundację SpeakLeash i społeczność. Język polski, jego niuanse i nasz kontekst kulturowy są w centrum tego projektu."
+                       FontSize="14" TextColor="{StaticResource Muted}" LineHeight="1.3" />
+            </VerticalStackLayout>
+            <Border Padding="20" StrokeThickness="0" BackgroundColor="{StaticResource SageLight}">
+                <VerticalStackLayout Spacing="11">
+                    <Label Text="Jeden model. Bez zamienników." FontFamily="AvenirNext-DemiBold" FontSize="15" />
+                    <Label Text="Ta aplikacja korzysta wyłącznie z Bielik 11B v2.6. Model działa w Ollamie na Twoim Macu. iPhone jest natywnym interfejsem, nie uruchamia wag modelu."
+                           FontSize="12" TextColor="{StaticResource Muted}" LineHeight="1.3" />
+                    <Label Text="8192 tokenów kontekstu · temperatura 0,1&#10;Inferencja CPU · historia tylko w pamięci aplikacji."
+                           Style="{StaticResource Caption}" FontSize="10" />
+                </VerticalStackLayout>
+            </Border>
+            <Button Text="Oficjalna karta modelu   ↗︎" Clicked="OnModelCardClicked" AutomationId="open-model-card" />
+            <Label Text="Wybrana wersja jest przypięta celowo. Aplikacja nie przełącza się na żaden model ani usługę AI w chmurze."
+                   Style="{StaticResource Caption}" FontSize="10" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

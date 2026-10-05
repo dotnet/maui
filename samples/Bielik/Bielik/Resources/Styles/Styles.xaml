@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Style x:Key="AppPage" TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{StaticResource Paper}" />
+        <Setter Property="SafeAreaEdges" Value="Container" />
+        <Setter Property="Shell.NavBarIsVisible" Value="False" />
+    </Style>
+    <Style x:Key="BodyLabel" TargetType="Label">
+        <Setter Property="FontFamily" Value="AvenirNext-Regular" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="LineBreakMode" Value="WordWrap" />
+    </Style>
+    <Style TargetType="Label" BasedOn="{StaticResource BodyLabel}" />
+    <Style x:Key="Display" TargetType="Label" BasedOn="{StaticResource BodyLabel}">
+        <Setter Property="FontFamily" Value="Georgia" />
+        <Setter Property="FontSize" Value="38" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="LineHeight" Value="1.1" />
+    </Style>
+    <Style x:Key="SectionTitle" TargetType="Label" BasedOn="{StaticResource BodyLabel}">
+        <Setter Property="FontFamily" Value="Georgia" />
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+    </Style>
+    <Style x:Key="Eyebrow" TargetType="Label" BasedOn="{StaticResource BodyLabel}">
+        <Setter Property="FontFamily" Value="AvenirNext-DemiBold" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="CharacterSpacing" Value="1.8" />
+        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+    </Style>
+    <Style x:Key="Caption" TargetType="Label" BasedOn="{StaticResource BodyLabel}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource Muted}" />
+    </Style>
+    <Style TargetType="Border">
+        <Setter Property="Stroke" Value="{StaticResource Line}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Card}" />
+    </Style>
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="AvenirNext-DemiBold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{StaticResource Paper}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Wine}" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="18,14" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="MinimumWidthRequest" Value="48" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.45" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}" />
+    <Style x:Key="QuietButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Blush}" />
+        <Setter Property="TextColor" Value="{StaticResource Wine}" />
+    </Style>
+    <Style x:Key="TextButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Wine}" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style TargetType="Entry">
+        <Setter Property="FontFamily" Value="AvenirNext-Regular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Muted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+    <Style TargetType="Editor">
+        <Setter Property="FontFamily" Value="AvenirNext-Regular" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Muted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource Wine}" />
+    </Style>
+</ResourceDictionary>

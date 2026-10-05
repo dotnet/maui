@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Shell
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Bielik.AppShell"
+    Title="Bielik"
+    FlyoutBehavior="Disabled"
+    NavBarIsVisible="False"
+    Shell.TabBarBackgroundColor="{StaticResource Paper}"
+    Shell.TabBarForegroundColor="{StaticResource Wine}"
+    Shell.TabBarTitleColor="{StaticResource Wine}"
+    Shell.TabBarUnselectedColor="{StaticResource Muted}">
+    <TabBar>
+        <ShellContent x:Name="DiscoverContent" Title="Odkrywaj" Route="discover" Icon="icon_home.png" />
+        <ShellContent x:Name="ChatContent" Title="Rozmowa" Route="chat" Icon="icon_chat.png" />
+        <ShellContent x:Name="ModelContent" Title="Model" Route="model" Icon="icon_model.png" />
+        <ShellContent x:Name="SettingsContent" Title="Ustawienia" Route="settings" Icon="icon_settings.png" />
+    </TabBar>
+</Shell>

@@ -1,0 +1,8 @@
+PASS: positive and odd values = 12
+PASS: negative even values = -8
+PASS: empty input = 0
+PASS: odd-only input = 0
+PASS: positive int overflow = 4294967292
+PASS: negative int overflow = -4294967296
+PASS: null input throws ArgumentNullException
+7/7 generated-code checks passed; only the enclosing Markdown fences were removed.

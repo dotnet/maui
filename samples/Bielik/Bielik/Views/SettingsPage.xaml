@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Bielik.ViewModels"
+    x:Class="Bielik.Views.SettingsPage"
+    x:DataType="vm:AppState"
+    Style="{StaticResource AppPage}"
+    Title="Ustawienia">
+    <ScrollView AutomationId="settings-scroll">
+        <VerticalStackLayout Padding="24,18,24,24" Spacing="21">
+            <Label Text="TWOJE DANE. TWOJE ZASADY." Style="{StaticResource Eyebrow}" TextColor="{StaticResource Wine}" />
+            <Label Text="Po Twojej&#10;stronie." Style="{StaticResource Display}" FontSize="37"
+                   SemanticProperties.HeadingLevel="Level1" AutomationId="settings-title" />
+            <Border Padding="18" BackgroundColor="{StaticResource SageLight}" StrokeThickness="0">
+                <Grid ColumnDefinitions="32,*" ColumnSpacing="12">
+                    <Image Source="icon_lock.png" HeightRequest="28" VerticalOptions="Start" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                        <Label Text="Prywatność zaczyna się lokalnie." FontFamily="AvenirNext-DemiBold" FontSize="14" />
+                        <Label Text="Bez kont. Bez kluczy API. Bez chmurowego zapasowego modelu."
+                               FontSize="12" TextColor="{StaticResource Muted}" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+            <Border Padding="19">
+                <VerticalStackLayout Spacing="13">
+                    <Label Text="Lokalny serwer" Style="{StaticResource SectionTitle}" FontSize="23" />
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                        <BoxView Color="{Binding StatusColor}" HeightRequest="7" WidthRequest="7" CornerRadius="4" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding StatusText}" FontSize="12" TextColor="{Binding StatusColor}"
+                               VerticalOptions="Center" AutomationId="connection-status" />
+                        <ActivityIndicator Grid.Column="2" IsRunning="{Binding IsChecking}" IsVisible="{Binding IsChecking}" WidthRequest="20" />
+                    </Grid>
+                    <Label Text="ADRES OLLAMY" Style="{StaticResource Eyebrow}" FontSize="8" />
+                    <Border Padding="11,0" BackgroundColor="{StaticResource Paper}" StrokeShape="RoundRectangle 12">
+                        <Entry Text="{Binding AddressDraft}" Keyboard="Url" ReturnType="Done" ClearButtonVisibility="WhileEditing"
+                               IsEnabled="{Binding CanConfigure}" AutomationId="server-address" FontSize="12"
+                               SemanticProperties.Description="Adres lokalnego serwera Ollama" />
+                    </Border>
+                    <Label Text="Symulator iOS: 127.0.0.1 prowadzi do tego Maca. Na fizycznym iPhonie użyj prywatnego adresu IP i HTTPS."
+                           Style="{StaticResource Caption}" FontSize="10" />
+                    <Button Text="Zapisz i sprawdź połączenie" Command="{Binding SaveCommand}" AutomationId="save-connection" />
+                    <Button Text="Sprawdź ponownie" Style="{StaticResource TextButton}" Command="{Binding ConnectCommand}"
+                            AutomationId="check-connection" />
+                    <Border IsVisible="{Binding HasConnectionError}" Padding="12" BackgroundColor="{StaticResource Blush}" StrokeThickness="0">
+                        <Label Text="{Binding ConnectionError}" FontSize="11" TextColor="{StaticResource Error}"
+                               AutomationId="connection-error" />
+                    </Border>
+                    <Label Text="Zmiana adresu rozpocznie nową rozmowę." Style="{StaticResource Caption}" FontSize="9" />
+                </VerticalStackLayout>
+            </Border>
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Uruchom na Macu." Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
+                <Label Text="1. Zainstaluj Ollamę.&#10;2. Pobierz oficjalne wagi Bielika.&#10;3. Uruchom serwer lokalny bez chmury."
+                       FontSize="12" LineHeight="1.5" TextColor="{StaticResource Muted}" />
+                <Border Padding="14" StrokeThickness="0" BackgroundColor="{StaticResource WineDark}" StrokeShape="RoundRectangle 14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="{Binding InstallCommand}" FontFamily="Menlo" FontSize="9" TextColor="#EFE2E7"
+                               LineBreakMode="CharacterWrap" AutomationId="model-install-command" />
+                        <Label Text="OLLAMA_NO_CLOUD=1 \&#10;OLLAMA_HOST=127.0.0.1:11434 \&#10;ollama serve"
+                               FontFamily="Menlo" FontSize="10" TextColor="#E3CBA4" />
+                    </VerticalStackLayout>
+                </Border>
+                <Button Text="Kopiuj polecenie pobrania" Command="{Binding CopyInstallCommand}"
+                        Style="{StaticResource QuietButton}" AutomationId="copy-install-command" />
+            </VerticalStackLayout>
+            <Border Padding="18">
+                <VerticalStackLayout Spacing="7">
+                    <Label Text="Tylko ten Bielik" FontFamily="AvenirNext-DemiBold" FontSize="14" />
+                    <Label Text="{Binding ModelName}" Style="{StaticResource Caption}" FontSize="11" />
+                    <Label Text="{Binding Digest, StringFormat='Identyfikator wag: {0}'}" IsVisible="{Binding IsReady}"
+                           FontFamily="Menlo" FontSize="10" TextColor="{StaticResource Muted}" AutomationId="model-digest" />
+                    <Label Text="Rozmowa nie jest zapisywana na dysku. Internet jest potrzebny do pobrania wag, nie do generowania odpowiedzi."
+                           Style="{StaticResource Caption}" FontSize="11" Margin="0,6,0,0" />
+                </VerticalStackLayout>
+            </Border>
+            <Label Text=".NET 11 PREVIEW  /  NATYWNE iOS&#10;Nieoficjalny projekt inspirowany bielik.ai"
+                   Style="{StaticResource Eyebrow}" FontSize="8" CharacterSpacing="1" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

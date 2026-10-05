@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net11.0-ios</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>Bielik</RootNamespace>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <ApplicationTitle>Bielik</ApplicationTitle>
+        <ApplicationId>dev.bielik.companion</ApplicationId>
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+        <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
+        <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+        <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    </PropertyGroup>
+    <ItemGroup>
+        <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#69243F" />
+        <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#F7F4EF" BaseSize="128,128" />
+        <MauiImage Include="Resources/Images/*.svg" />
+        <PackageReference Include="Microsoft.Maui.Controls" />
+        <ProjectReference Include="../Bielik.Core/Bielik.Core.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+        <PackageReference Include="Microsoft.Maui.DevFlow.Agent" />
+        <PartialAppManifest Include="Platforms/iOS/Info.Debug.plist" />
+    </ItemGroup>
+</Project>

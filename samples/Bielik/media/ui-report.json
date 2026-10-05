@@ -1,0 +1,154 @@
+{
+  "recorded_at": "2026-10-05T12:57:35.926211+00:00",
+  "simulator": "D156BD2F-A6B1-47D9-9278-66E85A40D889",
+  "app": {
+    "timestamp": "2026-10-05T12:56:56.3150220+00:00",
+    "agent": {
+      "name": "Microsoft.Maui.DevFlow.Agent",
+      "version": "0.1.0-preview.12.26421.1+78e85a5cb9c7a3efaaacf85d6176ce971f40b7d6",
+      "framework": ".NET MAUI",
+      "frameworkId": "maui",
+      "frameworkVersion": "11.0.0",
+      "uiFramework": "maui-controls",
+      "sessionId": "dwbielikbielikbielikcsproj"
+    },
+    "device": {
+      "platform": "iOS",
+      "deviceType": "Virtual",
+      "idiom": "Phone",
+      "displayDensity": 3,
+      "windowCount": 1,
+      "windowWidth": 402,
+      "windowHeight": 874
+    },
+    "app": {
+      "name": "Bielik",
+      "packageId": "dev.bielik.companion",
+      "version": "1.0",
+      "build": "1",
+      "processId": 71781
+    },
+    "capabilities": {
+      "ui": true,
+      "layoutDiagnostics": false,
+      "screenshots": true,
+      "webview": false,
+      "network": true,
+      "logs": true,
+      "sensors": true,
+      "storage": true,
+      "profiler": false,
+      "jobs": true,
+      "theme": true,
+      "mutationLease": true
+    },
+    "running": true,
+    "route": "//discover",
+    "cdpReady": false,
+    "cdpWebViewCount": 0,
+    "profiler": {
+      "available": false,
+      "supportedInBuild": true,
+      "featureEnabled": false,
+      "platform": "iOS",
+      "managedMemorySupported": true,
+      "nativeMemorySupported": true,
+      "gcSupported": true,
+      "cpuPercentSupported": true,
+      "fpsSupported": true,
+      "frameTimingsEstimated": true,
+      "nativeFrameTimingsSupported": true,
+      "jankEventsSupported": true,
+      "uiThreadStallSupported": true,
+      "threadCountSupported": true
+    },
+    "profilerSession": null,
+    "extensions": {
+      "count": 0,
+      "hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  },
+  "xctest_used": false,
+  "local_model_exercised": true,
+  "steps": [
+    {
+      "name": "native_discover",
+      "status": "passed",
+      "screenshot": "01-discover.png"
+    },
+    {
+      "name": "inspiration_cards",
+      "status": "passed",
+      "screenshot": "02-inspiration.png"
+    },
+    {
+      "name": "native_navigation_and_presets",
+      "status": "passed",
+      "screenshot": "03-chat-empty.png"
+    },
+    {
+      "name": "pinned_model_screen",
+      "status": "passed",
+      "screenshot": "04-model.png"
+    },
+    {
+      "name": "local_inference_disclosure",
+      "status": "passed",
+      "screenshot": "05-model-details.png"
+    },
+    {
+      "name": "public_endpoint_rejected",
+      "status": "passed",
+      "error": "Tylko lokalnie: użyj localhost lub prywatnego adresu IP. Serwery internetowe są wyłączone."
+    },
+    {
+      "name": "local_settings",
+      "status": "passed",
+      "screenshot": "06-settings.png"
+    },
+    {
+      "name": "actual_model_ready",
+      "status": "passed",
+      "digest": "Identyfikator wag: 7eb4bbe15c57"
+    },
+    {
+      "name": "real_polish_streamed_reply",
+      "status": "passed",
+      "reply": "Lokalna sztuczna inteligencja (Local AI) to podejście, w którym algorytmy uczenia maszynowego są wdrażane i wykonywane na urządzeniach brzegowych lub lokalnych, zamiast przesyłać dane do centralnej chmury. Pozwala to na szybsze przetwarzanie, mniejsze opóźnienia i lepszą ochronę prywatności.",
+      "metrics": "BIELIK · 21,1 TOK/S",
+      "screenshot": "07-real-chat.png"
+    },
+    {
+      "name": "native_clipboard",
+      "status": "passed"
+    },
+    {
+      "name": "same_endpoint_check_keeps_conversation",
+      "status": "passed"
+    },
+    {
+      "name": "actual_conversation_memory",
+      "status": "passed",
+      "reply": "bursztyn",
+      "screenshot": "08-memory.png"
+    },
+    {
+      "name": "real_generation_cancellation",
+      "status": "passed",
+      "screenshot": "09-cancellation.png"
+    },
+    {
+      "name": "offline_error_without_fallback",
+      "status": "passed",
+      "error": "Nie można połączyć się z lokalnym serwerem. Uruchom Ollama na Macu i sprawdź adres."
+    },
+    {
+      "name": "restored_local_chat",
+      "status": "passed",
+      "reply": "Korzystanie z Bielika lokalnie przyspiesza odpowiedzi i zmniejsza opóźnienia, zapewniając bardziej płynną interakcję. Ponadto, lokalne użycie może być bardziej efektywne energetycznie i przyjazne dla środowiska.",
+      "screenshot": "10-final-chat.png"
+    }
+  ],
+  "error": null,
+  "recording": "local-bielik-walkthrough.mp4"
+}

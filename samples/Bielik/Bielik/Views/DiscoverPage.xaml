@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Bielik.ViewModels"
+    xmlns:core="clr-namespace:Bielik.Core;assembly=Bielik.Core"
+    x:Class="Bielik.Views.DiscoverPage"
+    x:DataType="vm:AppState"
+    Style="{StaticResource AppPage}"
+    Title="Odkrywaj">
+    <ScrollView AutomationId="discover-scroll">
+        <VerticalStackLayout Padding="24,12,24,24" Spacing="22">
+            <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="10">
+                <Image Source="bielik_mark.png" HeightRequest="34" WidthRequest="34" />
+                <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                    <Label Text="bielik." FontFamily="AvenirNext-Bold" FontSize="25" CharacterSpacing="-1" />
+                    <Label Text="POLSKA AI. BLIŻEJ CIEBIE." Style="{StaticResource Eyebrow}" FontSize="8" CharacterSpacing="1.2" />
+                </VerticalStackLayout>
+                <Border Grid.Column="2" Padding="10,7" StrokeThickness="0" BackgroundColor="{StaticResource SageLight}"
+                        StrokeShape="RoundRectangle 12" VerticalOptions="Center">
+                    <Label Text="LOCAL FIRST" FontSize="9" FontFamily="AvenirNext-DemiBold"
+                           CharacterSpacing="1" TextColor="{StaticResource Sage}" />
+                </Border>
+            </Grid>
+
+            <Border StrokeThickness="0" BackgroundColor="{StaticResource Wine}" Padding="24" StrokeShape="RoundRectangle 26">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="15">
+                    <Image Grid.RowSpan="4" Source="flight_art.png" Aspect="AspectFit" WidthRequest="226"
+                           HeightRequest="238" HorizontalOptions="End" VerticalOptions="Start" Margin="0,0,-22,0"
+                           Opacity="0.62" InputTransparent="True" />
+                    <Label Text="OTWARTY MODEL. WŁASNE ZASADY." Style="{StaticResource Eyebrow}"
+                           TextColor="#E3CBA4" FontSize="8" CharacterSpacing="1.3" />
+                    <Label Grid.Row="1" Text="Polska AI.&#10;Twój własny&#10;kierunek." Style="{StaticResource Display}"
+                           FontSize="40" TextColor="{StaticResource Paper}" LineHeight="1.04"
+                           SemanticProperties.HeadingLevel="Level1" AutomationId="discover-title" />
+                    <Label Grid.Row="2" Text="Odkrywaj, twórz i rozmawiaj.&#10;Z Bielikiem działającym na Twoim Macu."
+                           FontSize="12" LineHeight="1.3" TextColor="#EADDE0" />
+                    <Button Grid.Row="3" Text="Porozmawiaj z Bielikiem   ↗︎" AutomationId="start-chat"
+                            BackgroundColor="{StaticResource Paper}" TextColor="{StaticResource Wine}"
+                            Clicked="OnStartChat" Margin="0,4,0,0" />
+                </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" Padding="4,0">
+                <VerticalStackLayout Spacing="3">
+                    <Label Text="11B" FontFamily="Georgia" FontSize="24" />
+                    <Label Text="parametrów" Style="{StaticResource Caption}" FontSize="10" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1" Spacing="3">
+                    <Label Text="100%" FontFamily="Georgia" FontSize="24" />
+                    <Label Text="lokalna inferencja" Style="{StaticResource Caption}" FontSize="10" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2" Spacing="3">
+                    <Label Text="Twój." FontFamily="Georgia" FontSize="24" />
+                    <Label Text="język i kontekst" Style="{StaticResource Caption}" FontSize="10" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Label Text="Co dziś odkryjesz?" Style="{StaticResource SectionTitle}" VerticalOptions="Center"
+                       SemanticProperties.HeadingLevel="Level2" />
+                <Label Grid.Column="1" Text="MAŁA INSPIRACJA ↙︎" Style="{StaticResource Eyebrow}" FontSize="8"
+                       VerticalOptions="Center" CharacterSpacing="0.8" />
+            </Grid>
+            <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" AlignItems="Stretch"
+                        BindableLayout.ItemsSource="{Binding Ideas}" Margin="0,-8,0,0">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="core:PromptIdea">
+                        <Border FlexLayout.Basis="48.5%" Padding="16" Margin="0,0,0,12" StrokeShape="RoundRectangle 18">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="{Binding Category}" Style="{StaticResource Eyebrow}" FontSize="8"
+                                       TextColor="{StaticResource Wine}" CharacterSpacing="1.2" />
+                                <Label Text="{Binding Title}" FontFamily="AvenirNext-DemiBold" FontSize="15" />
+                                <Label Text="{Binding Subtitle}" Style="{StaticResource Caption}" FontSize="10" MinimumHeightRequest="32" />
+                                <Button Text="Wypróbuj  ↗︎" Style="{StaticResource TextButton}" HorizontalOptions="Start"
+                                        CommandParameter="{Binding Id}" AutomationId="{Binding Id, StringFormat='idea-{0}'}"
+                                        Clicked="OnIdeaClicked" Padding="0,4" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
+            <Border Padding="16" BackgroundColor="{StaticResource SageLight}" StrokeThickness="0" Margin="0,-14,0,0">
+                <Grid ColumnDefinitions="26,*" ColumnSpacing="10">
+                    <Image Source="icon_lock.png" HeightRequest="22" VerticalOptions="Start" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                        <Label Text="Mniej chmury. Więcej swobody." FontFamily="AvenirNext-DemiBold" FontSize="12" />
+                        <Label Text="Bez konta i klucza API. Rozmowa trafia tylko do skonfigurowanego lokalnego serwera."
+                               Style="{StaticResource Caption}" FontSize="11" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+            <Label Text="Zainspirowane bielik.ai · Nieoficjalna aplikacja&#10;Model rozwijany przez Fundację SpeakLeash i społeczność."
+                   Style="{StaticResource Caption}" FontSize="10" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
