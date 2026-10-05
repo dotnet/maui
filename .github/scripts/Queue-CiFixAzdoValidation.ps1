@@ -559,7 +559,7 @@ function Write-CiFixJobSummary {
 }
 
 if ([string]::IsNullOrWhiteSpace($EventPath) -or -not (Test-Path -LiteralPath $EventPath -PathType Leaf)) {
-    throw 'GITHUB_EVENT_PATH must identify the pull_request_target event payload.'
+    throw 'GITHUB_EVENT_PATH must identify a supported GitHub event payload file.'
 }
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'

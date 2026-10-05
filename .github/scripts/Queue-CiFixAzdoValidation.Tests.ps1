@@ -18,9 +18,12 @@ BeforeAll {
             'Get-CiFixEventContext',
             'Test-TrustedCiFixWorkflowRun',
             'Get-OpenCiFixContexts',
+            'Test-IsTransientHttpException',
+            'Get-HttpStatusCode',
             'Invoke-WithHttpRetry',
             'Get-AzdoToken',
             'Find-AzdoDuplicateBuild',
+            'Get-AzdoDuplicateBuild',
             'New-AzdoQueueRequest',
             'Invoke-AzdoPipelineQueue')) {
         $function = $ast.Find({
@@ -472,11 +475,176 @@ Describe 'Find-AzdoDuplicateBuild' {
 }
 
 Describe 'Invoke-AzdoPipelineQueue retry safety' {
-    It 'reconciles an ambiguous POST instead of blindly retrying it' {
-        $queueFunction = (Get-Command Invoke-AzdoPipelineQueue).ScriptBlock.ToString()
-        $queueFunction | Should -Match 'Get-AzdoDuplicateBuild'
-        $queueFunction | Should -Match 'The POST was not retried to avoid duplicate builds'
-        $queueFunction | Should -Not -Match 'Invoke-WithHttpRetry'
+    BeforeAll {
+        $queueFunctionDefinitions = @(
+            'Get-ObjectPropertyValue',
+            'Test-IsTransientHttpException',
+            'Get-HttpStatusCode',
+            'Get-AzdoDuplicateBuild',
+            'New-AzdoQueueRequest',
+            'Invoke-AzdoPipelineQueue'
+        ) | ForEach-Object {
+            $functionName = $_
+            $ast.Find({
+                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                    $args[0].Name -eq $functionName
+                }, $true).Extent.Text
+        }
+        $script:queueTestModule = New-Module -Name QueueCiFixAzdoValidationTest -ScriptBlock {
+            param([string[]]$FunctionDefinitions)
+
+            $script:AzureDevOpsOrganization = 'dnceng-public'
+            $script:AzureDevOpsProject = 'public'
+            $script:TransientHttpStatusCodes = @(408, 429, 500, 502, 503, 504)
+            $script:MaxHttpAttempts = 4
+            $script:RetryBaseDelaySeconds = 2
+            foreach ($definition in $FunctionDefinitions) {
+                Invoke-Expression $definition
+            }
+        } -ArgumentList (, $queueFunctionDefinitions)
+        Import-Module $script:queueTestModule -Prefix QueueTest -Force
+    }
+
+    AfterAll {
+        Remove-Module $script:queueTestModule -Force
+    }
+
+    Context 'behavioral paths' {
+        BeforeEach {
+            $script:queueContext = [pscustomobject]@{
+                PullRequestNumber = 123
+                PullRequestId = 456789
+                Draft = $true
+                Title = '[ci-fix] Repair CI (refs #123)'
+                BaseRef = 'main'
+                HeadRef = 'ci-fix/issue-123'
+                HeadSha = '1111111111111111111111111111111111111111'
+                MergeSha = '2222222222222222222222222222222222222222'
+            }
+            Mock Start-Sleep {} -ModuleName QueueCiFixAzdoValidationTest
+        }
+
+        It 'returns a successful POST without duplicate reconciliation' {
+            $script:postedBuild = [pscustomobject]@{ id = 7001 }
+            Mock Invoke-RestMethod { return $script:postedBuild } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Duplicate lookup must not run after a successful POST.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            $result = Invoke-QueueTestAzdoPipelineQueue `
+                -DefinitionId 302 `
+                -Context $script:queueContext `
+                -AuthToken test-token
+
+            $result.Build.id | Should -Be 7001
+            $result.Reconciled | Should -BeFalse
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'reconciles a timed-out POST to the exact build without retrying the POST' {
+            $script:duplicateCalls = 0
+            $script:correlatedBuild = [pscustomobject]@{ id = 7002 }
+            Mock Invoke-RestMethod {
+                throw [System.TimeoutException]::new('queue response timed out')
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                $script:duplicateCalls++
+                if ($script:duplicateCalls -eq 2) {
+                    return $script:correlatedBuild
+                }
+                return $null
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            $result = Invoke-QueueTestAzdoPipelineQueue `
+                -DefinitionId 302 `
+                -Context $script:queueContext `
+                -AuthToken test-token
+
+            $result.Build.id | Should -Be 7002
+            $result.Reconciled | Should -BeTrue
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+        }
+
+        It 'reconciles a 5xx POST to the exact build without retrying the POST' {
+            $script:correlatedBuild = [pscustomobject]@{ id = 7003 }
+            Mock Invoke-RestMethod {
+                $exception = [System.Exception]::new('service unavailable')
+                $exception | Add-Member -NotePropertyName StatusCode -NotePropertyValue 503
+                throw $exception
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                return $script:correlatedBuild
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            $result = Invoke-QueueTestAzdoPipelineQueue `
+                -DefinitionId 313 `
+                -Context $script:queueContext `
+                -AuthToken test-token
+
+            $result.Build.id | Should -Be 7003
+            $result.Reconciled | Should -BeTrue
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+        }
+
+        It 'throws after bounded reconciliation when no exact build appears' {
+            Mock Invoke-RestMethod {
+                throw [System.TimeoutException]::new('queue response timed out')
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 314 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*ambiguous transient failure*no exact correlated build appeared after reconciliation*The POST was not retried to avoid duplicate builds*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 4 -Exactly
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 4 -Exactly
+        }
+
+        It 'throws a nontransient POST failure without reconciliation or retry' {
+            Mock Invoke-RestMethod {
+                throw [System.InvalidOperationException]::new('invalid request')
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Duplicate lookup must not run for a nontransient failure.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 302 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*invalid request*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+    }
+}
+
+Describe 'event payload validation' {
+    It 'uses an event-neutral error for a missing payload file' {
+        $missingEventPath = Join-Path $TestDrive 'missing-event.json'
+
+        $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
+            -EventPath $missingEventPath `
+            -Repository dotnet/maui `
+            -EventName workflow_run `
+            -DryRun 2>&1
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $output -join [Environment]::NewLine |
+            Should -Match 'GITHUB_EVENT_PATH must identify a supported GitHub event payload file\.'
     }
 }
 
