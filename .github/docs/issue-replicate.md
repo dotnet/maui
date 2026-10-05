@@ -134,6 +134,10 @@ acknowledgement nonce and operation ID prevent stale replies; missing or failed
 acknowledgements stop the body after a bounded 25-second wait. The controller
 stops at the named `Stop` marker and rejects spans exceeding its conservative
 30-second deadline instead of exporting an automatically expired clip.
+An Appium acknowledgement confirms the recording request, not that the encoder
+captured the first frame or initiating interaction. Before publishing a manual
+canary, decode its actual frames and inspect the baseline, interaction and result.
+A decodable clip showing only the final state is not interaction evidence.
 The trusted controller uses the live Appium session without enabling session discovery.
 It selects the frontend session from Appium's incoming HTTP command or top-level
 session-creation log entries, not the distinct UiAutomator2/WDA backend session
