@@ -1,12 +1,13 @@
 # TEMPORARY WORKAROUND for release/11.0.1xx-rc2.
 #
-# The branch pins the final RC2 SDK 11.0.100-rc.2.26475.136 (BAR 334091), which is published only
+# The branch pins the October RC2 SDK 11.0.100-rc.2.26504.105 (BAR 335067), which is published only
 # to internal locations. Builds that cannot use the internal feeds (public maui-pr and other
 # untrusted pipelines) would fail with HTTP 404 while provisioning it.
 #
 # While the pinned SDK is not publicly downloadable, this step switches the local checkout's
-# global.json and eng/Versions.props to the equivalent public RC2 build (BAR 334092) so those
-# pipelines can still validate changes. Its net10 workload manifests reference unreleased .NET
+# global.json and eng/Versions.props to the public RC2 SDK and product packages from BAR 334092
+# (VMR 290612e85619452b73fc8e313e8d5517fedf8f85). This is compatibility validation, not validation
+# of the exact shipping dependencies. Its net10 workload manifests reference unreleased .NET
 # 10.0.13 packs, so the step also adds the public release/10.0.1xx build feed (BAR 333293) that
 # contains them. Trusted internal builds never include this template and always build with the
 # pinned SDK and internal 10.0.13 packs. The step becomes a no-op as soon as the pinned SDK is public.
@@ -16,6 +17,7 @@
 parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   publicFallbackSdkVersion: 11.0.100-rc.2.26475.137
+  publicFallbackProductVersion: 11.0.0-rc.2.26475.137
   publicFallbackPackageFeedName: temporary-darc-pub-dotnet-dotnet-e4bafa1e
   publicFallbackPackageFeed: https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-dotnet-e4bafa1e/nuget/v3/index.json
 
@@ -25,49 +27,95 @@ steps:
 
     $root = '${{ parameters.checkoutDirectory }}'
     $fallback = '${{ parameters.publicFallbackSdkVersion }}'
+    $fallbackProduct = '${{ parameters.publicFallbackProductVersion }}'
     $globalJsonPath = Join-Path $root 'global.json'
     $versionsPropsPath = Join-Path $root 'eng/Versions.props'
     $pinned = (Get-Content -LiteralPath $globalJsonPath -Raw | ConvertFrom-Json).tools.dotnet
 
-    if ($pinned -eq $fallback) {
-      Write-Host "global.json already uses SDK $fallback."
-      exit 0
-    }
-
-    $probeUrl = "https://ci.dot.net/public/Sdk/$pinned/dotnet-sdk-$pinned-linux-x64.tar.gz"
-    $status = 0
-    for ($attempt = 1; $attempt -le 3; $attempt++) {
-      try {
-        $status = [int](Invoke-WebRequest -Method Head -Uri $probeUrl -UseBasicParsing -SkipHttpErrorCheck).StatusCode
-      } catch {
-        Write-Host "Attempt ${attempt}: $($_.Exception.Message)"
-        $status = 0
+    if ($pinned -ne $fallback) {
+      $probeUrl = "https://ci.dot.net/public/Sdk/$pinned/dotnet-sdk-$pinned-linux-x64.tar.gz"
+      $status = 0
+      for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+          $status = [int](Invoke-WebRequest -Method Head -Uri $probeUrl -UseBasicParsing -SkipHttpErrorCheck).StatusCode
+        } catch {
+          Write-Host "Attempt ${attempt}: $($_.Exception.Message)"
+          $status = 0
+        }
+        if ($status -eq 200 -or $status -eq 404) { break }
+        Start-Sleep -Seconds 5
       }
-      if ($status -eq 200 -or $status -eq 404) { break }
-      Start-Sleep -Seconds 5
+
+      if ($status -eq 200) {
+        Write-Host "SDK $pinned is publicly available; no fallback needed. This temporary workaround can be removed."
+        exit 0
+      }
+      if ($status -ne 404) {
+        Write-Host "##vso[task.logissue type=error]Could not determine whether SDK $pinned is publicly available (HTTP $status from $probeUrl)."
+        exit 1
+      }
     }
 
-    if ($status -eq 200) {
-      Write-Host "SDK $pinned is publicly available; no fallback needed. This temporary workaround can be removed."
-      exit 0
-    }
-    if ($status -ne 404) {
-      Write-Host "##vso[task.logissue type=error]Could not determine whether SDK $pinned is publicly available (HTTP $status from $probeUrl)."
-      exit 1
-    }
-
+    # Only the current .NET product pins change; platform, tooling and N-1 pins stay untouched.
+    $productProperties = @(
+      'MicrosoftNETCoreAppRefPackageVersion'
+      'MicrosoftExtensionsConfigurationVersion'
+      'MicrosoftExtensionsConfigurationAbstractionsVersion'
+      'MicrosoftExtensionsConfigurationJsonVersion'
+      'MicrosoftExtensionsDependencyInjectionVersion'
+      'MicrosoftExtensionsDependencyInjectionAbstractionsVersion'
+      'MicrosoftExtensionsFileProvidersAbstractionsVersion'
+      'MicrosoftExtensionsLoggingAbstractionsVersion'
+      'MicrosoftExtensionsLoggingVersion'
+      'MicrosoftExtensionsLoggingConsoleVersion'
+      'MicrosoftExtensionsLoggingDebugVersion'
+      'MicrosoftExtensionsPrimitivesVersion'
+      'MicrosoftExtensionsHostingAbstractionsVersion'
+      'MicrosoftExtensionsHttpVersion'
+      'MicrosoftAspNetCoreAuthorizationPackageVersion'
+      'MicrosoftAspNetCoreAuthenticationFacebookPackageVersion'
+      'MicrosoftAspNetCoreAuthenticationGooglePackageVersion'
+      'MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion'
+      'MicrosoftAspNetCoreComponentsAnalyzersPackageVersion'
+      'MicrosoftAspNetCoreComponentsFormsPackageVersion'
+      'MicrosoftAspNetCoreComponentsPackageVersion'
+      'MicrosoftAspNetCoreComponentsWebPackageVersion'
+      'MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion'
+      'MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion'
+      'MicrosoftAspNetCoreComponentsWebViewPackageVersion'
+      'MicrosoftAspNetCoreMetadataPackageVersion'
+      'MicrosoftJSInteropPackageVersion'
+      'MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion'
+      'MicrosoftEntityFrameworkCoreSqlitePackageVersion'
+    )
+    $versionsContent = [IO.File]::ReadAllText($versionsPropsPath)
+    $versionsProps = [xml]$versionsContent
+    $pinnedProduct = $versionsProps.Project.PropertyGroup.MicrosoftNETCoreAppRefPackageVersion |
+      Where-Object { $_ }
     $replacements = @(
       @{ Path = $globalJsonPath; Pattern = '("dotnet"\s*:\s*")' + [regex]::Escape($pinned) + '"'; Replacement = '${1}' + $fallback + '"' }
       @{ Path = $versionsPropsPath; Pattern = '<MicrosoftNETSdkPackageVersion>' + [regex]::Escape($pinned) + '</MicrosoftNETSdkPackageVersion>'; Replacement = "<MicrosoftNETSdkPackageVersion>$fallback</MicrosoftNETSdkPackageVersion>" }
     )
+    foreach ($property in $productProperties) {
+      $replacements += @{
+        Path = $versionsPropsPath
+        Pattern = "<$property>" + [regex]::Escape($pinnedProduct) + "</$property>"
+        Replacement = "<$property>$fallbackProduct</$property>"
+      }
+    }
+    $updatedContents = @{}
     foreach ($item in $replacements) {
-      $content = [IO.File]::ReadAllText($item.Path)
+      $content = if ($updatedContents.ContainsKey($item.Path)) {
+        $updatedContents[$item.Path]
+      } else {
+        [IO.File]::ReadAllText($item.Path)
+      }
       $matchCount = [regex]::Matches($content, $item.Pattern).Count
       if ($matchCount -ne 1) {
-        Write-Host "##vso[task.logissue type=error]Expected one SDK pin in $($item.Path), found $matchCount."
+        Write-Host "##vso[task.logissue type=error]Expected one dependency pin matching $($item.Pattern) in $($item.Path), found $matchCount."
         exit 1
       }
-      [IO.File]::WriteAllText($item.Path, [regex]::Replace($content, $item.Pattern, $item.Replacement))
+      $updatedContents[$item.Path] = [regex]::Replace($content, $item.Pattern, $item.Replacement)
     }
 
     $feedName = '${{ parameters.publicFallbackPackageFeedName }}'
@@ -87,5 +135,9 @@ steps:
       $nugetConfig.Save($nugetConfigPath)
     }
 
-    Write-Host "##vso[task.logissue type=warning]TEMPORARY: SDK $pinned is internal-only; this build uses public SDK $fallback and package feed $feedUrl instead."
-  displayName: 'TEMPORARY: Use public RC2 SDK when the pinned SDK is internal-only'
+    foreach ($path in $updatedContents.Keys) {
+      [IO.File]::WriteAllText($path, $updatedContents[$path])
+    }
+
+    Write-Host "##vso[task.logissue type=warning]TEMPORARY public compatibility validation only: this checkout uses SDK $fallback and .NET product packages $fallbackProduct (BAR 334092) instead of SDK $pinned and product packages $pinnedProduct, with compatibility feed $feedUrl. This does not validate the exact shipping dependencies; trusted internal CI must validate those."
+  displayName: 'TEMPORARY: Use public RC2 SDK and products when the pinned SDK is internal-only'

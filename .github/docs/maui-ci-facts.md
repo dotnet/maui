@@ -86,6 +86,24 @@ The official pack-only job can use `skipXcode: true`, but that also skips simula
 setup in `common/provision.yml`, which iOS UI tests need. Device-test execution
 still uses the Helix queues in `eng/helix_xharness.proj`.
 
+### Temporary RC2 public dependency fallback
+
+`eng/pipelines/common/public-sdk-fallback.yml` is shared by provisioning,
+Helix unit-test jobs and public device-test execution jobs. Existing trusted-internal
+feed gates exclude it. When the pinned SDK download returns HTTP 404, it changes only
+the ephemeral checkout to public SDK `11.0.100-rc.2.26475.137` and .NET product packages
+`11.0.0-rc.2.26475.137`, both from BAR 334092 / VMR
+`290612e85619452b73fc8e313e8d5517fedf8f85`. All 29 explicit current-product version
+properties and their four runtime aliases use that set; platform pins, independent
+Arcade/Helix tooling, N-1 policy and committed shipping provenance remain unchanged.
+The existing extra public feed supplies the SDK's .NET 10 compatibility packs.
+
+This is **public compatibility validation**, not evidence that the exact October
+shipping SDK and packages restore or build. Trusted internal CI must validate the
+shipping pins. A public HTTP 200 leaves the pins untouched; inconclusive SDK probes
+fail rather than silently falling back. Remove the temporary template and its
+references once the pinned SDK and its product dependencies are publicly available.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,
