@@ -558,7 +558,12 @@ global install. Update the manifest and lockfile together, deliberately review
 the dependency changes and revalidate generation before deploying a version bump.
 
 Execution checkouts are shallow, without partial-clone extensions that the pinned
-SourceLink tooling does not support. Before restoring tools, native jobs use the
+SourceLink tooling does not support. Git transfer integrity checks are enabled.
+A failed clone, fetch or checkout is discarded and retried at most three times in
+fresh owned temporary directories, never in a corrupt or existing destination.
+Only a checkout matching the pinned SHA with no local credential header is
+atomically moved into the execution directory; exhausted retries remain fatal.
+Before restoring tools, native jobs use the
 pinned checkout's Arcade bootstrap to install the exact `global.json` SDK from
 public feeds in a separate job-temporary bootstrap directory. Native provisioning
 replaces the checkout's `.dotnet` directory, so the bootstrap SDK running Cake and
