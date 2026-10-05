@@ -22,17 +22,17 @@ $ErrorActionPreference = 'Stop'
 $marker = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "<!-- issue-replicate-result:github:$($GitHubRepository):$GitHubRunId -->"
 } else { "<!-- issue-replicate-result:$BuildId -->" }
-$summary = 'Reproduction could not be assessed. No completed test evidence is available; this is not evidence that the issue is invalid.'
-$details = 'No validated intake or test result is available.'
-$reproducibility = 'Not determined; no completed test evidence.'
-$testCoverage = 'Not verified; no completed test execution.'
+$summary = 'No test outcome is available; this does not rule out the issue.'
+$reproducibility = 'Not assessed; no completed test evidence.'
+$testCoverage = 'Not verified.'
+$reproductionIcon = '&#x26AA;'
+$testIcon = '&#x26AA;'
 $confidence = 0
-$confidenceReason = 'Unassessed, not evidence that the issue is invalid.'
+$confirmationNote = ''
 $assertionDiagnostic = ''
 $candidate = ''
-$candidateHeading = 'Generated test candidate'
-$followUp = 'Correct the reported build/environment blocker and run a fresh attempt. No reviewable test candidate is available.'
-$commit = 'unknown'
+$candidateHeading = 'Verified failing test patch'
+$reproLink = ''
 $patchText = ''
 $patchSha256 = ''
 $sampleDiagnostic = ''
@@ -71,44 +71,23 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         ($manifest.sourceType -eq 'repository' -and $manifest.sourceCommit -cnotmatch '^[0-9a-f]{40}$')) {
         throw 'The intake snapshot does not match this issue, comment, or target revision.'
     }
-    $commit = $manifest.targetSha.Substring(0, 7)
-    $details = @(
-        "| Evidence | Value |",
-        "|---|---|",
-        "| Platform | $($manifest.platform) |",
-        "| MAUI revision | [$commit](https://github.com/dotnet/maui/commit/$($manifest.targetSha)) |",
-        "| Repro ZIP SHA-256 | ``$($manifest.sampleSha256)`` |"
-    ) -join "`n"
     if ($manifest.sourceUrl) {
         $source = Get-IssueReplicateSource -AuthorTexts @("[repro.zip]($($manifest.sourceUrl))")
         if ($source.Url -cne $manifest.sourceUrl -or $source.Type -cne $manifest.sourceType) {
             throw 'The repro link does not match a supported GitHub source.'
         }
-        $sourceLabel = if ($source.Type -eq 'repository') { 'Author repro repository' } else { 'Download author repro ZIP' }
-        $details += "`n| Original repro | [$sourceLabel]($($source.Url)) |"
-    } else {
-        $details += "`n| Original repro | Source link unavailable in this intake snapshot. |"
-    }
-    $details += "`n| Issue context | [View the associated issue comment](https://github.com/dotnet/maui/issues/$IssueNumber#issuecomment-$CommentId) |"
-    if ($manifest.sourceType -eq 'repository') {
-        $sourceCommit = $manifest.sourceCommit
-        $commitLink = if ($manifest.sourceUrl) {
-            "[$($sourceCommit.Substring(0, 7))](https://github.com/$($source.Repository)/tree/$sourceCommit)"
-        } else { "``$sourceCommit``" }
-        $details += "`n| Pinned author repro revision | $commitLink |"
+        $sourceUrl = if ($source.Type -eq 'repository') {
+            "https://github.com/$($source.Repository)/tree/$($manifest.sourceCommit)"
+        } else { $source.Url }
+        $reproLink = "[Author repro]($sourceUrl)"
     }
     $sample = $null
     if ($SampleDirectory -and (Test-Path -LiteralPath (Join-Path $SampleDirectory 'sample-result.json') -PathType Leaf)) {
         $sample = Read-IssueReplicateSampleResult -Path (Join-Path $SampleDirectory 'sample-result.json') -Manifest $manifest
-        $details += "`n| Author sample built | $($sample.buildSucceeded) |"
-        $details += "`n| Author target framework | ``$($sample.targetFramework)`` |"
         if (-not $sample.buildSucceeded) {
-            $summary = 'The unchanged author sample failed to build on the pinned public toolchain. No generated test was executed, so reproduction is inconclusive and the issue has not been ruled out.'
-            $reproducibility = 'Not determined; the unchanged author sample did not build.'
-            $testCoverage = 'Not verified; the generated test was not executed.'
-            $details += "`n| Status | ``inconclusive`` |"
-            $details += "`n| Generated test executed | False |"
-            $details += "`n| Matching assertion failures verified twice | False |"
+            $reproductionIcon = '&#x26A0;&#xFE0F;'
+            $reproducibility = 'Blocked: the author sample did not build.'
+            $summary = "Build target: ``$($sample.targetFramework)``. No test was executed; this does not rule out the issue."
             $sampleDiagnostic = [string]$sample.diagnostic
         }
     }
@@ -123,16 +102,10 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             ($null -ne $sample -and $sample.buildSucceeded -ne $result.sampleBuilt)) {
             throw 'The verification result does not match the immutable intake snapshot.'
         }
-        $details += "`n| Status | ``$($result.status)`` |"
-        if ($null -eq $sample) { $details += "`n| Author sample built | $($result.sampleBuilt -eq $true) |" }
-        $details += "`n| Generated test executed | $($result.testExecuted -eq $true) |"
         if ($null -ne $result.confirmationTestExecuted) {
-            $details += "`n| Fresh confirmation executed | $($result.confirmationTestExecuted) |"
-        }
-        $details += "`n| Matching assertion failures verified twice | $($result.assertionFailed -eq $true) |"
-        if ($result.testKind -cin @('unit', 'xaml', 'ui') -and $result.testExecuted -eq $true) {
-            $class = if ($result.testKind -eq 'xaml') { "Maui$IssueNumber" } else { "Issue$IssueNumber" }
-            $details += "`n| Executed test | $($result.testKind) class ``$class`` |"
+            $confirmationNote = if ($result.confirmationTestExecuted) {
+                'Fresh test executed, but matching failures were not verified.'
+            } else { 'Fresh test execution was not verified.' }
         }
         switch ($result.status) {
             'candidate-failed' {
@@ -153,41 +126,36 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                         throw 'A generated patch modifies a path outside the permitted test files.'
                     }
                 }
-                $summary = 'The author sample built and a generated test **failed at an assertion twice** against the pinned MAUI revision. The original app interaction was not exercised, so this is a verified failing *test candidate*, not confirmation of the reported issue.'
-                $reproducibility = 'Yes for the generated scenario: matching assertion failures in two independent executions. The original reported interaction is not confirmed.'
-                $testCoverage = 'Not confirmed for the reported issue. The test catches a repeatable assertion error; its alignment with the issue and a causal control still need review.'
+                $summary = ''
+                $reproductionIcon = '&#x2705;'
+                $testIcon = '&#x1F7E1;'
+                $reproducibility = 'Same assertion failed in two independent runs.'
+                $testCoverage = 'Verified failing candidate; its match to the original issue still needs review.'
+                $confirmationNote = ''
                 $confidence = 75
-                $confidenceReason = 'Two matching failures support the generated scenario, but the original interaction and bug-specific causality have not been verified.'
                 $patchSha256 = $result.patchSha256
-                $candidate = "**Review before applying:** this is generated, untrusted test code, not a framework fix. " +
-                    "The complete candidate diff is published in issue comments, not stored as a run artifact.`n`n" +
-                    "Patch SHA-256: ``$patchSha256``."
+                $candidate = '**Review before applying:** generated, untrusted test code, not a framework fix.'
             }
             'not-reproduced-on-tested-revision' {
-                $summary = 'The generated test ran and passed on this revision. That does **not** prove the reported bug never occurs; it may require a different version or setup.'
+                $summary = 'The generated test ran and passed. This does not rule out the reported issue.'
+                $testIcon = '&#x1F7E1;'
                 $reproducibility = 'Not reproduced by the generated test on the tested revision.'
-                $testCoverage = 'No on this revision: the test passed and did not expose the reported error.'
-                $confidenceReason = 'No failing reproduction was observed. A passing candidate does not establish that the issue is invalid or that the test would catch it elsewhere.'
+                $testCoverage = 'Passed; it did not catch the reported error on this revision.'
             }
             'unsupported' {
-                $summary = 'The submitted repro or generated test is not supported by this first-version runner; no conclusion about the issue was reached.'
-                $reproducibility = 'Not determined; the submitted scenario or candidate is unsupported.'
-                $testCoverage = 'Not verified; no supported test execution.'
+                $reproducibility = 'Not assessed: this scenario is not supported.'
+                $testCoverage = 'Not tested.'
             }
             default {
-                $summary = 'Reproduction was inconclusive (missing assertion evidence or a test/build/environment error); the issue has not been ruled out.'
-                $reproducibility = 'Not determined; execution or confirmation was incomplete.'
-                $testCoverage = 'Not verified; no matching pair of assertion failures.'
+                $reproductionIcon = '&#x26A0;&#xFE0F;'
+                $reproducibility = 'Inconclusive: execution or confirmation was incomplete.'
+                $testCoverage = 'Not verified.'
                 if ($result.testExecuted -eq $true -and $result.recording -and $result.recording.status -eq 'failed') {
-                    $summary = 'The named generated test body executed, but its native recording failed. Verification and independent confirmation are incomplete; the issue has not been ruled out.'
-                }
-                if ($null -ne $result.confirmationTestExecuted -and -not $result.confirmationTestExecuted) {
-                    $summary = 'The first generated test body reached an assertion, but the fresh confirmation did not complete a qualifying named body. Its setup, recording or result evidence was inconclusive; the issue has not been ruled out.'
+                    $summary = 'The test body executed, but its recording failed.'
                 }
                 if ($result.testExecuted -eq $true -and $result.observedAssertion -eq $true) {
-                    $reproducibility = 'Not confirmed; an assertion failed, but matching independent confirmation is missing.'
+                    $reproducibility = 'An assertion failed, but independent confirmation is missing.'
                     $confidence = 25
-                    $confidenceReason = 'An unconfirmed assertion failure is weak evidence; it does not establish repeatability or that the test catches the reported issue.'
                 }
             }
         }
@@ -217,33 +185,28 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                 $patchText = Get-IssueReplicateDraftPatch -Candidate $draft -IssueNumber $IssueNumber -Platform $manifest.platform
                 $patchSha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
                     [Text.Encoding]::UTF8.GetBytes($patchText))).ToLowerInvariant()
-                $candidateHeading = 'Draft test candidate (not verified failing)'
+                $candidateHeading = 'Unverified test draft'
                 $execution = if ($null -ne $result -and $result.testExecuted) {
                     'The test was executed, but matching assertion failures were not verified twice.'
                 } elseif ($null -ne $sample -and -not $sample.buildSucceeded) {
                     'This draft has not been compiled or executed by the verifier because the author build was blocked.'
                 } else { 'No test-body execution has been verified for this draft; compilation or execution may be blocked.' }
-                $candidate = "**Unverified draft - review before using.** $execution " +
-                    "It is generated, untrusted test code, not a framework fix or evidence that the issue was reproduced.`n`n" +
-                    "Candidate JSON SHA-256: ``$draftHash``.`n`nPatch SHA-256: ``$patchSha256``."
-                $summary += ' A reviewable test draft is included below; it is not a verified failing test.'
+                $candidate = "**Unverified draft - review before using.** $execution"
             }
         }
-    }
-    if ($patchText) {
-        $followUp = 'Review whether the generated assertion isolates the reported scenario before applying a candidate patch. A simulator result does not replace physical-device validation.'
     }
 } elseif ($CandidateDirectory) {
     throw 'A draft cannot be published without its validated issue snapshot.'
 }
 
 $verdict = @(
-    "**Reproducible:** $reproducibility",
+    "$reproductionIcon **Reproduction:** $reproducibility",
     '',
-    "**Generated test catches the reported issue:** $testCoverage",
+    "$testIcon **Test:** $testCoverage",
     '',
-    "**Confidence that the issue is reproduced:** **$confidence% (evidence score, not a statistical probability).** $confidenceReason"
+    "&#x1F4CA; **Evidence:** $confidence% (not a probability)."
 ) -join "`n"
+if ($confirmationNote) { $verdict += "`n`n&#x26A0;&#xFE0F; **Confirmation:** $confirmationNote" }
 
 function Format-PatchBlock {
     param([string]$Text, [ValidateSet('diff', 'text')][string]$Language = 'diff')
@@ -253,15 +216,6 @@ function Format-PatchBlock {
     }
     $fence = '`' * [Math]::Max(4, $maxBacktickRun + 1)
     return "`n`n$fence$Language`n$Text`n$fence"
-}
-
-if ($sampleDiagnostic) {
-    $details += "`n`nAuthor sample build diagnostic (untrusted log text):" +
-        (Format-PatchBlock -Text $sampleDiagnostic -Language text)
-}
-if ($assertionDiagnostic) {
-    $details += "`n`nObserved assertion error (untrusted test diagnostic):" +
-        (Format-PatchBlock -Text $assertionDiagnostic -Language text)
 }
 
 function Get-RecordingSection {
@@ -277,9 +231,7 @@ function Get-RecordingSection {
                 Import-IssueReplicateRecording -Recording $result.recording -Prefix $RecordingPrefix
             }
             Export-IssueReplicateRecording -Bytes $recordingBytes -Recording $result.recording -Provider None | Out-Null
-            $recordingText = "Bounded native UI recording from attempt $($result.attempt) (at most 30 seconds, no audio). " +
-                "This is visual context, not independent proof of the original issue or evidence authenticity.`n`n" +
-                "Video SHA-256: ``$($result.recording.sha256)``.`n`n"
+            $recordingText = 'Recording of the generated test; not independent proof of the original issue.' + "`n`n"
             if ($OutputPath) {
                 [IO.File]::WriteAllBytes([IO.Path]::GetFullPath("$OutputPath.recording.mp4"), $recordingBytes)
                 $recordingText += 'The recording is available to the publisher. This read-only preview does not upload media or post a comment.'
@@ -301,7 +253,7 @@ function Get-RecordingSection {
                     $receipt = Sync-IssueReplicateRecordingPublication -Bytes $recordingBytes `
                         -Recording $result.recording -IssueNumber $IssueNumber -ExistingBody $existingBody -SaveCheckpoint {
                         param([string]$Checkpoint)
-                        $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n$verdict`n`n$summary`n`n$runNote`n`n" +
+                        $pendingBody = "$marker`n## Issue reproduction`n`n$verdict`n`n" +
                             "**Media publication is incomplete.** A recording upload may have started. " +
                             "If its receipt is missing, retries will not repeat the upload; an operator must reconcile it. " +
                             "A recorded attachment URL below is a receipt, not a finalized reproduction report.`n`n" +
@@ -320,13 +272,11 @@ function Get-RecordingSection {
             }
         } else {
             $recordingFailure = [string]$result.recording.diagnostic
-            $recordingText = "**Native recording unavailable:** ``$($result.recording.status)``. " +
-                'The test result is reported separately; no video evidence is claimed.' +
+            $recordingText = "&#x26A0;&#xFE0F; **Native recording unavailable.** " +
                 (Format-PatchBlock -Text $recordingFailure -Language text)
         }
         $recordingSection = @(
-            '---', '', '<details>', '<summary><strong>&#x1F3A5; Native recording</strong></summary>',
-            '<br/>', '', $recordingText, '', '</details>', ''
+            '&#x1F3A5; **Video**', '', $recordingText, ''
         ) -join "`n"
     }
     return @{
@@ -367,11 +317,8 @@ if ($recordingReport.Interrupted) {
 $inlinePatch = ''
 if ($patchText) {
     $inlineExact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($patchText))
-    $inlinePatch = "`n`nReadable diff preview (use the exact-byte payload when applying):" +
-        (Format-PatchBlock -Text $patchText) +
-        "`n`n**Exact UTF-8 patch (base64)**. Decode this payload and verify the patch SHA-256 " +
-        "above before applying; rendered diff previews may normalize line endings." +
-        (Format-PatchBlock -Text $inlineExact -Language text)
+    $inlinePatch = "`n`n<!-- issue-replicate-patch-data:${patchSha256}:$inlineExact -->" +
+        (Format-PatchBlock -Text $patchText)
     if ([Text.Encoding]::UTF8.GetByteCount($inlinePatch) -gt 45000) {
         $parts = @()
         for ($offset = 0; $offset -lt $patchText.Length;) {
@@ -382,7 +329,7 @@ if ($patchText) {
         }
         $links = @()
         if (-not $OutputPath) {
-            $pendingBody = "$marker`n## Issue Reproduction Analysis`n`n" +
+            $pendingBody = "$marker`n## Issue reproduction`n`n" +
                 "$verdict`n`n**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
                 "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
                 $recordingReport.Checkpoint
@@ -393,15 +340,11 @@ if ($patchText) {
             $partMarker = $marker.Replace('issue-replicate-result:', "issue-replicate-patch:${number}:")
             $exact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($parts[$index]))
             $partBody = "$partMarker`n## Generated test candidate: part $number of $($parts.Count)`n`n" +
-                "$verdict`n`n" +
-                "Patch SHA-256: ``$patchSha256``. " +
                 $(if ($OutputPath) { 'The full patch is preserved across all preview parts. ' }
                     else { "Publication is complete only when [the main report]($pendingUrl) links every part; otherwise these fragments are incomplete and must not be applied. " }) +
-                "Review this untrusted code before applying it. To reconstruct exact bytes, decode each " +
-                "base64 fragment and concatenate the decoded bytes in order." +
-                (Format-PatchBlock -Text $parts[$index]) +
-                "`n`n<details><summary>Exact UTF-8 patch fragment (base64)</summary>`n`n" +
-                ('`' * 4) + "text`n$exact`n" + ('`' * 4) + "`n`n</details>"
+                "Review this untrusted code before applying it." +
+                "`n`n<!-- issue-replicate-patch-data:${patchSha256}:$exact -->" +
+                (Format-PatchBlock -Text $parts[$index])
             if ([Text.Encoding]::UTF8.GetByteCount($partBody) -gt 60000) { throw 'A patch continuation is oversized.' }
             if ($OutputPath) {
                 [IO.File]::WriteAllText([IO.Path]::GetFullPath("$OutputPath.patch-$number.md"),
@@ -418,47 +361,34 @@ if ($patchText) {
 
 $candidateSection = if ($patchText) {
     @(
-        '---', '', '<details>',
-        "<summary><strong>&#x1F4DD; $candidateHeading</strong> &#x2014; review code</summary>",
-        '<br/>', '', ($candidate + $inlinePatch), '', '</details>', ''
+        '<details>',
+        "<summary><strong>&#x1F9EA; $candidateHeading</strong></summary>",
+        '', ($candidate + $inlinePatch), '', '</details>', ''
     ) -join "`n"
 } else { '' }
 $body = @(
     $marker,
-    '## Issue Reproduction Analysis',
+    '## Issue reproduction',
     '',
     $verdict,
     '',
     $summary,
     '',
-    $runNote,
+    $(if ($assertionDiagnostic) { Format-PatchBlock -Text $assertionDiagnostic -Language text }),
     '',
-    '<p align="left">',
-    '  <img alt="Scope issue reproduction" src="https://img.shields.io/badge/Scope-issue%20reproduction-1f6feb?labelColor=30363d&amp;style=flat-square">',
-    "  <img alt=`"Commit $commit`" src=`"https://img.shields.io/badge/Commit-$commit-1f6feb?labelColor=30363d&amp;style=flat-square`">",
-    '</p>',
+    $(if ($sampleDiagnostic) {
+        "<details><summary>Build blocker</summary>`n`n" +
+            (Format-PatchBlock -Text $sampleDiagnostic -Language text) + "`n`n</details>"
+        }),
     '',
-    '---',
-    '',
-    '<details>',
-    '<summary><strong>&#x1F9EA; Reproduction evidence</strong> &#x2014; click to expand</summary>',
-    '<br/>',
-    '',
-    $details,
-    '',
-    '</details>',
-    '',
-    $candidateSection,
     $recordingReport.Section,
-    '---',
+    $candidateSection,
     '',
-    '<details>',
-    '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
-    '<br/>',
+    $reproLink,
     '',
-    'This report contains the reproduction verdict, candidate code and available video directly. No framework source or PR was changed by this attempt.',
+    '<details><summary>About this run</summary>',
     '',
-    $followUp,
+    $runNote,
     '',
     $refresh,
     '',

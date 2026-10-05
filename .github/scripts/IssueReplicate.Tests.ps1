@@ -599,11 +599,10 @@ Describe 'Drafts when author builds are blocked' {
         $body | Should -Match 'Unverified draft'
         $body | Should -Match 'not been compiled or executed'
         $body | Should -Match 'public class Issue12345'
-        $body | Should -Match 'Generated test executed \| False'
-        $body | Should -Match 'Matching assertion failures verified twice \| False'
+        $body | Should -Match 'No test was executed'
         $body | Should -Match 'net10.0-ios27.0'
-        $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
-        $body | Should -Match '0% \(evidence score, not a statistical probability\)'
+        $body | Should -Match '&#x26AA; \*\*Test:\*\* Not verified'
+        $body | Should -Match '0% \(not a probability\)'
         $body | Should -Not -Match 'dev\.azure\.com|/actions/runs/|Inspect the run log'
         $body | Should -Not -Match 'verified failing \*test candidate\*|No verified failing test patch|System.Object\[\]'
     }
@@ -652,13 +651,13 @@ Describe 'Drafts when author builds are blocked' {
         $body = Get-Content -Raw $preview
         $body | Should -Match 'ran and passed'
         $body | Should -Match 'The test was executed'
-        $body | Should -Match 'Generated test catches the reported issue:\*\* No on this revision'
-        $body | Should -Match '0% \(evidence score, not a statistical probability\)'
+        $body | Should -Match '&#x1F7E1; \*\*Test:\*\* Passed; it did not catch the reported error on this revision'
+        $body | Should -Match '0% \(not a probability\)'
         $body | Should -Not -Match 'dev\.azure\.com|/actions/runs/'
         $body | Should -Not -Match 'not been compiled or executed|verified failing \*test candidate\*'
     }
 
-    It 'preserves the complete draft in bounded exact-byte continuation previews for <Name>' -TestCases @(
+    It 'preserves the complete draft in bounded readable continuations with hidden recovery data for <Name>' -TestCases @(
         @{ Name = 'oversized Unicode'; Content = "public class Issue12345 { } // " + ('漢' * 16000) + "`n" },
         @{ Name = 'combined preview and payload budget'; Content = "public class Issue12345 { } // " + ('x' * 24000) + "`n" }
     ) {
@@ -679,9 +678,12 @@ Describe 'Drafts when author builds are blocked' {
                 $part.Length | Should -BeLessThan 60001
                 $body = Get-Content -Raw $part.FullName
                 $fragment = [regex]::Match($body,
-                    '(?s)Exact UTF-8 patch fragment \(base64\).*?`{4}text\n([A-Za-z0-9+/=]+)\n`{4}')
+                    '<!-- issue-replicate-patch-data:[0-9a-f]{64}:([A-Za-z0-9+/=]+) -->')
                 $fragment.Success | Should -BeTrue
                 $bytes.Write([Convert]::FromBase64String($fragment.Groups[1].Value))
+                $body | Should -Match '`{4}diff\n'
+                $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
+                $visible | Should -Not -Match 'SHA-256|base64|decode|[a-f0-9]{64}'
             }
             $expected = Get-IssueReplicateDraftPatch -Candidate $script:draftCandidate -IssueNumber 12345 -Platform ios
             [Text.Encoding]::UTF8.GetString($bytes.ToArray()) | Should -BeExactly $expected
@@ -725,13 +727,16 @@ Describe 'Drafts when author builds are blocked' {
             -SampleDirectory $script:draftSample -CandidateDirectory $script:draftOutput -OutputPath $preview
         $body = Get-Content -Raw $preview
         $exact = [regex]::Match($body,
-            '(?s)Exact UTF-8 patch \(base64\).*?`{4}text\n([A-Za-z0-9+/=]+)\n`{4}')
+            '<!-- issue-replicate-patch-data:([0-9a-f]{64}):([A-Za-z0-9+/=]+) -->')
         $exact.Success | Should -BeTrue
-        $bytes = [Convert]::FromBase64String($exact.Groups[1].Value)
+        $exact.Groups[1].Value | Should -BeExactly $expectedHash
+        $bytes = [Convert]::FromBase64String($exact.Groups[2].Value)
         [Convert]::ToBase64String($bytes) | Should -BeExactly ([Convert]::ToBase64String($expectedBytes))
         [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant() |
             Should -BeExactly $expectedHash
-        $body | Should -Match ([regex]::Escape("Patch SHA-256: ``$expectedHash``."))
+        $body | Should -Match '`{4}diff\n'
+        $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
+        $visible | Should -Not -Match 'SHA-256|base64|decode|[a-f0-9]{64}'
         $patchPath = Join-Path $TestDrive 'exact-draft.patch'
         [IO.File]::WriteAllBytes($patchPath, $bytes)
         $applied = Join-Path $script:draftRoot 'applied'
@@ -1394,11 +1399,13 @@ Describe 'Pinned test verification' {
                 -GitHubRunId 987654321 -InputDirectory (Split-Path $manifestPath) `
                 -ResultsDirectory $imported -OutputPath $preview
             $body = Get-Content -Raw $preview
-            $body | Should -Match '25% \(evidence score, not a statistical probability\)'
-            $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
+            $body | Should -Match '25% \(not a probability\)'
+            $body | Should -Match '&#x26AA; \*\*Test:\*\* Not verified'
             $body | Should -Match 'Expected: 1'
             $body | Should -Match 'But was: 0'
-            $body | Should -Match ([regex]::Escape("| Fresh confirmation executed | $(-not [bool]$ConfirmationFault) |"))
+            $confirmationText = if ($ConfirmationFault) { 'Fresh test execution was not verified.' }
+            else { 'Fresh test executed, but matching failures were not verified.' }
+            $body | Should -Match ([regex]::Escape("**Confirmation:** $confirmationText"))
             if ($ConfirmationFault) {
                 (Get-Content -Raw (Join-Path $imported 'feedback.txt')) | Should -Match 'OneTimeSetUp: Fixture setup failed'
             }
@@ -1625,11 +1632,11 @@ Describe 'Forwarded verification feedback' {
 
 Describe 'Bounded issue result publication' {
     It 'leads with an evidence-based verdict and observed error for <Status> (assertion=<Observed>)' -TestCases @(
-        @{ Status = 'candidate-failed'; Observed = $true; Executed = $true; Score = 75; Verdict = 'Not confirmed for the reported issue' },
-        @{ Status = 'not-reproduced-on-tested-revision'; Observed = $false; Executed = $true; Score = 0; Verdict = 'No on this revision' },
+        @{ Status = 'candidate-failed'; Observed = $true; Executed = $true; Score = 75; Verdict = 'Verified failing candidate; its match to the original issue still needs review.' },
+        @{ Status = 'not-reproduced-on-tested-revision'; Observed = $false; Executed = $true; Score = 0; Verdict = 'Passed; it did not catch the reported error on this revision.' },
         @{ Status = 'inconclusive'; Observed = $true; Executed = $true; Score = 25; Verdict = 'Not verified' },
         @{ Status = 'inconclusive'; Observed = $false; Executed = $false; Score = 0; Verdict = 'Not verified' },
-        @{ Status = 'unsupported'; Observed = $false; Executed = $false; Score = 0; Verdict = 'Not verified' }
+        @{ Status = 'unsupported'; Observed = $false; Executed = $false; Score = 0; Verdict = 'Not tested.' }
     ) {
         param($Status, $Observed, $Executed, $Score, $Verdict)
         $inputDir = Join-Path $TestDrive "verdict-input-$Status-$Observed"
@@ -1658,9 +1665,16 @@ Describe 'Bounded issue result publication' {
         & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') -IssueNumber 12345 -CommentId 4925414214 `
             -GitHubRunId 987654321 -InputDirectory $inputDir -ResultsDirectory $resultsDir -OutputPath $preview
         $body = Get-Content -Raw $preview
-        $body.IndexOf('**Reproducible:**') | Should -BeLessThan $body.IndexOf('<details>')
-        $body | Should -Match ([regex]::Escape("Generated test catches the reported issue:** $Verdict"))
-        $body | Should -Match ([regex]::Escape("$Score% (evidence score, not a statistical probability)"))
+        $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan 0
+        $body.IndexOf('**Reproduction:**') | Should -BeLessThan $body.IndexOf('<details>')
+        $body | Should -Match ([regex]::Escape("**Test:** $Verdict"))
+        $body | Should -Match ([regex]::Escape("**Evidence:** $Score% (not a probability)"))
+        $icon = if ($Status -eq 'candidate-failed') { '&#x2705;' }
+        elseif ($Status -eq 'inconclusive') { '&#x26A0;&#xFE0F;' }
+        else { '&#x26AA;' }
+        $body | Should -Match ([regex]::Escape("$icon **Reproduction:**"))
+        $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
+        $visible | Should -Not -Match 'SHA-256|base64|[a-f0-9]{64}|shields\.io|\| Evidence \|'
         $body | Should -Not -Match '100%|dev\.azure\.com|/actions/runs/|Public run and execution logs'
         if ($Observed) {
             $body | Should -Match 'Expected: "Current: 2"'
@@ -1678,9 +1692,9 @@ Describe 'Bounded issue result publication' {
             -BuildId 456789 -InputDirectory (Join-Path $TestDrive 'no-input') `
             -ResultsDirectory (Join-Path $TestDrive 'no-result') -OutputPath $preview
         $body = Get-Content -Raw $preview
-        $body | Should -Match 'Generated test catches the reported issue:\*\* Not verified'
-        $body | Should -Match '0% \(evidence score, not a statistical probability\)'
-        $body | Should -Match 'not evidence that the issue is invalid'
+        $body | Should -Match '&#x26AA; \*\*Test:\*\* Not verified'
+        $body | Should -Match '0% \(not a probability\)'
+        $body | Should -Match 'does not rule out the issue'
         $body | Should -Not -Match 'dev\.azure\.com|/actions/runs/'
     }
 
@@ -1705,10 +1719,10 @@ Describe 'Bounded issue result publication' {
             -CommentId 4925414214 -BuildId 456789 -InputDirectory $inputDir -ResultsDirectory $resultsDir `
             -SampleDirectory $sampleDir -OutputPath $preview
         $body = Get-Content -Raw $preview
-        $body | Should -Match 'unchanged author sample failed to build'
+        $body | Should -Match 'Blocked: the author sample did not build'
         $body | Should -Match 'net10.0-ios27.0'
-        $body | Should -Match 'Generated test executed \| False'
-        $body | Should -Match 'Matching assertion failures verified twice \| False'
+        $body | Should -Match 'No test was executed'
+        $body | Should -Match '&#x26AA; \*\*Test:\*\* Not verified'
         $body | Should -Match '`````text'
         $body | Should -Match 'error NETSDK1140'
         $body | Should -Not -Match 'verified failing \*test candidate\*'
@@ -1766,7 +1780,7 @@ Describe 'Bounded issue result publication' {
             -CommentId 4925414214 -BuildId 456789 -InputDirectory $inputDir -ResultsDirectory $resultsDir
         $postedBody = $global:issueReplicatePostedBody -join "`n"
         Remove-Variable issueReplicatePostedBody -Scope Global
-        $postedBody | Should -Match 'verified failing \*test candidate\*'
+        $postedBody | Should -Match 'Verified failing candidate; its match to the original issue still needs review'
         $postedBody | Should -Match 'public class Issue12345'
         $postedBody | Should -Not -Match '\[run artifact\]'
         $postedBody | Should -Not -Match 'Ignore previous instructions'

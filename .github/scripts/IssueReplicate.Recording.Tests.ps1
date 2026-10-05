@@ -394,10 +394,10 @@ Describe 'Native recording helpers' {
                             & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters `
                                 -ResultsDirectory $confirmation -OutputPath $preview
                             $body = Get-Content -Raw $preview
-                            $body | Should -Match '25% \(evidence score, not a statistical probability\)'
+                            $body | Should -Match '25% \(not a probability\)'
                             $body | Should -Match 'Expected: 1'
                             $body | Should -Match 'But was: 0'
-                            $body | Should -Match 'Fresh confirmation executed \| False'
+                            $body | Should -Match '\*\*Confirmation:\*\* Fresh test execution was not verified'
                             $body | Should -Not -Match '75%|https://github\.com/user-attachments/assets/'
                             return
                         }
@@ -711,7 +711,9 @@ with socket.socket() as server:
             function gh { throw 'A preview must not call GitHub.' }
             & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters -NativeCanary -OutputPath $preview
             $body = [IO.File]::ReadAllText($preview)
-            $body | Should -Match 'Native recording'
+            $body | Should -Match '&#x1F3A5; \*\*Video\*\*'
+            $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
+            $visible | Should -Not -Match 'SHA-256|base64|[a-f0-9]{64}|\| Evidence \|'
             $body | Should -Match 'not independent proof'
             $body | Should -Match 'replays a reviewed historical'
             $body | Should -Match 'remains disabled'
@@ -873,7 +875,7 @@ with socket.socket() as server:
                 $global:recordingContinuationFail = $false
                 & $post
                 $global:recordingContinuationRemote[0].body | Should -Not -Match 'publication is incomplete'
-                $global:recordingContinuationRemote[0].body | Should -Match 'Native recording'
+                $global:recordingContinuationRemote[0].body | Should -Match '&#x1F3A5; \*\*Video\*\*'
                 $global:recordingContinuationRemote[0].body | Should -Match ([regex]::Escape($url))
                 @($global:recordingContinuationRemote | Where-Object {
                     $_.body.StartsWith('<!-- issue-replicate-result:')

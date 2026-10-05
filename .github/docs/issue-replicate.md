@@ -77,8 +77,12 @@ The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
-Every comment leads with **Reproducible**, **Generated test catches the reported
-issue**, and **Confidence that the issue is reproduced**. The percentage is a
+Every comment leads with short emoji-labelled **Reproduction**, **Test**, and
+**Evidence** verdicts. A check mark identifies a repeatable generated failure,
+a yellow indicator identifies a passing or repeatably failing candidate whose
+match to the original issue still needs review, and warning/neutral indicators
+identify incomplete or unavailable evidence. There is no technical boolean table.
+The percentage is a
 deterministic evidence score, not a calibrated probability that the issue is real:
 **0%** means no failing reproduction evidence (unassessed, blocked, unsupported,
 or a passing candidate), **25%** means an executed but unconfirmed assertion
@@ -96,15 +100,20 @@ expected/actual assertion text is included directly; no run or execution-log lin
 are posted, including in pending, queue-failure and incomplete-publication notices.
 
 The result is posted **under the originating issue**, with a concise outcome and
-the same expandable-section style as `/review tests`: **Reproduction evidence**,
-**Generated test candidate**, and **Follow-up**. A verified failing candidate's
+an immediately visible video when available and an expandable **Verified failing
+test patch** or **Unverified test draft**. Build blockers and run/deployment context
+are expandable rather than part of a technical evidence table. A verified failing candidate's
 hash-checked diff is embedded in the comment so it can be reviewed without
-downloading anything. Every patch includes a readable fenced preview and an
-exact UTF-8 base64 payload, including small patches. Decode the payload and
-verify the displayed patch SHA-256 before applying; rendered previews may
-normalize line endings. When the combined preview and payload exceed the inline
+downloading anything. Every patch includes a complete readable fenced diff.
+Hashes and exact-byte recovery data are retained only in non-rendered HTML
+metadata; no checksums, base64 blocks or decode instructions clutter the rendered
+report. Internal source, result, candidate, patch and video integrity checks are
+unchanged. The hidden `issue-replicate-patch-data` marker contains the full patch
+SHA-256 and exact UTF-8 base64 data, including for small patches; use that metadata
+from the raw comment if exact-byte recovery is needed, since rendered diff previews
+may normalize line endings. When the combined diff and hidden metadata exceed the inline
 budget, diffs are split across bounded continuation
-comments linked from the main report, with the full patch hash and ordered code
+comments linked from the main report, with hidden full-patch binding and ordered code
 blocks; no code is truncated. Passing and inconclusive results can include the
 complete generated draft, clearly distinguished from a verified failing candidate.
 The publisher validates its path, platform envelope, bounds and candidate hash;
@@ -116,8 +125,7 @@ or controller trait overrides. The generator requires an observed initial state,
 separate confirmation that the setting changed, component-scoped native observations,
 and restoration of modified settings. Generation guidance is not execution evidence.
 Evidence includes direct links to the author's original repro ZIP or public
-repository, the immutable repository revision when applicable, and the issue
-comment associated with the run. Repro links are validated against the supported
+repository at the immutable revision when applicable. Repro links are validated against the supported
 GitHub source formats before publication.
 Results are updated idempotently per run, using only the authenticated publisher's
 own comments; third-party markers cannot redirect or suppress publication.
@@ -170,7 +178,7 @@ author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
 do not record a UI video. Recorder or upload failures remain explicit in the
 report and fail publication rather than claiming a playable attachment exists.
 The isolated publisher uploads the validated bytes as a GitHub media attachment,
-then includes its player URL in an expandable **Native recording** section.
+then includes its player URL directly under **Video**, without requiring an expansion.
 The publisher records a bot-owned pending report before uploading and checkpoints
 the returned attachment URL immediately afterward, before finalizing the report
 or publishing patch continuations. Retries reuse that matching run/video receipt;
