@@ -32,7 +32,7 @@ jobs:
       # pull_request_target supplies base-branch code. Pin checkout to the exact
       # trusted base SHA and never fetch or execute the PR head.
       - name: Checkout trusted base revision
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.sha || github.event.pull_request.base.sha }}
           fetch-depth: 1

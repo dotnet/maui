@@ -5,6 +5,7 @@ param(
     [string]$EventPath = $env:GITHUB_EVENT_PATH,
     [string]$Repository = $env:GITHUB_REPOSITORY,
     [string]$EventName = $env:GITHUB_EVENT_NAME,
+    [string]$PullRequestsFixturePath,
     [switch]$DryRun
 )
 
@@ -205,8 +206,28 @@ function Test-TrustedCiFixWorkflowRun {
 function Get-OpenCiFixContexts {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
-        [Parameter(Mandatory = $true)][string]$GitHubToken
+        [AllowEmptyString()][string]$GitHubToken,
+        [AllowEmptyString()][string]$FixturePath
     )
+
+    if (-not [string]::IsNullOrWhiteSpace($FixturePath)) {
+        if (-not (Test-Path -LiteralPath $FixturePath -PathType Leaf)) {
+            throw "Pull request fixture '$FixturePath' does not exist."
+        }
+
+        $fixturePullRequests = @(
+            (Get-Content -Raw -LiteralPath $FixturePath | ConvertFrom-Json -Depth 100) |
+                ForEach-Object { $_ }
+        )
+        $fixtureContexts = [System.Collections.Generic.List[object]]::new()
+        foreach ($pullRequest in $fixturePullRequests) {
+            $context = Get-CiFixContextFromPullRequest -PullRequest $pullRequest -Repository $Repository
+            if ($null -ne $context) {
+                $fixtureContexts.Add($context)
+            }
+        }
+        return $fixtureContexts.ToArray()
+    }
 
     if ([string]::IsNullOrWhiteSpace($GitHubToken)) {
         throw 'GITHUB_TOKEN is required for workflow_run reconciliation.'
@@ -214,8 +235,7 @@ function Get-OpenCiFixContexts {
 
     $contexts = [System.Collections.Generic.List[object]]::new()
     for ($page = 1; $page -le 10; $page++) {
-        $pullRequests = @(
-            Invoke-WithHttpRetry -OperationName "GitHub open pull request query page $page" -Operation {
+        $pageResponse = Invoke-WithHttpRetry -OperationName "GitHub open pull request query page $page" -Operation {
                 Invoke-RestMethod `
                     -Method Get `
                     -Uri "https://api.github.com/repos/$Repository/pulls?state=open&per_page=100&page=$page" `
@@ -226,7 +246,9 @@ function Get-OpenCiFixContexts {
                     } `
                     -TimeoutSec 30
             }
-        )
+        # Invoke-RestMethod returns a top-level JSON array as one Object[] value.
+        # Enumerate it explicitly so pagination and per-PR validation see each PR.
+        $pullRequests = @($pageResponse | ForEach-Object { $_ })
 
         foreach ($pullRequest in $pullRequests) {
             $context = Get-CiFixContextFromPullRequest -PullRequest $pullRequest -Repository $Repository
@@ -442,6 +464,7 @@ function New-AzdoQueueRequest {
         triggerInfo = [ordered]@{
             'pr.sourceBranch' = $Context.HeadRef
             'pr.sourceSha' = $Context.HeadSha
+            'pr.targetBranch' = $Context.BaseRef
             'pr.id' = "$($Context.PullRequestId)"
             'pr.title' = $Context.Title
             'pr.number' = "$($Context.PullRequestNumber)"
@@ -541,16 +564,43 @@ if ([string]::IsNullOrWhiteSpace($EventPath) -or -not (Test-Path -LiteralPath $E
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'
 }
+if (-not [string]::IsNullOrWhiteSpace($PullRequestsFixturePath) -and -not $DryRun) {
+    throw 'PullRequestsFixturePath is permitted only with -DryRun.'
+}
 
 $event = Get-Content -Raw -LiteralPath $EventPath | ConvertFrom-Json -Depth 100
 $contexts = if ($EventName -ceq 'pull_request_target') {
-    @(Get-CiFixEventContext -Event $event -Repository $Repository -EventName $EventName)
+    $triggerContext = Get-CiFixEventContext -Event $event -Repository $Repository -EventName $EventName
+    if ($null -eq $triggerContext) {
+        @()
+    }
+    else {
+        # GitHub concurrency preserves only one pending run. Every accepted
+        # event therefore reconciles every live eligible head, so an event
+        # displaced while pending is recovered by the surviving run.
+        $liveContexts = @(
+            Get-OpenCiFixContexts `
+                -Repository $Repository `
+                -GitHubToken $env:GITHUB_TOKEN `
+                -FixturePath $PullRequestsFixturePath
+        )
+        @(
+            @($triggerContext) + $liveContexts |
+                Group-Object { "$($_.PullRequestNumber):$($_.HeadSha)" } |
+                ForEach-Object { $_.Group[0] }
+        )
+    }
 }
 elseif ($EventName -ceq 'workflow_run') {
     if (-not (Test-TrustedCiFixWorkflowRun -Event $event -Repository $Repository)) {
         throw 'workflow_run did not originate from a trusted main-branch CI-fixer workflow.'
     }
-    @(Get-OpenCiFixContexts -Repository $Repository -GitHubToken $env:GITHUB_TOKEN)
+    @(
+        Get-OpenCiFixContexts `
+            -Repository $Repository `
+            -GitHubToken $env:GITHUB_TOKEN `
+            -FixturePath $PullRequestsFixturePath
+    )
 }
 else {
     throw "Unexpected event '$EventName'."
