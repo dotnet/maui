@@ -1631,7 +1631,7 @@ Describe 'Forwarded verification feedback' {
 }
 
 Describe 'Bounded issue result publication' {
-    It 'leads with an evidence-based verdict and observed error for <Status> (assertion=<Observed>)' -TestCases @(
+    It 'renders an evidence-based verdict and observed error in expandable analysis for <Status> (assertion=<Observed>)' -TestCases @(
         @{ Status = 'candidate-failed'; Observed = $true; Executed = $true; Score = 75; Verdict = 'Verified failing candidate; its match to the original issue still needs review.' },
         @{ Status = 'not-reproduced-on-tested-revision'; Observed = $false; Executed = $true; Score = 0; Verdict = 'Passed; it did not catch the reported error on this revision.' },
         @{ Status = 'inconclusive'; Observed = $true; Executed = $true; Score = 25; Verdict = 'Not verified' },
@@ -1666,7 +1666,9 @@ Describe 'Bounded issue result publication' {
             -GitHubRunId 987654321 -InputDirectory $inputDir -ResultsDirectory $resultsDir -OutputPath $preview
         $body = Get-Content -Raw $preview
         $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan 0
-        $body.IndexOf('**Reproduction:**') | Should -BeLessThan $body.IndexOf('<details>')
+        $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan $body.IndexOf('<details>')
+        $body | Should -Match '<summary><strong>&#x1F9EA; Reproduction analysis</strong> &#x2014; click to expand</summary>'
+        $body | Should -Match '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>'
         $body | Should -Match ([regex]::Escape("**Test:** $Verdict"))
         $body | Should -Match ([regex]::Escape("**Evidence:** $Score% (not a probability)"))
         $icon = if ($Status -eq 'candidate-failed') { '&#x2705;' }

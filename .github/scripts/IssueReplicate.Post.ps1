@@ -276,7 +276,10 @@ function Get-RecordingSection {
                 (Format-PatchBlock -Text $recordingFailure -Language text)
         }
         $recordingSection = @(
-            '&#x1F3A5; **Video**', '', $recordingText, ''
+            '<details>',
+            '<summary><strong>&#x1F3A5; Native recording</strong></summary>',
+            '<br/>',
+            '', $recordingText, '', '</details>', ''
         ) -join "`n"
     }
     return @{
@@ -362,13 +365,20 @@ if ($patchText) {
 $candidateSection = if ($patchText) {
     @(
         '<details>',
-        "<summary><strong>&#x1F9EA; $candidateHeading</strong></summary>",
+        "<summary><strong>&#x1F4DD; $candidateHeading</strong> &#x2014; review code</summary>",
+        '<br/>',
         '', ($candidate + $inlinePatch), '', '</details>', ''
     ) -join "`n"
 } else { '' }
 $body = @(
     $marker,
     '## Issue reproduction',
+    '',
+    '---',
+    '',
+    '<details>',
+    '<summary><strong>&#x1F9EA; Reproduction analysis</strong> &#x2014; click to expand</summary>',
+    '<br/>',
     '',
     $verdict,
     '',
@@ -381,12 +391,23 @@ $body = @(
             (Format-PatchBlock -Text $sampleDiagnostic -Language text) + "`n`n</details>"
         }),
     '',
-    $recordingReport.Section,
+    $(if ($candidateSection) { '---' }),
+    '',
     $candidateSection,
+    '',
+    $(if ($recordingReport.Section) { '---' }),
+    '',
+    $recordingReport.Section,
     '',
     $reproLink,
     '',
-    '<details><summary>About this run</summary>',
+    '</details>',
+    '',
+    '---',
+    '',
+    '<details>',
+    '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
+    '<br/>',
     '',
     $runNote,
     '',

@@ -77,8 +77,9 @@ The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
-Every comment leads with short emoji-labelled **Reproduction**, **Test**, and
-**Evidence** verdicts. A check mark identifies a repeatable generated failure,
+Every final comment uses an expandable **Reproduction analysis** section with
+short emoji-labelled **Reproduction**, **Test**, and **Evidence** verdicts.
+A check mark identifies a repeatable generated failure,
 a yellow indicator identifies a passing or repeatably failing candidate whose
 match to the original issue still needs review, and warning/neutral indicators
 identify incomplete or unavailable evidence. There is no technical boolean table.
@@ -99,10 +100,12 @@ blocked cases explicitly state that they do not invalidate the issue. Available
 expected/actual assertion text is included directly; no run or execution-log links
 are posted, including in pending, queue-failure and incomplete-publication notices.
 
-The result is posted **under the originating issue**, with a concise outcome and
-an immediately visible video when available and an expandable **Verified failing
-test patch** or **Unverified test draft**. Build blockers and run/deployment context
-are expandable rather than part of a technical evidence table. A verified failing candidate's
+The result is posted **under the originating issue**, using the same expandable
+layout as the regression-trace reports: **Reproduction analysis** contains the
+outcome and nested **Verified failing test patch** or **Unverified test draft**
+and **Native recording** sections when available. A separate expandable
+**Follow-up** section contains run/deployment context and refresh instructions.
+Build blockers are expandable rather than part of a technical evidence table. A verified failing candidate's
 hash-checked diff is embedded in the comment so it can be reviewed without
 downloading anything. Every patch includes a complete readable fenced diff.
 Hashes and exact-byte recovery data are retained only in non-rendered HTML
@@ -178,7 +181,7 @@ author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
 do not record a UI video. Recorder or upload failures remain explicit in the
 report and fail publication rather than claiming a playable attachment exists.
 The isolated publisher uploads the validated bytes as a GitHub media attachment,
-then includes its player URL directly under **Video**, without requiring an expansion.
+then includes its player URL inside the expandable **Native recording** section.
 The publisher records a bot-owned pending report before uploading and checkpoints
 the returned attachment URL immediately afterward, before finalizing the report
 or publishing patch continuations. Retries reuse that matching run/video receipt;

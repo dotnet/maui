@@ -711,7 +711,7 @@ with socket.socket() as server:
             function gh { throw 'A preview must not call GitHub.' }
             & (Join-Path $PSScriptRoot 'IssueReplicate.Post.ps1') @parameters -NativeCanary -OutputPath $preview
             $body = [IO.File]::ReadAllText($preview)
-            $body | Should -Match '&#x1F3A5; \*\*Video\*\*'
+            $body | Should -Match '<details>\n<summary><strong>&#x1F3A5; Native recording</strong></summary>'
             $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
             $visible | Should -Not -Match 'SHA-256|base64|[a-f0-9]{64}|\| Evidence \|'
             $body | Should -Match 'not independent proof'
@@ -875,7 +875,7 @@ with socket.socket() as server:
                 $global:recordingContinuationFail = $false
                 & $post
                 $global:recordingContinuationRemote[0].body | Should -Not -Match 'publication is incomplete'
-                $global:recordingContinuationRemote[0].body | Should -Match '&#x1F3A5; \*\*Video\*\*'
+                $global:recordingContinuationRemote[0].body | Should -Match '<details>\n<summary><strong>&#x1F3A5; Native recording</strong></summary>'
                 $global:recordingContinuationRemote[0].body | Should -Match ([regex]::Escape($url))
                 @($global:recordingContinuationRemote | Where-Object {
                     $_.body.StartsWith('<!-- issue-replicate-result:')
