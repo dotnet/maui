@@ -15,7 +15,7 @@ namespace Microsoft.Maui.UnitTests
 	public class LocalizationTests : IClassFixture<CultureFixture>, IClassFixture<GlobalLogSetup>
 	{
 		string _mauiRoot = Path.Combine("..", "..", "..", "..", "..");
-		static string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
+		static string _globalFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "GlobalLog.txt");
 
 		// Since one word phrases are sometimes not translated, we can filter them out if needed
 		bool _ignoreOneWordPhrases = true;
@@ -168,6 +168,7 @@ namespace Microsoft.Maui.UnitTests
 		/// <summary>
 		/// This test compares the localized json translations with the standard json files and makes sure they are not equal.
 		/// This test will not be able to compare if both strings are still english but just different, so it is not a perfect test.
+		/// Template localization files are copied to the test output so the test also runs from an isolated Helix payload.
 		/// Strings that are not translated will be stored in a txt file for viewing:
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/JsonLocalizationTranslationsIncorrect_<locale>.txt
 		/// </summary>
@@ -187,9 +188,13 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("zh-Hant")]
 		public void JsonLocalizationStringsAreTranslated(string culture)
 		{
-			var jsonfiles = GetFilesExcludingArtifacts(_mauiRoot, "*templatestrings.json");
+			var templateLocalizationRoot = Path.Combine(AppContext.BaseDirectory, "TemplateLocalization");
+			Assert.True(Directory.Exists(templateLocalizationRoot), $"Template localization files were not copied to '{templateLocalizationRoot}'.");
 
-			var outputFilePath = Path.Combine("localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
+			var jsonfiles = Directory.GetFiles(templateLocalizationRoot, "templatestrings.json", SearchOption.AllDirectories);
+			Assert.NotEmpty(jsonfiles);
+
+			var outputFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -209,12 +214,7 @@ namespace Microsoft.Maui.UnitTests
 					string directory = Path.GetDirectoryName(file);
 					string localizedJson = Path.Combine(directory, $"templatestrings.{culture}.json");
 
-					if (!File.Exists(localizedJson))
-					{
-						writer.WriteLine($"*** File does not exist!!: {localizedJson}");
-						WriteToGlobalLog($"*** File does not exist!!: {localizedJson}");
-						return;
-					}
+					Assert.True(File.Exists(localizedJson), $"Localized template strings file does not exist: {localizedJson}");
 
 					var originalJson = File.ReadAllText(file);
 					var localizedJsonContent = File.ReadAllText(localizedJson);
@@ -247,9 +247,10 @@ namespace Microsoft.Maui.UnitTests
 
 						if (sb.Length > 0)
 						{
-							writer.WriteLine($"File: {GetRelativePathFromSrc(localizedJson)}");
+							var relativePath = Path.GetRelativePath(templateLocalizationRoot, localizedJson);
+							writer.WriteLine($"File: {relativePath}");
 							writer.WriteLine(sb.ToString());
-							WriteToGlobalLog($"File: {GetRelativePathFromSrc(localizedJson)}");
+							WriteToGlobalLog($"File: {relativePath}");
 							WriteToGlobalLog(sb.ToString());
 						}
 					}
@@ -486,7 +487,7 @@ namespace Microsoft.Maui.UnitTests
 
 	public class GlobalLogSetup : IDisposable
 	{
-		string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
+		string _globalFilePath = Path.Combine(AppContext.BaseDirectory, "localizationTestsOutput", "GlobalLog.txt");
 
 		public GlobalLogSetup()
 		{
