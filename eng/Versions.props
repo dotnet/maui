@@ -229,7 +229,7 @@
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
     <!-- Manifest package IDs follow each platform's publishing band independently of the VMR SDK. -->
-    <DotNetAndroidManifestVersionBand>11.0.100-rc.2</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>11.0.100</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>11.0.100-rc.2</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet110_265PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
