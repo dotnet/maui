@@ -162,8 +162,11 @@ session-creation log entries, not the distinct UiAutomator2/WDA backend session
 UUIDs in proxy requests. Missing frontend evidence fails recording explicitly.
 Selection reuses the bounded Appium reader: it scans at most the last 64 MiB and
 keeps the last 80 non-syslog rows, so an iOS system-log flood cannot hide a recent
-frontend command inside the ordinary 256 KiB tail. Its four-second deadline leaves
-room for the existing 20-second recording request within the NUnit wait.
+frontend command inside the ordinary 256 KiB tail. It reads backwards, stopping
+once those rows and an omitted earlier row are found, instead of always scanning
+the entire window. Its four-second deadline leaves room for the existing
+20-second recording request within the NUnit wait. A deadline failure still
+blocks recording and the body; reduced read cost is not proof of native success.
 Recorded UI candidates must execute exactly one named test: one matching
 `Start`/`Stop` pair, one acknowledged recording action and one TRX result whose
 method matches those markers.
@@ -295,8 +298,11 @@ now prevents the body, while a later recorder failure does not erase a completed
 body's evidence. Neither case exports assertion routing, a verified patch,
 video evidence or a successful strict canary packet.
 Appium context retains the last 80 non-system-log rows in at most 128 KiB from
-a fixed 64 MiB tail scan with a hard reader deadline. Omitted context is labeled;
-these diagnostics are not assertion evidence and do not create artifacts.
+a backwards scan bounded to the last 64 MiB with a hard reader deadline.
+The scan stops after finding the retained rows and an omitted earlier row;
+syslog-only spans still require scanning within the fixed window.
+Omitted context is labeled; these diagnostics are not assertion evidence and
+do not create artifacts.
 
 Generated UI files are limited to the Android or iOS platform actually verified.
 The entire shared NUnit file must use the corresponding exclusion-symbol `#if`

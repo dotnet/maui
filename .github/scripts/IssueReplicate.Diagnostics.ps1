@@ -78,7 +78,6 @@ import json
 import os
 import stat
 import sys
-from collections import deque
 
 path, mode, limit = sys.argv[1], sys.argv[2], int(sys.argv[3])
 fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
@@ -90,37 +89,50 @@ try:
     start = max(0, info.st_size - scan_limit) if mode in ("tail", "appium-tail") else 0
     if mode == "whole" and info.st_size > limit:
         raise ValueError("Native diagnostics exceed the file bound.")
-    os.lseek(fd, start, os.SEEK_SET)
-    remaining = min(scan_limit, info.st_size - start) if mode == "appium-tail" else (
-        limit if mode == "tail" else limit + 1)
-    chunks = deque(maxlen=80) if mode == "appium-tail" else []
-    line = bytearray()
-    partial = mode == "appium-tail" and start > 0
     omitted = start > 0
-    while remaining:
-        chunk = os.read(fd, min(remaining, 8192))
-        if not chunk:
-            break
-        if mode == "appium-tail":
+    if mode == "appium-tail":
+        position = info.st_size
+        rows = []
+        prefix = b""
+        line_size = 0
+        terminated = False
+        while position > start and len(rows) <= 80:
+            count = min(position - start, 8192)
+            position -= count
+            chunk = os.pread(fd, count, position)
+            if len(chunk) != count:
+                raise ValueError("Native diagnostics changed during the bounded read.")
             parts = chunk.split(b"\n")
-            for index, part in enumerate(parts):
-                if not partial:
-                    if len(line) + len(part) > 2000:
-                        omitted = True
-                    line.extend(part[:max(0, 2000 - len(line))])
-                if index < len(parts) - 1:
-                    if not partial and b"[IOS_SYSLOG_ROW]" not in line:
-                        omitted = omitted or len(chunks) == 80
-                        chunks.append(bytes(line) + b"\n")
-                    line.clear()
-                    partial = False
-        else:
+            for index in range(len(parts) - 1, -1, -1):
+                part = parts[index]
+                prefix = (part + prefix)[:2000]
+                line_size += len(part)
+                omitted = omitted or line_size > 2000
+                if index > 0:
+                    if (line_size or terminated) and b"[IOS_SYSLOG_ROW]" not in prefix:
+                        rows.append(prefix + (b"\n" if terminated else b""))
+                        if len(rows) > 80:
+                            omitted = True
+                            break
+                    prefix = b""
+                    line_size = 0
+                    terminated = True
+        if position == 0 and len(rows) <= 80 and (line_size or terminated):
+            if b"[IOS_SYSLOG_ROW]" not in prefix:
+                rows.append(prefix + (b"\n" if terminated else b""))
+                omitted = omitted or len(rows) > 80
+        data = b"".join(reversed(rows[:80]))
+    else:
+        os.lseek(fd, start, os.SEEK_SET)
+        remaining = limit if mode == "tail" else limit + 1
+        chunks = []
+        while remaining:
+            chunk = os.read(fd, min(remaining, 8192))
+            if not chunk:
+                break
             chunks.append(chunk)
-        remaining -= len(chunk)
-    if mode == "appium-tail" and line and not partial and b"[IOS_SYSLOG_ROW]" not in line:
-        omitted = omitted or len(chunks) == 80
-        chunks.append(bytes(line))
-    data = b"".join(chunks)
+            remaining -= len(chunk)
+        data = b"".join(chunks)
     if mode == "appium-tail" and len(data) > limit:
         data = data[-limit:]
         omitted = True
