@@ -31,6 +31,108 @@ BeforeAll {
     }
 }
 
+Describe 'review command helpers' {
+    It 'parses review command branch and platform options' {
+        $parsed = ConvertFrom-ReviewCommand '/review -b feature/regression-check -p ios'
+
+        $parsed | Should -Not -BeNullOrEmpty
+        $parsed.Platform | Should -Be 'ios'
+        $parsed.PipelineRef | Should -Be 'feature/regression-check'
+    }
+
+    It 'parses equals-form branch and platform options' {
+        $parsed = ConvertFrom-ReviewCommand '/review --branch=refs/heads/feature/regression-check --platform=ios'
+
+        $parsed | Should -Not -BeNullOrEmpty
+        $parsed.Platform | Should -Be 'ios'
+        $parsed.PipelineRef | Should -Be 'feature/regression-check'
+    }
+
+    It 'normalizes friendly platform aliases to the live trigger values' -TestCases @(
+        @{ Value = 'macos';       Expected = 'catalyst' }
+        @{ Value = 'maccatalyst'; Expected = 'catalyst' }
+        @{ Value = 'mac';         Expected = 'catalyst' }
+        @{ Value = 'win';         Expected = 'windows' }
+        @{ Value = 'IOS';         Expected = 'ios' }
+    ) {
+        param($Value, $Expected)
+
+        Normalize-ReviewPlatform $Value | Should -Be $Expected
+    }
+
+    It 'leaves unrecognized or omitted platforms empty for existing default selection' -TestCases @(
+        @{ Command = '/review' }
+        @{ Command = '/review linux' }
+        @{ Command = '/review --platform=linux' }
+    ) {
+        param($Command)
+
+        $parsed = ConvertFrom-ReviewCommand $Command
+
+        $parsed | Should -Not -BeNullOrEmpty
+        $parsed.Platform | Should -BeNullOrEmpty
+    }
+
+    It 'strips refs heads prefix when normalizing review pipeline refs' {
+        Normalize-ReviewPipelineRef 'refs/heads/feature/regression-check' |
+            Should -Be 'feature/regression-check'
+    }
+
+    Context 'Test-ReviewOptionLoginTrusted (collaborator-permission lookup)' {
+        BeforeEach {
+            Clear-ReviewOptionPermissionCache
+            Mock Start-Sleep {}
+        }
+
+        It 'trusts write/maintain/admin permission' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 0; Permission = 'write'; StdErr = '' } }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' | Should -BeTrue
+        }
+
+        It 'does not trust read or none permission' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 0; Permission = 'read'; StdErr = '' } }
+            Test-ReviewOptionLoginTrusted -Login 'reader' | Should -BeFalse
+        }
+
+        It 'rejects an invalid (non-user) login without calling the API' {
+            Mock Get-CollaboratorPermissionResult { throw 'API should not be called for an invalid login' }
+            Test-ReviewOptionLoginTrusted -Login 'dotnet-maestro[bot]' | Should -BeFalse
+            Test-ReviewOptionLoginTrusted -Login '' | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 0
+        }
+
+        It 'treats a definitive HTTP 404 as untrusted and caches it (one API call)' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Not Found (HTTP 404)' } }
+            Test-ReviewOptionLoginTrusted -Login 'outsider' | Should -BeFalse
+            Test-ReviewOptionLoginTrusted -Login 'outsider' | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 1
+        }
+
+        It 'retries a transient error and does not cache the undecided result' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Server Error (HTTP 503)' } }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 3
+            # Not cached: a later lookup tries again rather than staying downgraded.
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 6
+        }
+
+        It 'recovers when a transient error clears on a later attempt' {
+            $script:permAttempt = 0
+            Mock Get-CollaboratorPermissionResult {
+                $script:permAttempt++
+                if ($script:permAttempt -eq 1) {
+                    [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Server Error (HTTP 503)' }
+                } else {
+                    [pscustomobject]@{ ExitCode = 0; Permission = 'admin'; StdErr = '' }
+                }
+            }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeTrue
+            Should -Invoke Get-CollaboratorPermissionResult -Times 2
+        }
+    }
+}
+
 Describe 'recovery script initialization' {
     It 'preserves custom repository parameters when importing shared command helpers' {
         $state = & {

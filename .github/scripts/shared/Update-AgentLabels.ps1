@@ -10,7 +10,7 @@
     Label categories:
     - Outcome labels (mutually exclusive): agent-approved, agent-changes-requested, agent-review-incomplete
     - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-pr-picked
-    - Manual / queue labels: agent-fix-implemented, agent-ready-for-rerun, agent-review-in-progress
+    - Manual / lock labels: agent-fix-implemented, agent-review-in-progress
     - Tracking label: agent-reviewed (always applied on completed run)
 
 .NOTES
@@ -43,7 +43,6 @@ $script:SignalLabels = @{
 
 $script:ManualLabels = @{
     's/agent-fix-implemented'   = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
-    's/agent-ready-for-rerun'   = @{ Description = 'AI review has new PR activity and is ready for rerun'; Color = '5319E7' }
     's/agent-review-in-progress' = @{ Description = 'AI review is currently running for this PR'; Color = 'FBCA04' }
 }
 

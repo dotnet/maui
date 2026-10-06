@@ -660,10 +660,11 @@ jobs:
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
 
-      - name: Setup credential-isolated Vally runtime
+      - name: Setup isolated Vally runtime
         id: vally-runtime
         env:
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_UPSTREAM_URL: https://github.com/${{ github.repository }}.git
         run: |
           set -euo pipefail
           SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
@@ -688,6 +689,7 @@ jobs:
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
@@ -697,7 +699,7 @@ jobs:
           set -euo pipefail
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           REQUIRED_MODELS_OUTPUT=$(
-            ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH" \
+            ruby "$PREPARER" "$EVALUATOR_WORKSPACE" "$TESTS_PATH" \
               --validate-only --list-models
           )
           mapfile -t REQUIRED_MODELS <<< "$REQUIRED_MODELS_OUTPUT"
@@ -744,8 +746,10 @@ jobs:
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
           BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
         run: |
           set -e
+          cd "$EVALUATOR_WORKSPACE"
           if [ -z "${BASE_SHA:-}" ]; then
             echo "No base SHA (manual dispatch?) — skipping baseline run."
             echo "baseline_ran=false" >> "$GITHUB_OUTPUT"
@@ -754,9 +758,9 @@ jobs:
           SKILL_DIR="${TESTS_PATH%/tests}"
 
           # Ensure the base commit is available locally (fork PRs may need it
-          # fetched from the base repo, added as `upstream` by the fixture step).
+          # fetched from the trusted `upstream` rebuilt by runtime setup).
           if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            git fetch --no-tags --depth=1 upstream "$BASE_SHA" 2>/dev/null || true
+            git fetch --no-tags --no-write-fetch-head --depth=1 upstream "$BASE_SHA" 2>/dev/null || true
           fi
           if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
             echo "::warning::Base commit ${BASE_SHA} unavailable — skipping baseline run."
@@ -892,23 +896,27 @@ jobs:
       # the authoritative run, regardless of how the baseline step exited.
       - name: Restore PR skill content
         if: always()
-        run: git --no-replace-objects restore --staged --worktree --source=HEAD -- .github/skills
+        env:
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
+        run: git -C "$EVALUATOR_WORKSPACE" --no-replace-objects restore --staged --worktree --source=HEAD -- .github/skills
 
       - name: Revalidate specs and restore trusted fixtures
         env:
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           TRUSTED_REPOSITORY: ${{ github.repository }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
+          cd "$EVALUATOR_WORKSPACE"
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
           if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
             git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
           fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
-          ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
+          ruby "$PREPARER" "$EVALUATOR_WORKSPACE" "$TESTS_PATH"
 
       - name: Run Vally evaluation
         id: eval-run
@@ -925,10 +933,12 @@ jobs:
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
           RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/eval-results/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
         run: |
+          test -d "$EVALUATOR_WORKSPACE/.git"
           # Collect this skill's capability specs. Pass every nonstandard
           # eval*.vally.yaml filename explicitly because Vally directory discovery
           # only recognizes eval.yaml/eval.yml. This EXCLUDES hermeticity.vally.yaml
@@ -1124,7 +1134,7 @@ jobs:
           npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$HERMETICITY_SPEC" --strict
           echo "path=$HERMETICITY_SPEC" >> "$GITHUB_OUTPUT"
 
-      - name: Setup credential-isolated Vally runtime
+      - name: Setup isolated Vally runtime
         id: vally-runtime
         env:
           TRUSTED_SHA: ${{ github.workflow_sha }}
@@ -1181,9 +1191,11 @@ jobs:
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
           RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/hermeticity-results
           HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}
         run: |
+          test -d "$EVALUATOR_WORKSPACE/.git"
           mkdir -p "$RESULTS_PATH"
           chmod 2770 "$RESULTS_PATH"
           if [ ! -f "$HERMETICITY_SPEC" ]; then

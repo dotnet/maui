@@ -157,7 +157,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup credential-isolated Vally runtime
+      - name: Setup isolated Vally runtime
         id: vally-runtime
         run: >-
           .github/scripts/SetupVallyRuntime.sh
@@ -198,6 +198,7 @@ jobs:
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          EVALUATOR_WORKSPACE: ${{ steps.vally-runtime.outputs.workspace_root }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/live-soak-results
@@ -206,6 +207,7 @@ jobs:
           RUNS: ${{ github.event.inputs.runs || '1' }}
         run: |
           set -euo pipefail
+          test -d "$EVALUATOR_WORKSPACE/.git"
           mkdir -p "$RESULTS_PATH"
           chmod 2770 "$RESULTS_PATH"
 

@@ -140,6 +140,14 @@ Always format code before committing:
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
+### Performance PR Reviews
+
+The explicit `/review performance` PR command is a separate hosted entrypoint:
+`copilot-review-performance.md` runs isolated managed benchmarks and calls
+`perf-analysis`, then renders and validates one gh-aw safe-output comment. It does
+not run native devices; keep those coverage gaps explicit. Do not route this
+subcommand through the full `/review` pipeline or missed-command recovery.
+
 ## Contribution Guidelines
 
 ### Handling Existing PRs for Assigned Issues

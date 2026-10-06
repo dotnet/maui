@@ -27,11 +27,15 @@ public class ShellFlyoutContent : _IssuesUITest
 	{
 		App.WaitForElement("PageLoaded");
 		App.TapInShellFlyout(FlyoutItem);
+		App.WaitForElement("ToggleContent");
 		App.Tap("ToggleContent");
 		App.TapInShellFlyout("ContentView");
+		App.WaitForElement(FlyoutItem);
 		App.Tap(FlyoutItem);
+		App.WaitForElement("ToggleFlyoutContentTemplate");
 		App.Tap("ToggleFlyoutContentTemplate");
 		App.TapInShellFlyout(ResetButton);
+		App.WaitForElement(FlyoutItem);
 		App.Tap(FlyoutItem);
 	}
 }
