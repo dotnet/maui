@@ -385,6 +385,9 @@ scroll the parent, then measures the parent scroll offset after dragging on the
 short WebView. The overflowing WebView remains in the layout but its independent
 scrolling is not asserted. Missing, nonnumeric or nonfinite parent scroll-position
 diagnostics are setup failures, not evidence of the WebView bug.
+Before the WebView gesture, the same finite numeric telemetry must confirm a
+parent offset within 0.5 of zero; a substring such as `0.0` also matches `100.0`
+and cannot establish that the reset completed.
 The Android WebView is located through its unique short HTML content and outer
 native WebView ancestor; Chromium's accessibility subtree omits its automation ID.
 The candidate still requires that native rectangle to fit fully inside the parent

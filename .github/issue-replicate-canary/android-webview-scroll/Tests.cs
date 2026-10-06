@@ -40,8 +40,7 @@ public class Issue38452 : _IssuesUITest
 			throw new TimeoutException($"The ordinary label gesture did not scroll the outer page: {controlOffset:F1}.");
 
 		App.Tap("ResetOuterScroll");
-		if (!App.WaitForTextToBePresentInElement("OuterScrollPosition", "0.0", TimeSpan.FromSeconds(5)))
-			throw new TimeoutException("The outer ScrollView did not return to the top before the WebView gesture.");
+		WaitForOuterScroll(requireTop: true);
 		var webView = App.WaitForElement(
 			AppiumQuery.ByXPath("//android.webkit.WebView[not(ancestor::android.webkit.WebView) and .//*[@text='Short content that fits inside the WebView.']]"),
 			timeout: TimeSpan.FromSeconds(3)).GetRect();
@@ -56,9 +55,10 @@ public class Issue38452 : _IssuesUITest
 			$"A gesture starting on non-overflowing HTML must scroll its parent, as the label control did ({controlOffset:F1}).");
 	}
 
-	double WaitForOuterScroll()
+	double WaitForOuterScroll(bool requireTop = false)
 	{
 		var wait = Stopwatch.StartNew();
+		var timeout = TimeSpan.FromSeconds(requireTop ? 5 : 3);
 		double offset;
 		do
 		{
@@ -66,8 +66,14 @@ public class Issue38452 : _IssuesUITest
 			if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out offset) ||
 				!double.IsFinite(offset))
 				throw new TimeoutException("The outer ScrollView did not expose a finite numeric scroll position.");
-			if (offset > 20 || wait.Elapsed >= TimeSpan.FromSeconds(3))
+			if (requireTop ? Math.Abs(offset) <= 0.5 : offset > 20)
 				return offset;
+			if (wait.Elapsed >= timeout)
+			{
+				if (requireTop)
+					throw new TimeoutException($"The outer ScrollView did not return to the top before the WebView gesture: {offset:F1}.");
+				return offset;
+			}
 			Task.Delay(200).Wait();
 		} while (true);
 	}
