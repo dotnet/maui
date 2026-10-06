@@ -9,6 +9,15 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
+    $declarationFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-CSharpDeclarationEndLine'
+    }, $true)
+    if (-not $declarationFunction) {
+        throw "Function 'Get-CSharpDeclarationEndLine' not found"
+    }
+    Invoke-Expression $declarationFunction.Extent.Text
+
     $platformFunction = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
         $args[0].Name -eq 'Test-DeviceTestFileAppliesToPlatform'

@@ -78,7 +78,7 @@ $verdict = switch ($TrustedGateResult) {
         if ($failureOnly) {
             '&#x2705; **Verification: PASSED (failure-only).** The selected tests failed without a product fix. No with-fix result was verified.'
         } else {
-            '&#x2705; **Verification: PASSED.** The selected tests met the verifier''s expected outcomes. See the diagnostics for the before/after evidence; a test-only change does not imply a with-fix run.'
+            '&#x2705; **Verification: PASSED.** The verifier''s passing conditions were satisfied. Inspect the diagnostics for the tests actually exercised and any unmatched, skipped, or inconclusive groups; this does not mean every selected test ran.'
         }
     }
     'FAILED' {
@@ -156,7 +156,7 @@ $body = @(
     $nextStep, '',
     'No expert code review, alternative fix, title/description edit, approval, or full-category UI sweep runs in this command.', '',
     "Refresh with ``/review gate --platform $Platform`` after updating the PR or resolving the blocker.", '',
-    "<sub>Gate execution $RunId. Existing tests only; no generated test candidate or native recording is claimed.</sub>",
+    "<sub>[Gate execution $RunId](https://dev.azure.com/DevDiv/DevDiv/_build/results?buildId=$RunId). Existing tests only; no generated test candidate or native recording is claimed.</sub>",
     '</details>'
 ) -join "`n"
 if ([Text.Encoding]::UTF8.GetByteCount($body) -gt 60000) {

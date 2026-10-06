@@ -176,7 +176,10 @@ fresh-agent gate publication, and lock cleanup:
    the same PR owns it.
 
 Unit, XAML, device, and UI test runners retain their existing verification,
-retry, and infrastructure-error classification. Native selection remains capped
+retry, and infrastructure-error classification. Detection resolves the class
+scope containing each test attribute, excluding closed nested helpers. Nested
+XAML fixtures are grouped by their containing page rather than a generic `Test`
+filter that would match the entire assembly. Native selection remains capped
 at two device and two UI groups by default, with newly added groups prioritized.
 Dropped groups are reported as coverage gaps and receive no subsequent deep
 category sweep. A test-only PR keeps failure-only verification; it does not claim
@@ -193,7 +196,11 @@ Only `s/agent-gate-passed` or `s/agent-gate-failed` signals are applied, and onl
 while the live PR head still matches the tested head. The command never submits
 a PR review, approves, requests changes, applies full-review outcome labels, or
 edits the title/description. A pass signal means the selected verification mode
-passed, not that every test ran or that a test-only PR includes a fix.
+passed, not that every test ran or that a test-only PR includes a fix. The existing
+full-verification rule accepts at least one genuine failure-to-pass pair with no
+genuine with-fix regression. Unmatched or inconclusive groups are not successful
+execution evidence; inspect the diagnostic table and coverage limitations even
+when another group satisfies the passing rule.
 
 Comments are idempotent per Azure run. Only the authenticated publisher's owned
 gate comments can be updated or collapsed. A stale run remains visibly tied to

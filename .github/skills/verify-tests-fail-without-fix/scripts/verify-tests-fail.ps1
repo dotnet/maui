@@ -2189,7 +2189,7 @@ if ($DetectedFixFiles.Count -eq 0) {
     # masquerade as a broken test — mirroring the full-verification mode's classification.
     $hasEnvError   = @($allResults | Where-Object { $_.EnvError }).Count -gt 0
     $hasBuildError = @($allResults | Where-Object { $_.BuildError }).Count -gt 0
-    $hasOtherError = @($allResults | Where-Object { $_.Error -and -not $_.EnvError -and -not $_.BuildError }).Count -gt 0
+    $hasOtherError = @($allResults | Where-Object { $_.FilterMismatch -or ($_.Error -and -not $_.EnvError -and -not $_.BuildError) }).Count -gt 0
 
     # Show per-test results
     foreach ($r in $allResults) {
@@ -2198,6 +2198,8 @@ if ($DetectedFixFiles.Count -eq 0) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ENV ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif ($r.BuildError) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): 🛠️ BUILD ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif ($r.FilterMismatch) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): 🔍 NO MATCH — $($r.Error)" -ForegroundColor Yellow
         } elseif ($r.Error) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif (-not $r.Passed) {
@@ -3549,6 +3551,10 @@ foreach ($testEntry in $AllDetectedTests) {
     $counts = if ($result.Total -gt 0) { " ($($result.Total) total, $($result.Failed) failed)" } else { "" }
     if ($result.EnvError) {
         Write-Host "  ⚠️ $($testEntry.TestName): ENV ERROR$counts — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.BuildError) {
+        Write-Host "  🛠️ $($testEntry.TestName): BUILD ERROR — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.FilterMismatch) {
+        Write-Host "  🔍 $($testEntry.TestName): NO MATCH — $durStr — $($result.Error)" -ForegroundColor Yellow
     } elseif (-not $result.Passed) {
         Write-Host "  ✅ $($testEntry.TestName): FAILED$counts — $durStr (expected)" -ForegroundColor Green
         if ($result.FailureReason) { Write-Host "     └─ $($result.FailureReason)" -ForegroundColor DarkGray }
@@ -3672,6 +3678,10 @@ foreach ($testEntry in $AllDetectedTests) {
     $counts = if ($result.Total -gt 0) { " ($($result.Total) total, $($result.Failed) failed)" } else { "" }
     if ($result.EnvError) {
         Write-Host "  ⚠️ $($testEntry.TestName): ENV ERROR$counts — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.BuildError) {
+        Write-Host "  🛠️ $($testEntry.TestName): BUILD ERROR — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.FilterMismatch) {
+        Write-Host "  🔍 $($testEntry.TestName): NO MATCH — $durStr — $($result.Error)" -ForegroundColor Yellow
     } elseif ($result.Passed) {
         Write-Host "  ✅ $($testEntry.TestName): PASSED$counts — $durStr (expected)" -ForegroundColor Green
     } else {
@@ -4104,8 +4114,10 @@ $gateInfraError = (-not $hasDefinitiveGateFailure) -and (
 
 Write-Log ""
 Write-Log "Summary:"
-Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'ALL FAIL ✅ (expected)' } else { 'SOME PASS ❌ (should all fail!)' })"
-Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'ALL PASS ✅ (expected)' } else { 'SOME FAIL ❌ (should all pass!)' })"
+Write-Log "  - Conclusive FAIL-to-PASS test groups: $reproducingCount"
+Write-Log "  - Genuine with-fix failures: $withFixGenuineFailCount"
+Write-Log "  - Unmatched selected filters: $anyFilterMismatch"
+Write-Log "  - Environment/build blockers: $($anyEnvError -or $baselineBuildError -or $withFixBuildError)"
 
 # Generate markdown report
 Write-MarkdownReport `
@@ -4132,6 +4144,7 @@ if ($verificationPassed) {
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Tests correctly detect the issue:                        ║" -ForegroundColor Green
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
+    Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
 } elseif ($compileCoupledVerified) {
