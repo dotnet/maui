@@ -106,6 +106,54 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Execute Mode Menu Item Width Excludes SwipeItemView")]
+		public async Task ExecuteModeMenuItemWidthExcludesSwipeItemView()
+		{
+			SetupBuilder();
+
+			var content = CreateContent();
+			var swipeItems = new SwipeItems
+			{
+				Mode = SwipeMode.Execute
+			};
+			swipeItems.Add(new SwipeItem { Text = "OK" });
+			swipeItems.Add(new SwipeItemView
+			{
+				Content = new Grid
+				{
+					WidthRequest = 240,
+					HeightRequest = 60
+				}
+			});
+			swipeItems.Add(new SwipeItem { Text = "A significantly longer action" });
+			var swipeView = CreateSwipeView(swipeItems, content);
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformView = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await platformView.AttachAndRun(async () =>
+				{
+					var actionView = await OpenLeftItemsAsync(swipeView, platformView);
+					var nativeMenuItems = actionView.Subviews.OfType<SwipeItemButton>().ToArray();
+					var contentView = Assert.IsAssignableFrom<UIView>(content.Handler?.PlatformView);
+
+					Assert.Equal(2, nativeMenuItems.Length);
+					await AssertEventually(() => nativeMenuItems.All(item => item.Frame.Width > 0));
+
+					var totalDesiredWidth = nativeMenuItems.Sum(
+						item => item.SizeThatFits(contentView.Bounds.Size).Width);
+					var expectedMenuItemWidth = totalDesiredWidth > contentView.Bounds.Width
+						? contentView.Bounds.Width / nativeMenuItems.Length
+						: totalDesiredWidth / nativeMenuItems.Length;
+
+					Assert.All(nativeMenuItems, item =>
+						Assert.Equal(expectedMenuItemWidth, item.Frame.Width, 1d));
+				});
+			});
+		}
+
 		[Fact(DisplayName = "Execute Mode Icon And Text Size Is Stable After Reopen (Issue 37700)")]
 		public async Task ExecuteModeIconAndTextSizeIsStableAfterReopen()
 		{
