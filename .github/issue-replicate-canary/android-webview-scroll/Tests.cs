@@ -60,7 +60,10 @@ public class Issue38452 : _IssuesUITest
 		double offset;
 		do
 		{
-			offset = double.Parse(App.WaitForElement("OuterScrollPosition").GetText(), CultureInfo.InvariantCulture);
+			var text = App.WaitForElement("OuterScrollPosition").GetText();
+			if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out offset) ||
+				!double.IsFinite(offset))
+				throw new TimeoutException("The outer ScrollView did not expose a finite numeric scroll position.");
 			if (offset > 20 || wait.Elapsed >= TimeSpan.FromSeconds(3))
 				return offset;
 			Task.Delay(200).Wait();
