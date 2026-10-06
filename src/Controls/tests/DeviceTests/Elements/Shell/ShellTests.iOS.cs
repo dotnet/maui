@@ -686,6 +686,91 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Disposed Shell Section Ignores Pending Pop")]
+		public async Task DisposedShellSectionIgnoresPendingPop()
+		{
+			// https://github.com/dotnet/maui/issues/34087
+			SetupBuilder();
+
+			// Shell.OnBackButtonPressed pops the page itself; when an app overrides it and returns false,
+			// SendPop queues the back navigation instead
+			var shell = await InvokeOnMainThreadAsync(() =>
+			{
+				var value = new BackButtonNotHandledShell();
+				value.Items.Add(new ContentPage());
+				return value;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				await shell.Navigation.PushAsync(new ContentPage())
+					.WaitAsync(TimeSpan.FromSeconds(2));
+
+				IShellContext shellContext = handler;
+				var shellItemRenderer = Assert.IsType<ShellItemRenderer>(shellContext.CurrentShellItemRenderer);
+				var sectionRenderer = Assert.IsType<ShellSectionRenderer>(shellItemRenderer.CurrentRenderer);
+
+				// SendPop queues the back navigation on the main queue as an async void callback. Run that
+				// callback with a context that collects what it throws instead of letting it crash the app.
+				var originalContext = SynchronizationContext.Current;
+				var context = new ExceptionCollectingSynchronizationContext(originalContext);
+				var dispatched = new TaskCompletionSource();
+
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => SynchronizationContext.SetSynchronizationContext(context));
+
+				try
+				{
+					sectionRenderer.SendPop();
+					sectionRenderer.Dispose();
+				}
+				finally
+				{
+					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+					{
+						SynchronizationContext.SetSynchronizationContext(originalContext);
+						dispatched.SetResult();
+					});
+				}
+
+				await dispatched.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+				// Wait for anything the queued back navigation posted to the context
+				var posted = new TaskCompletionSource();
+				context.Post(_ => posted.SetResult(), null);
+				await posted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+				Assert.Empty(context.Exceptions);
+			});
+		}
+
+		class BackButtonNotHandledShell : Shell
+		{
+			protected override bool OnBackButtonPressed() => false;
+		}
+
+		class ExceptionCollectingSynchronizationContext : SynchronizationContext
+		{
+			readonly SynchronizationContext _inner;
+
+			public ExceptionCollectingSynchronizationContext(SynchronizationContext inner) =>
+				_inner = inner ?? new SynchronizationContext();
+
+			public List<Exception> Exceptions { get; } = new List<Exception>();
+
+			public override void Post(SendOrPostCallback d, object state) =>
+				_inner.Post(s =>
+				{
+					try
+					{
+						d(s);
+					}
+					catch (Exception ex)
+					{
+						Exceptions.Add(ex);
+					}
+				}, state);
+		}
+
 		[Fact(DisplayName = "Disposed Shell Flyout Content Ignores Late Lifecycle Callbacks")]
 		public async Task DisposedShellFlyoutContentIgnoresLateLifecycleCallbacks()
 		{
