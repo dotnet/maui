@@ -209,7 +209,10 @@ Describe 'trusted workflow configuration' {
         $workflow | Should -Match 'persist-credentials: false'
         $workflow | Should -Match 'id-token: write'
         $workflow | Should -Match 'timeout-minutes: 10'
-        $workflow | Should -Match 'Queue-CiFixAzdoValidation\.ps1 -DispatcherBudgetSeconds 420'
+        $workflow | Should -Match 'CI_FIX_DISPATCHER_DEADLINE_UNIX_SECONDS=.*date \+%s.*\+ 420'
+        $workflow.IndexOf('Start dispatcher deadline') |
+            Should -BeLessThan $workflow.IndexOf('Checkout trusted workflow revision')
+        $workflow | Should -Match 'Queue-CiFixAzdoValidation\.ps1 -DispatcherBudgetSeconds 420 -DispatcherDeadlineUnixSeconds \$env:CI_FIX_DISPATCHER_DEADLINE_UNIX_SECONDS'
     }
 }
 
@@ -825,6 +828,7 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             'Test-IsTransientHttpException',
             'Get-HttpStatusCode',
             'Invoke-WithHttpRetry',
+            'Resolve-VerifiedCiFixContext',
             'Find-AzdoDuplicateBuild',
             'Get-AzdoDuplicateBuild',
             'New-AzdoQueueRequest',
@@ -875,6 +879,9 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             }
             Mock Start-Sleep {} -ModuleName QueueCiFixAzdoValidationTest
             Mock Get-DispatcherElapsedSeconds { return 0 } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Resolve-VerifiedCiFixContext {
+                return $NominatedContext
+            } -ModuleName QueueCiFixAzdoValidationTest
         }
 
         It 'returns a successful POST without duplicate reconciliation' {
@@ -1303,6 +1310,74 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
                     -AuthToken ''
             } | Should -Throw '*authentication is required before processing verified PR #123*'
 
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'stops remaining pipelines when queue-time verification observes a newer head' {
+            $script:verificationCalls = 0
+            Mock Resolve-VerifiedCiFixContext {
+                $script:verificationCalls++
+                if ($script:verificationCalls -eq 1) {
+                    return $NominatedContext
+                }
+                $changedContext = $NominatedContext.PSObject.Copy()
+                $changedContext.HeadSha = '3333333333333333333333333333333333333333'
+                $changedContext.MergeSha = '4444444444444444444444444444444444444444'
+                return $changedContext
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                return [pscustomobject]@{
+                    Build = [pscustomobject]@{ id = 7302 }
+                    Reconciled = $false
+                }
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 3
+            $results[0].Outcome | Should -Be 'queued'
+            foreach ($result in $results[1..2]) {
+                $result.Outcome | Should -Be 'failed'
+                $result.Error | Should -Match 'changed after discovery'
+                $result.Error | Should -Match 'No queue POST was attempted'
+            }
+            Should -Invoke Resolve-VerifiedCiFixContext -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+        }
+
+        It 'makes no Azure request when queue-time verification observes revoked eligibility' {
+            Mock Resolve-VerifiedCiFixContext {
+                return $null
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Azure duplicate lookup must not run after eligibility is revoked.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                throw 'Azure queue POST must not run after eligibility is revoked.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 3
+            foreach ($result in $results) {
+                $result.Outcome | Should -Be 'failed'
+                $result.Error | Should -Match 'no longer an eligible open automated CI-fix PR'
+                $result.Error | Should -Match 'No queue POST was attempted'
+            }
+            Should -Invoke Resolve-VerifiedCiFixContext -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
             Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
         }

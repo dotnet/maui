@@ -201,10 +201,11 @@ Automated CI-fix PR validation is implemented separately by
   failed pipeline results for that PR without making Azure requests, while
   continuing scan-all recovery for other verified eligible heads. Unexpected
   GitHub failures and shared-budget exhaustion remain fatal discovery errors;
-- enforces one shared seven-minute elapsed-time budget across PR discovery,
-  authentication, dedupe reads, queue POSTs, retries, and reconciliation. The
-  ten-minute job timeout leaves three minutes for runner startup/checkout,
-  summaries, and an explicit failed outcome instead of a hard cancellation;
+- starts an absolute seven-minute deadline before checkout and applies its
+  remaining allowance across PR discovery, authentication, queue-time
+  revalidation, dedupe reads, queue POSTs, retries, and reconciliation. The
+  ten-minute job timeout therefore preserves a real three-minute reserve for
+  summaries and an explicit failed outcome instead of a hard cancellation;
 - caps every HTTP timeout and retry sleep to the remaining shared budget. If it
   expires, no new requests start, completed results remain visible, all
   unprocessed PR/pipeline work is marked failed, and an ambiguous one-time POST

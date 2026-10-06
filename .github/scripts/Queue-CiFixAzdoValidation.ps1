@@ -7,6 +7,7 @@ param(
     [string]$EventName = $env:GITHUB_EVENT_NAME,
     [string]$PullRequestsFixturePath,
     [ValidateRange(1, 540)][int]$DispatcherBudgetSeconds = 420,
+    [long]$DispatcherDeadlineUnixSeconds = 0,
     [switch]$DryRun
 )
 
@@ -18,7 +19,15 @@ $script:AzureDevOpsProject = 'public'
 $script:TransientHttpStatusCodes = @(408, 429, 500, 502, 503, 504)
 $script:MaxHttpAttempts = 4
 $script:RetryBaseDelaySeconds = 2
-$script:DispatcherBudgetSeconds = $DispatcherBudgetSeconds
+$secondsUntilDeadline = if ($DispatcherDeadlineUnixSeconds -gt 0) {
+    $DispatcherDeadlineUnixSeconds - [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+}
+else {
+    $DispatcherBudgetSeconds
+}
+$script:DispatcherBudgetSeconds = [Math]::Max(
+    0,
+    [Math]::Min($DispatcherBudgetSeconds, $secondsUntilDeadline))
 $script:DispatcherStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $script:DispatcherBudgetPrefix = '[dispatcher-budget-exhausted]'
 
@@ -865,7 +874,10 @@ function New-CiFixFailureResult {
 function Invoke-CiFixQueueWork {
     param(
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Contexts,
-        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$AuthToken
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$AuthToken,
+        [string]$Repository = 'dotnet/maui',
+        [AllowEmptyString()][string]$GitHubToken = '',
+        [AllowNull()][object]$FixtureData
     )
 
     $workResults = [System.Collections.Generic.List[object]]::new()
@@ -878,6 +890,7 @@ function Invoke-CiFixQueueWork {
             throw "Azure DevOps authentication is required before processing verified PR #$($context.PullRequestNumber)."
         }
 
+        $contextStoppedError = $null
         foreach ($pipeline in Get-CiFixPipelineDefinitions) {
             if (-not [string]::IsNullOrWhiteSpace($verificationError)) {
                 $result = New-CiFixFailureResult `
@@ -889,9 +902,46 @@ function Invoke-CiFixQueueWork {
                 continue
             }
 
+            if ($null -ne $contextStoppedError) {
+                $result = New-CiFixFailureResult `
+                    -Context $context `
+                    -Pipeline $pipeline `
+                    -ErrorMessage $contextStoppedError
+                $workResults.Add($result)
+                $contextResults.Add($result)
+                continue
+            }
+
             if ($null -ne $budgetExhaustedAfter) {
                 $skippedError = "$($script:DispatcherBudgetPrefix) PR #$($context.PullRequestNumber) pipeline '$($pipeline.Name)' was not processed because the shared dispatcher budget was exhausted while processing $budgetExhaustedAfter. No queue POST was attempted for this work item."
                 $result = New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $skippedError
+                $workResults.Add($result)
+                $contextResults.Add($result)
+                continue
+            }
+
+            $currentContext = Resolve-VerifiedCiFixContext `
+                -NominatedContext $context `
+                -Repository $Repository `
+                -GitHubToken $GitHubToken `
+                -FixtureData $FixtureData
+            $currentVerificationError = if ($null -eq $currentContext) {
+                "PR #$($context.PullRequestNumber) is no longer an eligible open automated CI-fix PR. No queue POST was attempted for pipeline '$($pipeline.Name)' or any remaining pipeline for this PR."
+            }
+            else {
+                [string](Get-ObjectPropertyValue -InputObject $currentContext -Name 'VerificationError')
+            }
+            if ([string]::IsNullOrWhiteSpace($currentVerificationError) -and
+                ($currentContext.HeadSha -cne $context.HeadSha -or
+                    $currentContext.MergeSha -cne $context.MergeSha)) {
+                $currentVerificationError = "PR #$($context.PullRequestNumber) changed after discovery: expected head '$($context.HeadSha)' with merge '$($context.MergeSha)', but live verification found head '$($currentContext.HeadSha)' with merge '$($currentContext.MergeSha)'. No queue POST was attempted for pipeline '$($pipeline.Name)' or any remaining pipeline for this PR."
+            }
+            if (-not [string]::IsNullOrWhiteSpace($currentVerificationError)) {
+                $contextStoppedError = $currentVerificationError
+                $result = New-CiFixFailureResult `
+                    -Context $context `
+                    -Pipeline $pipeline `
+                    -ErrorMessage $contextStoppedError
                 $workResults.Add($result)
                 $contextResults.Add($result)
                 continue
@@ -1070,7 +1120,18 @@ catch {
 }
 
 try {
-    foreach ($result in Invoke-CiFixQueueWork -Contexts $queueContexts -AuthToken $authToken) {
+    $queueFixtureData = if ([string]::IsNullOrWhiteSpace($PullRequestsFixturePath)) {
+        $null
+    }
+    else {
+        Get-Content -Raw -LiteralPath $PullRequestsFixturePath | ConvertFrom-Json -Depth 100
+    }
+    foreach ($result in Invoke-CiFixQueueWork `
+            -Contexts $queueContexts `
+            -AuthToken $authToken `
+            -Repository $Repository `
+            -GitHubToken $env:GITHUB_TOKEN `
+            -FixtureData $queueFixtureData) {
         $results.Add($result)
     }
 }
