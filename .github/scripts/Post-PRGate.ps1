@@ -71,31 +71,198 @@ if ($TrustedGateResult -eq 'PASSED' -and
     throw 'Cannot publish PASSED without diagnostic evidence and immutable commit identities.'
 }
 
-$failureOnly = $report -match '(?m)^## Gate: Test Verification \(Failure-Only Mode\)\s*$'
+function ConvertTo-GatePhaseCell {
+    param([string]$Value, [switch]$WithoutFix)
+
+    $status = [regex]::Match($Value, '^[^A-Za-z]*(BUILD ERROR|ENV ERROR|NO MATCH|NEW SNAPSHOT|PASS|FAIL)\b',
+        [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $duration = [regex]::Match($Value, '\b([0-9]{1,7})s\b')
+    $suffix = if ($duration.Success) { " ($($duration.Groups[1].Value)s)" } else { '' }
+    switch ($status.Groups[1].Value) {
+        'BUILD ERROR' { return '&#x26A0; Build blocked' }
+        'ENV ERROR' { return '&#x26A0; Environment blocked' }
+        'NO MATCH' { return '&#x26A0; No matching tests' }
+        'NEW SNAPSHOT' { return '&#x26A0; Snapshot baseline missing' }
+        'FAIL' {
+            if ($WithoutFix) { return "&#x2705; Failed as expected$suffix" }
+            return "&#x274C; Failed$suffix"
+        }
+        'PASS' {
+            if ($WithoutFix) { return "&#x26A0; Passed without the fix$suffix" }
+            return "&#x2705; Passed$suffix"
+        }
+        default {
+            Write-Warning 'An unrecognized diagnostic phase outcome is displayed as not verified.'
+            return 'Not verified'
+        }
+    }
+}
+
+function ConvertTo-GateTestName {
+    param([string]$Name)
+
+    $text = ($Name -replace '[\x00-\x1F\x7F]', ' ').Trim()
+    if ($text.Length -gt 120) { $text = $text.Substring(0, 117) + '...' }
+    $text = $text.Replace('|', '\|')
+    $delimiter = '`'
+    while ($text.Contains($delimiter)) { $delimiter += '`' }
+    return "$delimiter $text $delimiter"
+}
+
+function Get-GateDiagnosticSummary {
+    param([string]$Report, [switch]$FailureOnly)
+
+    # Rebuild only known report fields; artifact-owned Markdown is never rendered.
+    $scan = $Report.Substring(0, [Math]::Min($Report.Length, 256KB))
+    $rows = [Collections.Generic.List[object]]::new()
+    $logs = [Collections.Generic.List[object]]::new()
+    $table = $false
+    $insideLog = $false
+    $phase = 'Execution'
+    $logTest = ''
+    $log = [Text.StringBuilder]::new()
+    $totalGroups = 0
+    $invalidRow = $false
+    foreach ($line in ($scan -split '\r?\n')) {
+        if ($line -match '^```(?:[A-Za-z0-9_-]+)?\s*$') {
+            if ($insideLog -and $log.Length -gt 0 -and $logs.Count -lt 4) {
+                $logs.Add([pscustomobject]@{ Phase = $phase; Test = $logTest; Text = $log.ToString().TrimEnd() })
+            }
+            $insideLog = -not $insideLog
+            [void]$log.Clear()
+            continue
+        }
+        if ($insideLog) {
+            if ($log.Length -lt 2000 -and $logs.Count -lt 4) {
+                [void]$log.AppendLine($line.Substring(0, [Math]::Min($line.Length, 2000 - $log.Length)))
+            }
+            continue
+        }
+        if ($line -match '^<summary>.*<strong>(Without fix|With fix)</strong>') {
+            $phase = $Matches[1]
+            $logTest = ''
+            foreach ($candidate in ($rows | Sort-Object { $_.PlainName.Length } -Descending)) {
+                if ($line.Contains("$($candidate.PlainName):")) {
+                    $logTest = $candidate.Name
+                    break
+                }
+            }
+        }
+        if ($FailureOnly -and $logs.Count -lt 4 -and
+            $line -match '^-\s+\*\*(?<test>[^*\r\n]{1,200})\*\*:\s+`(?<error>[^\r\n]{1,2048})`$') {
+            $logs.Add([pscustomobject]@{
+                Phase = 'Without fix'
+                Test = ConvertTo-GateTestName -Name $Matches['test']
+                Text = $Matches['error']
+            })
+        }
+        if ($line.Trim() -in @(
+            '| Test | Without Fix (expect FAIL) | With Fix (expect PASS) |',
+            '| Test | Type | Outcome |'
+        )) {
+            $table = $true
+            continue
+        }
+        if (-not $table) { continue }
+        if ($line -match '^\|[-| ]+\|$') { continue }
+        if (-not $line.StartsWith('|')) {
+            $table = $false
+            continue
+        }
+        $row = [regex]::Match($line,
+            '^\|\s*(?<test>.{1,2048}?)\s*\|\s*(?<before>[^|\r\n]{1,256})\s*\|\s*(?<after>[^|\r\n]{1,256})\s*\|\s*$')
+        if (-not $row.Success) {
+            $invalidRow = $true
+            continue
+        }
+        $test = $row.Groups['test'].Value.Trim()
+        $name = if ($FailureOnly) {
+            [regex]::Match($test, '^`(?<name>[^`\r\n]+)`$')
+        } else {
+            [regex]::Match($test, '\*\*(?<name>[^*\r\n]+)\*\*')
+        }
+        if (-not $name.Success) {
+            $invalidRow = $true
+            continue
+        }
+        $totalGroups++
+        if ($rows.Count -ge 20) { continue }
+        $type = 'Other'
+        if ($FailureOnly) {
+            if ($row.Groups['before'].Value.Trim() -in @('UnitTest', 'XamlUnitTest', 'DeviceTest', 'UITest')) {
+                $type = $row.Groups['before'].Value.Trim()
+            }
+            $before = ConvertTo-GatePhaseCell -Value $row.Groups['after'].Value -WithoutFix
+            $after = 'Not run (test-only change)'
+        } else {
+            foreach ($entry in @(
+                @{ Type = 'UnitTest'; Icon = 0x1F9EA },
+                @{ Type = 'XamlUnitTest'; Icon = 0x1F4C4 },
+                @{ Type = 'DeviceTest'; Icon = 0x1F4F1 },
+                @{ Type = 'UITest'; Icon = 0x1F5A5 }
+            )) {
+                if ($test.StartsWith([char]::ConvertFromUtf32($entry.Icon))) {
+                    $type = $entry.Type
+                    break
+                }
+            }
+            $before = ConvertTo-GatePhaseCell -Value $row.Groups['before'].Value -WithoutFix
+            $after = ConvertTo-GatePhaseCell -Value $row.Groups['after'].Value
+        }
+        $rows.Add([pscustomobject]@{
+            Type = $type
+            PlainName = $name.Groups['name'].Value
+            Name = ConvertTo-GateTestName -Name $name.Groups['name'].Value
+            Before = $before
+            After = $after
+        })
+    }
+    if ($invalidRow) {
+        Write-Warning 'Some diagnostic rows could not be parsed; the run link retains the complete evidence.'
+    }
+    if ($insideLog -and $log.Length -gt 0 -and $logs.Count -lt 4) {
+        $logs.Add([pscustomobject]@{ Phase = $phase; Test = $logTest; Text = $log.ToString().TrimEnd() })
+    }
+    return [pscustomobject]@{
+        Rows = $rows.ToArray()
+        Logs = $logs.ToArray()
+        Truncated = $scan.Length -lt $Report.Length -or $totalGroups -gt $rows.Count
+    }
+}
+
+$firstLine = ($report -split '\r?\n', 2)[0].Trim()
+$failureOnly = $firstLine -eq '## Gate: Test Verification (Failure-Only Mode)'
+$tableStart = $report.IndexOf('| Test |', [StringComparison]::Ordinal)
+$preambleLength = if ($tableStart -ge 0) { $tableStart } else { $report.Length }
+$preamble = $report.Substring(0, [Math]::Min($preambleLength, 8192))
+$compileCoupled = $preamble -match '(?m)^[^A-Za-z\r\n]*\*\*Verified \(new API / feature\)\*\*'
+$summary = Get-GateDiagnosticSummary -Report $report -FailureOnly:$failureOnly
 $isCurrent = $ReviewedCommit -and $pr.head.sha -ceq $ReviewedCommit
 $verdict = switch ($TrustedGateResult) {
     'PASSED' {
         if ($failureOnly) {
-            '&#x2705; **Verification: PASSED (failure-only).** The selected tests failed without a product fix. No with-fix result was verified.'
+            '&#x2705; **Passed (failure-only).** The selected tests failed without a product fix. No with-fix result was verified.'
+        } elseif ($compileCoupled) {
+            '&#x2705; **Passed (compilation-dependent baseline).** The tests require API added by the fix, so the without-fix baseline could not compile. The with-fix run passed; no runtime failure-to-pass reproduction is claimed.'
         } else {
-            '&#x2705; **Verification: PASSED.** The verifier''s passing conditions were satisfied. Inspect the diagnostics for the tests actually exercised and any unmatched, skipped, or inconclusive groups; this does not mean every selected test ran.'
+            '&#x2705; **Passed.** The selected verification satisfied the gate''s passing conditions. Unmatched, skipped, or inconclusive groups are not passing evidence.'
         }
     }
     'FAILED' {
-        '&#x274C; **Verification: FAILED.** The selected tests did not meet the expected outcomes. Inspect the evidence before changing the test or fix.'
+        '&#x274C; **Failed.** The selected tests did not meet the expected outcomes. Inspect the evidence before changing the test or fix.'
     }
     'SKIPPED' {
-        '&#x26A0; **Verification: SKIPPED.** No runnable PR tests were selected. The fix has not been verified by this gate.'
+        '&#x26A0; **Skipped.** No runnable PR tests were selected. The fix has not been verified by this gate.'
     }
     'INCONCLUSIVE' {
         if ($SetupResult -eq 'MERGE_CONFLICT') {
-            '&#x26A0; **Verification: INCONCLUSIVE.** The PR could not be merged with its target branch. Resolve the merge conflicts before retrying; no tests ran.'
+            '&#x26A0; **Inconclusive.** The PR could not be merged with its target branch; no tests ran.'
         } else {
-            '&#x26A0; **Verification: INCONCLUSIVE.** Setup, build, or execution did not produce a conclusive result. This is not evidence that the fix is incorrect.'
+            '&#x26A0; **Inconclusive.** Setup, build, or execution did not produce a conclusive result. This does not prove the fix is incorrect.'
         }
     }
     'TIMEDOUT' {
-        '&#x26A0; **Verification: TIMEDOUT.** The gate stopped before publishing its verdict. Partial diagnostics do not verify the fix.'
+        '&#x26A0; **Timed out.** The gate stopped before publishing its verdict. Partial diagnostics do not verify the fix.'
     }
 }
 
@@ -119,44 +286,100 @@ $staleNote = if ($ReviewedCommit -and -not $isCurrent) {
     '**Outdated snapshot:** the PR head changed while this gate ran. This report is for the pinned commit above; result labels are not updated.'
 } else { '' }
 
-$reportNote = ''
-if ($report.Length -gt 8000) {
-    $report = $report.Substring(0, 4000) + "`n... diagnostic excerpt omitted ...`n" +
-        $report.Substring($report.Length - 4000)
-    $reportNote = 'The diagnostic excerpt is shortened. The complete bounded report and execution logs remain in the GateLogs pipeline artifact.'
+$analysis = [Collections.Generic.List[string]]::new()
+foreach ($group in @(
+    @{ Type = 'UnitTest'; Title = '&#x1F9EA; Unit tests' },
+    @{ Type = 'XamlUnitTest'; Title = '&#x1F4C4; XAML unit tests' },
+    @{ Type = 'DeviceTest'; Title = '&#x1F4F1; Device tests' },
+    @{ Type = 'UITest'; Title = '&#x1F5A5; UI tests' },
+    @{ Type = 'Other'; Title = 'Selected tests' }
+)) {
+    $rows = @($summary.Rows | Where-Object { $_.Type -eq $group.Type })
+    if ($rows.Count -eq 0) { continue }
+    $analysis.Add('<details>')
+    $analysis.Add("<summary><strong>$($group.Title)</strong></summary>")
+    $analysis.Add('<br/>')
+    $analysis.Add('')
+    $analysis.Add('| Test group | Without fix | With fix |')
+    $analysis.Add('|---|---|---|')
+    foreach ($row in $rows) {
+        $analysis.Add("| $($row.Name) | $($row.Before) | $($row.After) |")
+    }
+    $analysis.Add('')
+    $analysis.Add('</details>')
+    $analysis.Add('')
 }
-$diagnostics = if (-not [string]::IsNullOrWhiteSpace($report)) {
-    '<details><summary>Test results and diagnostics</summary>' + "`n`n" +
-        '**Diagnostic transcript only; the verification verdict above is authoritative.**' + "`n`n" +
-        '<pre>' + [Net.WebUtility]::HtmlEncode($report) + '</pre>' + "`n`n" +
-        $reportNote + "`n`n</details>"
+if ($summary.Rows.Count -eq 0) {
+    $analysis.Add('No interpretable test-group summary was produced. No additional test execution is inferred.')
+}
+if ($summary.Truncated) {
+    $analysis.Add('Only a bounded selection of test groups is shown; the run retains the complete report.')
+}
+if ($report -match '(?m)^#### .*Gate coverage limitations') {
+    $analysis.Add('**Coverage gap:** some detected groups were omitted by the verifier. Inspect the complete report before treating this as full coverage.')
+}
+if ($summary.Logs.Count -gt 0) {
+    $analysis.Add('<details>')
+    $analysis.Add('<summary><strong>Execution log excerpts</strong></summary>')
+    $analysis.Add('<br/>')
+    $analysis.Add('')
+    foreach ($log in $summary.Logs) {
+        $analysis.Add("**$($log.Phase)** $($log.Test)")
+        $analysis.Add('')
+        $analysis.Add('<pre><code>' + [Net.WebUtility]::HtmlEncode($log.Text) + '</code></pre>')
+        $analysis.Add('')
+    }
+    $analysis.Add('</details>')
+}
+$platformName = switch ($Platform) {
+    'android' { 'Android' }
+    'ios' { 'iOS' }
+    'catalyst' { 'MacCatalyst' }
+    'windows' { 'Windows' }
+}
+$resultColor = switch ($TrustedGateResult) {
+    'PASSED' { '2da44e' }
+    'FAILED' { 'cf222e' }
+    default { '9a6700' }
+}
+$intro = if ($ReviewedCommit) {
+    "> @$($pr.user.login) &#x2014; existing-test verification for commit [``$($ReviewedCommit.Substring(0, 8))``](https://github.com/dotnet/maui/commit/$ReviewedCommit)."
 } else {
-    'No diagnostic report was produced. No successful test execution is inferred.'
+    "> @$($pr.user.login) &#x2014; existing-test verification; Setup did not capture a tested commit."
 }
+$commitBadge = if ($ReviewedCommit) {
+    "  <img alt=`"Commit $($ReviewedCommit.Substring(0, 8))`" src=`"https://img.shields.io/badge/Commit-$($ReviewedCommit.Substring(0, 8))-1f6feb?labelColor=30363d&amp;style=flat-square`">"
+} else { '' }
 
 $marker = '<!-- AI Gate -->'
 $runMarker = "<!-- pr-gate-run:$RunId -->"
 $prefix = "$marker`n$runMarker"
 $body = @(
-    $prefix, '## PR gate', '',
-    "@$($pr.user.login), this report verifies existing tests only.", '',
+    $prefix, '', '## PR Test Gate', '',
+    $intro, '',
+    '<p align="left">',
+    '  <img alt="Scope Existing PR tests" src="https://img.shields.io/badge/Scope-Existing%20PR%20tests-1f6feb?labelColor=30363d&amp;style=flat-square">',
+    "  <img alt=`"Result $TrustedGateResult`" src=`"https://img.shields.io/badge/Result-$TrustedGateResult-$resultColor`?labelColor=30363d&amp;style=flat-square`">",
+    "  <img alt=`"Platform $platformName`" src=`"https://img.shields.io/badge/Platform-$platformName-1f6feb?labelColor=30363d&amp;style=flat-square`">",
+    $commitBadge,
+    '</p>', '',
     '---', '',
     '<details>',
     '<summary><strong>&#x1F9EA; Gate analysis</strong> &#x2014; click to expand</summary>',
     '<br/>', '',
     $verdict, '',
-    "**Platform:** $Platform", '',
-    $commitNote, '', $baseNote, '', $staleNote, '',
-    '**Scope:** Selected PR unit, XAML, device, and UI tests. Native coverage remains bounded by the verifier; unselected tests are not implied to pass.', '',
-    $diagnostics, '',
+    $staleNote, '',
+    ($analysis -join "`n"), '',
+    $commitNote, '', $baseNote, '',
+    '**Scope:** Selected PR tests only, with bounded native coverage. The table summarizes diagnostic evidence; the gate verdict above is authoritative.', '',
+    "[Complete report and execution logs](https://dev.azure.com/DevDiv/DevDiv/_build/results?buildId=$RunId) &#x2014; ``GateLogs`` and ``BuildLogs`` artifacts.", '',
     '</details>', '', '---', '',
     '<details>',
     '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
     '<br/>', '',
-    $nextStep, '',
-    'No expert code review, alternative fix, title/description edit, approval, or full-category UI sweep runs in this command.', '',
-    "Refresh with ``/review gate --platform $Platform`` after updating the PR or resolving the blocker.", '',
-    "<sub>[Gate execution $RunId](https://dev.azure.com/DevDiv/DevDiv/_build/results?buildId=$RunId). Existing tests only; no generated test candidate or native recording is claimed.</sub>",
+    "**Next action:** $nextStep", '',
+    "> Maintainers: comment ``/review gate --platform $Platform`` to refresh this report.", '',
+    'This is test verification, not a code review or merge recommendation. No alternative fix, generated test, native recording, approval, or PR metadata edit is claimed.',
     '</details>'
 ) -join "`n"
 if ([Text.Encoding]::UTF8.GetByteCount($body) -gt 60000) {

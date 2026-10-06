@@ -186,10 +186,15 @@ category sweep. A test-only PR keeps failure-only verification; it does not clai
 a with-fix pass. A PR without runnable tests is `SKIPPED`; missing tests are not
 generated.
 
-The report follows the expandable issue-reproduction layout: closed **Gate
-analysis** and **Follow-up** sections, short verification verdicts, pinned commit
-links, and bounded escaped diagnostics. Native recordings and generated patches
-are not claimed. Setup/build/environment blockers are `INCONCLUSIVE`, not a
+The report follows the compact test-failure-analysis layout: an author/commit
+quote, scope/result/platform/commit badges, closed **Gate analysis** and
+**Follow-up** sections, and readable phase-result tables grouped by test type.
+Only known diagnostic fields are rendered; bounded execution-log excerpts
+remain escaped in a separate collapsed section rather than displaying the
+entire raw Markdown report. Compilation-dependent baselines and test-only mode
+are explicit, and build-blocked or unmatched filters are never shown as expected
+runtime failures. Native recordings and generated patches are not claimed.
+Setup/build/environment blockers are `INCONCLUSIVE`, not a
 failed fix. A missing verdict, including a killed or timed-out Gate task, is
 `INCONCLUSIVE`; no timeout is inferred solely from an absent result.
 Only `s/agent-gate-passed` or `s/agent-gate-failed` signals are applied, and only
