@@ -400,6 +400,12 @@ fresh-instance control, and observes native content elements and geometry after
 interactive dismissal and reopening through displayed native accessibility
 elements with positive bounds, not pixel comparison. DI is isolated to the
 candidate's route factory; the author application's bootstrap is not replayed.
+The modal candidate reads native content, instance markers, navigation bars,
+window geometry and returned-home controls from one accessibility snapshot per
+state instead of repeated element-property requests. Actions use the observed
+native bounds; snapshot reads and gestures stay inside the 26-second body budget.
+The two fresh-instance controls, singleton reuse check, reopened-content
+observation and 30-second recording limit are unchanged.
 The CollectionView case uses issue #38276's original public attachment. It
 preserves the capped Grid inside a VerticalStackLayout and compares rendered
 height for one item, ten items, and a replacement with one item; it does not force
