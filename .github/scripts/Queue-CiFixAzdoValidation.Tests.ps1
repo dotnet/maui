@@ -1213,6 +1213,94 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             }
         }
 
+        It 'preserves completed results when queue-time revalidation exhausts the budget' {
+            $secondContext = $script:queueContext.PSObject.Copy()
+            $secondContext.PullRequestNumber = 124
+            $secondContext.PullRequestId = 456913
+            $secondContext.HeadSha = '3333333333333333333333333333333333333333'
+            $secondContext.MergeSha = '4444444444444444444444444444444444444444'
+            $script:verificationCalls = 0
+            Mock Resolve-VerifiedCiFixContext {
+                $script:verificationCalls++
+                if ($script:verificationCalls -eq 1) {
+                    return $NominatedContext
+                }
+                throw '[dispatcher-budget-exhausted] queue-time PR verification exceeded the shared deadline'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                return [pscustomobject]@{
+                    Build = [pscustomobject]@{ id = 8101 }
+                    Reconciled = $false
+                }
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext, $secondContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 6
+            $results[0].Outcome | Should -Be 'queued'
+            $results[0].BuildId | Should -Be 8101
+            $results[1].Outcome | Should -Be 'failed'
+            $results[1].Error | Should -Match 'dispatcher-budget-exhausted'
+            $results[1].Error | Should -Match 'queue-time PR verification exceeded the shared deadline'
+            foreach ($result in $results[2..5]) {
+                $result.Outcome | Should -Be 'failed'
+                $result.Error | Should -Match "PR #$($result.PullRequestNumber) pipeline '$([regex]::Escape($result.Name))' was not processed"
+                $result.Error | Should -Match "while processing PR #123 pipeline 'maui-pr-uitests'"
+                $result.Error | Should -Match 'No queue POST was attempted for this work item'
+            }
+            Should -Invoke Resolve-VerifiedCiFixContext -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly -ParameterFilter {
+                @($Results).Count -eq 3
+            }
+        }
+
+        It 'reports a nonbudget queue-time revalidation failure without losing completed results' {
+            $script:verificationCalls = 0
+            Mock Resolve-VerifiedCiFixContext {
+                $script:verificationCalls++
+                if ($script:verificationCalls -eq 2) {
+                    throw 'GitHub queue-time PR refresh failed'
+                }
+                return $NominatedContext
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                return [pscustomobject]@{
+                    Build = [pscustomobject]@{ id = 8200 + $DefinitionId }
+                    Reconciled = $false
+                }
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 3
+            $results[0].Outcome | Should -Be 'queued'
+            $results[0].BuildId | Should -Be 8502
+            $results[1].Outcome | Should -Be 'failed'
+            $results[1].Error | Should -Be 'GitHub queue-time PR refresh failed'
+            $results[2].Outcome | Should -Be 'queued'
+            $results[2].BuildId | Should -Be 8514
+            Should -Invoke Resolve-VerifiedCiFixContext -ModuleName QueueCiFixAzdoValidationTest -Times 3 -Exactly
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                @($Results).Count -eq 3
+            }
+        }
+
         It 'keeps ambiguous uncertainty on only the submitted POST and skips every later item accurately' {
             $secondContext = $script:queueContext.PSObject.Copy()
             $secondContext.PullRequestNumber = 124
