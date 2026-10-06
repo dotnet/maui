@@ -17,6 +17,15 @@ parameters:
       - name: IosShellNavigation
         scenario: ios-shell-navigation
         platform: ios
+      - name: AndroidWebViewScroll
+        scenario: android-webview-scroll
+        platform: android
+      - name: IosModalSingleton
+        scenario: ios-modal-singleton
+        platform: ios
+      - name: IosCollectionShrink
+        scenario: ios-collection-shrink
+        platform: ios
 
 stages:
   - ${{ each case in parameters.cases }}:

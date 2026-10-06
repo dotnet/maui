@@ -62,7 +62,7 @@ parameters:
     displayName: 'Issue reproduction canary case'
     type: string
     default: all
-    values: [all, android-carousel, android-scrollview, ios-refresh, ios-shell-navigation]
+    values: [all, android-carousel, android-scrollview, ios-refresh, ios-shell-navigation, android-webview-scroll, ios-modal-singleton, ios-collection-shrink]
 
   - name: BuildEverything
     type: boolean

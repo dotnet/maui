@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 38276,
+  "commentId": 6014862462,
+  "platform": "ios",
+  "targetRef": "main",
+  "targetSha": "f7530d0af403055a37cc945904905aacb94a63ef",
+  "author": "Monika4841",
+  "issueText": "Reviewed manual canary for issue 38276: after replacing ten items with one, an iOS CollectionView inside a star-row Grid capped at height 180 within a VerticalStackLayout must shrink its rendered height. Preserve the original attachment's layout cap, spacing and Border/Label template. Establish a real one-item layout control, grow to ten, then replace with one and compare actual native rendered geometry after bounded layout polling. Do not force height or invalidate layout to fix the behavior under test. This new candidate has not yet been executed; the separate author-project build is not a driven original-app reproduction.",
+  "sourceType": "attachment",
+  "sourceUrl": "https://github.com/user-attachments/files/31911116/Sample.zip",
+  "sampleSha256": "3704e96cdc8b557d5e24a5936a6f607d245ea057bc01839f583d331abc4eaf1a"
+}

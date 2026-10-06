@@ -363,7 +363,8 @@ The existing `maui-pr-uitests` definition can run a credential-free canary from
 the PR branch without changing its registered YAML path. Manually select the
 branch and exact commit, set `IssueReplicateCanary=true`, and choose
 `IssueReplicateCase=all`, `android-carousel`, `android-scrollview`, `ios-refresh`,
-or `ios-shell-navigation`.
+`ios-shell-navigation`, `android-webview-scroll`, `ios-modal-singleton`, or
+`ios-collection-shrink`.
 The default is false: ordinary UI validation, pools, parameters and secret imports
 are unchanged. Canary mode excludes the shared MAUI variable group and all normal
 UI stages. It requires a manual run in `dnceng-public/public`.
@@ -378,6 +379,22 @@ reviewed iOS candidate. It runs a normal push/pop control before dismissing a mo
 and pushing a detail page inside `Shell.Navigated`, then observes the real root
 handler and root pop notifications. Its assertion is not proof of the original
 app's visual blank-page outcome.
+The WebView case uses issue #38452's author-owned repository. It checks real native
+HTML loading and absence of vertical overflow, proves a normal label gesture can
+scroll the parent, then measures the parent scroll offset after dragging on the
+short WebView. The overflowing WebView remains in the layout but its independent
+scrolling is not asserted.
+The singleton modal case uses issue #38361's author-owned repository. It preserves
+the reused modal page/navigation wrapper and manual disconnect policy, compares a
+fresh-instance control, and observes native content elements and geometry after
+interactive dismissal and reopening through displayed native accessibility
+elements with positive bounds, not pixel comparison. DI is isolated to the
+candidate's route factory; the author application's bootstrap is not replayed.
+The CollectionView case uses issue #38276's original public attachment. It
+preserves the capped Grid inside a VerticalStackLayout and compares rendered
+height for one item, ten items, and a replacement with one item; it does not force
+a layout invalidation. These reviewed candidates are not executed evidence until
+their corresponding native jobs run.
 The ScrollView candidate polls both rendered padding insets for up
 to five seconds after the status changes; the synchronous status text alone is
 not a layout-completion signal. They share the production sample job, native

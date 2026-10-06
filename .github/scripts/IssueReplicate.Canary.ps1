@@ -2,7 +2,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][ValidateSet('Input', 'Candidate')][string]$Mode,
-    [Parameter(Mandatory)][ValidateSet('android-carousel', 'android-scrollview', 'ios-refresh', 'ios-shell-navigation')][string]$Scenario,
+    [Parameter(Mandatory)][ValidateSet('android-carousel', 'android-scrollview', 'ios-refresh', 'ios-shell-navigation',
+        'android-webview-scroll', 'ios-modal-singleton', 'ios-collection-shrink')][string]$Scenario,
     [Parameter(Mandatory)][string]$DataRoot,
     [Parameter(Mandatory)][string]$OutputDirectory
 )
