@@ -14,6 +14,7 @@ using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using ALinearLayoutCompat = AndroidX.AppCompat.Widget.LinearLayoutCompat;
 using ATextView = Android.Widget.TextView;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -283,6 +284,64 @@ namespace Microsoft.Maui.DeviceTests
 					$"Expected the Execute-mode SwipeItem width ({swipeItemWidthPixels}px) to be smaller " +
 					$"than the full SwipeView content width ({contentWidthPixels}px), matching the native " +
 					$"button's measured content size instead of the entire SwipeView width.");
+			});
+		}
+
+		[Fact(DisplayName = "Execute Mode Menu Item Width Excludes SwipeItemView")]
+		public async Task ExecuteModeMenuItemWidthExcludesSwipeItemView()
+		{
+			SetupBuilder();
+
+			var swipeItems = new SwipeItems
+			{
+				Mode = SwipeMode.Execute
+			};
+			swipeItems.Add(new SwipeItem { Text = "OK" });
+			swipeItems.Add(new SwipeItemView
+			{
+				Content = new Grid
+				{
+					WidthRequest = 240,
+					HeightRequest = 60
+				}
+			});
+			swipeItems.Add(new SwipeItem { Text = "A significantly longer action" });
+
+			var swipeView = new SwipeView
+			{
+				HeightRequest = 60,
+				WidthRequest = 500,
+				LeftItems = swipeItems,
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 60,
+					Background = new SolidColorBrush(Colors.White)
+				}
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = Assert.IsAssignableFrom<ViewGroup>(platformView.GetChildAt(1));
+				await AssertEventually(() => actionView.ChildCount == 3);
+
+				var firstMenuItem = actionView.GetChildAt(0);
+				var secondMenuItem = actionView.GetChildAt(2);
+				var unspecifiedWidth = AView.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
+				var exactHeight = AView.MeasureSpec.MakeMeasureSpec(actionView.Height, MeasureSpecMode.Exactly);
+
+				firstMenuItem.Measure(unspecifiedWidth, exactHeight);
+				secondMenuItem.Measure(unspecifiedWidth, exactHeight);
+
+				var expectedMenuItemWidth = (firstMenuItem.MeasuredWidth + secondMenuItem.MeasuredWidth) / 2;
+
+				Assert.InRange(firstMenuItem.Width, expectedMenuItemWidth - 1, expectedMenuItemWidth + 1);
+				Assert.InRange(secondMenuItem.Width, expectedMenuItemWidth - 1, expectedMenuItemWidth + 1);
 			});
 		}
 
