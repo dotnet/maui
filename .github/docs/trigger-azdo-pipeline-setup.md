@@ -191,6 +191,14 @@ Automated CI-fix PR validation is implemented separately by
   behavior cannot strand an eligible head;
 - treats the live open-PR scan as authoritative so delayed webhook snapshots
   cannot restore revoked eligibility or queue obsolete head/merge commits;
+- enforces one shared seven-minute elapsed-time budget across PR discovery,
+  authentication, dedupe reads, queue POSTs, retries, and reconciliation. The
+  ten-minute job timeout leaves three minutes for runner startup/checkout,
+  summaries, and an explicit failed outcome instead of a hard cancellation;
+- caps every HTTP timeout and retry sleep to the remaining shared budget. If it
+  expires, no new requests start, completed results remain visible, all
+  unprocessed PR/pipeline work is marked failed, and an ambiguous one-time POST
+  remains explicitly uncertain rather than being retried;
 - queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
 - supplies the merge commit as `sourceVersion` and the PR head as
   `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build

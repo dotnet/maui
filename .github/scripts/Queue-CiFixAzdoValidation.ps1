@@ -6,6 +6,7 @@ param(
     [string]$Repository = $env:GITHUB_REPOSITORY,
     [string]$EventName = $env:GITHUB_EVENT_NAME,
     [string]$PullRequestsFixturePath,
+    [ValidateRange(1, 540)][int]$DispatcherBudgetSeconds = 420,
     [switch]$DryRun
 )
 
@@ -17,6 +18,52 @@ $script:AzureDevOpsProject = 'public'
 $script:TransientHttpStatusCodes = @(408, 429, 500, 502, 503, 504)
 $script:MaxHttpAttempts = 4
 $script:RetryBaseDelaySeconds = 2
+$script:DispatcherBudgetSeconds = $DispatcherBudgetSeconds
+$script:DispatcherStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$script:DispatcherBudgetPrefix = '[dispatcher-budget-exhausted]'
+
+function Get-DispatcherElapsedSeconds {
+    return $script:DispatcherStopwatch.Elapsed.TotalSeconds
+}
+
+function Get-DispatcherRemainingSeconds {
+    return [Math]::Max(0, $script:DispatcherBudgetSeconds - (Get-DispatcherElapsedSeconds))
+}
+
+function Test-IsDispatcherBudgetException {
+    param([Parameter(Mandatory = $true)][System.Exception]$Exception)
+
+    return $Exception.Message.StartsWith($script:DispatcherBudgetPrefix, [System.StringComparison]::Ordinal)
+}
+
+function Get-DispatcherHttpTimeoutSeconds {
+    param(
+        [Parameter(Mandatory = $true)][string]$OperationName,
+        [ValidateRange(1, 300)][int]$MaximumSeconds = 30
+    )
+
+    $remainingSeconds = [Math]::Floor((Get-DispatcherRemainingSeconds))
+    if ($remainingSeconds -lt 1) {
+        throw "$($script:DispatcherBudgetPrefix) No time remains before '$OperationName'."
+    }
+
+    return [int][Math]::Min($MaximumSeconds, $remainingSeconds)
+}
+
+function Invoke-DispatcherSleep {
+    param(
+        [Parameter(Mandatory = $true)][string]$OperationName,
+        [ValidateRange(1, 300)][int]$RequestedSeconds
+    )
+
+    $remainingSeconds = [Math]::Floor((Get-DispatcherRemainingSeconds))
+    $sleepSeconds = [Math]::Min($RequestedSeconds, $remainingSeconds - 1)
+    if ($sleepSeconds -lt 1) {
+        throw "$($script:DispatcherBudgetPrefix) No retry time remains before '$OperationName'."
+    }
+
+    Start-Sleep -Seconds $sleepSeconds
+}
 
 function Get-ObjectPropertyValue {
     param(
@@ -236,6 +283,8 @@ function Get-OpenCiFixContexts {
     $contexts = [System.Collections.Generic.List[object]]::new()
     for ($page = 1; $page -le 10; $page++) {
         $pageResponse = Invoke-WithHttpRetry -OperationName "GitHub open pull request query page $page" -Operation {
+            param($timeoutSeconds)
+
                 Invoke-RestMethod `
                     -Method Get `
                     -Uri "https://api.github.com/repos/$Repository/pulls?state=open&per_page=100&page=$page" `
@@ -244,7 +293,7 @@ function Get-OpenCiFixContexts {
                         Accept = 'application/vnd.github+json'
                         'X-GitHub-Api-Version' = '2022-11-28'
                     } `
-                    -TimeoutSec 30
+                    -TimeoutSec $timeoutSeconds
             }
         # Invoke-RestMethod returns a top-level JSON array as one Object[] value.
         # Enumerate it explicitly so pagination and per-PR validation see each PR.
@@ -321,9 +370,14 @@ function Invoke-WithHttpRetry {
 
     for ($attempt = 1; $attempt -le $script:MaxHttpAttempts; $attempt++) {
         try {
-            return & $Operation
+            $timeoutSeconds = Get-DispatcherHttpTimeoutSeconds -OperationName "$OperationName attempt $attempt"
+            return & $Operation $timeoutSeconds
         }
         catch {
+            if (Test-IsDispatcherBudgetException -Exception $_.Exception) {
+                throw
+            }
+
             $isTransient = Test-IsTransientHttpException -Exception $_.Exception
             if (-not $isTransient -or $attempt -eq $script:MaxHttpAttempts) {
                 throw
@@ -331,7 +385,7 @@ function Invoke-WithHttpRetry {
 
             $delaySeconds = $script:RetryBaseDelaySeconds * $attempt
             Write-Warning "$OperationName failed transiently on attempt $attempt/$($script:MaxHttpAttempts); retrying in $delaySeconds seconds."
-            Start-Sleep -Seconds $delaySeconds
+            Invoke-DispatcherSleep -OperationName "$OperationName retry $($attempt + 1)" -RequestedSeconds $delaySeconds
         }
     }
 }
@@ -350,11 +404,13 @@ function Get-AzdoToken {
     }
 
     $oidcResponse = Invoke-WithHttpRetry -OperationName 'GitHub OIDC token request' -Operation {
+        param($timeoutSeconds)
+
         Invoke-RestMethod `
             -Method Get `
             -Uri "$requestUrl&audience=api://AzureADTokenExchange" `
             -Headers @{ Authorization = "Bearer $requestToken" } `
-            -TimeoutSec 30
+            -TimeoutSec $timeoutSeconds
     }
     $oidcToken = [string](Get-ObjectPropertyValue -InputObject $oidcResponse -Name 'value')
     if ([string]::IsNullOrWhiteSpace($oidcToken)) {
@@ -372,12 +428,14 @@ function Get-AzdoToken {
 
     try {
         $tokenResponse = Invoke-WithHttpRetry -OperationName 'Azure AD token exchange' -Operation {
+            param($timeoutSeconds)
+
             Invoke-RestMethod `
                 -Method Post `
                 -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" `
                 -ContentType 'application/x-www-form-urlencoded' `
                 -Body $body `
-                -TimeoutSec 30
+                -TimeoutSec $timeoutSeconds
         }
     }
     finally {
@@ -436,11 +494,13 @@ function Get-AzdoDuplicateBuild {
         "?definitions=$DefinitionId&branchName=$branchName&queryOrder=queueTimeDescending&`$top=50&api-version=7.1"
 
     $response = Invoke-WithHttpRetry -OperationName "Azure DevOps duplicate query for definition $DefinitionId" -Operation {
+        param($timeoutSeconds)
+
         Invoke-RestMethod `
             -Method Get `
             -Uri $url `
             -Headers @{ Authorization = "Bearer $AuthToken" } `
-            -TimeoutSec 30
+            -TimeoutSec $timeoutSeconds
     }
 
     return Find-AzdoDuplicateBuild `
@@ -487,6 +547,7 @@ function Invoke-AzdoPipelineQueue {
     $body = $request | ConvertTo-Json -Depth 10 -Compress
     $url = "https://dev.azure.com/$($script:AzureDevOpsOrganization)/$($script:AzureDevOpsProject)/_apis/build/builds?api-version=7.1"
 
+    $postTimeoutSeconds = Get-DispatcherHttpTimeoutSeconds -OperationName "Azure DevOps queue POST for definition $DefinitionId"
     try {
         $build = Invoke-RestMethod `
             -Method Post `
@@ -494,7 +555,7 @@ function Invoke-AzdoPipelineQueue {
             -Headers @{ Authorization = "Bearer $AuthToken" } `
             -ContentType 'application/json' `
             -Body $body `
-            -TimeoutSec 30
+            -TimeoutSec $postTimeoutSeconds
         return [pscustomobject]@{ Build = $build; Reconciled = $false }
     }
     catch {
@@ -506,13 +567,23 @@ function Invoke-AzdoPipelineQueue {
         # lost. Never blindly retry an ambiguous queue request. Reconcile the
         # exact definition + PR ref + source head/merge identity first.
         for ($attempt = 1; $attempt -le $script:MaxHttpAttempts; $attempt++) {
-            Start-Sleep -Seconds ($script:RetryBaseDelaySeconds * $attempt)
-            $duplicate = Get-AzdoDuplicateBuild `
-                -DefinitionId $DefinitionId `
-                -PullRequestNumber $Context.PullRequestNumber `
-                -HeadSha $Context.HeadSha `
-                -MergeSha $Context.MergeSha `
-                -AuthToken $AuthToken
+            try {
+                Invoke-DispatcherSleep `
+                    -OperationName "ambiguous queue reconciliation for definition $DefinitionId attempt $attempt" `
+                    -RequestedSeconds ($script:RetryBaseDelaySeconds * $attempt)
+                $duplicate = Get-AzdoDuplicateBuild `
+                    -DefinitionId $DefinitionId `
+                    -PullRequestNumber $Context.PullRequestNumber `
+                    -HeadSha $Context.HeadSha `
+                    -MergeSha $Context.MergeSha `
+                    -AuthToken $AuthToken
+            }
+            catch {
+                if (Test-IsDispatcherBudgetException -Exception $_.Exception) {
+                    throw "$($script:DispatcherBudgetPrefix) Azure DevOps queue request for definition $DefinitionId may have been accepted, but the shared dispatcher budget expired before exact reconciliation completed. The POST was issued exactly once and was not retried; acceptance remains uncertain."
+                }
+                throw
+            }
             if ($null -ne $duplicate) {
                 return [pscustomobject]@{ Build = $duplicate; Reconciled = $true }
             }
@@ -541,8 +612,8 @@ function Write-CiFixJobSummary {
         "- Head: ``$($Context.HeadSha)``",
         "- PR ref: ``refs/pull/$($Context.PullRequestNumber)/merge``",
         '',
-        '| Pipeline | Result | Build |',
-        '|---|---|---|'
+        '| Pipeline | Result | Build | Details |',
+        '|---|---|---|---|'
     )
 
     foreach ($result in $Results) {
@@ -552,10 +623,107 @@ function Write-CiFixJobSummary {
         else {
             '-'
         }
-        $lines += "| $($result.Name) | $($result.Outcome) | $build |"
+        $details = if ($result.PSObject.Properties['Error']) {
+            ([string]$result.Error).Replace('|', '\|').Replace("`r", ' ').Replace("`n", ' ')
+        }
+        else {
+            '-'
+        }
+        $lines += "| $($result.Name) | $($result.Outcome) | $build | $details |"
     }
 
     Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($lines -join [Environment]::NewLine)
+}
+
+function New-CiFixFailureResult {
+    param(
+        [Parameter(Mandatory = $true)][object]$Context,
+        [Parameter(Mandatory = $true)][object]$Pipeline,
+        [Parameter(Mandatory = $true)][string]$ErrorMessage
+    )
+
+    return [pscustomobject]@{
+        PullRequestNumber = $Context.PullRequestNumber
+        Name = $Pipeline.Name
+        DefinitionId = $Pipeline.DefinitionId
+        Outcome = 'failed'
+        BuildId = $null
+        Error = $ErrorMessage
+    }
+}
+
+function Invoke-CiFixQueueWork {
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Contexts,
+        [Parameter(Mandatory = $true)][string]$AuthToken
+    )
+
+    $workResults = [System.Collections.Generic.List[object]]::new()
+    $budgetFailure = $null
+    foreach ($context in $Contexts) {
+        $contextResults = [System.Collections.Generic.List[object]]::new()
+        foreach ($pipeline in Get-CiFixPipelineDefinitions) {
+            if ($null -ne $budgetFailure) {
+                $result = New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $budgetFailure
+                $workResults.Add($result)
+                $contextResults.Add($result)
+                continue
+            }
+
+            try {
+                $duplicate = Get-AzdoDuplicateBuild `
+                    -DefinitionId $pipeline.DefinitionId `
+                    -PullRequestNumber $context.PullRequestNumber `
+                    -HeadSha $context.HeadSha `
+                    -MergeSha $context.MergeSha `
+                    -AuthToken $AuthToken
+
+                if ($null -ne $duplicate) {
+                    $result = [pscustomobject]@{
+                        PullRequestNumber = $context.PullRequestNumber
+                        Name = $pipeline.Name
+                        DefinitionId = $pipeline.DefinitionId
+                        Outcome = 'deduplicated'
+                        BuildId = [int](Get-ObjectPropertyValue -InputObject $duplicate -Name 'id')
+                    }
+                    $workResults.Add($result)
+                    $contextResults.Add($result)
+                    continue
+                }
+
+                $queueResult = Invoke-AzdoPipelineQueue `
+                    -DefinitionId $pipeline.DefinitionId `
+                    -Context $context `
+                    -AuthToken $AuthToken
+                $buildId = [int](Get-ObjectPropertyValue -InputObject $queueResult.Build -Name 'id')
+                if ($buildId -le 0) {
+                    throw "Azure DevOps returned an invalid build id for definition $($pipeline.DefinitionId)."
+                }
+
+                $result = [pscustomobject]@{
+                    PullRequestNumber = $context.PullRequestNumber
+                    Name = $pipeline.Name
+                    DefinitionId = $pipeline.DefinitionId
+                    Outcome = if ($queueResult.Reconciled) { 'reconciled-after-ambiguous-post' } else { 'queued' }
+                    BuildId = $buildId
+                }
+                $workResults.Add($result)
+                $contextResults.Add($result)
+            }
+            catch {
+                Write-Error -ErrorAction Continue "PR #$($context.PullRequestNumber) pipeline '$($pipeline.Name)' failed: $($_.Exception.Message)"
+                $result = New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $_.Exception.Message
+                $workResults.Add($result)
+                $contextResults.Add($result)
+                if (Test-IsDispatcherBudgetException -Exception $_.Exception) {
+                    $budgetFailure = $_.Exception.Message
+                }
+            }
+        }
+        Write-CiFixJobSummary -Context $context -Results $contextResults
+    }
+
+    return $workResults.ToArray()
 }
 
 if ([string]::IsNullOrWhiteSpace($EventPath) -or -not (Test-Path -LiteralPath $EventPath -PathType Leaf)) {
@@ -626,66 +794,30 @@ if ($DryRun) {
     exit 0
 }
 
-$authToken = Get-AzdoToken
+$pipelines = @(Get-CiFixPipelineDefinitions)
 try {
+    $authToken = Get-AzdoToken
+}
+catch {
+    $authFailure = "Dispatcher authentication failed before queueing: $($_.Exception.Message)"
     foreach ($context in $contexts) {
-        $contextResults = [System.Collections.Generic.List[object]]::new()
-        foreach ($pipeline in Get-CiFixPipelineDefinitions) {
-            try {
-                $duplicate = Get-AzdoDuplicateBuild `
-                    -DefinitionId $pipeline.DefinitionId `
-                    -PullRequestNumber $context.PullRequestNumber `
-                    -HeadSha $context.HeadSha `
-                    -MergeSha $context.MergeSha `
-                    -AuthToken $authToken
-
-                if ($null -ne $duplicate) {
-                    $result = [pscustomobject]@{
-                        PullRequestNumber = $context.PullRequestNumber
-                        Name = $pipeline.Name
-                        DefinitionId = $pipeline.DefinitionId
-                        Outcome = 'deduplicated'
-                        BuildId = [int](Get-ObjectPropertyValue -InputObject $duplicate -Name 'id')
-                    }
-                    $results.Add($result)
-                    $contextResults.Add($result)
-                    continue
-                }
-
-                $queueResult = Invoke-AzdoPipelineQueue `
-                    -DefinitionId $pipeline.DefinitionId `
-                    -Context $context `
-                    -AuthToken $authToken
-                $buildId = [int](Get-ObjectPropertyValue -InputObject $queueResult.Build -Name 'id')
-                if ($buildId -le 0) {
-                    throw "Azure DevOps returned an invalid build id for definition $($pipeline.DefinitionId)."
-                }
-
-                $result = [pscustomobject]@{
-                    PullRequestNumber = $context.PullRequestNumber
-                    Name = $pipeline.Name
-                    DefinitionId = $pipeline.DefinitionId
-                    Outcome = if ($queueResult.Reconciled) { 'reconciled-after-ambiguous-post' } else { 'queued' }
-                    BuildId = $buildId
-                }
-                $results.Add($result)
-                $contextResults.Add($result)
+        $contextResults = @(
+            foreach ($pipeline in $pipelines) {
+                New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $authFailure
             }
-            catch {
-                Write-Error -ErrorAction Continue "PR #$($context.PullRequestNumber) pipeline '$($pipeline.Name)' failed: $($_.Exception.Message)"
-                $result = [pscustomobject]@{
-                    PullRequestNumber = $context.PullRequestNumber
-                    Name = $pipeline.Name
-                    DefinitionId = $pipeline.DefinitionId
-                    Outcome = 'failed'
-                    BuildId = $null
-                    Error = $_.Exception.Message
-                }
-                $results.Add($result)
-                $contextResults.Add($result)
-            }
+        )
+        foreach ($result in $contextResults) {
+            $results.Add($result)
         }
         Write-CiFixJobSummary -Context $context -Results $contextResults
+    }
+    $results | ConvertTo-Json -Depth 10
+    throw $authFailure
+}
+
+try {
+    foreach ($result in Invoke-CiFixQueueWork -Contexts $contexts -AuthToken $authToken) {
+        $results.Add($result)
     }
 }
 finally {

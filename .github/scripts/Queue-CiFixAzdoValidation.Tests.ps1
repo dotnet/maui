@@ -12,6 +12,11 @@ BeforeAll {
 
     foreach ($functionName in @(
             'Get-ObjectPropertyValue',
+            'Get-DispatcherElapsedSeconds',
+            'Get-DispatcherRemainingSeconds',
+            'Test-IsDispatcherBudgetException',
+            'Get-DispatcherHttpTimeoutSeconds',
+            'Invoke-DispatcherSleep',
             'Test-CiFixPrFingerprint',
             'Get-CiFixPipelineDefinitions',
             'Get-CiFixContextFromPullRequest',
@@ -25,7 +30,10 @@ BeforeAll {
             'Find-AzdoDuplicateBuild',
             'Get-AzdoDuplicateBuild',
             'New-AzdoQueueRequest',
-            'Invoke-AzdoPipelineQueue')) {
+            'Invoke-AzdoPipelineQueue',
+            'Write-CiFixJobSummary',
+            'New-CiFixFailureResult',
+            'Invoke-CiFixQueueWork')) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
                 $args[0].Name -eq $functionName
@@ -154,6 +162,8 @@ Describe 'trusted workflow configuration' {
         $workflow | Should -Not -Match 'github\.event\.pull_request\.base\.sha'
         $workflow | Should -Match 'persist-credentials: false'
         $workflow | Should -Match 'id-token: write'
+        $workflow | Should -Match 'timeout-minutes: 10'
+        $workflow | Should -Match 'Queue-CiFixAzdoValidation\.ps1 -DispatcherBudgetSeconds 420'
     }
 }
 
@@ -478,11 +488,21 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
     BeforeAll {
         $queueFunctionDefinitions = @(
             'Get-ObjectPropertyValue',
+            'Get-DispatcherElapsedSeconds',
+            'Get-DispatcherRemainingSeconds',
+            'Test-IsDispatcherBudgetException',
+            'Get-DispatcherHttpTimeoutSeconds',
+            'Invoke-DispatcherSleep',
+            'Get-CiFixPipelineDefinitions',
             'Test-IsTransientHttpException',
             'Get-HttpStatusCode',
+            'Invoke-WithHttpRetry',
             'Get-AzdoDuplicateBuild',
             'New-AzdoQueueRequest',
-            'Invoke-AzdoPipelineQueue'
+            'Invoke-AzdoPipelineQueue',
+            'Write-CiFixJobSummary',
+            'New-CiFixFailureResult',
+            'Invoke-CiFixQueueWork'
         ) | ForEach-Object {
             $functionName = $_
             $ast.Find({
@@ -498,6 +518,9 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             $script:TransientHttpStatusCodes = @(408, 429, 500, 502, 503, 504)
             $script:MaxHttpAttempts = 4
             $script:RetryBaseDelaySeconds = 2
+            $script:DispatcherBudgetSeconds = 480
+            $script:DispatcherStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+            $script:DispatcherBudgetPrefix = '[dispatcher-budget-exhausted]'
             foreach ($definition in $FunctionDefinitions) {
                 Invoke-Expression $definition
             }
@@ -522,6 +545,7 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
                 MergeSha = '2222222222222222222222222222222222222222'
             }
             Mock Start-Sleep {} -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-DispatcherElapsedSeconds { return 0 } -ModuleName QueueCiFixAzdoValidationTest
         }
 
         It 'returns a successful POST without duplicate reconciliation' {
@@ -628,6 +652,121 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
             Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'caps HTTP timeouts and retry sleeps to the shared remaining budget' {
+            Mock Get-DispatcherElapsedSeconds { return 455 } -ModuleName QueueCiFixAzdoValidationTest
+
+            Get-QueueTestDispatcherHttpTimeoutSeconds -OperationName 'bounded request' |
+                Should -Be 25
+
+            Mock Get-DispatcherElapsedSeconds { return 475 } -ModuleName QueueCiFixAzdoValidationTest
+            Invoke-QueueTestDispatcherSleep -OperationName 'bounded sleep' -RequestedSeconds 10
+
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                $Seconds -eq 4
+            }
+        }
+
+        It 'prevents a queue POST after the shared budget expires' {
+            Mock Get-DispatcherElapsedSeconds { return 480 } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-RestMethod { throw 'HTTP must not run after budget expiry.' } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 302 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*dispatcher-budget-exhausted*before*queue POST*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'prevents nested HTTP retries from overrunning the shared budget' {
+            $script:elapsedCalls = 0
+            Mock Get-DispatcherElapsedSeconds {
+                $script:elapsedCalls++
+                if ($script:elapsedCalls -le 2) { return 470 }
+                return 479.5
+            } -ModuleName QueueCiFixAzdoValidationTest
+            $script:operationCalls = 0
+
+            {
+                Invoke-QueueTestWithHttpRetry -OperationName 'nested retry' -Operation {
+                    param($timeoutSeconds)
+                    $script:operationCalls++
+                    $timeoutSeconds | Should -Be 10
+                    throw [System.TimeoutException]::new('transient')
+                }
+            } | Should -Throw '*dispatcher-budget-exhausted*'
+
+            $script:operationCalls | Should -Be 1
+            Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                $Seconds -eq 2
+            }
+        }
+
+        It 'keeps an ambiguous POST uncertain when reconciliation exhausts the budget' {
+            Mock Invoke-RestMethod {
+                throw [System.TimeoutException]::new('queue response timed out')
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-DispatcherSleep {
+                throw '[dispatcher-budget-exhausted] no reconciliation time remains'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Duplicate lookup must not run after sleep exhausts the budget.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 302 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*may have been accepted*POST was issued exactly once*acceptance remains uncertain*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                $Method -eq 'Post'
+            }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'preserves completed results and marks all remaining work failed after budget exhaustion' {
+            $secondContext = $script:queueContext.PSObject.Copy()
+            $secondContext.PullRequestNumber = 124
+            $secondContext.PullRequestId = 456913
+            $secondContext.HeadSha = '3333333333333333333333333333333333333333'
+            $secondContext.MergeSha = '4444444444444444444444444444444444444444'
+            $script:queueCalls = 0
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                $script:queueCalls++
+                if ($script:queueCalls -eq 1) {
+                    return [pscustomobject]@{
+                        Build = [pscustomobject]@{ id = 8001 }
+                        Reconciled = $false
+                    }
+                }
+                throw '[dispatcher-budget-exhausted] queue budget expired before the next POST'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext, $secondContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 6
+            $results[0].Outcome | Should -Be 'queued'
+            $results[0].BuildId | Should -Be 8001
+            @($results[1..5].Outcome | Sort-Object -Unique) | Should -Be @('failed')
+            $results[1].Error | Should -Match 'dispatcher-budget-exhausted'
+            @($results[1..5].Error | Sort-Object -Unique) | Should -Be @($results[1].Error)
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+            Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly -ParameterFilter {
+                @($Results).Count -eq 3
+            }
         }
     }
 }

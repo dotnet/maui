@@ -23,6 +23,8 @@ jobs:
   queue-validation:
     if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
+    # The script stops network work after 7 minutes, preserving 3 minutes for
+    # runner startup/checkout, partial summaries, and an explicit failed outcome.
     timeout-minutes: 10
     permissions:
       contents: read
@@ -44,4 +46,4 @@ jobs:
           AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: .github/scripts/Queue-CiFixAzdoValidation.ps1
+        run: .github/scripts/Queue-CiFixAzdoValidation.ps1 -DispatcherBudgetSeconds 420
