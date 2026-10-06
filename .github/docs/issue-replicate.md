@@ -403,7 +403,8 @@ candidate's route factory; the author application's bootstrap is not replayed.
 The modal candidate reads native content, instance markers, navigation bars,
 window geometry and returned-home controls from one accessibility snapshot per
 state instead of repeated element-property requests. Actions use the observed
-native bounds; snapshot reads and gestures stay inside the 26-second body budget.
+native bounds; waits for snapshot reads and gestures share the 26-second body
+budget. Timing out a wait does not cancel an already issued Appium request.
 The two fresh-instance controls, singleton reuse check, reopened-content
 observation and 30-second recording limit are unchanged.
 The CollectionView case uses issue #38276's original public attachment. It
