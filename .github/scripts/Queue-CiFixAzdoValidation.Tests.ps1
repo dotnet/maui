@@ -410,6 +410,30 @@ Describe 'New-AzdoQueueRequest' {
         $request.triggerInfo.'pr.targetBranch' | Should -Be 'net11.0'
     }
 
+    It 'serializes producer-equivalent system pull request parameters for both target branches' {
+        foreach ($targetBranch in @('main', 'net11.0')) {
+            $title = if ($targetBranch -eq 'main') { '[ci-fix] Repair CI' } else { '[ci-fix-net11] Repair CI' }
+            $headRef = if ($targetBranch -eq 'main') { 'ci-fix/issue-123' } else { 'ci-fix/issue-124' }
+            $context = Get-CiFixEventContext `
+                -Event (New-TestEvent -BaseRef $targetBranch -Title $title -HeadRef $headRef) `
+                -Repository dotnet/maui `
+                -EventName pull_request_target
+            $request = New-AzdoQueueRequest -DefinitionId 302 -Context $context
+            $parameters = $request.parameters | ConvertFrom-Json
+
+            $parameters.'system.pullRequest.pullRequestId' | Should -Be '456912'
+            $parameters.'system.pullRequest.pullRequestNumber' | Should -Be '123'
+            $parameters.'system.pullRequest.mergedAt' | Should -Be ''
+            $parameters.'system.pullRequest.sourceBranch' | Should -Be $headRef
+            $parameters.'system.pullRequest.targetBranch' | Should -Be $targetBranch
+            $parameters.'system.pullRequest.targetBranchName' | Should -Be $targetBranch
+            $parameters.'system.pullRequest.sourceRepositoryUri' | Should -Be 'https://github.com/dotnet/maui'
+            $parameters.'system.pullRequest.sourceCommitId' | Should -Be '1111111111111111111111111111111111111111'
+            $parameters.'system.pullRequest.isFork' | Should -Be 'False'
+            $request.sourceVersion | Should -Be '2222222222222222222222222222222222222222'
+        }
+    }
+
     It 'defines all three MAUI validation pipelines' {
         $pipelines = @(Get-CiFixPipelineDefinitions)
         $pipelines.Name | Should -Be @('maui-pr', 'maui-pr-uitests', 'maui-pr-devicetests')
@@ -591,6 +615,41 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
             Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+        }
+
+        It 'recognizes the PowerShell timeout exception chain and reconciles exactly once' {
+            $socket = [System.Net.Sockets.SocketException]::new([System.Net.Sockets.SocketError]::TimedOut)
+            $io = [System.IO.IOException]::new('socket timed out', $socket)
+            $timeout = [System.TimeoutException]::new('request timed out', $io)
+            $canceled = [System.Threading.Tasks.TaskCanceledException]::new('request canceled', $timeout)
+            $script:correlatedBuild = [pscustomobject]@{ id = 7004 }
+            Mock Invoke-RestMethod { throw $canceled } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild { return $script:correlatedBuild } -ModuleName QueueCiFixAzdoValidationTest
+
+            (Test-QueueTestIsTransientHttpException -Exception $canceled) | Should -BeTrue
+            $result = Invoke-QueueTestAzdoPipelineQueue `
+                -DefinitionId 302 `
+                -Context $script:queueContext `
+                -AuthToken test-token
+
+            $result.Build.id | Should -Be 7004
+            $result.Reconciled | Should -BeTrue
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+        }
+
+        It 'does not classify plain cancellation or authentication failures as transient' {
+            (Test-QueueTestIsTransientHttpException -Exception ([System.Threading.Tasks.TaskCanceledException]::new('caller canceled'))) | Should -BeFalse
+            $unauthorized = [System.Net.Http.HttpRequestException]::new(
+                'unauthorized',
+                $null,
+                [System.Net.HttpStatusCode]::Unauthorized)
+            (Test-QueueTestIsTransientHttpException -Exception $unauthorized) | Should -BeFalse
+            $wrappedUnauthorized = [System.Net.Http.HttpRequestException]::new(
+                'unauthorized',
+                [System.TimeoutException]::new('inner timeout'),
+                [System.Net.HttpStatusCode]::Unauthorized)
+            (Test-QueueTestIsTransientHttpException -Exception $wrappedUnauthorized) | Should -BeFalse
         }
 
         It 'reconciles a 5xx POST to the exact build without retrying the POST' {

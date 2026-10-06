@@ -317,30 +317,47 @@ function Get-OpenCiFixContexts {
 function Test-IsTransientHttpException {
     param([Parameter(Mandatory = $true)][System.Exception]$Exception)
 
-    if ($Exception -is [System.TimeoutException] -or $Exception -is [System.Net.Http.HttpRequestException]) {
-        $statusCode = Get-ObjectPropertyValue -InputObject $Exception -Name 'StatusCode'
-        if ($null -eq $statusCode) {
-            return $true
+    $currentException = $Exception
+    $statusCode = $null
+    $hasTimeout = $false
+    $hasNetworkException = $false
+    while ($null -ne $currentException) {
+        $response = Get-ObjectPropertyValue -InputObject $currentException -Name 'Response'
+        $nestedStatusCode = Get-ObjectPropertyValue -InputObject $response -Name 'StatusCode'
+        if ($null -eq $nestedStatusCode) {
+            $nestedStatusCode = Get-ObjectPropertyValue -InputObject $currentException -Name 'StatusCode'
         }
+        if ($null -eq $statusCode -and $null -ne $nestedStatusCode) {
+            $statusCode = $nestedStatusCode
+        }
+
+        if ($currentException -is [System.TimeoutException]) {
+            $hasTimeout = $true
+        }
+        if ($currentException -is [System.IO.IOException] -or
+            $currentException -is [System.Net.Sockets.SocketException] -or
+            $currentException -is [System.Net.Http.HttpRequestException]) {
+            $hasNetworkException = $true
+        }
+
+        $currentException = $currentException.InnerException
     }
 
-    $response = Get-ObjectPropertyValue -InputObject $Exception -Name 'Response'
-    $statusCode = Get-ObjectPropertyValue -InputObject $response -Name 'StatusCode'
-    if ($null -eq $statusCode) {
-        $statusCode = Get-ObjectPropertyValue -InputObject $Exception -Name 'StatusCode'
-    }
-    if ($null -eq $statusCode) {
-        return $false
-    }
-
-    $numericStatusCode = if ($statusCode.PSObject.Properties['value__']) {
-        [int]$statusCode.value__
-    }
-    else {
-        [int]$statusCode
+    if ($null -ne $statusCode) {
+        $numericStatusCode = if ($statusCode.PSObject.Properties['value__']) {
+            [int]$statusCode.value__
+        }
+        else {
+            [int]$statusCode
+        }
+        return $numericStatusCode -in $script:TransientHttpStatusCodes
     }
 
-    return $numericStatusCode -in $script:TransientHttpStatusCodes
+    # PowerShell's request timeout can be a TaskCanceledException wrapping a
+    # TimeoutException, IOException, and SocketException. Plain cancellation
+    # remains non-transient so authentication and caller cancellation do not
+    # trigger queue retries.
+    return $hasTimeout -or $hasNetworkException
 }
 
 function Get-HttpStatusCode {
@@ -521,6 +538,17 @@ function New-AzdoQueueRequest {
         reason = 'pullRequest'
         sourceBranch = "refs/pull/$($Context.PullRequestNumber)/merge"
         sourceVersion = $Context.MergeSha
+        parameters = ([ordered]@{
+            'system.pullRequest.pullRequestId' = "$($Context.PullRequestId)"
+            'system.pullRequest.pullRequestNumber' = "$($Context.PullRequestNumber)"
+            'system.pullRequest.mergedAt' = ''
+            'system.pullRequest.sourceBranch' = $Context.HeadRef
+            'system.pullRequest.targetBranch' = $Context.BaseRef
+            'system.pullRequest.targetBranchName' = $Context.BaseRef
+            'system.pullRequest.sourceRepositoryUri' = 'https://github.com/dotnet/maui'
+            'system.pullRequest.sourceCommitId' = $Context.HeadSha
+            'system.pullRequest.isFork' = 'False'
+        } | ConvertTo-Json -Compress)
         triggerInfo = [ordered]@{
             'pr.sourceBranch' = $Context.HeadRef
             'pr.sourceSha' = $Context.HeadSha
