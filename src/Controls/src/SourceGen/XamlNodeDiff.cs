@@ -453,9 +453,11 @@ static class XamlNodeDiff
 			// RegisterTemplateComponent, not a single XamlComponentRegistry entry, so a local
 			// same-id rebuild emitted against "this" would silently no-op for every realized
 			// instance. Only directives whose creation codegen can faithfully reproduce the
-			// change (x:Name, x:Key — see IsLocallyRebuildable) are eligible; anything else
-			// (x:FactoryMethod, x:TypeArguments, ...) keeps cascading, since the local-rebuild
-			// creation path always emits a plain `new {Type}()` and cannot represent those.
+			// change (x:Name — see IsLocallyRebuildable) is eligible; anything else
+			// (x:Key, x:FactoryMethod, x:TypeArguments, ...) keeps cascading, since the
+			// local-rebuild creation path always emits a plain `new {Type}()` and skips all x:
+			// directives, and a compound edit is only eligible if EVERY changed codegen-sensitive
+			// directive on this node is individually eligible (see DiffProperties).
 			// Below the root, contain the damage: signal the caller to rebuild just this node
 			// (same id, fresh subtree) instead of failing the entire diff.
 			if (depth == 0 || templateContent || codegenSensitiveChange is not { } change || !IsLocallyRebuildable(change))
@@ -948,6 +950,12 @@ static class XamlNodeDiff
 		xDataTypeChanged = false;
 		codegenSensitiveChange = null;
 
+		// Every codegen-sensitive x: directive that changed, in encounter order. A compound edit
+		// (e.g. x:Name AND x:FactoryMethod both changed) must not let an eligible directive
+		// (x:Name) mask an ineligible one (x:FactoryMethod): we need to see all of them before
+		// deciding whether a local rebuild can faithfully represent the whole change.
+		List<XmlName>? allCodegenSensitiveChanges = null;
+
 		// Check all properties in the old node
 		foreach (var kvp in oldNode.Properties)
 		{
@@ -965,11 +973,13 @@ static class XamlNodeDiff
 					continue;
 				}
 
-				// Codegen-sensitive x: property changed → structural regardless of value
+				// Codegen-sensitive x: property changed → structural regardless of value.
+				// Keep scanning (don't return yet) so a later, ineligible directive change on
+				// this same node isn't masked by an earlier eligible one.
 				if (IsCodegenSensitive(name) && !NodeValueEquals(oldPropNode, newPropNode))
 				{
-					codegenSensitiveChange = name;
-					return false;
+					(allCodegenSensitiveChanges ??= []).Add(name);
+					continue;
 				}
 
 				// Both sides have the property — compare values
@@ -1011,8 +1021,9 @@ static class XamlNodeDiff
 				}
 				if (IsCodegenSensitive(name))
 				{
-					codegenSensitiveChange = name;
-					return false; // removing x:Name/x:Class/etc. → structural
+					// removing x:Name/x:Class/etc. — keep scanning, see comment above
+					(allCodegenSensitiveChanges ??= []).Add(name);
+					continue;
 				}
 				// Carry the old node for complex properties so codegen knows what's being cleared
 				var oldNodeRef = oldPropNode is not ValueNode ? oldPropNode : null;
@@ -1033,8 +1044,9 @@ static class XamlNodeDiff
 				}
 				if (IsCodegenSensitive(kvp.Key))
 				{
-					codegenSensitiveChange = kvp.Key;
-					return false; // adding x:Name/x:Class/etc. → structural
+					// adding x:Name/x:Class/etc. — keep scanning, see comment above
+					(allCodegenSensitiveChanges ??= []).Add(kvp.Key);
+					continue;
 				}
 
 				var newPropNode = kvp.Value;
@@ -1050,8 +1062,29 @@ static class XamlNodeDiff
 			}
 		}
 
-		return true;
+		if (allCodegenSensitiveChanges is null)
+			return true;
+
+		// A local rebuild can only stand in for this change if EVERY codegen-sensitive directive
+		// that changed is individually eligible (see IsLocallyRebuildable) — a compound edit with
+		// even one ineligible directive (e.g. x:Name + x:FactoryMethod together) must keep the
+		// structural fallback, since the rebuild's creation codegen can only faithfully represent
+		// the eligible subset, not the rest.
+		codegenSensitiveChange = allCodegenSensitiveChanges.TrueForAll(IsLocallyRebuildable)
+			? allCodegenSensitiveChanges[0]
+			: NonRebuildableSentinel;
+		return false;
 	}
+
+	/// <summary>
+	/// Sentinel <see cref="XmlName"/> returned via <c>codegenSensitiveChange</c> from
+	/// <see cref="DiffProperties"/> when a compound edit changed multiple codegen-sensitive
+	/// directives and at least one of them is not locally rebuildable. It deliberately fails
+	/// <see cref="IsLocallyRebuildable"/> (its namespace is not <c>"x"</c>), forcing
+	/// <see cref="DiffNode"/> to keep the structural fallback instead of acting on only the
+	/// first-seen eligible directive.
+	/// </summary>
+	static readonly XmlName NonRebuildableSentinel = new("", "");
 
 	/// <summary>
 	/// Returns <see langword="true"/> when <paramref name="name"/> is a codegen-sensitive
@@ -1091,12 +1124,18 @@ static class XamlNodeDiff
 	/// parameterless constructor) or <c>x:TypeArguments</c> (needs a generic instantiation).
 	/// <c>x:Class</c>/<c>x:ClassModifier</c>/<c>x:FieldModifier</c> only ever apply to the root
 	/// element, which is already excluded from local rebuilds at <c>depth == 0</c>, so they are
-	/// excluded here too for clarity/defense-in-depth. Only <c>x:Name</c> and <c>x:Key</c> changes
-	/// — pure identifier edits that don't affect how the instance is constructed — are eligible;
-	/// anything else keeps cascading to a full structural reload.
+	/// excluded here too for clarity/defense-in-depth. <c>x:Key</c> is also excluded: it addresses
+	/// an entry in a <c>ResourceDictionary</c>, which is rewritten via the dedicated
+	/// <c>TryEmitResourceDictionaryItemChange</c>/<c>TryEmitResourceDictionaryChange</c> path
+	/// (plain dictionary add/remove by key), not the Layout-child/content-property path that
+	/// <c>EmitChildListChange</c> (the local-rebuild emitter) understands — so a same-id rebuild
+	/// would silently be skipped and the old key would remain mapped to the detached instance.
+	/// Only <c>x:Name</c> changes — pure element-identifier edits that don't affect how the
+	/// instance is constructed or looked up in a dictionary — are eligible; anything else keeps
+	/// cascading to a full structural reload.
 	/// </summary>
 	static bool IsLocallyRebuildable(XmlName name) =>
-		name.NamespaceURI == "x" && (name.LocalName == "Name" || name.LocalName == "Key");
+		name.NamespaceURI == "x" && name.LocalName == "Name";
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the property is <c>x:DataType</c>,

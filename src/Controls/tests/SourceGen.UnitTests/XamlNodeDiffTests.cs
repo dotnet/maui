@@ -1045,11 +1045,14 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XKey_Changed_IsLocalRebuild_NotStructural()
+	public void XKey_Changed_CascadesToStructural_NotLocalRebuild()
 	{
-		// FIXED: like x:Name, x:Key is a codegen-sensitive property, but renaming it on an
-		// element that never moved/reparented/changed type is a local, same-id rebuild — not a
-		// page (or dictionary)-wide structural reset.
+		// Unlike x:Name, x:Key identifies an entry in a ResourceDictionary. That dictionary is
+		// rewritten via the dedicated TryEmitResourceDictionaryItemChange/
+		// TryEmitResourceDictionaryChange path (plain add/remove by key), not the Layout-child/
+		// content-property path EmitChildListChange (the local-rebuild emitter) understands — so
+		// renaming x:Key must still cascade to a full structural (null) result, not a same-id
+		// local rebuild (see IsLocallyRebuildable's doc comment).
 		var old = Parse($"""
 			<ResourceDictionary {MauiXmlns} x:Class="Test.Resources">
 				<Color x:Key="OldKey">Red</Color>
@@ -1061,17 +1064,9 @@ public class XamlNodeDiffTests
 			</ResourceDictionary>
 			""");
 
-		var oldIds = NodeIdHelper.AssignIds(old);
-		var newIds = NodeIdHelper.AssignIds(@new);
-		var diff = XamlNodeDiff.ComputeDiff(old, @new, oldIds, newIds, out _);
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.NotNull(diff);
-		var change = Assert.Single(diff.ChildListChanges);
-		var entry = Assert.Single(change.NewChildren);
-		Assert.Equal(ChildChangeKind.Added, entry.Kind);
-		var oldColorElement = (ElementNode)old.CollectionItems[0];
-		Assert.Equal(oldIds[oldColorElement], entry.NewNodeId); // same id retained
-		Assert.Empty(change.RemovedNodeIds);
+		Assert.Null(diff);
 	}
 
 	[Fact]
@@ -3143,12 +3138,14 @@ public class XamlNodeDiffTests
 		Assert.Equal("oldLabel", removedName.Name);
 	}
 
-	// Rebuild-eligibility boundary — only x:Name/x:Key changes are safe to route through a
+	// Rebuild-eligibility boundary — only a plain x:Name change is safe to route through a
 	// same-id local rebuild (see IsLocallyRebuildable's doc comment: the rebuild codegen always
 	// emits a plain "new {Type}()" and skips all x: directives, which would be wrong for a
-	// factory-constructed or open-generic type). Every other codegen-sensitive directive, and
-	// any codegen-sensitive change inside a template, must still cascade to a full structural
-	// (null) result.
+	// factory-constructed or open-generic type, and EmitChildListChange doesn't understand
+	// ResourceDictionary entries either). Every other codegen-sensitive directive (including
+	// x:Key), any codegen-sensitive change inside a template, and any COMPOUND edit where x:Name
+	// changes alongside an ineligible directive, must still cascade to a full structural (null)
+	// result.
 
 	[Fact]
 	public void XFactoryMethodChanged_CascadesToStructural_NotLocalRebuild()
@@ -3209,4 +3206,20 @@ public class XamlNodeDiffTests
 
 		Assert.Null(diff);
 	}
+
+	[Fact]
+	public void XNameAndXFactoryMethodBothChanged_CascadesToStructural_NotLocalRebuild()
+	{
+		// Compound edit: x:Name (eligible) and x:FactoryMethod (not eligible) change together on
+		// the same node. DiffProperties must not let the eligible directive mask the ineligible
+		// one — the local-rebuild creation path always emits a plain "new {Type}()", which would
+		// silently discard the factory-method change if this were allowed through as a rebuild.
+		var old = Parse(Page("""<Label x:Name="oldLabel" x:FactoryMethod="Create" Text="Hello" />"""));
+		var @new = Parse(Page("""<Label x:Name="newLabel" x:FactoryMethod="CreateOther" Text="Hello" />"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
 }
+
