@@ -344,7 +344,9 @@ function Resolve-VerifiedCiFixContext {
         }
     }
 
-    throw "Eligible CI-fix PR #$($NominatedContext.PullRequestNumber) head '$lastHeadSha' did not obtain a verified test merge after $($script:MaxHttpAttempts) attempts. Last candidate merge '$lastMergeSha': $lastDiagnostic. No Azure DevOps validation was queued or deduplicated for this PR."
+    $verificationError = "Eligible CI-fix PR #$($NominatedContext.PullRequestNumber) head '$lastHeadSha' did not obtain a verified test merge after $($script:MaxHttpAttempts) attempts. Last candidate merge '$lastMergeSha': $lastDiagnostic. No Azure DevOps validation was queued or deduplicated for this PR."
+    $context | Add-Member -NotePropertyName VerificationError -NotePropertyValue $verificationError -Force
+    return $context
 }
 
 function Get-CiFixEventContext {
@@ -871,6 +873,17 @@ function Invoke-CiFixQueueWork {
     foreach ($context in $Contexts) {
         $contextResults = [System.Collections.Generic.List[object]]::new()
         foreach ($pipeline in Get-CiFixPipelineDefinitions) {
+            $verificationError = [string](Get-ObjectPropertyValue -InputObject $context -Name 'VerificationError')
+            if (-not [string]::IsNullOrWhiteSpace($verificationError)) {
+                $result = New-CiFixFailureResult `
+                    -Context $context `
+                    -Pipeline $pipeline `
+                    -ErrorMessage $verificationError
+                $workResults.Add($result)
+                $contextResults.Add($result)
+                continue
+            }
+
             if ($null -ne $budgetExhaustedAfter) {
                 $skippedError = "$($script:DispatcherBudgetPrefix) PR #$($context.PullRequestNumber) pipeline '$($pipeline.Name)' was not processed because the shared dispatcher budget was exhausted while processing $budgetExhaustedAfter. No queue POST was attempted for this work item."
                 $result = New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $skippedError
@@ -981,8 +994,26 @@ if ($contexts.Count -eq 0) {
 }
 
 $results = [System.Collections.Generic.List[object]]::new()
+$verificationFailureContexts = @(
+    $contexts | Where-Object {
+        -not [string]::IsNullOrWhiteSpace(
+            [string](Get-ObjectPropertyValue -InputObject $_ -Name 'VerificationError'))
+    }
+)
+$queueContexts = @(
+    $contexts | Where-Object {
+        [string]::IsNullOrWhiteSpace(
+            [string](Get-ObjectPropertyValue -InputObject $_ -Name 'VerificationError'))
+    }
+)
+if ($verificationFailureContexts.Count -gt 0) {
+    foreach ($result in Invoke-CiFixQueueWork -Contexts $verificationFailureContexts -AuthToken '') {
+        $results.Add($result)
+    }
+}
+
 if ($DryRun) {
-    foreach ($context in $contexts) {
+    foreach ($context in $queueContexts) {
         $contextResults = [System.Collections.Generic.List[object]]::new()
         foreach ($pipeline in Get-CiFixPipelineDefinitions) {
             $request = New-AzdoQueueRequest -DefinitionId $pipeline.DefinitionId -Context $context
@@ -1000,16 +1031,25 @@ if ($DryRun) {
         Write-CiFixJobSummary -Context $context -Results $contextResults
     }
     $results | ConvertTo-Json -Depth 10
+    $dryRunFailures = @($results | Where-Object Outcome -eq 'failed')
+    if ($dryRunFailures.Count -gt 0) {
+        throw "$($dryRunFailures.Count) of $($results.Count) Azure DevOps validation pipelines failed before dry-run queue payload generation."
+    }
     exit 0
 }
 
 $pipelines = @(Get-CiFixPipelineDefinitions)
+if ($queueContexts.Count -eq 0) {
+    $results | ConvertTo-Json -Depth 10
+    throw "$($results.Count) Azure DevOps validation pipelines failed test-merge verification; no queue requests were attempted."
+}
+
 try {
     $authToken = Get-AzdoToken
 }
 catch {
     $authFailure = "Dispatcher authentication failed before queueing: $($_.Exception.Message)"
-    foreach ($context in $contexts) {
+    foreach ($context in $queueContexts) {
         $contextResults = @(
             foreach ($pipeline in $pipelines) {
                 New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $authFailure
@@ -1025,7 +1065,7 @@ catch {
 }
 
 try {
-    foreach ($result in Invoke-CiFixQueueWork -Contexts $contexts -AuthToken $authToken) {
+    foreach ($result in Invoke-CiFixQueueWork -Contexts $queueContexts -AuthToken $authToken) {
         $results.Add($result)
     }
 }

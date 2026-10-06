@@ -197,6 +197,10 @@ Automated CI-fix PR validation is implemented separately by
   parent before the head/merge pair can enter Azure queueing or deduplication.
   The current base SHA is not required to equal the first merge parent because
   the base can advance independently;
+- reports a bounded missing/stale/conflicting test merge as three explicit
+  failed pipeline results for that PR without making Azure requests, while
+  continuing scan-all recovery for other verified eligible heads. Unexpected
+  GitHub failures and shared-budget exhaustion remain fatal discovery errors;
 - enforces one shared seven-minute elapsed-time budget across PR discovery,
   authentication, dedupe reads, queue POSTs, retries, and reconciliation. The
   ten-minute job timeout leaves three minutes for runner startup/checkout,

@@ -468,9 +468,11 @@ Describe 'Get-OpenCiFixContexts' {
             throw "Unexpected operation '$OperationName'."
         }
 
-        {
-            Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath ''
-        } | Should -Throw "*PR #123 head '1111111111111111111111111111111111111111' did not obtain a verified test merge after 4 attempts*source parent '3333333333333333333333333333333333333333' does not match head*No Azure DevOps validation was queued or deduplicated*"
+        $contexts = @(Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath '')
+
+        $contexts.Count | Should -Be 1
+        $contexts[0].VerificationError |
+            Should -BeLike "*PR #123 head '1111111111111111111111111111111111111111' did not obtain a verified test merge after 4 attempts*source parent '3333333333333333333333333333333333333333' does not match head*No Azure DevOps validation was queued or deduplicated*"
 
         Should -Invoke Invoke-WithHttpRetry -Times 4 -Exactly -ParameterFilter {
             $OperationName -like '*detail refresh'
@@ -591,9 +593,10 @@ Describe 'Get-OpenCiFixContexts' {
             throw "Unexpected operation '$OperationName'."
         }
 
-        {
-            Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath ''
-        } | Should -Throw $Expected
+        $contexts = @(Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath '')
+
+        $contexts.Count | Should -Be 1
+        $contexts[0].VerificationError | Should -BeLike $Expected
 
         Should -Invoke Invoke-DispatcherSleep -Times 3 -Exactly
     }
@@ -1232,6 +1235,57 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             }
             Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
+        }
+
+        It 'isolates an unverifiable PR while processing every pipeline for the next verified head' {
+            $unverifiedContext = $script:queueContext.PSObject.Copy()
+            $unverifiedContext | Add-Member `
+                -NotePropertyName VerificationError `
+                -NotePropertyValue "Eligible CI-fix PR #123 head '$($unverifiedContext.HeadSha)' did not obtain a verified test merge. No Azure DevOps validation was queued or deduplicated for this PR."
+            $verifiedContext = $script:queueContext.PSObject.Copy()
+            $verifiedContext.PullRequestNumber = 124
+            $verifiedContext.PullRequestId = 456913
+            $verifiedContext.BaseRef = 'net11.0'
+            $verifiedContext.HeadRef = 'ci-fix/issue-124'
+            $verifiedContext.HeadSha = '3333333333333333333333333333333333333333'
+            $verifiedContext.MergeSha = '4444444444444444444444444444444444444444'
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                return [pscustomobject]@{
+                    Build = [pscustomobject]@{ id = 8000 + $DefinitionId }
+                    Reconciled = $false
+                }
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($unverifiedContext, $verifiedContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 6
+            @($results[0..2].Outcome | Select-Object -Unique) | Should -Be @('failed')
+            foreach ($result in $results[0..2]) {
+                $result.PullRequestNumber | Should -Be 123
+                $result.Error | Should -Match 'did not obtain a verified test merge'
+                $result.Error | Should -Match 'No Azure DevOps validation was queued or deduplicated'
+            }
+            @($results[3..5].Outcome | Select-Object -Unique) | Should -Be @('queued')
+            @($results[3..5].PullRequestNumber | Select-Object -Unique) | Should -Be @(124)
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 3 -Exactly -ParameterFilter {
+                $PullRequestNumber -eq 124
+            }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly -ParameterFilter {
+                $PullRequestNumber -eq 123
+            }
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 3 -Exactly -ParameterFilter {
+                $Context.PullRequestNumber -eq 124
+            }
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly -ParameterFilter {
+                $Context.PullRequestNumber -eq 123
+            }
             Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
         }
     }
