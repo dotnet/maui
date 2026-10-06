@@ -250,6 +250,73 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SelectedItemSetBeforeItemsSourceIsSelected()
+		{
+			// https://github.com/dotnet/maui/issues/30644
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedItem = "Paul";
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Paul", picker.SelectedItem);
+			// Same as when ItemsSource is set first and SelectedItem second
+			Assert.Equal(1, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedItemBoundBeforeItemsSourceKeepsBoundValue()
+		{
+			// https://github.com/dotnet/maui/issues/30644
+			var paul = new PickerTestsContextFixture("Paul", "Paul");
+			var bindingContext = new PickerTestsBindingContext
+			{
+				Items = new ObservableCollection<object>
+				{
+					new PickerTestsContextFixture("John", "John"),
+					paul
+				},
+				SelectedItem = paul
+			};
+			var picker = new Picker
+			{
+				BindingContext = bindingContext,
+				ItemDisplayBinding = new Binding("DisplayName"),
+			};
+
+			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
+			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Same(paul, picker.SelectedItem);
+			Assert.Same(paul, bindingContext.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedItemNotInItemsSourceSetBeforeItemsSourceIsCleared()
+		{
+			var picker = new Picker();
+
+			picker.SelectedItem = "Ringo";
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
 		public void SelectedItemSetAfterPendingSelectedIndexClearsPendingIndex()
 		{
 			var items = new ObservableCollection<string>();
