@@ -683,6 +683,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"//catdetails"));
 		}
 
+		[Theory]
+		[InlineData("catdetails")]
+		[InlineData("catdetails/dogdetails")]
+		public async Task RoutingToContentThatIsNotAPageThrows(string route)
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "dogs");
+			shell.Items.Add(item1);
+
+			Routing.RegisterRoute("catdetails", typeof(ContentView));
+			Routing.RegisterRoute("dogdetails", typeof(ContentPage));
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => shell.GoToAsync(route));
+			Assert.Contains("catdetails", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(typeof(ContentView).FullName, exception.Message, StringComparison.Ordinal);
+		}
+
 		[Fact]
 		public async Task LocationRemovesImplicit()
 		{
