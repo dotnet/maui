@@ -74,7 +74,10 @@ Review-PR.ps1
 The full outcome/alternative-fix labels above belong to local `Review-PR.ps1`
 reviews. The hosted `/review gate` command applies only the gate pass/fail signals
 through `Post-PRGate.ps1`, never approval or full-review tracking labels, and only
-when the live PR head still matches the tested head.
+when the live PR head still matches the tested head. It assigns the existing
+gate labels without editing their repository-wide descriptions or colors.
+Required label-operation failures make publication incomplete rather than
+silently reporting success.
 `s/agent-review-in-progress` remains the shared async lock. It normally clears in
 the Azure cleanup stage; very old locks are treated as stale so cancellation
 does not permanently block another gate.
@@ -95,7 +98,10 @@ The `Parse-PhaseOutcomes` function in `Update-AgentLabels.ps1` reads `content.md
 
 ### Self-Bootstrapping
 
-Labels are created automatically on first use via `Ensure-LabelExists`. No manual setup required. If a label already exists but has a stale description or color, it is updated.
+Local full-review helpers create labels on first use via `Ensure-LabelExists`
+and update stale descriptions or colors. Hosted gate publication requires the
+existing gate signal labels and changes only their PR assignments; it does not
+require permission to manage repository-wide label definitions.
 
 ---
 
@@ -168,9 +174,9 @@ is:pr label:s/agent-reviewed
 ### Design Principles
 
 - **Idempotent**: Safe to re-run — checks before add/remove, GitHub ignores duplicate adds
-- **Non-fatal**: Label failures emit warnings but never fail the overall workflow
-- **Single source**: All labels applied from `Review-PR.ps1` only — no other scripts touch labels
-- **Self-bootstrapping**: Labels are created on first use via GitHub API
+- **Failure handling**: Local full-review label failures warn; required hosted gate signal failures fail publication explicitly
+- **Shared helpers**: Local full reviews and hosted gate publication use the same PR-label assignment helpers
+- **Self-bootstrapping**: Local full-review helpers create labels on first use; hosted publication uses existing gate signals
 - **Mutual exclusivity enforced**: Outcome labels and same-category signal labels automatically remove their counterpart
 
 ---

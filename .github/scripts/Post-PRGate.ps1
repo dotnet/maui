@@ -217,18 +217,25 @@ $currentPrJson = Invoke-GhCommandWithRetry `
 $currentPr = $currentPrJson | ConvertFrom-Json
 if ($ReviewedCommit -and $currentPr.state -eq 'open' -and
     $currentPr.head.sha -ceq $ReviewedCommit -and $newerReport.Count -eq 0) {
-    foreach ($label in @('s/agent-gate-passed', 's/agent-gate-failed')) {
-        Remove-Label -PRNumber $PRNumber -LabelName $label | Out-Null
-    }
     $labelName = switch ($TrustedGateResult) {
         'PASSED' { 's/agent-gate-passed' }
         'FAILED' { 's/agent-gate-failed' }
         default { '' }
     }
     if ($labelName) {
-        $definition = $script:SignalLabels[$labelName]
-        Ensure-LabelExists -LabelName $labelName -Description $definition.Description -Color $definition.Color
-        Add-Label -PRNumber $PRNumber -LabelName $labelName | Out-Null
+        # Publishing a gate signal must not edit repository-wide label definitions.
+        Invoke-GhCommandWithRetry `
+            -Arguments @('api', "repos/dotnet/maui/labels/$([uri]::EscapeDataString($labelName))") `
+            -Description "read existing gate signal '$labelName'" -RequireOutput | Out-Null
+    }
+    foreach ($label in @('s/agent-gate-passed', 's/agent-gate-failed')) {
+        if ($label -eq $labelName) { continue }
+        if (-not (Remove-Label -PRNumber $PRNumber -LabelName $label)) {
+            throw "Gate comment was published, but clearing signal '$label' failed."
+        }
+    }
+    if ($labelName -and -not (Add-Label -PRNumber $PRNumber -LabelName $labelName)) {
+        throw "Gate comment was published, but applying signal '$labelName' failed."
     }
     foreach ($comment in $comments) {
         if ($comment.id -eq $posted.id) { continue }
