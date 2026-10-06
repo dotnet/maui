@@ -596,6 +596,7 @@ function Get-IssueReplicateTrxVerdict {
         return [pscustomobject]@{ Status = 'Passed'; Names = $names }
     }
     if ($ExitCode -ne 0 -and $failures.Count -gt 0 -and
+        $failures.Count -eq $allFailures -and
         $failures.Count + $passed -eq $results.Count -and
         @($failures | Where-Object {
             $errorInfo = $_.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']")

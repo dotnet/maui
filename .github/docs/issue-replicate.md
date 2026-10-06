@@ -622,7 +622,10 @@ comparison failures are also recognized by the NUnit executor's `Assert.That`,
 `Expected:`, and `But was:` diagnostics, not by generic failure text.
 Setup exceptions such as `Xunit.Sdk.TestClassException` do not count as assertions.
 Prefix-colliding classes are excluded from the candidate's result set after
-validating whole-run counters. UI runners must report their authoritative
+validating whole-run counters. Every failed result must belong to the intended
+candidate class; an unrelated or undiscovered failure makes the run inconclusive,
+even when the candidate also fails an assertion. Unrelated passing results remain
+excluded from candidate identities. UI runners must report their authoritative
 `TRX_RESULT_FILE`; unsupported historical runners fail explicitly.
 Unit candidates contain exactly one file in one project. The verifier snapshots
 the bounded diff before execution, checks source hashes before and after each
