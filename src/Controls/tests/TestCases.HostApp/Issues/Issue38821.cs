@@ -69,7 +69,7 @@ public class Issue38821 : ContentPage
 		if (currentItem is not null)
 			_viewModel.Items?.Remove(currentItem);
 
-		_carouselView.CurrentItem = "2";
+		_carouselView.CurrentItem = "Item2";
 	}
 }
 
