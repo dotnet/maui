@@ -367,6 +367,66 @@ $"""
 		Assert.Contains(".Insert(", result, System.StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void XNameRebuild_WithEventHandler_ReWiresEventOnRebuiltInstance()
+	{
+		// Regression test for the "Rebuilt elements lose XAML event wiring" review finding: the
+		// local-rebuild creation path (EmitNewElement -> EmitNewElementProperties) must subscribe
+		// XAML event attributes (e.g. Clicked="OnClicked") with += — an event can never be
+		// assigned with a plain '=' — or the freshly-rebuilt instance would silently lose its
+		// handler.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="oldName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="newName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		Assert.Contains("Clicked += OnClicked", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked = OnClicked", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRebuild_UnderGetterOnlyCollectionContentProperty_SkipsInsteadOfGeneratingInvalidCode()
+	{
+		// Regression test for the "Local rebuild generates invalid updates for collection
+		// content" review finding: FormattedString.Spans is a getter-only IList<Span> content
+		// property (not a Layout, not a publicly-settable single-value content property).
+		// EmitContentPropertyChange can only emit a plain assignment, which would not compile
+		// against a read-only collection property — so this unsupported shape must be skipped
+		// (like "no content property"), never emitted as a broken assignment.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="oldName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="newName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		// Must never try to assign the read-only Spans property.
+		Assert.DoesNotContain(".Spans =", result, System.StringComparison.Ordinal);
+		Assert.Contains("is not a Layout and has no settable content property", result, System.StringComparison.Ordinal);
+	}
+
 	// helpers
 	static int CountOccurrences(string source, string pattern)
 	{

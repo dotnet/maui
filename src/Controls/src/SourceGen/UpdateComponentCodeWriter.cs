@@ -321,9 +321,20 @@ static class UpdateComponentCodeWriter
 		if (!isLayout && parentType != null)
 			contentPropertyName = parentType.GetContentPropertyName(context: null);
 
-		if (!isLayout && contentPropertyName == null)
+		// EmitContentPropertyChange only understands a single-value, publicly-settable content
+		// property (e.g. ContentPage.Content, Border.Content) — it emits a plain assignment
+		// (`parent.ContentProp = child` / `= null!`). A getter-only, collection-typed content
+		// property (e.g. FormattedString.Spans, an IList<Span> with no setter) can't be
+		// represented that way: the generated assignment wouldn't compile. Treat that shape the
+		// same as "no content property at all" — skip incremental emission for this change
+		// rather than generate invalid code.
+		bool contentPropertyIsSettable = contentPropertyName != null
+			&& parentType!.GetAllProperties(contentPropertyName, context: null)
+				.FirstOrDefault()?.SetMethod?.IsPublic() == true;
+
+		if (!isLayout && (contentPropertyName == null || !contentPropertyIsSettable))
 		{
-			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — skipped");
+			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no settable content property — skipped");
 			if (guardedByParentTryGet)
 			{
 				codeWriter.Indent--;
@@ -704,6 +715,20 @@ static class UpdateComponentCodeWriter
 					// Attached property on a new element — use SetValue pattern
 					var syntheticDiff = new PropertyDiff(kvp.Key, PropertyDiffKind.Set, rawValue);
 					TryEmitAttachedPropertyChange(codeWriter, syntheticDiff, varName, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+				}
+				else if (!propName.Contains('.')
+					&& typeSymbol.GetAllEvents(context: null).FirstOrDefault(e => e.Name == propName) is { } eventSymbol)
+				{
+					// XAML event wiring (e.g. Button.Clicked="OnClicked") — an event can only be
+					// subscribed via +=, never assigned with =. This matters here because a local
+					// rebuild (ChildChangeKind.Rebuilt) constructs a brand-new instance through
+					// this same helper, so an unrelated x:Name rename on a node that also has event
+					// attributes must still wire them up — otherwise the rebuilt instance would
+					// silently lose its event handlers.
+					if (IsValidCSharpIdentifier(rawValue))
+						codeWriter.WriteLine($"{varName}.{propName} += {rawValue};");
+					else
+						codeWriter.WriteLine($"// Event '{propName}' handler '{rawValue}' is not a valid identifier — skipped subscribe");
 				}
 				else
 				{

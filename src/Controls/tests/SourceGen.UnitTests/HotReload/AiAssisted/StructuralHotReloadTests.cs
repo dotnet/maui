@@ -735,4 +735,104 @@ public class StructuralHotReloadTests
 
 		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
 	}
+
+	[MetadataUpdateFact]
+	public void StructuralResetMidReorder_PreservesLiveRegistrationAndIdentityThroughFinalEdit()
+	{
+		// Runtime companion to XamlNodeDiffTests.StructuralResetMidReorder_NoLongerDesyncsIdsFromLiveApp:
+		// that test only compares generator-side id dictionaries across the edit chain. This
+		// exercises the SAME edit chain (reorder + transient x:Name loss/restore + a final
+		// ordinary property edit) through real generated UpdateComponent code, applied against a
+		// live instance, and asserts on actual XamlComponentRegistry/namescope behavior — the
+		// live Entry must stay the SAME instance and resolvable by name throughout, and the final
+		// FontSize edit must land on it (not silently retarget the Label), which is exactly what
+		// would fail if ids ever desynced from what the live app registered.
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.Entry entry1 = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		const string seed = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Entry x:Name="entry1" Text="hello" />
+			    <Label Text="Static" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		// Transient: reordered AND x:Name momentarily missing (mid-keystroke state).
+		const string transientNoName = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label Text="Static" />
+			    <Entry Text="hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		// Settled: same reordered shape, x:Name restored.
+		const string settled = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label Text="Static" />
+			    <Entry x:Name="entry1" Text="hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		// Final: an ordinary property edit.
+		const string finalEdit = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label Text="Static" />
+			    <Entry x:Name="entry1" Text="hello" FontSize="20" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(StructuralResetMidReorder_PreservesLiveRegistrationAndIdentityThroughFinalEdit),
+			PageClass,
+			pageStub);
+		var generation = harness.Generate(seed, transientNoName, settled, finalEdit);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
+			var originalEntry = Assert.IsType<Entry>(layout[0]);
+			Assert.Same(originalEntry, page.FindByName<Entry>("entry1"));
+
+			// Transient: x:Name removed, elements reordered.
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Null(page.FindByName<Entry>("entry1"));
+			var entryAfterTransient = Assert.IsType<Entry>(layout[1]);
+			// THE FIX, VERIFIED: still the SAME live instance — a local rebuild tied to the
+			// SAME id, not a page-wide structural reset that would have swapped identities.
+			Assert.Same(originalEntry, entryAfterTransient);
+
+			// Settled: x:Name restored on the (still same) live instance.
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(2));
+			Assert.Same(originalEntry, page.FindByName<Entry>("entry1"));
+
+			// Final: an ordinary property edit must land on the SAME live Entry, not on the
+			// Label — which is exactly what an id desync would have broken.
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(3));
+			Assert.Same(originalEntry, page.FindByName<Entry>("entry1"));
+			Assert.Equal(20d, originalEntry.FontSize);
+		});
+	}
 }

@@ -14,9 +14,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// </summary>
 public class XamlNodeDiffTests
 {
-	// ---------------------------------------------------------------------------
 	// Helpers
-	// ---------------------------------------------------------------------------
 
 	/// <summary>
 	/// Parses a XAML snippet and returns the root ElementNode.
@@ -33,9 +31,7 @@ public class XamlNodeDiffTests
 	static string Page(string content, string? extraAttrs = null) =>
 		$"""<ContentPage {MauiXmlns} x:Class="Test.MyPage" {extraAttrs}>{content}</ContentPage>""";
 
-	// ---------------------------------------------------------------------------
 	// Identical trees → empty diff
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void IdenticalTree_ReturnsEmptyDiff()
@@ -74,9 +70,7 @@ public class XamlNodeDiffTests
 		Assert.True(diff.IsEmpty);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Property changes → correct diffs
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void ChangedRootProperty_ReturnsPropertyDiff()
@@ -243,9 +237,7 @@ public class XamlNodeDiffTests
 		Assert.Equal("2", nodeDiff4.NodeId);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Structural changes → returns null
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void DifferentRootType_ReturnsNull()
@@ -514,9 +506,7 @@ public class XamlNodeDiffTests
 		Assert.Equal(1, change.NewChildren[2].OldIndex);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Child addition / removal
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void ChildAdded_SimpleElement_ReturnsAddEntry()
@@ -698,9 +688,7 @@ public class XamlNodeDiffTests
 		Assert.Equal(ChildChangeKind.Added, change.NewChildren[2].Kind);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Debug output (ToDebugString) — canonical diff verification
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void ToDebugString_SinglePropertyChange()
@@ -1197,9 +1185,7 @@ public class XamlNodeDiffTests
 		Assert.True(diff.IsEmpty);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Edge cases
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void SingleNodeNoChildren_PropertyChanged_ReturnsDiff()
@@ -1263,9 +1249,7 @@ public class XamlNodeDiffTests
 		Assert.True(diff.IsEmpty);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Multi-edit scenarios (property + structural changes combined)
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void MultiEdit_RootPropertyAndChildProperty()
@@ -1501,9 +1485,7 @@ public class XamlNodeDiffTests
 		Assert.Contains("removed:", debug, StringComparison.Ordinal);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Complex property diff tests (no fallback)
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void BindingToValue_ProducesPropertyDiffWithSimpleValue()
@@ -1538,9 +1520,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(prop.NewNode);
 	}
 
-	// -------------------------------------------------------------------------
 	// Property transition matrix: Value ↔ Binding ↔ StaticResource ↔ DynamicResource
-	// -------------------------------------------------------------------------
 
 	[Fact]
 	public void ValueToBinding_ProducesComplexPropertyDiff()
@@ -1884,9 +1864,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(prop.NewNode);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Sequential edits (xaml1 → xaml2 → xaml3 → …) — simulating a hot reload session
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void SequentialEdits_PropertyTweaks()
@@ -2120,9 +2098,7 @@ public class XamlNodeDiffTests
 		Assert.Equal("Bio", d23.NodeChanges[0].PropertyChanges[0].NewValue);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Smart same-type sibling matching
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void SmartMatching_XNameBased_DetectsReorder()
@@ -2318,9 +2294,7 @@ public class XamlNodeDiffTests
 		Assert.Empty(diff.ChildListChanges);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Resource dictionary changes
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void ResourceAdded_ProducesRootPropertyDiff()
