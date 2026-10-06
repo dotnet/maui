@@ -419,7 +419,22 @@ Describe 'New-AzdoQueueRequest' {
                 -Repository dotnet/maui `
                 -EventName pull_request_target
             $request = New-AzdoQueueRequest -DefinitionId 302 -Context $context
-            $parameters = $request.parameters | ConvertFrom-Json
+            $outerJson = $request | ConvertTo-Json -Depth 10 -Compress
+            $outerRequest = $outerJson | ConvertFrom-Json -Depth 10
+
+            $outerRequest.parameters.GetType() | Should -Be ([string])
+            $parameters = $outerRequest.parameters | ConvertFrom-Json
+            @($parameters.PSObject.Properties.Name | Sort-Object) | Should -Be @(
+                'system.pullRequest.isFork',
+                'system.pullRequest.mergedAt',
+                'system.pullRequest.pullRequestId',
+                'system.pullRequest.pullRequestNumber',
+                'system.pullRequest.sourceBranch',
+                'system.pullRequest.sourceCommitId',
+                'system.pullRequest.sourceRepositoryUri',
+                'system.pullRequest.targetBranch',
+                'system.pullRequest.targetBranchName'
+            )
 
             $parameters.'system.pullRequest.pullRequestId' | Should -Be '456912'
             $parameters.'system.pullRequest.pullRequestNumber' | Should -Be '123'
@@ -430,7 +445,11 @@ Describe 'New-AzdoQueueRequest' {
             $parameters.'system.pullRequest.sourceRepositoryUri' | Should -Be 'https://github.com/dotnet/maui'
             $parameters.'system.pullRequest.sourceCommitId' | Should -Be '1111111111111111111111111111111111111111'
             $parameters.'system.pullRequest.isFork' | Should -Be 'False'
-            $request.sourceVersion | Should -Be '2222222222222222222222222222222222222222'
+            foreach ($property in $parameters.PSObject.Properties) {
+                $property.Value.GetType() | Should -Be ([string])
+            }
+            $outerRequest.sourceVersion | Should -Be '2222222222222222222222222222222222222222'
+            $parameters.'system.pullRequest.sourceCommitId' | Should -Not -Be $outerRequest.sourceVersion
         }
     }
 
@@ -521,6 +540,7 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             'Test-IsTransientHttpException',
             'Get-HttpStatusCode',
             'Invoke-WithHttpRetry',
+            'Find-AzdoDuplicateBuild',
             'Get-AzdoDuplicateBuild',
             'New-AzdoQueueRequest',
             'Invoke-AzdoPipelineQueue',
@@ -620,11 +640,33 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
         It 'recognizes the PowerShell timeout exception chain and reconciles exactly once' {
             $socket = [System.Net.Sockets.SocketException]::new([System.Net.Sockets.SocketError]::TimedOut)
             $io = [System.IO.IOException]::new('socket timed out', $socket)
-            $timeout = [System.TimeoutException]::new('request timed out', $io)
+            $innerCanceled = [System.Threading.Tasks.TaskCanceledException]::new('socket read canceled', $io)
+            $timeout = [System.TimeoutException]::new('request timed out', $innerCanceled)
             $canceled = [System.Threading.Tasks.TaskCanceledException]::new('request canceled', $timeout)
-            $script:correlatedBuild = [pscustomobject]@{ id = 7004 }
-            Mock Invoke-RestMethod { throw $canceled } -ModuleName QueueCiFixAzdoValidationTest
-            Mock Get-AzdoDuplicateBuild { return $script:correlatedBuild } -ModuleName QueueCiFixAzdoValidationTest
+            $script:exactBuild = [pscustomobject]@{
+                id = 7004
+                sourceBranch = 'refs/pull/123/merge'
+                sourceVersion = '2222222222222222222222222222222222222222'
+                triggerInfo = [pscustomobject]@{
+                    'pr.number' = '123'
+                    'pr.sourceSha' = '1111111111111111111111111111111111111111'
+                }
+            }
+            $script:wrongBuild = [pscustomobject]@{
+                id = 7005
+                sourceBranch = 'refs/pull/123/merge'
+                sourceVersion = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                triggerInfo = [pscustomobject]@{
+                    'pr.number' = '123'
+                    'pr.sourceSha' = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                }
+            }
+            Mock Invoke-RestMethod {
+                if ($Method -eq 'Post') {
+                    throw $canceled
+                }
+                return [pscustomobject]@{ value = @($script:wrongBuild, $script:exactBuild) }
+            } -ModuleName QueueCiFixAzdoValidationTest
 
             (Test-QueueTestIsTransientHttpException -Exception $canceled) | Should -BeTrue
             $result = Invoke-QueueTestAzdoPipelineQueue `
@@ -635,7 +677,31 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             $result.Build.id | Should -Be 7004
             $result.Reconciled | Should -BeTrue
             Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
-            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Get' }
+        }
+
+        It 'keeps nested timeout POST acceptance uncertain when the exact reconciliation read fails' {
+            $socket = [System.Net.Sockets.SocketException]::new([System.Net.Sockets.SocketError]::TimedOut)
+            $io = [System.IO.IOException]::new('socket timed out', $socket)
+            $innerCanceled = [System.Threading.Tasks.TaskCanceledException]::new('socket read canceled', $io)
+            $timeout = [System.TimeoutException]::new('request timed out', $innerCanceled)
+            $canceled = [System.Threading.Tasks.TaskCanceledException]::new('request canceled', $timeout)
+            Mock Invoke-RestMethod {
+                if ($Method -eq 'Post') {
+                    throw $canceled
+                }
+                throw [System.InvalidOperationException]::new('duplicate query unavailable')
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 302 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*may have been accepted*exact reconciliation failed: duplicate query unavailable*POST was issued exactly once*acceptance remains uncertain*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Get' }
         }
 
         It 'does not classify plain cancellation or authentication failures as transient' {
