@@ -14,6 +14,13 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Dokdo-Regular.ttf" />
+    <_TemplateLocalizationFiles Include="..\..\..\Templates\src\templates\*\.template.config\localize\templatestrings*.json" />
+    <_TemplateLocalizationBaselines Include="@(_TemplateLocalizationFiles->WithMetadataValue('Filename', 'templatestrings'))" />
+    <AssemblyMetadata Include="TemplateLocalizationBaselineCount" Value="@(_TemplateLocalizationBaselines->Count())" />
+    <None Include="@(_TemplateLocalizationFiles)"
+          Link="TemplateLocalization\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!--
