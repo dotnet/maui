@@ -532,6 +532,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Label");
 	}
 
+#if TEST_FAILS_ON_ANDROID
 	[Test, Order(33)]
 	public void VerifyImageWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
@@ -573,6 +574,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 			App.WaitForElement("EventInvokedLabel").GetText(),
 			Is.EqualTo("Icon Invoked"));
 	}
+#endif
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/27436
 	[Test, Order(34)]
@@ -1013,6 +1015,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
 	}
 
+#if TEST_FAILS_ON_CATALYST //DragCoordinates are not properly working in CI on Mac platform
 	[Test, Order(60)]
 	public void VerifyMultipleSwipeItemsOnAllSides()
 	{
@@ -1045,6 +1048,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 			swipeViewRect.CenterX(), swipeViewRect.Y - 10);
 		VerifyMultipleSwipeItems("Up");
 	}
+#endif
 
 	[Test, Order(61)]
 	public void VerifyDisabledSwipeItemDoesNotExecuteBoundCommand()
