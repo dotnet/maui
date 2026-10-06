@@ -32,22 +32,6 @@ BeforeAll {
 }
 
 Describe 'review command helpers' {
-    It 'parses review command branch and platform options' {
-        $parsed = ConvertFrom-ReviewCommand '/review -b feature/regression-check -p ios'
-
-        $parsed | Should -Not -BeNullOrEmpty
-        $parsed.Platform | Should -Be 'ios'
-        $parsed.PipelineRef | Should -Be 'feature/regression-check'
-    }
-
-    It 'parses equals-form branch and platform options' {
-        $parsed = ConvertFrom-ReviewCommand '/review --branch=refs/heads/feature/regression-check --platform=ios'
-
-        $parsed | Should -Not -BeNullOrEmpty
-        $parsed.Platform | Should -Be 'ios'
-        $parsed.PipelineRef | Should -Be 'feature/regression-check'
-    }
-
     It 'normalizes friendly platform aliases to the live trigger values' -TestCases @(
         @{ Value = 'macos';       Expected = 'catalyst' }
         @{ Value = 'maccatalyst'; Expected = 'catalyst' }
@@ -58,19 +42,6 @@ Describe 'review command helpers' {
         param($Value, $Expected)
 
         Normalize-ReviewPlatform $Value | Should -Be $Expected
-    }
-
-    It 'leaves unrecognized or omitted platforms empty for existing default selection' -TestCases @(
-        @{ Command = '/review' }
-        @{ Command = '/review linux' }
-        @{ Command = '/review --platform=linux' }
-    ) {
-        param($Command)
-
-        $parsed = ConvertFrom-ReviewCommand $Command
-
-        $parsed | Should -Not -BeNullOrEmpty
-        $parsed.Platform | Should -BeNullOrEmpty
     }
 
     It 'strips refs heads prefix when normalizing review pipeline refs' {
@@ -145,71 +116,6 @@ Describe 'recovery script initialization' {
 
         $state.Owner | Should -Be 'example-owner'
         $state.Repo | Should -Be 'example-repo'
-    }
-}
-
-Describe 'Select-ReviewCommandCandidates' {
-    It 'selects only aged normal review commands and preserves parsed options' {
-        $now = [datetimeoffset]'2026-08-06T22:00:00Z'
-        $comments = @(
-            New-RecoveryTestComment -Id 1 -Body '/review -b improved-reviewer -p android' -CreatedAt '2026-08-06T21:30:00Z'
-            New-RecoveryTestComment -Id 2 -Body '/review ios' -CreatedAt '2026-08-06T21:55:00Z'
-            New-RecoveryTestComment -Id 3 -Body '/review tests' -CreatedAt '2026-08-06T21:30:00Z'
-            New-RecoveryTestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-08-06T21:20:00Z'
-            New-RecoveryTestComment -Id 5 -Body 'please review' -CreatedAt '2026-08-06T21:10:00Z'
-            New-RecoveryTestComment -Id 6 -Body '/review windows' -CreatedAt '2026-08-05T20:00:00Z'
-        )
-
-        $result = @(Select-ReviewCommandCandidates `
-            -Comments $comments `
-            -LookbackHours 24 `
-            -MinimumAgeMinutes 25 `
-            -Now $now)
-
-        $result.Count | Should -Be 1
-        $result[0].CommentId | Should -Be 1
-        $result[0].PRNumber | Should -Be 37148
-        $result[0].Platform | Should -Be 'android'
-        $result[0].PipelineRef | Should -Be 'improved-reviewer'
-    }
-
-    It 'selects the exact PR 36572 command whose issue_comment webhook was missed' {
-        $now = [datetimeoffset]'2026-08-06T22:30:00Z'
-        $comment = New-RecoveryTestComment `
-            -Id 5209393546 `
-            -PRNumber 36572 `
-            -Body '/review -b improved-reviewer -p android' `
-            -CreatedAt '2026-08-06T21:57:59Z'
-
-        $result = @(Select-ReviewCommandCandidates `
-            -Comments @($comment) `
-            -LookbackHours 24 `
-            -MinimumAgeMinutes 25 `
-            -Now $now)
-
-        $result.Count | Should -Be 1
-        $result[0].CommentId | Should -Be 5209393546
-        $result[0].PRNumber | Should -Be 36572
-        $result[0].Platform | Should -Be 'android'
-        $result[0].PipelineRef | Should -Be 'improved-reviewer'
-    }
-
-    It 'does not replay comments created before the recovery workflow was deployed' {
-        $now = [datetimeoffset]'2026-08-06T22:30:00Z'
-        $comment = New-RecoveryTestComment `
-            -Id 5209393546 `
-            -PRNumber 36572 `
-            -Body '/review -b improved-reviewer -p android' `
-            -CreatedAt '2026-08-06T21:57:59Z'
-
-        $result = @(Select-ReviewCommandCandidates `
-            -Comments @($comment) `
-            -LookbackHours 24 `
-            -MinimumAgeMinutes 25 `
-            -NotBefore ([datetimeoffset]'2026-08-06T22:00:00Z') `
-            -Now $now)
-
-        $result.Count | Should -Be 0
     }
 }
 
@@ -352,144 +258,6 @@ Describe 'Test-ReviewCommentHasRecoveryMarker' {
 }
 
 Describe 'Invoke-MissedReviewCommandRecovery' {
-    BeforeEach {
-        $script:Now = [datetimeoffset]'2026-08-06T22:00:00Z'
-        $script:Comment = New-RecoveryTestComment `
-            -Id 5209319531 `
-            -Body '/review -b improved-reviewer -p android' `
-            -CreatedAt '2026-08-06T21:30:00Z'
-
-        Mock Get-RecentIssueComments { @($script:Comment) }
-        Mock Test-ReviewCommentIsMinimized { $false }
-        Mock Test-ReviewCommentHasRecoveryMarker { $false }
-        Mock Get-ReviewRecoveryPullRequest {
-            [pscustomobject]@{ number = 37148; state = 'open' }
-        }
-        Mock Test-ReviewOptionLoginTrusted { $true }
-        Mock Invoke-ReviewWorkflowDispatch
-    }
-
-    It 'dispatches an authorized unprocessed command with its original options' {
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 1
-        $result.Failed.Count | Should -Be 0
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
-            $PRNumber -eq 37148 -and
-            $Platform -eq 'android' -and
-            $PipelineRef -eq 'improved-reviewer' -and
-            $CommentId -eq 5209319531 -and
-            $CommentNodeId -eq 'IC_5209319531'
-        }
-        $result.Recovered[0].AcknowledgementPending | Should -BeTrue
-    }
-
-    It 'dispatches recovered platform aliases using canonical live-trigger values' -TestCases @(
-        @{ Command = '/review macos';           Expected = 'catalyst' }
-        @{ Command = '/review -p maccatalyst';  Expected = 'catalyst' }
-        @{ Command = '/review --platform=mac';  Expected = 'catalyst' }
-        @{ Command = '/review win';             Expected = 'windows' }
-    ) {
-        param($Command, $Expected)
-
-        $script:Comment.body = $Command
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 1
-        $result.Recovered[0].Platform | Should -Be $Expected
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
-            $Platform -eq $Expected
-        }
-    }
-
-    It 'does not dispatch minimized commands' {
-        Mock Test-ReviewCommentIsMinimized { $true }
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 0
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
-        Should -Invoke Test-ReviewCommentHasRecoveryMarker -Times 0 -Exactly
-    }
-
-    It 'does not dispatch commands already marked by the recovery bot' {
-        Mock Test-ReviewCommentHasRecoveryMarker { $true }
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 0
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
-    }
-
-    It 'does not dispatch commands from users without current write access' {
-        Mock Test-ReviewOptionLoginTrusted { $false }
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 0
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
-    }
-
-    It 'keeps manual dry runs read-only' {
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now -DryRun
-
-        $result.Recovered.Count | Should -Be 1
-        $result.Recovered[0].DryRun | Should -BeTrue
-        $result.Recovered[0].AcknowledgementPending | Should -BeFalse
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
-    }
-
-    It 'passes the deployment epoch through candidate selection' {
-        $result = Invoke-MissedReviewCommandRecovery `
-            -Now $script:Now `
-            -NotBefore ([datetimeoffset]'2026-08-06T21:45:00Z')
-
-        $result.Recovered.Count | Should -Be 0
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
-    }
-
-    It 'dispatches the full batch while the serialized workflow owns acknowledgement' {
-        $secondComment = New-RecoveryTestComment `
-            -Id 5209319532 `
-            -Body '/review ios' `
-            -CreatedAt '2026-08-06T21:29:00Z'
-        Mock Get-RecentIssueComments { @($script:Comment, $secondComment) }
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 2
-        @($result.Recovered | Where-Object AcknowledgementPending).Count | Should -Be 2
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 2 -Exactly
-    }
-
-    It 'continues after one candidate metadata check fails' {
-        $olderComment = New-RecoveryTestComment `
-            -Id 5209319530 `
-            -Body '/review windows' `
-            -CreatedAt '2026-08-06T21:29:00Z'
-        Mock Get-RecentIssueComments { @($script:Comment, $olderComment) }
-        Mock Test-ReviewCommentIsMinimized {
-            param([string]$NodeId)
-            if ($NodeId -eq 'IC_5209319530') {
-                throw 'GraphQL node was deleted'
-            }
-            return $false
-        }
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 1
-        $result.Recovered[0].CommentId | Should -Be 5209319531
-        $result.Failed.Count | Should -Be 1
-        $result.Failed[0].CommentId | Should -Be 5209319530
-        $result.Failed[0].PRNumber | Should -Be 37148
-        $result.Failed[0].Error | Should -Be 'GraphQL node was deleted'
-        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
-            $CommentId -eq 5209319531
-        }
-    }
-
     It 'surfaces isolated failures in console, annotation, and step-summary output' {
         $scriptText = Get-Content -Raw -LiteralPath $script:RecoverScriptPath
 

@@ -1,4 +1,4 @@
-# Recover authorized /review comments whose issue_comment webhook was not
+# Recover authorized /review gate comments whose issue_comment webhook was not
 # delivered by GitHub Actions. This is deterministic polling, not an agentic
 # workflow: no untrusted PR code is checked out or executed.
 
@@ -34,7 +34,7 @@ jobs:
           ref: main
           persist-credentials: false
 
-      - name: Recover missed /review commands
+      - name: Recover missed /review gate commands
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

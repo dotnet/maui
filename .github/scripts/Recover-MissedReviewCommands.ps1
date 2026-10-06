@@ -1,10 +1,10 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Recovers authorized /review comments missed by GitHub Actions webhooks.
+    Recovers authorized /review gate comments missed by GitHub Actions webhooks.
 
 .DESCRIPTION
-    Polls recent repository issue comments, finds unprocessed /review commands,
+    Polls recent repository issue comments, finds unprocessed /review gate commands,
     verifies the commenter still has write access, dispatches review-trigger.yml,
     and marks the source comment so delayed webhook delivery cannot double-trigger.
 
@@ -295,7 +295,7 @@ function Invoke-ReviewWorkflowDispatch {
             ref = 'main'
             inputs = [ordered]@{
                 pr_number = [string]$PRNumber
-                platform = [string]$Platform
+                platform = $(if ([string]::IsNullOrWhiteSpace($Platform)) { 'auto' } else { $Platform })
                 pipeline_ref = [string]$PipelineRef
                 source_comment_id = [string]$CommentId
                 source_comment_node_id = $CommentNodeId

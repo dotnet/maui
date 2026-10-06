@@ -1,4 +1,4 @@
-# Trigger the maui-copilot DevDiv pipeline when a maintainer comments '/review' on a PR.
+# Trigger the gate-only maui-copilot pipeline for '/review gate' on a PR.
 # Uses OIDC (no PAT) — see .github/docs/trigger-azdo-pipeline-setup.md for identity setup.
 
 name: Review Trigger
@@ -9,14 +9,15 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to review'
+        description: 'PR number whose tests should be verified'
         required: true
       platform:
-        description: 'Target platform (android, ios, catalyst, windows, or empty for pipeline default)'
+        description: 'Target platform (auto uses PR labels, then the pipeline default)'
         required: false
         type: choice
+        default: auto
         options:
-          - ''
+          - auto
           - android
           - ios
           - catalyst
@@ -63,22 +64,9 @@ jobs:
             echo "matched=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          # `/review rerun` is not a supported command. Reject it explicitly so
-          # it cannot fall through to the generic `/review` matcher below. `sed`
-          # strips leading whitespace per line, so a leading BLANK line survives in
-          # TRIMMED_BODY; tolerate leading whitespace/newlines here (consistent with
-          # the generic matcher) so a pasted `\n/review rerun` can't evade the guard.
-          if [[ "${TRIMMED_BODY}" =~ ^[[:space:]]*/review[[:space:]]+rerun([[:space:]]|$) ]]; then
-            echo "matched=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          # Match `/review` as the first non-whitespace token, optionally followed by args.
-          # Allows arbitrary leading whitespace (spaces, tabs, newlines).
-          # Subcommands are reserved for their focused gh-aw review workflows.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]]; then
-            echo "matched=false" >> "$GITHUB_OUTPUT"
-          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
+          shopt -s nocasematch
+          # Only the gate subcommand belongs to this pipeline.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+gate([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
           else
             echo "matched=false" >> "$GITHUB_OUTPUT"
@@ -98,8 +86,7 @@ jobs:
         run: |
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-            [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
+            [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]]
           }
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
@@ -159,6 +146,8 @@ jobs:
 
           MINIMIZED_READ=false
           for attempt in 1 2 3; do
+            # GraphQL variables must remain literal.
+            # shellcheck disable=SC2016
             if IS_MINIMIZED=$(gh api graphql \
               -f query='query($id:ID!){node(id:$id){... on IssueComment{isMinimized}}}' \
               -f id="${COMMENT_NODE_ID}" \
@@ -269,20 +258,20 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${INPUT_PR_NUMBER}"
             PLATFORM="${INPUT_PLATFORM}"
+            if [ "$PLATFORM" = "auto" ]; then PLATFORM=""; fi
             PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
-            # Trim any leading whitespace (spaces/tabs/newlines) the user may have
-            # accidentally typed before the slash command, then strip the '/review'
-            # prefix and parse remaining args.
-            TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
-            ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+            ARGS=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs '
+              sub("^\\s*/[rR][eE][vV][iI][eE][wW]\\s+[gG][aA][tT][eE](\\s+|$)"; "")')
 
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
             # Disable globbing so user input like '*.cs' doesn't expand
             set -f
+            # Deliberate token splitting with globbing disabled.
+            # shellcheck disable=SC2086
             set -- ${ARGS}
             while [ $# -gt 0 ]; do
               case "$1" in
@@ -343,9 +332,11 @@ jobs:
             exit 1
           fi
 
-          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-          echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
-          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
+          {
+            echo "pr_number=${PR_NUMBER}"
+            echo "platform=${PLATFORM}"
+            echo "pipeline_ref=${PIPELINE_REF}"
+          } >> "$GITHUB_OUTPUT"
           echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
 
       - name: Validate PR
@@ -498,7 +489,7 @@ jobs:
             } else {
               "locked=true" >> $env:GITHUB_OUTPUT
               "state=already-running" >> $env:GITHUB_OUTPUT
-              "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
+              "### /review gate skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
 
               # Make the skip VISIBLE to the maintainer. Previously this path only
@@ -527,13 +518,13 @@ jobs:
                   $skipBody = @(
                     $skipMarker,
                     '> [!NOTE]',
-                    '> ### 🔍 `/review` skipped — a review is already running',
+                    '> ### 🔍 `/review gate` skipped — a gate is already running',
                     '>',
-                    '> This PR already holds the `s/agent-review-in-progress` lock, so a new review was **not** started (only one review runs at a time to avoid duplicate, racing reviews). The in-flight run must finish first — this can take a while when the deep UI-test stage is queued.',
+                    '> This PR already holds the `s/agent-review-in-progress` lock, so a new gate was **not** started. The in-flight test verification must finish first.',
                     '>',
-                    '> Re-comment `/review` once it completes to start a fresh run.',
+                    '> Re-comment `/review gate` once it completes to start a fresh run.',
                     '>',
-                    '> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline.</sub>'
+                    '> <sub>🔍 Automated message from the .NET MAUI PR test gate.</sub>'
                   ) -join "`n"
                   $skipBody | gh pr comment $env:PR_NUMBER --repo '${{ github.repository_owner }}/${{ github.event.repository.name }}' --body-file - | Out-Null
                 }
@@ -734,7 +725,7 @@ jobs:
 
       # A successful command used to leave only two subtle signals: a label and a rocket
       # reaction on a comment that was immediately minimized. On busy PRs that looked like
-      # the command vanished, prompting duplicate /review comments while the first run was
+      # the command vanished, prompting duplicate /review gate comments while the first run was
       # already active. Post one durable start notice with the exact AzDO build instead.
       - name: Report /review start to the PR
         if: steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome == 'success'
@@ -755,11 +746,11 @@ jobs:
           cat > "${BODY_FILE}" <<EOF
           <!-- copilot-review-started:${RUN_ID} -->
           > [!NOTE]
-          > ### 🔍 \`/review\` started
+          > ### 🔍 \`/review gate\` started
           >
           > [AzDO build **${RUN_ID}**](https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}) is running for **${PLATFORM}**.
           >
-          > The \`s/agent-review-in-progress\` label stays on this PR while the run is active. The final recommendation and outcome labels are posted only after Gate, expert review, and Deep UI tests finish.
+          > The \`s/agent-review-in-progress\` label stays on this PR while existing PR tests are verified. The final gate report contains test evidence only: no expert review, alternative fixes, or Deep UI sweep runs.
           EOF
 
           if ! gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body-file "${BODY_FILE}"; then
@@ -780,10 +771,10 @@ jobs:
         run: |
           if [ "${FAIL_REASON}" = "branch-missing" ]; then
             BODY="> [!WARNING]
-          > Your \`/review\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Use \`--branch improved-reviewer\` (the current reviewer branch), or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`/review android --branch improved-reviewer\`)."
+          > Your \`/review gate\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Choose an existing branch or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`/review gate --platform android --branch main\`)."
           else
             BODY="> [!WARNING]
-          > Your \`/review\` couldn't start due to a transient error triggering the pipeline. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again in a minute."
+          > Your \`/review gate\` couldn't start due to a transient error triggering the pipeline. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review gate\` again in a minute."
           fi
           for attempt in 1 2 3 4; do
             if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
@@ -817,7 +808,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           BODY="> [!WARNING]
-          > Your \`/review\` couldn't start because the trusted trigger setup hit a transient infrastructure failure. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again."
+          > Your \`/review gate\` couldn't start because the trusted trigger setup hit a transient infrastructure failure. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review gate\` again."
           for attempt in 1 2 3 4; do
             if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
               exit 0
@@ -860,8 +851,7 @@ jobs:
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             is_recoverable_review_command() {
               NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-              [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
+              [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]]
             }
 
             if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
@@ -887,13 +877,15 @@ jobs:
             --method POST \
             -f content='rocket' \
             --silent; then
-            echo "Acknowledged /review command comment ${COMMENT_ID}"
+            echo "Acknowledged /review gate command comment ${COMMENT_ID}"
           else
-            echo "::warning::Could not acknowledge /review command comment ${COMMENT_ID}"
+            echo "::warning::Could not acknowledge /review gate command comment ${COMMENT_ID}"
           fi
 
+          # GraphQL variables must remain literal.
+          # shellcheck disable=SC2016
           if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
-            echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
+            echo "Hid /review gate command comment ${COMMENT_NODE_ID} as resolved"
           else
-            echo "::warning::Could not hide /review command comment ${COMMENT_NODE_ID}"
+            echo "::warning::Could not hide /review gate command comment ${COMMENT_NODE_ID}"
           fi

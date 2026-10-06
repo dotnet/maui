@@ -1754,10 +1754,9 @@ function Limit-ExpensiveGateTests {
         AzDO hard-kills the task → a "The task has timed out" FAILED verdict
         with no analysis (observed on build 14676353 / PR #36109: 11 device
         tests → 120-min timeout). This caps the expensive tests, prioritising
-        the PR's own newly-added (fix-authored) regression tests. Deep UI Tests
-        exercises the HostApp UI category matrix, but does not run DeviceTests;
-        any dropped device-test groups are persisted as an explicit coverage
-        limitation in the gate report. Cheap unit/XAML tests are never capped
+        the PR's own newly-added (fix-authored) regression tests. Dropped native
+        groups are persisted as explicit coverage limitations in the report;
+        /review gate runs no subsequent sweep. Cheap unit/XAML tests are never capped
         (they are fast). Caps are env-overridable via GATE_MAX_DEVICE_TESTS /
         GATE_MAX_UI_TESTS.
     #>
@@ -1800,13 +1799,13 @@ function Limit-ExpensiveGateTests {
     }
     if ($droppedDevice.Count -gt 0) {
         $droppedDeviceNames = @($droppedDevice | ForEach-Object { $_.TestName }) -join ', '
-        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Deep UI Tests runs HostApp UI categories only and does not execute DeviceTests; separate device-test validation is required."
+        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Separate device-test validation is required; /review gate does not run a subsequent sweep."
         $script:GateCoverageLimitations += $deviceLimitation
         Write-Host "⚠️  $deviceLimitation" -ForegroundColor Yellow
     }
     if ($droppedUi.Count -gt 0) {
         $droppedUiNames = @($droppedUi | ForEach-Object { $_.TestName }) -join ', '
-        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Those UI categories are exercised separately by the Deep UI Tests stage, without the gate's before/after comparison."
+        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Separate UI-test validation is required; /review gate does not run a subsequent category sweep."
         $script:GateCoverageLimitations += $uiLimitation
         Write-Host "⚠️  $uiLimitation" -ForegroundColor Yellow
     }

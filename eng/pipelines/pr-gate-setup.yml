@@ -1,0 +1,1227 @@
+# Platform provisioning retained from ci-copilot.yml, before PR code is merged.
+parameters:
+  - name: PRNumber
+    type: number
+  - name: Platform
+    type: string
+
+steps:
+  - bash: |
+      set -uo pipefail
+      BASE_REF=""
+      if command -v gh >/dev/null 2>&1; then
+        BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName 2>/dev/null || true)
+      fi
+      if [ -z "${BASE_REF}" ]; then
+        REPO=$(git config --get remote.origin.url 2>/dev/null | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+        [ -z "${REPO}" ] && REPO="dotnet/maui"
+        BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
+          | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])" 2>/dev/null || true)
+      fi
+      if [ -z "${BASE_REF}" ]; then
+        echo "Could not determine the PR base branch here; it will be re-checked (with retries) in 'Resolve PR base branch'. Continuing."
+        exit 0
+      fi
+      # Validate BEFORE echoing/using to avoid any injection via the ref.
+      if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+        echo "##vso[task.logissue type=error]The PR gate only supports targets 'main', 'netN.0', 'inflight/*', or 'release/*'. No workloads/SDK band or safe merge-base can be derived for this unsupported target."
+        exit 1
+      fi
+      echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the gate."
+    displayName: 'Validate PR base branch (fast-fail unsupported)'
+    env:
+      PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+      GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+  - bash: |
+      echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
+    displayName: 'Set Pipeline Run Title'
+    env:
+      PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+  # Capture trusted test infrastructure exactly once while the worktree
+  # is still at $(Build.SourceVersion). Keep this outside the retried
+  # branch-resolution task: a retry may begin after that task switched
+  # to PR-controlled content.
+  - bash: |
+      set -e
+      TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+      chmod -R u+w "$TRUSTED" 2>/dev/null || true
+      rm -rf "$TRUSTED" 2>/dev/null || true
+      mkdir -p "$TRUSTED"
+      cp -r .github/scripts "$TRUSTED/scripts"
+      cp -r .github/skills  "$TRUSTED/skills"
+      cp -r eng/scripts     "$TRUSTED/eng-scripts"
+      mkdir -p "$TRUSTED/source-overrides"
+      cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
+      chmod -R a-w "$TRUSTED"
+      echo "Trusted scripts and source overrides copied to $TRUSTED"
+    displayName: 'Capture trusted test infrastructure'
+    timeoutInMinutes: 5
+
+  # ─────────────────────────────────────────────────────────
+  #  Resolve the PR's target (base) branch and switch the
+  #  worktree to it BEFORE installing workloads or merging.
+  #
+  #  This pipeline branch (self) may be based on net11.0 while
+  #  a PR targets main (net10), or vice-versa. Two things derive
+  #  from the checked-out tree and must follow the PR's REAL base:
+  #    1. Workloads / SDK band — build.ps1 --target=dotnet reads
+  #       global.json + eng/Versions.props from the worktree.
+  #    2. Merge base — Review-PR.ps1 -Phase Setup squash-merges
+  #       the PR onto the current HEAD in CI.
+  #  Running on the wrong base ⇒ wrong workloads + cross-branch
+  #  squash-merge conflicts. Switching to the PR's base fixes both,
+  #  so ONE pipeline branch handles main- and net11-targeting PRs.
+  #
+  #  The previous non-retried step captured trusted infrastructure
+  #  from the pipeline ref, before this branch switch.
+  # ─────────────────────────────────────────────────────────
+  - bash: |
+      set -e
+
+      # PRNumber is validated upstream ('Validate Parameters'); re-guard
+      # before use in a gh call.
+      if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+        echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
+        exit 1
+      fi
+
+      # Detect the PR's base branch (GitHub-provided metadata). Prefer gh; fall back
+      # to the GitHub REST API because gh is not pre-installed on macOS (catalyst/ios)
+      # agents this early in the job.
+      if command -v gh >/dev/null 2>&1; then
+        BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+      else
+        REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+        [ -z "$REPO" ] && REPO="dotnet/maui"
+        BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
+          | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+      fi
+
+      # Allowlist: only ever switch to a known protected base branch.
+      # Validate BEFORE echoing/using to avoid any injection via the ref.
+      if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+        echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
+        exit 1
+      fi
+      echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+
+      # Always keep the worktree on the protected target branch while the
+      # credential-bearing workload and build-task steps run. The trusted
+      # Setup phase merges the immutable PR head later, after DOTNET_TOKEN is
+      # out of scope, including for inflight/* targets.
+      git fetch origin "${BASE_REF}" --no-tags
+      git checkout --detach "origin/${BASE_REF}"
+      echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
+    name: ResolveBaseBranch
+    displayName: 'Resolve PR base branch (workloads + merge base)'
+    retryCountOnTaskFailure: 2
+    env:
+      GH_TOKEN: $(GH_COMMENT_TOKEN)
+      PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+  # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
+  - ${{ if eq(parameters.Platform, 'android') }}:
+    - template: common/enable-kvm.yml
+
+  # Provision SDKs (same parameters as ui-tests-steps.yml)
+  - template: common/provision.yml
+    parameters:
+      skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
+      skipProvisionator: true
+      skipJdk: ${{ ne(parameters.Platform, 'android') }}
+      skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
+      skipAndroidPlatformApis: true
+      onlyAndroidPlatformDefaultApis: true
+      skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+      # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+      # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+      # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+      skipAndroidCreateAvds: true
+      androidEmulatorApiLevel: '30'
+      skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+      skipCertificates: true
+
+  # Free disk space BEFORE .NET workload installation and the gate build.
+  # Android hosted agents are tight on disk after SDK provisioning: builds
+  # 15154242 and 15154507 exhausted the disk during `build.ps1
+  # --target=dotnet`, so the later pre-build cleanup was skipped. The same
+  # cleanup measured 1.3 GB free before and 16 GB after in build 15153835.
+  # common/provision.yml has already installed the repository-local
+  # ./.dotnet used below, so these unused hosted-image caches are safe to
+  # remove. Best-effort: every removal is non-blocking.
+  - ${{ if eq(parameters.Platform, 'android') }}:
+    - bash: |
+        echo "=== Disk space before pre-workload cleanup ==="
+        df -h 2>/dev/null || true
+        echo "Removing unused hosted-tool caches before .NET workload installation..."
+        sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium 2>/dev/null || true
+        sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/Python 2>/dev/null || true
+        sudo rm -rf /usr/share/swift 2>/dev/null || true
+        echo "=== Disk space after pre-workload cleanup ==="
+        df -h 2>/dev/null || true
+      displayName: 'Free disk space before .NET workloads (android)'
+      condition: succeeded()
+      continueOnError: true
+
+  # Install .NET and workloads via build.ps1
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+    displayName: 'Install .NET and workloads'
+    retryCountOnTaskFailure: 3
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
+
+  - pwsh: |
+      $ErrorActionPreference = 'Continue'
+      $wd = (Get-Location).Path
+      $dotnetDir = Join-Path $wd ".dotnet"
+      $dotnetExe = Join-Path $dotnetDir "dotnet.exe"
+
+      # Best-effort: stop build servers / stray processes rooted in .dotnet
+      # (or with an unreadable path) so a reinstall isn't blocked by a
+      # stale handle. Not the primary fix, but cheap insurance.
+      if (Test-Path $dotnetExe) {
+        try { & $dotnetExe build-server shutdown 2>$null | Out-Null } catch {}
+      }
+      try {
+        Get-Process -ErrorAction SilentlyContinue |
+          Where-Object {
+            $_.Name -in @('dotnet','VBCSCompiler','MSBuild','testhost') -and
+            ((-not $_.Path) -or $_.Path.StartsWith($dotnetDir, [System.StringComparison]::OrdinalIgnoreCase))
+          } |
+          ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue } catch {} }
+      } catch {}
+
+      if (-not (Test-Path $dotnetExe)) {
+        Write-Host "No ./.dotnet present — cake will install it fresh. Nothing to do."
+        exit 0
+      }
+
+      # A half-removed SDK makes 'dotnet --version' fail with
+      # 'hostpolicy.dll not found'; use that as the health probe.
+      $healthy = $false
+      try {
+        & $dotnetExe --version *> $null
+        if ($LASTEXITCODE -eq 0) { $healthy = $true }
+      } catch { $healthy = $false }
+
+      if ($healthy) {
+        $stamp = Join-Path $dotnetDir ".stamp"
+        try {
+          Set-Content -Path $stamp -Value "provisioned by ci-copilot pre-step" -NoNewline -ErrorAction Stop
+          (Get-Item $stamp -Force).LastWriteTimeUtc = (Get-Date).ToUniversalTime()
+          Write-Host "Healthy ./.dotnet detected — wrote $stamp so cake skips the self-deleting reinstall."
+        } catch {
+          Write-Host "WARNING: could not write $stamp ($($_.Exception.Message)); cake may attempt a reinstall."
+        }
+      } else {
+        Write-Host "./.dotnet is present but unhealthy (dotnet --version failed) — removing so cake can reinstall."
+        for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+          try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop }
+          catch { Start-Sleep -Seconds 2 }
+        }
+        if (Test-Path $dotnetDir) {
+          Write-Host "WARNING: ./.dotnet could not be fully removed; cake's RemoveDir may still fail."
+        } else {
+          Write-Host "Removed ./.dotnet; cake will reinstall it cleanly."
+        }
+      }
+      exit 0
+    displayName: 'Prepare .dotnet for cake (Windows)'
+    condition: and(succeeded(), eq('${{ parameters.Platform }}', 'windows'))
+    continueOnError: true
+
+  # A recurring android/mac gate failure is DotNet.csproj MSB6003
+  # "System.IO.Pipes.dll ... cannot find the file": the shared
+  # Microsoft.NETCore.App pack was provisioned WITHOUT System.IO.Pipes.dll
+  # (an assembly that always ships in that framework). 'dotnet --version'
+  # still succeeds — it never loads that assembly — and the SDK carries a
+  # valid cake stamp, so cake REUSES the corrupt SDK. Every build that
+  # spawns a process (DotNet.csproj Exec 'sh') then dies, which on the gate
+  # stage means setup never completes, the sentinel is never written, and
+  # NO review is posted at all (observed: #34136 build 14753151, and
+  # #36657). The Windows 'Prepare .dotnet' step above doesn't help here
+  # (it's windows-only and its --version probe can't see this). Detect an
+  # incomplete runtime pack and remove ./.dotnet so the build step below
+  # reinstalls a complete SDK. Best-effort (continueOnError) — it only ever
+  # deletes a provably-incomplete SDK, and can never fail the build itself.
+  - pwsh: |
+      $ErrorActionPreference = 'Continue'
+      $dotnetDir = Join-Path (Get-Location).Path ".dotnet"
+      $sharedRoot = Join-Path $dotnetDir "shared/Microsoft.NETCore.App"
+      if (-not (Test-Path $sharedRoot)) {
+        Write-Host "No local shared runtime present yet — nothing to verify (cake will install fresh)."
+        exit 0
+      }
+      $incomplete = $false
+      foreach ($p in @(Get-ChildItem -Path $sharedRoot -Directory -ErrorAction SilentlyContinue)) {
+        if (-not (Test-Path (Join-Path $p.FullName 'System.IO.Pipes.dll'))) {
+          Write-Host "Runtime pack $($p.Name) is INCOMPLETE (System.IO.Pipes.dll missing) — corrupt install."
+          $incomplete = $true
+        }
+      }
+      if (-not $incomplete) {
+        Write-Host "Local .dotnet shared runtime looks complete."
+        exit 0
+      }
+      Write-Host "Removing corrupt ./.dotnet so the build step reinstalls a complete SDK."
+      for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+        try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop }
+        catch { Start-Sleep -Seconds 2 }
+      }
+      if (Test-Path $dotnetDir) { Write-Host "WARNING: ./.dotnet could not be fully removed; cake's reinstall may still be affected." }
+      else { Write-Host "Removed ./.dotnet; cake will reinstall it cleanly." }
+      exit 0
+    displayName: 'Verify .dotnet runtime completeness'
+    condition: and(succeeded(), ne('${{ parameters.Platform }}', 'windows'))
+    continueOnError: true
+
+  # Build MSBuild tasks (required for MAUI builds). Wrapped in a
+  # wall-clock WATCHDOG because AzDO's step-level timeoutInMinutes does
+  # NOT reliably kill a hung dotnet/cake process tree — build 14754622
+  # ran 82+ min past a 40-min step timeout without being cancelled. Under
+  # heavy agent-pool contention the buildtasks build can hang for hours
+  # (observed 1.5-3.3h: 14751470 #36657, 14753160 #36405, 14753158
+  # #36328), holding the agent and reddening the gate. Run the build as a
+  # child process and, if it exceeds the budget, kill the ENTIRE tree so
+  # the retryCountOnTaskFailure retry starts fresh. build.ps1 forwards all
+  # --x=y args to cake via $ScriptArgs, so the -File child invocation is
+  # behaviourally identical to the old inline call. Falls back to a direct
+  # build if the child process can't be launched (never worse than before).
+  - pwsh: |
+      $ErrorActionPreference = 'Continue'
+      $timeoutMin = 40
+      $buildCommand = "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
+      # A recurring android failure is a CORRUPT local .dotnet: the shared
+      # Microsoft.NETCore.App pack ships a System.IO.Pipes.dll the build can't
+      # LOAD (MSB6003 "could not be run"), so DotNet.csproj's Exec 'sh' dies and
+      # the gate never finishes setup (review blocked — #36657, #34136). A
+      # pre-build FILE check ("Verify .dotnet") can't catch it: the file is
+      # present but unloadable, and/or cake reinstalls .dotnet AFTER the check.
+      # So on a RETRY, wipe ./.dotnet first to force a fully fresh reinstall.
+      # The marker persists across AzDO retryCountOnTaskFailure retries (same
+      # agent/job); a healthy first attempt never wipes, so no regression.
+      $wipeMarker = Join-Path "$(Agent.TempDirectory)" 'buildtasks-wipe-dotnet'
+      $dotnetDir  = Join-Path (Get-Location).Path '.dotnet'
+      # When buildtasks FAILS we drop this marker so the Gate wrapper can tell
+      # a base-branch build break (not the PR's fault — e.g. the target branch
+      # doesn't compile, #36776 on a broken inflight/current) apart from a real
+      # test-verification FAILED. continueOnError lets Setup capture its snapshot
+      # and the fresh publisher report INCONCLUSIVE rather than blaming the PR.
+      $btFailMarker = Join-Path "$(Build.ArtifactStagingDirectory)" 'buildtasks-failed.marker'
+      Remove-Item $btFailMarker -Force -ErrorAction SilentlyContinue
+      function Set-BuildTasksFailed { param([int]$Code)
+        try {
+          New-Item -ItemType Directory -Force -Path (Split-Path -Parent $btFailMarker) | Out-Null
+          "exit=$Code" | Set-Content -Path $btFailMarker -Encoding UTF8
+        } catch { }
+      }
+      if (Test-Path $wipeMarker) {
+        Write-Host "A prior Build MSBuild Tasks attempt failed — wiping ./.dotnet so this retry reinstalls a clean SDK."
+        Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue
+        for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
+          try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
+        }
+        # Wiping ./.dotnet also removes the .NET WORKLOADS that the earlier
+        # 'Install .NET and workloads' step installed (android/ios/maccatalyst).
+        # The buildtasks reinstall (dotnet-buildtasks) restores only the SDK, NOT
+        # the platform workload, so the gate's later test build would hit
+        # NETSDK1147 ("the following workloads must be installed: android") — a pure
+        # GATE-INFRA flake, not the PR (build 14843829 / #36572). Drop a PERSISTENT
+        # marker (not removed on success like $wipeMarker) so the dedicated
+        # 'Restore .NET workloads if .dotnet was wiped' step below reinstalls them
+        # band-correctly before the gate runs.
+        New-Item -ItemType File -Force -Path (Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads') | Out-Null
+      }
+      try {
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = 'bash'
+        foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
+        $psi.UseShellExecute = $false
+        $proc = [System.Diagnostics.Process]::Start($psi)
+      } catch {
+        Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
+        & bash -o pipefail -c $buildCommand
+        if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $LASTEXITCODE }
+        exit $LASTEXITCODE
+      }
+      if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
+        Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
+        try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
+        Start-Sleep -Seconds 3
+        New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
+        Set-BuildTasksFailed 1
+        exit 1
+      }
+      if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $proc.ExitCode }
+      else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue; Remove-Item $btFailMarker -Force -ErrorAction SilentlyContinue }
+      exit $proc.ExitCode
+    displayName: 'Build MSBuild Tasks'
+    retryCountOnTaskFailure: 1
+    # A protected-base build failure is not a failed PR assertion.
+    # The frozen marker forces INCONCLUSIVE while preserving diagnostics.
+    continueOnError: true
+    # Outer AzDO backstop above the 40-min watchdog (the watchdog should
+    # always fire first; this only matters if the wrapper itself wedges).
+    timeoutInMinutes: 50
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  # If 'Build MSBuild Tasks' wiped ./.dotnet on a retry (corrupt-SDK
+  # recovery), the .NET WORKLOADS installed by 'Install .NET and workloads'
+  # are gone and the buildtasks reinstall may restore only the SDK. The
+  # workload-pack incremental stamp lives at .dotnet/packs/.stamp; a partial
+  # wipe can leave that stamp behind after deleting the SDK workload
+  # registration, so a plain build.ps1 --target=dotnet reports success while
+  # skipping _InstallWorkloadPacks. The gate then fails with NETSDK1147 even
+  # though the pinned Android packs are available (build 14953016 / #37321).
+  # Verify the platform workload on every mobile run, invalidate the stale
+  # stamp when recovery is needed, then rebuild the MAUI build tasks that the
+  # failed wrapper could not produce. Clear each failure marker only after
+  # its corresponding prerequisite is healthy.
+  - pwsh: |
+      $ErrorActionPreference = 'Continue'
+      $marker = Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads'
+      $recoveryReadyMarker = Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-workloads-recovered'
+      $btFailMarker = Join-Path "$(Build.ArtifactStagingDirectory)" 'buildtasks-failed.marker'
+      $dotnetDir = Join-Path (Get-Location).Path '.dotnet'
+      $dotnetExeName = if ($IsWindows) { 'dotnet.exe' } else { 'dotnet' }
+      $dotnetExe = Join-Path $dotnetDir $dotnetExeName
+      $packStamp = Join-Path $dotnetDir 'packs/.stamp'
+      $platform = '${{ parameters.Platform }}'
+      $expectedWorkload = switch ($platform) {
+        'android' { 'android' }
+        'ios' { 'ios' }
+        'catalyst' { 'maccatalyst' }
+        default { $null }
+      }
+
+      function Test-ExpectedWorkload {
+        if (-not $expectedWorkload) { return $true }
+        if (-not (Test-Path -LiteralPath $dotnetExe -PathType Leaf)) {
+          Write-Host "Local dotnet executable is missing: $dotnetExe"
+          return $false
+        }
+
+        $workloadOutput = @(& $dotnetExe workload list 2>&1)
+        $workloadExit = $LASTEXITCODE
+        $workloadOutput | ForEach-Object { Write-Host "$_" }
+        if ($workloadExit -ne 0) {
+          Write-Host "dotnet workload list exited $workloadExit."
+          return $false
+        }
+
+        $workloadPattern = '^\s*' + [regex]::Escape($expectedWorkload) + '(?:\s|$)'
+        return [bool]($workloadOutput | Where-Object { "$_" -match $workloadPattern } | Select-Object -First 1)
+      }
+
+      $wasWiped = Test-Path -LiteralPath $marker
+      $dotnetRecoveryCompleted = Test-Path -LiteralPath $recoveryReadyMarker
+      if (-not $expectedWorkload -and -not $wasWiped) {
+        Write-Host "Platform '$platform' does not require mobile workload verification; no recovery needed."
+        exit 0
+      }
+
+      $workloadRegistered = Test-ExpectedWorkload
+      if (-not $wasWiped -and $workloadRegistered) {
+        Write-Host "Verified '$expectedWorkload' workload registration; no recovery needed."
+        exit 0
+      }
+
+      $needsDotnetRecovery = -not $workloadRegistered -or ($wasWiped -and -not $dotnetRecoveryCompleted)
+      if ($needsDotnetRecovery) {
+        if ($wasWiped) {
+          Write-Host "##[warning]./.dotnet was wiped by a Build MSBuild Tasks retry — forcing workload reinstallation."
+        } else {
+          Write-Host "##[warning]Expected '$expectedWorkload' workload is not registered — forcing workload reinstallation before Gate."
+          New-Item -ItemType File -Force -Path $marker | Out-Null
+        }
+
+        if (Test-Path -LiteralPath $packStamp) {
+          Write-Host "Removing stale workload-pack stamp $packStamp so _InstallWorkloadPacks cannot be skipped."
+          Remove-Item -LiteralPath $packStamp -Force -ErrorAction SilentlyContinue
+        }
+
+        ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+        $restoreExit = $LASTEXITCODE
+        if ($restoreExit -ne 0) {
+          Write-Host "##[warning]Workload reinstall exited $restoreExit; retaining the recovery marker for the task retry."
+          exit $restoreExit
+        }
+
+        if ($expectedWorkload -and -not (Test-ExpectedWorkload)) {
+          Write-Host "##[warning]Workload reinstall completed but '$expectedWorkload' is still not registered; retaining the recovery marker for the task retry."
+          exit 1
+        }
+
+        New-Item -ItemType File -Force -Path $recoveryReadyMarker | Out-Null
+      } else {
+        Write-Host "The repo-pinned .NET SDK and '$expectedWorkload' workload were already recovered by an earlier task attempt."
+      }
+
+      if ($wasWiped -and (Test-Path -LiteralPath $btFailMarker)) {
+        Write-Host "##[warning]Rebuilding MAUI MSBuild tasks now that the local SDK and workloads are healthy."
+        ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+        $buildTasksExit = $LASTEXITCODE
+        if ($buildTasksExit -ne 0) {
+          Write-Host "##[warning]MSBuild task recovery exited $buildTasksExit; retaining the failure markers for the task retry."
+          exit $buildTasksExit
+        }
+
+        Remove-Item -LiteralPath $btFailMarker -Force -ErrorAction SilentlyContinue
+        Write-Host "Verified MAUI MSBuild tasks after .NET recovery."
+      }
+
+      Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
+      Remove-Item -LiteralPath $recoveryReadyMarker -Force -ErrorAction SilentlyContinue
+      if ($expectedWorkload) {
+        Write-Host "Verified '$expectedWorkload' workload registration after recovery."
+      } else {
+        Write-Host "Completed .NET recovery for platform '$platform'."
+      }
+    displayName: 'Verify and restore .NET workloads'
+    retryCountOnTaskFailure: 2
+    continueOnError: true
+    timeoutInMinutes: 30
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  # Restore .NET tools (includes xharness)
+  - bash: dotnet tool restore
+    displayName: 'Restore .NET Tools'
+
+  # Set screen resolution on Windows (same as ui-tests-steps.yml).
+  # BEST-EFFORT ONLY: a hosted agent that cannot enumerate its display
+  # (EnumDisplaySettings → "Value cannot be null") must NOT abort the
+  # whole Review stage — screen resolution only affects screenshot
+  # dimensions, never the review itself. Observed failing the entire
+  # review (no review posted) on build 14665196. try/catch turns the
+  # error into a warning; continueOnError is the backstop.
+  - ${{ if eq(parameters.Platform, 'windows') }}:
+    - pwsh: |
+        $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+        if (Test-Path $scriptPath) {
+          try { & $scriptPath -Width 1920 -Height 1080 }
+          catch { Write-Host "##[warning]Set-ScreenResolution threw (non-fatal): $($_.Exception.Message)" }
+          if ($LASTEXITCODE -ne 0) { Write-Host "##[warning]Set-ScreenResolution exited $LASTEXITCODE (non-fatal) — using default resolution" }
+        } else {
+          Write-Host "##[warning]Set-ScreenResolution.ps1 not found — using default resolution"
+        }
+        # Best-effort ONLY: setting the resolution only affects screenshot
+        # dimensions. A display-less agent makes the script exit 1 (which a
+        # PowerShell try/catch canNOT catch), so force exit 0 here — this step
+        # must NEVER fail the Review/gate. continueOnError is the backstop.
+        exit 0
+      displayName: 'Set screen resolution'
+      continueOnError: true
+
+  # Create AVD and boot Android Emulator
+  - ${{ if eq(parameters.Platform, 'android') }}:
+    # Free disk space on hosted agents (emulator needs ~7GB for userdata partition)
+    - script: |
+        echo "=== Disk space before cleanup ==="
+        df -h /home
+        echo "Removing unnecessary tools to free space..."
+        sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium 2>/dev/null || true
+        sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/Python 2>/dev/null || true
+        sudo rm -rf /usr/share/swift 2>/dev/null || true
+        echo "=== Disk space after cleanup ==="
+        df -h /home
+      displayName: 'Free Disk Space for Emulator'
+      condition: succeeded()
+
+    - script: |
+        export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+        export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+        # Pin a single, consistent AVD location. Modern cmdline-tools
+        # (avdmanager) default the Android user home to
+        # $XDG_CONFIG_HOME/.android (~/.config/.android) on the hosted
+        # agents, so `avdmanager create` wrote the AVD to
+        # ~/.config/.android/avd/Emulator_30.avd while the (older)
+        # `emulator` binary + our config.ini/adbkey/boot logic look in
+        # ~/.android/avd — a path mismatch that made `emulator -avd
+        # Emulator_30` report "Unknown AVD name" even though the AVD WAS
+        # created (build 14665001/14665465, PR #36130). ANDROID_AVD_HOME is
+        # honored FIRST by BOTH avdmanager and emulator, so exporting it
+        # pins create + boot + our guards to the same directory.
+        export ANDROID_AVD_HOME="$HOME/.android/avd"
+        mkdir -p "$ANDROID_AVD_HOME"
+
+        # Ensure the required system image is present before creating the
+        # AVD (idempotent — a fast no-op when already installed). The
+        # "Provision Android SDK - Emulator Images" step can report success
+        # yet leave no image on the agent, in which case avdmanager create
+        # fails with "Package path is not valid. Valid system image paths
+        # are: null" and every retry fails identically. See deep-stage
+        # build 14635021.
+        SYS_IMAGE="system-images;android-30;google_apis_playstore;x86_64"
+        if ! sdkmanager --list_installed 2>/dev/null | grep -q "google_apis_playstore/x86_64"; then
+          echo "=== System image not detected — installing $SYS_IMAGE ==="
+          yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -8 || true
+        fi
+
+        echo "=== Creating AVD ==="
+        echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
+
+        # avdmanager can fail/stall (e.g. "Loading local repository…" hangs,
+        # or the system image is registered but incomplete) and leave NO AVD
+        # behind. Booting a non-existent AVD then spins "Unknown AVD name
+        # [Emulator_30]" for 120s on EVERY launch/retry until the whole task
+        # times out — 6+ min wasted and no review (build 14665001, PR #36130).
+        # Verify the .ini the emulator actually loads exists; if not, force
+        # re-install the image and re-create (up to 3×), then fail FAST rather
+        # than fall through to an unbootable AVD.
+        AVD_INI="$HOME/.android/avd/Emulator_30.ini"
+        CREATE_TRIES=0
+        while [ ! -f "$AVD_INI" ] && [ $CREATE_TRIES -lt 3 ]; do
+          CREATE_TRIES=$((CREATE_TRIES + 1))
+          echo "##vso[task.logissue type=warning]AVD Emulator_30 not created (try $CREATE_TRIES) — re-installing $SYS_IMAGE and re-creating"
+          yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -5 || true
+          echo "no" | avdmanager create avd -n Emulator_30 -k "$SYS_IMAGE" --device "Nexus 5X" --force
+        done
+        if [ ! -f "$AVD_INI" ]; then
+          echo "##vso[task.logissue type=error]Could not create AVD Emulator_30 (system image unavailable on this agent). Failing fast instead of booting a non-existent AVD."
+          avdmanager list avd 2>/dev/null || true
+          exit 1
+        fi
+        echo "AVD Emulator_30 ready: $AVD_INI"
+
+        # Reduce userdata partition to fit on hosted agents (~4.2GB free)
+        AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
+        if [ -f "$AVD_CONFIG" ]; then
+          sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
+          echo "Updated disk.dataPartition.size to 2048m"
+        fi
+
+        # Pre-authorize ADB keys (mirrors android.cake HandleVirtualDevice)
+        echo "=== Pre-authorizing ADB keys ==="
+        mkdir -p "$HOME/.android"
+        if [ ! -f "$HOME/.android/adbkey" ]; then
+          adb keygen "$HOME/.android/adbkey" 2>/dev/null || true
+        fi
+        ADB_KEY_PUB="$HOME/.android/adbkey.pub"
+        AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
+        if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+          cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+          echo "ADB key pre-authorized for emulator"
+        fi
+
+        echo "=== Starting Emulator ==="
+        # Kill ALL stale emulator processes from previous step retries
+        for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+          echo "Killing stale emulator PID $STALE_PID"
+          kill "$STALE_PID" 2>/dev/null || true
+        done
+        sleep 2
+        for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+          kill -9 "$STALE_PID" 2>/dev/null || true
+        done
+        # Kill any stale adb server and restart
+        adb kill-server 2>/dev/null || true
+        sleep 1
+        adb start-server
+
+        # Retry loop: emulator sometimes fails to connect ADB on first launch
+        MAX_LAUNCH_ATTEMPTS=2
+        EMULATOR_PID=""
+        for LAUNCH_ATTEMPT in $(seq 1 $MAX_LAUNCH_ATTEMPTS); do
+          echo "--- Emulator launch attempt $LAUNCH_ATTEMPT of $MAX_LAUNCH_ATTEMPTS ---"
+
+          if [ $LAUNCH_ATTEMPT -gt 1 ]; then
+            echo "Cleaning up before retry..."
+            if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              kill "$EMULATOR_PID" 2>/dev/null || true
+              sleep 2
+              kill -0 "$EMULATOR_PID" 2>/dev/null && kill -9 "$EMULATOR_PID" 2>/dev/null || true
+            fi
+            sleep 3
+            adb kill-server 2>/dev/null || true
+            sleep 2
+            adb start-server
+            sleep 2
+          fi
+
+          nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+          EMULATOR_PID=$!
+          echo "Emulator PID: $EMULATOR_PID"
+
+          echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
+          # Intentionally UNGUARDED (no `|| true`): this step has no `set -e`, so a non-zero
+          # exit (124 on timeout) does NOT abort — the `if [ $? -eq 0 ]` below drives the
+          # retry + device-detection. Adding `|| true`/`|| echo` here would force $?=0 and
+          # silently break the retry loop. (Contrast the warmup step which DOES set -e and so
+          # must guard its wait-for-device.) Keep this unguarded.
+          if timeout 120 adb wait-for-device; then
+            # `adb wait-for-device` can return during a momentary online
+            # transition and the transport can already be OFFLINE by the
+            # next command. Also, grep "emulator.*device" incorrectly
+            # matches an OFFLINE row because its metadata contains
+            # "device:generic_*" (build 14892784). Require column 2 to
+            # remain exactly "device" before accepting this launch.
+            DETECTED_DEVICE=""
+            for DEVICE_STATE_CHECK in $(seq 1 6); do
+              DETECTED_DEVICE=$(adb devices | awk '$1 ~ /^emulator-/ && $2 == "device" { print $1; exit }')
+              if [ -n "$DETECTED_DEVICE" ]; then
+                echo "Device online and stable: $DETECTED_DEVICE ($(adb devices -l | grep emulator || true))"
+                break
+              fi
+              echo "ADB transport did not remain online ($DEVICE_STATE_CHECK/6); waiting..."
+              sleep 5
+            done
+            if [ -n "$DETECTED_DEVICE" ]; then
+              break
+            fi
+            echo "##vso[task.logissue type=warning]adb wait-for-device returned, but the emulator never remained in device state (attempt $LAUNCH_ATTEMPT)"
+          fi
+
+          echo "##vso[task.logissue type=warning]Emulator did not establish a stable ADB connection (attempt $LAUNCH_ATTEMPT)"
+          adb devices -l
+          tail -30 /tmp/emulator.log
+
+          if [ $LAUNCH_ATTEMPT -eq $MAX_LAUNCH_ATTEMPTS ]; then
+            echo "##vso[task.logissue type=error]Emulator failed to connect after $MAX_LAUNCH_ATTEMPTS attempts"
+            exit 1
+          fi
+        done
+
+        timeout=300
+        waited=0
+        while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+          sleep 5
+          waited=$((waited + 5))
+          if [ $waited -ge $timeout ]; then
+            echo "##vso[task.logissue type=error]Emulator did not finish booting after ${timeout}s"
+            exit 1
+          fi
+          # At 90 seconds, restart ADB server to recover from auth issues (mirrors android.cake)
+          if [ $waited -eq 90 ]; then
+            echo "Boot taking longer than expected (90/${timeout}s). Restarting ADB server..."
+            adb kill-server 2>/dev/null || true
+            sleep 2
+            adb start-server
+            sleep 2
+            echo "ADB server restarted. Continuing to wait..."
+          fi
+          # Re-ensure ADB keys every 60s during boot (mirrors android.cake PrepareDevice)
+          if [ $((waited % 60)) -eq 0 ] && [ $waited -gt 0 ]; then
+            if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+              cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub" 2>/dev/null || true
+            fi
+          fi
+        done
+        echo "Boot completed, waiting for package manager..."
+
+        timeout=120
+        waited=0
+        # timeout-wrap the PM query: 'adb shell' against a wedged/offline
+        # device can block indefinitely, which would otherwise hang this
+        # loop past the AzDO task timeout (the loop's own waited>=timeout
+        # check never runs while the command is blocked).
+        while ! timeout 30 adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+          sleep 5
+          waited=$((waited + 5))
+          if [ $waited -ge $timeout ]; then
+            echo "##vso[task.logissue type=error]Package manager not ready after ${timeout}s"
+            exit 1
+          fi
+        done
+
+        DEVICE_ID="${DETECTED_DEVICE:-$(adb devices | awk '$1 ~ /^emulator-/ && $2 == "device" { print $1; exit }')}"
+        if [ -z "$DEVICE_ID" ]; then
+          echo "##vso[task.logissue type=error]Emulator boot completed but no online ADB transport is available"
+          exit 1
+        fi
+        echo "✅ Emulator fully booted: $DEVICE_ID"
+
+        # Prepare emulator for CI use — keeps device responsive during idle period
+        echo "=== Preparing emulator for CI ==="
+        # Wait for device to stabilize after boot (transient offline state)
+        DEVICE_READY=false
+        for i in $(seq 1 20); do
+          if timeout 15 adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+            DEVICE_READY=true
+            break
+          fi
+          echo "Device offline, retrying ($i/20)..."
+          # Halfway through, restart the adb daemon and reconnect — a
+          # transient "device offline" is usually an adb-server glitch
+          # that self-heals on restart, avoiding a full step retry.
+          if [ "$i" -eq 10 ]; then
+            echo "Still offline at ~50s — restarting adb server and reconnecting..."
+            adb kill-server 2>/dev/null || true
+            sleep 2
+            adb start-server 2>/dev/null || true
+            timeout 15 adb reconnect offline 2>/dev/null || true
+            timeout 60 adb wait-for-device 2>/dev/null || true
+          fi
+          sleep 5
+        done
+
+        if [ "$DEVICE_READY" = false ]; then
+          echo "##vso[task.logissue type=error]Emulator went offline after boot — device not responsive after 100s"
+          exit 1
+        fi
+
+        # Disable all animations (reduces CPU load and flakiness).
+        # timeout-wrap every 'adb shell': against a wedged device these
+        # can block with no per-command bound and hang the task.
+        timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+        timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+        timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+        # Suppress ANR / "isn't responding" and crash dialogs system-wide for the whole
+        # session. A SystemUI ANR dialog can pop up mid-run (after the one-shot pre-test
+        # warmup) and overlay the HostApp, so Appium never finds "Go To Test" and the test
+        # reports "produced no results". This global flag prevents the dialog from ever
+        # being shown, so a transiently-starved emulator can't block the UI automation.
+        timeout 20 adb -s $DEVICE_ID shell settings put global hide_error_dialogs 1 || true
+        # Prevent screen from turning off (emulator simulates AC charging)
+        timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+        timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
+        # Wake screen and dismiss any lock screen
+        timeout 20 adb -s $DEVICE_ID shell input keyevent 82 || true
+        sleep 1
+        # Dismiss any "System UI has stopped" or crash dialogs
+        timeout 20 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+        # Clear logcat buffer so agent sees only fresh logs
+        timeout 20 adb -s $DEVICE_ID logcat -c 2>/dev/null || true
+        echo "Emulator preparation complete"
+
+        echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+        echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+        echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+      displayName: 'Create AVD and Boot Android Emulator'
+      retryCountOnTaskFailure: 3
+      # The timeout covers ALL RetryHelper attempts, not each attempt.
+      # Build 14892784 reached a third recovery attempt at 12m26s and
+      # was killed by the former 15m cap before it could finish.
+      timeoutInMinutes: 25
+      # Emulator provisioning is infrastructure. If every retry fails,
+      # continue into Setup so code review still runs; the Gate will
+      # classify any device-dependent verification as inconclusive.
+      continueOnError: true
+      condition: succeeded()
+
+  # Install Node.js and Appium (same as ui-tests-steps.yml)
+  - task: UseNode@1
+    inputs:
+      version: "24.x"
+    displayName: 'Install Node.js'
+
+  - pwsh: |
+      $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+    displayName: 'Install Appium'
+    condition: succeeded()
+    retryCountOnTaskFailure: 2
+    timeoutInMinutes: 10
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
+
+  - bash: |
+      echo "Installing GitHub CLI..."
+      # gh is pre-installed on Azure Pipelines hosted images (ubuntu, macOS, windows)
+      # Attempt upgrade if available, otherwise install
+      if command -v gh &> /dev/null; then
+        echo "GitHub CLI already installed: $(gh --version | head -1)"
+      elif command -v brew &> /dev/null; then
+        brew install gh
+      else
+        echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
+        exit 1
+      fi
+      gh --version
+      echo "GitHub CLI ready"
+    displayName: 'Install GitHub CLI'
+
+  # Never persist gh credentials on the test agent. Only trusted metadata
+  # tasks receive GH_TOKEN; Gate and PR-controlled subprocesses do not.
+
+  - bash: |
+      echo "=== Booting iOS Simulator ==="
+
+      # Pin the RUN to iOS 26.4 — the OS the ios-26 visual baselines were captured
+      # on (PR #35061). The build SDK is newer (26.5, required by the net11 workload)
+      # and its matching runtime is installed only so actool can compile; the app
+      # runs fine on 26.4, and rendering on the baseline OS avoids spurious
+      # VerifyScreenshot diffs. Fall back to the newest iOS 26, then 18.x/17.x.
+      # Pick the newest runtime whose name matches regex $1. $2 (optional)
+      # is an extra simctl arg, e.g. "available" to restrict to enrolled runtimes.
+      pick_runtime() {
+        xcrun simctl list runtimes $2 --json 2>/dev/null | jq -r --arg re "$1" '
+          [.runtimes[] | select(.name | test($re))] | sort_by(.version) | last | .identifier // empty
+        '
+      }
+      # Prefer iOS 26.4 (the OS the ios-26 visual baselines were captured on),
+      # then any 26, 18, 17, then the newest available iOS of ANY version.
+      for RE in "iOS 26\\.4" "iOS 26" "iOS 18" "iOS 17" "iOS "; do
+        RUNTIME=$(pick_runtime "$RE" available)
+        [ -n "$RUNTIME" ] && break
+      done
+      # After the "Install Simulator Runtimes" step recovers from an exit-70
+      # delete+reinstall, 'simctl list runtimes available' can transiently return
+      # EMPTY even though the runtime disk images are Ready — CoreSimulator has not
+      # re-enrolled them yet (build 14665868: iOS 26.3.1/26.5 Ready as disk images,
+      # yet 'available' returned nothing, so RUNTIME was empty and no sim booted).
+      # Settle + retry, then fall back to the unfiltered runtime list.
+      if [ -z "$RUNTIME" ]; then
+        echo "No available iOS runtime on first pass — settling 15s and retrying..."
+        sleep 15
+        for RE in "iOS 26\\.4" "iOS 26" "iOS "; do
+          RUNTIME=$(pick_runtime "$RE" available); [ -n "$RUNTIME" ] && break
+        done
+      fi
+      if [ -z "$RUNTIME" ]; then
+        echo "Still none via 'available' — trying the unfiltered runtime list..."
+        for RE in "iOS 26\\.4" "iOS 26" "iOS "; do
+          RUNTIME=$(pick_runtime "$RE"); [ -n "$RUNTIME" ] && break
+        done
+      fi
+      # THIRD RECOVERY (build 14680947, #35846 ios): the classic
+      # 'simctl list runtimes' used by pick_runtime can be EMPTY even unfiltered
+      # while the NEWER 'simctl runtime list' shows an iOS runtime whose disk image
+      # is Ready — CoreSimulator has the image on disk but has not enrolled it into
+      # the legacy simruntime registry yet (seen right after the Install step's
+      # exit-70 delete+reinstall recovery: 'Install Simulator Runtimes' reported
+      # iOS 26.5/26.3.1 Ready, yet this boot found "== Runtimes ==" empty and went
+      # INCONCLUSIVE while a perfectly usable runtime sat on disk). 'simctl create'
+      # accepts the runtimeIdentifier of a Ready disk image and mounts it on demand,
+      # so grab that identifier directly instead of degrading. If none is Ready this
+      # yields empty and the graceful-degrade below still fires (no behavior change).
+      if [ -z "$RUNTIME" ]; then
+        RUNTIME=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '
+          [to_entries[] | .value
+           | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))]
+          | sort_by(.version // "0") | last | .runtimeIdentifier // empty
+        ')
+        [ -n "$RUNTIME" ] && echo "Recovered Ready (unenrolled) iOS runtime disk image: $RUNTIME"
+      fi
+      echo "Selected iOS runtime: $RUNTIME"
+      if [ -z "$RUNTIME" ]; then
+        # LAST-RESORT DIAGNOSTICS + ENROLLMENT (build 14696636, #35706): the runtime
+        # disk images can be "Ready" on disk yet UNENROLLED in CoreSimulator, so
+        # 'simctl list runtimes' is EMPTY and 'simctl create' -> "Invalid runtime". The
+        # step used to degrade to INCONCLUSIVE right here without ever capturing WHY or
+        # attempting a fix. Capture the exact reason (availabilityError / image
+        # state+path / xcode-select) and try to enroll before degrading.
+        echo "=== iOS runtime diagnostics (before graceful degrade) ==="
+        echo "xcode-select -p: $(xcode-select -p 2>&1)"
+        echo "-- simctl runtime list (human; shows (unavailable/invalid) reasons) --"
+        xcrun simctl runtime list 2>&1 | grep -i ios || echo "(none)"
+        echo "-- simctl list runtimes -j (availabilityError) --"
+        xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "(none enrolled)"
+        echo "-- simctl runtime list --json (image state/sig/mount/path) --"
+        xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null) path=\(.path // "null")"' 2>/dev/null || echo "(no images)"
+        # CoreSimulator is Xcode-specific: point xcode-select at the newest Xcode (the
+        # runtimes may have been enrolled under it) then 'simctl runtime add <path>' each
+        # Ready-but-unavailable image (stages/verifies/mounts). Best-effort; ignore errors.
+        NEWEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+        [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to newest Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
+        AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
+        while IFS=$'\t' read -r IMG_ID IMG_PATH; do
+          [ -z "$IMG_ID" ] && continue
+          printf '%s\n' "$AVAIL_IDS" | grep -qxF "$IMG_ID" && continue
+          if [ -z "$IMG_PATH" ] || [ "$IMG_PATH" = "null" ]; then echo "  $IMG_ID: no .path field — cannot 'runtime add'"; continue; fi
+          echo "  Enrolling $IMG_ID via 'simctl runtime add' ($IMG_PATH)..."
+          sudo -n xcrun simctl runtime add "$IMG_PATH" 2>&1 || xcrun simctl runtime add "$IMG_PATH" 2>&1 || true
+        done < <(xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select(((.runtimeIdentifier//"")|test("iOS")) and .state=="Ready") | "\(.runtimeIdentifier)\t\(.path)"' 2>/dev/null)
+        sleep 5
+        xcrun simctl list runtimes >/dev/null 2>&1 || true
+        # Re-pick a runtime now that enrollment may have made one usable.
+        for RE in "iOS 26\\.4" "iOS 26" "iOS "; do RUNTIME=$(pick_runtime "$RE" available); [ -n "$RUNTIME" ] && break; done
+        if [ -z "$RUNTIME" ]; then
+          RUNTIME=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '[to_entries[] | .value | select((.state=="Ready") and (((.runtimeIdentifier//"")|test("iOS"))))] | sort_by(.version // "0") | last | .runtimeIdentifier // empty')
+        fi
+        echo "Runtime after enrollment attempt: ${RUNTIME:-<none>}"
+      fi
+      if [ -z "$RUNTIME" ]; then
+        # Keep diagnostics available and let the gate classify the missing runtime.
+        echo "##vso[task.logissue type=warning]No usable iOS simulator runtime on this agent — native gate verification will be INCONCLUSIVE."
+        echo "##vso[task.setvariable variable=DEVICE_UDID]"
+        exit 0
+      fi
+
+      # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
+      UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+        .devices[$rt] // [] |
+        map(select(.name == "iPhone Xs")) |
+        .[0].udid // empty
+      ')
+
+      # If iPhone Xs doesn't exist, try iPhone 11 Pro (same 1125×2436 resolution)
+      if [ -z "$UDID" ]; then
+        UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+          .devices[$rt] // [] |
+          map(select(.name == "iPhone 11 Pro")) |
+          .[0].udid // empty
+        ')
+        if [ -n "$UDID" ]; then
+          echo "Found existing iPhone 11 Pro (same resolution as iPhone Xs): $UDID"
+        fi
+      else
+        echo "Found existing iPhone Xs: $UDID"
+      fi
+
+      # If neither exists, try to create the right-size device. The selected
+      # $RUNTIME can be a Ready-on-disk-but-unenrolled runtime that 'simctl create'
+      # rejects with "Invalid runtime" (build 14686795, #36507 ios: create iPhone 11
+      # Pro on iOS-26-5 -> "Invalid runtime: ...iOS-26-5" -> UDID null -> gate degraded
+      # to INCONCLUSIVE even though iOS-26-4 was createable). So try the selected
+      # runtime FIRST, then fall through to every other available (installed) iOS
+      # runtime, highest version first, until a create succeeds — mirroring
+      # Start-Emulator.ps1's deep-stage boot. Only after ALL runtimes fail do we take
+      # an arbitrary existing iPhone.
+      if [ -z "$UDID" ]; then
+        echo "No matching device found - attempting to create one (preferred runtime $RUNTIME first)..."
+        ALL_IOS_RUNTIMES=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '
+          [.runtimes[] | select((.identifier // "") | test("iOS")) | {id: .identifier, v: (.version // "0")}]
+          | sort_by(.v) | reverse | .[].id
+        ' 2>/dev/null)
+        # ALSO pull Ready disk images from the newer 'simctl runtime list' (build
+        # 14689719, #35706 ios: 'simctl list runtimes available' was transiently EMPTY,
+        # so CANDIDATE_RUNTIMES held ONLY the unenrolled iOS-26-5 — create rejected it
+        # with "Invalid runtime" and the equally-Ready iOS-26-3-1 was NEVER tried, so the
+        # gate degraded to INCONCLUSIVE with a usable runtime sitting on disk). Merging
+        # both sources means every Ready iOS runtime gets a create attempt, highest first.
+        READY_IOS_RUNTIMES=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '
+          [to_entries[] | .value
+           | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))
+           | {id: .runtimeIdentifier, v: (.version // "0")}]
+          | sort_by(.v) | reverse | .[].id
+        ' 2>/dev/null)
+        # Selected runtime first, then every other available/Ready runtime — dedup,
+        # preserve order, drop blanks.
+        CANDIDATE_RUNTIMES=$(printf '%s\n%s\n%s\n' "$RUNTIME" "$ALL_IOS_RUNTIMES" "$READY_IOS_RUNTIMES" | awk 'NF && !seen[$0]++')
+        for RT in $CANDIDATE_RUNTIMES; do
+          # Try iPhone Xs then iPhone 11 Pro (both 1125×2436 -> baseline size) on this runtime.
+          CREATED=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RT" 2>&1)
+          if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+            UDID="$CREATED"; echo "Created iPhone Xs on $RT: $UDID"; break
+          fi
+          CREATED=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RT" 2>&1)
+          if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+            UDID="$CREATED"; echo "Created iPhone 11 Pro on $RT: $UDID"; break
+          fi
+          echo "Could not create iPhone Xs / 11 Pro on $RT (trying next runtime if any): $CREATED"
+        done
+        # ENROLLMENT RECOVERY (build 14691165, #36507 ios): if EVERY create above failed
+        # "Invalid runtime", the Ready iOS images are on disk but not enrolled into
+        # CoreSimulator's registry. Restart CoreSimulatorService to force a re-scan/enroll,
+        # then retry the create loop once. Only runs when the first pass produced no UDID,
+        # so the healthy path is untouched; non-destructive (daemon auto-relaunches).
+        if [ -z "$UDID" ]; then
+          echo "All runtime create attempts failed — restarting CoreSimulatorService to enroll Ready-but-unenrolled runtimes and retrying…"
+          # Diagnose WHY each Ready iOS runtime is unavailable (build 14695557, #35706:
+          # gate INCONCLUSIVE with iOS-26-5/26-3 both "Ready" yet `simctl create` ->
+          # "Invalid runtime"). availabilityError + signature/mount state pinpoint the
+          # real reason (not mounted vs signature vs Xcode mismatch) instead of guessing.
+          echo "iOS runtime availability (before restart/enroll):"
+          xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "  (could not read runtimes)"
+          xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  [image] \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null)"' 2>/dev/null || echo "  (could not read images)"
+          sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+          sleep 8
+          xcrun simctl list runtimes >/dev/null 2>&1 || true
+          sleep 4
+          # A restart alone often does NOT make Ready images create-usable. Explicitly
+          # re-stage / verify / mount each Ready runtime that is NOT in the available
+          # list via `simctl runtime add <path>` (which "stages, verifies, and mounts"),
+          # then re-scan before retrying create. Only touches unavailable runtimes, so
+          # healthy ones are never re-added; best-effort (errors ignored).
+          AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
+          while IFS=$'\t' read -r IMG_ID IMG_PATH; do
+            [ -z "$IMG_ID" ] && continue
+            printf '%s\n' "$AVAIL_IDS" | grep -qxF "$IMG_ID" && continue
+            [ -z "$IMG_PATH" ] && continue
+            echo "Re-staging Ready-but-unavailable runtime $IMG_ID via 'simctl runtime add' ($IMG_PATH)..."
+            sudo -n xcrun simctl runtime add "$IMG_PATH" 2>&1 || xcrun simctl runtime add "$IMG_PATH" 2>&1 || true
+          done < <(xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select(((.runtimeIdentifier//"")|test("iOS")) and .state=="Ready") | "\(.runtimeIdentifier)\t\(.path)"' 2>/dev/null)
+          xcrun simctl list runtimes >/dev/null 2>&1 || true
+          sleep 4
+          echo "iOS runtime availability (after restart/enroll):"
+          xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "  (could not read runtimes)"
+          ALL_IOS_RUNTIMES=$(xcrun simctl list runtimes available --json 2>/dev/null | jq -r '
+            [.runtimes[] | select((.identifier // "") | test("iOS")) | {id: .identifier, v: (.version // "0")}]
+            | sort_by(.v) | reverse | .[].id
+          ' 2>/dev/null)
+          READY_IOS_RUNTIMES=$(xcrun simctl runtime list --json 2>/dev/null | jq -r '
+            [to_entries[] | .value
+             | select((.state == "Ready") and (((.runtimeIdentifier // "") | test("iOS"))))
+             | {id: .runtimeIdentifier, v: (.version // "0")}]
+            | sort_by(.v) | reverse | .[].id
+          ' 2>/dev/null)
+          CANDIDATE_RUNTIMES=$(printf '%s\n%s\n%s\n' "$RUNTIME" "$ALL_IOS_RUNTIMES" "$READY_IOS_RUNTIMES" | awk 'NF && !seen[$0]++')
+          for RT in $CANDIDATE_RUNTIMES; do
+            CREATED=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RT" 2>&1)
+            if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+              UDID="$CREATED"; echo "Created iPhone Xs on $RT after service restart: $UDID"; break
+            fi
+            CREATED=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RT" 2>&1)
+            if [ $? -eq 0 ] && echo "$CREATED" | grep -qiE '^[0-9A-F-]{36}$'; then
+              UDID="$CREATED"; echo "Created iPhone 11 Pro on $RT after service restart: $UDID"; break
+            fi
+            echo "Still could not create on $RT after service restart: $CREATED"
+          done
+        fi
+        # Last resort: any already-created iPhone on any runtime (wrong size → visual
+        # tests may report 'size differs', but non-visual tests can still run).
+        if [ -z "$UDID" ]; then
+          echo "##vso[task.logissue type=warning]Could not create an iPhone Xs / 11 Pro on any available runtime — falling back to first existing iPhone."
+          UDID=$(xcrun simctl list devices available --json | jq -r '
+            .devices | to_entries |
+            map(.value) | flatten |
+            map(select(.name | test("iPhone"))) |
+            .[0].udid // empty
+          ')
+        fi
+      fi
+
+      if [ -z "$UDID" ]; then
+        echo "##vso[task.logissue type=warning]No iOS simulator could be found or created — native gate verification will be INCONCLUSIVE."
+        echo "##vso[task.setvariable variable=DEVICE_UDID]"
+        exit 0
+      fi
+
+      # Shutdown any other booted simulators to avoid Appium connecting to wrong device
+      xcrun simctl list devices booted --json | jq -r '
+        .devices | to_entries | map(.value) | flatten |
+        map(select(.state == "Booted" and .udid != "'"$UDID"'")) |
+        .[].udid
+      ' | while read OTHER_UDID; do
+        echo "Shutting down other simulator: $OTHER_UDID"
+        xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
+      done
+
+      echo "Booting simulator: $UDID"
+      xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
+      sleep 10
+
+      echo "Booted simulators:"
+      xcrun simctl list devices booted
+
+      echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
+      echo "iOS Simulator UDID: $UDID"
+    displayName: 'Boot iOS Simulator'
+    condition: eq('${{ parameters.Platform }}', 'ios')
+    timeoutInMinutes: 5
+
+  # Warm up the emulator after tool installation, before test verification.
+  - bash: |
+      set -e
+      DEVICE_ID="$(DEVICE_UDID)"
+      if [ -z "$DEVICE_ID" ]; then
+        echo "No DEVICE_UDID set — skipping warmup"
+        exit 0
+      fi
+
+      echo "=== Emulator warmup before gate ==="
+      # No adb probe in this best-effort step may consume the AzDO task's
+      # six-minute hard timeout. A dead transport previously hung on a later
+      # `adb shell` after the explicit wait loop and made the whole review
+      # yellow (build 14887598), even though the Gate correctly owns recovery.
+      adb_safe() {
+        timeout 5 adb -s "$DEVICE_ID" "$@"
+      }
+      adb_server_safe() {
+        timeout 5 adb "$@"
+      }
+
+      # Verify device is still connected
+      if ! adb_safe shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+        echo "Device not responding. Restarting ADB server..."
+        adb_server_safe kill-server 2>/dev/null || true
+        sleep 2
+        if ! adb_server_safe start-server; then
+          echo "##vso[task.logissue type=warning]ADB server did not restart during warmup — continuing to the Gate recovery path"
+          exit 0
+        fi
+        sleep 2
+        # Best-effort: a stuck/slow emulator must NOT hard-abort the whole review via
+        # `set -e` (adb wait-for-device -> timeout exit 124). Warn and continue so the
+        # rest of the warmup sweep still runs; the downstream gate has its own emulator
+        # retry and reports INCONCLUSIVE on genuine infra failure.
+        timeout 90 adb -s "$DEVICE_ID" wait-for-device || echo "##vso[task.logissue type=warning]adb wait-for-device timed out during warmup — emulator slow/stuck; continuing (gate will retry / report INCONCLUSIVE)"
+        # Wait for boot to complete after ADB reconnect
+        boot_deadline=$((SECONDS + 90))
+        while [ "$(adb_safe shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+          if [ $SECONDS -ge $boot_deadline ]; then
+            echo "##vso[task.logissue type=warning]Emulator still not booted after ADB restart — skipping the remaining warmup (gate will retry / report INCONCLUSIVE)"
+            exit 0
+          fi
+          sleep 5
+        done
+      fi
+
+      # Dismiss ANR dialogs and wake screen — run twice for reliability
+      for PASS in 1 2; do
+        echo "--- Warmup pass $PASS ---"
+        adb_safe shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+        adb_safe shell input keyevent KEYCODE_MENU 2>/dev/null || true
+        sleep 1
+
+        # Dismiss system dialogs (ANR, crash, etc.)
+        adb_safe shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+        adb_safe shell input keyevent KEYCODE_ENTER 2>/dev/null || true
+        adb_safe shell input keyevent KEYCODE_BACK 2>/dev/null || true
+        sleep 1
+      done
+
+      # Check for lingering ANR in window state
+      if adb_safe shell dumpsys window 2>/dev/null | grep -qi "Application Not Responding\|ANR"; then
+        echo "⚠️  ANR dialog still present — force-dismissing with HOME + BACK"
+        adb_safe shell input keyevent KEYCODE_HOME 2>/dev/null || true
+        sleep 2
+        adb_safe shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+        adb_safe shell input keyevent KEYCODE_BACK 2>/dev/null || true
+        sleep 1
+      fi
+
+      # Open and close Settings to exercise the system and confirm responsiveness
+      adb_safe shell am start -a android.settings.SETTINGS 2>/dev/null || true
+      sleep 3
+      adb_safe shell am force-stop com.android.settings 2>/dev/null || true
+
+      # Final dialog sweep
+      adb_safe shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+      adb_safe shell input keyevent KEYCODE_BACK 2>/dev/null || true
+
+      # Clear logcat before test execution.
+      adb_safe logcat -c 2>/dev/null || true
+
+      if adb_safe shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+        echo "✅ Emulator warmed up and responsive"
+      else
+        echo "##vso[task.logissue type=warning]Warmup finished without a responsive emulator — continuing to the Gate recovery path"
+      fi
+    displayName: 'Warm Up Android Emulator'
+    condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+    # Warmup is a best-effort keep-alive, never a gate: a slow/stuck emulator (exit 124
+    # from adb wait-for-device, seen killing whole reviews on PR #36215 / #36130) must
+    # NOT abort test verification. continueOnError downgrades any warmup
+    # failure to a warning so Setup/Gate still execute — the gate has its own
+    # emulator retry and INCONCLUSIVE classification for genuine infra failures.
+    continueOnError: true
+    timeoutInMinutes: 6
+    retryCountOnTaskFailure: 2
+
+  # Freeze the pre-merge buildtasks result before Setup introduces PR-controlled
+  # code. Gate receives this output through its task environment, so merged PR
+  # execution cannot forge a marker after a genuine test failure.
+  - bash: |
+      BASE_BUILDTASKS_FAILED=false
+      if [ -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker" ]; then
+        BASE_BUILDTASKS_FAILED=true
+      fi
+      echo "Frozen pre-merge buildtasks failure state: $BASE_BUILDTASKS_FAILED"
+      echo "##vso[task.setvariable variable=baseBuildTasksFailed;isOutput=true;isReadOnly=true]$BASE_BUILDTASKS_FAILED"
+      rm -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker"
+    name: FreezeBuildTasksState
+    displayName: 'Freeze pre-merge buildtasks state'

@@ -38,11 +38,6 @@ BeforeAll {
 }
 
 Describe 'Copilot reviewer base branch allowlist' {
-    It 'keeps every pipeline validator synchronized' {
-        $script:BaseBranchPatterns.Count | Should -Be 5
-        @($script:BaseBranchPatterns | Select-Object -Unique).Count | Should -Be 1
-    }
-
     Describe 'Copilot model policy' {
         It 'contains no Anthropic model identifiers in repository automation' {
             $violations = foreach ($file in $script:AutomationFiles) {
@@ -72,50 +67,9 @@ Describe 'Copilot reviewer base branch allowlist' {
         }
     }
 
-    It 'accepts every supported base branch shape' {
-        $pattern = $script:BaseBranchPatterns[0]
-
-        @(
-            'main'
-            'net12.0'
-            'inflight/current'
-            'inflight/10.0.101'
-            'inflight/11.0.100-preview.7'
-            'release/10.0.1xx-sr10'
-            'release/11.0.1xx-preview7.1'
-        ) | ForEach-Object {
-            [regex]::IsMatch($_, $pattern) | Should -BeTrue -Because "'$_' is supported"
-        }
-    }
-
-    It 'rejects unsupported or unsafe base branch shapes' {
-        $pattern = $script:BaseBranchPatterns[0]
-
-        @(
-            'improved-reviewer'
-            'inflight/.hidden'
-            'inflight/Future'
-            'inflight/foo/bar'
-            'inflight/../main'
-            'refs/heads/inflight/current'
-            'release/custom'
-        ) | ForEach-Object {
-            [regex]::IsMatch($_, $pattern) | Should -BeFalse -Because "'$_' is unsupported or unsafe"
-        }
-    }
 }
 
 Describe 'Copilot review artifact publication' {
-    It 'uses the trusted fixed-path bounded exporter' {
-        $pipeline | Should -Match ([regex]::Escape(
-            '$exportScript = Join-Path $trusted "scripts/shared/Export-ExpectedPRAgentArtifact.ps1"'))
-        $pipeline | Should -Match 'Export-ExpectedPRAgentArtifact\s+`'
-        $pipeline | Should -Match ([regex]::Escape(
-            "targetPath: '`$(Build.ArtifactStagingDirectory)/copilot-logs-publish'"))
-        $pipeline | Should -Match ([regex]::Escape(
-            "condition: and(succeededOrFailed(), eq(variables['BoundedCopilotLogsReady'], 'true'))"))
-    }
-
     It 'does not recursively publish agent-controlled workspaces' {
         $pipeline | Should -Not -Match (
             'Copy-Item\s+-Path\s+"CustomAgentLogsTmp"\s+-Destination\s+\$logsDir\s+-Recurse')

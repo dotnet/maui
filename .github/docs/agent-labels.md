@@ -26,7 +26,7 @@ Additive — **multiple** can coexist on a single PR.
 
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
-| `s/agent-gate-passed` | 🟢 `#4CAF50` | AI verified tests catch the bug (fail without fix, pass with fix) | Validate phase passes |
+| `s/agent-gate-passed` | 🟢 `#4CAF50` | Selected PR-test verification passed; inspect the report for mode and coverage | Validate phase or hosted gate passes |
 | `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Validate phase fails |
 | `s/agent-fix-win` | 🟢 `#66BB6A` | AI found a better alternative fix than the PR | Fix phase: alternative selected over PR's fix |
 | `s/agent-fix-pr-picked` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
@@ -71,7 +71,13 @@ Review-PR.ps1
     └── Non-fatal: errors warn but don't fail the workflow
 ```
 
-Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exception is the lock label: `s/agent-review-in-progress` is applied before triggering the async AzDO review pipeline. The lock label normally clears in the AzDO cleanup stage; trigger paths treat very old locks as stale so a cancelled pipeline does not permanently block reviews.
+The full outcome/alternative-fix labels above belong to local `Review-PR.ps1`
+reviews. The hosted `/review gate` command applies only the gate pass/fail signals
+through `Post-PRGate.ps1`, never approval or full-review tracking labels, and only
+when the live PR head still matches the tested head.
+`s/agent-review-in-progress` remains the shared async lock. It normally clears in
+the Azure cleanup stage; very old locks are treated as stale so cancellation
+does not permanently block another gate.
 
 ### How Labels Are Parsed
 
@@ -140,8 +146,9 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/workflows/review-trigger.yml` | Manual `/review` trigger that applies `s/agent-review-in-progress` before triggering AzDO reviews |
-| `eng/pipelines/ci-copilot.yml` | AzDO review pipeline that removes `s/agent-review-in-progress` in final cleanup |
+| `.github/workflows/review-trigger.yml` | `/review gate` trigger that applies `s/agent-review-in-progress` before queuing test verification |
+| `.github/scripts/Post-PRGate.ps1` | Publishes the hosted gate report and commit-bound gate signals only |
+| `eng/pipelines/ci-copilot.yml` | Gate-only Azure pipeline that removes the in-progress lock in final cleanup |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions

@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Parsing and authorization helpers for missed manual /review command recovery.
+    Parsing and authorization helpers for missed manual /review gate command recovery.
 #>
 
 function ConvertTo-DateTimeOffset {
@@ -60,14 +60,11 @@ function ConvertFrom-ReviewCommand {
     param([string]$Body)
 
     $trimmed = ([string]$Body).Trim()
-    if ($trimmed -notmatch '(?i)^/review(\s|$)') {
-        return $null
-    }
-    if ($trimmed -match '(?i)^/review\s+(rerun|tests|performance)(\s|$)') {
+    if ($trimmed -notmatch '(?i)^/review\s+gate(\s|$)') {
         return $null
     }
 
-    $argsText = [regex]::Replace($trimmed, '(?i)^/review\s*', '')
+    $argsText = [regex]::Replace($trimmed, '(?i)^/review\s+gate(?:\s+|$)', '')
     $tokens = @()
     if (-not [string]::IsNullOrWhiteSpace($argsText)) {
         $tokens = @($argsText -split '\s+' | Where-Object { $_ })
