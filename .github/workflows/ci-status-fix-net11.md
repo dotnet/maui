@@ -1116,8 +1116,9 @@ Run these gates in order — the FIRST that fires decides this cycle's outcome:
    so it is the highest-value outcome.)*
 4. **Red → classify caused-by-fix vs unrelated-flake.** If `C.overallConclusion ==
    "failure"`, analyze the PR's OWN failing build (NOT `net11.0`): find the AzDO
-   `maui-pr` build for this PR (filter builds by `branchName=refs/pull/<P>/merge`,
-   or match `sourceVersion == C.headSha`), then apply the SAME Step 4 timeline/log
+   `maui-pr` build for this PR (require BOTH `branchName == refs/pull/<P>/merge`
+   AND `triggerInfo["pr.sourceSha"] == C.headSha`; `sourceVersion` is the merge SHA,
+   not the PR-head identity), then apply the SAME Step 4 timeline/log
    method and Step 4.7 flake buckets to `C.failedLegs`.
    - **Unrelated flake only** (every failed leg is known-flaky / infra / a
      pre-existing baseline red NOT introduced by the fix): do NOT burn an attempt.
@@ -1211,7 +1212,9 @@ loop CAN observe: if the PR's `[ci-scan]` issue signature or its own diff indica
 ORIGINATING failure was in a separately queued pipeline (`maui-pr-uitests` def 313 or
 `maui-pr-devicetests` def 314) rather than `maui-pr` (def 302), do NOT undraft on
 `maui-pr`-green alone — a green primary build is NOT evidence the separate pipeline break
-is fixed. Require the automatic matching run for that pipeline; if it is absent, record
+is fixed. Require the automatic matching run for that pipeline: BOTH
+`branchName == refs/pull/<P>/merge` AND `triggerInfo["pr.sourceSha"] == C.headSha`.
+If it is absent, record
 `skipped: build-only fix PR #<P> targets pipeline (<pipeline>) whose automatic run was not observed`
 and stop this gate. Otherwise, set `TARGET := "the maui-pr build
 (build-only fix — no single target test)"` and proceed to **T3** to mark ready. If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
@@ -1245,8 +1248,10 @@ test's UI-test category — its `[Category(UITestCategories.X)]` in the test/Hos
 visible in the PR diff or the test file — to know which leg-name substring identifies its legs;
 for a device test, the per-platform device-test legs.
 
-Using the SAME build-discovery as Step 4 (filter AzDO builds by `branchName=refs/pull/<P>/merge`
-or `sourceVersion == C.headSha`), read each build's **timeline** on `C.headSha` for the
+Using the SAME build-discovery as Step 4 (require BOTH
+`branchName == refs/pull/<P>/merge` AND `triggerInfo["pr.sourceSha"] == C.headSha`;
+`sourceVersion` is the merge SHA, not the PR-head identity), read each build's
+**timeline** on `C.headSha` for the
 pipeline(s) that RUN the target test — `maui-pr` (def 302) for unit/integration tests,
 `maui-pr-uitests` (def 313) for Appium UI tests, `maui-pr-devicetests` (def 314) for device
 tests:
@@ -1581,8 +1586,9 @@ This is the "is the issue actually fixed?" check.
 **Mode note.** In **FRESH** mode (Step 3.4) verify against the latest completed
 `net11.0` build (below). In **ADVANCE** mode (Step 3.5) the PR is already red — its
 own build IS the reproduction: run the SAME timeline/log analysis against the PR's
-`maui-pr` build for `C.headSha` (filter builds by `branchName=refs/pull/<P>/merge`
-or match `sourceVersion`), extract the still-failing signature, and carry it into
+`maui-pr` build for `C.headSha` (require BOTH `branchName == refs/pull/<P>/merge`
+AND `triggerInfo["pr.sourceSha"] == C.headSha`; do not use the merge-SHA
+`sourceVersion` as PR-head identity), extract the still-failing signature, and carry it into
 Step 5. Skip the net11.0-build fetch in ADVANCE mode.
 
 1. Map the issue's `Pipeline` to its definition ID (302 / 314 / 313).
