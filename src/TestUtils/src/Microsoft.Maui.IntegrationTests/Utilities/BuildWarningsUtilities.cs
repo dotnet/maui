@@ -109,7 +109,7 @@ namespace Microsoft.Maui.IntegrationTests
 			return actualWarnings;
 		}
 
-		static void ReadBuildEvents(string binLogFilePath, Action<BuildEventArgs> processEvent)
+		internal static void ReadBuildEvents(string binLogFilePath, Action<BuildEventArgs> processEvent)
 		{
 			using var stream = File.OpenRead(binLogFilePath);
 			// Unlike ReadRecords, Replay does not initialize message resources in a fresh process.
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.IntegrationTests
 				processEvent(args);
 			};
 			// Replay otherwise reports read exceptions only through this event.
-			reader.OnException += exception => ExceptionDispatchInfo.Capture(exception).Throw();
+			reader.OnException += exception => ExceptionDispatchInfo.Capture(NormalizeReadException(exception)).Throw();
 			reader.Replay(stream);
 
 			// BuildFinished precedes the embedded imports and final end-of-file marker.
@@ -130,6 +130,20 @@ namespace Microsoft.Maui.IntegrationTests
 				throw new InvalidDataException("The binlog is incomplete: the end-of-file marker was not recorded.");
 			if (!buildFinished)
 				throw new InvalidDataException("The binlog is incomplete: no BuildFinished event was recorded.");
+		}
+
+		internal static Exception NormalizeReadException(Exception exception)
+		{
+			// StructuredLogger 2.3.246 passes a short ReadBytes(16) result to Guid instead of reporting EOF.
+			// OnException surrounds record deserialization, not the dispatched processEvent callback.
+			if (exception is ArgumentException { ParamName: "b" } &&
+				exception.GetType() == typeof(ArgumentException) &&
+				exception.TargetSite?.DeclaringType == typeof(Guid))
+			{
+				return new InvalidDataException($"The binlog contains an incomplete GUID: {exception.Message}", exception);
+			}
+
+			return exception;
 		}
 
 		private static void AddActualWarning(this List<WarningsPerFile> warnings, string file, string code, string message)

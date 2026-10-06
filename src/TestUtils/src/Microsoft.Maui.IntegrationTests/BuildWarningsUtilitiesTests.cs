@@ -46,6 +46,132 @@ public class BuildWarningsUtilitiesTests : IDisposable
 	}
 
 	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(15)]
+	public void ReportsTruncatedAssemblyGuidWithoutReplacingBuildFailure(int guidBytes)
+	{
+		var binlog = CreateAssemblyGuidBinlog(guidBytes);
+
+		// Verify this cut exercises the short GUID read, rather than another truncation path.
+		var reader = new BinLogReader();
+		Exception? readException = null;
+		reader.OnException += exception => readException = exception;
+		reader.Replay(binlog);
+		var original = Assert.IsType<ArgumentException>(readException);
+		Assert.Equal("b", original.ParamName);
+		Assert.Contains("ReadGuid", original.StackTrace, StringComparison.Ordinal);
+
+		var output = new RecordingOutput();
+		BuildWarningsUtilities.OutputBuildErrorsFromBinLog(binlog, output: output);
+
+		Assert.Contains("Could not completely read binlog", output.Text, StringComparison.Ordinal);
+		Assert.Contains(binlog, output.Text, StringComparison.Ordinal);
+		Assert.Contains(original.Message, output.Text, StringComparison.Ordinal);
+		Assert.Contains("TEST0002: test build error", output.Text, StringComparison.Ordinal);
+		var strict = Assert.Throws<InvalidDataException>(() => BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog));
+		var inner = Assert.IsType<ArgumentException>(strict.InnerException);
+		Assert.Equal(original.Message, inner.Message);
+		Assert.Contains("ReadGuid", inner.StackTrace, StringComparison.Ordinal);
+	}
+
+	string CreateAssemblyGuidBinlog(int guidBytes)
+	{
+		var binlog = CreateBinlog();
+		using var decompressed = new MemoryStream();
+		using (var stream = File.OpenRead(binlog))
+		using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
+			gzip.CopyTo(decompressed);
+
+		using var readerForHeader = new BinaryReader(decompressed, Encoding.UTF8, leaveOpen: true);
+		decompressed.Position = 0;
+		Assert.True(readerForHeader.ReadInt32() >= 18, "The fixture must use length-framed records.");
+		Assert.Equal((byte)BinaryLogRecordKind.EndOfFile, decompressed.GetBuffer()[checked((int)decompressed.Length - 1)]);
+		decompressed.SetLength(decompressed.Length - 1);
+		decompressed.Position = decompressed.Length;
+		using var writer = new BinaryWriter(decompressed, Encoding.UTF8, leaveOpen: true);
+		// Assembly-load events are incidental to task loading and need not occur in every MSBuild process.
+		// Append a length-framed record explicitly: flags, context, three string indices, GUID, app-domain index.
+		writer.Write7BitEncodedInt((int)BinaryLogRecordKind.AssemblyLoad);
+		writer.Write7BitEncodedInt(22);
+		writer.Write7BitEncodedInt(0); // No optional common fields.
+		writer.Write7BitEncodedInt(0); // Assembly-loading context.
+		writer.Write7BitEncodedInt(1); // Empty loading initiator.
+		writer.Write7BitEncodedInt(1); // Empty assembly name.
+		writer.Write7BitEncodedInt(1); // Empty assembly path.
+		var guidStart = decompressed.Position;
+		writer.Write(new Guid("01234567-89ab-cdef-0123-456789abcdef").ToByteArray());
+		writer.Write7BitEncodedInt(1); // Empty app-domain descriptor.
+		writer.Write7BitEncodedInt((int)BinaryLogRecordKind.EndOfFile);
+		WriteBinlog();
+
+		using (var stream = File.OpenRead(binlog))
+			Assert.Equal(BinaryLogRecordKind.AssemblyLoad, new BinLogReader().ReadRecords(stream).Last(record => record.Args is not null).Kind);
+		var validOutput = new RecordingOutput();
+		BuildWarningsUtilities.OutputBuildErrorsFromBinLog(binlog, output: validOutput);
+		Assert.Contains("TEST0002: test build error", validOutput.Text, StringComparison.Ordinal);
+		Assert.DoesNotContain("Could not completely read", validOutput.Text, StringComparison.Ordinal);
+		Assert.Equal("TEST0001", Assert.Single(Assert.Single(BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binlog)).WarningsPerCode).Code);
+
+		decompressed.SetLength(guidStart + guidBytes);
+		WriteBinlog();
+		return binlog;
+
+		void WriteBinlog()
+		{
+			decompressed.Position = 0;
+			using var stream = File.Create(binlog);
+			using var gzip = new GZipStream(stream, CompressionMode.Compress);
+			decompressed.CopyTo(gzip);
+		}
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void DoesNotNormalizeEventCallbackFailures(bool shortGuid)
+	{
+		var binlog = CreateBinlog();
+		Exception? callbackFailure = null;
+
+		var exception = Assert.Throws<AggregateException>(() => BuildWarningsUtilities.ReadBuildEvents(binlog, args =>
+		{
+			try
+			{
+				if (shortGuid)
+					_ = new Guid(new byte[1]);
+				throw new ArgumentException("Callback failure", "b");
+			}
+			catch (ArgumentException failure)
+			{
+				callbackFailure = failure;
+				throw;
+			}
+		}));
+
+		Assert.NotNull(callbackFailure);
+		Assert.Same(callbackFailure, Assert.Single(exception.Flatten().InnerExceptions));
+	}
+
+	[Fact]
+	public void DoesNotNormalizeUnrelatedReadFailures()
+	{
+		Exception[] failures =
+		[
+			new ArgumentException("Unrelated argument", "b"),
+			new ArgumentNullException("b"),
+			new ArgumentOutOfRangeException("b"),
+			new IOException("Read failure"),
+			new InvalidDataException("Invalid data"),
+			new OutOfMemoryException("Out of memory")
+		];
+		foreach (var failure in failures)
+			Assert.Same(failure, BuildWarningsUtilities.NormalizeReadException(failure));
+
+		Assert.Throws<ArgumentNullException>(() => BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(null!));
+	}
+
+	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void RejectsTruncationAfterBuildFinished(bool completeImportArchive)
