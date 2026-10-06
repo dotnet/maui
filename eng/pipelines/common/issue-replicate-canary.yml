@@ -146,7 +146,7 @@ stages:
                     throw 'No completed native result: the canary did not verify execution or routing.'
                   }
                   $result = Get-Content -LiteralPath "$verified/result.json" -Raw | ConvertFrom-Json
-                  if ($result.testExecuted -ne $true) { throw 'The reviewed native UI candidate did not execute.' }
+                  if ($result.testExecuted -ne $true) { throw 'The canary did not verify a completed candidate execution.' }
                   if ($result.recording.status -cne 'available' -or
                       -not (Test-Path -LiteralPath "$preview.recording.mp4" -PathType Leaf)) {
                     throw 'The native canary did not preserve its bounded video for publication.'
