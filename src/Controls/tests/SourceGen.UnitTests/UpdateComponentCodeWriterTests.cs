@@ -328,6 +328,45 @@ $"""
 		Assert.DoesNotContain("ReRoot", result, System.StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void XNameRebuild_AmongUntouchedSiblings_DoesNotClearLayout()
+	{
+		// Regression test for the "sibling disruption" review finding: a same-position x:Name
+		// rename is a local rebuild (ChildChangeKind.Rebuilt), not a structural add/remove. The
+		// generated code must target only the renamed child's slot — not Clear() the whole
+		// Layout and re-Add every child — so untouched siblings keep their live handler/platform
+		// view state (focus, animations, scroll position, etc.) across the hot-reload patch.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="oldName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="newName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		// Untouched siblings must never be detached/reattached: no destructive Clear()+readd.
+		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
+		// The rebuilt Entry is removed from its stale slot and reinserted at the same target
+		// index — a targeted, non-destructive single-slot replace.
+		Assert.Contains("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.Contains(".Insert(", result, System.StringComparison.Ordinal);
+	}
+
 	// helpers
 	static int CountOccurrences(string source, string pattern)
 	{

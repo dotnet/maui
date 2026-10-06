@@ -1038,7 +1038,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		var change = Assert.Single(diff.ChildListChanges);
 		var entry = Assert.Single(change.NewChildren);
-		Assert.Equal(ChildChangeKind.Added, entry.Kind); // recreated...
+		Assert.Equal(ChildChangeKind.Rebuilt, entry.Kind); // recreated...
 		var oldLabelId = oldIds[(ElementNode)old.CollectionItems[0]];
 		Assert.Equal(oldLabelId, entry.NewNodeId); // ...but re-registered under the SAME id
 		Assert.Empty(change.RemovedNodeIds); // never unregistered — would race the same-id re-add
@@ -2756,7 +2756,7 @@ public class XamlNodeDiffTests
 		Assert.All(diff.ChildListChanges, c =>
 		{
 			var entry = Assert.Single(c.NewChildren);
-			Assert.Equal(ChildChangeKind.Added, entry.Kind);
+			Assert.Equal(ChildChangeKind.Rebuilt, entry.Kind);
 			Assert.Empty(c.RemovedNodeIds);
 		});
 	}
@@ -2862,7 +2862,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		var childChange = Assert.Single(diff.ChildListChanges);
 		var rebuiltEntry = Assert.Single(childChange.NewChildren);
-		Assert.Equal(ChildChangeKind.Added, rebuiltEntry.Kind);
+		Assert.Equal(ChildChangeKind.Rebuilt, rebuiltEntry.Kind);
 		Assert.Empty(childChange.RemovedNodeIds);
 
 		var unrelatedChange = Assert.Single(diff.NodeChanges);
@@ -3054,7 +3054,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		var change = Assert.Single(diff.ChildListChanges);
 		var entry = Assert.Single(change.NewChildren);
-		Assert.Equal(ChildChangeKind.Added, entry.Kind);
+		Assert.Equal(ChildChangeKind.Rebuilt, entry.Kind);
 		var oldEntryElement = (ElementNode)((ElementNode)old.CollectionItems[0]).CollectionItems[0];
 		Assert.Equal(oldIds[oldEntryElement], entry.NewNodeId); // same id retained
 		Assert.Empty(change.RemovedNodeIds);

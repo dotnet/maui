@@ -90,6 +90,15 @@ enum ChildChangeKind
 	Retained,
 	/// <summary>The child is newly added and must be created at runtime.</summary>
 	Added,
+	/// <summary>
+	/// The child occupies the same position/id as before, but a codegen-sensitive directive
+	/// (currently only <c>x:Name</c>) changed, so it must be recreated in place under the SAME
+	/// id — a same-id local rebuild (see <see cref="XamlNodeDiff.IsLocallyRebuildable"/>), NOT an
+	/// insertion. Code writers must replace only this one slot (remove the stale old instance,
+	/// create+insert the new one at the same position), never a full <c>Clear()</c>/re-add of
+	/// the whole collection — that would needlessly detach every retained sibling too.
+	/// </summary>
+	Rebuilt,
 }
 
 /// <summary>
@@ -115,20 +124,22 @@ readonly struct ChildChangeEntry(
 
 	/// <summary>
 	/// For <see cref="ChildChangeKind.Retained"/>: the node ID in the old tree (used to look up the live component).
+	/// For <see cref="ChildChangeKind.Rebuilt"/>: the SAME id, reused (used to look up and remove
+	/// the stale old instance before inserting the rebuilt one).
 	/// <see langword="null"/> for <see cref="ChildChangeKind.Added"/>.
 	/// </summary>
 	public string? OldNodeId { get; } = oldNodeId;
 
 	/// <summary>
-	/// For <see cref="ChildChangeKind.Retained"/>: the index in the old parent's collection.
-	/// <c>-1</c> for <see cref="ChildChangeKind.Added"/>.
+	/// For <see cref="ChildChangeKind.Retained"/> and <see cref="ChildChangeKind.Rebuilt"/>: the
+	/// index in the old parent's collection. <c>-1</c> for <see cref="ChildChangeKind.Added"/>.
 	/// </summary>
 	public int OldIndex { get; } = oldIndex;
 
 	/// <summary>
-	/// For <see cref="ChildChangeKind.Added"/>: the full parsed <see cref="ElementNode"/> whose
-	/// properties and children are used by code writers to generate creation code.
-	/// <see langword="null"/> for <see cref="ChildChangeKind.Retained"/>.
+	/// For <see cref="ChildChangeKind.Added"/> and <see cref="ChildChangeKind.Rebuilt"/>: the full
+	/// parsed <see cref="ElementNode"/> whose properties and children are used by code writers to
+	/// generate creation code. <see langword="null"/> for <see cref="ChildChangeKind.Retained"/>.
 	/// </summary>
 	public ElementNode? NewElement { get; } = newElement;
 }
@@ -152,9 +163,10 @@ readonly struct ChildListChangeDiff(
 	public XmlType? ParentXmlType { get; } = parentXmlType;
 
 	/// <summary>
-	/// One entry per child in <em>new</em> order. Each entry is either
-	/// <see cref="ChildChangeKind.Retained"/> (mapped from old tree) or
-	/// <see cref="ChildChangeKind.Added"/> (must be created).
+	/// One entry per child in <em>new</em> order. Each entry is <see cref="ChildChangeKind.Retained"/>
+	/// (mapped from old tree), <see cref="ChildChangeKind.Added"/> (must be created and inserted),
+	/// or <see cref="ChildChangeKind.Rebuilt"/> (same slot, same id, must be recreated in place
+	/// without disturbing other children).
 	/// </summary>
 	public IReadOnlyList<ChildChangeEntry> NewChildren { get; } = newChildren;
 
@@ -288,6 +300,10 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 				if (e.Kind == ChildChangeKind.Added)
 				{
 					sb.Append('+').Append(e.NewNodeId);
+				}
+				else if (e.Kind == ChildChangeKind.Rebuilt)
+				{
+					sb.Append('~').Append(e.NewNodeId);
 				}
 				else if (e.OldNodeId != e.NewNodeId)
 				{
@@ -657,7 +673,7 @@ static class XamlNodeDiff
 					sameId ??= "";
 					effective[newElem] = sameId; // keep using the SAME id for future diffs too
 					entries ??= BuildUnchangedPositionalEntries(oldNode, newNode, i, oldIds, effective);
-					entries.Add(new ChildChangeEntry(ChildChangeKind.Added, sameId, newElem.XmlType, null, -1, newElem));
+					entries.Add(new ChildChangeEntry(ChildChangeKind.Rebuilt, sameId, newElem.XmlType, sameId, i, newElem));
 					removedNames ??= new List<RemovedNameEntry>();
 					CollectRebuiltSubtreeNames(oldElem, oldIds, removedNames);
 				}
@@ -884,8 +900,8 @@ static class XamlNodeDiff
 					// orphaned. Deliberately NOT added to removedIds below: an explicit Unregister
 					// would race with (and clobber) this same-id re-registration.
 					entries.Add(new ChildChangeEntry(
-						ChildChangeKind.Added, retainedOldId ?? "", newChildren[newIdx].XmlType,
-						null, -1, newChildren[newIdx]));
+						ChildChangeKind.Rebuilt, retainedOldId ?? "", newChildren[newIdx].XmlType,
+						retainedOldId ?? "", oldIdx, newChildren[newIdx]));
 					rebuiltOldSubtrees.Add(oldChildren[oldIdx]);
 				}
 				else
