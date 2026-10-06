@@ -3893,22 +3893,22 @@ foreach ($t in $AllDetectedTests) {
     $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
     $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
 
-    $woIcon = if ($woResult.EnvError) { "⚠️ ENV ERR" } elseif (-not $woResult.Passed) { "✅ FAIL   " } else { "❌ PASS   " }
-    $wIcon = if ($wResult.EnvError) { "⚠️ ENV ERR" } elseif ($wResult.Passed) { "✅ PASS  " } else { "❌ FAIL  " }
+    $woIcon = if ($woResult.EnvError) { "⚠️ ENV ERR" } elseif ($woResult.BuildError) { "BUILD ERR" } elseif ($woResult.FilterMismatch) { "NO MATCH " } elseif (-not $woResult.Passed) { "✅ FAIL   " } else { "❌ PASS   " }
+    $wIcon = if ($wResult.EnvError) { "⚠️ ENV ERR" } elseif ($wResult.BuildError) { "BUILD ERR" } elseif ($wResult.FilterMismatch) { "NO MATCH " } elseif ($wResult.Passed) { "✅ PASS  " } else { "❌ FAIL  " }
 
     $nameDisplay = $t.TestName
     if ($nameDisplay.Length -gt 22) { $nameDisplay = $nameDisplay.Substring(0, 19) + "..." }
     $nameDisplay = $nameDisplay.PadRight(22)
 
-    $woColor = if ($woResult.EnvError) { "Yellow" } elseif (-not $woResult.Passed) { "Green" } else { "Red" }
-    $wColor = if ($wResult.EnvError) { "Yellow" } elseif ($wResult.Passed) { "Green" } else { "Red" }
+    $woColor = if ($woResult.EnvError -or $woResult.BuildError -or $woResult.FilterMismatch) { "Yellow" } elseif (-not $woResult.Passed) { "Green" } else { "Red" }
+    $wColor = if ($wResult.EnvError -or $wResult.BuildError -or $wResult.FilterMismatch) { "Yellow" } elseif ($wResult.Passed) { "Green" } else { "Red" }
 
     Write-Host "  $nameDisplay │ " -NoNewline -ForegroundColor White
     Write-Host "$woIcon" -NoNewline -ForegroundColor $woColor
     Write-Host "  │ " -NoNewline -ForegroundColor White
     Write-Host "$wIcon" -ForegroundColor $wColor
 
-    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$(if (-not $woResult.Passed) {'FAIL ✅'} else {'PASS ❌'}), with fix=$(if ($wResult.Passed) {'PASS ✅'} else {'FAIL ❌'})"
+    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$($woIcon.Trim()), with fix=$($wIcon.Trim())"
 }
 Write-Host "  ───────────────────────┼─────────────┼────────────" -ForegroundColor DarkGray
 Write-Host "  Expected               │   FAIL      │   PASS     " -ForegroundColor DarkGray
