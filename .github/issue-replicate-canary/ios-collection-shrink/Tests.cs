@@ -2,9 +2,13 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -60,14 +64,14 @@ public class Issue38276 : _IssuesUITest
 		});
 	}
 
-	Rectangle WaitForStableCollection(Stopwatch clock, string phase, int count, int replacement,
-		Func<Rectangle, bool> usable)
+	RectangleF WaitForStableCollection(Stopwatch clock, string phase, int count, int replacement,
+		Func<RectangleF, bool> usable)
 	{
 		var started = clock.Elapsed;
 		var deadline = started + TimeSpan.FromSeconds(6);
 		var expectedStatus = $"Items: {count}; replacement: {replacement}";
-		Rectangle? previous = null;
-		Rectangle? lastRect = null;
+		RectangleF? previous = null;
+		RectangleF? lastRect = null;
 		string? lastStatus = null;
 		var stableSince = started;
 		var samples = 0;
@@ -76,23 +80,16 @@ public class Issue38276 : _IssuesUITest
 		{
 			while (clock.Elapsed < deadline && clock.Elapsed < TimeSpan.FromSeconds(24))
 			{
-				var status = WithinBudget(clock,
-					() => App.FindElements("Issue38276SourceStatus").SingleOrDefault(), deadline);
-				lastStatus = status is null ? null : WithinBudget(clock, () => status.GetText(), deadline);
-				var collection = WithinBudget(clock,
-					() => App.FindElements("Issue38276Collection").SingleOrDefault(), deadline);
+				var snapshot = WithinBudget(clock, ObserveCollection, deadline);
+				lastStatus = snapshot.Status;
+				lastRect = snapshot.Rect;
 				var ready = false;
 
-				if (lastStatus == expectedStatus && collection is not null)
+				if (lastStatus == expectedStatus && snapshot.Rect.HasValue)
 				{
-					var rect = WithinBudget(clock, () => collection.GetRect(), deadline);
-					lastRect = rect;
-					var firstItemPresent = WithinBudget(clock,
-						() => App.FindElementsByText("Appointment 1").Count > 0, deadline);
-					var secondItemPresent = WithinBudget(clock,
-						() => App.FindElementsByText("Appointment 2").Count > 0, deadline);
+					var rect = snapshot.Rect.Value;
 					ready = rect.Width > 0 && rect.Height > 0 && usable(rect)
-						&& firstItemPresent && secondItemPresent == (count == 10);
+						&& snapshot.FirstItem && snapshot.SecondItem == (count == 10);
 
 					if (ready)
 					{
@@ -137,12 +134,42 @@ public class Issue38276 : _IssuesUITest
 			+ $"last native rectangle: {lastRect}. This is not a shrink assertion.");
 	}
 
-	static bool SameViewport(Rectangle current, Rectangle control) =>
+	(string? Status, RectangleF? Rect, bool FirstItem, bool SecondItem) ObserveCollection()
+	{
+		var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
+		using var reader = XmlReader.Create(new StringReader(App.ElementTree), settings);
+		var tree = XDocument.Load(reader);
+		var status = tree.Descendants().SingleOrDefault(element =>
+			(string?)element.Attribute("name") == "Issue38276SourceStatus"
+			&& (string?)element.Attribute("visible") == "true");
+		var collection = tree.Descendants().SingleOrDefault(element =>
+			(string?)element.Attribute("name") == "Issue38276Collection"
+			&& (string?)element.Attribute("visible") == "true");
+		RectangleF? rect = collection is null ? null : new RectangleF(
+			ReadNativeCoordinate(collection, "x"), ReadNativeCoordinate(collection, "y"),
+			ReadNativeCoordinate(collection, "width"), ReadNativeCoordinate(collection, "height"));
+		bool HasItem(string label) => collection?.Descendants().Any(element =>
+			element.Name.LocalName == "XCUIElementTypeStaticText"
+			&& (string?)element.Attribute("label") == label
+			&& (string?)element.Attribute("visible") == "true") == true;
+
+		return ((string?)status?.Attribute("value"), rect, HasItem("Appointment 1"), HasItem("Appointment 2"));
+	}
+
+	static float ReadNativeCoordinate(XElement element, string attribute)
+	{
+		if (!float.TryParse((string?)element.Attribute(attribute), NumberStyles.Float,
+			CultureInfo.InvariantCulture, out var value) || !float.IsFinite(value))
+			throw new TimeoutException($"The native CollectionView exposed an invalid {attribute} coordinate.");
+		return value;
+	}
+
+	static bool SameViewport(RectangleF current, RectangleF control) =>
 		Math.Abs(current.X - control.X) <= 2
 		&& Math.Abs(current.Y - control.Y) <= 2
 		&& Math.Abs(current.Width - control.Width) <= 2;
 
-	static bool SameRect(Rectangle current, Rectangle previous) =>
+	static bool SameRect(RectangleF current, RectangleF previous) =>
 		Math.Abs(current.X - previous.X) <= 1
 		&& Math.Abs(current.Y - previous.Y) <= 1
 		&& Math.Abs(current.Width - previous.Width) <= 1

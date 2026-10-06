@@ -400,7 +400,10 @@ candidate's route factory; the author application's bootstrap is not replayed.
 The CollectionView case uses issue #38276's original public attachment. It
 preserves the capped Grid inside a VerticalStackLayout and compares rendered
 height for one item, ten items, and a replacement with one item; it does not force
-a layout invalidation. These reviewed candidates are not executed evidence until
+a layout invalidation. Each observation reads status, native geometry and visible
+item contents from one native accessibility snapshot rather than six sequential
+Appium requests. The stabilization requirements and observation/recording budgets
+are unchanged. These reviewed candidates are not executed evidence until
 their corresponding native jobs run.
 The ScrollView candidate polls both rendered padding insets for up
 to five seconds after the status changes; the synchronous status text alone is
