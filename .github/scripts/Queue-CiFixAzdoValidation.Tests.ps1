@@ -1288,6 +1288,24 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             }
             Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
         }
+
+        It 'rejects an empty token before verified work can make any Azure request' {
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Azure duplicate lookup must not run without authentication.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                throw 'Azure queue POST must not run without authentication.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext) `
+                    -AuthToken ''
+            } | Should -Throw '*authentication is required before processing verified PR #123*'
+
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
     }
 }
 
@@ -1304,6 +1322,98 @@ Describe 'event payload validation' {
         $LASTEXITCODE | Should -Not -Be 0
         $output -join [Environment]::NewLine |
             Should -Match 'GITHUB_EVENT_PATH must identify a supported GitHub event payload file\.'
+    }
+}
+
+Describe 'entrypoint verification failure routing' {
+    BeforeEach {
+        $script:oldStepSummary = $env:GITHUB_STEP_SUMMARY
+        Mock Start-Sleep {}
+    }
+
+    AfterEach {
+        $env:GITHUB_STEP_SUMMARY = $script:oldStepSummary
+    }
+
+    It 'retains one unverifiable PR while producing all dry-run payloads for the next verified PR' {
+        $eventPath = Join-Path $TestDrive 'mixed-event.json'
+        $fixturePath = Join-Path $TestDrive 'mixed-fixture.json'
+        $stdoutPath = Join-Path $TestDrive 'mixed-stdout.json'
+        $summaryPath = Join-Path $TestDrive 'mixed-summary.md'
+        $env:GITHUB_STEP_SUMMARY = $summaryPath
+        New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
+
+        $unverifiedPullRequest = New-TestPullRequest -Number 123
+        $verifiedPullRequest = New-TestPullRequest `
+            -Number 124 `
+            -BaseRef net11.0 `
+            -HeadRef ci-fix/issue-124 `
+            -Title '[ci-fix-net11] Repair CI (refs #124)' `
+            -HeadSha '3333333333333333333333333333333333333333' `
+            -MergeSha '4444444444444444444444444444444444444444'
+        $fixture = New-TestPullRequestFixture -PullRequests @(
+            $unverifiedPullRequest,
+            $verifiedPullRequest
+        )
+        $fixture.commits.'2222222222222222222222222222222222222222' = New-TestMergeCommit `
+            -MergeSha '2222222222222222222222222222222222222222' `
+            -HeadSha '5555555555555555555555555555555555555555'
+        $fixture | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $fixturePath
+
+        {
+            & $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -PullRequestsFixturePath $fixturePath `
+                -DryRun > $stdoutPath
+        } | Should -Throw '*3 of 6 Azure DevOps validation pipelines failed before dry-run queue payload generation*'
+
+        $results = @(Get-Content -Raw -LiteralPath $stdoutPath | ConvertFrom-Json -Depth 20)
+        $results.Count | Should -Be 6
+        @($results[0..2].PullRequestNumber | Select-Object -Unique) | Should -Be @(123)
+        @($results[0..2].Outcome | Select-Object -Unique) | Should -Be @('failed')
+        @($results[3..5].PullRequestNumber | Select-Object -Unique) | Should -Be @(124)
+        @($results[3..5].Outcome | Select-Object -Unique) | Should -Be @('dry-run')
+        $summary = Get-Content -Raw -LiteralPath $summaryPath
+        $summary | Should -Match 'dotnet/maui#123'
+        $summary | Should -Match 'dotnet/maui#124'
+        Should -Invoke Start-Sleep -Times 3 -Exactly
+    }
+
+    It 'retains all-unverifiable results without attempting OIDC or Azure work' {
+        $eventPath = Join-Path $TestDrive 'unverifiable-event.json'
+        $fixturePath = Join-Path $TestDrive 'unverifiable-fixture.json'
+        $stdoutPath = Join-Path $TestDrive 'unverifiable-stdout.json'
+        $summaryPath = Join-Path $TestDrive 'unverifiable-summary.md'
+        $env:GITHUB_STEP_SUMMARY = $summaryPath
+        New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
+
+        $pullRequest = New-TestPullRequest
+        $fixture = New-TestPullRequestFixture -PullRequests @($pullRequest)
+        $fixture.commits.'2222222222222222222222222222222222222222' = New-TestMergeCommit `
+            -MergeSha '2222222222222222222222222222222222222222' `
+            -HeadSha '5555555555555555555555555555555555555555'
+        $fixture | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $fixturePath
+
+        {
+            & $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -PullRequestsFixturePath $fixturePath `
+                -DryRun > $stdoutPath
+        } | Should -Throw '*3 of 3 Azure DevOps validation pipelines failed before dry-run queue payload generation*'
+
+        $results = @(Get-Content -Raw -LiteralPath $stdoutPath | ConvertFrom-Json -Depth 20)
+        $results.Count | Should -Be 3
+        @($results.Outcome | Select-Object -Unique) | Should -Be @('failed')
+        foreach ($result in $results) {
+            $result.Error | Should -Match 'did not obtain a verified test merge'
+            $result.Error | Should -Match 'No Azure DevOps validation was queued or deduplicated'
+        }
+        (Get-Content -Raw -LiteralPath $summaryPath) | Should -Match 'dotnet/maui#123'
+        Should -Invoke Start-Sleep -Times 3 -Exactly
     }
 }
 

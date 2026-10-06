@@ -865,15 +865,20 @@ function New-CiFixFailureResult {
 function Invoke-CiFixQueueWork {
     param(
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Contexts,
-        [Parameter(Mandatory = $true)][string]$AuthToken
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$AuthToken
     )
 
     $workResults = [System.Collections.Generic.List[object]]::new()
     $budgetExhaustedAfter = $null
     foreach ($context in $Contexts) {
         $contextResults = [System.Collections.Generic.List[object]]::new()
+        $verificationError = [string](Get-ObjectPropertyValue -InputObject $context -Name 'VerificationError')
+        if ([string]::IsNullOrWhiteSpace($verificationError) -and
+            [string]::IsNullOrWhiteSpace($AuthToken)) {
+            throw "Azure DevOps authentication is required before processing verified PR #$($context.PullRequestNumber)."
+        }
+
         foreach ($pipeline in Get-CiFixPipelineDefinitions) {
-            $verificationError = [string](Get-ObjectPropertyValue -InputObject $context -Name 'VerificationError')
             if (-not [string]::IsNullOrWhiteSpace($verificationError)) {
                 $result = New-CiFixFailureResult `
                     -Context $context `
