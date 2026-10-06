@@ -75,8 +75,8 @@ jobs:
           fi
           # Match `/review` as the first non-whitespace token, optionally followed by args.
           # Allows arbitrary leading whitespace (spaces, tabs, newlines).
-          # `/review tests` is reserved for the gh-aw test-failure review workflow.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+tests([[:space:]]|$) ]]; then
+          # Subcommands are reserved for their focused gh-aw review workflows.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
@@ -99,7 +99,7 @@ jobs:
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
           }
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
@@ -548,13 +548,6 @@ jobs:
           if (-not $locked) {
             throw "Failed to apply s/agent-review-in-progress to PR #$($env:PR_NUMBER)."
           }
-          if ($labels -contains 's/agent-ready-for-rerun') {
-            if (Remove-Label -PRNumber $env:PR_NUMBER -LabelName 's/agent-ready-for-rerun' -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
-              Write-Host "  ✅ Removed stale queue label: s/agent-ready-for-rerun"
-            } else {
-              Write-Host "  ⚠️  Could not remove stale queue label: s/agent-ready-for-rerun" -ForegroundColor Yellow
-            }
-          }
           "locked=false" >> $env:GITHUB_OUTPUT
           "state=acquired" >> $env:GITHUB_OUTPUT
 
@@ -852,8 +845,8 @@ jobs:
           # never enter this job, leaving their comments fully visible.
           #
           # We MINIMIZE (hide as resolved) rather than delete so the command — and its
-          # --branch/--platform options — survives in the REST comment history that the rerun
-          # scanner replays. Minimized comments are still returned by the REST list endpoint;
+          # --branch/--platform options — survives in the REST comment history.
+          # Minimized comments are still returned by the REST list endpoint;
           # only collapsed in the web UI. A failed hide must never fail the review trigger.
           #
           # The rocket reaction and minimized state are durable idempotency
@@ -868,7 +861,7 @@ jobs:
             is_recoverable_review_command() {
               NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
             }
 
             if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then

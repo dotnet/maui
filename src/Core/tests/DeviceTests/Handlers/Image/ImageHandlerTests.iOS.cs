@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using Xunit;
 
@@ -85,6 +88,44 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				});
 			});
+		}
+
+		[Fact]
+		public async Task CancelledLoadThatFailsDoesNotUpdateDisconnectedHandler()
+		{
+			// https://github.com/dotnet/maui/issues/38845
+			var image = new TStub();
+
+			var events = new List<string>();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+				await image.WaitUntilLoaded();
+
+				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var imageService = provider.GetRequiredImageSourceService<CountedImageSourceStub>();
+				var countedService = Assert.IsType<CountedImageSourceServiceStub>(imageService);
+
+				image.LoadingCompleted += successful => events.Add($"LoadingCompleted({successful})");
+				image.LoadingFailed += exception => events.Add($"LoadingFailed({exception.Message})");
+
+				image.Source = new CountedImageSourceStub(Colors.Blue, true) { FailWhenCancelled = true };
+				var loadTask = handler.SourceLoader.UpdateImageSourceAsync();
+
+				await Task.Run(() => countedService.Starting.WaitOne());
+
+				// Disconnecting the handler cancels the pending load, as ListView does
+				// after measuring a cell with uneven rows
+				((IElementHandler)handler).DisconnectHandler();
+
+				// The service then reports the cancelled load as a failure
+				countedService.DoWork.Set();
+
+				await loadTask;
+			});
+
+			Assert.Equal(new[] { "LoadingCompleted(False)" }, events);
 		}
 
 		protected virtual bool UsesAnimatedImages => true;

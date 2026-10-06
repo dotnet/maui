@@ -19,3 +19,4 @@ static Microsoft.Maui.Handlers.EditorHandler.MapBackground(Microsoft.Maui.Handle
 static Microsoft.Maui.Handlers.EntryHandler.MapBackground(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapBackground(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.PerformAction(UIKit.UIWindowScene! windowScene, UIKit.UIApplicationShortcutItem! shortcutItem, System.Action<bool>! completionHandler) -> void
+override Microsoft.Maui.Platform.PlatformTouchGraphicsView.MovedToWindow() -> void
