@@ -19,8 +19,7 @@ public class Issue39061 : _IssuesUITest
 
 		App.Tap("ToggleIsEnabledButton");
 
-		App.WaitForElement("Dismiss");
-		App.Tap("Dismiss");
+		App.TapDisplayAlertButton("Dismiss");
 
 		App.WaitForElement("SaveItem");
 

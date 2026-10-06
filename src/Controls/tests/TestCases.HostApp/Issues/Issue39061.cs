@@ -1,6 +1,11 @@
+#if IOS || MACCATALYST
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using UIKit;
+#endif
+
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 39061, "ToolbarItem custom TintColor is lost when IsEnabled changes on iOS", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 39061, "ToolbarItem custom TintColor is lost when IsEnabled changes on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 	public class Issue39061 : NavigationPage
 	{
 		public Issue39061() : base(new MainPage())
@@ -66,39 +71,26 @@ namespace Maui.Controls.Sample.Issues
 						toggleButton
 					}
 				};
-
-#if IOS || MACCATALYST
-				Loaded += OnPageLoaded;
-#endif
 			}
-
-#if IOS || MACCATALYST
-			void OnPageLoaded(object sender, EventArgs e)
-			{
-				Loaded -= OnPageLoaded;
-
-				if (Handler?.PlatformView is UIKit.UIView nativeView)
-				{
-					var parentViewController = nativeView.Window?.RootViewController;
-					var navController = parentViewController as UIKit.UINavigationController
-						?? parentViewController?.NavigationController;
-
-					if (navController?.NavigationBar is not null)
-					{
-						navController.NavigationBar.TintColor = UIKit.UIColor.FromRGB(0, 190, 180);
-
-						var rightItems = navController.VisibleViewController?.NavigationItem?.RightBarButtonItems;
-						if (rightItems is not null)
-						{
-							foreach (var item in rightItems)
-							{
-								item.TintColor = UIKit.UIColor.FromRGB(255, 45, 146);
-							}
-						}
-					}
-				}
-			}
-#endif
 		}
 	}
+
+#if IOS || MACCATALYST
+	public sealed class Issue39061NavigationRenderer : NavigationRenderer
+	{
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+
+			NavigationBar.TintColor = UIColor.FromRGB(0, 190, 180);
+
+			var rightBarButtonItems = VisibleViewController?.NavigationItem.RightBarButtonItems;
+			if (rightBarButtonItems is null)
+				return;
+
+			foreach (var item in rightBarButtonItems)
+				item.TintColor = UIColor.FromRGB(255, 45, 146);
+		}
+	}
+#endif
 }
