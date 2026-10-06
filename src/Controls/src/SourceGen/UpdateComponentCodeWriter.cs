@@ -96,6 +96,14 @@ static class UpdateComponentCodeWriter
 			// patch instead (return null), which routes the caller to its existing "structural
 			// change" fallback: fresh ids reassigned from 0, matching what happens when
 			// XamlNodeDiff.ComputeDiff itself returns null.
+			//
+			// That fallback is a pre-existing, intentional trade-off (see the "Structural change"
+			// comment in XamlGenerator.cs): EXISTING live instances are not patched across a
+			// structural change (UpdateComponent() is emitted empty, so XamlIncrementalHotReloadHandler
+			// skips calling it) — only freshly-constructed instances pick up the new tree, via the
+			// regenerated InitializeComponent(). Routing this emission failure through the SAME
+			// fallback is consistent with every other structural-reset trigger; it does not newly
+			// desync anything that wasn't already an accepted limitation of that path.
 			if (!EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return null;
 			codeWriter.WriteLine();

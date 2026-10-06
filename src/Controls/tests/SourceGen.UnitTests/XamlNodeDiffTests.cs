@@ -3240,5 +3240,29 @@ public class XamlNodeDiffTests
 
 		Assert.Null(diff);
 	}
+
+	[Fact]
+	public void XNameChanged_WithDescendantXFactoryMethod_CascadesToStructural_NotLocalRebuild()
+	{
+		// Regression test for "Ancestor rebuild ignores descendant construction directives":
+		// the renamed node itself carries no x:FactoryMethod/x:Arguments, but
+		// EmitNewElementChildren recreates the ENTIRE recreated subtree via plain "new {Type}()",
+		// so a descendant carrying one of these directives is just as unsafe to silently drop as
+		// the rebuilt node itself carrying it.
+		var old = Parse(Page("""
+			<VerticalStackLayout x:Name="oldStack">
+				<Label x:FactoryMethod="Create" Text="Hello" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout x:Name="newStack">
+				<Label x:FactoryMethod="Create" Text="Hello" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
 }
 

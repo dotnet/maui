@@ -472,16 +472,17 @@ static class XamlNodeDiff
 			// change (x:Name — see IsLocallyRebuildable) is eligible; anything else
 			// (x:Key, x:FactoryMethod, x:TypeArguments, ...) keeps cascading, since the
 			// local-rebuild creation path always emits a plain `new {Type}()` and skips all x:
-			// directives, and a compound edit is only eligible if EVERY changed codegen-sensitive
-			// directive on this node is individually eligible (see DiffProperties).
+			// directives (on the node itself AND every descendant it recreates), and a compound
+			// edit is only eligible if EVERY changed codegen-sensitive directive on this node is
+			// individually eligible (see DiffProperties).
 			// Below the root, contain the damage: signal the caller to rebuild just this node
 			// (same id, fresh subtree) instead of failing the entire diff.
 			if (depth == 0
 				|| templateContent
 				|| codegenSensitiveChange is not { } change
 				|| !IsLocallyRebuildable(change)
-				|| HasUnsupportedConstructionDirective(oldNode)
-				|| HasUnsupportedConstructionDirective(newNode))
+				|| HasUnsupportedConstructionDirectiveInSubtree(oldNode)
+				|| HasUnsupportedConstructionDirectiveInSubtree(newNode))
 				return false;
 			needsRebuild = true;
 			return true;
@@ -1170,6 +1171,30 @@ static class XamlNodeDiff
 	/// </summary>
 	static bool HasUnsupportedConstructionDirective(ElementNode node) =>
 		node.Properties.ContainsKey(XmlName.xFactoryMethod) || node.Properties.ContainsKey(XmlName.xArguments);
+
+	/// <summary>
+	/// Same as <see cref="HasUnsupportedConstructionDirective"/>, but checked recursively over
+	/// <paramref name="node"/>'s ENTIRE subtree. <c>EmitNewElementChildren</c> recreates every
+	/// descendant of a rebuilt node via the same construction-directive-unaware plain
+	/// <c>new {Type}()</c> path — a descendant carrying <c>x:FactoryMethod</c>/<c>x:Arguments</c>
+	/// is just as unsafe to silently rebuild as the rebuilt node itself carrying one, even though
+	/// the ancestor's own directive (if any) is unaffected by the edit.
+	/// </summary>
+	static bool HasUnsupportedConstructionDirectiveInSubtree(ElementNode node)
+	{
+		if (HasUnsupportedConstructionDirective(node))
+			return true;
+
+		foreach (var propertyNode in node.Properties.Values)
+			if (propertyNode is ElementNode propertyElement && HasUnsupportedConstructionDirectiveInSubtree(propertyElement))
+				return true;
+
+		foreach (var item in node.CollectionItems)
+			if (item is ElementNode itemElement && HasUnsupportedConstructionDirectiveInSubtree(itemElement))
+				return true;
+
+		return false;
+	}
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the property is <c>x:DataType</c>,
