@@ -676,11 +676,9 @@ function Find-AzdoDuplicateBuild {
         $triggerInfo = Get-ObjectPropertyValue -InputObject $build -Name 'triggerInfo'
         $sourceSha = [string](Get-ObjectPropertyValue -InputObject $triggerInfo -Name 'pr.sourceSha')
         $prNumber = [string](Get-ObjectPropertyValue -InputObject $triggerInfo -Name 'pr.number')
-        $sourceVersion = [string](Get-ObjectPropertyValue -InputObject $build -Name 'sourceVersion')
 
-        if (($sourceSha -ceq $HeadSha -and ($prNumber -ceq '' -or $prNumber -ceq "$PullRequestNumber")) -or
-            $sourceVersion -ceq $HeadSha -or
-            $sourceVersion -ceq $MergeSha) {
+        if ($sourceSha -ceq $HeadSha -and
+            ($prNumber -ceq '' -or $prNumber -ceq "$PullRequestNumber")) {
             return $build
         }
     }

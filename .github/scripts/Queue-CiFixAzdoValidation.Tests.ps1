@@ -774,29 +774,37 @@ Describe 'Find-AzdoDuplicateBuild' {
             Should -BeNullOrEmpty
     }
 
-    It 'deduplicates legacy metadata by the exact merge commit' {
+    It 'does not deduplicate sourceVersion-only legacy metadata' {
         $builds = @(
             [pscustomobject]@{
                 id = 9002
                 sourceBranch = 'refs/pull/123/merge'
                 sourceVersion = '2222222222222222222222222222222222222222'
                 triggerInfo = [pscustomobject]@{}
+            },
+            [pscustomobject]@{
+                id = 9003
+                sourceBranch = 'refs/pull/123/merge'
+                sourceVersion = '1111111111111111111111111111111111111111'
+                triggerInfo = [pscustomobject]@{
+                    'pr.number' = '123'
+                    'pr.sourceSha' = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                }
             }
         )
 
-        $duplicate = Find-AzdoDuplicateBuild `
+        Find-AzdoDuplicateBuild `
             -Builds $builds `
             -PullRequestNumber 123 `
             -HeadSha '1111111111111111111111111111111111111111' `
-            -MergeSha '2222222222222222222222222222222222222222'
-
-        $duplicate.id | Should -Be 9002
+            -MergeSha '2222222222222222222222222222222222222222' |
+            Should -BeNullOrEmpty
     }
 
     It 'does not let a previous-head build deduplicate a current verified head through an old merge SHA' {
         $builds = @(
             [pscustomobject]@{
-                id = 9003
+                id = 9004
                 sourceBranch = 'refs/pull/123/merge'
                 sourceVersion = '2222222222222222222222222222222222222222'
                 triggerInfo = [pscustomobject]@{
