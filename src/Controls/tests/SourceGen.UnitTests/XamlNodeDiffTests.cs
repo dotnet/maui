@@ -3195,5 +3195,50 @@ public class XamlNodeDiffTests
 
 		Assert.Null(diff);
 	}
+
+	[Fact]
+	public void XNameChanged_WithUnchangedXFactoryMethod_CascadesToStructural_NotLocalRebuild()
+	{
+		// Regression test for "Local rebuild ignores factory method and constructor arguments":
+		// x:Name alone changes here — x:FactoryMethod is present but IDENTICAL in both versions,
+		// so it never shows up as a codegen-sensitive CHANGE. Eligibility must still fail: the
+		// local-rebuild creation path (EmitNewElement) always emits a plain "new {Type}()" and
+		// has no knowledge of x:FactoryMethod at all, so it would call a nonexistent parameterless
+		// constructor (or silently bypass the factory) for a node that is ONLY ever constructed
+		// via that factory method — regardless of whether the directive's VALUE changed.
+		var old = Parse(Page("""<Label x:Name="oldLabel" x:FactoryMethod="Create" Text="Hello" />"""));
+		var @new = Parse(Page("""<Label x:Name="newLabel" x:FactoryMethod="Create" Text="Hello" />"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
+
+	[Fact]
+	public void XNameChanged_WithUnchangedXArguments_CascadesToStructural_NotLocalRebuild()
+	{
+		// Same concern as the x:FactoryMethod case above, for x:Arguments (constructor
+		// arguments): EmitNewElement's plain "new {Type}()" has no knowledge of x:Arguments
+		// either, so a node constructed with non-default constructor arguments must not be
+		// locally rebuilt just because its x:Name changed.
+		var old = Parse(Page("""
+			<Label x:Name="oldLabel" Text="Hello">
+				<x:Arguments>
+					<x:String>seed</x:String>
+				</x:Arguments>
+			</Label>
+			"""));
+		var @new = Parse(Page("""
+			<Label x:Name="newLabel" Text="Hello">
+				<x:Arguments>
+					<x:String>seed</x:String>
+				</x:Arguments>
+			</Label>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
 }
 

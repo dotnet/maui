@@ -89,7 +89,15 @@ static class UpdateComponentCodeWriter
 		int addedCounter = 0;
 		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			// A change against a parent shape EmitChildListChange can't safely represent (e.g. a
+			// getter-only collection content property like FormattedString.Spans) would otherwise
+			// leave the live tree un-patched for that one child while the caller still caches this
+			// generation's ids as if the whole patch had applied — a silent desync. Abort the WHOLE
+			// patch instead (return null), which routes the caller to its existing "structural
+			// change" fallback: fresh ids reassigned from 0, matching what happens when
+			// XamlNodeDiff.ComputeDiff itself returns null.
+			if (!EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				return null;
 			codeWriter.WriteLine();
 		}
 
@@ -251,7 +259,7 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
-	static void EmitChildListChange(
+	static bool EmitChildListChange(
 		IndentedTextWriter codeWriter,
 		ChildListChangeDiff change,
 		int changeIdx,
@@ -332,15 +340,26 @@ static class UpdateComponentCodeWriter
 			&& parentType!.GetAllProperties(contentPropertyName, context: null)
 				.FirstOrDefault()?.SetMethod?.IsPublic() == true;
 
-		if (!isLayout && (contentPropertyName == null || !contentPropertyIsSettable))
+		// A getter-only collection content property (e.g. FormattedString.Spans) is unsupported
+		// regardless of whether this change is an add/rebuild or a pure removal — even "set to
+		// null" doesn't apply to a collection-typed property, and we have no Add/Remove support
+		// for it. Bail unconditionally so the caller falls back to a full structural reset.
+		if (!isLayout && contentPropertyName != null && !contentPropertyIsSettable)
+			return false;
+
+		// A parent with NO content property at all (e.g. ResourceDictionary, whose children are
+		// dictionary entries, not a single settable/collection property) can't have anything
+		// INSERTED into it here. But a pure removal (no new/rebuilt child to place) needs nothing
+		// emitted for the content property itself — the removed-id unregister loop below still
+		// runs normally — so only bail when there is actual content to apply.
+		if (!isLayout && contentPropertyName == null && change.NewChildren.Count > 0)
 		{
-			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no settable content property — skipped");
-			if (guardedByParentTryGet)
-			{
-				codeWriter.Indent--;
-				codeWriter.WriteLine("}");
-			}
-			return;
+			// Unsupported parent shape: don't emit a partial/skipped patch for just this change
+			// while the caller still treats the OVERALL generation as successfully applied (which
+			// would cache ids as if the live tree had been updated, desyncing it from the real
+			// state). Signal failure so GeneratePatchBody aborts the whole patch and the caller
+			// falls back to a full structural reset instead.
+			return false;
 		}
 
 		if (isLayout)
@@ -447,12 +466,15 @@ static class UpdateComponentCodeWriter
 				}
 			}
 		}
-		else
+		else if (contentPropertyName != null)
 		{
 			// Content property container (ContentPage, ContentView, ScrollView, Border, etc.)
 			// These have a single content property — set directly instead of using Children.Add()
-			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName!, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 		}
+		// else: no content property at all (e.g. ResourceDictionary) and nothing to insert (the
+		// bail-out above already covers the case where there WAS something to insert) — this is a
+		// pure removal; nothing to emit here, the unregister loop below still runs.
 
 		// Unregister removed children and their entire subtrees.
 		// `change.RemovedNodeIds` already includes all descendants (collected by CollectSubtreeIds
@@ -469,6 +491,8 @@ static class UpdateComponentCodeWriter
 			codeWriter.Indent--;
 			codeWriter.WriteLine("}");
 		}
+
+		return true;
 	}
 
 	/// <summary>

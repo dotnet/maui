@@ -476,7 +476,12 @@ static class XamlNodeDiff
 			// directive on this node is individually eligible (see DiffProperties).
 			// Below the root, contain the damage: signal the caller to rebuild just this node
 			// (same id, fresh subtree) instead of failing the entire diff.
-			if (depth == 0 || templateContent || codegenSensitiveChange is not { } change || !IsLocallyRebuildable(change))
+			if (depth == 0
+				|| templateContent
+				|| codegenSensitiveChange is not { } change
+				|| !IsLocallyRebuildable(change)
+				|| HasUnsupportedConstructionDirective(oldNode)
+				|| HasUnsupportedConstructionDirective(newNode))
 				return false;
 			needsRebuild = true;
 			return true;
@@ -1152,6 +1157,19 @@ static class XamlNodeDiff
 	/// </summary>
 	static bool IsLocallyRebuildable(XmlName name) =>
 		name.NamespaceURI == "x" && name.LocalName == "Name";
+
+	/// <summary>
+	/// Returns <see langword="true"/> when <paramref name="node"/> carries an
+	/// <c>x:FactoryMethod</c> or <c>x:Arguments</c> directive, regardless of whether that
+	/// directive itself changed. The local-rebuild creation path (<c>EmitNewElement</c>) always
+	/// constructs via a plain parameterless <c>new {Type}()</c> call — it has no knowledge of a
+	/// factory method or constructor arguments. An otherwise-eligible edit (e.g. an <c>x:Name</c>
+	/// rename) on a node that is ALSO constructed via one of these directives would still be
+	/// rebuilt through that unaware path, silently dropping the factory call / constructor
+	/// arguments. Such nodes must keep cascading to a full structural reload instead.
+	/// </summary>
+	static bool HasUnsupportedConstructionDirective(ElementNode node) =>
+		node.Properties.ContainsKey(XmlName.xFactoryMethod) || node.Properties.ContainsKey(XmlName.xArguments);
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the property is <c>x:DataType</c>,

@@ -395,14 +395,18 @@ $"""
 	}
 
 	[Fact]
-	public void XNameRebuild_UnderGetterOnlyCollectionContentProperty_SkipsInsteadOfGeneratingInvalidCode()
+	public void XNameRebuild_UnderGetterOnlyCollectionContentProperty_AbortsPatchForStructuralFallback()
 	{
 		// Regression test for the "Local rebuild generates invalid updates for collection
-		// content" review finding: FormattedString.Spans is a getter-only IList<Span> content
-		// property (not a Layout, not a publicly-settable single-value content property).
+		// content" / "Unsupported collection skips desynchronizes live tree and cached IDs"
+		// review findings: FormattedString.Spans is a getter-only IList<Span> content property
+		// (not a Layout, not a publicly-settable single-value content property).
 		// EmitContentPropertyChange can only emit a plain assignment, which would not compile
-		// against a read-only collection property — so this unsupported shape must be skipped
-		// (like "no content property"), never emitted as a broken assignment.
+		// against a read-only collection property. Silently skipping just this one change while
+		// still reporting the overall patch as applied would desync the live tree (never patched)
+		// from the ids the generator caches (as if it had been) — so this unsupported shape must
+		// abort the WHOLE patch instead, forcing the caller's existing structural-fallback path
+		// (fresh ids reassigned from 0), exactly like XamlNodeDiff.ComputeDiff returning null.
 		var v1 =
 $"""
 <ContentPage {MauiXmlns} x:Class="Test.TestPage">
@@ -420,11 +424,9 @@ $"""
 </ContentPage>
 """;
 		var result = Generate(v1, v2);
-		Assert.NotNull(result);
 
-		// Must never try to assign the read-only Spans property.
-		Assert.DoesNotContain(".Spans =", result, System.StringComparison.Ordinal);
-		Assert.Contains("is not a Layout and has no settable content property", result, System.StringComparison.Ordinal);
+		// No patch at all is emitted — never a broken assignment to the read-only Spans property.
+		Assert.Null(result);
 	}
 
 	// helpers
