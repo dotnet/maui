@@ -118,7 +118,8 @@ function Get-CiFixPipelineDefinitions {
 function Get-CiFixContextFromPullRequest {
     param(
         [Parameter(Mandatory = $true)][object]$PullRequest,
-        [Parameter(Mandatory = $true)][string]$Repository
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [bool]$RequireMergeSha = $true
     )
 
     $base = Get-ObjectPropertyValue -InputObject $PullRequest -Name 'base'
@@ -176,12 +177,174 @@ function Get-CiFixContextFromPullRequest {
     if ($context.HeadSha -cnotmatch '^[0-9a-fA-F]{40}$') {
         throw 'Eligible CI-fix pull request head SHA is missing or invalid.'
     }
-    if ($context.MergeSha -cnotmatch '^[0-9a-fA-F]{40}$') {
+    if ($RequireMergeSha -and $context.MergeSha -cnotmatch '^[0-9a-fA-F]{40}$') {
         Write-Warning "Eligible CI-fix PR #$($context.PullRequestNumber) has no merge commit yet; deferring validation."
         return $null
     }
 
     return $context
+}
+
+function Get-GitHubApiHeaders {
+    param([Parameter(Mandatory = $true)][string]$GitHubToken)
+
+    return @{
+        Authorization = "Bearer $GitHubToken"
+        Accept = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+    }
+}
+
+function Get-FixturePullRequestDetail {
+    param(
+        [Parameter(Mandatory = $true)][object]$FixtureData,
+        [Parameter(Mandatory = $true)][int]$PullRequestNumber
+    )
+
+    $details = Get-ObjectPropertyValue -InputObject $FixtureData -Name 'pullRequestDetails'
+    $detail = Get-ObjectPropertyValue -InputObject $details -Name "$PullRequestNumber"
+    if ($null -eq $detail) {
+        throw "Pull request fixture has no detail metadata for PR #$PullRequestNumber."
+    }
+
+    return $detail
+}
+
+function Get-FixtureCommit {
+    param(
+        [Parameter(Mandatory = $true)][object]$FixtureData,
+        [Parameter(Mandatory = $true)][string]$CommitSha
+    )
+
+    $commits = Get-ObjectPropertyValue -InputObject $FixtureData -Name 'commits'
+    $commit = Get-ObjectPropertyValue -InputObject $commits -Name $CommitSha
+    if ($null -eq $commit) {
+        throw "Pull request fixture has no commit metadata for '$CommitSha'."
+    }
+
+    return $commit
+}
+
+function Get-CiFixMergePairDiagnostic {
+    param(
+        [Parameter(Mandatory = $true)][object]$Context,
+        [Parameter(Mandatory = $true)][object]$Commit
+    )
+
+    $commitSha = [string](Get-ObjectPropertyValue -InputObject $Commit -Name 'sha')
+    if ($commitSha -cne $Context.MergeSha) {
+        return "requested merge '$($Context.MergeSha)' returned commit '$commitSha'"
+    }
+
+    $parents = @(
+        @(Get-ObjectPropertyValue -InputObject $Commit -Name 'parents') |
+            ForEach-Object { $_ }
+    )
+    if ($parents.Count -ne 2) {
+        return "merge '$($Context.MergeSha)' has $($parents.Count) parent(s), expected exactly 2"
+    }
+
+    $baseParentSha = [string](Get-ObjectPropertyValue -InputObject $parents[0] -Name 'sha')
+    if ($baseParentSha -cnotmatch '^[0-9a-fA-F]{40}$') {
+        return "merge '$($Context.MergeSha)' has an invalid first parent '$baseParentSha'"
+    }
+
+    $sourceParentSha = [string](Get-ObjectPropertyValue -InputObject $parents[1] -Name 'sha')
+    if ($sourceParentSha -cne $Context.HeadSha) {
+        return "merge '$($Context.MergeSha)' source parent '$sourceParentSha' does not match head '$($Context.HeadSha)'"
+    }
+
+    return $null
+}
+
+function Resolve-VerifiedCiFixContext {
+    param(
+        [Parameter(Mandatory = $true)][object]$NominatedContext,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [AllowEmptyString()][string]$GitHubToken,
+        [AllowNull()][object]$FixtureData
+    )
+
+    $lastDiagnostic = 'no test merge metadata was available'
+    $lastHeadSha = $NominatedContext.HeadSha
+    $lastMergeSha = $NominatedContext.MergeSha
+
+    for ($attempt = 1; $attempt -le $script:MaxHttpAttempts; $attempt++) {
+        $pullRequest = if ($null -ne $FixtureData) {
+            Get-FixturePullRequestDetail `
+                -FixtureData $FixtureData `
+                -PullRequestNumber $NominatedContext.PullRequestNumber
+        }
+        else {
+            Invoke-WithHttpRetry `
+                -OperationName "GitHub pull request #$($NominatedContext.PullRequestNumber) detail refresh" `
+                -Operation {
+                    param($timeoutSeconds)
+
+                    Invoke-RestMethod `
+                        -Method Get `
+                        -Uri "https://api.github.com/repos/$Repository/pulls/$($NominatedContext.PullRequestNumber)" `
+                        -Headers (Get-GitHubApiHeaders -GitHubToken $GitHubToken) `
+                        -TimeoutSec $timeoutSeconds
+                }
+        }
+
+        $context = Get-CiFixContextFromPullRequest `
+            -PullRequest $pullRequest `
+            -Repository $Repository `
+            -RequireMergeSha $false
+        if ($null -eq $context) {
+            return $null
+        }
+
+        $lastHeadSha = $context.HeadSha
+        $lastMergeSha = $context.MergeSha
+        if ($context.MergeSha -cnotmatch '^[0-9a-fA-F]{40}$') {
+            $lastDiagnostic = 'the refreshed pull request has no syntactically valid test merge SHA'
+        }
+        else {
+            try {
+                $commit = if ($null -ne $FixtureData) {
+                    Get-FixtureCommit -FixtureData $FixtureData -CommitSha $context.MergeSha
+                }
+                else {
+                    Invoke-WithHttpRetry `
+                        -OperationName "GitHub test merge commit $($context.MergeSha) for PR #$($context.PullRequestNumber)" `
+                        -Operation {
+                            param($timeoutSeconds)
+
+                            Invoke-RestMethod `
+                                -Method Get `
+                                -Uri "https://api.github.com/repos/$Repository/git/commits/$($context.MergeSha)" `
+                                -Headers (Get-GitHubApiHeaders -GitHubToken $GitHubToken) `
+                                -TimeoutSec $timeoutSeconds
+                        }
+                }
+                $lastDiagnostic = Get-CiFixMergePairDiagnostic -Context $context -Commit $commit
+                if ($null -eq $lastDiagnostic) {
+                    return $context
+                }
+            }
+            catch {
+                if (Test-IsDispatcherBudgetException -Exception $_.Exception) {
+                    throw
+                }
+                $statusCode = Get-HttpStatusCode -Exception $_.Exception
+                if ($null -eq $FixtureData -and $statusCode -notin @(404, 409, 422)) {
+                    throw
+                }
+                $lastDiagnostic = "test merge metadata read failed: $($_.Exception.Message)"
+            }
+        }
+
+        if ($attempt -lt $script:MaxHttpAttempts) {
+            Invoke-DispatcherSleep `
+                -OperationName "fresh test merge for PR #$($context.PullRequestNumber) attempt $($attempt + 1)" `
+                -RequestedSeconds ($script:RetryBaseDelaySeconds * $attempt)
+        }
+    }
+
+    throw "Eligible CI-fix PR #$($NominatedContext.PullRequestNumber) head '$lastHeadSha' did not obtain a verified test merge after $($script:MaxHttpAttempts) attempts. Last candidate merge '$lastMergeSha': $lastDiagnostic. No Azure DevOps validation was queued or deduplicated for this PR."
 }
 
 function Get-CiFixEventContext {
@@ -262,15 +425,26 @@ function Get-OpenCiFixContexts {
             throw "Pull request fixture '$FixturePath' does not exist."
         }
 
+        $fixtureData = Get-Content -Raw -LiteralPath $FixturePath | ConvertFrom-Json -Depth 100
         $fixturePullRequests = @(
-            (Get-Content -Raw -LiteralPath $FixturePath | ConvertFrom-Json -Depth 100) |
+            @(Get-ObjectPropertyValue -InputObject $fixtureData -Name 'pullRequests') |
                 ForEach-Object { $_ }
         )
         $fixtureContexts = [System.Collections.Generic.List[object]]::new()
         foreach ($pullRequest in $fixturePullRequests) {
-            $context = Get-CiFixContextFromPullRequest -PullRequest $pullRequest -Repository $Repository
-            if ($null -ne $context) {
-                $fixtureContexts.Add($context)
+            $nominatedContext = Get-CiFixContextFromPullRequest `
+                -PullRequest $pullRequest `
+                -Repository $Repository `
+                -RequireMergeSha $false
+            if ($null -ne $nominatedContext) {
+                $verifiedContext = Resolve-VerifiedCiFixContext `
+                    -NominatedContext $nominatedContext `
+                    -Repository $Repository `
+                    -GitHubToken '' `
+                    -FixtureData $fixtureData
+                if ($null -ne $verifiedContext) {
+                    $fixtureContexts.Add($verifiedContext)
+                }
             }
         }
         return $fixtureContexts.ToArray()
@@ -288,11 +462,7 @@ function Get-OpenCiFixContexts {
                 Invoke-RestMethod `
                     -Method Get `
                     -Uri "https://api.github.com/repos/$Repository/pulls?state=open&per_page=100&page=$page" `
-                    -Headers @{
-                        Authorization = "Bearer $GitHubToken"
-                        Accept = 'application/vnd.github+json'
-                        'X-GitHub-Api-Version' = '2022-11-28'
-                    } `
+                    -Headers (Get-GitHubApiHeaders -GitHubToken $GitHubToken) `
                     -TimeoutSec $timeoutSeconds
             }
         # Invoke-RestMethod returns a top-level JSON array as one Object[] value.
@@ -300,9 +470,19 @@ function Get-OpenCiFixContexts {
         $pullRequests = @($pageResponse | ForEach-Object { $_ })
 
         foreach ($pullRequest in $pullRequests) {
-            $context = Get-CiFixContextFromPullRequest -PullRequest $pullRequest -Repository $Repository
-            if ($null -ne $context) {
-                $contexts.Add($context)
+            $nominatedContext = Get-CiFixContextFromPullRequest `
+                -PullRequest $pullRequest `
+                -Repository $Repository `
+                -RequireMergeSha $false
+            if ($null -ne $nominatedContext) {
+                $verifiedContext = Resolve-VerifiedCiFixContext `
+                    -NominatedContext $nominatedContext `
+                    -Repository $Repository `
+                    -GitHubToken $GitHubToken `
+                    -FixtureData $null
+                if ($null -ne $verifiedContext) {
+                    $contexts.Add($verifiedContext)
+                }
             }
         }
 

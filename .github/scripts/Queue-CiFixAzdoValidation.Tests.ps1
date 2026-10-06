@@ -3,6 +3,9 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Queue-CiFixAzdoValidation.ps1'
+    $script:MaxHttpAttempts = 4
+    $script:RetryBaseDelaySeconds = 2
+    $script:DispatcherBudgetPrefix = '[dispatcher-budget-exhausted]'
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -20,6 +23,11 @@ BeforeAll {
             'Test-CiFixPrFingerprint',
             'Get-CiFixPipelineDefinitions',
             'Get-CiFixContextFromPullRequest',
+            'Get-GitHubApiHeaders',
+            'Get-FixturePullRequestDetail',
+            'Get-FixtureCommit',
+            'Get-CiFixMergePairDiagnostic',
+            'Resolve-VerifiedCiFixContext',
             'Get-CiFixEventContext',
             'Test-TrustedCiFixWorkflowRun',
             'Get-OpenCiFixContexts',
@@ -106,6 +114,44 @@ BeforeAll {
                 -Title $Title `
                 -Labels $Labels `
                 -State $State
+        }
+    }
+
+    function New-TestMergeCommit {
+        param(
+            [string]$MergeSha = '2222222222222222222222222222222222222222',
+            [string]$HeadSha = '1111111111111111111111111111111111111111',
+            [string]$BaseParentSha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        )
+
+        return [pscustomobject]@{
+            sha = $MergeSha
+            parents = @(
+                [pscustomobject]@{ sha = $BaseParentSha },
+                [pscustomobject]@{ sha = $HeadSha }
+            )
+        }
+    }
+
+    function New-TestPullRequestFixture {
+        param([Parameter(Mandatory = $true)][object[]]$PullRequests)
+
+        $details = [ordered]@{}
+        $commits = [ordered]@{}
+        foreach ($pullRequest in $PullRequests) {
+            $number = [string]$pullRequest.number
+            $details[$number] = $pullRequest
+            if ([string]$pullRequest.merge_commit_sha -match '^[0-9a-fA-F]{40}$') {
+                $commits[[string]$pullRequest.merge_commit_sha] = New-TestMergeCommit `
+                    -MergeSha ([string]$pullRequest.merge_commit_sha) `
+                    -HeadSha ([string]$pullRequest.head.sha)
+            }
+        }
+
+        return [pscustomobject]@{
+            pullRequests = $PullRequests
+            pullRequestDetails = [pscustomobject]$details
+            commits = [pscustomobject]$commits
         }
     }
 }
@@ -271,6 +317,10 @@ Describe 'Test-TrustedCiFixWorkflowRun' {
 }
 
 Describe 'Get-OpenCiFixContexts' {
+    BeforeEach {
+        Mock Invoke-DispatcherSleep {}
+    }
+
     It 'enumerates a top-level REST Object[] and keeps both eligible PRs' {
         $script:restPullRequests = @(
             (New-TestPullRequest -Number 123),
@@ -283,7 +333,25 @@ Describe 'Get-OpenCiFixContexts' {
                 -MergeSha '4444444444444444444444444444444444444444'),
             (New-TestPullRequest -Number 125 -Author attacker -HeadRef feature/unrelated)
         )
-        Mock Invoke-WithHttpRetry { return ,$script:restPullRequests }
+        $script:restDetails = @{
+            123 = $script:restPullRequests[0]
+            124 = $script:restPullRequests[1]
+        }
+        Mock Invoke-WithHttpRetry {
+            if ($OperationName -like 'GitHub open pull request query page *') {
+                return ,$script:restPullRequests
+            }
+            if ($OperationName -match 'pull request #(?<number>\d+) detail') {
+                return $script:restDetails[[int]$Matches.number]
+            }
+            if ($OperationName -match 'test merge commit (?<sha>[0-9a-f]{40})') {
+                $detail = $script:restDetails.Values |
+                    Where-Object merge_commit_sha -EQ $Matches.sha |
+                    Select-Object -First 1
+                return New-TestMergeCommit -MergeSha $Matches.sha -HeadSha $detail.head.sha
+            }
+            throw "Unexpected operation '$OperationName'."
+        }
 
         $contexts = @(
             Get-OpenCiFixContexts `
@@ -294,7 +362,10 @@ Describe 'Get-OpenCiFixContexts' {
 
         $contexts.Count | Should -Be 2
         $contexts.PullRequestNumber | Should -Be @(123, 124)
-        Should -Invoke Invoke-WithHttpRetry -Times 1 -Exactly
+        Should -Invoke Invoke-WithHttpRetry -Times 5 -Exactly
+        Should -Invoke Invoke-WithHttpRetry -Times 0 -Exactly -ParameterFilter {
+            $OperationName -match 'pull request #125 detail'
+        }
     }
 
     It 'handles an empty REST array' {
@@ -335,6 +406,196 @@ Describe 'Get-OpenCiFixContexts' {
 
         $contexts.Count | Should -Be 0
         Should -Invoke Invoke-WithHttpRetry -Times 2 -Exactly
+    }
+
+    It 'refreshes a stale list response and verifies the current head and test merge pair' {
+        $listPullRequest = New-TestPullRequest `
+            -HeadSha '1111111111111111111111111111111111111111' `
+            -MergeSha '2222222222222222222222222222222222222222'
+        $staleDetailPullRequest = New-TestPullRequest `
+            -HeadSha '3333333333333333333333333333333333333333' `
+            -MergeSha '2222222222222222222222222222222222222222'
+        $freshDetailPullRequest = New-TestPullRequest `
+            -HeadSha '3333333333333333333333333333333333333333' `
+            -MergeSha '4444444444444444444444444444444444444444'
+        $script:detailRefresh = 0
+        Mock Invoke-WithHttpRetry {
+            if ($OperationName -like 'GitHub open pull request query page *') {
+                return ,@($listPullRequest)
+            }
+            if ($OperationName -like '*detail refresh') {
+                $script:detailRefresh++
+                if ($script:detailRefresh -eq 1) {
+                    return $staleDetailPullRequest
+                }
+                return $freshDetailPullRequest
+            }
+            if ($OperationName -like 'GitHub test merge commit 2222*') {
+                return New-TestMergeCommit `
+                    -MergeSha '2222222222222222222222222222222222222222' `
+                    -HeadSha '1111111111111111111111111111111111111111'
+            }
+            if ($OperationName -like 'GitHub test merge commit 4444*') {
+                return New-TestMergeCommit `
+                    -MergeSha '4444444444444444444444444444444444444444' `
+                    -HeadSha '3333333333333333333333333333333333333333'
+            }
+            throw "Unexpected operation '$OperationName'."
+        }
+
+        $contexts = @(Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath '')
+
+        $contexts.Count | Should -Be 1
+        $contexts[0].HeadSha | Should -Be '3333333333333333333333333333333333333333'
+        $contexts[0].MergeSha | Should -Be '4444444444444444444444444444444444444444'
+        Should -Invoke Invoke-DispatcherSleep -Times 1 -Exactly
+    }
+
+    It 'fails closed after bounded refreshes when the test merge remains stale' {
+        $pullRequest = New-TestPullRequest
+        Mock Invoke-WithHttpRetry {
+            if ($OperationName -like 'GitHub open pull request query page *') {
+                return ,@($pullRequest)
+            }
+            if ($OperationName -like '*detail refresh') {
+                return $pullRequest
+            }
+            if ($OperationName -like 'GitHub test merge commit *') {
+                return New-TestMergeCommit `
+                    -MergeSha $pullRequest.merge_commit_sha `
+                    -HeadSha '3333333333333333333333333333333333333333'
+            }
+            throw "Unexpected operation '$OperationName'."
+        }
+
+        {
+            Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath ''
+        } | Should -Throw "*PR #123 head '1111111111111111111111111111111111111111' did not obtain a verified test merge after 4 attempts*source parent '3333333333333333333333333333333333333333' does not match head*No Azure DevOps validation was queued or deduplicated*"
+
+        Should -Invoke Invoke-WithHttpRetry -Times 4 -Exactly -ParameterFilter {
+            $OperationName -like '*detail refresh'
+        }
+        Should -Invoke Invoke-WithHttpRetry -Times 4 -Exactly -ParameterFilter {
+            $OperationName -like 'GitHub test merge commit *'
+        }
+        Should -Invoke Invoke-DispatcherSleep -Times 3 -Exactly
+    }
+
+    It 'uses an individually refreshed revocation as authoritative' {
+        $listPullRequest = New-TestPullRequest
+        $revokedPullRequest = New-TestPullRequest -Labels @()
+        Mock Invoke-WithHttpRetry {
+            if ($OperationName -like 'GitHub open pull request query page *') {
+                return ,@($listPullRequest)
+            }
+            if ($OperationName -like '*detail refresh') {
+                return $revokedPullRequest
+            }
+            throw "Unexpected operation '$OperationName'."
+        }
+
+        $contexts = @(Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath '')
+
+        $contexts.Count | Should -Be 0
+        Should -Invoke Invoke-WithHttpRetry -Times 0 -Exactly -ParameterFilter {
+            $OperationName -like 'GitHub test merge commit *'
+        }
+    }
+
+    It 'stops stale merge refreshes when the shared dispatcher budget expires' {
+        $pullRequest = New-TestPullRequest
+        Mock Invoke-WithHttpRetry {
+            if ($OperationName -like 'GitHub open pull request query page *') {
+                return ,@($pullRequest)
+            }
+            if ($OperationName -like '*detail refresh') {
+                return $pullRequest
+            }
+            if ($OperationName -like 'GitHub test merge commit *') {
+                return New-TestMergeCommit `
+                    -MergeSha $pullRequest.merge_commit_sha `
+                    -HeadSha '3333333333333333333333333333333333333333'
+            }
+            throw "Unexpected operation '$OperationName'."
+        }
+        Mock Invoke-DispatcherSleep {
+            throw "$($script:DispatcherBudgetPrefix) No retry time remains."
+        }
+
+        {
+            Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath ''
+        } | Should -Throw '*dispatcher-budget-exhausted*'
+
+        Should -Invoke Invoke-WithHttpRetry -Times 1 -Exactly -ParameterFilter {
+            $OperationName -like '*detail refresh'
+        }
+        Should -Invoke Invoke-WithHttpRetry -Times 1 -Exactly -ParameterFilter {
+            $OperationName -like 'GitHub test merge commit *'
+        }
+    }
+
+    It 'rejects malformed test merge metadata before a context can be returned' -ForEach @(
+        @{
+            Name = 'wrong commit identity'
+            Commit = [pscustomobject]@{
+                sha = '5555555555555555555555555555555555555555'
+                parents = @(
+                    [pscustomobject]@{ sha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+                    [pscustomobject]@{ sha = '1111111111111111111111111111111111111111' }
+                )
+            }
+            Expected = '*requested merge*returned commit*'
+        },
+        @{
+            Name = 'missing source parent'
+            Commit = [pscustomobject]@{
+                sha = '2222222222222222222222222222222222222222'
+                parents = @([pscustomobject]@{ sha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })
+            }
+            Expected = '*has 1 parent(s), expected exactly 2*'
+        },
+        @{
+            Name = 'wrong source parent'
+            Commit = [pscustomobject]@{
+                sha = '2222222222222222222222222222222222222222'
+                parents = @(
+                    [pscustomobject]@{ sha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+                    [pscustomobject]@{ sha = '3333333333333333333333333333333333333333' }
+                )
+            }
+            Expected = '*source parent*does not match head*'
+        },
+        @{
+            Name = 'malformed base parent'
+            Commit = [pscustomobject]@{
+                sha = '2222222222222222222222222222222222222222'
+                parents = @(
+                    [pscustomobject]@{ sha = '' },
+                    [pscustomobject]@{ sha = '1111111111111111111111111111111111111111' }
+                )
+            }
+            Expected = '*has an invalid first parent*'
+        }
+    ) {
+        $pullRequest = New-TestPullRequest
+        Mock Invoke-WithHttpRetry {
+            if ($OperationName -like 'GitHub open pull request query page *') {
+                return ,@($pullRequest)
+            }
+            if ($OperationName -like '*detail refresh') {
+                return $pullRequest
+            }
+            if ($OperationName -like 'GitHub test merge commit *') {
+                return $Commit
+            }
+            throw "Unexpected operation '$OperationName'."
+        }
+
+        {
+            Get-OpenCiFixContexts -Repository dotnet/maui -GitHubToken token -FixturePath ''
+        } | Should -Throw $Expected
+
+        Should -Invoke Invoke-DispatcherSleep -Times 3 -Exactly
     }
 }
 
@@ -524,6 +785,27 @@ Describe 'Find-AzdoDuplicateBuild' {
             -MergeSha '2222222222222222222222222222222222222222'
 
         $duplicate.id | Should -Be 9002
+    }
+
+    It 'does not let a previous-head build deduplicate a current verified head through an old merge SHA' {
+        $builds = @(
+            [pscustomobject]@{
+                id = 9003
+                sourceBranch = 'refs/pull/123/merge'
+                sourceVersion = '2222222222222222222222222222222222222222'
+                triggerInfo = [pscustomobject]@{
+                    'pr.number' = '123'
+                    'pr.sourceSha' = '1111111111111111111111111111111111111111'
+                }
+            }
+        )
+
+        Find-AzdoDuplicateBuild `
+            -Builds $builds `
+            -PullRequestNumber 123 `
+            -HeadSha '3333333333333333333333333333333333333333' `
+            -MergeSha '4444444444444444444444444444444444444444' |
+            Should -BeNullOrEmpty
     }
 }
 
@@ -987,7 +1269,7 @@ Describe 'full-script offline reconciliation' {
                 }
             } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
 
-            @(
+            $fixturePullRequests = @(
                 (New-TestPullRequest -Number 123),
                 (New-TestPullRequest `
                     -Number 124 `
@@ -997,7 +1279,10 @@ Describe 'full-script offline reconciliation' {
                     -HeadSha '3333333333333333333333333333333333333333' `
                     -MergeSha '4444444444444444444444444444444444444444'),
                 (New-TestPullRequest -Number 125 -Author attacker -HeadRef feature/unrelated)
-            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+            )
+            New-TestPullRequestFixture -PullRequests $fixturePullRequests |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $pullRequestsPath
 
             $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
                 -EventPath $eventPath `
@@ -1022,7 +1307,7 @@ Describe 'full-script offline reconciliation' {
         $pullRequestsPath = [System.IO.Path]::GetTempFileName()
         try {
             New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
-            @(
+            $fixturePullRequests = @(
                 (New-TestPullRequest -Number 123),
                 (New-TestPullRequest `
                     -Number 124 `
@@ -1031,7 +1316,10 @@ Describe 'full-script offline reconciliation' {
                     -Title '[ci-fix-net11] Repair CI (refs #124)' `
                     -HeadSha '3333333333333333333333333333333333333333' `
                     -MergeSha '4444444444444444444444444444444444444444')
-            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+            )
+            New-TestPullRequestFixture -PullRequests $fixturePullRequests |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $pullRequestsPath
 
             $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
                 -EventPath $eventPath `
@@ -1061,10 +1349,13 @@ Describe 'full-script offline reconciliation' {
                 -Labels @() |
                 ConvertTo-Json -Depth 10 |
                 Set-Content -LiteralPath $eventPath
-            @(
+            $fixturePullRequests = @(
                 (New-TestPullRequest -Number 123),
                 (New-TestPullRequest -Number 125 -Author contributor -HeadRef feature/unrelated -Labels @())
-            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+            )
+            New-TestPullRequestFixture -PullRequests $fixturePullRequests |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $pullRequestsPath
 
             $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
                 -EventPath $eventPath `
@@ -1088,9 +1379,12 @@ Describe 'full-script offline reconciliation' {
         $pullRequestsPath = [System.IO.Path]::GetTempFileName()
         try {
             New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
-            @(
+            $fixturePullRequests = @(
                 New-TestPullRequest -Labels @()
-            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+            )
+            New-TestPullRequestFixture -PullRequests $fixturePullRequests |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $pullRequestsPath
 
             $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
                 -EventPath $eventPath `
@@ -1112,11 +1406,14 @@ Describe 'full-script offline reconciliation' {
         $pullRequestsPath = [System.IO.Path]::GetTempFileName()
         try {
             New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
-            @(
+            $fixturePullRequests = @(
                 New-TestPullRequest `
                     -HeadSha '3333333333333333333333333333333333333333' `
                     -MergeSha '4444444444444444444444444444444444444444'
-            ) | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pullRequestsPath
+            )
+            New-TestPullRequestFixture -PullRequests $fixturePullRequests |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $pullRequestsPath
 
             $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
                 -EventPath $eventPath `
@@ -1131,6 +1428,49 @@ Describe 'full-script offline reconciliation' {
             @($results.Request.triggerInfo.'pr.sourceSha' | Sort-Object -Unique) |
                 Should -Be @('3333333333333333333333333333333333333333')
             @($results.Request.sourceVersion | Sort-Object -Unique) | Should -Be @('4444444444444444444444444444444444444444')
+        }
+        finally {
+            Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'refreshes a stale list merge and queues only the verified current head pair from fixture metadata' {
+        $eventPath = [System.IO.Path]::GetTempFileName()
+        $pullRequestsPath = [System.IO.Path]::GetTempFileName()
+        try {
+            New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
+            $listPullRequest = New-TestPullRequest `
+                -HeadSha '1111111111111111111111111111111111111111' `
+                -MergeSha '2222222222222222222222222222222222222222'
+            $detailPullRequest = New-TestPullRequest `
+                -HeadSha '3333333333333333333333333333333333333333' `
+                -MergeSha '4444444444444444444444444444444444444444'
+            [pscustomobject]@{
+                pullRequests = @($listPullRequest)
+                pullRequestDetails = [pscustomobject]@{
+                    '123' = $detailPullRequest
+                }
+                commits = [pscustomobject]@{
+                    '4444444444444444444444444444444444444444' = New-TestMergeCommit `
+                        -MergeSha '4444444444444444444444444444444444444444' `
+                        -HeadSha '3333333333333333333333333333333333333333'
+                }
+            } | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $pullRequestsPath
+
+            $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -PullRequestsFixturePath $pullRequestsPath `
+                -DryRun
+
+            $LASTEXITCODE | Should -Be 0
+            $results = @($output -join [Environment]::NewLine | ConvertFrom-Json -Depth 20)
+            $results.Count | Should -Be 3
+            @($results.Request.triggerInfo.'pr.sourceSha' | Sort-Object -Unique) |
+                Should -Be @('3333333333333333333333333333333333333333')
+            @($results.Request.sourceVersion | Sort-Object -Unique) |
+                Should -Be @('4444444444444444444444444444444444444444')
         }
         finally {
             Remove-Item -LiteralPath $eventPath, $pullRequestsPath -Force -ErrorAction SilentlyContinue

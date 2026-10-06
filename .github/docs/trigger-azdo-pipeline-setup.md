@@ -191,6 +191,12 @@ Automated CI-fix PR validation is implemented separately by
   behavior cannot strand an eligible head;
 - treats the live open-PR scan as authoritative so delayed webhook snapshots
   cannot restore revoked eligibility or queue obsolete head/merge commits;
+- uses the list response only to nominate eligible PRs, then refreshes each
+  nominee individually within bounded retries and verifies the candidate
+  GitHub test-merge commit object has that refreshed source head as its second
+  parent before the head/merge pair can enter Azure queueing or deduplication.
+  The current base SHA is not required to equal the first merge parent because
+  the base can advance independently;
 - enforces one shared seven-minute elapsed-time budget across PR discovery,
   authentication, dedupe reads, queue POSTs, retries, and reconciliation. The
   ten-minute job timeout leaves three minutes for runner startup/checkout,
@@ -200,7 +206,8 @@ Automated CI-fix PR validation is implemented separately by
   unprocessed PR/pipeline work is marked failed, and an ambiguous one-time POST
   remains explicitly uncertain rather than being retried;
 - queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
-- supplies the merge commit as `sourceVersion` and the PR head as
+- supplies only a verified test-merge commit as `sourceVersion` and its paired
+  PR head as
   `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build
   metadata intended to attach checks to the PR head;
 - supplies Azure Build Queue `parameters` as a serialized JSON string containing
