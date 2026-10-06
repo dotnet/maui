@@ -92,6 +92,9 @@ or a passing candidate), **25%** means an executed but unconfirmed assertion
 failure, and **75%** means two matching independent assertion failures. A first
 assertion followed by a passing or inconclusive fresh confirmation retains **25%**;
 its result stays inconclusive and exports no verified failing patch. The report
+explicitly acknowledges an executed test even when verification or independent
+confirmation is incomplete; it does not describe that case as having no outcome.
+Recording failures remain explicit alongside the incomplete verification. The report
 distinguishes a test executed in either attempt from whether the fresh confirmation
 completed its named body; setup, recording and missing/stale-result failures do not
 claim a second execution. First-attempt assertion values remain visible. The score never claims

@@ -150,8 +150,11 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
                 $reproductionIcon = '&#x26A0;&#xFE0F;'
                 $reproducibility = 'Inconclusive: execution or confirmation was incomplete.'
                 $testCoverage = 'Not verified.'
-                if ($result.testExecuted -eq $true -and $result.recording -and $result.recording.status -eq 'failed') {
-                    $summary = 'The test body executed, but its recording failed.'
+                if ($result.testExecuted -eq $true) {
+                    $summary = 'The generated test executed, but verification or independent confirmation was incomplete. This does not rule out the reported issue.'
+                    if ($result.recording -and $result.recording.status -eq 'failed') {
+                        $summary += ' Its native recording failed.'
+                    }
                 }
                 if ($result.testExecuted -eq $true -and $result.observedAssertion -eq $true) {
                     $reproducibility = 'An assertion failed, but independent confirmation is missing.'
