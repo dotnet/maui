@@ -385,6 +385,10 @@ scroll the parent, then measures the parent scroll offset after dragging on the
 short WebView. The overflowing WebView remains in the layout but its independent
 scrolling is not asserted. Missing, nonnumeric or nonfinite parent scroll-position
 diagnostics are setup failures, not evidence of the WebView bug.
+The Android WebView is located through its unique short HTML content and outer
+native WebView ancestor; Chromium's accessibility subtree omits its automation ID.
+The candidate still requires that native rectangle to fit fully inside the parent
+viewport before initiating the gesture, with no change to the recording limit.
 The singleton modal case uses issue #38361's author-owned repository. It preserves
 the reused modal page/navigation wrapper and manual disconnect policy, compares a
 fresh-instance control, and observes native content elements and geometry after

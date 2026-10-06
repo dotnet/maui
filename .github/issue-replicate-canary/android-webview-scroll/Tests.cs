@@ -42,7 +42,9 @@ public class Issue38452 : _IssuesUITest
 		App.Tap("ResetOuterScroll");
 		if (!App.WaitForTextToBePresentInElement("OuterScrollPosition", "0.0", TimeSpan.FromSeconds(5)))
 			throw new TimeoutException("The outer ScrollView did not return to the top before the WebView gesture.");
-		var webView = App.WaitForElement("ShortWebView").GetRect();
+		var webView = App.WaitForElement(
+			AppiumQuery.ByXPath("//android.webkit.WebView[not(ancestor::android.webkit.WebView) and .//*[@text='Short content that fits inside the WebView.']]"),
+			timeout: TimeSpan.FromSeconds(3)).GetRect();
 		var viewport = App.WaitForElement("OuterScrollView").GetRect();
 		if (webView.Height <= 0 || webView.Y < viewport.Y ||
 			webView.Y + webView.Height > viewport.Y + viewport.Height)
