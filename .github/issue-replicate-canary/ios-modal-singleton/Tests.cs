@@ -93,7 +93,11 @@ public class Issue38361 : _IssuesUITest
 		while (elapsed.Elapsed < deadline)
 		{
 			var tree = ObserveSnapshot(elapsed);
-			if (ready(tree) && elapsed.Elapsed < deadline)
+			var isReady = ready(tree);
+			Remaining(elapsed, 26);
+			if (elapsed.Elapsed >= deadline)
+				Console.WriteLine($"Native modal readiness read crossed its retry window: ready={isReady}; body elapsed={elapsed.Elapsed.TotalSeconds.ToString("F3", CultureInfo.InvariantCulture)}s; {description}");
+			if (isReady)
 				return tree;
 			Thread.Sleep(100);
 		}

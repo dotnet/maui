@@ -411,6 +411,10 @@ window geometry and returned-home controls from one accessibility snapshot per
 state instead of repeated element-property requests. Actions use the observed
 native bounds; waits for snapshot reads and gestures share the 26-second body
 budget. Timing out a wait does not cancel an already issued Appium request.
+The readiness retry window limits scheduling another snapshot, not accepting an
+already completed, ready snapshot that is still within the body budget. A read
+that crosses that window logs its readiness and elapsed body time; a late read
+cannot bypass the overall budget or turn an incomplete control into an assertion.
 The two fresh-instance controls, singleton reuse check, reopened-content
 observation and 30-second recording limit are unchanged.
 The CollectionView case uses issue #38276's original public attachment. It
