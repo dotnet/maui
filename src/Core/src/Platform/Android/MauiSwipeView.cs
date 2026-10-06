@@ -1243,8 +1243,10 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var pair in _swipeItems)
 			{
-				if (!GetIsVisible(pair.Key) || pair.Value is not AView view)
+				if (pair.Key is not ISwipeItemMenuItem || !GetIsVisible(pair.Key) || pair.Value is not AView view)
+				{
 					continue;
+				}
 
 				view.Measure(
 					MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
