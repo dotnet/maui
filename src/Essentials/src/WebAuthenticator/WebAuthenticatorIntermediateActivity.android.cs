@@ -42,6 +42,14 @@ namespace Microsoft.Maui.Authentication
 
 			if (!launched)
 			{
+				// without the intent of the authentication flow (for example when the activity
+				// was started without extras) there's nothing to start, so just close
+				if (actualIntent is null)
+				{
+					Finish();
+					return;
+				}
+
 				// if this is the first time, start the authentication flow
 				StartActivity(actualIntent);
 
