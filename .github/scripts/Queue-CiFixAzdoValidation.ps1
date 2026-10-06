@@ -659,12 +659,13 @@ function Invoke-CiFixQueueWork {
     )
 
     $workResults = [System.Collections.Generic.List[object]]::new()
-    $budgetFailure = $null
+    $budgetExhaustedAfter = $null
     foreach ($context in $Contexts) {
         $contextResults = [System.Collections.Generic.List[object]]::new()
         foreach ($pipeline in Get-CiFixPipelineDefinitions) {
-            if ($null -ne $budgetFailure) {
-                $result = New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $budgetFailure
+            if ($null -ne $budgetExhaustedAfter) {
+                $skippedError = "$($script:DispatcherBudgetPrefix) PR #$($context.PullRequestNumber) pipeline '$($pipeline.Name)' was not processed because the shared dispatcher budget was exhausted while processing $budgetExhaustedAfter. No queue POST was attempted for this work item."
+                $result = New-CiFixFailureResult -Context $context -Pipeline $pipeline -ErrorMessage $skippedError
                 $workResults.Add($result)
                 $contextResults.Add($result)
                 continue
@@ -716,7 +717,7 @@ function Invoke-CiFixQueueWork {
                 $workResults.Add($result)
                 $contextResults.Add($result)
                 if (Test-IsDispatcherBudgetException -Exception $_.Exception) {
-                    $budgetFailure = $_.Exception.Message
+                    $budgetExhaustedAfter = "PR #$($context.PullRequestNumber) pipeline '$($pipeline.Name)'"
                 }
             }
         }

@@ -761,12 +761,50 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             $results[0].BuildId | Should -Be 8001
             @($results[1..5].Outcome | Sort-Object -Unique) | Should -Be @('failed')
             $results[1].Error | Should -Match 'dispatcher-budget-exhausted'
-            @($results[1..5].Error | Sort-Object -Unique) | Should -Be @($results[1].Error)
+            $results[1].Error | Should -Match 'queue budget expired before the next POST'
+            foreach ($result in $results[2..5]) {
+                $result.Error | Should -Match "PR #$($result.PullRequestNumber) pipeline '$([regex]::Escape($result.Name))' was not processed"
+                $result.Error | Should -Match 'No queue POST was attempted for this work item'
+                $result.Error | Should -Match "while processing PR #123 pipeline 'maui-pr-uitests'"
+                $result.Error | Should -Not -Match 'may have been accepted'
+            }
             Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
             Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly -ParameterFilter {
                 @($Results).Count -eq 3
             }
+        }
+
+        It 'keeps ambiguous uncertainty on only the submitted POST and skips every later item accurately' {
+            $secondContext = $script:queueContext.PSObject.Copy()
+            $secondContext.PullRequestNumber = 124
+            $secondContext.PullRequestId = 456913
+            $secondContext.HeadSha = '3333333333333333333333333333333333333333'
+            $secondContext.MergeSha = '4444444444444444444444444444444444444444'
+            Mock Get-AzdoDuplicateBuild { return $null } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Invoke-AzdoPipelineQueue {
+                throw '[dispatcher-budget-exhausted] Azure DevOps queue request for definition 302 may have been accepted, but reconciliation expired. The POST was issued exactly once and acceptance remains uncertain.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Write-CiFixJobSummary {} -ModuleName QueueCiFixAzdoValidationTest
+
+            $results = @(
+                Invoke-QueueTestCiFixQueueWork `
+                    -Contexts @($script:queueContext, $secondContext) `
+                    -AuthToken test-token
+            )
+
+            $results.Count | Should -Be 6
+            $results[0].Error | Should -Match 'definition 302 may have been accepted'
+            $results[0].Error | Should -Match 'acceptance remains uncertain'
+            foreach ($result in $results[1..5]) {
+                $result.Error | Should -Match "PR #$($result.PullRequestNumber) pipeline '$([regex]::Escape($result.Name))' was not processed"
+                $result.Error | Should -Match 'No queue POST was attempted for this work item'
+                $result.Error | Should -Not -Match 'may have been accepted'
+                $result.Error | Should -Not -Match 'acceptance remains uncertain'
+            }
+            Should -Invoke Invoke-AzdoPipelineQueue -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
+            Should -Invoke Write-CiFixJobSummary -ModuleName QueueCiFixAzdoValidationTest -Times 2 -Exactly
         }
     }
 }
