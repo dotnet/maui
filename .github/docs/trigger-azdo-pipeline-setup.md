@@ -202,7 +202,9 @@ Automated CI-fix PR validation is implemented separately by
 - queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
 - supplies the merge commit as `sourceVersion` and the PR head as
   `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build
-  metadata so checks attach to the PR head;
+  metadata intended to attach checks to the PR head. Exact PR-head check
+  association still requires live rollout canary verification for all three
+  definitions;
 - deduplicates each pipeline by PR head SHA and reports partial failures.
 
 The workflow and script need to exist only on `main`. Before declaring net11

@@ -627,11 +627,32 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
                     -DefinitionId 314 `
                     -Context $script:queueContext `
                     -AuthToken test-token
-            } | Should -Throw '*ambiguous transient failure*no exact correlated build appeared after reconciliation*The POST was not retried to avoid duplicate builds*'
+            } | Should -Throw '*may have been accepted*no exact correlated build appeared after reconciliation*POST was issued exactly once*acceptance remains uncertain*'
 
             Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 4 -Exactly
             Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 4 -Exactly
+        }
+
+        It 'preserves possible acceptance when reconciliation itself fails' {
+            Mock Invoke-RestMethod {
+                throw [System.TimeoutException]::new('queue response timed out')
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw [System.InvalidOperationException]::new('duplicate lookup unavailable')
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 302 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*may have been accepted*exact reconciliation failed: duplicate lookup unavailable*POST was issued exactly once*acceptance remains uncertain*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                $Method -eq 'Post'
+            }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly
         }
 
         It 'throws a nontransient POST failure without reconciliation or retry' {

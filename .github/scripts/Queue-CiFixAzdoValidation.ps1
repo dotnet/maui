@@ -562,6 +562,7 @@ function Invoke-AzdoPipelineQueue {
         if (-not (Test-IsTransientHttpException -Exception $_.Exception)) {
             throw
         }
+        $queueStatusCode = Get-HttpStatusCode -Exception $_.Exception
 
         # A timed-out or 5xx POST may have been accepted before the response was
         # lost. Never blindly retry an ambiguous queue request. Reconcile the
@@ -582,15 +583,14 @@ function Invoke-AzdoPipelineQueue {
                 if (Test-IsDispatcherBudgetException -Exception $_.Exception) {
                     throw "$($script:DispatcherBudgetPrefix) Azure DevOps queue request for definition $DefinitionId may have been accepted, but the shared dispatcher budget expired before exact reconciliation completed. The POST was issued exactly once and was not retried; acceptance remains uncertain."
                 }
-                throw
+                throw "Azure DevOps queue request for definition $DefinitionId may have been accepted after an ambiguous transient failure (HTTP $queueStatusCode), but exact reconciliation failed: $($_.Exception.Message). The POST was issued exactly once and was not retried; acceptance remains uncertain."
             }
             if ($null -ne $duplicate) {
                 return [pscustomobject]@{ Build = $duplicate; Reconciled = $true }
             }
         }
 
-        $statusCode = Get-HttpStatusCode -Exception $_.Exception
-        throw "Azure DevOps queue request for definition $DefinitionId had an ambiguous transient failure (HTTP $statusCode) and no exact correlated build appeared after reconciliation. The POST was not retried to avoid duplicate builds."
+        throw "Azure DevOps queue request for definition $DefinitionId may have been accepted after an ambiguous transient failure (HTTP $queueStatusCode), but no exact correlated build appeared after reconciliation. The POST was issued exactly once and was not retried; acceptance remains uncertain."
     }
 }
 
