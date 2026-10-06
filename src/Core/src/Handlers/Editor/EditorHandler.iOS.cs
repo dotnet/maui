@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 
 					if (!PlatformView.AllowAutoGrowth
 						&& currentHeight > 0
-						&& PlatformView.ContentSize.Height >= currentHeight)
+						&& sizeThatFits.Height > currentHeight)
 					{
 						heightConstraint = currentHeight; // real MAUI-arranged bound — cap will apply
 					}
