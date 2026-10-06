@@ -23,23 +23,42 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var portraitRect = App.WaitForElement("TitleViewGrid").GetRect();
 			var portraitWidth = portraitRect.Width;
 
-			App.SetOrientationLandscape();
-			App.WaitForElement("TitleViewGrid"); // re-wait to ensure layout has settled after rotation
+			var landscapeWidth = portraitWidth;
+			try
+			{
+				App.SetOrientationLandscape();
+				// The title view stays present while rotation layout is still in progress.
+				App.WaitForElement(() =>
+				{
+					var titleView = App.FindElement("TitleViewGrid");
+					if (titleView is null)
+						return null;
 
-			// After rotation, TitleView width must change to fill the wider nav bar
-			var landscapeRect = App.WaitForElement("TitleViewGrid").GetRect();
-			var landscapeWidth = landscapeRect.Width;
+					landscapeWidth = titleView.GetRect().Width;
+					return landscapeWidth > portraitWidth + 50 ? titleView : null;
+				}, "Shell TitleView did not expand to landscape width after rotation");
 
-			Assert.That(landscapeWidth, Is.Not.EqualTo(portraitWidth).Within(50),
-				"Shell TitleView width should expand after rotating to landscape on iOS 26+");
-			Assert.That(landscapeWidth, Is.GreaterThan(portraitWidth),
-				"Shell TitleView should be wider in landscape than portrait");
+				Assert.That(landscapeWidth, Is.Not.EqualTo(portraitWidth).Within(50),
+					"Shell TitleView width should expand after rotating to landscape on iOS 26+");
+				Assert.That(landscapeWidth, Is.GreaterThan(portraitWidth),
+					"Shell TitleView should be wider in landscape than portrait");
+			}
+			finally
+			{
+				App.SetOrientationPortrait();
+			}
 
 			// Rotate back and verify TitleView returns to original width
-			App.SetOrientationPortrait();
-			App.WaitForElement("TitleViewGrid"); // re-wait to ensure layout has settled after rotation
+			var finalRect = portraitRect;
+			App.WaitForElement(() =>
+			{
+				var titleView = App.FindElement("TitleViewGrid");
+				if (titleView is null)
+					return null;
 
-			var finalRect = App.WaitForElement("TitleViewGrid").GetRect();
+				finalRect = titleView.GetRect();
+				return Math.Abs(finalRect.Width - portraitWidth) <= 5 ? titleView : null;
+			}, "Shell TitleView did not return to its original portrait width after rotation");
 			Assert.That(finalRect.Width, Is.EqualTo(portraitWidth).Within(5),
 				"Shell TitleView should return to original portrait width after rotating back");
 		}
