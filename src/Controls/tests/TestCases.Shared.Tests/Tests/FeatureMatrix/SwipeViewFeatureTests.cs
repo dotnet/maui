@@ -532,7 +532,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Label");
 	}
 
-#if TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/39166
 	[Test, Order(33)]
 	public void VerifyImageWithSwipeRevealAndSwipeBehaviorOnInvokedAuto()
 	{
