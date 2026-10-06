@@ -1045,8 +1045,11 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XKey_Changed_ReturnsNull()
+	public void XKey_Changed_IsLocalRebuild_NotStructural()
 	{
+		// FIXED: like x:Name, x:Key is a codegen-sensitive property, but renaming it on an
+		// element that never moved/reparented/changed type is a local, same-id rebuild — not a
+		// page (or dictionary)-wide structural reset.
 		var old = Parse($"""
 			<ResourceDictionary {MauiXmlns} x:Class="Test.Resources">
 				<Color x:Key="OldKey">Red</Color>
@@ -1058,9 +1061,17 @@ public class XamlNodeDiffTests
 			</ResourceDictionary>
 			""");
 
-		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+		var oldIds = NodeIdHelper.AssignIds(old);
+		var newIds = NodeIdHelper.AssignIds(@new);
+		var diff = XamlNodeDiff.ComputeDiff(old, @new, oldIds, newIds, out _);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		var entry = Assert.Single(change.NewChildren);
+		Assert.Equal(ChildChangeKind.Added, entry.Kind);
+		var oldColorElement = (ElementNode)old.CollectionItems[0];
+		Assert.Equal(oldIds[oldColorElement], entry.NewNodeId); // same id retained
+		Assert.Empty(change.RemovedNodeIds);
 	}
 
 	[Fact]
@@ -2403,13 +2414,11 @@ public class XamlNodeDiffTests
 		Assert.NotNull(resProp.NewNode);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Id lifecycle across a version chain — mirrors XamlGenerator.cs's own id
 	// bookkeeping exactly (fresh IDs assigned to the new tree starting at the
 	// previous NextNodeId, ComputeDiff threading oldIds/newIds/effectiveNewIds,
 	// and a full fresh-from-0 reassignment via NodeIdHelper.AssignIds(root, 0, ...)
 	// whenever ComputeDiff returns null — the "structural" branch).
-	// ---------------------------------------------------------------------------
 
 	/// <summary>
 	/// Applies one version transition the same way <c>XamlGenerator.cs</c> does: assigns fresh
@@ -2524,7 +2533,6 @@ public class XamlNodeDiffTests
 		return null;
 	}
 
-	// ---------------------------------------------------------------------------
 	// Reparenting — current gap. An element identified by x:Name (or otherwise
 	// matchable) that moves to a DIFFERENT parent is not matched at all today:
 	// XamlNodeDiff's matching (MatchTypeGroupByCost) only runs within one parent's
@@ -2532,7 +2540,6 @@ public class XamlNodeDiffTests
 	// plain remove-from-old-parent + add-to-new-parent, losing its id. These tests
 	// document the CURRENT (to-be-fixed) behavior as a baseline for the upcoming
 	// tree-global identity-matching change.
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void Reparenting_SameXName_DifferentParent_CurrentlyNotMatched()
@@ -2819,11 +2826,9 @@ public class XamlNodeDiffTests
 		Assert.Single(change.NewChildren, e => e.Kind == ChildChangeKind.Added); // fresh Entry at root
 	}
 
-	// ---------------------------------------------------------------------------
 	// Cascading "blast radius" of a single structural trigger — demonstrates that
 	// ComputeDiff returning null is an ALL-OR-NOTHING signal for the whole page,
 	// not scoped to the subtree where the actual trigger occurred.
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void NestedXNameChange_IsLocalRebuild_UnrelatedSiblingEditStaysOrdinary()
@@ -2908,11 +2913,9 @@ public class XamlNodeDiffTests
 		Assert.Equal("Unrelated edit", entryChange.PropertyChanges[0].NewValue);
 	}
 
-	// ---------------------------------------------------------------------------
 	// Id-stability contrast: a structural reset does NOT always desync ids — only
 	// when it coincides with an actual shape change relative to what the live app
 	// has. These tests delineate the precise boundary of the bug reproduced above.
-	// ---------------------------------------------------------------------------
 
 	[Fact]
 	public void NoNameLossAndRestore_SameShape_IdsStayInSync()
@@ -3062,4 +3065,148 @@ public class XamlNodeDiffTests
 		Assert.Empty(change.RemovedNodeIds);
 	}
 
+	// Local-rebuild namescope cleanup — a rebuilt node's OLD subtree is entirely discarded, so
+	// any x:Name it (or a named descendant) carried must be unregistered, or FindByName/
+	// x:Reference would keep resolving the detached old instance.
+
+	[Fact]
+	public void XNameChanged_LocalRebuild_UnregistersOldNameFromNamescope()
+	{
+		var old = Parse(Page("<Label x:Name=\"oldLabel\" Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label x:Name=\"newLabel\" Text=\"Hello\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		var change = Assert.Single(diff!.ChildListChanges);
+		var removedName = Assert.Single(change.RemovedNames);
+		Assert.Equal("oldLabel", removedName.Name);
+	}
+
+	[Fact]
+	public void NestedXNameChange_LocalRebuild_UnregistersDeeplyNestedOldName()
+	{
+		// Same tree as NestedXNameChange_IsLocalRebuild_UnrelatedSiblingEditStaysOrdinary: the
+		// rebuilt node here is the OUTER VerticalStackLayout's single child (the inner
+		// VerticalStackLayout), whose entire old subtree — including "deepLabel", two levels
+		// further down — is discarded. The name must be unregistered even though it belongs to a
+		// named DESCENDANT of the rebuilt node, not the rebuilt node itself.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<VerticalStackLayout>
+						<Label x:Name="deepLabel" Text="Hello" />
+					</VerticalStackLayout>
+				</Border>
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Border>
+					<VerticalStackLayout>
+						<Label x:Name="renamedLabel" Text="Hello" />
+					</VerticalStackLayout>
+				</Border>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		var change = Assert.Single(diff!.ChildListChanges);
+		var removedName = Assert.Single(change.RemovedNames);
+		Assert.Equal("deepLabel", removedName.Name);
+	}
+
+	[Fact]
+	public void XNameChanged_LocalRebuild_WithReorder_UnregistersOldNameFromNamescope()
+	{
+		// Same local-rebuild-plus-namescope-cleanup requirement, but routed through
+		// DiffChildrenWithMatching (not DiffChildrenPositional) because a sibling reorder is
+		// also present, exercising the matched-pair rebuild path's own RemovedNames collection.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label x:Name="oldLabel" Text="First" />
+				<Entry Placeholder="Second" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Placeholder="Second" />
+				<Label x:Name="newLabel" Text="First" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		var removedName = Assert.Single(change.RemovedNames);
+		Assert.Equal("oldLabel", removedName.Name);
+	}
+
+	// Rebuild-eligibility boundary — only x:Name/x:Key changes are safe to route through a
+	// same-id local rebuild (see IsLocallyRebuildable's doc comment: the rebuild codegen always
+	// emits a plain "new {Type}()" and skips all x: directives, which would be wrong for a
+	// factory-constructed or open-generic type). Every other codegen-sensitive directive, and
+	// any codegen-sensitive change inside a template, must still cascade to a full structural
+	// (null) result.
+
+	[Fact]
+	public void XFactoryMethodChanged_CascadesToStructural_NotLocalRebuild()
+	{
+		var old = Parse(Page("""<Label x:FactoryMethod="Create" Text="Hello" />"""));
+		var @new = Parse(Page("""<Label x:FactoryMethod="CreateOther" Text="Hello" />"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
+
+	[Fact]
+	public void XTypeArgumentsChanged_TreatedAsTypeChange_NotSameIdLocalRebuild()
+	{
+		// Unlike x:FactoryMethod (a plain property-diff failure gated by IsLocallyRebuildable),
+		// x:TypeArguments is baked into the constructed generic XmlType itself, so
+		// ContentView<string> vs ContentView<int> are already unequal XmlTypes before
+		// DiffProperties ever runs. That routes this case through the ordinary type-change
+		// "remove old (old id) + add new (FRESH id)" path (like Label -> Button), which is
+		// inherently safe — it never reuses the old id, so it needs no IsLocallyRebuildable gate.
+		var old = Parse(Page("""<ContentView x:TypeArguments="x:String" />"""));
+		var @new = Parse(Page("""<ContentView x:TypeArguments="x:Int32" />"""));
+
+		var oldIds = NodeIdHelper.AssignIds(old);
+		var newIds = NodeIdHelper.AssignIds(@new, 100, out _); // offset so reuse vs. fresh is distinguishable
+		var diff = XamlNodeDiff.ComputeDiff(old, @new, oldIds, newIds, out _);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		var oldElem = (ElementNode)old.CollectionItems[0];
+		var newElem = (ElementNode)(@new).CollectionItems[0];
+		Assert.Single(change.RemovedNodeIds, oldIds[oldElem]); // old retired under its OWN id
+		var added = Assert.Single(change.NewChildren, e => e.Kind == ChildChangeKind.Added);
+		Assert.Equal(newIds[newElem], added.NewNodeId); // new gets its OWN fresh id, not the old one reused
+	}
+
+	[Fact]
+	public void XNameChanged_InsideDataTemplate_CascadesToStructural_NotLocalRebuild()
+	{
+		// Unlike the plain-tree case, an x:Name change on a node realized per-instance inside a
+		// DataTemplate/ControlTemplate can't be routed through a local rebuild: the parent
+		// resolution EmitChildListChange relies on (XamlComponentRegistry.TryGet) only covers the
+		// template's own declaration-time instance, not the (potentially many) realized template
+		// instances tracked via RegisterTemplateComponent/GetTemplateComponents.
+		var old = Parse(Page("""
+			<DataTemplate x:Name="RowTemplate">
+				<Label x:Name="oldLabel" Text="Hello" />
+			</DataTemplate>
+			"""));
+		var @new = Parse(Page("""
+			<DataTemplate x:Name="RowTemplate">
+				<Label x:Name="newLabel" Text="Hello" />
+			</DataTemplate>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
 }
