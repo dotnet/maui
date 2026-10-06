@@ -200,14 +200,18 @@ Describe 'Test-CiFixPrFingerprint' {
 }
 
 Describe 'trusted workflow configuration' {
-    It 'pins checkout to the reviewed v7.0.1 commit in the id-token job' {
+    It 'pins checkout to the reviewed v7.0.1 commit in the id-token job with <LineEnding> line endings' -ForEach @(
+        @{ LineEnding = 'LF'; NewLine = "`n" }
+        @{ LineEnding = 'CRLF'; NewLine = "`r`n" }
+    ) {
         $workflow = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-fix-azdo-validation.yml')
+        $workflow = $workflow -replace '\r?\n', $NewLine
 
         $workflow | Should -Match 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\.0\.1'
         $workflow | Should -Match 'ref: \$\{\{ github\.sha \}\}'
         $workflow | Should -Not -Match 'github\.event\.pull_request\.base\.sha'
         $workflow | Should -Match 'fetch-depth: 1'
-        $workflow | Should -Match '(?m)^\s+sparse-checkout: \|\r?\n\s+/\.github/scripts/Queue-CiFixAzdoValidation\.ps1\r?\n\s+sparse-checkout-cone-mode: false$'
+        $workflow | Should -Match '(?m)^\s+sparse-checkout: \|\r?\n\s+/\.github/scripts/Queue-CiFixAzdoValidation\.ps1\r?\n\s+sparse-checkout-cone-mode: false\r?$'
         $workflow | Should -Match 'persist-credentials: false'
         $workflow | Should -Match 'id-token: write'
         $workflow | Should -Match 'timeout-minutes: 10'
