@@ -1216,8 +1216,29 @@ is fixed. Require the automatic matching run for that pipeline: BOTH
 `branchName == refs/pull/<P>/merge` AND `triggerInfo["pr.sourceSha"] == C.headSha`.
 If it is absent, record
 `skipped: build-only fix PR #<P> targets pipeline (<pipeline>) whose automatic run was not observed`
-and stop this gate. Otherwise, set `TARGET := "the maui-pr build
-(build-only fix — no single target test)"` and proceed to **T3** to mark ready. If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
+and stop this gate. Existence alone is NOT validation. For a matching def 313/314 run,
+use the anonymous `_apis/build/builds/<buildId>/timeline` method from T2 and identify the
+RELEVANT platform **BUILD** leg(s) that establish the originating build failure was fixed
+(from the `[ci-scan-net11]` signature, original failed leg(s), and the PR diff). Require
+every such relevant leg to have `state == "completed"` AND `result == "succeeded"`. If the
+relevant evidence is absent/unknown, record `skipped: build-only fix PR #<P> originating
+pipeline <pipeline> build <buildId> has no conclusive relevant platform build-leg evidence
+for head <C.headSha> (<expected legs>)` and stop. If any relevant leg is pending/inProgress,
+record `skipped: build-only fix PR #<P> originating pipeline <pipeline> build <buildId>
+not yet green on head <C.headSha> (relevant build leg(s) <legs> pending)` and stop. If any
+relevant leg failed/canceled/aborted, record `skipped: build-only fix PR #<P> originating
+pipeline <pipeline> build <buildId> still fails on head <C.headSha> (relevant build leg(s)
+<legs>: <results>)` and stop. Do NOT require unrelated test legs or unrelated platform-test
+flakes in that originating pipeline to be green for a build-only issue; only the relevant
+platform BUILD legs prove the originating build break is repaired. Save
+`ORIGIN_PIPELINE`, `ORIGIN_BUILD_ID`, and `ORIGIN_BUILD_LEGS` for the T3 audit, then set
+`TARGET := "the primary maui-pr build plus the originating <pipeline> relevant platform
+build legs (build-only fix — no single target test)"`. If the originating failure was
+def 302 itself, no separate-pipeline evidence is required: set `TARGET := "the primary
+maui-pr whole build (build-only fix — no single target test)"`. In either case, proceed
+to **T3** only after the required primary and, when applicable, originating evidence is
+green.
+If any `maui-pr` build leg is still unconcluded, record `skipped: build-only fix PR
 #<P> not yet whole-build green (leg(s) <legs> pending)` and stop this gate WITHOUT marking
 ready (a green subset is not enough — a still-pending build leg could yet fail).
 
@@ -1296,7 +1317,8 @@ this gate WITHOUT marking ready. Do NOT overclaim — a green *sibling* leg (a d
 on the same platform) is not the target's leg, and a green leg on one platform is not a pass on
 the others.
 
-**T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN. The 🎯 comment,
+**T3 — Mark ready + report.** If EVERY target test is VALIDATED-GREEN, or a build-only
+fix passed every T1 primary/originating-pipeline requirement. The 🎯 comment,
 the mark-ready, and the `p/0` label are THREE SEPARATE safe-outputs — the comment
 existing does NOT prove the mark-ready took effect, so they are tracked independently:
 
@@ -1335,14 +1357,22 @@ existing does NOT prove the mark-ready took effect, so they are tracked independ
      `p/0`; a maintainer still reviews and merges.` (For a **build-only fix** — the T1
      whole-build fallback, no single target test — phrase the first clause as `🎯 Build
      validated green on <C.headSha> — the maui-pr build passed on ALL platforms (buildId
-     <B>).` instead of naming a test.)
+     <PRIMARY_BUILD_ID>)<if origin is def 313/314: " and originating <ORIGIN_PIPELINE>
+     build <ORIGIN_BUILD_ID> passed the relevant platform build legs
+     <ORIGIN_BUILD_LEGS>">.` instead of naming a test. This audit must name every pipeline,
+     build, and relevant platform build leg whose evidence was required for readiness.)
   2. `mark_pull_request_as_ready_for_review` with `reason:` a one-line justification
-     naming the validated test(s) and `<C.headSha>`.
+     naming the validated test(s) and `<C.headSha>`, or for a build-only fix naming the
+     primary build plus any validated originating pipeline/build and relevant platform
+     build legs.
   3. `add_labels` with `labels: ["p/0"]` for PR #<P> — put the now-review-ready fix into
      the team's p/0 priority queue so it is triaged, not lost in the draft backlog. (If
      the PR somehow already carries `p/0`, this is a harmless no-op.)
 - Record `marked-ready PR #<P> (target <TestList> green on ALL platforms on <C.headSha>,
-  labeled p/0)` and stop.
+  labeled p/0)` for a test fix, or `marked-ready PR #<P> (build-only: maui-pr
+  <PRIMARY_BUILD_ID> whole-build green<if origin is def 313/314: "; <ORIGIN_PIPELINE>
+  <ORIGIN_BUILD_ID> relevant build legs <ORIGIN_BUILD_LEGS> green"> on <C.headSha>,
+  labeled p/0)` for a build-only fix, and stop.
 
 #### Step 3.5.R — Maintainer change-request response (Track C)
 

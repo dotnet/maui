@@ -214,6 +214,27 @@ Describe 'trusted workflow configuration' {
             Should -BeLessThan $workflow.IndexOf('Checkout trusted workflow revision')
         $workflow | Should -Match 'Queue-CiFixAzdoValidation\.ps1 -DispatcherBudgetSeconds 420 -DispatcherDeadlineUnixSeconds \$env:CI_FIX_DISPATCHER_DEADLINE_UNIX_SECONDS'
     }
+
+    It 'requires exact-head originating build evidence before build-only readiness in both fixer prompts' {
+        foreach ($workflowName in @('ci-status-fix.md', 'ci-status-fix-net11.md')) {
+            $workflow = Get-Content -Raw -LiteralPath (
+                Join-Path $PSScriptRoot "../workflows/$workflowName"
+            )
+
+            $workflow | Should -Match 'branchName == refs/pull/<P>/merge'
+            $workflow | Should -Match 'triggerInfo\["pr\.sourceSha"\] == C\.headSha'
+            $workflow | Should -Match 'Existence alone is NOT validation'
+            $workflow | Should -Match 'RELEVANT platform \*\*BUILD\*\* leg'
+            $workflow | Should -Match 'state == "completed".*result == "succeeded"'
+            $workflow | Should -Match 'relevant evidence is absent/unknown'
+            $workflow | Should -Match 'pending/inProgress'
+            $workflow | Should -Match 'failed/canceled/aborted'
+            $workflow | Should -Match 'Do NOT require unrelated test legs'
+            $workflow | Should -Match 'ORIGIN_PIPELINE.*ORIGIN_BUILD_ID.*ORIGIN_BUILD_LEGS'
+            $workflow | Should -Match 'originating failure was\s+def 302 itself'
+            $workflow | Should -Match 'This audit must name every pipeline'
+        }
+    }
 }
 
 Describe 'Get-CiFixEventContext' {
