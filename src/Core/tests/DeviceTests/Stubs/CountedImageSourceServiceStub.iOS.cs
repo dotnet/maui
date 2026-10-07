@@ -26,6 +26,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					if (imageSource.Wait)
 						DoWork.WaitOne();
 
+					if (imageSource.FailWhenCancelled && cancellationToken.IsCancellationRequested)
+						throw new InvalidOperationException("Unable to load image after the load was cancelled.");
+
 					var color = imageSource.Color.ToPlatform();
 
 					return CreateImageAsync(scale, color);

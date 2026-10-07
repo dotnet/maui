@@ -132,6 +132,18 @@ namespace Microsoft.Maui.Handlers
 			UpdateInsetView(scrollView, handler, crossPlatformLayout);
 		}
 
+		internal static void MapInvalidateMeasure(IScrollViewHandler handler, IView view, object? args)
+		{
+			handler.PlatformView.InvalidateMeasure(view);
+
+			var insetPanel = FindInsetPanel(handler);
+
+			if (insetPanel is not null)
+			{
+				PlatformInterop.RequestLayoutIfNeeded(insetPanel);
+			}
+		}
+
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView.SetHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
