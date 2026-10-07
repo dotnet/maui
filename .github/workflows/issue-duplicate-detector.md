@@ -134,6 +134,7 @@ tools:
 
 safe-outputs:
   runs-on: ubuntu-latest
+  github-token: ${{ secrets.GITHUB_TOKEN }}
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.staged == true }}
   allowed-github-references: [repo]
   data:

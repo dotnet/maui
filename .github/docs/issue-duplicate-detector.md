@@ -56,6 +56,9 @@ The visible report fingerprint survives gh-aw's content sanitization. Reports
 are recognized by the bot author, trusted workflow markers, and exact fingerprint
 even when the publisher prepends a caution. Recognized reports are excluded
 from evidence and target hashes.
+Safe-output publication is pinned to the built-in `GITHUB_TOKEN`, keeping
+comment authors consistent with the strict `github-actions[bot]` provenance
+check instead of accepting a configurable publisher identity.
 Every candidate's content hash, timestamp, state, and lock status are rechecked
 after report construction, followed by the target's final eligibility/evidence
 check. Validation and GitHub publication are not an atomic transaction; changes
