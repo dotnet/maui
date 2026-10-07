@@ -676,7 +676,7 @@ with socket.socket() as server:
                         return
                     }
                     if ('--paginate' -in $args) { '7'; return }
-                    $global:recordingPendingBody = $inputBody -join "`n"
+                    $global:recordingPendingBody = ($inputBody -join "`n" | ConvertFrom-Json).body
                     'https://github.com/dotnet/maui/issues/12345#issuecomment-7'
                 }
             }
@@ -800,8 +800,9 @@ with socket.socket() as server:
                     if ('PATCH' -notin $args -or $args[1] -ne 'repos/dotnet/maui/issues/comments/7') {
                         throw 'The retry must update the owned comment only.'
                     }
-                    $global:recordingPostedBodies.Add(($inputBody -join "`n"))
-                    $global:recordingExistingBody = $inputBody -join "`n"
+                    $body = ($inputBody -join "`n" | ConvertFrom-Json).body
+                    $global:recordingPostedBodies.Add($body)
+                    $global:recordingExistingBody = $body
                     'https://github.com/dotnet/maui/issues/12345#issuecomment-7'
                 }
             }
@@ -864,7 +865,7 @@ with socket.socket() as server:
                         } else { $items | ForEach-Object id }
                         return
                     }
-                    $body = $inputBody -join "`n"
+                    $body = ($inputBody -join "`n" | ConvertFrom-Json).body
                     if ($global:recordingContinuationFail -and $body.StartsWith('<!-- issue-replicate-patch:2:')) {
                         $global:LASTEXITCODE = 1
                         return
@@ -913,7 +914,7 @@ with socket.socket() as server:
                         return
                     }
                     if ('--paginate' -in $args) { return }
-                    $global:recordingPostedBodies.Add(($inputBody -join "`n"))
+                    $global:recordingPostedBodies.Add(($inputBody -join "`n" | ConvertFrom-Json).body)
                     'https://github.com/dotnet/maui/issues/12345#issuecomment-8'
                 }
             }

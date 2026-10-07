@@ -893,6 +893,7 @@ function Set-IssueReplicateResultComment {
         --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$Marker`"))) | .id")
     if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
     if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same run.' }
+    $payload = @{ body = $Body } | ConvertTo-Json -Compress
     if ($existing.Count -eq 1) {
         $state = @(Get-IssueReplicateReportComments -IssueNumber $IssueNumber | Where-Object {
             $_.id -eq $existing[0] -and $_.user.login -ieq $identity -and $_.body.StartsWith($Marker, [StringComparison]::Ordinal)
@@ -900,9 +901,9 @@ function Set-IssueReplicateResultComment {
         if ($state.Count -ne 1 -or $state[0].isMinimized -ne $false) {
             throw 'The owned report or continuation is hidden or changed; do not resurrect superseded evidence.'
         }
-        $url = $Body | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH -F body=@- --jq .html_url
+        $url = $payload | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH --input - --jq .html_url
     } else {
-        $url = $Body | gh api "repos/dotnet/maui/issues/$IssueNumber/comments" --method POST -F body=@- --jq .html_url
+        $url = $payload | gh api "repos/dotnet/maui/issues/$IssueNumber/comments" --method POST --input - --jq .html_url
     }
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$url) -or
         [string]$url -cnotmatch "^https://github\.com/dotnet/maui/issues/$IssueNumber#issuecomment-[1-9][0-9]*$") {

@@ -1772,7 +1772,7 @@ Describe 'Bounded issue result publication' {
         $global:issueReplicatePostedBody = @()
         function gh {
             process {
-                if ($null -ne $_) { $global:issueReplicatePostedBody += [string]$_ }
+                if ($null -ne $_) { $global:issueReplicatePostedBody += [string](($_ | ConvertFrom-Json).body) }
             }
             end {
                 $global:LASTEXITCODE = 0
@@ -1847,7 +1847,7 @@ Describe 'Continuation publication integrity' {
                     } | ForEach-Object id
                     return
                 }
-                $body = $inputBody -join "`n"
+                $body = ($inputBody -join "`n" | ConvertFrom-Json).body
                 if ($global:issueReplicateFailPart -and
                     $body.StartsWith('<!-- issue-replicate-patch:2:')) {
                     $global:LASTEXITCODE = 1

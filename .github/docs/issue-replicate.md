@@ -134,7 +134,10 @@ An independent validation report must explicitly start with
 headings do not grant cleanup authority.
 
 The publisher verifies the new owned report's exact body and visible state before
-minimizing older recognized reports as **OUTDATED**. It never deletes their text,
+minimizing older recognized reports as **OUTDATED**. POST and PATCH send a JSON
+envelope through native `gh api --input -`, preserving the body exactly: the
+PowerShell pipeline's terminal newline follows the JSON document rather than
+becoming part of the comment. It never deletes their text,
 attachments or continuation links. Among visible completed reports, the newest
 comment ID wins; overlapping publishers may only hide older IDs, never a newer
 replacement. Each minimization rechecks the unchanged old body and visible
