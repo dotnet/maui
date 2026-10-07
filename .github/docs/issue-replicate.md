@@ -154,7 +154,9 @@ tools, without changing the candidate or tracked framework files. Its fresh
 acknowledgement nonce and operation ID prevent stale replies; missing or failed
 acknowledgements stop the body after a bounded 25-second wait. The controller
 stops at the named `Stop` marker and rejects spans exceeding its conservative
-30-second deadline instead of exporting an automatically expired clip.
+30-second deadline instead of exporting an automatically expired clip. The deadline
+is checked when that marker arrives, before the bounded recording retrieval;
+retrieval latency does not count as continued test execution.
 An Appium acknowledgement confirms the recording request, not that the encoder
 captured the first frame or initiating interaction. Before publishing a manual
 canary, decode its actual frames and inspect the baseline, interaction and result.
@@ -423,10 +425,13 @@ observation and 30-second recording limit are unchanged.
 The CollectionView case uses issue #38276's original public attachment. It
 preserves the capped Grid inside a VerticalStackLayout and compares rendered
 height for one item, ten items, and a replacement with one item; it does not force
-a layout invalidation. Each observation reads status, native geometry and visible
-item contents from one native accessibility snapshot rather than six sequential
-Appium requests. The stabilization requirements and observation/recording budgets
-are unchanged. These reviewed candidates are not executed evidence until
+a layout invalidation. Each state first qualifies status, native geometry and
+visible item contents from one native accessibility snapshot. Stabilization then
+reads the bound native collection and status elements, including visible item
+queries scoped to that collection, instead of rebuilding the entire hierarchy
+for every sample. It still requires three matching geometry observations, the
+same item/source-state checks, and the unchanged observation/recording budgets.
+These reviewed candidates are not executed evidence until
 their corresponding native jobs run.
 The ScrollView candidate polls both rendered padding insets for up
 to five seconds after the status changes; the synchronous status text alone is

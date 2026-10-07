@@ -291,9 +291,10 @@ try {
                     }
                     if ($recordingSession -and $isStopMarker) {
                         try {
+                            $finishedWithinWindow = $recordingReadyCount -eq 1 -and $recordingTimer -and
+                                $recordingTimer.Elapsed.TotalSeconds -le 30
                             $recordingBytes = Stop-IssueReplicateRecording -SessionId $recordingSession
-                            if ($recordingReadyCount -ne 1 -or -not $recordingTimer -or
-                                $recordingTimer.Elapsed.TotalSeconds -gt 30) {
+                            if (-not $finishedWithinWindow) {
                                 throw 'The named test did not finish inside its acknowledged 30-second recording window.'
                             }
                             $result.recording = @{

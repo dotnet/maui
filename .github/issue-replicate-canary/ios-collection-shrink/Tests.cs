@@ -73,6 +73,8 @@ public class Issue38276 : _IssuesUITest
 		RectangleF? previous = null;
 		RectangleF? lastRect = null;
 		string? lastStatus = null;
+		IUIElement? collectionElement = null;
+		IUIElement? statusElement = null;
 		var stableSince = started;
 		var samples = 0;
 
@@ -80,7 +82,9 @@ public class Issue38276 : _IssuesUITest
 		{
 			while (clock.Elapsed < deadline && clock.Elapsed < TimeSpan.FromSeconds(24))
 			{
-				var snapshot = WithinBudget(clock, ObserveCollection, deadline);
+				var snapshot = WithinBudget(clock, () => collectionElement is null || statusElement is null
+					? ObserveCollection()
+					: ObserveCollection(collectionElement, statusElement), deadline);
 				lastStatus = snapshot.Status;
 				lastRect = snapshot.Rect;
 				var ready = false;
@@ -93,6 +97,13 @@ public class Issue38276 : _IssuesUITest
 
 					if (ready)
 					{
+						if (collectionElement is null || statusElement is null)
+						{
+							(collectionElement, statusElement) = WithinBudget(clock, () => (
+								App.FindElement("Issue38276Collection"),
+								App.FindElement("Issue38276SourceStatus")), deadline);
+						}
+
 						if (previous.HasValue && SameRect(rect, previous.Value))
 							samples++;
 						else
@@ -154,6 +165,18 @@ public class Issue38276 : _IssuesUITest
 			&& (string?)element.Attribute("visible") == "true") == true;
 
 		return ((string?)status?.Attribute("value"), rect, HasItem("Appointment 1"), HasItem("Appointment 2"));
+	}
+
+	static (string? Status, RectangleF? Rect, bool FirstItem, bool SecondItem) ObserveCollection(
+		IUIElement collection, IUIElement status)
+	{
+		var visible = collection.IsDisplayed();
+		RectangleF? rect = visible ? collection.GetRect() : null;
+		bool HasItem(string label) => visible
+			&& collection.ByAccessibilityId(label).Any(element => element.IsDisplayed());
+
+		return (status.IsDisplayed() ? status.GetText() : null, rect,
+			HasItem("Appointment 1"), HasItem("Appointment 2"));
 	}
 
 	static float ReadNativeCoordinate(XElement element, string attribute)
