@@ -314,6 +314,7 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  report-failed-jobs: false
   steps:
     - name: Checkout trusted triage validator
       uses: actions/checkout@v7.0.1
