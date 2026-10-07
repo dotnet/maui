@@ -100,14 +100,19 @@ they never silently replace ambiguous form fields.
 An additive `investigation` record keeps a selected source pair and comparison
 separate from `boundaries.reportedGood`/`reportedBad` and the original comparison.
 An explicit good/bad pair from one human comment or issue text can select exact
-release snapshots, with at most four supplemental version lookups. Outcome
-cells or prose sentences must contain one version and fit 1,024 characters;
+release snapshots, with at most four supplemental version lookups.
+Sources are considered in reverse frozen encounter order, not lexicographic
+permalink order, so later corrections take precedence across comment-ID lengths.
+Outcome cells or prose sentences must contain one version and fit 1,024 characters;
 fenced code and SDK/OS version labels are excluded. The twenty-observation cap
 retains early and late observations. Each selection retains author, outcome excerpt and permalink and
 does not establish equivalent-environment runtime confirmation.
 Statements such as "failed to reproduce" or "cannot reproduce" remain
 unclassified outcomes; inability to reproduce is not a failing version boundary
 or proof that a version works.
+Present- and past-tense negations are handled consistently: "did not work" is
+failing, while "did not reproduce" is a human-reported non-reproduction outcome,
+not a failing boundary or verified runtime proof.
 An explicit human "from/since version" failing observation can instead pair with
 a resolved working form answer; both origins remain visible and the observed
 failure is not claimed to be the first bad release.

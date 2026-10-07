@@ -398,10 +398,14 @@ function Get-RegressionDiagnosticInventory {
                 if ($cell -match "\b(?:fail(?:ed|s|ing)?\s+to|unable\s+to|not\s+able\s+to|cannot|can't|could\s+not|couldn't)\s+reproduc(?:e(?:d+|s)?|ing)\b") {
                     continue
                 }
-                $goodText = $cell -replace "\b(?:does not work|doesn't work|not working)\b", ''
-                $badText = $cell -replace "\b(?:not reproduc(?:ed+|ible)|does not reproduce|doesn't reproduce)\b", ''
-                $good = $goodText -match "\b(?:not reproduc(?:ed+|ible)|does not reproduce|doesn't reproduce|works?|worked|pass(?:es|ed)?|last (?:working|good))\b"
-                $bad = $badText -match "\b(?:reproduced+|reproduces?|reproducible|broken|fail(?:s|ed)?|does not work|doesn't work|not working|first (?:bad|failing))\b"
+                $notWorking = "\b(?:(?:(?:do|does|did)\s+not|don't|doesn't|didn't)\s+work|not\s+working)\b"
+                $notReproduced = "\b(?:not\s+reproduc(?:ed+|ible)|(?:(?:do|does|did)\s+not|don't|doesn't|didn't)\s+reproduce)\b"
+                $goodText = $cell -replace $notWorking, ''
+                $badText = $cell -replace $notReproduced, ''
+                $good = $cell -match $notReproduced -or
+                $goodText -match '\b(?:works?|worked|pass(?:es|ed)?|last (?:working|good))\b'
+                $bad = $cell -match $notWorking -or
+                $badText -match '\b(?:reproduced+|reproduces?|reproducible|broken|fail(?:s|ed)?|first (?:bad|failing))\b'
                 if ($good -eq $bad) { continue }
                 if ($observations.Count -ge 20) {
                     $observationsTruncated = $true

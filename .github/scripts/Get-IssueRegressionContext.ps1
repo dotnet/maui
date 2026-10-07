@@ -207,9 +207,10 @@ function Get-RegressionInvestigation {
         if ($null -ne $version) { $resolved[$version] = $boundary }
     }
     $lookups = 0
-    $groups = @($investigation.observations | Group-Object mentionedAt)
-    for ($index = $groups.Count - 1; $index -ge 0; $index--) {
-        $observations = $groups[$index].Group
+    $sourceOrder = @($investigation.observations | Select-Object -ExpandProperty mentionedAt -Unique)
+    $groups = $investigation.observations | Group-Object mentionedAt -AsHashTable -AsString
+    for ($index = $sourceOrder.Count - 1; $index -ge 0; $index--) {
+        $observations = $groups[$sourceOrder[$index]]
         $goodVersions = @($observations | Where-Object role -EQ 'good' | Select-Object -ExpandProperty value -Unique)
         $badVersions = @($observations | Where-Object role -EQ 'bad' | Select-Object -ExpandProperty value -Unique)
         $formGood = $goodVersions.Count -eq 0 -and $badVersions.Count -eq 1 -and

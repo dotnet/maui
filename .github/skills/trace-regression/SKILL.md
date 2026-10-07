@@ -103,12 +103,18 @@ precise values already present in prose/tables are leads, not replacement form
 boundaries. Request clarification of their role, not the same version again.
 `investigation.selection: human-reported-pair` means one human source explicitly
 reported both outcomes, each version resolved to an exact tag, and the collector
-selected that pair for bounded static inspection. Cite each `origin.mentionedAt`
-and the captured outcome text, show how it differs from the original form, and
+selected that pair for bounded static inspection.
+Sources are considered in reverse frozen encounter order; lexical permalink
+order does not establish which human correction is newer.
+Cite each `origin.mentionedAt` and the captured outcome text,
+show how it differs from the original form, and
 retain uncertainty about equivalent platform/toolchain conditions. These
 observations do not prove the first bad release or a parent/candidate runtime test.
 An inability to reproduce ("failed to reproduce", "cannot reproduce") is not a
 failing or passing outcome; the diagnostic inventory leaves it unclassified.
+Present- and past-tense negations are consistent: "did not work" is failing;
+"did not reproduce" is a human-reported non-reproduction outcome, not a failing
+boundary or verified runtime proof.
 `form-good-and-human-first-bad` retains a resolved working form answer and a
 human's explicit "from/since version" failing observation. Cite both sources;
 the latter is the first observed failing version, not a proven first bad release.
