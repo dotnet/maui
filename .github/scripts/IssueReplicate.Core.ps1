@@ -792,8 +792,7 @@ function Test-IssueReplicateCompletedReport {
         return $false
     }
     if ($complete) { return $true }
-    $prefix = ($Body -split '<details>', 2)[0]
-    return $prefix -notmatch 'Media publication is incomplete|Candidate publication is incomplete'
+    return $Body -notmatch 'Media publication is incomplete|Candidate publication is incomplete'
 }
 
 function Complete-IssueReplicateReportPublication {

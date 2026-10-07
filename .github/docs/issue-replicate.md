@@ -140,6 +140,8 @@ comment ID wins; overlapping publishers may only hide older IDs, never a newer
 replacement. Each minimization rechecks the unchanged old body and visible
 replacement, and completion verifies there is exactly one current report.
 Pending recording/patch checkpoints do not supersede the last completed report.
+Legacy reports without the completion footer are checked for incomplete media or
+candidate publication warnings throughout their body, including closed sections.
 Hidden reports or continuations are not resurrected by retries. Failed reads,
 writes or minimization are explicit publication failures, leaving the replacement
 and any unprocessed historical evidence intact. Authorized local publishers of a
