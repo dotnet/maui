@@ -192,8 +192,8 @@ being lost to a missing parser helper. A PR without runnable tests is `SKIPPED`;
 missing tests are not generated.
 
 The report follows the compact test-failure-analysis layout: an author/commit
-quote, scope/result/platform/commit badges, closed **Gate analysis** and
-**Follow-up** sections, and readable phase-result tables grouped by test type.
+quote, result/platform/commit badges, a closed **Gate analysis** section,
+and readable phase-result tables grouped by test type.
 Only known diagnostic fields are rendered; bounded execution-log excerpts
 remain escaped in a separate collapsed section rather than displaying the
 entire raw Markdown report. Compilation-dependent baselines and test-only mode
@@ -469,10 +469,9 @@ Do not treat `Insufficient data` as "unrelated." It means a human or a rerun wit
 
 ### PR gate
 
-`/review gate` posts a `PR gate` comment with closed **Gate analysis** and
-**Follow-up** sections. Expand the analysis for the platform, pinned PR head and
+`/review gate` posts a `PR gate` comment with a closed **Gate analysis**
+section. Expand the analysis for the platform, pinned PR head and
 baseline, verification verdict, coverage limitations, and diagnostic transcript.
-Expand the follow-up for the next action and refresh command.
 
 Historical `AI Summary` comments and the local full-review skills remain
 available, but the hosted gate does not produce their code-review, alternative

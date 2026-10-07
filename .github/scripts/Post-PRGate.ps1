@@ -218,7 +218,7 @@ function Get-GateDiagnosticSummary {
         })
     }
     if ($invalidRow) {
-        Write-Warning 'Some diagnostic rows could not be parsed; the run link retains the complete evidence.'
+        Write-Warning 'Some diagnostic rows could not be parsed; the run artifacts retain the complete evidence.'
     }
     if ($insideLog -and $log.Length -gt 0 -and $logs.Count -lt 4) {
         $logs.Add([pscustomobject]@{ Phase = $phase; Test = $logTest; Text = $log.ToString().TrimEnd() })
@@ -266,12 +266,6 @@ $verdict = switch ($TrustedGateResult) {
     }
 }
 
-$nextStep = switch ($TrustedGateResult) {
-    'PASSED' { 'Review whether the selected tests cover the reported issue. A passing gate is not a code review or merge recommendation.' }
-    'FAILED' { 'Check the unexpected before/after outcome and the assertion diagnostics, then correct the test or fix.' }
-    'SKIPPED' { 'Add runnable regression tests to the PR. This command does not generate missing tests.' }
-    default { 'Resolve the reported setup, build, or environment blocker before retrying. An inconclusive run does not invalidate the PR.' }
-}
 $commitNote = if ($ReviewedCommit) {
     "PR head: [$($ReviewedCommit.Substring(0, 8))](https://github.com/dotnet/maui/commit/$ReviewedCommit)."
 } else {
@@ -358,7 +352,6 @@ $body = @(
     $prefix, '', '## PR Test Gate', '',
     $intro, '',
     '<p align="left">',
-    '  <img alt="Scope Existing PR tests" src="https://img.shields.io/badge/Scope-Existing%20PR%20tests-1f6feb?labelColor=30363d&amp;style=flat-square">',
     "  <img alt=`"Result $TrustedGateResult`" src=`"https://img.shields.io/badge/Result-$TrustedGateResult-$resultColor`?labelColor=30363d&amp;style=flat-square`">",
     "  <img alt=`"Platform $platformName`" src=`"https://img.shields.io/badge/Platform-$platformName-1f6feb?labelColor=30363d&amp;style=flat-square`">",
     $commitBadge,
@@ -371,15 +364,6 @@ $body = @(
     $staleNote, '',
     ($analysis -join "`n"), '',
     $commitNote, '', $baseNote, '',
-    '**Scope:** Selected PR tests only, with bounded native coverage. The table summarizes diagnostic evidence; the gate verdict above is authoritative.', '',
-    "[Complete report and execution logs](https://dev.azure.com/DevDiv/DevDiv/_build/results?buildId=$RunId) &#x2014; ``GateLogs`` and ``BuildLogs`` artifacts.", '',
-    '</details>', '', '---', '',
-    '<details>',
-    '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
-    '<br/>', '',
-    "**Next action:** $nextStep", '',
-    "> Maintainers: comment ``/review gate --platform $Platform`` to refresh this report.", '',
-    'This is test verification, not a code review or merge recommendation. No alternative fix, generated test, native recording, approval, or PR metadata edit is claimed.',
     '</details>'
 ) -join "`n"
 if ([Text.Encoding]::UTF8.GetByteCount($body) -gt 60000) {
