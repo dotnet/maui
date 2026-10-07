@@ -206,6 +206,19 @@ Automated CI-fix PR validation is implemented separately by
   revalidation, dedupe reads, queue POSTs, retries, and reconciliation. The
   ten-minute job timeout therefore preserves a real three-minute reserve for
   summaries and an explicit failed outcome instead of a hard cancellation;
+- uses exact-file, non-cone sparse checkout of the standalone dispatcher script
+  at the trusted `github.sha`, keeping the pinned checkout action, shallow fetch,
+  and disabled credential persistence. This avoids materializing unrelated
+  repository files; it does not guarantee checkout finishes within the deadline
+  or establish production checkout performance;
+- keeps the validated caller budget separate from the effective remaining
+  budget. If preparation consumes the deadline, startup fails explicitly with
+  `[dispatcher-budget-exhausted]`, records the preparation/deadline stage in the
+  job summary, and states that no queue POST was attempted before any PR
+  discovery, authentication, HTTP request, or retry sleep. An expired deadline
+  is a failure even when no eligible work exists; it is never restarted after
+  checkout. Checkout or startup exceeding the hard job timeout can still cancel
+  the job before the script can report this diagnostic;
 - caps every HTTP timeout and retry sleep to the remaining shared budget. If it
   expires, no new requests start, completed results remain visible, all
   unprocessed PR/pipeline work is marked failed, and an ambiguous one-time POST

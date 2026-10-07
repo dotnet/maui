@@ -25,7 +25,7 @@ $secondsUntilDeadline = if ($DispatcherDeadlineUnixSeconds -gt 0) {
 else {
     $DispatcherBudgetSeconds
 }
-$script:DispatcherBudgetSeconds = [Math]::Max(
+$script:EffectiveDispatcherBudgetSeconds = [Math]::Max(
     0,
     [Math]::Min($DispatcherBudgetSeconds, $secondsUntilDeadline))
 $script:DispatcherStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -36,7 +36,7 @@ function Get-DispatcherElapsedSeconds {
 }
 
 function Get-DispatcherRemainingSeconds {
-    return [Math]::Max(0, $script:DispatcherBudgetSeconds - (Get-DispatcherElapsedSeconds))
+    return [Math]::Max(0, $script:EffectiveDispatcherBudgetSeconds - (Get-DispatcherElapsedSeconds))
 }
 
 function Test-IsDispatcherBudgetException {
@@ -999,6 +999,21 @@ function Invoke-CiFixQueueWork {
     }
 
     return $workResults.ToArray()
+}
+
+if ([Math]::Floor((Get-DispatcherRemainingSeconds)) -lt 1) {
+    $preparationFailure = "$($script:DispatcherBudgetPrefix) Dispatcher deadline exhausted during preparation (trusted checkout / PowerShell startup), before PR discovery or authentication. No queue POST was attempted."
+    if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
+        $lines = @(
+            '## Automated CI-fix Azure DevOps validation',
+            '',
+            '- Stage: preparation / dispatcher deadline',
+            '- Result: failed',
+            "- Details: $preparationFailure"
+        )
+        Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($lines -join [Environment]::NewLine)
+    }
+    throw $preparationFailure
 }
 
 if ([string]::IsNullOrWhiteSpace($EventPath) -or -not (Test-Path -LiteralPath $EventPath -PathType Leaf)) {

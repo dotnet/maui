@@ -678,7 +678,11 @@ Use `staged=false` only for intentional application; `/issue triage` comments
 are apply-mode commands. New workflows are not dispatchable until recognized
 on the default branch, so local compilation is not end-to-end hosted validation.
 
-After source changes, regenerate only this workflow:
+After source changes, regenerate only this workflow. Shared import frontmatter
+changes (including `shared/pat_pool.md`) also require recompiling dependent locks
+against the final merged imports, even when this workflow's source is unchanged.
+Otherwise activation rejects the stale lock with `E009 CONFIG_HASH_MISMATCH`
+before inference or publication.
 
 ```bash
 gh aw compile issue-triage --strict --no-check-update
