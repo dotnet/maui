@@ -1,7 +1,7 @@
 # Issue duplicate detector
 
 [`issue-duplicate-detector`](../workflows/issue-duplicate-detector.md) checks new
-and reopened human-authored issues in `dotnet/maui`. Maintainers can manually
+and reopened issues in `dotnet/maui`. Maintainers can manually
 check an existing open issue. It posts at most one advisory report per run and
 never changes labels, closes issues, or asks reporters to close an issue.
 
@@ -60,8 +60,10 @@ Every candidate's content hash, timestamp, state, and lock status are rechecked
 after report construction, followed by the target's final eligibility/evidence
 check. Validation and GitHub publication are not an atomic transaction; changes
 after the final checks remain possible.
-Closed, locked, or already-marked-duplicate targets are skipped. Bot-authored
-issues are skipped automatically but can be checked manually.
+Closed, locked, or already-marked-duplicate targets are skipped. Issues with a
+known bot author are skipped automatically but can be checked manually.
+Deleted-account author identities are preserved as `null`, without dropping
+their evidence or treating unknown authors as trusted workflow bots.
 
 ## Manual preview and publication
 

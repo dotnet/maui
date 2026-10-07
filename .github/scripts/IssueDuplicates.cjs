@@ -94,7 +94,7 @@ async function getSnapshot(github, repository, issueNumber, issue) {
             ...data.map((comment) => ({
                 id: comment.id,
                 body: comment.body ?? '',
-                author: comment.user.login,
+                author: comment.user?.login ?? null,
                 url: comment.html_url,
                 updatedAt: comment.updated_at,
             })),
@@ -111,7 +111,7 @@ async function getSnapshot(github, repository, issueNumber, issue) {
         url: issue.html_url,
         state: issue.state,
         locked: issue.locked,
-        authorType: issue.user.type,
+        authorType: issue.user?.type ?? null,
         createdAt: issue.created_at,
         updatedAt: issue.updated_at,
         labels: issue.labels.map((label) => label.name),
@@ -178,7 +178,7 @@ async function gather({ github, core, context, issueNumber, outputDirectory }) {
         issue.state !== 'open' ||
         issue.locked ||
         issue.labels.some((label) => /^s\/duplicate\b/.test(label.name)) ||
-        (context.eventName === 'issues' && issue.user.type === 'Bot')
+        (context.eventName === 'issues' && issue.user?.type === 'Bot')
     ) {
         core.info(
             'Skipping a closed, locked, already-duplicate, or automatically created bot issue.',
