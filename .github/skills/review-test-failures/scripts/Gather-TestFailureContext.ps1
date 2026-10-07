@@ -2550,9 +2550,8 @@ function Get-AggregatedBaseLegMap {
 function Get-KnownBuildIssues {
     # Loads the repo's open "Known Build Error" issues (the dotnet Build Analysis
     # known-issues registry). Each such issue body carries one or more ```json blocks
-    # with an ErrorMessage (substring) and/or ErrorPattern (regex) field. We compile
-    # those into matchers so a PR failure whose message matches a documented known
-    # issue can be stamped as a known flake instead of being read as PR-caused.
+    # with an ErrorMessage (literal or ordered array of line literals) and/or
+    # ErrorPattern (regex) field. A match is a cross-reference hint, not a flake verdict.
     param([string]$Repository)
 
     $patterns = New-Object System.Collections.Generic.List[object]
@@ -2576,11 +2575,26 @@ function Get-KnownBuildIssues {
                 $pattern = [string]$obj.ErrorPattern
                 $isRegex = $true
             }
-            elseif (($obj.PSObject.Properties.Name -contains "ErrorMessage") -and $obj.ErrorMessage) {
-                $pattern = [string]$obj.ErrorMessage
-                $isRegex = $false
+            elseif ($obj.PSObject.Properties.Name -contains "ErrorMessage") {
+                if ($obj.ErrorMessage -is [System.Array]) {
+                    $validArray = $obj.ErrorMessage.Count -gt 0
+                    foreach ($expression in $obj.ErrorMessage) {
+                        if ($expression -isnot [string] -or [string]::IsNullOrWhiteSpace($expression)) {
+                            $validArray = $false
+                            break
+                        }
+                    }
+                    if (-not $validArray) {
+                        Write-Warning "Skipping invalid ErrorMessage array in Known Build Error #$($issue.number): expected non-empty strings."
+                        continue
+                    }
+                    $pattern = [string[]]$obj.ErrorMessage
+                }
+                elseif ($obj.ErrorMessage) {
+                    $pattern = [string]$obj.ErrorMessage
+                }
             }
-            if ([string]::IsNullOrWhiteSpace($pattern)) {
+            if ($pattern -isnot [System.Array] -and [string]::IsNullOrWhiteSpace($pattern)) {
                 continue
             }
             # Validate a declared regex; fall back to substring matching if it is invalid
@@ -2606,6 +2620,7 @@ function Get-KnownBuildIssues {
 function Test-KnownIssueMatch {
     # Returns the first known-issue {number,title,url} whose pattern matches $Text,
     # or $null. Regex matches use a short timeout to defang a pathological pattern.
+    # Literal arrays require every expression, in order, on distinct subsequent lines.
     param(
         [object[]]$Patterns,
         [string]$Text
@@ -2618,6 +2633,7 @@ function Test-KnownIssueMatch {
         $Text = $Text.Substring(0, 20000)
     }
 
+    $lines = $null
     foreach ($p in $Patterns) {
         $hit = $false
         if ($p.isRegex) {
@@ -2628,6 +2644,22 @@ function Test-KnownIssueMatch {
                     [TimeSpan]::FromMilliseconds(250))
             }
             catch { $hit = $false }
+        }
+        elseif ($p.pattern -is [System.Array]) {
+            if ($null -eq $lines) { $lines = $Text -split '\r\n|\n|\r' }
+            $lineIndex = 0
+            $hit = $p.pattern.Count -gt 0
+            foreach ($expression in $p.pattern) {
+                $found = $false
+                while ($lineIndex -lt $lines.Count -and -not $found) {
+                    $found = $lines[$lineIndex].IndexOf($expression, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+                    $lineIndex++
+                }
+                if (-not $found) {
+                    $hit = $false
+                    break
+                }
+            }
         }
         else {
             $hit = $Text.IndexOf([string]$p.pattern, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
@@ -4601,9 +4633,8 @@ foreach ($failure in $dedupedFailures) {
     }
     $failure['retriedStillFailing'] = [bool]$retried
 
-    # Known-issue cross-reference: match the test name + failure messages against the
-    # repo's open "Known Build Error" registry. A hit is strong "documented flake /
-    # unrelated" evidence the classifier can cite by issue number.
+    # Known-issue cross-reference for this failure only. A signature match is a hint;
+    # attribution still needs independent evidence, not a presumed flake verdict.
     $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
     $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText
 

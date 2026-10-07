@@ -7,14 +7,15 @@
 
 .DESCRIPTION
     Gather-TestFailureContext.ps1 is a param'd, self-executing script (it does real GitHub/AzDO/
-    Helix I/O on load), so these tests AST-extract only the pure, side-effect-free functions and
-    dot-source them — the same pattern Run-DeviceTests.Tests.ps1 uses. No network, no auth.
+    Helix I/O on load), so these tests AST-extract the functions under test and mock their I/O
+    rather than loading the entrypoint. No network, no auth.
 
     Functions covered:
       - Get-HelixWorkItemCounts      (Phase 1: anonymous /workitems completeness + fail counting)
       - Get-XUnitFailures            (Phase 2: parse xUnit v2 TestResults XML)
       - Get-ConsoleFailureReason     (Phase 2: extract crash/timeout reason from console log)
       - New-DeviceWorkItemFailureRecords (Phase 2: classify ONE failed work item into records)
+      - Get-KnownBuildIssues / Test-KnownIssueMatch (mocked issue transport, real loader/matcher)
 
     CORE INVARIANT under test: NEVER A FALSE GREEN. A non-zero-ExitCode device-test work item must
     ALWAYS yield at least one capping record, and any incompleteness (running items, short counts,
@@ -45,6 +46,8 @@ BeforeAll {
             'Invoke-JsonUrl',
             'Invoke-TextUrl',
             'Get-PinnedPrDiff',
+            'Get-KnownBuildIssues',
+            'Test-KnownIssueMatch',
             'Get-AzDoApiBase',
             'Get-HttpStatusCode',
             'Invoke-AzDoJsonWithProjectFallback',
@@ -326,6 +329,167 @@ Describe 'No-results evaluation shortcut' {
         foreach ($write in $skipWrites) {
             $write.Extent.Text | Should -Match '-OutputDirectory \$RunDirectory(?:\s|$)'
         }
+    }
+}
+
+Describe 'Known Build Error loader-to-matcher boundary' -Tag 'KnownBuildIssues' {
+    BeforeAll {
+        $expressions = @(
+            'at System.IO.FileStream.ReadAsync',
+            'at Microsoft.Maui.Essentials.DeviceTests.FileSystem_Tests.'
+        )
+
+        function New-KnownBuildIssueFixture {
+            param(
+                [object]$ErrorMessage = $expressions,
+                [object]$ErrorPattern = $null,
+                [int]$Number = 36435
+            )
+            $rule = [ordered]@{ ErrorMessage = $ErrorMessage; ErrorPattern = $ErrorPattern }
+            return [pscustomobject]@{
+                number = $Number
+                title = 'FileSystem test failure signature'
+                url = "https://github.com/dotnet/maui/issues/$Number"
+                body = '```json' + "`n" + ($rule | ConvertTo-Json -Depth 6) + "`n" + '```'
+            }
+        }
+    }
+
+    BeforeEach {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture
+        Mock Invoke-GhJson { return @($script:kbeIssueFixture) }
+    }
+
+    It 'matches every array expression on separate stack frames: <Case>' -ForEach @(
+        @{ Case = 'LF'; NewLine = "`n" }
+        @{ Case = 'CRLF'; NewLine = "`r`n" }
+        @{ Case = 'CR'; NewLine = "`r" }
+    ) {
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        $loaded.error | Should -BeNullOrEmpty
+        $text = @(
+            'System.NullReferenceException : Arg_NullReferenceException',
+            "   $($expressions[0])(Memory``1 buffer, CancellationToken cancellationToken)",
+            '   at System.IO.StreamReader.ReadToEndAsyncInternal(CancellationToken cancellationToken)',
+            "   $($expressions[1])CheckFileResultOpenReadAsyncMultipleTimes()"
+        ) -join $NewLine
+        $match = Test-KnownIssueMatch -Patterns $loaded.patterns -Text $text
+        $match.number | Should -Be 36435
+        $match.title | Should -Be $script:kbeIssueFixture.title
+        $match.url | Should -Be $script:kbeIssueFixture.url
+        $loaded.patterns[0].pattern.GetType().IsArray | Should -BeTrue
+        $loaded.patterns[0].pattern | Should -Be $expressions
+        Should -Invoke Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            ($Arguments -join ' ') -eq 'issue list -R dotnet/maui --label Known Build Error --state open --json number,title,url,body --limit 100'
+        }
+    }
+
+    It 'preserves scalar and single-expression array matching: <Case>' -ForEach @(
+        @{ Case = 'scalar'; Message = 'at System.IO.FileStream.ReadAsync' }
+        @{ Case = 'single-expression array'; Message = @('at System.IO.FileStream.ReadAsync') }
+    ) {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage $Message
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        (Test-KnownIssueMatch -Patterns $loaded.patterns -Text 'before AT SYSTEM.IO.FILESTREAM.READASYNC after').number | Should -Be 36435
+        if ($Message -is [System.Array]) {
+            $loaded.patterns[0].pattern.GetType().IsArray | Should -BeTrue
+        }
+        else {
+            $loaded.patterns[0].pattern | Should -BeOfType ([string])
+        }
+    }
+
+    It 'keeps array literals case-insensitive and does not interpret regex characters' {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('Assert.True() [ReadAsync]', 'Actual:   False')
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        (Test-KnownIssueMatch -Patterns $loaded.patterns -Text "ASSERT.TRUE() [READASYNC]`nactual:   false").number | Should -Be 36435
+        Test-KnownIssueMatch -Patterns $loaded.patterns -Text "AssertXTrue ReadAsync`nActual:   False" | Should -BeNullOrEmpty
+    }
+
+    It 'requires every expression on a distinct later line: <Case>' -ForEach @(
+        @{ Case = 'three expressions'; Message = @('first frame', 'middle frame', 'last frame'); MatchingText = "first frame`nmiddle frame`nlast frame"; PartialText = "first frame`nlast frame" }
+        @{ Case = 'repeated expression'; Message = @('same frame', 'same frame'); MatchingText = "same frame`nsame frame"; PartialText = 'same frame same frame' }
+    ) {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage $Message
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        (Test-KnownIssueMatch -Patterns $loaded.patterns -Text $MatchingText).number | Should -Be 36435
+        Test-KnownIssueMatch -Patterns $loaded.patterns -Text $PartialText | Should -BeNullOrEmpty
+    }
+
+    It 'rejects partial, unrelated, reversed, or same-line array evidence: <Case>' -ForEach @(
+        @{ Case = 'first only'; Indices = @(0); Separator = "`n" }
+        @{ Case = 'second only'; Indices = @(1); Separator = "`n" }
+        @{ Case = 'unrelated'; Indices = @(); Separator = "`n" }
+        @{ Case = 'reversed'; Indices = @(1, 0); Separator = "`n" }
+        @{ Case = 'same line'; Indices = @(0, 1); Separator = ' ' }
+    ) {
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        $text = 'Unrelated failure' + "`n" + (($Indices | ForEach-Object { $expressions[$_] }) -join $Separator)
+        Test-KnownIssueMatch -Patterns $loaded.patterns -Text $text | Should -BeNullOrEmpty
+    }
+
+    It 'does not combine expressions from different tests at the real cross-reference call site' {
+        $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        $assignments = $gatherAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $args[0].Left.Extent.Text -in @('$matchText', '$failure[''matchesKnownIssue'']')
+        }, $true)
+        $assignments.Count | Should -Be 2
+        foreach ($failure in @(
+            @{ testName = 'FileReaderTest'; messages = @($expressions[0]) },
+            @{ testName = 'FileSystemTest'; messages = @($expressions[1]) }
+        )) {
+            foreach ($assignment in $assignments) { Invoke-Expression $assignment.Extent.Text }
+            $failure.matchesKnownIssue | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'preserves regex precedence, invalid-regex fallback, and scalar multiline matching: <Case>' -ForEach @(
+        @{ Case = 'regex'; Message = @('missing first', 'missing second'); Pattern = 'ReadAsync\(\d+\)'; Text = 'READASYNC(42)' }
+        @{ Case = 'invalid regex literal fallback'; Message = 'ignored'; Pattern = '['; Text = 'literal [ bracket' }
+        @{ Case = 'multiline scalar'; Message = "first`nsecond"; Pattern = $null; Text = "before first`nsecond after" }
+    ) {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage $Message -ErrorPattern $Pattern
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        (Test-KnownIssueMatch -Patterns $loaded.patterns -Text $Text).number | Should -Be 36435
+        Test-KnownIssueMatch -Patterns $loaded.patterns -Text 'unrelated failure' | Should -BeNullOrEmpty
+    }
+
+    It 'keeps first-matching-issue selection with multiple issue rules' {
+        $script:kbeIssueFixture = @(
+            (New-KnownBuildIssueFixture -ErrorMessage 'unrelated' -Number 1),
+            (New-KnownBuildIssueFixture),
+            (New-KnownBuildIssueFixture -ErrorMessage $expressions[0] -Number 2)
+        )
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        (Test-KnownIssueMatch -Patterns $loaded.patterns -Text ($expressions -join "`n")).number | Should -Be 36435
+    }
+
+    It 'does not match an array expression beyond the existing 20000-character text limit' {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame')
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        $prefix = "first frame`n"
+        $withinLimit = $prefix + ('x' * (20000 - $prefix.Length - "`nlast frame".Length)) + "`nlast frame"
+        $withinLimit.Length | Should -Be 20000
+        (Test-KnownIssueMatch -Patterns $loaded.patterns -Text $withinLimit).number | Should -Be 36435
+        $beyondLimit = $prefix + ('x' * (20000 - $prefix.Length)) + "`nlast frame"
+        Test-KnownIssueMatch -Patterns $loaded.patterns -Text $beyondLimit | Should -BeNullOrEmpty
+    }
+
+    It 'rejects an invalid array without weakening it to a partial matcher: <Case>' -ForEach @(
+        @{ Case = 'empty'; Message = @() }
+        @{ Case = 'null element'; Message = @('first frame', $null) }
+        @{ Case = 'blank element'; Message = @('first frame', ' ') }
+        @{ Case = 'numeric element'; Message = @('first frame', 42) }
+        @{ Case = 'object element'; Message = @('first frame', @{ nested = 'last frame' }) }
+        @{ Case = 'nested array'; Message = @('first frame', @('last frame')) }
+    ) {
+        $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage $Message
+        Mock Write-Warning {}
+        $loaded = Get-KnownBuildIssues -Repository 'dotnet/maui'
+        @($loaded.patterns).Count | Should -Be 0
+        Test-KnownIssueMatch -Patterns $loaded.patterns -Text 'first frame' | Should -BeNullOrEmpty
+        Should -Invoke Write-Warning -Times 1 -Exactly -ParameterFilter { $Message -like '*ErrorMessage array*36435*' }
     }
 }
 
