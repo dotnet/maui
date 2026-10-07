@@ -117,6 +117,63 @@ jobs:
     if: github.run_attempt == 1
   safe_outputs:
     if: github.run_attempt == 1
+  minimize_command:
+    needs: [pre_activation, activation, agent, detection, safe_outputs]
+    if: >-
+      !cancelled() &&
+      github.repository == 'dotnet/maui' &&
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      github.event.comment.user.type == 'User' &&
+      github.event.comment.id > 0 &&
+      github.run_attempt == 1 &&
+      needs.pre_activation.outputs.triage_authorized == 'true' &&
+      needs.pre_activation.outputs.triage_ready == 'true' &&
+      needs.activation.result == 'success' &&
+      needs.agent.result == 'success' &&
+      needs.detection.result == 'success' &&
+      (needs.detection.outputs.detection_conclusion == 'success' ||
+        needs.detection.outputs.detection_conclusion == 'skipped') &&
+      needs.safe_outputs.result == 'success' &&
+      needs.safe_outputs.outputs.process_safe_outputs_status == 'success' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_cancelled == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_deferred == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_failed == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_skipped == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_warnings == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_processed_count != '' &&
+      needs.safe_outputs.outputs.process_safe_outputs_processed_count > 0 &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_applied == needs.safe_outputs.outputs.process_safe_outputs_processed_count &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_succeeded == needs.safe_outputs.outputs.process_safe_outputs_processed_count
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout trusted command completion script
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download trusted validation receipt outside checkout
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: issue-triage-report-${{ github.run_id }}
+          path: ${{ runner.temp }}/issue-triage-completion
+      - name: Resolve only the successfully handled authorized command
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMAND_COMMENT_ID: ${{ github.event.comment.id }}
+          EXPECTED_CONTEXT_HASH: ${{ needs.pre_activation.outputs.context_hash }}
+          NATIVE_PROCESSED_COUNT: ${{ needs.safe_outputs.outputs.process_safe_outputs_processed_count }}
+          DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
+        run: |
+          timeout -k 30s 2m pwsh -NoProfile -File .github/scripts/IssueTriage.ps1 \
+            -Stage Complete -IssueNumber "$ISSUE_NUMBER" -Repository "$GITHUB_REPOSITORY" \
+            -Actor "$GITHUB_ACTOR" -CommandCommentId "$COMMAND_COMMENT_ID" \
+            -ContextDirectory "$RUNNER_TEMP/issue-triage-completion" \
+            -ExpectedContextHash "$EXPECTED_CONTEXT_HASH" -ProcessedOperations "$NATIVE_PROCESSED_COUNT"
   pre-activation:
     outputs:
       triage_ready: ${{ steps.context.outputs.ready }}
@@ -257,6 +314,7 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  report-failed-jobs: false
   steps:
     - name: Checkout trusted triage validator
       uses: actions/checkout@v7.0.1
