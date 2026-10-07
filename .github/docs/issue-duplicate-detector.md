@@ -11,7 +11,7 @@ MAUI previously received `github-actions[bot]` comments explicitly described as
 finding similar issues **based on the issue title**, with decimal similarity
 scores. Examples: [issue #22884](https://github.com/dotnet/maui/issues/22884#issuecomment-2152048565)
 and [issue #22849](https://github.com/dotnet/maui/issues/22849#issuecomment-2149701059).
-The latter suggested unrelated CollectionView failures across platforms.
+The latter suggested different CollectionView symptoms across platforms.
 Those similarity scores are not probabilities of a shared defect.
 
 At implementation time, the current workflow definitions and Policy Service
@@ -52,6 +52,14 @@ to 300 comments per issue and a 1 MiB prepared file. Missing required evidence
 is an incomplete run, not proof that there are no duplicates.
 An unchanged report is suppressed. Changed reports are posted as new comments;
 existing bot and human comments are never edited, deleted, or minimized.
+The visible report fingerprint survives gh-aw's content sanitization. Reports
+are recognized by the bot author, trusted workflow markers, and exact fingerprint
+even when the publisher prepends a caution. Recognized reports are excluded
+from evidence and target hashes.
+Every candidate's content hash, timestamp, state, and lock status are rechecked
+after report construction, followed by the target's final eligibility/evidence
+check. Validation and GitHub publication are not an atomic transaction; changes
+after the final checks remain possible.
 Closed, locked, or already-marked-duplicate targets are skipped. Bot-authored
 issues are skipped automatically but can be checked manually.
 

@@ -4,7 +4,8 @@ const path = require('node:path');
 
 const maxComments = 300;
 const maxFileBytes = 1024 * 1024;
-const reportPrefix = '<!-- issue-duplicate-detector-report:';
+// gh-aw strips HTML comments from report content before adding trusted provenance.
+const reportPrefix = 'Duplicate detector report fingerprint: ';
 const workflowMarker = '<!-- gh-aw-workflow-call-id: dotnet/maui/issue-duplicate-detector -->';
 
 function assert(condition, message) {
@@ -34,13 +35,21 @@ function hash(value) {
     return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
+function getReportHash(comment) {
+    if (
+        comment.author !== 'github-actions[bot]' ||
+        !comment.body.includes('<!-- Issue Duplicate Detector -->') ||
+        !comment.body.includes(workflowMarker)
+    ) {
+        return null;
+    }
+    const marker = comment.body.split(/\r?\n/).find((line) => line.startsWith(reportPrefix));
+    const fingerprint = marker?.slice(reportPrefix.length);
+    return fingerprint && /^[a-f0-9]{64}$/.test(fingerprint) ? fingerprint : null;
+}
+
 function isWorkflowReport(comment) {
-    return (
-        comment.author === 'github-actions[bot]' &&
-        comment.body.startsWith('<!-- Issue Duplicate Detector -->') &&
-        comment.body.includes(workflowMarker) &&
-        comment.body.includes(reportPrefix)
-    );
+    return getReportHash(comment) !== null;
 }
 
 function plainText(value) {
@@ -247,6 +256,7 @@ async function validate({ github, core, context, issueNumber, contextDirectory, 
     assert(current.contextHash === expectedHash, 'Issue evidence changed; request a fresh run.');
     const seen = new Set([issueNumber]);
     const matches = [];
+    const candidateSnapshots = [];
     for (const match of proposal.matches) {
         assertKeys(match, [
             'issueNumber',
@@ -278,6 +288,7 @@ async function validate({ github, core, context, issueNumber, contextDirectory, 
             candidate.target.updatedAt === match.updatedAt,
             'Candidate evidence changed; request a fresh run.',
         );
+        candidateSnapshots.push(candidate);
         matches.push({
             issueNumber: match.issueNumber,
             title: candidate.target.title,
@@ -295,11 +306,9 @@ async function validate({ github, core, context, issueNumber, contextDirectory, 
             right.probability - left.probability || left.issueNumber - right.issueNumber,
     );
     const reportHash = hash({ contextHash: expectedHash, matches });
-    const marker = `${reportPrefix}${reportHash} -->`;
-    const existing = current.comments.filter(
-        (comment) => isWorkflowReport(comment) && comment.body.includes(marker),
-    );
-    if (existing.length) {
+    const marker = `${reportPrefix}${reportHash}`;
+    const existing = current.comments.some((comment) => getReportHash(comment) === reportHash);
+    if (existing) {
         payload.items = [
             {
                 type: 'noop',
@@ -320,7 +329,6 @@ async function validate({ github, core, context, issueNumber, contextDirectory, 
                 `"${plainText(match.candidateEvidence.quote)}".`,
         );
         item.body = [
-            marker,
             '## Possible duplicate issues',
             '',
             'These probabilities are uncalibrated AI estimates of the same underlying issue, not title-similarity scores or confirmed duplicate decisions. Maintainers decide whether to consolidate reports; this workflow never labels or closes issues.',
@@ -333,9 +341,23 @@ async function validate({ github, core, context, issueNumber, contextDirectory, 
             'Closed candidates are historical context. A recurrence after a fix can be a new regression, not a duplicate.',
             '',
             `[Workflow result](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`,
+            '',
+            marker,
         ].join('\n');
         delete item.data;
         delete item.temporary_id;
+        await Promise.all(
+            candidateSnapshots.map(async (previous) => {
+                const latest = await getSnapshot(github, context.repo, previous.target.issueNumber);
+                assert(
+                    latest.contextHash === previous.contextHash &&
+                        latest.target.updatedAt === previous.target.updatedAt &&
+                        latest.target.state === previous.target.state &&
+                        latest.target.locked === previous.target.locked,
+                    `Candidate #${previous.target.issueNumber} evidence changed during validation; request a fresh run.`,
+                );
+            }),
+        );
         const final = await getSnapshot(github, context.repo, issueNumber);
         assert(
             final.contextHash === expectedHash &&
