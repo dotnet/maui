@@ -401,6 +401,12 @@ function Export-ExpectedPRAgentArtifact {
             -Pattern 'test-with-fix*.log' `
             -DestinationDirectory "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail" `
             -Truncatable
+        Add-DirectPatternFiles `
+            -BoundaryRoot $repositoryPath `
+            -SourceDirectory (Join-Path $sourcePRAgentPath 'gate/verify-tests-fail') `
+            -Pattern 'test-failure*.log' `
+            -DestinationDirectory "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail" `
+            -Truncatable
     }
 
     if ($null -ne $diagnosticsPath) {

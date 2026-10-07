@@ -184,8 +184,10 @@ Native selection remains capped at two device and two UI groups by default, with
 newly added groups prioritized.
 Dropped groups are reported as coverage gaps and receive no subsequent deep
 category sweep. A test-only PR keeps failure-only verification; it does not claim
-a with-fix pass. A PR without runnable tests is `SKIPPED`; missing tests are not
-generated.
+a with-fix pass. Both modes use the same early-loaded result parser, so genuine
+assertion failures in test-only mode remain reproduction evidence rather than
+being lost to a missing parser helper. A PR without runnable tests is `SKIPPED`;
+missing tests are not generated.
 
 The report follows the compact test-failure-analysis layout: an author/commit
 quote, scope/result/platform/commit badges, closed **Gate analysis** and
@@ -212,6 +214,7 @@ Comments are idempotent per Azure run. Only the authenticated publisher's owned
 gate comments can be updated or collapsed. A stale run remains visibly tied to
 its old commit and cannot hide newer gate reports or change result labels.
 Bounded execution diagnostics are retained in `GateLogs` and `BuildLogs`.
+The allowlist includes both full-verification and failure-only execution logs.
 Oversized allowlisted execution transcripts are explicitly tail-truncated; they
 do not discard the structured gate report or relax artifact size limits.
 
