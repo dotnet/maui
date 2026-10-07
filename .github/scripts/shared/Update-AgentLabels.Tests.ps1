@@ -13,7 +13,6 @@
 
 BeforeAll {
     . (Join-Path $PSScriptRoot 'Invoke-GhCommandWithRetry.ps1')
-    . (Join-Path $PSScriptRoot 'Test-ReviewerArtifactsComplete.ps1')
 
     $scriptPath = Join-Path $PSScriptRoot 'Update-AgentLabels.ps1'
     $tokens = $null

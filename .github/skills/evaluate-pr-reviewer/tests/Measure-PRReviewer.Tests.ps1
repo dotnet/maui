@@ -88,7 +88,7 @@ Describe 'Offline PR reviewer grading' {
     It 'does not credit an intentional omission against a corpus requiring Try-Fix' {
         $case = New-TestCase
         $root = Add-ArtifactFiles $case
-        '<!-- TRY-FIX-STATUS: not-requested -->' | Set-Content (Join-Path $root 'try-fix/content.md')
+        '<!-- TRY-FIX-STATUS: not-requested -->' | Set-Content (Join-Path $root 'try-fix\content.md')
         $result = Invoke-TestCase $case
         $result.runs[0].phases.'try-fix' | Should -Be 'not-requested'
         $result.runs[0].delivery | Should -Be 'incomplete'
