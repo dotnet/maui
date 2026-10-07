@@ -1707,11 +1707,19 @@ if ($final.contextHash -cne $current.contextHash) {
 }
 Set-Content -LiteralPath (Join-Path $OutputDirectory 'report.md') -Value $body -Encoding utf8
 Write-Json 'decision.json' $proposal
-Write-Json 'validation.json' @{ status = 'validated'; contextHash = $current.contextHash; existingComment = $existing.Count -gt 0 }
-$comment.body = $body
-$comment.Remove('data')
-$comment.Remove('temporary_id')
-# A retry can complete unchanged decisions from the original report without another comment.
-if ($existing.Count -gt 0) { $payload.items = @($items | Where-Object { $_.type -cne 'add_comment' }) }
+Write-Json 'validation.json' @{
+    status = 'validated'; contextHash = $current.contextHash; existingComment = $existing.Count -gt 0
+    publicCommentWrites = 0
+    requestedAdditions = @($proposal.additions | ForEach-Object { $_.label })
+    requestedRemovals = @($proposal.removals | ForEach-Object { $_.label })
+}
+# The structured comment is evidence transport only; retain its report in Actions artifacts.
+$payload.items = @($items | Where-Object { $_.type -cne 'add_comment' })
+if ($payload.items.Count -eq 0) {
+    $payload.items = @(@{
+        type = 'noop'
+        message = 'No label changes requested; validated withheld decisions are retained in the issue-triage-report artifact.'
+    })
+}
 $payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $AgentOutputPath -Encoding utf8
 Write-Host "Validated $($proposal.additions.Count) additions and $($proposal.removals.Count) removals for issue $IssueNumber."

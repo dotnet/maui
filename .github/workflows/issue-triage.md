@@ -331,7 +331,9 @@ do not guess a first bad release or invent priority, approval or validation.
 Information/reproduction requests must be concrete and actionable.
 
 Use the skill's structured `data.triage` contract with one `add_comment` carrying
-`item_number` for this issue and a placeholder body. Emit matching plain-string
+`item_number` for this issue and a placeholder body. This is internal evidence
+transport only, not a public comment: trusted validation strips it before
+publication and retains explanations in Actions artifacts. Emit matching plain-string
 `add_labels`/`remove_labels` deltas, at most one intent of each type. Always pass
 the prepared issue number explicitly. Do not use label objects or intent metadata.
 Propose at most 20 total changes, with at most ten additions and ten removals.
@@ -345,4 +347,8 @@ shell is disabled, and the MCP tools already expose the required schemas.
 
 The separate safe-output job re-fetches context, reauthorizes the requester,
 checks evidence provenance and policy, rejects stale/unsupported proposals,
-renders its own explanatory comment and then permits the built-in label handlers.
+retains its explanatory report and decisions in Actions artifacts, strips the
+internal comment intent and then permits only validated built-in label intents.
+A validated withheld-only result becomes a native `noop`; neither it nor a
+no-change result posts a public triage report. Feedback labels may still trigger
+separate repository Policy Service replies.

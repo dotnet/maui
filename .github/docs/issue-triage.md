@@ -2,8 +2,10 @@
 
 Post exactly `/issue triage` as a new comment on an **open issue** in
 `dotnet/maui`. The caller must currently have write, maintain or admin permission.
-The command proposes and applies evidence-backed manual issue labels and posts
-one explanation. It does not reproduce bugs, run samples, change milestones or
+The command proposes and applies evidence-backed manual issue labels and retains
+its explanation only in Actions artifacts, without posting a public triage report.
+Separate Policy Service replies triggered by feedback labels are unchanged.
+It does not reproduce bugs, run samples, change milestones or
 assignees, close/reopen issues, modify product code or create pull requests.
 
 This is a standalone **GitHub Agentic Workflow**, not an Azure pipeline.
@@ -554,7 +556,9 @@ One GPT-6.1 Sol/Copilot analysis reads prepared evidence and the declared local
 skill. Shell and GitHub tools are disabled. It has read-only repository
 permissions and does not receive the publication job's write token.
 It declares final intents through the exposed safeoutputs MCP tools, not shell
-CLI/schema probes. Structured triage data belongs to the comment tool.
+CLI/schema probes. Structured triage data belongs to the comment tool, which
+remains declared solely as internal typed evidence transport. Trusted validation
+always strips this intent before native publication, including withheld-only results.
 The pinned runtime automatically attaches an `aw_` plus eight-alphanumeric
 comment temporary ID; the validator accepts only that known transport shape and
 discards it before publication. Numeric target, evidence and incomplete-output
@@ -570,7 +574,7 @@ The separate safe-output job checks out the exact trusted revision, imports only
 bounded regular JSON outside the checkout, binds it to the preparation job's
 independent context hash, and re-fetches/rechecks context and authority. It rejects
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
-intents and unsafe transitions, then renders its own comment.
+intents and unsafe transitions, then renders its own artifact-only report.
 Withheld labels must be unique and cannot overlap the proposed label delta.
 After evidence validation and report rendering, the final gate re-fetches the
 complete bounded snapshot and requires its hash to match the validated context
@@ -578,9 +582,9 @@ before writing the report or releasing native intents. This clears the permissio
 cache, rechecks the original command actor and any rerun actor, verifies the source
 command and open issue again, and rejects intervening evidence, label, reference,
 authority or catalog changes. A stale proposal requires a fresh invocation.
-Only built-in gh-aw add/remove/comment handlers perform writes.
+Only built-in gh-aw add/remove-label handlers receive validated write intents.
 Safe-output publication explicitly uses the built-in `secrets.GITHUB_TOKEN`,
-consistently posting as `github-actions[bot]`; it does not select a configured
+consistently applying labels as `github-actions[bot]`; it does not select a configured
 `GH_AW_GITHUB_TOKEN` publisher. Retry-marker recognition uses that same identity.
 Their coarse family allowlists meet the compiler's 50-entry bound; the narrower
 machine policy and exact live-name checks are mandatory before those handlers.
@@ -593,7 +597,8 @@ introduce a custom write handler; review this remaining least-privilege limitati
 before apply-mode deployment.
 
 Each run permits at most 20 total label changes, ten additions, ten removals and
-one result comment. The pinned add-label handler independently rejects arrays
+one internal structured comment, with zero public triage comment writes.
+The pinned add-label handler independently rejects arrays
 larger than ten labels before applying its configurable limit; increasing
 `max` cannot override that ceiling. The workflow, skill and trusted policy share
 the ten-addition cap, so oversized proposals fail validation rather than reaching
@@ -607,7 +612,10 @@ assuming a command was processed; use a fresh invocation for a canceled command.
 A genuine no-change result uses `noop` and leaves the issue untouched. Missing
 required evidence is incomplete, not a successful review; inspect the Actions
 result rather than interpreting the absence of a comment as success.
-Label/comment APIs are **not an atomic transaction**: inspect the Actions result
+A validated withheld-only proposal retains its report and decisions, then emits
+one native `noop` with a nonempty `message`, rather than an empty intent array or
+a public report. Existing pure no-ops and incomplete/failure semantics are unchanged.
+Label APIs are **not an atomic transaction**: inspect the Actions result
 for actual application, particularly after a partial failure. The explanation
 describes a validated requested delta, not an unconditional delivery claim.
 The final snapshot check detects changes during validation; it cannot lock GitHub
@@ -632,16 +640,17 @@ Legacy intact HTML identifiers remain readable. Legacy sanitized reports with
 the publisher-injected `Issue Triage` header and validated-proposal heading are
 also excluded from evidence, but missing invocation or decision identifiers
 cannot establish exact retry coverage.
-Duplicate-report protection remains
-defensive: a report for the same invocation can suppress a new comment only
-when it covers all decisions exactly; changed decisions or multiple reports
-fail visibly. This is not a supported job-rerun recovery mechanism.
+Legacy report-marker checks remain defensive: a report for the same invocation
+must cover all decisions exactly; changed decisions or multiple reports fail
+visibly. Reports are never published by this workflow now, regardless of whether
+a prior report exists. This is not a supported job-rerun recovery mechanism.
 The validated `report.md`, `decision.json` and `validation.json` are retained
-before any label/comment handler runs. If comment publication fails while
-labels succeed, retrieve that report artifact for the historical explanation.
+before any label handler runs. `validation.json` records zero public comment writes
+and the exact requested additions/removals, not proof of completed label writes.
+Retrieve the report artifact for the historical explanation.
 A fresh invocation proposes only remaining changes and may legitimately use
-`noop`; it does not reconstruct or automatically repost the missing historical
-comment. Inspect the original run and retained report for actual partial
+`noop`; it does not reconstruct or publish a historical comment.
+Inspect the original run and retained report for actual partial
 publication, rather than treating the new no-op as proof of prior delivery.
 
 ## Deployment and staged operation
