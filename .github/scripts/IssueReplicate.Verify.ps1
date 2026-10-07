@@ -334,7 +334,9 @@ try {
                 }
         }
         $testExit = $LASTEXITCODE
-        if ($candidate.kind -eq 'ui') {
+        $failedWithoutTrx = $candidate.kind -eq 'ui' -and $testExit -is [int] -and
+            $testExit -ne 0 -and $reportedTrx.Count -eq 0
+        if ($candidate.kind -eq 'ui' -and -not $failedWithoutTrx) {
             if ($reportedTrx.Count -ne 1) { throw 'The pinned UI runner must report one authoritative TRX_RESULT_FILE.' }
             if (-not (Test-Path -LiteralPath $nunitFile -PathType Leaf) -or
                 (Get-Item -LiteralPath $nunitFile).LastWriteTimeUtc -lt $started) {
@@ -353,6 +355,12 @@ try {
                 (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -cne $sourceHashes[$relative]) {
                 throw 'Generated code changed the candidate source or tracked framework tree; no verified patch will be exported.'
             }
+        }
+        if ($failedWithoutTrx) {
+            $diagnostic = "Failed UI runner: exit code $testExit without an authoritative TRX; no completed test outcome was verified."
+            $testLines.Add($diagnostic)
+            Write-Warning $diagnostic
+            break
         }
         if (-not (Test-Path -LiteralPath $trxFile -PathType Leaf) -or
             (Get-Item -LiteralPath $trxFile).LastWriteTimeUtc -lt $started) { break }

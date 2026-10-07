@@ -71,6 +71,13 @@ is reported as a **verified failing test candidate**, not proof that the
 author's scenario was exercised or the issue is confirmed. Only that outcome labels the complete generated candidate diff as verified failing.
 Both drafting attempts import the same bounded author-build record and include
 its validated target framework, outcome and diagnostic in the GPT prompt.
+Generated UI tests must use existing category members; NavigationPage tests use
+`UITestCategories.Navigation`, not `UITestCategories.NavigationPage`.
+If the UI runner exits nonzero without reporting a TRX, verification exports an
+explicitly inconclusive result without qualified execution and bounded runner/compiler feedback
+for the permitted revision. This does not qualify an assertion, recording or
+verified patch. A successful runner without its authoritative result, multiple
+reported results, and changed tracked source still fail closed.
 Bounded build diagnostics retain up to three error lines, including native
 tool errors without a compiler code (such as `actool error :`), so a missing
 simulator runtime is not reduced to an empty build-blocker record.
