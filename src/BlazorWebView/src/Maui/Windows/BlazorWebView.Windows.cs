@@ -24,8 +24,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void Window_Destroying(object? sender, EventArgs e)
 		{
-			// see: https://github.com/microsoft/microsoft-ui-xaml/issues/6872
-			((BlazorWebViewHandler?)Handler)?.PlatformView.Close();
+			// Routed through the shared guarded helper because DisconnectHandler may also
+			// close the native CoreWebView2 around the same time.
+			var platformView = ((BlazorWebViewHandler?)Handler)?.PlatformView;
+			if (platformView is not null)
+			{
+				BlazorWebViewHandler.CloseWebView2(platformView);
+			}
 		}
 	}
 }

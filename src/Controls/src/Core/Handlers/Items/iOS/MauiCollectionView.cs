@@ -68,7 +68,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		_pendingScrollRestoreItemCount = 0;
 	}
 
-	void OnContentOffsetChanged(NSObservedChange change)
+	void OnContentOffsetChanged()
 	{
 		if (!_isTrackingScrollRestore)
 		{
@@ -148,7 +148,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 			return;
 		}
 
-		_contentOffsetObserver = this.AddObserver("contentOffset", NSKeyValueObservingOptions.New, OnContentOffsetChanged);
+		_contentOffsetObserver = KeyValueObservation.ObserveContentOffset(this, OnContentOffsetChanged);
 	}
 
 	void StopContentOffsetObserver()

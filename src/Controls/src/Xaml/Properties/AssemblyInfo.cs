@@ -21,8 +21,6 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
-[assembly: Preserve]
-
 [assembly: XmlnsDefinition(Microsoft.Maui.Controls.Xaml.XamlParser.MauiUri, "Microsoft.Maui.Controls.Xaml")]
 [assembly: XmlnsDefinition(Microsoft.Maui.Controls.Xaml.XamlParser.MauiDesignUri, "Microsoft.Maui.Controls.Xaml")]
 [assembly: XmlnsDefinition(Microsoft.Maui.Controls.Xaml.XamlParser.X2006Uri, "Microsoft.Maui.Controls.Xaml")]

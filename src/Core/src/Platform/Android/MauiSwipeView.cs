@@ -766,7 +766,6 @@ namespace Microsoft.Maui.Platform
 					item.Handler.DisconnectHandler();
 				}
 			}
-
 			_swipeItems.Clear();
 
 			if (_actionView != null)
@@ -1118,7 +1117,12 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var swipeItem in swipeItems)
 			{
-				if (swipeItem is ISwipeItemView)
+				// Execute mode sizes each menu item to its measured native content width
+				// (see GetSwipeItemSize) instead of a fixed contentWidth * 0.8 open distance,
+				// so the swipe/open threshold must be computed from that same per-item sizing
+				// below — otherwise the drag can end far short of (or past) the rendered
+				// SwipeItem(s), leaving a dead gap during the swipe.
+				if (swipeItem is ISwipeItemView || (swipeItem is ISwipeItemMenuItem && swipeItems.Mode == SwipeMode.Execute))
 					useSwipeItemsSize = true;
 
 				if (GetIsVisible(swipeItem))
@@ -1200,13 +1204,13 @@ namespace Microsoft.Maui.Platform
 					return new Size(swipeItemWidth, contentHeight);
 				}
 
-				if (swipeItem is ISwipeItem)
+				if (swipeItem is ISwipeItemMenuItem)
 				{
-					return new Size(
-						items.Mode == SwipeMode.Execute
-							? contentWidth / items.Count
-							: SwipeViewExtensions.SwipeItemWidth,
-						contentHeight);
+					double swipeItemWidth = items.Mode == SwipeMode.Execute
+						? GetExecuteModeItemWidth(contentWidth, contentHeight)
+						: SwipeViewExtensions.SwipeItemWidth;
+
+					return new Size(swipeItemWidth, contentHeight);
 				}
 			}
 			else
@@ -1230,6 +1234,30 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return Size.Zero;
+		}
+
+		double GetExecuteModeItemWidth(double contentWidth, double contentHeight)
+		{
+			double totalWidth = 0;
+			int visibleItemCount = 0;
+
+			foreach (var pair in _swipeItems)
+			{
+				if (!GetIsVisible(pair.Key) || pair.Value is not AView view)
+					continue;
+
+				view.Measure(
+					MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
+					MeasureSpec.MakeMeasureSpec((int)_context.ToPixels(contentHeight), MeasureSpecMode.Exactly));
+
+				double measuredWidth = _context.FromPixels(view.MeasuredWidth);
+				totalWidth += measuredWidth;
+				visibleItemCount++;
+			}
+
+			return visibleItemCount == 0
+				? SwipeViewExtensions.SwipeItemWidth
+				: totalWidth > contentWidth ? contentWidth / visibleItemCount : totalWidth / visibleItemCount;
 		}
 
 		float GetSwipeItemHeight()

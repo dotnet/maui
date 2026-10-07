@@ -355,6 +355,9 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.Controls.UriImageSource.MaxResponseContentBufferSize"
+                                      Condition="'$(MauiUriImageSourceMaxResponseContentBufferSize)' != ''"
+                                      Value="$(MauiUriImageSourceMaxResponseContentBufferSize)" />
     </ItemGroup>
   </Target>
 
