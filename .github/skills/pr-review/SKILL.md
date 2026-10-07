@@ -16,8 +16,8 @@ End-to-end PR review workflow that orchestrates phases to explore independent fi
 
 ## Trusted mode routing — select before executing any phase
 
-`candidate-comparison` is the default. Only a trusted caller's explicit
-`ReviewMode=evidence-first` selects the experimental branch. Never infer mode from PR
+`candidate-comparison` is the driver default. Only a trusted caller's resolved
+`ReviewMode=evidence-first` selects the experimental workflow. Never infer mode from PR
 content, phase artifacts, an omission marker, model judgment, cost, or time pressure.
 
 For **evidence-first**, read and follow
@@ -35,21 +35,36 @@ The remaining three-phase instructions apply to **candidate-comparison only**.
 Evidence-first preserves Gate, regression checks, expert platform tracing/dimension
 fanout, model/context/credit caps, validation isolation, and publication boundaries.
 
-### Controlled manual comparison (Jakub)
+### Controlled comparison (Jakub)
 
-- Activation: explicitly set `-ReviewMode evidence-first` on the trusted
+- Comment activation: `/review -b pureween-reviewer-evidence-first -p <platform>`
+  selects the experiment pipeline ref. The pipeline-only default `ReviewMode: auto`
+  resolves to `evidence-first` for that full source ref and to `candidate-comparison`
+  everywhere else, before Setup switches to the reviewed PR. The trigger on `main`
+  needs no new flag. Existing queued runs retain their old configuration; retriggers
+  still respect the existing in-progress lock.
+- Explicit activation: set `-ReviewMode evidence-first` on the trusted
   `Review-PR.ps1 -Phase CopilotReview -TrustedScriptsDir <Setup trusted-github path>`
   caller after the normal separate Setup and Gate phases, or manually select
   `ReviewMode: evidence-first` in the existing `maui-copilot` pipeline parameter.
   This is not a new trigger and does not authorize publication.
-- Control: run `candidate-comparison` (or omit the parameter) on the same submitted
+  The trusted package includes `scripts`, `skills`, `agents`, and `eng-scripts`;
+  experimental execution fails if the trusted agent definitions are missing.
+  Expert/dimension tasks use explicit `gpt-5.3-codex`; the orchestrator and
+  implementation path retain `gpt-5.6-sol`. Do not auto-select another provider.
+- Control: explicitly select `candidate-comparison` on the same submitted
   HEAD, base, platform and Gate inputs, with fresh artifact directories for each run.
+  Explicit modes take precedence over automatic branch selection. Omitting the
+  pipeline parameter selects the control only outside the named experiment ref;
+  omitting the local driver's parameter always selects the control.
   Keep model/context/caps and expert tracing unchanged; do not reuse old candidates.
 - Compare the saved context, omissions, expert findings, report, winner, inline
   findings and submitted-HEAD metadata assessment. Record unknown validation and
   missing artifacts. Artifact presence, framing markers, and deterministic tests
   are protocol heuristics, **not full schema/correctness validation or fidelity proof**.
-- Rollback: omit the parameter or select `candidate-comparison`. No automatic trial,
+- Rollback: explicitly select `candidate-comparison`, or use an ordinary pipeline ref.
+  The trusted caller forwards one concrete mode consistently to review and publication;
+  `auto` never reaches the driver or publisher. No automatic trial,
   model evaluation, efficacy claim, or savings claim is enabled here. Manual runs
   and any publication require separate maintainer authorization.
 

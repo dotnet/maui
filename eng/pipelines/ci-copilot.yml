@@ -25,10 +25,11 @@ parameters:
       - windows
 
   - name: ReviewMode
-    displayName: 'Review mode (evidence-first is experimental)'
+    displayName: 'Review mode (auto selects evidence-first on the experiment branch only)'
     type: string
-    default: candidate-comparison
+    default: auto
     values:
+      - auto
       - candidate-comparison
       - evidence-first
 
@@ -58,6 +59,15 @@ parameters:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  # Resolve from the pipeline ref before Setup switches to the reviewed PR.
+  # Consumers expand this at compile time, not through mutable runtime macros.
+  - name: EffectiveReviewMode
+    ${{ if ne(parameters.ReviewMode, 'auto') }}:
+      value: ${{ parameters.ReviewMode }}
+    ${{ elseif eq(variables['Build.SourceBranch'], 'refs/heads/pureween-reviewer-evidence-first') }}:
+      value: evidence-first
+    ${{ else }}:
+      value: candidate-comparison
   # Override the shared REQUIRED_XCODE/DEVICETESTS_REQUIRED_XCODE/XCODE pins (26.0.1 in
   # variables.yml) for this pipeline only. The net11 Microsoft.iOS / Microsoft.MacCatalyst
   # workloads require the iOS 26.5 SDK; building the HostApp with an older Xcode (26.0.1)
@@ -125,9 +135,19 @@ stages:
                 exit 1
               fi
               echo "PR Number: ${PR_NUM}"
+              case "${PARAM_REVIEW_MODE}" in
+                candidate-comparison|evidence-first) ;;
+                *)
+                  echo "##vso[task.logissue type=error]ReviewMode did not resolve to a supported concrete mode"
+                  exit 1
+                  ;;
+              esac
+              echo "Review mode: ${PARAM_REVIEW_MODE} (requested: ${PARAM_REQUESTED_REVIEW_MODE})"
             displayName: 'Validate Parameters'
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REQUESTED_REVIEW_MODE: ${{ parameters.ReviewMode }}
+              PARAM_REVIEW_MODE: ${{ variables.EffectiveReviewMode }}
 
           # Preserve the one helper needed by the final telemetry stage while
           # the worktree is still the immutable pipeline revision. Publish it
@@ -219,6 +239,7 @@ stages:
               mkdir -p "$TRUSTED"
               cp -r .github/scripts "$TRUSTED/scripts"
               cp -r .github/skills  "$TRUSTED/skills"
+              cp -r .github/agents  "$TRUSTED/agents"
               cp -r eng/scripts     "$TRUSTED/eng-scripts"
               mkdir -p "$TRUSTED/source-overrides"
               cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
@@ -1789,7 +1810,7 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
-              PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}
+              PARAM_REVIEW_MODE: ${{ variables.EffectiveReviewMode }}
               COMMENTS_VIA_FILE: "true"
 
           # Export only the fixed, bounded files consumed by the posting jobs.
@@ -2001,7 +2022,7 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
-              PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}
+              PARAM_REVIEW_MODE: ${{ variables.EffectiveReviewMode }}
               # The review token can create reviews/labels but GitHub returns 404
               # when it tries to edit PR metadata. Stage 3 applies the same trusted
               # recommendation with its persisted checkout credential instead.
@@ -5011,7 +5032,7 @@ stages:
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
-              PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}
+              PARAM_REVIEW_MODE: ${{ variables.EffectiveReviewMode }}
               BUILD_BUILDID: $(Build.BuildId)
               DEEP_STAGE_RESULT: $(deepStageResult)
 

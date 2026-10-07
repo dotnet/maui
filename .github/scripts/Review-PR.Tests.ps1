@@ -64,6 +64,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateRetryFitsBudget')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Restore-TrustedScripts')
     foreach ($name in @(
         'Get-PreflightToolArguments', 'Get-PreparedReviewDiff', 'Write-ReviewPhaseContent',
         'Update-PreflightCapture', 'Complete-PreflightCapture', 'New-TryFixOmissionContent',
@@ -327,16 +328,102 @@ Describe 'Prepared snapshot with real local Git objects' {
     }
 
 Describe 'Reviewer mode publication wiring' {
-    It 'wires the validated manual parameter into review and both trusted publication paths' {
-        $pipelineContent | Should -Match '(?s)name: ReviewMode.*?default: candidate-comparison.*?values:.*?candidate-comparison.*?evidence-first'
+    It 'keeps auto in the pipeline and forwards only the frozen concrete mode' {
+        $pipelineContent | Should -Match '(?s)name: ReviewMode.*?default: auto.*?values:.*?- auto.*?candidate-comparison.*?evidence-first'
         $pipelineContent | Should -Match ([regex]::Escape('-ReviewMode "${PARAM_REVIEW_MODE}"'))
-        $pipelineContent | Should -Match ([regex]::Escape('PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}'))
+        $pipelineContent | Should -Match ([regex]::Escape('PARAM_REVIEW_MODE: ${{ variables.EffectiveReviewMode }}'))
         $content | Should -Match 'Invoke-ReviewPreflight -ReviewMode \$ReviewMode'
         $content | Should -Match 'Get-ReviewCandidatePolicy -ReviewMode \$ReviewMode'
-        ([regex]::Matches($pipelineContent, 'PARAM_REVIEW_MODE: \$\{\{ parameters.ReviewMode \}\}')).Count |
-            Should -Be 3
+        ([regex]::Matches($pipelineContent, 'PARAM_REVIEW_MODE: \$\{\{ variables.EffectiveReviewMode \}\}')).Count |
+            Should -Be 4
+        $pipelineContent | Should -Not -Match 'PARAM_REVIEW_MODE: \$\{\{ parameters.ReviewMode \}\}'
+        $pipelineContent | Should -Not -Match '\$\(EffectiveReviewMode\)'
         $pipelineContent | Should -Match ([regex]::Escape('-ReviewMode "$env:PARAM_REVIEW_MODE"'))
         $content | Should -Match '(?s)Apply-AgentLabels.*-ReviewMode \$ReviewMode'
+    }
+
+    It 'honors either explicit mode before considering the experiment source ref' {
+        $pipelineContent | Should -Match ([regex]::Escape(@'
+- name: EffectiveReviewMode
+    ${{ if ne(parameters.ReviewMode, 'auto') }}:
+      value: ${{ parameters.ReviewMode }}
+    ${{ elseif eq(variables['Build.SourceBranch'], 'refs/heads/pureween-reviewer-evidence-first') }}:
+      value: evidence-first
+    ${{ else }}:
+      value: candidate-comparison
+'@))
+    }
+
+    It 'uses the trusted full pipeline ref, never a PR branch or loose branch-name match' {
+        $routing = [regex]::Match($pipelineContent, '(?s)- name: EffectiveReviewMode\r?\n.*?(?=\r?\n  #)').Value
+        $routing | Should -Not -BeNullOrEmpty
+        $routing | Should -Match ([regex]::Escape("variables['Build.SourceBranch']"))
+        $routing | Should -Not -Match 'SourceBranchName|PullRequest|contains\(|startsWith\(|endsWith\(|\$\('
+        $routing | Should -Match 'value: candidate-comparison'
+    }
+
+    It 'logs and validates the resolved mode before running PR-controlled code' {
+        $pipelineContent | Should -Match 'case "\$\{PARAM_REVIEW_MODE\}" in'
+        $pipelineContent | Should -Match 'ReviewMode did not resolve to a supported concrete mode'
+        $pipelineContent | Should -Match 'Review mode: \$\{PARAM_REVIEW_MODE\} \(requested: \$\{PARAM_REQUESTED_REVIEW_MODE\}\)'
+        $pipelineContent.IndexOf('ReviewMode did not resolve') |
+            Should -BeLessThan $pipelineContent.IndexOf('Capture trusted test infrastructure')
+    }
+}
+
+Describe 'Trusted reviewer model selection' {
+    BeforeEach {
+        $script:previousReviewMode = $script:ReviewMode
+        $script:previousPlatform = $script:Platform
+        $script:ReviewMode = 'evidence-first'
+        $script:Platform = 'windows'
+        $fixtureId = [Guid]::NewGuid().ToString('N')
+        $script:trustedRoot = Join-Path $TestDrive "model-policy-trusted-$fixtureId"
+        $script:reviewRoot = Join-Path $TestDrive "model-policy-review-$fixtureId"
+        New-Item -ItemType Directory -Path (Join-Path $script:reviewRoot '.github/agents') -Force | Out-Null
+    }
+
+    AfterEach {
+        $script:ReviewMode = $script:previousReviewMode
+        $script:Platform = $script:previousPlatform
+    }
+
+    It 'restores the trusted agent definition over a PR-provided model selection' {
+        $trustedAgents = Join-Path $script:trustedRoot 'agents'
+        New-Item -ItemType Directory -Path $trustedAgents -Force | Out-Null
+        Set-Content (Join-Path $trustedAgents 'maui-expert-reviewer.md') 'Trusted GPT-only model policy'
+        Set-Content (Join-Path $script:reviewRoot '.github/agents/maui-expert-reviewer.md') 'PR-provided model selection'
+
+        Restore-TrustedScripts -TrustedScriptsDir $script:trustedRoot -RepoRoot $script:reviewRoot
+
+        Get-Content -Raw (Join-Path $script:reviewRoot '.github/agents/maui-expert-reviewer.md') |
+            Should -Match 'Trusted GPT-only model policy'
+    }
+
+    It 'stops experimental execution when the trusted agent copy is missing' {
+        { Restore-TrustedScripts -TrustedScriptsDir $script:trustedRoot -RepoRoot $script:reviewRoot } |
+            Should -Throw '*Trusted reviewer agent definitions are missing*'
+    }
+
+    It 'does not accept an empty trusted agent directory as a model policy' {
+        New-Item -ItemType Directory -Path (Join-Path $script:trustedRoot 'agents') -Force | Out-Null
+        { Restore-TrustedScripts -TrustedScriptsDir $script:trustedRoot -RepoRoot $script:reviewRoot } |
+            Should -Throw '*Trusted reviewer agent definitions are missing*'
+    }
+
+    It 'copies agent definitions before Setup changes the reviewed worktree' {
+        $pipelineContent | Should -Match ([regex]::Escape('cp -r .github/agents  "$TRUSTED/agents"'))
+        $pipelineContent.IndexOf('cp -r .github/agents') |
+            Should -BeLessThan $pipelineContent.IndexOf('-Phase Setup')
+    }
+
+    It 'pins the expert and its dimension workers to the existing GPT model' {
+        $expert = Get-Content -Raw (Join-Path $PSScriptRoot '../agents/maui-expert-reviewer.md')
+        $codeReview = Get-Content -Raw (Join-Path $PSScriptRoot '../skills/code-review/SKILL.md')
+        $expert | Should -Match 'Use `model: "gpt-5.3-codex"` explicitly for every dimension sub-agent'
+        $codeReview | Should -Match 'with model `gpt-5.3-codex`'
+        $content | Should -Match 'Pass an explicit ``model`` on every delegated task, including nested dimension tasks'
+        $content | Should -Match 'Do not use automatic model selection, Anthropic models'
     }
 }
 
