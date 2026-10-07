@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		View _content;
 		object _previousDataContext;
 		Shell _shell;
+		bool _updatingVisualState;
 		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
 
 		public ShellFlyoutItemView()
@@ -148,9 +149,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateVisualState()
 		{
-			if (_content?.BindingContext is BaseShellItem baseShellItem)
+			if (_updatingVisualState || _content?.BindingContext is not BaseShellItem baseShellItem)
 			{
+				return;
+			}
+
+			try
+			{
+				_updatingVisualState = true;
 				VisualStateManager.GoToState(_content, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
+			}
+			finally
+			{
+				_updatingVisualState = false;
 			}
 		}
 
