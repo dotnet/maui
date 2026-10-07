@@ -178,9 +178,10 @@ fresh-agent gate publication, and lock cleanup:
 Unit, XAML, device, and UI test runners retain their existing verification,
 retry, and infrastructure-error classification. Detection resolves the class
 scope containing each test attribute, excluding closed nested helpers. Nested
-XAML fixtures are grouped by their containing page rather than a generic `Test`
-filter that would match the entire assembly. Native selection remains capped
-at two device and two UI groups by default, with newly added groups prioritized.
+unit and XAML fixtures are grouped by their containing outer class or page rather
+than generic `Resize` or `Test` filters that would match unrelated fixtures.
+Native selection remains capped at two device and two UI groups by default, with
+newly added groups prioritized.
 Dropped groups are reported as coverage gaps and receive no subsequent deep
 category sweep. A test-only PR keeps failure-only verification; it does not claim
 a with-fix pass. A PR without runnable tests is `SKIPPED`; missing tests are not
@@ -211,6 +212,8 @@ Comments are idempotent per Azure run. Only the authenticated publisher's owned
 gate comments can be updated or collapsed. A stale run remains visibly tied to
 its old commit and cannot hide newer gate reports or change result labels.
 Bounded execution diagnostics are retained in `GateLogs` and `BuildLogs`.
+Oversized allowlisted execution transcripts are explicitly tail-truncated; they
+do not discard the structured gate report or relax artifact size limits.
 
 Manual branch validation is supported by the existing dispatcher:
 

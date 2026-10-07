@@ -408,7 +408,8 @@ function Export-ExpectedPRAgentArtifact {
             -BoundaryRoot $diagnosticsPath `
             -SourceDirectory $diagnosticsPath `
             -Pattern 'copilot_review_output*.md' `
-            -DestinationDirectory '.'
+            -DestinationDirectory '.' `
+            -Truncatable
     }
 
     if ($null -ne $tokenUsagePath) {
@@ -480,6 +481,10 @@ function Export-ExpectedPRAgentArtifact {
             -Force `
             -ErrorAction SilentlyContinue
         throw
+    }
+
+    if ($truncatedFiles -gt 0) {
+        Write-Warning "Tail-truncated $truncatedFiles allowlisted diagnostic files to the $MaxFileBytes-byte limit; structured reports and artifact limits remain unchanged."
     }
 
     return [pscustomobject]@{

@@ -1023,7 +1023,7 @@ foreach ($file in $ChangedFiles) {
                 }
 
                 "UnitTest" {
-                    $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                    $parsedClass = Get-ClassNameFromFile -RelativePath $file -OutermostClass
                     if ($parsedClass) {
                         $testName = $parsedClass
                     } elseif ($file -match "[/\\]([^/\\]+)\.cs$") {

@@ -470,3 +470,6 @@ if ($ReviewedCommit -and $currentPr.state -eq 'open' -and
 } else {
     Write-Warning 'The PR snapshot is unverified, closed, outdated, or superseded by a newer run; result labels and other reports were left unchanged.'
 }
+
+# Removing an already-absent signal accepts HTTP 404 but leaves gh's native exit code.
+exit 0
