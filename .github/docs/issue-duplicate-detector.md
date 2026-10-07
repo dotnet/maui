@@ -83,6 +83,8 @@ The workflow-local PAT selector follows `issue-triage`'s existing pattern to
 keep the activation guard explicit with the pinned gh-aw v0.86.2 compiler.
 Prepared evidence and validator code come from trusted default-branch
 infrastructure; issue/reproduction content is never executed.
+The GitHub MCP's repository guard restricts both searches and issue reads to
+`dotnet/maui`; repository scope is enforced rather than left to the prompt.
 
 ## Editing and validation
 

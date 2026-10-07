@@ -124,6 +124,7 @@ tools:
   edit: false
   github:
     toolsets: [issues]
+    allowed-repos: [dotnet/maui]
     allowed:
       - name: search_issues
         max-calls: 8
