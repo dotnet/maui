@@ -182,6 +182,8 @@ unit and XAML fixtures are grouped by their containing outer class or page rathe
 than generic `Resize` or `Test` filters that would match unrelated fixtures.
 Native selection remains capped at two device and two UI groups by default, with
 newly added groups prioritized.
+Setup's MSBuild-task watchdog uses native PowerShell on Windows rather than
+requiring WSL, while preserving its timeout, sanitized output, and build exit code.
 Dropped groups are reported as coverage gaps and receive no subsequent deep
 category sweep. A test-only PR keeps failure-only verification; it does not claim
 a with-fix pass. Both modes use the same early-loaded result parser, so genuine

@@ -299,6 +299,18 @@ steps:
       $ErrorActionPreference = 'Continue'
       $timeoutMin = 40
       $buildCommand = "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
+      $buildShell = 'bash'
+      $buildArguments = @('-o','pipefail','-c',$buildCommand)
+      if ($IsWindows) {
+        $buildShell = Join-Path $PSHOME 'pwsh.exe'
+        $windowsBuildCommand = @'
+      & ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic *>&1 |
+        ForEach-Object { $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', '' } |
+        ForEach-Object { [Console]::WriteLine($_) }
+      exit $LASTEXITCODE
+      '@
+        $buildArguments = @('-NoLogo','-NoProfile','-NonInteractive','-Command',$windowsBuildCommand)
+      }
       # A recurring android failure is a CORRUPT local .dotnet: the shared
       # Microsoft.NETCore.App pack ships a System.IO.Pipes.dll the build can't
       # LOAD (MSB6003 "could not be run"), so DotNet.csproj's Exec 'sh' dies and
@@ -342,13 +354,13 @@ steps:
       }
       try {
         $psi = New-Object System.Diagnostics.ProcessStartInfo
-        $psi.FileName = 'bash'
-        foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
+        $psi.FileName = $buildShell
+        foreach ($a in $buildArguments) { [void]$psi.ArgumentList.Add($a) }
         $psi.UseShellExecute = $false
         $proc = [System.Diagnostics.Process]::Start($psi)
       } catch {
-        Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
-        & bash -o pipefail -c $buildCommand
+        Write-Host "Watchdog could not launch child $buildShell ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
+        & $buildShell @buildArguments
         if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $LASTEXITCODE }
         exit $LASTEXITCODE
       }
