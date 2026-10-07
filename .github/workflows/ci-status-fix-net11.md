@@ -134,9 +134,11 @@ jobs:
     outputs:
       ci_fix_candidates: ${{ steps.ci_fix_context.outputs.candidates }}
 
+# Both fixer workflows are deployed and manually dispatched from main. The
+# net11.0 value below remains the fix/capture/apply base, not the workflow ref.
 if: |
   github.repository == 'dotnet/maui' &&
-  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/net11.0')
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main')
 
 model: gpt-6.1-sol
 engine:

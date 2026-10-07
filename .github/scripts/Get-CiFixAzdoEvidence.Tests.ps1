@@ -691,7 +691,8 @@ Describe 'CI-fixer workflow evidence wiring' {
         }
 
         $mainWorkflow | Should -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/main'"
-        $net11Workflow | Should -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/net11\.0'"
+        $net11Workflow | Should -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/main'"
+        $net11Workflow | Should -Not -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/net11\.0'"
         $mainWorkflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch main'
         $net11Workflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch net11\.0'
     }
