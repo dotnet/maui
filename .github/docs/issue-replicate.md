@@ -710,9 +710,14 @@ These instructions do not prove candidate adequacy: inspect whether the assertio
 isolates the reported bug instead of ordinary scrolling or overscroll.
 TRX verification accepts NUnit's parameterized fixture names (for example
 `Issue37323(Android)`) while still requiring matching test IDs, execution counts,
-and command exit status. NUnit may omit assertion framework frames from TRX:
-comparison failures are also recognized by the NUnit executor's `Assert.That`,
-`Expected:`, and `But was:` diagnostics, not by generic failure text.
+and command exit status. Assertion evidence requires a recognized exception type
+at the start of the runner's message or an assertion API frame in its separate
+`StackTrace` field, not assertion-looking text embedded in an ordinary exception.
+Messages identifying ordinary exceptions remain inconclusive even when they
+include assertion frames. NUnit can filter its framework frames and omit the
+exception type: `Assert.That`, `Expected:`, and `But was:` text alone is ambiguous
+and remains inconclusive, with its diagnostic preserved. Matching repetition does
+not turn that ambiguity into assertion evidence.
 Setup exceptions such as `Xunit.Sdk.TestClassException` do not count as assertions.
 Prefix-colliding classes are excluded from the candidate's result set after
 validating whole-run counters. Every failed result must belong to the intended

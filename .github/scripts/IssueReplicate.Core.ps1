@@ -628,14 +628,17 @@ function Get-IssueReplicateTrxVerdict {
             $errorInfo = $_.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']")
             $messageNode = if ($errorInfo) { $errorInfo.SelectSingleNode("*[local-name()='Message']") } else { $null }
             $message = if ($messageNode) { $messageNode.InnerText } else { '' }
-            $errorInfo -and
+            $stackNode = if ($errorInfo) { $errorInfo.SelectSingleNode("*[local-name()='StackTrace']") } else { $null }
+            $stackText = if ($stackNode) { $stackNode.InnerText } else { '' }
+            $assertionType = $message -match "(?i)\A\s*(?:NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:$xunitExceptions)\b|(?:Microsoft\.VisualStudio\.TestTools\.UnitTesting\.)?AssertFailedException)\b"
+            $ordinaryException = -not $assertionType -and
+                $message -match '(?i)\A\s*(?:[\w.+`]*Exception|(?:[\w+`]+\.)+[\w+`]+)\s*:'
+            $errorInfo -and -not [string]::IsNullOrWhiteSpace($message) -and
+                -not $ordinaryException -and
                 $message -notmatch '(?i)Xunit\.Sdk\.TestClassException' -and
                 $message -notmatch '(?im)^\s*(?:OneTimeSetUp|SetUp|OneTimeTearDown|TearDown)\s*:' -and
-                ($errorInfo.InnerText -match "(?i)NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:$xunitExceptions)\b|AssertFailedException|at\s+(?:Xunit|NUnit\.Framework)\.Assert\." -or
-                    ($nunitIds.Contains($_.GetAttribute('testId')) -and
-                        $message -match '(?m)^\s*Assert\.That\(' -and
-                        $message -match '(?m)^\s*Expected:' -and
-                        $message -match '(?m)^\s*But was:'))
+                ($assertionType -or
+                    $stackText -match '(?im)^\s*at\s+(?:Xunit|NUnit\.Framework)\.Assert\.\w+\b')
         }).Count -eq $failures.Count) {
         $identities = @()
         foreach ($failure in $failures) {

@@ -286,7 +286,12 @@ Describe 'Observed test evidence' {
             ($script:xml -replace 'testId="test-1"', 'testId="old-test"'),
             ($script:xml -replace 'outcome="Failed"', 'outcome="NotExecuted"'),
             ($script:xml -replace 'executed="1"', 'executed="0"'),
-            ($script:xml -replace 'NUnit.Framework.AssertionException', 'System.IO.IOException'))) {
+            ($script:xml -replace 'NUnit.Framework.AssertionException', 'System.IO.IOException'),
+            ($script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
+                -replace '<Message>.*?</Message>', "<Message>System.InvalidOperationException: prerequisite failed`nAssert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"),
+            ($script:xml -replace '<Message>.*?</Message>', '<Message>System.InvalidOperationException: prerequisite failed&#10;at NUnit.Framework.Assert.That(actual, expression)</Message>'),
+            ($script:xml -replace '<Message>.*?</Message>', '<Message>System.ArgumentException: invalid constraint</Message>' `
+                -replace '<StackTrace>', '<StackTrace>at NUnit.Framework.Assert.That(actual, expression)&#10;'))) {
             Set-Content -LiteralPath $script:trxPath -Value $invalid
             (Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1).Status |
                 Should -Be 'Inconclusive'
@@ -340,7 +345,7 @@ Describe 'Observed test evidence' {
     ) {
         param($Frame, $StackTrace)
         $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
-            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>" `
+            -replace '<Message>.*?</Message>', "<Message>NUnit.Framework.AssertionException: Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>" `
             -replace '(?s)<StackTrace>.*?</StackTrace>', $StackTrace
         Set-Content -LiteralPath $script:trxPath -Value $xml
         $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
@@ -416,7 +421,8 @@ Describe 'Observed test evidence' {
         param($Fixture)
         $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
             -replace 'className="Example.Issue12345"', "className=`"Example.Issue12345($Fixture)`"" `
-            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"
+            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>" `
+            -replace '<StackTrace>', '<StackTrace>at NUnit.Framework.Assert.That(actual, expression)&#10;'
         Set-Content -LiteralPath $script:trxPath -Value $xml
         $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
         $verdict.Status | Should -Be 'AssertionFailed'
@@ -426,6 +432,11 @@ Describe 'Observed test evidence' {
     It 'binds NUnit constraint assertions to the matching candidate source frame' {
         $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
             -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"
+        Set-Content -LiteralPath $script:trxPath -Value $xml
+        $ambiguous = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        $ambiguous.Status | Should -Be 'Inconclusive'
+        $ambiguous.FailureIdentities | Should -BeNullOrEmpty
+        $xml = $xml -replace '<StackTrace>', '<StackTrace>at NUnit.Framework.Assert.That(actual, expression)&#10;'
         Set-Content -LiteralPath $script:trxPath -Value $xml
         $first = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
         Set-Content -LiteralPath $script:trxPath -Value ($xml -replace 'line 12', 'line 15')
