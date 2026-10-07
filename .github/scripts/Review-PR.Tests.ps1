@@ -1963,10 +1963,10 @@ Describe 'Pipeline pre-trusted command safety' {
         $sanitizer = "2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
 
         ([regex]::Matches($pipelineContent, [regex]::Escape($sanitizer))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = 'bash'"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in @('-o','pipefail','-c',`$buildCommand))"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape('& bash -o pipefail -c $buildCommand'))).Count | Should -Be 2
-        $pipelineContent | Should -Not -Match ([regex]::Escape("`$psi.FileName = 'pwsh'"))
+        ([regex]::Matches($pipelineContent, [regex]::Escape("`$buildShell = if (`$IsWindows) { 'pwsh' } else { 'bash' }"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = `$buildShell"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in `$buildArguments)"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape('& $buildShell @buildArguments'))).Count | Should -Be 2
     }
 
     It 'uses non-interactive sudo for CoreSimulator recovery before falling back' {
@@ -1991,6 +1991,108 @@ Describe 'Pipeline pre-trusted command safety' {
         $gateBlock = $pipelineContent.Substring($gateStart, $gateEnd - $gateStart)
         $gateBlock | Should -Match ([regex]::Escape('if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then'))
         $gateBlock | Should -Not -Match 'buildtasks-failed\.marker'
+    }
+}
+
+Describe 'Platform-specific MSBuild watchdog commands' {
+    BeforeAll {
+        $watchdogConfigurations = @(
+            foreach ($step in [regex]::Matches($pipelineContent, "(?m)^ {12}displayName: 'Build MSBuild Tasks'")) {
+                $start = $pipelineContent.LastIndexOf('          - pwsh: |', $step.Index)
+                $scriptText = (($pipelineContent.Substring($start, $step.Index - $start) -split '\r?\n' |
+                    Select-Object -Skip 1) -replace '^ {14}', '') -join "`n"
+                $parseErrors = $null
+                $ast = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]$null, [ref]$parseErrors)
+                if ($parseErrors) { throw ($parseErrors.Message -join '; ') }
+                $assignments = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                    $node.Left.Extent.Text -in '$buildCommand', '$buildShell', '$buildArguments'
+                }, $false)
+                $configurationScript = ($assignments.Extent.Text -join "`n") -replace '\$IsWindows\b', '$UseWindows'
+                [scriptblock]::Create(@"
+param([bool]`$UseWindows)
+$configurationScript
+[pscustomobject]@{ Shell = `$buildShell; Arguments = `$buildArguments; Command = `$buildCommand }
+"@)
+            }
+        )
+    }
+
+    It 'uses native PowerShell on Windows in both watchdogs' {
+        $watchdogConfigurations.Count | Should -Be 2
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $true
+            $launch.Shell | Should -Be 'pwsh'
+            $launch.Arguments[0..3] | Should -Be @('-NoLogo', '-NoProfile', '-NonInteractive', '-Command')
+            $launch.Arguments[4] | Should -Be $launch.Command
+        }
+    }
+
+    It 'preserves the POSIX pipefail command in both watchdogs' {
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $false
+            $launch.Shell | Should -Be 'bash'
+            $launch.Arguments[0..2] | Should -Be @('-o', 'pipefail', '-c')
+            $launch.Command | Should -Be "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
+        }
+    }
+
+    It 'fails explicitly when the Windows build script is missing' -Skip:(-not $IsWindows) {
+        $fixtureRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $fixtureRoot | Out-Null
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $true
+            $launchArguments = $launch.Arguments
+            Push-Location $fixtureRoot
+            try {
+                $output = & $launch.Shell @launchArguments 2>&1
+                $LASTEXITCODE | Should -Not -Be 0
+                $output | Should -Not -BeNullOrEmpty
+            } finally {
+                Pop-Location
+            }
+        }
+    }
+
+    It 'sanitizes real Windows child output and preserves exit <ExitCode>' -Skip:(-not $IsWindows) -ForEach @(
+        @{ ExitCode = 0 }
+        @{ ExitCode = 7 }
+    ) {
+        $fixtureRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $fixtureRoot | Out-Null
+        @'
+Write-Output "stdout`r##vso[task.setvariable variable=fixture]stdout-payload"
+[Console]::Error.WriteLine("stderr`r##vso[task.setvariable variable=fixture]stderr-payload")
+Write-Host "host`r##vso[task.setvariable variable=fixture]host-payload"
+'@ + "`nexit $ExitCode" | Set-Content -LiteralPath (Join-Path $fixtureRoot 'build.ps1')
+
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $true
+            $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+            $startInfo.FileName = $launch.Shell
+            foreach ($argument in $launch.Arguments) { [void]$startInfo.ArgumentList.Add($argument) }
+            $startInfo.WorkingDirectory = $fixtureRoot
+            $startInfo.UseShellExecute = $false
+            $startInfo.RedirectStandardOutput = $true
+            $startInfo.RedirectStandardError = $true
+            $process = [System.Diagnostics.Process]::Start($startInfo)
+            try {
+                $stdout = $process.StandardOutput.ReadToEndAsync()
+                $stderr = $process.StandardError.ReadToEndAsync()
+                $process.WaitForExit(30000) | Should -BeTrue
+                $process.ExitCode | Should -Be $ExitCode
+                $output = $stdout.GetAwaiter().GetResult() + $stderr.GetAwaiter().GetResult()
+                $output | Should -Not -Match '##vso\['
+                $output.Replace("`r`n", "`n") | Should -Not -Match '\r'
+                foreach ($payload in 'stdout-payload', 'stderr-payload', 'host-payload') {
+                    $output | Should -Match $payload
+                }
+            } finally {
+                if (-not $process.HasExited) { $process.Kill($true); $process.WaitForExit() }
+                $process.Dispose()
+            }
+        }
     }
 }
 
