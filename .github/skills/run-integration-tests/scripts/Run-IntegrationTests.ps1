@@ -122,8 +122,8 @@ try {
         
         if ($RunningOnWindows) {
             $buildCmd = Join-Path $RepoRoot 'build.cmd'
-            # Use -warnAsError false to match dotnet cake behavior (warnings don't fail the build)
-            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration, "-warnAsError", "false")
+            # The Windows bootstrap reparses arguments as PowerShell; numeric 0 binds to Boolean false.
+            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration, "-warnAsError", "0")
             Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
             & $buildCmd @buildArgs
         }

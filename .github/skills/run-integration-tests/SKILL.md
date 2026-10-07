@@ -141,6 +141,7 @@ ls .dotnet/packs/Microsoft.Maui.Sdk
 | "Local .dotnet SDK not found" | Run `dotnet tool restore && dotnet cake --target=dotnet && dotnet cake --target=dotnet-local-workloads` |
 | Template not found | Workload installation may have failed |
 | Build failures | Check `artifacts/log/` for detailed build logs |
+| Windows `warnAsError` Boolean binding error | Use the current runner, which passes numeric `0` through the Windows PowerShell bootstrap. POSIX builds continue passing `false`. A binding error does not prove a successful build, even if the old bootstrap returned exit code 0. |
 | "Cannot proceed with locked .dotnet folder" | Kill processes using `.dotnet`: `Get-Process \| Where-Object { $_.Path -like "*\.dotnet\*" } \| ForEach-Object { Stop-Process -Id $_.Id -Force }` |
 | Session times out / becomes invalid | Integration tests are long-running (15-60+ min). Run manually in a terminal window instead of via Copilot CLI |
 | Tests take too long | Start with `Build` category (fastest), then run others. Use `-SkipBuild -SkipInstall` if workloads are already installed |
