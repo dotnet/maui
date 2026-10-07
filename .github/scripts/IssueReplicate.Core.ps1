@@ -735,7 +735,8 @@ function New-IssueReplicateReportHeader {
     param(
         [Parameter(Mandatory)][string]$Marker,
         [string]$Heading = 'Issue reproduction',
-        [string]$TargetSha = ''
+        [string]$TargetSha = '',
+        [string]$Verdict = ''
     )
 
     $attribution = '> AI-generated issue replication attempt. Review the generated test and evidence before relying on the result.'
@@ -752,11 +753,161 @@ function New-IssueReplicateReportHeader {
         $Marker,
         "## $Heading",
         '',
+        '**AI-generated issue replication attempt.**',
+        '',
+        $Verdict,
+        '',
+        '<details>',
+        '<summary>Report provenance</summary>',
+        '',
         $attribution,
         '',
         '<p align="left">',
         '  <img alt="Scope Issue replication" src="https://img.shields.io/badge/Scope-Issue%20replication-1f6feb?labelColor=30363d&style=flat-square">',
         $commitBadge,
-        '</p>'
+        '</p>',
+        '',
+        '</details>'
     ) -join "`n"
+}
+
+function Get-IssueReplicateReportComments {
+    param([Parameter(Mandatory)][int]$IssueNumber)
+
+    $query = 'query($issue:Int!,$endCursor:String){repository(owner:"dotnet",name:"maui"){issue(number:$issue){comments(first:100,after:$endCursor){pageInfo{hasNextPage endCursor}nodes{databaseId id body isMinimized author{login}}}}}}'
+    $rows = @(gh api graphql --paginate -f query="$query" -F issue="$IssueNumber" `
+        --jq '.data.repository.issue.comments.nodes[] | {id:.databaseId,node_id:.id,body,isMinimized,user:{login:.author.login}} | @json')
+    if ($LASTEXITCODE -ne 0) { throw 'Could not enumerate issue report publication state.' }
+    return @($rows | ForEach-Object { $_ | ConvertFrom-Json -Depth 5 })
+}
+
+function Test-IssueReplicateCompletedReport {
+    param([string]$Body)
+
+    $complete = $Body.TrimEnd().EndsWith('<!-- issue-replicate-report-complete -->', [StringComparison]::Ordinal)
+    if ($Body -cmatch '\A<!-- issue-replicate-independent-report -->\r?\n') {
+        return $complete
+    }
+    if ($Body -cnotmatch '\A<!-- issue-replicate-result:(?:[1-9][0-9]*|github:(?:dotnet|kubaflo)/maui:[1-9][0-9]*) -->\r?\n## (?:Issue reproduction|Issue Reproduction Analysis)\r?\n') {
+        return $false
+    }
+    if ($complete) { return $true }
+    $prefix = ($Body -split '<details>', 2)[0]
+    return $prefix -notmatch 'Media publication is incomplete|Candidate publication is incomplete'
+}
+
+function Complete-IssueReplicateReportPublication {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory)][int]$IssueNumber,
+        [Parameter(Mandatory)][string]$Url,
+        [Parameter(Mandatory)][string]$Body
+    )
+
+    if ($Url -cnotmatch "^https://github\.com/dotnet/maui/issues/$IssueNumber#issuecomment-([1-9][0-9]*)$") {
+        throw 'The current report URL does not belong to the requested issue.'
+    }
+    $currentId = [long]$Matches[1]
+    $identity = gh api user --jq .login
+    if ($LASTEXITCODE -ne 0 -or "$identity" -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
+        throw 'Could not identify the report reconciliation publisher.'
+    }
+    $trustedAuthors = @([string]$identity, 'kubaflo', 'MauiBot', 'maui-bot', 'maui-bot[bot]', 'github-actions[bot]')
+    $comments = @(Get-IssueReplicateReportComments -IssueNumber $IssueNumber)
+    $current = @($comments | Where-Object { $_.id -eq $currentId -and $_.user.login -ieq $identity })
+    if ($current.Count -ne 1 -or $current[0].body -cne $Body -or
+        -not (Test-IssueReplicateCompletedReport -Body $Body)) {
+        throw 'The completed owned report could not be verified; earlier reports were preserved.'
+    }
+    if ($current[0].isMinimized -ne $false) {
+        throw 'This report is already hidden; do not reconcile or resurrect superseded evidence.'
+    }
+    $reports = @($comments | Where-Object {
+        $_.user.login -iin $trustedAuthors -and $_.isMinimized -eq $false -and
+        (Test-IssueReplicateCompletedReport -Body ([string]$_.body))
+    } | Sort-Object { [long]$_.id } -Descending)
+    if ($reports.Count -eq 0) { throw 'No visible completed report is available; reconciliation stopped.' }
+    $winner = $reports[0]
+    foreach ($older in @($reports | Select-Object -Skip 1)) {
+        $check = 'query($winner:ID!,$older:ID!){winner:node(id:$winner){... on IssueComment{databaseId body isMinimized author{login} issue{number repository{nameWithOwner}}}}older:node(id:$older){... on IssueComment{databaseId body isMinimized author{login} issue{number repository{nameWithOwner}}}}}'
+        $rows = @(gh api graphql -f query="$check" -f winner="$($winner.node_id)" -f older="$($older.node_id)" `
+            --jq '[.data.winner,.data.older][] | {id:.databaseId,body,isMinimized,user:{login:.author.login},issue:.issue.number,repository:.issue.repository.nameWithOwner} | @json')
+        if ($LASTEXITCODE -ne 0) { throw 'Could not recheck the replacement and superseded report.' }
+        $fresh = @($rows | ForEach-Object { $_ | ConvertFrom-Json -Depth 5 })
+        if ($fresh.Count -ne 2 -or @($fresh | Where-Object {
+            $_.issue -ne $IssueNumber -or $_.repository -cne 'dotnet/maui'
+        }).Count -ne 0) {
+            throw 'The report recheck did not match the requested issue and repository.'
+        }
+        $visibleWinner = @($fresh | Where-Object {
+            $_.id -eq $winner.id -and $_.isMinimized -eq $false -and
+            $_.user.login -ieq $winner.user.login -and $_.body -ceq $winner.body
+        })
+        $unchangedOlder = @($fresh | Where-Object {
+            $_.id -eq $older.id -and $_.isMinimized -eq $false -and
+            $_.user.login -ieq $older.user.login -and $_.body -ceq $older.body
+        })
+        if ($visibleWinner.Count -ne 1) {
+            throw 'The replacement report changed during reconciliation; remaining evidence was preserved.'
+        }
+        if ($unchangedOlder.Count -ne 1) {
+            throw 'An older report changed during reconciliation; remaining evidence was preserved.'
+        }
+        if ($PSCmdlet.ShouldProcess("Issue $IssueNumber comment $($older.id)", 'Minimize superseded report as OUTDATED; retain all evidence')) {
+            $minimize = 'mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:OUTDATED}){minimizedComment{isMinimized}}}'
+            $hidden = gh api graphql -f query="$minimize" -f id="$($older.node_id)" `
+                --jq '.data.minimizeComment.minimizedComment.isMinimized'
+            if ($LASTEXITCODE -ne 0 -or "$hidden" -cne 'true') {
+                throw 'Could not minimize a superseded report; the current report and older evidence were preserved.'
+            }
+        }
+    }
+    if ($current[0].isMinimized -ne $false -or $winner.id -ne $currentId) {
+        throw 'This attempt was superseded by a newer completed report; its evidence was preserved.'
+    }
+    if ($WhatIfPreference) { return $Url }
+    $remaining = @(Get-IssueReplicateReportComments -IssueNumber $IssueNumber | Where-Object {
+        $_.user.login -iin $trustedAuthors -and $_.isMinimized -eq $false -and
+        (Test-IssueReplicateCompletedReport -Body ([string]$_.body))
+    })
+    if ($remaining.Count -ne 1 -or $remaining[0].id -ne $currentId -or $remaining[0].body -cne $Body) {
+        throw 'Report state changed during final reconciliation; publication did not establish one current report.'
+    }
+    return $Url
+}
+
+function Set-IssueReplicateResultComment {
+    param(
+        [Parameter(Mandatory)][int]$IssueNumber,
+        [Parameter(Mandatory)][string]$Marker,
+        [Parameter(Mandatory)][string]$Body
+    )
+
+    if ([Text.Encoding]::UTF8.GetByteCount($Body) -gt 60000 -or -not $Body.StartsWith($Marker, [StringComparison]::Ordinal)) {
+        throw 'The reproduction comment exceeds its publication bound or does not match its ownership marker.'
+    }
+    $identity = gh api user --jq .login
+    if ($LASTEXITCODE -ne 0 -or [string]$identity -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
+        throw 'Could not identify the authenticated comment publisher.'
+    }
+    $existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
+        --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$Marker`"))) | .id")
+    if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
+    if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same run.' }
+    if ($existing.Count -eq 1) {
+        $state = @(Get-IssueReplicateReportComments -IssueNumber $IssueNumber | Where-Object {
+            $_.id -eq $existing[0] -and $_.user.login -ieq $identity -and $_.body.StartsWith($Marker, [StringComparison]::Ordinal)
+        })
+        if ($state.Count -ne 1 -or $state[0].isMinimized -ne $false) {
+            throw 'The owned report or continuation is hidden or changed; do not resurrect superseded evidence.'
+        }
+        $url = $Body | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH -F body=@- --jq .html_url
+    } else {
+        $url = $Body | gh api "repos/dotnet/maui/issues/$IssueNumber/comments" --method POST -F body=@- --jq .html_url
+    }
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$url) -or
+        [string]$url -cnotmatch "^https://github\.com/dotnet/maui/issues/$IssueNumber#issuecomment-[1-9][0-9]*$") {
+        throw 'Could not post the issue reproduction comment.'
+    }
+    return $url
 }

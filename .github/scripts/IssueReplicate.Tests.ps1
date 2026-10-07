@@ -1668,7 +1668,7 @@ Describe 'Bounded issue result publication' {
         $body = Get-Content -Raw $preview
         $body | Should -Match '^<!-- issue-replicate-result:github:kubaflo/maui:987654321 -->'
         $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan 0
-        $body.IndexOf('**Reproduction:**') | Should -BeGreaterThan $body.IndexOf('<details>')
+        $body.IndexOf('**Reproduction:**') | Should -BeLessThan $body.IndexOf('<details>')
         $body | Should -Match '<summary><strong>&#x1F9EA; Reproduction analysis</strong> &#x2014; click to expand</summary>'
         $body | Should -Match '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>'
         $body | Should -Match ([regex]::Escape("**Test:** $Verdict"))
@@ -1776,6 +1776,12 @@ Describe 'Bounded issue result publication' {
             }
             end {
                 $global:LASTEXITCODE = 0
+                if ($args[1] -eq 'graphql') {
+                    @{ id = 1; node_id = 'IC_fixture1'; user = @{ login = 'fixture-publisher' }
+                        isMinimized = $false; body = ($global:issueReplicatePostedBody -join "`n") } |
+                    ConvertTo-Json -Compress
+                    return
+                }
                 if ('user' -in $args) { 'fixture-publisher' }
                 if ('.html_url' -in $args) { 'https://github.com/dotnet/maui/issues/12345#issuecomment-1' }
             }
@@ -1825,6 +1831,13 @@ Describe 'Continuation publication integrity' {
             end {
                 $global:LASTEXITCODE = 0
                 if ($args[1] -eq 'user') { 'fixture-publisher'; return }
+                if ($args[1] -eq 'graphql') {
+                    $global:issueReplicateRemote | ForEach-Object {
+                        @{ id = $_.id; node_id = "IC_fixture$($_.id)"; user = @{ login = $_.owner }
+                            isMinimized = $false; body = $_.body } | ConvertTo-Json -Compress
+                    }
+                    return
+                }
                 if ('--paginate' -in $args) {
                     $query = $args[[array]::IndexOf($args, '--jq') + 1]
                     $query | Should -Match '\.user\.login == "fixture-publisher"'

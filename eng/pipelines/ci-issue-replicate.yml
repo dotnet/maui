@@ -321,7 +321,11 @@ stages:
                 }
                 . .github/scripts/IssueReplicate.Core.ps1
                 $message = @(
-                  (New-IssueReplicateReportHeader -Marker "<!-- issue-replicate-result:$(Build.BuildId) -->"),
+                  (New-IssueReplicateReportHeader -Marker "<!-- issue-replicate-result:$(Build.BuildId) -->" `
+                    -Verdict '**Reproduction:** Inconclusive; issue not ruled out. **Test quality:** Not verified. **Evidence confidence:** 0% (evidence score, not a probability).'),
+                  '',
+                  '<details>',
+                  '<summary>Publication blocker</summary>',
                   '',
                   '> [!WARNING]',
                   '> `/issue replicate` was inconclusive: the public build could not publish a validated result. This is not evidence against the issue.',
@@ -332,6 +336,8 @@ stages:
                   '',
                   '**Confidence that the issue is reproduced:** **0% (unassessed evidence score, not a probability that the issue is invalid).**',
                   '',
+                  '</details>',
+                  '',
                   '<details>',
                   '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
                   '<br/>',
@@ -340,10 +346,13 @@ stages:
                   '',
                   '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.',
                   '',
-                  '</details>'
+                  '</details>',
+                  '',
+                  '<!-- issue-replicate-report-complete -->'
                 ) -join "`n"
-                $message | gh issue comment $issue --repo dotnet/maui --body-file -
-                if ($LASTEXITCODE -ne 0) { throw 'Could not publish the incomplete notice.' }
+                $url = Set-IssueReplicateResultComment -IssueNumber $issue `
+                  -Marker "<!-- issue-replicate-result:$(Build.BuildId) -->" -Body $message
+                Complete-IssueReplicateReportPublication -IssueNumber $issue -Url $url -Body $message | Out-Null
                 throw
               }
             displayName: 'Post validated issue outcome on a clean agent'

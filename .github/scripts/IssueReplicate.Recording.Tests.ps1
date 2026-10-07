@@ -784,6 +784,12 @@ with socket.socket() as server:
                 end {
                     $global:LASTEXITCODE = 0
                     if ($args[1] -eq 'user') { 'fixture-publisher'; return }
+                    if ($args[1] -eq 'graphql') {
+                        @{ id = 7; node_id = 'IC_fixture7'; user = @{ login = 'fixture-publisher' }
+                            isMinimized = $false; body = $global:recordingExistingBody } |
+                        ConvertTo-Json -Compress
+                        return
+                    }
                     if ('--slurp' -in $args) { throw 'gh does not support --slurp with --jq.' }
                     $query = $args[[array]::IndexOf($args, '--jq') + 1]
                     if ($query.EndsWith('| @json')) {
@@ -795,6 +801,7 @@ with socket.socket() as server:
                         throw 'The retry must update the owned comment only.'
                     }
                     $global:recordingPostedBodies.Add(($inputBody -join "`n"))
+                    $global:recordingExistingBody = $inputBody -join "`n"
                     'https://github.com/dotnet/maui/issues/12345#issuecomment-7'
                 }
             }
@@ -839,6 +846,13 @@ with socket.socket() as server:
                     $global:LASTEXITCODE = 0
                     if ($args[1] -eq 'user') { 'fixture-publisher'; return }
                     if ($args[1] -eq 'repos/dotnet/maui') { throw 'A receipt retry must not upload again.' }
+                    if ($args[1] -eq 'graphql') {
+                        $global:recordingContinuationRemote | ForEach-Object {
+                            @{ id = $_.id; node_id = "IC_fixture$($_.id)"; user = @{ login = 'fixture-publisher' }
+                                isMinimized = $false; body = $_.body } | ConvertTo-Json -Compress
+                        }
+                        return
+                    }
                     if ('--paginate' -in $args) {
                         $query = $args[[array]::IndexOf($args, '--jq') + 1]
                         $query | Should -Match '\.user\.login == "fixture-publisher"'
@@ -892,6 +906,12 @@ with socket.socket() as server:
                 end {
                     $global:LASTEXITCODE = 0
                     if ($args[1] -eq 'user') { 'fixture-publisher'; return }
+                    if ($args[1] -eq 'graphql') {
+                        @{ id = 8; node_id = 'IC_fixture8'; user = @{ login = 'fixture-publisher' }
+                            isMinimized = $false; body = $global:recordingPostedBodies[-1] } |
+                        ConvertTo-Json -Compress
+                        return
+                    }
                     if ('--paginate' -in $args) { return }
                     $global:recordingPostedBodies.Add(($inputBody -join "`n"))
                     'https://github.com/dotnet/maui/issues/12345#issuecomment-8'

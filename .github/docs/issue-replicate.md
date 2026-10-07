@@ -79,9 +79,12 @@ The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
-Every report starts with an **Issue reproduction** heading and an explicit
-**AI-generated issue replication attempt** attribution, without tagging the issue
-author. Flat-square **Scope: Issue replication** and **Commit** badges use the
+Every report starts with an **Issue reproduction** heading, explicit
+**AI-generated issue replication attempt** attribution, and a compact
+**Reproduction / Test quality / Evidence confidence** verdict. Detailed narrative,
+code, videos, diagnostics, caveats and provenance are initially hidden in closed
+`<details>` sections. Flat-square **Scope: Issue replication** and **Commit** badges
+are in the closed **Report provenance** section and use the
 same layout as test-failure analysis comments. The commit links to the validated,
 pinned MAUI target revision, not the workflow revision or the author's sample.
 When no validated intake snapshot is available, the commit badge is omitted
@@ -106,7 +109,7 @@ confirmation is incomplete; it does not describe that case as having no outcome.
 Recording failures remain explicit alongside the incomplete verification. The report
 distinguishes a test executed in either attempt from whether the fresh confirmation
 completed its named body; setup, recording and missing/stale-result failures do not
-claim a second execution. First-attempt assertion values remain visible. The score never claims
+claim a second execution. First-attempt assertion values remain available inside the closed analysis. The score never claims
 certainty: the original author interaction and a bug-specific causal
 control have not been verified. A repeatably failing generated scenario does not
 automatically establish that its test catches the reported issue. Passing and
@@ -122,6 +125,29 @@ and **Native recording** sections when available. A separate expandable
 Build blockers are expandable rather than part of a technical evidence table. A verified failing candidate's
 hash-checked diff is embedded in the comment so it can be reviewed without
 downloading anything. Every patch includes a complete readable fenced diff.
+Publication keeps **one current completed report per issue**, across run-specific
+markers and recognized historical reports, from the authenticated publisher,
+`kubaflo`, or the established MAUI bot accounts. Other discussion is untouched.
+An independent validation report must explicitly start with
+`<!-- issue-replicate-independent-report -->` and end with
+`<!-- issue-replicate-report-complete -->` to participate; generic validation
+headings do not grant cleanup authority.
+
+The publisher verifies the new owned report's exact body and visible state before
+minimizing older recognized reports as **OUTDATED**. It never deletes their text,
+attachments or continuation links. Among visible completed reports, the newest
+comment ID wins; overlapping publishers may only hide older IDs, never a newer
+replacement. Each minimization rechecks the unchanged old body and visible
+replacement, and completion verifies there is exactly one current report.
+Pending recording/patch checkpoints do not supersede the last completed report.
+Hidden reports or continuations are not resurrected by retries. Failed reads,
+writes or minimization are explicit publication failures, leaving the replacement
+and any unprocessed historical evidence intact. Authorized local publishers of a
+read-only canary preview must invoke `Complete-IssueReplicateReportPublication`
+from the trusted Core script after posting their owned main report; preview itself
+still performs no GitHub mutation. The reconciliation helper also supports
+`-WhatIf` for a read-only live publication-state audit; that mode does not claim
+that minimization succeeded or that the issue already has a single current report.
 Hashes and exact-byte recovery data are retained only in non-rendered HTML
 metadata; no checksums, base64 blocks or decode instructions clutter the rendered
 report. Internal source, result, candidate, patch and video integrity checks are

@@ -204,7 +204,18 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
 }
 
 $targetSha = if ($null -ne $manifest) { $manifest.targetSha } else { '' }
-$reportHeader = New-IssueReplicateReportHeader -Marker $marker -TargetSha $targetSha
+$compactReproduction = if ($confidence -eq 75) { 'Repeated generated failure; original issue unconfirmed.' }
+elseif ($confidence -eq 25) { 'Unconfirmed assertion failure.' }
+elseif ($null -ne $result -and $result.status -eq 'not-reproduced-on-tested-revision') {
+    'Not reproduced by this test; issue not ruled out.'
+} else { 'Not assessed or inconclusive; issue not ruled out.' }
+$compactQuality = if ($confidence -eq 75 -or $testIcon -eq '&#x1F7E1;') { 'Needs review.' }
+else { 'Not verified.' }
+$compactVerdict = "$reproductionIcon **Reproduction:** $compactReproduction`n`n" +
+    "$testIcon **Test quality:** $compactQuality &#x1F4CA; **Evidence confidence:** $confidence% (evidence score, not a probability)."
+$reportHeader = New-IssueReplicateReportHeader -Marker $marker -TargetSha $targetSha -Verdict $compactVerdict
+$pendingHeader = New-IssueReplicateReportHeader -Marker $marker -TargetSha $targetSha `
+    -Heading 'Issue reproduction pending' -Verdict $compactVerdict
 $verdict = @(
     "$reproductionIcon **Reproduction:** $reproducibility",
     '',
@@ -259,11 +270,11 @@ function Get-RecordingSection {
                     $receipt = Sync-IssueReplicateRecordingPublication -Bytes $recordingBytes `
                         -Recording $result.recording -IssueNumber $IssueNumber -ExistingBody $existingBody -SaveCheckpoint {
                         param([string]$Checkpoint)
-                        $pendingBody = "$reportHeader`n`n$verdict`n`n" +
+                        $pendingBody = "$pendingHeader`n`n<details>`n<summary>Incomplete media publication</summary>`n`n$verdict`n`n" +
                             "**Media publication is incomplete.** A recording upload may have started. " +
                             "If its receipt is missing, retries will not repeat the upload; an operator must reconcile it. " +
                             "A recorded attachment URL below is a receipt, not a finalized reproduction report.`n`n" +
-                            $Checkpoint
+                            $Checkpoint + "`n`n</details>"
                         Set-ResultComment -Marker $marker -Body $pendingBody | Out-Null
                     }
                     $checkpoint = $receipt.Checkpoint
@@ -296,27 +307,7 @@ function Get-RecordingSection {
 
 function Set-ResultComment {
     param([string]$Marker, [string]$Body)
-    if ([Text.Encoding]::UTF8.GetByteCount($Body) -gt 60000) {
-        throw 'The reproduction comment exceeds the bounded publication size.'
-    }
-    $identity = gh api user --jq .login
-    if ($LASTEXITCODE -ne 0 -or [string]$identity -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
-        throw 'Could not identify the authenticated comment publisher.'
-    }
-    $existing = @(gh api --paginate "repos/dotnet/maui/issues/$IssueNumber/comments?per_page=100" `
-        --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"$Marker`"))) | .id")
-    if ($LASTEXITCODE -ne 0) { throw 'Could not check for a prior result comment.' }
-    if ($existing.Count -gt 1) { throw 'Multiple result comments exist for the same run.' }
-    if ($existing.Count -eq 1) {
-        $url = $Body | gh api "repos/dotnet/maui/issues/comments/$($existing[0])" --method PATCH -F body=@- --jq .html_url
-    } else {
-        $url = $Body | gh api "repos/dotnet/maui/issues/$IssueNumber/comments" --method POST -F body=@- --jq .html_url
-    }
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$url) -or
-        [string]$url -cnotmatch "^https://github\.com/dotnet/maui/issues/$IssueNumber#issuecomment-[1-9][0-9]*$") {
-        throw 'Could not post the issue reproduction comment.'
-    }
-    return $url
+    return Set-IssueReplicateResultComment -IssueNumber $IssueNumber -Marker $Marker -Body $Body
 }
 
 $recordingReport = Get-RecordingSection
@@ -338,10 +329,10 @@ if ($patchText) {
         }
         $links = @()
         if (-not $OutputPath) {
-            $pendingBody = "$reportHeader`n`n" +
+            $pendingBody = "$pendingHeader`n`n<details>`n<summary>Incomplete candidate publication</summary>`n`n" +
                 "$verdict`n`n**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
                 "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
-                $recordingReport.Checkpoint
+                $recordingReport.Checkpoint + "`n`n</details>"
             $pendingUrl = Set-ResultComment -Marker $marker -Body $pendingBody
         }
         for ($index = 0; $index -lt $parts.Count; $index++) {
@@ -350,12 +341,12 @@ if ($patchText) {
             $exact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($parts[$index]))
             $partHeader = New-IssueReplicateReportHeader -Marker $partMarker -TargetSha $targetSha `
                 -Heading "Generated test candidate: part $number of $($parts.Count)"
-            $partBody = "$partHeader`n`n" +
+            $partBody = "$partHeader`n`n<details>`n<summary>Candidate code and publication status</summary>`n`n" +
                 $(if ($OutputPath) { 'The full patch is preserved across all preview parts. ' }
                     else { "Publication is complete only when [the main report]($pendingUrl) links every part; otherwise these fragments are incomplete and must not be applied. " }) +
                 "Review this untrusted code before applying it." +
                 "`n`n<!-- issue-replicate-patch-data:${patchSha256}:$exact -->" +
-                (Format-PatchBlock -Text $parts[$index])
+                (Format-PatchBlock -Text $parts[$index]) + "`n`n</details>"
             if ([Text.Encoding]::UTF8.GetByteCount($partBody) -gt 60000) { throw 'A patch continuation is oversized.' }
             if ($OutputPath) {
                 [IO.File]::WriteAllText([IO.Path]::GetFullPath("$OutputPath.patch-$number.md"),
@@ -420,7 +411,9 @@ $body = @(
     '',
     $refresh,
     '',
-    '</details>'
+    '</details>',
+    '',
+    '<!-- issue-replicate-report-complete -->'
 ) -join "`n"
 if ([Text.Encoding]::UTF8.GetByteCount($body) -gt 60000) {
     throw 'The reproduction comment exceeds the bounded publication size.'
@@ -430,7 +423,8 @@ if ($OutputPath) {
     return
 }
 
-Set-ResultComment -Marker $marker -Body $body
+$publishedUrl = Set-ResultComment -Marker $marker -Body $body
+Complete-IssueReplicateReportPublication -IssueNumber $IssueNumber -Url $publishedUrl -Body $body
 if ($recordingReport.Failure) {
     throw "The result comment was posted, but native video is incomplete: $($recordingReport.Failure)"
 }
