@@ -8,6 +8,22 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Xaml)]
 	public class XamlTests
 	{
+		[Fact("Parsed XAML binding path is preserved when trimmed")]
+		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(BindingItem))]
+		public void BindingPath_Parsed()
+		{
+			var label = new Label();
+			label.LoadFromXaml(
+				"""
+					<Label xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+						Text="{Binding Index}" />
+				""");
+			label.BindingContext = new BindingItem { Index = "1" };
+
+			Assert.Equal("1", label.Text);
+		}
+
 		[Fact("Parsed XAML can use mscorlib")]
 		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
 		public void Namespace_mscorlib_Parsed()
@@ -97,6 +113,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var page = new RadioButtonUsing();
 			Assert.Equal(42d, page.Resources["MyNumber"]);
+		}
+
+		sealed class BindingItem
+		{
+			public string Index { get; set; }
 		}
 	}
 }
