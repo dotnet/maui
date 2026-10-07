@@ -96,6 +96,8 @@ not an exact MAUI tag or evidence of the app's installed package. Its
 runtime boundary or promoting a candidate on that basis alone.
 Conflicting duplicate headings still force `boundary-only`; repeated precise
 answers with the same normalized version do not.
+Accepted parenthetical notes are preserved in the raw answer; Preview/RC mapping
+and preflight use its canonical normalized version.
 Consult `diagnostics.supplementalVersions` and their originating issue/comment:
 precise values already present in prose/tables are leads, not replacement form
 boundaries. Request clarification of their role, not the same version again.
@@ -105,6 +107,8 @@ selected that pair for bounded static inspection. Cite each `origin.mentionedAt`
 and the captured outcome text, show how it differs from the original form, and
 retain uncertainty about equivalent platform/toolchain conditions. These
 observations do not prove the first bad release or a parent/candidate runtime test.
+An inability to reproduce ("failed to reproduce", "cannot reproduce") is not a
+failing or passing outcome; the diagnostic inventory leaves it unclassified.
 `form-good-and-human-first-bad` retains a resolved working form answer and a
 human's explicit "from/since version" failing observation. Cite both sources;
 the latter is the first observed failing version, not a proven first bad release.

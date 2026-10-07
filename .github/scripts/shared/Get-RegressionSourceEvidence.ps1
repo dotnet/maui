@@ -394,6 +394,10 @@ function Get-RegressionDiagnosticInventory {
                     $cell.Substring(0, $numbers[0].Index) -match '(?:SDK|Xcode|iOS|Android|macOS|Windows|Visual Studio(?: Code)?)\s*(?:version\s*)?\z') {
                     continue
                 }
+                # An inability to reproduce is not an observed failing or passing outcome.
+                if ($cell -match "\b(?:fail(?:ed|s|ing)?\s+to|unable\s+to|not\s+able\s+to|cannot|can't|could\s+not|couldn't)\s+reproduc(?:e(?:d+|s)?|ing)\b") {
+                    continue
+                }
                 $goodText = $cell -replace "\b(?:does not work|doesn't work|not working)\b", ''
                 $badText = $cell -replace "\b(?:not reproduc(?:ed+|ible)|does not reproduce|doesn't reproduce)\b", ''
                 $good = $goodText -match "\b(?:not reproduc(?:ed+|ible)|does not reproduce|doesn't reproduce|works?|worked|pass(?:es|ed)?|last (?:working|good))\b"

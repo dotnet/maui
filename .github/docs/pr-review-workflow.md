@@ -105,6 +105,9 @@ cells or prose sentences must contain one version and fit 1,024 characters;
 fenced code and SDK/OS version labels are excluded. The twenty-observation cap
 retains early and late observations. Each selection retains author, outcome excerpt and permalink and
 does not establish equivalent-environment runtime confirmation.
+Statements such as "failed to reproduce" or "cannot reproduce" remain
+unclassified outcomes; inability to reproduce is not a failing version boundary
+or proof that a version works.
 An explicit human "from/since version" failing observation can instead pair with
 a resolved working form answer; both origins remain visible and the observed
 failure is not claimed to be the first bad release.
@@ -112,6 +115,9 @@ Preview/RC release metadata can supply a `mapped-source` lead from the published
 MAUI workload row, keeping the workload-set tag, package version and source commit
 distinct. It cannot resolve the application's installed package or justify a
 verified regression boundary.
+Mapping eligibility, shorthand matching and preflight use the same canonical
+version normalizer, including accepted parenthetical annotations, while retaining
+the raw reported answer for provenance.
 `investigation.releaseMetadata` records whether the list was requested and how
 many release reads were attempted so inference cannot repeat an already spent
 metadata budget.

@@ -64,6 +64,16 @@ function ConvertTo-RegressionFormVersion {
     return $null
 }
 
+function Get-RegressionMetadataVersion {
+    param([AllowEmptyString()][string]$Value)
+
+    $version = ConvertTo-RegressionFormVersion -Value $Value
+    if ($version -cmatch '\A\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z') {
+        return $version
+    }
+    return $null
+}
+
 function Get-RegressionIssueFields {
     param([AllowEmptyString()][string]$Body)
 
@@ -258,7 +268,7 @@ function Get-RegressionInvestigation {
     $eligible = @('good', 'bad' | Where-Object {
             $boundary = $investigation[$_]
             $boundary.status -eq 'unresolved' -and
-            [string]$boundary.reported -cmatch '\Av?\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z'
+            $null -ne (Get-RegressionMetadataVersion -Value ([string]$boundary.reported))
         })
     if ($eligible.Count -gt 0) {
         try {
@@ -271,7 +281,7 @@ function Get-RegressionInvestigation {
             $investigation.releaseMetadata.listPossiblyTruncated = $releases.Count -eq 30
             $releaseReads = 0
             foreach ($role in $eligible) {
-                $shorthand = ([string]$investigation[$role].reported).TrimStart('v')
+                $shorthand = Get-RegressionMetadataVersion -Value ([string]$investigation[$role].reported)
                 $parts = [regex]::Match($shorthand, '\A(?<prefix>\d+\.\d+\.)\d+-(?<channel>(?:preview|rc)\.\d+)\z')
                 $pattern = '\A' + [regex]::Escape($parts.Groups['prefix'].Value) +
                 '\d+-' + [regex]::Escape($parts.Groups['channel'].Value) + '(?:\.\d+)*\z'
@@ -467,8 +477,8 @@ function Get-IssueRegressionContext {
     $sourceBad = $context.investigation.bad
     $sourceComparison = $context.investigation.comparison
     $ambiguous = $good.status -eq 'ambiguous' -or $bad.status -eq 'ambiguous'
-    $metadataEligible = [string]$good.reported -match '\Av?\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z' -or
-    [string]$bad.reported -match '\Av?\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z'
+    $metadataEligible = $null -ne (Get-RegressionMetadataVersion -Value ([string]$good.reported)) -or
+    $null -ne (Get-RegressionMetadataVersion -Value ([string]$bad.reported))
     $context.preflight = [ordered]@{
         mode               = if ($ambiguous) {
             'boundary-only'
