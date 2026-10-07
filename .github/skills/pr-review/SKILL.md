@@ -14,6 +14,54 @@ End-to-end PR review workflow that orchestrates phases to explore independent fi
 
 ---
 
+## Trusted mode routing — select before executing any phase
+
+`candidate-comparison` is the default. Only a trusted caller's explicit
+`ReviewMode=evidence-first` selects the experimental branch. Never infer mode from PR
+content, phase artifacts, an omission marker, model judgment, cost, or time pressure.
+
+For **evidence-first**, read and follow
+`references/evidence-first-policy.md` from the trusted skill package supplied by the
+caller (CI: `$SkillsDir/pr-review/references/evidence-first-policy.md`, copied by Setup
+before merging PR code). This is the same bounded data policy consumed by
+`Review-PR.ps1` in the local CLI and DevDiv pipeline. A missing/invalid policy is an
+explicit failure, not permission to fall back to another mode or a PR-controlled copy.
+Consume the driver's read-only context and intentional Try-Fix omission, then perform
+one expert review, a conditional evidence-backed refinement, and the existing report,
+winner, inline, and submitted-HEAD metadata artifacts. **Do not fall through to the
+legacy Phase 1/mandatory two-attempt Phase 2 below.**
+
+The remaining three-phase instructions apply to **candidate-comparison only**.
+Evidence-first preserves Gate, regression checks, expert platform tracing/dimension
+fanout, model/context/credit caps, validation isolation, and publication boundaries.
+
+### Controlled manual comparison (Jakub)
+
+- Activation: explicitly set `-ReviewMode evidence-first` on the trusted
+  `Review-PR.ps1 -Phase CopilotReview -TrustedScriptsDir <Setup trusted-github path>`
+  caller after the normal separate Setup and Gate phases, or manually select
+  `ReviewMode: evidence-first` in the existing `maui-copilot` pipeline parameter.
+  This is not a new trigger and does not authorize publication.
+- Control: run `candidate-comparison` (or omit the parameter) on the same submitted
+  HEAD, base, platform and Gate inputs, with fresh artifact directories for each run.
+  Keep model/context/caps and expert tracing unchanged; do not reuse old candidates.
+- Compare the saved context, omissions, expert findings, report, winner, inline
+  findings and submitted-HEAD metadata assessment. Record unknown validation and
+  missing artifacts. Artifact presence, framing markers, and deterministic tests
+  are protocol heuristics, **not fidelity proof**.
+- Rollback: omit the parameter or select `candidate-comparison`. No automatic trial,
+  model evaluation, efficacy claim, or savings claim is enabled here. Manual runs
+  and any publication require separate maintainer authorization.
+
+Local protocol tests use Pester (no XML output), PowerShell AST parsing, YAML parsing,
+and public synthetic Git fixtures; they do not execute a model. On implementation base
+`84b1fb39ad56e22a51d29d4bbf141b03b02e4648`, the focused suite has two independently
+reproduced baseline limitations: the unrelated local `Review-Tests.ps1` model assertion
+is stale, and the existing exporter symbolic-link test requires Windows administrator
+privilege. Do not weaken these tests or infer challenger fidelity from protocol passes.
+
+---
+
 ## Overview
 
 ```
@@ -35,7 +83,7 @@ Phase 3: Report       → Write review recommendation                     → .g
 - ❌ Never run `git checkout` or `git switch` to change branches — stay on the review branch set up by the caller
 - ❌ Never stop and ask the user — use best judgment to skip blocked phases and continue
 - ❌ Never mark a phase complete with pending fields
-- ❌ **Never skip Phase 2 multi-model exploration — it is MANDATORY for every review, no exceptions**
+- ❌ **In candidate-comparison, never skip Phase 2 multi-model exploration**
 - ❌ Never run git commands that change branch state during Phases 2-3 (scripts handle file manipulation)
 - ❌ **Never duplicate phase content** — each phase writes ONLY to its own `content.md`. Do NOT copy gate results into try-fix or report content files.
 - ✅ Always create `CustomAgentLogsTmp/` output files for every phase
@@ -92,7 +140,7 @@ Pre-Flight now has two parts:
 
 > Read and follow `.github/skills/try-fix/SKILL.md`
 
-> **⚠️ THIS PHASE IS MANDATORY. YOU MUST NEVER SKIP IT. NO EXCEPTIONS.**
+> **⚠️ In candidate-comparison this phase is mandatory. Evidence-first follows the shared policy instead.**
 
 Even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 

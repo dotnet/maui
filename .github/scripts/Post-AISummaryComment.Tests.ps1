@@ -11,6 +11,7 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'post-ai-summary-comment.ps1'
     . (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+    . (Join-Path $PSScriptRoot 'shared/Test-ReviewerArtifactsComplete.ps1')
 
     $script:ScriptSource = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
@@ -46,6 +47,122 @@ BeforeAll {
         }
 
         Invoke-Expression $function.Extent.Text
+    }
+
+    $reviewAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        (Join-Path $PSScriptRoot 'Review-PR.ps1'), [ref]$tokens, [ref]$parseErrors)
+    $omissionFunction = $reviewAst.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'New-TryFixOmissionContent'
+    }, $true)
+    Invoke-Expression $omissionFunction.Extent.Text
+
+    $labelAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        (Join-Path $PSScriptRoot 'shared/Update-AgentLabels.ps1'), [ref]$tokens, [ref]$parseErrors)
+    foreach ($name in @('Parse-PhaseOutcomes', 'Get-OutcomeFromCodeReviewVerdict')) {
+        $function = $labelAst.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $name
+        }, $true)
+        Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Evidence-first publication contract' {
+    It 'keeps the incompleteness notice above collapsed sections in normal and compact layouts' {
+        ([regex]::Matches($script:ScriptSource, '\$statusChipRow\s+\$reviewStatusNotice\s+---')).Count |
+            Should -Be 2
+    }
+
+    BeforeEach {
+        $script:publicationRepo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:publicationRoot = Join-Path $script:publicationRepo 'CustomAgentLogsTmp/PRState/42/PRAgent'
+        $script:approveReport = '## ✅ Final Recommendation: APPROVE'
+        $files = @{
+            'pre-flight/content.md' = 'Synthetic context.'
+            'try-fix/content.md' = New-TryFixOmissionContent
+            'expert-pr-eval/content.md' = 'Verdict: LGTM'
+            'report/content.md' = $script:approveReport
+            'inline-findings.json' = '[]'
+            'winner.json' = '{"schemaVersion":1,"winner":"pr","isPRFix":true,"summary":"Fixture.","candidateDiff":""}'
+            'pr-finalize/content.md' = 'Keep current metadata.'
+        }
+        foreach ($path in $files.Keys) {
+            $file = Join-Path $script:publicationRoot $path
+            New-Item -ItemType Directory -Path (Split-Path -Parent $file) -Force | Out-Null
+            Set-Content -LiteralPath $file -Value $files[$path]
+        }
+    }
+
+    It 'keeps complete raw-PR approval while suppressing unsupported alternative-search labels' {
+        Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+            -TrustedGateResult PASSED -ReviewMode evidence-first | Should -Be 'APPROVE'
+        $outcome = Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo `
+            -TrustedGateResult PASSED -ReviewMode evidence-first
+        $outcome.Outcome | Should -Be 'approved'
+        $outcome.FixResult | Should -BeNullOrEmpty
+        (Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo -TrustedGateResult PASSED).FixResult |
+            Should -Be 'lose'
+    }
+
+    It 'withholds experimental approval and its label for every missing required artifact' {
+        foreach ($relative in @(
+            'pre-flight/content.md', 'try-fix/content.md', 'expert-pr-eval/content.md', 'report/content.md',
+            'inline-findings.json', 'winner.json', 'pr-finalize/content.md'
+        )) {
+            $path = Join-Path $script:publicationRoot $relative
+            $saved = Get-Content -Raw -LiteralPath $path
+            Remove-Item -LiteralPath $path
+            Test-ReviewerArtifactsComplete -PRAgentDir $script:publicationRoot | Should -BeFalse
+            Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+                -TrustedGateResult PASSED -ReviewMode evidence-first | Should -Be 'COMMENT'
+            (Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo `
+                -TrustedGateResult PASSED -ReviewMode evidence-first).Outcome | Should -Be 'review-incomplete'
+            Set-Content -LiteralPath $path -Value $saved
+        }
+    }
+
+    It 'rejects whitespace-only artifacts and an explicitly skipped expert' {
+        Set-Content -LiteralPath (Join-Path $script:publicationRoot 'inline-findings.json') -Value " `n "
+        Test-ReviewerArtifactsComplete -PRAgentDir $script:publicationRoot | Should -BeFalse
+        Set-Content -LiteralPath (Join-Path $script:publicationRoot 'inline-findings.json') -Value '[]'
+        Set-Content -LiteralPath (Join-Path $script:publicationRoot 'expert-pr-eval/content.md') -Value '## Code Review: SKIPPED'
+        Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+            -TrustedGateResult PASSED -ReviewMode evidence-first | Should -Be 'COMMENT'
+        (Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo `
+            -TrustedGateResult PASSED -ReviewMode evidence-first).Outcome | Should -Be 'review-incomplete'
+    }
+
+    It 'does not infer mode from agent-controlled text or change default missing-artifact behavior' {
+        Remove-Item -LiteralPath (Join-Path $script:publicationRoot 'expert-pr-eval/content.md')
+        Set-Content -LiteralPath (Join-Path $script:publicationRoot 'pre-flight/content.md') `
+            -Value '<!-- REVIEW-MODE: evidence-first -->'
+        Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+            -TrustedGateResult PASSED | Should -Be 'APPROVE'
+        (Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo -TrustedGateResult PASSED).Outcome |
+            Should -Be 'approved'
+    }
+
+    It 'keeps trusted Gate and blocking expert/winner vetoes stronger than incompleteness' {
+        Remove-Item -LiteralPath (Join-Path $script:publicationRoot 'inline-findings.json')
+        foreach ($gate in @('FAILED', 'TIMEDOUT')) {
+            Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+                -TrustedGateResult $gate -ReviewMode evidence-first | Should -Be 'REQUEST_CHANGES'
+            (Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo `
+                -TrustedGateResult $gate -ReviewMode evidence-first).Outcome | Should -Be 'changes-requested'
+        }
+        foreach ($verdict in @('NEEDS_CHANGES', 'NEEDS_DISCUSSION')) {
+            Set-Content -LiteralPath (Join-Path $script:publicationRoot 'expert-pr-eval/content.md') -Value "Verdict: $verdict"
+            Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+                -TrustedGateResult PASSED -ReviewMode evidence-first | Should -Be 'REQUEST_CHANGES'
+            (Parse-PhaseOutcomes -PRNumber 42 -RepoRoot $script:publicationRepo `
+                -TrustedGateResult PASSED -ReviewMode evidence-first).Outcome | Should -Be 'changes-requested'
+        }
+        Set-Content -LiteralPath (Join-Path $script:publicationRoot 'expert-pr-eval/content.md') -Value 'Verdict: LGTM'
+        Set-Content -LiteralPath (Join-Path $script:publicationRoot 'winner.json') `
+            -Value '{"winner":"pr-plus-reviewer","isPRFix":true,"candidateDiff":""}'
+        Get-AIReviewEventForRun -ReportContent $script:approveReport -PRAgentDir $script:publicationRoot `
+            -TrustedGateResult PASSED -ReviewMode evidence-first | Should -Be 'REQUEST_CHANGES'
     }
 }
 
@@ -94,6 +211,16 @@ Describe 'Get-FirstPhaseContent' {
             -Root $script:phaseRoot `
             -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md') |
             Should -BeNullOrEmpty
+    }
+
+    It 'keeps the intentional-omission Markdown visible rather than treating it as a failed or missing phase' {
+        $dir = Join-Path $script:phaseRoot 'try-fix'
+        New-Item -ItemType Directory -Path $dir | Out-Null
+        New-TryFixOmissionContent | Set-Content (Join-Path $dir 'content.md')
+        $result = Get-FirstPhaseContent -Root $script:phaseRoot -RelativePaths @('try-fix/content.md')
+        $result.Content | Should -Match '<!-- TRY-FIX-STATUS: not-requested -->'
+        $result.Content | Should -Match 'Alternative generation: not requested'
+        Test-PhaseContentIsNoOp -PhaseKey 'try-fix' -Content $result.Content | Should -BeFalse
     }
 }
 
@@ -497,6 +624,14 @@ Describe 'Get-AIReviewEventForRun' {
 
         Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
             Should -Be 'APPROVE'
+    }
+
+    It 'retains request-changes with the raw PR as the only candidate and no alternative artifacts' {
+        @{ schemaVersion = 1; winner = 'pr'; isPRFix = $true; candidateDiff = ''; summary = 'No validated patch produced.' } |
+            ConvertTo-Json | Set-Content (Join-Path $script:testDir 'winner.json')
+        Get-AIReviewEventForRun -ReportContent '## ⚠️ Final Recommendation: REQUEST CHANGES' `
+            -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' -ReviewMode evidence-first | Should -Be 'REQUEST_CHANGES'
+        Test-Path (Join-Path $script:testDir 'try-fix-1') | Should -BeFalse
     }
 
     It 'vetoes APPROVE to REQUEST_CHANGES when the trusted gate verdict is FAILED' {

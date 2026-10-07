@@ -24,6 +24,13 @@ parameters:
       - catalyst
       - windows
 
+  - name: ReviewMode
+    displayName: 'Review mode (evidence-first is experimental)'
+    type: string
+    default: candidate-comparison
+    values:
+      - candidate-comparison
+      - evidence-first
 
   - name: androidPool
     type: object
@@ -1750,7 +1757,7 @@ stages:
 
               echo "Review platform: ${{ parameters.Platform }}"
 
-              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -ReviewMode "${PARAM_REVIEW_MODE}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${REVIEW_ARGS[@]}"
@@ -1762,7 +1769,7 @@ stages:
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
             name: RunReview
-            displayName: 'Task 3: Copilot Review (expert review + try-fix)'
+            displayName: 'Task 3: Copilot Review'
             # succeededOrFailed so the expert review STILL runs when the Gate (Task 2) was
             # stopped by its 150-min hang-safety timeout — a killed gate step is marked FAILED,
             # which the default succeeded() would treat as a reason to SKIP the review, leaving
@@ -1782,6 +1789,7 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}
               COMMENTS_VIA_FILE: "true"
 
           # Export only the fixed, bounded files consumed by the posting jobs.
@@ -1978,6 +1986,7 @@ stages:
                 -PRNumber "${env:PARAM_PR_NUMBER}" `
                 -Platform "${{ parameters.Platform }}" `
                 -Phase Post `
+                -ReviewMode "$env:PARAM_REVIEW_MODE" `
                 -TrustedGateResult "$(effectiveTrustedGateResult)" `
                 -ReviewedCommit "$(trustedReviewedPrHeadSha)" `
                 -TokenUsageOutputDir "$(Pipeline.Workspace)/CopilotLogs/copilot-token-usage/raw" `
@@ -1992,6 +2001,7 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
+              PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}
               # The review token can create reviews/labels but GitHub returns 404
               # when it tries to edit PR metadata. Stage 3 applies the same trusted
               # recommendation with its persisted checkout credential instead.
@@ -4929,7 +4939,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)" -ReviewMode "$env:PARAM_REVIEW_MODE"
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }
@@ -4943,6 +4953,7 @@ stages:
                         -PRNumber $prNumber `
                         -RepoRoot (Get-Location).Path `
                         -TrustedGateResult $trustedGate `
+                        -ReviewMode "$env:PARAM_REVIEW_MODE" `
                         -ExpectedHeadSha "$(reviewedPrHeadSha)"
                       Write-Host "✅ Labels applied"
                     } catch {
@@ -5000,6 +5011,7 @@ stages:
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
+              PARAM_REVIEW_MODE: ${{ parameters.ReviewMode }}
               BUILD_BUILDID: $(Build.BuildId)
               DEEP_STAGE_RESULT: $(deepStageResult)
 

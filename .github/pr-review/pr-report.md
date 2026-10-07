@@ -10,6 +10,14 @@
 
 ## Prerequisites
 
+For an explicitly trusted `ReviewMode=evidence-first` caller, follow
+`pr-review/references/evidence-first-policy.md` in the trusted skill package instead
+of requiring legacy two-attempt completion below. Display Try-Fix as **not requested**,
+compare only actual candidates, and do not treat missing/skipped expert review as
+approval evidence. The caller still requires winner, inline, and submitted-HEAD
+pr-finalize artifacts; its explicit metadata assessment does not authorize mutation.
+These exceptions do not change candidate-comparison or any Gate/blocking veto.
+
 - Phases 1-2 (Pre-Flight, Try-Fix) must be complete before starting
 - Gate result is available from the prompt (ran separately before this skill)
 - **Read `pre-flight/content.md`** for issue/PR context
