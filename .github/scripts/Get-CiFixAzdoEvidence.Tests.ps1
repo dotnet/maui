@@ -19,6 +19,7 @@ BeforeAll {
             'ConvertFrom-CiFixJsonResponse',
             'Get-CiFixFailedTaskRecords',
             'Get-CiFixPreviousAttemptReferences',
+            'Resolve-CiFixPreviousAttemptTaskProvenance',
             'Get-CiFixBuildEvidence',
             'Get-CiFixBuildEvidenceBounded',
             'New-CiFixAzdoEvidence')) {
@@ -450,8 +451,190 @@ Describe 'Get-CiFixAzdoEvidence' {
         $result.failedTasks[0].sourceRecordId | Should -BeExactly $previousRecordId
         $result.failedTasks[0].sourceAttempt | Should -Be 1
         $result.failedTasks[0].status | Should -BeExactly 'available'
+        $result.failedTasks[1].source | Should -BeExactly 'previous_attempt'
+        $result.failedTasks[1].sourceTimelineId | Should -BeExactly $previousTimelineId
+        $result.failedTasks[1].sourceRecordId | Should -BeExactly $secondPreviousRecordId
+        $result.failedTasks[1].sourceAttempt | Should -Be 1
+        $result.failedTasks[1].status | Should -BeExactly 'available'
         @($requestedUris | Where-Object { $_ -match [regex]::Escape("/timeline/$previousTimelineId") }).Count |
             Should -Be 1
+    }
+
+    It 'fails closed when previous-attempt task provenance is ambiguous unresolved or cyclic' {
+        $destination = Join-Path $TestDrive 'invalid-previous-attempt-provenance'
+        $previousTimelineId = '11111111-1111-1111-1111-111111111111'
+        $previousRecordId = '22222222-2222-2222-2222-222222222222'
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = (@{
+                            records = @(
+                                @{
+                                    id = '33333333-3333-3333-3333-333333333333'
+                                    type = 'Job'
+                                    result = 'succeeded'
+                                    previousAttempts = @(
+                                        @{
+                                            timelineId = $previousTimelineId
+                                            recordId = $previousRecordId
+                                            attempt = 1
+                                        }
+                                    )
+                                },
+                                @{
+                                    id = '44444444-4444-4444-4444-444444444444'
+                                    type = 'Job'
+                                    result = 'succeeded'
+                                    previousAttempts = @(
+                                        @{
+                                            timelineId = $previousTimelineId
+                                            recordId = $previousRecordId
+                                            attempt = 2
+                                        }
+                                    )
+                                }
+                            )
+                        } | ConvertTo-Json -Depth 10 -Compress)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            if ($Uri -match [regex]::Escape("/timeline/$previousTimelineId")) {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = (@{
+                            id = $previousTimelineId
+                            records = @(
+                                @{
+                                    id = $previousRecordId
+                                    type = 'Job'
+                                    result = 'failed'
+                                    name = 'ambiguous referenced job'
+                                },
+                                @{
+                                    id = '55555555-5555-5555-5555-555555555555'
+                                    parentId = $previousRecordId
+                                    type = 'Task'
+                                    result = 'failed'
+                                    name = 'ambiguous failed task'
+                                    log = @{ id = 77 }
+                                },
+                                @{
+                                    id = '66666666-6666-6666-6666-666666666666'
+                                    type = 'Job'
+                                    result = 'failed'
+                                    name = 'unreferenced job'
+                                },
+                                @{
+                                    id = '77777777-7777-7777-7777-777777777777'
+                                    parentId = '66666666-6666-6666-6666-666666666666'
+                                    type = 'Task'
+                                    result = 'failed'
+                                    name = 'unresolved failed task'
+                                    log = @{ id = 78 }
+                                },
+                                @{
+                                    id = '88888888-8888-8888-8888-888888888888'
+                                    parentId = '99999999-9999-9999-9999-999999999999'
+                                    type = 'Task'
+                                    result = 'failed'
+                                    name = 'cyclic failed task'
+                                    log = @{ id = 79 }
+                                },
+                                @{
+                                    id = '99999999-9999-9999-9999-999999999999'
+                                    parentId = '88888888-8888-8888-8888-888888888888'
+                                    type = 'Job'
+                                    result = 'failed'
+                                    name = 'cyclic job'
+                                }
+                            )
+                        } | ConvertTo-Json -Depth 10 -Compress)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            if ($Uri -match '/logs/') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = 'must not be accepted without provenance'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+
+            throw "Unexpected URI: $Uri"
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeFalse
+        $result.previousAttemptsComplete | Should -BeFalse
+        $result.failedTaskCount | Should -Be 3
+        @($result.failedTasks | Where-Object status -EQ 'unavailable').Count | Should -Be 3
+        ($result.failedTasks.error -join "`n") | Should -Match 'ambiguous'
+        ($result.failedTasks.error -join "`n") | Should -Match 'no referenced ancestor'
+        ($result.failedTasks.error -join "`n") | Should -Match 'cycle'
+        @($requestedUris | Where-Object { $_ -match '/logs/' }).Count | Should -Be 0
+    }
+
+    It 'uses the nearest uniquely referenced ancestor for previous-attempt provenance' {
+        $timelineId = '11111111-1111-1111-1111-111111111111'
+        $outerRecordId = '22222222-2222-2222-2222-222222222222'
+        $innerRecordId = '33333333-3333-3333-3333-333333333333'
+        $timeline = [pscustomobject]@{
+            records = @(
+                [pscustomobject]@{
+                    id = $outerRecordId
+                    type = 'Stage'
+                    result = 'failed'
+                }
+                [pscustomobject]@{
+                    id = $innerRecordId
+                    parentId = $outerRecordId
+                    type = 'Job'
+                    result = 'failed'
+                }
+                [pscustomobject]@{
+                    id = '44444444-4444-4444-4444-444444444444'
+                    parentId = $innerRecordId
+                    type = 'Task'
+                    result = 'failed'
+                    name = 'nested failure'
+                    log = [pscustomobject]@{ id = 77 }
+                }
+            )
+        }
+        $references = @(
+            [pscustomobject]@{ recordId = $outerRecordId; attempt = 1 }
+            [pscustomobject]@{ recordId = $innerRecordId; attempt = 2 }
+        )
+
+        $result = Resolve-CiFixPreviousAttemptTaskProvenance `
+            -Timeline $timeline `
+            -References $references `
+            -SourceTimelineId $timelineId
+
+        $result.complete | Should -BeTrue
+        $result.tasks.Count | Should -Be 1
+        $result.tasks[0].sourceRecordId | Should -BeExactly $innerRecordId
+        $result.tasks[0].sourceAttempt | Should -Be 2
     }
 
     It 'marks a build incomplete when a referenced previous-attempt timeline is unavailable' {

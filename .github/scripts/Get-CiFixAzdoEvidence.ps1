@@ -336,6 +336,8 @@ function Get-CiFixFailedTaskRecords {
             sourceTimelineId = $SourceTimelineId
             sourceRecordId = $SourceRecordId
             sourceAttempt = $SourceAttempt
+            provenanceValid = $true
+            provenanceError = ''
         }
     }
 
@@ -384,6 +386,105 @@ function Get-CiFixPreviousAttemptReferences {
     }
 
     return @($references)
+}
+
+function Resolve-CiFixPreviousAttemptTaskProvenance {
+    param(
+        [Parameter(Mandatory = $true)]$Timeline,
+        [Parameter(Mandatory = $true)][object[]]$References,
+        [Parameter(Mandatory = $true)][string]$SourceTimelineId
+    )
+
+    $recordGroups = @{}
+    foreach ($record in @($Timeline.records)) {
+        $recordId = [string]$record.id
+        if ([string]::IsNullOrWhiteSpace($recordId)) {
+            continue
+        }
+        if (-not $recordGroups.ContainsKey($recordId)) {
+            $recordGroups[$recordId] = [Collections.Generic.List[object]]::new()
+        }
+        $recordGroups[$recordId].Add($record)
+    }
+
+    $referenceGroups = @{}
+    foreach ($reference in @($References)) {
+        $recordId = [string]$reference.recordId
+        if (-not $referenceGroups.ContainsKey($recordId)) {
+            $referenceGroups[$recordId] = [Collections.Generic.List[object]]::new()
+        }
+        $referenceGroups[$recordId].Add($reference)
+    }
+
+    $resolvedTasks = @()
+    $errors = @()
+    foreach ($task in @(Get-CiFixFailedTaskRecords -Timeline $Timeline)) {
+        $currentRecordId = [string]$task.recordId
+        $visited = @{}
+        $matchedReference = $null
+        $provenanceError = ''
+
+        while ($true) {
+            if ([string]::IsNullOrWhiteSpace($currentRecordId)) {
+                $provenanceError = "failed task '$($task.name)' has no usable record identity"
+                break
+            }
+            if ($visited.ContainsKey($currentRecordId)) {
+                $provenanceError = "failed task '$($task.recordId)' ancestry contains a cycle at record '$currentRecordId'"
+                break
+            }
+            $visited[$currentRecordId] = $true
+
+            if (-not $recordGroups.ContainsKey($currentRecordId)) {
+                $provenanceError = "failed task '$($task.recordId)' ancestry record '$currentRecordId' is unavailable"
+                break
+            }
+            $matchingRecords = @($recordGroups[$currentRecordId])
+            if ($matchingRecords.Count -ne 1) {
+                $provenanceError = "failed task '$($task.recordId)' ancestry record '$currentRecordId' has conflicting timeline definitions"
+                break
+            }
+
+            if ($referenceGroups.ContainsKey($currentRecordId)) {
+                $matchingReferences = @($referenceGroups[$currentRecordId])
+                if ($matchingReferences.Count -ne 1) {
+                    $provenanceError = "failed task '$($task.recordId)' has ambiguous previous-attempt references at record '$currentRecordId'"
+                    break
+                }
+                $matchedReference = $matchingReferences[0]
+                break
+            }
+
+            $parentId = [string]$matchingRecords[0].parentId
+            if ([string]::IsNullOrWhiteSpace($parentId)) {
+                $provenanceError = "failed task '$($task.recordId)' has no referenced ancestor in previous-attempt timeline '$SourceTimelineId'"
+                break
+            }
+            $currentRecordId = $parentId
+        }
+
+        if ($null -ne $matchedReference) {
+            $task.source = 'previous_attempt'
+            $task.sourceTimelineId = $SourceTimelineId
+            $task.sourceRecordId = $matchedReference.recordId
+            $task.sourceAttempt = $matchedReference.attempt
+        } else {
+            $task.source = 'previous_attempt'
+            $task.sourceTimelineId = $SourceTimelineId
+            $task.sourceRecordId = $null
+            $task.sourceAttempt = $null
+            $task.provenanceValid = $false
+            $task.provenanceError = $provenanceError
+            $errors += $provenanceError
+        }
+        $resolvedTasks += $task
+    }
+
+    return [pscustomobject]@{
+        complete = $errors.Count -eq 0
+        tasks = @($resolvedTasks)
+        errors = @($errors)
+    }
 }
 
 function Get-CiFixBuildEvidence {
@@ -462,7 +563,6 @@ function Get-CiFixBuildEvidence {
 
     foreach ($timelineGroup in @($validPreviousAttemptTimelines | Select-Object -First $MaxFailedLogs)) {
         $references = @($timelineGroup.Group)
-        $firstReference = $references[0]
         $timelineId = [string]$timelineGroup.Name
         $previousTimelineUri = "$($script:AzdoBaseUri)/builds/$BuildId/timeline/${timelineId}?api-version=7.1"
         $previousTimelineResponse = & $RequestInvoker $previousTimelineUri $TimelineByteLimit
@@ -488,18 +588,22 @@ function Get-CiFixBuildEvidence {
             $references |
                 Where-Object { -not $timelineRecordIds.ContainsKey([string]$_.recordId) } |
                 ForEach-Object recordId)
-        $previousFailedTasks = if ($previousTimelineResult.Succeeded -and $missingRecordIds.Count -eq 0) {
-            @(Get-CiFixFailedTaskRecords `
-                    -Timeline $previousTimelineResult.Value `
-                    -Source 'previous_attempt' `
-                    -SourceTimelineId $timelineId `
-                    -SourceRecordId $firstReference.recordId `
-                    -SourceAttempt $firstReference.attempt)
+        $previousTaskResolution = if ($previousTimelineResult.Succeeded -and $missingRecordIds.Count -eq 0) {
+            Resolve-CiFixPreviousAttemptTaskProvenance `
+                -Timeline $previousTimelineResult.Value `
+                -References $references `
+                -SourceTimelineId $timelineId
+        } else {
+            $null
+        }
+        $previousFailedTasks = if ($null -ne $previousTaskResolution) {
+            @($previousTaskResolution.tasks)
         } else {
             @()
         }
         if (-not $previousTimelineResult.Succeeded -or
             $missingRecordIds.Count -gt 0 -or
+            ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) -or
             $previousFailedTasks.Count -eq 0) {
             $complete = $false
             $previousAttemptsComplete = $false
@@ -508,18 +612,21 @@ function Get-CiFixBuildEvidence {
 
         $previousAttempts += [pscustomobject]@{
             timelineId = $timelineId
-            recordId = $firstReference.recordId
-            attempt = $firstReference.attempt
-            referencedByRecordId = $firstReference.referencedByRecordId
-            referencedByName = $firstReference.referencedByName
+            recordId = if ($references.Count -eq 1) { $references[0].recordId } else { $null }
+            attempt = if ($references.Count -eq 1) { $references[0].attempt } else { $null }
+            referencedByRecordId = if ($references.Count -eq 1) { $references[0].referencedByRecordId } else { $null }
+            referencedByName = if ($references.Count -eq 1) { $references[0].referencedByName } else { $null }
             referenceCount = $references.Count
             references = @($references)
             status = if ($previousTimelineResult.Succeeded -and
                 $missingRecordIds.Count -eq 0 -and
+                $previousTaskResolution.complete -and
                 $previousFailedTasks.Count -gt 0) {
                 'available'
             } elseif ($previousTimelineResponse.Truncated) {
                 'truncated'
+            } elseif ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) {
+                'unavailable'
             } else {
                 'error'
             }
@@ -532,6 +639,8 @@ function Get-CiFixBuildEvidence {
                 $previousTimelineResult.Error
             } elseif ($missingRecordIds.Count -gt 0) {
                 "referenced previous-attempt record(s) not found: $($missingRecordIds -join ', ')"
+            } elseif ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) {
+                $previousTaskResolution.errors -join '; '
             } elseif ($previousFailedTasks.Count -eq 0) {
                 'referenced previous attempt contained no failed Task records'
             } else {
@@ -552,7 +661,9 @@ function Get-CiFixBuildEvidence {
         $deduplicatedFailedTasks += $task
     }
     $allFailedTasks = @($deduplicatedFailedTasks)
-    $validFailedTaskCount = @($allFailedTasks | Where-Object logIdValid).Count
+    $validFailedTaskCount = @(
+        $allFailedTasks |
+            Where-Object { $_.logIdValid -and $_.provenanceValid }).Count
     $logsTruncatedByCount = $validFailedTaskCount -gt $MaxFailedLogs
     if ($logsTruncatedByCount) {
         $complete = $false
@@ -560,6 +671,30 @@ function Get-CiFixBuildEvidence {
 
     $fetchedFailedTaskCount = 0
     foreach ($task in $allFailedTasks) {
+        if (-not $task.provenanceValid) {
+            $complete = $false
+            $previousAttemptsComplete = $false
+            $failedTasks += [pscustomobject]@{
+                recordId = $task.recordId
+                name = $task.name
+                attempt = $task.attempt
+                logId = $task.logId
+                rawLogId = $task.rawLogId
+                source = $task.source
+                sourceTimelineId = $task.sourceTimelineId
+                sourceRecordId = $null
+                sourceAttempt = $null
+                status = 'unavailable'
+                httpStatus = $null
+                redirectLocation = $null
+                attempts = 0
+                path = $null
+                bytes = 0
+                error = $task.provenanceError
+            }
+            continue
+        }
+
         if (-not $task.logIdValid) {
             $complete = $false
             if ($task.source -eq 'previous_attempt') {
