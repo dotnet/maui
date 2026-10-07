@@ -343,6 +343,31 @@ function Get-IssueReplicateUiPlatformCondition {
     }
 }
 
+function Get-IssueReplicateCSharpIdentifiers {
+    param([Parameter(Mandatory)][string]$Source)
+
+    $identifiers = [regex]::Replace($Source, '\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})', {
+            param($match)
+            if ($match.Groups[1].Success) {
+                return [string][char][Convert]::ToInt32($match.Groups[1].Value, 16)
+            }
+            $codePoint = [Convert]::ToInt64($match.Groups[2].Value, 16)
+            if ($codePoint -gt 0x10FFFF -or ($codePoint -ge 0xD800 -and $codePoint -le 0xDFFF)) {
+                throw 'The candidate contains an invalid Unicode identifier escape.'
+            }
+            return [char]::ConvertFromUtf32([int]$codePoint)
+        }, [Text.RegularExpressions.RegexOptions]::None, [TimeSpan]::FromSeconds(1))
+    $identifiers = [regex]::Replace($identifiers, '\p{Cf}', '')
+    return [regex]::Replace($identifiers, '@(?=[\p{L}\p{Nl}_])', ' ')
+}
+
+function Get-IssueReplicateAssertionExceptionNames {
+    return @('AssertionException', 'AssertFailedException') + @(
+        'True|False|Equal|NotEqual|StrictEqual|Null|NotNull|Empty|NotEmpty|Single|Collection|Contains|DoesNotContain|InRange|NotInRange|IsType|IsNotType|IsAssignableFrom|Throws|ThrowsAny|Same|NotSame|StartsWith|EndsWith|Matches|DoesNotMatch|All|Equivalent|Multiple|PropertyChanged'.Split('|') |
+            ForEach-Object { "${_}Exception" }
+    )
+}
+
 function Assert-IssueReplicateCandidate {
     param([Parameter(Mandatory)]$Candidate, [Parameter(Mandatory)][int]$IssueNumber,
         [ValidateSet('android', 'ios')][string]$Platform = '')
@@ -357,6 +382,8 @@ function Assert-IssueReplicateCandidate {
     if ($files.Count -lt 1 -or $files.Count -gt 3) { throw 'A candidate must contain one to three test files.' }
     $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     $total = 0
+    $assertionExceptionPattern = '\b(?:' + ((Get-IssueReplicateAssertionExceptionNames |
+        ForEach-Object { [regex]::Escape($_) }) -join '|') + ')\b'
     foreach ($file in $files) {
         $path = [string]$file.path
         if (-not (Test-IssueReplicateCandidatePath -Path $path -IssueNumber $IssueNumber -Kind $Candidate.kind) -or
@@ -365,6 +392,14 @@ function Assert-IssueReplicateCandidate {
         }
         if ($file.content -isnot [string] -or $file.content.Length -gt 30000 -or
             [string]::IsNullOrWhiteSpace($file.content)) { throw 'Candidate test file is empty or too large.' }
+        $validationSource = if ($path.EndsWith('.xaml', [StringComparison]::Ordinal)) {
+            [Net.WebUtility]::HtmlDecode($file.content)
+        } else { $file.content }
+        $identifiers = Get-IssueReplicateCSharpIdentifiers -Source $validationSource
+        if ([regex]::IsMatch($identifiers, $assertionExceptionPattern,
+            [Text.RegularExpressions.RegexOptions]::None, [TimeSpan]::FromSeconds(1))) {
+            throw 'Generated tests must use assertion APIs, not reference assertion-exception implementation types.'
+        }
         if ($Candidate.kind -eq 'ui') {
             $condition = $uiCondition
             $surface = 'NUnit'
@@ -381,18 +416,6 @@ function Assert-IssueReplicateCandidate {
                 throw "A UI candidate $surface file must use the exclusive $Platform whole-file platform guard without other preprocessor directives."
             }
             if ($surface -eq 'NUnit') {
-                $identifiers = [regex]::Replace($source, '\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})', {
-                    param($match)
-                    if ($match.Groups[1].Success) {
-                        return [string][char][Convert]::ToInt32($match.Groups[1].Value, 16)
-                    }
-                    $codePoint = [Convert]::ToInt64($match.Groups[2].Value, 16)
-                    if ($codePoint -gt 0x10FFFF -or ($codePoint -ge 0xD800 -and $codePoint -le 0xDFFF)) {
-                        throw 'The UI candidate contains an invalid Unicode identifier escape.'
-                    }
-                    return [char]::ConvertFromUtf32([int]$codePoint)
-                }, [Text.RegularExpressions.RegexOptions]::None, [TimeSpan]::FromSeconds(1))
-                $identifiers = [regex]::Replace($identifiers, '\p{Cf}', '')
                 if ($identifiers -match '\b(?:ResetAfterEachTest|FixtureSetup|FixtureOneTimeTearDown|TestSetup|TestTearDown|RecordTestSetup|RecordTestTeardown|InitialSetup|Reset|(?:SetUp|TearDown|OneTimeSetUp|OneTimeTearDown)(?:Attribute)?)\b') {
                     throw 'A UI candidate must leave the default fixture lifecycle unchanged; lifecycle/reset hook references are unsupported.'
                 }
@@ -592,6 +615,9 @@ function Get-IssueReplicateTrxVerdict {
     $passed = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
     $failures = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' })
     $names = @($results | ForEach-Object { $_.GetAttribute('testName') } | Sort-Object)
+    $xunitExceptions = ((Get-IssueReplicateAssertionExceptionNames | Where-Object {
+        $_ -cnotin @('AssertionException', 'AssertFailedException')
+    } | ForEach-Object { [regex]::Escape($_) }) -join '|')
     if ($passed -eq $results.Count -and $ExitCode -eq 0 -and $allFailures -eq 0) {
         return [pscustomobject]@{ Status = 'Passed'; Names = $names }
     }
@@ -605,7 +631,7 @@ function Get-IssueReplicateTrxVerdict {
             $errorInfo -and
                 $message -notmatch '(?i)Xunit\.Sdk\.TestClassException' -and
                 $message -notmatch '(?im)^\s*(?:OneTimeSetUp|SetUp|OneTimeTearDown|TearDown)\s*:' -and
-                ($errorInfo.InnerText -match '(?i)NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:True|False|Equal|NotEqual|StrictEqual|Null|NotNull|Empty|NotEmpty|Single|Collection|Contains|DoesNotContain|InRange|NotInRange|IsType|IsNotType|IsAssignableFrom|Throws|ThrowsAny|Same|NotSame|StartsWith|EndsWith|Matches|DoesNotMatch|All|Equivalent|Multiple|PropertyChanged)Exception\b|AssertFailedException|at\s+(?:Xunit|NUnit\.Framework)\.Assert\.' -or
+                ($errorInfo.InnerText -match "(?i)NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:$xunitExceptions)\b|AssertFailedException|at\s+(?:Xunit|NUnit\.Framework)\.Assert\." -or
                     ($nunitIds.Contains($_.GetAttribute('testId')) -and
                         $message -match '(?m)^\s*Assert\.That\(' -and
                         $message -match '(?m)^\s*Expected:' -and

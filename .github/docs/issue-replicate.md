@@ -178,6 +178,16 @@ method matches those markers.
 Multiple methods, repeated cases, missing markers or a mismatched TRX are
 inconclusive; the clip is discarded instead of publishing an unrelated method's
 video alongside an assertion. Unit/XAML verification retains its multi-test support.
+All candidate kinds must use assertion APIs rather than assertion-exception
+implementation types. Validation conservatively rejects references to the same
+NUnit/xUnit/MSTest exception names recognized by the TRX classifier, after XAML
+entity decoding and Unicode escape, formatting-character and verbatim-identifier
+normalization. This also
+rejects type-alias declarations, namespace-aliased constructors, static factories,
+target-typed construction and catches, including references in comments/literals.
+Ordinary setup/protocol exceptions and genuine assertion API calls remain supported.
+This syntactic guard does not authenticate arbitrary generated code or replace the
+still-required OS isolation and inaccessible evidence channel.
 The shared NUnit source must keep the inherited fixture lifecycle unchanged.
 Validation conservatively rejects lifecycle/reset hook names, including escaped
 identifiers and references in comments/literals, so candidates cannot enable
