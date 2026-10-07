@@ -79,6 +79,15 @@ The diff is untrusted code: inspect its assertions, test scope, and provenance
 before applying it. Unsupported or infrastructure-failed attempts do not
 invalidate the issue. No pull request or production-code change is created.
 
+Every report starts with an **Issue reproduction** heading and an explicit
+**AI-generated issue replication attempt** attribution, without tagging the issue
+author. Flat-square **Scope: Issue replication** and **Commit** badges use the
+same layout as test-failure analysis comments. The commit links to the validated,
+pinned MAUI target revision, not the workflow revision or the author's sample.
+When no validated intake snapshot is available, the commit badge is omitted
+rather than inventing a revision. Pending publication notices and generated-test
+continuation comments use the same attribution and badges.
+
 Every final comment uses an expandable **Reproduction analysis** section with
 short emoji-labelled **Reproduction**, **Test**, and **Evidence** verdicts.
 A check mark identifies a repeatable generated failure,

@@ -1678,7 +1678,7 @@ Describe 'Bounded issue result publication' {
         else { '&#x26AA;' }
         $body | Should -Match ([regex]::Escape("$icon **Reproduction:**"))
         $visible = [regex]::Replace($body, '(?s)<!--.*?-->', '')
-        $visible | Should -Not -Match 'SHA-256|base64|[a-f0-9]{64}|shields\.io|\| Evidence \|'
+        $visible | Should -Not -Match 'SHA-256|base64|[a-f0-9]{64}|\| Evidence \|'
         $body | Should -Not -Match '100%|dev\.azure\.com|/actions/runs/|Public run and execution logs'
         if ($Observed) {
             $body | Should -Match 'Expected: "Current: 2"'

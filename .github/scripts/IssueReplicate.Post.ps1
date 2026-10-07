@@ -61,6 +61,7 @@ function Read-BoundedJson {
         ConvertFrom-Json -Depth 10
 }
 
+$manifest = $null
 $manifestPath = Join-Path $InputDirectory 'manifest.json'
 if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     $manifest = Read-BoundedJson -Path $manifestPath -MaxBytes 50000
@@ -202,6 +203,8 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     throw 'A draft cannot be published without its validated issue snapshot.'
 }
 
+$targetSha = if ($null -ne $manifest) { $manifest.targetSha } else { '' }
+$reportHeader = New-IssueReplicateReportHeader -Marker $marker -TargetSha $targetSha
 $verdict = @(
     "$reproductionIcon **Reproduction:** $reproducibility",
     '',
@@ -256,7 +259,7 @@ function Get-RecordingSection {
                     $receipt = Sync-IssueReplicateRecordingPublication -Bytes $recordingBytes `
                         -Recording $result.recording -IssueNumber $IssueNumber -ExistingBody $existingBody -SaveCheckpoint {
                         param([string]$Checkpoint)
-                        $pendingBody = "$marker`n## Issue reproduction`n`n$verdict`n`n" +
+                        $pendingBody = "$reportHeader`n`n$verdict`n`n" +
                             "**Media publication is incomplete.** A recording upload may have started. " +
                             "If its receipt is missing, retries will not repeat the upload; an operator must reconcile it. " +
                             "A recorded attachment URL below is a receipt, not a finalized reproduction report.`n`n" +
@@ -335,7 +338,7 @@ if ($patchText) {
         }
         $links = @()
         if (-not $OutputPath) {
-            $pendingBody = "$marker`n## Issue reproduction`n`n" +
+            $pendingBody = "$reportHeader`n`n" +
                 "$verdict`n`n**Candidate publication is incomplete.** The full candidate patch is not yet available; " +
                 "do not apply individual fragments. A retry will reconcile this report and its parts.`n`n" +
                 $recordingReport.Checkpoint
@@ -345,7 +348,9 @@ if ($patchText) {
             $number = $index + 1
             $partMarker = $marker.Replace('issue-replicate-result:', "issue-replicate-patch:${number}:")
             $exact = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($parts[$index]))
-            $partBody = "$partMarker`n## Generated test candidate: part $number of $($parts.Count)`n`n" +
+            $partHeader = New-IssueReplicateReportHeader -Marker $partMarker -TargetSha $targetSha `
+                -Heading "Generated test candidate: part $number of $($parts.Count)"
+            $partBody = "$partHeader`n`n" +
                 $(if ($OutputPath) { 'The full patch is preserved across all preview parts. ' }
                     else { "Publication is complete only when [the main report]($pendingUrl) links every part; otherwise these fragments are incomplete and must not be applied. " }) +
                 "Review this untrusted code before applying it." +
@@ -374,8 +379,7 @@ $candidateSection = if ($patchText) {
     ) -join "`n"
 } else { '' }
 $body = @(
-    $marker,
-    '## Issue reproduction',
+    $reportHeader,
     '',
     '---',
     '',

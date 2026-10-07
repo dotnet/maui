@@ -319,9 +319,9 @@ stages:
                   Write-Warning 'The owned run report already records the incomplete publication; no duplicate notice will be posted.'
                   throw
                 }
+                . .github/scripts/IssueReplicate.Core.ps1
                 $message = @(
-                  "<!-- issue-replicate-result:$(Build.BuildId) -->",
-                  '## Issue Reproduction Analysis',
+                  (New-IssueReplicateReportHeader -Marker "<!-- issue-replicate-result:$(Build.BuildId) -->"),
                   '',
                   '> [!WARNING]',
                   '> `/issue replicate` was inconclusive: the public build could not publish a validated result. This is not evidence against the issue.',

@@ -730,3 +730,33 @@ function Assert-IssueReplicateResult {
     }
     return $true
 }
+
+function New-IssueReplicateReportHeader {
+    param(
+        [Parameter(Mandatory)][string]$Marker,
+        [string]$Heading = 'Issue reproduction',
+        [string]$TargetSha = ''
+    )
+
+    $attribution = '> AI-generated issue replication attempt. Review the generated test and evidence before relying on the result.'
+    $commitBadge = ''
+    if ($TargetSha) {
+        if ($TargetSha -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'The report header requires a validated MAUI target revision.'
+        }
+        $shortSha = $TargetSha.Substring(0, 7)
+        $attribution = "> AI-generated issue replication attempt targeting .NET MAUI commit [``$shortSha``](https://github.com/dotnet/maui/commit/$TargetSha). Review the generated test and evidence before relying on the result."
+        $commitBadge = "  <img alt=`"Commit $shortSha`" src=`"https://img.shields.io/badge/Commit-$shortSha-1f6feb?labelColor=30363d&style=flat-square`">"
+    }
+    return @(
+        $Marker,
+        "## $Heading",
+        '',
+        $attribution,
+        '',
+        '<p align="left">',
+        '  <img alt="Scope Issue replication" src="https://img.shields.io/badge/Scope-Issue%20replication-1f6feb?labelColor=30363d&style=flat-square">',
+        $commitBadge,
+        '</p>'
+    ) -join "`n"
+}
