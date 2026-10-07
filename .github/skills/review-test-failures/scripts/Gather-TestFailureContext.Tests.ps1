@@ -353,6 +353,26 @@ Describe 'Known Build Error loader-to-matcher boundary' -Tag 'KnownBuildIssues' 
                 body = '```json' + "`n" + ($rule | ConvertTo-Json -Depth 6) + "`n" + '```'
             }
         }
+
+        $matchTextAssignment = $gatherAst.Find({
+            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $args[0].Left.Extent.Text -eq '$matchText'
+        }, $true)
+        $matchAssignment = $gatherAst.Find({
+            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $args[0].Left.Extent.Text -eq '$failure[''matchesKnownIssue'']'
+        }, $true)
+        if (-not $matchTextAssignment -or -not $matchAssignment) { throw 'Known-issue cross-reference not found.' }
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $script:kbeCrossReference = [scriptblock]::Create($source.Substring(
+            $matchTextAssignment.Extent.StartOffset,
+            $matchAssignment.Extent.EndOffset - $matchTextAssignment.Extent.StartOffset))
+
+        function Invoke-KnownIssueCrossReference {
+            param($Failure, $KnownIssues)
+            & $script:kbeCrossReference
+            return $Failure.matchesKnownIssue
+        }
     }
 
     BeforeEach {
@@ -430,17 +450,13 @@ Describe 'Known Build Error loader-to-matcher boundary' -Tag 'KnownBuildIssues' 
 
     It 'does not combine expressions from different tests at the real cross-reference call site' {
         $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
-        $assignments = $gatherAst.FindAll({
-            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
-            $args[0].Left.Extent.Text -in @('$matchText', '$failure[''matchesKnownIssue'']')
-        }, $true)
-        $assignments.Count | Should -Be 2
-        foreach ($failure in @(
-            @{ testName = 'FileReaderTest'; messages = @($expressions[0]) },
-            @{ testName = 'FileSystemTest'; messages = @($expressions[1]) }
-        )) {
-            foreach ($assignment in $assignments) { Invoke-Expression $assignment.Extent.Text }
-            $failure.matchesKnownIssue | Should -BeNullOrEmpty
+        $failures = @(Get-DeduplicatedFailures -Failures @(
+            @{ testName = 'FileReaderTest'; platform = 'Android'; message = $expressions[0] },
+            @{ testName = 'FileSystemTest'; platform = 'Android'; message = $expressions[1] }
+        ))
+        $failures.Count | Should -Be 2
+        foreach ($failure in $failures) {
+            Invoke-KnownIssueCrossReference -Failure $failure -KnownIssues $knownIssues | Should -BeNullOrEmpty
         }
     }
 
@@ -490,6 +506,101 @@ Describe 'Known Build Error loader-to-matcher boundary' -Tag 'KnownBuildIssues' 
         @($loaded.patterns).Count | Should -Be 0
         Test-KnownIssueMatch -Patterns $loaded.patterns -Text 'first frame' | Should -BeNullOrEmpty
         Should -Invoke Write-Warning -Times 1 -Exactly -ParameterFilter { $Message -like '*ErrorMessage array*36435*' }
+    }
+
+    Context 'Occurrence-local array evidence' -Tag 'KnownIssueOccurrences' {
+        It 'does not assemble an array signature from separate occurrences of the same test and platform' {
+            $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame')
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $failures = @(Get-DeduplicatedFailures -Failures @(
+                @{ testName = 'Same.Test'; platform = 'Android'; message = 'first frame'; buildId = 1 },
+                @{ testName = 'Same.Test'; platform = 'Android'; message = 'last frame'; buildId = 2 }
+            ))
+            $failures.Count | Should -Be 1
+            $failures[0].occurrenceCount | Should -Be 2
+            $failures[0].messages | Should -Be @('first frame', 'last frame')
+            Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues | Should -BeNullOrEmpty
+        }
+
+        It 'matches a complete signature in one actual occurrence: <Case>' -ForEach @(
+            @{ Case = 'message'; Occurrence = @{ testName = 'Same.Test'; platform = 'Android'; message = "FIRST FRAME`nintermediate frame`nLAST FRAME" } }
+            @{ Case = 'errorMessage and name aliases'; Occurrence = @{ name = 'Same.Test'; platform = 'Android'; errorMessage = "FIRST FRAME`nintermediate frame`nLAST FRAME" } }
+        ) {
+            $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame')
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $failures = @(Get-DeduplicatedFailures -Failures @(
+                @{ testName = 'Same.Test'; platform = 'Android'; message = 'unrelated occurrence' },
+                $Occurrence
+            ))
+            $failures.Count | Should -Be 1
+            (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be 36435
+        }
+
+        It 'does not reuse aggregate messages when occurrence evidence is absent: <Case>' -ForEach @(
+            @{ Case = 'no occurrences'; Occurrences = @() }
+            @{ Case = 'no message'; Occurrences = @(@{ testName = 'Same.Test'; platform = 'Android' }) }
+            @{ Case = 'blank message'; Occurrences = @(@{ testName = 'Same.Test'; platform = 'Android'; message = ' ' }) }
+        ) {
+            $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame')
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $failure = @{ testName = 'Same.Test'; messages = @('first frame', 'last frame'); occurrences = $Occurrences }
+            Invoke-KnownIssueCrossReference -Failure $failure -KnownIssues $knownIssues | Should -BeNullOrEmpty
+        }
+
+        It 'selects the first matching rule even when it matches a later occurrence' {
+            $script:kbeIssueFixture = @(
+                (New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame') -Number 1),
+                (New-KnownBuildIssueFixture -ErrorMessage @('alternate first', 'alternate last') -Number 2)
+            )
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $failures = @(Get-DeduplicatedFailures -Failures @(
+                @{ testName = 'Same.Test'; platform = 'Android'; message = "alternate first`nalternate last" },
+                @{ testName = 'Same.Test'; platform = 'Android'; message = "first frame`nlast frame" }
+            ))
+            (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be 1
+        }
+
+        It 'preserves scalar and regex matching across aggregated occurrence messages: <Case>' -ForEach @(
+            @{ Case = 'scalar multiline literal'; Message = "first frame`nlast frame"; Pattern = $null }
+            @{ Case = 'regex'; Message = @('ignored first', 'ignored last'); Pattern = 'FIRST FRAME\s+LAST FRAME' }
+        ) {
+            $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage $Message -ErrorPattern $Pattern
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $failures = @(Get-DeduplicatedFailures -Failures @(
+                @{ testName = 'Same.Test'; platform = 'Android'; message = 'first frame' },
+                @{ testName = 'Same.Test'; platform = 'Android'; message = 'last frame' }
+            ))
+            (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be 36435
+        }
+
+        It 'preserves mixed rule ordering for scalar and array rules: <Case>' -ForEach @(
+            @{ Case = 'scalar first'; ArrayFirst = $false; Expected = 1 }
+            @{ Case = 'array first'; ArrayFirst = $true; Expected = 2 }
+        ) {
+            $scalar = New-KnownBuildIssueFixture -ErrorMessage 'first frame' -Number 1
+            $array = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame') -Number 2
+            $script:kbeIssueFixture = if ($ArrayFirst) { @($array, $scalar) } else { @($scalar, $array) }
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $failures = @(Get-DeduplicatedFailures -Failures @(
+                @{ testName = 'Same.Test'; platform = 'Android'; message = 'first frame' },
+                @{ testName = 'Same.Test'; platform = 'Android'; message = "first frame`nlast frame" }
+            ))
+            (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be $Expected
+        }
+
+        It 'retains the 20000-character cap for each occurrence: <Case>' -ForEach @(
+            @{ Case = 'at limit'; Padding = 0; Expected = 36435 }
+            @{ Case = 'past limit'; Padding = 1; Expected = $null }
+        ) {
+            $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame')
+            $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+            $prefix = "Same.Test`nfirst frame`n"
+            $message = "first frame`n" + ('x' * (20000 - $prefix.Length - "`nlast frame".Length + $Padding)) + "`nlast frame"
+            $failures = @(Get-DeduplicatedFailures -Failures @(
+                @{ testName = 'Same.Test'; platform = 'Android'; message = $message }
+            ))
+            (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be $Expected
+        }
     }
 }
 

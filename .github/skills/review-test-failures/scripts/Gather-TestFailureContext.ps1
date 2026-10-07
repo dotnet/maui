@@ -2620,10 +2620,12 @@ function Get-KnownBuildIssues {
 function Test-KnownIssueMatch {
     # Returns the first known-issue {number,title,url} whose pattern matches $Text,
     # or $null. Regex matches use a short timeout to defang a pathological pattern.
-    # Literal arrays require every expression, in order, on distinct subsequent lines.
+    # Literal arrays require every expression on distinct subsequent lines in one
+    # occurrence. Omitted occurrence text preserves standalone single-text matching.
     param(
         [object[]]$Patterns,
-        [string]$Text
+        [string]$Text,
+        [string[]]$OccurrenceTexts
     )
 
     if ([string]::IsNullOrWhiteSpace($Text) -or -not $Patterns) {
@@ -2633,7 +2635,10 @@ function Test-KnownIssueMatch {
         $Text = $Text.Substring(0, 20000)
     }
 
-    $lines = $null
+    $arrayTexts = @($Text)
+    if ($PSBoundParameters.ContainsKey('OccurrenceTexts')) {
+        $arrayTexts = @($OccurrenceTexts)
+    }
     foreach ($p in $Patterns) {
         $hit = $false
         if ($p.isRegex) {
@@ -2646,19 +2651,24 @@ function Test-KnownIssueMatch {
             catch { $hit = $false }
         }
         elseif ($p.pattern -is [System.Array]) {
-            if ($null -eq $lines) { $lines = $Text -split '\r\n|\n|\r' }
-            $lineIndex = 0
-            $hit = $p.pattern.Count -gt 0
-            foreach ($expression in $p.pattern) {
-                $found = $false
-                while ($lineIndex -lt $lines.Count -and -not $found) {
-                    $found = $lines[$lineIndex].IndexOf($expression, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
-                    $lineIndex++
+            foreach ($arrayText in $arrayTexts) {
+                if ([string]::IsNullOrWhiteSpace($arrayText)) { continue }
+                if ($arrayText.Length -gt 20000) { $arrayText = $arrayText.Substring(0, 20000) }
+                $lines = $arrayText -split '\r\n|\n|\r'
+                $lineIndex = 0
+                $hit = $p.pattern.Count -gt 0
+                foreach ($expression in $p.pattern) {
+                    $found = $false
+                    while ($lineIndex -lt $lines.Count -and -not $found) {
+                        $found = $lines[$lineIndex].IndexOf($expression, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+                        $lineIndex++
+                    }
+                    if (-not $found) {
+                        $hit = $false
+                        break
+                    }
                 }
-                if (-not $found) {
-                    $hit = $false
-                    break
-                }
+                if ($hit) { break }
             }
         }
         else {
@@ -4633,10 +4643,14 @@ foreach ($failure in $dedupedFailures) {
     }
     $failure['retriedStillFailing'] = [bool]$retried
 
-    # Known-issue cross-reference for this failure only. A signature match is a hint;
-    # attribution still needs independent evidence, not a presumed flake verdict.
+    # Arrays must match within one occurrence; scalar/regex rules keep aggregated text.
+    # A signature match is a hint, not a presumed flake verdict.
     $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
-    $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText
+    $occurrenceMatchTexts = @($failure.occurrences | ForEach-Object {
+        (@([string](Get-ObjectValue -Object $_ -Names @("testName", "name") -Default $failure.testName)) +
+            @([string](Get-ObjectValue -Object $_ -Names @("message", "errorMessage")))) -join "`n"
+    })
+    $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText -OccurrenceTexts $occurrenceMatchTexts
 
     # ci-scan cross-reference: does this failure's exact test (or its failing leg) appear in the
     # multi-build base-branch failure registry for THIS PR's base branch family? A hit means the

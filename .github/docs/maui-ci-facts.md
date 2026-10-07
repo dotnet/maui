@@ -407,10 +407,12 @@ on appearance alone:
    a *different* test that merely shares a red leg on base. An uncorroborated text match (no
    exact base match) stays `indeterminate` (`Needs human investigation`).
    The local gatherer preserves `ErrorMessage` arrays as ordered AND conditions:
-   every literal must occur on a distinct subsequent line in the same failure text,
+   every literal must occur on a distinct subsequent line within one actual occurrence,
    following the [public BA array contract](https://github.com/dotnet/arcade/blob/5a63d054ea793bdbdb6aa9f4558558e3a8f41529/Documentation/Build%20Analysis/KnownIssues.md#fill-out-known-issues-with-a-list-of-errors).
-   Existing case-insensitive scalar substring and regex handling, the 20,000-character
-   text limit, and attribution gates are unchanged. This local hint matcher does not
+   Arrays cannot combine partial messages from separate occurrences of a deduplicated
+   test/platform. Scalar and regex rules retain their existing aggregated text.
+   Case-insensitive matching, the 20,000-character cap per matched text, first-matching-rule
+   selection, and attribution gates are unchanged. This local hint matcher does not
    establish full Build Analysis/Build Insights service parity.
 4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
    attempt (the recovered leg does not surface as a failure at all). A leg that was retried
