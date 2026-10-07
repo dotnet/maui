@@ -20,7 +20,9 @@ param(
     [ValidateRange(1024, 16777216)]
     [int]$MaxLogBytes = 4194304,
     [ValidateRange(1048576, 268435456)]
-    [long]$MaxTotalDownloadBytes = 67108864
+    [long]$MaxTotalDownloadBytes = 67108864,
+    [ValidateRange(60, 3600)]
+    [int]$MaxProducerSeconds = 600
 )
 
 $ErrorActionPreference = 'Stop'
@@ -35,6 +37,7 @@ $script:TransientStatusCodes = @(408, 429, 500, 502, 503, 504)
 $script:MaxHttpAttempts = 3
 $script:HttpTimeoutSeconds = 60
 $script:RemainingDownloadBytes = $MaxTotalDownloadBytes
+$script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds($MaxProducerSeconds)
 
 function Get-CiFixIssueField {
     param(
@@ -77,19 +80,34 @@ function Invoke-CiFixAzdoRequest {
 
     $requestByteLimit = [int][Math]::Min([long]$MaxBytes, $script:RemainingDownloadBytes)
     $lastError = $null
+    $lastStatusCode = $null
+    $lastRedirectLocation = $null
+    $attemptsMade = 0
     for ($attempt = 1; $attempt -le $script:MaxHttpAttempts; $attempt++) {
+        $producerRemaining = $script:ProducerDeadlineUtc - [DateTime]::UtcNow
+        if ($producerRemaining -le [TimeSpan]::Zero) {
+            $lastError = 'producer deadline exhausted'
+            break
+        }
+
+        $attemptsMade = $attempt
+        $attemptTimeout = [TimeSpan]::FromSeconds(
+            [Math]::Min($script:HttpTimeoutSeconds, $producerRemaining.TotalSeconds))
+        $cancellation = [Threading.CancellationTokenSource]::new()
+        $cancellation.CancelAfter($attemptTimeout)
         $handler = [System.Net.Http.HttpClientHandler]::new()
         $handler.AllowAutoRedirect = $false
         $client = [System.Net.Http.HttpClient]::new($handler)
-        $client.Timeout = [TimeSpan]::FromSeconds($script:HttpTimeoutSeconds)
+        $client.Timeout = [Threading.Timeout]::InfiniteTimeSpan
         try {
             $request = [System.Net.Http.HttpRequestMessage]::new(
                 [System.Net.Http.HttpMethod]::Get,
                 $Uri)
             try {
-                $response = $client.Send(
+                $response = $client.SendAsync(
                     $request,
-                    [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead)
+                    [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,
+                    $cancellation.Token).GetAwaiter().GetResult()
                 try {
                     $statusCode = [int]$response.StatusCode
                     $redirectLocation = if ($null -ne $response.Headers.Location) {
@@ -97,12 +115,19 @@ function Invoke-CiFixAzdoRequest {
                     } else {
                         $null
                     }
+                    $lastStatusCode = $statusCode
+                    $lastRedirectLocation = $redirectLocation
                     if (-not $response.IsSuccessStatusCode) {
                         $errorText = "HTTP $statusCode"
                         if ($script:TransientStatusCodes -contains $statusCode -and
                             $attempt -lt $script:MaxHttpAttempts) {
                             $lastError = $errorText
-                            Start-Sleep -Seconds ([Math]::Pow(2, $attempt - 1))
+                            $delaySeconds = [Math]::Pow(2, $attempt - 1)
+                            if (($script:ProducerDeadlineUtc - [DateTime]::UtcNow).TotalSeconds -le $delaySeconds) {
+                                $lastError = 'producer deadline exhausted before retry'
+                                break
+                            }
+                            Start-Sleep -Seconds $delaySeconds
                             continue
                         }
 
@@ -117,13 +142,18 @@ function Invoke-CiFixAzdoRequest {
                         }
                     }
 
-                    $stream = $response.Content.ReadAsStream()
+                    $stream = $response.Content.ReadAsStreamAsync(
+                        $cancellation.Token).GetAwaiter().GetResult()
                     try {
                         $buffer = [byte[]]::new(65536)
                         $memory = [System.IO.MemoryStream]::new()
                         try {
                             $truncated = $false
-                            while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) {
+                            while (($read = $stream.ReadAsync(
+                                        $buffer,
+                                        0,
+                                        $buffer.Length,
+                                        $cancellation.Token).GetAwaiter().GetResult()) -gt 0) {
                                 $remaining = ($requestByteLimit + 1) - [int]$memory.Length
                                 if ($remaining -le 0) {
                                     $truncated = $true
@@ -179,25 +209,48 @@ function Invoke-CiFixAzdoRequest {
             }
         }
         catch {
-            $lastError = $_.Exception.Message
+            $caughtException = $_.Exception
+            $operationCanceled = $false
+            while ($null -ne $caughtException) {
+                if ($caughtException -is [OperationCanceledException]) {
+                    $operationCanceled = $true
+                    break
+                }
+                $caughtException = $caughtException.InnerException
+            }
+            $lastError = if ($operationCanceled) {
+                if ([DateTime]::UtcNow -ge $script:ProducerDeadlineUtc) {
+                    'producer deadline exhausted'
+                } else {
+                    "request deadline exhausted after $([Math]::Round($attemptTimeout.TotalSeconds, 3)) seconds"
+                }
+            } else {
+                $_.Exception.Message
+            }
             if ($attempt -lt $script:MaxHttpAttempts) {
-                Start-Sleep -Seconds ([Math]::Pow(2, $attempt - 1))
+                $delaySeconds = [Math]::Pow(2, $attempt - 1)
+                if (($script:ProducerDeadlineUtc - [DateTime]::UtcNow).TotalSeconds -le $delaySeconds) {
+                    $lastError = 'producer deadline exhausted before retry'
+                    break
+                }
+                Start-Sleep -Seconds $delaySeconds
                 continue
             }
         }
         finally {
             $client.Dispose()
+            $cancellation.Dispose()
         }
     }
 
     return [pscustomobject]@{
         Succeeded = $false
-        StatusCode = $null
-        RedirectLocation = $null
+        StatusCode = $lastStatusCode
+        RedirectLocation = $lastRedirectLocation
         Content = ''
         Truncated = $false
         Error = $lastError
-        Attempts = $script:MaxHttpAttempts
+        Attempts = $attemptsMade
     }
 }
 
@@ -232,7 +285,13 @@ function ConvertFrom-CiFixJsonResponse {
 }
 
 function Get-CiFixFailedTaskRecords {
-    param([AllowNull()]$Timeline)
+    param(
+        [AllowNull()]$Timeline,
+        [string]$Source = 'current',
+        [AllowNull()][string]$SourceTimelineId,
+        [AllowNull()][string]$SourceRecordId,
+        [AllowNull()][int]$SourceAttempt
+    )
 
     if ($null -eq $Timeline -or $null -eq $Timeline.records) {
         return @()
@@ -273,10 +332,58 @@ function Get-CiFixFailedTaskRecords {
                 $null
             }
             attempt = $record.attempt
+            source = $Source
+            sourceTimelineId = $SourceTimelineId
+            sourceRecordId = $SourceRecordId
+            sourceAttempt = $SourceAttempt
         }
     }
 
     return @($records)
+}
+
+function Get-CiFixPreviousAttemptReferences {
+    param([AllowNull()]$Timeline)
+
+    if ($null -eq $Timeline -or $null -eq $Timeline.records) {
+        return @()
+    }
+
+    $seen = @{}
+    $references = @()
+    foreach ($record in @($Timeline.records)) {
+        foreach ($previousAttempt in @($record.previousAttempts)) {
+            $timelineId = [Guid]::Empty
+            $recordId = [Guid]::Empty
+            $attempt = 0
+            $valid = [Guid]::TryParse([string]$previousAttempt.timelineId, [ref]$timelineId) -and
+                [Guid]::TryParse([string]$previousAttempt.recordId, [ref]$recordId) -and
+                [int]::TryParse([string]$previousAttempt.attempt, [ref]$attempt) -and
+                $attempt -gt 0
+            $key = if ($valid) {
+                "$($timelineId.ToString('D'))/$($recordId.ToString('D'))/$attempt"
+            } else {
+                "invalid/$([string]$previousAttempt.timelineId)/$([string]$previousAttempt.recordId)/$([string]$previousAttempt.attempt)"
+            }
+            if ($seen.ContainsKey($key)) {
+                continue
+            }
+            $seen[$key] = $true
+
+            $references += [pscustomobject]@{
+                valid = $valid
+                timelineId = if ($valid) { $timelineId.ToString('D') } else { [string]$previousAttempt.timelineId }
+                recordId = if ($valid) { $recordId.ToString('D') } else { [string]$previousAttempt.recordId }
+                attempt = if ($valid) { $attempt } else { $null }
+                referencedByRecordId = [string]$record.id
+                referencedByName = [string]$record.name
+                referencedByType = [string]$record.type
+                referencedByResult = [string]$record.result
+            }
+        }
+    }
+
+    return @($references)
 }
 
 function Get-CiFixBuildEvidence {
@@ -308,10 +415,143 @@ function Get-CiFixBuildEvidence {
     $failedTasks = @()
     $complete = [bool]$timelineResult.Succeeded
     $allFailedTasks = if ($timelineResult.Succeeded) {
-        @(Get-CiFixFailedTaskRecords -Timeline $timelineResult.Value)
+        @(Get-CiFixFailedTaskRecords `
+                -Timeline $timelineResult.Value `
+                -SourceTimelineId ([string]$timelineResult.Value.id))
     } else {
         @()
     }
+    $previousAttemptReferences = if ($timelineResult.Succeeded) {
+        @(Get-CiFixPreviousAttemptReferences -Timeline $timelineResult.Value)
+    } else {
+        @()
+    }
+    $previousAttempts = @()
+    $previousAttemptsComplete = [bool]$timelineResult.Succeeded
+    $invalidPreviousAttemptReferences = @($previousAttemptReferences | Where-Object { -not $_.valid })
+    $validPreviousAttemptTimelines = @(
+        $previousAttemptReferences |
+            Where-Object valid |
+            Group-Object timelineId)
+    $previousAttemptsTruncatedByCount = $validPreviousAttemptTimelines.Count -gt $MaxFailedLogs
+    if ($previousAttemptsTruncatedByCount) {
+        $complete = $false
+        $previousAttemptsComplete = $false
+    }
+
+    foreach ($reference in $invalidPreviousAttemptReferences) {
+        $complete = $false
+        $previousAttemptsComplete = $false
+        $previousAttempts += [pscustomobject]@{
+            timelineId = $reference.timelineId
+            recordId = $reference.recordId
+            attempt = $reference.attempt
+            referencedByRecordId = $reference.referencedByRecordId
+            referencedByName = $reference.referencedByName
+            referenceCount = 1
+            references = @($reference)
+            status = 'unavailable'
+            httpStatus = $null
+            redirectLocation = $null
+            attempts = 0
+            path = $null
+            failedTaskCount = 0
+            error = 'previous-attempt reference is missing or invalid'
+        }
+    }
+
+    foreach ($timelineGroup in @($validPreviousAttemptTimelines | Select-Object -First $MaxFailedLogs)) {
+        $references = @($timelineGroup.Group)
+        $firstReference = $references[0]
+        $timelineId = [string]$timelineGroup.Name
+        $previousTimelineUri = "$($script:AzdoBaseUri)/builds/$BuildId/timeline/${timelineId}?api-version=7.1"
+        $previousTimelineResponse = & $RequestInvoker $previousTimelineUri $TimelineByteLimit
+        $previousTimelineResult = ConvertFrom-CiFixJsonResponse `
+            -Response $previousTimelineResponse `
+            -Description "build $BuildId previous-attempt timeline $timelineId"
+        $previousTimelineRelativePath = "build_$BuildId/previous_timeline_$timelineId.json"
+        $previousTimelinePath = Join-Path $OutputDirectory $previousTimelineRelativePath
+        if ($previousTimelineResponse.Content.Length -gt 0) {
+            [IO.File]::WriteAllText(
+                $previousTimelinePath,
+                $previousTimelineResponse.Content,
+                [Text.UTF8Encoding]::new($false))
+        }
+
+        $timelineRecordIds = @{}
+        if ($previousTimelineResult.Succeeded) {
+            foreach ($timelineRecord in @($previousTimelineResult.Value.records)) {
+                $timelineRecordIds[[string]$timelineRecord.id] = $true
+            }
+        }
+        $missingRecordIds = @(
+            $references |
+                Where-Object { -not $timelineRecordIds.ContainsKey([string]$_.recordId) } |
+                ForEach-Object recordId)
+        $previousFailedTasks = if ($previousTimelineResult.Succeeded -and $missingRecordIds.Count -eq 0) {
+            @(Get-CiFixFailedTaskRecords `
+                    -Timeline $previousTimelineResult.Value `
+                    -Source 'previous_attempt' `
+                    -SourceTimelineId $timelineId `
+                    -SourceRecordId $firstReference.recordId `
+                    -SourceAttempt $firstReference.attempt)
+        } else {
+            @()
+        }
+        if (-not $previousTimelineResult.Succeeded -or
+            $missingRecordIds.Count -gt 0 -or
+            $previousFailedTasks.Count -eq 0) {
+            $complete = $false
+            $previousAttemptsComplete = $false
+        }
+        $allFailedTasks += $previousFailedTasks
+
+        $previousAttempts += [pscustomobject]@{
+            timelineId = $timelineId
+            recordId = $firstReference.recordId
+            attempt = $firstReference.attempt
+            referencedByRecordId = $firstReference.referencedByRecordId
+            referencedByName = $firstReference.referencedByName
+            referenceCount = $references.Count
+            references = @($references)
+            status = if ($previousTimelineResult.Succeeded -and
+                $missingRecordIds.Count -eq 0 -and
+                $previousFailedTasks.Count -gt 0) {
+                'available'
+            } elseif ($previousTimelineResponse.Truncated) {
+                'truncated'
+            } else {
+                'error'
+            }
+            httpStatus = $previousTimelineResponse.StatusCode
+            redirectLocation = $previousTimelineResponse.RedirectLocation
+            attempts = $previousTimelineResponse.Attempts
+            path = if ($previousTimelineResponse.Content.Length -gt 0) { $previousTimelineRelativePath } else { $null }
+            failedTaskCount = $previousFailedTasks.Count
+            error = if (-not $previousTimelineResult.Succeeded) {
+                $previousTimelineResult.Error
+            } elseif ($missingRecordIds.Count -gt 0) {
+                "referenced previous-attempt record(s) not found: $($missingRecordIds -join ', ')"
+            } elseif ($previousFailedTasks.Count -eq 0) {
+                'referenced previous attempt contained no failed Task records'
+            } else {
+                ''
+            }
+        }
+    }
+
+    $deduplicatedFailedTasks = @()
+    $seenFailedTaskLogs = @{}
+    foreach ($task in $allFailedTasks) {
+        if ($task.logIdValid) {
+            if ($seenFailedTaskLogs.ContainsKey([long]$task.logId)) {
+                continue
+            }
+            $seenFailedTaskLogs[[long]$task.logId] = $true
+        }
+        $deduplicatedFailedTasks += $task
+    }
+    $allFailedTasks = @($deduplicatedFailedTasks)
     $validFailedTaskCount = @($allFailedTasks | Where-Object logIdValid).Count
     $logsTruncatedByCount = $validFailedTaskCount -gt $MaxFailedLogs
     if ($logsTruncatedByCount) {
@@ -322,12 +562,19 @@ function Get-CiFixBuildEvidence {
     foreach ($task in $allFailedTasks) {
         if (-not $task.logIdValid) {
             $complete = $false
+            if ($task.source -eq 'previous_attempt') {
+                $previousAttemptsComplete = $false
+            }
             $failedTasks += [pscustomobject]@{
                 recordId = $task.recordId
                 name = $task.name
                 attempt = $task.attempt
                 logId = $null
                 rawLogId = $task.rawLogId
+                source = $task.source
+                sourceTimelineId = $task.sourceTimelineId
+                sourceRecordId = $task.sourceRecordId
+                sourceAttempt = $task.sourceAttempt
                 status = 'unavailable'
                 httpStatus = $null
                 redirectLocation = $null
@@ -340,12 +587,19 @@ function Get-CiFixBuildEvidence {
         }
 
         if ($fetchedFailedTaskCount -ge $MaxFailedLogs) {
+            if ($task.source -eq 'previous_attempt') {
+                $previousAttemptsComplete = $false
+            }
             $failedTasks += [pscustomobject]@{
                 recordId = $task.recordId
                 name = $task.name
                 attempt = $task.attempt
                 logId = $task.logId
                 rawLogId = $task.rawLogId
+                source = $task.source
+                sourceTimelineId = $task.sourceTimelineId
+                sourceRecordId = $task.sourceRecordId
+                sourceAttempt = $task.sourceAttempt
                 status = 'not_fetched_limit'
                 httpStatus = $null
                 redirectLocation = $null
@@ -367,6 +621,9 @@ function Get-CiFixBuildEvidence {
         }
         if (-not $logResponse.Succeeded) {
             $complete = $false
+            if ($task.source -eq 'previous_attempt') {
+                $previousAttemptsComplete = $false
+            }
         }
 
         $failedTasks += [pscustomobject]@{
@@ -375,6 +632,10 @@ function Get-CiFixBuildEvidence {
             attempt = $task.attempt
             logId = $task.logId
             rawLogId = $task.rawLogId
+            source = $task.source
+            sourceTimelineId = $task.sourceTimelineId
+            sourceRecordId = $task.sourceRecordId
+            sourceAttempt = $task.sourceAttempt
             status = if ($logResponse.Succeeded) { 'available' } elseif ($logResponse.Truncated) { 'truncated' } else { 'error' }
             httpStatus = $logResponse.StatusCode
             redirectLocation = $logResponse.RedirectLocation
@@ -399,6 +660,11 @@ function Get-CiFixBuildEvidence {
         failedTaskCount = $allFailedTasks.Count
         fetchedFailedTaskCount = $fetchedFailedTaskCount
         logsTruncatedByCount = $logsTruncatedByCount
+        previousAttemptCount = $previousAttemptReferences.Count
+        previousAttemptTimelineCount = $validPreviousAttemptTimelines.Count
+        previousAttemptsComplete = $previousAttemptsComplete
+        previousAttemptsTruncatedByCount = $previousAttemptsTruncatedByCount
+        previousAttempts = @($previousAttempts)
         failedTasks = @($failedTasks)
     }
 }
@@ -438,6 +704,11 @@ function Get-CiFixBuildEvidenceBounded {
             failedTaskCount = 0
             fetchedFailedTaskCount = 0
             logsTruncatedByCount = $false
+            previousAttemptCount = 0
+            previousAttemptTimelineCount = 0
+            previousAttemptsComplete = $false
+            previousAttemptsTruncatedByCount = $false
+            previousAttempts = @()
             failedTasks = @()
         }
         $Evidence[$BuildId] = $limited
@@ -466,6 +737,7 @@ function New-CiFixAzdoEvidence {
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
         [int]$TotalBuildLimit = 40,
         [long]$TotalDownloadByteLimit = 67108864,
+        [int]$ProducerSeconds = 600,
         [scriptblock]$RequestInvoker = {
             param($RequestUri, $ByteLimit)
             Invoke-CiFixAzdoRequest -Uri $RequestUri -MaxBytes $ByteLimit
@@ -484,6 +756,7 @@ function New-CiFixAzdoEvidence {
 
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     $script:RemainingDownloadBytes = $TotalDownloadByteLimit
+    $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds($ProducerSeconds)
 
     $issues = @()
     $requestedPipelines = [ordered]@{}
@@ -677,6 +950,7 @@ function New-CiFixAzdoEvidence {
             maxTimelineBytes = $TimelineByteLimit
             maxLogBytes = $LogByteLimit
             maxTotalDownloadBytes = $TotalDownloadByteLimit
+            maxProducerSeconds = $ProducerSeconds
         }
         downloadedBytes = $TotalDownloadByteLimit - $script:RemainingDownloadBytes
         issues = @($issues)
@@ -701,5 +975,6 @@ if ($MyInvocation.InvocationName -ne '.') {
         -TotalBuildLimit $MaxTotalBuilds `
         -TimelineByteLimit $MaxTimelineBytes `
         -LogByteLimit $MaxLogBytes `
-        -TotalDownloadByteLimit $MaxTotalDownloadBytes | Out-Null
+        -TotalDownloadByteLimit $MaxTotalDownloadBytes `
+        -ProducerSeconds $MaxProducerSeconds | Out-Null
 }

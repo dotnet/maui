@@ -18,6 +18,7 @@ BeforeAll {
             'Invoke-CiFixAzdoRequest',
             'ConvertFrom-CiFixJsonResponse',
             'Get-CiFixFailedTaskRecords',
+            'Get-CiFixPreviousAttemptReferences',
             'Get-CiFixBuildEvidence',
             'Get-CiFixBuildEvidenceBounded',
             'New-CiFixAzdoEvidence')) {
@@ -41,6 +42,7 @@ BeforeAll {
     $script:MaxHttpAttempts = 3
     $script:HttpTimeoutSeconds = 60
     $script:RemainingDownloadBytes = 67108864
+    $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddMinutes(10)
 }
 
 Describe 'Get-CiFixAzdoEvidence' {
@@ -256,6 +258,261 @@ Describe 'Get-CiFixAzdoEvidence' {
         }
     }
 
+    It 'cancels a response body that stalls after sending headers' {
+        $port = Get-Random -Minimum 30000 -Maximum 45000
+        $readyPath = Join-Path $TestDrive 'stall-server.ready'
+        $serverJob = Start-Job -ArgumentList $port, $readyPath -ScriptBlock {
+            param($Port, $ReadyPath)
+
+            $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
+            $listener.Start()
+            Set-Content -LiteralPath $ReadyPath -Value 'ready'
+            try {
+                $client = $listener.AcceptTcpClient()
+                try {
+                    $stream = $client.GetStream()
+                    $reader = [IO.StreamReader]::new($stream, [Text.Encoding]::ASCII, $false, 1024, $true)
+                    while (($line = $reader.ReadLine()) -ne '') {
+                        if ($null -eq $line) {
+                            break
+                        }
+                    }
+                    $response = "HTTP/1.1 200 OK`r`nContent-Length: 100`r`nConnection: close`r`n`r`n"
+                    $bytes = [Text.Encoding]::ASCII.GetBytes($response)
+                    $stream.Write($bytes, 0, $bytes.Length)
+                    Start-Sleep -Seconds 5
+                }
+                finally {
+                    $client.Dispose()
+                }
+            }
+            finally {
+                $listener.Stop()
+            }
+        }
+
+        try {
+            $deadline = [DateTime]::UtcNow.AddSeconds(5)
+            while (-not (Test-Path -LiteralPath $readyPath) -and [DateTime]::UtcNow -lt $deadline) {
+                Start-Sleep -Milliseconds 25
+            }
+            Test-Path -LiteralPath $readyPath | Should -BeTrue
+
+            $requestJob = Start-Job -ArgumentList $scriptPath, $port -ScriptBlock {
+                param($ScriptPath, $Port)
+
+                . $ScriptPath
+                $script:RemainingDownloadBytes = 10000
+                $script:MaxHttpAttempts = 1
+                $script:HttpTimeoutSeconds = 1
+                $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds(1)
+                Invoke-CiFixAzdoRequest -Uri "http://127.0.0.1:$Port/stall" -MaxBytes 10000
+            }
+            try {
+                Wait-Job -Job $requestJob -Timeout 3 | Should -Not -BeNullOrEmpty
+                $result = Receive-Job -Job $requestJob
+                $result.Succeeded | Should -BeFalse
+                $result.StatusCode | Should -Be 200
+                $result.Error | Should -Match 'deadline exhausted'
+            }
+            finally {
+                Stop-Job -Job $requestJob -ErrorAction SilentlyContinue
+                Remove-Job -Job $requestJob -Force
+            }
+        }
+        finally {
+            Wait-Job -Job $serverJob -Timeout 7 | Out-Null
+            Remove-Job -Job $serverJob -Force
+        }
+    }
+
+    It 'prefetches failed task logs from referenced previous-attempt timelines' {
+        $destination = Join-Path $TestDrive 'previous-attempt'
+        $previousTimelineId = '11111111-1111-1111-1111-111111111111'
+        $previousRecordId = '22222222-2222-2222-2222-222222222222'
+        $secondPreviousRecordId = '55555555-5555-5555-5555-555555555555'
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = (@{
+                            id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+                            records = @(
+                                @{
+                                    id = '33333333-3333-3333-3333-333333333333'
+                                    type = 'Job'
+                                    result = 'succeeded'
+                                    name = 'retried job'
+                                    previousAttempts = @(
+                                        @{
+                                            timelineId = $previousTimelineId
+                                            recordId = $previousRecordId
+                                            attempt = 1
+                                        }
+                                    )
+                                },
+                                @{
+                                    id = '66666666-6666-6666-6666-666666666666'
+                                    type = 'Job'
+                                    result = 'succeeded'
+                                    name = 'second retried job'
+                                    previousAttempts = @(
+                                        @{
+                                            timelineId = $previousTimelineId
+                                            recordId = $secondPreviousRecordId
+                                            attempt = 1
+                                        }
+                                    )
+                                }
+                            )
+                        } | ConvertTo-Json -Depth 10 -Compress)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            if ($Uri -match [regex]::Escape("/timeline/$previousTimelineId")) {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = (@{
+                            id = $previousTimelineId
+                            records = @(
+                                @{
+                                    id = $previousRecordId
+                                    type = 'Job'
+                                    result = 'failed'
+                                    name = 'retried job'
+                                },
+                                @{
+                                    id = '44444444-4444-4444-4444-444444444444'
+                                    parentId = $previousRecordId
+                                    type = 'Task'
+                                    result = 'failed'
+                                    name = 'failed first attempt'
+                                    log = @{ id = 77 }
+                                },
+                                @{
+                                    id = $secondPreviousRecordId
+                                    type = 'Job'
+                                    result = 'failed'
+                                    name = 'second retried job'
+                                },
+                                @{
+                                    id = '77777777-7777-7777-7777-777777777777'
+                                    parentId = $secondPreviousRecordId
+                                    type = 'Task'
+                                    result = 'failed'
+                                    name = 'second failed first attempt'
+                                    log = @{ id = 78 }
+                                }
+                            )
+                        } | ConvertTo-Json -Depth 10 -Compress)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            if ($Uri -match '/logs/(77|78)') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = 'first-attempt failure signature'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+
+            throw "Unexpected URI: $Uri"
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeTrue
+        $result.previousAttemptsComplete | Should -BeTrue
+        $result.previousAttemptCount | Should -Be 2
+        $result.previousAttemptTimelineCount | Should -Be 1
+        $result.previousAttempts[0].referenceCount | Should -Be 2
+        $result.failedTaskCount | Should -Be 2
+        $result.failedTasks[0].source | Should -BeExactly 'previous_attempt'
+        $result.failedTasks[0].sourceTimelineId | Should -BeExactly $previousTimelineId
+        $result.failedTasks[0].sourceRecordId | Should -BeExactly $previousRecordId
+        $result.failedTasks[0].sourceAttempt | Should -Be 1
+        $result.failedTasks[0].status | Should -BeExactly 'available'
+        @($requestedUris | Where-Object { $_ -match [regex]::Escape("/timeline/$previousTimelineId") }).Count |
+            Should -Be 1
+    }
+
+    It 'marks a build incomplete when a referenced previous-attempt timeline is unavailable' {
+        $destination = Join-Path $TestDrive 'missing-previous-attempt'
+        $previousTimelineId = '11111111-1111-1111-1111-111111111111'
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            if ($Uri -match '/timeline\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = (@{
+                            records = @(
+                                @{
+                                    id = '33333333-3333-3333-3333-333333333333'
+                                    type = 'Job'
+                                    result = 'succeeded'
+                                    previousAttempts = @(
+                                        @{
+                                            timelineId = $previousTimelineId
+                                            recordId = '22222222-2222-2222-2222-222222222222'
+                                            attempt = 1
+                                        }
+                                    )
+                                }
+                            )
+                        } | ConvertTo-Json -Depth 10 -Compress)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            if ($Uri -match [regex]::Escape("/timeline/$previousTimelineId")) {
+                return [pscustomobject]@{
+                    Succeeded = $false
+                    StatusCode = 404
+                    Content = ''
+                    Truncated = $false
+                    Error = 'HTTP 404'
+                    Attempts = 1
+                }
+            }
+
+            throw "Unexpected URI: $Uri"
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeFalse
+        $result.previousAttemptsComplete | Should -BeFalse
+        $result.previousAttempts[0].status | Should -BeExactly 'error'
+        $result.previousAttempts[0].httpStatus | Should -Be 404
+        $result.failedTaskCount | Should -Be 0
+    }
+
     It 'deduplicates builds across multiple issues and pipelines' {
         $snapshotPath = Join-Path $TestDrive 'candidates.json'
         $destination = Join-Path $TestDrive 'evidence'
@@ -433,6 +690,8 @@ Describe 'CI-fixer workflow evidence wiring' {
             $workflow | Should -Not -Match 'Fetch those failed earlier-attempt log\(s\)'
         }
 
+        $mainWorkflow | Should -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/main'"
+        $net11Workflow | Should -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/net11\.0'"
         $mainWorkflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch main'
         $net11Workflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch net11\.0'
     }

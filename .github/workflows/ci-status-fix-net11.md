@@ -135,7 +135,8 @@ jobs:
       ci_fix_candidates: ${{ steps.ci_fix_context.outputs.candidates }}
 
 if: |
-  github.repository == 'dotnet/maui'
+  github.repository == 'dotnet/maui' &&
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/net11.0')
 
 model: gpt-6.1-sol
 engine:
@@ -1633,10 +1634,12 @@ Azure downloader from the agent shell.
 
 - A build is usable only when its manifest `complete == true`.
 - `timeline.status` or any `failedTasks[].status` other than `available`, or
-  `logsTruncatedByCount == true`, means retrieval is incomplete. Missing or
-  invalid log IDs are retained as `unavailable`; redirect responses are retained
-  with their original HTTP status. None of these states is proof that the
-  signature is absent or that the issue is fixed.
+  `logsTruncatedByCount == true`, `previousAttemptsComplete == false`, or
+  `previousAttemptsTruncatedByCount == true`, means retrieval is incomplete.
+  Missing or invalid log IDs and invalid prior-attempt references are retained
+  as `unavailable`; redirect responses are retained with their original HTTP
+  status. None of these states is proof that the signature is absent or that
+  the issue is fixed.
 - Keep cited-build retrieval separate from current-build evidence. A cited
   historical build may be 404 while the latest build and its failed-task logs
   are fully available.
