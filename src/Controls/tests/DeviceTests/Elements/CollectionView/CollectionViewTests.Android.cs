@@ -108,6 +108,75 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReloadingItemsWithEmptyViewKeepsHeaderFooterAndItemsInPlace()
+		{
+			SetupBuilder();
+
+			var header = new Label { Text = "Header" };
+			var footer = new Label { Text = "Footer" };
+			var emptyView = new Label { Text = "Empty" };
+			var items = new[] { "Item 1", "Item 2", "Item 3" };
+
+			var collectionView = new CollectionView
+			{
+				Header = header,
+				Footer = footer,
+				EmptyView = emptyView,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				}),
+				ItemsSource = items
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
+
+				// Every reload swaps the RecyclerView between the empty view adapter and the items adapter,
+				// which take their view holders from the same pool
+				for (var reload = 0; reload < 30; reload++)
+				{
+					collectionView.ItemsSource = null;
+					LayoutAndGetViewHolder(recyclerView);
+					AssertShowsView(header, 0, reload);
+					AssertShowsView(emptyView, 1, reload);
+					AssertShowsView(footer, 2, reload);
+
+					collectionView.ItemsSource = items;
+					LayoutAndGetViewHolder(recyclerView);
+					AssertShowsView(header, 0, reload);
+
+					for (var i = 0; i < items.Length; i++)
+					{
+						var viewHolder = recyclerView.FindViewHolderForAdapterPosition(i + 1);
+						Assert.True(viewHolder is TemplatedItemViewHolder templatedViewHolder && Equals(templatedViewHolder.View?.BindingContext, items[i]),
+							$"Reload {reload}: position {i + 1} should show {items[i]}, but shows {Describe(viewHolder)}");
+					}
+
+					AssertShowsView(footer, items.Length + 1, reload);
+				}
+
+				static string Describe(global::AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder viewHolder) => viewHolder switch
+				{
+					SimpleViewHolder s => $"{(s.View as Label)?.Text} (view type {viewHolder.ItemViewType})",
+					TemplatedItemViewHolder t => $"{t.View?.BindingContext} (view type {viewHolder.ItemViewType})",
+					_ => $"{viewHolder}",
+				};
+
+				void AssertShowsView(View view, int position, int reload)
+				{
+					var viewHolder = recyclerView.FindViewHolderForAdapterPosition(position);
+					Assert.True(viewHolder is SimpleViewHolder simpleViewHolder && simpleViewHolder.View == view,
+						$"Reload {reload}: position {position} should show {((Label)view).Text}, but shows {Describe(viewHolder)}");
+				}
+			});
+		}
+
+		[Fact]
 		public async Task DisconnectingWhileEmptyViewLayoutIsQueuedDoesNotCrash()
 		{
 			SetupBuilder();
