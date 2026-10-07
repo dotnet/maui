@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Platform
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
+			// A pending fragment transaction can run after the navigation manager has been disconnected,
+			// for example when a modal NavigationPage is dismissed while it's still navigating
+			if ((_navigationManager ?? NavHostFragment?.StackNavigationManager) is not { HasNavHost: true })
+				return null!;
+
 			_fragmentContainerView ??= container as FragmentContainerView;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
