@@ -515,7 +515,7 @@ function Get-IssueReplicateFeedback {
         $Lines = @(Get-Content -LiteralPath $file.FullName)
     }
     $diagnostics = @($Lines | Where-Object {
-        $_ -match '(?i):\s*error\s+[A-Z]+[0-9]+:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
+        $_ -match '(?i):\s*error\s+[A-Z]+[0-9]+:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|Native recording failed:|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
     } | Select-Object -Last 25)
     $content = if ($diagnostics.Count -gt 0) { $diagnostics -join "`n" }
         else { ($Lines | Select-Object -Last 25) -join "`n" }
@@ -657,7 +657,17 @@ function Get-IssueReplicateTrxVerdict {
             FailureIdentities = @($identities | Sort-Object)
         }
     }
-    return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
+    $diagnostic = 'The selected test result did not establish a pass or a verified issue assertion.'
+    if ($failures.Count -gt 0) {
+        $messageNode = $failures[0].SelectSingleNode(
+            "*[local-name()='Output']/*[local-name()='ErrorInfo']/*[local-name()='Message']")
+        if ($messageNode -and -not [string]::IsNullOrWhiteSpace($messageNode.InnerText)) {
+            $message = ($messageNode.InnerText -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' ').Trim()
+            $message = $message.Substring(0, [Math]::Min(500, $message.Length))
+            $diagnostic = "The selected test reported an unqualified failure: $message"
+        }
+    }
+    return [pscustomobject]@{ Status = 'Inconclusive'; Names = @(); Diagnostic = $diagnostic }
 }
 
 function Assert-IssueReplicateResult {

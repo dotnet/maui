@@ -358,6 +358,12 @@ try {
             } else {
                 'A recorded UI candidate needs one acknowledged recording action, one matching Start/Stop pair and exactly one named TRX test body.'
             }
+            if ($verdict.Diagnostic -and $result.recording.status -eq 'failed' -and
+                -not [string]::IsNullOrWhiteSpace($result.recording.diagnostic) -and
+                $result.recording.diagnostic -cne $verdict.Diagnostic) {
+                $diagnostic += " Recording: $($result.recording.diagnostic)"
+            }
+            if ($diagnostic.Length -gt 1000) { $diagnostic = $diagnostic.Substring(0, 1000) }
             $result.recording = @{ status = 'failed'; diagnostic = $diagnostic }
             $recordingBytes = [byte[]]@()
             $testLines.Add("Native recording failed: $diagnostic")

@@ -346,6 +346,11 @@ empty or invalid feedback fails explicitly. Captured native output can contain
 blank lines without preventing the completed record from being exported.
 Feedback retains fixture setup/teardown diagnostics, which remain inconclusive
 rather than being classified as test-body assertions.
+Selected TRX failures that do not qualify as issue assertions retain their bounded,
+sanitized error message instead of being mislabeled as missing recording markers.
+Native verification preserves any separate recording failure alongside that error,
+and its feedback retains the combined diagnostic. These outcomes still discard
+the clip, skip assertion confirmation and export no verified failing patch.
 Every assertion identity requires a matching non-constructor candidate stack
 frame and the fully qualified test method recorded in its TRX definition
 (including async state-machine frames). NUnit fixture display arguments such
