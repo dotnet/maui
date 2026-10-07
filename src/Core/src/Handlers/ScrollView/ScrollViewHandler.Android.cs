@@ -162,27 +162,34 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var context = handler.PlatformView.Context;
+			var platformView = handler.PlatformView;
+			var context = platformView.Context;
 
 			if (context == null)
 			{
 				return;
 			}
 
-			if (!handler.PlatformView.IsLaidOut || handler.PlatformView.IsLayoutRequested)
+			// A view laid out at least once has usable scroll geometry: platform ScrollTo clamps to the
+			// last completed layout, so serving beats deferring - and in the latched state below, only
+			// serving terminates. IsLayoutRequested must not gate this decision; see WaitToScrollOnLayout.
+			if (!platformView.IsLaidOut)
 			{
-				handler.PlatformView.Post(() =>
+				WaitToScrollOnLayout(platformView, () =>
 				{
 					if (handler.IsConnected())
+					{
 						MapRequestScrollTo(handler, scrollView, args);
+					}
 				});
+
 				return;
 			}
 
 			var horizontalOffsetDevice = (int)context.ToPixels(request.HorizontalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
-			handler.PlatformView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
+			platformView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
 				request.Instant, () =>
 				{
 					if (handler.IsConnected())
@@ -190,6 +197,82 @@ namespace Microsoft.Maui.Handlers
 						handler.VirtualView.ScrollFinished();
 					}
 				});
+		}
+
+		const int LayoutWaitTimeoutMillis = 4000;
+
+		// Waits (bounded) for the platform view's first layout, then runs 'resume' exactly once on the
+		// UI thread. Event-driven and bounded, unlike the flag-polled re-post it replaces: ViewRootImpl
+		// swallows requestLayout() while handling a layout-inside-layout request
+		// (mHandlingLayoutInLayoutRequest), which leaves IsLayoutRequested set with no traversal ever
+		// scheduled - a retry loop gated on that flag spins at full looper throughput, which is the bug.
+		// Listening for the global layout event (and arming the traversal with RequestLayout when none is
+		// pending) cannot spin; the timeout cannot park. A view that never lays out still serves the
+		// (clamped, harmless) scroll and completes the caller's task.
+		static void WaitToScrollOnLayout(MauiScrollView platformView, Action resume)
+		{
+			if (!platformView.IsLayoutRequested)
+			{
+				platformView.RequestLayout();
+			}
+
+			var observer = platformView.ViewTreeObserver;
+
+			if (observer is { IsAlive: true })
+			{
+				var waiter = new LayoutWaiter(platformView, resume);
+				observer.AddOnGlobalLayoutListener(waiter);
+				platformView.PostDelayed(waiter.TimedOut, LayoutWaitTimeoutMillis);
+			}
+			else
+			{
+				platformView.PostDelayed(resume, LayoutWaitTimeoutMillis);
+			}
+		}
+
+		sealed class LayoutWaiter : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
+		{
+			readonly View _view;
+			readonly Action _resume;
+			int _state; // 0 = armed, 1 = fired
+
+			public LayoutWaiter(View view, Action resume)
+			{
+				_view = view;
+				_resume = resume;
+			}
+
+			public void OnGlobalLayout()
+			{
+				// Fires for the whole view hierarchy; the wait is satisfied only once the view we are
+				// waiting for has actually been laid out.
+				if (_view.IsLaidOut)
+				{
+					Fire();
+				}
+			}
+
+			public void TimedOut()
+			{
+				Fire();
+			}
+
+			void Fire()
+			{
+				if (System.Threading.Interlocked.Exchange(ref _state, 1) != 0)
+				{
+					return;
+				}
+
+				var observer = _view.ViewTreeObserver;
+
+				if (observer is { IsAlive: true })
+				{
+					observer.RemoveOnGlobalLayoutListener(this);
+				}
+
+				_resume();
+			}
 		}
 
 		/*
