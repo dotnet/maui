@@ -1576,6 +1576,60 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(75, measure.Height);
 		}
 
+		static IView CreateConstraintFillingView()
+		{
+			var view = CreateTestView();
+			view.DesiredSize.Returns(Size.Zero);
+
+			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(args => new Size((double)args[0], (double)args[1]))
+				.AndDoes(args => view.DesiredSize.Returns(new Size((double)args[0], (double)args[1])));
+
+			return view;
+		}
+
+		[Fact]
+		public void AutoRowSpanningStarColumnIsSizedBeforeStarRows()
+		{
+			// https://github.com/dotnet/maui/issues/26426
+			var grid = CreateGridLayout(rows: "*, Auto", columns: "Auto, *");
+
+			var fillingView = CreateConstraintFillingView();
+			var autoRowView = CreateTestView(new Size(80, 50));
+
+			SubstituteChildren(grid, fillingView, autoRowView);
+			SetLocation(grid, fillingView, row: 0, col: 1);
+			SetLocation(grid, autoRowView, row: 1, col: 0, colSpan: 2);
+
+			var measure = MeasureAndArrangeFixed(grid, 400, 800);
+
+			// The * row only gets the space left over by the Auto row
+			Assert.Equal(800, measure.Height);
+			fillingView.Received().Measure(400, 750);
+			AssertArranged(fillingView, 0, 0, 400, 750);
+			AssertArranged(autoRowView, 0, 750, 400, 50);
+		}
+
+		[Fact]
+		public void AutoColumnSpanningStarRowIsSizedBeforeStarColumns()
+		{
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "*, Auto");
+
+			var fillingView = CreateConstraintFillingView();
+			var autoColumnView = CreateTestView(new Size(50, 80));
+
+			SubstituteChildren(grid, fillingView, autoColumnView);
+			SetLocation(grid, fillingView, row: 1, col: 0);
+			SetLocation(grid, autoColumnView, row: 0, col: 1, rowSpan: 2);
+
+			var measure = MeasureAndArrangeFixed(grid, 400, 800);
+
+			// The * column only gets the space left over by the Auto column
+			Assert.Equal(400, measure.Width);
+			fillingView.Received().Measure(350, 800);
+			AssertArranged(fillingView, 0, 0, 350, 800);
+			AssertArranged(autoColumnView, 350, 0, 50, 800);
+		}
+
 		[Theory]
 		[InlineData(100, 200, 210, 200)]
 		[InlineData(200, 100, 210, 200)]
