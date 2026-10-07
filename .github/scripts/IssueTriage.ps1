@@ -263,6 +263,45 @@ function Complete-TriageRequest {
         $issue.state -cne 'open' -or $issue.ContainsKey('pull_request')) {
         throw 'The completion target is no longer the exact open issue.'
     }
+    $requestedNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $expectedOperations = 0
+    foreach ($field in @('requestedAdditions', 'requestedRemovals')) {
+        if ($validation[$field] -isnot [array] -or $validation[$field].Count -gt 10) {
+            throw 'The trusted validation receipt has an invalid exact label delta.'
+        }
+        if ($validation[$field].Count -gt 0) { $expectedOperations++ }
+        foreach ($name in $validation[$field]) {
+            if ($name -isnot [string] -or [string]::IsNullOrWhiteSpace($name) -or
+                $name.Length -gt 100 -or -not $requestedNames.Add($name)) {
+                throw 'The trusted validation receipt has invalid, duplicate or opposing label names.'
+            }
+        }
+    }
+    if (($validation.status -ceq 'noop' -and $requestedNames.Count -ne 0) -or
+        [Math]::Max(1, $expectedOperations) -ne $ProcessedOperations) {
+        throw 'The trusted exact label delta does not match the completed native operations.'
+    }
+    if ($issue.labels -isnot [array]) {
+        throw 'The current issue response does not contain a valid label array; leaving the command visible.'
+    }
+    $actualNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($label in $issue.labels) {
+        if ($label -isnot [Collections.IDictionary] -or $label.name -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($label.name) -or $label.name.Length -gt 100 -or
+            -not $actualNames.Add($label.name)) {
+            throw 'The current issue response contains invalid or duplicate label objects; leaving the command visible.'
+        }
+    }
+    foreach ($name in $validation.requestedAdditions) {
+        if (-not $actualNames.Contains($name)) {
+            throw 'A validated requested addition is absent from the current issue; leaving the command visible.'
+        }
+    }
+    foreach ($name in $validation.requestedRemovals) {
+        if ($actualNames.Contains($name)) {
+            throw 'A validated requested removal is still present on the current issue; leaving the command visible.'
+        }
+    }
     $command = Get-Api "repos/$Repository/issues/comments/$CommandCommentId"
     if ($command.id -ne $CommandCommentId -or $command.node_id -cne $event.comment.node_id -or
         $command.user.type -cne 'User' -or $command.user.login -cne $Actor -or
@@ -1623,6 +1662,7 @@ $items = @($payload.items)
 if ($items.Count -eq 1 -and $items[0].type -in @('noop', 'report_incomplete', 'missing_tool')) {
     Write-Json 'validation.json' @{
         status = $items[0].type; contextHash = $current.contextHash; writes = 0
+        requestedAdditions = @(); requestedRemovals = @()
         completion = Get-TriageCompletionReceipt 1 $payload
     }
     if ($items[0].type -ne 'noop') { throw 'Triage is incomplete; inspect the agent result, resolve the missing evidence, and rerun.' }

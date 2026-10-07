@@ -9,6 +9,10 @@ After successful validation and native safe-output processing, the exact
 authorized triggering slash-command comment collapses as **resolved**, including
 successful no-change and withheld-only results. A separate trusted completion job
 rechecks the open issue, unchanged human command and caller's current write access.
+It also requires every trusted validated addition to be present and every removal
+to be absent in the freshly fetched issue's exact canonical label names, not just
+successful native operation counts. Invalid label responses, partial removals or
+concurrent label reversals keep the command visible without changing any labels.
 Failed, cancelled, deferred, skipped, warning, partial or incomplete outcomes leave
 the command visible. Manual dispatches (including staged runs), edited/replayed
 commands, bot comments and unrelated comments are never minimized. A minimization
