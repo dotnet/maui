@@ -71,6 +71,9 @@ is reported as a **verified failing test candidate**, not proof that the
 author's scenario was exercised or the issue is confirmed. Only that outcome labels the complete generated candidate diff as verified failing.
 Both drafting attempts import the same bounded author-build record and include
 its validated target framework, outcome and diagnostic in the GPT prompt.
+Bounded build diagnostics retain up to three error lines, including native
+tool errors without a compiler code (such as `actool error :`), so a missing
+simulator runtime is not reduced to an empty build-blocker record.
 Tool-free drafting also runs when a completed, bounded author build record reports
 a failure. That does not bypass the author-build prerequisite for native verification:
 the unchanged sample's target and diagnostic remain in the report, and the draft

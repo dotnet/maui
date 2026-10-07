@@ -47,8 +47,8 @@ if ($NuGetConfigPath) {
     }
 $exitCode = $LASTEXITCODE
 $redacted | Set-Content -LiteralPath $log -Encoding utf8
-$diagnostic = ($redacted | Where-Object { $_ -match '\berror [A-Z]+[0-9]+:' } |
-    Select-Object -First 2) -join "`n"
+$diagnostic = ($redacted | Where-Object { $_ -match '\berror(?:\s+[A-Z]+[0-9]+)?\s*:' } |
+    Select-Object -First 3) -join "`n"
 if ($diagnostic.Length -gt 2048) {
     $length = if ([char]::IsHighSurrogate($diagnostic[2047])) { 2047 } else { 2048 }
     $diagnostic = $diagnostic.Substring(0, $length)
