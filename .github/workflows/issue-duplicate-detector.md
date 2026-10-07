@@ -119,6 +119,13 @@ engine:
 
 network: defaults
 
+sandbox:
+  mcp:
+    env:
+      # Preserve the explicit repository scope instead of replacing it with all public repos.
+      MCP_GATEWAY_FORCE_PUBLIC_REPOS: "false"
+
+# Stock v0.86.2 drops call-limit metadata; use CompileIssueDuplicateDetector.sh.
 tools:
   bash: false
   edit: false
@@ -216,17 +223,29 @@ safe-outputs:
       uses: actions/github-script@v9.0.0
       env:
         ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        STAGED: ${{ github.event_name == 'workflow_dispatch' && inputs.staged == true }}
       with:
         script: |
           const { validate } = require('./.github/scripts/IssueDuplicates.cjs');
           await validate({
             github, core, context,
             issueNumber: Number(process.env.ISSUE_NUMBER),
+            staged: JSON.parse(process.env.STAGED),
             contextDirectory: `${process.env.RUNNER_TEMP}/issue-duplicate-context`,
             agentOutputPath: '/tmp/gh-aw/agent_output.json'
           });
 
 steps:
+  - name: Check official compiler base compatibility
+    uses: actions/github-script@v9.0.0
+    env:
+      GH_AW_COMPILED_VERSION: v0.86.2
+    with:
+      script: |
+        const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+        setupGlobals(core, github, context, exec, io, getOctokit);
+        const { main } = require('${{ runner.temp }}/gh-aw/actions/check_version_updates.cjs');
+        await main();
   - name: Download prepared issue evidence
     uses: actions/download-artifact@v8.0.1
     with:

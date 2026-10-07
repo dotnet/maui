@@ -196,8 +196,17 @@ async function gather({ github, core, context, issueNumber, outputDirectory }) {
     core.setOutput('should_run', 'true');
 }
 
-async function validate({ github, core, context, issueNumber, contextDirectory, agentOutputPath }) {
+async function validate({
+    github,
+    core,
+    context,
+    issueNumber,
+    staged,
+    contextDirectory,
+    agentOutputPath,
+}) {
     assert(Number.isSafeInteger(issueNumber) && issueNumber > 0, 'Invalid publication inputs.');
+    assert(typeof staged === 'boolean', 'A boolean staging flag is required.');
     assert(
         context.payload.repository.full_name === 'dotnet/maui' &&
             context.ref === `refs/heads/${context.payload.repository.default_branch}`,
@@ -368,6 +377,18 @@ async function validate({ github, core, context, issueNumber, contextDirectory, 
         );
     }
     await fs.writeFile(agentOutputPath, JSON.stringify(payload));
+    if (staged && payload.items[0].type === 'add_comment') {
+        await core.summary
+            .addHeading('Validated duplicate report preview')
+            .addEOL()
+            .addRaw(
+                'Staged run: no duplicate-report comment is posted. The preview below is the validated report before gh-aw adds publication cautions and workflow markers.',
+                true,
+            )
+            .addEOL()
+            .addRaw(payload.items[0].body, true)
+            .write();
+    }
     core.info(
         `Validated duplicate probabilities and source excerpts for ${matches.length} candidate(s).`,
     );

@@ -46,9 +46,13 @@ unverified source excerpts, and stale evidence also fail validation.
 The publisher renders the table and GitHub links itself, so free-form agent
 prose cannot bypass the probability requirement.
 
-Search is bounded to eight queries, 20 results per query, ten investigated
-candidates, 30 issue-read calls, and five published matches. Context is limited
-to 300 comments per issue and a 1 MiB prepared file. Missing required evidence
+The GitHub gateway enforces eight `search_issues` calls and 30 `issue_read`
+calls per MCP session. These counters do not cover the trusted collector's or
+publisher's separate API reads. The 20 results per query, one page per query,
+and ten investigated candidates are **agent instructions**, not gateway
+parameter validators or investigation counters. The trusted collector/publisher
+enforces five published matches, 300 comments per issue, and 1 MiB regular JSON
+files. The agent job also has a 15-minute timeout. Missing required evidence
 is an incomplete run, not proof that there are no duplicates.
 An unchanged report is suppressed. Changed reports are posted as new comments;
 existing bot and human comments are never edited, deleted, or minimized.
@@ -77,8 +81,13 @@ gh aw run issue-duplicate-detector --ref main --raw-field issue_number=12345 --r
 ```
 
 Replace `12345` with the real issue number. Manual runs default to `staged=true`:
-the same analysis and validation run, but the proposed report is shown in the
-workflow summary rather than posted. To publish, explicitly pass
+the same analysis and validation run, but the trusted validator writes the
+constructed probability table and evidence excerpts to the safe-output job's
+**Validated duplicate report preview** summary rather than posting them.
+This preview appears only after all validation and final freshness checks,
+and excludes the publisher's later cautions and provenance wrappers. Invalid,
+stale, no-match, and identical-report-suppressed outputs produce no report preview.
+To publish, explicitly pass
 `--raw-field staged=false`. New/reopened issue events publish qualifying reports.
 No-match runs intentionally produce no comment.
 
@@ -90,14 +99,38 @@ Prepared evidence and validator code come from trusted default-branch
 infrastructure; issue/reproduction content is never executed.
 The GitHub MCP's repository guard restricts both searches and issue reads to
 `dotnet/maui`; repository scope is enforced rather than left to the prompt.
+The gateway's public-repository scope override is disabled so it cannot broaden
+that explicit scope to all public repositories.
 
 ## Editing and validation
 
-Commit the source, trusted publisher and compiled lock file together:
+Stock gh-aw v0.86.2 rewrites structured GitHub `allowed` entries to tool names
+during default-tool normalization, dropping their `max-calls` metadata.
+[`CompileIssueDuplicateDetector.sh`](../scripts/CompileIssueDuplicateDetector.sh)
+builds an isolated compiler from the immutable
+[`38188610df02cd73cb595f21efd90f515b94944f` correction](https://github.com/kubaflo/gh-aw/commit/38188610df02cd73cb595f21efd90f515b94944f)
+on top of v0.86.2. The correction preserves both gateway call limits and
+Copilot's explicit tool permissions. It does not install or replace the user's
+`gh aw` extension. Compiler metadata identifies the patched build; all runtime
+actions and containers retain their existing official immutable pins.
+The custom compiler version is not recognized by the runtime's official-release
+checker, so an explicit pre-agent step runs the same compatibility and revocation
+check against the v0.86.2 base before inference.
+
+Go 1.26.5 or later is required for this build-only workaround. The helper caches
+the pinned source and compiler under `${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw`,
+checks the source revision and cleanliness before every build, and removes
+publication/inference tokens from the compiler build's environment. Replace this
+helper with a fixed official compiler after verifying that it preserves the
+counter policy and explicit Copilot allowlist; do not regenerate with stock
+v0.86.2 or hand-edit the generated lock.
+
+Commit the source, compilation helper, trusted publisher and compiled lock file together:
 
 ```bash
 node --check .github/scripts/IssueDuplicates.cjs
-gh aw compile issue-duplicate-detector --strict --validate
+bash .github/scripts/CompileIssueDuplicateDetector.sh
+shellcheck .github/scripts/CompileIssueDuplicateDetector.sh
 actionlint -oneline -ignore 'unexpected key "queue" for "concurrency" section' .github/workflows/issue-duplicate-detector.lock.yml
 git diff --check
 ```
