@@ -1616,9 +1616,11 @@ that manifest as the authoritative retrieval result. Do NOT improvise a second
 Azure downloader from the agent shell.
 
 - A build is usable only when its manifest `complete == true`.
-- `timeline.status` or any `failedTasks[].status` of `error` / `truncated`, or
-  `logsTruncatedByCount == true`, means retrieval is incomplete. It is NOT proof
-  that the signature is absent or that the issue is fixed.
+- `timeline.status` or any `failedTasks[].status` other than `available`, or
+  `logsTruncatedByCount == true`, means retrieval is incomplete. Missing or
+  invalid log IDs are retained as `unavailable`; redirect responses are retained
+  with their original HTTP status. None of these states is proof that the
+  signature is absent or that the issue is fixed.
 - Keep cited-build retrieval separate from current-build evidence. A cited
   historical build may be 404 while the latest build and its failed-task logs
   are fully available.
@@ -1690,15 +1692,19 @@ evidence is incomplete, report incomplete rather than querying Azure ad hoc.
      on **retry** (Azure DevOps / Helix re-run failed tests), which reads as green
      but is exactly the flaky signal we now want to fix. Run the flakiness probe:
 
-     a. **Intra-build retry check.** Re-walk the latest build's timeline for leaf
-        records that carry `previousAttempts` (or `attempt > 1`, or a sibling
-        record for the same task at an earlier attempt whose `result == failed`).
-        Fetch those failed earlier-attempt log(s) and grep the signature with
-        `grep -F -f /tmp/gh-aw/agent/sig_${N}.txt`.
-     b. **Cross-build intermittency check.** Take the previous 3–4 completed
-        builds of the same pipeline+branch (the `$top=5` list from step 2) and
-        grep the signature across their failed-leaf logs; count how many recent
-        builds contain it.
+     a. **Intra-build retry check.** Use only the earlier-attempt logs already
+        retained in the selected build's manifest `failedTasks[]` inventory for
+        records carrying `previousAttempts` (or `attempt > 1`, or a sibling
+        failed record for the same task). Grep only entries whose status is
+        `available`. If a required earlier-attempt entry is missing or not
+        available, report incomplete; do not improvise another downloader or
+        infer that the signature is absent.
+     b. **Cross-build intermittency check.** Use only the recent-build logs
+        already retained for the previous 3–4 completed builds of the same
+        pipeline+branch (the prepared `$top=5` list from step 2). Grep available
+        failed-task logs and count how many recent builds contain the signature.
+        If required evidence was not prepared or is incomplete, report
+        incomplete instead of fetching it from the agent shell.
 
      Then branch:
      - **Signature failed-then-passed-on-retry in the latest build, OR present in

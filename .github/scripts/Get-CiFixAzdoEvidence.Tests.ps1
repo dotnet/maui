@@ -128,6 +128,134 @@ Describe 'Get-CiFixAzdoEvidence' {
             Should -BeExactly 'real failure text'
     }
 
+    It 'retains failed tasks with missing or invalid log IDs as incomplete without requesting them' {
+        $destination = Join-Path $TestDrive 'invalid-log-ids'
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = '{"records":[{"id":"a","type":"Task","result":"failed","name":"missing-log"},{"id":"b","type":"Task","result":"failed","name":"null-log","log":null},{"id":"c","type":"Task","result":"failed","name":"null-id","log":{"id":null}},{"id":"d","type":"Task","result":"failed","name":"invalid-id","log":{"id":"not-a-number"}},{"id":"e","type":"Task","result":"failed","name":"valid","log":{"id":10}}]}'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            if ($Uri -match '/logs/10') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = 'real failure text'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+
+            throw "Unexpected URI: $Uri"
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeFalse
+        $result.failedTaskCount | Should -Be 5
+        $result.fetchedFailedTaskCount | Should -Be 1
+        @($result.failedTasks | Where-Object status -eq 'unavailable').Count | Should -Be 4
+        @($result.failedTasks | Where-Object status -eq 'available').Count | Should -Be 1
+        @($result.failedTasks | Where-Object status -eq 'unavailable' | ForEach-Object error | Select-Object -Unique) |
+            Should -Be @('failed task log ID is missing or invalid')
+        @($requestedUris | Where-Object { $_ -match '/logs/' }).Count | Should -Be 1
+    }
+
+    It 'does not follow an HTTP redirect to a sign-in response' {
+        $port = Get-Random -Minimum 30000 -Maximum 45000
+        $readyPath = Join-Path $TestDrive 'redirect-server.ready'
+        $redirectLocation = "http://127.0.0.1:$port/sign-in"
+        $serverJob = Start-Job -ArgumentList $port, $readyPath -ScriptBlock {
+            param($Port, $ReadyPath)
+
+            $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
+            $listener.Start()
+            Set-Content -LiteralPath $ReadyPath -Value 'ready'
+            try {
+                $client = $listener.AcceptTcpClient()
+                try {
+                    $stream = $client.GetStream()
+                    $reader = [IO.StreamReader]::new($stream, [Text.Encoding]::ASCII, $false, 1024, $true)
+                    while (($line = $reader.ReadLine()) -ne '') {
+                        if ($null -eq $line) {
+                            break
+                        }
+                    }
+                    $response = "HTTP/1.1 302 Found`r`nLocation: http://127.0.0.1:$Port/sign-in`r`nContent-Length: 0`r`nConnection: close`r`n`r`n"
+                    $bytes = [Text.Encoding]::ASCII.GetBytes($response)
+                    $stream.Write($bytes, 0, $bytes.Length)
+                }
+                finally {
+                    $client.Dispose()
+                }
+
+                $deadline = [DateTime]::UtcNow.AddSeconds(3)
+                while (-not $listener.Pending() -and [DateTime]::UtcNow -lt $deadline) {
+                    Start-Sleep -Milliseconds 25
+                }
+                if ($listener.Pending()) {
+                    $client = $listener.AcceptTcpClient()
+                    try {
+                        $stream = $client.GetStream()
+                        $reader = [IO.StreamReader]::new($stream, [Text.Encoding]::ASCII, $false, 1024, $true)
+                        while (($line = $reader.ReadLine()) -ne '') {
+                            if ($null -eq $line) {
+                                break
+                            }
+                        }
+                        $content = '<html>sign in</html>'
+                        $response = "HTTP/1.1 200 OK`r`nContent-Length: $($content.Length)`r`nConnection: close`r`n`r`n$content"
+                        $bytes = [Text.Encoding]::ASCII.GetBytes($response)
+                        $stream.Write($bytes, 0, $bytes.Length)
+                    }
+                    finally {
+                        $client.Dispose()
+                    }
+                }
+            }
+            finally {
+                $listener.Stop()
+            }
+        }
+
+        try {
+            $deadline = [DateTime]::UtcNow.AddSeconds(5)
+            while (-not (Test-Path -LiteralPath $readyPath) -and [DateTime]::UtcNow -lt $deadline) {
+                Start-Sleep -Milliseconds 25
+            }
+            Test-Path -LiteralPath $readyPath | Should -BeTrue
+
+            $result = Invoke-CiFixAzdoRequest `
+                -Uri "http://127.0.0.1:$port/start" `
+                -MaxBytes 10000
+
+            $result.Succeeded | Should -BeFalse
+            $result.StatusCode | Should -Be 302
+            $result.RedirectLocation | Should -BeExactly $redirectLocation
+            $result.Content | Should -BeExactly ''
+            $result.Error | Should -BeExactly 'HTTP 302'
+        }
+        finally {
+            Wait-Job -Job $serverJob -Timeout 5 | Out-Null
+            Remove-Job -Job $serverJob -Force
+        }
+    }
+
     It 'deduplicates builds across multiple issues and pipelines' {
         $snapshotPath = Join-Path $TestDrive 'candidates.json'
         $destination = Join-Path $TestDrive 'evidence'
@@ -300,6 +428,9 @@ Describe 'CI-fixer workflow evidence wiring' {
             $workflow | Should -Match '/tmp/gh-aw/agent/azdo-evidence'
             $workflow | Should -Match 'Do NOT improvise a second\s+Azure downloader'
             $workflow | Should -Match 'retrieval failure into a successful/noop'
+            $workflow | Should -Match 'Use only the earlier-attempt logs already'
+            $workflow | Should -Match 'Use only the recent-build logs'
+            $workflow | Should -Not -Match 'Fetch those failed earlier-attempt log\(s\)'
         }
 
         $mainWorkflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch main'

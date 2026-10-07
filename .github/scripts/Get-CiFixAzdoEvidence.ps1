@@ -67,6 +67,7 @@ function Invoke-CiFixAzdoRequest {
         return [pscustomobject]@{
             Succeeded = $false
             StatusCode = $null
+            RedirectLocation = $null
             Content = ''
             Truncated = $false
             Error = 'total download limit exhausted'
@@ -77,7 +78,9 @@ function Invoke-CiFixAzdoRequest {
     $requestByteLimit = [int][Math]::Min([long]$MaxBytes, $script:RemainingDownloadBytes)
     $lastError = $null
     for ($attempt = 1; $attempt -le $script:MaxHttpAttempts; $attempt++) {
-        $client = [System.Net.Http.HttpClient]::new()
+        $handler = [System.Net.Http.HttpClientHandler]::new()
+        $handler.AllowAutoRedirect = $false
+        $client = [System.Net.Http.HttpClient]::new($handler)
         $client.Timeout = [TimeSpan]::FromSeconds($script:HttpTimeoutSeconds)
         try {
             $request = [System.Net.Http.HttpRequestMessage]::new(
@@ -89,6 +92,11 @@ function Invoke-CiFixAzdoRequest {
                     [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead)
                 try {
                     $statusCode = [int]$response.StatusCode
+                    $redirectLocation = if ($null -ne $response.Headers.Location) {
+                        $response.Headers.Location.ToString()
+                    } else {
+                        $null
+                    }
                     if (-not $response.IsSuccessStatusCode) {
                         $errorText = "HTTP $statusCode"
                         if ($script:TransientStatusCodes -contains $statusCode -and
@@ -101,6 +109,7 @@ function Invoke-CiFixAzdoRequest {
                         return [pscustomobject]@{
                             Succeeded = $false
                             StatusCode = $statusCode
+                            RedirectLocation = $redirectLocation
                             Content = ''
                             Truncated = $false
                             Error = $errorText
@@ -138,6 +147,7 @@ function Invoke-CiFixAzdoRequest {
                             return [pscustomobject]@{
                                 Succeeded = -not $truncated
                                 StatusCode = $statusCode
+                                RedirectLocation = $redirectLocation
                                 Content = [Text.Encoding]::UTF8.GetString($bytes)
                                 Truncated = $truncated
                                 Error = if ($truncated) {
@@ -183,6 +193,7 @@ function Invoke-CiFixAzdoRequest {
     return [pscustomobject]@{
         Succeeded = $false
         StatusCode = $null
+        RedirectLocation = $null
         Content = ''
         Truncated = $false
         Error = $lastError
@@ -231,26 +242,36 @@ function Get-CiFixFailedTaskRecords {
     $records = @()
     foreach ($record in @($Timeline.records)) {
         if ([string]$record.type -cne 'Task' -or
-            [string]$record.result -cne 'failed' -or
-            $null -eq $record.log -or
-            $null -eq $record.log.id) {
+            [string]$record.result -cne 'failed') {
             continue
         }
 
         $logId = 0L
-        if (-not [long]::TryParse(
+        $validLogId = $null -ne $record.log -and
+            $null -ne $record.log.id -and
+            [long]::TryParse(
                 [string]$record.log.id,
                 [Globalization.NumberStyles]::None,
                 [Globalization.CultureInfo]::InvariantCulture,
-                [ref]$logId) -or $logId -le 0 -or $seen.ContainsKey($logId)) {
+                [ref]$logId) -and
+            $logId -gt 0
+        if ($validLogId -and $seen.ContainsKey($logId)) {
             continue
         }
 
-        $seen[$logId] = $true
+        if ($validLogId) {
+            $seen[$logId] = $true
+        }
         $records += [pscustomobject]@{
             recordId = [string]$record.id
             name = [string]$record.name
-            logId = $logId
+            logId = if ($validLogId) { $logId } else { $null }
+            logIdValid = $validLogId
+            rawLogId = if ($null -ne $record.log -and $null -ne $record.log.id) {
+                [string]$record.log.id
+            } else {
+                $null
+            }
             attempt = $record.attempt
         }
     }
@@ -291,12 +312,52 @@ function Get-CiFixBuildEvidence {
     } else {
         @()
     }
-    $logsTruncatedByCount = $allFailedTasks.Count -gt $MaxFailedLogs
+    $validFailedTaskCount = @($allFailedTasks | Where-Object logIdValid).Count
+    $logsTruncatedByCount = $validFailedTaskCount -gt $MaxFailedLogs
     if ($logsTruncatedByCount) {
         $complete = $false
     }
 
-    foreach ($task in @($allFailedTasks | Select-Object -First $MaxFailedLogs)) {
+    $fetchedFailedTaskCount = 0
+    foreach ($task in $allFailedTasks) {
+        if (-not $task.logIdValid) {
+            $complete = $false
+            $failedTasks += [pscustomobject]@{
+                recordId = $task.recordId
+                name = $task.name
+                attempt = $task.attempt
+                logId = $null
+                rawLogId = $task.rawLogId
+                status = 'unavailable'
+                httpStatus = $null
+                redirectLocation = $null
+                attempts = 0
+                path = $null
+                bytes = 0
+                error = 'failed task log ID is missing or invalid'
+            }
+            continue
+        }
+
+        if ($fetchedFailedTaskCount -ge $MaxFailedLogs) {
+            $failedTasks += [pscustomobject]@{
+                recordId = $task.recordId
+                name = $task.name
+                attempt = $task.attempt
+                logId = $task.logId
+                rawLogId = $task.rawLogId
+                status = 'not_fetched_limit'
+                httpStatus = $null
+                redirectLocation = $null
+                attempts = 0
+                path = $null
+                bytes = 0
+                error = "failed-task log limit $MaxFailedLogs reached"
+            }
+            continue
+        }
+
+        $fetchedFailedTaskCount++
         $logUri = "$($script:AzdoBaseUri)/builds/$BuildId/logs/$($task.logId)?api-version=7.1"
         $logResponse = & $RequestInvoker $logUri $LogByteLimit
         $relativePath = "build_$BuildId/log_$($task.logId).txt"
@@ -313,8 +374,10 @@ function Get-CiFixBuildEvidence {
             name = $task.name
             attempt = $task.attempt
             logId = $task.logId
+            rawLogId = $task.rawLogId
             status = if ($logResponse.Succeeded) { 'available' } elseif ($logResponse.Truncated) { 'truncated' } else { 'error' }
             httpStatus = $logResponse.StatusCode
+            redirectLocation = $logResponse.RedirectLocation
             attempts = $logResponse.Attempts
             path = if ($logResponse.Content.Length -gt 0) { $relativePath } else { $null }
             bytes = [Text.Encoding]::UTF8.GetByteCount($logResponse.Content)
@@ -328,12 +391,13 @@ function Get-CiFixBuildEvidence {
         timeline = [pscustomobject]@{
             status = if ($timelineResult.Succeeded) { 'available' } elseif ($timelineResponse.Truncated) { 'truncated' } else { 'error' }
             httpStatus = $timelineResponse.StatusCode
+            redirectLocation = $timelineResponse.RedirectLocation
             attempts = $timelineResponse.Attempts
             path = if ($timelineResponse.Content.Length -gt 0) { "build_$BuildId/timeline.json" } else { $null }
             error = $timelineResult.Error
         }
         failedTaskCount = $allFailedTasks.Count
-        fetchedFailedTaskCount = $failedTasks.Count
+        fetchedFailedTaskCount = $fetchedFailedTaskCount
         logsTruncatedByCount = $logsTruncatedByCount
         failedTasks = @($failedTasks)
     }
@@ -366,6 +430,7 @@ function Get-CiFixBuildEvidenceBounded {
             timeline = [pscustomobject]@{
                 status = 'not_fetched_limit'
                 httpStatus = $null
+                redirectLocation = $null
                 attempts = 0
                 path = $null
                 error = "global build limit $BuildLimit reached"
@@ -506,6 +571,7 @@ function New-CiFixAzdoEvidence {
             branch = $TargetBranch
             queryComplete = [bool]$latestResult.Succeeded
             httpStatus = $latestResponse.StatusCode
+            redirectLocation = $latestResponse.RedirectLocation
             attempts = $latestResponse.Attempts
             error = $latestResult.Error
             builds = @($latestBuilds)
@@ -591,6 +657,7 @@ function New-CiFixAzdoEvidence {
             headSha = $headSha
             queryComplete = [bool]$queryResult.Succeeded
             httpStatus = $queryResponse.StatusCode
+            redirectLocation = $queryResponse.RedirectLocation
             attempts = $queryResponse.Attempts
             error = $queryResult.Error
             builds = @($matchingBuilds)
