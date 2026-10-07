@@ -76,7 +76,7 @@ $recordingReadyCount = 0
 $recordingNonce = ''
 $recordingTimer = $null
 $recordingAcknowledgement = ''
-$recordingEnvironment = @{}
+$testEnvironment = @{}
 $firstFeedback = ''
 if ($RecordVideo -and $candidate.kind -eq 'ui') {
     $result.recording = @{ status = 'not-started'; diagnostic = 'The native test did not reach its start marker.' }
@@ -198,6 +198,15 @@ try {
             $uiTrxDirectory = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/TestResults'
             $trxFile = Join-Path $uiTrxDirectory "$($filter -replace '[^A-Za-z0-9._-]', '_').trx"
             if (Test-Path -LiteralPath $trxFile) { Remove-Item -LiteralPath $trxFile -Force }
+            $nunitDirectory = Join-Path ([IO.Path]::GetFullPath($OutputDirectory)) 'nunit'
+            $nunitFile = Join-Path $nunitDirectory "Controls.TestCases.$($manifest.platform -eq 'ios' ? 'iOS' : 'Android').Tests.xml"
+            if (Test-Path -LiteralPath $nunitFile) { Remove-Item -LiteralPath $nunitFile -Force }
+            if ($env:VSTestSetting) { throw 'UI assertion evidence cannot replace existing test run settings.' }
+            $testEnvironment.VSTestSetting = [Environment]::GetEnvironmentVariable('VSTestSetting')
+            $nunitSettings = Join-Path ([IO.Path]::GetFullPath($OutputDirectory)) 'nunit.runsettings'
+            [IO.File]::WriteAllText($nunitSettings,
+                "<RunSettings><NUnit><TestOutputXml>$([Security.SecurityElement]::Escape($nunitDirectory))</TestOutputXml></NUnit></RunSettings>")
+            $env:VSTestSetting = $nunitSettings
         } else {
             $trxFile = Join-Path $trxDirectory "attempt-$attempt.trx"
             if (Test-Path -LiteralPath $trxFile) { Remove-Item -LiteralPath $trxFile -Force }
@@ -223,7 +232,7 @@ try {
                 }
                 foreach ($name in @('CustomBeforeMicrosoftCommonTargets', 'ISSUE_REPLICATE_RECORDING_ACK',
                         'ISSUE_REPLICATE_RECORDING_NONCE')) {
-                    $recordingEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
+                    $testEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
                 }
                 $env:CustomBeforeMicrosoftCommonTargets = [IO.Path]::GetFullPath($recordingTargets)
                 $env:ISSUE_REPLICATE_RECORDING_ACK = $recordingAcknowledgement
@@ -327,6 +336,10 @@ try {
         $testExit = $LASTEXITCODE
         if ($candidate.kind -eq 'ui') {
             if ($reportedTrx.Count -ne 1) { throw 'The pinned UI runner must report one authoritative TRX_RESULT_FILE.' }
+            if (-not (Test-Path -LiteralPath $nunitFile -PathType Leaf) -or
+                (Get-Item -LiteralPath $nunitFile).LastWriteTimeUtc -lt $started) {
+                throw 'The pinned UI runner did not produce its fresh, structured NUnit result.'
+            }
             $trxFile = [IO.Path]::GetFullPath($reportedTrx[0])
             $root = [IO.Path]::GetFullPath($RepoRoot).TrimEnd([IO.Path]::DirectorySeparatorChar) +
                 [IO.Path]::DirectorySeparatorChar
@@ -344,6 +357,7 @@ try {
         if (-not (Test-Path -LiteralPath $trxFile -PathType Leaf) -or
             (Get-Item -LiteralPath $trxFile).LastWriteTimeUtc -lt $started) { break }
         $verdictParameters = @{ Path = $trxFile; ClassName = $issueClass; ExitCode = $testExit }
+        if ($candidate.kind -eq 'ui') { $verdictParameters.NUnitResultPath = $nunitFile }
         if ($RecordVideo -and $candidate.kind -eq 'ui' -and $recordingStartMethod) {
             $verdictParameters.SingleTestMethod = $recordingStartMethod
         }
@@ -441,8 +455,8 @@ try {
     }
 }
 finally {
-    foreach ($name in $recordingEnvironment.Keys) {
-        [Environment]::SetEnvironmentVariable($name, $recordingEnvironment[$name])
+    foreach ($name in $testEnvironment.Keys) {
+        [Environment]::SetEnvironmentVariable($name, $testEnvironment[$name])
     }
     if ($recordingAcknowledgement -and (Test-Path -LiteralPath $recordingAcknowledgement -PathType Leaf)) {
         Remove-Item -LiteralPath $recordingAcknowledgement -Force

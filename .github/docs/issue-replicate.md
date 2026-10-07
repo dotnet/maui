@@ -710,14 +710,25 @@ These instructions do not prove candidate adequacy: inspect whether the assertio
 isolates the reported bug instead of ordinary scrolling or overscroll.
 TRX verification accepts NUnit's parameterized fixture names (for example
 `Issue37323(Android)`) while still requiring matching test IDs, execution counts,
-and command exit status. Assertion evidence requires a recognized exception type
-at the start of the runner's message or an assertion API frame in its separate
+and command exit status. TRX-only assertion evidence requires a recognized exception
+type at the start of the runner's message or an assertion API frame in its separate
 `StackTrace` field, not assertion-looking text embedded in an ordinary exception.
 Messages identifying ordinary exceptions remain inconclusive even when they
-include assertion frames. NUnit can filter its framework frames and omit the
-exception type: `Assert.That`, `Expected:`, and `But was:` text alone is ambiguous
-and remains inconclusive, with its diagnostic preserved. Matching repetition does
-not turn that ambiguity into assertion evidence.
+include assertion frames. NUnit filters its framework frames and omits the
+exception type for normal constraint failures. The verifier supplies run settings
+through MSBuild's
+`VSTestSetting` to enable the pinned adapter's supported `NUnit.TestOutputXml`
+output, without modifying the source-pinned UI runner. Existing run settings are
+not overwritten, and the environment is restored afterward. The verifier requires
+the adapter's fresh, bounded assembly-named XML result and
+binds its structured failed assertions to the TRX adapter, exact test/fixture name,
+start/end timestamps, failure message, source stack and whole-run counters, rejecting
+error labels and lifecycle sites. Each structured failed assertion's filtered stack
+must terminate at the candidate body: NUnit 4 can omit a setup site even when setup
+calls that body. Async dispatch frames in the aggregate failure stack are retained.
+`Assert.That`, `Expected:`, and `But was:` text alone remains
+ambiguous and inconclusive, with its diagnostic preserved; neither repetition nor
+an unbound, missing or stale XML result upgrades that evidence.
 Setup exceptions such as `Xunit.Sdk.TestClassException` do not count as assertions.
 Prefix-colliding classes are excluded from the candidate's result set after
 validating whole-run counters. Every failed result must belong to the intended

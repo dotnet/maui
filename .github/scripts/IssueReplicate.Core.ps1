@@ -549,12 +549,11 @@ function Get-IssueReplicateFeedback {
     return $content
 }
 
-function Get-IssueReplicateTrxVerdict {
-    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$ClassName,
-        [Parameter(Mandatory)][int]$ExitCode, [string]$SingleTestMethod = '')
-
+function Read-IssueReplicateTestResultXml {
+    param([Parameter(Mandatory)][string]$Path)
     $file = Get-Item -LiteralPath $Path -ErrorAction Stop
-    if ($file.PSIsContainer -or $file.Length -lt 1 -or $file.Length -gt 1MB) {
+    if ($file.PSIsContainer -or $file.Length -lt 1 -or $file.Length -gt 1MB -or
+        $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         throw 'A test result is missing or too large.'
     }
     $settings = [Xml.XmlReaderSettings]::new()
@@ -566,7 +565,17 @@ function Get-IssueReplicateTrxVerdict {
         $xml = [xml]::new()
         $xml.XmlResolver = $null
         $xml.Load($reader)
-    } finally { $reader.Dispose() }
+    }
+    finally { $reader.Dispose() }
+    return , $xml
+}
+
+function Get-IssueReplicateTrxVerdict {
+    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$ClassName,
+        [Parameter(Mandatory)][int]$ExitCode, [string]$SingleTestMethod = '',
+        [string]$NUnitResultPath = '')
+
+    $xml = Read-IssueReplicateTestResultXml -Path $Path
     $definitions = @($xml.SelectNodes("//*[local-name()='UnitTest']") | Where-Object {
         $method = $_.SelectSingleNode("*[local-name()='TestMethod']")
         $method -and $method.GetAttribute('className') -match
@@ -602,6 +611,32 @@ function Get-IssueReplicateTrxVerdict {
         }).Count -gt 0) {
         return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() }
     }
+    $nunitCases = [System.Collections.Generic.Dictionary[string, Xml.XmlElement]]::new([StringComparer]::Ordinal)
+    if ($NUnitResultPath) {
+        if (-not $ids.SetEquals($nunitIds)) {
+            return [pscustomobject]@{
+                Status = 'Inconclusive'; Names = @()
+                Diagnostic = 'Structured NUnit evidence requires the matching NUnit TRX adapter.'
+            }
+        }
+        $nunitXml = Read-IssueReplicateTestResultXml -Path $NUnitResultPath
+        $nunitRun = $nunitXml.SelectSingleNode('/test-run')
+        $cases = @($nunitXml.SelectNodes('/test-run//test-case'))
+        if (-not $nunitRun -or $cases.Count -ne $allResults.Count -or
+            [int]$nunitRun.GetAttribute('total') -ne $allResults.Count -or
+            [int]$nunitRun.GetAttribute('passed') -ne $allPassed -or
+            [int]$nunitRun.GetAttribute('failed') -ne $allFailures -or
+            @($cases | Where-Object { $_.GetAttribute('result') -eq 'Passed' }).Count -ne $allPassed -or
+            @($cases | Where-Object { $_.GetAttribute('result') -eq 'Failed' }).Count -ne $allFailures) {
+            throw 'NUnit and TRX results do not describe the same completed run.'
+        }
+        foreach ($case in $cases) {
+            $fullName = $case.GetAttribute('fullname')
+            if ([string]::IsNullOrWhiteSpace($fullName) -or -not $nunitCases.TryAdd($fullName, $case)) {
+                throw 'NUnit results have missing or duplicate test identities.'
+            }
+        }
+    }
     $results = @($allResults | Where-Object { $ids.Contains($_.GetAttribute('testId')) })
     if ($results.Count -lt 1) { return [pscustomobject]@{ Status = 'Inconclusive'; Names = @() } }
     if ($SingleTestMethod -and
@@ -633,12 +668,37 @@ function Get-IssueReplicateTrxVerdict {
             $assertionType = $message -match "(?i)\A\s*(?:NUnit\.Framework\.AssertionException|Xunit\.Sdk\.(?:$xunitExceptions)\b|(?:Microsoft\.VisualStudio\.TestTools\.UnitTesting\.)?AssertFailedException)\b"
             $ordinaryException = -not $assertionType -and
                 $message -match '(?i)\A\s*(?:[\w.+`]*Exception|(?:[\w+`]+\.)+[\w+`]+)\s*:'
+            $nunitAssertion = $false
+            if ($nunitIds.Contains($_.GetAttribute('testId')) -and $NUnitResultPath) {
+                $method = $methods[$_.GetAttribute('testId')]
+                $fullName = "$($method.GetAttribute('className')).$($method.GetAttribute('name'))"
+                $case = $null
+                if ($nunitCases.TryGetValue($fullName, [ref]$case)) {
+                    $failureMessage = $case.SelectSingleNode('failure/message')
+                    $assertions = @($case.SelectNodes('assertions/assertion'))
+                    $nunitAssertion = $case.GetAttribute('result') -ceq 'Failed' -and
+                        $case.GetAttribute('label') -ceq '' -and $case.GetAttribute('site') -ceq '' -and
+                        $case.GetAttribute('name') -ceq $_.GetAttribute('testName') -and
+                        $case.GetAttribute('methodname') -ceq $method.GetAttribute('name') -and
+                        [DateTimeOffset]::Parse($case.GetAttribute('start-time'), [Globalization.CultureInfo]::InvariantCulture) -eq
+                            [DateTimeOffset]::Parse($_.GetAttribute('startTime'), [Globalization.CultureInfo]::InvariantCulture) -and
+                        [DateTimeOffset]::Parse($case.GetAttribute('end-time'), [Globalization.CultureInfo]::InvariantCulture) -eq
+                            [DateTimeOffset]::Parse($_.GetAttribute('endTime'), [Globalization.CultureInfo]::InvariantCulture) -and
+                        $failureMessage -and
+                        $failureMessage.InnerText.Replace("`r", '').Trim() -ceq $message.Replace("`r", '').Trim() -and
+                        @($assertions | Where-Object { $_.GetAttribute('result') -ceq 'Failed' }).Count -gt 0 -and
+                        @($assertions | Where-Object { $_.GetAttribute('result') -cnotin @('Passed', 'Failed') }).Count -eq 0
+                }
+            }
             $errorInfo -and -not [string]::IsNullOrWhiteSpace($message) -and
                 -not $ordinaryException -and
                 $message -notmatch '(?i)Xunit\.Sdk\.TestClassException' -and
                 $message -notmatch '(?im)^\s*(?:OneTimeSetUp|SetUp|OneTimeTearDown|TearDown)\s*:' -and
-                ($assertionType -or
-                    $stackText -match '(?im)^\s*at\s+(?:Xunit|NUnit\.Framework)\.Assert\.\w+\b')
+                $(if ($nunitIds.Contains($_.GetAttribute('testId')) -and $NUnitResultPath) {
+                    $nunitAssertion
+                } else {
+                    $assertionType -or $stackText -match '(?im)^\s*at\s+(?:Xunit|NUnit\.Framework)\.Assert\.\w+\b'
+                })
         }).Count -eq $failures.Count) {
         $identities = @()
         foreach ($failure in $failures) {
@@ -665,6 +725,27 @@ function Get-IssueReplicateTrxVerdict {
             $declaringClass = [regex]::Escape($recordedClass)
             $methodName = [regex]::Escape($method.GetAttribute('name'))
             $bodyPattern = "\bat\s+$declaringClass(?:\.$methodName\s*(?:\(|\[|<)|[.+]<$methodName>)"
+            if ($nunitIds.Contains($failure.GetAttribute('testId')) -and $NUnitResultPath) {
+                $fullName = "$($method.GetAttribute('className')).$($method.GetAttribute('name'))"
+                $nativeStack = $nunitCases[$fullName].SelectSingleNode('failure/stack-trace')
+                $nativeText = if ($nativeStack) { $nativeStack.InnerText.Replace("`r", '').Trim() } else { '' }
+                $nativeAssertions = @($nunitCases[$fullName].SelectNodes("assertions/assertion[@result='Failed']"))
+                $boundAssertions = @($nativeAssertions | Where-Object {
+                    $assertionStack = $_.SelectSingleNode('stack-trace')
+                    $assertionText = if ($assertionStack) { $assertionStack.InnerText.Replace("`r", '').Trim() } else { '' }
+                    $assertionFrames = @($assertionText -split "`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+                    $assertionFrames.Count -gt 0 -and $assertionFrames[-1] -cmatch $bodyPattern -and
+                        $stack.InnerText.Replace("`r", '').Contains($assertionText, [StringComparison]::Ordinal)
+                })
+                # NUnit 4 can omit the setup site; a setup caller below the body is still not a body failure.
+                if (-not $nativeText -or $boundAssertions.Count -ne $nativeAssertions.Count -or
+                    -not $stack.InnerText.Replace("`r", '').Trim().StartsWith($nativeText, [StringComparison]::Ordinal)) {
+                    return [pscustomobject]@{
+                        Status = 'Inconclusive'; Names = @()
+                        Diagnostic = 'The structured NUnit assertion stack did not establish a matching test-body failure.'
+                    }
+                }
+            }
             $bodyIndex = -1
             for ($index = 0; $index -lt $stackFrames.Count; $index++) {
                 if ($stackFrames[$index] -cmatch $bodyPattern) { $bodyIndex = $index; break }

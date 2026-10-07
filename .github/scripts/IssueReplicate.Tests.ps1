@@ -262,11 +262,22 @@ Describe 'Observed test evidence' {
         $script:xml = @'
 <TestRun>
   <TestDefinitions><UnitTest id="test-1"><TestMethod className="Example.Issue12345" name="ChecksBehavior" /></UnitTest></TestDefinitions>
-  <Results><UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed">
+  <Results><UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed" startTime="2026-10-01T12:00:00Z" endTime="2026-10-01T12:00:01Z">
     <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message><StackTrace>at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12</StackTrace></ErrorInfo></Output>
   </UnitTestResult></Results>
   <ResultSummary outcome="Failed"><Counters total="1" executed="1" passed="0" failed="1" /></ResultSummary>
 </TestRun>
+'@
+        $script:nunitPath = Join-Path $TestDrive 'nunit.xml'
+        $script:nunitXml = @'
+<test-run total="1" passed="0" failed="1">
+  <test-case name="ChecksBehavior" fullname="Example.Issue12345.ChecksBehavior" methodname="ChecksBehavior" result="Failed" start-time="2026-10-01T12:00:00Z" end-time="2026-10-01T12:00:01Z">
+    <failure><message>Assert.That(actual, Is.EqualTo(1))
+Expected: 1
+But was: 0</message><stack-trace>at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12</stack-trace></failure>
+    <assertions><assertion result="Failed"><stack-trace>at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12</stack-trace></assertion></assertions>
+  </test-case>
+</test-run>
 '@
     }
 
@@ -421,10 +432,12 @@ Describe 'Observed test evidence' {
         param($Fixture)
         $xml = $script:xml -replace '<TestMethod ', '<TestMethod adapterTypeName="executor://nunit3testexecutor/" ' `
             -replace 'className="Example.Issue12345"', "className=`"Example.Issue12345($Fixture)`"" `
-            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>" `
-            -replace '<StackTrace>', '<StackTrace>at NUnit.Framework.Assert.That(actual, expression)&#10;'
+            -replace '<Message>.*?</Message>', "<Message>Assert.That(actual, Is.EqualTo(1))`nExpected: 1`nBut was: 0</Message>"
         Set-Content -LiteralPath $script:trxPath -Value $xml
-        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        Set-Content -LiteralPath $script:nunitPath -Value (
+            $script:nunitXml.Replace('fullname="Example.Issue12345.', "fullname=`"Example.Issue12345($Fixture)."))
+        $verdict = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1 `
+            -NUnitResultPath $script:nunitPath
         $verdict.Status | Should -Be 'AssertionFailed'
         $verdict.FailureIdentities.Count | Should -Be 1
     }
@@ -436,11 +449,13 @@ Describe 'Observed test evidence' {
         $ambiguous = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
         $ambiguous.Status | Should -Be 'Inconclusive'
         $ambiguous.FailureIdentities | Should -BeNullOrEmpty
-        $xml = $xml -replace '<StackTrace>', '<StackTrace>at NUnit.Framework.Assert.That(actual, expression)&#10;'
-        Set-Content -LiteralPath $script:trxPath -Value $xml
-        $first = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        Set-Content -LiteralPath $script:nunitPath -Value $script:nunitXml
+        $first = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1 `
+            -NUnitResultPath $script:nunitPath
         Set-Content -LiteralPath $script:trxPath -Value ($xml -replace 'line 12', 'line 15')
-        $second = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1
+        Set-Content -LiteralPath $script:nunitPath -Value ($script:nunitXml -replace 'line 12', 'line 15')
+        $second = Get-IssueReplicateTrxVerdict -Path $script:trxPath -ClassName Issue12345 -ExitCode 1 `
+            -NUnitResultPath $script:nunitPath
         $first.Status | Should -Be 'AssertionFailed'
         $second.Status | Should -Be 'AssertionFailed'
         $first.FailureIdentities.Count | Should -Be 1

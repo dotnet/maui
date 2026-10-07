@@ -288,8 +288,8 @@ Describe 'Native recording helpers' {
                 $method = if ($global:recordingRetryFault -eq 'wrong method') { 'OtherBehavior' } else { 'ChecksBehavior' }
                 $xml = @"
 <TestRun>
-  <TestDefinitions><UnitTest id="test-1"><TestMethod className="Example.Issue12345" name="$method" /></UnitTest></TestDefinitions>
-  <Results><UnitTestResult testId="test-1" testName="$method" outcome="$outcome" /></Results>
+  <TestDefinitions><UnitTest id="test-1"><TestMethod adapterTypeName="executor://nunit3testexecutor/" className="Example.Issue12345" name="$method" /></UnitTest></TestDefinitions>
+  <Results><UnitTestResult testId="test-1" testName="$method" outcome="$outcome" startTime="2026-10-01T12:00:00Z" endTime="2026-10-01T12:00:01Z" /></Results>
   <ResultSummary outcome="$outcome"><Counters total="1" executed="$executed" passed="$executed" failed="0" /></ResultSummary>
 </TestRun>
 "@
@@ -297,9 +297,9 @@ Describe 'Native recording helpers' {
                 if ($global:recordingRetryAssertion) {
                     $xml = $xml.Replace('outcome="Passed"', 'outcome="Failed"').
                     Replace('passed="1" failed="0"', 'passed="0" failed="1"').
-                    Replace('<UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed" />', @'
-<UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed">
-  <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message>
+                    Replace('<UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed" startTime="2026-10-01T12:00:00Z" endTime="2026-10-01T12:00:01Z" />', @'
+<UnitTestResult testId="test-1" testName="ChecksBehavior" outcome="Failed" startTime="2026-10-01T12:00:00Z" endTime="2026-10-01T12:00:01Z">
+  <Output><ErrorInfo><Message>Expected: 1 But was: 0</Message>
   <StackTrace>at Example.Issue12345.ChecksBehavior() in /test/Issue12345.cs:line 12</StackTrace></ErrorInfo></Output>
 </UnitTestResult>
 '@)
@@ -313,7 +313,7 @@ Describe 'Native recording helpers' {
                 if ($global:recordingRetryFault -in @('later failure', 'extra result', 'repeated case')) {
                     $otherMethod = if ($global:recordingRetryFault -eq 'repeated case') { 'ChecksBehavior' } else { 'OtherBehavior' }
                     $xml = $xml.Replace('</TestDefinitions>',
-                        "<UnitTest id=`"test-2`"><TestMethod className=`"Example.Issue12345`" name=`"$otherMethod`" /></UnitTest></TestDefinitions>")
+                        "<UnitTest id=`"test-2`"><TestMethod adapterTypeName=`"executor://nunit3testexecutor/`" className=`"Example.Issue12345`" name=`"$otherMethod`" /></UnitTest></TestDefinitions>")
                     $xml = $xml.Replace('</Results>', @"
 <UnitTestResult testId="test-2" testName="$otherMethod(2)" outcome="Failed">
   <Output><ErrorInfo><Message>NUnit.Framework.AssertionException: Expected: 1 But was: 0</Message>
@@ -329,6 +329,23 @@ Describe 'Native recording helpers' {
                 else { [DateTime]::UtcNow.AddSeconds(1) }
                 [IO.File]::SetLastWriteTimeUtc($trx, $timestamp)
                 if ($global:recordingRetryFault -eq 'missing TRX') { Remove-Item -LiteralPath $trx }
+                [xml]$settings = [IO.File]::ReadAllText($env:VSTestSetting)
+                $nunitDirectory = [string]$settings.RunSettings.NUnit.TestOutputXml
+                New-Item -ItemType Directory -Path $nunitDirectory -Force | Out-Null
+                $nunitPath = Join-Path $nunitDirectory 'Controls.TestCases.Android.Tests.xml'
+                [xml]$trxXml = $xml
+                $counters = $trxXml.TestRun.ResultSummary.Counters
+                $nunitCases = @($trxXml.TestRun.Results.UnitTestResult | ForEach-Object {
+                    $name = [Security.SecurityElement]::Escape($_.testName)
+                    $message = [Security.SecurityElement]::Escape([string]$_.Output.ErrorInfo.Message)
+                    $stack = [Security.SecurityElement]::Escape([string]$_.Output.ErrorInfo.StackTrace)
+                    $failure = if ($_.outcome -eq 'Failed') {
+                        "<failure><message>$message</message><stack-trace>$stack</stack-trace></failure><assertions><assertion result=`"Failed`"><stack-trace>$stack</stack-trace></assertion></assertions>"
+                    } else { '' }
+                    "<test-case name=`"$name`" fullname=`"Example.Issue12345.$name`" methodname=`"$name`" result=`"$($_.outcome)`" start-time=`"$($_.startTime)`" end-time=`"$($_.endTime)`">$failure</test-case>"
+                }) -join ''
+                [IO.File]::WriteAllText($nunitPath,
+                    "<test-run total=`"$($counters.total)`" passed=`"$($counters.passed)`" failed=`"$($counters.failed)`">$nunitCases</test-run>")
                 ">>> TRX_RESULT_FILE: $trx"
             }
             try {
