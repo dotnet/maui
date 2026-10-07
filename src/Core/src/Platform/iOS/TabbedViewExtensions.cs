@@ -42,39 +42,32 @@ namespace Microsoft.Maui.Platform
 			if (_tabBarAppearance == null)
 			{
 				_tabBarAppearance = new UITabBarAppearance();
+				_tabBarAppearance.ConfigureWithDefaultBackground();
+
 			}
 
-			// Reset to the platform default on every update so a previous gradient or solid
-			// background (a cleared blur effect or a stale BackgroundColor) does not survive a
-			// transition back to a solid or default background.
-			_tabBarAppearance.ConfigureWithDefaultBackground();
+			// Reset the background layer to ensure any previous customizations do not persist.
 			tabBar.RemoveBackgroundLayer();
 
-			var effectiveBarColor = barBackground switch
+			switch (barBackground)
 			{
-				null => defaultBarColor,
-				// A SolidPaint with a null Color (e.g. an empty brush) should behave like no brush at all.
-				SolidPaint solidPaint => solidPaint.Color?.ToPlatform() ?? defaultBarColor,
-				_ => null,
-			};
+				case GradientPaint:
+					_tabBarAppearance.BackgroundEffect = null;
+					_tabBarAppearance.BackgroundColor = UIColor.Clear;
+					tabBar.BackgroundColor = UIColor.Clear;
+					tabBar.UpdateBackground(barBackground);
+					break;
 
-			if (barBackground is GradientPaint)
-			{
-				_tabBarAppearance.BackgroundEffect = null;
-				_tabBarAppearance.BackgroundColor = UIColor.Clear;
-				tabBar.BackgroundColor = UIColor.Clear;
-				tabBar.UpdateBackground(barBackground);
-			}
+				case SolidPaint solidPaint:
+					_tabBarAppearance.BackgroundColor =
+						solidPaint.Color?.ToPlatform() ?? defaultBarColor;
+					tabBar.BackgroundColor = null;
+					break;
 
-			// Set BarBackgroundColor
-			if (effectiveBarColor != null)
-			{
-				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-			}
-			else if (barBackground is not GradientPaint)
-			{
-				// Clear any native solid color applied during a previous update.
-				tabBar.BackgroundColor = null;
+				default:
+					_tabBarAppearance.BackgroundColor = defaultBarColor;
+					tabBar.BackgroundColor = null;
+					break;
 			}
 
 			// Set BarTextColor

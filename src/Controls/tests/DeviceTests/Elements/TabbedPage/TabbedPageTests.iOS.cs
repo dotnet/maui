@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "TabbedPage BarBackground gradient persists after iOS 15 appearance update")]
 		public async Task BarBackgroundGradientPersistsAfteriOS15AppearanceUpdate()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(15))
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				return;
 
 			SetupBuilder();
@@ -40,6 +40,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
 			{
+				Assert.Contains(
+					GetTabBar(tabbedPage).Layer.Sublayers,
+					layer => layer is CAGradientLayer);
+
+				tabbedPage.BarTextColor = Colors.Green;
+
 				Assert.Contains(
 					GetTabBar(tabbedPage).Layer.Sublayers,
 					layer => layer is CAGradientLayer);
