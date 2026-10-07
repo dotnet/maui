@@ -1557,7 +1557,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (childView is not null)
 				{
-					childView.Frame = View.Bounds;
+					var childBounds = View.Bounds;
+
+					if (_navigation.TryGetTarget(out var navigation) &&
+						!navigation.NavigationBarHidden &&
+						!navigation.NavigationBar.Translucent &&
+						Child is Page child &&
+						NavigationPage.GetHasNavigationBar(child))
+					{
+						var navigationBarFrame = navigation.NavigationBar.ConvertRectToView(navigation.NavigationBar.Bounds, View);
+						var top = Math.Min(childBounds.Bottom, Math.Max(childBounds.Top, navigationBarFrame.Bottom));
+						childBounds = new CGRect(childBounds.X, top, childBounds.Width, childBounds.Bottom - top);
+					}
+
+					childView.Frame = childBounds;
 				}
 			}
 
