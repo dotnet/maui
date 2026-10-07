@@ -80,6 +80,7 @@ BeforeAll {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot '../skills/pr-review/references/evidence-first-policy.md') `
         -Destination (Join-Path $policyDir 'evidence-first-policy.md')
     $skillContent = Get-Content -Raw (Join-Path $PSScriptRoot '../skills/pr-review/SKILL.md')
+    $reportPolicyContent = Get-Content -Raw (Join-Path $PSScriptRoot '../pr-review/pr-report.md')
     $sharedPolicy = Get-Content -Raw (Join-Path $policyDir 'evidence-first-policy.md')
 }
 
@@ -218,6 +219,21 @@ Describe 'Shared trusted evidence-first policy' {
         $skillContent | Should -Match 'Do not fall through'
         $skillContent | Should -Match 'remaining three-phase instructions apply to \*\*candidate-comparison only\*\*'
         $skillContent | Should -Not -Match 'MANDATORY for every review, no exceptions|NEVER SKIP IT. NO EXCEPTIONS'
+    }
+
+    It 'locally scopes every mandatory two-model directive so mid-file readers cannot apply it to evidence-first' {
+        $directives = @($skillContent -split '\r?\n' | Where-Object {
+            $_ -match '(?i)MANDATORY.*multi-model|MUST.*both models|2-model exploration.*MANDATORY'
+        })
+        $directives.Count | Should -BeGreaterOrEqual 3
+        foreach ($directive in $directives) {
+            $directive | Should -Match 'candidate-comparison'
+        }
+        $skillContent | Should -Match 'Checklist \(candidate-comparison: you MUST complete ALL of these\)'
+        $reportPolicyContent | Should -Match 'In candidate-comparison, Phases 1-2.*must be complete'
+        $reportPolicyContent | Should -Match 'Code review SKIPPED \(candidate-comparison only\)'
+        $reportPolicyContent | Should -Match 'LGTM \(or SKIPPED in candidate-comparison only\)'
+        $reportPolicyContent | Should -Match 'In evidence-first, missing/skipped expert review cannot support approval'
     }
 
     It 'fails explicitly for missing, oversized, invalid version or absent/duplicate sections' {

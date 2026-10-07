@@ -48,7 +48,7 @@ fanout, model/context/credit caps, validation isolation, and publication boundar
 - Compare the saved context, omissions, expert findings, report, winner, inline
   findings and submitted-HEAD metadata assessment. Record unknown validation and
   missing artifacts. Artifact presence, framing markers, and deterministic tests
-  are protocol heuristics, **not fidelity proof**.
+  are protocol heuristics, **not full schema/correctness validation or fidelity proof**.
 - Rollback: omit the parameter or select `candidate-comparison`. No automatic trial,
   model evaluation, efficacy claim, or savings claim is enabled here. Manual runs
   and any publication require separate maintainer authorization.
@@ -67,7 +67,7 @@ privilege. Do not weaken these tests or infer challenger fidelity from protocol 
 ```
 Gate (pre-run)    → Already completed by Review-PR.ps1 before this skill runs
 Phase 1: Pre-Flight   → Gather context, classify files, code review     → .github/pr-review/pr-preflight.md
-Phase 2: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
+Phase 2: Try-Fix      → candidate-comparison: ⚠️ MANDATORY multi-model exploration → invoke try-fix skill (×2 models)
 Phase 3: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
 
@@ -93,7 +93,7 @@ Phase 3: Report       → Write review recommendation                     → .g
 
 ### Multi-Model Configuration
 
-Phase 2 uses these 2 AI models (run SEQUENTIALLY — they modify the same files):
+In candidate-comparison, Phase 2 uses these 2 AI models (run SEQUENTIALLY — they modify the same files):
 
 | Order | Model |
 |-------|-------|
@@ -136,13 +136,13 @@ Pre-Flight now has two parts:
 
 ---
 
-## Phase 2: Try-Fix → Invoke `try-fix` Skill (×2 Models)
+## Phase 2: Try-Fix → Invoke `try-fix` Skill (×2 Models, candidate-comparison only)
 
 > Read and follow `.github/skills/try-fix/SKILL.md`
 
 > **⚠️ In candidate-comparison this phase is mandatory. Evidence-first follows the shared policy instead.**
 
-Even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
+In candidate-comparison, even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
 > **⏱️ HARD TIME BUDGET — Phase 2 must finish within ~90 minutes.** Task 3 (this whole Copilot Review step) has a 180-minute safety cap. The pipeline preserves partial output when that cap is reached, but the review remains incomplete and can lose its final comparison — so reaching it is still unacceptable. Track wall-clock time from the moment you enter Phase 2. Order of work: (1) run each of the two models **once**, writing `try-fix/content.md` after each attempt; (2) select the best fix. In the CI split-step reviewer, skip cross-pollination entirely; direct interactive invocations may do one optional round only when comfortably under budget. The moment you approach ~90 minutes — or sooner if attempts stop making progress — **STOP immediately**, finalize `try-fix/content.md` with the results so far, and move to Phase 3. Never run open-ended "exhaustion", per-candidate deep-dive, repeated candidate repair loops, or repeated cross-pollination that can consume the whole budget.
 
@@ -156,7 +156,7 @@ The purpose is NOT to re-test the PR's fix, but to:
 3. **Compare with PR's fix** — Is there a simpler/better alternative?
 4. **Learn from failures** — Record WHY failed attempts didn't work
 
-### Checklist (you MUST complete ALL of these)
+### Checklist (candidate-comparison: you MUST complete ALL of these)
 
 - [ ] Attempt 1 launched with gpt-5.3-codex
 - [ ] `try-fix/content.md` updated with attempt 1 result
@@ -274,7 +274,7 @@ Deliver the final review recommendation.
 
 > 🚨 **DO NOT post any comments.** All output goes to `CustomAgentLogsTmp/PRState/`.
 
-**Gate:** Phases 1-2 must be complete.
+**Gate:** In candidate-comparison, Phases 1-2 must be complete. Evidence-first follows the shared policy's context, omission, and expert-review prerequisites instead.
 
 ---
 
@@ -310,7 +310,7 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 |-------|--------------|------------|------------|
 | Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
 | 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
-| 2. Try-Fix | `try-fix` skill (×2) | **2-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
+| 2. Try-Fix | `try-fix` skill (×2) | **candidate-comparison: 2-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
 | 3. Report | `pr-report.md` | Write review recommendation | Never skip |
 
 ---
