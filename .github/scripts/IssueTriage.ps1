@@ -1,14 +1,15 @@
 #!/usr/bin/env pwsh
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Gather', 'Validate')][string]$Stage,
+    [Parameter(Mandatory)][ValidateSet('Gather', 'Validate', 'Complete')][string]$Stage,
     [Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$IssueNumber,
     [ValidateSet('dotnet/maui')][string]$Repository = 'dotnet/maui',
     [Parameter(Mandatory)][ValidatePattern('^[A-Za-z0-9_-]+$')][string]$Actor,
     [ValidateRange(0, [long]::MaxValue)][long]$CommandCommentId = 0,
-    [Parameter(Mandatory)][string]$OutputDirectory,
+    [string]$OutputDirectory,
     [string]$ContextDirectory,
     [string]$AgentOutputPath,
+    [ValidateRange(0, 2)][int]$ProcessedOperations = 0,
     [ValidatePattern('^[A-F0-9]{64}$')][string]$ExpectedContextHash
 )
 
@@ -225,6 +226,77 @@ function Assert-Actor {
         } else {
             throw 'Unsupported issue-triage event.'
         }
+    }
+}
+
+function Complete-TriageRequest {
+    if ($env:GITHUB_ACTIONS -cne 'true' -or $env:GITHUB_EVENT_NAME -cne 'issue_comment' -or
+        $CommandCommentId -le 0 -or $ProcessedOperations -le 0 -or
+        -not $ContextDirectory -or -not $ExpectedContextHash) {
+        throw 'Command completion requires a fresh hosted issue-comment invocation.'
+    }
+    $validation = Read-Json (Join-Path $ContextDirectory 'validation.json')
+    $receipt = $validation.completion
+    if ($validation.status -cnotin @('validated', 'noop') -or
+        $validation.contextHash -cne $ExpectedContextHash -or
+        $receipt.repository -cne $Repository -or $receipt.actor -cne $Actor -or
+        $receipt.issueNumber -ne $IssueNumber -or $receipt.commandCommentId -ne $CommandCommentId -or
+        $receipt.runId -cne $env:GITHUB_RUN_ID -or $receipt.runAttempt -cne '1' -or
+        $receipt.warningFree -cne $true -or $receipt.operations -ne $ProcessedOperations -or
+        ($env:DETECTION_CONCLUSION -cne 'success' -and
+            -not ($env:DETECTION_CONCLUSION -ceq 'skipped' -and $validation.status -ceq 'noop'))) {
+        throw 'The trusted validation receipt does not prove complete successful triage for this invocation.'
+    }
+    $permissions.Clear()
+    Assert-Actor
+    $event = Read-Json $env:GITHUB_EVENT_PATH 2MB
+    if ($event.repository.full_name -cne $Repository -or
+        $event.issue.state -cne 'open' -or $event.comment.user.type -cne 'User' -or
+        $event.comment.user.login -cne $Actor -or
+        $event.comment.body -cnotmatch '\A/issue triage[ \t\r\n]*\z' -or
+        (Get-Timestamp $event.comment.created_at) -cne (Get-Timestamp $event.comment.updated_at) -or
+        [string]::IsNullOrWhiteSpace([string]$event.comment.node_id)) {
+        throw 'The completion event is not an unedited authorized human triage command.'
+    }
+    $issue = Get-Api "repos/$Repository/issues/$IssueNumber"
+    if ($issue.number -ne $IssueNumber -or $issue.id -ne $event.issue.id -or
+        $issue.state -cne 'open' -or $issue.ContainsKey('pull_request')) {
+        throw 'The completion target is no longer the exact open issue.'
+    }
+    $command = Get-Api "repos/$Repository/issues/comments/$CommandCommentId"
+    if ($command.id -ne $CommandCommentId -or $command.node_id -cne $event.comment.node_id -or
+        $command.user.type -cne 'User' -or $command.user.login -cne $Actor -or
+        $command.user.id -ne $event.comment.user.id -or
+        $command.issue_url -cne "https://api.github.com/repos/$Repository/issues/$IssueNumber" -or
+        $command.body -cne $event.comment.body -or
+        $command.body -cnotmatch '\A/issue triage[ \t\r\n]*\z' -or
+        (Get-Timestamp $command.created_at) -cne (Get-Timestamp $event.comment.created_at) -or
+        (Get-Timestamp $command.updated_at) -cne (Get-Timestamp $event.comment.updated_at)) {
+        throw 'The triggering command was edited, deleted, retargeted or replaced; leaving it visible.'
+    }
+    try {
+        $raw = Invoke-GhCommandWithRetry -Arguments @(
+            'api', 'graphql', '-f',
+            'query=mutation($id: ID!) { minimizeComment(input: {subjectId: $id, classifier: RESOLVED}) { minimizedComment { isMinimized } } }',
+            '-f', "id=$($command.node_id)"
+        ) -Description 'resolve the successfully handled issue-triage command' -RequireOutput -MaxAttempts 1
+        $result = $raw | ConvertFrom-Json -AsHashtable
+        if (($result.ContainsKey('errors') -and $result.errors) -or
+            $result.data.minimizeComment.minimizedComment.isMinimized -cne $true) {
+            throw 'GitHub did not confirm that the triggering command was minimized.'
+        }
+        Write-Host "Resolved issue-triage command $CommandCommentId."
+    } catch {
+        Write-Warning "Command minimization was not confirmed; successful label operations are unchanged. $($_.Exception.Message)"
+    }
+}
+
+function Get-TriageCompletionReceipt([int]$OperationCount, $Payload) {
+    return @{
+        repository = $Repository; actor = $Actor; issueNumber = $IssueNumber
+        commandCommentId = $CommandCommentId; runId = $env:GITHUB_RUN_ID
+        runAttempt = $env:GITHUB_RUN_ATTEMPT; operations = $OperationCount
+        warningFree = -not ($Payload.ContainsKey('warnings') -and @($Payload.warnings).Count -gt 0)
     }
 }
 
@@ -1509,6 +1581,11 @@ function Assert-Change($Decision, [string]$Action, $Snapshot, [string[]]$Effecti
     }
 }
 
+if ($Stage -eq 'Complete') {
+    Complete-TriageRequest
+    return
+}
+if (-not $OutputDirectory) { throw 'Gather and Validate require OutputDirectory.' }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 $null = New-Item -ItemType Directory -Path $OutputDirectory -Force
 $null = Assert-RegularPath $OutputDirectory -Directory
@@ -1544,7 +1621,10 @@ if ($payload.items -isnot [array] -or $payload.items.Count -eq 0 -or $payload.it
 }
 $items = @($payload.items)
 if ($items.Count -eq 1 -and $items[0].type -in @('noop', 'report_incomplete', 'missing_tool')) {
-    Write-Json 'validation.json' @{ status = $items[0].type; contextHash = $current.contextHash; writes = 0 }
+    Write-Json 'validation.json' @{
+        status = $items[0].type; contextHash = $current.contextHash; writes = 0
+        completion = Get-TriageCompletionReceipt 1 $payload
+    }
     if ($items[0].type -ne 'noop') { throw 'Triage is incomplete; inspect the agent result, resolve the missing evidence, and rerun.' }
     Write-Host 'No label changes requested.'
     return
@@ -1707,12 +1787,6 @@ if ($final.contextHash -cne $current.contextHash) {
 }
 Set-Content -LiteralPath (Join-Path $OutputDirectory 'report.md') -Value $body -Encoding utf8
 Write-Json 'decision.json' $proposal
-Write-Json 'validation.json' @{
-    status = 'validated'; contextHash = $current.contextHash; existingComment = $existing.Count -gt 0
-    publicCommentWrites = 0
-    requestedAdditions = @($proposal.additions | ForEach-Object { $_.label })
-    requestedRemovals = @($proposal.removals | ForEach-Object { $_.label })
-}
 # The structured comment is evidence transport only; retain its report in Actions artifacts.
 $payload.items = @($items | Where-Object { $_.type -cne 'add_comment' })
 if ($payload.items.Count -eq 0) {
@@ -1722,4 +1796,11 @@ if ($payload.items.Count -eq 0) {
     })
 }
 $payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $AgentOutputPath -Encoding utf8
+Write-Json 'validation.json' @{
+    status = 'validated'; contextHash = $current.contextHash; existingComment = $existing.Count -gt 0
+    publicCommentWrites = 0
+    requestedAdditions = @($proposal.additions | ForEach-Object { $_.label })
+    requestedRemovals = @($proposal.removals | ForEach-Object { $_.label })
+    completion = Get-TriageCompletionReceipt $payload.items.Count $payload
+}
 Write-Host "Validated $($proposal.additions.Count) additions and $($proposal.removals.Count) removals for issue $IssueNumber."
