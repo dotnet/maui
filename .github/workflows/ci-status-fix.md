@@ -153,6 +153,18 @@ pre-agent-steps:
   - name: Pin safe-output capture base
     shell: bash
     run: echo "DEFAULT_BRANCH=main" >> "$GITHUB_ENV"
+  - name: Prefetch bounded Azure DevOps failure evidence
+    shell: pwsh
+    env:
+      CI_FIX_CANDIDATES: ${{ needs.pre_activation.outputs.ci_fix_candidates }}
+    run: |
+      $snapshot = "/tmp/gh-aw/agent/prefetch.json"
+      New-Item -ItemType Directory -Force -Path (Split-Path -Parent $snapshot) | Out-Null
+      [IO.File]::WriteAllText($snapshot, $env:CI_FIX_CANDIDATES, [Text.UTF8Encoding]::new($false))
+      .github/scripts/Get-CiFixAzdoEvidence.ps1 `
+        -CandidatesPath $snapshot `
+        -OutputDirectory /tmp/gh-aw/agent/azdo-evidence `
+        -Branch main
 
 # AI-credit budget: DISABLED for this workflow via the -1 sentinel. Token cost is not
 # a constraint here, and the default daily cap (5000 AIC) was throttling the
@@ -1597,38 +1609,65 @@ Stop this cycle after Step 3.5.R (one issue = one outcome, Rule 5).
 
 This is the "is the issue actually fixed?" check.
 
+The trusted pre-agent producer has already fetched the bounded Azure DevOps
+evidence into `/tmp/gh-aw/agent/azdo-evidence/manifest.json`, with each actual
+failed-task log stored at the relative `path` recorded in that manifest. Treat
+that manifest as the authoritative retrieval result. Do NOT improvise a second
+Azure downloader from the agent shell.
+
+- A build is usable only when its manifest `complete == true`.
+- `timeline.status` or any `failedTasks[].status` of `error` / `truncated`, or
+  `logsTruncatedByCount == true`, means retrieval is incomplete. It is NOT proof
+  that the signature is absent or that the issue is fixed.
+- Keep cited-build retrieval separate from current-build evidence. A cited
+  historical build may be 404 while the latest build and its failed-task logs
+  are fully available.
+- If the manifest is missing/malformed, the pipeline query is incomplete, or
+  every relevant recent build is incomplete, register and emit
+  `report_incomplete` once with the exact manifest error/status and stop. Do not
+  turn a retrieval failure into a successful/noop or fixed-in-latest outcome.
+
 **Mode note.** In **FRESH** mode (Step 3.4) verify against the latest completed
 `main` build (below). In **ADVANCE** mode (Step 3.5) the PR is already red — its
-own build IS the reproduction: run the SAME timeline/log analysis against the PR's
-`maui-pr` build for `C.headSha` (require BOTH `branchName == refs/pull/<P>/merge`
-AND `triggerInfo["pr.sourceSha"] == C.headSha`; do not use the merge-SHA
-`sourceVersion` as PR-head identity), extract the still-failing signature, and carry it into
-Step 5. Skip the main-build fetch in ADVANCE mode.
+own build IS the reproduction: use the manifest's `pullRequests[]` entry for
+`C.prNumber` + `C.headSha`. The trusted producer included a build only after
+requiring BOTH `branchName == refs/pull/<P>/merge` AND
+`triggerInfo["pr.sourceSha"] == C.headSha`; do not use the merge-SHA
+`sourceVersion` as PR-head identity. Run the SAME manifest/log analysis against
+those builds, extract the still-failing signature, and carry it into Step 5.
+Skip the main-build list in ADVANCE mode. If the matching PR query/build
+evidence is incomplete, report incomplete rather than querying Azure ad hoc.
 
 1. Map the issue's `Pipeline` to its definition ID (302 / 314 / 313).
-2. Fetch the most recent completed builds of that pipeline on `main`:
+2. Read that pipeline's `main` entry from the evidence manifest. It contains up
+   to five latest completed builds in newest-first order:
 
    ```bash
-   def=<pipeline-def-id>
-   branch=main
-   url="https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=${def}&branchName=refs/heads/${branch}&statusFilter=completed&resultFilter=succeeded,failed,partiallySucceeded&%24top=5&api-version=7.1"
-   curl -s "$url" | tee /tmp/gh-aw/agent/latest_${N}.json | jq -r '.value[0] | "\(.id) \(.result) \(.finishTime)"'
+   jq -r --arg pipeline "<pipeline-name>" \
+     '.pipelines[] | select(.pipeline == $pipeline) |
+      .builds[] | [.buildId,.result,.finishTime,.evidenceComplete] | @tsv' \
+     /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
-3. Pick the latest completed build. Walk its timeline:
+3. Pick the latest completed build whose `evidenceComplete` is true. Read its
+   timeline and failed-task log inventory from the manifest:
 
    ```bash
    build_id=<id-from-above>
-   url="https://dev.azure.com/dnceng-public/public/_apis/build/builds/${build_id}/timeline?api-version=7.1"
-   curl -s "$url" | tee /tmp/gh-aw/agent/timeline_${N}.json
+   jq --argjson build_id "$build_id" \
+     '.builds[] | select(.buildId == $build_id)' \
+     /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
-4. For each failed leaf record with non-null `log.id`, fetch its log:
+4. For each `failedTasks[]` entry, inspect the actual prefetched log at
+   `/tmp/gh-aw/agent/azdo-evidence/<path>`. Concatenate only `status ==
+   "available"` files for the selected complete build:
 
    ```bash
-   log_id=<leaf-log-id>
-   url="https://dev.azure.com/dnceng-public/public/_apis/build/builds/${build_id}/logs/${log_id}?api-version=7.1"
-   curl -s "$url" | tee -a /tmp/gh-aw/agent/latest_failure_${N}.log | tail -3
+   jq -r --argjson build_id "$build_id" \
+     '.builds[] | select(.buildId == $build_id) |
+      .failedTasks[] | select(.status == "available") | .path' \
+     /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
 5. Match the issue's failure signature against the concatenated latest-build
