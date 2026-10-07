@@ -11,8 +11,11 @@ successful no-change and withheld-only results. A separate trusted completion jo
 rechecks the open issue, unchanged human command and caller's current write access.
 It also requires every trusted validated addition to be present and every removal
 to be absent in the freshly fetched issue's exact canonical label names, not just
-successful native operation counts. Invalid label responses, partial removals or
-concurrent label reversals keep the command visible without changing any labels.
+successful native operation counts. This is a point-in-time postcondition check:
+malformed or unmet label state detected in that fetched snapshot keeps the command
+visible without changing any labels. The subsequent command checks and separate
+minimization mutation are not atomic with the label read; a concurrent label change
+after that snapshot can still occur before the command collapses.
 Failed, cancelled, deferred, skipped, warning, partial or incomplete outcomes leave
 the command visible. Manual dispatches (including staged runs), edited/replayed
 commands, bot comments and unrelated comments are never minimized. A minimization
