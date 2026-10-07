@@ -68,8 +68,12 @@ working/failing versions, exact release-tag SHAs, and a bounded release comparis
 The collected context is mounted read-only in the agent sandbox. A failed context
 download stops the agent before inference; no report is published without that
 snapshot. Only headings outside backtick or tilde fences are parsed as form fields.
-Duplicate version headings are ambiguous rather than silently selecting the first value;
-comment pages whose counts change during collection record an evidence gap.
+Conflicting duplicate version headings are ambiguous rather than silently selecting
+the first value. Repeated answers identifying the same precise version are
+consistent, including `v` prefixes, GA/SR qualifiers and a trailing parenthetical
+note that contains no other version. The raw issue body and first answer remain
+available; generic or conflicting answers are not normalized into a release.
+Comment pages whose counts change during collection record an evidence gap.
 The collector also revalidates the issue's comment count and update marker after
 pagination; concurrent changes or a failed revalidation make the comment evidence incomplete.
 The agent narrows that history to affected code and verifies candidate diffs,
@@ -77,8 +81,9 @@ platform applicability and shipped ancestry. API failures, missing versions,
 divergent branches and truncated history remain explicit evidence gaps.
 
 Optional context extensions provide a cheap boundary preflight, a diagnostic
-inventory and a trusted bounded source/history snapshot. Ambiguous headings or
-two unmapped reported versions select `boundary-only`: the agent reads existing
+inventory and a trusted bounded source/history snapshot. Conflicting headings or
+two unmapped versions without a usable supplemental source pair select
+`boundary-only`: the agent reads existing
 corrections/diagnostics and reports the missing exact installed versions without
 loading the full investigation skill or doing source/history searches. The
 trusted mode is exposed as a fixed workflow output, not inferred from issue
@@ -87,17 +92,45 @@ receipt/minimization guards still run. One exact boundary permits static leads,
 not regression attribution. Generic Preview/RC workload-set metadata is supplemental and does
 not verify the application's installed MAUI packages.
 Recoverable Preview/RC shorthand remains eligible for `metadata-resolution`
-(one 30-release list page and two matching published releases), rather than being
+(one 30-release list page and two matching published releases across collector
+and agent), rather than being
 discarded because its shorthand has no exact tag. Precise version values already
 provided in prose/tables are inventoried as supplemental, unverified leads;
 they never silently replace ambiguous form fields.
+An additive `investigation` record keeps a selected source pair and comparison
+separate from `boundaries.reportedGood`/`reportedBad` and the original comparison.
+An explicit good/bad pair from one human comment or issue text can select exact
+release snapshots, with at most four supplemental version lookups. Outcome
+cells or prose sentences must contain one version and fit 1,024 characters;
+fenced code and SDK/OS version labels are excluded. The twenty-observation cap
+retains early and late observations. Each selection retains author, outcome excerpt and permalink and
+does not establish equivalent-environment runtime confirmation.
+An explicit human "from/since version" failing observation can instead pair with
+a resolved working form answer; both origins remain visible and the observed
+failure is not claimed to be the first bad release.
+Preview/RC release metadata can supply a `mapped-source` lead from the published
+MAUI workload row, keeping the workload-set tag, package version and source commit
+distinct. It cannot resolve the application's installed package or justify a
+verified regression boundary.
+`investigation.releaseMetadata` records whether the list was requested and how
+many release reads were attempted so inference cannot repeat an already spent
+metadata budget.
 
-The trusted collector reads only `dotnet/maui`, at exact resolved release SHAs,
+The trusted collector reads only `dotnet/maui`, at exact resolved release SHAs
+or explicitly marked published-release source commits,
 using symptom-selected **fixed paths**, not agent-supplied endpoints. Its budget
-is six paths, 64 KiB per source file, ten commits per path and six commit diffs
+is six paths, 64 KiB per complete source file, ten commits per path and six commit diffs
 with 8,000-character patches. Every source/history record includes revision/path
-and API provenance; capped lists, renames not followed, missing/oversized files
-and unavailable patches remain explicit. This deliberately limited read-only
+and API provenance. For the large iOS `NavigationRenderer`, fixed trusted
+symbols permit at most 256 KiB decoded input and retain at most 16 KiB/240 lines
+of excerpts with original blob, size and line ranges. Such records explicitly
+have `complete: false`, `representation: symbol-excerpts` and `content: null`;
+omitted code cannot establish absence. Diff selection prefers commits in the
+visible bad-side comparison history and round-robins across paths. A divergent
+comparison remains non-linear even when it helps prioritize a source lead.
+Older history is excluded only for a complete forward comparison. Capped lists,
+renames not followed, missing/oversized files and unavailable patches remain
+explicit. This deliberately limited read-only
 snapshot restores useful leads without changing the MCP DIFC
 `min-integrity: approved` policy, visibility rules or shell allowlist. Original
 hosted failures included integrity-filtered history and separate shell permission
@@ -108,11 +141,17 @@ the frozen artifact has not been verified. That integration requires
 platform-owner evidence or an authorized non-production policy test; the hosted
 public-repository acceptance runs do not establish it.
 
-An explicit HybridWebView name selects its shared and native handlers
-before other groups and excludes the legacy WebView group.
+Title-matched groups precede incidental body/comment matches, and reported
+platforms filter native paths before applying the six-path cap. Fixed groups
+include Resizetizer versions/packaging, iOS NavigationPage TitleView,
+item safe-area/wrapper handling, Windows CollectionView selection/AOT,
+Android/iOS/Windows SwipeView and SourceGen resource generation. An explicit
+HybridWebView name selects its shared and applicable native handlers
+and excludes the legacy WebView group.
 `EvaluateJavaScriptAsync` is shared by both controls and does not independently
 select either group; method-only reports retain the unmatched-path gap. Legacy WebView
-selection includes shared, Android, iOS and Windows handlers; source presence at
+selection prioritizes Android's native view when Android is reported, followed
+by applicable platform and shared handlers; source presence at
 the exact release remains explicit, not proof that each platform is affected.
 
 Inline logs/code and author corrections are analyzed before requesting more
@@ -121,7 +160,10 @@ credentials, signed URLs, internal links and unrelated personal data and escapes
 dynamic HTML/badge components. These are prompt constraints, not proof of
 deterministic redaction.
 Inventory uses the issue body and human (`authorType: User`) comments,
-not bot reports. Public GitHub attachment links retain their originating
+not bot reports. Prior regression/AI-summary/replication reports are also excluded even
+when posted by an account GitHub identifies as a User; comments retain an
+`isPriorReport` marker so the first agent read can omit them.
+Public GitHub attachment links retain their originating
 comment; the twenty-mention cap retains the earliest ten and latest ten so a
 later correction can reach image selection. An inventory alone is **not
 analysis**. Trailing sentence periods are removed from inventoried attachment
