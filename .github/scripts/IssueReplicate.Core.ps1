@@ -20,8 +20,15 @@ function Get-IssueReplicateIOSRuntimeMatches {
 
     if (-not $IsMacOS) { throw 'iOS runtime inspection requires a hosted macOS runner.' }
     . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
-    $inventory = Invoke-ProcessWithTimeout -FilePath 'xcrun' -TimeoutSeconds $TimeoutSeconds `
-        -ArgumentList @('simctl', 'list', 'runtimes', '--json')
+    $collect = @'
+set -euo pipefail
+xcrun simctl list runtimes --json | jq -c '{runtimes: [.runtimes[] | {
+  identifier, version, buildversion, isAvailable, supportedArchitectures,
+  availabilityError: ((.availabilityError // "") | .[:512])
+}]}'
+'@
+    $inventory = Invoke-ProcessWithTimeout -FilePath '/bin/bash' -TimeoutSeconds $TimeoutSeconds `
+        -ArgumentList @('-c', $collect)
     if ($inventory.TimedOut -or $inventory.OutputDrainTimedOut -or $inventory.ExitCode -ne 0) {
         foreach ($row in @($inventory.Output | Select-Object -Last 10)) {
             $line = $row.ToString() -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
@@ -30,7 +37,8 @@ function Get-IssueReplicateIOSRuntimeMatches {
         throw "Could not inspect the hosted iOS runtime inventory: exit=$($inventory.ExitCode), timeout=$($inventory.TimedOut), drainTimeout=$($inventory.OutputDrainTimedOut)."
     }
     $text = $inventory.Output -join "`n"
-    if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 64KB) { throw 'The hosted iOS runtime inventory exceeds its bound.' }
+    $bytes = [Text.Encoding]::UTF8.GetByteCount($text)
+    if ($bytes -gt 64KB) { throw "The normalized iOS runtime inventory exceeds its bound: $bytes bytes, permitted 65536." }
     $runtimes = $text | ConvertFrom-Json -Depth 8
     $runtimeId = "com.apple.CoreSimulator.SimRuntime.iOS-$($SdkVersion.Replace('.', '-'))"
     $related = @($runtimes.runtimes | Where-Object { $_.identifier -ceq $runtimeId })
