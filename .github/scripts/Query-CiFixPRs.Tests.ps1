@@ -439,6 +439,7 @@ exit 1
                 & pwsh -NoProfile -File $scriptPath `
                     -Owner dotnet -Repo maui `
                     -OutputPath $outputPath `
+                    -BaseBranch net11.0 `
                     -MaxIssues 5 `
                     -MaxIssueTitleChars 64 `
                     -MaxIssueBodyChars 256 | Out-Null
@@ -450,6 +451,7 @@ exit 1
 
             $snapshot = Get-Content -LiteralPath $outputPath -Raw | ConvertFrom-Json
             $snapshot.schemaVersion | Should -Be 2
+            $snapshot.baseBranch | Should -BeExactly 'net11.0'
             $snapshot.issueEvidence.maxIssues | Should -Be 5
             $snapshot.issueEvidence.titleMaxChars | Should -Be 64
             $snapshot.issueEvidence.bodyMaxChars | Should -Be 256

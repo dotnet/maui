@@ -2,6 +2,31 @@
 #Requires -Modules Pester
 
 Describe 'Complete-CiFixEmptyQueue' {
+    BeforeAll {
+        $script:invokeEmptyQueueHelper = {
+            param(
+                [string]$ScriptPath,
+                [string]$CandidatesPath,
+                [string]$ExpectedIssueLabel,
+                [string]$ExpectedBaseBranch,
+                [string]$OutputDirectory,
+                [string]$ExpectationDirectory
+            )
+
+            $parameters = @{
+                CandidatesPath = $CandidatesPath
+                ExpectedIssueLabel = $ExpectedIssueLabel
+                OutputDirectory = $OutputDirectory
+                ExpectationDirectory = $ExpectationDirectory
+            }
+            if ((Get-Command -Name $ScriptPath).Parameters.ContainsKey('ExpectedBaseBranch')) {
+                $parameters.ExpectedBaseBranch = $ExpectedBaseBranch
+            }
+
+            & $ScriptPath @parameters
+        }
+    }
+
     BeforeEach {
         $script:scriptPath = Join-Path $PSScriptRoot 'Complete-CiFixEmptyQueue.ps1'
         $caseRoot = Join-Path $TestDrive ([Guid]::NewGuid().ToString('N'))
@@ -11,13 +36,17 @@ Describe 'Complete-CiFixEmptyQueue' {
         New-Item -ItemType Directory -Force -Path $caseRoot | Out-Null
     }
 
-    It 'persists an authoritative empty queue and registers one noop' {
+    It 'persists an authoritative empty queue and registers one noop' -ForEach @(
+        @{ IssueLabel = 'ci-scan'; BaseBranch = 'main' }
+        @{ IssueLabel = 'ci-scan-net11'; BaseBranch = 'net11.0' }
+    ) {
         @{
             schemaVersion = 2
             repository = 'dotnet/maui'
+            baseBranch = $BaseBranch
             issueEvidence = @{
                 authoritative = $true
-                exactLabel = 'ci-scan'
+                exactLabel = $IssueLabel
                 scopedIssueNumber = $null
                 truncated = $false
                 count = 0
@@ -27,9 +56,11 @@ Describe 'Complete-CiFixEmptyQueue' {
             candidates = @()
         } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $script:candidatesPath
 
-        $result = & $script:scriptPath `
+        $result = & $script:invokeEmptyQueueHelper `
+            -ScriptPath $script:scriptPath `
             -CandidatesPath $script:candidatesPath `
-            -ExpectedIssueLabel ci-scan `
+            -ExpectedIssueLabel $IssueLabel `
+            -ExpectedBaseBranch $BaseBranch `
             -OutputDirectory $script:outputDirectory `
             -ExpectationDirectory $script:expectationDirectory
 
@@ -48,6 +79,7 @@ Describe 'Complete-CiFixEmptyQueue' {
     It 'rejects non-empty or incomplete queue evidence without registering noop' -ForEach @(
         @{
             Name = 'non-empty issues'
+            BaseBranch = 'main'
             IssueEvidence = @{
                 authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
                 truncated = $false; count = 1; totalMatched = 1; issues = @(@{ issueNumber = 1 })
@@ -56,6 +88,7 @@ Describe 'Complete-CiFixEmptyQueue' {
         }
         @{
             Name = 'truncated evidence'
+            BaseBranch = 'main'
             IssueEvidence = @{
                 authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
                 truncated = $true; count = 0; totalMatched = 0; issues = @()
@@ -64,6 +97,7 @@ Describe 'Complete-CiFixEmptyQueue' {
         }
         @{
             Name = 'watch candidate'
+            BaseBranch = 'main'
             IssueEvidence = @{
                 authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
                 truncated = $false; count = 0; totalMatched = 0; issues = @()
@@ -72,6 +106,7 @@ Describe 'Complete-CiFixEmptyQueue' {
         }
         @{
             Name = 'missing candidates inventory'
+            BaseBranch = 'main'
             IssueEvidence = @{
                 authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
                 truncated = $false; count = 0; totalMatched = 0; issues = @()
@@ -81,6 +116,7 @@ Describe 'Complete-CiFixEmptyQueue' {
         }
         @{
             Name = 'null issues inventory'
+            BaseBranch = 'main'
             IssueEvidence = @{
                 authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
                 truncated = $false; count = 0; totalMatched = 0; issues = $null
@@ -89,17 +125,103 @@ Describe 'Complete-CiFixEmptyQueue' {
         }
         @{
             Name = 'null candidates inventory'
+            BaseBranch = 'main'
             IssueEvidence = @{
                 authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
                 truncated = $false; count = 0; totalMatched = 0; issues = @()
             }
             Candidates = $null
         }
+        @{
+            Name = 'missing base branch'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = 0; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+            OmitBaseBranch = $true
+        }
+        @{
+            Name = 'wrong base branch'
+            BaseBranch = 'net11.0'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = 0; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'string schema version'
+            BaseBranch = 'main'
+            SchemaVersion = '2'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = 0; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'string authoritative flag'
+            BaseBranch = 'main'
+            IssueEvidence = @{
+                authoritative = 'true'; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = 0; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'string truncated flag'
+            BaseBranch = 'main'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = 'false'; count = 0; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'string issue count'
+            BaseBranch = 'main'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = '0'; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'fractional issue count'
+            BaseBranch = 'main'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = 0.4; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'floating zero issue count'
+            BaseBranch = 'main'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = [double]0; totalMatched = 0; issues = @()
+            }
+            Candidates = @()
+        }
+        @{
+            Name = 'string total matched'
+            BaseBranch = 'main'
+            IssueEvidence = @{
+                authoritative = $true; exactLabel = 'ci-scan'; scopedIssueNumber = $null
+                truncated = $false; count = 0; totalMatched = '0'; issues = @()
+            }
+            Candidates = @()
+        }
     ) {
         $snapshot = @{
-            schemaVersion = 2
+            schemaVersion = if ($null -ne $SchemaVersion) { $SchemaVersion } else { 2 }
             repository = 'dotnet/maui'
             issueEvidence = $IssueEvidence
+        }
+        if (-not $OmitBaseBranch) {
+            $snapshot.baseBranch = $BaseBranch
         }
         if (-not $OmitCandidates) {
             $snapshot.candidates = $Candidates
@@ -107,9 +229,11 @@ Describe 'Complete-CiFixEmptyQueue' {
         $snapshot | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $script:candidatesPath
 
         {
-            & $script:scriptPath `
+            & $script:invokeEmptyQueueHelper `
+                -ScriptPath $script:scriptPath `
                 -CandidatesPath $script:candidatesPath `
                 -ExpectedIssueLabel ci-scan `
+                -ExpectedBaseBranch main `
                 -OutputDirectory $script:outputDirectory `
                 -ExpectationDirectory $script:expectationDirectory
         } | Should -Throw
@@ -145,6 +269,8 @@ Describe 'CI-fixer unattended bootstrap contracts' {
         $source | Should -Match ([regex]::Escape(
                 ".github/scripts/Complete-CiFixEmptyQueue.ps1 ``"))
         $source | Should -Match "-ExpectedIssueLabel $Label"
+        $expectedBaseBranch = if ($Workflow -eq 'ci-status-fix') { 'main' } else { 'net11.0' }
+        $source | Should -Match "-ExpectedBaseBranch $([regex]::Escape($expectedBaseBranch))"
         $source | Should -Match 'call the `safeoutputs` `noop` tool exactly\s+once'
         $source | Should -Not -Match '(?ms)empty queue.*?touch /tmp/gh-aw/agent'
         $lock | Should -Match ([regex]::Escape(

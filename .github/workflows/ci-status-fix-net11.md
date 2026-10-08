@@ -795,9 +795,9 @@ inputs once at the start and let them shape the whole run:
 #### Step 0.1 — Authoritative empty-queue completion
 
 After reading `/tmp/gh-aw/agent/prefetch.json`, if `issue_number` is empty and
-the snapshot reports an authoritative, untruncated `ci-scan-net11` issue count
-of zero, zero matched issues, an empty `issues` array, and an empty `candidates`
-array:
+the snapshot reports product base `net11.0`, an authoritative, untruncated
+`ci-scan-net11` issue count of zero, zero matched issues, an empty `issues`
+array, and an empty `candidates` array:
 
 1. Do NOT assemble a shell validation pipeline and do NOT use `touch`, `jq`,
      redirection, or an ad-hoc file writer for this outcome.
@@ -806,7 +806,8 @@ array:
      ```powershell
      pwsh .github/scripts/Complete-CiFixEmptyQueue.ps1 `
        -CandidatesPath /tmp/gh-aw/agent/prefetch.json `
-       -ExpectedIssueLabel ci-scan-net11
+       -ExpectedIssueLabel ci-scan-net11 `
+       -ExpectedBaseBranch net11.0
      ```
 
      It revalidates the authoritative empty snapshot, persists the empty coverage
