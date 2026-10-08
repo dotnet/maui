@@ -118,7 +118,7 @@ jobs:
             $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
               ConvertFrom-Json -Depth 6
             if ($candidate.kind -cne 'ui') { exit 0 }
-            . "$(Build.SourcesDirectory)/.github/scripts/IssueReplicate.Core.ps1"
+            . "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Core.ps1"
             Initialize-IssueReplicateIOSRuntime -RepoRoot "$(Pipeline.Workspace)/maui"
           displayName: 'Reuse or provision the exact unique pinned iOS runtime'
           timeoutInMinutes: 30

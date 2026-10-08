@@ -88,7 +88,10 @@ older pack's `_RecommendedXcodeVersion`), not from
 the iOS SDK minor version. Those versions can differ: an iOS 26.5 pack may
 require Xcode 26.6 while still requiring the exact iOS 26.5 simulator runtime.
 The framework verifier likewise installs its pinned primary native pack before
-reading that pack's requirement. Each selector records the pack identity and
+reading that pack's requirement. Its checkout-free Azure job loads runtime
+helpers from the immutable `$(Pipeline.Workspace)/IssueTools` bundle, not from
+`Build.SourcesDirectory` or the downloaded framework tree.
+Each selector records the pack identity and
 requirement metadata hash. Missing or ambiguous metadata or a missing matching
 Xcode installation fails explicitly. The author toolchain stays independent
 from the framework verifier's toolchain; a newer runtime or
