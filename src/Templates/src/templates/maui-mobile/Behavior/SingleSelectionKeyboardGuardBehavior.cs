@@ -71,6 +71,8 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
 
     void DetachPlatformView()
     {
+        ClearRestriction();
+
         if (_platformView is not null)
         {
             _platformView.PreviewKeyDown -= OnPreviewKeyDown;
@@ -119,6 +121,10 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
             case VirtualKey.Right:
             case VirtualKey.Up:
             case VirtualKey.Down:
+            case VirtualKey.Home:
+            case VirtualKey.End:
+            case VirtualKey.PageUp:
+            case VirtualKey.PageDown:
                 RestrictSelection();
                 break;
 
@@ -135,13 +141,28 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
 
     void RestrictSelection()
     {
-        if (_restrictSelection)
+        if (_restrictSelection ||
+            _collectionView is not { SelectionMode: SelectionMode.Single } ||
+            _platformItemsView is not WItemsView platformItemsView)
         {
             return;
         }
 
-        _selectedItem = _collectionView?.SelectedItem;
+        _selectedItem = platformItemsView.SelectedItem;
         _restrictSelection = true;
+
+        // Limit the guard to this input turn, not subsequent programmatic selection changes.
+        if (!platformItemsView.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (ReferenceEquals(_platformItemsView, platformItemsView))
+            {
+                ClearRestriction();
+            }
+        }))
+        {
+            ClearRestriction();
+            throw new InvalidOperationException("Unable to queue the keyboard selection guard reset.");
+        }
     }
 
     void ClearRestriction()
@@ -161,7 +182,7 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
             return;
         }
 
-        if (ReferenceEquals(_collectionView.SelectedItem, _selectedItem))
+        if (ReferenceEquals(sender.SelectedItem, _selectedItem))
         {
             return;
         }
@@ -170,7 +191,21 @@ public sealed class SingleSelectionKeyboardGuardBehavior : Behavior<CollectionVi
 
         try
         {
-            _collectionView.SelectedItem = _selectedItem;
+            // Restore native selection before MAUI's queued synchronization can execute commands.
+            if (_selectedItem is not null &&
+                sender.ItemsSource is Microsoft.UI.Xaml.Data.ICollectionView items)
+            {
+                for (var index = 0; index < items.Count; index++)
+                {
+                    if (ReferenceEquals(items[index], _selectedItem))
+                    {
+                        sender.Select(index);
+                        return;
+                    }
+                }
+            }
+
+            sender.DeselectAll();
         }
         finally
         {
