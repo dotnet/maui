@@ -188,6 +188,10 @@ Describe 'Opt-in reviewer routing' {
         $policy.expert | Should -Match 'Preserve platform tracing and the existing dimension review'
         $policy.refinement | Should -Match 'Cite that evidence before patching'
         $policy.refinement | Should -Match 'Do not patch for style'
+        $policy.refinement | Should -Match 'single validation pass includes bounded, documented prerequisite setup'
+        $policy.refinement | Should -Match ([regex]::Escape('`-AutoProvision`'))
+        $policy.refinement | Should -Match 'Do not use.*-SkipBuild.*-SkipInstall.*candidate-built outputs'
+        $policy.refinement | Should -Match 'report blocked; do not retry or enlarge'
         $policy.comparison | Should -Match 'sole candidate and still require REQUEST CHANGES'
         $policy.comparison | Should -Match 'blocked, unvalidated'
         $policy.validation | Should -BeExactly 'Regression fixture.'
@@ -927,6 +931,16 @@ Describe 'Reviewer pipeline timeout containment' {
         $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree prune --expire now'))
         $content | Should -Match 'Could not fully remove pr-plus-reviewer sandbox'
         $content | Should -Match 'The sandbox is temporary and must not be copied into review artifacts'
+    }
+
+    It 'requires candidate-local prerequisites without widening the validation budget' {
+        $content | Should -Match 'Copied build tasks do not provide a candidate-local SDK'
+        $content | Should -Match ([regex]::Escape('``Run-IntegrationTests.ps1 -AutoProvision``'))
+        $content | Should -Match 'candidate-built outputs and installed packs match the current candidate'
+        $content | Should -Match "Never borrow the raw PR's SDK or installed templates as candidate evidence"
+        $content | Should -Match 'record blocked and stop; do not retry or enlarge the execution bound'
+        $skillContent | Should -Match 'one targeted validation pass includes.*documented prerequisite'
+        $skillContent | Should -Match "Never validate against the raw PR's installed templates"
     }
 
     It 'runs regression tests through trusted scripts overlaid into the review worktree' {

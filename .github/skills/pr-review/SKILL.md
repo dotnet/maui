@@ -62,6 +62,12 @@ fanout, model/context/credit caps, validation isolation, and publication boundar
   findings and submitted-HEAD metadata assessment. Record unknown validation and
   missing artifacts. Artifact presence, framing markers, and deterministic tests
   are protocol heuristics, **not full schema/correctness validation or fidelity proof**.
+- A fresh refinement worktree does not inherit SDK/workload/template installations.
+  Its one targeted validation pass includes the runner's documented prerequisite
+  setup within existing budgets. Use the integration runner's `-AutoProvision` and
+  default build/install steps; skip them only with evidence of matching candidate
+  outputs and packs. Never validate against the raw PR's installed templates.
+  Failed setup remains blocked, not a test pass or permission for another attempt.
 - Rollback: explicitly select `candidate-comparison`, or use an ordinary pipeline ref.
   The trusted caller forwards one concrete mode consistently to review and publication;
   `auto` never reaches the driver or publisher. No automatic trial,

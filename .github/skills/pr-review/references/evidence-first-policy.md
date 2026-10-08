@@ -17,6 +17,7 @@ Review PR #{{PR_NUMBER}}'s submitted fix first. Review mode: evidence-first (exp
 
 ## Refinement
 - Only generate a consolidated `pr-plus-reviewer` patch when the expert findings identify a concrete actionable defect or unresolved behavioral mechanism backed by source/test evidence. Cite that evidence before patching. Do not patch for style, generic caution, metadata, or merely to populate a candidate table. At most one implementation and one required targeted validation pass; then report, even if blocked.
+- The single validation pass includes bounded, documented prerequisite setup inside the candidate worktree. A fresh worktree does not inherit the primary SDK, workloads, or installed templates. For integration validation, use the existing runner with `-AutoProvision` and its default build/install steps before one focused test filter. Do not use `-SkipBuild` or `-SkipInstall` without evidence that candidate-built outputs and installed packs match the current candidate. Never borrow the raw PR's SDK or installed templates as candidate evidence. If setup fails or exceeds existing budgets, report blocked; do not retry or enlarge the execution bound.
 
 ## Expert
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the submitted PR independently, once only. Preserve platform tracing and the existing dimension review and fanout. Persist findings before considering the conditional refinement; do not invoke try-fix or a second expert audit.
