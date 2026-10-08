@@ -24,7 +24,9 @@ public class Issue38452 : _IssuesUITest
 		var loading = Stopwatch.StartNew();
 		do
 		{
-			App.Tap("ProbeShortWebView");
+			App.WaitForElement("ProbeShortWebView",
+				timeoutMessage: "The author-scenario HTML probe button did not become available.",
+				timeout: TimeSpan.FromSeconds(8)).Click();
 			if (App.WaitForElement("ShortWebViewState").GetText() == "Short HTML loaded; no vertical overflow")
 				break;
 			if (loading.Elapsed >= TimeSpan.FromSeconds(8))
@@ -39,7 +41,9 @@ public class Issue38452 : _IssuesUITest
 		if (controlOffset <= 20)
 			throw new TimeoutException($"The ordinary label gesture did not scroll the outer page: {controlOffset:F1}.");
 
-		App.Tap("ResetOuterScroll");
+		App.WaitForElement("ResetOuterScroll",
+			timeoutMessage: "The outer-scroll reset button did not become available.",
+			timeout: TimeSpan.FromSeconds(5)).Click();
 		WaitForOuterScroll(requireTop: true);
 		var webView = App.WaitForElement(
 			AppiumQuery.ByXPath("//android.webkit.WebView[not(ancestor::android.webkit.WebView) and .//*[@text='Short content that fits inside the WebView.']]"),
