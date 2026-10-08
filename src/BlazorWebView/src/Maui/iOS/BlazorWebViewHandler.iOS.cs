@@ -133,6 +133,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			DisconnectRootComponents();
+
 			platformView.StopLoading();
 
 			if (_webviewManager != null)
