@@ -316,6 +316,8 @@ session before the body completes. These checks are not an isolation boundary.
 Generation rejection keeps the guard intact and logs the exact matched lifecycle
 token plus a bounded, SHA256-labelled, base64 proposal diagnostic. Rejected source
 is not a candidate envelope and is never admitted to native execution or publication.
+UI drafting uses the required `ShardedTestCategory` attribute for CollectionView,
+preserving its umbrella and CI-shard registration rather than suppressing MAUI0003.
 The recording is visual context for the generated candidate, not proof of the
 author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
 do not record a UI video. Recorder or upload failures remain explicit in the
