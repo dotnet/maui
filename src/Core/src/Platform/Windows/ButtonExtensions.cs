@@ -113,6 +113,7 @@ namespace Microsoft.Maui.Platform
 
 			platformButton.RefreshThemeResources();
 		}
+
 		static readonly string[] BackgroundResourceKeys =
 		{
 			"ButtonBackground",
