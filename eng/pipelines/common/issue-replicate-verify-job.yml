@@ -169,35 +169,50 @@ jobs:
               fi
             done
             test -x "$tool_dir/sdkmanager"
-            "$tool_dir/sdkmanager" --install "system-images;android-30;google_apis;x86_64" "platforms;android-30"
-            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --device "Nexus 5X" --package "system-images;android-30;google_apis;x86_64"
+            manifest="$(Pipeline.Workspace)/IssueInput/manifest.json"
+            api=$(jq -er 'if has("androidApi") then .androidApi | select(type == "string") else "30" end' "$manifest")
+            case "$api" in 30|35|36) ;; *) echo 'Unsupported requested Android API' >&2; exit 1 ;; esac
+            if jq -e 'has("androidApi")' "$manifest" >/dev/null; then
+              echo "Provisioning immutable-request Android API $api."
+            else
+              echo 'Legacy snapshot: preserving original API 30 provisioning without assigning retroactive runtime provenance.'
+            fi
+            "$tool_dir/sdkmanager" --install "system-images;android-${api};google_apis;x86_64" "platforms;android-${api}"
+            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --device "Nexus 5X" --package "system-images;android-${api};google_apis;x86_64"
             test -f "$ANDROID_AVD_HOME/IssueRepro.ini"
             avd_config="$ANDROID_AVD_HOME/IssueRepro.avd/config.ini"
             test -f "$avd_config"
             sed -i 's/^disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$avd_config"
             grep -qx 'disk.dataPartition.size=2048m' "$avd_config"
-            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect -partition-size 2048 \
+            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -port 5554 -no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect -partition-size 2048 \
               > "$emulator_log" 2>&1 &
             emulator_pid=$!
             adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+            device=emulator-5554
             sleep 5
             if ! kill -0 "$emulator_pid" 2>/dev/null; then
               echo 'Android emulator exited before connecting to ADB.' >&2
               exit 1
             fi
-            timeout 600 "$adb" wait-for-device
+            timeout 600 "$adb" -s "$device" wait-for-device
             for attempt in $(seq 1 120); do
-              if [ "$("$adb" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+              if [ "$("$adb" -s "$device" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+                actual_api=$(timeout 20 "$adb" -s "$device" shell getprop ro.build.version.sdk | tr -d '\r')
+                if [ "$actual_api" != "$api" ]; then
+                  echo "Requested Android API $api; owned emulator reports $actual_api." >&2
+                  exit 1
+                fi
                 for setting in window_animation_scale transition_animation_scale animator_duration_scale; do
-                  timeout 20 "$adb" shell settings put global "$setting" 0.0
+                  timeout 20 "$adb" -s "$device" shell settings put global "$setting" 0.0
                 done
-                timeout 20 "$adb" shell settings put global hide_error_dialogs 1
-                test "$(timeout 20 "$adb" shell settings get global hide_error_dialogs | tr -d '\r')" = 1
-                timeout 20 "$adb" shell settings put system screen_off_timeout 2147483647
-                timeout 20 "$adb" shell svc power stayon true
-                timeout 20 "$adb" shell input keyevent KEYCODE_WAKEUP
-                timeout 20 "$adb" shell wm dismiss-keyguard
-                timeout 20 "$adb" shell input keyevent KEYCODE_MENU
+                timeout 20 "$adb" -s "$device" shell settings put global hide_error_dialogs 1
+                test "$(timeout 20 "$adb" -s "$device" shell settings get global hide_error_dialogs | tr -d '\r')" = 1
+                timeout 20 "$adb" -s "$device" shell settings put system screen_off_timeout 2147483647
+                timeout 20 "$adb" -s "$device" shell svc power stayon true
+                timeout 20 "$adb" -s "$device" shell input keyevent KEYCODE_WAKEUP
+                timeout 20 "$adb" -s "$device" shell wm dismiss-keyguard
+                timeout 20 "$adb" -s "$device" shell input keyevent KEYCODE_MENU
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$device"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
                 exit 0
@@ -224,6 +239,8 @@ jobs:
         continueOnError: true
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
+          ${{ if eq(parameters.platform, 'android') }}:
+            DEVICE_UDID: $(DEVICE_UDID)
       - pwsh: |
           $ErrorActionPreference = 'Stop'
           $directory = "$(Pipeline.Workspace)/maui/CustomAgentLogsTmp/UITests"

@@ -30,6 +30,7 @@ function Read-ForwardedBytes {
 }
 
 $manifest = $utf8.GetString((Read-ForwardedBytes $ManifestPath 50000)) | ConvertFrom-Json -Depth 6
+$requestedApi = Get-IssueReplicateSnapshotAndroidApi -Snapshot $manifest
 $sample = $utf8.GetString((Read-ForwardedBytes $SampleResultPath 16384)) | ConvertFrom-Json -Depth 6
 $candidateBytes = Read-ForwardedBytes $CandidatePath 80000
 $candidate = $utf8.GetString($candidateBytes) | ConvertFrom-Json -Depth 6
@@ -50,6 +51,7 @@ Assert-IssueReplicateResult -Result $result -IssueNumber $manifest.issueNumber -
 Assert-IssueReplicateResultRecording -Result $result
 $candidateHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($candidateBytes)).ToLowerInvariant()
 if ($result.targetSha -cne $manifest.targetSha -or $result.sampleSha256 -cne $manifest.sampleSha256 -or
+    [string]$result.androidApi -cne $requestedApi -or
     $result.platform -cne $manifest.platform -or $result.testKind -cne $candidate.kind -or
     $result.candidateSha256 -cne $candidateHash -or $result.attempt -ne $Attempt -or
     $result.sampleBuilt -ne $true -or $result.observedAssertion -isnot [bool] -or

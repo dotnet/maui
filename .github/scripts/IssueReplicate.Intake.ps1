@@ -6,6 +6,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
     [Parameter(Mandatory)][string]$TargetRef,
     [string]$SourceUrl = '',
+    [string]$AndroidApi = '',
     [Parameter(Mandatory)][string]$OutputDirectory
 )
 
@@ -13,6 +14,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
 
 if ($TargetRef -cnotmatch '^(main|net[0-9]+\.0)$') { throw 'Unsupported target branch.' }
+$requestedApi = Resolve-IssueReplicateAndroidApi -Platform $Platform -Requested $AndroidApi
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 
 function Get-GitHubJson {
@@ -85,6 +87,7 @@ $manifest = [ordered]@{
     issueNumber = $IssueNumber
     commentId = $CommentId
     platform = $Platform
+    androidApi = $requestedApi
     targetRef = $TargetRef
     targetSha = $targetSha
     author = $author

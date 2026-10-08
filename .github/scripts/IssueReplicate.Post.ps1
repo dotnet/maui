@@ -10,6 +10,7 @@ param(
     [Parameter(Mandatory)][string]$ResultsDirectory,
     [string]$SampleDirectory = '',
     [string]$CandidateDirectory = '',
+    [string]$AndroidApi = '',
     [string]$RecordingPrefix = 'REPRO_VIDEO_',
     [byte[]]$VideoBytes,
     [switch]$NativeCanary,
@@ -66,6 +67,11 @@ $manifest = $null
 $manifestPath = Join-Path $InputDirectory 'manifest.json'
 if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
     $manifest = Read-BoundedJson -Path $manifestPath -MaxBytes 50000
+    $requestedApi = Get-IssueReplicateSnapshotAndroidApi -Snapshot $manifest
+    if ($PSBoundParameters.ContainsKey('AndroidApi') -and
+        $requestedApi -cne (Resolve-IssueReplicateAndroidApi -Platform $manifest.platform -Requested $AndroidApi)) {
+        throw 'The report snapshot does not match the authorized Android runtime request.'
+    }
     if ($manifest.issueNumber -ne $IssueNumber -or $manifest.commentId -ne $CommentId -or
         $manifest.targetSha -cnotmatch '^[0-9a-f]{40}$' -or
         $manifest.sampleSha256 -cnotmatch '^[0-9a-f]{64}$' -or
@@ -113,6 +119,7 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
         Assert-IssueReplicateResult -Result $result -IssueNumber $IssueNumber -CommentId $CommentId | Out-Null
         Assert-IssueReplicateResultRecording -Result $result
         if ($result.targetSha -cne $manifest.targetSha -or $result.platform -cne $manifest.platform -or
+            [string]$result.androidApi -cne $requestedApi -or
             $result.sampleSha256 -cne $manifest.sampleSha256 -or
             ($null -ne $sample -and $sample.buildSucceeded -ne $result.sampleBuilt)) {
             throw 'The verification result does not match the immutable intake snapshot.'
@@ -234,6 +241,11 @@ $compactQuality = if ($confidence -eq 75 -or $testIcon -eq '&#x1F7E1;') { 'Needs
 else { 'Not verified.' }
 $compactVerdict = "$reproductionIcon **Reproduction:** $compactReproduction`n`n" +
     "$testIcon **Test quality:** $compactQuality &#x1F4CA; **Evidence confidence:** $confidence% (evidence score, not a probability)."
+if ($manifest -and $manifest.platform -ceq 'android') {
+    $requestedRuntime = if ($requestedApi) { "API $requestedApi" } else { 'not recorded in this legacy snapshot' }
+    $actualRuntime = if ($result -and $result.nativeAndroidApi) { "API $($result.nativeAndroidApi)" } else { 'not verified' }
+    $compactVerdict += "`n`n**Android runtime:** requested $requestedRuntime; observed $actualRuntime."
+}
 $reportHeader = New-IssueReplicateReportHeader -Marker $marker -TargetSha $targetSha -Verdict $compactVerdict
 $pendingHeader = New-IssueReplicateReportHeader -Marker $marker -TargetSha $targetSha `
     -Heading 'Issue reproduction pending' -Verdict $compactVerdict

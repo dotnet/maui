@@ -202,6 +202,7 @@ function Parse-IssueReplicateCommand {
     $platform = ''
     $branch = 'main'
     $sourceUrl = ''
+    $androidApi = ''
     $branchSpecified = $false
     for ($i = 2; $i -lt $parts.Count; $i += 2) {
         if ($i + 1 -ge $parts.Count) { throw 'A command option is missing its value.' }
@@ -223,11 +224,16 @@ function Parse-IssueReplicateCommand {
                 $source = Get-IssueReplicateSource -AuthorTexts @("[repro.zip]($sourceUrl)")
                 if ($source.Url -cne $sourceUrl) { throw 'The selected source must be one supported GitHub URL.' }
             }
+            '--android-api' {
+                if ($androidApi) { throw 'The Android API was specified more than once.' }
+                $androidApi = $parts[$i + 1]
+                if ($androidApi -cnotin @('30', '35', '36')) { throw 'Supported Android APIs: 30, 35, 36.' }
+            }
             default { throw 'Unsupported /issue replicate option.' }
         }
     }
 
-    return [pscustomobject]@{ Platform = $platform; Branch = $branch; SourceUrl = $sourceUrl }
+    return [pscustomobject]@{ Platform = $platform; Branch = $branch; SourceUrl = $sourceUrl; AndroidApi = $androidApi }
 }
 
 function Resolve-IssueReplicatePlatform {
@@ -243,6 +249,50 @@ function Resolve-IssueReplicatePlatform {
         throw 'Specify --platform android or --platform ios when the issue has no single supported platform label.'
     }
     return $supported[0]
+}
+
+function Resolve-IssueReplicateAndroidApi {
+    param([Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
+        [string]$Requested = '')
+
+    if ($Platform -cnotin @('android', 'ios')) { throw 'Supported platforms: android, ios.' }
+    if ($Platform -ceq 'ios') {
+        if ($Requested) { throw '--android-api is supported only for Android.' }
+        return ''
+    }
+    if (-not $Requested) { return '30' }
+    if ($Requested -cnotin @('30', '35', '36')) { throw 'Supported Android APIs: 30, 35, 36.' }
+    return $Requested
+}
+
+function Get-IssueReplicateSnapshotAndroidApi {
+    param([Parameter(Mandatory)]$Snapshot)
+
+    if ($Snapshot.platform -cnotin @('android', 'ios')) { throw 'The snapshot platform is unsupported.' }
+    if (-not $Snapshot.PSObject.Properties['androidApi']) { return '' }
+    if ($Snapshot.androidApi -isnot [string] -or
+        ($Snapshot.platform -ceq 'android' -and $Snapshot.androidApi -cnotin @('30', '35', '36')) -or
+        ($Snapshot.platform -ceq 'ios' -and $Snapshot.androidApi -cne '')) {
+        throw 'The snapshot contains an invalid or platform-incompatible Android API.'
+    }
+    return [string]$Snapshot.androidApi
+}
+
+function Get-IssueReplicateNativeAndroidApi {
+    param([Parameter(Mandatory)][string]$RepoRoot)
+
+    if ($env:DEVICE_UDID -cnotmatch '^emulator-[0-9]+$') {
+        throw 'Android runtime verification requires the explicitly owned emulator serial.'
+    }
+    . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
+    $api = Invoke-ProcessWithTimeout -FilePath 'adb' -TimeoutSeconds 20 `
+        -ArgumentList @('-s', $env:DEVICE_UDID, 'shell', 'getprop', 'ro.build.version.sdk')
+    $value = ($api.Output -join "`n").Trim()
+    if ($api.TimedOut -or $api.OutputDrainTimedOut -or $api.ExitCode -ne 0 -or
+        $value -cnotmatch '^[1-9][0-9]{0,2}$') {
+        throw 'The owned Android emulator did not report one API level within its deadline.'
+    }
+    return $value
 }
 
 function Get-IssueReplicateSource {
@@ -849,6 +899,20 @@ function Assert-IssueReplicateResult {
         $Result.sampleSha256 -cnotmatch '^[a-fA-F0-9]{64}$' -or
         $Result.status -cnotin @('candidate-failed', 'not-reproduced-on-tested-revision', 'inconclusive', 'unsupported')) {
         throw 'The issue reproduction result does not match the requested issue, revision, or status.'
+    }
+    if ($Result.PSObject.Properties['androidApi'] -or $Result.PSObject.Properties['nativeAndroidApi']) {
+        if ($Result.androidApi -isnot [string] -or
+            $Result.androidApi -cnotin @('', '30', '35', '36') -or
+            $Result.nativeAndroidApi -isnot [string] -or
+            ($Result.nativeAndroidApi -and $Result.nativeAndroidApi -cnotmatch '^[1-9][0-9]{0,2}$') -or
+            ($Result.platform -ceq 'ios' -and ($Result.androidApi -or $Result.nativeAndroidApi))) {
+            throw 'The result contains invalid or platform-incompatible Android runtime evidence.'
+        }
+        if ($Result.platform -ceq 'android' -and $Result.androidApi -and $Result.testKind -ceq 'ui' -and
+            $Result.status -cin @('candidate-failed', 'not-reproduced-on-tested-revision') -and
+            $Result.nativeAndroidApi -cne $Result.androidApi) {
+            throw 'A qualified Android UI outcome must execute on the requested API level.'
+        }
     }
     if ($Result.status -eq 'candidate-failed' -and
         ($Result.testExecuted -ne $true -or $Result.assertionFailed -ne $true -or

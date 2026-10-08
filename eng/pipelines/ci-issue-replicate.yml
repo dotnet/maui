@@ -20,6 +20,10 @@ parameters:
   - name: SourceUrl
     type: string
     default: ''
+  - name: AndroidApi
+    type: string
+    default: ''
+    values: ['', '30', '35', '36']
 
 variables:
   # Never import the shared MAUI variable group into sample/test jobs.
@@ -59,11 +63,13 @@ stages:
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
                 -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
                 -Platform $env:PLATFORM -TargetRef $env:TARGET_REF -SourceUrl $env:SOURCE_URL `
+                -AndroidApi $env:ANDROID_API `
                 -PipelineRevision "$(Build.SourceVersion)"
               if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for intake.' }
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Intake.ps1 `
                 -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
                 -Platform $env:PLATFORM -TargetRef $env:TARGET_REF -SourceUrl $env:SOURCE_URL `
+                -AndroidApi $env:ANDROID_API `
                 -OutputDirectory "$(Pipeline.Workspace)/IssueInput"
               if ($LASTEXITCODE -ne 0) { throw 'Bounded intake failed.' }
             displayName: 'Authorize command and pin bounded author repro'
@@ -73,6 +79,7 @@ stages:
               PLATFORM: ${{ parameters.Platform }}
               TARGET_REF: ${{ parameters.TargetRef }}
               SOURCE_URL: ${{ parameters.SourceUrl }}
+              ANDROID_API: ${{ parameters.AndroidApi }}
               GH_READ_TOKEN: $(ISSUE_REPRO_READ_TOKEN)
           - pwsh: |
               & .github/scripts/IssueReplicate.Transport.ps1 -Mode Export -Kind Input `
@@ -273,7 +280,7 @@ stages:
               $comment = [long]$env:COMMENT_ID
               & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
                 -IssueNumber $issue -CommentId $comment -Platform $env:PLATFORM -TargetRef $env:TARGET_REF `
-                -SourceUrl $env:SOURCE_URL -PipelineRevision "$(Build.SourceVersion)"
+                -SourceUrl $env:SOURCE_URL -AndroidApi $env:ANDROID_API -PipelineRevision "$(Build.SourceVersion)"
               if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for publication.' }
               $result = "$(Pipeline.Workspace)/Verified1"
               $candidateDirectory = ''
@@ -307,6 +314,7 @@ stages:
                 }
                 & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
                   -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
+                  -AndroidApi $env:ANDROID_API `
                   -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result `
                   -SampleDirectory "$(Pipeline.Workspace)/SampleOutput" -CandidateDirectory $candidateDirectory
                 if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
@@ -369,3 +377,4 @@ stages:
               PLATFORM: ${{ parameters.Platform }}
               TARGET_REF: ${{ parameters.TargetRef }}
               SOURCE_URL: ${{ parameters.SourceUrl }}
+              ANDROID_API: ${{ parameters.AndroidApi }}

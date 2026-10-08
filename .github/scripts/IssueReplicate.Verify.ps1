@@ -23,6 +23,7 @@ if (-not $CoreLoaded) {
     . (Join-Path $PSScriptRoot 'IssueReplicate.Diagnostics.ps1')
 }
 $manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
+$requestedApi = Get-IssueReplicateSnapshotAndroidApi -Snapshot $manifest
 $sample = Get-Content -Raw -LiteralPath $SampleResultPath | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1 -or $manifest.targetSha -cnotmatch '^[0-9a-f]{40}$' -or
     $sample.targetSha -cne $manifest.targetSha -or $sample.sampleSha256 -cne $manifest.sampleSha256 -or
@@ -44,6 +45,8 @@ $result = [ordered]@{
     issueNumber       = [int]$manifest.issueNumber
     commentId         = [long]$manifest.commentId
     platform          = [string]$manifest.platform
+    androidApi        = $requestedApi
+    nativeAndroidApi  = ''
     targetSha         = [string]$manifest.targetSha
     sampleSha256      = [string]$manifest.sampleSha256
     status            = 'inconclusive'
@@ -93,6 +96,7 @@ if ($Attempt -eq 2) {
     Assert-IssueReplicateResult -Result $previous -IssueNumber $result.issueNumber -CommentId $result.commentId | Out-Null
     if ($previous.targetSha -cne $result.targetSha -or $previous.sampleSha256 -cne $result.sampleSha256 -or
         $previous.platform -cne $result.platform -or $previous.testKind -cne $result.testKind -or
+        [string]$previous.androidApi -cne $result.androidApi -or
         $previous.candidateSha256 -cne $result.candidateSha256 -or $previous.attempt -ne 1 -or
         $previous.observedAssertion -isnot [bool]) {
         throw 'The first attempt does not match this immutable candidate and issue snapshot.'
@@ -160,6 +164,27 @@ $testLines = [System.Collections.Generic.List[string]]::new()
 $log = Join-Path $OutputDirectory 'test.log'
 Push-Location $RepoRoot
 try {
+    if ($candidate.kind -ceq 'ui' -and $manifest.platform -ceq 'android' -and $requestedApi) {
+        try {
+            $result.nativeAndroidApi = Get-IssueReplicateNativeAndroidApi -RepoRoot $RepoRoot
+            if ($result.nativeAndroidApi -cne $requestedApi) {
+                throw "Requested Android API $requestedApi, but the owned emulator reports API $($result.nativeAndroidApi)."
+            }
+            if ($previous -and [string]$previous.nativeAndroidApi -cne $result.nativeAndroidApi) {
+                throw 'The independent confirmation Android runtime does not match the first attempt.'
+            }
+            Write-Host "Verified owned emulator $env:DEVICE_UDID API $($result.nativeAndroidApi); request bound to the immutable snapshot."
+        }
+        catch {
+            $line = "Verification incomplete: Android runtime preflight failed before candidate execution: $($_.Exception.Message)"
+            $feedback = Get-IssueReplicateFeedback -Lines @($line)
+            Write-Warning $feedback
+            [IO.File]::WriteAllText((Join-Path $OutputDirectory 'feedback.txt'), $feedback)
+            $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
+            if ($OnCompleted) { & $OnCompleted $result '' $feedback }
+            return
+        }
+    }
     if ($candidate.kind -eq 'ui' -and $manifest.platform -eq 'ios') {
         try {
             $iosSimulator = New-IssueReplicateIOSSimulator -RepoRoot $RepoRoot

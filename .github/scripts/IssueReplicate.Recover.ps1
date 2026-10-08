@@ -40,8 +40,9 @@ for ($page = 1; $page -le 10; $page++) {
         if ($LASTEXITCODE -ne 0) { throw 'Could not inspect a recovery issue.' }
         if ($issue.state -ne 'open' -or $issue.pull_request -or $issue.comments -gt 300) { continue }
         try {
-            Resolve-IssueReplicatePlatform -Labels @($issue.labels | ForEach-Object name) `
-                -Requested $command.Platform | Out-Null
+            $platform = Resolve-IssueReplicatePlatform -Labels @($issue.labels | ForEach-Object name) `
+                -Requested $command.Platform
+            Resolve-IssueReplicateAndroidApi -Platform $platform -Requested $command.AndroidApi | Out-Null
         } catch {
             Write-Warning "Skipping incomplete command comment $($comment.id): $($_.Exception.Message)"
             continue
