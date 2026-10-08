@@ -28,17 +28,22 @@ function Invoke-IssueReplicateUIRunner {
         $readers = @($process.StandardOutput, $process.StandardError)
         $pending = @($readers[0].ReadLineAsync(), $readers[1].ReadLineAsync())
         while (@($pending | Where-Object { $null -ne $_ }).Count) {
+            $madeProgress = $false
             for ($stream = 0; $stream -lt 2; $stream++) {
-                if ($null -eq $pending[$stream] -or -not $pending[$stream].IsCompleted) { continue }
-                $line = $pending[$stream].GetAwaiter().GetResult()
-                if ($null -eq $line) { $pending[$stream] = $null; continue }
-                $lastOutput = $timer.Elapsed.TotalSeconds
-                if ($line.Length -gt 8000) { $line = $line.Substring(0, 8000) + ' [line truncated]' }
-                Write-Output $line
-                $pending[$stream] = $readers[$stream].ReadLineAsync()
+                for ($batch = 0; $batch -lt 64; $batch++) {
+                    if ($null -eq $pending[$stream] -or -not $pending[$stream].IsCompleted) { break }
+                    $line = $pending[$stream].GetAwaiter().GetResult()
+                    if ($null -eq $line) { $pending[$stream] = $null; break }
+                    $madeProgress = $true
+                    $lastOutput = $timer.Elapsed.TotalSeconds
+                    if ($line.Length -gt 8000) { $line = $line.Substring(0, 8000) + ' [line truncated]' }
+                    Write-Output $line
+                    $pending[$stream] = $readers[$stream].ReadLineAsync()
+                }
             }
+            if (-not @($pending | Where-Object { $null -ne $_ }).Count) { break }
             if ($process.HasExited) {
-                if ($null -eq $exitedAt) { $exitedAt = $timer.Elapsed.TotalSeconds }
+                if ($null -eq $exitedAt -or $madeProgress) { $exitedAt = $timer.Elapsed.TotalSeconds }
                 if ($timer.Elapsed.TotalSeconds - $exitedAt -gt 2) {
                     Write-Output 'Verification incomplete: UI runner exited with inherited output handles still open; capture was bounded.'
                     return
@@ -49,7 +54,7 @@ function Invoke-IssueReplicateUIRunner {
                 Write-Output "Verification incomplete: UI runner exceeded its ${TimeoutSeconds}s wall or ${IdleTimeoutSeconds}s no-output deadline; no result is manufactured."
                 return
             }
-            Start-Sleep -Milliseconds 20
+            if (-not $madeProgress) { Start-Sleep -Milliseconds 20 }
         }
         if (-not $process.WaitForExit(2000)) {
             Write-Output 'Verification incomplete: UI runner closed output without terminating; no result is manufactured.'
