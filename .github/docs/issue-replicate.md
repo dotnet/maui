@@ -74,7 +74,8 @@ retargeting the sample. Choose the matching `netN.0` branch explicitly. The buil
 runs from the author project directory so its SDK declaration is actually used.
 ZIP metadata such as `__MACOSX` and AppleDouble files is not treated as source.
 On iOS, the isolated SDK's actual native pack selects Xcode from its installed
-`targets/Microsoft.iOS.Sdk.Versions.props` `RecommendedXcodeVersion`, not from
+`targets/Microsoft.iOS.Sdk.Versions.props` `RecommendedXcodeVersion` (or the
+older pack's `_RecommendedXcodeVersion`), not from
 the iOS SDK minor version. Those versions can differ: an iOS 26.5 pack may
 require Xcode 26.6 while still requiring the exact iOS 26.5 simulator runtime.
 The framework verifier likewise installs its pinned primary native pack before

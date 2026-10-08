@@ -33,6 +33,8 @@ if ($metadata.PSIsContainer -or $metadata.Attributes -band [IO.FileAttributes]::
     $metadata.Length -gt 32KB) {
     throw 'The installed iOS SDK requirement metadata must be a bounded regular file.'
 }
+$metadataHash = (Get-FileHash -LiteralPath $metadata.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+Write-Host "Installed iOS SDK $($pack.Parent.Name)/$($pack.Name); requirement metadata SHA256 $metadataHash."
 $settings = [Xml.XmlReaderSettings]::new()
 $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
 $settings.XmlResolver = $null
@@ -44,9 +46,15 @@ try {
     $versions.Load($reader)
 }
 finally { $reader.Dispose() }
-$requirements = @($versions.SelectNodes("/*[local-name()='Project']/*[local-name()='PropertyGroup']/*[local-name()='RecommendedXcodeVersion']"))
-if ($requirements.Count -ne 1 -or $requirements[0].InnerText.Trim() -cnotmatch '^[0-9]+\.[0-9]+(?:\.[0-9]+){0,2}$') {
-    throw 'The installed iOS SDK must declare one literal RecommendedXcodeVersion.'
+$declarations = @($versions.SelectNodes("/*[local-name()='Project']/*[local-name()='PropertyGroup']/*[local-name()='RecommendedXcodeVersion' or local-name()='_RecommendedXcodeVersion']"))
+$requirements = @($declarations | Where-Object { $_.InnerText.Trim() -cmatch '^[0-9]+\.[0-9]+(?:\.[0-9]+){0,2}$' })
+$aliases = @($declarations | Where-Object {
+        $_.LocalName -ceq '_RecommendedXcodeVersion' -and $_.InnerText.Trim() -ceq '$(RecommendedXcodeVersion)'
+    })
+if ($declarations.Count -lt 1 -or $declarations.Count -gt 2 -or $requirements.Count -ne 1 -or
+    $aliases.Count -ne $declarations.Count - 1 -or
+    ($aliases.Count -eq 1 -and $requirements[0].LocalName -cne 'RecommendedXcodeVersion')) {
+    throw 'The installed iOS SDK must declare one literal RecommendedXcodeVersion or legacy _RecommendedXcodeVersion, with only its exact supported alias.'
 }
 $required = [version]$requirements[0].InnerText.Trim()
 $xcode = "$($required.Major).$($required.Minor)"
@@ -59,8 +67,7 @@ if ($choices.Count -lt 1) { throw "The installed iOS SDK $($pack.Parent.Name)/$(
 $selected = $choices[0]
 $developer = Join-Path $selected.Path 'Contents/Developer'
 if (-not (Test-Path -LiteralPath $developer -PathType Container)) { throw 'The selected Xcode is incomplete.' }
-$metadataHash = (Get-FileHash -LiteralPath $metadata.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-Write-Host "Installed iOS SDK $($pack.Parent.Name)/$($pack.Name); requirement metadata SHA256 $metadataHash; requires Xcode $required; selected Xcode $($selected.Version); exact iOS runtime remains $sdk."
+Write-Host "Installed requirement $($requirements[0].LocalName)=$required; selected Xcode $($selected.Version); exact iOS runtime remains $sdk."
 switch ($Provider) {
     'Azure' {
         Write-Host "##vso[task.setvariable variable=XCODE]$($selected.Version)"
