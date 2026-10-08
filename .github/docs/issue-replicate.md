@@ -73,9 +73,15 @@ incompatible with the unchanged author TFM blocks provisioning instead of
 retargeting the sample. Choose the matching `netN.0` branch explicitly. The build
 runs from the author project directory so its SDK declaration is actually used.
 ZIP metadata such as `__MACOSX` and AppleDouble files is not treated as source.
-On iOS, the isolated SDK's actual native pack selects its matching installed
-Xcode and exact simulator runtime independently from the framework verifier's
-toolchain. Missing matching tools block the author build; a newer runtime or
+On iOS, the isolated SDK's actual native pack selects Xcode from its installed
+`targets/Microsoft.iOS.Sdk.Versions.props` `RecommendedXcodeVersion`, not from
+the iOS SDK minor version. Those versions can differ: an iOS 26.5 pack may
+require Xcode 26.6 while still requiring the exact iOS 26.5 simulator runtime.
+The framework verifier likewise installs its pinned primary native pack before
+reading that pack's requirement. Each selector records the pack identity and
+requirement metadata hash. Missing or ambiguous metadata or a missing matching
+Xcode installation fails explicitly. The author toolchain stays independent
+from the framework verifier's toolchain; a newer runtime or
 different framework is not silently substituted.
 Author provisioning selects that Xcode and clears the command cache before the
 first CoreSimulator query. Runtime inventory has a two-minute cold-start
@@ -680,8 +686,8 @@ either predefined environment value is missing or belongs to another project.
    issue/repository reads, Copilot access, and issue-comment posting.
 4. Confirm `ubuntu-22.04` and `macOS-26` are **fresh Microsoft-hosted
    agents**, with Android KVM, Appium, appropriate Xcode/simulator, and workloads
-   on the chosen MAUI branches. Xcode is selected from the pinned branch's
-   declared iOS SDK; a missing matching installation fails rather than silently
+   on the chosen MAUI branches. Xcode is selected from the installed pinned
+   iOS SDK pack's declared requirement; a missing matching installation fails rather than silently
    using an incompatible version. Do not enable iOS on a persistent/shared macOS
    agent. Validate native execution with the credential-free canary while
    production stays disabled. Validate old-revision and activation-off direct

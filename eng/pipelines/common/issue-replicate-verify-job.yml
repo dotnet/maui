@@ -67,13 +67,17 @@ jobs:
       - template: issue-replicate-sdk.yml
       - ${{ if eq(parameters.platform, 'android') }}:
         - template: issue-replicate-linux-disk.yml
+      - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
+        displayName: 'Prepare local provisioning logs'
       - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+          workingDirectory: $(Pipeline.Workspace)/maui
+          displayName: 'Install pinned public MAUI SDK/workloads before reading iOS pack requirements'
+          timeoutInMinutes: 50
         - pwsh: |
             & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
               -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
-          displayName: 'Require Xcode matching the pinned iOS SDK'
-      - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
-        displayName: 'Prepare local provisioning logs'
+          displayName: 'Require Xcode declared by the installed pinned iOS SDK pack'
       - ${{ if eq(parameters.platform, 'android') }}:
         - template: enable-kvm.yml
       - template: provision.yml
@@ -91,10 +95,11 @@ jobs:
           skipAndroidPlatformApis: true
           skipAndroidEmulatorImages: true
           skipAndroidCreateAvds: true
-      - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
-        workingDirectory: $(Pipeline.Workspace)/maui
-        displayName: 'Install pinned public MAUI SDK/workloads'
-        timeoutInMinutes: 50
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+          workingDirectory: $(Pipeline.Workspace)/maui
+          displayName: 'Install pinned public MAUI SDK/workloads'
+          timeoutInMinutes: 50
       - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
         displayName: 'Use pinned SDK'
       - pwsh: |

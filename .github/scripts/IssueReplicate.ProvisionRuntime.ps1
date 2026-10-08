@@ -2,7 +2,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$RepoRoot,
-    [Parameter(Mandatory)][ValidatePattern('^[0-9]+\.[0-9]+$')][string]$SdkVersion
+    [Parameter(Mandatory)][ValidatePattern('^[0-9]+\.[0-9]+$')][string]$SdkVersion,
+    [Parameter(Mandatory)][string]$SdkPackDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -10,7 +11,7 @@ if (-not $IsMacOS) { throw 'iOS runtime provisioning requires a hosted macOS run
 . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
 . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
 $developer = & (Join-Path $PSScriptRoot 'IssueReplicate.SelectXcode.ps1') `
-    -RepoRoot $RepoRoot -SdkVersion $SdkVersion
+    -RepoRoot $RepoRoot -SdkVersion $SdkVersion -SdkPackDirectory $SdkPackDirectory
 $env:DEVELOPER_DIR = $developer
 $selection = Invoke-ProcessWithTimeout -FilePath 'sudo' -TimeoutSeconds 30 `
     -ArgumentList @('-n', 'xcode-select', '-s', $developer)

@@ -72,11 +72,12 @@ try {
 } finally { Pop-Location }
 if ($Platform -eq 'ios') {
     $iosPacks = @(Get-ChildItem -LiteralPath (Join-Path $InstallDirectory 'packs') -Directory |
-        Where-Object { $_.Name -cmatch "^Microsoft\.iOS\.Sdk\.net$($tfmVersion.Major)\.$($tfmVersion.Minor)_([0-9]+\.[0-9]+)$" } |
-        ForEach-Object { [version]([regex]::Match($_.Name, '_([0-9]+\.[0-9]+)$').Groups[1].Value) } |
-        Sort-Object -Unique)
+        Where-Object { $_.Name -cmatch "^Microsoft\.iOS\.Sdk\.net$($tfmVersion.Major)\.$($tfmVersion.Minor)_([0-9]+\.[0-9]+)$" })
     if ($iosPacks.Count -ne 1) { throw 'The isolated author SDK must declare exactly one matching iOS SDK pack.' }
+    $packVersions = @(Get-ChildItem -LiteralPath $iosPacks[0].FullName -Directory)
+    if ($packVersions.Count -ne 1) { throw 'The isolated author SDK must contain exactly one matching installed iOS pack version.' }
+    $iosVersion = [regex]::Match($iosPacks[0].Name, '_([0-9]+\.[0-9]+)$').Groups[1].Value
     & (Join-Path $PSScriptRoot 'IssueReplicate.ProvisionRuntime.ps1') `
-        -RepoRoot $RepoRoot -SdkVersion $iosPacks[0].ToString()
+        -RepoRoot $RepoRoot -SdkVersion $iosVersion -SdkPackDirectory $packVersions[0].FullName
 }
 exit 0
