@@ -42,7 +42,7 @@ public class Issue38452 : _IssuesUITest
 			throw new TimeoutException($"The ordinary label gesture did not scroll the outer page: {controlOffset:F1}.");
 
 		App.WaitForElement("ResetOuterScroll",
-			timeoutMessage: "The outer-scroll reset button did not become available.",
+			timeoutMessage: "The outer-scroll return-to-top button did not become available.",
 			timeout: TimeSpan.FromSeconds(5)).Click();
 		WaitForOuterScroll(requireTop: true);
 		var webView = App.WaitForElement(
