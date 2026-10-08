@@ -42,6 +42,8 @@ BeforeAll {
         return $ScriptText.Substring($start, $end - $start + 1)
     }
 
+    function copilot { throw 'Copilot test double was not configured.' }
+
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TrxResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-DotNetTestResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-IsNumericValue')
@@ -83,6 +85,10 @@ BeforeAll {
     $skillContent = Get-Content -Raw (Join-Path $PSScriptRoot '../skills/pr-review/SKILL.md')
     $reportPolicyContent = Get-Content -Raw (Join-Path $PSScriptRoot '../pr-review/pr-report.md')
     $sharedPolicy = Get-Content -Raw (Join-Path $policyDir 'evidence-first-policy.md')
+}
+
+AfterAll {
+    Remove-Item Function:\copilot -ErrorAction SilentlyContinue
 }
 
 Describe 'Opt-in reviewer routing' {
