@@ -19,13 +19,9 @@ if ($manifest.schemaVersion -ne 1 -or
 $sampleDir = Join-Path $OutputDirectory 'sample'
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 Assert-IssueReplicateZip -Path $zip -ExtractTo $sampleDir
-$projects = @(Get-ChildItem -LiteralPath $sampleDir -Filter *.csproj -File -Recurse |
-    Where-Object { $_.FullName -notmatch '[/\\](obj|bin)[/\\]' })
-if ($projects.Count -ne 1) { throw 'The sample needs exactly one buildable .csproj.' }
-$project = $projects[0]
-$projectXml = Get-Content -LiteralPath $project.FullName -Raw
-$tfm = [regex]::Match($projectXml, "net[0-9]+\.[0-9]+-$($manifest.platform)(?:[0-9]+(?:\.[0-9]+)*)?(?=[;\s<`"']|$)").Value
-if (-not $tfm) { throw "The sample project does not target $($manifest.platform)." }
+$selection = Get-IssueReplicateSampleProject -Directory $sampleDir -Platform $manifest.platform
+$project = $selection.Project
+$tfm = $selection.TargetFramework
 
 $log = Join-Path $OutputDirectory 'sample-build.log'
 $redacted = [System.Collections.Generic.List[string]]::new()
@@ -39,13 +35,16 @@ if ($NuGetConfigPath) {
     $buildArguments += "-p:RestoreConfigFile=$($config.FullName)"
     $buildArguments += '-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json'
 }
-& dotnet @buildArguments 2>&1 |
-    ForEach-Object {
-        $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
-        if ($redacted.Count -lt 3000) { $redacted.Add($line) }
-        Write-Host $line
-    }
-$exitCode = $LASTEXITCODE
+Push-Location $project.DirectoryName
+try {
+    & dotnet @buildArguments 2>&1 |
+        ForEach-Object {
+            $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+            if ($redacted.Count -lt 3000) { $redacted.Add($line) }
+            Write-Host $line
+        }
+    $exitCode = $LASTEXITCODE
+} finally { Pop-Location }
 $redacted | Set-Content -LiteralPath $log -Encoding utf8
 $diagnostic = ($redacted | Where-Object { $_ -match '\berror(?:\s+[A-Z]+[0-9]+)?\s*:' } |
     Select-Object -First 3) -join "`n"

@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory)][ValidateRange(1, [long]::MaxValue)][long]$CommentId,
     [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
     [Parameter(Mandatory)][string]$TargetRef,
+    [string]$SourceUrl = '',
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$PipelineRevision
 )
 
@@ -43,8 +44,9 @@ $command = Parse-IssueReplicateCommand -Body $comment.body
 if ($null -eq $command) { throw 'The supplied comment is not an /issue replicate command.' }
 $requestedPlatform = Resolve-IssueReplicatePlatform -Labels @($issue.labels | ForEach-Object name) `
     -Requested $command.Platform
-if ($requestedPlatform -cne $Platform -or $command.Branch -cne $TargetRef) {
-    throw 'The queued platform or target branch does not match the current command.'
+if ($requestedPlatform -cne $Platform -or $command.Branch -cne $TargetRef -or
+    $command.SourceUrl -cne $SourceUrl) {
+    throw 'The queued platform, target branch or selected source does not match the current command.'
 }
 $login = [string]$comment.user.login
 if ($login.Length -gt 100 -or $login -cnotmatch '^[A-Za-z0-9-]+(?:\[bot\])?$') {

@@ -154,11 +154,24 @@ if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
 }
 
 $iosSimulator = ''
+$testLines = [System.Collections.Generic.List[string]]::new()
+$log = Join-Path $OutputDirectory 'test.log'
 Push-Location $RepoRoot
 try {
     if ($candidate.kind -eq 'ui' -and $manifest.platform -eq 'ios') {
-        $iosSimulator = New-IssueReplicateIOSSimulator -RepoRoot $RepoRoot
-        Initialize-IssueReplicateIOSWebDriverAgent -RepoRoot $RepoRoot -SimulatorUdid $iosSimulator
+        try {
+            $iosSimulator = New-IssueReplicateIOSSimulator -RepoRoot $RepoRoot
+            Initialize-IssueReplicateIOSWebDriverAgent -RepoRoot $RepoRoot -SimulatorUdid $iosSimulator
+        } catch {
+            $line = "Verification incomplete: Native iOS preflight failed before candidate execution: $($_.Exception.Message)"
+            $line = $line.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+            $feedback = Get-IssueReplicateFeedback -Lines @($line)
+            Write-Warning $feedback
+            [IO.File]::WriteAllText((Join-Path $OutputDirectory 'feedback.txt'), $feedback)
+            $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
+            if ($OnCompleted) { & $OnCompleted $result '' $feedback }
+            return
+        }
     }
     $written = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @($candidate.files)) {
@@ -179,8 +192,6 @@ try {
     foreach ($relative in $tracked) {
         $sourceHashes[$relative] = (Get-FileHash -LiteralPath (Join-Path $RepoRoot $relative) -Algorithm SHA256).Hash
     }
-    $log = Join-Path $OutputDirectory 'test.log'
-    $testLines = [System.Collections.Generic.List[string]]::new()
     $filter = "FullyQualifiedName~$issueClass"
     $trxDirectory = Join-Path $OutputDirectory 'trx'
     New-Item -ItemType Directory -Path $trxDirectory -Force | Out-Null
@@ -214,7 +225,10 @@ try {
         $started = [DateTime]::UtcNow
         if ($candidate.kind -eq 'ui') {
             $runner = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
-            $deviceArguments = if ($iosSimulator) { @('-DeviceUdid', $iosSimulator) } else { @() }
+            $deviceArguments = if ($iosSimulator) { @('-DeviceUdid', $iosSimulator) }
+                elseif ($manifest.platform -eq 'android' -and $env:DEVICE_UDID -cmatch '^emulator-[0-9]+$') {
+                    @('-DeviceUdid', $env:DEVICE_UDID)
+                } else { @() }
             if ($RecordVideo) {
                 if ($env:CustomBeforeMicrosoftCommonTargets) {
                     throw 'Native recording cannot replace an existing custom MSBuild targets import.'
@@ -238,7 +252,9 @@ try {
                 $env:ISSUE_REPLICATE_RECORDING_ACK = $recordingAcknowledgement
                 $env:ISSUE_REPLICATE_RECORDING_NONCE = $recordingNonce
             }
-            & pwsh -NoProfile -File $runner -Platform $manifest.platform -TestFilter $filter @deviceArguments 2>&1 |
+            $runnerState = @{}
+            Invoke-IssueReplicateUIRunner -Runner $runner -State $runnerState `
+                -Arguments (@('-Platform', $manifest.platform, '-TestFilter', $filter) + $deviceArguments) |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
                     $readyPattern = '^ISSUE_REPLICATE_RECORDING_READY=' + $recordingNonce + ':(?<operation>[0-9a-f]{32})$'
@@ -324,6 +340,7 @@ try {
                     if ($testLines.Count -lt 3000) { $testLines.Add($line) }
                     Write-Host $line
                 }
+            $global:LASTEXITCODE = $runnerState.ExitCode
         } else {
             & dotnet test $projectPath -c Debug --filter $filter --logger "trx;LogFileName=attempt-$attempt.trx" `
                 --results-directory $trxDirectory --nologo --verbosity quiet 2>&1 |
@@ -432,6 +449,30 @@ try {
             $result.status = 'candidate-failed'
         }
     } while ($false)
+    if ($candidate.kind -eq 'ui' -and $result.status -eq 'inconclusive') {
+        try {
+            $appium = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/appium.log'
+            if (Test-Path -LiteralPath $appium) {
+                $native = Read-IssueReplicateNativeDiagnostic -Path $appium -MaxBytes 16384 -Tail -AppiumLog
+                foreach ($line in $native.Text.Split("`n")) {
+                    $line = $line.Replace("`r", '') -replace '\x1b\[[0-9;]*[A-Za-z]|##vso\[[^]]*\]', ''
+                    $testLines.Add($line)
+                    Write-Host $line
+                }
+                if ($native.Omitted) { Write-Warning 'Native Appium diagnostics are a bounded filtered tail, not the complete log.' }
+            }
+            if ($manifest.platform -eq 'android') {
+                . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
+                foreach ($line in @(Get-IssueReplicateAndroidCrashDiagnostic -OutputDirectory $OutputDirectory)) {
+                    $testLines.Add($line)
+                }
+            }
+        } catch {
+            $diagnostic = "Verification incomplete: Native diagnostic capture failed: $($_.Exception.Message)"
+            Write-Warning $diagnostic
+            $testLines.Add($diagnostic)
+        }
+    }
     if ($recordingSession) {
         $result.recording.status = 'failed'
         $result.recording.diagnostic = 'The native test did not emit its completion marker before the session ended.'

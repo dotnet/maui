@@ -19,6 +19,11 @@ Repository writers, maintainers, and administrators can comment on an **open iss
 
 `--platform android|ios` is optional only when exactly one supported `platform/android`
 or `platform/ios` issue label exists. `--branch main|netN.0` defaults to `main`.
+`--source <supported-GitHub-URL>` may explicitly select one of multiple links in
+the latest author repro text. Intake rejects a selection absent from that text;
+without a selection, ambiguity still fails closed. The immutable snapshot keeps
+the alternate author links, and both intake and publication reauthorize the exact
+selected URL against the current command.
 Pull requests and commands from users without current repository write access do
 not queue a run. The trigger posts an unassessed status acknowledgement without
 operational run/log links; a second comment reports the result. A fresh command
@@ -62,6 +67,17 @@ downloads, non-GitHub attachments, or an inaccessible dependency may be
 inconclusive. **Do not include credentials or private data in a public repro,
 issue comment, or generated candidate.**
 
+The isolated author SDK honors the nearest archived `global.json` SDK version,
+or the pinned target branch SDK when the author did not specify one. An SDK
+incompatible with the unchanged author TFM blocks provisioning instead of
+retargeting the sample. Choose the matching `netN.0` branch explicitly. The build
+runs from the author project directory so its SDK declaration is actually used.
+ZIP metadata such as `__MACOSX` and AppleDouble files is not treated as source.
+On iOS, the isolated SDK's actual native pack selects its matching installed
+Xcode and exact simulator runtime independently from the framework verifier's
+toolchain. Missing matching tools block the author build; a newer runtime or
+different framework is not silently substituted.
+
 The sample is *built*, not driven through the reported interaction. A generated
 unit/XAML/UI test runs against the pinned MAUI commit in a separate credential-free
 job, with at most one feedback-driven revision. A passing test means only
@@ -86,6 +102,15 @@ test's source frame, and the verifier's incomplete-result diagnostic. Inconclusi
 reports without an observed assertion show that feedback in a closed
 **Verification blocker** section without qualifying a timeout or setup failure
 as an issue assertion.
+The iOS prerequisite checks a responsive native WebDriverAgent status, not
+just a successful build. Preflight failures are exported as bounded unqualified
+feedback. The UI subprocess has a 45-minute wall deadline and a 10-minute
+no-output deadline, with exact-process-tree termination and bounded pipe draining,
+so session setup cannot consume the full outer job without exporting a blocker.
+Inconclusive native runs retain a bounded filtered Appium tail. On an explicitly
+owned Android emulator, the app-scoped crash buffer keeps process/thread,
+signal and backtrace diagnostics; those diagnostics remain unqualified and do
+not turn a teardown error into an assertion or verified patch.
 Tool-free drafting also runs when a completed, bounded author build record reports
 a failure. That does not bypass the author-build prerequisite for native verification:
 the unchanged sample's target and diagnostic remain in the report, and the draft

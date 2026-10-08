@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory)][ValidateRange(1, [long]::MaxValue)][long]$CommentId,
     [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform,
     [Parameter(Mandatory)][string]$TargetRef,
+    [string]$SourceUrl = '',
     [Parameter(Mandatory)][string]$OutputDirectory
 )
 
@@ -44,7 +45,7 @@ for ($page = $pages; $page -ge 1; $page--) {
     }
 }
 $authorTexts.Add([string]$issue.body)
-$source = Get-IssueReplicateSource -AuthorTexts $authorTexts.ToArray()
+$source = Get-IssueReplicateSource -AuthorTexts $authorTexts.ToArray() -SelectedUrl $SourceUrl
 
 $sourceCommit = ''
 if ($source.Type -eq 'repository') {
@@ -92,6 +93,7 @@ $manifest = [ordered]@{
     sourceType = $source.Type
     sourceUrl = $source.Url
     sourceCommit = $sourceCommit
+    sourceAlternatives = @($source.Alternatives)
     sampleSha256 = $sha
 }
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'manifest.json') -Encoding utf8

@@ -2,12 +2,13 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$RepoRoot,
+    [ValidatePattern('^[0-9]+\.[0-9]+$')][string]$SdkVersion = '',
     [ValidateSet('None', 'Azure', 'GitHub')][string]$Provider = 'None'
 )
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'IssueReplicate.Core.ps1')
-$sdk = Get-IssueReplicateIOSSdkVersion -RepoRoot $RepoRoot
+$sdk = if ($SdkVersion) { $SdkVersion } else { Get-IssueReplicateIOSSdkVersion -RepoRoot $RepoRoot }
 $choices = @(Get-ChildItem -LiteralPath /Applications -Directory -Filter 'Xcode_*.app' | ForEach-Object {
     if ($_.Name -cmatch "^Xcode_($([regex]::Escape($sdk))(?:\.[0-9]+)?)\.app$") {
         [pscustomobject]@{ Path = $_.FullName; Version = [version]$Matches[1] }

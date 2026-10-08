@@ -82,6 +82,19 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             "https://github.com/$($source.Repository)/tree/$($manifest.sourceCommit)"
         } else { $source.Url }
         $reproLink = "[Author repro]($sourceUrl)"
+        $alternatives = @()
+        if ($null -ne $manifest.sourceAlternatives) {
+            foreach ($url in @($manifest.sourceAlternatives)) {
+                $alternate = Get-IssueReplicateSource -AuthorTexts @("[repro.zip]($url)")
+                if ($alternate.Url -cne $url -or $url -ceq $manifest.sourceUrl) {
+                    throw 'An alternate author source is not a distinct supported GitHub URL.'
+                }
+                $alternatives += "[alternate author source]($url)"
+            }
+        }
+        if ($alternatives.Count) {
+            $reproLink += " (explicit selection; not used: $($alternatives -join ', '))"
+        }
     }
     $sample = $null
     if ($SampleDirectory -and (Test-Path -LiteralPath (Join-Path $SampleDirectory 'sample-result.json') -PathType Leaf)) {

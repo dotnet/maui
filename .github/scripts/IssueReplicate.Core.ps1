@@ -73,6 +73,7 @@ async function prepare() {
         iosSdkVersion: sdk,
         platformVersion: sdk,
         showXcodeLog: true,
+        wdaLaunchTimeout: 50000,
     });
     const derivedDataPath = await wda.retrieveDerivedDataPath();
     if (!derivedDataPath || !isAbsolute(derivedDataPath)) {
@@ -80,6 +81,16 @@ async function prepare() {
     }
     await wda.xcodebuild.start(true);
     console.log(`WebDriverAgent preparation used the installed driver derived-data directory: ${derivedDataPath}`);
+    try {
+        await wda.launch('issue-replicate-preflight');
+        const status = await wda.getStatus(50000);
+        if (!status || !status.os || status.os.name !== 'iOS') {
+            throw new Error('WebDriverAgent did not return a responsive native iOS status.');
+        }
+        console.log(`Native iOS preflight responsive on ${udid}: ${JSON.stringify(status)}`);
+    } finally {
+        await wda.quit();
+    }
 }
 
 prepare().catch(error => {
@@ -89,7 +100,19 @@ prepare().catch(error => {
 '@
     . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
 
-    Write-Host "Prebuilding the installed WebDriverAgent for pinned iOS $sdk ($SimulatorUdid); ten-minute build deadline."
+    if ($devices[0].state -cne 'Booted') {
+        $boot = Invoke-ProcessWithTimeout -FilePath 'xcrun' -TimeoutSeconds 60 `
+            -ArgumentList @('simctl', 'boot', $SimulatorUdid)
+        if ($boot.TimedOut -or $boot.OutputDrainTimedOut -or $boot.ExitCode -ne 0) {
+            throw 'The owned iOS simulator could not begin booting within its deadline.'
+        }
+    }
+    $ready = Invoke-ProcessWithTimeout -FilePath 'xcrun' -TimeoutSeconds 180 `
+        -ArgumentList @('simctl', 'bootstatus', $SimulatorUdid, '-b')
+    if ($ready.TimedOut -or $ready.OutputDrainTimedOut -or $ready.ExitCode -ne 0) {
+        throw 'The owned iOS simulator did not finish booting within its three-minute deadline.'
+    }
+    Write-Host "Building and checking the installed WebDriverAgent for pinned iOS $sdk ($SimulatorUdid); ten-minute preflight deadline."
     $timer = [Diagnostics.Stopwatch]::StartNew()
     $build = Invoke-ProcessWithTimeout -FilePath $node.Source -TimeoutSeconds 600 `
         -ArgumentList @('-e', $prebuild, $SimulatorUdid, $sdk)
@@ -98,11 +121,11 @@ prepare().catch(error => {
         if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
         Write-Host $line
     }
-    if ($build.TimedOut) { throw 'WebDriverAgent prebuilding exceeded its ten-minute deadline; the candidate did not execute.' }
+    if ($build.TimedOut) { throw 'WebDriverAgent preflight exceeded its ten-minute deadline; the candidate did not execute.' }
     if ($build.OutputDrainTimedOut -or $build.ExitCode -ne 0) {
-        throw "WebDriverAgent prebuilding failed (exit $($build.ExitCode)); the candidate did not execute."
+        throw "WebDriverAgent preflight failed (exit $($build.ExitCode)); the candidate did not execute."
     }
-    Write-Host "WebDriverAgent build completed in $([Math]::Ceiling($timer.Elapsed.TotalSeconds)) seconds; the pinned runner and its launch timeout remain unchanged."
+    Write-Host "Responsive WebDriverAgent preflight completed in $([Math]::Ceiling($timer.Elapsed.TotalSeconds)) seconds; the pinned runner and its launch timeout remain unchanged."
 }
 
 function Get-IssueReplicateDownload {
@@ -173,6 +196,7 @@ function Parse-IssueReplicateCommand {
     $parts = @($text -split '\s+')
     $platform = ''
     $branch = 'main'
+    $sourceUrl = ''
     $branchSpecified = $false
     for ($i = 2; $i -lt $parts.Count; $i += 2) {
         if ($i + 1 -ge $parts.Count) { throw 'A command option is missing its value.' }
@@ -188,11 +212,17 @@ function Parse-IssueReplicateCommand {
                 $branch = $parts[$i + 1]
                 if ($branch -cnotmatch '^(main|net[0-9]+\.0)$') { throw 'Supported branches: main, netN.0.' }
             }
+            '--source' {
+                if ($sourceUrl) { throw 'The source was specified more than once.' }
+                $sourceUrl = $parts[$i + 1]
+                $source = Get-IssueReplicateSource -AuthorTexts @("[repro.zip]($sourceUrl)")
+                if ($source.Url -cne $sourceUrl) { throw 'The selected source must be one supported GitHub URL.' }
+            }
             default { throw 'Unsupported /issue replicate option.' }
         }
     }
 
-    return [pscustomobject]@{ Platform = $platform; Branch = $branch }
+    return [pscustomobject]@{ Platform = $platform; Branch = $branch; SourceUrl = $sourceUrl }
 }
 
 function Resolve-IssueReplicatePlatform {
@@ -211,7 +241,7 @@ function Resolve-IssueReplicatePlatform {
 }
 
 function Get-IssueReplicateSource {
-    param([Parameter(Mandatory)][string[]]$AuthorTexts)
+    param([Parameter(Mandatory)][string[]]$AuthorTexts, [string]$SelectedUrl = '')
 
     foreach ($text in $AuthorTexts) {
         $sources = @()
@@ -242,6 +272,14 @@ function Get-IssueReplicateSource {
             }
             $sourceKeys.Add($key)
         })
+        $alternatives = @()
+        if ($SelectedUrl -and $sources.Count -gt 0) {
+            $alternatives = @($sources | Where-Object Url -CNE $SelectedUrl | ForEach-Object Url)
+            $sources = @($sources | Where-Object Url -CEQ $SelectedUrl)
+            if ($sources.Count -ne 1) {
+                throw 'The selected source is not a supported link in the latest author repro text.'
+            }
+        }
         if ($sources.Count -gt 1) {
             throw 'The latest author repro contains multiple supported links; keep one ZIP or public repository link.'
         }
@@ -252,12 +290,27 @@ function Get-IssueReplicateSource {
                 Repository = $sources[0].Repository
                 Ref = $sources[0].Ref
                 FallbackUrl = $sources[0].FallbackUrl
+                Alternatives = $alternatives
                 Text = $text.Substring(0, [Math]::Min(8000, $text.Length))
             }
         }
     }
 
     throw 'No GitHub-hosted ZIP attachment or public GitHub repository was found in the issue author text.'
+}
+
+function Get-IssueReplicateSampleProject {
+    param([Parameter(Mandatory)][string]$Directory,
+        [Parameter(Mandatory)][ValidateSet('android', 'ios')][string]$Platform)
+
+    $projects = @(Get-ChildItem -LiteralPath $Directory -Filter *.csproj -File -Recurse |
+        Where-Object { $_.FullName -notmatch '[/\\](obj|bin|__MACOSX)[/\\]|[/\\]\._' })
+    if ($projects.Count -ne 1) { throw 'The sample needs exactly one buildable .csproj.' }
+    $project = $projects[0]
+    $xml = Get-Content -LiteralPath $project.FullName -Raw
+    $tfm = [regex]::Match($xml, "net[0-9]+\.[0-9]+-$Platform(?:[0-9]+(?:\.[0-9]+)*)?(?=[;\s<`"']|$)").Value
+    if (-not $tfm) { throw "The sample project does not target $Platform." }
+    return [pscustomobject]@{ Project = $project; TargetFramework = $tfm }
 }
 
 function Assert-IssueReplicateZip {
@@ -538,7 +591,7 @@ function Get-IssueReplicateFeedback {
         $Lines = @(Get-Content -LiteralPath $file.FullName)
     }
     $diagnostics = @($Lines | Where-Object {
-        $_ -match '(?i)\berror(?:\s+[A-Z]+[0-9]+)?\s*:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|Native recording failed:|Verification incomplete:|(?:[\w+`]+\.)*[\w+`]+Exception\s*:|at\s+(?:[\w+`]+\.)*(?:Issue|Maui)[1-9][0-9]*\.|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
+        $_ -match '(?i)\berror(?:\s+[A-Z]+[0-9]+)?\s*:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|Native recording failed:|Native crash diagnostic|Verification incomplete:|(?:[\w+`]+\.)*[\w+`]+Exception\s*:|at\s+(?:[\w+`]+\.)*(?:Issue|Maui)[1-9][0-9]*\.|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
     } | Select-Object -Last 25)
     $content = if ($diagnostics.Count -gt 0) { $diagnostics -join "`n" }
         else { ($Lines | Select-Object -Last 25) -join "`n" }

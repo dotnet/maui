@@ -1,3 +1,101 @@
+function Invoke-IssueReplicateUIRunner {
+    param(
+        [Parameter(Mandatory)][string]$Runner,
+        [Parameter(Mandatory)][string[]]$Arguments,
+        [Parameter(Mandatory)][hashtable]$State,
+        [ValidateRange(1, 3600)][int]$TimeoutSeconds = 2700,
+        [ValidateRange(1, 900)][int]$IdleTimeoutSeconds = 600
+    )
+
+    $pwsh = Get-Command pwsh -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    $start = [Diagnostics.ProcessStartInfo]::new($pwsh.Source)
+    $start.UseShellExecute = $false
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    foreach ($argument in @('-NoProfile', '-NonInteractive', '-File', $Runner) + $Arguments) {
+        $start.ArgumentList.Add($argument)
+    }
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $start
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    $lastOutput = 0.0
+    $exitedAt = $null
+    $started = $false
+    $State.ExitCode = 124
+    try {
+        $started = $process.Start()
+        if (-not $started) { throw 'Could not start the bounded UI runner.' }
+        $readers = @($process.StandardOutput, $process.StandardError)
+        $pending = @($readers[0].ReadLineAsync(), $readers[1].ReadLineAsync())
+        while (@($pending | Where-Object { $null -ne $_ }).Count) {
+            for ($stream = 0; $stream -lt 2; $stream++) {
+                if ($null -eq $pending[$stream] -or -not $pending[$stream].IsCompleted) { continue }
+                $line = $pending[$stream].GetAwaiter().GetResult()
+                if ($null -eq $line) { $pending[$stream] = $null; continue }
+                $lastOutput = $timer.Elapsed.TotalSeconds
+                if ($line.Length -gt 8000) { $line = $line.Substring(0, 8000) + ' [line truncated]' }
+                Write-Output $line
+                $pending[$stream] = $readers[$stream].ReadLineAsync()
+            }
+            if ($process.HasExited) {
+                if ($null -eq $exitedAt) { $exitedAt = $timer.Elapsed.TotalSeconds }
+                if ($timer.Elapsed.TotalSeconds - $exitedAt -gt 2) {
+                    Write-Output 'Verification incomplete: UI runner exited with inherited output handles still open; capture was bounded.'
+                    return
+                }
+            }
+            if ($timer.Elapsed.TotalSeconds -ge $TimeoutSeconds -or
+                $timer.Elapsed.TotalSeconds - $lastOutput -ge $IdleTimeoutSeconds) {
+                Write-Output "Verification incomplete: UI runner exceeded its ${TimeoutSeconds}s wall or ${IdleTimeoutSeconds}s no-output deadline; no result is manufactured."
+                return
+            }
+            Start-Sleep -Milliseconds 20
+        }
+        if (-not $process.WaitForExit(2000)) {
+            Write-Output 'Verification incomplete: UI runner closed output without terminating; no result is manufactured.'
+            return
+        }
+        $State.ExitCode = $process.ExitCode
+    } finally {
+        try {
+            if ($started -and -not $process.HasExited) {
+                $process.Kill($true)
+                if (-not $process.WaitForExit(10000)) { throw 'Could not terminate the owned timed-out UI runner tree.' }
+            }
+        } finally { $process.Dispose() }
+    }
+}
+
+function Get-IssueReplicateAndroidCrashDiagnostic {
+    param([Parameter(Mandatory)][string]$OutputDirectory)
+
+    if ($env:DEVICE_UDID -cnotmatch '^emulator-[0-9]+$') {
+        throw 'Android crash diagnostics require the explicitly owned emulator serial.'
+    }
+    $capture = Invoke-ProcessWithTimeout -FilePath 'adb' -TimeoutSeconds 20 `
+        -ArgumentList @('-s', $env:DEVICE_UDID, 'logcat', '-b', 'crash', '-d', '-v', 'threadtime', '-t', '500')
+    if ($capture.TimedOut -or $capture.OutputDrainTimedOut -or $capture.ExitCode -ne 0) {
+        throw 'The owned emulator crash buffer could not be captured within its deadline.'
+    }
+    $text = ($capture.Output -join "`n").Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+    if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 65536) {
+        throw 'The bounded Android crash buffer exceeds its diagnostic file limit.'
+    }
+    $blocks = @([regex]::Split($text, '(?m)(?=^.*\bDEBUG\s*:\s*\*{3}\s+\*{3})') |
+        Where-Object { $_ -cmatch '>>>\s*com\.microsoft\.maui\.uitests\s*<<<' })
+    if (-not $blocks.Count) { return @() }
+    $selected = $blocks -join "`n"
+    $path = Join-Path $OutputDirectory 'android-hostapp-crash.log'
+    $bytes = [Text.Encoding]::UTF8.GetBytes($selected)
+    [IO.File]::WriteAllBytes($path, $bytes)
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+    Write-Host "Unqualified HostApp crash buffer, emulator $env:DEVICE_UDID, SHA256 $hash; not an issue assertion:"
+    Write-Host $selected
+    return @($selected.Split("`n") | Where-Object {
+        $_ -match 'pid:|tid:|name:|Cmdline:|signal [0-9]+|backtrace:|#[0-9]{2}\s+pc'
+    } | Select-Object -First 12 | ForEach-Object { "Native crash diagnostic (unqualified): $_" })
+}
+
 function Invoke-IssueReplicateDiagnosticProcess {
     param(
         [Parameter(Mandatory)][string]$Code,

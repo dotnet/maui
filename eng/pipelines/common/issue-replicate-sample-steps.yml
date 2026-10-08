@@ -52,6 +52,7 @@ steps:
   - pwsh: |
       & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.ProvisionSample.ps1" `
         -RepoRoot "$(Pipeline.Workspace)/maui" `
+        -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
         -InstallDirectory "$(Agent.TempDirectory)/issue-sample-dotnet" `
         -Platform '${{ parameters.platform }}'
       if ($LASTEXITCODE -ne 0) { throw 'Public author sample workload preparation failed.' }

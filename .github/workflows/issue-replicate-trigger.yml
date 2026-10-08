@@ -36,6 +36,7 @@ jobs:
       comment: ${{ steps.gate.outputs.comment }}
       platform: ${{ steps.gate.outputs.platform }}
       branch: ${{ steps.gate.outputs.branch }}
+      source_url: ${{ steps.gate.outputs.source_url }}
       infrastructure_sha: ${{ steps.gate.outputs.infrastructure_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -104,6 +105,7 @@ jobs:
           "comment=$commentId" >> $env:GITHUB_OUTPUT
           "platform=$platform" >> $env:GITHUB_OUTPUT
           "branch=$($command.Branch)" >> $env:GITHUB_OUTPUT
+          "source_url=$($command.SourceUrl)" >> $env:GITHUB_OUTPUT
           "infrastructure_sha=$main" >> $env:GITHUB_OUTPUT
 
   dispatch:
@@ -124,6 +126,7 @@ jobs:
       COMMENT: ${{ needs.authorize.outputs.comment }}
       PLATFORM: ${{ needs.authorize.outputs.platform }}
       TARGET_REF: ${{ needs.authorize.outputs.branch }}
+      SOURCE_URL: ${{ needs.authorize.outputs.source_url }}
       TRUSTED_MAIN_SHA: ${{ needs.authorize.outputs.infrastructure_sha }}
     steps:
       - name: Check durable acknowledgement
@@ -238,11 +241,12 @@ jobs:
               "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs/${prior_id}?api-version=7.1" \
               -H "Authorization: Bearer ${token}")
             if printf '%s' "$prior" | jq -e --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
-               --arg platform "$PLATFORM" --arg target "$TARGET_REF" \
+               --arg platform "$PLATFORM" --arg target "$TARGET_REF" --arg source "$SOURCE_URL" \
                '(.templateParameters.IssueNumber // 0 | tonumber) == $issue and
                 (.templateParameters.CommentId // 0 | tonumber) == $comment and
                 .templateParameters.Platform == $platform and
-                .templateParameters.TargetRef == $target' >/dev/null; then
+                .templateParameters.TargetRef == $target and
+                (.templateParameters.SourceUrl // "") == $source' >/dev/null; then
               if ! printf '%s' "$prior" | jq -e --arg sha "$TRUSTED_MAIN_SHA" \
                 '.resources.repositories.self.refName == "refs/heads/main" and
                  .resources.repositories.self.version == $sha' >/dev/null; then
@@ -262,8 +266,8 @@ jobs:
             exit 0
           fi
           payload=$(jq -n --argjson issue "$ISSUE" --argjson comment "$COMMENT" \
-            --arg platform "$PLATFORM" --arg target "$TARGET_REF" --arg sha "$TRUSTED_MAIN_SHA" \
-            '{templateParameters:{IssueNumber:$issue,CommentId:$comment,Platform:$platform,TargetRef:$target},
+            --arg platform "$PLATFORM" --arg target "$TARGET_REF" --arg source "$SOURCE_URL" --arg sha "$TRUSTED_MAIN_SHA" \
+            '{templateParameters:{IssueNumber:$issue,CommentId:$comment,Platform:$platform,TargetRef:$target,SourceUrl:$source},
               resources:{repositories:{self:{refName:"refs/heads/main",version:$sha}}}}')
           response=$(curl --fail-with-body --silent --show-error --max-time 45 -X POST \
             "https://dev.azure.com/dnceng-public/public/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1" \
