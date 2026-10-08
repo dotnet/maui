@@ -130,6 +130,37 @@ on:
         retention-days: 1
 
 jobs:
+  detection:
+    pre-steps:
+      - name: Prepare bounded ripgrep dependency
+        shell: bash
+        run: |
+          timeout --signal=TERM --kill-after=15s 270s bash <<'RIPGREP_PREP'
+          set -euo pipefail
+          if command -v rg >/dev/null 2>&1; then
+            rg --version
+            exit 0
+          fi
+
+          echo "::notice::ripgrep is absent; starting bounded noninteractive apt preparation"
+          trap 'status=$?; echo "::error::bounded ripgrep preparation failed with exit ${status}"; exit "${status}"' ERR
+          timeout --signal=TERM --kill-after=15s 120s \
+            sudo -n env DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none apt-get \
+              -o DPkg::Lock::Timeout=60 \
+              -o Acquire::Retries=2 \
+              -o Acquire::http::Timeout=30 \
+              -o Acquire::https::Timeout=30 \
+              update -qq
+          timeout --signal=TERM --kill-after=15s 120s \
+            sudo -n env DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none apt-get \
+              -o DPkg::Lock::Timeout=60 \
+              -o Acquire::Retries=2 \
+              -o Acquire::http::Timeout=30 \
+              -o Acquire::https::Timeout=30 \
+              install -y -qq ripgrep
+          command -v rg >/dev/null 2>&1
+          rg --version
+          RIPGREP_PREP
   pre-activation:
     outputs:
       ci_fix_candidates: ${{ steps.ci_fix_context.outputs.candidates }}
@@ -760,6 +791,32 @@ inputs once at the start and let them shape the whole run:
     the outcome as `dry-run: would-<fix|help|deflake>`. Emit nothing.
   - Otherwise (`"false"` / empty): normal mode — emit PRs via `safe-outputs` as
     the steps describe.
+
+#### Step 0.1 — Authoritative empty-queue completion
+
+After reading `/tmp/gh-aw/agent/prefetch.json`, if `issue_number` is empty and
+the snapshot reports an authoritative, untruncated `ci-scan-net11` issue count
+of zero, zero matched issues, an empty `issues` array, and an empty `candidates`
+array:
+
+1. Do NOT assemble a shell validation pipeline and do NOT use `touch`, `jq`,
+     redirection, or an ad-hoc file writer for this outcome.
+2. Run this trusted helper as one standalone shell call:
+
+     ```powershell
+     pwsh .github/scripts/Complete-CiFixEmptyQueue.ps1 `
+       -CandidatesPath /tmp/gh-aw/agent/prefetch.json `
+       -ExpectedIssueLabel ci-scan-net11
+     ```
+
+     It revalidates the authoritative empty snapshot, persists the empty coverage
+     file and summary table, and registers exactly one expected `noop`.
+3. If and only if the helper succeeds, call the `safeoutputs` `noop` tool exactly
+     once with the reason `Authoritative ci-scan-net11 queue is empty; no issues or
+     watched CI-fix PRs require action.`, then stop.
+4. If the helper rejects the snapshot or fails, do not call `noop`. Register and
+     emit one `report_incomplete` under Hard Rule 11 with the helper error, then
+     stop.
 
 Note for operators: a fully write-free preview that also blocks GitHub API calls
 at the framework level is available without this input via `gh aw trial` (it
