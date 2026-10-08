@@ -508,11 +508,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
+		// True when the CV has no items AND no EmptyView is showing.
+		// Uses _isEmpty field (defaults to true, updated in CheckForEmptySource) rather than
+		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
 		// Exposed so the handler can avoid the expansive-size fallback without
 		// reaching into _emptyViewDisplayed or ItemsSource directly.
-		// Read ItemsSource directly because _isEmpty is updated by UIKit data-source
-		// callbacks, which can run after the pre-mount measurement.
-		internal bool IsEmpty => (ItemsSource is null || ItemsSource.ItemCount == 0) && !_emptyViewDisplayed;
+		internal bool IsEmpty
+		{
+			get
+			{
+				// On macOS 27, UIKit can defer data-source callbacks until the CollectionView
+				// has usable bounds. Therefore, _isEmpty may still have its initial value
+				// during the first measurement.
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(27, 0))
+				{
+					return (ItemsSource?.ItemCount ?? 0) == 0 && !_emptyViewDisplayed;
+				}
+
+				return _isEmpty && !_emptyViewDisplayed;
+			}
+		}
 
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{
