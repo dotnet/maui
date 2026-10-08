@@ -142,11 +142,13 @@ check against the v0.86.2 base before inference.
 Go 1.26.5 or later is required for this build-only workaround. The helper caches
 the pinned source and compiler under `${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw`,
 checks the source revision and cleanliness before every build, and removes
-publication/inference tokens from the compiler build's environment. Replace this
-helper with a fixed official compiler after verifying that it preserves the
-counter policy, explicit Copilot allowlist, disabled editing and scoped
-safe-output policy; do not regenerate with stock v0.86.2 or hand-edit the
-generated lock.
+publication/inference tokens from the compiler build's environment. The build
+sets `GOWORK=off`, so parent- or source-local `go.work` files cannot override the
+pinned module's dependency selection. This isolates Go workspace resolution,
+not every aspect of the build environment. Replace this helper with a fixed
+official compiler after verifying that it preserves the counter policy, explicit
+Copilot allowlist, disabled editing and scoped safe-output policy; do not
+regenerate with stock v0.86.2 or hand-edit the generated lock.
 
 Commit the source, compilation helper, trusted publisher and compiled lock file together:
 

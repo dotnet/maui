@@ -40,7 +40,7 @@ fi
     -u COPILOT_PAT_0 -u COPILOT_PAT_1 -u COPILOT_PAT_2 -u COPILOT_PAT_3 \
     -u COPILOT_PAT_4 -u COPILOT_PAT_5 -u COPILOT_PAT_6 -u COPILOT_PAT_7 \
     -u COPILOT_PAT_8 -u COPILOT_PAT_9 \
-    go build -p 4 \
+    GOWORK=off go build -p 4 \
     -ldflags "-X main.version=$compiler_version -X main.isRelease=true" \
     -o "$compiler_binary" ./cmd/gh-aw
 )
