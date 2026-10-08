@@ -22,7 +22,7 @@ $ErrorActionPreference = 'Stop'
 $marker = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "<!-- issue-replicate-result:github:$($GitHubRepository):$GitHubRunId -->"
 } else { "<!-- issue-replicate-result:$BuildId -->" }
-$summary = 'No test outcome is available; this does not rule out the issue.'
+$summary = 'No qualified test outcome was verified; this does not rule out the issue.'
 $reproducibility = 'Not assessed; no completed test evidence.'
 $testCoverage = 'Not verified.'
 $reproductionIcon = '&#x26AA;'
@@ -36,6 +36,7 @@ $reproLink = ''
 $patchText = ''
 $patchSha256 = ''
 $sampleDiagnostic = ''
+$verificationDiagnostic = ''
 $runNote = if ($PSCmdlet.ParameterSetName -eq 'GitHub') {
     "> Fork canary on ``$GitHubRepository``; this was not a production Azure pipeline run."
 } else { '' }
@@ -164,13 +165,20 @@ if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             }
         }
         $feedbackPath = Join-Path $ResultsDirectory 'feedback.txt'
-        if ($result.testExecuted -eq $true -and
-            ($result.assertionFailed -eq $true -or $result.observedAssertion -eq $true) -and
+        if (($result.status -eq 'inconclusive' -or
+                ($result.testExecuted -eq $true -and
+                    ($result.assertionFailed -eq $true -or $result.observedAssertion -eq $true))) -and
             (Test-Path -LiteralPath $feedbackPath -PathType Leaf)) {
             $feedback = Get-IssueReplicateFeedback -Path $feedbackPath
-            $assertionDiagnostic = (@([regex]::Matches($feedback,
-                        '(?m)^\s*(?:Expected:|But was:|Actual:)[^\r\n]*$')) |
-                    Select-Object -First 6 | ForEach-Object { $_.Value.Trim().Substring(0, [Math]::Min(800, $_.Value.Trim().Length)) }) -join "`n"
+            if ($result.testExecuted -eq $true -and
+                ($result.assertionFailed -eq $true -or $result.observedAssertion -eq $true)) {
+                $assertionDiagnostic = (@([regex]::Matches($feedback,
+                            '(?m)^\s*(?:Expected:|But was:|Actual:)[^\r\n]*$')) |
+                        Select-Object -First 6 | ForEach-Object { $_.Value.Trim().Substring(0, [Math]::Min(800, $_.Value.Trim().Length)) }) -join "`n"
+            }
+            if ($result.status -eq 'inconclusive' -and $result.observedAssertion -ne $true) {
+                $verificationDiagnostic = $feedback
+            }
         }
     }
     if ($CandidateDirectory) {
@@ -388,6 +396,11 @@ $body = @(
         "<details><summary>Build blocker</summary>`n`n" +
             (Format-PatchBlock -Text $sampleDiagnostic -Language text) + "`n`n</details>"
         }),
+    '',
+    $(if ($verificationDiagnostic) {
+        "<details><summary>Verification blocker</summary>`n`n" +
+            (Format-PatchBlock -Text $verificationDiagnostic -Language text) + "`n`n</details>"
+    }),
     '',
     $(if ($candidateSection) { '---' }),
     '',

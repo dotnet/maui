@@ -392,7 +392,14 @@ try {
             Write-Warning $diagnostic
             break
         }
-        if ($verdict.Status -eq 'Inconclusive') { break }
+        if ($verdict.Status -eq 'Inconclusive') {
+            $diagnostic = if ($verdict.Diagnostic) { $verdict.Diagnostic } else {
+                'The selected test result did not establish a pass or a verified issue assertion.'
+            }
+            $testLines.Add("Verification incomplete: $diagnostic")
+            Write-Warning "Verification incomplete: $diagnostic"
+            break
+        }
         $result.testExecuted = $true
         if ($Attempt -eq 2) { $result.confirmationTestExecuted = $true }
         if ($RecordVideo -and $candidate.kind -eq 'ui') {

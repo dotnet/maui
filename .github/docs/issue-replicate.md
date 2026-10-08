@@ -81,6 +81,11 @@ reported results, and changed tracked source still fail closed.
 Bounded build diagnostics retain up to three error lines, including native
 tool errors without a compiler code (such as `actool error :`), so a missing
 simulator runtime is not reduced to an empty build-blocker record.
+Bounded verification feedback retains ordinary exception messages, the generated
+test's source frame, and the verifier's incomplete-result diagnostic. Inconclusive
+reports without an observed assertion show that feedback in a closed
+**Verification blocker** section without qualifying a timeout or setup failure
+as an issue assertion.
 Tool-free drafting also runs when a completed, bounded author build record reports
 a failure. That does not bypass the author-build prerequisite for native verification:
 the unchanged sample's target and diagnostic remain in the report, and the draft
