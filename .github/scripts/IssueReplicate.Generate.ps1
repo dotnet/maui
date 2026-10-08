@@ -24,17 +24,49 @@ try {
         $_.Length -le 8000 -and $_.FullName -match '\.(cs|xaml|csproj)$' -and
         $_.FullName -notmatch '(^|/)(\.github|obj|bin|__MACOSX)/|(^|/)\._'
     })
-    $bootstrapTypes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-    foreach ($entry in @($eligible | Where-Object { $_.FullName -match '(^|/)(MauiProgram\.cs|App\.xaml\.cs)$' })) {
-        $reader = [IO.StreamReader]::new($entry.Open())
-        try {
-            $body = $reader.ReadToEnd()
-            if ($body.Length -gt 8000 -or $body -match '\x00') { continue }
-            foreach ($match in [regex]::Matches($body,
-                '(?:\bnew\s+|\btypeof\s*\(\s*)(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*(?<type>[A-Za-z_][A-Za-z0-9_]*)')) {
-                [void]$bootstrapTypes.Add($match.Groups['type'].Value)
+    $sourceBodies = [Collections.Generic.Dictionary[string, string]]::new([StringComparer]::Ordinal)
+    $readSource = {
+        param($entry)
+        if (-not $sourceBodies.ContainsKey($entry.FullName)) {
+            $reader = [IO.StreamReader]::new($entry.Open())
+            try {
+                $body = $reader.ReadToEnd()
+                $sourceBodies[$entry.FullName] = if ($body.Length -le 8000 -and $body -notmatch '\x00') { $body } else { $null }
+            } finally { $reader.Dispose() }
+        }
+        return $sourceBodies[$entry.FullName]
+    }
+    $referencedTypes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $visited = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $initializers = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $xamlPaths = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($entry in $eligible) {
+        if ($entry.FullName.EndsWith('.xaml', [StringComparison]::Ordinal)) { [void]$xamlPaths.Add($entry.FullName) }
+    }
+    $initializerPattern = '(?s)^\s*(?:using\s+[A-Za-z_][A-Za-z0-9_.]*\s*;\s*)*namespace\s+[A-Za-z_][A-Za-z0-9_.]*\s*(?:;\s*|\{\s*)(?:public\s+)?partial\s+class\s+(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*(?::\s*(?:global::)?[A-Za-z_][A-Za-z0-9_.]*\s*)?\{\s*public\s+\k<type>\s*\(\s*\)\s*\{\s*InitializeComponent\s*\(\s*\)\s*;\s*\}\s*\}\s*\}?\s*$'
+    for ($depth = 0; $depth -lt 8; $depth++) {
+        $pending = @($eligible | Where-Object {
+            $type = [IO.Path]::GetFileName($_.FullName) -replace '\.(xaml\.cs|xaml|cs)$', ''
+            -not $visited.Contains($_.FullName) -and
+                ($_.FullName -match '(^|/)(MauiProgram\.cs|App\.xaml\.cs)$' -or $referencedTypes.Contains($type))
+        })
+        if (-not $pending.Count) { break }
+        foreach ($entry in $pending) {
+            [void]$visited.Add($entry.FullName)
+            $body = & $readSource $entry
+            if ($null -eq $body) { continue }
+            foreach ($pattern in @(
+                '(?:\bnew\s+|\btypeof\s*\(\s*)(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*(?<type>[A-Za-z_][A-Za-z0-9_]*)',
+                '<[A-Za-z_][A-Za-z0-9_]*:(?<type>[A-Za-z_][A-Za-z0-9_]*)\b'
+            )) {
+                foreach ($match in [regex]::Matches($body, $pattern)) { [void]$referencedTypes.Add($match.Groups['type'].Value) }
             }
-        } finally { $reader.Dispose() }
+            if ($entry.FullName.EndsWith('.xaml.cs', [StringComparison]::Ordinal) -and
+                $xamlPaths.Contains($entry.FullName.Substring(0, $entry.FullName.Length - 3)) -and
+                $body -match $initializerPattern) {
+                [void]$initializers.Add($entry.FullName)
+            }
+        }
     }
     $entries = @($eligible | Sort-Object -Property @{
         Expression = {
@@ -44,7 +76,7 @@ try {
             if ($name -match '\.csproj$') { return 0 }
             if ($name -match '(^|/)(MauiProgram\.cs|App\.xaml\.cs)$') { return 1 }
             $type = [IO.Path]::GetFileName($name) -replace '\.(xaml\.cs|xaml|cs)$', ''
-            if ($bootstrapTypes.Contains($type)) { return 2 }
+            if ($referencedTypes.Contains($type) -and -not $initializers.Contains($name)) { return 2 }
             if ($name -match '(?i)(renderer|handler|behavior|effect)[^/]*\.cs$') { return 3 }
             if ($name -notmatch '(?i)(^|/)(Platforms?|Resources)/') { return 4 }
             if ($name -match '(?i)(^|/)Platforms?/') { return 5 }
@@ -53,12 +85,9 @@ try {
     }, FullName)
     foreach ($entry in $entries) {
         if ($snippets.Count -ge 8) { break }
-        $reader = [System.IO.StreamReader]::new($entry.Open())
-        try {
-            $body = $reader.ReadToEnd()
-            if ($body.Length -gt 8000 -or $body -match '\x00') { continue }
-            $snippets.Add("FILE $($entry.FullName)`n$body")
-        } finally { $reader.Dispose() }
+        $body = & $readSource $entry
+        if ($null -eq $body) { continue }
+        $snippets.Add("FILE $($entry.FullName)`n$body")
     }
 } finally { $archive.Dispose() }
 if ($snippets.Count -eq 0) { throw 'The linked repro contains no bounded C#, XAML, or project files.' }

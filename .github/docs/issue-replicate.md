@@ -126,9 +126,13 @@ the strict cross-run identity comparison are not normalized or weakened.
 Both drafting attempts import the same bounded author-build record, including
 its validated target framework, outcome and diagnostic in the GPT prompt.
 The unchanged eight-file, 8,000-byte/character-per-file source budget prioritizes project
-declarations, app bootstrap, files named by its constructed/registered types and
+declarations, app bootstrap, files named by its reachable constructed/registered types and
 custom renderer/handler implementations over archive order, unrelated platforms
-and resources. Bootstrap references are read as bounded source text, never executed.
+and resources. Up to eight traversal levels follow literal C# construction/registration
+and prefixed XAML element references, including nested navigation pages. A paired
+XAML code-behind containing only its constructor's `InitializeComponent()` call
+has lower priority than the actual page markup and interaction code.
+References are read as bounded source text, never executed or parsed as live XAML.
 A custom native registration must remain
 part of the candidate's actual execution path, not be replaced with a default
 handler or page-level styling. Missing native binding remains a prerequisite
