@@ -77,6 +77,9 @@ On iOS, the isolated SDK's actual native pack selects its matching installed
 Xcode and exact simulator runtime independently from the framework verifier's
 toolchain. Missing matching tools block the author build; a newer runtime or
 different framework is not silently substituted.
+Author provisioning selects that Xcode and clears the command cache before the
+first CoreSimulator query. Runtime inventory has a two-minute cold-start
+deadline; failures retain bounded output plus exit/timeout/capture status.
 
 The sample is *built*, not driven through the reported interaction. A generated
 unit/XAML/UI test runs against the pinned MAUI commit in a separate credential-free
@@ -97,6 +100,10 @@ reported results, and changed tracked source still fail closed.
 Bounded build diagnostics retain up to three error lines, including native
 tool errors without a compiler code (such as `actool error :`), so a missing
 simulator runtime is not reduced to an empty build-blocker record.
+Author build output is drained but forwarding/storage stops at 3,000 lines or
+2 MiB, with an 8,192-character per-line bound and an explicit truncation warning.
+The first three bounded error lines are retained independently of that log
+budget, so late compiler diagnostics still reach the author-build record.
 Bounded verification feedback retains ordinary exception messages, the generated
 test's source frame, and the verifier's incomplete-result diagnostic. Inconclusive
 reports without an observed assertion show that feedback in a closed
