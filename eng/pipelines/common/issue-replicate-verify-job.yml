@@ -112,6 +112,16 @@ jobs:
         inputs:
           version: "24.x"
         displayName: 'Install Node.js for Appium'
+      - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+            $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+              ConvertFrom-Json -Depth 6
+            if ($candidate.kind -cne 'ui') { exit 0 }
+            . "$(Build.SourcesDirectory)/.github/scripts/IssueReplicate.Core.ps1"
+            Initialize-IssueReplicateIOSRuntime -RepoRoot "$(Pipeline.Workspace)/maui"
+          displayName: 'Reuse or provision the exact unique pinned iOS runtime'
+          timeoutInMinutes: 30
       - pwsh: |
           $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
             ConvertFrom-Json -Depth 6

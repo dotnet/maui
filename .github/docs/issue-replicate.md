@@ -96,6 +96,12 @@ different framework is not silently substituted.
 Author provisioning selects that Xcode and clears the command cache before the
 first CoreSimulator query. Runtime inventory has a two-minute cold-start
 deadline; failures retain bounded output plus exit/timeout/capture status.
+Author and framework provisioning reuse a uniquely available exact runtime
+instead of downloading another build of the same version. Missing runtimes may
+be installed once, followed by at most three minutes of fresh registration
+checks. Bounded inventory summaries retain the exact match count, build,
+availability and architectures; multiple exact available matches are an
+explicit blocker, not a reason to download or select an arbitrary copy.
 
 The sample is *built*, not driven through the reported interaction. A generated
 unit/XAML/UI test runs against the pinned MAUI commit in a separate credential-free

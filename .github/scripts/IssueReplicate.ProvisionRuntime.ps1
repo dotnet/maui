@@ -28,31 +28,6 @@ if ($env:GITHUB_ENV) {
 elseif ($env:SYSTEM_COLLECTIONURI -cmatch '^https://dev\.azure\.com/dnceng-public/') {
     Write-Host "##vso[task.setvariable variable=DEVELOPER_DIR]$developer"
 }
+Initialize-IssueReplicateIOSRuntime -RepoRoot $RepoRoot -SdkVersion $SdkVersion
 $runtimeId = "com.apple.CoreSimulator.SimRuntime.iOS-$($SdkVersion.Replace('.', '-'))"
-function Test-InstalledRuntime {
-    $inventory = Invoke-ProcessWithTimeout -FilePath 'xcrun' -TimeoutSeconds 120 `
-        -ArgumentList @('simctl', 'list', 'runtimes', 'available', '--json')
-    if ($inventory.TimedOut -or $inventory.OutputDrainTimedOut -or $inventory.ExitCode -ne 0) {
-        foreach ($row in @($inventory.Output | Select-Object -Last 10)) {
-            $line = $row.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
-            Write-Warning ($line.Substring(0, [Math]::Min(1024, $line.Length)))
-        }
-        throw "Could not inspect the hosted iOS runtime inventory within its two-minute startup deadline: exit=$($inventory.ExitCode), timeout=$($inventory.TimedOut), drainTimeout=$($inventory.OutputDrainTimedOut)."
-    }
-    $record = ($inventory.Output -join "`n") | ConvertFrom-Json
-    return @($record.runtimes | Where-Object {
-            $_.identifier -ceq $runtimeId -and $_.version -ceq $SdkVersion -and $_.isAvailable -eq $true
-        }).Count -eq 1
-}
-if (-not (Test-InstalledRuntime)) {
-    $download = Invoke-ProcessWithTimeout -FilePath 'xcodebuild' -TimeoutSeconds 1200 `
-        -ArgumentList @('-downloadPlatform', 'iOS', '-buildVersion', $SdkVersion, '-architectureVariant', 'arm64')
-    foreach ($row in @($download.Output | Select-Object -Last 60)) {
-        Write-Host ($row.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', '')
-    }
-    if ($download.TimedOut -or $download.OutputDrainTimedOut -or $download.ExitCode -ne 0) {
-        throw "Could not provision the exact author-build iOS $SdkVersion runtime within its twenty-minute deadline."
-    }
-}
-if (-not (Test-InstalledRuntime)) { throw "The author-build iOS $SdkVersion runtime is unavailable; refusing a substitution." }
 Write-Host "Author-build toolchain: Xcode at $developer; exact available runtime $runtimeId."
