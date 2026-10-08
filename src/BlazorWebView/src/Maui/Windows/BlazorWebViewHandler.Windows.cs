@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WebView2Control platformView)
 		{
-			DisconnectRootComponents();
-
 			if (_webviewManager != null)
 			{
 				// Start the disposal...

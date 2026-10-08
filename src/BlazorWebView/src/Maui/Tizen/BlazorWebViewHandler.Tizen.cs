@@ -77,8 +77,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(NWebView platformView)
 		{
-			DisconnectRootComponents();
-
 			platformView.PageLoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(platformView);
 			s_webviewHandlerTable.Remove(GetHashCode().ToString());
