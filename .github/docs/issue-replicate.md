@@ -343,14 +343,17 @@ successful session recreation, the controller restarts recording on that new
 session before the body completes. These checks are not an isolation boundary.
 Diagnostic snapshots additionally retain bounded `SearchBar` and
 `GoToTestButton` native attributes from the already-bounded source response,
-before truncating the raw tree, including a source-only query while the recording
-acknowledgement still holds the body. These explicitly unqualified observations
-expose stale gallery input without expanding the tree budget or changing navigation.
+before truncating the raw tree. An initial source-only query runs after releasing
+the recording acknowledgement, so diagnostics do not extend its 25-second body
+gate. These unqualified observations expose stale gallery input without expanding
+the tree budget or changing navigation; they do not prove pre-interaction state.
 Generation rejection keeps the guard intact and logs the exact matched lifecycle
 token plus a bounded, SHA256-labelled, base64 proposal diagnostic. Rejected source
 is not a candidate envelope and is never admitted to native execution or publication.
 UI drafting uses the required `ShardedTestCategory` attribute for CollectionView,
 preserving its umbrella and CI-shard registration rather than suppressing MAUI0003.
+For iOS-specific configuration imports, drafting qualifies the actual Controls
+navigation types to avoid the identically named platform-configuration classes.
 The recording is visual context for the generated candidate, not proof of the
 author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
 do not record a UI video. Recorder or upload failures remain explicit in the

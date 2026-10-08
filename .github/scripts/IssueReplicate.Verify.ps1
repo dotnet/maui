@@ -303,10 +303,6 @@ try {
                             $result.recording.diagnostic = ''
                             $acknowledgement = 'started'
                             Write-Host 'Native recording started before test setup; acknowledging the blocked test body.'
-                            if ($RetainNativeDiagnostics) {
-                                Write-IssueReplicateNativeSnapshot -SessionId $recordingSession -Phase START `
-                                    -Observations $testLines -GalleryOnly
-                            }
                         }
                         catch {
                             $result.recording.status = 'failed'
@@ -318,6 +314,10 @@ try {
                         }
                         finally {
                             [IO.File]::WriteAllText($recordingAcknowledgement, "${operation}:$acknowledgement")
+                        }
+                        if ($RetainNativeDiagnostics -and $acknowledgement -ceq 'started') {
+                            Write-IssueReplicateNativeSnapshot -SessionId $recordingSession -Phase START `
+                                -Observations $testLines -GalleryOnly
                         }
                     }
                     if ($RecordVideo -and $line -match '^>>>>> .+ (?<method>\S+) Start$') {
