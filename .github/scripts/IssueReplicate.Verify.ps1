@@ -303,6 +303,10 @@ try {
                             $result.recording.diagnostic = ''
                             $acknowledgement = 'started'
                             Write-Host 'Native recording started before test setup; acknowledging the blocked test body.'
+                            if ($RetainNativeDiagnostics) {
+                                Write-IssueReplicateNativeSnapshot -SessionId $recordingSession -Phase START `
+                                    -Observations $testLines -GalleryOnly
+                            }
                         }
                         catch {
                             $result.recording.status = 'failed'
@@ -370,7 +374,8 @@ try {
                                 catch {
                                     Write-Warning "Unqualified diagnostic footage unavailable: $($_.Exception.Message)"
                                 }
-                                Write-IssueReplicateNativeSnapshot -SessionId $recordingSession -Phase STOP
+                                Write-IssueReplicateNativeSnapshot -SessionId $recordingSession -Phase STOP `
+                                    -Observations $testLines
                             }
                             if (-not $finishedWithinWindow) {
                                 throw 'The named test did not finish inside its acknowledged 30-second recording window.'

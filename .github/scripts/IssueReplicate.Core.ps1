@@ -729,7 +729,7 @@ function Get-IssueReplicateFeedback {
         $Lines = @(Get-Content -LiteralPath $file.FullName)
     }
     $diagnostics = @($Lines | Where-Object {
-        $_ -match '(?i)\berror(?:\s+[A-Z]+[0-9]+)?\s*:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|Native recording failed:|Native crash diagnostic|Verification incomplete:|(?:[\w+`]+\.)*[\w+`]+Exception\s*:|at\s+(?:[\w+`]+\.)*(?:Issue|Maui)[1-9][0-9]*\.|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
+        $_ -match '(?i)\berror(?:\s+[A-Z]+[0-9]+)?\s*:|^\s*(Failed\b|Error Message:|Stack Trace:|Expected:|But was:|Native recording failed:|Native crash diagnostic|ISSUE_REPLICATE_GALLERY_DIAGNOSTIC=|Verification incomplete:|(?:[\w+`]+\.)*[\w+`]+Exception\s*:|at\s+(?:[\w+`]+\.)*(?:Issue|Maui)[1-9][0-9]*\.|(?:OneTime)?(?:SetUp|TearDown)\s*:)|AssertionException'
     } | Select-Object -Last 25)
     $content = if ($diagnostics.Count -gt 0) { $diagnostics -join "`n" }
         else { ($Lines | Select-Object -Last 25) -join "`n" }

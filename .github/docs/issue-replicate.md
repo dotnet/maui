@@ -341,6 +341,11 @@ attributes are unsupported as well. Put issue-specific interaction
 in the one test body instead. If the framework's own setup recovery reports a
 successful session recreation, the controller restarts recording on that new
 session before the body completes. These checks are not an isolation boundary.
+Diagnostic snapshots additionally retain bounded `SearchBar` and
+`GoToTestButton` native attributes from the already-bounded source response,
+before truncating the raw tree, including a source-only query while the recording
+acknowledgement still holds the body. These explicitly unqualified observations
+expose stale gallery input without expanding the tree budget or changing navigation.
 Generation rejection keeps the guard intact and logs the exact matched lifecycle
 token plus a bounded, SHA256-labelled, base64 proposal diagnostic. Rejected source
 is not a candidate envelope and is never admitted to native execution or publication.

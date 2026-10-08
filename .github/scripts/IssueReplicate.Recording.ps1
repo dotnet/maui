@@ -120,10 +120,13 @@ function Write-IssueReplicateDiagnosticBytes {
 function Write-IssueReplicateNativeSnapshot {
     param(
         [Parameter(Mandatory)][string]$SessionId,
-        [Parameter(Mandatory)][ValidateSet('START', 'STOP')][string]$Phase
+        [Parameter(Mandatory)][ValidateSet('START', 'STOP')][string]$Phase,
+        [Collections.Generic.List[string]]$Observations,
+        [switch]$GalleryOnly
     )
 
-    foreach ($kind in @('TREE', 'SCREENSHOT')) {
+    $kinds = if ($GalleryOnly) { @('TREE') } else { @('TREE', 'SCREENSHOT') }
+    foreach ($kind in $kinds) {
         try {
             $endpoint = if ($kind -ceq 'TREE') { 'source' } else { 'screenshot' }
             $value = Invoke-IssueReplicateRecordingRequest -Method GET -Path "session/$SessionId/$endpoint" `
@@ -132,6 +135,17 @@ function Write-IssueReplicateNativeSnapshot {
                 throw "Appium returned no diagnostic $kind."
             }
             if ($kind -ceq 'TREE') {
+                try {
+                    foreach ($observation in @(Get-IssueReplicateGalleryObservation -Source $value -Phase $Phase)) {
+                        if ($null -ne $Observations) { $Observations.Add($observation) }
+                        Write-Host $observation
+                    }
+                }
+                catch {
+                    $message = $_.Exception.Message -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
+                    Write-Warning "Unqualified gallery diagnostic unavailable: $($message.Substring(0, [Math]::Min(900, $message.Length)))"
+                }
+                if ($GalleryOnly) { continue }
                 $length = [Math]::Min(8192, $value.Length)
                 if ([char]::IsHighSurrogate($value[$length - 1])) { $length-- }
                 $bytes = [Text.Encoding]::UTF8.GetBytes($value.Substring(0, $length))
@@ -151,6 +165,60 @@ function Write-IssueReplicateNativeSnapshot {
             $message = $_.Exception.Message -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
             Write-Warning "Unqualified native $kind diagnostic unavailable: $($message.Substring(0, [Math]::Min(900, $message.Length)))"
         }
+    }
+}
+
+function Get-IssueReplicateGalleryObservation {
+    param(
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][ValidateSet('START', 'STOP')][string]$Phase
+    )
+
+    if ($Source.Length -gt 192KB) { throw 'The native gallery source exceeds its existing diagnostic bound.' }
+    $settings = [Xml.XmlReaderSettings]::new()
+    $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+    $settings.XmlResolver = $null
+    $settings.MaxCharactersInDocument = 192KB
+    $text = [IO.StringReader]::new($Source)
+    $reader = [Xml.XmlReader]::Create($text, $settings)
+    try {
+        $document = [Xml.XmlDocument]::new()
+        $document.XmlResolver = $null
+        $document.Load($reader)
+        $hash = [Convert]::ToHexString(
+            [Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($Source))).ToLowerInvariant()
+        foreach ($id in @('SearchBar', 'GoToTestButton')) {
+            $nodes = @($document.SelectNodes(
+                    "//*[@resource-id='com.microsoft.maui.uitests:id/$id' or @content-desc='$id' or @name='$id']"))
+            foreach ($node in @($nodes | Select-Object -First 2)) {
+                $attributes = [ordered]@{}
+                $truncated = [Collections.Generic.List[string]]::new()
+                foreach ($name in @('class', 'type', 'text', 'name', 'label', 'value', 'bounds',
+                        'x', 'y', 'width', 'height', 'enabled', 'displayed', 'visible')) {
+                    if (-not $node.HasAttribute($name)) { continue }
+                    $value = $node.GetAttribute($name)
+                    if ($value.Length -gt 512) {
+                        $length = if ([char]::IsHighSurrogate($value[511])) { 511 } else { 512 }
+                        $value = $value.Substring(0, $length)
+                        $truncated.Add($name)
+                    }
+                    $attributes[$name] = $value
+                }
+                $record = [ordered]@{
+                    qualified = $false; phase = $Phase; automationId = $id; matchingNodes = $nodes.Count
+                    sourceSha256 = $hash; truncatedAttributes = @($truncated); attributes = $attributes
+                } | ConvertTo-Json -Depth 5 -Compress
+                $record = $record -replace '##vso\[[^]]*\]', ''
+                if ([Text.Encoding]::UTF8.GetByteCount($record) -gt 4096) {
+                    throw 'The native gallery observation exceeds its diagnostic line bound.'
+                }
+                "ISSUE_REPLICATE_GALLERY_DIAGNOSTIC=$record"
+            }
+        }
+    }
+    finally {
+        $reader.Dispose()
+        $text.Dispose()
     }
 }
 
