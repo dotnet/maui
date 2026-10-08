@@ -19,6 +19,11 @@ public class ImageButtonViewModel : INotifyPropertyChanged
 	private bool _isVisible = true;
 	private Shadow _shadow = null;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	private Color _backgroundColor;
+	private double _imageButtonOpacity = 1.0;
+	private bool _inputTransparent = false;
+	private double _rotation = 0;
+	private double _scale = 1.0;
 	public ICommand ImageCommand { get; }
 	private int _clickTotal;
 	private int _pressedTotal;
@@ -93,6 +98,36 @@ public class ImageButtonViewModel : INotifyPropertyChanged
 	{
 		get => _flowDirection;
 		set { if (_flowDirection != value) { _flowDirection = value; OnPropertyChanged(); } }
+	}
+
+	public Color BackgroundColor
+	{
+		get => _backgroundColor;
+		set { if (_backgroundColor != value) { _backgroundColor = value; OnPropertyChanged(); } }
+	}
+
+	public double ImageButtonOpacity
+	{
+		get => _imageButtonOpacity;
+		set { if (_imageButtonOpacity != value) { _imageButtonOpacity = value; OnPropertyChanged(); } }
+	}
+
+	public bool InputTransparent
+	{
+		get => _inputTransparent;
+		set { if (_inputTransparent != value) { _inputTransparent = value; OnPropertyChanged(); } }
+	}
+
+	public double ImageButtonRotation
+	{
+		get => _rotation;
+		set { if (_rotation != value) { _rotation = value; OnPropertyChanged(); } }
+	}
+
+	public double ImageButtonScale
+	{
+		get => _scale;
+		set { if (_scale != value) { _scale = value; OnPropertyChanged(); } }
 	}
 
 	public string CommandResult

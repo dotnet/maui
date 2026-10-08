@@ -1,17 +1,169 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Android.Views;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using ALinearLayoutCompat = AndroidX.AppCompat.Widget.LinearLayoutCompat;
+using ATextView = Android.Widget.TextView;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
+		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
+		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
+		[Fact(DisplayName = "SwipeItem Command Executes Via Accessibility ACTION_CLICK")]
+		public async Task SwipeItemCommandExecutesViaAccessibilityActionClick()
+		{
+			SetupBuilder();
+
+			bool commandExecuted = false;
+			ICommand command = new Command(() => commandExecuted = true);
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.Red,
+				Command = command
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds the action-item container as a child dynamically when opened.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeItemView = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItemView);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					// A real accessibility service (TalkBack) only dispatches ACTION_CLICK to nodes
+					// that actually advertise the action. Assert discoverability, not just dispatch,
+					// so this test would fail if the node never exposed ACTION_CLICK in the first place.
+					var nodeInfo = AccessibilityNodeInfoCompat.Wrap(swipeItemView.CreateAccessibilityNodeInfo());
+					Assert.Contains(nodeInfo.ActionList, action => action.Id == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id);
+
+					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
+#pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
+					ViewCompat.PerformAccessibilityAction(swipeItemView, actionClickId, null);
+#pragma warning restore CS0618
+				});
+
+				await AssertEventually(() => commandExecuted);
+				Assert.True(commandExecuted);
+			});
+		}
+
+		// Issue #23478 (SwipeItemView variant): SwipeItemView's platform view is a plain ContentViewGroup,
+		// which — unlike SwipeItem's AppCompatButton — is not inherently clickable. This verifies the
+		// accessibility action still reaches the bound Command for custom-content swipe items.
+		[Fact(DisplayName = "SwipeItemView Command Executes Via Accessibility ACTION_CLICK")]
+		public async Task SwipeItemViewCommandExecutesViaAccessibilityActionClick()
+		{
+			SetupBuilder();
+
+			bool commandExecuted = false;
+			ICommand command = new Command(() => commandExecuted = true);
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItemContent = new Grid
+			{
+				BackgroundColor = Colors.Red,
+				WidthRequest = 60,
+			};
+
+			var swipeItemView = new SwipeItemView
+			{
+				Content = swipeItemContent,
+				Command = command
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItemView
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds the action-item container as a child dynamically when opened.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeItemPlatformView = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItemPlatformView);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var nodeInfo = AccessibilityNodeInfoCompat.Wrap(swipeItemPlatformView.CreateAccessibilityNodeInfo());
+					Assert.Contains(nodeInfo.ActionList, action => action.Id == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id);
+
+					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
+#pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
+					ViewCompat.PerformAccessibilityAction(swipeItemPlatformView, actionClickId, null);
+#pragma warning restore CS0618
+				});
+
+				await AssertEventually(() => commandExecuted);
+				Assert.True(commandExecuted);
+			});
+		}
+
 		[Fact(DisplayName = "SwipeItem Size Initializes Correctly")]
 		public async Task SwipeItemSizeInitializesCorrectly()
 		{
@@ -225,6 +377,96 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var isEnabled = nativeView.Enabled;
 				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(5)]
+		[InlineData(20)]
+		[Description("SwipeItem icon and text should remain centered together when wrapping a CollectionView")]
+		public async Task SwipeItemIconAndTextRemainAlignedWithCollectionView(int itemCount)
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = Enumerable.Range(1, itemCount).Select(index => $"{index} record").ToArray(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { Padding = 10 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				Text = "Back",
+				BackgroundColor = Colors.White,
+				IconImageSource = new FileImageSource { File = "red.png" }
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				LeftItems = swipeItems,
+				Content = collectionView
+			};
+
+			var root = new Grid
+			{
+				HeightRequest = 500,
+				WidthRequest = 300,
+				RowDefinitions =
+				{
+					new RowDefinition { Height = 40 },
+					new RowDefinition { Height = GridLength.Star }
+				}
+			};
+			root.Add(new Label { Text = "Records" });
+			root.Add(swipeView, row: 1);
+
+			await AttachAndRun(root, async (_) =>
+			{
+				var platformView = Assert.IsType<SwipeViewHandler>(swipeView.Handler).PlatformView;
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				await AssertEventually(() =>
+					Enumerable.Range(0, platformView.ChildCount)
+						.Select(platformView.GetChildAt)
+						.OfType<ALinearLayoutCompat>()
+						.Any(view => view.ChildCount > 0));
+
+				var actionView = Assert.Single(
+					Enumerable.Range(0, platformView.ChildCount)
+						.Select(platformView.GetChildAt)
+						.OfType<ALinearLayoutCompat>()
+						.Where(view => view.ChildCount > 0));
+				var swipeButton = Assert.IsAssignableFrom<ATextView>(actionView.GetChildAt(0));
+
+				await AssertEventually(() =>
+					swipeButton.Height > 0 &&
+					swipeButton.Baseline > 0 &&
+					swipeButton.GetCompoundDrawables()[1] is not null);
+
+				var icon = swipeButton.GetCompoundDrawables()[1];
+				var fontMetrics = new global::Android.Graphics.Paint.FontMetricsInt();
+				swipeButton.Paint.GetFontMetricsInt(fontMetrics);
+				var iconTop = swipeButton.PaddingTop;
+				var iconBottom = iconTop + icon.Bounds.Height();
+				var textTop = swipeButton.Baseline + fontMetrics.Top;
+				var density = swipeButton.Context.GetDisplayDensity();
+				var tolerance = (int)Math.Ceiling(density);
+				var maxAlignmentGap = Math.Max(
+					swipeButton.CompoundDrawablePadding + tolerance,
+					swipeButton.LineHeight / 2);
+
+				Assert.InRange(textTop - iconBottom, -tolerance, maxAlignmentGap);
 			});
 		}
 	}

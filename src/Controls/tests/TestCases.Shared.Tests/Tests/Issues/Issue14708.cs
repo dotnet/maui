@@ -33,7 +33,11 @@ public class Issue14708 : _IssuesUITest
 		// a full-screen black overlay replaces the inline keyboard and covers all
 		// page content. VerifyScreenshot() catches this because the visual output
 		// is dramatically different from the fixed (inline-keyboard) baseline.
-		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+#if ANDROID
+		VerifyScreenshot(cropLeft: 125, cropBottom:600, retryTimeout: TimeSpan.FromSeconds(2));
+#else
+		VerifyScreenshot(cropBottom:520, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 	}
 }
 #endif

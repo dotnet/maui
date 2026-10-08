@@ -14,6 +14,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
 	public abstract class MauiTestApplicationDelegate : UIApplicationDelegate
 	{
+		readonly TaskCompletionSource _windowReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 		// TODO: https://github.com/xamarin/xamarin-macios/issues/12555
 		readonly static string[] EnvVarNames = {
 			"NUNIT_AUTOSTART",
@@ -80,7 +82,12 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override UIWindow? Window { get; set; }
 
+		internal Task WindowReady => _windowReady.Task;
+
 		protected abstract MauiApp CreateMauiApp();
+
+		internal void SetWindowReady() =>
+			_windowReady.TrySetResult();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
@@ -112,19 +119,27 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
-			var tcs = new TaskCompletionSource();
-
-			Window = new UIWindow(UIScreen.MainScreen.Bounds)
+			var window = new UIWindow(UIScreen.MainScreen.Bounds)
 			{
-				RootViewController = new MauiTestViewController(tcs.Task)
+				RootViewController = new MauiTestViewController(WindowReady)
 			};
 
-			Window.MakeKeyAndVisible();
+			Window = window;
 
-			tcs.TrySetResult();
+#if MACCATALYST
+			if (HasSceneManifest())
+				return true;
+#endif
+
+			window.MakeKeyAndVisible();
+			SetWindowReady();
 
 			return true;
 		}
 
+#if MACCATALYST
+		static bool HasSceneManifest() =>
+			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString("UIApplicationSceneManifest")) == true;
+#endif
 	}
 }

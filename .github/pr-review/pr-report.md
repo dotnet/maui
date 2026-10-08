@@ -12,8 +12,9 @@
 
 - Phases 1-2 (Pre-Flight, Try-Fix) must be complete before starting
 - Gate result is available from the prompt (ran separately before this skill)
-- **Read `pre-flight/content.md`** to get the code-review summary (verdict, confidence, error/warning counts)
-- Optionally read `pre-flight/code-review.md` for full findings if needed for the recommendation
+- **Read `pre-flight/content.md`** for issue/PR context
+- **Read `expert-pr-eval/content.md`** for the code-review verdict, confidence, and findings
+- Read `try-fix/content.md` and the individual candidate outputs for the comparison
 
 ---
 
@@ -25,11 +26,11 @@
    |----------|-----------|----------------|
    | 1 | Code review verdict is `NEEDS_CHANGES` (any ❌ errors) | `⚠️ REQUEST CHANGES` — code review found errors |
    | 2 | Gate failed (tests fail with fix) | `⚠️ REQUEST CHANGES` — fix doesn't work |
-   | 3 | Alternative fix found via Try-Fix that is simpler/better | `⚠️ REQUEST CHANGES` — suggest alternative |
+   | 3 | `pr-plus-reviewer` or a `try-fix-*` candidate wins | `⚠️ REQUEST CHANGES` — submitted PR needs the winning changes |
    | 4 | Code review verdict is `NEEDS_DISCUSSION` | `⚠️ REQUEST CHANGES` — include code review concerns |
-   | 5 | PR's fix selected AND Gate passed AND code review LGTM or SKIPPED | `✅ APPROVE` |
+   | 5 | Raw `pr` candidate wins AND Gate permits approval AND code review is LGTM or SKIPPED | `✅ APPROVE` |
 
-   **🚨 Hard gate:** If the code review (from Pre-Flight) has verdict `NEEDS_CHANGES`, the final recommendation MUST be `REQUEST CHANGES` regardless of Gate or Try-Fix results. Code-review ❌ Errors cannot be overridden by passing tests alone.
+   **🚨 Hard gate:** If the expert code review has verdict `NEEDS_CHANGES`, the final recommendation MUST be `REQUEST CHANGES` regardless of Gate or Try-Fix results. Code-review ❌ Errors cannot be overridden by passing tests alone.
 
    **Code review SKIPPED:** If the code-review sub-agent failed or timed out (verdict = `SKIPPED`), the hard gate does NOT apply. Proceed as if code review was not available — base the recommendation on Gate and Try-Fix results only. Note in the report that code review was unavailable.
 
@@ -47,7 +48,7 @@
 mkdir -p CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/report
 ```
 
-Write `content.md`:
+Write `content.md`. Its first non-empty line must be exactly the canonical heading shown below:
 ```markdown
 ## {✅/⚠️} Final Recommendation: {APPROVE/REQUEST CHANGES}
 
@@ -60,8 +61,8 @@ Write `content.md`:
 | Try-Fix | ✅ COMPLETE | {N} attempts, {M} passing |
 | Report | ✅ COMPLETE | |
 
-### Code Review Impact on Try-Fix
-{Brief description of how code-review findings influenced try-fix exploration. Did any model specifically address a code review ❌ Error? Did failure-mode probes reveal issues that guided fix approaches?}
+### Code Review and Candidate Comparison
+{Briefly identify which candidates address the expert review findings and whether any candidate leaves a ❌ Error unresolved. Do not imply the expert pass influenced earlier try-fix attempts; it runs after those attempts.}
 
 ### Summary
 {Brief summary of the review}
@@ -96,6 +97,7 @@ Standard markers in content.md: `✅ PASSED`, `❌ FAILED`, `Selected Fix: PR`, 
 
 ## Common Mistakes
 
+- ❌ Replacing the required first line with `## Result`, `**Winner:**`, or equivalent prose
 - ❌ Rushing the report — take time for clear justification
 - ❌ Running git commands — user handles commit/push
 - ❌ Posting comments — this phase only produces output files, never posts to GitHub

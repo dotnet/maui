@@ -13,7 +13,7 @@ public class NestedCollectionView : _IssuesUITest
 	public override string Issue => "[iOS] Crash when creating a CollectionView inside a CollectionView";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void NestedCollectionViewsShouldNotCrash()
 	{
 		// If this page loaded and didn't crash, we're good.

@@ -22,7 +22,7 @@
     },
     "precedence": "9000",
     "identity": "MauiAspire.ServiceDefaults.CSharp.8.0",
-    "thirdPartyNotices": "https://aka.ms/dotnet/aspire/third-party-notices",
+    "thirdPartyNotices": "https://github.com/microsoft/aspire/blob/main/THIRD-PARTY-NOTICES.TXT",
     "groupIdentity": "MauiAspire.ServiceDefaults",
     "symbols": {
       "Framework": {

@@ -218,7 +218,7 @@ type: capability
 defaults:
   runs: 3
   model: gpt-5.6-sol
-  judge_model: claude-opus-5
+  judge_model: gpt-5.3-codex
   executor: copilot-sdk
 stimuli:
   - name: <mode>-floor
@@ -242,7 +242,7 @@ scoring:
 Then validate every emitted file:
 
 ```bash
-npx -y @microsoft/vally-cli@0.12.0 lint --eval-spec <path-to-eval> --strict
+npx -y @microsoft/vally-cli@0.14.0 lint --eval-spec <path-to-eval> --strict
 ```
 
 ## Privacy & safety

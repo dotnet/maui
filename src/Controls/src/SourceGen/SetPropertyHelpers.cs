@@ -231,6 +231,16 @@ static class SetPropertyHelpers
 		// Handle lambda expressions
 		if (vn.Value is Expression expression)
 		{
+			// Check for method group reference in lambda body (missing parentheses)
+			var methodGroupRef = CSharpExpressionHelpers.DetectLambdaMethodGroupReference(expression.Code);
+			if (methodGroupRef != null)
+			{
+				var (methodGroup, suggestion) = methodGroupRef.Value;
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.LambdaMethodGroupReference, location, methodGroup, suggestion));
+				return;
+			}
+
 			if (treeOrder && icWriter != null && inflatorVar != null)
 			{
 				writer = icWriter;
@@ -673,7 +683,7 @@ static class SetPropertyHelpers
 		}
 
 		// Analyze the expression for mixed local+binding scenarios
-		var analysis = ExpressionAnalyzer.Analyze(expression.Code, "__source", dataTypeSymbol, context.RootType);
+		var analysis = ExpressionAnalyzer.Analyze(expression.Code, "__source", dataTypeSymbol, context.RootType, context.Compilation);
 
 		// Check for ambiguity first - resolve the expression
 		var resolution = MemberResolver.Resolve(expression.Code, context.RootType, dataTypeSymbol, context.Compilation);
@@ -698,11 +708,32 @@ static class SetPropertyHelpers
 		// Handle not-found case for simple identifiers
 		if (resolution.Location == MemberLocation.Neither &&
 			!string.IsNullOrEmpty(resolution.RootIdentifier) &&
-			MemberResolver.IsSimpleIdentifier(expression.Code))
+			MemberResolver.IsSimpleIdentifier(expression.Code) &&
+			!MemberResolver.StartsWithTypeReference(context.Compilation, expression.Code, MemberResolver.GetContainingNamespace(context.RootType)))
 		{
 			var neitherLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, neitherLocation, resolution.RootIdentifier, context.RootType?.Name ?? "this", dataTypeSymbol.Name));
 			return true; // Handled (with error)
+		}
+
+		// Validate identifiers inside interpolated string holes
+		if (expression.Code.StartsWith("$\"", StringComparison.Ordinal) || expression.Code.StartsWith("$@\"", StringComparison.Ordinal))
+		{
+			var interpolatedIds = CSharpExpressionHelpers.ExtractInterpolatedStringIdentifierReferences(expression.Code);
+			foreach (var idReference in interpolatedIds)
+			{
+				var id = idReference.Identifier;
+				var idResolution = MemberResolver.Resolve(id, context.RootType, dataTypeSymbol, context.Compilation);
+				if (idResolution.Location == MemberLocation.Neither &&
+					!MemberResolver.HasMember(context.RootType, id, includeMethods: true) &&
+					!MemberResolver.HasMember(dataTypeSymbol, id, includeMethods: true) &&
+					!MemberResolver.ResolvesToType(context.Compilation, idReference.TypeReferenceCandidate, MemberResolver.GetContainingNamespace(context.RootType)))
+				{
+					var idLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, idLocation, id, context.RootType?.Name ?? "this", dataTypeSymbol.Name));
+					return true; // Handled (with error)
+				}
+			}
 		}
 
 		// If we have binding handlers, this needs a TypedBinding
@@ -750,7 +781,7 @@ static class SetPropertyHelpers
 			expression, context.Compilation, dataTypeSymbol, context.RootType);
 
 		// Analyze expression for mixed local+binding scenarios
-		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, context.RootType);
+		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, context.RootType, context.Compilation);
 		var handlers = analysis.Handlers;
 
 		// Resolve the expression's result type for TProperty.
@@ -789,19 +820,26 @@ static class SetPropertyHelpers
 			writer.WriteLine($"__source => ({getterExpression}, true),");
 
 			// Generate setter if expression is a simple property chain AND the terminal property is writable
-			if (analysis.IsSettable && IsExpressionWritable(expression, dataTypeSymbol, context))
+			var writeInfo = GetExpressionWriteInfo(expression, dataTypeSymbol, context);
+			if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.DirectAssignment)
 			{
 				writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
+			}
+			else if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.StructCopyWriteback)
+			{
+				WriteStructCopyWritebackSetter(writer, writeInfo.Chain!);
 			}
 			else
 			{
 				writer.WriteLine($"null,");
-				// Emit info diagnostic when binding a complex expression to a TwoWay property
+				// Emit diagnostics when binding a complex expression to a TwoWay property
 				if (IsTwoWayByDefault(bpFieldSymbol))
 				{
 					var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression);
 					context.ReportDiagnostic(Diagnostic.Create(
-						Descriptors.ExpressionNotSettable,
+						writeInfo.Kind == ExpressionWriteKind.StructIntermediateNotSettable
+							? Descriptors.StructIntermediateNotSettable
+							: Descriptors.ExpressionNotSettable,
 						location,
 						expression,
 						bpFieldSymbol.Name));
@@ -921,15 +959,41 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// Checks if the terminal property in a C# expression chain is writable (has a public setter).
-	/// For example, "Name" is writable if Name has a public set accessor, but "ReadOnlyProp" is not
-	/// if it only has a getter (expression-bodied or getter-only property).
-	/// Returns false for complex expressions that are not simple property chains.
+	/// Describes how a C# expression can be used as a binding setter.
 	/// </summary>
-	static bool IsExpressionWritable(string expression, ITypeSymbol dataType, SourceGenContext context)
+	enum ExpressionWriteKind
 	{
+		/// <summary>Cannot generate a setter (terminal not writable, or not a property chain).</summary>
+		NotWritable,
+		/// <summary>Simple direct assignment: __source.Prop = __value.</summary>
+		DirectAssignment,
+		/// <summary>Needs copy-modify-writeback pattern for struct intermediates.</summary>
+		StructCopyWriteback,
+		/// <summary>Has struct intermediate but the intermediate property has no setter.</summary>
+		StructIntermediateNotSettable,
+	}
+
+	readonly struct ExpressionWriteInfo
+	{
+		public ExpressionWriteKind Kind { get; init; }
+		/// <summary>
+		/// For StructCopyWriteback: the chain of property names from root to terminal.
+		/// Each bool indicates whether that property is a value-type intermediate requiring writeback.
+		/// </summary>
+		public (string Name, bool IsStructIntermediate)[]? Chain { get; init; }
+	}
+
+	/// <summary>
+	/// Analyzes whether a C# expression property chain can generate a setter,
+	/// and if so, what kind of setter is needed.
+	/// Handles value type (struct) intermediates that require copy-modify-writeback.
+	/// </summary>
+	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext context)
+	{
+		var notWritable = new ExpressionWriteInfo { Kind = ExpressionWriteKind.NotWritable };
+
 		if (string.IsNullOrWhiteSpace(expression))
-			return false;
+			return notWritable;
 
 		var expr = expression.Trim();
 
@@ -945,50 +1009,118 @@ static class SetPropertyHelpers
 			expr = expr.Substring("BindingContext.".Length);
 
 		if (string.IsNullOrEmpty(expr))
-			return false;
+			return notWritable;
 
 		// Walk the dot-separated property chain (also handle ?. null-conditional access)
 		var parts = expr.Replace("?.", ".").Split('.');
 		var currentType = dataType;
 		IPropertySymbol? lastProperty = null;
+		var chain = new (string Name, bool IsStructIntermediate)[parts.Length];
+		bool hasStructIntermediate = false;
+		bool hasUnsettableStructIntermediate = false;
 
-		foreach (var part in parts)
+		for (int i = 0; i < parts.Length; i++)
 		{
-			var memberName = part.Trim().TrimEnd('!');
+			var memberName = parts[i].Trim().TrimEnd('!');
 
 			// If it contains parens, operators, or special chars, it's not a simple property chain
 			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
-				return false;
+				return notWritable;
 
 			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
 			if (member is IPropertySymbol prop)
 			{
 				lastProperty = prop;
 				currentType = prop.Type;
+
+				bool isStructIntermediate = i < parts.Length - 1 && currentType.IsValueType;
+				chain[i] = (memberName, isStructIntermediate);
+
+				if (isStructIntermediate)
+				{
+					hasStructIntermediate = true;
+					// Check if this intermediate property has a setter (needed for writeback)
+					bool intermediateSettable = prop.SetMethod is not null
+						&& prop.SetMethod.DeclaredAccessibility == Accessibility.Public
+						&& !prop.SetMethod.IsInitOnly;
+					if (!intermediateSettable)
+						hasUnsettableStructIntermediate = true;
+				}
 			}
 			else if (member is IFieldSymbol field)
 			{
 				if (field.IsReadOnly)
-					return false;
+					return notWritable;
 				lastProperty = null;
+				chain[i] = (memberName, false); // Fields don't need writeback
 				currentType = field.Type;
 			}
 			else
 			{
-				return false;
+				return notWritable;
 			}
 		}
 
 		// Check if the terminal property has a public, non-init setter
 		if (lastProperty is not null)
 		{
-			return lastProperty.SetMethod is not null
+			bool terminalWritable = lastProperty.SetMethod is not null
 				&& lastProperty.SetMethod.DeclaredAccessibility == Accessibility.Public
 				&& !lastProperty.SetMethod.IsInitOnly;
+			if (!terminalWritable)
+				return notWritable;
 		}
 
-		// For fields, assume writable
-		return true;
+		if (hasUnsettableStructIntermediate)
+			return new ExpressionWriteInfo { Kind = ExpressionWriteKind.StructIntermediateNotSettable };
+
+		if (hasStructIntermediate)
+			return new ExpressionWriteInfo { Kind = ExpressionWriteKind.StructCopyWriteback, Chain = chain };
+
+		return new ExpressionWriteInfo { Kind = ExpressionWriteKind.DirectAssignment };
+	}
+
+	/// <summary>
+	/// Generates a copy-modify-writeback setter for expressions with value type (struct) intermediates.
+	/// For example, {Margin.Top} generates:
+	/// <c>(__source, __value) =&gt; { var __t0 = __source.Margin; __t0.Top = __value; __source.Margin = __t0; },</c>
+	/// </summary>
+	static void WriteStructCopyWritebackSetter(IndentedTextWriter writer, (string Name, bool IsStructIntermediate)[] chain)
+	{
+		writer.Write("(__source, __value) => { ");
+
+		string currentAccessor = "__source";
+		var structStack = new System.Collections.Generic.List<(string TempVar, string ParentAccessor, string PropertyName)>();
+		int tempIndex = 0;
+
+		// Process non-terminal parts
+		for (int i = 0; i < chain.Length - 1; i++)
+		{
+			var (name, isStruct) = chain[i];
+			if (isStruct)
+			{
+				var tempVar = $"__t{tempIndex++}";
+				writer.Write($"var {tempVar} = {currentAccessor}.{name}; ");
+				structStack.Add((tempVar, currentAccessor, name));
+				currentAccessor = tempVar;
+			}
+			else
+			{
+				currentAccessor = $"{currentAccessor}.{name}";
+			}
+		}
+
+		// Terminal assignment
+		writer.Write($"{currentAccessor}.{chain[chain.Length - 1].Name} = __value; ");
+
+		// Write back struct copies in reverse order
+		for (int i = structStack.Count - 1; i >= 0; i--)
+		{
+			var (tempVar, parent, propName) = structStack[i];
+			writer.Write($"{parent}.{propName} = {tempVar}; ");
+		}
+
+		writer.WriteLine("},");
 	}
 
 }

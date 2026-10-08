@@ -277,7 +277,11 @@ namespace Maui.Controls.Sample
 						.OnActivated((a) => LogEvent(nameof(iOSLifecycle.OnActivated)))
 						.OnResignActivation((a) => LogEvent(nameof(iOSLifecycle.OnResignActivation)))
 						.OpenUrl((a, b, c) => LogEvent(nameof(iOSLifecycle.OpenUrl)) && false)
-						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
+						.PerformActionForShortcutItem((a, b, completionHandler) =>
+						{
+							LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem));
+							completionHandler(false);
+						})
 						.WillEnterForeground((a) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
 						.ApplicationSignificantTimeChange((a) => LogEvent(nameof(iOSLifecycle.ApplicationSignificantTimeChange)))
 						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate))));

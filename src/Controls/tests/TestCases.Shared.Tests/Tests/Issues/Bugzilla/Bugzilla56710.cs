@@ -13,7 +13,7 @@ public class Bugzilla56710 : _IssuesUITest
 	public override string Issue => "ContextActionsCell.OnMenuItemPropertyChanged throws NullReferenceException";
 
 	[Test]
-	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.ContextActions)]
 	public void Bugzilla56710Test()
 	{
 		App.WaitForElement("Go to Test Page");

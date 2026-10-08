@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView with Incremental Collection (RemainingItemsThreshold)";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void CollectionViewInfiniteScroll()
 		{
 			// The reproduction initially adds 10 elements to the CollectionView, and we need to scroll to the bottom

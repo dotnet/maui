@@ -1,4 +1,7 @@
 using System.Reflection;
+#if MACUITEST
+using System.Runtime.InteropServices;
+#endif
 using System.Text.RegularExpressions;
 using ImageMagick;
 using ImageMagick.Drawing;
@@ -17,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif IOSUITEST
 	[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
-		[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Mac)]
 #elif WINTEST
 		[TestFixture(TestDevice.Windows)]
 #endif
@@ -97,11 +100,11 @@ namespace Microsoft.Maui.TestCases.Tests
 						config.SetProperty("Udid", udid);
 					}
 					else
-					{					 
+					{
 						config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
 						config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					}
-					
+
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.Mac:
@@ -165,7 +168,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.LaunchApp();
 		}
-		
+
 		/// <summary>
 		/// Verifies the screenshots and returns an exception in case of failure.
 		/// </summary>
@@ -222,7 +225,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
 #if MACUITEST || WINTEST
-/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+		/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
 #endif
 		/// <remarks>
 		/// This method immediately throws an exception if the screenshot verification fails.
@@ -261,14 +264,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
-			
+
 			// If retryTimeout is specified, keep retrying until timeout expires
 			// Otherwise, just retry once (backward compatible behavior)
 			if (retryTimeout.HasValue)
 			{
 				var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 				Exception? lastException = null;
-				
+
 				while (stopwatch.Elapsed < retryTimeout.Value)
 				{
 					try
@@ -285,7 +288,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 					}
 				}
-				
+
 				// Final attempt after timeout
 				try
 				{
@@ -560,7 +563,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Reset();
 		}
-		
+
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
@@ -654,6 +657,35 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if MACUITEST
+		const string CoreGraphicsLibrary = "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics";
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct NativePoint
+		{
+			public double X;
+			public double Y;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct NativeSize
+		{
+			public double Width;
+			public double Height;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct NativeRectangle
+		{
+			public NativePoint Origin;
+			public NativeSize Size;
+		}
+
+		[DllImport(CoreGraphicsLibrary)]
+		static extern uint CGMainDisplayID();
+
+		[DllImport(CoreGraphicsLibrary)]
+		static extern NativeRectangle CGDisplayBounds(uint display);
+
 		byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
@@ -664,24 +696,89 @@ namespace Microsoft.Maui.TestCases.Tests
 			var y = windowBounds.Y;
 			var width = windowBounds.Width;
 			var height = windowBounds.Height;
+			var logicalWidth = width;
+			var logicalHeight = height;
 			const int cornerRadius = 12;
 
 			// Take the screenshot
 			var bytes = App.Screenshot();
 
-			if (width <= 0 || height <= 0)
+			if (logicalWidth <= 0 || logicalHeight <= 0)
 				return bytes;
 
-			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
+			byte[] ReturnUncroppedScreenshot(string reason)
+			{
+				TestContext.Error.WriteLine($"Unable to crop the Mac screenshot; preserving the full screenshot instead. {reason}");
+				return bytes;
+			}
+
+			using var image = new MagickImage(bytes);
+			NativeRectangle displayBounds;
+			try
+			{
+				displayBounds = CGDisplayBounds(CGMainDisplayID());
+			}
+			catch (DllNotFoundException ex)
+			{
+				return ReturnUncroppedScreenshot($"CoreGraphics could not be loaded: {ex.Message}");
+			}
+			catch (EntryPointNotFoundException ex)
+			{
+				return ReturnUncroppedScreenshot($"A required CoreGraphics entry point was unavailable: {ex.Message}");
+			}
+			catch (BadImageFormatException ex)
+			{
+				return ReturnUncroppedScreenshot($"CoreGraphics could not be loaded for this architecture: {ex.Message}");
+			}
+
+			if (displayBounds.Size.Width <= 0 || displayBounds.Size.Height <= 0)
+				return ReturnUncroppedScreenshot($"Invalid main display bounds: {displayBounds.Size.Width}x{displayBounds.Size.Height}.");
+
+			// CGDisplayBounds and Mac2 element bounds use the display coordinate space,
+			// while the PNG uses its backing pixels. Deriving the scale from the actual
+			// image also handles non-Retina and downsampled screenshots correctly.
+			double scaleX = image.Width / displayBounds.Size.Width;
+			double scaleY = image.Height / displayBounds.Size.Height;
+
+			if (!double.IsFinite(scaleX) || !double.IsFinite(scaleY) || scaleX <= 0 || scaleY <= 0)
+				return ReturnUncroppedScreenshot($"Invalid screenshot scale: {scaleX}x{scaleY}.");
+
+			int pixelX = (int)Math.Round((x - displayBounds.Origin.X) * scaleX);
+			int pixelY = (int)Math.Round((y - displayBounds.Origin.Y) * scaleY);
+			int pixelRight = (int)Math.Round((x + logicalWidth - displayBounds.Origin.X) * scaleX);
+			int pixelBottom = (int)Math.Round((y + logicalHeight - displayBounds.Origin.Y) * scaleY);
+			int pixelWidth = pixelRight - pixelX;
+			int pixelHeight = pixelBottom - pixelY;
+
+			if (pixelX < 0 || pixelY < 0 || pixelWidth <= 0 || pixelHeight <= 0 ||
+				pixelRight > image.Width || pixelBottom > image.Height)
+			{
+				return ReturnUncroppedScreenshot(
+					$"Mac app window pixels ({pixelX},{pixelY},{pixelWidth},{pixelHeight}) " +
+					$"are outside screenshot bounds {image.Width}x{image.Height}.");
+			}
+
+			int pixelCornerRadius = Math.Max(1, (int)Math.Round(cornerRadius * Math.Min(scaleX, scaleY)));
+
+			// Draw a rounded rectangle with the physical-pixel app window bounds as mask.
+			using var surface = new MagickImage(MagickColors.Transparent, (uint)pixelWidth, (uint)pixelHeight);
 			new Drawables()
-				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
+				.RoundRectangle(0, 0, pixelWidth, pixelHeight, pixelCornerRadius, pixelCornerRadius)
 				.FillColor(MagickColors.Black)
 				.Draw(surface);
 
-			// Composite the screenshot with the mask
-			using var image = new MagickImage(bytes);
-			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
+			surface.Composite(image, -pixelX, -pixelY, CompositeOperator.SrcAtop);
+
+			// Keep committed snapshots density-independent and preserve the existing
+			// logical crop values (for example, the 29-point title-bar crop).
+			if (pixelWidth != logicalWidth || pixelHeight != logicalHeight)
+			{
+				var logicalSize = new MagickGeometry((uint)logicalWidth, (uint)logicalHeight)
+				{
+					IgnoreAspectRatio = true,
+				};
+				surface.Resize(logicalSize);
+			}
 
 			return surface.ToByteArray(MagickFormat.Png);
 		}

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
@@ -183,6 +184,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ViewCell PropertyChanged and MeasureInvalidated subscriptions are removed when the cell changes and in Dispose(bool).")]
 			void UpdateCell(ViewCell cell)
 #pragma warning restore CS0618 // Type or member is obsolete
 			{

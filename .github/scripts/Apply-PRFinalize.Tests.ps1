@@ -10,6 +10,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'apply-pr-finalize.ps1'
+    $script:ScriptText = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -34,10 +35,13 @@ BeforeAll {
 
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
+        'Test-ExpectedHeadMatches',
         'Test-FinalizeIsNoOp',
+        'Get-FinalizeApplyDecision',
         'Get-FinalizeRecommendation',
         'Merge-PreservedTitlePrefix',
         'Merge-PreservedBodyPreamble',
+        'New-PullRequestUpdatePayload',
         'New-ExclusiveTempFile'
     )) {
         $function = $ast.Find({
@@ -74,6 +78,26 @@ Fixed it.
 '@
 }
 
+Describe 'Test-ExpectedHeadMatches' {
+    It 'allows callers without a pinned snapshot' {
+        Test-ExpectedHeadMatches -CurrentHeadSha '' -ExpectedHeadSha '' | Should -BeTrue
+    }
+
+    It 'matches the immutable reviewed head case-insensitively' {
+        Test-ExpectedHeadMatches `
+            -CurrentHeadSha 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeTrue
+    }
+
+    It 'rejects a PR head that advanced after the review snapshot' {
+        Test-ExpectedHeadMatches `
+            -CurrentHeadSha 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeFalse
+    }
+}
+
 Describe 'Test-FinalizeIsNoOp' {
     It 'is true for the keep-as-is verdict' {
         Test-FinalizeIsNoOp -Content '✅ Current title and description accurately reflect the change — recommend keeping as-is.' |
@@ -86,6 +110,56 @@ Describe 'Test-FinalizeIsNoOp' {
 
     It 'is false when an update is recommended' {
         Test-FinalizeIsNoOp -Content $script:RecommendContent | Should -BeFalse
+    }
+}
+
+Describe 'Get-FinalizeApplyDecision' {
+    It 'allows automatic metadata edits only when the raw submitted PR won' {
+        $winnerFile = Join-Path $TestDrive 'raw-pr-winner.json'
+        @{ winner = 'pr'; isPRFix = $true } |
+            ConvertTo-Json | Set-Content -LiteralPath $winnerFile -Encoding UTF8
+
+        $decision = Get-FinalizeApplyDecision -WinnerFile $winnerFile
+
+        $decision.ShouldApply | Should -BeTrue
+        $decision.Winner | Should -BeExactly 'pr'
+    }
+
+    It 'blocks a pr-plus-reviewer winner even though isPRFix is true' {
+        $winnerFile = Join-Path $TestDrive 'reviewer-winner.json'
+        @{ winner = 'pr-plus-reviewer'; isPRFix = $true } |
+            ConvertTo-Json | Set-Content -LiteralPath $winnerFile -Encoding UTF8
+
+        $decision = Get-FinalizeApplyDecision -WinnerFile $winnerFile
+
+        $decision.ShouldApply | Should -BeFalse
+        $decision.Reason | Should -Match 'not on the PR branch'
+    }
+
+    It 'blocks a try-fix winner' {
+        $winnerFile = Join-Path $TestDrive 'try-fix-winner.json'
+        @{ winner = 'try-fix-2'; isPRFix = $false } |
+            ConvertTo-Json | Set-Content -LiteralPath $winnerFile -Encoding UTF8
+
+        (Get-FinalizeApplyDecision -WinnerFile $winnerFile).ShouldApply | Should -BeFalse
+    }
+
+    It 'fails closed when the manifest is missing, malformed, or inconsistent' {
+        (Get-FinalizeApplyDecision -WinnerFile (Join-Path $TestDrive 'missing.json')).ShouldApply |
+            Should -BeFalse
+
+        $malformed = Join-Path $TestDrive 'malformed.json'
+        'not json' | Set-Content -LiteralPath $malformed -Encoding UTF8
+        (Get-FinalizeApplyDecision -WinnerFile $malformed).ShouldApply | Should -BeFalse
+
+        $empty = Join-Path $TestDrive 'empty.json'
+        'null' | Set-Content -LiteralPath $empty -Encoding UTF8
+        (Get-FinalizeApplyDecision -WinnerFile $empty).ShouldApply | Should -BeFalse
+
+        $inconsistent = Join-Path $TestDrive 'inconsistent.json'
+        @{ winner = 'pr'; isPRFix = $false } |
+            ConvertTo-Json | Set-Content -LiteralPath $inconsistent -Encoding UTF8
+        (Get-FinalizeApplyDecision -WinnerFile $inconsistent).ShouldApply | Should -BeFalse
     }
 }
 
@@ -133,6 +207,34 @@ var x = 1;
         $result | Should -Not -BeNullOrEmpty
         $result.Body | Should -Match 'var x = 1;'
     }
+
+    It 'does not truncate at a same-length fenced example inside the description' {
+        $nested = @'
+**Recommended title**
+```text
+[Android] FlyoutPage: Fix teardown
+```
+
+**Recommended description**
+```text
+### What this fixes
+
+The process crashed with:
+
+```
+java.lang.IllegalArgumentException: No view found for id
+```
+
+### Validation
+
+- FlyoutPage: 15/15 pass.
+```
+'@
+        $result = Get-FinalizeRecommendation -Content $nested
+        $result | Should -Not -BeNullOrEmpty
+        $result.Body | Should -Match 'java\.lang\.IllegalArgumentException'
+        $result.Body | Should -Match 'FlyoutPage: 15/15 pass\.'
+    }
 }
 
 Describe 'Merge-PreservedTitlePrefix' {
@@ -169,6 +271,34 @@ Describe 'Merge-PreservedTitlePrefix' {
             -CurrentTitle '[net11.0][iOS] Respect InputTransparent' `
             -RecommendedTitle '[iOS] UserInteraction: Respect InputTransparent' |
             Should -Be '[net11.0][iOS] UserInteraction: Respect InputTransparent'
+    }
+
+    It 'does not preserve a component prefix already represented by the recommendation' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[BlazorWebView] Simplify Android Blazor startup scripts' `
+            -RecommendedTitle '[Android] BlazorWebView: Simplify Blazor startup scripts' |
+            Should -Be '[Android] BlazorWebView: Simplify Blazor startup scripts'
+    }
+
+    It 'preserves workflow tags while dropping component tags' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[WIP][BlazorWebView][Android] Simplify startup scripts' `
+            -RecommendedTitle '[Android] BlazorWebView: Simplify startup scripts' |
+            Should -Be '[WIP][Android] BlazorWebView: Simplify startup scripts'
+    }
+
+    It 'preserves known automation and revert markers' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[automated][Revert][Windows] Update generated assets' `
+            -RecommendedTitle '[Windows] Assets: Revert generated update' |
+            Should -Be '[automated][Revert][Windows] Assets: Revert generated update'
+    }
+
+    It 'drops an unknown area prefix' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[Testing][Windows] Update test infrastructure' `
+            -RecommendedTitle '[Windows] Tests: Update infrastructure' |
+            Should -Be '[Windows] Tests: Update infrastructure'
     }
 
     It 'returns the recommendation unchanged when there is no prefix' {
@@ -223,6 +353,37 @@ Old description.
 
     It 'handles an empty current body' {
         Merge-PreservedBodyPreamble -CurrentBody '' -RecommendedBody '### New' | Should -Be '### New'
+    }
+}
+
+Describe 'New-PullRequestUpdatePayload' {
+    It 'includes only the title when only the title changed' {
+        $payload = New-PullRequestUpdatePayload `
+            -TitleChanged $true `
+            -Title '[Android] RadioButton: Clear reset borders' `
+            -BodyChanged $false `
+            -Body 'unchanged'
+
+        @($payload.Keys) | Should -Be @('title')
+        $payload.title | Should -Be '[Android] RadioButton: Clear reset borders'
+    }
+
+    It 'includes only the body when only the body changed' {
+        $payload = New-PullRequestUpdatePayload `
+            -TitleChanged $false `
+            -Title 'unchanged' `
+            -BodyChanged $true `
+            -Body "### Change`n`nUpdated details."
+
+        @($payload.Keys) | Should -Be @('body')
+        $payload.body | Should -Be "### Change`n`nUpdated details."
+    }
+
+    It 'uses the REST pull-request endpoint for reads and writes' {
+        $script:ScriptText | Should -Match ([regex]::Escape('$prOutput = @(& gh api "repos/$Repo/pulls/$PRNumber"'))
+        $script:ScriptText | Should -Match ([regex]::Escape('$ghArgs = @(''api'', "repos/$Repo/pulls/$PRNumber", ''--method'', ''PATCH'', ''--input'', $payloadFile, ''--silent'')'))
+        $script:ScriptText | Should -Not -Match '\bgh\s+pr\s+(?:view|edit)\b'
+        $script:ScriptText | Should -Not -Match ([regex]::Escape("@('pr', 'edit'"))
     }
 }
 

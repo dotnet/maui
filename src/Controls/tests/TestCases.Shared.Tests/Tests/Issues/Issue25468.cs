@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Collection view has no scroll bar";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void CollectionViewShouldHaveScrollBar()
 		{
 			App.WaitForElement("1");

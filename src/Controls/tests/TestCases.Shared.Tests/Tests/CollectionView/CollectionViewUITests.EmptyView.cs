@@ -6,6 +6,7 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 
+
 	public class CollectionViewEmptyViewTests : CollectionViewUITests
 	{
 		protected override bool ResetAfterEachTest => true;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void EmptyViewItemsSourceNullStringWorks()
 		{
 			VisitInitialGallery("EmptyView");
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void EmptyViewItemsSourceNullViewWorks()
 		{
 			VisitInitialGallery("EmptyView");

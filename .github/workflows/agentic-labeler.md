@@ -14,6 +14,7 @@ description: |
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 imports:
+  - shared/gpt-6.1-sol.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
@@ -54,10 +55,11 @@ permissions:
   issues: read
   pull-requests: read
 
-model: gpt-5.6-sol
+model: gpt-6.1-sol
 engine:
   id: copilot
   env:
+    COPILOT_PROVIDER_WIRE_API: responses
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 network: defaults
@@ -85,6 +87,11 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  # `report-failure-as-issue` only covers agent-level failures. Job-level
+  # failures are a separate reporter (`report-failed-jobs`, default true),
+  # so it has to be disabled explicitly or this workflow keeps filing
+  # `[aw] Failed jobs: ...` issues despite the line above.
+  report-failed-jobs: false
   # Note: `create-issue: false` is the canonical key for `missing-tool` /
   # `report-incomplete` and IS honored by the compiler (verified: removing
   # these blocks regresses GH_AW_*_CREATE_ISSUE back to "true" in the lock).

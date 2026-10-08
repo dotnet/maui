@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CollectionView Header cause delay to adding items.";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void HeaderDoesNotBreakIndexes()
 		{
 			App.WaitForElement("entryInsert");

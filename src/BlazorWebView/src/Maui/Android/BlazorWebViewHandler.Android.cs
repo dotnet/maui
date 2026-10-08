@@ -49,6 +49,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
+				blazorAndroidWebView.Settings.MinimumFontSize = 1;
+				blazorAndroidWebView.Settings.MinimumLogicalFontSize = 1;
 			}
 
 			_webViewClient = new WebKitWebViewClient(this);
@@ -109,6 +111,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			DisconnectRootComponents();
+
 			_backPressedCallback?.Remove();
 			_backPressedCallback?.Dispose();
 			_backPressedCallback = null;

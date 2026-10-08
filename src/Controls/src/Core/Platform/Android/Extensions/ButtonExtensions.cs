@@ -1,7 +1,7 @@
 #nullable disable
 using System;
+using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
@@ -27,11 +27,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var context = materialButton.Context;
 			if (context == null)
 				return;
+			var icon = materialButton.Icon;
 
-			var icon = materialButton.Icon ??
-#pragma warning disable CS0618 // Type or member is obsolete
-						TextViewCompat.GetCompoundDrawablesRelative(materialButton)[3];
-#pragma warning restore CS0618 // Type or member is obsolete
+			if (icon == null)
+			{
+				Drawable[] drawables = materialButton.GetCompoundDrawablesRelative();
+				icon = drawables[3];
+			}
 
 			if (icon != null &&
 				!String.IsNullOrEmpty(button.Text))

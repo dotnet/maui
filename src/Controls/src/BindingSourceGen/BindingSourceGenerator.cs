@@ -47,19 +47,46 @@ public class BindingSourceGenerator : IIncrementalGenerator
 				throw new InvalidOperationException("Location cannot be null");
 			}
 
-			var fileName = $"{location.FilePath}-GeneratedBindingInterceptors-{location.Line}-{location.Column}.g.cs";
-			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
+			var stableLocationId = CreateStableLocationId(location);
+			var hintName = CreateHintName(stableLocationId, location);
 			var methodNamePrefix = binding.MethodType switch
 			{
 				InterceptedMethodType.SetBinding => "SetBinding",
 				InterceptedMethodType.Create => "Create",
 				_ => throw new NotSupportedException()
 			};
-			var uniqueId = (uint)Math.Abs(location.GetHashCode());
 
-			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{uniqueId}");
-			spc.AddSource(sanitizedFileName, code);
+			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{stableLocationId}");
+			spc.AddSource(hintName, code);
 		});
+	}
+
+	private static string CreateHintName(string stableLocationId, SimpleLocation location)
+	{
+		return $"BindingSourceGen-{stableLocationId}-{location.Line}-{location.Column}.g.cs";
+	}
+
+	private static string CreateStableLocationId(SimpleLocation location)
+	{
+		return ComputeStableHash($"{location.FilePath}|{location.Line}|{location.Column}");
+	}
+
+	private static string ComputeStableHash(string text)
+	{
+		const ulong offsetBasis = 14695981039346656037;
+		const ulong prime = 1099511628211;
+
+		unchecked
+		{
+			var hash = offsetBasis;
+			foreach (var character in text)
+			{
+				hash ^= character;
+				hash *= prime;
+			}
+
+			return hash.ToString("x16");
+		}
 	}
 
 	private static bool IsSetBindingMethod(SyntaxNode node)

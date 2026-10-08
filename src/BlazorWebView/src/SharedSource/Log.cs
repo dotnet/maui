@@ -56,6 +56,9 @@ internal static partial class Log
 	[LoggerMessage(EventId = 16, Level = LogLevel.Debug, Message = "Blazor startup scripts finished.")]
 	public static partial void BlazorStartupScriptsFinished(this ILogger logger);
 
+	[LoggerMessage(EventId = 40, Level = LogLevel.Debug, Message = "Blazor startup scripts submitted.")]
+	public static partial void BlazorStartupScriptsSubmitted(this ILogger logger);
+
 	[LoggerMessage(EventId = 17, Level = LogLevel.Debug, Message = "Creating WebKit WKWebView...")]
 	public static partial void CreatingWebKitWKWebView(this ILogger logger);
 

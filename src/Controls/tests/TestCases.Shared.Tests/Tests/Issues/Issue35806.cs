@@ -12,7 +12,7 @@ public class Issue35806 : _IssuesUITest
 	public override string Issue => "Android CollectionView KeepScrollOffset stops working after replacing ItemsSource";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void KeepScrollOffsetWorksAfterReplacingItemsSource()
 	{
 		App.WaitForElement("CollectionView35806");

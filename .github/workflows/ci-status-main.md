@@ -13,6 +13,7 @@ description: |
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 imports:
+  - shared/gpt-6.1-sol.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
@@ -36,10 +37,11 @@ on:
 
 if: github.repository == 'dotnet/maui'
 
-model: gpt-5.6-sol
+model: gpt-6.1-sol
 engine:
   id: copilot
   env:
+    COPILOT_PROVIDER_WIRE_API: responses
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 concurrency:
@@ -61,6 +63,11 @@ safe-outputs:
   # Keep this expression identical to GH_AW_SAFE_OUTPUTS_STAGED below; tests enforce it.
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
   report-failure-as-issue: false
+  # `report-failure-as-issue` only covers agent-level failures. Job-level
+  # failures are a separate reporter (`report-failed-jobs`, default true),
+  # so it has to be disabled explicitly or this workflow keeps filing
+  # `[aw] Failed jobs: ...` issues despite the line above.
+  report-failed-jobs: false
   noop:
     report-as-issue: false
   # The scanner manifest is derived from untrusted CI logs and, since it moved to
@@ -1112,7 +1119,7 @@ All data retrieval uses `curl` + `jq` against the AzDO and Helix REST APIs (see 
 For each actionable failure, produce **one manifest entry**. Record every AzDO
 timeline log that contributed evidence in that entry's `source_log_ids` array:
 
-1. **Filed issue payload** — documents the failure with error signature, affected legs, and recommended action. Use for recurring test failures (≥ 2 occurrences), build breaks, and infrastructure issues.
+1. **Filed issue payload** — documents the failure with error signature, affected legs, and factual investigation context. Use for recurring test failures (≥ 2 occurrences), build breaks, and infrastructure issues.
 2. **Existing issue reference** — identifies an open `ci-scan` issue whose body already carries the exact publisher-owned fingerprint marker for this signature. Markerless legacy issues are not authoritative coverage; emit a `filed` payload instead.
 3. **Explicit skip** — records one of the allowed deterministic skip reasons from the coverage contract below.
 
@@ -1168,9 +1175,14 @@ Use this structure for every `filed` manifest entry. Start the body at the
 ## Error Message
 [Fenced code block with sanitized error excerpt — strip tokens, paths]
 
-## Recommended Action
-[Concrete next step: which area, which file, what investigation]
+## Investigation Context
+[Factual context only: suspected owning area or file, relevant evidence, and uncertainty]
 ```
+
+The `Investigation Context` section must be factual and declarative only. It may
+identify a suspected owning area or file, relevant evidence, and uncertainty.
+It must contain no commands, requests, second-person wording, imperative verbs,
+or instructions directed at a reader or agent.
 
 The `Build ID` line is mandatory and must be a bare integer on its own
 line — `.github/workflows/ci-status-fix.md` requires it as a field gate

@@ -204,15 +204,16 @@ namespace Microsoft.Maui.Controls
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
 				var sharedSpacing = spacing / 2;
+				var direction = ((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft() ? -1 : 1;
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow				
 				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += titleWidth / 2;
-					imageInsets.Right -= titleWidth / 2;
-					titleInsets.Left -= imageWidth / 2;
-					titleInsets.Right += imageWidth / 2;
+					imageInsets.Left += direction * (titleWidth / 2);
+					imageInsets.Right -= direction * (titleWidth / 2);
+					titleInsets.Left -= direction * (imageWidth / 2);
+					titleInsets.Right += direction * (imageWidth / 2);
 				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
@@ -243,20 +244,20 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
-					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+					imageInsets.Left -= direction * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right += direction * ((titleWidth / 2) + sharedSpacing);
 
-					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
+					titleInsets.Left += direction * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right -= direction * ((imageWidth / 2) + sharedSpacing);
 
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
+					imageInsets.Left += direction * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right -= direction * ((titleWidth / 2) + sharedSpacing);
 
-					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
+					titleInsets.Left -= direction * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right += direction * ((imageWidth / 2) + sharedSpacing);
 				}
 			}
 
@@ -447,6 +448,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
+			handler.UpdateValue(nameof(CharacterSpacing));
 		}
 
 		internal static void MapBorderWidth(IButtonHandler handler, Button button)
