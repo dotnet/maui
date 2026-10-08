@@ -86,15 +86,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private RootComponentsCollection? _rootComponents;
 
-		private void DisconnectRootComponents()
-		{
-			if (_rootComponents != null)
-			{
-				_rootComponents.CollectionChanged -= OnRootComponentsCollectionChanged;
-				_rootComponents = null;
-			}
-		}
-
 		private RootComponentsCollection? RootComponents
 		{
 			get => _rootComponents;
