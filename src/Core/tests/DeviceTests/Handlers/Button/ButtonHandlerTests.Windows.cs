@@ -13,14 +13,16 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ButtonHandlerTests
 	{
 		[Theory]
-		[InlineData("#B2F9F9F9")]
-		[InlineData("#B21A7F37")]
-		public async Task TransparentBackgroundEndpointsPreserveTransitionRgb(string hoverColorHex)
+		[InlineData("#00000000", "#B2F9F9F9")]
+		[InlineData("#00000000", "#B21A7F37")]
+		[InlineData("#00FF0000", "#B2F9F9F9")]
+		[InlineData("#00FF0000", "#B21A7F37")]
+		public async Task TransparentBackgroundEndpointsPreserveTransitionRgb(string transparentColorHex, string hoverColorHex)
 		{
 			var button = new ButtonStub
 			{
 				Text = "Test",
-				Background = new SolidPaintStub(Color.FromArgb("#00FF0000"))
+				Background = new SolidPaintStub(Color.FromArgb(transparentColorHex))
 			};
 
 			await AttachAndRun(button, handler =>
@@ -44,12 +46,12 @@ namespace Microsoft.Maui.DeviceTests
 
 					var hoverBrush = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(resources["ButtonBackground"]);
 					var hoverColor = hoverBrush.Color;
-					Assert.Equal((byte)0xB2, hoverColor.A);
+					Assert.Equal(Color.FromArgb(hoverColorHex).ToWindowsColor(), hoverColor);
 					Assert.Equal(global::Windows.UI.Color.FromArgb(0, hoverColor.R, hoverColor.G, hoverColor.B), transparentBrush.Color);
 					foreach (var key in resourceKeys)
 						Assert.Equal(hoverColor, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(resources[key]).Color);
 
-					button.Background = new SolidPaintStub(Color.FromArgb("#00FF0000"));
+					button.Background = new SolidPaintStub(Color.FromArgb(transparentColorHex));
 					handler.UpdateValue(nameof(IView.Background));
 
 					var expectedTransparentColor = global::Windows.UI.Color.FromArgb(0, hoverColor.R, hoverColor.G, hoverColor.B);
