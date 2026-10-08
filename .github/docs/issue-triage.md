@@ -5,6 +5,22 @@ Post exactly `/issue triage` as a new comment on an **open issue** in
 The command proposes and applies evidence-backed manual issue labels and retains
 its explanation only in Actions artifacts, without posting a public triage report.
 Separate Policy Service replies triggered by feedback labels are unchanged.
+After successful validation and native safe-output processing, the exact
+authorized triggering slash-command comment collapses as **resolved**, including
+successful no-change and withheld-only results. A separate trusted completion job
+rechecks the open issue, unchanged human command and caller's current write access.
+It also requires every trusted validated addition to be present and every removal
+to be absent in the freshly fetched issue's exact canonical label names, not just
+successful native operation counts. This is a point-in-time postcondition check:
+malformed or unmet label state detected in that fetched snapshot keeps the command
+visible without changing any labels. The subsequent command checks and separate
+minimization mutation are not atomic with the label read; a concurrent label change
+after that snapshot can still occur before the command collapses.
+Failed, cancelled, deferred, skipped, warning, partial or incomplete outcomes leave
+the command visible. Manual dispatches (including staged runs), edited/replayed
+commands, bot comments and unrelated comments are never minimized. A minimization
+API error is reported in Actions without rolling back successful labels or posting
+a report; explanations remain artifact-only.
 It does not reproduce bugs, run samples, change milestones or
 assignees, close/reopen issues, modify product code or create pull requests.
 
