@@ -12,7 +12,9 @@ function Read-IssueReplicateHttpResponse {
     else {
         $MaxBytes = [Math]::Min($MaxBytes, 16384)
     }
-    if ($Response.Content.Headers.ContentLength -gt $MaxBytes) { throw 'The HTTP response exceeds its bound.' }
+    if ($Response.Content.Headers.ContentLength -gt $MaxBytes) {
+        throw "The HTTP response exceeds its bound: declared $($Response.Content.Headers.ContentLength) bytes, permitted $MaxBytes."
+    }
     $stream = $Response.Content.ReadAsStreamAsync($CancellationToken).GetAwaiter().GetResult()
     try {
         $bytes = [byte[]]::new($MaxBytes + 1)
@@ -22,7 +24,7 @@ function Read-IssueReplicateHttpResponse {
             if (-not $read) { break }
             $count += $read
         }
-        if ($count -gt $MaxBytes) { throw 'The HTTP response exceeds its bound.' }
+        if ($count -gt $MaxBytes) { throw "The HTTP response exceeds its bound: read at least $count bytes, permitted $MaxBytes." }
         $text = [Text.UTF8Encoding]::new($false, $true).GetString($bytes, 0, $count)
         if (-not $Response.IsSuccessStatusCode) {
             $errorResponse = $text | ConvertFrom-Json -Depth 8
@@ -173,7 +175,7 @@ function Start-IssueReplicateRecording {
     $options = @{ timeLimit = 30; forceRestart = $true }
     if ($Platform -eq 'android') {
         $options.bitRate = 100000
-        $options.videoSize = '480x854'
+        $options.videoSize = '400x712'
     }
     else {
         $options.videoType = 'libx264'

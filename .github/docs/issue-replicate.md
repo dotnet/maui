@@ -97,6 +97,9 @@ is reported as a **verified failing test candidate**, not proof that the
 author's scenario was exercised or the issue is confirmed. Only that outcome labels the complete generated candidate diff as verified failing.
 Both drafting attempts import the same bounded author-build record and include
 its validated target framework, outcome and diagnostic in the GPT prompt.
+Rendering/crash candidates must preserve the author's child order and render
+surface; a new opaque status overlay is not an unchanged-scenario confirmation.
+Hosted recording/toolchain failures do not justify rewriting that scenario.
 Generated UI tests must use existing category members; NavigationPage tests use
 `UITestCategories.Navigation`, not `UITestCategories.NavigationPage`.
 Boolean text waits must succeed before a required interaction. A failed load
@@ -138,6 +141,9 @@ reproduction media; the existing qualified-recording checks are unchanged.
 No snapshot request is inserted before or during the reported interaction.
 This diagnostic logging is enabled by CI output providers, not by default for
 standalone verifier calls. Raw clips retain the 512-KiB native limit in the log.
+Android capture uses 400x712 video at 100,000 bits/second to leave headroom
+for variable-rate output within that unchanged raw bound; this does not change
+the native app viewport. Hosted clip readability still needs verification.
 For GitHub's unchanged 256-KiB job-output limit, oversized qualified clips are
 two-pass encoded without trimming their duration, at up to 480 pixels wide and
 8 fps; duration, width, file shape and final byte size are checked. Encoder
