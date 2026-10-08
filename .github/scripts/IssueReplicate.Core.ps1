@@ -107,10 +107,15 @@ prepare().catch(error => {
             throw 'The owned iOS simulator could not begin booting within its deadline.'
         }
     }
-    $ready = Invoke-ProcessWithTimeout -FilePath 'xcrun' -TimeoutSeconds 180 `
+    $ready = Invoke-ProcessWithTimeout -FilePath 'xcrun' -TimeoutSeconds 600 `
         -ArgumentList @('simctl', 'bootstatus', $SimulatorUdid, '-b')
+    foreach ($row in @($ready.Output | Select-Object -Last 20)) {
+        $line = $row.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+        if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
+        Write-Host "Owned simulator boot status: $line"
+    }
     if ($ready.TimedOut -or $ready.OutputDrainTimedOut -or $ready.ExitCode -ne 0) {
-        throw 'The owned iOS simulator did not finish booting within its three-minute deadline.'
+        throw "The owned iOS simulator did not finish booting within its ten-minute cold-boot deadline (exit $($ready.ExitCode)); the candidate did not execute."
     }
     Write-Host "Building and checking the installed WebDriverAgent for pinned iOS $sdk ($SimulatorUdid); ten-minute preflight deadline."
     $timer = [Diagnostics.Stopwatch]::StartNew()
@@ -470,7 +475,8 @@ function Assert-IssueReplicateCandidate {
             }
             if ($surface -eq 'NUnit') {
                 if ($identifiers -match '\b(?:ResetAfterEachTest|FixtureSetup|FixtureOneTimeTearDown|TestSetup|TestTearDown|RecordTestSetup|RecordTestTeardown|InitialSetup|Reset|(?:SetUp|TearDown|OneTimeSetUp|OneTimeTearDown)(?:Attribute)?)\b') {
-                    throw 'A UI candidate must leave the default fixture lifecycle unchanged; lifecycle/reset hook references are unsupported.'
+                    $lifecycleToken = $Matches[0]
+                    throw "A UI candidate must leave the default fixture lifecycle unchanged; lifecycle/reset hook token '$lifecycleToken' is unsupported, including in comments and literals."
                 }
             }
         }

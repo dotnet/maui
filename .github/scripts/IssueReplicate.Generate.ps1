@@ -60,13 +60,14 @@ Draft a meaningful test from the immutable issue and sample even when the unchan
 HostApp pattern: namespace Maui.Controls.Sample.Issues; [Issue(IssueTracker.Github, $($manifest.issueNumber), "short description", PlatformAffected.$(if ($manifest.platform -eq 'ios') { 'iOS' } else { 'Android' }))] public class Issue$($manifest.issueNumber) : ContentPage { public Issue$($manifest.issueNumber)() { Content = new Label { AutomationId = "Result" }; } }
 For a Shell/flyout issue, derive the HostApp fixture from TestShell instead of embedding a Shell in a ContentPage. Build its Shell items, header and footer in protected override void Init(). Preserve the author's default item template when it matters.
 UI test pattern: namespace Microsoft.Maui.TestCases.Tests.Issues; public class Issue$($manifest.issueNumber) : _IssuesUITest { public Issue$($manifest.issueNumber)(TestDevice device) : base(device) {} public override string Issue => "short description"; }. Add exactly one non-parameterized [Test] method that uses App.WaitForElement("Result") and asserts the issue-specific expected behavior. Do not add TestCase/TestCaseSource, Repeat, or additional inherited tests: native video verification requires exactly one named test execution, with one matching Start/Stop pair and TRX body. Every UI test needs exactly one [Category(UITestCategories.ControlName)] attribute on its method or class, choosing an existing category member (for example UITestCategories.ScrollView). NavigationPage tests use UITestCategories.Navigation, not the nonexistent UITestCategories.NavigationPage. Do not invent a category member from the control's class name. Missing categories are compile errors (MAUI0001). Import NUnit.Framework, UITest.Appium, UITest.Core as appropriate.
-Keep the inherited NUnit fixture lifecycle unchanged. Do not reference ResetAfterEachTest, FixtureSetup, FixtureOneTimeTearDown, TestSetup, TestTearDown, RecordTestSetup, RecordTestTeardown, InitialSetup or Reset in the shared NUnit source, even in comments or literals. Do not add SetUp/TearDown/OneTimeSetUp/OneTimeTearDown attributes, override lifecycle hooks or reset/recreate the Appium session. Put issue-specific interaction in the single test body instead; App.ResetApp is distinct from resetting the fixture/session.
+Keep the inherited NUnit fixture lifecycle unchanged. The admission scan checks the entire source case-insensitively, including comments, diagnostic messages and literals: avoid the standalone words reset, setup and teardown even in ordinary prose. Do not reference ResetAfterEachTest, FixtureSetup, FixtureOneTimeTearDown, TestSetup, TestTearDown, RecordTestSetup, RecordTestTeardown, InitialSetup or Reset in the shared NUnit source. Do not add SetUp/TearDown/OneTimeSetUp/OneTimeTearDown attributes, override lifecycle hooks or reset/recreate the Appium session. Put issue-specific interaction in the single test body instead; App.ResetApp is distinct from resetting the fixture/session. For restoring an observed value, use return-to-baseline or restore in messages and comments, not a forbidden standalone token.
 UI platform guard: #if $uiCondition
 For UI candidates, put that exact guard on the first line of the entire shared NUnit file and #endif on its last line. Keep all using directives, namespaces and fixture declarations inside it, with no other preprocessor directives. This candidate may be verified only on $($manifest.platform); PlatformAffected on the HostApp page is metadata and does not restrict test discovery. TEST_FAILS_ON_* symbols exclude their named platform, so do not select the tested platform with its own TEST_FAILS_ON_* symbol. Do not restrict unit or XAML candidates with this UI guard.
 HostApp platform guard: #if $hostAppCondition
 For UI candidates, put that exact guard on the first line of the entire HostApp file and #endif on its last line, including all using directives and declarations inside it with no other preprocessor directives. The HostApp project is multi-targeted; PlatformAffected does not prevent compilation on other platforms. Do not broaden this guard to any unverified platform. Unit and XAML candidates do not use this guard.
 Read rendered bounds with App.WaitForElement("automationId").GetRect() and text with App.WaitForElement("automationId").GetText(); there is no App.GetElementRect API. After changing UI state, wait for the changed text with App.WaitForTextToBePresentInElement("automationId", "expected text") rather than waiting again for an element that was already visible. For native rendering bugs, assert the rendered result, not just the managed property value.
-WaitForTextToBePresentInElement returns a boolean: always check it and throw an ordinary TimeoutException when a required readiness/state transition was not observed. Never ignore a false wait result and proceed to the reported interaction. Wait for each required button and click that returned element rather than tapping a possibly absent element.
+WaitForTextToBePresentInElement returns a boolean: always check it and throw an ordinary TimeoutException when a required readiness/state transition was not observed. Never ignore a false wait result and proceed to the reported interaction. Wait for each required button and call Click() on that returned IUIElement: App.WaitForElement("buttonId").Click(). App.Click accepts an automation-id string, not an IUIElement; do not pass the returned element to App.Click.
+For physical device orientation, use the supported external runner methods App.SetOrientationLandscape() and App.SetOrientationPortrait(), not HostApp UIWindowScene.RequestGeometryUpdate instrumentation. Preserve platform analyzers and deployment targets. If an original scenario requires a newer native API, guard it with OperatingSystem.IsIOSVersionAtLeast for its actual introduced version; compilation against a new SDK does not raise the HostApp deployment minimum.
 When the reported interaction changes an OS setting, change that actual setting through platform automation from the external test runner. Do not replace it with synthetic notifications, controller trait overrides, or direct updates of the controls under test. For iOS simulator Dynamic Type, the macOS NUnit runner can invoke xcrun with fixed ProcessStartInfo.ArgumentList arguments: simctl ui booted content_size. Query and preserve the original category, set large for the initial baseline, change to accessibility-large while the app stays alive, check process exit codes with a bounded timeout, and restore the original category in finally. A failed prerequisite must be inconclusive, not a bug assertion. Confirm the live change using the already-working page label, then separately assert the affected flyout views. Scope native font observations to the tested component's subtree; a similarly titled page or navigation label is not evidence about a flyout item.
 Preserve the repro's relevant control hierarchy, content size, and state. Do not add tall filler content that introduces scrolling or overscroll when the author's content fits the viewport. Assert the expected initial state before applying the issue interaction. Initial-state assertions must observe the actual control or bound view-model state, not a status label initialized to the expected literal. Bind diagnostic labels to the observed value or update them from its real change notifications so later native-driven changes remain visible. Verify that the requested interaction actually ran; a guard that skips it must not look like an executed reproduction. For transient gesture or animation bugs, observe the incorrect state while it happens or record native-driven movement callbacks in a sticky result label; checking only the settled position after a gesture can miss a rebound. An event the issue explicitly says already behaves correctly is not sufficient coverage on its own.
 For a non-scrollable WebView inside a parent ScrollView, require loaded native HTML with no vertical overflow, a positive ordinary-label gesture control, a finite observed parent ScrollY reset within 0.5 of zero, and containment of the WebView within the native viewport before the WebView gesture. Keep those preconditions as ordinary setup exceptions, not issue assertions. For a reported native crash, preserve the author's external/local WebView content and rendering settings; generic teardown or app disappearance is not the reported signal/backtrace.
@@ -100,13 +101,31 @@ $responsePath = Join-Path $OutputDirectory 'copilot.jsonl'
 if ($LASTEXITCODE -ne 0) { throw 'Copilot could not produce a candidate test.' }
 $candidate = ConvertFrom-IssueReplicateCopilotOutput -Path $responsePath
 Remove-Item -LiteralPath $responsePath -Force
-if ($candidate.kind -eq 'unsupported') {
-    if (@($candidate.files).Count -ne 0) { throw 'Unsupported candidates cannot contain files.' }
-} else {
-    Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber ([int]$manifest.issueNumber) `
-        -Platform $manifest.platform | Out-Null
+$candidateJson = $candidate | ConvertTo-Json -Depth 6 -Compress
+$candidateBytes = [Text.Encoding]::UTF8.GetBytes($candidateJson)
+if ($candidateBytes.Length -gt 80000) { throw 'The serialized candidate exceeds the verification limit.' }
+try {
+    if ($candidate.kind -eq 'unsupported') {
+        if (@($candidate.files).Count -ne 0) { throw 'Unsupported candidates cannot contain files.' }
+    }
+    else {
+        Assert-IssueReplicateCandidate -Candidate $candidate -IssueNumber ([int]$manifest.issueNumber) `
+            -Platform $manifest.platform | Out-Null
+    }
 }
-$candidate | ConvertTo-Json -Depth 6 -Compress | Set-Content -LiteralPath (Join-Path $OutputDirectory 'candidate.json') -Encoding utf8
+catch {
+    [IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'rejected-candidate.json'), $candidateBytes)
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($candidateBytes)).ToLowerInvariant()
+    Write-Host "Rejected proposal diagnostic only; no admitted candidate, execution or assertion."
+    Write-Host "ISSUE_REPLICATE_REJECTED_CANDIDATE_SHA256=$hash"
+    Write-Host "ISSUE_REPLICATE_REJECTED_CANDIDATE_BYTES=$($candidateBytes.Length)"
+    for ($index = 0; $index * 4096 -lt $candidateBytes.Length; $index++) {
+        $length = [Math]::Min(4096, $candidateBytes.Length - $index * 4096)
+        Write-Host "ISSUE_REPLICATE_REJECTED_CANDIDATE_$index=$([Convert]::ToBase64String($candidateBytes, $index * 4096, $length))"
+    }
+    throw
+}
+$candidateJson | Set-Content -LiteralPath (Join-Path $OutputDirectory 'candidate.json') -Encoding utf8
 if ((Get-Item -LiteralPath (Join-Path $OutputDirectory 'candidate.json')).Length -gt 80000) {
     throw 'The serialized candidate exceeds the verification limit.'
 }

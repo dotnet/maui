@@ -122,26 +122,37 @@ jobs:
         displayName: 'Provision Appium only for UI candidates'
         env:
           APPIUM_HOME: $(Pipeline.Workspace)/.appium
-      - ${{ if eq(parameters.platform, 'ios') }}:
-        - pwsh: |
-            $ErrorActionPreference = 'Stop'
-            $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
-              ConvertFrom-Json -Depth 6
-            if ($candidate.kind -ne 'ui') { exit 0 }
-            if (-not (Get-Command ffmpeg -CommandType Application -ErrorAction SilentlyContinue)) {
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+            ConvertFrom-Json -Depth 6
+          if ($candidate.kind -ne 'ui') { exit 0 }
+          if (-not (Get-Command ffmpeg -CommandType Application -ErrorAction SilentlyContinue) -or
+              -not (Get-Command ffprobe -CommandType Application -ErrorAction SilentlyContinue)) {
+            if ($IsMacOS) {
               & brew install ffmpeg
-              if ($LASTEXITCODE -ne 0) { throw 'Could not install FFmpeg for native iOS recording.' }
+              if ($LASTEXITCODE -ne 0) { throw 'Could not install FFmpeg for native recording.' }
+            } elseif ($IsLinux) {
+              & sudo apt-get update -qq
+              if ($LASTEXITCODE -ne 0) { throw 'Could not refresh the hosted FFmpeg package index.' }
+              & sudo apt-get install -y -qq ffmpeg
+              if ($LASTEXITCODE -ne 0) { throw 'Could not install FFmpeg for native recording.' }
+            } else {
+              throw 'Native recording requires a supported disposable macOS or Linux agent.'
             }
-            $ffmpeg = Get-Command ffmpeg -CommandType Application -ErrorAction Stop | Select-Object -First 1
-            $version = @(& $ffmpeg.Source -hide_banner -version)
-            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg could not report its version.' }
+          }
+          foreach ($binary in @('ffmpeg', 'ffprobe')) {
+            $tool = Get-Command $binary -CommandType Application -ErrorAction Stop | Select-Object -First 1
+            $version = @(& $tool.Source -hide_banner -version)
+            if ($LASTEXITCODE -ne 0) { throw "$binary could not report its version." }
             $version | Select-Object -First 1 | ForEach-Object { Write-Host $_ }
-            $encoders = @(& $ffmpeg.Source -hide_banner -encoders 2>&1)
-            if ($LASTEXITCODE -ne 0 -or -not ($encoders -match '\blibx264\b')) {
-              throw 'Native iOS recording requires the FFmpeg libx264 encoder.'
-            }
-          displayName: 'Require FFmpeg with libx264 for native iOS video'
-          timeoutInMinutes: 10
+          }
+          $encoders = @(& ffmpeg -hide_banner -encoders 2>&1)
+          if ($LASTEXITCODE -ne 0 -or -not ($encoders -match '\blibx264\b')) {
+            throw 'Native recording requires the FFmpeg libx264 encoder.'
+          }
+        displayName: 'Require FFmpeg, ffprobe and libx264 for native video'
+        timeoutInMinutes: 10
       - ${{ if eq(parameters.platform, 'android') }}:
         - bash: |
             set -euo pipefail

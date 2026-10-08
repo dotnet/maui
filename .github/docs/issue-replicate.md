@@ -313,6 +313,9 @@ attributes are unsupported as well. Put issue-specific interaction
 in the one test body instead. If the framework's own setup recovery reports a
 successful session recreation, the controller restarts recording on that new
 session before the body completes. These checks are not an isolation boundary.
+Generation rejection keeps the guard intact and logs the exact matched lifecycle
+token plus a bounded, SHA256-labelled, base64 proposal diagnostic. Rejected source
+is not a candidate envelope and is never admitted to native execution or publication.
 The recording is visual context for the generated candidate, not proof of the
 author's exact app interaction or tamper-proof evidence. Unit/XAML candidates
 do not record a UI video. Recorder or upload failures remain explicit in the
@@ -410,15 +413,17 @@ XCUITest driver's WebDriverAgent library to resolve its derived-data directory
 and build for that owned simulator and the pinned SDK version. The bundled
 `build-wda` command does not resolve this directory before building; its default
 Xcode output can differ from the directory used by the native runner. Preparation
-uses the driver's own path resolution rather than a hardcoded cache path. This
-separates a cold WebDriverAgent build from the unchanged pinned runner's
+uses the driver's own path resolution rather than a hardcoded cache path.
+The uniquely owned simulator first has a ten-minute cold-boot deadline, with a
+bounded boot-status diagnostic tail; it must actually become ready.
+Preparation separates a cold WebDriverAgent build from the unchanged pinned runner's
 session-launch timeout. Preparation has a ten-minute process
 deadline, emits a bounded diagnostic tail, and fails explicitly on a build error,
 timeout, or incomplete output capture; none is a candidate assertion. It does not
 change the pinned framework, Appium package versions, or launch capabilities.
 Successful prebuilding alone is not evidence that WebDriverAgent starts or that
 the test body executes.
-Native iOS UI jobs also require FFmpeg with the `libx264` encoder before running
+Native iOS and Android UI jobs also require FFmpeg, ffprobe and the `libx264` encoder before running
 the candidate. A missing binary is installed on that disposable hosted agent;
 installation, version and encoder checks fail explicitly. Recorder HTTP failures
 retain the bounded Appium error message rather than only its status code. Error
