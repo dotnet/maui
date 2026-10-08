@@ -2007,26 +2007,58 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateToolbarItems();
 			}
 
+			void UpdateSecondaryMenuOnly()
+			{
+				var menuButton = NavigationItem.RightBarButtonItems?.FirstOrDefault(
+					item => item.AccessibilityIdentifier == "SecondaryToolbarMenuButton");
+
+				if (menuButton is null)
+					return;
+
+				List<UIMenuElement> secondaries = null;
+
+				foreach (var item in _tracker.ToolbarItems)
+				{
+					if (item.Order == ToolbarItemOrder.Secondary)
+						(secondaries ??= []).Add(CreateSecondaryPlatformAction(item));
+				}
+
+				if (secondaries is not null)
+					menuButton.Menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+			}
+
 			void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				// Only rebuild toolbar items if a relevant property changed
-				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
+				var item = sender as ToolbarItem;
+				var isRelevantProperty =
+					e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
 					e.PropertyName == MenuItem.TextProperty.PropertyName ||
-					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName;
+
+				if (item is null || !isRelevantProperty)
+					return;
+
+				if (item.Order != ToolbarItemOrder.Secondary &&
+					e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
 				{
-					// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
-					if (!_toolbarUpdatePending)
+					return;
+				}
+
+				// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
+				if (!_toolbarUpdatePending)
+				{
+					_toolbarUpdatePending = true;
+					BeginInvokeOnMainThread(() =>
 					{
-						_toolbarUpdatePending = true;
-						BeginInvokeOnMainThread(() =>
+						_toolbarUpdatePending = false;
+						if (!_disposed)
 						{
-							_toolbarUpdatePending = false;
-							if (!_disposed)
-							{
+							if (item.Order == ToolbarItemOrder.Secondary)
+								UpdateSecondaryMenuOnly();
+							else
 								UpdateToolbarItems();
-							}
-						});
-					}
+						}
+					});
 				}
 			}
 
