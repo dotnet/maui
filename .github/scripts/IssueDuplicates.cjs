@@ -324,7 +324,31 @@ async function validate({
         (left, right) =>
             right.probability - left.probability || left.issueNumber - right.issueNumber,
     );
-    const reportHash = hash({ contextHash: expectedHash, matches });
+    const rows = matches.map(
+        (match) =>
+            `| [${plainText(match.title)} (#${match.issueNumber})](${match.url}) | ${match.state} | ` +
+            `**${match.probability}%** | ${match.probability >= 85 ? 'Likely duplicate' : 'Possible duplicate'} | ` +
+            `${plainText(match.evidence)}<br>**Differences/uncertainty:** ${plainText(match.differences)} |`,
+    );
+    const excerpts = matches.map(
+        (match) =>
+            `**#${match.issueNumber} evidence:** [Current report](${match.targetEvidence.url}): ` +
+            `"${plainText(match.targetEvidence.quote)}"; [candidate](${match.candidateEvidence.url}): ` +
+            `"${plainText(match.candidateEvidence.quote)}".`,
+    );
+    const reportBody = [
+        '## Possible duplicate issues',
+        '',
+        'These probabilities are uncalibrated AI estimates of the same underlying issue, not title-similarity scores or confirmed duplicate decisions. Maintainers decide whether to consolidate reports; this workflow never labels or closes issues.',
+        '',
+        '| Issue | State | Duplicate probability | Assessment | Evidence |',
+        '| --- | --- | --- | --- | --- |',
+        ...rows,
+        '',
+        ...excerpts.flatMap((excerpt) => [excerpt, '']),
+        'Closed candidates are historical context. A recurrence after a fix can be a new regression, not a duplicate.',
+    ].join('\n');
+    const reportHash = hash(reportBody);
     const marker = `${reportPrefix}${reportHash}`;
     const existing = current.comments.some((comment) => getReportHash(comment) === reportHash);
     if (existing) {
@@ -335,29 +359,8 @@ async function validate({
             },
         ];
     } else {
-        const rows = matches.map(
-            (match) =>
-                `| [${plainText(match.title)} (#${match.issueNumber})](${match.url}) | ${match.state} | ` +
-                `**${match.probability}%** | ${match.probability >= 85 ? 'Likely duplicate' : 'Possible duplicate'} | ` +
-                `${plainText(match.evidence)}<br>**Differences/uncertainty:** ${plainText(match.differences)} |`,
-        );
-        const excerpts = matches.map(
-            (match) =>
-                `**#${match.issueNumber} evidence:** [Current report](${match.targetEvidence.url}): ` +
-                `"${plainText(match.targetEvidence.quote)}"; [candidate](${match.candidateEvidence.url}): ` +
-                `"${plainText(match.candidateEvidence.quote)}".`,
-        );
         item.body = [
-            '## Possible duplicate issues',
-            '',
-            'These probabilities are uncalibrated AI estimates of the same underlying issue, not title-similarity scores or confirmed duplicate decisions. Maintainers decide whether to consolidate reports; this workflow never labels or closes issues.',
-            '',
-            '| Issue | State | Duplicate probability | Assessment | Evidence |',
-            '| --- | --- | --- | --- | --- |',
-            ...rows,
-            '',
-            ...excerpts.flatMap((excerpt) => [excerpt, '']),
-            'Closed candidates are historical context. A recurrence after a fix can be a new regression, not a duplicate.',
+            reportBody,
             '',
             `[Workflow result](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`,
             '',

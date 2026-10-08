@@ -56,6 +56,10 @@ files. The agent job also has a 15-minute timeout. Missing required evidence
 is an incomplete run, not proof that there are no duplicates.
 An unchanged report is suppressed. Changed reports are posted as new comments;
 existing bot and human comments are never edited, deleted, or minimized.
+The fingerprint covers the trusted rendered table, assessments, and excerpts,
+not the evidence-freshness hash or per-run workflow link. An unrelated target
+comment therefore cannot defeat suppression when the rendered report is unchanged;
+the separate evidence hashes still require fresh target and candidate snapshots.
 The visible report fingerprint survives gh-aw's content sanitization. Reports
 are recognized by the bot author, trusted workflow markers, and exact fingerprint
 even when the publisher prepends a caution. Recognized reports are excluded
@@ -142,7 +146,8 @@ check against the v0.86.2 base before inference.
 Go 1.26.5 or later is required for this build-only workaround. The helper caches
 the pinned source and compiler under `${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw`,
 checks the source revision and cleanliness before every build, and removes
-publication/inference tokens from the compiler build's environment. The build
+publication/inference tokens from both the build and compiler execution using
+the same command-scoped environment wrapper. The build
 sets `GOWORK=off`, so parent- or source-local `go.work` files cannot override the
 pinned module's dependency selection. This isolates Go workspace resolution,
 not every aspect of the build environment. Replace this helper with a fixed

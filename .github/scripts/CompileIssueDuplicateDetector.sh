@@ -8,6 +8,15 @@ cache_directory="${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw/$compiler_commit"
 source_directory="$cache_directory/source"
 compiler_binary="$cache_directory/gh-aw"
 
+run_without_tokens() {
+  env -u GH_TOKEN -u GITHUB_TOKEN -u COPILOT_GITHUB_TOKEN -u GH_COMMENT_TOKEN \
+    -u GH_AW_GITHUB_TOKEN -u GH_AW_GITHUB_MCP_SERVER_TOKEN \
+    -u COPILOT_PAT_0 -u COPILOT_PAT_1 -u COPILOT_PAT_2 -u COPILOT_PAT_3 \
+    -u COPILOT_PAT_4 -u COPILOT_PAT_5 -u COPILOT_PAT_6 -u COPILOT_PAT_7 \
+    -u COPILOT_PAT_8 -u COPILOT_PAT_9 \
+    "$@"
+}
+
 if ! command -v go >/dev/null 2>&1; then
   echo "Compiling the duplicate detector requires Go 1.26.5 or later." >&2
   exit 127
@@ -35,15 +44,10 @@ fi
 
 (
   cd "$source_directory"
-  env -u GH_TOKEN -u GITHUB_TOKEN -u COPILOT_GITHUB_TOKEN -u GH_COMMENT_TOKEN \
-    -u GH_AW_GITHUB_TOKEN -u GH_AW_GITHUB_MCP_SERVER_TOKEN \
-    -u COPILOT_PAT_0 -u COPILOT_PAT_1 -u COPILOT_PAT_2 -u COPILOT_PAT_3 \
-    -u COPILOT_PAT_4 -u COPILOT_PAT_5 -u COPILOT_PAT_6 -u COPILOT_PAT_7 \
-    -u COPILOT_PAT_8 -u COPILOT_PAT_9 \
-    GOWORK=off go build -p 4 \
+  run_without_tokens GOWORK=off go build -p 4 \
     -ldflags "-X main.version=$compiler_version -X main.isRelease=true" \
     -o "$compiler_binary" ./cmd/gh-aw
 )
 
-"$compiler_binary" compile issue-duplicate-detector --strict --validate --no-check-update \
+run_without_tokens "$compiler_binary" compile issue-duplicate-detector --strict --validate --no-check-update \
   --action-mode action --action-tag "$runtime_commit" "$@"
