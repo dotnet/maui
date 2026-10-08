@@ -21,11 +21,6 @@ steps:
   - template: issue-replicate-sdk.yml
   - ${{ if eq(parameters.platform, 'android') }}:
     - template: issue-replicate-linux-disk.yml
-  - ${{ if eq(parameters.platform, 'ios') }}:
-    - pwsh: |
-        & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
-          -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
-      displayName: 'Require Xcode matching the pinned iOS SDK'
   - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
     displayName: 'Prepare local provisioning logs'
   - ${{ if eq(parameters.platform, 'android') }}:
@@ -38,8 +33,8 @@ steps:
       skipInternalFeeds: true
       skipCertificates: true
       skipGradleCache: true
-      skipXcode: ${{ eq(parameters.platform, 'android') }}
-      skipSimulatorSetup: ${{ eq(parameters.platform, 'android') }}
+      skipXcode: true
+      skipSimulatorSetup: true
       skipJdk: ${{ eq(parameters.platform, 'ios') }}
       skipAndroidCommonSdks: ${{ eq(parameters.platform, 'ios') }}
       skipAndroidPlatformApis: true
