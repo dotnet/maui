@@ -114,6 +114,12 @@ job, with at most one feedback-driven revision. A passing test means only
 runs, with the same failing test, assertion diagnostic and source signature,
 is reported as a **verified failing test candidate**, not proof that the
 author's scenario was exercised or the issue is confirmed. Only that outcome labels the complete generated candidate diff as verified failing.
+Keep invariant assertion explanations stable, and log incidental timing or
+successful-control measurements separately. The reviewed WebView-scroll probe
+retains its positive label control and the unchanged `WebViewOffset > 20`
+assertion; both measured offsets are logged without inserting the variable
+label offset into the assertion identity. Expected/actual assertion values and
+the strict cross-run identity comparison are not normalized or weakened.
 Both drafting attempts import the same bounded author-build record and include
 its validated target framework, outcome and diagnostic in the GPT prompt.
 Rendering/crash candidates must preserve the author's child order and render

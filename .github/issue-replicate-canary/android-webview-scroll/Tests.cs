@@ -55,8 +55,9 @@ public class Issue38452 : _IssuesUITest
 		App.DragCoordinates(webView.CenterX(), webView.Y + webView.Height * 0.8f,
 			webView.CenterX(), webView.Y + webView.Height * 0.2f);
 		var webViewOffset = WaitForOuterScroll();
+		TestContext.Progress.WriteLine($"Outer-scroll gesture offsets: label={controlOffset:F1}, WebView={webViewOffset:F1}.");
 		Assert.That(webViewOffset, Is.GreaterThan(20),
-			$"A gesture starting on non-overflowing HTML must scroll its parent, as the label control did ({controlOffset:F1}).");
+			"A gesture starting on non-overflowing HTML must scroll its parent, as the successful label control did.");
 	}
 
 	double WaitForOuterScroll(bool requireTop = false)
