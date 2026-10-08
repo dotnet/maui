@@ -93,6 +93,7 @@ namespace Microsoft.Maui.Platform
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 		WeakReference<object>? _data;
+		string? _automationId;
 
 		public object? Content
 		{
@@ -104,6 +105,12 @@ namespace Microsoft.Maui.Platform
 		{
 			get { return _icon; }
 			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
+		}
+
+		public string? AutomationId
+		{
+			get => _automationId;
+			set { this.SetProperty(ref _automationId, value, OnPropertyChanged); }
 		}
 
 		public WBrush? Foreground

@@ -690,7 +690,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
-				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.CurrentItem?.AutomationId ?? ShellSection.Title;
 				_nativeTabRegistrations.Register(
 					shellSection,
 					TabBarItem,

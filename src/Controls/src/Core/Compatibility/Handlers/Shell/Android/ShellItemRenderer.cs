@@ -23,6 +23,7 @@ using AView = Android.Views.View;
 using IMenu = Android.Views.IMenu;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Orientation = Android.Widget.Orientation;
+using AndroidX.Core.View.Accessibility;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -707,6 +708,41 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			using (var menu = _bottomView.Menu)
 				SetupMenu(menu, _bottomView.MaxItemCount, ShellItem);
+			UpdateTabBarAutomationIds();
+		}
+
+		void UpdateTabBarAutomationIds()
+		{
+			var shellItemAutomationId = ShellItem.AutomationId;
+
+			if (!string.IsNullOrEmpty(shellItemAutomationId))
+			{
+				ViewCompat.SetAccessibilityDelegate(
+					_bottomView,
+					new AutomationIdAccessibilityDelegate(shellItemAutomationId));
+			}
+
+			var shellItems = ((IShellItemController)ShellItem).GetItems();
+
+			for (int i = 0; i < shellItems.Count && i < _bottomView.Menu.Size(); i++)
+			{
+				var automationId = shellItems[i].CurrentItem?.AutomationId;
+
+				if (string.IsNullOrEmpty(automationId))
+					continue;
+
+				using var menuItem = _bottomView.Menu.GetItem(i);
+
+				// Get the native view corresponding to this menu item
+				var itemView = _bottomView.FindViewById(menuItem.ItemId);
+
+				if (itemView is not null)
+				{
+					ViewCompat.SetAccessibilityDelegate(
+						itemView,
+						new AutomationIdAccessibilityDelegate(automationId));
+				}
+			}
 		}
 
 		protected virtual void UpdateTabBarVisibility()
@@ -736,6 +772,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SetAppearance(_shellAppearance);
 			}
+		}
+	}
+	
+	sealed class AutomationIdAccessibilityDelegate : AccessibilityDelegateCompat
+	{
+		readonly string _automationId;
+
+		public AutomationIdAccessibilityDelegate(string automationId)
+		{
+			_automationId = automationId;
+		}
+
+		public override void OnInitializeAccessibilityNodeInfo(
+			AView host,
+			AccessibilityNodeInfoCompat info)
+		{
+			base.OnInitializeAccessibilityNodeInfo(host, info);
+			info.ViewIdResourceName = _automationId;
 		}
 	}
 }
