@@ -5,6 +5,7 @@
     <DataTemplate x:Key="TabBarNavigationViewMenuItem">
         <NavigationViewItem 
             x:Name="navViewItem"
+            AutomationProperties.AutomationId="{Binding AutomationId}"
             Content="{Binding Content}"
             Background="{Binding Background}" 
             IsEnabled="{Binding IsEnabled}"

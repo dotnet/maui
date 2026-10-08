@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Platform
 		string? _badgeText;
 		WBrush? _badgeBackground;
 		WBrush? _badgeForeground;
+		string? _automationId;
 
 		public object? Content
 		{
@@ -114,6 +115,12 @@ namespace Microsoft.Maui.Platform
 					UpdateForeground();
 				}
 			}
+		}
+
+		public string? AutomationId
+		{
+			get => _automationId;
+			set { this.SetProperty(ref _automationId, value, OnPropertyChanged); }
 		}
 
 		public WBrush? Foreground

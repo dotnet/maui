@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (mauiNavView is not null)
 			{
+				mauiNavView.SetAutomationProperties(VirtualView, MauiContext);
 				mauiNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
 				mauiNavView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 				mauiNavView.IsSettingsVisible = false;
@@ -375,6 +376,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
+					vm.AutomationId = bsi.AutomationId;
 					vm.Content = bsi.Title;
 
 					vm.IsEnabled = bsi.IsEnabled;
@@ -403,8 +405,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			UpdateOverflowMenuItems();
 
-			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
-				navView.SelectedItem = selectedItem;
+			if (PlatformView is NavigationView navView)
+			{
+				navView.SetAutomationPropertiesAutomationId(VirtualView.AutomationId);
+
+				if (navView.SelectedItem != selectedItem)
+					navView.SelectedItem = selectedItem;
+			}
 
 			if (_shellAppearanceElement is not null)
 			{
