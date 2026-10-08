@@ -403,7 +403,8 @@ try {
                         finally { $recordingSession = '' }
                     }
                     if ($line -match '^>>> TRX_RESULT_FILE: (.+)$') { $reportedTrx.Add($Matches[1]) }
-                    if ($testLines.Count -lt 3000) { $testLines.Add($line) }
+                    if ($testLines.Count -ge 3000) { $testLines.RemoveAt(0) }
+                    $testLines.Add($line)
                     Write-Host $line
                 }
             $global:LASTEXITCODE = $runnerState.ExitCode
@@ -413,7 +414,8 @@ try {
                 --results-directory $trxDirectory --nologo --verbosity quiet 2>&1 |
                 ForEach-Object {
                     $line = $_.ToString().Replace("`r", '') -replace '##vso\[[^]]*\]', ''
-                    if ($testLines.Count -lt 3000) { $testLines.Add($line) }
+                    if ($testLines.Count -ge 3000) { $testLines.RemoveAt(0) }
+                    $testLines.Add($line)
                     Write-Host $line
                 }
         }

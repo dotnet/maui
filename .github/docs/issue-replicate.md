@@ -123,13 +123,19 @@ retains its positive label control and the unchanged `WebViewOffset > 20`
 assertion; both measured offsets are logged without inserting the variable
 label offset into the assertion identity. Expected/actual assertion values and
 the strict cross-run identity comparison are not normalized or weakened.
-Both drafting attempts import the same bounded author-build record and include
+Both drafting attempts import the same bounded author-build record, including
 its validated target framework, outcome and diagnostic in the GPT prompt.
+Verifier feedback retains the latest bounded compiler/native log tail rather
+than only early build output.
 Rendering/crash candidates must preserve the author's child order and render
 surface; a new opaque status overlay is not an unchanged-scenario confirmation.
 Hosted recording/toolchain failures do not justify rewriting that scenario.
 Generated UI tests must use existing category members; NavigationPage tests use
 `UITestCategories.Navigation`, not `UITestCategories.NavigationPage`.
+Native-navigation scenarios retain a real navigation host before observing its
+bar or rotating the device. Unset-width scenarios retain the zero/non-accessible
+baseline and observe actual native bounds instead of demanding a positive initial
+element or substituting its requested width.
 Boolean text waits must succeed before a required interaction. A failed load
 or readiness transition is an ordinary prerequisite exception, not an issue
 assertion. Crash scenarios after WebView navigation retain the actual
