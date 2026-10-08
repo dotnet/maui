@@ -90,6 +90,10 @@ stale, no-match, and identical-report-suppressed outputs produce no report previ
 To publish, explicitly pass
 `--raw-field staged=false`. New/reopened issue events publish qualifying reports.
 No-match runs intentionally produce no comment.
+The run-scoped evidence artifact is overwritten when the collector reruns, so
+full reruns do not collide with immutable uploads. Failed-job-only reruns can
+still download the completed collector's artifact; final freshness checks remain
+required before publication.
 
 The workflow uses the existing `copilot-pat-pool` environment and GPT-6.1 Sol
 configuration. No additional service, model provider, token, or secret is needed.
@@ -101,18 +105,36 @@ The GitHub MCP's repository guard restricts both searches and issue reads to
 `dotnet/maui`; repository scope is enforced rather than left to the prompt.
 The gateway's public-repository scope override is disabled so it cannot broaden
 that explicit scope to all public repositories.
+Exact repository scope conservatively carries the `private:dotnet/maui` secrecy
+label even for public reports. The workflow declares
+`private-to-public-flows: [safeoutputs]` for that built-in server only; its
+write-sink still accepts only `private:dotnet/maui`. The compiler omits sink
+visibility only for this exempted safe-output server, not for unrelated sinks,
+and does not emit a blanket `allow` or wildcard exemption.
+The trusted collector and validator check live repository metadata and reject
+anything other than public `dotnet/maui`, including a final check before a report
+is approved for publication. The compiled Copilot command grants neither shell
+nor filesystem-write tools.
 
 ## Editing and validation
 
 Stock gh-aw v0.86.2 rewrites structured GitHub `allowed` entries to tool names
-during default-tool normalization, dropping their `max-calls` metadata.
+during default-tool normalization, dropping their `max-calls` metadata, and
+grants filesystem-write permission even when `edit: false` is declared.
 [`CompileIssueDuplicateDetector.sh`](../scripts/CompileIssueDuplicateDetector.sh)
 builds an isolated compiler from the immutable
-[`38188610df02cd73cb595f21efd90f515b94944f` correction](https://github.com/kubaflo/gh-aw/commit/38188610df02cd73cb595f21efd90f515b94944f)
+[`8b600a3beee3591b7add4c79e595d9481a470cc4` correction](https://github.com/kubaflo/gh-aw/commit/8b600a3beee3591b7add4c79e595d9481a470cc4)
 on top of v0.86.2. The correction preserves both gateway call limits and
-Copilot's explicit tool permissions. It does not install or replace the user's
-`gh aw` extension. Compiler metadata identifies the patched build; all runtime
-actions and containers retain their existing official immutable pins.
+Copilot's explicit tool permissions, honors disabled editing, and wires the
+scoped safe-output exemption consistently in strict validation and JSON/TOML
+configuration. It does not install or replace the user's `gh aw` extension.
+Compiler metadata identifies the patched build.
+Only the official MCP gateway is upgraded, to
+[`v0.4.30`](https://github.com/github/gh-aw-mcpg/releases/tag/v0.4.30), whose
+[`sink-visibility correction`](https://github.com/github/gh-aw-mcpg/commit/ece856095ca6445fc4f41884512478b1d4e2851c)
+honors the safe-output exemption. Its immutable image digest is
+`sha256:ab5a436a1490438db473e4e3d4c973cb1d75e3cb233fb08b73d31b42d7d18fba`.
+All other runtime action/container pins and engine versions remain unchanged.
 The custom compiler version is not recognized by the runtime's official-release
 checker, so an explicit pre-agent step runs the same compatibility and revocation
 check against the v0.86.2 base before inference.
@@ -122,8 +144,9 @@ the pinned source and compiler under `${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw
 checks the source revision and cleanliness before every build, and removes
 publication/inference tokens from the compiler build's environment. Replace this
 helper with a fixed official compiler after verifying that it preserves the
-counter policy and explicit Copilot allowlist; do not regenerate with stock
-v0.86.2 or hand-edit the generated lock.
+counter policy, explicit Copilot allowlist, disabled editing and scoped
+safe-output policy; do not regenerate with stock v0.86.2 or hand-edit the
+generated lock.
 
 Commit the source, compilation helper, trusted publisher and compiled lock file together:
 

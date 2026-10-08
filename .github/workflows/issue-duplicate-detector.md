@@ -33,9 +33,10 @@ on:
       with:
         script: |
           const allowed = context.payload.repository.full_name === 'dotnet/maui' &&
+            context.payload.repository.private === false &&
             context.ref === `refs/heads/${context.payload.repository.default_branch}`;
           core.setOutput('allowed', String(allowed));
-          if (!allowed) core.info('Duplicate detection requires trusted dotnet/maui default-branch infrastructure.');
+          if (!allowed) core.info('Duplicate detection requires trusted public dotnet/maui default-branch infrastructure.');
     - name: Checkout trusted duplicate-detection tooling
       if: steps.authorization.outputs.allowed == 'true'
       uses: actions/checkout@v7.0.1
@@ -64,6 +65,7 @@ on:
       with:
         name: issue-duplicate-context-${{ github.run_id }}
         path: ${{ runner.temp }}/issue-duplicate-context/context.json
+        overwrite: true
         retention-days: 7
         if-no-files-found: error
 
@@ -132,6 +134,7 @@ tools:
   github:
     toolsets: [issues]
     allowed-repos: [dotnet/maui]
+    private-to-public-flows: [safeoutputs]
     allowed:
       - name: search_issues
         max-calls: 8

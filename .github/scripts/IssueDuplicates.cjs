@@ -72,6 +72,14 @@ async function readJson(file) {
     return JSON.parse(await fs.readFile(file, 'utf8'));
 }
 
+async function assertPublicRepository(github, repository) {
+    const { data } = await github.rest.repos.get(repository);
+    assert(
+        data.full_name === 'dotnet/maui' && data.private === false && data.visibility === 'public',
+        'Duplicate detection requires the public dotnet/maui repository.',
+    );
+}
+
 async function getSnapshot(github, repository, issueNumber, issue) {
     if (!issue) {
         ({ data: issue } = await github.rest.issues.get({
@@ -169,6 +177,7 @@ async function gather({ github, core, context, issueNumber, outputDirectory }) {
         (context.payload.inputs?.aw_context ?? '') === '',
         'Caller workspace context is not accepted.',
     );
+    await assertPublicRepository(github, context.repo);
     const { data: issue } = await github.rest.issues.get({
         ...context.repo,
         issue_number: issueNumber,
@@ -212,6 +221,7 @@ async function validate({
             context.ref === `refs/heads/${context.payload.repository.default_branch}`,
         'Untrusted publication context.',
     );
+    await assertPublicRepository(github, context.repo);
     const original = await readJson(path.join(contextDirectory, 'context.json'));
     const expectedHash = original.contextHash;
     assert(
@@ -367,6 +377,7 @@ async function validate({
                 );
             }),
         );
+        await assertPublicRepository(github, context.repo);
         const final = await getSnapshot(github, context.repo, issueNumber);
         assert(
             final.contextHash === expectedHash &&
