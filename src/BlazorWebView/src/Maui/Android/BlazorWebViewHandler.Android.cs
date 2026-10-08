@@ -111,6 +111,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			DisconnectRootComponents();
+
 			_backPressedCallback?.Remove();
 			_backPressedCallback?.Dispose();
 			_backPressedCallback = null;
