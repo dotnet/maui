@@ -87,12 +87,39 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = button.Background?.ToPlatform();
 
+			if (brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidBrush &&
+				TryUpdateBackgroundBrushes(platformButton, solidBrush))
+				return;
+
 			if (brush is null)
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);
 			else
 				platformButton.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
 
 			platformButton.RefreshThemeResources();
+		}
+
+		static bool TryUpdateBackgroundBrushes(Button platformButton, Microsoft.UI.Xaml.Media.SolidColorBrush newBrush)
+		{
+			var localBrushCount = 0;
+			foreach (var resource in platformButton.Resources)
+			{
+				if (resource.Key is not string key || System.Array.IndexOf(BackgroundResourceKeys, key) < 0)
+					continue;
+
+				if (resource.Value is not Microsoft.UI.Xaml.Media.SolidColorBrush)
+					return false;
+
+				localBrushCount++;
+			}
+
+			if (localBrushCount != BackgroundResourceKeys.Length)
+				return false;
+
+			foreach (var key in BackgroundResourceKeys)
+				((Microsoft.UI.Xaml.Media.SolidColorBrush)platformButton.Resources[key]).Color = newBrush.Color;
+
+			return true;
 		}
 
 		static readonly string[] BackgroundResourceKeys =
