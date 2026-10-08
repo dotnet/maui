@@ -20,10 +20,39 @@ New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $archive = [System.IO.Compression.ZipFile]::OpenRead($sample)
 try {
     $snippets = [System.Collections.Generic.List[string]]::new()
-    foreach ($entry in $archive.Entries) {
-        if ($snippets.Count -ge 8 -or $entry.Length -gt 8000 -or
-            $entry.FullName -notmatch '\.(cs|xaml|csproj)$' -or
-            $entry.FullName -match '(^|/)(\.github|obj|bin|__MACOSX)/|(^|/)\._') { continue }
+    $eligible = @($archive.Entries | Where-Object {
+        $_.Length -le 8000 -and $_.FullName -match '\.(cs|xaml|csproj)$' -and
+        $_.FullName -notmatch '(^|/)(\.github|obj|bin|__MACOSX)/|(^|/)\._'
+    })
+    $bootstrapTypes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($entry in @($eligible | Where-Object { $_.FullName -match '(^|/)(MauiProgram\.cs|App\.xaml\.cs)$' })) {
+        $reader = [IO.StreamReader]::new($entry.Open())
+        try {
+            $body = $reader.ReadToEnd()
+            if ($body.Length -gt 8000 -or $body -match '\x00') { continue }
+            foreach ($match in [regex]::Matches($body,
+                '(?:\bnew\s+|\btypeof\s*\(\s*)(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*(?<type>[A-Za-z_][A-Za-z0-9_]*)')) {
+                [void]$bootstrapTypes.Add($match.Groups['type'].Value)
+            }
+        } finally { $reader.Dispose() }
+    }
+    $entries = @($eligible | Sort-Object -Property @{
+        Expression = {
+            $name = $_.FullName
+            $otherPlatform = if ($manifest.platform -eq 'ios') { 'Android|Windows|MacCatalyst' } else { 'iOS|Windows|MacCatalyst' }
+            if ($name -match "(?i)(^|[/.])($otherPlatform)([/.]|$)") { return 7 }
+            if ($name -match '\.csproj$') { return 0 }
+            if ($name -match '(^|/)(MauiProgram\.cs|App\.xaml\.cs)$') { return 1 }
+            $type = [IO.Path]::GetFileName($name) -replace '\.(xaml\.cs|xaml|cs)$', ''
+            if ($bootstrapTypes.Contains($type)) { return 2 }
+            if ($name -match '(?i)(renderer|handler|behavior|effect)[^/]*\.cs$') { return 3 }
+            if ($name -notmatch '(?i)(^|/)(Platforms?|Resources)/') { return 4 }
+            if ($name -match '(?i)(^|/)Platforms?/') { return 5 }
+            return 6
+        }
+    }, FullName)
+    foreach ($entry in $entries) {
+        if ($snippets.Count -ge 8) { break }
         $reader = [System.IO.StreamReader]::new($entry.Open())
         try {
             $body = $reader.ReadToEnd()
@@ -68,9 +97,11 @@ For UI candidates, put that exact guard on the first line of the entire shared N
 HostApp platform guard: #if $hostAppCondition
 For UI candidates, put that exact guard on the first line of the entire HostApp file and #endif on its last line, including all using directives and declarations inside it with no other preprocessor directives. The HostApp project is multi-targeted; PlatformAffected does not prevent compilation on other platforms. Do not broaden this guard to any unverified platform. Unit and XAML candidates do not use this guard.
 Read rendered bounds with App.WaitForElement("automationId").GetRect() and text with App.WaitForElement("automationId").GetText(); there is no App.GetElementRect API. After changing UI state, wait for the changed text with App.WaitForTextToBePresentInElement("automationId", "expected text") rather than waiting again for an element that was already visible. For native rendering bugs, assert the rendered result, not just the managed property value.
+GetText() returns string?. Before calling instance methods such as Contains or parsing its value, require non-null observed text with an ordinary prerequisite exception or the supported TryGetText helper. Do not suppress nullable diagnostics or substitute an expected literal when no native text was observed.
 WaitForTextToBePresentInElement returns a boolean: always check it and throw an ordinary TimeoutException when a required readiness/state transition was not observed. Never ignore a false wait result and proceed to the reported interaction. Wait for each required button and call Click() on that returned IUIElement: App.WaitForElement("buttonId").Click(). App.Click accepts an automation-id string, not an IUIElement; do not pass the returned element to App.Click.
 For physical device orientation, use the supported external runner methods App.SetOrientationLandscape() and App.SetOrientationPortrait(), not HostApp UIWindowScene.RequestGeometryUpdate instrumentation. Preserve platform analyzers and deployment targets. If an original scenario requires a newer native API, guard it with OperatingSystem.IsIOSVersionAtLeast for its actual introduced version; compilation against a new SDK does not raise the HostApp deployment minimum.
 When importing Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific, qualify navigation/control types with Microsoft.Maui.Controls or explicit aliases. In particular, the HostApp NavigationPage base type must be Microsoft.Maui.Controls.NavigationPage; the iOSSpecific namespace also declares a NavigationPage and an unqualified base becomes CS0104.
+Preserve author custom handler/compatibility-renderer registrations and their native customization path. A fixture that requires NavigationRenderer must actually use that renderer for its navigation host and observe that binding before the reported interaction. A default handler or direct tint assignment from an ordinary page is not a substitute for the author's custom renderer lifecycle; unavailable binding is an ordinary prerequisite blocker.
 When the reported interaction changes an OS setting, change that actual setting through platform automation from the external test runner. Do not replace it with synthetic notifications, controller trait overrides, or direct updates of the controls under test. For iOS simulator Dynamic Type, the macOS NUnit runner can invoke xcrun with fixed ProcessStartInfo.ArgumentList arguments: simctl ui booted content_size. Query and preserve the original category, set large for the initial baseline, change to accessibility-large while the app stays alive, check process exit codes with a bounded timeout, and restore the original category in finally. A failed prerequisite must be inconclusive, not a bug assertion. Confirm the live change using the already-working page label, then separately assert the affected flyout views. Scope native font observations to the tested component's subtree; a similarly titled page or navigation label is not evidence about a flyout item.
 Preserve the repro's relevant control hierarchy, content size, and state. Do not add tall filler content that introduces scrolling or overscroll when the author's content fits the viewport. Assert the expected initial state before applying the issue interaction. Initial-state assertions must observe the actual control or bound view-model state, not a status label initialized to the expected literal. Bind diagnostic labels to the observed value or update them from its real change notifications so later native-driven changes remain visible. Verify that the requested interaction actually ran; a guard that skips it must not look like an executed reproduction. For transient gesture or animation bugs, observe the incorrect state while it happens or record native-driven movement callbacks in a sticky result label; checking only the settled position after a gesture can miss a rebound. An event the issue explicitly says already behaves correctly is not sufficient coverage on its own.
 For a width-change issue comparing an unset WidthRequest with an initial WidthRequest of 1, preserve both cases. The unset control may initially have zero native width and no accessible element; do not require a positive width or WaitForElement on it before clicking the author buttons. Expose actual native bounds through layout observations in visible diagnostic controls, then exercise and compare both unchanged author interactions. Do not substitute a positive initial width, a managed requested width, or a literal success value for the native result.

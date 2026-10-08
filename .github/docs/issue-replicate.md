@@ -125,6 +125,15 @@ label offset into the assertion identity. Expected/actual assertion values and
 the strict cross-run identity comparison are not normalized or weakened.
 Both drafting attempts import the same bounded author-build record, including
 its validated target framework, outcome and diagnostic in the GPT prompt.
+The unchanged eight-file, 8,000-byte/character-per-file source budget prioritizes project
+declarations, app bootstrap, files named by its constructed/registered types and
+custom renderer/handler implementations over archive order, unrelated platforms
+and resources. Bootstrap references are read as bounded source text, never executed.
+A custom native registration must remain
+part of the candidate's actual execution path, not be replaced with a default
+handler or page-level styling. Missing native binding remains a prerequisite
+blocker. Nullable text observations require a real non-null value before use,
+without suppressing compiler diagnostics or substituting expected text.
 Verifier feedback retains the latest bounded compiler/native log tail rather
 than only early build output.
 Rendering/crash candidates must preserve the author's child order and render
