@@ -242,7 +242,9 @@ Describe 'Native recording helpers' {
                 }
                 return ''
             }
-            function pwsh {
+            function Invoke-IssueReplicateUIRunner {
+                param([string]$Runner, [object[]]$Arguments, [hashtable]$State)
+
                 [IO.File]::WriteAllText($global:recordingRetryLog,
                     '[AppiumDriver] New AndroidDriver session created successfully, session aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa added')
                 '>>>>> 10/04/2026 12:00:00 FixtureSetup for ChecksBehavior'
@@ -347,6 +349,7 @@ Describe 'Native recording helpers' {
                 [IO.File]::WriteAllText($nunitPath,
                     "<test-run total=`"$($counters.total)`" passed=`"$($counters.passed)`" failed=`"$($counters.failed)`">$nunitCases</test-run>")
                 ">>> TRX_RESULT_FILE: $trx"
+                $State.ExitCode = $global:LASTEXITCODE
             }
             try {
                 & (Join-Path $PSScriptRoot 'IssueReplicate.Verify.ps1') -ManifestPath $manifestPath `

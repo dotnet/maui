@@ -92,6 +92,10 @@ Both drafting attempts import the same bounded author-build record and include
 its validated target framework, outcome and diagnostic in the GPT prompt.
 Generated UI tests must use existing category members; NavigationPage tests use
 `UITestCategories.Navigation`, not `UITestCategories.NavigationPage`.
+Boolean text waits must succeed before a required interaction. A failed load
+or readiness transition is an ordinary prerequisite exception, not an issue
+assertion. Crash scenarios after WebView navigation retain the actual
+`WebNavigationResult` and require successful navigation before the reported pop.
 If the UI runner exits nonzero without reporting a TRX, verification exports an
 explicitly inconclusive result without qualified execution and bounded runner/compiler feedback
 for the permitted revision. This does not qualify an assertion, recording or
@@ -118,6 +122,19 @@ Inconclusive native runs retain a bounded filtered Appium tail. On an explicitly
 owned Android emulator, the app-scoped crash buffer keeps process/thread,
 signal and backtrace diagnostics; those diagnostics remain unqualified and do
 not turn a teardown error into an assertion or verified patch.
+Post-body native trees, PNG screenshots and marker-bound captured MP4 bytes are retained
+as bounded, hash-labelled **diagnostic-only** chunks in the native job log, even
+when the result is an ordinary exception. Trees may be truncated and STOP-side
+snapshots/footage may include teardown. These logs remain retrievable if posting
+is blocked, but do not qualify execution, an assertion, a patch or published
+reproduction media; the existing qualified-recording checks are unchanged.
+No snapshot request is inserted before or during the reported interaction.
+This diagnostic logging is enabled by CI output providers, not by default for
+standalone verifier calls. Raw clips retain the 512-KiB native limit in the log.
+For GitHub's unchanged 256-KiB job-output limit, oversized qualified clips are
+two-pass encoded without trimming their duration, at up to 480 pixels wide and
+8 fps; duration, width, file shape and final byte size are checked. Encoder
+failure remains an explicit media blocker, not successful publication.
 Tool-free drafting also runs when a completed, bounded author build record reports
 a failure. That does not bypass the author-build prerequisite for native verification:
 the unchanged sample's target and diagnostic remain in the report, and the draft

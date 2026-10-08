@@ -8,7 +8,8 @@ function Read-IssueReplicateHttpResponse {
 
     if (-not $AppiumErrorResponse -or $Response.IsSuccessStatusCode) {
         $Response.EnsureSuccessStatusCode() | Out-Null
-    } else {
+    }
+    else {
         $MaxBytes = [Math]::Min($MaxBytes, 16384)
     }
     if ($Response.Content.Headers.ContentLength -gt $MaxBytes) { throw 'The HTTP response exceeds its bound.' }
@@ -35,19 +36,24 @@ function Read-IssueReplicateHttpResponse {
             throw "Native Appium recording failed (HTTP $status): $message"
         }
         return $text
-    } finally { $stream.Dispose() }
+    }
+    finally { $stream.Dispose() }
 }
 
 function Invoke-IssueReplicateRecordingRequest {
     param(
-        [Parameter(Mandatory)][ValidateSet('POST')][string]$Method,
+        [Parameter(Mandatory)][ValidateSet('POST', 'GET')][string]$Method,
         [Parameter(Mandatory)][string]$Path,
         [hashtable]$Body = @{},
         [ValidateRange(1, 1048576)][int]$MaxBytes = 16384,
-        [uri]$ServerUri = 'http://127.0.0.1:4723/wd/hub/'
+        [uri]$ServerUri = 'http://127.0.0.1:4723/wd/hub/',
+        [ValidateRange(1, 20)][int]$TimeoutSeconds = 20
     )
 
-    if ($Path -cnotmatch '^session/[a-zA-Z0-9-]{1,100}/appium/(start|stop)_recording_screen$') {
+    $recordingPath = $Path -cmatch '^session/[a-zA-Z0-9-]{1,100}/appium/(start|stop)_recording_screen$'
+    $diagnosticPath = $Path -cmatch '^session/[a-zA-Z0-9-]{1,100}/(source|screenshot)$'
+    if (($Method -ceq 'POST' -and -not $recordingPath) -or
+        ($Method -ceq 'GET' -and -not $diagnosticPath)) {
         throw 'Unexpected native recording endpoint.'
     }
     if ($ServerUri.Scheme -cne 'http' -or $ServerUri.Host -cne '127.0.0.1' -or
@@ -58,7 +64,7 @@ function Invoke-IssueReplicateRecordingRequest {
     $handler.AllowAutoRedirect = $false
     $handler.UseProxy = $false
     $client = [Net.Http.HttpClient]::new($handler)
-    $deadline = [Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(20))
+    $deadline = [Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($TimeoutSeconds))
     $request = [Net.Http.HttpRequestMessage]::new(
         [Net.Http.HttpMethod]::new($Method), [uri]::new($ServerUri, $Path))
     $response = $null
@@ -71,18 +77,78 @@ function Invoke-IssueReplicateRecordingRequest {
             $deadline.Token).GetAwaiter().GetResult()
         $result = Read-IssueReplicateHttpResponse -Response $response -MaxBytes $MaxBytes `
             -CancellationToken $deadline.Token -AppiumErrorResponse |
-        ConvertFrom-Json -Depth 8
+            ConvertFrom-Json -Depth 8
         if ('value' -cnotin @($result.PSObject.Properties.Name)) {
             throw 'Appium did not return a recording response envelope.'
         }
-        if ($result.value.error) { throw 'Appium rejected the native recording request.' }
+        if ($result.value -isnot [string] -and $result.value.error) {
+            throw 'Appium rejected the native recording request.'
+        }
         return $result.value
-    } finally {
+    }
+    finally {
         if ($response) { $response.Dispose() }
         $request.Dispose()
         $deadline.Dispose()
         $client.Dispose()
         $handler.Dispose()
+    }
+}
+
+function Write-IssueReplicateDiagnosticBytes {
+    param(
+        [Parameter(Mandatory)][ValidateSet('TREE', 'SCREENSHOT', 'VIDEO')][string]$Kind,
+        [Parameter(Mandatory)][ValidateSet('START', 'STOP')][string]$Phase,
+        [Parameter(Mandatory)][byte[]]$Bytes
+    )
+
+    $limit = switch ($Kind) { 'TREE' { 32KB } 'SCREENSHOT' { 128KB } 'VIDEO' { 512KB } }
+    if ($Bytes.Length -lt 1 -or $Bytes.Length -gt $limit) {
+        throw "The diagnostic $Kind exceeds its fixed bounded evidence budget."
+    }
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($Bytes)).ToLowerInvariant()
+    Write-Host "ISSUE_REPLICATE_DIAGNOSTIC_${Phase}_${Kind}_SHA256=$hash"
+    Write-Host "ISSUE_REPLICATE_DIAGNOSTIC_${Phase}_${Kind}_BYTES=$($Bytes.Length)"
+    for ($index = 0; $index * 4096 -lt $Bytes.Length; $index++) {
+        $length = [Math]::Min(4096, $Bytes.Length - $index * 4096)
+        Write-Host "ISSUE_REPLICATE_DIAGNOSTIC_${Phase}_${Kind}_$index=$([Convert]::ToBase64String($Bytes, $index * 4096, $length))"
+    }
+}
+
+function Write-IssueReplicateNativeSnapshot {
+    param(
+        [Parameter(Mandatory)][string]$SessionId,
+        [Parameter(Mandatory)][ValidateSet('START', 'STOP')][string]$Phase
+    )
+
+    foreach ($kind in @('TREE', 'SCREENSHOT')) {
+        try {
+            $endpoint = if ($kind -ceq 'TREE') { 'source' } else { 'screenshot' }
+            $value = Invoke-IssueReplicateRecordingRequest -Method GET -Path "session/$SessionId/$endpoint" `
+                -MaxBytes 192KB -TimeoutSeconds 5
+            if ($value -isnot [string] -or [string]::IsNullOrWhiteSpace($value)) {
+                throw "Appium returned no diagnostic $kind."
+            }
+            if ($kind -ceq 'TREE') {
+                $length = [Math]::Min(8192, $value.Length)
+                if ([char]::IsHighSurrogate($value[$length - 1])) { $length-- }
+                $bytes = [Text.Encoding]::UTF8.GetBytes($value.Substring(0, $length))
+                if ($length -lt $value.Length) { Write-Warning 'The diagnostic native tree was truncated; it is not a complete hierarchy.' }
+            }
+            else {
+                if ($value -cnotmatch '^[A-Za-z0-9+/]+={0,2}$') { throw 'The diagnostic screenshot is not base64.' }
+                $bytes = [Convert]::FromBase64String($value)
+                if ($bytes.Length -lt 24 -or
+                    [Convert]::ToHexString($bytes[0..7]) -cne '89504E470D0A1A0A') {
+                    throw 'The diagnostic screenshot is not a PNG.'
+                }
+            }
+            Write-IssueReplicateDiagnosticBytes -Kind $kind -Phase $Phase -Bytes $bytes
+        }
+        catch {
+            $message = $_.Exception.Message -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
+            Write-Warning "Unqualified native $kind diagnostic unavailable: $($message.Substring(0, [Math]::Min(900, $message.Length)))"
+        }
     }
 }
 
@@ -108,7 +174,8 @@ function Start-IssueReplicateRecording {
     if ($Platform -eq 'android') {
         $options.bitRate = 100000
         $options.videoSize = '480x854'
-    } else {
+    }
+    else {
         $options.videoType = 'libx264'
         $options.videoFps = 10
         $options.videoScale = '480:-2'
@@ -128,6 +195,82 @@ function Assert-IssueReplicateRecordingBytes {
     }
 }
 
+function Convert-IssueReplicateRecordingBudget {
+    param(
+        [Parameter(Mandatory)][byte[]]$Bytes,
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][ValidateRange(24576, 524288)][int]$MaxBytes
+    )
+
+    Assert-IssueReplicateRecordingBytes -Bytes $Bytes
+    . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
+    $directory = Join-Path ([IO.Path]::GetTempPath()) "issue-recording-encode-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $directory -ErrorAction Stop | Out-Null
+    try {
+        $source = Join-Path $directory 'source.mp4'
+        $encoded = Join-Path $directory 'transport.mp4'
+        [IO.File]::WriteAllBytes($source, $Bytes)
+        function Read-VideoIdentity {
+            param([string]$Path)
+            $probe = Invoke-ProcessWithTimeout -FilePath 'ffprobe' -TimeoutSeconds 20 `
+                -ArgumentList @('-v', 'error', '-select_streams', 'v', '-show_entries',
+                'stream=width,height:format=duration', '-of', 'json', $Path)
+            if ($probe.TimedOut -or $probe.OutputDrainTimedOut -or $probe.ExitCode -ne 0) {
+                throw "Recording inspection failed: exit=$($probe.ExitCode), timeout=$($probe.TimedOut), drainTimeout=$($probe.OutputDrainTimedOut)."
+            }
+            $identity = ($probe.Output -join "`n") | ConvertFrom-Json
+            if (@($identity.streams).Count -ne 1) { throw 'A recording must have one video stream.' }
+            $duration = [double]::Parse([string]$identity.format.duration, [Globalization.CultureInfo]::InvariantCulture)
+            if (-not [double]::IsFinite($duration) -or $duration -le 0 -or $duration -gt 31 -or
+                $identity.streams[0].width -lt 1 -or $identity.streams[0].width -gt 4096 -or
+                $identity.streams[0].height -lt 1 -or $identity.streams[0].height -gt 4096) {
+                throw 'The recording duration or dimensions exceed the native capture contract.'
+            }
+            return @{ Duration = $duration; Width = [int]$identity.streams[0].width }
+        }
+        $original = Read-VideoIdentity -Path $source
+        $width = [Math]::Min(480, $original.Width)
+        $width -= $width % 2
+        if ($width -lt 2) { throw 'The recording is too narrow for bounded encoding.' }
+        $bitrate = [int][Math]::Floor(($MaxBytes - 16384) * 8 * 0.8 / $original.Duration)
+        $arguments = @('-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-i', $source,
+            '-an', '-sn', '-dn', '-vf', "fps=8,scale=${width}:-2:flags=lanczos", '-c:v', 'libx264',
+            '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-b:v', "$bitrate",
+            '-passlogfile', (Join-Path $directory 'encode'))
+        foreach ($pass in 1..2) {
+            $output = if ($pass -eq 1) { @('-f', 'null', '-') } else { @('-movflags', '+faststart', $encoded) }
+            $process = Invoke-ProcessWithTimeout -FilePath 'ffmpeg' -TimeoutSeconds 90 `
+                -ArgumentList ($arguments + @('-pass', "$pass") + $output)
+            if ($process.TimedOut -or $process.OutputDrainTimedOut -or $process.ExitCode -ne 0) {
+                foreach ($row in @($process.Output | Select-Object -Last 5)) {
+                    $line = $row.ToString() -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
+                    Write-Warning ($line.Substring(0, [Math]::Min(1000, $line.Length)))
+                }
+                throw "Bounded recording encoding failed: exit=$($process.ExitCode), timeout=$($process.TimedOut), drainTimeout=$($process.OutputDrainTimedOut)."
+            }
+        }
+        $file = Get-Item -LiteralPath $encoded -ErrorAction Stop
+        if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+            $file.Length -lt 24 -or $file.Length -gt $MaxBytes) {
+            throw 'The full-duration recording still exceeds the fixed transport byte budget.'
+        }
+        $converted = Read-VideoIdentity -Path $encoded
+        if ([Math]::Abs($converted.Duration - $original.Duration) -gt 0.25 -or
+            $converted.Width -ne $width) {
+            throw 'Recording encoding changed its duration or requested readable width.'
+        }
+        $result = [IO.File]::ReadAllBytes($file.FullName)
+        Assert-IssueReplicateRecordingBytes -Bytes $result
+        return @{
+            Bytes = $result; Width = $width; SourceBytes = $Bytes.Length
+            SourceSha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($Bytes)).ToLowerInvariant()
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $directory -Recurse -Force
+    }
+}
+
 function Stop-IssueReplicateRecording {
     param([Parameter(Mandatory)][string]$SessionId)
 
@@ -140,7 +283,7 @@ function Stop-IssueReplicateRecording {
     }
     $bytes = [Convert]::FromBase64String($encoded)
     Assert-IssueReplicateRecordingBytes -Bytes $bytes
-    return ,$bytes
+    return , $bytes
 }
 
 function Assert-IssueReplicateRecording {
@@ -229,7 +372,7 @@ function Import-IssueReplicateRecording {
     $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
     if ($hash -cne $Recording.sha256) { throw 'Recording fragments failed their integrity check.' }
     Assert-IssueReplicateRecordingBytes -Bytes $bytes
-    return ,$bytes
+    return , $bytes
 }
 
 function Sync-IssueReplicateRecordingPublication {
@@ -306,7 +449,8 @@ function Publish-IssueReplicateRecording {
             throw 'GitHub did not return an approved recording URL.'
         }
         return [string]$receipt.url
-    } finally {
+    }
+    finally {
         if ($response) { $response.Dispose() }
         $request.Dispose()
         $deadline.Dispose()

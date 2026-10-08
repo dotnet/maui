@@ -47,6 +47,8 @@ if ($Mode -eq 'Sample') {
     if ($Mode -eq 'Verify') {
         $parameters.RepoRoot = $RepoRoot
         $parameters.RecordVideo = $RecordVideo
+        $parameters.RetainNativeDiagnostics = $Provider -ne 'None'
+        $parameters.RecordingByteBudget = if ($Provider -eq 'GitHub') { 256KB } else { 512KB }
         $parameters.RecordingToolsDirectory = $PSScriptRoot
     } else { $parameters.RecordingPrefix = $RecordingPrefix }
     $parameters.Attempt = $Attempt

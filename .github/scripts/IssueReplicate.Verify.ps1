@@ -9,6 +9,8 @@ param(
     [ValidateRange(1, 2)][int]$Attempt = 1,
     [string]$PreviousResultPath = '',
     [switch]$RecordVideo,
+    [switch]$RetainNativeDiagnostics,
+    [ValidateRange(24576, 524288)][int]$RecordingByteBudget = 512KB,
     [string]$RecordingToolsDirectory = $PSScriptRoot,
     [scriptblock]$OnCompleted,
     [switch]$CoreLoaded
@@ -38,20 +40,20 @@ $candidate = Get-Content -LiteralPath $CandidatePath -Raw | ConvertFrom-Json -De
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $resultPath = Join-Path $OutputDirectory 'result.json'
 $result = [ordered]@{
-    schemaVersion = 1
-    issueNumber = [int]$manifest.issueNumber
-    commentId = [long]$manifest.commentId
-    platform = [string]$manifest.platform
-    targetSha = [string]$manifest.targetSha
-    sampleSha256 = [string]$manifest.sampleSha256
-    status = 'inconclusive'
-    testExecuted = $false
-    assertionFailed = $false
-    sampleBuilt = $true
-    testKind = [string]$candidate.kind
-    patchSha256 = ''
-    candidateSha256 = (Get-FileHash -LiteralPath $CandidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    attempt = $Attempt
+    schemaVersion     = 1
+    issueNumber       = [int]$manifest.issueNumber
+    commentId         = [long]$manifest.commentId
+    platform          = [string]$manifest.platform
+    targetSha         = [string]$manifest.targetSha
+    sampleSha256      = [string]$manifest.sampleSha256
+    status            = 'inconclusive'
+    testExecuted      = $false
+    assertionFailed   = $false
+    sampleBuilt       = $true
+    testKind          = [string]$candidate.kind
+    patchSha256       = ''
+    candidateSha256   = (Get-FileHash -LiteralPath $CandidatePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    attempt           = $Attempt
     observedAssertion = $false
     failureIdentities = @()
 }
@@ -140,7 +142,7 @@ elseif ($PreviousResultPath) {
 $issueClass = if ($candidate.kind -eq 'xaml') { "Maui$($result.issueNumber)" } else { "Issue$($result.issueNumber)" }
 $project = switch ($candidate.kind) {
     'xaml' { 'src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj' }
-    'ui'   { 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj' }
+    'ui' { 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj' }
     'unit' {
         $path = [string]$candidate.files[0].path
         if ($path.StartsWith('src/Core/')) { 'src/Core/tests/UnitTests/Core.UnitTests.csproj' }
@@ -162,7 +164,8 @@ try {
         try {
             $iosSimulator = New-IssueReplicateIOSSimulator -RepoRoot $RepoRoot
             Initialize-IssueReplicateIOSWebDriverAgent -RepoRoot $RepoRoot -SimulatorUdid $iosSimulator
-        } catch {
+        }
+        catch {
             $line = "Verification incomplete: Native iOS preflight failed before candidate execution: $($_.Exception.Message)"
             $line = $line.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
             $feedback = Get-IssueReplicateFeedback -Lines @($line)
@@ -218,7 +221,8 @@ try {
             [IO.File]::WriteAllText($nunitSettings,
                 "<RunSettings><NUnit><TestOutputXml>$([Security.SecurityElement]::Escape($nunitDirectory))</TestOutputXml></NUnit></RunSettings>")
             $env:VSTestSetting = $nunitSettings
-        } else {
+        }
+        else {
             $trxFile = Join-Path $trxDirectory "attempt-$attempt.trx"
             if (Test-Path -LiteralPath $trxFile) { Remove-Item -LiteralPath $trxFile -Force }
         }
@@ -226,9 +230,10 @@ try {
         if ($candidate.kind -eq 'ui') {
             $runner = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
             $deviceArguments = if ($iosSimulator) { @('-DeviceUdid', $iosSimulator) }
-                elseif ($manifest.platform -eq 'android' -and $env:DEVICE_UDID -cmatch '^emulator-[0-9]+$') {
-                    @('-DeviceUdid', $env:DEVICE_UDID)
-                } else { @() }
+            elseif ($manifest.platform -eq 'android' -and $env:DEVICE_UDID -cmatch '^emulator-[0-9]+$') {
+                @('-DeviceUdid', $env:DEVICE_UDID)
+            }
+            else { @() }
             if ($RecordVideo) {
                 if ($env:CustomBeforeMicrosoftCommonTargets) {
                     throw 'Native recording cannot replace an existing custom MSBuild targets import.'
@@ -273,20 +278,31 @@ try {
                             $result.recording.diagnostic = ''
                             $acknowledgement = 'started'
                             Write-Host 'Native recording started before test setup; acknowledging the blocked test body.'
-                        } catch {
+                        }
+                        catch {
                             $result.recording.status = 'failed'
                             $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
                             if ($result.recording.diagnostic.Length -gt 1000) {
                                 $result.recording.diagnostic = $result.recording.diagnostic.Substring(0, 1000)
                             }
                             Write-Warning "Native recording failed: $($result.recording.diagnostic)"
-                        } finally {
+                        }
+                        finally {
                             [IO.File]::WriteAllText($recordingAcknowledgement, "${operation}:$acknowledgement")
                         }
                     }
                     if ($RecordVideo -and $line -match '^>>>>> .+ (?<method>\S+) Start$') {
                         $recordingStarts = [Math]::Min(2, $recordingStarts + 1)
                         if ($recordingStarts -eq 1) { $recordingStartMethod = $Matches['method'] }
+                        if ($RetainNativeDiagnostics -and $recordingStarts -eq 1 -and $recordingSession) {
+                            $scope = @{
+                                qualified = $false; issueNumber = $manifest.issueNumber; commentId = $manifest.commentId
+                                targetSha = $manifest.targetSha; sampleSha256 = $manifest.sampleSha256
+                                candidateSha256 = $result.candidateSha256; bodyMethod = $recordingStartMethod
+                                diagnosticOnly = 'Marker-bound snapshots/footage are not qualified reproduction evidence; STOP may include teardown.'
+                            } | ConvertTo-Json -Compress
+                            Write-Host "ISSUE_REPLICATE_DIAGNOSTIC_SCOPE=$scope"
+                        }
                     }
                     if ($RecordVideo -and $recordingSession -and $line -match '\bSession recreation successful\b') {
                         try {
@@ -299,7 +315,8 @@ try {
                                 $recordingTimer.Restart()
                                 Write-Host 'Native recording restarted on the recreated Appium session.'
                             }
-                        } catch {
+                        }
+                        catch {
                             $recordingSession = ''
                             $result.recording.status = 'failed'
                             $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
@@ -317,31 +334,51 @@ try {
                     if ($recordingSession -and $isStopMarker) {
                         try {
                             $finishedWithinWindow = $recordingReadyCount -eq 1 -and $recordingTimer -and
-                                $recordingTimer.Elapsed.TotalSeconds -le 30
+                            $recordingTimer.Elapsed.TotalSeconds -le 30
                             $recordingBytes = Stop-IssueReplicateRecording -SessionId $recordingSession
+                            if ($RetainNativeDiagnostics -and $recordingReadyCount -eq 1 -and
+                                $recordingStarts -eq 1 -and $recordingStops -eq 1 -and
+                                $recordingStartMethod -ceq $recordingStopMethod) {
+                                try {
+                                    Write-IssueReplicateDiagnosticBytes -Kind VIDEO -Phase STOP -Bytes $recordingBytes
+                                }
+                                catch {
+                                    Write-Warning "Unqualified diagnostic footage unavailable: $($_.Exception.Message)"
+                                }
+                                Write-IssueReplicateNativeSnapshot -SessionId $recordingSession -Phase STOP
+                            }
                             if (-not $finishedWithinWindow) {
                                 throw 'The named test did not finish inside its acknowledged 30-second recording window.'
+                            }
+                            if ($recordingBytes.Length -gt $RecordingByteBudget) {
+                                $normalized = Convert-IssueReplicateRecordingBudget -Bytes $recordingBytes `
+                                    -RepoRoot $RepoRoot -MaxBytes $RecordingByteBudget
+                                $recordingBytes = $normalized.Bytes
+                                Write-Host "Recording normalized for transport: source $($normalized.SourceSha256), $($normalized.SourceBytes) bytes; retained $($recordingBytes.Length) bytes, full duration at $($normalized.Width)px/8fps."
                             }
                             $result.recording = @{
                                 status = 'available'; bytes = $recordingBytes.Length; diagnostic = ''
                                 sha256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($recordingBytes)).ToLowerInvariant()
                             }
                             Write-Host "Native recording captured: $($recordingBytes.Length) bytes."
-                        } catch {
+                        }
+                        catch {
                             $result.recording.status = 'failed'
                             $result.recording.diagnostic = ($_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', '')
                             if ($result.recording.diagnostic.Length -gt 1000) {
                                 $result.recording.diagnostic = $result.recording.diagnostic.Substring(0, 1000)
                             }
                             Write-Warning "Native recording failed: $($result.recording.diagnostic)"
-                        } finally { $recordingSession = '' }
+                        }
+                        finally { $recordingSession = '' }
                     }
                     if ($line -match '^>>> TRX_RESULT_FILE: (.+)$') { $reportedTrx.Add($Matches[1]) }
                     if ($testLines.Count -lt 3000) { $testLines.Add($line) }
                     Write-Host $line
                 }
             $global:LASTEXITCODE = $runnerState.ExitCode
-        } else {
+        }
+        else {
             & dotnet test $projectPath -c Debug --filter $filter --logger "trx;LogFileName=attempt-$attempt.trx" `
                 --results-directory $trxDirectory --nologo --verbosity quiet 2>&1 |
                 ForEach-Object {
@@ -352,7 +389,7 @@ try {
         }
         $testExit = $LASTEXITCODE
         $failedWithoutTrx = $candidate.kind -eq 'ui' -and $testExit -is [int] -and
-            $testExit -ne 0 -and $reportedTrx.Count -eq 0
+        $testExit -ne 0 -and $reportedTrx.Count -eq 0
         if ($candidate.kind -eq 'ui' -and -not $failedWithoutTrx) {
             if ($reportedTrx.Count -ne 1) { throw 'The pinned UI runner must report one authoritative TRX_RESULT_FILE.' }
             if (-not (Test-Path -LiteralPath $nunitFile -PathType Leaf) -or
@@ -361,7 +398,7 @@ try {
             }
             $trxFile = [IO.Path]::GetFullPath($reportedTrx[0])
             $root = [IO.Path]::GetFullPath($RepoRoot).TrimEnd([IO.Path]::DirectorySeparatorChar) +
-                [IO.Path]::DirectorySeparatorChar
+            [IO.Path]::DirectorySeparatorChar
             if (-not $trxFile.StartsWith($root, [StringComparison]::Ordinal) -or
                 [IO.Path]::GetExtension($trxFile) -cne '.trx') { throw 'The UI runner reported an unexpected result path.' }
         }
@@ -390,11 +427,12 @@ try {
         if ($RecordVideo -and $candidate.kind -eq 'ui' -and
             ($recordingStarts -gt 0 -or $verdict.Status -ne 'Inconclusive') -and
             ($recordingReadyCount -ne 1 -or $recordingStarts -ne 1 -or $recordingStops -ne 1 -or
-             $recordingStartMethod -cne $recordingStopMethod -or
-             $verdict.Status -eq 'Inconclusive')) {
+            $recordingStartMethod -cne $recordingStopMethod -or
+            $verdict.Status -eq 'Inconclusive')) {
             $diagnostic = if ($verdict.Diagnostic) { $verdict.Diagnostic } elseif ($result.recording.status -eq 'failed') {
                 $result.recording.diagnostic
-            } else {
+            }
+            else {
                 'A recorded UI candidate needs one acknowledged recording action, one matching Start/Stop pair and exactly one named TRX test body.'
             }
             if ($verdict.Diagnostic -and $result.recording.status -eq 'failed' -and
@@ -467,7 +505,8 @@ try {
                     $testLines.Add($line)
                 }
             }
-        } catch {
+        }
+        catch {
             $diagnostic = "Verification incomplete: Native diagnostic capture failed: $($_.Exception.Message)"
             Write-Warning $diagnostic
             $testLines.Add($diagnostic)
