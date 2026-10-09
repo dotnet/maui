@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue23704 : _IssuesUITest
+public class Issue39270 : _IssuesUITest
 {
-	public Issue23704(TestDevice testDevice) : base(testDevice)
+	public Issue39270(TestDevice testDevice) : base(testDevice)
 	{
 	}
 	public override string Issue => "CollectionView items disappear after device rotation";

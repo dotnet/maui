@@ -2,10 +2,10 @@
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 23704, "CollectionView items disappear after device rotation", PlatformAffected.iOS)]
-public class Issue23704 : ContentPage
+[Issue(IssueTracker.Github, 39270, "CollectionView items disappear after device rotation", PlatformAffected.iOS)]
+public class Issue39270 : ContentPage
 {
-	public Issue23704()
+	public Issue39270()
 	{
 		var grid = new Grid
 		{
@@ -20,7 +20,7 @@ public class Issue23704 : ContentPage
 
 		grid.Add(new Label
 		{
-			Text = "1. The test passes if you are able to see the last item index(17) and verify that index(17) remains visible after resizing the window.",
+			Text = "1. The test passes if all CollectionView items remain visible after changing the device orientation.",
 			AutomationId = "label"
 		}, 0, 0);
 
@@ -56,7 +56,7 @@ public class Issue23704 : ContentPage
 
 		grid.Add(new Label
 		{
-			Text = "2. The test passes if you are able to see the last item index(17) and verify that index(17) remains visible after resizing the window."
+			Text = "2. The test passes if the CollectionView items remain visible after the layout changes."
 		}, 0, 2);
 
 		var collectionView2 = new CollectionView2
@@ -91,32 +91,32 @@ public class Issue23704 : ContentPage
 		grid.Add(collectionView2, 0, 3);
 
 		Content = grid;
-		BindingContext = new Issue23704ViewModel();
+		BindingContext = new Issue39270ViewModel();
 	}
 }
 
-public class Issue23704ViewModel
+public class Issue39270ViewModel
 {
-	public ObservableCollection<Issue23704Model> Items { get; } = new();
-	public ObservableCollection<Issue23704Model> Items2 { get; } = new();
+	public ObservableCollection<Issue39270Model> Items { get; } = new();
+	public ObservableCollection<Issue39270Model> Items2 { get; } = new();
 
-	public Issue23704ViewModel()
+	public Issue39270ViewModel()
 	{
-		Items.Add(new Issue23704Model { Index = 0, Color = GetColor(0), Width = 100 });
+		Items.Add(new Issue39270Model { Index = 0, Color = GetColor(0), Width = 100 });
 
 		for (int i = 1; i < 16; i++)
-			Items.Add(new Issue23704Model { Index = i, Color = GetColor(i), Width = 50 });
+			Items.Add(new Issue39270Model { Index = i, Color = GetColor(i), Width = 50 });
 
-		Items.Add(new Issue23704Model { Index = 16, Color = GetColor(17), Width = 100 });
-		Items.Add(new Issue23704Model { Index = 17, Color = GetColor(18), Width = 100 });
+		Items.Add(new Issue39270Model { Index = 16, Color = GetColor(17), Width = 100 });
+		Items.Add(new Issue39270Model { Index = 17, Color = GetColor(18), Width = 100 });
 
-		Items2.Add(new Issue23704Model { Index = 0, Color = GetColor(0), Width = 50 });
+		Items2.Add(new Issue39270Model { Index = 0, Color = GetColor(0), Width = 50 });
 
 		for (int i = 1; i < 16; i++)
-			Items2.Add(new Issue23704Model { Index = i, Color = GetColor(i + 1), Width = 50 });
+			Items2.Add(new Issue39270Model { Index = i, Color = GetColor(i + 1), Width = 50 });
 
-		Items2.Add(new Issue23704Model { Index = 16, Color = GetColor(17), Width = 100 });
-		Items2.Add(new Issue23704Model { Index = 17, Color = GetColor(18), Width = 100 });
+		Items2.Add(new Issue39270Model { Index = 16, Color = GetColor(17), Width = 100 });
+		Items2.Add(new Issue39270Model { Index = 17, Color = GetColor(18), Width = 100 });
 	}
 
 	Color GetColor(int i)
@@ -137,7 +137,7 @@ public class Issue23704ViewModel
 	}
 }
 
-public class Issue23704Model
+public class Issue39270Model
 {
 	public Color Color { get; set; }
 	public int Width { get; set; }
