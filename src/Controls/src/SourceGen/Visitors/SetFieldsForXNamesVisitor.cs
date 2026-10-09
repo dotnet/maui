@@ -45,9 +45,13 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 
 		// XAML Incremental Hot Reload: field declarations are additive-only (see
 		// CodeBehindCodeWriter.ReconcileNamedFieldsForHotReload / issue #38993), so a renamed/reused
-		// x:Name can resolve to a field whose declared (ghost) type no longer matches the element
-		// actually produced here. Assigning to it would be a straight type-mismatch compile error, so
-		// skip the assignment; the field keeps its original, unrelated value (default!).
+		// x:Name can resolve to a field whose declared (ghost) type can no longer hold the element
+		// actually produced here (e.g. retyped to an unrelated/incompatible type). Assigning to it
+		// would be a straight type-mismatch compile error, so skip the assignment in that case; a
+		// freshly-constructed instance then simply leaves that field at its default value (an
+		// already-live instance from before the edit keeps whatever it was holding - the assignment is
+		// skipped, not reset). Reusing the x:Name on an assignable type (e.g. a derived control) is
+		// still safe and is assigned normally.
 		if (Context.ProjectItem.EnableIncrementalHotReload)
 		{
 			var assemblyName = Context.Compilation.AssemblyName ?? string.Empty;
@@ -56,8 +60,8 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 			var accumulatedFields = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey);
 			if (accumulatedFields != null && accumulatedFields.TryGetValue(fieldName, out var accumulatedField))
 			{
-				var currentType = parentElement.XmlType.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, Context.TypeCache)?.ToFQDisplayString();
-				if (currentType != accumulatedField.Type)
+				var currentType = parentElement.XmlType.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, Context.TypeCache)?.ToFQDisplayString() ?? string.Empty;
+				if (!IsAssignableToGhostField(currentType, accumulatedField.Type, Context.Compilation))
 					return;
 			}
 		}

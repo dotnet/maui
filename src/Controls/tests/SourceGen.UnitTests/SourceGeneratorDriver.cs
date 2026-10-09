@@ -85,6 +85,36 @@ public static class SourceGeneratorDriver
 		return (runResult1, runResult2);
 	}
 
+	/// <summary>
+	/// Same as <see cref="RunGeneratorWithChanges{T}"/>, but additionally feeds the second generation's
+	/// output back into the compilation (<see cref="GeneratorDriver.RunGeneratorsAndUpdateCompilation"/>)
+	/// so callers can assert the regenerated code - including <c>.xsg.cs</c> (InitializeComponent) field
+	/// assignments - actually compiles, rather than only string-matching the raw generated text.
+	/// </summary>
+	public static (GeneratorDriverRunResult result1, GeneratorDriverRunResult result2, Compilation updatedCompilation2, ImmutableArray<Diagnostic> diagnostics2) RunGeneratorWithChangesAndUpdateCompilation<T>(Compilation compilation,
+		Func<GeneratorDriver, Compilation, (GeneratorDriver driver, Compilation compilation)> applyChanges, params AdditionalFile[] additionalFiles)
+		where T : IIncrementalGenerator, new()
+	{
+		ISourceGenerator generator = new T().AsSourceGenerator();
+
+		var options = new GeneratorDriverOptions(
+			disabledOutputs: IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
+			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
+			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
+
+		driver = driver.RunGenerators(compilation);
+		GeneratorDriverRunResult runResult1 = driver.GetRunResult();
+
+		var change = applyChanges(driver, compilation);
+		var driver2 = change.driver.RunGeneratorsAndUpdateCompilation(change.compilation, out var updatedCompilation2, out var diagnostics2);
+		GeneratorDriverRunResult runResult2 = driver2.GetRunResult();
+
+		return (runResult1, runResult2, updatedCompilation2, diagnostics2);
+	}
+
 	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated")
 	{
 		var references = GetMauiReferences();

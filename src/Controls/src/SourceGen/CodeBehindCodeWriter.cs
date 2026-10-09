@@ -447,7 +447,10 @@ static class CodeBehindCodeWriter
 	/// <returns>
 	/// The set of field names that are declared but must NOT be assigned in InitializeComponent (and must
 	/// be excluded from MemberNotNull): fields whose x:Name no longer exists in the current XAML, or whose
-	/// name now resolves to an incompatible element type.
+	/// name now resolves to a type that can't be assigned to the field's preserved declared type without a
+	/// cast (see <see cref="IsAssignableToGhostField"/>) — e.g. an unrelated or narrower type. Reusing the
+	/// name on an assignable type (same type, or a type assignable to the preserved one, such as a derived
+	/// control) keeps the field live and assigned as usual.
 	/// </returns>
 	static HashSet<string> ReconcileNamedFieldsForHotReload(ProjectItem projItem, Compilation compilation, ref IEnumerable<(string name, string type, string accessModifier)>? namedFields)
 	{
@@ -478,7 +481,11 @@ static class CodeBehindCodeWriter
 			merged.Add((kvp.Key, kvp.Value.Type, kvp.Value.AccessModifier));
 			mergedNames.Add(kvp.Key);
 
-			if (!currentByName.TryGetValue(kvp.Key, out var current) || current.Type != kvp.Value.Type)
+			// A field is only safe to keep assigning if the element currently using its x:Name can
+			// actually be stored in it without a cast - e.g. a Label field stays assignable when the
+			// x:Name is reused on a MyLabel : Label element. Anything else (including a type we can't
+			// prove assignable) is ghosted: declared, but left unassigned.
+			if (!currentByName.TryGetValue(kvp.Key, out var current) || !IsAssignableToGhostField(current.Type, kvp.Value.Type, compilation))
 				ghostFieldNames.Add(kvp.Key);
 		}
 
