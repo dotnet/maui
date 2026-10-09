@@ -474,6 +474,10 @@ runtime declared by the pinned iOS SDK and passes its UDID explicitly to the
 unchanged pinned UI runner. Missing or unavailable matching runtimes fail
 explicitly; visual-test preferences must not silently select a newer runtime
 than the matching Xcode. The owned simulator is deleted after verification.
+The verifier passes the pinned runner's existing `HEADLESS=true` setting only
+while running against its owned iOS simulator, then restores the prior value.
+This avoids Appium shutting down a ready background simulator to reopen it with
+a visible Simulator window. Native screenshots, recording and assertions remain required.
 Before adding or executing the candidate, the verifier uses the installed
 XCUITest driver's WebDriverAgent library to resolve its derived-data directory
 and build for that owned simulator and the pinned SDK version. The bundled

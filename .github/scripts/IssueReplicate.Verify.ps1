@@ -253,6 +253,10 @@ try {
         }
         $started = [DateTime]::UtcNow
         if ($candidate.kind -eq 'ui') {
+            if ($iosSimulator) {
+                $testEnvironment.HEADLESS = [Environment]::GetEnvironmentVariable('HEADLESS')
+                $env:HEADLESS = 'true'
+            }
             $runner = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
             $deviceArguments = if ($iosSimulator) { @('-DeviceUdid', $iosSimulator) }
             elseif ($manifest.platform -eq 'android' -and $env:DEVICE_UDID -cmatch '^emulator-[0-9]+$') {
