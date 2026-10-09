@@ -11,7 +11,7 @@
     </ContentPage.ToolbarItems>
     <ScrollView>
         <Grid Padding="1"
-              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
             <StackLayout Grid.Row="1">
                 <!--ItemSource Type-->
                 <Label Text="ItemSource Type:"
@@ -79,6 +79,41 @@
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceNone"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <!-- ItemsLayout -->
+                <Label Text="ItemsLayout:"
+                       FontAttributes="Bold"
+                       FontSize="11"/>
+                <VerticalStackLayout>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsLayoutVerticalList"
+                                     Content="Vertical List"
+                                     FontSize="10"
+                                     IsChecked="True"
+                                     GroupName="ItemsLayoutGroup"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     AutomationId="ItemsLayoutVerticalList"/>
+                        <RadioButton x:Name="ItemsLayoutHorizontalList"
+                                     Content="Horizontal List"
+                                     FontSize="10"
+                                     GroupName="ItemsLayoutGroup"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     AutomationId="ItemsLayoutHorizontalList"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsLayoutVerticalGrid"
+                                     Content="Vertical Grid"
+                                     FontSize="10"
+                                     GroupName="ItemsLayoutGroup"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     AutomationId="ItemsLayoutVerticalGrid"/>
+                        <RadioButton x:Name="ItemsLayoutHorizontalGrid"
+                                     Content="Horizontal Grid"
+                                     FontSize="10"
+                                     GroupName="ItemsLayoutGroup"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     AutomationId="ItemsLayoutHorizontalGrid"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
                 <!--IsGrouped-->

@@ -112,6 +112,13 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
 	public bool ShowAddRemoveButtons => ItemsSourceType == ItemsSourceType.ObservableCollectionT3 || ItemsSourceType == ItemsSourceType.GroupedListT3;
 
+	public bool CanReplaceItemsSource =>
+		ItemsSourceType is ItemsSourceType.ObservableCollectionStringT
+			or ItemsSourceType.ObservableCollectionModelT
+			or ItemsSourceType.ListT
+			or ItemsSourceType.ListModelT
+			or ItemsSourceType.GroupedListStringT
+			or ItemsSourceType.GroupedListModelT;
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
@@ -146,8 +153,35 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		});
 
 		SetItemTemplate();
-		SelectedItems = new ObservableCollection<object>();
 		SelectedItems.CollectionChanged += OnSelectedItemsChanged;
+	}
+
+	public void ResetItemsSourceProperties()
+	{
+		ClearSelection();
+
+		_itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+		_itemsSourceType = ItemsSourceType.None;
+		_isGrouped = false;
+		_itemsSourceStringItems = true;
+		fruitIndex = 0;
+		groupAIndex = 0;
+		_addIndex = 0;
+		_selectionMode = SelectionMode.None;
+
+		LoadItems();
+		SetItemTemplate();
+
+		OnPropertyChanged(nameof(ItemsLayout));
+		OnPropertyChanged(nameof(ItemsSourceType));
+		OnPropertyChanged(nameof(IsGrouped));
+		OnPropertyChanged(nameof(ItemsSourceStringItems));
+		OnPropertyChanged(nameof(SelectionMode));
+		OnPropertyChanged(nameof(ItemsSource));
+		OnPropertyChanged(nameof(ItemsSourceItemCount));
+		OnPropertyChanged(nameof(ItemsSourceItemOrder));
+		OnPropertyChanged(nameof(ShowAddRemoveButtons));
+		OnPropertyChanged(nameof(CanReplaceItemsSource));
 	}
 
 	public object EmptyView
@@ -233,7 +267,10 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				_itemsSourceType = value;
 				OnPropertyChanged();
 				OnPropertyChanged(nameof(ItemsSource));
+				OnPropertyChanged(nameof(ItemsSourceItemCount));
+				OnPropertyChanged(nameof(ItemsSourceItemOrder));
 				OnPropertyChanged(nameof(ShowAddRemoveButtons));
+				OnPropertyChanged(nameof(CanReplaceItemsSource));
 				SetItemTemplate();
 			}
 		}
@@ -385,6 +422,22 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public int ItemsSourceItemCount => GetItemsSourceCaptions().Count();
+
+	public string ItemsSourceItemOrder => string.Join("|", GetItemsSourceCaptions());
+
+	private IEnumerable<string> GetItemsSourceCaptions()
+	{
+		return ItemsSource switch
+		{
+			IEnumerable<CollectionViewTestItem> items => items.Select(item => item.Caption),
+			IEnumerable<CollectionViewTestModelItem> items => items.Select(item => item.Caption),
+			IEnumerable<Grouping<string, CollectionViewTestItem>> groups => groups.SelectMany(group => group).Select(item => item.Caption),
+			IEnumerable<Grouping<string, CollectionViewTestModelItem>> groups => groups.SelectMany(group => group).Select(item => item.Caption),
+			_ => Enumerable.Empty<string>()
+		};
+	}
+
 	public ItemSizingStrategy ItemSizingStrategy
 	{
 		get => _itemSizingStrategy;
@@ -444,9 +497,17 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		get => _selectedItems;
 		set
 		{
+			value ??= new ObservableCollection<object>();
+
 			if (_selectedItems != value)
 			{
+				if (_selectedItems != null)
+					_selectedItems.CollectionChanged -= OnSelectedItemsChanged;
+
 				_selectedItems = value;
+				if (_selectedItems != null)
+					_selectedItems.CollectionChanged += OnSelectedItemsChanged;
+
 				OnPropertyChanged();
 				OnPropertyChanged(nameof(SelectedItemsCount));
 				OnPropertyChanged(nameof(SelectedItemText));
@@ -515,8 +576,12 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		get => _itemsSourceStringItems;
 		set
 		{
-			_itemsSourceStringItems = value;
-			OnPropertyChanged();
+			if (_itemsSourceStringItems != value)
+			{
+				_itemsSourceStringItems = value;
+				OnPropertyChanged();
+				SetItemTemplate();
+			}
 		}
 	}
 
@@ -808,6 +873,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		}
 
 		OnPropertyChanged(nameof(ItemsSource));
+		OnPropertyChanged(nameof(ItemsSourceItemCount));
+		OnPropertyChanged(nameof(ItemsSourceItemOrder));
 	}
 
 	private void SetItemTemplate()
@@ -889,11 +956,12 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	{
 		string[] fruits = { "Kiwi", "Guava", "Chikoo", "Raseberry", "Papaya", "Pineapple", "Strawberry", "Blueberry", "Peach", "Cherry" };
 		string[] groupA = { "green.png", "groceries.png", "oasis.jpg", "seth.png", "test.jpg", "vegetables.jpg" };
+		bool changed = false;
 
 		string nextItem = ItemsSourceType switch
 		{
-			ItemsSourceType.ObservableCollectionStringT or ItemsSourceType.GroupedListStringT => fruits[fruitIndex++ % fruits.Length],
-			ItemsSourceType.ObservableCollectionModelT or ItemsSourceType.GroupedListModelT => groupA[groupAIndex++ % groupA.Length],
+			ItemsSourceType.ObservableCollectionStringT or ItemsSourceType.ListT or ItemsSourceType.GroupedListStringT => fruits[fruitIndex++ % fruits.Length],
+			ItemsSourceType.ObservableCollectionModelT or ItemsSourceType.ListModelT or ItemsSourceType.GroupedListModelT => groupA[groupAIndex++ % groupA.Length],
 			_ => string.Empty
 		};
 
@@ -901,10 +969,22 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		{
 			case ItemsSourceType.ObservableCollectionStringT:
 				_observableCollectionString.Add(new CollectionViewTestItem(nextItem, _observableCollectionString.Count));
+				changed = true;
 				break;
 
 			case ItemsSourceType.ObservableCollectionModelT:
 				_observableCollectionModel.Add(new CollectionViewTestModelItem(nextItem, nextItem, _observableCollectionModel.Count));
+				changed = true;
+				break;
+
+			case ItemsSourceType.ListT:
+				_list.Add(new CollectionViewTestItem(nextItem, _list.Count));
+				changed = true;
+				break;
+
+			case ItemsSourceType.ListModelT:
+				_listModel.Add(new CollectionViewTestModelItem(nextItem, nextItem, _listModel.Count));
+				changed = true;
 				break;
 
 			case ItemsSourceType.GroupedListStringT:
@@ -912,10 +992,12 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				{
 					int targetGroupIndex = _groupedListString[0].Count <= _groupedListString[1].Count ? 0 : 1;
 					_groupedListString[targetGroupIndex].Add(new CollectionViewTestItem(nextItem, _groupedListString[targetGroupIndex].Count));
+					changed = true;
 				}
 				else if (_groupedListString.Count > 0)
 				{
 					_groupedListString[0].Add(new CollectionViewTestItem(nextItem, _groupedListString[0].Count));
+					changed = true;
 				}
 				break;
 
@@ -924,15 +1006,18 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				{
 					int targetGroupIndex = _groupedListModel[0].Count <= _groupedListModel[1].Count ? 0 : 1;
 					_groupedListModel[targetGroupIndex].Add(new CollectionViewTestModelItem(nextItem, nextItem, _groupedListModel[targetGroupIndex].Count));
+					changed = true;
 				}
 				else if (_groupedListModel.Count > 0)
 				{
 					_groupedListModel[0].Add(new CollectionViewTestModelItem(nextItem, nextItem, _groupedListModel[0].Count));
+					changed = true;
 				}
 				break;
 		}
 
-		OnPropertyChanged(nameof(ItemsSource));
+		if (changed)
+			NotifyAfterItemsSourceMutation();
 	}
 
 	public void RemoveLastItem()
@@ -956,28 +1041,42 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				}
 				break;
 
-			case ItemsSourceType.GroupedListStringT:
-				if (_groupedListString.Count > 0)
+			case ItemsSourceType.ListT:
+				if (_list.Count > 0)
 				{
-					int targetGroupIndex = (_groupedListString[0].Count > 0) ? 0 : 1;
+					deletedItem = _list[^1];
+					_list.RemoveAt(_list.Count - 1);
+				}
+				break;
 
-					if (targetGroupIndex < _groupedListString.Count && _groupedListString[targetGroupIndex].Count > 0)
+			case ItemsSourceType.ListModelT:
+				if (_listModel.Count > 0)
+				{
+					deletedItem = _listModel[^1];
+					_listModel.RemoveAt(_listModel.Count - 1);
+				}
+				break;
+
+			case ItemsSourceType.GroupedListStringT:
+				for (int groupIndex = _groupedListString.Count - 1; groupIndex >= 0; groupIndex--)
+				{
+					if (_groupedListString[groupIndex].Count > 0)
 					{
-						deletedItem = _groupedListString[targetGroupIndex][^1];
-						_groupedListString[targetGroupIndex].RemoveAt(_groupedListString[targetGroupIndex].Count - 1);
+						deletedItem = _groupedListString[groupIndex][^1];
+						_groupedListString[groupIndex].RemoveAt(_groupedListString[groupIndex].Count - 1);
+						break;
 					}
 				}
 				break;
 
 			case ItemsSourceType.GroupedListModelT:
-				if (_groupedListModel.Count > 0)
+				for (int groupIndex = _groupedListModel.Count - 1; groupIndex >= 0; groupIndex--)
 				{
-					int targetGroupIndex = (_groupedListModel[0].Count > 0) ? 0 : 1;
-
-					if (targetGroupIndex < _groupedListModel.Count && _groupedListModel[targetGroupIndex].Count > 0)
+					if (_groupedListModel[groupIndex].Count > 0)
 					{
-						deletedItem = _groupedListModel[targetGroupIndex][^1];
-						_groupedListModel[targetGroupIndex].RemoveAt(_groupedListModel[targetGroupIndex].Count - 1);
+						deletedItem = _groupedListModel[groupIndex][^1];
+						_groupedListModel[groupIndex].RemoveAt(_groupedListModel[groupIndex].Count - 1);
+						break;
 					}
 				}
 				break;
@@ -996,13 +1095,18 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 			}
 		}
 
-		OnPropertyChanged(nameof(ItemsSource));
+		if (deletedItem != null)
+			NotifyAfterItemsSourceMutation();
 	}
 
 	public void AddItemAtIndex(int index)
 	{
+		if (index < 0)
+			return;
+
 		string[] fruits = { "Kiwi", "Guava", "Chikoo", "Raseberry", "Papaya", "Pineapple", "Strawberry", "Blueberry", "Peach", "Cherry" };
 		string[] groupA = { "green.png", "groceries.png", "oasis.jpg", "seth.png", "test.jpg", "vegetables.jpg" };
+		bool changed = false;
 
 		string sequentialItem = fruits[index % fruits.Length];
 		string sequentialImageItem = groupA[index % groupA.Length];
@@ -1013,6 +1117,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				if (index >= 0 && index <= _observableCollectionString.Count)
 				{
 					_observableCollectionString.Insert(index, new CollectionViewTestItem(sequentialItem, index));
+					changed = true;
 				}
 				break;
 
@@ -1020,25 +1125,45 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				if (index >= 0 && index <= _observableCollectionModel.Count)
 				{
 					_observableCollectionModel.Insert(index, new CollectionViewTestModelItem(sequentialImageItem, sequentialImageItem, index));
+					changed = true;
+				}
+				break;
+
+			case ItemsSourceType.ListT:
+				if (index >= 0 && index <= _list.Count)
+				{
+					_list.Insert(index, new CollectionViewTestItem(sequentialItem, index));
+					changed = true;
+				}
+				break;
+
+			case ItemsSourceType.ListModelT:
+				if (index >= 0 && index <= _listModel.Count)
+				{
+					_listModel.Insert(index, new CollectionViewTestModelItem(sequentialImageItem, sequentialImageItem, index));
+					changed = true;
 				}
 				break;
 
 			case ItemsSourceType.GroupedListStringT:
-				if (_groupedListString.Count > 0 && index >= 0 && index <= _groupedListString[0].Count)
+				if (TryGetGroupedItemLocation(_groupedListString, index, allowEnd: true, out int stringGroupIndex, out int stringItemIndex))
 				{
-					_groupedListString[0].Insert(index, new CollectionViewTestItem(sequentialItem, index));
+					_groupedListString[stringGroupIndex].Insert(stringItemIndex, new CollectionViewTestItem(sequentialItem, index));
+					changed = true;
 				}
 				break;
 
 			case ItemsSourceType.GroupedListModelT:
-				if (_groupedListModel.Count > 0 && index >= 0 && index <= _groupedListModel[0].Count)
+				if (TryGetGroupedItemLocation(_groupedListModel, index, allowEnd: true, out int modelGroupIndex, out int modelItemIndex))
 				{
-					_groupedListModel[0].Insert(index, new CollectionViewTestModelItem(sequentialImageItem, sequentialImageItem, index));
+					_groupedListModel[modelGroupIndex].Insert(modelItemIndex, new CollectionViewTestModelItem(sequentialImageItem, sequentialImageItem, index));
+					changed = true;
 				}
 				break;
 		}
 
-		OnPropertyChanged(nameof(ItemsSource));
+		if (changed)
+			NotifyAfterItemsSourceMutation();
 	}
 	public void RemoveItemAtIndex(int index)
 	{
@@ -1062,35 +1187,35 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				}
 				break;
 
-			case ItemsSourceType.GroupedListStringT:
-				if (_groupedListString.Count > 0)
+			case ItemsSourceType.ListT:
+				if (index >= 0 && index < _list.Count)
 				{
-					if (index >= 0 && index < _groupedListString[0].Count)
-					{
-						deletedItem = _groupedListString[0][index];
-						_groupedListString[0].RemoveAt(index);
-					}
-					else if (_groupedListString.Count > 1 && index >= 0 && index < _groupedListString[1].Count)
-					{
-						deletedItem = _groupedListString[1][index];
-						_groupedListString[1].RemoveAt(index);
-					}
+					deletedItem = _list[index];
+					_list.RemoveAt(index);
+				}
+				break;
+
+			case ItemsSourceType.ListModelT:
+				if (index >= 0 && index < _listModel.Count)
+				{
+					deletedItem = _listModel[index];
+					_listModel.RemoveAt(index);
+				}
+				break;
+
+			case ItemsSourceType.GroupedListStringT:
+				if (TryGetGroupedItemLocation(_groupedListString, index, allowEnd: false, out int stringGroupIndex, out int stringItemIndex))
+				{
+					deletedItem = _groupedListString[stringGroupIndex][stringItemIndex];
+					_groupedListString[stringGroupIndex].RemoveAt(stringItemIndex);
 				}
 				break;
 
 			case ItemsSourceType.GroupedListModelT:
-				if (_groupedListModel.Count > 0)
+				if (TryGetGroupedItemLocation(_groupedListModel, index, allowEnd: false, out int modelGroupIndex, out int modelItemIndex))
 				{
-					if (index >= 0 && index < _groupedListModel[0].Count)
-					{
-						deletedItem = _groupedListModel[0][index];
-						_groupedListModel[0].RemoveAt(index);
-					}
-					else if (_groupedListModel.Count > 1 && index >= 0 && index < _groupedListModel[1].Count)
-					{
-						deletedItem = _groupedListModel[1][index];
-						_groupedListModel[1].RemoveAt(index);
-					}
+					deletedItem = _groupedListModel[modelGroupIndex][modelItemIndex];
+					_groupedListModel[modelGroupIndex].RemoveAt(modelItemIndex);
 				}
 				break;
 		}
@@ -1106,9 +1231,165 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 			{
 				SelectedItem = null;
 			}
+			NotifyAfterItemsSourceMutation();
+		}
+	}
+
+	private static bool TryGetGroupedItemLocation<TItem>(
+		IList<Grouping<string, TItem>> groups,
+		int index,
+		bool allowEnd,
+		out int groupIndex,
+		out int itemIndex)
+	{
+		// Indices are flattened across item collections. Group headers do not consume an index.
+		groupIndex = -1;
+		itemIndex = -1;
+
+		if (index < 0)
+			return false;
+
+		for (int i = 0; i < groups.Count; i++)
+		{
+			if (index < groups[i].Count || (allowEnd && index == groups[i].Count && i == groups.Count - 1))
+			{
+				groupIndex = i;
+				itemIndex = index;
+				return true;
+			}
+
+			index -= groups[i].Count;
+		}
+
+		return false;
+	}
+
+	private void RefreshListItemsSource()
+	{
+		// List<T> does not raise collection notifications. Replace the list so the
+		// ItemsSource binding receives a new value after a mutation.
+		switch (ItemsSourceType)
+		{
+			case ItemsSourceType.ListT:
+				_list = new List<CollectionViewTestItem>(_list);
+				break;
+
+			case ItemsSourceType.ListModelT:
+				_listModel = new List<CollectionViewTestModelItem>(_listModel);
+				break;
+		}
+	}
+
+	private void NotifyItemsSourceChanged()
+	{
+		if (!IsObservableItemsSource)
+			OnPropertyChanged(nameof(ItemsSource));
+	}
+
+	private bool IsObservableItemsSource =>
+		ItemsSourceType is ItemsSourceType.ObservableCollectionStringT
+			or ItemsSourceType.ObservableCollectionModelT
+			or ItemsSourceType.GroupedListStringT
+			or ItemsSourceType.GroupedListModelT;
+
+	private void NotifyAfterItemsSourceMutation()
+	{
+		RefreshListItemsSource();
+		NotifyItemsSourceChanged();
+		OnPropertyChanged(nameof(ItemsSourceItemCount));
+		OnPropertyChanged(nameof(ItemsSourceItemOrder));
+	}
+
+	public void ReplaceItemsSource()
+	{
+		ClearSelection();
+
+		switch (ItemsSourceType)
+		{
+			case ItemsSourceType.ObservableCollectionStringT:
+				_observableCollectionString = new ObservableCollection<CollectionViewTestItem>
+				{
+					new CollectionViewTestItem("Updated Item 1", 0),
+					new CollectionViewTestItem("Updated Item 2", 1),
+					new CollectionViewTestItem("Updated Item 3", 2),
+					new CollectionViewTestItem("Updated Item 4", 3)
+				};
+				break;
+
+			case ItemsSourceType.ObservableCollectionModelT:
+				_observableCollectionModel = new ObservableCollection<CollectionViewTestModelItem>
+				{
+					new CollectionViewTestModelItem("Updated calculator.png", "calculator.png", 0),
+					new CollectionViewTestModelItem("Updated avatar.png", "coffee.png", 1),
+					new CollectionViewTestModelItem("Updated blue.png", "blue.png", 2),
+					new CollectionViewTestModelItem("Updated bank.png", "bank.png", 3)
+				};
+				break;
+
+			case ItemsSourceType.ListT:
+				_list = new List<CollectionViewTestItem>
+				{
+					new CollectionViewTestItem("Updated Item 1", 0),
+					new CollectionViewTestItem("Updated Item 2", 1),
+					new CollectionViewTestItem("Updated Item 3", 2),
+					new CollectionViewTestItem("Updated Item 4", 3)
+				};
+				break;
+
+			case ItemsSourceType.ListModelT:
+				_listModel = new List<CollectionViewTestModelItem>
+				{
+					new CollectionViewTestModelItem("Updated calculator.png", "calculator.png", 0),
+					new CollectionViewTestModelItem("Updated avatar.png", "coffee.png", 1),
+					new CollectionViewTestModelItem("Updated blue.png", "blue.png", 2),
+					new CollectionViewTestModelItem("Updated bank.png", "bank.png", 3)
+				};
+				break;
+
+			case ItemsSourceType.GroupedListStringT:
+				_groupedListString = new List<Grouping<string, CollectionViewTestItem>>
+				{
+					new Grouping<string, CollectionViewTestItem>("Updated Fruits", new[]
+					{
+						new CollectionViewTestItem("Updated Item 1", 0),
+						new CollectionViewTestItem("Updated Item 2", 1)
+					}),
+					new Grouping<string, CollectionViewTestItem>("Updated Vegetables", new[]
+					{
+						new CollectionViewTestItem("Updated Item 3", 2),
+						new CollectionViewTestItem("Updated Item 4", 3)
+					})
+				};
+				break;
+
+			case ItemsSourceType.GroupedListModelT:
+				_groupedListModel = new List<Grouping<string, CollectionViewTestModelItem>>
+				{
+					new Grouping<string, CollectionViewTestModelItem>("Updated Group A", new[]
+					{
+						new CollectionViewTestModelItem("Updated calculator.png", "calculator.png", 0),
+						new CollectionViewTestModelItem("Updated avatar.png", "coffee.png", 1)
+					}),
+					new Grouping<string, CollectionViewTestModelItem>("Updated Group B", new[]
+					{
+						new CollectionViewTestModelItem("Updated blue.png", "blue.png", 2),
+						new CollectionViewTestModelItem("Updated bank.png", "bank.png", 3)
+					})
+				};
+				break;
 		}
 
 		OnPropertyChanged(nameof(ItemsSource));
+		OnPropertyChanged(nameof(ItemsSourceItemCount));
+		OnPropertyChanged(nameof(ItemsSourceItemOrder));
+	}
+
+	private void ClearSelection()
+	{
+		SelectedItem = null;
+		SelectedItems?.Clear();
+		CurrentSelectionText = "No current items";
+		PreviousSelectionText = "No previous items";
 	}
 
 	private void OnSelectedItemsChanged(object sender, NotifyCollectionChangedEventArgs e)

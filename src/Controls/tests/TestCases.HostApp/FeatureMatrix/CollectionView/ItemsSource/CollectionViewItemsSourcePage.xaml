@@ -13,7 +13,7 @@
        <Grid Padding="10"
              RowSpacing="5"
              ColumnSpacing="5"
-             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto"
+             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
              ColumnDefinitions="*, *">
               <local:CollectionView2
                      x:Name="collectionView"
@@ -21,6 +21,7 @@
                      Grid.ColumnSpan="2"
                      ItemsSource="{Binding ItemsSource}"
                      ItemTemplate="{Binding ItemTemplate}"
+                     ItemsLayout="{Binding ItemsLayout}"
                      IsGrouped="{Binding IsGrouped}"
                      SelectionMode="{Binding SelectionMode}"
                      SelectedItem="{Binding SelectedItem}"
@@ -29,7 +30,8 @@
                      GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
                      AutomationId="CollectionViewItemsSource">
               </local:CollectionView2>
-              <!--Add or Remove item based on Index-->
+              <!-- For grouped sources, the index is flattened across items; group headers are excluded. -->
+              <!-- Add or remove an item based on the flattened item index. -->
               <Label Text="Enter Item Index:"
                      FontAttributes="Bold"
                      FontSize="11"
@@ -52,39 +54,53 @@
                       Grid.Row="2"
                       Grid.Column="1"
                       AutomationId="RemoveItems"/>
+              <Button Text="Replace ItemsSource"
+                       Clicked="ReplaceItemsSource_Clicked"
+                       IsVisible="{Binding CanReplaceItemsSource}"
+                       Grid.Row="3"
+                       Grid.ColumnSpan="2"
+                       AutomationId="ReplaceItemsSource"/>
               <!--Display Previous Selection Text-->
               <Label Text="Previous Selection:"
-                     FontAttributes="Bold"
-                     Grid.Row="3"
-                     Grid.Column="0"/>
+                      FontAttributes="Bold"
+                      Grid.Row="4"
+                      Grid.Column="0"/>
               <Label Text="{Binding PreviousSelectionText}"
-                     TextColor="Blue"
-                     Grid.Row="3"
-                     Grid.Column="1"
-                     AutomationId="PreviousSelectionTextLabel"/>
+                      TextColor="Blue"
+                      Grid.Row="4"
+                      Grid.Column="1"
+                      AutomationId="PreviousSelectionTextLabel"/>
               <!--Display Current Selection Text-->
               <Label Text="Current Selection:"
-                     FontAttributes="Bold"
-                     Grid.Row="4"
-                     Grid.Column="0"/>
+                      FontAttributes="Bold"
+                      Grid.Row="5"
+                      Grid.Column="0"/>
               <Label Text="{Binding CurrentSelectionText}"
-                     TextColor="Blue"
-                     Grid.Row="4"
-                     Grid.Column="1"
-                     AutomationId="CurrentSelectionTextLabel"/>
+                      TextColor="Blue"
+                      Grid.Row="5"
+                      Grid.Column="1"
+                      AutomationId="CurrentSelectionTextLabel"/>
               <!--Update the Selection Item-->
               <Button
-                     Text="Multiple Selection"
-                     Grid.Row="5"
-                     Grid.Column="0"
-                     Clicked="OnPreSelectionButtonClicked"
-                     AutomationId="MultipleModePreselection">
+                      Text="Multiple Selection"
+                      Grid.Row="6"
+                      Grid.Column="0"
+                      Clicked="OnPreSelectionButtonClicked"
+                      AutomationId="MultipleModePreselection">
               </Button>
               <Button Text="Single Selection"
-                      Grid.Row="5"
+                       Grid.Row="6"
                       Grid.Column="1"
                       Clicked="OnPreSelectionButtonClicked"
                       AutomationId="SingleModePreselection">
               </Button>
+              <Label Text="{Binding ItemsSourceItemCount}"
+                     Grid.Row="7"
+                     Grid.Column="0"
+                     AutomationId="ItemsSourceItemCount"/>
+              <Label Text="{Binding ItemsSourceItemOrder}"
+                     Grid.Row="7"
+                     Grid.Column="1"
+                     AutomationId="ItemsSourceItemOrder"/>
        </Grid>
 </ContentPage>
