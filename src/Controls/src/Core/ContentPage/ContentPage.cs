@@ -2,12 +2,11 @@
 
 using System;
 using System.Diagnostics;
-
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -120,10 +119,27 @@ namespace Microsoft.Maui.Controls
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
+			var platformBounds = bounds;
+			var delegateTopSafeArea = false;
+			var topSafeArea = 0d;
+			AdjustCrossPlatformArrangeBounds(ref bounds, ref delegateTopSafeArea, ref topSafeArea);
+
 			Frame = bounds;
 			this.ArrangeContent(bounds);
+			ApplyCrossPlatformArrangeSafeArea(platformBounds, bounds, delegateTopSafeArea, topSafeArea);
 			return bounds.Size;
 		}
+
+		partial void AdjustCrossPlatformArrangeBounds(
+			ref Rect bounds,
+			ref bool delegateTopSafeArea,
+			ref double topSafeArea);
+
+		partial void ApplyCrossPlatformArrangeSafeArea(
+			Rect platformBounds,
+			Rect arrangedBounds,
+			bool delegateTopSafeArea,
+			double topSafeArea);
 
 		protected override void InvalidateMeasureOverride()
 		{
