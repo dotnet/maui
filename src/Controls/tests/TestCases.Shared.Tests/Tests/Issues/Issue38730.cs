@@ -18,6 +18,7 @@ public class Issue38730 : _IssuesUITest
 	{
 		App.WaitForElement("NavigateButton");
 		App.Tap("NavigateButton");
+		App.WaitForElement("TestInstructions");
 		VerifyScreenshot();
 	}
 }
