@@ -17,7 +17,13 @@ internal sealed class WebViewRequestLifetime
 
 	internal void Invoke(Action callback, bool complete = false)
 	{
-		// Dispatch before acquiring the gate so a stopped task cannot deadlock the UI thread.
+		lock (_gate)
+		{
+			if (!_active)
+				return;
+		}
+
+		// Dispatch without holding the gate, then check liveness again on the UI thread.
 		_dispatch(() =>
 		{
 			lock (_gate)

@@ -26,6 +26,19 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void StoppedLifetimeDoesNotUseTheDispatcher()
+		{
+			var dispatches = 0;
+			var lifetime = new WebViewRequestLifetime(action => dispatches++, () => { });
+
+			lifetime.Stop();
+			lifetime.Invoke(() => throw new InvalidOperationException());
+			lifetime.Invoke(() => throw new InvalidOperationException(), complete: true);
+
+			Assert.Equal(0, dispatches);
+		}
+
+		[Fact]
 		public void CompletionAndStopAreIdempotent()
 		{
 			var callbacks = 0;
