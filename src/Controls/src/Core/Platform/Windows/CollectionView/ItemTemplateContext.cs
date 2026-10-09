@@ -3,6 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+	[Microsoft.UI.Xaml.Data.Bindable]
 	public class ItemTemplateContext
 	{
 		readonly WeakReference<BindableObject> _container;
