@@ -2542,7 +2542,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_disposed)
 					return;
 
-				if ((OperatingSystem.IsIOSVersionAtLeast(27) || OperatingSystem.IsMacCatalystVersionAtLeast(27)) &&
+				if (OperatingSystem.IsIOSVersionAtLeast(27, 1) && !OperatingSystem.IsMacCatalyst() &&
 					_bar?.Bounds.Height > 0 &&
 					_navigationBarHeight != _bar.Bounds.Height &&
 					Owner?.TryGetTarget(out var owner) == true &&
