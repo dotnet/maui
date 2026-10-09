@@ -2,8 +2,31 @@
 
 Post exactly `/issue triage` as a new comment on an **open issue** in
 `dotnet/maui`. The caller must currently have write, maintain or admin permission.
-The command proposes and applies evidence-backed manual issue labels and posts
-one explanation. It does not reproduce bugs, run samples, change milestones or
+Inherited repository write access from the
+[`dotnet/maui-external-partners` team](https://github.com/orgs/dotnet/teams/maui-external-partners)
+satisfies this requirement; no public team membership, admin grant or new token
+is required. See the [command access inventory](pr-review-workflow.md#command-access-and-other-entrypoints)
+for the other repository-owned commands and their target restrictions.
+The command proposes and applies evidence-backed manual issue labels and retains
+its explanation only in Actions artifacts, without posting a public triage report.
+Separate Policy Service replies triggered by feedback labels are unchanged.
+After successful validation and native safe-output processing, the exact
+authorized triggering slash-command comment collapses as **resolved**, including
+successful no-change and withheld-only results. A separate trusted completion job
+rechecks the open issue, unchanged human command and caller's current write access.
+It also requires every trusted validated addition to be present and every removal
+to be absent in the freshly fetched issue's exact canonical label names, not just
+successful native operation counts. This is a point-in-time postcondition check:
+malformed or unmet label state detected in that fetched snapshot keeps the command
+visible without changing any labels. The subsequent command checks and separate
+minimization mutation are not atomic with the label read; a concurrent label change
+after that snapshot can still occur before the command collapses.
+Failed, cancelled, deferred, skipped, warning, partial or incomplete outcomes leave
+the command visible. Manual dispatches (including staged runs), edited/replayed
+commands, bot comments and unrelated comments are never minimized. A minimization
+API error is reported in Actions without rolling back successful labels or posting
+a report; explanations remain artifact-only.
+It does not reproduce bugs, run samples, change milestones or
 assignees, close/reopen issues, modify product code or create pull requests.
 
 This is a standalone **GitHub Agentic Workflow**, not an Azure pipeline.
@@ -554,7 +577,9 @@ One GPT-6.1 Sol/Copilot analysis reads prepared evidence and the declared local
 skill. Shell and GitHub tools are disabled. It has read-only repository
 permissions and does not receive the publication job's write token.
 It declares final intents through the exposed safeoutputs MCP tools, not shell
-CLI/schema probes. Structured triage data belongs to the comment tool.
+CLI/schema probes. Structured triage data belongs to the comment tool, which
+remains declared solely as internal typed evidence transport. Trusted validation
+always strips this intent before native publication, including withheld-only results.
 The pinned runtime automatically attaches an `aw_` plus eight-alphanumeric
 comment temporary ID; the validator accepts only that known transport shape and
 discards it before publication. Numeric target, evidence and incomplete-output
@@ -566,11 +591,24 @@ also guards the registered-validator path; account type or write access alone
 cannot establish human evidence. Their label events remain chronology facts,
 not approvals.
 
+The separate native threat detector is instructed to perform its full analysis
+without delegation and emit one final verdict with all three boolean flags and a
+`reasons` array, including `[]` when empty, matching the existing regression-trace
+workflow's format contract. In gh-aw v0.86.2, a result without `reasons` and a
+second result with `reasons: []` count as conflicting raw verdicts even if all
+flags agree; the parser checks for conflicts before defaulting optional reasons.
+These instructions reduce that observed format failure, not guarantee model
+compliance. Native conflicting/malformed verdict handling and genuine-threat
+checks are unchanged. WTD3 still cancels label writes on a detection warning.
+Inspect the detection log, native safe-output counters and retained report:
+green job conclusions alone do not prove labels were applied. A blocked run
+leaves the command visible and does not post a triage status/report comment.
+
 The separate safe-output job checks out the exact trusted revision, imports only
 bounded regular JSON outside the checkout, binds it to the preparation job's
 independent context hash, and re-fetches/rechecks context and authority. It rejects
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
-intents and unsafe transitions, then renders its own comment.
+intents and unsafe transitions, then renders its own artifact-only report.
 Withheld labels must be unique and cannot overlap the proposed label delta.
 After evidence validation and report rendering, the final gate re-fetches the
 complete bounded snapshot and requires its hash to match the validated context
@@ -578,9 +616,9 @@ before writing the report or releasing native intents. This clears the permissio
 cache, rechecks the original command actor and any rerun actor, verifies the source
 command and open issue again, and rejects intervening evidence, label, reference,
 authority or catalog changes. A stale proposal requires a fresh invocation.
-Only built-in gh-aw add/remove/comment handlers perform writes.
+Only built-in gh-aw add/remove-label handlers receive validated write intents.
 Safe-output publication explicitly uses the built-in `secrets.GITHUB_TOKEN`,
-consistently posting as `github-actions[bot]`; it does not select a configured
+consistently applying labels as `github-actions[bot]`; it does not select a configured
 `GH_AW_GITHUB_TOKEN` publisher. Retry-marker recognition uses that same identity.
 Their coarse family allowlists meet the compiler's 50-entry bound; the narrower
 machine policy and exact live-name checks are mandatory before those handlers.
@@ -593,7 +631,8 @@ introduce a custom write handler; review this remaining least-privilege limitati
 before apply-mode deployment.
 
 Each run permits at most 20 total label changes, ten additions, ten removals and
-one result comment. The pinned add-label handler independently rejects arrays
+one internal structured comment, with zero public triage comment writes.
+The pinned add-label handler independently rejects arrays
 larger than ten labels before applying its configurable limit; increasing
 `max` cannot override that ceiling. The workflow, skill and trusted policy share
 the ten-addition cap, so oversized proposals fail validation rather than reaching
@@ -607,7 +646,10 @@ assuming a command was processed; use a fresh invocation for a canceled command.
 A genuine no-change result uses `noop` and leaves the issue untouched. Missing
 required evidence is incomplete, not a successful review; inspect the Actions
 result rather than interpreting the absence of a comment as success.
-Label/comment APIs are **not an atomic transaction**: inspect the Actions result
+A validated withheld-only proposal retains its report and decisions, then emits
+one native `noop` with a nonempty `message`, rather than an empty intent array or
+a public report. Existing pure no-ops and incomplete/failure semantics are unchanged.
+Label APIs are **not an atomic transaction**: inspect the Actions result
 for actual application, particularly after a partial failure. The explanation
 describes a validated requested delta, not an unconditional delivery claim.
 The final snapshot check detects changes during validation; it cannot lock GitHub
@@ -632,16 +674,17 @@ Legacy intact HTML identifiers remain readable. Legacy sanitized reports with
 the publisher-injected `Issue Triage` header and validated-proposal heading are
 also excluded from evidence, but missing invocation or decision identifiers
 cannot establish exact retry coverage.
-Duplicate-report protection remains
-defensive: a report for the same invocation can suppress a new comment only
-when it covers all decisions exactly; changed decisions or multiple reports
-fail visibly. This is not a supported job-rerun recovery mechanism.
+Legacy report-marker checks remain defensive: a report for the same invocation
+must cover all decisions exactly; changed decisions or multiple reports fail
+visibly. Reports are never published by this workflow now, regardless of whether
+a prior report exists. This is not a supported job-rerun recovery mechanism.
 The validated `report.md`, `decision.json` and `validation.json` are retained
-before any label/comment handler runs. If comment publication fails while
-labels succeed, retrieve that report artifact for the historical explanation.
+before any label handler runs. `validation.json` records zero public comment writes
+and the exact requested additions/removals, not proof of completed label writes.
+Retrieve the report artifact for the historical explanation.
 A fresh invocation proposes only remaining changes and may legitimately use
-`noop`; it does not reconstruct or automatically repost the missing historical
-comment. Inspect the original run and retained report for actual partial
+`noop`; it does not reconstruct or publish a historical comment.
+Inspect the original run and retained report for actual partial
 publication, rather than treating the new no-op as proof of prior delivery.
 
 ## Deployment and staged operation
@@ -695,7 +738,7 @@ With actionlint 1.7.12, the compiler-generated `queue: max` field is not yet
 recognized. Other diagnostics can still be checked without editing the lock:
 
 ```bash
-actionlint -ignore 'unexpected key "queue" for "concurrency" section' \
+actionlint -ignore '^unexpected key "queue" for "concurrency" section\. expected one of "cancel-in-progress", "group"$' \
   .github/workflows/issue-triage.lock.yml
 ```
 

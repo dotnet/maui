@@ -1114,6 +1114,7 @@ jobs:
       - activation
       - agent
       - detection
+      - minimize_command
       - pat_pool
       - safe_outputs
     if: >
@@ -1123,7 +1124,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: copilot-pat-pool
     permissions:
-      actions: read
       contents: read
       issues: write
       pull-requests: write
@@ -1357,23 +1357,6 @@ jobs:
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_agent_failure.cjs');
             await main();
-      - name: Report failed jobs
-        id: report_failed_jobs
-        if: always()
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Full issue-label triage"
-          GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/issue-triage.md"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GH_AW_REPORT_FAILED_JOBS: "true"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/report_failed_jobs.cjs');
-            await main();
 
   detection:
     needs:
@@ -1465,6 +1448,7 @@ jobs:
           WORKFLOW_DESCRIPTION: "Apply evidence-backed manual issue labels for an authorized /issue triage command."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "true"
+          CUSTOM_PROMPT: "Perform the full security analysis without delegating to subagents.\nEmit exactly one final THREAT_DETECTION_RESULT object, never an intermediate\nor example result. Include all three boolean fields (prompt_injection,\nsecret_leak, malicious_patch) and reasons as an array, including [] when empty.\nDo not repeat the result in a second format or omit reasons.\n"
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -1642,6 +1626,56 @@ jobs:
                 core.setFailed(msg);
               }
             }
+
+  minimize_command:
+    needs:
+      - activation
+      - agent
+      - detection
+      - pre_activation
+      - safe_outputs
+    if: >
+      !cancelled() && github.repository == 'dotnet/maui' && github.event_name == 'issue_comment' && github.event.action == 'created' && github.event.comment.user.type == 'User' && github.event.comment.id > 0 && github.run_attempt == 1 && needs.pre_activation.outputs.triage_authorized == 'true' && needs.pre_activation.outputs.triage_ready == 'true' && needs.activation.result == 'success' && needs.agent.result == 'success' && needs.detection.result == 'success' && (needs.detection.outputs.detection_conclusion == 'success' ||
+      needs.detection.outputs.detection_conclusion == 'skipped') &&
+      needs.safe_outputs.result == 'success' && needs.safe_outputs.outputs.process_safe_outputs_status == 'success' && needs.safe_outputs.outputs.process_safe_outputs_items_cancelled == '0' && needs.safe_outputs.outputs.process_safe_outputs_items_deferred == '0' && needs.safe_outputs.outputs.process_safe_outputs_items_failed == '0' && needs.safe_outputs.outputs.process_safe_outputs_items_skipped == '0' && needs.safe_outputs.outputs.process_safe_outputs_items_warnings == '0' && needs.safe_outputs.outputs.process_safe_outputs_processed_count != '' && needs.safe_outputs.outputs.process_safe_outputs_processed_count > 0 && needs.safe_outputs.outputs.process_safe_outputs_items_applied == needs.safe_outputs.outputs.process_safe_outputs_processed_count && needs.safe_outputs.outputs.process_safe_outputs_items_succeeded == needs.safe_outputs.outputs.process_safe_outputs_processed_count
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
+        shell: bash
+        run: | # zizmor: ignore[github-env] - GITHUB_SERVER_URL is set by GitHub Actions, not user input.
+          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
+          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
+          GH_HOST="${GITHUB_SERVER_URL#https://}"
+          GH_HOST="${GH_HOST#http://}"
+          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Checkout trusted command completion script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Download trusted validation receipt outside checkout
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: issue-triage-report-${{ github.run_id }}
+          path: ${{ runner.temp }}/issue-triage-completion
+      - name: Resolve only the successfully handled authorized command
+        run: |
+          timeout -k 30s 2m pwsh -NoProfile -File .github/scripts/IssueTriage.ps1 \
+            -Stage Complete -IssueNumber "$ISSUE_NUMBER" -Repository "$GITHUB_REPOSITORY" \
+            -Actor "$GITHUB_ACTOR" -CommandCommentId "$COMMAND_COMMENT_ID" \
+            -ContextDirectory "$RUNNER_TEMP/issue-triage-completion" \
+            -ExpectedContextHash "$EXPECTED_CONTEXT_HASH" -ProcessedOperations "$NATIVE_PROCESSED_COUNT"
+        env:
+          COMMAND_COMMENT_ID: ${{ github.event.comment.id }}
+          DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
+          EXPECTED_CONTEXT_HASH: ${{ needs.pre_activation.outputs.context_hash }}
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          NATIVE_PROCESSED_COUNT: ${{ needs.safe_outputs.outputs.process_safe_outputs_processed_count }}
 
   pat_pool:
     needs: pre_activation

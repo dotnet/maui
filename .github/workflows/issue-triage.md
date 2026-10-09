@@ -117,6 +117,63 @@ jobs:
     if: github.run_attempt == 1
   safe_outputs:
     if: github.run_attempt == 1
+  minimize_command:
+    needs: [pre_activation, activation, agent, detection, safe_outputs]
+    if: >-
+      !cancelled() &&
+      github.repository == 'dotnet/maui' &&
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      github.event.comment.user.type == 'User' &&
+      github.event.comment.id > 0 &&
+      github.run_attempt == 1 &&
+      needs.pre_activation.outputs.triage_authorized == 'true' &&
+      needs.pre_activation.outputs.triage_ready == 'true' &&
+      needs.activation.result == 'success' &&
+      needs.agent.result == 'success' &&
+      needs.detection.result == 'success' &&
+      (needs.detection.outputs.detection_conclusion == 'success' ||
+        needs.detection.outputs.detection_conclusion == 'skipped') &&
+      needs.safe_outputs.result == 'success' &&
+      needs.safe_outputs.outputs.process_safe_outputs_status == 'success' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_cancelled == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_deferred == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_failed == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_skipped == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_warnings == '0' &&
+      needs.safe_outputs.outputs.process_safe_outputs_processed_count != '' &&
+      needs.safe_outputs.outputs.process_safe_outputs_processed_count > 0 &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_applied == needs.safe_outputs.outputs.process_safe_outputs_processed_count &&
+      needs.safe_outputs.outputs.process_safe_outputs_items_succeeded == needs.safe_outputs.outputs.process_safe_outputs_processed_count
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout trusted command completion script
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download trusted validation receipt outside checkout
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: issue-triage-report-${{ github.run_id }}
+          path: ${{ runner.temp }}/issue-triage-completion
+      - name: Resolve only the successfully handled authorized command
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMAND_COMMENT_ID: ${{ github.event.comment.id }}
+          EXPECTED_CONTEXT_HASH: ${{ needs.pre_activation.outputs.context_hash }}
+          NATIVE_PROCESSED_COUNT: ${{ needs.safe_outputs.outputs.process_safe_outputs_processed_count }}
+          DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
+        run: |
+          timeout -k 30s 2m pwsh -NoProfile -File .github/scripts/IssueTriage.ps1 \
+            -Stage Complete -IssueNumber "$ISSUE_NUMBER" -Repository "$GITHUB_REPOSITORY" \
+            -Actor "$GITHUB_ACTOR" -CommandCommentId "$COMMAND_COMMENT_ID" \
+            -ContextDirectory "$RUNNER_TEMP/issue-triage-completion" \
+            -ExpectedContextHash "$EXPECTED_CONTEXT_HASH" -ProcessedOperations "$NATIVE_PROCESSED_COUNT"
   pre-activation:
     outputs:
       triage_ready: ${{ steps.context.outputs.ready }}
@@ -162,6 +219,13 @@ tools:
 network: defaults
 
 safe-outputs:
+  threat-detection:
+    prompt: |
+      Perform the full security analysis without delegating to subagents.
+      Emit exactly one final THREAT_DETECTION_RESULT object, never an intermediate
+      or example result. Include all three boolean fields (prompt_injection,
+      secret_leak, malicious_patch) and reasons as an array, including [] when empty.
+      Do not repeat the result in a second format or omit reasons.
   runs-on: ubuntu-latest
   needs: [pat_pool]
   github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -257,6 +321,7 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
+  report-failed-jobs: false
   steps:
     - name: Checkout trusted triage validator
       uses: actions/checkout@v7.0.1
@@ -331,7 +396,9 @@ do not guess a first bad release or invent priority, approval or validation.
 Information/reproduction requests must be concrete and actionable.
 
 Use the skill's structured `data.triage` contract with one `add_comment` carrying
-`item_number` for this issue and a placeholder body. Emit matching plain-string
+`item_number` for this issue and a placeholder body. This is internal evidence
+transport only, not a public comment: trusted validation strips it before
+publication and retains explanations in Actions artifacts. Emit matching plain-string
 `add_labels`/`remove_labels` deltas, at most one intent of each type. Always pass
 the prepared issue number explicitly. Do not use label objects or intent metadata.
 Propose at most 20 total changes, with at most ten additions and ten removals.
@@ -345,4 +412,8 @@ shell is disabled, and the MCP tools already expose the required schemas.
 
 The separate safe-output job re-fetches context, reauthorizes the requester,
 checks evidence provenance and policy, rejects stale/unsupported proposals,
-renders its own explanatory comment and then permits the built-in label handlers.
+retains its explanatory report and decisions in Actions artifacts, strips the
+internal comment intent and then permits only validated built-in label intents.
+A validated withheld-only result becomes a native `noop`; neither it nor a
+no-change result posts a public triage report. Feedback labels may still trigger
+separate repository Policy Service replies.

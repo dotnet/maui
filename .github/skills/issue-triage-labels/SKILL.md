@@ -461,7 +461,13 @@ a CLI transport. Do not manufacture a missing-tool signal for an unnecessary
 CLI path. Missing required evidence/tools still uses `report_incomplete`.
 
 Emit one `add_comment` intent with placeholder body `Triage proposal ready for
-trusted validation.` and that comment tool's `data.triage` of this shape:
+trusted validation.` and that comment tool's `data.triage`.
+
+This intent is internal typed evidence transport only. It must still be emitted
+for structured validation, including withheld-only proposals. Trusted code
+retains the explanation and decisions in Actions artifacts and always strips
+the comment intent before native publication; do not request a public report.
+Use this structured data shape:
 
 ```json
 {
@@ -509,7 +515,10 @@ After validation and report rendering, trusted code re-fetches the complete
 bounded snapshot, rechecks current authority and source-command/open-issue state,
 and requires an unchanged context hash before releasing native intents.
 Intervening changes require a fresh invocation, not a job rerun. This final
-freshness check does not make the later label/comment API writes atomic.
+freshness check does not make the later label API writes atomic. Only validated
+label intents are released. Withheld-only proposals become a native `noop`
+after the report and decisions are retained, without a public triage comment.
+Separate Policy Service replies triggered by feedback labels are unchanged.
 
 When no changes or substantive withheld decisions are needed, call `noop` with
 a short reason. Missing required evidence is incomplete, not a successful review;

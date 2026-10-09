@@ -5,6 +5,8 @@ This guide explains the automated investigation commands used in dotnet/maui:
 - `/review`
 - `/review tests`
 - `/review performance`
+- `/evaluate-tests`
+- `/issue triage` (on open issues)
 - `/issue trace-regression` (on issues)
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
@@ -17,9 +19,50 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 | `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
+| `/evaluate-tests` | Repository users with write, maintain, or admin access | Evaluates test quality and coverage on an open PR with test source changes. | Posts one test evaluation report. |
+| `/issue triage` | Repository users with write, maintain, or admin access | Applies evidence-backed manual labels to an open issue. | Labels only; explanation retained in Actions artifacts, not a public report. |
 | `/issue trace-regression` | Repository users with write, maintain, or admin access | Traces an issue's reported regression through release boundaries and source history to candidate introducing commits or PRs. | Posts one expandable `Regression Trace` comment on the issue and hides older reports. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR or issue.
+
+## Command access and other entrypoints
+
+The [`dotnet/maui-external-partners` team](https://github.com/orgs/dotnet/teams/maui-external-partners)
+already has **write access to dotnet/maui**. Inherited team access satisfies the
+current repository-permission gates; the team's organization-wide default role
+is not its repository grant. These commands do not require public membership or
+a separate team-roster allowlist. Authorization still depends on the caller's
+current effective repository permission, not the team name alone.
+
+| Entrypoint | Permission gates and non-permission restrictions |
+| --- | --- |
+| [`/issue triage`](../workflows/issue-triage.md) | Native roles and pre-activation accept write/maintain/admin. Trusted `IssueTriage.ps1` rechecks that permission during Gather, Validate and Complete. Requires a new exact human command on an open issue, trusted default-branch infrastructure and attempt one; freshness, evidence authority and exact label postconditions remain mandatory. |
+| [`/issue trace-regression`](../workflows/issue-trace-regression.md) | Native roles, collector checks before/after gathering and command completion accept write/maintain/admin. Requires a new exact human issue comment; publication validates the triggering issue and completion requires the actual report receipt. |
+| [`/evaluate-tests`](../workflows/copilot-evaluate-tests.md) | Native roles accept write/maintain/admin. The compiled association prefilter retains OWNER/MEMBER/COLLABORATOR; collaborator access includes repository write access, not only public organization membership. Requires a PR comment and an open PR with test source changes. |
+| [`/review tests`](../workflows/copilot-review-tests.md) | Native roles, exact-command authorization/minimization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR; reporting uses the triggering target. |
+| [`/review performance`](../workflows/copilot-review-performance.md) | Native roles, pre-activation, publication reauthorization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR and trusted default-branch tooling; pinned evidence/report validation still applies. |
+| [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review tests` and `/review performance` are separate workflows; `/review rerun` is unsupported. |
+| [`/evaluate-skills`](../workflows/skill-validation.yml) | The slash gate accepts write/maintain/admin on PR comments. Static-only mode can disable live evaluation independently of caller access; trusted-source and evaluation-content validation still apply. |
+| [`/rebase`](../workflows/rebase.yml) | The commenter must have write/maintain/admin and post exactly `/rebase` on an open PR. Conflicts or unavailable maintainer edits can prevent branch updates after authorization. |
+| [`/backport [to] <branch>`](../workflows/backport.yml) | Delegates to `dotnet/arcade`'s `backport-base.yml@main`; its current caller gate accepts write/admin, so partner write access qualifies. Requires a merged source PR and an existing target branch; upstream behavior can change independently. |
+
+Post commands as new comments on the target type above, not inside an issue
+description, quotation or code fence. Issue commands are not PR commands and
+vice versa. Effective write access makes a caller eligible; it does not bypass
+command matching, target state, infrastructure, validation or safety checks.
+
+For `/issue triage`, absence of a public report is intentional. A successful
+validated no-change/withheld-only result uses `noop`; a blocked, warning or
+incomplete run keeps the command visible. Inspect Actions artifacts, detector
+logs and native handler outcomes before claiming delivery. See
+[`/issue triage`](issue-triage.md) for the artifact-only contract and
+non-atomic completion postconditions. A triggered or green workflow is not
+itself proof of applied labels.
+
+External `/azp` commands are owned by the Azure Pipelines GitHub integration.
+Its trust/service-connection permissions are separate from these repository
+workflows; repository YAML or a GitHub team grant alone does not configure
+Azure authorization.
 
 ## Choosing the right command
 
