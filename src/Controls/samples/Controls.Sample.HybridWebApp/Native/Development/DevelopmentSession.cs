@@ -18,7 +18,8 @@ sealed class DevelopmentSession : IDisposable
 		AutomaticDecompression = DecompressionMethods.All,
 		UseCookies = false,
 		UseProxy = false
-	}) { Timeout = TimeSpan.FromSeconds(10) };
+	})
+	{ Timeout = TimeSpan.FromSeconds(10) };
 	readonly object _gate = new();
 	readonly Queue<RequestRecord> _requests = new();
 	readonly LoopbackInspector _inspector;
@@ -105,6 +106,14 @@ sealed class DevelopmentSession : IDisposable
 			request.Headers.TryAddWithoutValidation("Cache-Control", "no-cache");
 			request.Headers.TryAddWithoutValidation("Accept-Encoding", "identity");
 			using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation.Token).ConfigureAwait(false);
+			if ((int)response.StatusCode is >= 300 and < 400)
+			{
+				lock (_gate)
+					_failed++;
+				Console.WriteLine($"HYBRIDWEBAPP_PROXY_REDIRECT_REJECTED {e.Uri.PathAndQuery}");
+				await SendErrorAsync(e, 502, "Bad Gateway", "Vite asset redirects are not supported by this development sample.").ConfigureAwait(false);
+				return;
+			}
 			var bytes = e.Method == "HEAD" ? Array.Empty<byte>() : await ReadBoundedAsync(response.Content, cancellation.Token).ConfigureAwait(false);
 			var mime = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
 			await SendAsync(e, (int)response.StatusCode, response.ReasonPhrase ?? "", mime, bytes, cancellation.Token,
@@ -170,7 +179,7 @@ sealed class DevelopmentSession : IDisposable
 			if (_disposed)
 				return;
 			cancellationToken.ThrowIfCancellationRequested();
-			using var body = new MemoryStream(bytes, writable: false);
+			using var body = e.Method == "HEAD" ? null : new MemoryStream(bytes, writable: false);
 			var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 			{
 				["Content-Type"] = mime,
