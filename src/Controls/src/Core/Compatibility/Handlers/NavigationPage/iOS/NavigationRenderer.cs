@@ -1844,7 +1844,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void UpdateTitleArea(Page page)
 			{
-				if (page == null)
+				if (_disposed || page == null)
 					return;
 
 				ImageSource titleIcon = NavigationPage.GetTitleIconImageSource(page);
@@ -1873,6 +1873,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 
 					Container titleViewContainer = CreateTitleViewContainer(titleView, n.NavigationBar);
+					titleViewContainer.Owner = new WeakReference<UIViewController>(this);
 
 					UpdateTitleImage(titleViewContainer, titleIcon);
 					NavigationItem.TitleView = titleViewContainer;
@@ -2338,6 +2339,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UIImageView _icon;
 			bool _disposed;
 			nfloat? _navigationBarHeight;
+			internal WeakReference<UIViewController> Owner { get; set; }
 
 			//https://developer.apple.com/documentation/uikit/uiview/2865930-directionallayoutmargins
 			const int SystemMargin = 16;
@@ -2537,6 +2539,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void LayoutSubviews()
 			{
 				base.LayoutSubviews();
+				if (_disposed)
+					return;
+
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) &&
+					_bar?.Bounds.Height > 0 &&
+					_navigationBarHeight != _bar.Bounds.Height &&
+					Owner?.TryGetTarget(out var owner) == true &&
+					owner is ParentingViewController controller &&
+					controller.NavigationItem.TitleView == this)
+				{
+					// Compare the sizing height, not Frame.Height, which can exclude title margins.
+					controller.UpdateTitleArea(controller.Child);
+					return;
+				}
+
 				if (Frame == CGRect.Empty || Frame.Width >= 10000 || Frame.Height >= 10000)
 					return;
 
@@ -2573,6 +2590,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_disposed = true;
+				Owner = null;
 
 				if (disposing)
 				{
