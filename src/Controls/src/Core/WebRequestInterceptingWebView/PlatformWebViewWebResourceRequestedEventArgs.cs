@@ -108,6 +108,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 #elif IOS || MACCATALYST
 
 	IReadOnlyDictionary<string, string>? _headers;
+	readonly WebViewRequestLifetime? _requestLifetime;
 
 	internal PlatformWebViewWebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
@@ -120,6 +121,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 	internal PlatformWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
 		: this(args.Sender, args.UrlSchemeTask)
 	{
+		_requestLifetime = args.RequestLifetime;
 	}
 
 	/// <summary>
@@ -187,20 +189,22 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 	internal void SetResponse(int code, string reason, IReadOnlyDictionary<string, string>? headers, Stream? content)
 	{
 		// create and send the response headers
-		UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
+		using var response = new Foundation.NSHttpUrlResponse(
 			Request.Url,
 			code,
 			"HTTP/1.1",
-			ToPlatformHeaders(headers)));
+			ToPlatformHeaders(headers));
+		SendResponse(() => UrlSchemeTask.DidReceiveResponse(response));
 
 		// send the data
 		if (content is not null && Foundation.NSData.FromStream(content) is { } nsdata)
 		{
-			UrlSchemeTask.DidReceiveData(nsdata);
+			using (nsdata)
+				SendResponse(() => UrlSchemeTask.DidReceiveData(nsdata));
 		}
 
 		// let the webview know
-		UrlSchemeTask.DidFinish();
+		SendResponse(UrlSchemeTask.DidFinish, complete: true);
 	}
 
 	internal async Task SetResponseAsync(int code, string reason, IReadOnlyDictionary<string, string>? headers, Task<Stream?> contentTask)
@@ -208,11 +212,12 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		// iOS and MacCatalyst will just wait until DidFinish is called
 
 		// create and send the response headers
-		UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
+		using var response = new Foundation.NSHttpUrlResponse(
 			Request.Url,
 			code,
 			"HTTP/1.1",
-			ToPlatformHeaders(headers)));
+			ToPlatformHeaders(headers));
+		SendResponse(() => UrlSchemeTask.DidReceiveResponse(response));
 
 		// get the actual content
 		var data = await contentTask;
@@ -220,11 +225,20 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		// send the data
 		if (data is not null && Foundation.NSData.FromStream(data) is { } nsdata)
 		{
-			UrlSchemeTask.DidReceiveData(nsdata);
+			using (nsdata)
+				SendResponse(() => UrlSchemeTask.DidReceiveData(nsdata));
 		}
 
 		// let the webview know
-		UrlSchemeTask.DidFinish();
+		SendResponse(UrlSchemeTask.DidFinish, complete: true);
+	}
+
+	void SendResponse(Action callback, bool complete = false)
+	{
+		if (_requestLifetime is not null)
+			_requestLifetime.Invoke(callback, complete);
+		else
+			callback();
 	}
 
 #elif ANDROID

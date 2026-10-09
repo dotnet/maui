@@ -35,11 +35,15 @@ public class WebResourceRequestedEventArgs
 
 	internal WebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
-		global::WebKit.IWKUrlSchemeTask urlSchemeTask)
+		global::WebKit.IWKUrlSchemeTask urlSchemeTask,
+		WebViewRequestLifetime? requestLifetime = null)
 	{
 		Sender = sender;
 		UrlSchemeTask = urlSchemeTask;
+		RequestLifetime = requestLifetime;
 	}
+
+	internal WebViewRequestLifetime? RequestLifetime { get; }
 
 	/// <summary>
 	/// Gets the native view attached to the event.
