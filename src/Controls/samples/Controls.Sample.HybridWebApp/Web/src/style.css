@@ -1,0 +1,40 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #14324f;
+  background: #eaf2f8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  padding: 3rem;
+}
+
+main {
+  max-width: 48rem;
+  margin: auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 1rem;
+}
+
+.mode {
+  font-weight: 700;
+  color: #14643b;
+}
+
+#typescript-message {
+  font-size: 1.25rem;
+}
+
+#style-target {
+  background: #dceeff;
+  border: 3px solid #28639b;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+}
+
+code {
+  font-family: ui-monospace, monospace;
+}

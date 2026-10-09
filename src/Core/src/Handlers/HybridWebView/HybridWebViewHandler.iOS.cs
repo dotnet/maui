@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WKWebView>
 	{
 		private const string ScriptMessageHandlerName = "webwindowinterop";
+		SchemeHandler? _schemeHandler;
 
 		protected override WKWebView CreatePlatformView()
 		{
@@ -40,7 +42,8 @@ namespace Microsoft.Maui.Handlers
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(this), ScriptMessageHandlerName);
 
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
-			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+			_schemeHandler = new SchemeHandler(this);
+			config.SetUrlSchemeHandler(_schemeHandler, urlScheme: "app");
 
 			// Invoke the WebViewInitializing event to allow custom configuration of the web view
 			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
@@ -123,6 +126,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			_schemeHandler?.StopAll();
+			_schemeHandler = null;
 			platformView.Configuration.UserContentController.RemoveScriptMessageHandler(ScriptMessageHandlerName);
 
 			base.DisconnectHandler(platformView);
@@ -150,6 +155,7 @@ namespace Microsoft.Maui.Handlers
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
+			readonly Dictionary<nint, WebViewRequestLifetime> _requests = new();
 
 			public SchemeHandler(HybridWebViewHandler webViewHandler)
 			{
@@ -177,54 +183,71 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
+				var taskHandle = urlSchemeTask.Handle;
+				var lifetime = new WebViewRequestLifetime(
+					callback => webView.InvokeOnMainThread(callback),
+					() => _requests.Remove(taskHandle));
+				_requests.Add(taskHandle, lifetime);
 
-				logger?.LogDebug("Intercepting request for {Url}.", url);
-
-				// 1. First check if the app wants to modify or override the request.
-				if (WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, webView, urlSchemeTask, url, logger))
+				try
 				{
-					return;
-				}
+					logger?.LogDebug("Intercepting request for {Url}.", url);
 
-				// 2. If this is an app request, then assume the request is for a local resource.
-				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+					// 1. First check if the app wants to modify or override the request.
+					if (WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, webView, urlSchemeTask, url, logger, lifetime))
+					{
+						return;
+					}
+
+					// 2. If this is an app request, then assume the request is for a local resource.
+					if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+					{
+						logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
+
+						// 2.a. Check if the request is for a local resource
+						var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
+						using var responseBytes = bytes;
+
+						// 2.b. Return the response header
+						using var dic = new NSMutableDictionary<NSString, NSString>();
+						if (contentType is not null)
+						{
+							dic[(NSString)"Content-Type"] = (NSString)contentType;
+						}
+						if (bytes?.Length > 0)
+						{
+							// Disable local caching which would otherwise prevent user scripts from executing correctly.
+							dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
+							dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
+						}
+
+						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+						lifetime.Invoke(() => urlSchemeTask.DidReceiveResponse(response));
+
+						// 2.c. Return the body
+						if (bytes?.Length > 0)
+						{
+							lifetime.Invoke(() => urlSchemeTask.DidReceiveData(bytes));
+						}
+
+						// 2.d. Finish the task
+						lifetime.Invoke(urlSchemeTask.DidFinish, complete: true);
+					}
+
+					// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
+					//    handle the request as it would normally do. This means that it will try to load the resource
+					//    from the internet or from the local cache.
+
+					logger?.LogDebug("Request for {Url} was not handled.", url);
+					lifetime.Stop();
+				}
+				catch (Exception exception)
 				{
-					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
-
-					// 2.a. Check if the request is for a local resource
-					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
-
-					// 2.b. Return the response header
-					using var dic = new NSMutableDictionary<NSString, NSString>();
-					if (contentType is not null)
-					{
-						dic[(NSString)"Content-Type"] = (NSString)contentType;
-					}
-					if (bytes?.Length > 0)
-					{
-						// Disable local caching which would otherwise prevent user scripts from executing correctly.
-						dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
-						dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
-					}
-
-					using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-					urlSchemeTask.DidReceiveResponse(response);
-
-					// 2.c. Return the body
-					if (bytes?.Length > 0)
-					{
-						urlSchemeTask.DidReceiveData(bytes);
-					}
-
-					// 2.d. Finish the task
-					urlSchemeTask.DidFinish();
+					logger?.LogError(exception, "Failed to complete request for {Url}.", url);
+					using var domain = new NSString("NSURLErrorDomain");
+					using var error = new NSError(domain, -1);
+					lifetime.Invoke(() => urlSchemeTask.DidFailWithError(error), complete: true);
 				}
-
-				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
-				//    handle the request as it would normally do. This means that it will try to load the resource
-				//    from the internet or from the local cache.
-
-				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
 			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
@@ -337,6 +360,15 @@ namespace Microsoft.Maui.Handlers
 			[Export("webView:stopURLSchemeTask:")]
 			public void StopUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+				if (_requests.TryGetValue(urlSchemeTask.Handle, out var lifetime))
+					lifetime.Stop();
+			}
+
+			internal void StopAll()
+			{
+				var requests = new List<WebViewRequestLifetime>(_requests.Values);
+				foreach (var lifetime in requests)
+					lifetime.Stop();
 			}
 		}
 	}

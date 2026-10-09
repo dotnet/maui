@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Platform;
 
 internal static class WebRequestInterceptingWebView
 {
-	internal static bool TryInterceptResponseStream(IViewHandler? handler, WKWebView webView, IWKUrlSchemeTask urlSchemeTask, string url, ILogger? logger)
+	internal static bool TryInterceptResponseStream(IViewHandler? handler, WKWebView webView, IWKUrlSchemeTask urlSchemeTask, string url, ILogger? logger, WebViewRequestLifetime? requestLifetime = null)
 	{
 		if (handler is null || handler.VirtualView is not IWebRequestInterceptingWebView interceptingWebView)
 		{
@@ -13,7 +13,7 @@ internal static class WebRequestInterceptingWebView
 		}
 
 		// 1. First, create the event args
-		var platformArgs = new WebResourceRequestedEventArgs(webView, urlSchemeTask);
+		var platformArgs = new WebResourceRequestedEventArgs(webView, urlSchemeTask, requestLifetime);
 
 		// 2. Trigger the event for the app
 		var handled = interceptingWebView.WebResourceRequested(platformArgs);

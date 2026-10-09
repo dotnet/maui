@@ -78,6 +78,11 @@ public class WebViewWebResourceRequestedEventArgs : EventArgs
 	/// <param name="reason">The reason phrase for the response.</param>
 	/// <param name="headers">The headers to include in the response.</param>
 	/// <param name="content">The content of the response as a stream.</param>
+	/// <remarks>
+	/// For <see cref="HybridWebView"/> on iOS and Mac Catalyst, responses are ignored after WebKit stops the request
+	/// or the handler disconnects. This does not cancel application-owned work used to obtain the response.
+	/// Direct calls to native response methods are not protected by this method.
+	/// </remarks>
 	public void SetResponse(int code, string reason, IReadOnlyDictionary<string, string>? headers, Stream? content) =>
 		PlatformArgs?.SetResponse(code, reason, headers, content);
 

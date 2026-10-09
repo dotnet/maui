@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net$(_MauiDotNetVersion)-maccatalyst</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Maui.Controls.Sample.HybridWebApp</RootNamespace>
+    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <!-- Keep the bundle name aligned with the assembly for dotnet run (dotnet/sdk#47727). -->
+    <ApplicationTitle>Maui.Controls.Sample.HybridWebApp</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.sample.hybridwebapp</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
+    <DefineConstants Condition="'$(UseMaui)' != 'true'">$(DefineConstants);HYBRIDWEBAPP_IN_TREE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+    <Compile Remove="Development/**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseMaui)' != 'true'">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <ProjectReference Include="$(MauiSrcDirectory)Core/src/Core.csproj" />
+    <ProjectReference Include="$(MauiSrcDirectory)Essentials/src/Essentials.csproj" />
+    <ProjectReference Include="$(MauiSrcDirectory)Controls/src/Core/Controls.Core.csproj" />
+    <ProjectReference Include="$(MauiSrcDirectory)Controls/src/Xaml/Controls.Xaml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseMaui)' == 'true'">
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#14324F" />
+    <MauiAsset Include="Resources/Raw/**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition="'$(UseMaui)' != 'true'" />
+
+</Project>
