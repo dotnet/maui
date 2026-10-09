@@ -11,14 +11,30 @@ namespace Microsoft.Maui.Foldable
 	internal interface IFoldableService
 	{
 		event EventHandler OnScreenChanged;
+		event EventHandler<FoldableHingeAngleChangedEventArgs> HingeAngleChanged;
 		bool IsSpanned { get; }
 		bool IsLandscape { get; }
 		Rect GetHinge();
+		Rect GetHinge(VisualElement visualElement);
+		bool IsLandscapeFor(VisualElement visualElement);
+		Size GetScaledScreenSize(VisualElement visualElement);
 		Size ScaledScreenSize { get; }
 		Point? GetLocationOnScreen(VisualElement visualElement);
 		Task<int> GetHingeAngleAsync();
+		void StartMonitoring(VisualElement visualElement);
+		void StopMonitoring(VisualElement visualElement);
 
 		event EventHandler<FoldEventArgs> OnLayoutChanged;
+	}
+
+	internal sealed class FoldableHingeAngleChangedEventArgs : EventArgs
+	{
+		public FoldableHingeAngleChangedEventArgs(double hingeAngleInDegrees)
+		{
+			HingeAngleInDegrees = hingeAngleInDegrees;
+		}
+
+		public double HingeAngleInDegrees { get; }
 	}
 
 	public class FoldEventArgs : System.EventArgs

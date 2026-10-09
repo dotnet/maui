@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Foldable;
 using Microsoft.Maui.Graphics;
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Foldable
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
 		IFoldableService _dualScreenService;
+		bool _hasExplicitService;
 		IFoldableService FoldableService =>
 			_dualScreenService ?? Element?.Handler?.MauiContext?.Services?.GetService<IFoldableService>();
 
@@ -76,6 +78,7 @@ namespace Microsoft.Maui.Foldable
 			_spanningBounds = Array.Empty<Rect>();
 			Element = element;
 			_dualScreenService = dualScreenService;
+			_hasExplicitService = dualScreenService != null;
 
 			if (element == null)
 			{
@@ -83,14 +86,30 @@ namespace Microsoft.Maui.Foldable
 			}
 			else
 			{
-				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, FoldableService); // get if null
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, dualScreenService);
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
 			}
 		}
 
+		void BindFoldableService(IFoldableService foldableService)
+		{
+			if (ReferenceEquals(_dualScreenService, foldableService))
+				return;
+
+			var oldService = _dualScreenService;
+			if (subscriberCount > 0 && oldService != null)
+				oldService.HingeAngleChanged -= OnHingeAngleChanged;
+
+			_dualScreenService = foldableService;
+
+			if (subscriberCount > 0 && foldableService != null)
+				foldableService.HingeAngleChanged += OnHingeAngleChanged;
+		}
+
 		internal void SetFoldableService(IFoldableService foldableService)
 		{
-			_dualScreenService = foldableService;
+			_hasExplicitService = foldableService != null;
+			BindFoldableService(foldableService);
 			_twoPaneViewLayoutGuide.SetFoldableService(foldableService);
 		}
 
@@ -214,6 +233,9 @@ namespace Microsoft.Maui.Foldable
 
 		void OnTwoPaneViewLayoutGuideChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (!_hasExplicitService)
+				BindFoldableService(Element?.Handler?.MauiContext?.Services?.GetService<IFoldableService>());
+
 			SpanningBounds = GetSpanningBounds();
 			IsLandscape = GetIsLandscape();
 			HingeBounds = GetHingeBounds();
@@ -233,17 +255,20 @@ namespace Microsoft.Maui.Foldable
 			return true;
 		}
 
-#if !ANDROID
-		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
-		void ProcessHingeAngleSubscriberCount(int newCount) { }
-#else
-
 		static object hingeAngleLock = new object();
 		/// <summary>
 		/// Query the current hinge angle of the foldable device.
 		/// </summary>
 		/// <returns>Hinge angle between 0 and 360 degrees.</returns>
-		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
+		public async Task<int> GetHingeAngleAsync()
+		{
+			var service = FoldableService;
+			if (service == null)
+				return 0;
+
+			await MainThread.InvokeOnMainThreadAsync(() => service.StartMonitoring(Element));
+			return await service.GetHingeAngleAsync().ConfigureAwait(false);
+		}
 
 		void ProcessHingeAngleSubscriberCount(int newCount)
 		{
@@ -251,20 +276,31 @@ namespace Microsoft.Maui.Foldable
 			{
 				if (newCount == 1)
 				{
-					Foldable.FoldableService.HingeAngleChanged += OnHingeAngleChanged;
+					MainThread.BeginInvokeOnMainThread(() =>
+					{
+						lock (hingeAngleLock)
+						{
+							if (Volatile.Read(ref subscriberCount) <= 0)
+								return;
+
+							var service = FoldableService;
+							service?.StartMonitoring(Element);
+							service?.HingeAngleChanged -= OnHingeAngleChanged;
+							service?.HingeAngleChanged += OnHingeAngleChanged;
+						}
+					});
 				}
 				else if (newCount == 0)
 				{
-					Foldable.FoldableService.HingeAngleChanged -= OnHingeAngleChanged;
+					FoldableService?.HingeAngleChanged -= OnHingeAngleChanged;
 				}
 			}
 		}
 
-		void OnHingeAngleChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
+		void OnHingeAngleChanged(object sender, FoldableHingeAngleChangedEventArgs e)
 		{
-			_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
+			_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngleInDegrees));
 		}
-#endif
 	}
 
 	/// <summary>
