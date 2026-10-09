@@ -141,14 +141,23 @@ without suppressing compiler diagnostics or substituting expected text.
 Verifier feedback retains the latest bounded compiler/native log tail rather
 than only early build output.
 Rendering/crash candidates must preserve the author's child order and render
-surface; a new opaque status overlay is not an unchanged-scenario confirmation.
+surface, including the navigation launcher; newly inserted diagnostic children
+or an opaque status overlay are not an unchanged-scenario confirmation.
+An `OnAppearing` counter alone does not establish completed native return paint
+or post-return responsiveness.
 Hosted recording/toolchain failures do not justify rewriting that scenario.
 Generated UI tests must use existing category members; NavigationPage tests use
 `UITestCategories.Navigation`, not `UITestCategories.NavigationPage`.
 Native-navigation scenarios retain a real navigation host before observing its
 bar or rotating the device. Unset-width scenarios retain the zero/non-accessible
-baseline and observe actual native bounds instead of demanding a positive initial
-element or substituting its requested width.
+baseline instead of demanding a positive initial element or substituting its
+requested width. Bounds alone do not establish rendered BoxView fill: the unset
+case can report width 100 while its colored bar remains absent. Generated tests
+must inspect an external native screenshot, derive pixel regions and scale from
+observed geometry, and require the initially nonzero reference to actually paint
+before comparing the unset case's painted extent. Missing observation or a failed
+reference remains a prerequisite blocker; instrumentation must not force a redraw
+or insert diagnostic children into the affected layout.
 Boolean text waits must succeed before a required interaction. A failed load
 or readiness transition is an ordinary prerequisite exception, not an issue
 assertion. Crash scenarios after WebView navigation retain the actual
@@ -474,10 +483,12 @@ uses the driver's own path resolution rather than a hardcoded cache path.
 The uniquely owned simulator first has a ten-minute cold-boot deadline, with a
 bounded boot-status diagnostic tail; it must actually become ready.
 Preparation separates a cold WebDriverAgent build from the unchanged pinned runner's
-session-launch timeout. Preparation has a ten-minute process
+session-launch timeout. The cold preflight launch may wait within the existing
+ten-minute process deadline instead of interrupting WebDriverAgent after 50 seconds;
+it must still return a responsive native iOS status. Preparation has a ten-minute process
 deadline, emits a bounded diagnostic tail, and fails explicitly on a build error,
 timeout, or incomplete output capture; none is a candidate assertion. It does not
-change the pinned framework, Appium package versions, or launch capabilities.
+change the pinned framework, Appium package versions, or native test launch capabilities.
 Successful prebuilding alone is not evidence that WebDriverAgent starts or that
 the test body executes.
 Native iOS and Android UI jobs also require FFmpeg, ffprobe and the `libx264` encoder before running

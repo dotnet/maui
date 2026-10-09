@@ -155,7 +155,7 @@ async function prepare() {
         iosSdkVersion: sdk,
         platformVersion: sdk,
         showXcodeLog: true,
-        wdaLaunchTimeout: 50000,
+        wdaLaunchTimeout: 600000,
     });
     const derivedDataPath = await wda.retrieveDerivedDataPath();
     if (!derivedDataPath || !isAbsolute(derivedDataPath)) {
