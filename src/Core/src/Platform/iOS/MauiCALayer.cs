@@ -86,7 +86,9 @@ namespace Microsoft.Maui.Platform
 		{
 			base.DrawInContext(ctx);
 
-			var clipPath = GetClipPath();
+			ctx.SaveState();
+
+			var clipPath = RequiresUnclippedStroke() ? GetBorderClipPath() : GetClipPath();
 
 			if (clipPath! != null!)
 				ctx.AddPath(clipPath);
@@ -94,6 +96,8 @@ namespace Microsoft.Maui.Platform
 			ctx.Clip();
 
 			DrawBackground(ctx);
+			ctx.RestoreState();
+
 			DrawBorder(ctx);
 		}
 
@@ -321,6 +325,22 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		CGPath? GetBorderClipPath()
+		{
+			if (_shape.TryGetTarget(out var shape))
+			{
+				var bounds = _bounds.ToRectangle().Inset(_strokeThickness / 2);
+				var path = shape.PathForBounds(bounds);
+				return path?.AsCGPath();
+			}
+
+			return null;
+		}
+
+		bool RequiresUnclippedStroke() =>
+			_strokeLineJoin is not CGLineJoin.Miter ||
+			_strokeMiterLimit != CanvasDefaults.DefaultMiterLimit;
+
 		void SetDefaultBackgroundColor()
 		{
 			_backgroundColor = UIColor.Clear;
@@ -351,13 +371,14 @@ namespace Microsoft.Maui.Platform
 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
 
 			// The Stroke is inner and we are clipping the outer, for that reason, we use the double to get the correct value.
-			ctx.SetLineWidth(2 * _strokeThickness);
+			var requiresUnclippedStroke = RequiresUnclippedStroke();
+			ctx.SetLineWidth(requiresUnclippedStroke ? _strokeThickness : 2 * _strokeThickness);
 
 			ctx.SetLineCap(_strokeLineCap);
 			ctx.SetLineJoin(_strokeLineJoin);
 			ctx.SetMiterLimit(_strokeMiterLimit * _strokeThickness / 4);
 
-			var clipPath = GetClipPath();
+			var clipPath = requiresUnclippedStroke ? GetBorderClipPath() : GetClipPath();
 
 			if (clipPath! != null!)
 				ctx.AddPath(clipPath);
