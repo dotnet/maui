@@ -272,6 +272,45 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+
+			if (previousTraitCollection is not null &&
+				previousTraitCollection.PreferredContentSizeCategory != TraitCollection.PreferredContentSizeCategory)
+			{
+				InvalidateFontsOnContentSizeChanged(_headerView?.View);
+				InvalidateFontsOnContentSizeChanged(_footer);
+				ReMeasureFooter();
+				_tableViewController?.ForEachCachedView(InvalidateFontsOnContentSizeChanged);
+			}
+		}
+
+		static void InvalidateFontsOnContentSizeChanged(IView view)
+		{
+			if (view is null)
+			{
+				return;
+			}
+
+			if (view is ITextStyle { Font.AutoScalingEnabled: true } && view.Handler is not null)
+			{
+				view.Handler.UpdateValue(nameof(ITextStyle.Font));
+				view.InvalidateMeasure();
+			}
+
+			if (view is IVisualTreeElement visualTreeElement)
+			{
+				foreach (var child in visualTreeElement.GetVisualChildren())
+				{
+					if (child is IView childView)
+					{
+						InvalidateFontsOnContentSizeChanged(childView);
+					}
+				}
+			}
+		}
+
 		protected virtual void UpdateBackground()
 		{
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
