@@ -544,6 +544,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				position = items.IndexOf(Carousel.CurrentItem);
+
+				// The CurrentItem isn't found if, for example, enumerating the ItemsSource creates new items
+				// each time. Keep the current Position then, as iOS does, instead of setting it to -1
+				if (position == -1 && Carousel.Position >= 0 && Carousel.Position < items.Count)
+					position = Carousel.Position;
+
 				Carousel.Position = position;
 			}
 			else

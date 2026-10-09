@@ -1,5 +1,4 @@
 ﻿using System;
-using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -136,9 +135,11 @@ namespace Microsoft.Maui.Handlers
 		class WindowProxy
 		{
 			WeakReference<IWindow>? _virtualView;
+			WeakReference<UIWindowScene>? _windowScene;
 
 			IWindow? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
-			IDisposable? _effectiveGeometryObserver;
+			UIWindowScene? WindowScene => _windowScene is not null && _windowScene.TryGetTarget(out var s) ? s : null;
+			KeyValueObservation? _effectiveGeometryObserver;
 
 			public void Connect(IWindow virtualView, UIWindow platformView)
 			{
@@ -148,19 +149,28 @@ namespace Microsoft.Maui.Handlers
 				// > This property is key-value observing (KVO) compliant. Observing effectiveGeometry is the recommended way
 				// > to receive notifications of changes to the window scene’s geometry. These changes can occur because of
 				// > user interaction or as a result of the system resolving a geometry request.
-				_effectiveGeometryObserver = platformView.WindowScene?.AddObserver("effectiveGeometry", NSKeyValueObservingOptions.OldNew, HandleEffectiveGeometryObserved);
+				if (platformView.WindowScene is { } windowScene && IsEffectiveGeometrySupported)
+				{
+					_windowScene = new(windowScene);
+					_effectiveGeometryObserver = KeyValueObservation.ObserveEffectiveGeometry(windowScene, HandleEffectiveGeometryChanged);
+				}
 			}
+
+			[System.Runtime.Versioning.SupportedOSPlatformGuard("ios16.0")]
+			[System.Runtime.Versioning.SupportedOSPlatformGuard("maccatalyst16.0")]
+			static bool IsEffectiveGeometrySupported =>
+				OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16);
 
 			public void Disconnect()
 			{
 				_effectiveGeometryObserver?.Dispose();
 			}
 
-			void HandleEffectiveGeometryObserved(NSObservedChange obj)
+			void HandleEffectiveGeometryChanged()
 			{
-				if (obj is not null && VirtualView is IWindow virtualView && obj.NewValue is UIWindowSceneGeometry newGeometry)
+				if (IsEffectiveGeometrySupported && VirtualView is IWindow virtualView && WindowScene is { } windowScene)
 				{
-					var newRectangle = newGeometry.SystemFrame.ToRectangle();
+					var newRectangle = windowScene.EffectiveGeometry.SystemFrame.ToRectangle();
 
 					if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height))
 					{
@@ -177,7 +187,7 @@ namespace Microsoft.Maui.Handlers
 			WeakReference<IWindow>? _virtualView;
 			WeakReference<UIWindow>? _platformView;
 
-			IDisposable? _frameObserver;
+			KeyValueObservation? _frameObserver;
 
 			IWindow? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
@@ -188,7 +198,7 @@ namespace Microsoft.Maui.Handlers
 				_virtualView = new(virtualView);
 				_platformView = new(platformView);
 
-				_frameObserver = platformView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+				_frameObserver = KeyValueObservation.ObserveFrame(platformView, Update);
 			}
 
 			public void Disconnect(UIWindow platformView)
@@ -206,8 +216,6 @@ namespace Microsoft.Maui.Handlers
 					virtualView.FrameChanged(platformView.Frame.ToRectangle());
 				}
 			}
-
-			void FrameAction(Foundation.NSObservedChange obj) => Update();
 		}
 	}
 }

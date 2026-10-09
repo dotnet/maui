@@ -222,6 +222,70 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Execute Mode SwipeItem Measures Native Content Width (Issue 37700)")]
+		public async Task ExecuteModeSwipeItemMeasuresNativeContentWidth()
+		{
+			SetupBuilder();
+
+			var content = new VerticalStackLayout
+			{
+				HeightRequest = 60,
+				Background = new SolidColorBrush(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				Text = "OK"
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+			swipeItems.Mode = SwipeMode.Execute;
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				WidthRequest = 300,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds children dynamically when opening it.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var nativeSwipeItem = actionView.GetChildAt(0);
+				Assert.NotNull(nativeSwipeItem);
+
+				await AssertEventually(() => nativeSwipeItem.Width > 0);
+
+				int contentWidthPixels = platformView.Width;
+				int swipeItemWidthPixels = nativeSwipeItem.Width;
+
+				// Prior to the fix, a single Execute-mode SwipeItem was sized to
+				// contentWidth / items.Count, i.e. the entire SwipeView content
+				// width, instead of the native menu button's measured content size.
+				// With a single short-text item, the measured native width should be
+				// noticeably smaller than the full SwipeView content width.
+				Assert.True(swipeItemWidthPixels < contentWidthPixels,
+					$"Expected the Execute-mode SwipeItem width ({swipeItemWidthPixels}px) to be smaller " +
+					$"than the full SwipeView content width ({contentWidthPixels}px), matching the native " +
+					$"button's measured content size instead of the entire SwipeView width.");
+			});
+		}
+
 		[Fact]
 		[Description("The ScaleX property of a SwipeView should match with native ScaleX")]
 		public async Task ScaleXConsistent()
