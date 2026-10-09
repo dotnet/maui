@@ -536,7 +536,6 @@ try {
                 if ($native.Omitted) { Write-Warning 'Native Appium diagnostics are a bounded filtered tail, not the complete log.' }
             }
             if ($manifest.platform -eq 'android') {
-                . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
                 foreach ($line in @(Get-IssueReplicateAndroidCrashDiagnostic -OutputDirectory $OutputDirectory)) {
                     $testLines.Add($line)
                 }

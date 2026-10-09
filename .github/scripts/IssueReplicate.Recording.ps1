@@ -273,7 +273,7 @@ function Convert-IssueReplicateRecordingBudget {
     )
 
     Assert-IssueReplicateRecordingBytes -Bytes $Bytes
-    . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Diagnostics.ps1')
     $directory = Join-Path ([IO.Path]::GetTempPath()) "issue-recording-encode-$([guid]::NewGuid().ToString('N'))"
     New-Item -ItemType Directory -Path $directory -ErrorAction Stop | Out-Null
     try {
@@ -282,13 +282,11 @@ function Convert-IssueReplicateRecordingBudget {
         [IO.File]::WriteAllBytes($source, $Bytes)
         function Read-VideoIdentity {
             param([string]$Path)
-            $probe = Invoke-ProcessWithTimeout -FilePath 'ffprobe' -TimeoutSeconds 20 `
-                -ArgumentList @('-v', 'error', '-select_streams', 'v', '-show_entries',
-                'stream=width,height:format=duration', '-of', 'json', $Path)
-            if ($probe.TimedOut -or $probe.OutputDrainTimedOut -or $probe.ExitCode -ne 0) {
-                throw "Recording inspection failed: exit=$($probe.ExitCode), timeout=$($probe.TimedOut), drainTimeout=$($probe.OutputDrainTimedOut)."
-            }
-            $identity = ($probe.Output -join "`n") | ConvertFrom-Json
+            $ffprobe = Get-Command ffprobe -CommandType Application -ErrorAction Stop | Select-Object -First 1
+            $probe = Invoke-IssueReplicateBoundedProcess -FilePath $ffprobe.Source -TimeoutSeconds 20 `
+                -Arguments @('-v', 'error', '-select_streams', 'v', '-show_entries',
+                'stream=width,height:format=duration', '-of', 'json', $Path) -MaxOutputBytes 8192
+            $identity = $probe | ConvertFrom-Json
             if (@($identity.streams).Count -ne 1) { throw 'A recording must have one video stream.' }
             $duration = [double]::Parse([string]$identity.format.duration, [Globalization.CultureInfo]::InvariantCulture)
             if (-not [double]::IsFinite($duration) -or $duration -le 0 -or $duration -gt 31 -or
@@ -309,15 +307,9 @@ function Convert-IssueReplicateRecordingBudget {
             '-passlogfile', (Join-Path $directory 'encode'))
         foreach ($pass in 1..2) {
             $output = if ($pass -eq 1) { @('-f', 'null', '-') } else { @('-movflags', '+faststart', $encoded) }
-            $process = Invoke-ProcessWithTimeout -FilePath 'ffmpeg' -TimeoutSeconds 90 `
-                -ArgumentList ($arguments + @('-pass', "$pass") + $output)
-            if ($process.TimedOut -or $process.OutputDrainTimedOut -or $process.ExitCode -ne 0) {
-                foreach ($row in @($process.Output | Select-Object -Last 5)) {
-                    $line = $row.ToString() -replace '##vso\[[^]]*\]', '' -replace '[\x00-\x1f\x7f]', ' '
-                    Write-Warning ($line.Substring(0, [Math]::Min(1000, $line.Length)))
-                }
-                throw "Bounded recording encoding failed: exit=$($process.ExitCode), timeout=$($process.TimedOut), drainTimeout=$($process.OutputDrainTimedOut)."
-            }
+            $ffmpeg = Get-Command ffmpeg -CommandType Application -ErrorAction Stop | Select-Object -First 1
+            Invoke-IssueReplicateBoundedProcess -FilePath $ffmpeg.Source -TimeoutSeconds 90 `
+                -Arguments ($arguments + @('-pass', "$pass") + $output) -MaxOutputBytes 8192 | Out-Null
         }
         $file = Get-Item -LiteralPath $encoded -ErrorAction Stop
         if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint -or

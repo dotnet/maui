@@ -129,7 +129,8 @@ The unchanged eight-file, 8,000-byte/character-per-file source budget prioritize
 declarations, app bootstrap, files named by its reachable constructed/registered types and
 custom renderer/handler implementations over archive order, unrelated platforms
 and resources. Up to eight traversal levels follow literal C# construction/registration
-and prefixed XAML element references, including nested navigation pages. A paired
+and prefixed XAML element or `DataTemplate` markup-extension type references,
+including Shell content pages and nested navigation pages. A paired
 XAML code-behind containing only its constructor's `InitializeComponent()` call
 has lower priority than the actual page markup and interaction code.
 References are read as bounded source text, never executed or parsed as live XAML.
@@ -162,6 +163,17 @@ Boolean text waits must succeed before a required interaction. A failed load
 or readiness transition is an ordinary prerequisite exception, not an issue
 assertion. Crash scenarios after WebView navigation retain the actual
 `WebNavigationResult` and require successful navigation before the reported pop.
+The Android screenshot helper's unsupported image/API/density assertion is a
+prerequisite failure, even if a candidate catches the helper's wrapper exception
+and NUnit retains a body-bound assertion. It cannot confirm an issue.
+Owned Android API inspection uses the trusted replication tools' bounded process
+reader, not a timeout helper imported from the target framework checkout. Its
+fixed emulator-serial arguments, twenty-second deadline, sixteen-byte response
+bound and owned-process cleanup remain required on historical branches. Crash-buffer
+capture and recording conversion use that same trusted reader with their existing
+twenty-/ninety-second deadlines and explicit output bounds, without increasing
+recording size or changing full-duration checks. Both redirected streams drain
+concurrently into fixed allocations; stderr beyond 8 KiB is an explicit failure.
 If the UI runner exits nonzero without reporting a TRX, verification exports an
 explicitly inconclusive result without qualified execution and bounded runner/compiler feedback
 for the permitted revision. This does not qualify an assertion, recording or

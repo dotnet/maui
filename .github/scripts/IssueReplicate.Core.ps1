@@ -366,12 +366,12 @@ function Get-IssueReplicateNativeAndroidApi {
     if ($env:DEVICE_UDID -cnotmatch '^emulator-[0-9]+$') {
         throw 'Android runtime verification requires the explicitly owned emulator serial.'
     }
-    . (Join-Path $RepoRoot '.github/scripts/shared/shared-utils.ps1')
-    $api = Invoke-ProcessWithTimeout -FilePath 'adb' -TimeoutSeconds 20 `
-        -ArgumentList @('-s', $env:DEVICE_UDID, 'shell', 'getprop', 'ro.build.version.sdk')
-    $value = ($api.Output -join "`n").Trim()
-    if ($api.TimedOut -or $api.OutputDrainTimedOut -or $api.ExitCode -ne 0 -or
-        $value -cnotmatch '^[1-9][0-9]{0,2}$') {
+    . (Join-Path $PSScriptRoot 'IssueReplicate.Diagnostics.ps1')
+    $adb = Get-Command adb -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    $value = (Invoke-IssueReplicateBoundedProcess -FilePath $adb.Source -TimeoutSeconds 20 `
+        -Arguments @('-s', $env:DEVICE_UDID, 'shell', 'getprop', 'ro.build.version.sdk') `
+        -MaxOutputBytes 16).Trim()
+    if ($value -cnotmatch '^[1-9][0-9]{0,2}$') {
         throw 'The owned Android emulator did not report one API level within its deadline.'
     }
     return $value
@@ -841,6 +841,16 @@ function Get-IssueReplicateTrxVerdict {
     $passed = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
     $failures = @($results | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' })
     $names = @($results | ForEach-Object { $_.GetAttribute('testName') } | Sort-Object)
+    if (@($failures | Where-Object {
+        $message = $_.SelectSingleNode("*[local-name()='Output']/*[local-name()='ErrorInfo']/*[local-name()='Message']")
+        $message -and $message.InnerText -cmatch
+            'Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with (?:1440x2960 560|1080x2424 420)dpi screen, but the current device is API [0-9]+ with a [0-9]+x[0-9]+ [0-9]+dpi screen\.'
+    }).Count -gt 0) {
+        return [pscustomobject]@{
+            Status = 'Inconclusive'; Names = $names
+            Diagnostic = 'The Android screenshot environment guard failed before image capture; this is a prerequisite failure, not issue evidence.'
+        }
+    }
     $xunitExceptions = ((Get-IssueReplicateAssertionExceptionNames | Where-Object {
         $_ -cnotin @('AssertionException', 'AssertFailedException')
     } | ForEach-Object { [regex]::Escape($_) }) -join '|')

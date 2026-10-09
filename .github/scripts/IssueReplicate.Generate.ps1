@@ -57,7 +57,8 @@ try {
             if ($null -eq $body) { continue }
             foreach ($pattern in @(
                 '(?:\bnew\s+|\btypeof\s*\(\s*)(?:global::)?(?:[A-Za-z_][A-Za-z0-9_]*\.)*(?<type>[A-Za-z_][A-Za-z0-9_]*)',
-                '<[A-Za-z_][A-Za-z0-9_]*:(?<type>[A-Za-z_][A-Za-z0-9_]*)\b'
+                '<[A-Za-z_][A-Za-z0-9_]*:(?<type>[A-Za-z_][A-Za-z0-9_]*)\b',
+                '\{\s*(?:[A-Za-z_][A-Za-z0-9_]*:)?DataTemplate\s+(?:[A-Za-z_][A-Za-z0-9_]*:)?(?<type>[A-Za-z_][A-Za-z0-9_]*)\s*\}'
             )) {
                 foreach ($match in [regex]::Matches($body, $pattern)) { [void]$referencedTypes.Add($match.Groups['type'].Value) }
             }

@@ -77,12 +77,11 @@ function Get-IssueReplicateAndroidCrashDiagnostic {
     if ($env:DEVICE_UDID -cnotmatch '^emulator-[0-9]+$') {
         throw 'Android crash diagnostics require the explicitly owned emulator serial.'
     }
-    $capture = Invoke-ProcessWithTimeout -FilePath 'adb' -TimeoutSeconds 20 `
-        -ArgumentList @('-s', $env:DEVICE_UDID, 'logcat', '-b', 'crash', '-d', '-v', 'threadtime', '-t', '500')
-    if ($capture.TimedOut -or $capture.OutputDrainTimedOut -or $capture.ExitCode -ne 0) {
-        throw 'The owned emulator crash buffer could not be captured within its deadline.'
-    }
-    $text = ($capture.Output -join "`n").Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+    $adb = Get-Command adb -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    $capture = Invoke-IssueReplicateBoundedProcess -FilePath $adb.Source -TimeoutSeconds 20 `
+        -Arguments @('-s', $env:DEVICE_UDID, 'logcat', '-b', 'crash', '-d', '-v', 'threadtime', '-t', '500') `
+        -MaxOutputBytes 65536
+    $text = $capture.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
     if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 65536) {
         throw 'The bounded Android crash buffer exceeds its diagnostic file limit.'
     }
@@ -101,20 +100,19 @@ function Get-IssueReplicateAndroidCrashDiagnostic {
     } | Select-Object -First 12 | ForEach-Object { "Native crash diagnostic (unqualified): $_" })
 }
 
-function Invoke-IssueReplicateDiagnosticProcess {
+function Invoke-IssueReplicateBoundedProcess {
     param(
-        [Parameter(Mandatory)][string]$Code,
+        [Parameter(Mandatory)][string]$FilePath,
         [string[]]$Arguments = @(),
         [Parameter(Mandatory)][ValidateRange(1, 2098176)][int]$MaxOutputBytes,
-        [ValidateRange(1, 30)][int]$TimeoutSeconds = 20
+        [ValidateRange(1, 90)][int]$TimeoutSeconds = 20
     )
 
-    $python = Get-Command python3 -CommandType Application -ErrorAction Stop | Select-Object -First 1
-    $start = [Diagnostics.ProcessStartInfo]::new($python.Source)
+    $start = [Diagnostics.ProcessStartInfo]::new($FilePath)
     $start.UseShellExecute = $false
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
-    foreach ($argument in @('-I', '-S', '-c', $Code) + $Arguments) {
+    foreach ($argument in $Arguments) {
         $start.ArgumentList.Add($argument)
     }
     $process = [Diagnostics.Process]::new()
@@ -125,30 +123,43 @@ function Invoke-IssueReplicateDiagnosticProcess {
         $started = $process.Start()
         if (-not $started) { throw 'Could not start the diagnostic reader.' }
         $bytes = [byte[]]::new($MaxOutputBytes + 1)
+        $errorBytes = [byte[]]::new(8193)
         $count = 0
-        while ($true) {
-            $read = $process.StandardOutput.BaseStream.ReadAsync($bytes, $count, $bytes.Length - $count)
+        $errorCount = 0
+        $read = $process.StandardOutput.BaseStream.ReadAsync($bytes, 0, $bytes.Length)
+        $readError = $process.StandardError.BaseStream.ReadAsync($errorBytes, 0, $errorBytes.Length)
+        while ($read -or $readError) {
             $remaining = [int][Math]::Ceiling($TimeoutSeconds * 1000 - $timer.Elapsed.TotalMilliseconds)
-            if ($remaining -le 0 -or -not $read.Wait($remaining)) {
+            $pending = [Threading.Tasks.Task[]]@(@($read, $readError) | Where-Object { $null -ne $_ })
+            if ($remaining -le 0 -or [Threading.Tasks.Task]::WaitAny($pending, $remaining) -lt 0) {
                 throw 'The diagnostic reader exceeded its hard deadline.'
             }
-            $length = $read.GetAwaiter().GetResult()
-            if ($length -eq 0) { break }
-            $count += $length
-            if ($count -gt $MaxOutputBytes) { throw 'The diagnostic reader exceeded its output bound.' }
+            if ($read -and $read.IsCompleted) {
+                $length = $read.GetAwaiter().GetResult()
+                $read = $null
+                if ($length -gt 0) {
+                    $count += $length
+                    if ($count -gt $MaxOutputBytes) { throw 'The diagnostic reader exceeded its output bound.' }
+                    $read = $process.StandardOutput.BaseStream.ReadAsync($bytes, $count, $bytes.Length - $count)
+                }
+            }
+            if ($readError -and $readError.IsCompleted) {
+                $length = $readError.GetAwaiter().GetResult()
+                $readError = $null
+                if ($length -gt 0) {
+                    $errorCount += $length
+                    if ($errorCount -gt 8192) { throw 'The diagnostic reader exceeded its error output bound.' }
+                    $readError = $process.StandardError.BaseStream.ReadAsync(
+                        $errorBytes, $errorCount, $errorBytes.Length - $errorCount)
+                }
+            }
         }
         $remaining = [int][Math]::Ceiling($TimeoutSeconds * 1000 - $timer.Elapsed.TotalMilliseconds)
         if ($remaining -le 0 -or -not $process.WaitForExit($remaining)) {
             throw 'The diagnostic reader exceeded its hard deadline.'
         }
         if ($process.ExitCode -ne 0) {
-            $errorBytes = [byte[]]::new(8192)
-            $readError = $process.StandardError.BaseStream.ReadAsync($errorBytes, 0, $errorBytes.Length)
-            $remaining = [int][Math]::Ceiling($TimeoutSeconds * 1000 - $timer.Elapsed.TotalMilliseconds)
-            if ($remaining -le 0 -or -not $readError.Wait($remaining)) {
-                throw 'The diagnostic reader exceeded its hard deadline.'
-            }
-            $message = [Text.Encoding]::UTF8.GetString($errorBytes, 0, $readError.GetAwaiter().GetResult())
+            $message = [Text.Encoding]::UTF8.GetString($errorBytes, 0, $errorCount)
             $message = $message.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
             if ($message.Length -gt 1000) { $message = $message.Substring(0, 1000) }
             throw "The diagnostic reader failed: $($message.Trim())"
@@ -162,6 +173,20 @@ function Invoke-IssueReplicateDiagnosticProcess {
             }
         } finally { $process.Dispose() }
     }
+}
+
+function Invoke-IssueReplicateDiagnosticProcess {
+    param(
+        [Parameter(Mandatory)][string]$Code,
+        [string[]]$Arguments = @(),
+        [Parameter(Mandatory)][ValidateRange(1, 2098176)][int]$MaxOutputBytes,
+        [ValidateRange(1, 30)][int]$TimeoutSeconds = 20
+    )
+
+    $python = Get-Command python3 -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    Invoke-IssueReplicateBoundedProcess -FilePath $python.Source `
+        -Arguments (@('-I', '-S', '-c', $Code) + $Arguments) `
+        -MaxOutputBytes $MaxOutputBytes -TimeoutSeconds $TimeoutSeconds
 }
 
 function Read-IssueReplicateNativeDiagnostic {
