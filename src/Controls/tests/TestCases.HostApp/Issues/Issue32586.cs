@@ -7,11 +7,13 @@ public class Issue32586 : ContentPage
 	Button FooterButton;
 	Button ParentSafeAreaToggleButton;
 	Button ChildSafeAreaToggleButton;
+	Button SafeAreaOwnershipSequenceButton;
 	Label TestLabel;
 	Label SafeAreaStatusLabel;
 	ContentView FooterView;
 	Grid MainGrid;
 	VerticalStackLayout verticalStackLayout;
+	int safeAreaOwnershipSequenceStep;
 
 	public Issue32586()
 	{
@@ -87,6 +89,14 @@ public class Issue32586 : ContentPage
 		};
 		ChildSafeAreaToggleButton.Clicked += OnChildSafeAreaToggleClicked;
 
+		SafeAreaOwnershipSequenceButton = new Button
+		{
+			Text = "Advance Ownership Sequence",
+			HorizontalOptions = LayoutOptions.Center,
+			AutomationId = "SafeAreaOwnershipSequenceButton"
+		};
+		SafeAreaOwnershipSequenceButton.Clicked += OnSafeAreaOwnershipSequenceClicked;
+
 		// Create SafeAreaEdges status label
 		SafeAreaStatusLabel = new Label
 		{
@@ -102,6 +112,7 @@ public class Issue32586 : ContentPage
 		verticalStackLayout.Add(TestLabel);
 		verticalStackLayout.Add(ParentSafeAreaToggleButton);
 		verticalStackLayout.Add(ChildSafeAreaToggleButton);
+		verticalStackLayout.Add(SafeAreaOwnershipSequenceButton);
 		verticalStackLayout.Add(SafeAreaStatusLabel);
 
 		// Bottom marker - positioned at very bottom of grid, used to detect safe area
@@ -240,6 +251,33 @@ public class Issue32586 : ContentPage
 			verticalStackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None);
 		}
 		UpdateStatusLabel();
+	}
+
+	void OnSafeAreaOwnershipSequenceClicked(object sender, EventArgs e)
+	{
+		safeAreaOwnershipSequenceStep = (safeAreaOwnershipSequenceStep % 4) + 1;
+
+		switch (safeAreaOwnershipSequenceStep)
+		{
+			case 1:
+				MainGrid.SafeAreaEdges = SafeAreaEdges.All;
+				verticalStackLayout.ClearValue(Microsoft.Maui.Controls.Layout.SafeAreaEdgesProperty);
+				SafeAreaStatusLabel.Text = "Parent: All, Child: Default";
+				break;
+			case 2:
+				MainGrid.SafeAreaEdges = SafeAreaEdges.None;
+				verticalStackLayout.ClearValue(Microsoft.Maui.Controls.Layout.SafeAreaEdgesProperty);
+				SafeAreaStatusLabel.Text = "Parent: None, Child: Default";
+				break;
+			case 3:
+				verticalStackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+				SafeAreaStatusLabel.Text = "Parent: None, Child: Container";
+				break;
+			case 4:
+				MainGrid.SafeAreaEdges = SafeAreaEdges.All;
+				SafeAreaStatusLabel.Text = "Parent: All, Child: Container";
+				break;
+		}
 	}
 
 	void UpdateStatusLabel()
