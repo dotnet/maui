@@ -289,7 +289,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			if (_lastShell?.Target is IShellController shell)
+			{
 				shell.RemoveAppearanceObserver(this);
+			}
 
 			UnsubscribeAllShellContent();
 			_navigationManager?.Disconnect(VirtualView, platformView);
