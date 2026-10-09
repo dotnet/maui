@@ -85,6 +85,19 @@ Run on Windows:
 dotnet build -t:Run -f net10.0-windows10.0.19041.0
 ```
 
+## Agent upgrade guidance
+
+This package includes the text-only
+`skills/microsoft-maui-controls-upgrade-to-11/SKILL.md` Agent Skill and supporting
+references. Ask a compatible agent to inspect the skill from your exact restored
+package when upgrading a Controls application to MAUI 11. The guidance covers
+version alignment, native customization and behavior-preserving checks.
+
+NuGet restore does not execute or install the skill. Repository installation and
+refresh are separate operations; preserve local edits before refreshing.
+See [NuGet package skills](https://github.com/dotnet/maui/blob/main/docs/NuGetPackageSkills.md)
+for discovery tooling and release-placement details.
+
 ## 💡 Quick Start Example
 
 Here's a simple .NET MAUI page to get you started:
