@@ -1,0 +1,386 @@
+# Public-only issue reproduction pipeline. Register this YAML as a separate
+# dnceng-public/public pipeline; it must never be reused in an internal project.
+# Keep that definition's queueStatus disabled until the documented external
+# activation/revision checks protect every credential-bearing variable group.
+# ISSUE_REPLICATE_ENABLED gates GitHub dispatch, not direct Azure API queues.
+trigger: none
+pr: none
+
+parameters:
+  - name: IssueNumber
+    type: number
+  - name: CommentId
+    type: number
+  - name: Platform
+    type: string
+    values: [android, ios]
+  - name: TargetRef
+    type: string
+    default: main
+  - name: SourceUrl
+    type: string
+    default: ''
+  - name: AndroidApi
+    type: string
+    default: ''
+    values: ['', '30', '35', '36']
+
+variables:
+  # Never import the shared MAUI variable group into sample/test jobs.
+  - template: common/issue-replicate-variables.yml
+
+stages:
+  - stage: Reproduce
+    displayName: 'Reproduce public issue'
+    jobs:
+      - job: Intake
+        variables:
+          - group: issue-replicate-read
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 20
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ($env:SYSTEM_COLLECTIONURI -notmatch '^https://dev\.azure\.com/dnceng-public/' -or
+                  $env:SYSTEM_TEAMPROJECT -cne 'public') {
+                throw 'The issue reproduction pipeline must run in dnceng-public/public.'
+              }
+              if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
+                  (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
+                throw 'Issue repro infrastructure must run from an immutable main checkout.'
+              }
+              if ($env:ISSUE_NUMBER -notmatch '^[1-9][0-9]*$' -or
+                  $env:COMMENT_ID -notmatch '^[1-9][0-9]*$') {
+                throw 'Issue and comment IDs must be positive integers.'
+              }
+              if ($env:TARGET_REF -cnotmatch '^(main|net[0-9]+\.0)$') {
+                throw 'Only main and netN.0 MAUI targets are supported.'
+              }
+              & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
+                -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
+                -Platform $env:PLATFORM -TargetRef $env:TARGET_REF -SourceUrl $env:SOURCE_URL `
+                -AndroidApi $env:ANDROID_API `
+                -PipelineRevision "$(Build.SourceVersion)"
+              if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for intake.' }
+              & pwsh -NoProfile -File .github/scripts/IssueReplicate.Intake.ps1 `
+                -IssueNumber ([int]$env:ISSUE_NUMBER) -CommentId ([long]$env:COMMENT_ID) `
+                -Platform $env:PLATFORM -TargetRef $env:TARGET_REF -SourceUrl $env:SOURCE_URL `
+                -AndroidApi $env:ANDROID_API `
+                -OutputDirectory "$(Pipeline.Workspace)/IssueInput"
+              if ($LASTEXITCODE -ne 0) { throw 'Bounded intake failed.' }
+            displayName: 'Authorize command and pin bounded author repro'
+            env:
+              ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              COMMENT_ID: ${{ parameters.CommentId }}
+              PLATFORM: ${{ parameters.Platform }}
+              TARGET_REF: ${{ parameters.TargetRef }}
+              SOURCE_URL: ${{ parameters.SourceUrl }}
+              ANDROID_API: ${{ parameters.AndroidApi }}
+              GH_READ_TOKEN: $(ISSUE_REPRO_READ_TOKEN)
+          - pwsh: |
+              & .github/scripts/IssueReplicate.Transport.ps1 -Mode Export -Kind Input `
+                -Directory "$(Pipeline.Workspace)/IssueInput" -Provider Azure
+            name: snapshot
+            displayName: 'Transfer bounded snapshot through job outputs'
+
+      - job: Sample
+        dependsOn: Intake
+        condition: succeeded('Intake')
+        variables:
+          reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool:
+            vmImage: ubuntu-22.04
+        ${{ else }}:
+          pool:
+            vmImage: macOS-26
+        timeoutInMinutes: 120
+        steps:
+          - checkout: none
+          - template: common/issue-replicate-sample-steps.yml
+            parameters:
+              platform: ${{ parameters.Platform }}
+
+      - job: Generate1
+        dependsOn: [Intake, Sample]
+        condition: and(not(canceled()), succeeded('Intake'), ne(dependencies.Sample.outputs['sample.payload'], ''))
+        variables:
+          - group: issue-replicate-copilot
+          - name: reproInput
+            value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: reproSample
+            value: $[ dependencies.Sample.outputs['sample.payload'] ]
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 35
+        steps:
+          - checkout: none
+          - template: common/issue-replicate-tools.yml
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+                -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
+                -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+                -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+            displayName: 'Restore immutable generation inputs'
+            env:
+              REPRO_INPUT: $(reproInput)
+              REPRO_SAMPLE: $(reproSample)
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+          - bash: |
+              set -euo pipefail
+              cli="$(Pipeline.Workspace)/IssueTools/Cli"
+              npm ci --prefix "$cli" --ignore-scripts --no-audit --no-fund
+              "$cli/node_modules/.bin/copilot" --version
+              echo "##vso[task.prependpath]$cli/node_modules/.bin"
+            displayName: 'Install lockfile-pinned Copilot CLI'
+          - pwsh: |
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
+                -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+                -OutputDirectory "$(Pipeline.Workspace)/Proposal1" `
+                -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json"
+              if ($LASTEXITCODE -ne 0) { throw 'Copilot could not draft a test.' }
+            displayName: 'Draft test without executable tools'
+            env:
+              COPILOT_GITHUB_TOKEN: $(ISSUE_REPRO_COPILOT_TOKEN)
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Candidate `
+                -Directory "$(Pipeline.Workspace)/Proposal1" -Provider Azure
+            name: candidate
+            displayName: 'Transfer bounded candidate through job outputs'
+
+      - template: common/issue-replicate-verify-jobs.yml
+        parameters:
+          name: Verify1
+          dependsOn: Generate1
+          condition: and(succeeded('Generate1'), succeeded('Sample'))
+          proposal: Proposal1
+          platform: ${{ parameters.Platform }}
+
+      - job: Generate2
+        dependsOn: [Intake, Sample, Verify1]
+        condition: and(succeeded('Verify1'), eq(dependencies.Verify1.outputs['verify.verdict'], 'inconclusive'), ne(dependencies.Sample.outputs['sample.payload'], ''))
+        variables:
+          - group: issue-replicate-copilot
+          - name: reproInput
+            value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: reproSample
+            value: $[ dependencies.Sample.outputs['sample.payload'] ]
+          - name: reproFeedback
+            value: $[ dependencies.Verify1.outputs['verify.payload'] ]
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 35
+        steps:
+          - checkout: none
+          - template: common/issue-replicate-tools.yml
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+                -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode FetchSample `
+                -Directory "$(Pipeline.Workspace)/IssueInput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+                -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
+                -Encoded $env:REPRO_FEEDBACK -Directory "$(Pipeline.Workspace)/Verified1"
+            displayName: 'Restore bounded snapshot, author build and verification feedback'
+            env:
+              REPRO_INPUT: $(reproInput)
+              REPRO_SAMPLE: $(reproSample)
+              REPRO_FEEDBACK: $(reproFeedback)
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+          - bash: |
+              set -euo pipefail
+              cli="$(Pipeline.Workspace)/IssueTools/Cli"
+              npm ci --prefix "$cli" --ignore-scripts --no-audit --no-fund
+              "$cli/node_modules/.bin/copilot" --version
+              echo "##vso[task.prependpath]$cli/node_modules/.bin"
+            displayName: 'Install lockfile-pinned Copilot CLI'
+          - pwsh: |
+              $feedback = "$(Pipeline.Workspace)/Verified1/feedback.txt"
+              if (-not (Test-Path $feedback)) { throw 'The first test has no diagnostic feedback.' }
+              . "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Core.ps1"
+              $content = Get-IssueReplicateFeedback -Path $feedback
+              $path = "$(Agent.TempDirectory)/test-feedback.txt"
+              Set-Content -LiteralPath $path -Value $content -Encoding utf8
+              & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Generate.ps1" `
+                -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+                -OutputDirectory "$(Pipeline.Workspace)/Proposal2" -FeedbackPath $path `
+                -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json"
+              if ($LASTEXITCODE -ne 0) { throw 'Copilot could not revise the test.' }
+            displayName: 'Revise test from bounded feedback'
+            env:
+              COPILOT_GITHUB_TOKEN: $(ISSUE_REPRO_COPILOT_TOKEN)
+          - pwsh: |
+              & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Export -Kind Candidate `
+                -Directory "$(Pipeline.Workspace)/Proposal2" -Provider Azure
+            name: candidate
+            displayName: 'Transfer revised candidate through job outputs'
+
+      - template: common/issue-replicate-verify-jobs.yml
+        parameters:
+          name: Verify2
+          dependsOn: Generate2
+          condition: succeeded('Generate2')
+          proposal: Proposal2
+          platform: ${{ parameters.Platform }}
+
+      - job: Post
+        dependsOn: [Intake, Sample, Generate1, Verify1, Generate2, Verify2]
+        condition: always()
+        variables:
+          - group: issue-replicate-read
+          - group: issue-replicate-comment
+          - name: REPRO_INPUT
+            value: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+          - name: REPRO_VERIFIED1
+            value: $[ dependencies.Verify1.outputs['verify.payload'] ]
+          - name: REPRO_VERIFIED2
+            value: $[ dependencies.Verify2.outputs['verify.payload'] ]
+          - name: REPRO_SAMPLE
+            value: $[ dependencies.Sample.outputs['sample.payload'] ]
+          - name: REPRO_CANDIDATE1
+            value: $[ dependencies.Generate1.outputs['candidate.payload'] ]
+          - name: REPRO_CANDIDATE2
+            value: $[ dependencies.Generate2.outputs['candidate.payload'] ]
+          - ${{ each index in split('0,1,2,3,4,5,6,7', ',') }}:
+            - name: REPRO_VIDEO_${{ index }}
+              value: $[ iif(ne(variables.REPRO_VERIFIED2, ''), dependencies.Verify2.outputs['verify.recording${{ index }}'], dependencies.Verify1.outputs['verify.recording${{ index }}']) ]
+        pool:
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 20
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ($env:SYSTEM_COLLECTIONURI -notmatch '^https://dev\.azure\.com/dnceng-public/' -or
+                  $env:SYSTEM_TEAMPROJECT -cne 'public') {
+                throw 'The issue reproduction publisher must run in dnceng-public/public.'
+              }
+              if ("$(Build.SourceBranch)" -cne 'refs/heads/main' -or
+                  (git rev-parse HEAD).Trim() -cne "$(Build.SourceVersion)") {
+                throw 'Posting code differs from the trusted pipeline revision.'
+              }
+              if ($env:ISSUE_NUMBER -notmatch '^[1-9][0-9]*$' -or
+                  $env:COMMENT_ID -notmatch '^[1-9][0-9]*$') {
+                throw 'Issue and comment IDs must be positive integers.'
+              }
+              $issue = [int]$env:ISSUE_NUMBER
+              $comment = [long]$env:COMMENT_ID
+              & pwsh -NoProfile -File .github/scripts/IssueReplicate.Authorize.ps1 `
+                -IssueNumber $issue -CommentId $comment -Platform $env:PLATFORM -TargetRef $env:TARGET_REF `
+                -SourceUrl $env:SOURCE_URL -AndroidApi $env:ANDROID_API -PipelineRevision "$(Build.SourceVersion)"
+              if ($LASTEXITCODE -ne 0) { throw 'The issue command is not authorized for publication.' }
+              $result = "$(Pipeline.Workspace)/Verified1"
+              $candidateDirectory = ''
+              try {
+                if ($env:REPRO_INPUT -and $env:REPRO_INPUT -notmatch '^\$\(') {
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Input `
+                    -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+                }
+                if ($env:REPRO_SAMPLE -and $env:REPRO_SAMPLE -notmatch '^\$\(') {
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Sample `
+                    -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+                }
+                $hasFirstResult = $env:REPRO_VERIFIED1 -and $env:REPRO_VERIFIED1 -notmatch '^\$\('
+                $hasSecondResult = $env:REPRO_VERIFIED2 -and $env:REPRO_VERIFIED2 -notmatch '^\$\('
+                $hasFirstCandidate = $env:REPRO_CANDIDATE1 -and $env:REPRO_CANDIDATE1 -notmatch '^\$\('
+                $hasSecondCandidate = $env:REPRO_CANDIDATE2 -and $env:REPRO_CANDIDATE2 -notmatch '^\$\('
+                if ($hasSecondResult) {
+                  if (-not $hasSecondCandidate) { throw 'The second result has no matching candidate payload.' }
+                  $result = "$(Pipeline.Workspace)/Verified2"
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
+                    -Encoded $env:REPRO_VERIFIED2 -Directory $result
+                } elseif ($hasFirstResult) {
+                  if (-not $hasFirstCandidate) { throw 'The first result has no matching candidate payload.' }
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
+                    -Encoded $env:REPRO_VERIFIED1 -Directory $result
+                }
+                $useSecondCandidate = $hasSecondResult -or (-not $hasFirstResult -and $hasSecondCandidate)
+                $candidateData = if ($useSecondCandidate) {
+                  $env:REPRO_CANDIDATE2
+                } elseif ($hasFirstCandidate) {
+                  $env:REPRO_CANDIDATE1
+                }
+                if ($candidateData) {
+                  $candidateDirectory = "$(Pipeline.Workspace)/DraftCandidate"
+                  & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Candidate `
+                    -Encoded $candidateData -Directory $candidateDirectory
+                }
+                & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
+                  -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
+                  -AndroidApi $env:ANDROID_API `
+                  -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result `
+                  -SampleDirectory "$(Pipeline.Workspace)/SampleOutput" -CandidateDirectory $candidateDirectory
+                if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
+              } catch {
+                $identity = gh api user --jq .login
+                if ($LASTEXITCODE -ne 0 -or "$identity" -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_\[\]-]{0,99}$') {
+                  throw 'Could not identify the authenticated fallback publisher.'
+                }
+                $existing = @(gh api --paginate "repos/dotnet/maui/issues/$issue/comments?per_page=100" `
+                  --jq ".[] | select(.user.login == `"$identity`" and (.body | startswith(`"<!-- issue-replicate-result:$(Build.BuildId) -->`"))) | .id")
+                if ($LASTEXITCODE -ne 0 -or $existing.Count -gt 1) {
+                  throw 'Could not reconcile the incomplete result publication.'
+                }
+                if ($existing.Count -eq 1) {
+                  Write-Warning 'The owned run report already records the incomplete publication; no duplicate notice will be posted.'
+                  throw
+                }
+                . .github/scripts/IssueReplicate.Core.ps1
+                $message = @(
+                  (New-IssueReplicateReportHeader -Marker "<!-- issue-replicate-result:$(Build.BuildId) -->" `
+                    -Verdict '**Reproduction:** Inconclusive; issue not ruled out. **Test quality:** Not verified. **Evidence confidence:** 0% (evidence score, not a probability).'),
+                  '',
+                  '<details>',
+                  '<summary>Publication blocker</summary>',
+                  '',
+                  '> [!WARNING]',
+                  '> `/issue replicate` was inconclusive: the public build could not publish a validated result. This is not evidence against the issue.',
+                  '',
+                  '**Reproducible:** Not determined; validated results are unavailable.',
+                  '',
+                  '**Generated test catches the reported issue:** Not verified.',
+                  '',
+                  '**Confidence that the issue is reproduced:** **0% (unassessed evidence score, not a probability that the issue is invalid).**',
+                  '',
+                  '</details>',
+                  '',
+                  '<details>',
+                  '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
+                  '<br/>',
+                  '',
+                  'No verified test candidate is being published. Correct the execution or publication blocker before retrying.',
+                  '',
+                  '> Maintainers: comment `/issue replicate` with the desired platform and branch to run a fresh attempt.',
+                  '',
+                  '</details>',
+                  '',
+                  '<!-- issue-replicate-report-complete -->'
+                ) -join "`n"
+                $url = Set-IssueReplicateResultComment -IssueNumber $issue `
+                  -Marker "<!-- issue-replicate-result:$(Build.BuildId) -->" -Body $message
+                Complete-IssueReplicateReportPublication -IssueNumber $issue -Url $url -Body $message | Out-Null
+                throw
+              }
+            displayName: 'Post validated issue outcome on a clean agent'
+            env:
+              GH_TOKEN: $(ISSUE_REPRO_COMMENT_TOKEN)
+              GH_READ_TOKEN: $(ISSUE_REPRO_READ_TOKEN)
+              ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              COMMENT_ID: ${{ parameters.CommentId }}
+              PLATFORM: ${{ parameters.Platform }}
+              TARGET_REF: ${{ parameters.TargetRef }}
+              SOURCE_URL: ${{ parameters.SourceUrl }}
+              ANDROID_API: ${{ parameters.AndroidApi }}

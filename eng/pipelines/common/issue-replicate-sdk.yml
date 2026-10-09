@@ -1,0 +1,17 @@
+steps:
+  - bash: |
+      set -euo pipefail
+      export ci=true
+      export use_installed_dotnet_cli=false
+      source "$(Pipeline.Workspace)/maui/eng/common/tools.sh"
+      ReadGlobalVersion dotnet
+      if [[ "$_ReadGlobalVersion" == *-* ]]; then
+        export runtime_source_feed=https://ci.dot.net/public
+      fi
+      bootstrap="$(Agent.TempDirectory)/issue-bootstrap-dotnet"
+      InstallDotNetSdk "$bootstrap" "$_ReadGlobalVersion"
+      Write-PipelinePrependPath -path "$bootstrap"
+      Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
+      Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
+    displayName: 'Bootstrap the exact pinned SDK before restoring tools'
+    timeoutInMinutes: 20
