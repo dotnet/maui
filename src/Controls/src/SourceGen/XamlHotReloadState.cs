@@ -75,6 +75,26 @@ internal static class XamlHotReloadState
 		/// remains stable across edits because metadata updates cannot add or remove instance fields.
 		/// </summary>
 		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
+		/// <summary>
+		/// Every field (name, declared C# type, access modifier) <see cref="CodeBehindCodeWriter"/> has
+		/// ever emitted for this file during the current generator-host session. Unlike
+		/// <see cref="GeneratedFields"/> (a one-time seed), this set only ever grows: once a field has
+		/// been generated, it keeps being declared even if its x:Name is later renamed or removed, so a
+		/// live Hot Reload edit never turns into a field deletion/rename at the generated-source level.
+		/// Roslyn's EnC analyzer treats such deletions/renames as rude edits requiring a restart (see
+		/// https://github.com/dotnet/maui/issues/38993), even though the user never touched a C# field.
+		/// </summary>
+		public Dictionary<string, (string Type, string AccessModifier)>? AccumulatedCodeBehindFields { get; set; }
+		/// <summary>
+		/// True once <see cref="Update"/> has run for this entry at least once (i.e. a real IC/UC
+		/// generation has happened for this file). An entry can exist in <see cref="_cache"/> without
+		/// this being set — e.g. <see cref="SetAccumulatedCodeBehindFields"/> lazily creates an entry
+		/// purely to persist the CB field-additivity bookkeeping, which runs before the IC/UC pipeline
+		/// stage even on the very first generation. <see cref="TryGetPrevious"/> must not treat such a
+		/// bookkeeping-only entry as a real previous generation, or the UC diff logic will try to diff
+		/// against an empty/absent baseline and spuriously fail.
+		/// </summary>
+		public bool HasGeneratedOutput { get; set; }
 	}
 
 	/// <summary>
@@ -85,7 +105,7 @@ internal static class XamlHotReloadState
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
+			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.HasGeneratedOutput)
 			{
 				previousXaml = entry.XamlText;
 				previousRoot = entry.ParsedRoot;
@@ -132,6 +152,7 @@ internal static class XamlHotReloadState
 			entry.NodeIds = nodeIds;
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
+			entry.HasGeneratedOutput = true;
 		}
 	}
 
@@ -146,6 +167,43 @@ internal static class XamlHotReloadState
 			}
 
 			return null;
+		}
+	}
+
+	/// <summary>
+	/// Returns a defensive copy of the fields <see cref="CodeBehindCodeWriter"/> has accumulated for
+	/// this file so far (see <see cref="CacheEntry.AccumulatedCodeBehindFields"/>), or
+	/// <see langword="null"/> if none have been recorded yet.
+	/// </summary>
+	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath)
+	{
+		lock (_lock)
+		{
+			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+				&& entry.AccumulatedCodeBehindFields is not null)
+			{
+				return new Dictionary<string, (string, string)>(entry.AccumulatedCodeBehindFields, System.StringComparer.Ordinal);
+			}
+
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Replaces the accumulated code-behind field set for the given file. Callers are expected to pass
+	/// the union of the previously accumulated fields and the fields parsed from the current XAML —
+	/// this method does not merge on its own, it only stores whatever the caller computed.
+	/// </summary>
+	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields)
+	{
+		lock (_lock)
+		{
+			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
+			{
+				entry = new CacheEntry();
+				_cache[(assemblyName, targetFramework, relativePath)] = entry;
+			}
+			entry.AccumulatedCodeBehindFields = new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
 		}
 	}
 
