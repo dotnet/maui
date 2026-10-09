@@ -353,10 +353,11 @@ target, a placeholder `body`, and this `data` structure:
 Use actual fetched issue numbers and timestamps, not the example values. Never
 include a candidate without its probability or substitute a similarity score.
 The separate trusted publisher validates all scores and excerpts, re-fetches
-issue evidence, constructs the links/table itself, and suppresses identical
-reports. Staged manual runs follow the same contract but do not post.
+issue evidence, constructs the visible probability summary and expandable
+analysis/follow-up sections itself, and suppresses identical reports.
+Staged manual runs follow the same contract but do not post.
 
 If a completed bounded investigation finds no qualifying pair, call `noop`
 with a short explanation. If necessary tools/data fail or the evidence budget
 prevents a meaningful comparison, call `report_incomplete` instead. Emit exactly
-one of these outcomes; never post an empty table or invent a 0% no-match result.
+one of these outcomes; never post an empty report or invent a 0% no-match result.

@@ -63,6 +63,76 @@ function plainText(value) {
         .trim();
 }
 
+function renderReport(target, matches, workflowUrl) {
+    const probabilities = matches
+        .map((match) => `[#${match.issueNumber}](${match.url}) **${match.probability}%**`)
+        .join('; ');
+    const sections = matches.flatMap((match, index) => {
+        const assessment = match.probability >= 85 ? 'Likely duplicate' : 'Possible duplicate';
+        return [
+            ...(index ? ['---', ''] : []),
+            '<details>',
+            `<summary><strong>&#x1F4C4; #${match.issueNumber} &#x2014; ${match.probability}% ${assessment.toLowerCase()}</strong></summary>`,
+            '<br/>',
+            '',
+            `**Issue:** [${plainText(match.title)}](${match.url}) &#x2014; ${match.state}.`,
+            '',
+            `**Matching evidence:** ${plainText(match.evidence)}`,
+            '',
+            `**Differences/uncertainty:** ${plainText(match.differences)}`,
+            '',
+            `**[Current report excerpt](${match.targetEvidence.url}):**`,
+            '',
+            `> ${plainText(match.targetEvidence.quote)}`,
+            '',
+            `**[Candidate excerpt](${match.candidateEvidence.url}):**`,
+            '',
+            `> ${plainText(match.candidateEvidence.quote)}`,
+            '',
+            '</details>',
+            '',
+        ];
+    });
+    return [
+        '## Possible duplicate issues',
+        '',
+        `> Duplicate analysis for [#${target.issueNumber}](${target.url}).`,
+        '',
+        '<p align="left">',
+        '  <img alt="Scope Issue duplicates" src="https://img.shields.io/badge/Scope-Issue%20duplicates-1f6feb?labelColor=30363d&amp;style=flat-square">',
+        `  <img alt="Issue ${target.issueNumber}" src="https://img.shields.io/badge/Issue-${target.issueNumber}-1f6feb?labelColor=30363d&amp;style=flat-square">`,
+        '</p>',
+        '',
+        `**Estimated duplicate probabilities:** ${probabilities}.`,
+        '',
+        'These probabilities are uncalibrated AI estimates of the same underlying issue, not title-similarity scores or confirmed duplicate decisions.',
+        '',
+        '---',
+        '',
+        '<details>',
+        '<summary><strong>&#x1F50D; Duplicate Analysis</strong> &#x2014; click to expand</summary>',
+        '<br/>',
+        '',
+        ...sections,
+        '</details>',
+        '',
+        '---',
+        '',
+        '<details>',
+        '<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>',
+        '<br/>',
+        '',
+        '**Next action:** Compare reproductions and version boundaries before deciding whether to consolidate reports. This workflow never labels or closes issues; maintainers make that decision.',
+        '',
+        'Closed candidates are historical context. A recurrence after a fix can be a new regression, not a duplicate.',
+        '',
+        '> Maintainers: manually run `issue-duplicate-detector` for this issue to refresh this report. Manual runs default to a staged preview without posting.',
+        ...(workflowUrl ? ['', `[Workflow result](${workflowUrl}).`] : []),
+        '',
+        '</details>',
+    ].join('\n');
+}
+
 async function readJson(file) {
     const stat = await fs.lstat(file);
     assert(
@@ -324,31 +394,7 @@ async function validate({
         (left, right) =>
             right.probability - left.probability || left.issueNumber - right.issueNumber,
     );
-    const rows = matches.map(
-        (match) =>
-            `| [${plainText(match.title)} (#${match.issueNumber})](${match.url}) | ${match.state} | ` +
-            `**${match.probability}%** | ${match.probability >= 85 ? 'Likely duplicate' : 'Possible duplicate'} | ` +
-            `${plainText(match.evidence)}<br>**Differences/uncertainty:** ${plainText(match.differences)} |`,
-    );
-    const excerpts = matches.map(
-        (match) =>
-            `**#${match.issueNumber} evidence:** [Current report](${match.targetEvidence.url}): ` +
-            `"${plainText(match.targetEvidence.quote)}"; [candidate](${match.candidateEvidence.url}): ` +
-            `"${plainText(match.candidateEvidence.quote)}".`,
-    );
-    const reportBody = [
-        '## Possible duplicate issues',
-        '',
-        'These probabilities are uncalibrated AI estimates of the same underlying issue, not title-similarity scores or confirmed duplicate decisions. Maintainers decide whether to consolidate reports; this workflow never labels or closes issues.',
-        '',
-        '| Issue | State | Duplicate probability | Assessment | Evidence |',
-        '| --- | --- | --- | --- | --- |',
-        ...rows,
-        '',
-        ...excerpts.flatMap((excerpt) => [excerpt, '']),
-        'Closed candidates are historical context. A recurrence after a fix can be a new regression, not a duplicate.',
-    ].join('\n');
-    const reportHash = hash(reportBody);
+    const reportHash = hash(renderReport(current.target, matches));
     const marker = `${reportPrefix}${reportHash}`;
     const existing = current.comments.some((comment) => getReportHash(comment) === reportHash);
     if (existing) {
@@ -360,9 +406,11 @@ async function validate({
         ];
     } else {
         item.body = [
-            reportBody,
-            '',
-            `[Workflow result](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`,
+            renderReport(
+                current.target,
+                matches,
+                `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            ),
             '',
             marker,
         ].join('\n');
@@ -408,4 +456,4 @@ async function validate({
     );
 }
 
-module.exports = { gather, validate };
+module.exports = { gather, validate, renderReport };

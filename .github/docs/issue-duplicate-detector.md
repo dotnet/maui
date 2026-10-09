@@ -43,8 +43,16 @@ statistical probabilities or confirmed duplicate decisions.
 The schema and trusted publisher reject missing, fractional, out-of-range, or
 below-threshold scores; self-matches, repeated candidates, pull requests,
 unverified source excerpts, and stale evidence also fail validation.
-The publisher renders the table and GitHub links itself, so free-form agent
-prose cannot bypass the probability requirement.
+The publisher renders the comment and GitHub links itself, so free-form agent
+prose cannot bypass the probability requirement. Reports follow the
+[`/review tests` visual layout](../skills/review-test-failures/SKILL.md):
+an issue header and two blue Scope/Issue badges, then closed sibling
+**Duplicate Analysis** and **Follow-up** sections with icons, spacing, and
+horizontal rules. Every probability remains visible in the compact summary
+without expanding anything. Duplicate Analysis nests one closed section per
+candidate, including its percentage/assessment, state, matching evidence,
+differences/uncertainty, and linked source excerpts. Follow-up contains the
+maintainer action, closed-report caveat, refresh instructions, and workflow link.
 
 The GitHub gateway enforces eight `search_issues` calls and 30 `issue_read`
 calls per MCP session. These counters do not cover the trusted collector's or
@@ -56,9 +64,9 @@ files. The agent job also has a 15-minute timeout. Missing required evidence
 is an incomplete run, not proof that there are no duplicates.
 An unchanged report is suppressed. Changed reports are posted as new comments;
 existing bot and human comments are never edited, deleted, or minimized.
-The fingerprint covers the trusted rendered table, assessments, and excerpts,
-not the evidence-freshness hash or per-run workflow link. An unrelated target
-comment therefore cannot defeat suppression when the rendered report is unchanged;
+The fingerprint covers the trusted rendered summary, assessments, excerpts,
+and static follow-up, not the evidence-freshness hash or per-run workflow link.
+An unrelated target comment therefore cannot defeat suppression when the rendered report is unchanged;
 the separate evidence hashes still require fresh target and candidate snapshots.
 The visible report fingerprint survives gh-aw's content sanitization. Reports
 are recognized by the bot author, trusted workflow markers, and exact fingerprint
@@ -86,8 +94,8 @@ gh aw run issue-duplicate-detector --ref main --raw-field issue_number=12345 --r
 
 Replace `12345` with the real issue number. Manual runs default to `staged=true`:
 the same analysis and validation run, but the trusted validator writes the
-constructed probability table and evidence excerpts to the safe-output job's
-**Validated duplicate report preview** summary rather than posting them.
+same expandable report, including its visible probabilities, to the safe-output
+job's **Validated duplicate report preview** summary rather than posting them.
 This preview appears only after all validation and final freshness checks,
 and excludes the publisher's later cautions and provenance wrappers. Invalid,
 stale, no-match, and identical-report-suppressed outputs produce no report preview.
