@@ -73,7 +73,9 @@ namespace Microsoft.Maui.Controls.Platform
 			ShellController.RemoveAppearanceObserver(this);
 
 			if (ItemRenderer?.PlatformView is NavigationView navigationView)
+			{
 				navigationView.SelectionChanged -= TabSelectionChanged;
+			}
 
 			// These nodes aren't IView, so DisconnectHandlers only disconnects their pages.
 			var elements = new List<IElement>();
@@ -84,12 +86,16 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					elements.Add(section);
 					foreach (var content in section.Items)
+					{
 						elements.Add(content);
+					}
 				}
 			}
 
 			foreach (var element in elements)
+			{
 				element.Handler?.DisconnectHandler();
+			}
 
 			ItemRenderer = null;
 			Content = null;
