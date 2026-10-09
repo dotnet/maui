@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="../../Directory.Build.targets" />
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
+    <!-- Match the current mobile template and selected Xcode's deployment floor. -->
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+</Project>

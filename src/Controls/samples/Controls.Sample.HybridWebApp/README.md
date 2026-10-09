@@ -2,8 +2,7 @@
 
 A small .NET 11 `HybridWebView` app with a sibling Vite/TypeScript frontend.
 The native project uses the standard `$(MauiSamplePlatforms)` selection and
-includes Android, iOS, Mac Catalyst and WinUI heads (and optional Tizen when
-selected by the repository). iOS and Mac Catalyst use the current template's
+includes Android, iOS, Mac Catalyst and WinUI heads. iOS and Mac Catalyst use the current template's
 `MauiUISceneDelegate` and single-scene manifest, without a storyboard or duplicate
 lifecycle forwarding.
 
@@ -42,7 +41,8 @@ pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platf
 start or stop it. The same HTML/CSS/TypeScript edits update both native apps.
 For Android, `adb -s DEVICE reverse tcp:5173 tcp:5173` makes the host's Vite HTTP
 and HMR WebSocket available at the selected device's loopback address. Set
-`ANDROID_HOME` or put `adb` on PATH. The reverse mapping is intentionally left
+`ANDROID_HOME` or `ANDROID_SDK_ROOT`, use the standard macOS SDK location, or put
+`adb` on PATH. The reverse mapping is intentionally left
 in place so other sample sessions on that device can continue using it.
 iOS simulators share the Mac's loopback network. Physical iOS devices need a
 separate network configuration, which this loopback-only demo does not provide.
@@ -61,6 +61,9 @@ In Tauri development, the CLI can run a configured frontend development command
 `devUrl`. The target/device comes from the selected desktop or mobile command and
 target options, not from the web frontend. It does not automatically launch every
 platform.
+
+See [Tauri's development documentation](https://v2.tauri.app/develop/) for
+`beforeDevCommand`, `devUrl`, and the separate Android/iOS commands.
 
 Here, the small PS1 fills that local orchestration role:
 
@@ -84,8 +87,9 @@ Use the SDK pinned by `global.json`, repository-pinned platform workloads, and
 the current selected Xcode (`/Applications/Xcode.app`, Xcode 27 for the current
 validation). Do not downgrade Xcode to work around the native interop deployment
 target: the framework project now specifies the current Mac Catalyst minimum.
-The sample inherits repository OS minima (Mac Catalyst 17, Android 24, iOS 13,
-Windows 10.0.17763). No global SDK/workload or Xcode changes are needed.
+The sample uses Mac Catalyst 17, Android 24, iOS 15 (the current mobile template
+and Xcode deployment floor), and Windows 10.0.17763. No global SDK/workload or
+Xcode changes are needed.
 
 The repo wrapper acquires its SDK locally, but platform workloads are separate.
 For a fresh Mac checkout, acquire the pinned manifests, install the needed local
@@ -118,7 +122,7 @@ Controls.Sample.HybridWebApp/
   Native/
     Maui.Controls.Sample.HybridWebApp.csproj
     Development/                Debug-only forwarding and optional inspector
-    Platforms/                  Android, iOS, MacCatalyst, Windows, Tizen
+    Platforms/                  Android, iOS, MacCatalyst, Windows
     Resources/Raw/wwwroot/       packaged fallback; no Node required
   Web/
     package.json
@@ -224,7 +228,33 @@ Historical results:
 The current expansion uses selected Xcode 27 and standard scene delegates;
 the framework deployment-target correction is recorded separately. Updated
 cross-platform build/runtime and PS1 results will be recorded below.
-Windows and Tizen execution cannot be validated on this Mac. Physical iOS,
+Windows execution cannot be validated on this Mac. Physical iOS,
 release packaging of the Vite output, NativeAOT certification, generated command
 APIs/JS modules, native C# Hot Reload, DevFlow integration, global CLI/MSBuild
 integration and automatic all-platform launch are outside this demo.
+
+### Standard-head expansion: latest-Xcode Mac check
+
+The following command passed with **zero warnings/errors**, with Xcode 27
+globally selected and no `DEVELOPER_DIR` override:
+
+```sh
+.dotnet/dotnet build src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
+  -f net11.0-maccatalyst -p:IncludeAndroidTargetFrameworks=false \
+  -p:IncludeIosTargetFrameworks=false -p:IncludeMacOSTargetFrameworks=false \
+  --disable-build-servers -v:q
+```
+
+Direct launch of that scene-enabled bundle against an owned Vite server
+confirmed actual embedded DOM/source, dynamic module and native PNG. A CSS edit
+updated computed color through HMR with no new document request; subsequent
+HTML and TypeScript edits appeared with the same native PID/startup identity.
+All temporary source edits were restored; the owned app and Vite were stopped.
+
+Frontend `type-check`/`build`, `bash -n run-demo.sh`, PowerShell 7 parser checks,
+and `dotnet format whitespace Native --folder` passed. The PS1 reported a
+missing shared server after its bounded 30-second wait, rejected missing
+mobile device selection, and cleaned up its started Vite tree after an SDK
+wrapper failure without stopping an existing shared server.
+The PS1 uses the repository's Bash SDK wrapper on macOS/Linux and its PowerShell
+wrapper on Windows. Full PS1 native-launch and mobile checks are pending.

@@ -51,7 +51,8 @@ try {
 	if (!$ready) { throw 'The sample Vite frontend did not become ready on port 5173 within 30 seconds.' }
 
 	if ($Platform -eq 'android') {
-		$adb = if ($env:ANDROID_HOME) { Join-Path $env:ANDROID_HOME 'platform-tools/adb' } else { 'adb' }
+		$sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } elseif ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } elseif ($IsMacOS) { Join-Path $HOME 'Library/Android/sdk' }
+		$adb = if ($sdk) { Join-Path $sdk 'platform-tools/adb' } else { 'adb' }
 		& $adb -s $Device reverse tcp:5173 tcp:5173
 		if ($LASTEXITCODE) { throw "adb reverse failed with code $LASTEXITCODE." }
 	}
@@ -60,10 +61,9 @@ try {
 	$minor = $props.SelectSingleNode('//_MauiDotNetVersionMinor').InnerText
 	$tfm = "net$major.$minor-$Platform"
 	if ($Platform -eq 'windows') { $tfm += $props.SelectSingleNode('//WindowsTargetFrameworkVersion').InnerText }
-	$arguments = @('-NoProfile', '-File', (Join-Path $repo 'eng/common/dotnet.ps1'),
-		'run', '--project', $project, '-f', $tfm, '-c', 'Debug', '--no-launch-profile',
+	$arguments = @('run', '--project', $project, '-f', $tfm, '-c', 'Debug', '--no-launch-profile',
 		'--disable-build-servers', '-p:UseWorkload=false', '-e', "HYBRIDWEBAPP_DEV_URL=$url",
-		'-p:IncludeMacOSTargetFrameworks=false', '-p:IncludeTizenTargetFrameworks=false')
+		'-p:IncludeMacOSTargetFrameworks=false')
 	foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
 		$enabled = ($target.ToLowerInvariant() -eq $Platform).ToString().ToLowerInvariant()
 		$arguments += "-p:Include${target}TargetFrameworks=$enabled"
@@ -71,7 +71,11 @@ try {
 	if ($Device) { $arguments += @('--device', $Device) }
 	if ($NoBuild) { $arguments += '--no-build' }
 	Write-Host "Launching $tfm$(if ($Device) { " on $Device" }). Vite watches Web/; the SDK builds and launches Native/."
-	$runner = Start-Child (Get-Process -Id $PID).Path $arguments $repo
+	$runner = if ($IsWindows) {
+		Start-Child (Get-Process -Id $PID).Path (@('-NoProfile', '-File', (Join-Path $repo 'eng/common/dotnet.ps1')) + $arguments) $repo
+	} else {
+		Start-Child 'bash' (@((Join-Path $repo 'eng/common/dotnet.sh')) + $arguments) $repo
+	}
 	while (!$runner.WaitForExit(250)) {
 		if ($vite -and $vite.HasExited) { throw "Vite exited with code $($vite.ExitCode)." }
 	}

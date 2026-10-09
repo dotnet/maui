@@ -26,6 +26,9 @@ sealed class DevelopmentPlatform(Action startingDocument) : IDisposable
 	internal void Attach(WebViewInitializedEventArgs e, bool observeNavigation)
 	{
 		Dispose();
+#if ANDROID
+		_ = startingDocument;
+#endif
 #if IOS || MACCATALYST || ANDROID || WINDOWS
 		_native = e.PlatformArgs?.Sender;
 #endif
