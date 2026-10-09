@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly WeakReference<Window> _platformWindow;
 		WindowRootView _rootView;
+		RootNavigationView? _navigationView;
 		bool _disconnected = true;
 		internal event EventHandler? OnApplyTemplateFinished;
 
@@ -122,10 +123,14 @@ namespace Microsoft.Maui.Platform
 				_rootView.Content = null;
 			}
 
-			_rootView.Content = platformView is NavigationView ? platformView : new RootNavigationView()
+			if (_navigationView is not null)
+				_navigationView.Content = null;
+
+			_navigationView = platformView is NavigationView ? null : new RootNavigationView()
 			{
 				Content = platformView
 			};
+			_rootView.Content = _navigationView ?? platformView;
 
 			if (_disconnected && _platformWindow.TryGetTarget(out var platformWindow))
 			{
@@ -149,8 +154,12 @@ namespace Microsoft.Maui.Platform
 
 			_rootView.AppWindowId = null;
 
-			if (_rootView.Content is RootNavigationView navView)
-				navView.Content = null;
+			// Only clear the wrapper we created, not a page-owned navigation view such as Shell.
+			if (_navigationView is not null)
+			{
+				_navigationView.Content = null;
+				_navigationView = null;
+			}
 
 			_rootView.Content = null;
 			_disconnected = true;
