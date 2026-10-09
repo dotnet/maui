@@ -1,27 +1,52 @@
 #if TEST_FAILS_ON_WINDOWS // https://github.com/dotnet/maui/issues/36230
+using System;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+public class Issue38821 : _IssuesUITest
 {
-	public class Issue38821 : _IssuesUITest
+	public Issue38821(TestDevice device) : base(device)
 	{
-		public Issue38821(TestDevice testDevice) : base(testDevice)
-		{
-		}
+	}
 
-		public override string Issue => "CurrentItem is incorrect after removing an item from the CarouselView (Loop = false)";
+	public override string Issue => "CarouselView resets CurrentItem after removing the current item";
 
-		[Test]
-		[Category(UITestCategories.CarouselView)]
-		public void TestCurrentItemAfterRemoval()
-		{
-			App.WaitForElement("Item0");
-			App.SwipeRightToLeft("Issue38821_CarouselView");
-			App.Tap("Issue38821_Button");
-			App.WaitForElement("Item2");
-		}
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void RemovingCurrentItemThenSelectingAnotherItemPreservesCurrentItem()
+	{
+		Assert.That(
+		 App.WaitForElement("CurrentValue").GetText(),
+		 Is.EqualTo("Current: 1"));
+
+		AssertItemIsCentered("CarouselItem1");
+
+		App.Tap("RemoveCurrentItem");
+
+		App.WaitForTextToBePresentInElement("CurrentValue", "Current: 2");
+
+		Assert.That(
+		 App.WaitForElement("CurrentValue").GetText(),
+		 Is.EqualTo("Current: 2"));
+
+		AssertItemIsCentered("CarouselItem2");
+	}
+
+	void AssertItemIsCentered(string automationId)
+	{
+		var carouselRect = App.WaitForElement("Carousel").GetRect();
+		var itemRect = App.WaitForElement(automationId).GetRect();
+
+		var carouselCenterX = carouselRect.X + carouselRect.Width / 2f;
+		var itemCenterX = itemRect.X + itemRect.Width / 2f;
+
+		Assert.That(
+		 Math.Abs(itemCenterX - carouselCenterX),
+		 Is.LessThanOrEqualTo(5f),
+		 $"{automationId} should be the rendered current item");
 	}
 }
 #endif

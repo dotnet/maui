@@ -1,84 +1,111 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 38821, "CurrentItem is incorrect after removing an item from the CarouselView (Loop = false)", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 38821, "CarouselView resets CurrentItem after removing the current item", PlatformAffected.Android)]
 public class Issue38821 : ContentPage
 {
-	CarouselView _carouselView;
-	Issue38821_ViewModel _viewModel;
+	readonly Issue38821ViewModel _viewModel = new();
 
 	public Issue38821()
 	{
-		_viewModel = new Issue38821_ViewModel();
-
-		BindingContext = _viewModel;
-
-		_carouselView = new CarouselView
+		var carousel = new CarouselView
 		{
-			AutomationId = "Issue38821_CarouselView",
-			ItemsSource = _viewModel.Items,
+			AutomationId = "Carousel",
 			Loop = false,
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var grid = new Grid();
-
 				var label = new Label
 				{
 					FontSize = 40,
-					VerticalOptions = LayoutOptions.Center,
-					HorizontalOptions = LayoutOptions.Center
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
 				};
 
 				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(
+		Label.AutomationIdProperty,
+		new Binding(".", stringFormat: "CarouselItem{0}"));
 
-				grid.Add(label);
-
-				return grid;
+				return label;
 			})
 		};
 
-		var button = new Button
+		carousel.SetBinding(
+		 ItemsView.ItemsSourceProperty,
+		 nameof(Issue38821ViewModel.Items));
+
+		carousel.SetBinding(
+		 CarouselView.CurrentItemProperty,
+		 nameof(Issue38821ViewModel.CurrentItem));
+
+		var currentItem = new Label
 		{
-			Text = "Remove current Item",
-			AutomationId = "Issue38821_Button"
+			AutomationId = "CurrentValue"
 		};
 
-		button.Clicked += Button_Clicked;
+		currentItem.SetBinding(
+		 Label.TextProperty,
+		 new Binding(
+		  nameof(Issue38821ViewModel.CurrentItem),
+		  stringFormat: "Current: {0}"));
+
+		var removeButton = new Button
+		{
+			AutomationId = "RemoveCurrentItem",
+			Text = "Remove current item and select 2"
+		};
+
+		removeButton.Clicked += (_, _) =>
+		{
+			var currentItem = carousel.CurrentItem.ToString();
+			if (currentItem is not null)
+				_viewModel.Items?.Remove(currentItem);
+			_viewModel.CurrentItem = "2";
+		};
 
 		var grid = new Grid
 		{
 			RowDefinitions =
-			{
-				new RowDefinition(GridLength.Star),
-				new RowDefinition(GridLength.Auto)
-			}
+   {
+	new RowDefinition(GridLength.Star),
+	new RowDefinition(GridLength.Auto),
+	new RowDefinition(GridLength.Auto)
+   }
 		};
 
-		grid.Add(_carouselView);
-		Grid.SetRow(button, 1);
-		grid.Add(button);
+		grid.Add(carousel);
+		grid.Add(currentItem, 0, 1);
+		grid.Add(removeButton, 0, 2);
 
+		BindingContext = _viewModel;
 		Content = grid;
 	}
 
-	private void Button_Clicked(object sender, EventArgs e)
+	sealed class Issue38821ViewModel : INotifyPropertyChanged
 	{
-		var currentItem = _carouselView.CurrentItem?.ToString();
+		string _currentItem = "1";
 
-		if (currentItem is not null)
-			_viewModel.Items?.Remove(currentItem);
+		public ObservableCollection<string> Items { get; } =
+		 new() { "0", "1", "2", "3", "4", "5" };
 
-		_carouselView.CurrentItem = "Item2";
+		public string CurrentItem
+		{
+			get => _currentItem;
+			set
+			{
+				if (_currentItem == value)
+					return;
+
+				_currentItem = value;
+				PropertyChanged?.Invoke(
+				 this,
+				 new PropertyChangedEventArgs(nameof(CurrentItem)));
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
 	}
-}
-
-public class Issue38821_ViewModel
-{
-	public ObservableCollection<string> Items { get; } = new()
-	{
-		"Item0",
-		"Item1",
-		"Item2",
-	};
 }
