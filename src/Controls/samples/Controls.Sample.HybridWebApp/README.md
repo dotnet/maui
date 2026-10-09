@@ -2,9 +2,9 @@
 
 A small .NET 11 `HybridWebView` app with a sibling Vite/TypeScript frontend.
 The native project uses the standard `$(MauiSamplePlatforms)` selection and
-includes Android, iOS, Mac Catalyst and WinUI heads. iOS and Mac Catalyst use the current template's
-`MauiUISceneDelegate` and single-scene manifest, without a storyboard or duplicate
-lifecycle forwarding.
+includes Android, iOS, Mac Catalyst and WinUI heads. iOS and Mac Catalyst use
+the current template's `MauiUISceneDelegate` and single-scene manifest, without
+a storyboard or duplicate lifecycle forwarding.
 
 ## Run it
 
@@ -25,8 +25,11 @@ pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platf
 pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform windows
 ```
 
-The script can be invoked from any working directory. `-Platform` chooses the
-explicit target framework; `-Device` is passed to the SDK's `--device` option.
+The script can be invoked from any working directory; each child starts in its
+own project directory. `-Platform` chooses the explicit target framework;
+`-Device` is passed to the SDK's `--device` option.
+For iOS it also selects the simulator runtime matching the Mac's architecture,
+so the SDK builds the same bundle it will deploy.
 The mobile platforms require a device identifier rather than guessing which
 of somebody else's running devices to use.
 
@@ -48,7 +51,9 @@ iOS simulators share the Mac's loopback network. Physical iOS devices need a
 separate network configuration, which this loopback-only demo does not provide.
 
 The owner terminal keeps Vite alive even if desktop `dotnet run` returns after
-launching the window. Close the native app when finished, then press Ctrl+C in
+launching the window. Close an already-running Mac app before relaunching with
+different settings: the SDK cannot change an existing process's environment.
+Close the native app when finished, then press Ctrl+C in
 the owner terminal: cleanup stops only its own child process tree, not another
 terminal's server or unrelated apps. The short PS1 does not discover native
 process identities or generate inspection tokens. Startup/readiness, server
@@ -70,7 +75,8 @@ Here, the small PS1 fills that local orchestration role:
 ```text
 run-demo.ps1
   +-- npm run dev in Web/       Vite owns JS/HTML/CSS watching and HMR
-  +-- dotnet run in Native/     repository SDK owns native build/deploy/launch
+  +-- dotnet build in Native/   repository SDK builds the source references
+  +-- dotnet run --no-build     repository SDK owns native deploy/launch
         +-- HybridWebView keeps its virtual app origin
               ordinary assets --> Debug forwarding --> Vite on 127.0.0.1:5173
               HMR WebSocket ------------------------> Vite on 127.0.0.1:5173
@@ -80,13 +86,16 @@ run-demo.ps1
 `-Platform maccatalyst`, `android`, `ios` or `windows` selects one app per
 invocation. Use separate invocations to launch multiple platforms, sharing Vite
 with `-UseExistingWeb`. There is no extra JavaScript watcher or C# Hot Reload.
+`-NoBuild` skips the explicit build command. The Android deployment pass reuses
+the built source references rather than rebuilding them: the pinned SDK's
+deployment-only resource linking otherwise loses Material/AndroidX inputs.
 
 ## One-time prerequisites
 
 Use the SDK pinned by `global.json`, repository-pinned platform workloads, and
 the current selected Xcode (`/Applications/Xcode.app`, Xcode 27 for the current
 validation). Do not downgrade Xcode to work around the native interop deployment
-target: the framework project now specifies the current Mac Catalyst minimum.
+targets: the framework project now specifies iOS 15 and Mac Catalyst 17.
 The sample uses Mac Catalyst 17, Android 24, iOS 15 (the current mobile template
 and Xcode deployment floor), and Windows 10.0.17763. No global SDK/workload or
 Xcode changes are needed.
@@ -257,4 +266,45 @@ missing shared server after its bounded 30-second wait, rejected missing
 mobile device selection, and cleaned up its started Vite tree after an SDK
 wrapper failure without stopping an existing shared server.
 The PS1 uses the repository's Bash SDK wrapper on macOS/Linux and its PowerShell
-wrapper on Windows. Full PS1 native-launch and mobile checks are pending.
+wrapper on Windows.
+
+### PowerShell launcher and mobile checks after restart
+
+With the same SDK/workloads and selected Xcode 27, these user-facing commands
+launched actual native apps (not a standalone browser):
+
+```powershell
+# Starts Vite and the Mac app.
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform maccatalyst
+
+# Shares Vite with the selected Android emulator.
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform android -Device emulator-5554 -UseExistingWeb
+
+# Shares Vite with the selected iOS simulator, using its existing Debug build.
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform ios -Device 541E9F35-C9FB-4C5D-8891-80E51B84F3EE -UseExistingWeb -NoBuild
+```
+
+Android native DOM/computed-style inspection and native screenshots confirmed
+HTML, ordinary TypeScript imports, dynamic imports and CSS. CSS HMR changed
+`rgb(220, 238, 255)` to `rgb(215, 242, 220)` without changing the document's
+`performance.timeOrigin`. HTML/TypeScript edits reloaded the document while
+retaining the same native PID/startup identity and `https://0.0.0.1/` origin.
+The no-action-bar activity theme keeps the web content unobscured.
+
+iOS native screenshots and process-scoped logs confirmed the same edit types.
+The CSS screenshot changed more than 1,000 target pixels without another
+document request; HTML/TypeScript edits appeared after Vite document reloads
+with one unchanged native startup identity. All temporary web edits were
+restored. No DevFlow dependency was added.
+
+Native device and universal simulator archives passed under Xcode 27 after
+aligning their deployment minimum with its iOS 15 floor. Existing Swift
+Sendable warnings remain. The simulator app's `MinimumOSVersion` is 15.0;
+the Mac app's `LSMinimumSystemVersion` is 14.0.
+
+A clean Android app-only rebuild passed with zero warnings/errors. The focused
+PS1 parser and whitespace checks passed. Missing-device and occupied-port
+launches failed without stopping the existing server. Ctrl+C in the Android
+terminal stopped its selected native app while preserving the Mac app and Vite.
+Windows runtime, physical mobile devices and mobile Release execution remain
+unverified.

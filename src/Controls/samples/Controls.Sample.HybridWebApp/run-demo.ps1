@@ -10,7 +10,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../../..'))
-$project = Join-Path $PSScriptRoot 'Native/Maui.Controls.Sample.HybridWebApp.csproj'
+$native = Join-Path $PSScriptRoot 'Native'
+$project = Join-Path $native 'Maui.Controls.Sample.HybridWebApp.csproj'
 $web = Join-Path $PSScriptRoot 'Web'
 $url = 'http://127.0.0.1:5173/'
 $vite = $null
@@ -61,25 +62,42 @@ try {
 	$minor = $props.SelectSingleNode('//_MauiDotNetVersionMinor').InnerText
 	$tfm = "net$major.$minor-$Platform"
 	if ($Platform -eq 'windows') { $tfm += $props.SelectSingleNode('//WindowsTargetFrameworkVersion').InnerText }
-	$arguments = @('run', '--project', $project, '-f', $tfm, '-c', 'Debug', '--no-launch-profile',
-		'--disable-build-servers', '-p:UseWorkload=false', '-e', "HYBRIDWEBAPP_DEV_URL=$url",
+	$common = @('-f', $tfm, '-c', 'Debug',
+		'--disable-build-servers', '-p:UseWorkload=false',
 		'-p:IncludeMacOSTargetFrameworks=false')
 	foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
 		$enabled = ($target.ToLowerInvariant() -eq $Platform).ToString().ToLowerInvariant()
-		$arguments += "-p:Include${target}TargetFrameworks=$enabled"
+		$common += "-p:Include${target}TargetFrameworks=$enabled"
 	}
-	if ($Device) { $arguments += @('--device', $Device) }
-	if ($NoBuild) { $arguments += '--no-build' }
+	if ($Platform -eq 'ios') {
+		$common += @('--runtime', "iossimulator-$([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())")
+	}
 	Write-Host "Launching $tfm$(if ($Device) { " on $Device" }). Vite watches Web/; the SDK builds and launches Native/."
-	$runner = if ($IsWindows) {
-		Start-Child (Get-Process -Id $PID).Path (@('-NoProfile', '-File', (Join-Path $repo 'eng/common/dotnet.ps1')) + $arguments) $repo
-	} else {
-		Start-Child 'bash' (@((Join-Path $repo 'eng/common/dotnet.sh')) + $arguments) $repo
+	foreach ($command in 'build', 'run') {
+		if ($command -eq 'build' -and $NoBuild) { continue }
+		$arguments = if ($command -eq 'build') {
+			@('build', $project) + $common
+		} else {
+			@('run', '--project', $project, '--no-build', '--no-launch-profile',
+				'-e', "HYBRIDWEBAPP_DEV_URL=$url") + $common
+		}
+		if ($command -eq 'run') {
+			if ($Device) { $arguments += @('--device', $Device) }
+			# Source references were built above; rebuilding them during Android deployment loses resource inputs.
+			if ($Platform -eq 'android') { $arguments += '-p:BuildProjectReferences=false' }
+		}
+		$runner = if ($IsWindows) {
+			Start-Child (Get-Process -Id $PID).Path (@('-NoProfile', '-File', (Join-Path $repo 'eng/common/dotnet.ps1')) + $arguments) $native
+		} else {
+			Start-Child 'bash' (@((Join-Path $repo 'eng/common/dotnet.sh')) + $arguments) $native
+		}
+		while (!$runner.WaitForExit(250)) {
+			if ($vite -and $vite.HasExited) { throw "Vite exited with code $($vite.ExitCode)." }
+		}
+		if ($runner.ExitCode) { $exitCode = $runner.ExitCode; throw "dotnet $command failed with code $exitCode." }
+		$runner.Dispose()
+		$runner = $null
 	}
-	while (!$runner.WaitForExit(250)) {
-		if ($vite -and $vite.HasExited) { throw "Vite exited with code $($vite.ExitCode)." }
-	}
-	if ($runner.ExitCode) { $exitCode = $runner.ExitCode; throw "dotnet run failed with code $exitCode." }
 	Write-Host 'SDK launch completed; the native app may still be running. Close it when finished.'
 	if ($vite) {
 		Write-Host 'Keeping Vite alive. Press Ctrl+C here to stop only this script''s Vite process tree.'
