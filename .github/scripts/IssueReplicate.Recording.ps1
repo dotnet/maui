@@ -273,7 +273,6 @@ function Convert-IssueReplicateRecordingBudget {
     )
 
     Assert-IssueReplicateRecordingBytes -Bytes $Bytes
-    . (Join-Path $PSScriptRoot 'IssueReplicate.Diagnostics.ps1')
     $directory = Join-Path ([IO.Path]::GetTempPath()) "issue-recording-encode-$([guid]::NewGuid().ToString('N'))"
     New-Item -ItemType Directory -Path $directory -ErrorAction Stop | Out-Null
     try {

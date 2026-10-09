@@ -174,6 +174,9 @@ capture and recording conversion use that same trusted reader with their existin
 twenty-/ninety-second deadlines and explicit output bounds, without increasing
 recording size or changing full-duration checks. Both redirected streams drain
 concurrently into fixed allocations; stderr beyond 8 KiB is an explicit failure.
+Run and standalone verification preload the reader before untrusted execution;
+post-body recording conversion calls that in-memory function without reloading
+a mutable script file. This does not establish the missing OS evidence boundary.
 If the UI runner exits nonzero without reporting a TRX, verification exports an
 explicitly inconclusive result without qualified execution and bounded runner/compiler feedback
 for the permitted revision. This does not qualify an assertion, recording or

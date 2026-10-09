@@ -366,7 +366,6 @@ function Get-IssueReplicateNativeAndroidApi {
     if ($env:DEVICE_UDID -cnotmatch '^emulator-[0-9]+$') {
         throw 'Android runtime verification requires the explicitly owned emulator serial.'
     }
-    . (Join-Path $PSScriptRoot 'IssueReplicate.Diagnostics.ps1')
     $adb = Get-Command adb -CommandType Application -ErrorAction Stop | Select-Object -First 1
     $value = (Invoke-IssueReplicateBoundedProcess -FilePath $adb.Source -TimeoutSeconds 20 `
         -Arguments @('-s', $env:DEVICE_UDID, 'shell', 'getprop', 'ro.build.version.sdk') `
