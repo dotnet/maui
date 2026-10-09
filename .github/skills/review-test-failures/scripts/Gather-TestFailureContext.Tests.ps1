@@ -601,6 +601,67 @@ Describe 'Known Build Error loader-to-matcher boundary' -Tag 'KnownBuildIssues' 
             ))
             (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be $Expected
         }
+
+        Context 'Separately captured stack trace evidence' -Tag 'KnownIssueStackTraces' {
+            It 'matches array expressions in the same occurrence stack trace: <Case>' -ForEach @(
+                @{ Case = 'stack trace only'; Message = 'System.NullReferenceException'; MessageExpression = $false }
+                @{ Case = 'no message'; Message = $null; MessageExpression = $false }
+                @{ Case = 'message followed by stack trace'; Message = 'at System.IO.FileStream.ReadAsync'; MessageExpression = $true }
+            ) {
+                $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+                $stackTrace = if ($MessageExpression) { $expressions[1] } else { $expressions -join "`n" }
+                $failures = @(Get-DeduplicatedFailures -Failures @(
+                    @{
+                        testName = 'Same.Test'; platform = 'Android'; source = 'azdo-test-results'
+                        buildId = 1; runId = 10; resultId = 20
+                        message = $Message; stackTrace = $stackTrace
+                    }
+                ))
+                $failures.Count | Should -Be 1
+                $failures[0].occurrences[0].stackTrace | Should -Be $stackTrace
+                (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be 36435
+            }
+
+            It 'does not combine stack trace evidence from separate occurrences: <Case>' -ForEach @(
+                @{ Case = 'two stack traces'; FirstMessage = 'error'; FirstTrace = 'at System.IO.FileStream.ReadAsync' }
+                @{ Case = 'message and another stack trace'; FirstMessage = 'at System.IO.FileStream.ReadAsync'; FirstTrace = '' }
+            ) {
+                $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+                $failures = @(Get-DeduplicatedFailures -Failures @(
+                    @{ testName = 'Same.Test'; platform = 'Android'; buildId = 1; message = $FirstMessage; stackTrace = $FirstTrace },
+                    @{ testName = 'Same.Test'; platform = 'Android'; buildId = 2; message = 'error'; stackTrace = $expressions[1] }
+                ))
+                $failures.Count | Should -Be 1
+                $failures[0].occurrenceCount | Should -Be 2
+                Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues | Should -BeNullOrEmpty
+            }
+
+            It 'does not add stack traces to scalar or regex aggregated text: <Case>' -ForEach @(
+                @{ Case = 'scalar'; Message = 'first frame'; Pattern = $null }
+                @{ Case = 'regex'; Message = ''; Pattern = 'first\s+frame' }
+            ) {
+                $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage $Message -ErrorPattern $Pattern
+                $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+                $failures = @(Get-DeduplicatedFailures -Failures @(
+                    @{ testName = 'Same.Test'; platform = 'Android'; message = 'error'; stackTrace = "first frame`nlast frame" }
+                ))
+                Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues | Should -BeNullOrEmpty
+            }
+
+            It 'applies the existing text cap after including the stack trace: <Case>' -ForEach @(
+                @{ Case = 'at limit'; Padding = 0; Expected = 36435 }
+                @{ Case = 'past limit'; Padding = 1; Expected = $null }
+            ) {
+                $script:kbeIssueFixture = New-KnownBuildIssueFixture -ErrorMessage @('first frame', 'last frame')
+                $knownIssues = Get-KnownBuildIssues -Repository 'dotnet/maui'
+                $prefix = "Same.Test`nerror`nfirst frame`n"
+                $stackTrace = "first frame`n" + ('x' * (20000 - $prefix.Length - "`nlast frame".Length + $Padding)) + "`nlast frame"
+                $failures = @(Get-DeduplicatedFailures -Failures @(
+                    @{ testName = 'Same.Test'; platform = 'Android'; message = 'error'; stackTrace = $stackTrace }
+                ))
+                (Invoke-KnownIssueCrossReference -Failure $failures[0] -KnownIssues $knownIssues).number | Should -Be $Expected
+            }
+        }
     }
 }
 

@@ -409,8 +409,9 @@ on appearance alone:
    The local gatherer preserves `ErrorMessage` arrays as ordered AND conditions:
    every literal must occur on a distinct subsequent line within one actual occurrence,
    following the [public BA array contract](https://github.com/dotnet/arcade/blob/5a63d054ea793bdbdb6aa9f4558558e3a8f41529/Documentation/Build%20Analysis/KnownIssues.md#fill-out-known-issues-with-a-list-of-errors).
-   Arrays cannot combine partial messages from separate occurrences of a deduplicated
-   test/platform. Scalar and regex rules retain their existing aggregated text.
+   Each array's matched text includes that occurrence's name, message, and separately
+   captured stack trace. Arrays cannot combine evidence from separate occurrences of a
+   deduplicated test/platform. Scalar and regex rules retain their existing aggregated text.
    Case-insensitive matching, the 20,000-character cap per matched text, first-matching-rule
    selection, and attribution gates are unchanged. This local hint matcher does not
    establish full Build Analysis/Build Insights service parity.

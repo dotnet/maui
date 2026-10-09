@@ -4648,7 +4648,8 @@ foreach ($failure in $dedupedFailures) {
     $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
     $occurrenceMatchTexts = @($failure.occurrences | ForEach-Object {
         (@([string](Get-ObjectValue -Object $_ -Names @("testName", "name") -Default $failure.testName)) +
-            @([string](Get-ObjectValue -Object $_ -Names @("message", "errorMessage")))) -join "`n"
+            @([string](Get-ObjectValue -Object $_ -Names @("message", "errorMessage"))) +
+            @([string](Get-ObjectValue -Object $_ -Names @("stackTrace")))) -join "`n"
     })
     $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText -OccurrenceTexts $occurrenceMatchTexts
 
