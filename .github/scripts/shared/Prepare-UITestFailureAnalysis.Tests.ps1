@@ -31,8 +31,6 @@ BeforeAll {
         Invoke-Expression $function.Extent.Text
     }
 
-    $script:pipelineContent = Get-Content -Raw (
-        Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml')
 }
 
 Describe 'Prepare UI test failure analysis console safety' {
@@ -89,8 +87,4 @@ Describe 'Prepare UI test failure analysis output safety' {
         } | Should -Throw '*AgentTempDirectory is required*'
     }
 
-    It 'passes the trusted Azure temp root explicitly from the pipeline' {
-        $script:pipelineContent | Should -Match ([regex]::Escape(
-            '-AgentTempDirectory "$(Agent.TempDirectory)"'))
-    }
 }

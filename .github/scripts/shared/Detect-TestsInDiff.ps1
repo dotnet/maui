@@ -285,8 +285,158 @@ $testGroups = @{}  # Key: "Type:TestName" → Value: hashtable
 # from the file content is more reliable. Falls back to the filename basename
 # when the file can't be read (e.g., file deleted, path unresolvable).
 $RepoRootForRead = git rev-parse --show-toplevel 2>$null
+
+function Get-CSharpDeclarationEndLine {
+    param(
+        [string[]]$Lines,
+        [int]$DeclarationIndex,
+        [switch]$BlockOnly
+    )
+
+    $braceDepth = 0
+    $bodyStarted = $false
+    $expressionBodied = $false
+    $inBlockComment = $false
+    $stringKind = $null
+    $escapeNext = $false
+    $rawQuoteCount = 0
+
+    for ($lineIndex = $DeclarationIndex; $lineIndex -lt $Lines.Count; $lineIndex++) {
+        $line = $Lines[$lineIndex]
+        for ($characterIndex = 0; $characterIndex -lt $line.Length; $characterIndex++) {
+            $character = $line[$characterIndex]
+
+            if ($inBlockComment) {
+                if ($character -eq '*' -and
+                    ($characterIndex + 1) -lt $line.Length -and
+                    $line[$characterIndex + 1] -eq '/') {
+                    $characterIndex++
+                    $inBlockComment = $false
+                }
+                continue
+            }
+
+            if ($stringKind -eq 'Raw') {
+                if ($character -eq '"') {
+                    $quoteCount = 1
+                    while (($characterIndex + $quoteCount) -lt $line.Length -and
+                        $line[$characterIndex + $quoteCount] -eq '"') {
+                        $quoteCount++
+                    }
+                    $characterIndex += $quoteCount - 1
+                    if ($quoteCount -ge $rawQuoteCount) {
+                        $stringKind = $null
+                        $rawQuoteCount = 0
+                    }
+                }
+                continue
+            }
+
+            if ($stringKind -eq 'Verbatim') {
+                if ($character -eq '"') {
+                    if (($characterIndex + 1) -lt $line.Length -and
+                        $line[$characterIndex + 1] -eq '"') {
+                        $characterIndex++
+                    } else {
+                        $stringKind = $null
+                    }
+                }
+                continue
+            }
+
+            if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
+                if ($escapeNext) {
+                    $escapeNext = $false
+                    continue
+                }
+                if ($character -eq '\') {
+                    $escapeNext = $true
+                    continue
+                }
+                if (($stringKind -eq 'Regular' -and $character -eq '"') -or
+                    ($stringKind -eq 'Character' -and $character -eq "'")) {
+                    $stringKind = $null
+                }
+                continue
+            }
+
+            if ($character -eq '/' -and ($characterIndex + 1) -lt $line.Length) {
+                if ($line[$characterIndex + 1] -eq '/') {
+                    break
+                }
+                if ($line[$characterIndex + 1] -eq '*') {
+                    $characterIndex++
+                    $inBlockComment = $true
+                    continue
+                }
+            }
+
+            if ($character -eq '"') {
+                $quoteCount = 1
+                while (($characterIndex + $quoteCount) -lt $line.Length -and
+                    $line[$characterIndex + $quoteCount] -eq '"') {
+                    $quoteCount++
+                }
+                $prefix = $line.Substring(0, $characterIndex)
+                $characterIndex += $quoteCount - 1
+                if ($quoteCount -ge 3) {
+                    $stringKind = 'Raw'
+                    $rawQuoteCount = $quoteCount
+                } elseif ($quoteCount -eq 2) {
+                    # Empty regular/verbatim string; both delimiters are
+                    # present in this run, so no string state remains open.
+                    $stringKind = $null
+                } elseif ($prefix -match '@\$*$') {
+                    $stringKind = 'Verbatim'
+                } else {
+                    $stringKind = 'Regular'
+                }
+                continue
+            }
+
+            if ($character -eq "'") {
+                $stringKind = 'Character'
+                continue
+            }
+
+            if (-not $BlockOnly -and -not $bodyStarted -and
+                $character -eq '=' -and
+                ($characterIndex + 1) -lt $line.Length -and
+                $line[$characterIndex + 1] -eq '>') {
+                $expressionBodied = $true
+                $characterIndex++
+                continue
+            }
+
+            if ($expressionBodied -and $character -eq ';') {
+                return $lineIndex + 1
+            }
+
+            if ($character -eq '{') {
+                $bodyStarted = $true
+                $braceDepth++
+            } elseif ($bodyStarted -and $character -eq '}') {
+                $braceDepth--
+                if ($braceDepth -eq 0) {
+                    return $lineIndex + 1
+                }
+            }
+        }
+
+        if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
+            $stringKind = $null
+            $escapeNext = $false
+        }
+    }
+
+    return $Lines.Count
+}
+
 function Get-ClassNameFromFile {
-    param([string]$RelativePath)
+    param(
+        [string]$RelativePath,
+        [switch]$OutermostClass
+    )
     $candidates = @($RelativePath)
     if ($RepoRootForRead) {
         $candidates += (Join-Path $RepoRootForRead $RelativePath)
@@ -296,11 +446,8 @@ function Get-ClassNameFromFile {
             try {
                 $content = Get-Content $p -Raw -ErrorAction Stop
             } catch { continue }
-            # A test file can declare concrete helper classes before its actual test
-            # class. Prefer the first concrete class that owns a test method
-            # attribute instead of blindly selecting the first public class.
-            # This keeps XHarness class isolation on the class that owns the tests
-            # (for example ShellHandlerTests_Shell, not StartupTrackingShellHandler).
+            # A preceding or nested helper can have closed before the test method.
+            # Resolve containing scopes, not merely the last preceding declaration.
             $classMatches = @([regex]::Matches(
                 $content,
                 '(?m)^\s*public(?<modifiers>(?:\s+(?:partial|sealed|abstract|static))*)\s+class\s+(?<name>\w+)'
@@ -310,17 +457,27 @@ function Get-ClassNameFromFile {
             })
             if ($concreteClasses.Count -eq 0) { continue }
 
+            $sourceLines = @($content -split "`r?`n")
+            $classScopes = @($concreteClasses | ForEach-Object {
+                $declarationIndex = ($content.Substring(0, $_.Index) -split "`r?`n").Count - 1
+                [pscustomobject]@{
+                    Match = $_
+                    EndLine = Get-CSharpDeclarationEndLine `
+                        -Lines $sourceLines -DeclarationIndex $declarationIndex -BlockOnly
+                }
+            })
             $testAttributes = @([regex]::Matches(
                 $content,
                 '(?m)^\s*\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b'
             ))
             foreach ($testAttribute in $testAttributes) {
-                $testClass = $classMatches |
-                    Where-Object { $_.Index -lt $testAttribute.Index } |
-                    Select-Object -Last 1
-                if ($testClass -and
-                    $testClass.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b') {
-                    return $testClass.Groups['name'].Value
+                $attributeLine = ($content.Substring(0, $testAttribute.Index) -split "`r?`n").Count
+                $testClasses = @($classScopes | Where-Object {
+                    $_.Match.Index -lt $testAttribute.Index -and $_.EndLine -ge $attributeLine
+                })
+                if ($testClasses.Count -gt 0) {
+                    $classIndex = if ($OutermostClass) { 0 } else { $testClasses.Count - 1 }
+                    return $testClasses[$classIndex].Match.Groups['name'].Value
                 }
             }
 
@@ -676,151 +833,6 @@ function Get-ChangedDeviceTestMethodsFromPatch {
             }
         }
 
-        function Get-CSharpMethodEndLine {
-            param(
-                [string[]]$Lines,
-                [int]$DeclarationIndex
-            )
-
-            $braceDepth = 0
-            $bodyStarted = $false
-            $expressionBodied = $false
-            $inBlockComment = $false
-            $stringKind = $null
-            $escapeNext = $false
-            $rawQuoteCount = 0
-
-            for ($lineIndex = $DeclarationIndex; $lineIndex -lt $Lines.Count; $lineIndex++) {
-                $line = $Lines[$lineIndex]
-                for ($characterIndex = 0; $characterIndex -lt $line.Length; $characterIndex++) {
-                    $character = $line[$characterIndex]
-
-                    if ($inBlockComment) {
-                        if ($character -eq '*' -and
-                            ($characterIndex + 1) -lt $line.Length -and
-                            $line[$characterIndex + 1] -eq '/') {
-                            $characterIndex++
-                            $inBlockComment = $false
-                        }
-                        continue
-                    }
-
-                    if ($stringKind -eq 'Raw') {
-                        if ($character -eq '"') {
-                            $quoteCount = 1
-                            while (($characterIndex + $quoteCount) -lt $line.Length -and
-                                $line[$characterIndex + $quoteCount] -eq '"') {
-                                $quoteCount++
-                            }
-                            $characterIndex += $quoteCount - 1
-                            if ($quoteCount -ge $rawQuoteCount) {
-                                $stringKind = $null
-                                $rawQuoteCount = 0
-                            }
-                        }
-                        continue
-                    }
-
-                    if ($stringKind -eq 'Verbatim') {
-                        if ($character -eq '"') {
-                            if (($characterIndex + 1) -lt $line.Length -and
-                                $line[$characterIndex + 1] -eq '"') {
-                                $characterIndex++
-                            } else {
-                                $stringKind = $null
-                            }
-                        }
-                        continue
-                    }
-
-                    if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
-                        if ($escapeNext) {
-                            $escapeNext = $false
-                            continue
-                        }
-                        if ($character -eq '\') {
-                            $escapeNext = $true
-                            continue
-                        }
-                        if (($stringKind -eq 'Regular' -and $character -eq '"') -or
-                            ($stringKind -eq 'Character' -and $character -eq "'")) {
-                            $stringKind = $null
-                        }
-                        continue
-                    }
-
-                    if ($character -eq '/' -and ($characterIndex + 1) -lt $line.Length) {
-                        if ($line[$characterIndex + 1] -eq '/') {
-                            break
-                        }
-                        if ($line[$characterIndex + 1] -eq '*') {
-                            $characterIndex++
-                            $inBlockComment = $true
-                            continue
-                        }
-                    }
-
-                    if ($character -eq '"') {
-                        $quoteCount = 1
-                        while (($characterIndex + $quoteCount) -lt $line.Length -and
-                            $line[$characterIndex + $quoteCount] -eq '"') {
-                            $quoteCount++
-                        }
-                        $prefix = $line.Substring(0, $characterIndex)
-                        $characterIndex += $quoteCount - 1
-                        if ($quoteCount -ge 3) {
-                            $stringKind = 'Raw'
-                            $rawQuoteCount = $quoteCount
-                        } elseif ($quoteCount -eq 2) {
-                            # Empty regular/verbatim string; both delimiters are
-                            # present in this run, so no string state remains open.
-                            $stringKind = $null
-                        } elseif ($prefix -match '@\$*$') {
-                            $stringKind = 'Verbatim'
-                        } else {
-                            $stringKind = 'Regular'
-                        }
-                        continue
-                    }
-
-                    if ($character -eq "'") {
-                        $stringKind = 'Character'
-                        continue
-                    }
-
-                    if (-not $bodyStarted -and
-                        $character -eq '=' -and
-                        ($characterIndex + 1) -lt $line.Length -and
-                        $line[$characterIndex + 1] -eq '>') {
-                        $expressionBodied = $true
-                        $characterIndex++
-                        continue
-                    }
-
-                    if ($expressionBodied -and $character -eq ';') {
-                        return $lineIndex + 1
-                    }
-
-                    if ($character -eq '{') {
-                        $bodyStarted = $true
-                        $braceDepth++
-                    } elseif ($bodyStarted -and $character -eq '}') {
-                        $braceDepth--
-                        if ($braceDepth -eq 0) {
-                            return $lineIndex + 1
-                        }
-                    }
-                }
-
-                if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
-                    $stringKind = $null
-                    $escapeNext = $false
-                }
-            }
-
-            return $Lines.Count
-        }
-
         $sourceLines = @($SourceContent -split "`r?`n")
         $pendingSourceTestAttribute = $false
         $sourceAttributeState = $null
@@ -881,7 +893,7 @@ function Get-ChangedDeviceTestMethodsFromPatch {
                 } else {
                     $sourceIndex + 1
                 }
-                $methodEndLine = Get-CSharpMethodEndLine `
+                $methodEndLine = Get-CSharpDeclarationEndLine `
                     -Lines $sourceLines `
                     -DeclarationIndex $sourceIndex
 
@@ -970,7 +982,9 @@ foreach ($file in $ChangedFiles) {
                 }
 
                 "XamlUnitTest" {
-                    $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                    # Nested "Test" fixtures belong to their XAML page's group,
+                    # not a generic "Test" filter covering the whole assembly.
+                    $parsedClass = Get-ClassNameFromFile -RelativePath $file -OutermostClass
                     if ($parsedClass) {
                         $testName = $parsedClass
                     } elseif ($file -match "[/\\]([^/\\]+)\.(cs|xaml)$") {
@@ -1009,7 +1023,7 @@ foreach ($file in $ChangedFiles) {
                 }
 
                 "UnitTest" {
-                    $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                    $parsedClass = Get-ClassNameFromFile -RelativePath $file -OutermostClass
                     if ($parsedClass) {
                         $testName = $parsedClass
                     } elseif ($file -match "[/\\]([^/\\]+)\.cs$") {

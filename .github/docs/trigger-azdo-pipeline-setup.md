@@ -251,7 +251,7 @@ fires after its create/push run.
 4. Azure AD validates the JWT against the federated credential and returns
    a bearer token scoped to AzDO (resource: 499b84ac-1321-427f-aa17-267ca6975798)
 5. Step 3 calls the appropriate Azure DevOps queue endpoint with the bearer
-   token: the Pipelines Runs API for `/review`, or the Build Queue API for
+   token: the Pipelines Runs API for `/review gate`, or the Build Queue API for
    CI-fix PR validation
 6. AzDO validates the token, checks the identity's permissions, and queues the build
 ```

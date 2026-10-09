@@ -1,6 +1,6 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/skills/trace-regression/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*,.github/workflows/issue-trace-regression.*"
+applyTo: "eng/pipelines/ci-copilot.yml,eng/pipelines/pr-gate-setup.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/skills/trace-regression/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*,.github/workflows/issue-trace-regression.*"
 ---
 
 # CI Copilot pipeline — security rules
@@ -13,6 +13,10 @@ This pipeline runs **untrusted PR code** on AzDO agents with these tokens in sco
 
 Once the PR is merged into the worktree, the author controls every `.csproj`, `Directory.Build.targets`, source generator, analyzer, test, `.ps1`, and `.yml` the pipeline subsequently runs.
 
+The hosted `/review gate` path runs only Setup, Gate, fresh-agent publication,
+and lock cleanup. Gate uses the immutable local snapshot with no GitHub/Copilot
+token in its task environment. Full-review phases remain local tooling only.
+
 ## Rules
 
 1. **Per-task `env:` scoping.** Only put tokens in tasks that need them. The Copilot-agent task gets `COPILOT_GITHUB_TOKEN` only — never `GH_TOKEN`. Posting tasks run in separate Microsoft-hosted jobs and receive `GH_COMMENT_TOKEN` plus only the explicitly scoped publication token they need. Pass `--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN` to the Copilot CLI.
@@ -23,7 +27,7 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 4. **Run posting from a fresh Microsoft-hosted job.** Post jobs check out `$(Build.SourceVersion)` with `clean: true` and `persistCredentials: false`, then execute `.github/scripts`, `.github/skills`, and `eng/scripts` from that checkout. Prompt-influenced analysis must finish in a different job/agent. Download its result outside the checkout and import only the expected bounded regular file with `Copy-BoundedDiagnosticFile`; never copy artifact content over script directories. A second `clean: true` checkout in the same job is not isolation because `.git` and the agent's global config survive.
 
-5. **Strip tokens before invoking PR-controlled code.** Wrap every `dotnet build|test|run|pack`, `msbuild`, `dotnet cake`, `BuildAndRun*.ps1`, `Run-DeviceTests.ps1`, `Invoke-UITestWithRetry.ps1` in `Invoke-WithoutGhTokens { ... }` (defined in `Review-PR.ps1` and `verify-tests-fail.ps1` — saves/clears/restores `GH_TOKEN`, `GITHUB_TOKEN`, `COPILOT_GITHUB_TOKEN`). **Wrap as close to the subprocess as possible, not at the outer trusted-script boundary** — a trusted script may itself need `gh` for metadata (e.g., `verify-tests-fail.ps1` calls `Detect-TestsInDiff.ps1` which uses `gh api`), so wrapping the whole script breaks its detection path. Wrap only the line that launches the PR-controlled process. Exception: scripts that ONLY call `gh` for PR metadata (`Detect-TestsInDiff.ps1`, `Find-RegressionRisks.ps1`, `detect-ui-test-categories.ps1`) don't need wrapping at all — they keep the token.
+5. **Strip tokens before invoking PR-controlled code.** Wrap every `dotnet build|test|run|pack`, `msbuild`, `dotnet cake`, `BuildAndRun*.ps1`, `Run-DeviceTests.ps1`, `Invoke-UITestWithRetry.ps1` in `Invoke-WithoutGhTokens { ... }` (defined in `Review-PR.ps1` and `verify-tests-fail.ps1` — saves/clears/restores `GH_TOKEN`, `GITHUB_TOKEN`, `COPILOT_GITHUB_TOKEN`). **Wrap as close to the subprocess as possible, not at the outer trusted-script boundary** — a trusted script may itself need `gh` for metadata (e.g., `verify-tests-fail.ps1` calls `Detect-TestsInDiff.ps1` which uses `gh api`), so wrapping the whole script breaks its detection path. The hosted gate additionally clears credentials at the verifier boundary because `-BaseBranch` is pinned to Setup's full SHA and detection uses the local diff; keep the subprocess wrappers as well. Exception: scripts that ONLY call `gh` for PR metadata (`Detect-TestsInDiff.ps1`, `Find-RegressionRisks.ps1`, `detect-ui-test-categories.ps1`) don't need wrapping at all — they keep the token.
 
 6. **Cross-phase and cross-job results.** Same-job phase files belong in `$(Agent.TempDirectory)` or the trusted staging directory, never the merged worktree. Cross-job values use named output variables with a fixed set of expected values or pipeline artifacts. Download artifacts outside the checkout, copy only the required data directory, and never transfer scripts for Post to run.
 
