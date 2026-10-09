@@ -611,4 +611,230 @@ public class StructuralHotReloadTests
 		var compilation = harness.Compile(generation[1]);
 		Assert.True(compilation.PeImage.Length > 0, "Skipped malformed ItemTemplate should compile.");
 	}
+
+	[MetadataUpdateFact]
+	public void XNameRenamed_SamePositionSameType_UnregistersOldNameAndResolvesNewOne()
+	{
+		// Companion to the id-desync bug this PR fixes: an x:Name rename on an otherwise
+		// unchanged node is now a same-id local rebuild (see XamlNodeDiffTests), not a page-wide
+		// structural reset. This exercises that rebuild end-to-end through the real generated
+		// UpdateComponent code: the OLD name must stop resolving (namescope cleanup), and the
+		// NEW name must resolve to the freshly-rebuilt instance.
+		//
+		// NOTE: the harness recompiles InitializeComponent for EVERY version it applies (see
+		// XamlHotReloadLiveSession.PrepareUpdate), so both the V1 name ("oldLabel") and the V2
+		// name ("RenamedLabel") need a pre-declared backing field here to make that simulated
+		// recompilation succeed — this differs from the real incremental hot-reload pipeline,
+		// where only "oldLabel" would actually exist and "RenamedLabel" would have NO backing
+		// field at all (a known, accepted limitation: UpdateComponent patches an already-running
+		// object via reflection against ALREADY-COMPILED fields and cannot add/rename a class
+		// field at runtime — that needs a true edit-and-continue/full-rebuild cycle).
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.Label oldLabel = default!;
+				private global::Microsoft.Maui.Controls.Label RenamedLabel = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="oldLabel" Text="Hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="RenamedLabel" Text="Hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(XNameRenamed_SamePositionSameType_UnregistersOldNameAndResolvesNewOne),
+			PageClass,
+			pageStub);
+		var generation = harness.Generate(xamlV1, xamlV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var originalLabel = Assert.IsType<Label>(Assert.Single(Assert.IsType<VerticalStackLayout>(page.Content)));
+			Assert.Same(originalLabel, page.FindByName<Label>("oldLabel"));
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+
+			// Old name must no longer resolve to the (now-detached) original instance.
+			Assert.Null(page.FindByName<Label>("oldLabel"));
+
+			var rebuiltLabel = Assert.IsType<Label>(Assert.Single(Assert.IsType<VerticalStackLayout>(page.Content)));
+			Assert.Same(rebuiltLabel, page.FindByName<Label>("RenamedLabel"));
+			Assert.NotSame(originalLabel, rebuiltLabel);
+		});
+	}
+
+	[Fact]
+	public void XNameRenamed_SamePositionSameType_EmitsSameIdRegistrationAndOldNameUnregister()
+	{
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.Label RenamedLabel = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="oldLabel" Text="Hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="RenamedLabel" Text="Hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(XNameRenamed_SamePositionSameType_EmitsSameIdRegistrationAndOldNameUnregister),
+			PageClass,
+			pageStub);
+		var generation = harness.Generate(xamlV1, xamlV2);
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		// The old name's unregister guard (RemovedNames mechanism), proving it fires for a
+		// same-id local rebuild — not just for an ordinary removed child.
+		Assert.Contains("XamlComponentRegistry.TryGet(this", updateComponentSource!, StringComparison.Ordinal);
+		Assert.Contains("ReferenceEquals(__removedNameScope_", updateComponentSource!, StringComparison.Ordinal);
+		// The rebuilt instance registers the NEW name in the live namescope.
+		Assert.Contains("RegisterName(\"RenamedLabel\"", updateComponentSource!, StringComparison.Ordinal);
+
+		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
+	}
+
+	[MetadataUpdateFact]
+	public void StructuralResetMidReorder_PreservesLiveRegistrationAndIdentityThroughFinalEdit()
+	{
+		// Runtime companion to XamlNodeDiffTests.StructuralResetMidReorder_NoLongerDesyncsIdsFromLiveApp:
+		// that test only compares generator-side id dictionaries across the edit chain. This
+		// exercises the SAME edit chain (reorder + transient x:Name loss/restore + a final
+		// ordinary property edit) through real generated UpdateComponent code, applied against a
+		// live instance, and asserts on actual XamlComponentRegistry/namescope behavior — the
+		// live Entry must stay the SAME instance and resolvable by name throughout, and the final
+		// FontSize edit must land on it (not silently retarget the Label), which is exactly what
+		// would fail if ids ever desynced from what the live app registered.
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.Entry entry1 = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		const string seed = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Entry x:Name="entry1" Text="hello" />
+			    <Label Text="Static" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		// Transient: reordered AND x:Name momentarily missing (mid-keystroke state).
+		const string transientNoName = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label Text="Static" />
+			    <Entry Text="hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		// Settled: same reordered shape, x:Name restored.
+		const string settled = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label Text="Static" />
+			    <Entry x:Name="entry1" Text="hello" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		// Final: an ordinary property edit.
+		const string finalEdit = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label Text="Static" />
+			    <Entry x:Name="entry1" Text="hello" FontSize="20" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(StructuralResetMidReorder_PreservesLiveRegistrationAndIdentityThroughFinalEdit),
+			PageClass,
+			pageStub);
+		var generation = harness.Generate(seed, transientNoName, settled, finalEdit);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
+			Assert.IsType<Entry>(layout[0]);
+			Assert.Same(page.FindByName<Entry>("entry1"), layout[0]);
+
+			// Transient: x:Name removed, elements reordered. This is itself a codegen-sensitive,
+			// same-id local rebuild (see XamlNodeDiffTests), so the live Entry MAY be replaced by
+			// a fresh instance here — that's fine; what matters is id continuity, not object
+			// identity at this intermediate step.
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Null(page.FindByName<Entry>("entry1"));
+
+			// Settled: x:Name restored — again a local rebuild, not a cascade.
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(2));
+			var entryBeforeFinalEdit = page.FindByName<Entry>("entry1");
+			Assert.NotNull(entryBeforeFinalEdit);
+
+			// Final: an ordinary property edit. THE FIX, VERIFIED: this must be a plain patch on
+			// the SAME instance just resolved above (not another rebuild, and not silently
+			// misapplied to the Label) — exactly what an id desync would have broken.
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(3));
+			var entryAfterFinalEdit = page.FindByName<Entry>("entry1");
+			Assert.Same(entryBeforeFinalEdit, entryAfterFinalEdit);
+			Assert.Equal(20d, entryAfterFinalEdit!.FontSize);
+		});
+	}
 }

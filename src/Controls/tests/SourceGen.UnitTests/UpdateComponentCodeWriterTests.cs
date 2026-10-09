@@ -328,6 +328,107 @@ $"""
 		Assert.DoesNotContain("ReRoot", result, System.StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void XNameRebuild_AmongUntouchedSiblings_DoesNotClearLayout()
+	{
+		// Regression test for the "sibling disruption" review finding: a same-position x:Name
+		// rename is a local rebuild (ChildChangeKind.Rebuilt), not a structural add/remove. The
+		// generated code must target only the renamed child's slot — not Clear() the whole
+		// Layout and re-Add every child — so untouched siblings keep their live handler/platform
+		// view state (focus, animations, scroll position, etc.) across the hot-reload patch.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="oldName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="newName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		// Untouched siblings must never be detached/reattached: no destructive Clear()+readd.
+		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
+		// The rebuilt Entry is removed from its stale slot and reinserted at the same target
+		// index — a targeted, non-destructive single-slot replace.
+		Assert.Contains("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.Contains(".Insert(", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRebuild_WithEventHandler_ReWiresEventOnRebuiltInstance()
+	{
+		// Regression test for the "Rebuilt elements lose XAML event wiring" review finding: the
+		// local-rebuild creation path (EmitNewElement -> EmitNewElementProperties) must subscribe
+		// XAML event attributes (e.g. Clicked="OnClicked") with += — an event can never be
+		// assigned with a plain '=' — or the freshly-rebuilt instance would silently lose its
+		// handler.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="oldName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="newName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		Assert.Contains("Clicked += OnClicked", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked = OnClicked", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRebuild_UnderGetterOnlyCollectionContentProperty_AbortsPatchForStructuralFallback()
+	{
+		// Regression test for the "Local rebuild generates invalid updates for collection
+		// content" / "Unsupported collection skips desynchronizes live tree and cached IDs"
+		// review findings: FormattedString.Spans is a getter-only IList<Span> content property
+		// (not a Layout, not a publicly-settable single-value content property).
+		// EmitContentPropertyChange can only emit a plain assignment, which would not compile
+		// against a read-only collection property. Silently skipping just this one change while
+		// still reporting the overall patch as applied would desync the live tree (never patched)
+		// from the ids the generator caches (as if it had been) — so this unsupported shape must
+		// abort the WHOLE patch instead, forcing the caller's existing structural-fallback path
+		// (fresh ids reassigned from 0), exactly like XamlNodeDiff.ComputeDiff returning null.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="oldName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="newName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+
+		// No patch at all is emitted — never a broken assignment to the read-only Spans property.
+		Assert.Null(result);
+	}
+
 	// helpers
 	static int CountOccurrences(string source, string pattern)
 	{

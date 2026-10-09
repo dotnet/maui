@@ -89,7 +89,23 @@ static class UpdateComponentCodeWriter
 		int addedCounter = 0;
 		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			// A change against a parent shape EmitChildListChange can't safely represent (e.g. a
+			// getter-only collection content property like FormattedString.Spans) would otherwise
+			// leave the live tree un-patched for that one child while the caller still caches this
+			// generation's ids as if the whole patch had applied — a silent desync. Abort the WHOLE
+			// patch instead (return null), which routes the caller to its existing "structural
+			// change" fallback: fresh ids reassigned from 0, matching what happens when
+			// XamlNodeDiff.ComputeDiff itself returns null.
+			//
+			// That fallback is a pre-existing, intentional trade-off (see the "Structural change"
+			// comment in XamlGenerator.cs): EXISTING live instances are not patched across a
+			// structural change (UpdateComponent() is emitted empty, so XamlIncrementalHotReloadHandler
+			// skips calling it) — only freshly-constructed instances pick up the new tree, via the
+			// regenerated InitializeComponent(). Routing this emission failure through the SAME
+			// fallback is consistent with every other structural-reset trigger; it does not newly
+			// desync anything that wasn't already an accepted limitation of that path.
+			if (!EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				return null;
 			codeWriter.WriteLine();
 		}
 
@@ -251,7 +267,7 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
-	static void EmitChildListChange(
+	static bool EmitChildListChange(
 		IndentedTextWriter codeWriter,
 		ChildListChangeDiff change,
 		int changeIdx,
@@ -321,15 +337,37 @@ static class UpdateComponentCodeWriter
 		if (!isLayout && parentType != null)
 			contentPropertyName = parentType.GetContentPropertyName(context: null);
 
-		if (!isLayout && contentPropertyName == null)
+		// EmitContentPropertyChange only understands a single-value, publicly-settable content
+		// property (e.g. ContentPage.Content, Border.Content) — it emits a plain assignment
+		// (`parent.ContentProp = child` / `= null!`). A getter-only, collection-typed content
+		// property (e.g. FormattedString.Spans, an IList<Span> with no setter) can't be
+		// represented that way: the generated assignment wouldn't compile. Treat that shape the
+		// same as "no content property at all" — skip incremental emission for this change
+		// rather than generate invalid code.
+		bool contentPropertyIsSettable = contentPropertyName != null
+			&& parentType!.GetAllProperties(contentPropertyName, context: null)
+				.FirstOrDefault()?.SetMethod?.IsPublic() == true;
+
+		// A getter-only collection content property (e.g. FormattedString.Spans) is unsupported
+		// regardless of whether this change is an add/rebuild or a pure removal — even "set to
+		// null" doesn't apply to a collection-typed property, and we have no Add/Remove support
+		// for it. Bail unconditionally so the caller falls back to a full structural reset.
+		if (!isLayout && contentPropertyName != null && !contentPropertyIsSettable)
+			return false;
+
+		// A parent with NO content property at all (e.g. ResourceDictionary, whose children are
+		// dictionary entries, not a single settable/collection property) can't have anything
+		// INSERTED into it here. But a pure removal (no new/rebuilt child to place) needs nothing
+		// emitted for the content property itself — the removed-id unregister loop below still
+		// runs normally — so only bail when there is actual content to apply.
+		if (!isLayout && contentPropertyName == null && change.NewChildren.Count > 0)
 		{
-			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — skipped");
-			if (guardedByParentTryGet)
-			{
-				codeWriter.Indent--;
-				codeWriter.WriteLine("}");
-			}
-			return;
+			// Unsupported parent shape: don't emit a partial/skipped patch for just this change
+			// while the caller still treats the OVERALL generation as successfully applied (which
+			// would cache ids as if the live tree had been updated, desyncing it from the real
+			// state). Signal failure so GeneratePatchBody aborts the whole patch and the caller
+			// falls back to a full structural reset instead.
+			return false;
 		}
 
 		if (isLayout)
@@ -344,7 +382,10 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"bool {okVar} = {layoutVar} != null;");
 
 			// Probe references to all retained children by their old node IDs; if any are missing,
-			// flip {okVar} false rather than returning — see B5 fix comment above.
+			// flip {okVar} false rather than returning — see B5 fix comment above. Track each
+			// probed var by its NEW-order position so later passes don't have to re-derive the
+			// (Retained-only) index mapping themselves.
+			var retainedVarByPosition = new string?[change.NewChildren.Count];
 			int retainedIdx = 0;
 			for (int i = 0; i < change.NewChildren.Count; i++)
 			{
@@ -352,6 +393,7 @@ static class UpdateComponentCodeWriter
 				if (entry.Kind != ChildChangeKind.Retained)
 					continue;
 				var childVar = $"__rc_{changeIdx}_{retainedIdx++}";
+				retainedVarByPosition[i] = childVar;
 				codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{entry.OldNodeId}\", out var {childVar}))");
 				codeWriter.Indent++;
 				codeWriter.WriteLine($"{okVar} = false;");
@@ -361,40 +403,51 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"if ({okVar})");
 			using (PrePost.NewBlock(codeWriter))
 			{
-				// M13 optimization: if this change is a pure reorder (no adds, no removes),
-				// emit per-position Insert/RemoveAt patches so retained children keep their
-				// platform-side handler state (animation, focus, scroll position). Otherwise
-				// fall back to Clear + re-Add which is correct but destructive.
-				bool hasAdded = false;
+				// M13 optimization, extended to also cover same-slot Rebuilt entries: if this
+				// change has no genuine insertions or removals (only Retained/Rebuilt entries,
+				// each occupying the SAME slot count as before), emit per-position patches so
+				// unaffected retained children keep their platform-side handler state (animation,
+				// focus, scroll position) instead of a destructive Clear() + re-add of the WHOLE
+				// collection. A Rebuilt entry still needs its own stale instance removed and the
+				// freshly-created one inserted, but that is now scoped to just its one slot.
+				bool hasGenuineAdded = false;
 				for (int i = 0; i < change.NewChildren.Count; i++)
 				{
 					if (change.NewChildren[i].Kind == ChildChangeKind.Added)
-					{ hasAdded = true; break; }
+					{ hasGenuineAdded = true; break; }
 				}
-				bool pureReorder = !hasAdded && change.RemovedNodeIds.Count == 0;
+				bool canUseTargetedPath = !hasGenuineAdded && change.RemovedNodeIds.Count == 0;
 
-				if (pureReorder)
+				if (canUseTargetedPath)
 				{
-					// Build a stable per-index var lookup for the retained children we already probed.
-					var retainedVars = new List<string>(change.NewChildren.Count);
-					int rIdx = 0;
 					for (int i = 0; i < change.NewChildren.Count; i++)
 					{
-						retainedVars.Add($"__rc_{changeIdx}_{rIdx++}");
-					}
-
-					// Walk target positions; remove the existing element and re-insert at the
-					// correct index when it's out of place. RemoveAt + Insert preserves the
-					// IView instance and its handler — no Clear() and no re-handler-creation.
-					for (int i = 0; i < retainedVars.Count; i++)
-					{
-						var v = retainedVars[i];
-						codeWriter.WriteLine($"if ({i} < {layoutVar}!.Count && !object.ReferenceEquals({layoutVar}[{i}], {v}))");
-						using (PrePost.NewBlock(codeWriter))
+						var entry = change.NewChildren[i];
+						if (entry.Kind == ChildChangeKind.Retained)
 						{
-							codeWriter.WriteLine($"int __existing = {layoutVar}.IndexOf((global::Microsoft.Maui.IView){v}!);");
-							codeWriter.WriteLine($"if (__existing >= 0) {layoutVar}.RemoveAt(__existing);");
-							codeWriter.WriteLine($"{layoutVar}.Insert({i}, (global::Microsoft.Maui.IView){v}!);");
+							// Walk target positions; remove the existing element and re-insert at
+							// the correct index when it's out of place. RemoveAt + Insert preserves
+							// the IView instance and its handler — no Clear() and no
+							// re-handler-creation.
+							var v = retainedVarByPosition[i];
+							codeWriter.WriteLine($"if ({i} < {layoutVar}!.Count && !object.ReferenceEquals({layoutVar}[{i}], {v}))");
+							using (PrePost.NewBlock(codeWriter))
+							{
+								codeWriter.WriteLine($"int __existing = {layoutVar}.IndexOf((global::Microsoft.Maui.IView){v}!);");
+								codeWriter.WriteLine($"if (__existing >= 0) {layoutVar}.RemoveAt(__existing);");
+								codeWriter.WriteLine($"{layoutVar}.Insert({i}, (global::Microsoft.Maui.IView){v}!);");
+							}
+						}
+						else // Rebuilt: replace just this one slot, leaving every other child alone.
+						{
+							var staleVar = $"__stale_{changeIdx}_{i}";
+							codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{entry.NewNodeId}\", out var {staleVar}))");
+							using (PrePost.NewBlock(codeWriter))
+							{
+								codeWriter.WriteLine($"int __existing = {layoutVar}.IndexOf((global::Microsoft.Maui.IView){staleVar}!);");
+								codeWriter.WriteLine($"if (__existing >= 0) {layoutVar}.RemoveAt(__existing);");
+							}
+							EmitNewElement(codeWriter, entry.NewElement!, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, insertIndex: i);
 						}
 					}
 				}
@@ -403,17 +456,16 @@ static class UpdateComponentCodeWriter
 					// Clear children
 					codeWriter.WriteLine($"{layoutVar}!.Clear();");
 
-					// Re-add retained children and create+add new children in new order
-					int retainedIdx2 = 0;
+					// Re-add retained children and create+add new/rebuilt children in new order
 					for (int i = 0; i < change.NewChildren.Count; i++)
 					{
 						var entry = change.NewChildren[i];
 						if (entry.Kind == ChildChangeKind.Retained)
 						{
-							var childVar = $"__rc_{changeIdx}_{retainedIdx2++}";
+							var childVar = retainedVarByPosition[i];
 							codeWriter.WriteLine($"{layoutVar}.Add((global::Microsoft.Maui.IView){childVar}!);");
 						}
-						else // Added
+						else // Added or Rebuilt
 						{
 							var newElement = entry.NewElement!;
 							EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
@@ -422,12 +474,15 @@ static class UpdateComponentCodeWriter
 				}
 			}
 		}
-		else
+		else if (contentPropertyName != null)
 		{
 			// Content property container (ContentPage, ContentView, ScrollView, Border, etc.)
 			// These have a single content property — set directly instead of using Children.Add()
-			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName!, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 		}
+		// else: no content property at all (e.g. ResourceDictionary) and nothing to insert (the
+		// bail-out above already covers the case where there WAS something to insert) — this is a
+		// pure removal; nothing to emit here, the unregister loop below still runs.
 
 		// Unregister removed children and their entire subtrees.
 		// `change.RemovedNodeIds` already includes all descendants (collected by CollectSubtreeIds
@@ -444,6 +499,8 @@ static class UpdateComponentCodeWriter
 			codeWriter.Indent--;
 			codeWriter.WriteLine("}");
 		}
+
+		return true;
 	}
 
 	/// <summary>
@@ -548,7 +605,8 @@ static class UpdateComponentCodeWriter
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		INamedTypeSymbol rootType,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		int? insertIndex = null)
 	{
 		// Resolve XmlType → C# type
 		if (!element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol)
@@ -574,8 +632,12 @@ static class UpdateComponentCodeWriter
 		// Recursively create children
 		EmitNewElementChildren(codeWriter, element, varName, nodeId, newIds, existingNamedFields, ref addedCounter, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
-		// Add to parent layout
-		codeWriter.WriteLine($"{parentLayoutVar}.Add((global::Microsoft.Maui.IView){varName});");
+		// Add to parent layout — at a specific slot when replacing a single rebuilt child
+		// in place (insertIndex given), otherwise appended in iteration order (plain add).
+		if (insertIndex is { } slot)
+			codeWriter.WriteLine($"{parentLayoutVar}.Insert({slot}, (global::Microsoft.Maui.IView){varName});");
+		else
+			codeWriter.WriteLine($"{parentLayoutVar}.Add((global::Microsoft.Maui.IView){varName});");
 
 		// Register in component registry
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {varName});");
@@ -685,6 +747,20 @@ static class UpdateComponentCodeWriter
 					// Attached property on a new element — use SetValue pattern
 					var syntheticDiff = new PropertyDiff(kvp.Key, PropertyDiffKind.Set, rawValue);
 					TryEmitAttachedPropertyChange(codeWriter, syntheticDiff, varName, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+				}
+				else if (!propName.Contains('.')
+					&& typeSymbol.GetAllEvents(context: null).FirstOrDefault(e => e.Name == propName) is { } eventSymbol)
+				{
+					// XAML event wiring (e.g. Button.Clicked="OnClicked") — an event can only be
+					// subscribed via +=, never assigned with =. This matters here because a local
+					// rebuild (ChildChangeKind.Rebuilt) constructs a brand-new instance through
+					// this same helper, so an unrelated x:Name rename on a node that also has event
+					// attributes must still wire them up — otherwise the rebuilt instance would
+					// silently lose its event handlers.
+					if (IsValidCSharpIdentifier(rawValue))
+						codeWriter.WriteLine($"{varName}.{propName} += {rawValue};");
+					else
+						codeWriter.WriteLine($"// Event '{propName}' handler '{rawValue}' is not a valid identifier — skipped subscribe");
 				}
 				else
 				{
