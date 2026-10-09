@@ -17,6 +17,7 @@ BeforeAll {
             'Get-CiFixIssueField',
             'Invoke-CiFixAzdoRequest',
             'ConvertFrom-CiFixJsonResponse',
+            'Get-CiFixJsonArrayProperty',
             'Get-CiFixFailedTaskRecords',
             'Get-CiFixPreviousAttemptReferences',
             'Resolve-CiFixPreviousAttemptTaskProvenance',
@@ -73,6 +74,75 @@ Describe 'Get-CiFixAzdoEvidence' {
         $result.Count | Should -Be 1
         $result[0].logId | Should -Be 179
         $result[0].name | Should -BeExactly 'Build'
+    }
+
+    It 'selects partially succeeded and error-issue task logs' {
+        $timeline = [pscustomobject]@{
+            records = @(
+                [pscustomobject]@{
+                    id = '1'
+                    type = 'Task'
+                    result = 'partiallySucceeded'
+                    name = 'Partial'
+                    log = [pscustomobject]@{ id = 179 }
+                }
+                [pscustomobject]@{
+                    id = '2'
+                    type = 'Task'
+                    result = 'succeeded'
+                    name = 'Issue failure'
+                    issues = @([pscustomobject]@{ type = 'error' })
+                    log = [pscustomobject]@{ id = 180 }
+                }
+                [pscustomobject]@{
+                    id = '3'
+                    type = 'Task'
+                    result = 'succeeded'
+                    name = 'Passed'
+                    issues = @([pscustomobject]@{ type = 'warning' })
+                    log = [pscustomobject]@{ id = 181 }
+                }
+            )
+        }
+
+        $result = @(Get-CiFixFailedTaskRecords -Timeline $timeline)
+
+        $result.Count | Should -Be 2
+        $result.logId | Should -Be @(179, 180)
+    }
+
+    It 'marks structurally malformed timelines incomplete' -ForEach @(
+        @{ Name = 'empty body'; Content = '' }
+        @{ Name = 'JSON null'; Content = 'null' }
+        @{ Name = 'missing records'; Content = '{}' }
+        @{ Name = 'null records'; Content = '{"records":null}' }
+        @{ Name = 'object records'; Content = '{"records":{}}' }
+    ) {
+        $destination = Join-Path $TestDrive "malformed-timeline-$Name"
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                Content = $Content
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+            }
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeFalse
+        $result.timeline.status | Should -BeExactly 'malformed'
+        $result.timeline.error | Should -Match 'records'
+        $result.failedTaskCount | Should -Be 0
     }
 
     It 'retains available logs while marking missing logs incomplete' {
@@ -315,6 +385,86 @@ Describe 'Get-CiFixAzdoEvidence' {
                 $result.Succeeded | Should -BeFalse
                 $result.StatusCode | Should -Be 200
                 $result.Error | Should -Match 'deadline exhausted'
+            }
+            finally {
+                Stop-Job -Job $requestJob -ErrorAction SilentlyContinue
+                Remove-Job -Job $requestJob -Force
+            }
+        }
+        finally {
+            Wait-Job -Job $serverJob -Timeout 7 | Out-Null
+            Remove-Job -Job $serverJob -Force
+        }
+    }
+
+    It 'debits bytes consumed before a response body cancellation' {
+        $port = Get-Random -Minimum 30000 -Maximum 45000
+        $readyPath = Join-Path $TestDrive 'partial-stall-server.ready'
+        $serverJob = Start-Job -ArgumentList $port, $readyPath -ScriptBlock {
+            param($Port, $ReadyPath)
+
+            $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
+            $listener.Start()
+            Set-Content -LiteralPath $ReadyPath -Value 'ready'
+            try {
+                $client = $listener.AcceptTcpClient()
+                try {
+                    $stream = $client.GetStream()
+                    $reader = [IO.StreamReader]::new($stream, [Text.Encoding]::ASCII, $false, 1024, $true)
+                    while (($line = $reader.ReadLine()) -ne '') {
+                        if ($null -eq $line) {
+                            break
+                        }
+                    }
+                    $headers = "HTTP/1.1 200 OK`r`nContent-Length: 100`r`nConnection: close`r`n`r`n"
+                    $headerBytes = [Text.Encoding]::ASCII.GetBytes($headers)
+                    $stream.Write($headerBytes, 0, $headerBytes.Length)
+                    $bodyBytes = [Text.Encoding]::ASCII.GetBytes('hello')
+                    $stream.Write($bodyBytes, 0, $bodyBytes.Length)
+                    $stream.Flush()
+                    Start-Sleep -Seconds 5
+                }
+                finally {
+                    $client.Dispose()
+                }
+            }
+            finally {
+                $listener.Stop()
+            }
+        }
+
+        try {
+            $deadline = [DateTime]::UtcNow.AddSeconds(5)
+            while (-not (Test-Path -LiteralPath $readyPath) -and [DateTime]::UtcNow -lt $deadline) {
+                Start-Sleep -Milliseconds 25
+            }
+            Test-Path -LiteralPath $readyPath | Should -BeTrue
+
+            $requestJob = Start-Job -ArgumentList $scriptPath, $port -ScriptBlock {
+                param($ScriptPath, $Port)
+
+                . $ScriptPath
+                $script:RemainingDownloadBytes = 100
+                $script:MaxHttpAttempts = 1
+                $script:HttpTimeoutSeconds = 1
+                $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds(2)
+                $request = Invoke-CiFixAzdoRequest `
+                    -Uri "http://127.0.0.1:$Port/partial-stall" `
+                    -MaxBytes 100
+                [pscustomobject]@{
+                    Succeeded = $request.Succeeded
+                    StatusCode = $request.StatusCode
+                    Error = $request.Error
+                    RemainingDownloadBytes = $script:RemainingDownloadBytes
+                }
+            }
+            try {
+                Wait-Job -Job $requestJob -Timeout 3 | Should -Not -BeNullOrEmpty
+                $result = Receive-Job -Job $requestJob
+                $result.Succeeded | Should -BeFalse
+                $result.StatusCode | Should -Be 200
+                $result.Error | Should -Match 'deadline exhausted'
+                $result.RemainingDownloadBytes | Should -Be 95
             }
             finally {
                 Stop-Job -Job $requestJob -ErrorAction SilentlyContinue
@@ -755,6 +905,56 @@ Describe 'Get-CiFixAzdoEvidence' {
         @($requestedUris | Where-Object { $_ -match '/builds/600/timeline' }).Count | Should -Be 1
     }
 
+    It 'marks malformed latest-build query collections and selected IDs incomplete' -ForEach @(
+        @{ Name = 'missing value'; Content = '{}' }
+        @{ Name = 'null value'; Content = '{"value":null}' }
+        @{ Name = 'object value'; Content = '{"value":{}}' }
+        @{ Name = 'invalid selected ID'; Content = '{"value":[{"id":"invalid","result":"failed"}]}' }
+    ) {
+        $snapshotPath = Join-Path $TestDrive "latest-query-$Name.json"
+        $destination = Join-Path $TestDrive "latest-query-$Name"
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            issueEvidence = @{
+                authoritative = $true
+                issues = @(
+                    @{ issueNumber = 1; body = "- **Pipeline**: maui-pr" }
+                )
+            }
+            candidates = @()
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $snapshotPath
+
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            if ($Uri -match 'definitions=302') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = $Content
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            throw "Unexpected URI: $Uri"
+        }
+
+        $manifest = New-CiFixAzdoEvidence `
+            -InputPath $snapshotPath `
+            -Destination $destination `
+            -TargetBranch main `
+            -BuildLimit 5 `
+            -FailedLogLimit 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $manifest.pipelines[0].queryComplete | Should -BeFalse
+        $manifest.pipelines[0].error | Should -Not -BeNullOrEmpty
+        @($manifest.pipelines[0].builds).Count | Should -Be 0
+    }
+
     It 'prefetches head-SHA-matched PR builds for advance mode' {
         $snapshotPath = Join-Path $TestDrive 'candidates.json'
         $destination = Join-Path $TestDrive 'evidence'
@@ -825,6 +1025,60 @@ Describe 'Get-CiFixAzdoEvidence' {
         $manifest.pullRequests[0].builds[0].prSourceSha | Should -BeExactly $headSha
     }
 
+    It 'marks malformed PR-build query collections and matching invalid IDs incomplete' -ForEach @(
+        @{ Name = 'missing value'; Content = '{}' }
+        @{ Name = 'null value'; Content = '{"value":null}' }
+        @{ Name = 'object value'; Content = '{"value":{}}' }
+        @{
+            Name = 'matching invalid ID'
+            Content = '{"value":[{"id":"invalid","triggerInfo":{"pr.sourceSha":"1111111111111111111111111111111111111111"}}]}'
+        }
+    ) {
+        $snapshotPath = Join-Path $TestDrive "pr-query-$Name.json"
+        $destination = Join-Path $TestDrive "pr-query-$Name"
+        $headSha = '1111111111111111111111111111111111111111'
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            issueEvidence = @{
+                authoritative = $true
+                issues = @()
+            }
+            candidates = @(
+                @{ prNumber = 123; headSha = $headSha }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $snapshotPath
+
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            if ($Uri -match 'refs%2Fpull%2F123%2Fmerge') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = $Content
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            throw "Unexpected URI: $Uri"
+        }
+
+        $manifest = New-CiFixAzdoEvidence `
+            -InputPath $snapshotPath `
+            -Destination $destination `
+            -TargetBranch main `
+            -BuildLimit 5 `
+            -FailedLogLimit 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $manifest.pullRequests[0].queryComplete | Should -BeFalse
+        $manifest.pullRequests[0].error | Should -Not -BeNullOrEmpty
+        @($manifest.pullRequests[0].builds).Count | Should -Be 0
+    }
+
     It 'fails closed when the global build bound is reached' {
         $evidence = @{}
         $evidence[1L] = [pscustomobject]@{ buildId = 1; complete = $true }
@@ -855,6 +1109,15 @@ Describe 'Get-CiFixAzdoEvidence' {
         $result.Attempts | Should -Be 0
         $result.Error | Should -BeExactly 'total download limit exhausted'
     }
+
+    It 'debits downloaded bytes during each bounded read rather than after success' {
+        $source = Get-Content -Raw -LiteralPath $scriptPath
+
+        $source | Should -Match '\$readLimit\s*=\s*\[int\]\[Math\]::Min'
+        $source | Should -Match 'ReadAsync\(\s*\$buffer,\s*0,\s*\$readLimit,'
+        $source | Should -Match '\$script:RemainingDownloadBytes\s*-=\s*\$read'
+        $source | Should -Not -Match '\$script:RemainingDownloadBytes\s*-=\s*\$bytes\.Length'
+    }
 }
 
 Describe 'CI-fixer workflow evidence wiring' {
@@ -871,6 +1134,10 @@ Describe 'CI-fixer workflow evidence wiring' {
             $workflow | Should -Match 'Use only the earlier-attempt logs already'
             $workflow | Should -Match 'Use only the recent-build logs'
             $workflow | Should -Not -Match 'Fetch those failed earlier-attempt log\(s\)'
+            $workflow | Should -Match 'Inspect the newest completed build first'
+            $workflow | Should -Match '(?s)If that newest build.*?`evidenceComplete` is false'
+            $workflow | Should -Not -Match 'Pick the latest completed build whose `evidenceComplete` is true'
+            $workflow | Should -Match 'Do not skip an incomplete newest matching PR build'
         }
 
         $mainWorkflow | Should -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/main'"

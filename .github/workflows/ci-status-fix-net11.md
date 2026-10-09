@@ -1704,7 +1704,7 @@ Azure downloader from the agent shell.
   historical build may be 404 while the latest build and its failed-task logs
   are fully available.
 - If the manifest is missing/malformed, the pipeline query is incomplete, or
-  every relevant recent build is incomplete, register and emit
+  the newest relevant completed build is incomplete, register and emit
   `report_incomplete` once with the exact manifest error/status and stop. Do not
   turn a retrieval failure into a successful/noop or fixed-in-latest outcome.
 
@@ -1715,9 +1715,11 @@ own build IS the reproduction: use the manifest's `pullRequests[]` entry for
 requiring BOTH `branchName == refs/pull/<P>/merge` AND
 `triggerInfo["pr.sourceSha"] == C.headSha`; do not use the merge-SHA
 `sourceVersion` as PR-head identity. Run the SAME manifest/log analysis against
-those builds, extract the still-failing signature, and carry it into Step 5.
-Skip the net11.0-build list in ADVANCE mode. If the matching PR query/build
-evidence is incomplete, report incomplete rather than querying Azure ad hoc.
+the newest matching PR build, extract the still-failing signature, and carry it
+into Step 5. Do not skip an incomplete newest matching PR build in favor of an
+older one. Skip the net11.0-build list in ADVANCE mode. If the matching PR
+query/build evidence is incomplete, report incomplete rather than querying
+Azure ad hoc.
 
 1. Map the issue's `Pipeline` to its definition ID (302 / 314 / 313).
 2. Read that pipeline's `net11.0` entry from the evidence manifest. It contains
@@ -1730,8 +1732,10 @@ evidence is incomplete, report incomplete rather than querying Azure ad hoc.
      /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
-3. Pick the latest completed build whose `evidenceComplete` is true. Read its
-   timeline and failed-task log inventory from the manifest:
+3. Inspect the newest completed build first. If that newest build's
+   `evidenceComplete` is false, register and emit `report_incomplete`; do not
+   skip it and use an older build. Otherwise read its timeline and failed-task
+   log inventory from the manifest:
 
    ```bash
    build_id=<id-from-above>

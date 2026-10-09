@@ -78,12 +78,20 @@ function Invoke-CiFixAzdoRequest {
         }
     }
 
-    $requestByteLimit = [int][Math]::Min([long]$MaxBytes, $script:RemainingDownloadBytes)
     $lastError = $null
     $lastStatusCode = $null
     $lastRedirectLocation = $null
     $attemptsMade = 0
     for ($attempt = 1; $attempt -le $script:MaxHttpAttempts; $attempt++) {
+        if ($script:RemainingDownloadBytes -le 0) {
+            $lastError = 'total download limit exhausted'
+            break
+        }
+
+        $availableDownloadBytes = $script:RemainingDownloadBytes
+        $requestDownloadLimit = [long][Math]::Min(
+            ([long]$MaxBytes + 1L),
+            $availableDownloadBytes)
         $producerRemaining = $script:ProducerDeadlineUtc - [DateTime]::UtcNow
         if ($producerRemaining -le [TimeSpan]::Zero) {
             $lastError = 'producer deadline exhausted'
@@ -149,30 +157,63 @@ function Invoke-CiFixAzdoRequest {
                         $memory = [System.IO.MemoryStream]::new()
                         try {
                             $truncated = $false
-                            while (($read = $stream.ReadAsync(
-                                        $buffer,
-                                        0,
-                                        $buffer.Length,
-                                        $cancellation.Token).GetAwaiter().GetResult()) -gt 0) {
-                                $remaining = ($requestByteLimit + 1) - [int]$memory.Length
-                                if ($remaining -le 0) {
+                            $truncationError = ''
+                            $downloadedThisAttempt = 0L
+                            $declaredContentLength = $response.Content.Headers.ContentLength
+                            while ($true) {
+                                $remainingDownloadBytes = $requestDownloadLimit - $downloadedThisAttempt
+                                if ($remainingDownloadBytes -le 0) {
                                     $truncated = $true
+                                    $truncationError = 'total download limit exhausted while reading response'
                                     break
                                 }
 
-                                $writeCount = [Math]::Min($read, $remaining)
-                                $memory.Write($buffer, 0, $writeCount)
-                                if ($memory.Length -gt $requestByteLimit) {
+                                $readLimit = [int][Math]::Min(
+                                    [long]$buffer.Length,
+                                    $remainingDownloadBytes)
+                                $read = $stream.ReadAsync(
+                                    $buffer,
+                                    0,
+                                    $readLimit,
+                                    $cancellation.Token).GetAwaiter().GetResult()
+                                if ($read -le 0) {
+                                    if ($null -ne $declaredContentLength -and
+                                        $downloadedThisAttempt -lt $declaredContentLength) {
+                                        throw [IO.EndOfStreamException]::new(
+                                            "response ended after $downloadedThisAttempt of $declaredContentLength declared bytes")
+                                    }
+                                    break
+                                }
+
+                                $downloadedThisAttempt += $read
+                                $script:RemainingDownloadBytes -= $read
+                                $remainingContentBytes = [long]$MaxBytes - $memory.Length
+                                if ($remainingContentBytes -gt 0) {
+                                    $writeCount = [int][Math]::Min([long]$read, $remainingContentBytes)
+                                    $memory.Write($buffer, 0, $writeCount)
+                                }
+
+                                if ($downloadedThisAttempt -gt $MaxBytes) {
                                     $truncated = $true
+                                    $truncationError = "response exceeded the $MaxBytes-byte limit"
+                                    break
+                                }
+
+                                if ($downloadedThisAttempt -ge $requestDownloadLimit) {
+                                    if ($null -eq $declaredContentLength -or
+                                        $declaredContentLength -gt $downloadedThisAttempt) {
+                                        $truncated = $true
+                                        $truncationError = if ($availableDownloadBytes -le $MaxBytes) {
+                                            'total download limit exhausted while reading response'
+                                        } else {
+                                            "response exceeded the $MaxBytes-byte limit"
+                                        }
+                                    }
                                     break
                                 }
                             }
 
                             $bytes = $memory.ToArray()
-                            if ($bytes.Length -gt $requestByteLimit) {
-                                $bytes = $bytes[0..($requestByteLimit - 1)]
-                            }
-                            $script:RemainingDownloadBytes -= $bytes.Length
 
                             return [pscustomobject]@{
                                 Succeeded = -not $truncated
@@ -180,15 +221,7 @@ function Invoke-CiFixAzdoRequest {
                                 RedirectLocation = $redirectLocation
                                 Content = [Text.Encoding]::UTF8.GetString($bytes)
                                 Truncated = $truncated
-                                Error = if ($truncated) {
-                                    if ($requestByteLimit -lt $MaxBytes) {
-                                        'total download limit exhausted while reading response'
-                                    } else {
-                                        "response exceeded the $MaxBytes-byte limit"
-                                    }
-                                } else {
-                                    ''
-                                }
+                                Error = if ($truncated) { $truncationError } else { '' }
                                 Attempts = $attempt
                             }
                         }
@@ -284,6 +317,48 @@ function ConvertFrom-CiFixJsonResponse {
     }
 }
 
+function Get-CiFixJsonArrayProperty {
+    param(
+        [AllowNull()]$Value,
+        [Parameter(Mandatory = $true)][string]$PropertyName,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    if ($Value -isnot [pscustomobject]) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Items = @()
+            Error = "$Description must be a JSON object containing a '$PropertyName' array"
+        }
+    }
+
+    $property = $Value.PSObject.Properties[$PropertyName]
+    if ($null -eq $property -or
+        $null -eq $property.Value -or
+        $property.Value.GetType() -ne [object[]]) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Items = @()
+            Error = "$Description '$PropertyName' must be a JSON array"
+        }
+    }
+
+    $items = @($property.Value)
+    if (@($items | Where-Object { $_ -isnot [pscustomobject] }).Count -gt 0) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Items = @()
+            Error = "$Description '$PropertyName' contains a non-object entry"
+        }
+    }
+
+    return [pscustomobject]@{
+        Succeeded = $true
+        Items = $items
+        Error = ''
+    }
+}
+
 function Get-CiFixFailedTaskRecords {
     param(
         [AllowNull()]$Timeline,
@@ -300,8 +375,13 @@ function Get-CiFixFailedTaskRecords {
     $seen = @{}
     $records = @()
     foreach ($record in @($Timeline.records)) {
+        $hasErrorIssue = @(
+            @($record.issues) |
+                Where-Object { [string]$_.type -ceq 'error' }).Count -gt 0
         if ([string]$record.type -cne 'Task' -or
-            [string]$record.result -cne 'failed') {
+            ([string]$record.result -cne 'failed' -and
+                [string]$record.result -cne 'partiallySucceeded' -and
+                -not $hasErrorIssue)) {
             continue
         }
 
@@ -508,27 +588,40 @@ function Get-CiFixBuildEvidence {
     $timelineResult = ConvertFrom-CiFixJsonResponse `
         -Response $timelineResponse `
         -Description "build $BuildId timeline"
+    $timelineRecords = if ($timelineResult.Succeeded) {
+        Get-CiFixJsonArrayProperty `
+            -Value $timelineResult.Value `
+            -PropertyName 'records' `
+            -Description "build $BuildId timeline"
+    } else {
+        [pscustomobject]@{
+            Succeeded = $false
+            Items = @()
+            Error = $timelineResult.Error
+        }
+    }
+    $timelineValid = $timelineResult.Succeeded -and $timelineRecords.Succeeded
     $timelinePath = Join-Path $buildDirectory 'timeline.json'
     if ($timelineResponse.Content.Length -gt 0) {
         [IO.File]::WriteAllText($timelinePath, $timelineResponse.Content, [Text.UTF8Encoding]::new($false))
     }
 
     $failedTasks = @()
-    $complete = [bool]$timelineResult.Succeeded
-    $allFailedTasks = if ($timelineResult.Succeeded) {
+    $complete = [bool]$timelineValid
+    $allFailedTasks = if ($timelineValid) {
         @(Get-CiFixFailedTaskRecords `
                 -Timeline $timelineResult.Value `
                 -SourceTimelineId ([string]$timelineResult.Value.id))
     } else {
         @()
     }
-    $previousAttemptReferences = if ($timelineResult.Succeeded) {
+    $previousAttemptReferences = if ($timelineValid) {
         @(Get-CiFixPreviousAttemptReferences -Timeline $timelineResult.Value)
     } else {
         @()
     }
     $previousAttempts = @()
-    $previousAttemptsComplete = [bool]$timelineResult.Succeeded
+    $previousAttemptsComplete = [bool]$timelineValid
     $invalidPreviousAttemptReferences = @($previousAttemptReferences | Where-Object { -not $_.valid })
     $validPreviousAttemptTimelines = @(
         $previousAttemptReferences |
@@ -569,6 +662,20 @@ function Get-CiFixBuildEvidence {
         $previousTimelineResult = ConvertFrom-CiFixJsonResponse `
             -Response $previousTimelineResponse `
             -Description "build $BuildId previous-attempt timeline $timelineId"
+        $previousTimelineRecords = if ($previousTimelineResult.Succeeded) {
+            Get-CiFixJsonArrayProperty `
+                -Value $previousTimelineResult.Value `
+                -PropertyName 'records' `
+                -Description "build $BuildId previous-attempt timeline $timelineId"
+        } else {
+            [pscustomobject]@{
+                Succeeded = $false
+                Items = @()
+                Error = $previousTimelineResult.Error
+            }
+        }
+        $previousTimelineValid = $previousTimelineResult.Succeeded -and
+            $previousTimelineRecords.Succeeded
         $previousTimelineRelativePath = "build_$BuildId/previous_timeline_$timelineId.json"
         $previousTimelinePath = Join-Path $OutputDirectory $previousTimelineRelativePath
         if ($previousTimelineResponse.Content.Length -gt 0) {
@@ -579,8 +686,8 @@ function Get-CiFixBuildEvidence {
         }
 
         $timelineRecordIds = @{}
-        if ($previousTimelineResult.Succeeded) {
-            foreach ($timelineRecord in @($previousTimelineResult.Value.records)) {
+        if ($previousTimelineValid) {
+            foreach ($timelineRecord in $previousTimelineRecords.Items) {
                 $timelineRecordIds[[string]$timelineRecord.id] = $true
             }
         }
@@ -588,7 +695,7 @@ function Get-CiFixBuildEvidence {
             $references |
                 Where-Object { -not $timelineRecordIds.ContainsKey([string]$_.recordId) } |
                 ForEach-Object recordId)
-        $previousTaskResolution = if ($previousTimelineResult.Succeeded -and $missingRecordIds.Count -eq 0) {
+        $previousTaskResolution = if ($previousTimelineValid -and $missingRecordIds.Count -eq 0) {
             Resolve-CiFixPreviousAttemptTaskProvenance `
                 -Timeline $previousTimelineResult.Value `
                 -References $references `
@@ -601,7 +708,7 @@ function Get-CiFixBuildEvidence {
         } else {
             @()
         }
-        if (-not $previousTimelineResult.Succeeded -or
+        if (-not $previousTimelineValid -or
             $missingRecordIds.Count -gt 0 -or
             ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) -or
             $previousFailedTasks.Count -eq 0) {
@@ -618,13 +725,15 @@ function Get-CiFixBuildEvidence {
             referencedByName = if ($references.Count -eq 1) { $references[0].referencedByName } else { $null }
             referenceCount = $references.Count
             references = @($references)
-            status = if ($previousTimelineResult.Succeeded -and
+            status = if ($previousTimelineValid -and
                 $missingRecordIds.Count -eq 0 -and
                 $previousTaskResolution.complete -and
                 $previousFailedTasks.Count -gt 0) {
                 'available'
             } elseif ($previousTimelineResponse.Truncated) {
                 'truncated'
+            } elseif ($previousTimelineResult.Succeeded -and -not $previousTimelineRecords.Succeeded) {
+                'malformed'
             } elseif ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) {
                 'unavailable'
             } else {
@@ -637,6 +746,8 @@ function Get-CiFixBuildEvidence {
             failedTaskCount = $previousFailedTasks.Count
             error = if (-not $previousTimelineResult.Succeeded) {
                 $previousTimelineResult.Error
+            } elseif (-not $previousTimelineRecords.Succeeded) {
+                $previousTimelineRecords.Error
             } elseif ($missingRecordIds.Count -gt 0) {
                 "referenced previous-attempt record(s) not found: $($missingRecordIds -join ', ')"
             } elseif ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) {
@@ -785,12 +896,24 @@ function Get-CiFixBuildEvidence {
         buildId = $BuildId
         complete = $complete
         timeline = [pscustomobject]@{
-            status = if ($timelineResult.Succeeded) { 'available' } elseif ($timelineResponse.Truncated) { 'truncated' } else { 'error' }
+            status = if ($timelineValid) {
+                'available'
+            } elseif ($timelineResponse.Truncated) {
+                'truncated'
+            } elseif ($timelineResult.Succeeded -and -not $timelineRecords.Succeeded) {
+                'malformed'
+            } else {
+                'error'
+            }
             httpStatus = $timelineResponse.StatusCode
             redirectLocation = $timelineResponse.RedirectLocation
             attempts = $timelineResponse.Attempts
             path = if ($timelineResponse.Content.Length -gt 0) { "build_$BuildId/timeline.json" } else { $null }
-            error = $timelineResult.Error
+            error = if (-not $timelineResult.Succeeded) {
+                $timelineResult.Error
+            } else {
+                $timelineRecords.Error
+            }
         }
         failedTaskCount = $allFailedTasks.Count
         fetchedFailedTaskCount = $fetchedFailedTaskCount
@@ -940,15 +1063,35 @@ function New-CiFixAzdoEvidence {
         $latestResult = ConvertFrom-CiFixJsonResponse `
             -Response $latestResponse `
             -Description "$pipeline latest-build query"
+        $latestCollection = if ($latestResult.Succeeded) {
+            Get-CiFixJsonArrayProperty `
+                -Value $latestResult.Value `
+                -PropertyName 'value' `
+                -Description "$pipeline latest-build query"
+        } else {
+            [pscustomobject]@{
+                Succeeded = $false
+                Items = @()
+                Error = $latestResult.Error
+            }
+        }
+        $latestQueryErrors = [Collections.Generic.List[string]]::new()
+        if (-not $latestCollection.Succeeded) {
+            $latestQueryErrors.Add($latestCollection.Error)
+        }
         $latestBuilds = @()
-        if ($latestResult.Succeeded -and $null -ne $latestResult.Value.value) {
-            foreach ($build in @($latestResult.Value.value | Select-Object -First $BuildLimit)) {
+        if ($latestResult.Succeeded -and $latestCollection.Succeeded) {
+            $selectedBuildIndex = 0
+            foreach ($build in @($latestCollection.Items | Select-Object -First $BuildLimit)) {
+                $selectedBuildIndex++
                 $buildId = 0L
                 if (-not [long]::TryParse(
                         [string]$build.id,
                         [Globalization.NumberStyles]::None,
                         [Globalization.CultureInfo]::InvariantCulture,
                         [ref]$buildId) -or $buildId -le 0) {
+                    $latestQueryErrors.Add(
+                        "$pipeline latest-build query selected row $selectedBuildIndex has a missing or invalid build ID")
                     continue
                 }
 
@@ -977,11 +1120,17 @@ function New-CiFixAzdoEvidence {
             pipeline = $pipeline
             definitionId = $definitionId
             branch = $TargetBranch
-            queryComplete = [bool]$latestResult.Succeeded
+            queryComplete = $latestResult.Succeeded -and
+                $latestCollection.Succeeded -and
+                $latestQueryErrors.Count -eq 0
             httpStatus = $latestResponse.StatusCode
             redirectLocation = $latestResponse.RedirectLocation
             attempts = $latestResponse.Attempts
-            error = $latestResult.Error
+            error = if (-not $latestResult.Succeeded) {
+                $latestResult.Error
+            } else {
+                $latestQueryErrors -join '; '
+            }
             builds = @($latestBuilds)
         }
     }
@@ -1019,9 +1168,27 @@ function New-CiFixAzdoEvidence {
         $queryResult = ConvertFrom-CiFixJsonResponse `
             -Response $queryResponse `
             -Description "PR #$prNumber completed-build query"
+        $queryCollection = if ($queryResult.Succeeded) {
+            Get-CiFixJsonArrayProperty `
+                -Value $queryResult.Value `
+                -PropertyName 'value' `
+                -Description "PR #$prNumber completed-build query"
+        } else {
+            [pscustomobject]@{
+                Succeeded = $false
+                Items = @()
+                Error = $queryResult.Error
+            }
+        }
+        $queryErrors = [Collections.Generic.List[string]]::new()
+        if (-not $queryCollection.Succeeded) {
+            $queryErrors.Add($queryCollection.Error)
+        }
         $matchingBuilds = @()
-        if ($queryResult.Succeeded -and $null -ne $queryResult.Value.value) {
-            foreach ($build in @($queryResult.Value.value)) {
+        if ($queryResult.Succeeded -and $queryCollection.Succeeded) {
+            $queryRowIndex = 0
+            foreach ($build in $queryCollection.Items) {
+                $queryRowIndex++
                 $sourceSha = [string]$build.triggerInfo.'pr.sourceSha'
                 if (-not $sourceSha.Equals($headSha, [StringComparison]::OrdinalIgnoreCase)) {
                     continue
@@ -1033,6 +1200,8 @@ function New-CiFixAzdoEvidence {
                         [Globalization.NumberStyles]::None,
                         [Globalization.CultureInfo]::InvariantCulture,
                         [ref]$buildId) -or $buildId -le 0) {
+                    $queryErrors.Add(
+                        "PR #$prNumber completed-build query matching row $queryRowIndex has a missing or invalid build ID")
                     continue
                 }
 
@@ -1063,11 +1232,17 @@ function New-CiFixAzdoEvidence {
         $pullRequestEvidence += [pscustomobject]@{
             prNumber = $prNumber
             headSha = $headSha
-            queryComplete = [bool]$queryResult.Succeeded
+            queryComplete = $queryResult.Succeeded -and
+                $queryCollection.Succeeded -and
+                $queryErrors.Count -eq 0
             httpStatus = $queryResponse.StatusCode
             redirectLocation = $queryResponse.RedirectLocation
             attempts = $queryResponse.Attempts
-            error = $queryResult.Error
+            error = if (-not $queryResult.Succeeded) {
+                $queryResult.Error
+            } else {
+                $queryErrors -join '; '
+            }
             builds = @($matchingBuilds)
         }
     }
