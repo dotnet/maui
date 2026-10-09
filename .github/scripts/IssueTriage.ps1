@@ -469,6 +469,9 @@ function Get-Snapshot {
     $labelDefinitions = @($catalog | ForEach-Object {
         [ordered]@{ id = $_.id; name = $_.name; description = $_.description; category = Get-Category $_.name }
     })
+    foreach ($source in $sources) {
+        $source.prose = Get-Prose $source.body
+    }
     $snapshot = [ordered]@{
         schemaVersion = 1; repository = $Repository; issueNumber = $IssueNumber
         actor = $Actor; commandCommentId = $CommandCommentId; policyHash = $policyHash
