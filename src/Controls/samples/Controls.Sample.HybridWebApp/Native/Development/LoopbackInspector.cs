@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
-using WebKit;
 
 namespace Maui.Controls.Sample.HybridWebApp;
 
@@ -152,11 +151,11 @@ sealed class LoopbackInspector : IDisposable
 
 	async Task<(int Status, string Mime, byte[] Bytes)> ProbeAsync(string path)
 	{
-		if (_session.IsDisposed || _session.NativeView is not { } native || _view.Handler?.PlatformView != native)
+		if (_session.IsDisposed || !_session.Platform.IsAttached(_view))
 			throw new InvalidOperationException("The native WebView is not attached.");
 
 		if (path == "/state")
-			return (200, "application/json", State(native));
+			return (200, "application/json", State());
 		if (path == "/source")
 		{
 			var source = await _view.EvaluateJavaScriptAsync("document.documentElement.outerHTML");
@@ -171,10 +170,7 @@ sealed class LoopbackInspector : IDisposable
 		}
 		if (path == "/snapshot")
 		{
-			using var configuration = new WKSnapshotConfiguration { Rect = native.Bounds, AfterScreenUpdates = true };
-			using var image = await native.TakeSnapshotAsync(configuration);
-			using var png = image.AsPNG() ?? throw new InvalidOperationException("Snapshot PNG encoding failed.");
-			return (200, "image/png", png.ToArray());
+			return (200, "image/png", await _session.Platform.SnapshotAsync());
 		}
 		return (404, "text/plain", Encoding.UTF8.GetBytes("Unknown read-only probe."));
 	}
@@ -183,12 +179,12 @@ sealed class LoopbackInspector : IDisposable
 	{
 		if (value is null)
 			throw new InvalidOperationException("The JavaScript probe returned no result.");
-		// HybridWebView's Apple evaluator removes the surrounding JSON quotes, but retains string escapes.
+		// Controls strips JSON string quotes on all platforms; retained escapes need decoding.
 		using var document = JsonDocument.Parse("\"" + value + "\"");
 		return document.RootElement.GetString()!;
 	}
 
-	byte[] State(WKWebView native)
+	byte[] State()
 	{
 		using var stream = new MemoryStream();
 		using (var json = new Utf8JsonWriter(stream))
@@ -197,7 +193,7 @@ sealed class LoopbackInspector : IDisposable
 			json.WriteNumber("pid", Environment.ProcessId);
 			json.WriteString("startupId", MauiProgram.StartupId);
 			json.WriteString("startedAt", MauiProgram.StartedAt);
-			json.WriteString("uri", native.Url?.AbsoluteString);
+			json.WriteString("uri", _session.Platform.Uri);
 			json.WriteString("mode", _session.Mode);
 			var metrics = _session.GetMetrics();
 			json.WriteNumber("requests", metrics.Total);

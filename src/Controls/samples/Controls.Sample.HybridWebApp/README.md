@@ -1,505 +1,230 @@
 # Hybrid web app
 
-This sample is being implemented to demonstrate Vite live edits in a .NET 11
-Mac Catalyst app using `HybridWebView`.
+A small .NET 11 `HybridWebView` app with a sibling Vite/TypeScript frontend.
+The native project uses the standard `$(MauiSamplePlatforms)` selection and
+includes Android, iOS, Mac Catalyst and WinUI heads (and optional Tizen when
+selected by the repository). iOS and Mac Catalyst use the current template's
+`MauiUISceneDelegate` and single-scene manifest, without a storyboard or duplicate
+lifecycle forwarding.
 
-The Debug development path retains the native app's virtual app origin while
-loading assets from a local Vite server. Vite owns frontend updates; editing
-HTML, CSS, or TypeScript does not require rebuilding the native app.
-Without development configuration, the host loads its packaged fallback page.
-Release builds contain neither development forwarding nor the inspector.
+## Run it
 
-## Layout
+From the repository root, after the one-time prerequisites below:
 
-```text
-Controls.Sample.HybridWebApp/
-  README.md
-  run-demo.sh
-  Native/
-    Maui.Controls.Sample.HybridWebApp.csproj
-    Development/                 Debug-only provider and inspector
-    Platforms/MacCatalyst/
-    Resources/Raw/wwwroot/index.html
-  Web/
-    package.json
-    package-lock.json
-    vite.config.ts
-    index.html
-    src/
+```powershell
+# PowerShell 7. On a Mac the default is Mac Catalyst; on Windows it is WinUI.
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1
+
+# Existing in-tree Debug build:
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform maccatalyst -NoBuild
+
+# Explicitly select your own booted emulator or simulator:
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform android -Device emulator-5554
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform ios -Device YOUR-SIMULATOR-UDID
+
+# Windows host:
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform windows
 ```
 
-The native and frontend project roots are separate so Node dependencies are not
-implicitly discovered or packaged by the .NET project.
+The script can be invoked from any working directory. `-Platform` chooses the
+explicit target framework; `-Device` is passed to the SDK's `--device` option.
+The mobile platforms require a device identifier rather than guessing which
+of somebody else's running devices to use.
 
-## Native packaged-content smoke check
+**Mac Catalyst and Android together:** launch Mac Catalyst in one terminal,
+then run this in a second terminal:
 
-Run commands below from the repository root on a Mac. Use the .NET 11 SDK pinned
-in the repository's `global.json`, a compatible Mac Catalyst workload, and the
-Xcode version required by that workload. The repository wrapper acquires the
-pinned SDK locally; it does **not** install Apple workloads. Do not substitute a
-different MAUI package version to work around a missing workload.
+```powershell
+pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Platform android -Device emulator-5554 -UseExistingWeb
+```
 
-Select a compatible installed Xcode **per process**, without changing global
-`xcode-select`. For the pinned Apple 26.5 packs, validation succeeded with
-`/Applications/Xcode-26.6.0.app`; the globally selected Xcode 27.0 failed while
-building the framework's native interop project. The native build/run examples
-below show the validated `DEVELOPER_DIR` override. Adjust that path to your
-compatible installation rather than switching the machine-wide selection.
+`-UseExistingWeb` shares the already-running sample Vite server; it does not
+start or stop it. The same HTML/CSS/TypeScript edits update both native apps.
+For Android, `adb -s DEVICE reverse tcp:5173 tcp:5173` makes the host's Vite HTTP
+and HMR WebSocket available at the selected device's loopback address. Set
+`ANDROID_HOME` or put `adb` on PATH. The reverse mapping is intentionally left
+in place so other sample sessions on that device can continue using it.
+iOS simulators share the Mac's loopback network. Physical iOS devices need a
+separate network configuration, which this loopback-only demo does not provide.
 
-If that local SDK does not have Mac Catalyst packs, acquire the repository-pinned
-workload manifests without replacing the SDK, then install only Mac Catalyst into
-the local SDK:
+The owner terminal keeps Vite alive even if desktop `dotnet run` returns after
+launching the window. Close the native app when finished, then press Ctrl+C in
+the owner terminal: cleanup stops only its own child process tree, not another
+terminal's server or unrelated apps. The short PS1 does not discover native
+process identities or generate inspection tokens. Startup/readiness, server
+exit and SDK build/launch failures are reported with nonzero exit codes.
+
+### What runs what? Is this like Tauri?
+
+In Tauri development, the CLI can run a configured frontend development command
+(`beforeDevCommand`), then build and launch the native shell against its configured
+`devUrl`. The target/device comes from the selected desktop or mobile command and
+target options, not from the web frontend. It does not automatically launch every
+platform.
+
+Here, the small PS1 fills that local orchestration role:
+
+```text
+run-demo.ps1
+  +-- npm run dev in Web/       Vite owns JS/HTML/CSS watching and HMR
+  +-- dotnet run in Native/     repository SDK owns native build/deploy/launch
+        +-- HybridWebView keeps its virtual app origin
+              ordinary assets --> Debug forwarding --> Vite on 127.0.0.1:5173
+              HMR WebSocket ------------------------> Vite on 127.0.0.1:5173
+              reserved bridge routes ---------------> MAUI, unchanged
+```
+
+`-Platform maccatalyst`, `android`, `ios` or `windows` selects one app per
+invocation. Use separate invocations to launch multiple platforms, sharing Vite
+with `-UseExistingWeb`. There is no extra JavaScript watcher or C# Hot Reload.
+
+## One-time prerequisites
+
+Use the SDK pinned by `global.json`, repository-pinned platform workloads, and
+the current selected Xcode (`/Applications/Xcode.app`, Xcode 27 for the current
+validation). Do not downgrade Xcode to work around the native interop deployment
+target: the framework project now specifies the current Mac Catalyst minimum.
+The sample inherits repository OS minima (Mac Catalyst 17, Android 24, iOS 13,
+Windows 10.0.17763). No global SDK/workload or Xcode changes are needed.
+
+The repo wrapper acquires its SDK locally, but platform workloads are separate.
+For a fresh Mac checkout, acquire the pinned manifests, install the needed local
+workloads, then build the repository tasks:
 
 ```sh
 bash eng/common/dotnet.sh --version
 bash eng/common/dotnet.sh build src/DotNet/DotNet.csproj \
   -p:InstallDotNet=false -p:InstallWorkloadPacks=false
-bash eng/common/dotnet.sh workload install maccatalyst \
+bash eng/common/dotnet.sh workload install maccatalyst ios android \
   --skip-manifest-update --configfile NuGet.Config
-```
-
-Build the repository tasks first, then the native app. The task-build selectors
-avoid requiring unrelated Apple or Android workloads just for this sample:
-
-```sh
 bash eng/common/dotnet.sh build Microsoft.Maui.BuildTasks.slnf \
-  -p:IncludeAndroidTargetFrameworks=false \
-  -p:IncludeIosTargetFrameworks=false \
-  -p:IncludeMacCatalystTargetFrameworks=false \
-  -p:IncludeMacOSTargetFrameworks=false
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
-  -f net11.0-maccatalyst \
-  -p:IncludeAndroidTargetFrameworks=false \
-  -p:IncludeIosTargetFrameworks=false \
-  -p:IncludeMacOSTargetFrameworks=false \
-  --disable-build-servers
-```
-
-Launch the packaged app without Node or a Vite server:
-
-```sh
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-bash eng/common/dotnet.sh run --project src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
-  -f net11.0-maccatalyst \
-  -p:IncludeAndroidTargetFrameworks=false \
-  -p:IncludeIosTargetFrameworks=false \
-  -p:IncludeMacOSTargetFrameworks=false \
-  --no-build --no-restore
-```
-
-The page should say **HybridWebView is loading bundled content** under
-`app://0.0.0.1/`. Native startup writes one `HYBRIDWEBAPP_START` log line containing
-the actual process ID, a unique startup identity, and the UTC time. No JavaScript
-invocation is required to produce this marker.
-
-In the validated setup, `dotnet run` returns after launching the native process;
-its exit does not mean the app window has closed. Close the app when finished.
-The root launcher tracks authenticated native process/startup identity instead
-of treating the SDK runner's lifetime as the app's.
-
-The project inherits the common sample `Directory.Build.props`/targets. By default
-it references the framework source in this checkout. It also follows the sibling
-samples' `UseWorkload=true`/`MauiVersion` convention for explicitly selected
-workload-package builds; that path is not the in-tree validation path. Development
-forwarding refuses workload-package mode, which may lack the new internal
-stopped-task guard. Packaged content does not require that guard.
-
-This first host targets only Mac Catalyst. It is intentionally not added to
-`Microsoft.Maui.sln` or the general samples solution filter: restoring/building
-those surfaces must not require Mac Catalyst on Android/Windows/Linux hosts.
-Build this sample directly. Ordinary .NET builds never install frontend
-dependencies, start Vite, or include the sibling `Web/` tree as native assets.
-
-## Standalone frontend
-
-Install Node.js 20.19+ within 20.x, or 22.12+ (including newer majors), with npm.
-Perform dependency setup once, from the repository root:
-
-```sh
+  -p:IncludeAndroidTargetFrameworks=false -p:IncludeIosTargetFrameworks=false \
+  -p:IncludeMacCatalystTargetFrameworks=false -p:IncludeMacOSTargetFrameworks=false
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web ci
 ```
 
-Run the normal Vite development command:
+Android also needs OpenJDK 17 and the SDK matching the repository workload.
+Node 20.19+ within 20.x, or 22.12+ (including newer majors), is required.
+On Windows, use the equivalent repo PowerShell wrapper and the Windows SDK.
+No npm command runs during native MSBuild; the sibling `Web/` tree and Node
+dependencies are never implicitly compiled or bundled by the native project.
+
+## Layout and edit targets
+
+```text
+Controls.Sample.HybridWebApp/
+  run-demo.ps1                   focused user launcher
+  run-demo.sh                    optional Mac Catalyst validation harness
+  Native/
+    Maui.Controls.Sample.HybridWebApp.csproj
+    Development/                Debug-only forwarding and optional inspector
+    Platforms/                  Android, iOS, MacCatalyst, Windows, Tizen
+    Resources/Raw/wwwroot/       packaged fallback; no Node required
+  Web/
+    package.json
+    vite.config.ts
+    index.html                  #html-message
+    src/main.ts, message.ts      #typescript-message, ordinary module import
+    src/style.css               #style-target
+    src/details.ts              #module-message, dynamic import
+```
+
+Vite binds only to `127.0.0.1:5173` with strict-port behavior. Its HMR client uses
+`ws://127.0.0.1:5173`, not the virtual app hostname. To use the frontend alone:
 
 ```sh
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run dev
-```
-
-Open <http://127.0.0.1:5173/> in a browser for the standalone frontend. Vite binds
-only to loopback and fails if port 5173 is occupied. The HMR WebSocket explicitly
-uses `ws://127.0.0.1:5173` rather than inferring the native page's
-`app://0.0.0.1` hostname.
-
-Edit targets for later in-app validation:
-
-- `Web/index.html`: `#html-message`, static HTML text.
-- `Web/src/main.ts` and `message.ts`: `#typescript-message`, rendered TypeScript
-  content and a regular module import.
-- `Web/src/style.css`: `#style-target`, background, border, and spacing.
-- `Web/src/details.ts`: `#module-message`, content supplied by a dynamic import.
-
-Type-check and build the frontend independently:
-
-```sh
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run type-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run build
 ```
 
-`Web/dist/` is frontend build output, not automatically packaged native content.
-`node_modules/`, `dist/`, logs, and artifacts are ignored by source control.
-Stop Vite with Ctrl+C when finished.
+`Web/dist/` is not automatically packaged. With no development settings, native
+launch loads **HybridWebView is loading bundled content** from its packaged
+page. Release excludes all development code. The default project references
+this checkout's framework source; explicit `UseWorkload=true` follows the other
+samples' convention, but development forwarding refuses that mode because an
+older published framework might lack the Apple stopped-task lifetime guard.
 
-## Launch the demo
+## Debug forwarding and optional inspection
 
-After the one-time SDK/workload/build-task setup and `npm ci` above, run the
-sample-root launcher from any working directory:
+The single setting `HYBRIDWEBAPP_DEV_URL=http://127.0.0.1:5173/` enables live
+frontend loading. **No inspection token or port is required to run the app.**
+The inspector is a separate opt-in: set both `HYBRIDWEBAPP_INSPECT_TOKEN` (a
+32–128 character random base64url token) and `HYBRIDWEBAPP_INSPECT_PORT` (an
+unused port from 1024–65535, other than 5173).
 
-```sh
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh
-```
-
-For an existing in-tree Debug build, skip rebuilding:
-
-```sh
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh --no-build
-```
-
-The path example above is relative to the repository root; an absolute launcher
-path works from any directory. `DEVELOPER_DIR` is inherited per process and is
-never changed globally. `HYBRIDWEBAPP_INSPECT_PORT` can select an unused inspection
-port; otherwise the launcher selects one. Vite always uses port 5173.
-
-The launcher uses Bash and Python 3's standard library, plus the existing Node,
-npm, SDK wrapper, and macOS `ps`/`lsof` tools. It does not install frontend
-dependencies on each launch. Its preflight rejects missing dependencies,
-unsupported Node/architecture, unavailable ports, mismatched repository SDK,
-incompatible selected Xcode, missing local Apple packs/build tasks, and an
-already-running sample. An occupied port never triggers termination of another
-process.
-
-The existing npm dev command starts in the sibling Web project. The launcher
-checks the expected Vite page and its owned listener before invoking the pinned
-repository SDK with the explicit Native project, Debug configuration, Mac
-Catalyst TFM, in-tree/platform selectors, and supported `dotnet run -e` variables.
-No `eval`, JavaScript watcher, C# watch mode, or new SDK target is used.
-
-When ready, it prints the actual native PID/startup ID, inspection address, and
-an owner-only session directory under this sample's ignored `artifacts/`.
-The generated token is never printed; it is held in that directory's protected
-`token` file while the session runs. SDK output is redacted before being printed
-or saved. `state.json` records the authenticated native identity and inspection
-port. Use the token to make read-only probes while the launcher is running:
+The optional `run-demo.sh [--no-build]` is still a Mac Catalyst-only validation
+harness. It generates an owner-only ephemeral token, records authenticated
+native PID/startup identity, keeps Vite alive, and supervises its owned native
+instance. Use the small PS1 for ordinary development, not this advanced harness.
+Its printed session directory contains `token` and `state.json` while running:
 
 ```sh
-# Replace this path with the session directory printed by the launcher.
-session=/absolute/path/to/Controls.Sample.HybridWebApp/artifacts/session-...
+session=/path/printed/by/run-demo.sh
 token=$(cat "$session/token")
 port=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["inspectionPort"])' "$session/state.json")
 curl --fail -H "Authorization: Bearer $token" "http://127.0.0.1:$port/probe"
 ```
 
-The launcher keeps Vite alive after the SDK runner returns. Normal native process
-exit ends the session; Ctrl+C exits with 130. Build/startup/server failures exit
-nonzero. Cleanup targets only owned process groups and the verified launched
-native identity, with bounded TERM/KILL waits, then deletes the ephemeral token.
-Session logs and non-secret state remain for diagnosis.
+Read-only endpoints inspect the actual embedded native WebView, on its UI thread:
 
-## Manual Debug development session
+- `/state`: native PID/startup identity, URI, mode and bounded fetch metadata.
+- `/source`: current DOM as inert plain text with a no-script CSP.
+- `/probe`: fixed DOM text, computed CSS, resource URLs and document state.
+- `/snapshot`: native PNG (WKWebView snapshot on Apple, WebView drawing on
+  Android, WebView2 capture on Windows).
 
-For lower-level diagnosis, start Vite with the command above in its own
-terminal and build the Debug native project with the documented Xcode override.
-Choose an unused inspection port and generate a token; keep that token out of
-source control and use the same token in the native and probe terminals:
+The inspector binds loopback, validates the bearer token and exact loopback Host,
+accepts body-free GET only, and has no arbitrary-eval endpoint. Header, response
+and request/UI waits are bounded (8 KiB, 2 MiB, ten/eight seconds). For Android,
+forward a separate unused host inspection port to the selected device using
+`adb -s DEVICE forward tcp:HOST_PORT tcp:INSPECTION_PORT`; use that same number
+for both ports because the inspector checks Host. No forwarding is needed for
+the iOS simulator. Keep tokens out of source control/logs.
 
-```sh
-export HYBRIDWEBAPP_DEV_URL=http://127.0.0.1:5173/
-export HYBRIDWEBAPP_INSPECT_PORT=5917
-export HYBRIDWEBAPP_INSPECT_TOKEN=$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')
-```
+Assets retain `app://0.0.0.1/` on Apple and `https://0.0.0.1/` on Android/Windows.
+The provider preserves escaped paths, query, upstream status and MIME, buffers
+at most 8 MiB per asset, disables caching/redirects/cookies, and returns explicit
+502/504 errors rather than packaged fallback. Redirects are rejected with 502.
+HEAD is body-free, including error responses. The reserved routes
+`/_framework/hybridwebview.js`, `/__hwvInvokeDotNet`, `/__hwvSendMessage`
+remain owned by MAUI.
 
-Only the literal HTTP loopback Vite endpoint on port 5173 is accepted. For the
-current arm64 Debug layout, launch the built executable directly so it inherits
-the configuration and its native logs remain visible:
+Apple requests complete asynchronously on the UI thread and retain Core's
+stopped-task guard. Windows holds a native deferral before awaiting upstream.
+Android's resource callback runs off the UI thread and returns complete response
+metadata synchronously; its bounded network work never blocks the UI thread.
+Navigation/window destruction cancels outstanding sample fetches. Android's
+Debug-only network policy permits cleartext only to `127.0.0.1`, and mixed
+content is enabled only for the development view's loopback HMR.
 
-```sh
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-artifacts/bin/Maui.Controls.Sample.HybridWebApp/Debug/net11.0-maccatalyst/maccatalyst-arm64/Maui.Controls.Sample.HybridWebApp.app/Contents/MacOS/Maui.Controls.Sample.HybridWebApp
-```
+## Validation history and current limits
 
-This manual validation command bypasses the SDK-based root launcher.
-For packaged-content inspection, omit `HYBRIDWEBAPP_DEV_URL` but retain the
-inspection token and port. With all three variables absent, no inspector starts.
+Earlier Mac Catalyst milestones on 2026-10-09 used SDK
+`11.0.100-rtm.26480.113`, Apple `26.5.12253-net11-rc.2`,
+Node 24.4.1/npm 11.5.2, Vite 8.3.4 and TypeScript 7.0.2.
+An initial Xcode 27 native-framework build was blocked by the old macOS 10.15
+deployment target. Those **historical** native validations used a per-process
+Xcode 26.6 override; that is not a current prerequisite or recommended workaround.
 
-Probe the actual embedded view, not a separate browser:
+Historical results:
 
-```sh
-curl --fail -H "Authorization: Bearer $HYBRIDWEBAPP_INSPECT_TOKEN" \
-  "http://127.0.0.1:$HYBRIDWEBAPP_INSPECT_PORT/state"
-curl --fail -H "Authorization: Bearer $HYBRIDWEBAPP_INSPECT_TOKEN" \
-  "http://127.0.0.1:$HYBRIDWEBAPP_INSPECT_PORT/source"
-curl --fail -H "Authorization: Bearer $HYBRIDWEBAPP_INSPECT_TOKEN" \
-  "http://127.0.0.1:$HYBRIDWEBAPP_INSPECT_PORT/probe"
-curl --fail -H "Authorization: Bearer $HYBRIDWEBAPP_INSPECT_TOKEN" \
-  "http://127.0.0.1:$HYBRIDWEBAPP_INSPECT_PORT/snapshot" --output artifacts/hybridwebapp-snapshot.png
-```
+- Debug/Release native builds, packaged native launch, frontend type-check/build
+  and six `WebViewRequestLifetimeTests` passed.
+- In-app DOM/source and native PNG confirmed transformed modules and preserved
+  app origin. **22 HTML/TypeScript/CSS changes** updated one unchanged native
+  PID/startup identity; CSS used HMR, HTML/JS used document reload where needed.
+- Embedded fixtures verified status/MIME/escaped query, 404, body-free HEAD,
+  explicit 502, redirect rejection, reserved-route bypass, slow fetch abort and
+  navigation cancellation without stopped-task callbacks.
+- Inspector authentication/Host checks and absent `/eval` passed. The advanced
+  Bash harness exercised startup, `--no-build`, occupied ports, failure and
+  owned-process cleanup. Logs remain in ignored `artifacts/`.
 
-- `/state`: native PID/startup identity, native URI, mode, active fetches, and
-  bounded recent upstream result metadata (not WebKit delivery acknowledgments).
-- `/source`: current `document.documentElement.outerHTML`, served as plain text
-  with a no-script content security policy rather than an executable web page.
-- `/probe`: fixed text, computed style, resource URLs, and location/ready-state
-  values obtained with `HybridWebView.EvaluateJavaScriptAsync` on the UI thread.
-- `/snapshot`: PNG from the embedded `WKWebView`'s native snapshot API.
-
-The inspector binds only to `127.0.0.1`, requires the bearer token and literal
-loopback Host header, accepts only body-free GET requests, and has no arbitrary
-JavaScript execution endpoint. Requests and UI waits are bounded to ten/eight
-seconds, headers to 8 KiB, and responses to 2 MiB. Only Debug has the network
-client/server entitlements; the app sandbox remains enabled.
-
-The development provider forwards only ordinary app-origin GET/HEAD resources
-to the fixed upstream, preserving escaped paths, queries, status, and MIME type.
-It buffers at most 8 MiB per asset, recomputes body headers after decompression,
-disables caching/redirects/cookies, and returns explicit errors instead of
-substituting packaged HTML. Every upstream 3xx is explicitly rejected with 502;
-neither relative nor off-origin redirects are followed. HEAD responses have no
-body on success or error, while retaining representation Content-Length.
-These routes remain framework-owned:
-
-```text
-/_framework/hybridwebview.js
-/__hwvInvokeDotNet
-/__hwvSendMessage
-```
-
-The registered scheme handler is not replaced. An internal Core lifetime guard,
-carried into Controls' response helpers, drops callbacks after WebKit stops a
-task or the handler disconnects. It does not cancel application-owned HTTP work:
-the sample cancels the prior document's fetches before main-frame navigation and all
-fetches on window destruction, with a ten-second bound for individual fetches.
-Its sample-owned navigation observer is installed only when no existing delegate
-is present; it never replaces the registered app URL scheme handler.
-Close the native app and stop Vite when finished.
-
-## Initial scope
-
-- Mac Catalyst and .NET 11.
-- A temporary root launcher using the existing frontend command and `dotnet run`.
-- Safe development-resource forwarding and explicit error handling.
-- Sample-local Debug helpers for inspecting the actual WebView DOM and snapshots,
-  without a DevFlow dependency.
-
-Commands, generated JS modules, new interop APIs, native C# Hot Reload, and SDK
-integration are not part of this first demo.
-
-## Status
-
-The packaged host, independent frontend, Debug development resource provider,
-internal stopped-task guard, and authenticated Debug-only WebView inspector are
-implemented. The root `run-demo.sh` adds sample-local SDK-based launch and process
-supervision; launcher validation is recorded separately below.
-
-### Milestone 1 validation
-
-Validation on 2026-10-09 used Node 24.4.1/npm 11.5.2, the repository-pinned
-.NET SDK `11.0.100-rtm.26480.113`, Mac Catalyst packs
-`26.5.12253-net11-rc.2` from the repository workload manifests, and the existing
-Xcode 27.0 selection. No global SDK/workload or Xcode settings were changed.
-
-- The task-build command above passed with zero warnings/errors.
-- The `type-check` and frontend `build` commands above passed with Vite 8.3.4
-  and TypeScript 7.0.2. The production output includes a separate dynamic chunk.
-- Vite served the HTML, transformed TypeScript, imported CSS, and dynamic source
-  module. Its transformed HMR client uses the explicit loopback endpoint. A
-  second `run dev` invocation correctly failed on occupied port 5173.
-- MSBuild evaluation confirmed common sample imports, valid in-tree reference
-  paths, the `wwwroot/index.html` asset logical name, and no `Web/` compile items.
-- The initial native build without a `DEVELOPER_DIR` override was
-  **blocked before sample compilation**: Xcode 27 rejects the existing
-  `src/Core/AppleNative/PlatformInterop/MauiPlatformInterop.xcodeproj` macOS
-  deployment target 10.15; that Xcode supports targets 12.0 through 27.0.
-  `xcodebuild` exited with code 65. This sample does not alter that framework
-  project or switch global Xcode selection.
-
-### Native-toolchain unblock validation
-
-On the same date, the native build command above **passed with zero warnings and
-errors** using per-process Xcode 26.6.0. The SDK and Apple packs were unchanged.
-The shared deployment targets were not edited, and global `xcode-select` still
-reported `/Applications/Xcode.app/Contents/Developer` (Xcode 27.0).
-
-The packaged launch command above **returned successfully** and started the
-sample's actual native process with Vite stopped. A separate direct invocation
-of the built bundle executable captured the `HYBRIDWEBAPP_START` marker with the
-actual PID, unique startup identity, UTC time, and `content=packaged`. The process
-remained alive, finished native application startup, and owned an on-screen
-window. The bundle's `Contents/Resources/wwwroot/index.html` matched the packaged
-source byte-for-byte.
-
-For the validated arm64 Debug layout, the direct console-capture invocation was:
-
-```sh
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-artifacts/bin/Maui.Controls.Sample.HybridWebApp/Debug/net11.0-maccatalyst/maccatalyst-arm64/Maui.Controls.Sample.HybridWebApp.app/Contents/MacOS/Maui.Controls.Sample.HybridWebApp \
-  > artifacts/hybridwebapp-packaged-native.log 2>&1
-```
-
-Validation logs/binlog were retained under the ignored repository `artifacts/`:
-`hybridwebapp-native-xcode26.log`, `hybridwebapp-native-xcode26.binlog`,
-`hybridwebapp-packaged-launch.log`, `hybridwebapp-packaged-native.log`, and
-`hybridwebapp-packaged-window.log`.
-
-This verifies the build and packaged native launch, not the live DOM or WebView
-pixels. The read-only host accessibility check was unavailable because permission
-was not already granted; no permission prompt or global setting change was
-requested. At that milestone, embedded content/origin inspection was still
-pending. The Debug inspector now supplies that evidence without accessibility
-permissions. Both native test instances from this validation were stopped.
-
-### Development provider and inspector validation
-
-The same pinned SDK/Apple packs and per-process Xcode 26.6 were used. Exact native
-Debug build/run commands are above; Release was built with the same native build
-command plus `-c Release`. Both configurations passed with zero warnings/errors.
-The targeted framework regression command was:
-
-```sh
-bash eng/common/dotnet.sh test src/Core/tests/UnitTests/Core.UnitTests.csproj \
-  --filter FullyQualifiedName~WebViewRequestLifetimeTests \
-  -p:IncludeAndroidTargetFrameworks=false \
-  -p:IncludeIosTargetFrameworks=false \
-  -p:IncludeMacCatalystTargetFrameworks=false \
-  -p:IncludeMacOSTargetFrameworks=false \
-  --disable-build-servers
-```
-
-All **six** lifetime tests passed. The initial scoped whole-solution formatter
-passed; a repeated invocation stalled in its build host and was stopped after
-five minutes. Restricted C# whitespace formatting and all final builds passed.
-
-Runtime validation used the authenticated commands above against the actual
-embedded view:
-
-- Native URI and JavaScript `location.href` both remained `app://0.0.0.1/`.
-  HTML, TypeScript, the normal module import, and the dynamic import rendered;
-  proxy logs/result metadata showed Vite supplying their transformed resources.
-  Source and native WKWebView PNG captures were inspected.
-- One CSS-only edit applied via HMR without a document reload. Seven subsequent
-  rounds each changed HTML text, TypeScript-rendered text, and CSS color:
-  **22 source changes** were confirmed with in-app probes, with one unchanged
-  native PID/startup ID and no native rebuild, reinstall, or restart during those
-  edits. Ordinary HTML/TypeScript edits used Vite's document-reload fallback.
-- Temporary local Vite fixtures verified actual in-app 503/custom MIME/escaped
-  query preservation, a 404 response without packaged fallback, and body-free HEAD
-  with correct length. All three reserved routes bypassed Vite (zero upstream
-  reserved-route hits); framework JavaScript returned 200, the rejected native
-  invocation request returned 400, and the native message path returned 404.
-- A fetch aborted in the embedded page completed upstream eight seconds later
-  without invalid stopped-task callbacks or native restart. A Vite-triggered
-  document reload canceled a genuinely pending upstream fetch; upstream abort
-  metrics and native cancellation logs confirmed it, and active fetch count
-  returned to zero.
-- Stopping the fixture Vite listener produced an actual embedded HTTP 502 with an
-  explicit error body, not a successful packaged page. The inspector remained
-  available and native identity was unchanged.
-- The final inspector rejected absent/incorrect authentication with 401,
-  an incorrect Host with 400, and an `/eval` request with 404. Source responses
-  were inert plain text with a no-script CSP; final native snapshots were PNGs.
-- With Vite stopped and no upstream setting, packaged mode rendered the expected
-  fallback heading under the native app origin, with zero forwarded requests and
-  a native WKWebView snapshot. Release compilation excluded all development
-  sources/entitlements; a Release launch ignored the development environment,
-  stayed packaged, contained no development service types, and opened no
-  inspection listener.
-
-The temporary fixture HTML/CSS/TypeScript edits were restored byte-for-byte;
-frontend `type-check` and `build` passed afterward. The fixture middleware is not
-part of the sample. Inspection does not expose arbitrary JavaScript evaluation,
-and development mode adds no JS-to-.NET command or invocation target.
-
-Evidence is retained only in ignored `artifacts/`, including
-`hybridwebapp-lifetime-tests.log`, `hybridwebapp-proxy-debug.*`,
-`hybridwebapp-proxy-release.*`, `hybridwebapp-proxy-state.json`,
-`hybridwebapp-proxy-probe.json`, `hybridwebapp-proxy-source.html`,
-`hybridwebapp-proxy-snapshot.png`, `hybridwebapp-live-edits.jsonl`,
-`hybridwebapp-fixture-results.json`, `hybridwebapp-navigation-cancellation.json`,
-and `hybridwebapp-upstream-down.json`. Root launcher validation is recorded below.
-Every owned
-native instance and frontend process was stopped after validation; the ephemeral
-inspection token was removed rather than committed.
-
-### Launcher validation
-
-Native was rebuilt after the redirect/HEAD correction `d446c92d8e` using the
-documented per-process Xcode 26.6 build command: **passed, zero warnings/errors**.
-Launcher checks used that corrected app:
-
-- `bash -n run-demo.sh`, `shellcheck run-demo.sh`, and parsing the embedded Python
-  with `ast.parse`: **passed**.
-- The documented `run-demo.sh --no-build` invocation from `src/Core/`, using an
-  absolute launcher path: **passed**. Supported SDK `-e` settings reached the
-  actual app; authenticated DOM, CSS, source, and native PNG probes passed.
-  HTML/TypeScript/CSS edits reached the already-running native instance with an
-  unchanged PID/startup ID after the SDK runner returned.
-- Normal app quit through `NSRunningApplication.terminate()`: **launcher exit 0**;
-  Vite and inspection listeners closed and the token was deleted. This tested app
-  quit, not merely closing a window while leaving its native process alive.
-- The default build/run invocation followed by SIGINT to the recorded
-  `launcherPid`: **exit 130**, with bounded owned-process cleanup and token removal.
-- An unrelated HTTP listener on Vite port 5173: **nonzero preflight exit**. The
-  listener was neither killed nor adopted and continued serving its fixture page.
-- Selected Xcode 27 without `DEVELOPER_DIR`: **nonzero preflight exit**, with
-  actionable compatibility guidance and no global selection change.
-- Injected native build failure:
-
-  ```sh
-  DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-  MSBuildSDKsPath="$PWD/artifacts/nonexistent-sdk" \
-  ./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh
-  ```
-
-  **Nonzero exit** after the SDK's `MSB4236` failure; the owned Vite process stopped
-  and no native app or token remained.
-- Terminating the recorded owned Vite process group after native readiness:
-  **exit 1**, with cleanup of the verified native instance and token. A fixture
-  which closed only Vite's HTTP listener while its process stayed alive also
-  **exited 1** after the bounded repeated page-readiness checks failed.
-
-Logs for these checks are in ignored repository `artifacts/hybridwebapp-launcher-*`
-and the launcher's owner-only sample-local session directories. The frontend edits
-were restored to the original files; no launcher starts npm installation or changes
-global Xcode selection.
-
-### Redirect/HEAD correction runtime fixtures
-
-Narrow temporary Vite middleware and frontend `fetch` calls exercised the rebuilt
-`d446c92d8e` app through the same SDK launcher. The middleware/front-end edits
-were removed after validation. Actual results were read from the embedded DOM
-using the authenticated `/source` endpoint:
-
-```sh
-DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
-./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh --no-build
-# In a probe terminal, using that launcher's session/token/port as above:
-curl --fail -H "Authorization: Bearer $token" \
-  "http://127.0.0.1:$port/source"
-```
-
-- Relative 302 to a fixture destination: **502 redirect-not-supported error**;
-  destination request count stayed zero.
-- Off-origin 307 to a separately monitored loopback listener:
-  **502 redirect-not-supported error**, with **zero off-origin requests**.
-- HEAD against a fixture delaying response headers beyond the ten-second bound:
-  **504, empty body, nonzero representation Content-Length**.
-- HEAD after the owned Vite listener closed:
-  **502, empty body, nonzero representation Content-Length**. The native DOM
-  collector captured this before the launcher's bounded server-failure cleanup.
-
-Evidence: ignored `artifacts/hybridwebapp-redirect-head-results.json`,
-`hybridwebapp-head-down-result.json`, `hybridwebapp-off-origin-hits.log`, and
-`hybridwebapp-launcher-redirect-head.log`. All owned native/frontend/off-origin
-fixture processes were stopped, all session tokens removed, and frontend
-`type-check`/`build` passed again with the original sources restored.
+The current expansion uses selected Xcode 27 and standard scene delegates;
+the framework deployment-target correction is recorded separately. Updated
+cross-platform build/runtime and PS1 results will be recorded below.
+Windows and Tizen execution cannot be validated on this Mac. Physical iOS,
+release packaging of the Vite output, NativeAOT certification, generated command
+APIs/JS modules, native C# Hot Reload, DevFlow integration, global CLI/MSBuild
+integration and automatic all-platform launch are outside this demo.

@@ -296,9 +296,8 @@ try:
         raise RuntimeError("Repository SDK mismatch: expected " + pinned + ", got " + sdk)
     api = ET.parse(ROOT / "Directory.Build.props").findtext(".//MacCatalystTargetFrameworkVersion")
     xcode = re.search(r"Xcode (\d+(?:\.\d+)*)", run_checked(["xcrun", "xcodebuild", "-version"]))
-    if not xcode or int(xcode[1].split(".")[0]) != int(api.split(".")[0]):
-        raise RuntimeError("Selected Xcode is incompatible with this sample's pinned Apple " + api +
-                           " toolchain/native interop target. Set DEVELOPER_DIR to a compatible installed Xcode; global selection is unchanged.")
+    if not xcode:
+        raise RuntimeError("Selected Xcode could not be identified.")
     sdk_pack = ROOT / ".dotnet/packs" / ("Microsoft.MacCatalyst.Sdk.net11.0_" + api)
     if not sdk_pack.is_dir():
         raise RuntimeError("Repository-local Mac Catalyst packs are missing; follow the sample README workload setup.")

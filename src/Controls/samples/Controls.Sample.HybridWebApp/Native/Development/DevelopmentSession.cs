@@ -2,7 +2,6 @@ using System.Net;
 using System.Text;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
-using WebKit;
 
 namespace Maui.Controls.Sample.HybridWebApp;
 
@@ -22,8 +21,8 @@ sealed class DevelopmentSession : IDisposable
 	{ Timeout = TimeSpan.FromSeconds(10) };
 	readonly object _gate = new();
 	readonly Queue<RequestRecord> _requests = new();
-	readonly LoopbackInspector _inspector;
-	readonly NavigationObserver _navigation;
+	readonly LoopbackInspector? _inspector;
+	readonly DevelopmentPlatform _platform;
 	CancellationTokenSource _document = new();
 	long _total;
 	int _active;
@@ -31,7 +30,7 @@ sealed class DevelopmentSession : IDisposable
 	int _failed;
 	volatile bool _disposed;
 
-	internal WKWebView? NativeView { get; private set; }
+	internal DevelopmentPlatform Platform => _platform;
 	internal bool IsDisposed => _disposed;
 	internal string Mode => _settings.Upstream is null ? "packaged" : "vite";
 
@@ -39,35 +38,33 @@ sealed class DevelopmentSession : IDisposable
 	{
 		_view = view;
 		_settings = settings;
-		_navigation = new NavigationObserver(this);
+		_platform = new DevelopmentPlatform(StartingDocument);
 		view.WebResourceRequested += ResourceRequested;
 		view.WebViewInitialized += Initialized;
-		_inspector = new LoopbackInspector(this, view, settings);
+		if (settings.Token is not null)
+			_inspector = new LoopbackInspector(this, view, settings);
 	}
 
 	void Initialized(object? sender, WebViewInitializedEventArgs e)
 	{
-		NativeView = e.PlatformArgs?.Sender;
-		if (_settings.Upstream is not null && NativeView is { } native)
-		{
-			if (native.NavigationDelegate is not null)
-				throw new InvalidOperationException("The Debug sample must not replace an existing navigation delegate.");
-			native.NavigationDelegate = _navigation;
-		}
+		_platform.Attach(e, _settings.Upstream is not null);
 	}
 
 	void StartingDocument()
 	{
-		if (_disposed)
-			return;
-		_document.Cancel();
-		_document.Dispose();
-		_document = new CancellationTokenSource();
+		lock (_gate)
+		{
+			if (_disposed)
+				return;
+			_document.Cancel();
+			_document.Dispose();
+			_document = new CancellationTokenSource();
+		}
 	}
 
 	void ResourceRequested(object? sender, WebViewWebResourceRequestedEventArgs e)
 	{
-		if (_disposed || _settings.Upstream is null || e.Uri.Scheme != "app" || e.Uri.Host != "0.0.0.1" ||
+		if (_disposed || _settings.Upstream is null || e.Uri.Scheme != DevelopmentPlatform.AppScheme || e.Uri.Host != "0.0.0.1" ||
 			!e.Uri.IsDefaultPort || e.Uri.UserInfo.Length != 0)
 			return;
 
@@ -78,16 +75,49 @@ sealed class DevelopmentSession : IDisposable
 			return;
 		}
 
-		e.Handled = true;
-		var documentToken = _document.Token;
-		var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token, documentToken);
-		cancellation.CancelAfter(TimeSpan.FromSeconds(10));
+#if ANDROID
+		// ShouldInterceptRequest requires response metadata before its worker callback returns.
+		if (MainThread.IsMainThread)
+			throw new InvalidOperationException("Development interception must not block the Android UI thread.");
+		if (e.PlatformArgs?.Request.IsForMainFrame == true)
+			StartingDocument();
+#endif
+		CancellationToken documentToken;
+		CancellationTokenSource cancellation;
 		lock (_gate)
 		{
+			if (_disposed)
+				return;
+			documentToken = _document.Token;
+			cancellation = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token, documentToken);
 			_total++;
 			_active++;
 		}
+		e.Handled = true;
+		cancellation.CancelAfter(TimeSpan.FromSeconds(10));
+#if WINDOWS
+		var deferral = e.PlatformArgs!.RequestEventArgs.GetDeferral();
+		_ = RespondDeferredAsync();
+		async Task RespondDeferredAsync()
+		{
+			try
+			{
+				await RespondAsync(e, cancellation, documentToken).ConfigureAwait(false);
+			}
+			finally
+			{
+				await MainThread.InvokeOnMainThreadAsync(() =>
+				{
+					deferral.Complete();
+					deferral.Dispose();
+				}).ConfigureAwait(false);
+			}
+		}
+#elif ANDROID
+		RespondAsync(e, cancellation, documentToken).GetAwaiter().GetResult();
+#else
 		_ = RespondAsync(e, cancellation, documentToken);
+#endif
 	}
 
 	async Task RespondAsync(WebViewWebResourceRequestedEventArgs e, CancellationTokenSource cancellation, CancellationToken documentToken)
@@ -124,8 +154,13 @@ sealed class DevelopmentSession : IDisposable
 			lock (_gate)
 				_canceled++;
 			Console.WriteLine($"HYBRIDWEBAPP_PROXY_CANCELED {e.Uri.PathAndQuery}");
+#if ANDROID
+			// Even an obsolete document's synchronous callback must return response metadata.
+			await SendErrorAsync(e, 504, "Gateway Timeout", "Vite asset fetch was canceled or timed out.").ConfigureAwait(false);
+#else
 			if (!_disposed && !documentToken.IsCancellationRequested)
 				await SendErrorAsync(e, 504, "Gateway Timeout", "Vite asset fetch timed out.").ConfigureAwait(false);
+#endif
 		}
 		catch (Exception exception)
 		{
@@ -171,22 +206,34 @@ sealed class DevelopmentSession : IDisposable
 		}
 	}
 
-	async Task SendAsync(WebViewWebResourceRequestedEventArgs e, int status, string reason, string mime, byte[] bytes, CancellationToken cancellationToken, long? contentLength = null)
+	Task SendAsync(WebViewWebResourceRequestedEventArgs e, int status, string reason, string mime, byte[] bytes, CancellationToken cancellationToken, long? contentLength = null)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		await MainThread.InvokeOnMainThreadAsync(() =>
+		void Respond()
 		{
+#if !ANDROID
 			if (_disposed)
 				return;
+#endif
 			cancellationToken.ThrowIfCancellationRequested();
-			using var body = e.Method == "HEAD" ? null : new MemoryStream(bytes, writable: false);
+			var body = e.Method == "HEAD" ? null : new MemoryStream(bytes, writable: false);
 			var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 			{
 				["Content-Type"] = mime,
 				["Content-Length"] = (contentLength ?? bytes.Length).ToString(System.Globalization.CultureInfo.InvariantCulture),
 				["Cache-Control"] = "no-store"
 			};
+#if ANDROID
+			var type = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(mime);
+			e.PlatformArgs!.Response = new global::Android.Webkit.WebResourceResponse(
+				type.MediaType, type.CharSet ?? "UTF-8", status, string.IsNullOrEmpty(reason) ? "Response" : reason,
+				headers, body);
+#else
 			e.SetResponse(status, reason, headers, body);
+#if IOS || MACCATALYST
+			body?.Dispose();
+#endif
+#endif
 			lock (_gate)
 			{
 				if (_requests.Count == 64)
@@ -194,7 +241,13 @@ sealed class DevelopmentSession : IDisposable
 				_requests.Enqueue(new RequestRecord(e.Uri.PathAndQuery, status, mime));
 			}
 			Console.WriteLine($"HYBRIDWEBAPP_PROXY {e.Method} {e.Uri.PathAndQuery} {status} {mime}");
-		}).ConfigureAwait(false);
+		}
+#if ANDROID
+		Respond();
+		return Task.CompletedTask;
+#else
+		return MainThread.InvokeOnMainThreadAsync(Respond);
+#endif
 	}
 
 	internal (long Total, int Active, int Canceled, int Failed, RequestRecord[] Requests) GetMetrics()
@@ -205,33 +258,23 @@ sealed class DevelopmentSession : IDisposable
 
 	public void Dispose()
 	{
-		if (_disposed)
-			return;
-		_disposed = true;
+		lock (_gate)
+		{
+			if (_disposed)
+				return;
+			_disposed = true;
+			_shutdown.Cancel();
+			_document.Cancel();
+		}
 		_view.WebResourceRequested -= ResourceRequested;
 		_view.WebViewInitialized -= Initialized;
-		_shutdown.Cancel();
-		_document.Cancel();
 		_client.Dispose();
-		_inspector.Dispose();
-		if (NativeView?.NavigationDelegate == _navigation)
-			NativeView.WeakNavigationDelegate = null;
-		_navigation.Dispose();
-		NativeView = null;
+		_inspector?.Dispose();
+		_platform.Dispose();
 		_document.Dispose();
 		_shutdown.Dispose();
 	}
 
 	internal sealed record RequestRecord(string PathAndQuery, int Status, string Mime);
 
-	sealed class NavigationObserver(DevelopmentSession session) : WKNavigationDelegate
-	{
-		public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
-		{
-			// Observe only main-frame navigation, not Vite's index.html?html-proxy source modules.
-			if (navigationAction.TargetFrame?.MainFrame == true)
-				session.StartingDocument();
-			decisionHandler(WKNavigationActionPolicy.Allow);
-		}
-	}
 }

@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.HybridWebApp;
 
-sealed record DevelopmentSettings(Uri? Upstream, string Token, int InspectionPort)
+sealed record DevelopmentSettings(Uri? Upstream, string? Token, int InspectionPort)
 {
 	public static DevelopmentSettings? Read()
 	{
@@ -10,10 +10,14 @@ sealed record DevelopmentSettings(Uri? Upstream, string Token, int InspectionPor
 		if (upstream is null && token is null && port is null)
 			return null;
 
-		if (token is null || token.Length is < 32 or > 128 || token.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not '-' and not '_'))
-			throw new InvalidOperationException("Set HYBRIDWEBAPP_INSPECT_TOKEN to a 32–128 character random base64url token.");
-		if (!int.TryParse(port, out var inspectionPort) || inspectionPort is < 1024 or > 65535 || inspectionPort == 5173)
-			throw new InvalidOperationException("Set HYBRIDWEBAPP_INSPECT_PORT to an unused port from 1024 through 65535, other than 5173.");
+		var inspectionPort = 0;
+		if (token is not null || port is not null)
+		{
+			if (token is null || token.Length is < 32 or > 128 || token.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not '-' and not '_'))
+				throw new InvalidOperationException("Set HYBRIDWEBAPP_INSPECT_TOKEN to a 32–128 character random base64url token.");
+			if (!int.TryParse(port, out inspectionPort) || inspectionPort is < 1024 or > 65535 || inspectionPort == 5173)
+				throw new InvalidOperationException("Set HYBRIDWEBAPP_INSPECT_PORT to an unused port from 1024 through 65535, other than 5173.");
+		}
 
 		Uri? uri = null;
 		if (upstream is not null &&

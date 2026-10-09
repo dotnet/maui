@@ -1,25 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net$(_MauiDotNetVersion)-maccatalyst</TargetFramework>
+    <TargetFrameworks>$(MauiSamplePlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Maui.Controls.Sample.HybridWebApp</RootNamespace>
-    <RuntimeIdentifier>maccatalyst-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
     <!-- Keep the bundle name aligned with the assembly for dotnet run (dotnet/sdk#47727). -->
     <ApplicationTitle>Maui.Controls.Sample.HybridWebApp</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample.hybridwebapp</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
+    <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
+    <CodesignEntitlements Condition="$(TargetFramework.Contains('-maccatalyst'))">Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
     <DefineConstants Condition="'$(UseMaui)' != 'true'">$(DefineConstants);HYBRIDWEBAPP_IN_TREE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Debug'">
+    <AndroidManifest>Platforms/Android/AndroidManifest.Debug.xml</AndroidManifest>
   </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)' != 'Debug'">
     <Compile Remove="Development/**" />
