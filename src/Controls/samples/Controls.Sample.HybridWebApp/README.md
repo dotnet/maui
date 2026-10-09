@@ -37,6 +37,13 @@ Xcode version required by that workload. The repository wrapper acquires the
 pinned SDK locally; it does **not** install Apple workloads. Do not substitute a
 different MAUI package version to work around a missing workload.
 
+Select a compatible installed Xcode **per process**, without changing global
+`xcode-select`. For the pinned Apple 26.5 packs, validation succeeded with
+`/Applications/Xcode-26.6.0.app`; the globally selected Xcode 27.0 failed while
+building the framework's native interop project. The native build/run examples
+below show the validated `DEVELOPER_DIR` override. Adjust that path to your
+compatible installation rather than switching the machine-wide selection.
+
 If that local SDK does not have Mac Catalyst packs, acquire the repository-pinned
 workload manifests without replacing the SDK, then install only Mac Catalyst into
 the local SDK:
@@ -58,27 +65,36 @@ bash eng/common/dotnet.sh build Microsoft.Maui.BuildTasks.slnf \
   -p:IncludeIosTargetFrameworks=false \
   -p:IncludeMacCatalystTargetFrameworks=false \
   -p:IncludeMacOSTargetFrameworks=false
+DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
 bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
   -f net11.0-maccatalyst \
   -p:IncludeAndroidTargetFrameworks=false \
   -p:IncludeIosTargetFrameworks=false \
-  -p:IncludeMacOSTargetFrameworks=false
+  -p:IncludeMacOSTargetFrameworks=false \
+  --disable-build-servers
 ```
 
 Launch the packaged app without Node or a Vite server:
 
 ```sh
+DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
 bash eng/common/dotnet.sh run --project src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
   -f net11.0-maccatalyst \
   -p:IncludeAndroidTargetFrameworks=false \
   -p:IncludeIosTargetFrameworks=false \
-  -p:IncludeMacOSTargetFrameworks=false
+  -p:IncludeMacOSTargetFrameworks=false \
+  --no-build --no-restore
 ```
 
 The page should say **HybridWebView is loading bundled content** under
 `app://0.0.0.1/`. Native startup writes one `HYBRIDWEBAPP_START` log line containing
 the actual process ID, a unique startup identity, and the UTC time. No JavaScript
 invocation is required to produce this marker.
+
+In the validated setup, `dotnet run` returns after launching the native process;
+its exit does not mean the app window has closed. Close the app when finished.
+The future launcher must track actual native lifetime instead of treating the
+SDK runner's lifetime as the app's.
 
 The project inherits the common sample `Directory.Build.props`/targets. By default
 it references the framework source in this checkout. It also follows the sibling
@@ -165,14 +181,45 @@ Xcode 27.0 selection. No global SDK/workload or Xcode settings were changed.
   second `run dev` invocation correctly failed on occupied port 5173.
 - MSBuild evaluation confirmed common sample imports, valid in-tree reference
   paths, the `wwwroot/index.html` asset logical name, and no `Web/` compile items.
-- The native build command above, additionally using `--disable-build-servers`,
-  was **blocked before sample compilation**: Xcode 27 rejects the existing
+- The initial native build without a `DEVELOPER_DIR` override was
+  **blocked before sample compilation**: Xcode 27 rejects the existing
   `src/Core/AppleNative/PlatformInterop/MauiPlatformInterop.xcodeproj` macOS
   deployment target 10.15; that Xcode supports targets 12.0 through 27.0.
   `xcodebuild` exited with code 65. This sample does not alter that framework
   project or switch global Xcode selection.
 
-The native launch, startup log marker, and actual packaged WebView rendering
-remain unverified until the native-toolchain blocker is resolved. Standalone
-frontend checks do not prove in-app loading or live edits. No development server
-was left running.
+### Native-toolchain unblock validation
+
+On the same date, the native build command above **passed with zero warnings and
+errors** using per-process Xcode 26.6.0. The SDK and Apple packs were unchanged.
+The shared deployment targets were not edited, and global `xcode-select` still
+reported `/Applications/Xcode.app/Contents/Developer` (Xcode 27.0).
+
+The packaged launch command above **returned successfully** and started the
+sample's actual native process with Vite stopped. A separate direct invocation
+of the built bundle executable captured the `HYBRIDWEBAPP_START` marker with the
+actual PID, unique startup identity, UTC time, and `content=packaged`. The process
+remained alive, finished native application startup, and owned an on-screen
+window. The bundle's `Contents/Resources/wwwroot/index.html` matched the packaged
+source byte-for-byte.
+
+For the validated arm64 Debug layout, the direct console-capture invocation was:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
+artifacts/bin/Maui.Controls.Sample.HybridWebApp/Debug/net11.0-maccatalyst/maccatalyst-arm64/Maui.Controls.Sample.HybridWebApp.app/Contents/MacOS/Maui.Controls.Sample.HybridWebApp \
+  > artifacts/hybridwebapp-packaged-native.log 2>&1
+```
+
+Validation logs/binlog were retained under the ignored repository `artifacts/`:
+`hybridwebapp-native-xcode26.log`, `hybridwebapp-native-xcode26.binlog`,
+`hybridwebapp-packaged-launch.log`, `hybridwebapp-packaged-native.log`, and
+`hybridwebapp-packaged-window.log`.
+
+This verifies the build and packaged native launch, not the live DOM or WebView
+pixels. The read-only host accessibility check was unavailable because permission
+was not already granted; no permission prompt or global setting change was
+requested. Actual embedded content/origin inspection remains for the later
+Debug-only inspector milestone. Standalone frontend checks do not prove in-app
+loading or live edits. Both native test instances were stopped; no development
+server was started or left running.
