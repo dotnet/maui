@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var xaml = GetXamlForType(callingType, view, out var useDesignProperties);
 			if (string.IsNullOrEmpty(xaml))
-				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), new XmlLineInfo());
+				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), (IXmlLineInfo)new XmlLineInfo());
 			Load(view, xaml, useDesignProperties);
 		}
 

@@ -24,14 +24,14 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new ArgumentException("No IXamlTypeResolver in IServiceProvider");
 			if (string.IsNullOrEmpty(TypeName))
 			{
-				var li = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lip) ? lip.XmlLineInfo : new XmlLineInfo();
+				var li = serviceProvider.GetService(typeof(XamlLineInfo)) as XamlLineInfo ?? new XamlLineInfo();
 				throw new XamlParseException("TypeName isn't set.", li);
 			}
 
 			if (typeResolver.TryResolve(TypeName, out var type))
 				return new DataTemplate(type);
 
-			var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
+			var lineInfo = serviceProvider.GetService(typeof(XamlLineInfo)) as XamlLineInfo ?? new XamlLineInfo();
 			throw new XamlParseException($"DataTemplateExtension: Could not locate type for {TypeName}.", lineInfo);
 		}
 

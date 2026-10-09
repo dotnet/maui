@@ -25,6 +25,10 @@ public static class SourceGeneratorDriver
 
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile[] additionalFiles, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
+		=> RunGeneratorAndUpdateCompilation<T>(compilation, additionalFiles, assertNoCompilationErrors).Result;
+
+	public static (GeneratorDriverRunResult Result, Compilation Compilation) RunGeneratorAndUpdateCompilation<T>(Compilation compilation, AdditionalFile[] additionalFiles, bool assertNoCompilationErrors = true)
+		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
 
@@ -56,8 +60,7 @@ public static class SourceGeneratorDriver
 			}
 		}
 
-		var runResult = driver.GetRunResult();
-		return runResult;
+		return (driver.GetRunResult(), updatedCompilation);
 	}
 
 	public static (GeneratorDriverRunResult result1, GeneratorDriverRunResult result2) RunGeneratorWithChanges<T>(Compilation compilation,

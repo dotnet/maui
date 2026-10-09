@@ -143,6 +143,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[Fact]
+		public void RuntimeLoaderPreservesLineInformation()
+		{
+			var xaml =
+"""
+<Label
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	Text="Foo"
+	UnknownProperty="Bar" />
+""";
+
+			var exception = Assert.Throws<XamlParseException>(() => new Label().LoadFromXaml(xaml));
+
+			Assert.Equal(4, exception.XamlInfo.LineNumber);
+			Assert.True(exception.XamlInfo.LinePosition > 0);
+		}
+
+		[Fact]
 		public void TestSetValueToBindableProperty()
 		{
 			var xaml = @"

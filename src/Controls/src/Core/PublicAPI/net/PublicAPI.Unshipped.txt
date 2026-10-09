@@ -6,3 +6,10 @@ override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.Xaml.XamlLineInfo
+Microsoft.Maui.Controls.Xaml.XamlLineInfo.HasLineInfo() -> bool
+Microsoft.Maui.Controls.Xaml.XamlLineInfo.LineNumber.get -> int
+Microsoft.Maui.Controls.Xaml.XamlLineInfo.LinePosition.get -> int
+Microsoft.Maui.Controls.Xaml.XamlLineInfo.XamlLineInfo() -> void
+Microsoft.Maui.Controls.Xaml.XamlLineInfo.XamlLineInfo(int lineNumber, int linePosition) -> void
+~Microsoft.Maui.Controls.Xaml.XamlParseException.XamlInfo.get -> Microsoft.Maui.Controls.Xaml.XamlLineInfo
