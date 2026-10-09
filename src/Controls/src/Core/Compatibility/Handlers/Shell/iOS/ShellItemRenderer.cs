@@ -128,6 +128,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+			// UITabBarController re-evaluates which tabs go into More here (on iOS 27, after a
+			// size class change such as folding a foldable iPhone), so it has to run.
+			base.TraitCollectionDidChange(previousTraitCollection);
+
+			// That re-evaluation resets CustomizableViewControllers, which adds an Edit button
+			// to the More page; Shell keeps it empty (see CreateTabRenderers).
+			if (CustomizableViewControllers?.Length > 0)
+				CustomizableViewControllers = Array.Empty<UIViewController>();
+
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
 				return;
 
