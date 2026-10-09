@@ -5,20 +5,25 @@ namespace Maui.Controls.Sample;
 
 public partial class HybridWebViewControlPage : ContentPage
 {
-	private HybridWebViewViewModel _viewModel;
+	readonly HybridWebViewViewModel _viewModel = new();
 
 	public HybridWebViewControlPage()
 	{
 		InitializeComponent();
-		_viewModel = new HybridWebViewViewModel();
-		MyHybridWebView.RawMessageReceived += OnRawMessageReceived;
 		BindingContext = _viewModel;
 	}
 
 	private async void OnEvaluateJavaScriptClicked(object sender, EventArgs e)
 	{
-		var result = await MyHybridWebView.EvaluateJavaScriptAsync("document.title");
-		_viewModel.Status = $"EvaluateJavaScriptAsync Result: {result}";
+		try
+		{
+			var result = await MyHybridWebView.EvaluateJavaScriptAsync("document.title");
+			_viewModel.Status = $"EvaluateJavaScriptAsync Result: {result}";
+		}
+		catch (Exception ex)
+		{
+			_viewModel.Status = $"EvaluateJavaScriptAsync failed: {ex.Message}";
+		}
 	}
 
 	private async void OnHybridRootButtonClicked(object sender, EventArgs e)
@@ -26,11 +31,10 @@ public partial class HybridWebViewControlPage : ContentPage
 		var button = (Button)sender;
 		var selectedRoot = button.Text;
 		_viewModel.HybridRoot = selectedRoot;
-		MyHybridWebView.HybridRoot = selectedRoot;
 		try
 		{
-			await MyHybridWebView.EvaluateJavaScriptAsync("window.location.reload();");
-
+			_ = ReloadAsync();
+			await WaitForDocumentTitleAsync(selectedRoot == "HybridWebView1" ? GetTitle(_viewModel.DefaultFile) : "HybridWebView2");
 		}
 		catch (Exception ex)
 		{
@@ -43,11 +47,11 @@ public partial class HybridWebViewControlPage : ContentPage
 		var button = (Button)sender;
 		var selectedFile = button.Text;
 		_viewModel.DefaultFile = selectedFile;
-		MyHybridWebView.DefaultFile = selectedFile;
 
 		try
 		{
-			await MyHybridWebView.EvaluateJavaScriptAsync("window.location.reload();");
+			_ = ReloadAsync();
+			await WaitForDocumentTitleAsync(GetTitle(selectedFile));
 		}
 		catch (Exception ex)
 		{
@@ -55,31 +59,19 @@ public partial class HybridWebViewControlPage : ContentPage
 		}
 	}
 
-	private int _messageCount = 0;
 	private void OnRawMessageReceived(object sender, HybridWebViewRawMessageReceivedEventArgs e)
 	{
-		_messageCount++;
-		if (string.IsNullOrEmpty(e.Message))
-		{
-			_viewModel.Status = $"Message #{_messageCount}: EMPTY";
-		}
-		else
-		{
-			_viewModel.Status = $"Message: {e.Message}";
-		}
+		_viewModel.Status = string.IsNullOrEmpty(e.Message)
+			? "Raw message received: EMPTY"
+			: $"Raw message received: {e.Message}";
 	}
 
-	private async void OnSendMessageToJavaScriptClicked(object sender, EventArgs e)
+	private void OnSendMessageToJavaScriptClicked(object sender, EventArgs e)
 	{
 		try
 		{
-			_viewModel.Status = "Sending message to index.html...";
-			await Task.Delay(500);
-			var message = $"Hello from C#";
-			var jsCode = $@"window.receiveMessageFromCSharp('{message}')";
-			var result = await MyHybridWebView.EvaluateJavaScriptAsync(jsCode);
-			_viewModel.Status = $"Message sent successfully. Result: {result}";
-
+			_viewModel.Status = "Sending raw message to JavaScript...";
+			MyHybridWebView.SendRawMessage("Hello from C#");
 		}
 		catch (Exception ex)
 		{
@@ -94,13 +86,51 @@ public partial class HybridWebViewControlPage : ContentPage
 			: FlowDirection.RightToLeft;
 	}
 
-	private async void OnResetButtonClicked(object sender, EventArgs e)
+	private void OnResetButtonClicked(object sender, EventArgs e)
 	{
-		_viewModel = new HybridWebViewViewModel();
-		BindingContext = _viewModel;
-		MyHybridWebView.HybridRoot = _viewModel.HybridRoot;
-		MyHybridWebView.DefaultFile = _viewModel.DefaultFile;
-		await MyHybridWebView.EvaluateJavaScriptAsync("window.location.reload();");
-
+		_viewModel.ResetToDefaults();
+		_ = ReloadAsync();
 	}
+
+	private void OnWebViewInitialized(object sender, WebViewInitializedEventArgs e)
+	{
+		_viewModel.Status = "WebView initialized";
+	}
+
+	async Task WaitForDocumentTitleAsync(string expectedTitle)
+	{
+		for (var attempt = 0; attempt < 50; attempt++)
+		{
+			var title = await MyHybridWebView.EvaluateJavaScriptAsync("document.title");
+			if (title == expectedTitle)
+			{
+				_viewModel.Status = $"Loaded: {title}";
+				return;
+			}
+
+			await Task.Delay(100);
+		}
+
+		throw new TimeoutException($"Timed out waiting for document title '{expectedTitle}'.");
+	}
+
+	async Task ReloadAsync()
+	{
+		try
+		{
+			await MyHybridWebView.EvaluateJavaScriptAsync("window.location.reload();");
+		}
+		catch
+		{
+			// Reloading destroys the JavaScript context before some platforms complete the evaluation task.
+		}
+	}
+
+	static string GetTitle(string defaultFile) => defaultFile switch
+	{
+		"image.html" => "HybridWebView Image Page",
+		"navigation.html" => "HybridWebView Navigation Page",
+		"web.html" => "Simple Web Demo",
+		_ => "HybridWebView1",
+	};
 }
