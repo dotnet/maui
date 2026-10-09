@@ -78,6 +78,10 @@ namespace Microsoft.Maui.Platform
 		readonly bool[] _blockedEdgesCache = new bool[4];
 		bool _blockedEdgesCacheValid;
 
+		// Cached result of whether this scroll view is hosted by a PageSheet.
+		// Invalidated when UIKit moves the scroll view to a window.
+		bool? _isInsidePageSheet;
+
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
 		/// Only true when not nested in another scroll view, no parent MauiView handles it, and safe area is not empty.
@@ -631,7 +635,7 @@ namespace Microsoft.Maui.Platform
 			// This logic adds safe area padding to the contentSize *only if* the content is nearly large enough to require scrolling,
 			// ensuring the scroll view remains in "scrollable mode" and keeps safe area insets at the scroll view level.
 			// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
-			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic && !IsInsidePageSheet())
 			{
 				// We do this to keep the content scrollable
 				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
@@ -693,6 +697,29 @@ namespace Microsoft.Maui.Platform
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 			return contentSize;
+		}
+
+		bool IsInsidePageSheet()
+		{
+			if (_isInsidePageSheet.HasValue)
+			{
+				return _isInsidePageSheet.Value;
+			}
+
+			UIResponder? responder = this;
+			while (responder is not null)
+			{
+				if (responder is UIViewController { ModalPresentationStyle: UIModalPresentationStyle.PageSheet })
+				{
+					_isInsidePageSheet = true;
+					return true;
+				}
+
+				responder = responder.NextResponder;
+			}
+
+			_isInsidePageSheet = false;
+			return false;
 		}
 
 		/// <summary>
@@ -772,8 +799,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-	    /// </summary>
+		    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+		    /// </summary>
 
 		internal void OnOrientationChanged()
 		{
@@ -866,6 +893,7 @@ namespace Microsoft.Maui.Platform
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
 			_blockedEdgesCacheValid = false;
+			_isInsidePageSheet = null;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;
