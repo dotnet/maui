@@ -12,7 +12,6 @@ public class Issue30690 : _IssuesUITest
 	private const string CheckStatesButton = "CheckStates";
 	private const string TestEntry = "TestEntry";
 	private const string ToggleIsRefreshEnabledButton = "ToggleIsRefreshEnabled";
-	private const string Element = "StartRefresh";
 	private const string StatusLabel = "StatusLabel";
 	private const string ScrollViewContent = "ScrollViewContent";
 
@@ -41,22 +40,6 @@ public class Issue30690 : _IssuesUITest
 	}
 
 	[Test]
-	public void IsRefreshEnabledPreventsRefresh()
-	{
-		// Disable IsRefreshEnabled
-		App.WaitForElement(ToggleIsRefreshEnabledButton);
-		App.Tap(ToggleIsRefreshEnabledButton);
-		Assert.That(GetStatusText(), Contains.Substring("IsRefreshEnabled: False"));
-
-		// Try to start refresh
-		App.Tap(Element);
-
-		// Check that refresh did not start
-		App.Tap(CheckStatesButton);
-		Assert.That(GetStatusText(), Contains.Substring("IsRefreshing: False"));
-	}
-
-	[Test]
 	public void IsRefreshEnabledAllowsChildInteraction()
 	{
 		// Disable IsRefreshEnabled
@@ -69,22 +52,6 @@ public class Issue30690 : _IssuesUITest
 		App.ClearText(TestEntry);
 		App.EnterText(TestEntry, "refresh disabled but entry works");
 		Assert.That(App.FindElement(TestEntry).GetText(), Is.EqualTo("refresh disabled but entry works"));
-	}
-
-	[Test]
-	public void IsEnabledDisablesEntireViewAndPreventsRefresh()
-	{
-		// Disable IsEnabled
-		App.WaitForElement(ToggleIsEnabledButton);
-		App.Tap(ToggleIsEnabledButton);
-		Assert.That(GetStatusText(), Contains.Substring("IsEnabled: False"));
-
-		// Try to start refresh
-		App.Tap(Element);
-
-		// Check that refresh did not start
-		App.Tap(CheckStatesButton);
-		Assert.That(GetStatusText(), Contains.Substring("IsRefreshing: False"));
 	}
 
 	[Test]

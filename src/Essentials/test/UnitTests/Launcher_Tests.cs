@@ -7,6 +7,11 @@ namespace Tests
 {
 	public class Launcher_Tests
 	{
+		[Theory]
+		[InlineData("Not Valid Uri")]
+		public async Task InvalidUri(string uri) =>
+			await Assert.ThrowsAsync<UriFormatException>(() => Launcher.CanOpenAsync(uri));
+
 		[Fact]
 		public async Task CanOpen_String_NetStandard() =>
 			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Launcher.CanOpenAsync("http://www.xamarin.com"));

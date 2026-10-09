@@ -12,7 +12,7 @@ public partial class Bz43301 : ContentPage
 	[Collection("Issue")]
 	public class Tests
 	{
-		[Theory]
+		[Xunit.Theory]
 		[XamlInflatorData]
 		//No need for any actual [Test]. If this compiles, the bug is fixed.
 		internal void DoesCompile(XamlInflator inflator)

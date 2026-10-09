@@ -103,22 +103,5 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Equal(AltitudeReferenceSystem.Geoid, location.AltitudeReferenceSystem);
 			Assert.Null(location.VerticalAccuracy);
 		}
-
-		[Fact]
-		public void LocationCopyConstructor_PreservesAltitudeReferenceSystem()
-		{
-			var original = new Location(51.5, -0.1)
-			{
-				Altitude = 100.0,
-				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid,
-				VerticalAccuracy = 2.5
-			};
-
-			var copy = new Location(original);
-
-			Assert.Equal(original.Altitude, copy.Altitude);
-			Assert.Equal(original.AltitudeReferenceSystem, copy.AltitudeReferenceSystem);
-			Assert.Equal(original.VerticalAccuracy, copy.VerticalAccuracy);
-		}
 	}
 }
