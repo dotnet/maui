@@ -293,18 +293,24 @@ stages:
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Sample `
                     -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
                 }
+                $hasFirstResult = $env:REPRO_VERIFIED1 -and $env:REPRO_VERIFIED1 -notmatch '^\$\('
+                $hasSecondResult = $env:REPRO_VERIFIED2 -and $env:REPRO_VERIFIED2 -notmatch '^\$\('
+                $hasFirstCandidate = $env:REPRO_CANDIDATE1 -and $env:REPRO_CANDIDATE1 -notmatch '^\$\('
                 $hasSecondCandidate = $env:REPRO_CANDIDATE2 -and $env:REPRO_CANDIDATE2 -notmatch '^\$\('
-                if ($env:REPRO_VERIFIED2 -and $env:REPRO_VERIFIED2 -notmatch '^\$\(') {
+                if ($hasSecondResult) {
+                  if (-not $hasSecondCandidate) { throw 'The second result has no matching candidate payload.' }
                   $result = "$(Pipeline.Workspace)/Verified2"
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
                     -Encoded $env:REPRO_VERIFIED2 -Directory $result
-                } elseif (-not $hasSecondCandidate -and $env:REPRO_VERIFIED1 -and $env:REPRO_VERIFIED1 -notmatch '^\$\(') {
+                } elseif ($hasFirstResult) {
+                  if (-not $hasFirstCandidate) { throw 'The first result has no matching candidate payload.' }
                   & .github/scripts/IssueReplicate.Transport.ps1 -Mode Import -Kind Verified `
                     -Encoded $env:REPRO_VERIFIED1 -Directory $result
                 }
-                $candidateData = if ($hasSecondCandidate) {
+                $useSecondCandidate = $hasSecondResult -or (-not $hasFirstResult -and $hasSecondCandidate)
+                $candidateData = if ($useSecondCandidate) {
                   $env:REPRO_CANDIDATE2
-                } elseif ($env:REPRO_CANDIDATE1 -and $env:REPRO_CANDIDATE1 -notmatch '^\$\(') {
+                } elseif ($hasFirstCandidate) {
                   $env:REPRO_CANDIDATE1
                 }
                 if ($candidateData) {

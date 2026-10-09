@@ -466,6 +466,12 @@ observations requiring review, not tamper-proof verification.
 The isolated posting job imports only the snapshot, bounded sample build record,
 candidate draft and verified result when available, validates
 the existing issue/revision/patch contracts, and publishes the expandable report.
+Selection follows the available verification payload: result 2 uses candidate 2;
+if verification 2 exported nothing, a completed result 1 retains candidate 1 even
+when generation 2 succeeded. With no verification result, the latest available
+candidate remains an unverified draft. Missing matching candidates or malformed
+selected payloads fail explicitly; they do not fall back to a different pair or
+turn a failed revision into an independent confirmation.
 The full diff and original repro links are preserved in comments without artifact
 retention or storage charges. Fork publication requires a separately configured
 issue-comment credential: the fork's built-in token cannot post to `dotnet/maui`.
