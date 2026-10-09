@@ -789,7 +789,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AccessibilityNodeInfoCompat info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
-			info.ViewIdResourceName = _automationId;
+			info.ViewIdResourceName = $"{host.Context.PackageName}:id/{_automationId}";
 		}
 	}
 }
