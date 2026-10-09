@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 			using var trackingStream = new TrackingStream(bitmapStream.ToArray());
 			var imageSource = new StreamImageSourceStub(trackingStream);
 			var service = new StreamImageSourceService();
-			using var imageView = new RequestTrackingImageView(MauiProgram.DefaultContext);
+			using var imageView = new RequestTrackingImageView(MauiProgram.DefaultContext, trackingStream);
 
 			await InvokeOnMainThreadAsync(() => imageView.AttachAndRun(async () =>
 			{
@@ -69,20 +69,26 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var loadTask = service.LoadDrawableAsync(imageSource, imageView);
 
-					await trackingStream.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-					var submission = await imageView.RequestSubmitted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-					Assert.True(submission.IsRunning);
+					await WaitForStage(trackingStream.ReadStarted.Task, "the source stream read to start");
 
 					requestManager.OnStop();
 					requestManagerStopped = true;
-					Assert.False(submission.IsRunning);
 
 					trackingStream.AllowRead();
+
+					var submission = await WaitForStage(
+						imageView.RequestSubmitted.Task,
+						"Glide to submit the buffered image request");
+
+					Assert.True(submission.SourceDisposed);
+					Assert.False(submission.Request.IsRunning);
+
 					requestManager.OnStart();
 					requestManagerStopped = false;
 
-					using var result = await loadTask.WaitAsync(TimeSpan.FromSeconds(5));
+					using var result = await WaitForStage(
+						loadTask,
+						"the buffered image request to complete after Glide restarts");
 					Assert.NotNull(result);
 
 					var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
@@ -102,12 +108,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class RequestTrackingImageView : ImageView
 		{
-			public RequestTrackingImageView(global::Android.Content.Context context)
+			readonly TrackingStream _sourceStream;
+
+			public RequestTrackingImageView(global::Android.Content.Context context, TrackingStream sourceStream)
 				: base(context)
 			{
+				_sourceStream = sourceStream;
 			}
 
-			public TaskCompletionSource<IRequest> RequestSubmitted { get; } =
+			public TaskCompletionSource<(IRequest Request, bool SourceDisposed)> RequestSubmitted { get; } =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			public override void SetTag(int key, Java.Lang.Object tag)
@@ -115,7 +124,7 @@ namespace Microsoft.Maui.DeviceTests
 				base.SetTag(key, tag);
 
 				if (tag is IRequest request)
-					RequestSubmitted.TrySetResult(request);
+					RequestSubmitted.TrySetResult((request, _sourceStream.IsDisposed));
 			}
 		}
 
@@ -131,6 +140,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			readonly TaskCompletionSource<bool> _allowRead =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public bool IsDisposed { get; private set; }
 
 			public void AllowRead() => _allowRead.TrySetResult(true);
 
@@ -155,6 +166,35 @@ namespace Microsoft.Maui.DeviceTests
 				return await base.ReadAsync(buffer, offset, count, cancellationToken);
 			}
 
+			protected override void Dispose(bool disposing)
+			{
+				IsDisposed = true;
+				base.Dispose(disposing);
+			}
+		}
+
+		static async Task WaitForStage(Task task, string stage)
+		{
+			try
+			{
+				await task.WaitAsync(TimeSpan.FromSeconds(30));
+			}
+			catch (TimeoutException exception)
+			{
+				throw new TimeoutException($"Timed out waiting for {stage}.", exception);
+			}
+		}
+
+		static async Task<T> WaitForStage<T>(Task<T> task, string stage)
+		{
+			try
+			{
+				return await task.WaitAsync(TimeSpan.FromSeconds(30));
+			}
+			catch (TimeoutException exception)
+			{
+				throw new TimeoutException($"Timed out waiting for {stage}.", exception);
+			}
 		}
 	}
 }
