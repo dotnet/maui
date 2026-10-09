@@ -1182,6 +1182,27 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             $message.Length | Should -BeLessOrEqual 300
         }
 
+        It 'redacts quoted JSON credential fields while preserving safe fallback details' {
+            $exception = [System.InvalidOperationException]::new('invalid request')
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                '{"access_token":"sensitive","nested":{"client_assertion":"assertion"},"ID_TOKEN" : "id-secret","refresh_token":"refresh","token":"general","requestId":"safe-id"}')
+
+            $message = Get-QueueTestAzdoQueueFailureMessage -ErrorRecord $errorRecord
+
+            $message | Should -Match '"access_token":"\[redacted\]"'
+            $message | Should -Match '"client_assertion":"\[redacted\]"'
+            $message | Should -Match '"ID_TOKEN" : "\[redacted\]"'
+            $message | Should -Match '"refresh_token":"\[redacted\]"'
+            $message | Should -Match '"token":"\[redacted\]"'
+            $message | Should -Match '"requestId":"safe-id"'
+            $message | Should -Not -Match ':\s*"(?:sensitive|assertion|id-secret|refresh|general)"'
+        }
+
         It 'caps HTTP timeouts and retry sleeps to the shared remaining budget' {
             Mock Get-DispatcherElapsedSeconds { return 455 } -ModuleName QueueCiFixAzdoValidationTest
 

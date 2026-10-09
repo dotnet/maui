@@ -124,6 +124,7 @@ function Get-AzdoQueueFailureMessage {
 
     $detail = $detail -replace '[\r\n\t]+', ' '
     $detail = $detail -replace '(?i)\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+', '$1 [redacted]'
+    $detail = $detail -replace '(?i)("(?:client_assertion|access_token|id_token|refresh_token|token)"\s*:\s*)"(?:\\.|[^"\\])*"', '$1"[redacted]"'
     $detail = $detail -replace '(?i)\b(client_assertion|access_token|id_token|refresh_token|token)=([^&\s]+)', '$1=[redacted]'
     $detail = $detail -replace '\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b', '[redacted-jwt]'
     $detail = $detail.Trim()
