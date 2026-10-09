@@ -264,7 +264,10 @@ The development provider forwards only ordinary app-origin GET/HEAD resources
 to the fixed upstream, preserving escaped paths, queries, status, and MIME type.
 It buffers at most 8 MiB per asset, recomputes body headers after decompression,
 disables caching/redirects/cookies, and returns explicit errors instead of
-substituting packaged HTML. These routes remain framework-owned:
+substituting packaged HTML. Every upstream 3xx is explicitly rejected with 502;
+neither relative nor off-origin redirects are followed. HEAD responses have no
+body on success or error, while retaining representation Content-Length.
+These routes remain framework-owned:
 
 ```text
 /_framework/hybridwebview.js
@@ -461,9 +464,42 @@ Launcher checks used that corrected app:
   **Nonzero exit** after the SDK's `MSB4236` failure; the owned Vite process stopped
   and no native app or token remained.
 - Terminating the recorded owned Vite process group after native readiness:
-  **exit 1**, with cleanup of the verified native instance and token.
+  **exit 1**, with cleanup of the verified native instance and token. A fixture
+  which closed only Vite's HTTP listener while its process stayed alive also
+  **exited 1** after the bounded repeated page-readiness checks failed.
 
 Logs for these checks are in ignored repository `artifacts/hybridwebapp-launcher-*`
 and the launcher's owner-only sample-local session directories. The frontend edits
 were restored to the original files; no launcher starts npm installation or changes
 global Xcode selection.
+
+### Redirect/HEAD correction runtime fixtures
+
+Narrow temporary Vite middleware and frontend `fetch` calls exercised the rebuilt
+`d446c92d8e` app through the same SDK launcher. The middleware/front-end edits
+were removed after validation. Actual results were read from the embedded DOM
+using the authenticated `/source` endpoint:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
+./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh --no-build
+# In a probe terminal, using that launcher's session/token/port as above:
+curl --fail -H "Authorization: Bearer $token" \
+  "http://127.0.0.1:$port/source"
+```
+
+- Relative 302 to a fixture destination: **502 redirect-not-supported error**;
+  destination request count stayed zero.
+- Off-origin 307 to a separately monitored loopback listener:
+  **502 redirect-not-supported error**, with **zero off-origin requests**.
+- HEAD against a fixture delaying response headers beyond the ten-second bound:
+  **504, empty body, nonzero representation Content-Length**.
+- HEAD after the owned Vite listener closed:
+  **502, empty body, nonzero representation Content-Length**. The native DOM
+  collector captured this before the launcher's bounded server-failure cleanup.
+
+Evidence: ignored `artifacts/hybridwebapp-redirect-head-results.json`,
+`hybridwebapp-head-down-result.json`, `hybridwebapp-off-origin-hits.log`, and
+`hybridwebapp-launcher-redirect-head.log`. All owned native/frontend/off-origin
+fixture processes were stopped, all session tokens removed, and frontend
+`type-check`/`build` passed again with the original sources restored.
