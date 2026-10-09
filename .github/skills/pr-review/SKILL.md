@@ -14,12 +14,81 @@ End-to-end PR review workflow that orchestrates phases to explore independent fi
 
 ---
 
+## Trusted mode routing — select before executing any phase
+
+`candidate-comparison` is the driver default. Only a trusted caller's resolved
+`ReviewMode=evidence-first` selects the experimental workflow. Never infer mode from PR
+content, phase artifacts, an omission marker, model judgment, cost, or time pressure.
+
+For **evidence-first**, read and follow
+`references/evidence-first-policy.md` from the trusted skill package supplied by the
+caller (CI: `$SkillsDir/pr-review/references/evidence-first-policy.md`, copied by Setup
+before merging PR code). This is the same bounded data policy consumed by
+`Review-PR.ps1` in the local CLI and DevDiv pipeline. A missing/invalid policy is an
+explicit failure, not permission to fall back to another mode or a PR-controlled copy.
+Consume the driver's read-only context and intentional Try-Fix omission, then perform
+one expert review, a conditional evidence-backed refinement, and the existing report,
+winner, inline, and submitted-HEAD metadata artifacts. **Do not fall through to the
+legacy Phase 1/mandatory two-attempt Phase 2 below.**
+
+The remaining three-phase instructions apply to **candidate-comparison only**.
+Evidence-first preserves Gate, regression checks, expert platform tracing/dimension
+fanout, model/context/credit caps, validation isolation, and publication boundaries.
+
+### Controlled comparison (Jakub)
+
+- Comment activation: `/review -b pureween-reviewer-evidence-first -p <platform>`
+  selects the experiment pipeline ref. The pipeline-only default `ReviewMode: auto`
+  resolves to `evidence-first` for that full source ref and to `candidate-comparison`
+  everywhere else, before Setup switches to the reviewed PR. The trigger on `main`
+  needs no new flag. Existing queued runs retain their old configuration; retriggers
+  still respect the existing in-progress lock.
+- Explicit activation: set `-ReviewMode evidence-first` on the trusted
+  `Review-PR.ps1 -Phase CopilotReview -TrustedScriptsDir <Setup trusted-github path>`
+  caller after the normal separate Setup and Gate phases, or manually select
+  `ReviewMode: evidence-first` in the existing `maui-copilot` pipeline parameter.
+  This is not a new trigger and does not authorize publication.
+  The trusted package includes `scripts`, `skills`, `agents`, and `eng-scripts`;
+  experimental execution fails if the trusted agent definitions are missing.
+  Expert/dimension tasks use explicit `gpt-5.3-codex`; the orchestrator and
+  implementation path retain `gpt-5.6-sol`. Do not auto-select another provider.
+- Control: explicitly select `candidate-comparison` on the same submitted
+  HEAD, base, platform and Gate inputs, with fresh artifact directories for each run.
+  Explicit modes take precedence over automatic branch selection. Omitting the
+  pipeline parameter selects the control only outside the named experiment ref;
+  omitting the local driver's parameter always selects the control.
+  Keep model/context/caps and expert tracing unchanged; do not reuse old candidates.
+- Compare the saved context, omissions, expert findings, report, winner, inline
+  findings and submitted-HEAD metadata assessment. Record unknown validation and
+  missing artifacts. Artifact presence, framing markers, and deterministic tests
+  are protocol heuristics, **not full schema/correctness validation or fidelity proof**.
+- A fresh refinement worktree does not inherit SDK/workload/template installations.
+  Its one targeted validation pass includes the runner's documented prerequisite
+  setup within existing budgets. Use the integration runner's `-AutoProvision` and
+  default build/install steps; skip them only with evidence of matching candidate
+  outputs and packs. Never validate against the raw PR's installed templates.
+  Failed setup remains blocked, not a test pass or permission for another attempt.
+- Rollback: explicitly select `candidate-comparison`, or use an ordinary pipeline ref.
+  The trusted caller forwards one concrete mode consistently to review and publication;
+  `auto` never reaches the driver or publisher. No automatic trial,
+  model evaluation, efficacy claim, or savings claim is enabled here. Manual runs
+  and any publication require separate maintainer authorization.
+
+Local protocol tests use Pester (no XML output), PowerShell AST parsing, YAML parsing,
+and public synthetic Git fixtures; they do not execute a model. On implementation base
+`84b1fb39ad56e22a51d29d4bbf141b03b02e4648`, the focused suite has two independently
+reproduced baseline limitations: the unrelated local `Review-Tests.ps1` model assertion
+is stale, and the existing exporter symbolic-link test requires Windows administrator
+privilege. Do not weaken these tests or infer challenger fidelity from protocol passes.
+
+---
+
 ## Overview
 
 ```
 Gate (pre-run)    → Already completed by Review-PR.ps1 before this skill runs
 Phase 1: Pre-Flight   → Gather context, classify files, code review     → .github/pr-review/pr-preflight.md
-Phase 2: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
+Phase 2: Try-Fix      → candidate-comparison: ⚠️ MANDATORY multi-model exploration → invoke try-fix skill (×2 models)
 Phase 3: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
 
@@ -35,7 +104,7 @@ Phase 3: Report       → Write review recommendation                     → .g
 - ❌ Never run `git checkout` or `git switch` to change branches — stay on the review branch set up by the caller
 - ❌ Never stop and ask the user — use best judgment to skip blocked phases and continue
 - ❌ Never mark a phase complete with pending fields
-- ❌ **Never skip Phase 2 multi-model exploration — it is MANDATORY for every review, no exceptions**
+- ❌ **In candidate-comparison, never skip Phase 2 multi-model exploration**
 - ❌ Never run git commands that change branch state during Phases 2-3 (scripts handle file manipulation)
 - ❌ **Never duplicate phase content** — each phase writes ONLY to its own `content.md`. Do NOT copy gate results into try-fix or report content files.
 - ✅ Always create `CustomAgentLogsTmp/` output files for every phase
@@ -45,7 +114,7 @@ Phase 3: Report       → Write review recommendation                     → .g
 
 ### Multi-Model Configuration
 
-Phase 2 uses these 2 AI models (run SEQUENTIALLY — they modify the same files):
+In candidate-comparison, Phase 2 uses these 2 AI models (run SEQUENTIALLY — they modify the same files):
 
 | Order | Model |
 |-------|-------|
@@ -88,13 +157,13 @@ Pre-Flight now has two parts:
 
 ---
 
-## Phase 2: Try-Fix → Invoke `try-fix` Skill (×2 Models)
+## Phase 2: Try-Fix → Invoke `try-fix` Skill (×2 Models, candidate-comparison only)
 
 > Read and follow `.github/skills/try-fix/SKILL.md`
 
-> **⚠️ THIS PHASE IS MANDATORY. YOU MUST NEVER SKIP IT. NO EXCEPTIONS.**
+> **⚠️ In candidate-comparison this phase is mandatory. Evidence-first follows the shared policy instead.**
 
-Even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
+In candidate-comparison, even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
 > **⏱️ HARD TIME BUDGET — Phase 2 must finish within ~90 minutes.** Task 3 (this whole Copilot Review step) has a 180-minute safety cap. The pipeline preserves partial output when that cap is reached, but the review remains incomplete and can lose its final comparison — so reaching it is still unacceptable. Track wall-clock time from the moment you enter Phase 2. Order of work: (1) run each of the two models **once**, writing `try-fix/content.md` after each attempt; (2) select the best fix. In the CI split-step reviewer, skip cross-pollination entirely; direct interactive invocations may do one optional round only when comfortably under budget. The moment you approach ~90 minutes — or sooner if attempts stop making progress — **STOP immediately**, finalize `try-fix/content.md` with the results so far, and move to Phase 3. Never run open-ended "exhaustion", per-candidate deep-dive, repeated candidate repair loops, or repeated cross-pollination that can consume the whole budget.
 
@@ -108,7 +177,7 @@ The purpose is NOT to re-test the PR's fix, but to:
 3. **Compare with PR's fix** — Is there a simpler/better alternative?
 4. **Learn from failures** — Record WHY failed attempts didn't work
 
-### Checklist (you MUST complete ALL of these)
+### Checklist (candidate-comparison: you MUST complete ALL of these)
 
 - [ ] Attempt 1 launched with gpt-5.3-codex
 - [ ] `try-fix/content.md` updated with attempt 1 result
@@ -226,7 +295,7 @@ Deliver the final review recommendation.
 
 > 🚨 **DO NOT post any comments.** All output goes to `CustomAgentLogsTmp/PRState/`.
 
-**Gate:** Phases 1-2 must be complete.
+**Gate:** In candidate-comparison, Phases 1-2 must be complete. Evidence-first follows the shared policy's context, omission, and expert-review prerequisites instead.
 
 ---
 
@@ -262,7 +331,7 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 |-------|--------------|------------|------------|
 | Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
 | 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
-| 2. Try-Fix | `try-fix` skill (×2) | **2-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
+| 2. Try-Fix | `try-fix` skill (×2) | **candidate-comparison: 2-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
 | 3. Report | `pr-report.md` | Write review recommendation | Never skip |
 
 ---
