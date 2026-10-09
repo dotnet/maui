@@ -92,6 +92,54 @@ function Get-ObjectPropertyValue {
     return $property.Value
 }
 
+function Get-AzdoQueueFailureMessage {
+    param(
+        [Parameter(Mandatory = $true)][System.Management.Automation.ErrorRecord]$ErrorRecord,
+        [ValidateRange(256, 4096)][int]$MaximumDetailLength = 1024
+    )
+
+    $exceptionMessage = $ErrorRecord.Exception.Message
+    $responseBody = [string](Get-ObjectPropertyValue -InputObject $ErrorRecord.ErrorDetails -Name 'Message')
+    if ([string]::IsNullOrWhiteSpace($responseBody)) {
+        return $exceptionMessage
+    }
+
+    $detail = $responseBody
+    try {
+        $errorResponse = $responseBody | ConvertFrom-Json -Depth 10 -ErrorAction Stop
+        $azureMessage = [string](Get-ObjectPropertyValue -InputObject $errorResponse -Name 'message')
+        $typeKey = [string](Get-ObjectPropertyValue -InputObject $errorResponse -Name 'typeKey')
+        if (-not [string]::IsNullOrWhiteSpace($azureMessage)) {
+            $detail = if ([string]::IsNullOrWhiteSpace($typeKey)) {
+                $azureMessage
+            }
+            else {
+                "$azureMessage (Azure type: $typeKey)"
+            }
+        }
+    }
+    catch [System.ArgumentException] {
+        # Preserve non-JSON provider diagnostics after applying the same bounds and redaction.
+    }
+
+    $detail = $detail -replace '[\r\n\t]+', ' '
+    $detail = $detail -replace '(?i)\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+', '$1 [redacted]'
+    $detail = $detail -replace '(?i)("(?:client_assertion|access_token|id_token|refresh_token|token)"\s*:\s*)"(?:\\.|[^"\\])*"', '$1"[redacted]"'
+    $detail = $detail -replace '(?i)\b(client_assertion|access_token|id_token|refresh_token|token)=([^&\s]+)', '$1=[redacted]'
+    $detail = $detail -replace '\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b', '[redacted-jwt]'
+    $detail = $detail.Trim()
+    if ($detail.Length -gt $MaximumDetailLength) {
+        $truncationSuffix = '... [truncated]'
+        $detail = $detail.Substring(0, $MaximumDetailLength - $truncationSuffix.Length) + $truncationSuffix
+    }
+
+    if ([string]::IsNullOrWhiteSpace($detail)) {
+        return $exceptionMessage
+    }
+
+    return "$exceptionMessage Azure response: $detail"
+}
+
 function Test-CiFixPrFingerprint {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
@@ -777,7 +825,7 @@ function Invoke-AzdoPipelineQueue {
     }
     catch {
         if (-not (Test-IsTransientHttpException -Exception $_.Exception)) {
-            throw
+            throw (Get-AzdoQueueFailureMessage -ErrorRecord $_)
         }
         $queueStatusCode = Get-HttpStatusCode -Exception $_.Exception
 
