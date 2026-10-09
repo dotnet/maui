@@ -324,7 +324,8 @@ function Get-CiFixJsonArrayProperty {
         [Parameter(Mandatory = $true)][string]$Description
     )
 
-    if ($Value -isnot [pscustomobject]) {
+    if ($null -eq $Value -or
+        $Value.GetType() -ne [System.Management.Automation.PSCustomObject]) {
         return [pscustomobject]@{
             Succeeded = $false
             Items = @()
@@ -344,7 +345,10 @@ function Get-CiFixJsonArrayProperty {
     }
 
     $items = @($property.Value)
-    if (@($items | Where-Object { $_ -isnot [pscustomobject] }).Count -gt 0) {
+    if (@($items | Where-Object {
+                $null -eq $_ -or
+                $_.GetType() -ne [System.Management.Automation.PSCustomObject]
+            }).Count -gt 0) {
         return [pscustomobject]@{
             Succeeded = $false
             Items = @()

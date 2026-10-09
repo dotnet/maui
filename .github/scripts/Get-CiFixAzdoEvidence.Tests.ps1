@@ -111,12 +111,33 @@ Describe 'Get-CiFixAzdoEvidence' {
         $result.logId | Should -Be @(179, 180)
     }
 
+    It 'rejects scalar JSON array entries as non-objects' -ForEach @(
+        @{ Name = 'number'; Content = '{"value":[1]}' }
+        @{ Name = 'string'; Content = '{"value":["row"]}' }
+        @{ Name = 'boolean'; Content = '{"value":[true]}' }
+    ) {
+        $value = $Content | ConvertFrom-Json -Depth 10
+
+        $result = Get-CiFixJsonArrayProperty `
+            -Value $value `
+            -PropertyName 'value' `
+            -Description 'test collection'
+
+        $result.Succeeded | Should -BeFalse
+        $result.Error | Should -Match 'non-object entry'
+        @($result.Items).Count | Should -Be 0
+    }
+
     It 'marks structurally malformed timelines incomplete' -ForEach @(
         @{ Name = 'empty body'; Content = '' }
         @{ Name = 'JSON null'; Content = 'null' }
+        @{ Name = 'JSON scalar'; Content = '1' }
         @{ Name = 'missing records'; Content = '{}' }
         @{ Name = 'null records'; Content = '{"records":null}' }
         @{ Name = 'object records'; Content = '{"records":{}}' }
+        @{ Name = 'number record'; Content = '{"records":[1]}' }
+        @{ Name = 'string record'; Content = '{"records":["row"]}' }
+        @{ Name = 'boolean record'; Content = '{"records":[true]}' }
     ) {
         $destination = Join-Path $TestDrive "malformed-timeline-$Name"
         $requestInvoker = {
@@ -909,6 +930,9 @@ Describe 'Get-CiFixAzdoEvidence' {
         @{ Name = 'missing value'; Content = '{}' }
         @{ Name = 'null value'; Content = '{"value":null}' }
         @{ Name = 'object value'; Content = '{"value":{}}' }
+        @{ Name = 'number row'; Content = '{"value":[1]}' }
+        @{ Name = 'string row'; Content = '{"value":["row"]}' }
+        @{ Name = 'boolean row'; Content = '{"value":[true]}' }
         @{ Name = 'invalid selected ID'; Content = '{"value":[{"id":"invalid","result":"failed"}]}' }
     ) {
         $snapshotPath = Join-Path $TestDrive "latest-query-$Name.json"
@@ -1029,6 +1053,9 @@ Describe 'Get-CiFixAzdoEvidence' {
         @{ Name = 'missing value'; Content = '{}' }
         @{ Name = 'null value'; Content = '{"value":null}' }
         @{ Name = 'object value'; Content = '{"value":{}}' }
+        @{ Name = 'number row'; Content = '{"value":[1]}' }
+        @{ Name = 'string row'; Content = '{"value":["row"]}' }
+        @{ Name = 'boolean row'; Content = '{"value":[true]}' }
         @{
             Name = 'matching invalid ID'
             Content = '{"value":[{"id":"invalid","triggerInfo":{"pr.sourceSha":"1111111111111111111111111111111111111111"}}]}'
