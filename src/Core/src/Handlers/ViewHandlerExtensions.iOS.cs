@@ -84,10 +84,12 @@ namespace Microsoft.Maui
 			// This also affects ImageButtons
 			if (platformView is UIImageView imageView)
 			{
-				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
-				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
+				var widthIsExplicit = IsExplicitSet(virtualView.Width);
+				var heightIsExplicit = IsExplicitSet(virtualView.Height);
+				widthConstraint = widthIsExplicit ? virtualView.Width : widthConstraint;
+				heightConstraint = heightIsExplicit ? virtualView.Height : heightConstraint;
 
-				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
+				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint), default, widthIsExplicit, heightIsExplicit);
 			}
 			else if (platformView is LayoutView || platformView is MauiLabel)
 			{

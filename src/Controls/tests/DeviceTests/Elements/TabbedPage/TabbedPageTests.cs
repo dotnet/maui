@@ -441,7 +441,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-#if TEST_FAILS_ON_ANDROID //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS
 			, Skip = "FIXME: fails on Windows"
@@ -470,9 +469,12 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 			});
 
+			// Null the locals so they aren't hoisted into the async state machine and kept
+			// alive across the WaitForGC await below.
+			navPage = null;
+
 			await AssertionExtensions.WaitForGC(pageReference);
 		}
-#endif
 
 		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false, bool isSmoothScrollEnabled = true, IEnumerable<Page> pages = null)
 		{

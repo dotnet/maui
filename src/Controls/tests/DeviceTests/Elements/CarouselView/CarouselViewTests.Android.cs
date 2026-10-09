@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
@@ -54,6 +55,60 @@ namespace Microsoft.Maui.DeviceTests
 				var platformPosition = GetPlatformPosition(handler);
 				Assert.True(CheckPosition(platformPosition, position));
 			});
+		}
+
+		[Theory(DisplayName = "Position Initializes Correctly When ItemsSource Creates New Items On Each Enumeration")]
+		[InlineData(0, true)]
+		[InlineData(1, true)]
+		[InlineData(2, true)]
+		[InlineData(0, false)]
+		[InlineData(1, false)]
+		[InlineData(2, false)]
+		public async Task PositionInitializesCorrectlyWhenItemsSourceCreatesNewItems(int position, bool loop)
+		{
+			// https://github.com/dotnet/maui/issues/32037
+			SetupBuilder();
+
+			// Each enumeration creates new item instances, so the CurrentItem picked from one
+			// enumeration is not found in the next one
+			var data = Enumerable.Range(0, 3).Select(index => new CarouselItem(index));
+
+			var template = new DataTemplate(() =>
+			{
+				var label = new Label();
+
+				return new Grid()
+				{
+					label
+				};
+			});
+
+			var carouselView = new CarouselView()
+			{
+				ItemTemplate = template,
+				ItemsSource = data,
+				Loop = loop,
+				Position = position
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async (handler) =>
+			{
+				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
+
+				Assert.Equal(position, carouselView.Position);
+				var currentItem = Assert.IsType<CarouselItem>(carouselView.CurrentItem);
+				Assert.Equal(position, currentItem.Index);
+
+				var platformPosition = GetPlatformPosition(handler);
+				Assert.True(CheckPosition(platformPosition, position));
+			});
+		}
+
+		class CarouselItem
+		{
+			public CarouselItem(int index) => Index = index;
+
+			public int Index { get; }
 		}
 
 		[Fact(DisplayName = "Vertical Drag On Horizontal CarouselView Is Not Intercepted")]

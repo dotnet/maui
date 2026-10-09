@@ -133,6 +133,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			DisconnectRootComponents();
+
 			platformView.StopLoading();
 
 			if (_webviewManager != null)
@@ -268,6 +270,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+				if (_webViewHandler is null || _webViewHandler is IViewHandler ivh && ivh.VirtualView is null)
+				{
+					return;
+				}
+
 				var url = urlSchemeTask.Request.Url.AbsoluteString;
 				if (string.IsNullOrEmpty(url))
 				{
@@ -314,6 +321,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
 			{
+				// The typed VirtualView property throws when disconnected; use the nullable interface property.
+				if (((IViewHandler)_webViewHandler).VirtualView is null || _webViewHandler._webviewManager is null)
+				{
+					statusCode = 404;
+					contentType = string.Empty;
+					return Array.Empty<byte>();
+				}
+
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 

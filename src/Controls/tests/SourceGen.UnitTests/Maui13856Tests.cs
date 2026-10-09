@@ -81,7 +81,7 @@ namespace Test
 		Assert.True(generatedSource.SourceText != null, "Expected generated source file with xsg.cs extension");
 		var generatedCode = generatedSource.SourceText.ToString();
 
-		// Verify the enum index uses the fully qualified enum member name
-		Assert.Contains("UserSettings[global::Test.UserSetting.TBD]", generatedCode, System.StringComparison.Ordinal);
+		// Verify the enum index uses the fully qualified enum member name (with null-conditional access)
+		Assert.Contains("UserSettings?[global::Test.UserSetting.TBD]", generatedCode, System.StringComparison.Ordinal);
 	}
 }

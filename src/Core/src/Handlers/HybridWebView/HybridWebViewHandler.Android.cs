@@ -7,6 +7,22 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, AWebView>
 	{
+		public override bool NeedsContainer => true;
+
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			// Native parent clipping rejects off-screen WebView drawing without an empty Skia clip.
+			if (ContainerView is WrapperView wrapper)
+				wrapper.SetClipChildren(true);
+		}
+
+		protected override void RemoveContainer()
+		{
+			// Disconnect clears the platform view before removing the container.
+			WrapperView.RemoveContainer(((ViewHandler)this).PlatformView, Context, ContainerView, () => ContainerView = null);
+		}
+
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiHybridWebView(this, Context!)
@@ -68,7 +84,8 @@ namespace Microsoft.Maui.Handlers
 			//platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-
+			ContainerView?.RemoveFromParent();
+			HasContainer = false;
 
 			base.DisconnectHandler(platformView);
 		}

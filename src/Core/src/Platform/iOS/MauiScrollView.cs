@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
 
-		UIEdgeInsets _systemAdjustedContentInset = UIEdgeInsets.Zero;
+		SafeAreaPadding _systemAdjustedContentInset = SafeAreaPadding.Empty;
 
 		/// <summary>
 		/// Flag indicating whether the safe area needs to be recalculated.
@@ -409,6 +409,7 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
+			var systemAdjustedContentInset = SystemAdjustedContentInset.ToSafeAreaInsets();
 
 			// iOS sets AdjustedContentInset only when the ContentSize exceeds the ScrollView's Bounds.
 			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
@@ -421,6 +422,11 @@ namespace Microsoft.Maui.Platform
 			else
 				_safeArea = GetInset(SystemAdjustedContentInset).ToSafeAreaInsets();
 
+			if (_safeArea.IsEmptyAtPixelLevel())
+			{
+				_safeArea = SafeAreaPadding.Empty;
+			}
+
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			// Parent-edge blocking is now resolved per-edge inline while computing GetInset() above
 			// (see ResolveParentBlockedEdges/GetManualInsetForEdge) for BOTH the manual (mixed-edge)
@@ -429,10 +435,10 @@ namespace Microsoft.Maui.Platform
 			// whole-view parent check is needed.
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
 
-			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
+			if (!_systemAdjustedContentInset.EqualsAtPixelLevel(systemAdjustedContentInset))
 			{
 				InvalidateConstraintsCache();
-				_systemAdjustedContentInset = SystemAdjustedContentInset;
+				_systemAdjustedContentInset = systemAdjustedContentInset;
 				return false;
 			}
 
@@ -521,7 +527,7 @@ namespace Microsoft.Maui.Platform
 		/// readers between arranges.
 		/// </summary>
 		bool UIKitCompensatesForSafeArea =>
-			SystemAdjustedContentInset != UIEdgeInsets.Zero
+			!SystemAdjustedContentInset.ToSafeAreaInsets().IsEmptyAtPixelLevel()
 			&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 		/// <summary>
@@ -648,11 +654,23 @@ namespace Microsoft.Maui.Platform
 					height = Bounds.Height + 1;
 				}
 			}
-			else if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			else if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
+				// UIKit is not currently reserving any space for the safe area on
+				// this scroll view - either because the adjustment behavior is set
+				// to Never, or because it is set to Always but UIKit has not yet
+				// assigned a system inset for the current layout pass. In either
+				// case, the content size must be padded manually to keep the
+				// content clear of the safe area. Once UIKit assigns a non-zero
+				// inset, the safe area is reserved natively instead, as described
+				// below.
 				width += _safeArea.HorizontalThickness;
 				height += _safeArea.VerticalThickness;
 			}
+			// UIKit is already reserving the safe area natively via a non-zero
+			// AdjustedContentInset, so the content size is intentionally left
+			// unmodified here. Padding it again would reserve the same safe area
+			// twice, producing a scrollable range larger than the actual content.
 
 			contentSize = new Size(width, height);
 

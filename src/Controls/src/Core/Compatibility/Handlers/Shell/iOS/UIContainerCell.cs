@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -14,8 +15,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IPlatformViewHandler _renderer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Binding context is unsubscribed from PropertyChanged and cleared in Disconnect.")]
 		object _bindingContext;
+		readonly NativeElementRegistrationSet _nativeElementRegistrations = new NativeElementRegistrationSet();
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Resources changed listener is removed and the reference cleared in Disconnect.")]
 		IElementDefinition _viewResource;
+		bool _updatingVisualState;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Measure callback is cleared in Disconnect before the cell is released.")]
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
@@ -59,6 +62,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;
+			if (context is Element owner)
+			{
+				_nativeElementRegistrations.Register(
+					owner,
+					this,
+					NativeElementRoles.ShellFlyout,
+					NativeElementDiscriminators.RealizedView);
+			}
 
 			if (BindingContext is BaseShellItem bsi)
 				bsi.AddLogicalChild(View);
@@ -85,6 +96,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect(Shell shell = null, bool keepRenderer = false)
 		{
+			_nativeElementRegistrations.Clear();
+			if (View is null)
+				return;
+
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
 			_viewResource?.RemoveResourcesChangedListener(OnResourcesChanged);
@@ -148,9 +163,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateVisualState()
 		{
-			if (BindingContext is BaseShellItem bsi)
+			if (_updatingVisualState || BindingContext is not BaseShellItem bsi)
 			{
+				return;
+			}
+
+			try
+			{
+				_updatingVisualState = true;
 				VisualStateManager.GoToState(View, bsi.IsChecked ? "Selected" : "Normal", force: true);
+			}
+			finally
+			{
+				_updatingVisualState = false;
 			}
 		}
 
