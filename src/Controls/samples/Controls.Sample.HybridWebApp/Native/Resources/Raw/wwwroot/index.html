@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hybrid web app — packaged content</title>
+    <style>
+      :root {
+        font-family: system-ui, sans-serif;
+        color: #14324f;
+        background: #eaf2f8;
+      }
+      body { margin: 0; padding: 3rem; }
+      main { max-width: 42rem; margin: auto; padding: 2rem; background: white; border-radius: 1rem; }
+      .mode { font-weight: 700; color: #14643b; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="mode">Packaged mode · no frontend server required</p>
+      <h1 id="packaged-title">HybridWebView is loading bundled content</h1>
+      <p>This page ships in the native app's <code>Resources/Raw/wwwroot</code> folder.</p>
+      <p>The sibling Vite frontend is separate. Development forwarding is not enabled yet.</p>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+Web/node_modules/
+Web/dist/
+artifacts/
+*.log
+*.binlog
