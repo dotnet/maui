@@ -745,7 +745,13 @@ namespace Microsoft.Maui.Controls
 
 			if (oldPage?.IsLoaded == true)
 			{
-				this.OnUnloaded(() => oldPage.DisconnectHandlers());
+				var disconnectHandled = false;
+				HandleLoadedPageDisconnect(oldPage, ref disconnectHandled);
+
+				if (!disconnectHandled)
+				{
+					this.OnUnloaded(oldPage.DisconnectHandlers);
+				}
 			}
 			else
 			{
@@ -754,6 +760,8 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 		}
+
+		partial void HandleLoadedPageDisconnect(Page page, ref bool disconnectHandled);
 
 		void OnPageHandlerChanged(object? sender, EventArgs e)
 		{
