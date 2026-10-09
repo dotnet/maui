@@ -24,9 +24,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
+			return ToUIBarButtonItem(item, forceName, forcePrimary,
+				!OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(27, 1));
+		}
+
+		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName, bool forcePrimary, bool useTitleAndImage)
+		{
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
 				return new SecondaryToolbarItem(item);
-			return new PrimaryToolbarItem(item, forceName);
+			return new PrimaryToolbarItem(item, forceName, useTitleAndImage);
 		}
 
 		internal static SecondarySubToolbarItem ToSecondarySubToolbarItem(this ToolbarItem item)
@@ -47,14 +53,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 				}
 			});
-
-			if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
-			{
-				item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
-				{
-					action.Image = result?.Value;
-				});
-			}
 
 			return new SecondarySubToolbarItem(item, action);
 		}
@@ -92,16 +90,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			readonly bool _forceName;
 			readonly WeakReference<ToolbarItem> _item;
+			readonly bool _useTitleAndImage;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The image result is disposed when replaced and when the toolbar item is disposed.")]
+			IDisposable _imageSourceResult;
+			int _imageLoadVersion;
+			bool _isDisposed;
 
-			public PrimaryToolbarItem(ToolbarItem item, bool forceName)
+			public PrimaryToolbarItem(ToolbarItem item, bool forceName, bool useTitleAndImage)
 			{
 				_forceName = forceName;
 				_item = new(item);
+				_useTitleAndImage = useTitleAndImage;
 
-				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty && !forceName)
-					UpdateIconAndStyle(item);
-				else
-					UpdateTextAndStyle(item);
+				UpdateContentAndStyle(item);
 				UpdateIsEnabled(item);
 
 				Clicked += OnClicked;
@@ -128,6 +129,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (disposing)
 				{
+					_isDisposed = true;
+					_imageLoadVersion++;
+					Image = null;
+					_imageSourceResult?.Dispose();
+					_imageSourceResult = null;
+
 					if (_item.TryGetTarget(out var item))
 						item.PropertyChanged -= OnPropertyChanged;
 				}
@@ -144,18 +151,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					UpdateIsEnabled(item);
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 				{
-					if (item.IconImageSource == null || item.IconImageSource.IsEmpty || _forceName)
-						UpdateTextAndStyle(item);
+					if (_useTitleAndImage || item.IconImageSource == null || item.IconImageSource.IsEmpty || _forceName)
+						Title = item.Text;
 				}
 				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
 				{
-					if (!_forceName)
-					{
-						if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
-							UpdateIconAndStyle(item);
-						else
-							UpdateTextAndStyle(item);
-					}
+					UpdateContentAndStyle(item);
 				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
@@ -165,26 +166,56 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			void UpdateIconAndStyle(ToolbarItem item)
+			void UpdateContentAndStyle(ToolbarItem item)
 			{
-				if (item?.IconImageSource == null)
+				var imageSource = item?.IconImageSource;
+				if (!_forceName && imageSource is not null && !imageSource.IsEmpty)
 				{
-					Image = null;
-					Style = UIBarButtonItemStyle.Plain;
+					if (_useTitleAndImage)
+						Title = item.Text;
+
+					UpdateIcon(item, imageSource);
 				}
 				else
 				{
-					var mauiContext = item.FindMauiContext();
-					if (mauiContext is null)
+					UpdateTextAndStyle(item);
+				}
+			}
+
+			void UpdateIcon(ToolbarItem item, ImageSource imageSource)
+			{
+				var mauiContext = item.FindMauiContext();
+				if (mauiContext is null)
+					return;
+
+				var loadVersion = ++_imageLoadVersion;
+				imageSource.LoadImage(mauiContext, result =>
+				{
+					if (_isDisposed ||
+						loadVersion != _imageLoadVersion ||
+						!_item.TryGetTarget(out var currentItem) ||
+						!ReferenceEquals(currentItem.IconImageSource, imageSource))
 					{
+						result?.Dispose();
 						return;
 					}
-					item.IconImageSource.LoadImage(mauiContext, result =>
+
+					if (result?.Value is null)
 					{
-						Image = result?.Value;
+						Image = null;
 						Style = UIBarButtonItemStyle.Plain;
-					});
-				}
+						result?.Dispose();
+						_imageSourceResult?.Dispose();
+						_imageSourceResult = null;
+						return;
+					}
+
+					var previousResult = _imageSourceResult;
+					_imageSourceResult = result;
+					Image = result.Value;
+					Style = UIBarButtonItemStyle.Plain;
+					previousResult?.Dispose();
+				});
 			}
 
 			void UpdateIsEnabled(ToolbarItem item)
@@ -194,17 +225,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			void UpdateTextAndStyle(ToolbarItem item)
 			{
+				_imageLoadVersion++;
+				Image = null;
+				_imageSourceResult?.Dispose();
+				_imageSourceResult = null;
 				Title = item.Text;
 #pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios8.0")]
 				Style = UIBarButtonItemStyle.Bordered;
 #pragma warning restore CA1416, CA1422
-				Image = null;
 			}
 		}
 
 		internal sealed class SecondarySubToolbarItem
 		{
-			readonly WeakReference<ToolbarItem> _item;
 			readonly WeakReference<UIAction> _nativeItem;
 
 			public UIAction PlatformAction
@@ -222,14 +255,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public SecondarySubToolbarItem(ToolbarItem item, UIAction nativeItem)
 			{
-				_item = new(item);
 				_nativeItem = new(nativeItem);
 
 				UpdateText(item);
 				UpdateIcon(item);
 				UpdateIsEnabled(item);
-
-				item.PropertyChanged += OnPropertyChanged;
 
 				if (item is not null && !string.IsNullOrEmpty(item.AutomationId)
 					&& _nativeItem.TryGetTarget(out var nativeAction))
@@ -239,19 +269,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				//this.SetAccessibilityHint(item);
 				//this.SetAccessibilityLabel(item);
-			}
-
-			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-			{
-				if (!_item.TryGetTarget(out var item))
-					return;
-
-				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
-					UpdateText(item);
-				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
-					UpdateIcon(item);
-				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
-					UpdateIsEnabled(item);
 			}
 
 			void UpdateIcon(ToolbarItem item)

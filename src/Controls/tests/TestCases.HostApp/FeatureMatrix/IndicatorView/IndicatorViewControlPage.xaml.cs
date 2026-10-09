@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -41,10 +40,7 @@ public partial class IndicatorViewControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		_viewModel = new IndicatorViewViewModel();
-		BindingContext = _viewModel;
-		_viewModel.Position = 0;
-		_viewModel.CurrentItem = _viewModel.CarouselItems.FirstOrDefault();
+		_viewModel.Reset();
 		await Navigation.PushAsync(new IndicatorViewOptionsPage(_viewModel));
 	}
 

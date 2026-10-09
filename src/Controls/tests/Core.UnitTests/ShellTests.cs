@@ -28,6 +28,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DisplayedPageObserversCanRemoveThemselvesDuringNotification()
+		{
+			var section = new ShellSection();
+			var controller = (IShellSectionController)section;
+			var firstObserver = new object();
+			var secondObserver = new object();
+			var firstCalls = 0;
+			var secondCalls = 0;
+			var removeFirstObserver = false;
+			controller.AddDisplayedPageObserver(
+				firstObserver,
+				_ =>
+				{
+					firstCalls++;
+					if (removeFirstObserver)
+						controller.RemoveDisplayedPageObserver(firstObserver);
+				});
+			controller.AddDisplayedPageObserver(secondObserver, _ => secondCalls++);
+			removeFirstObserver = true;
+
+			var exception = Record.Exception(() => section.DisplayedPage = new ContentPage());
+
+			Assert.Null(exception);
+			Assert.Equal(2, firstCalls);
+			Assert.Equal(2, secondCalls);
+
+			section.DisplayedPage = new ContentPage();
+
+			Assert.Equal(2, firstCalls);
+			Assert.Equal(3, secondCalls);
+		}
+
+		[Fact]
 		public void CurrentItemAutoSets()
 		{
 			var shell = new Shell();
@@ -774,6 +807,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(bindingContext, menuItem2.BindingContext);
 		}
 
+		[Fact, Category(TestCategory.Memory)]
+		public async Task LongLivedMenuItemDoesNotRetainImplicitShellItem()
+		{
+			var menuItem = new MenuItem();
+
+			WeakReference CreateWrapperReference()
+			{
+				ShellItem wrapper = menuItem;
+				wrapper.BindingContext = new object();
+				return new WeakReference(wrapper);
+			}
+
+			var wrapperReference = CreateWrapperReference();
+
+			Assert.False(await wrapperReference.WaitForCollect(), "MenuItem should not retain an unattached implicit ShellItem wrapper.");
+			GC.KeepAlive(menuItem);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task LongLivedMenuItemDoesNotRetainRemovedShellItem()
+		{
+			var menuItem = new MenuItem();
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+
+			WeakReference AddAndRemoveWrapper()
+			{
+				ShellItem wrapper = menuItem;
+				shell.Items.Add(wrapper);
+				shell.Items.Remove(wrapper);
+				return new WeakReference(wrapper);
+			}
+
+			var wrapperReference = AddAndRemoveWrapper();
+
+			Assert.Null(menuItem.Parent);
+			Assert.False(await wrapperReference.WaitForCollect(), "MenuItem should not retain a removed ShellItem wrapper.");
+			GC.KeepAlive(menuItem);
+			GC.KeepAlive(shell);
+		}
+
 		[Fact]
 		public void FlyoutMenuItemIsVisibleSynchronized()
 		{
@@ -791,6 +865,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Shell.SetFlyoutItemIsVisible(menuShellItem, false);
 			Assert.False(Shell.GetFlyoutItemIsVisible(menuItem), "If menuShellItem visibility changes, menuItem visibility should change as well");
+		}
+
+		[Fact]
+		public void MenuItemPropertyChangedIsObservedWhileConnected()
+		{
+			var shell = new Shell();
+			var menuItem = new MenuItem();
+			var menuShellItem = new MenuShellItem(menuItem);
+			var connectedTemplate = new DataTemplate();
+			var disconnectedTemplate = new DataTemplate();
+
+			shell.Items.Add(menuShellItem);
+			Shell.SetMenuItemTemplate(menuItem, connectedTemplate);
+
+			Assert.Same(connectedTemplate, Shell.GetMenuItemTemplate(menuShellItem));
+
+			shell.Items.Remove(menuShellItem);
+			Shell.SetMenuItemTemplate(menuItem, disconnectedTemplate);
+
+			Assert.Same(connectedTemplate, Shell.GetMenuItemTemplate(menuShellItem));
 		}
 
 		[Fact]
@@ -1817,7 +1911,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellSection2 = new ShellSection();
 			var shellContent1 = new ShellContent { Title = "Page1", Content = new ContentPage() };
 			var shellContent2 = new ShellContent { Title = "Page2", Content = new ContentPage() };
-			
+
 			shellSection1.Items.Add(shellContent1);
 			shellSection2.Items.Add(shellContent2);
 			flyoutItem.Items.Add(shellSection1);
@@ -1827,7 +1921,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Both should be able to have the same route since they're in different parents
 			shellContent1.Route = sameRoute;
 			shellContent2.Route = sameRoute; // Should not throw - different parents
-			
+
 			Assert.Equal(sameRoute, shellContent1.Route);
 			Assert.Equal(sameRoute, shellContent2.Route);
 		}
@@ -1897,6 +1991,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shellContent.Route = route;
 			shellContent.Route = route; // Should not throw - same element, same route
 			Assert.Equal(route, shellContent.Route);
+	}
+
+		// Regression test for https://github.com/dotnet/maui/issues/37217
+		// Assigning the same long-lived Page to many transient ShellContent instances must not
+		// keep those ShellContent instances alive via the Page's PropertyChanged subscription.
+		[Fact]
+		public async Task SharedPagePropertyChangedDoesNotRetainTransientShellContents()
+		{
+			const int shellContentsToCreate = 30;
+			var sharedPage = new ContentPage { Title = "Shared Page" };
+
+			var references = CreateShellContents(sharedPage, shellContentsToCreate);
+
+			await TestHelpers.Collect();
+
+			var alive = 0;
+			foreach (var reference in references)
+			{
+				if (reference.IsAlive)
+				{
+					alive++;
+				}
+			}
+
+			GC.KeepAlive(sharedPage);
+
+			Assert.Equal(0, alive);
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateShellContents(ContentPage sharedPage, int count)
+		{
+			var references = new List<WeakReference>(count);
+			for (var i = 0; i < count; i++)
+			{
+				var shellContent = new ShellContent
+				{
+					Content = sharedPage
+				};
+
+				references.Add(new WeakReference(shellContent));
+			}
+
+			return references;
 		}
 	}
 }

@@ -137,6 +137,12 @@ namespace Microsoft.Maui.Handlers
 						Handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.LogWarning("Cannot load SwipeItem Icon");
 					}
 				}
+
+				var swipeView = button.GetParentOfType<MauiSwipeView>();
+				var desiredWidth = button.SizeThatFits(swipeView?.Bounds.Size ?? button.Bounds.Size).Width;
+
+				if (swipeView != null && Math.Abs(desiredWidth - button.Frame.Width) > double.Epsilon)
+					swipeView.UpdateSwipeItemSize(item);
 			}
 
 			static UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
