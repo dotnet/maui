@@ -54,6 +54,10 @@ candidate, including its percentage/assessment, state, matching evidence,
 differences/uncertainty, and linked source excerpts. Follow-up contains the
 maintainer action, closed-report caveat, refresh instructions, and workflow link.
 
+The network allowlist includes `img.shields.io` alongside `defaults` because
+gh-aw also uses it to sanitize published URLs. This allows the two badge images
+without disabling URL filtering or broadening the GitHub tool permissions.
+
 The GitHub gateway enforces eight `search_issues` calls and 30 `issue_read`
 calls per MCP session. These counters do not cover the trusted collector's or
 publisher's separate API reads. The 20 results per query, one page per query,
@@ -97,7 +101,8 @@ the same analysis and validation run, but the trusted validator writes the
 same expandable report, including its visible probabilities, to the safe-output
 job's **Validated duplicate report preview** summary rather than posting them.
 This preview appears only after all validation and final freshness checks,
-and excludes the publisher's later cautions and provenance wrappers. Invalid,
+and precedes gh-aw's publication sanitization, cautions, and provenance wrappers.
+It does not by itself verify which URLs survive publication. Invalid,
 stale, no-match, and identical-report-suppressed outputs produce no report preview.
 To publish, explicitly pass
 `--raw-field staged=false`. New/reopened issue events publish qualifying reports.
