@@ -14,6 +14,7 @@ Release builds contain neither development forwarding nor the inspector.
 ```text
 Controls.Sample.HybridWebApp/
   README.md
+  run-demo.sh
   Native/
     Maui.Controls.Sample.HybridWebApp.csproj
     Development/                 Debug-only provider and inspector
@@ -94,8 +95,8 @@ invocation is required to produce this marker.
 
 In the validated setup, `dotnet run` returns after launching the native process;
 its exit does not mean the app window has closed. Close the app when finished.
-The future launcher must track actual native lifetime instead of treating the
-SDK runner's lifetime as the app's.
+The root launcher tracks authenticated native process/startup identity instead
+of treating the SDK runner's lifetime as the app's.
 
 The project inherits the common sample `Directory.Build.props`/targets. By default
 it references the framework source in this checkout. It also follows the sibling
@@ -149,9 +150,66 @@ npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run build
 `node_modules/`, `dist/`, logs, and artifacts are ignored by source control.
 Stop Vite with Ctrl+C when finished.
 
+## Launch the demo
+
+After the one-time SDK/workload/build-task setup and `npm ci` above, run the
+sample-root launcher from any working directory:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
+./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh
+```
+
+For an existing in-tree Debug build, skip rebuilding:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
+./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh --no-build
+```
+
+The path example above is relative to the repository root; an absolute launcher
+path works from any directory. `DEVELOPER_DIR` is inherited per process and is
+never changed globally. `HYBRIDWEBAPP_INSPECT_PORT` can select an unused inspection
+port; otherwise the launcher selects one. Vite always uses port 5173.
+
+The launcher uses Bash and Python 3's standard library, plus the existing Node,
+npm, SDK wrapper, and macOS `ps`/`lsof` tools. It does not install frontend
+dependencies on each launch. Its preflight rejects missing dependencies,
+unsupported Node/architecture, unavailable ports, mismatched repository SDK,
+incompatible selected Xcode, missing local Apple packs/build tasks, and an
+already-running sample. An occupied port never triggers termination of another
+process.
+
+The existing npm dev command starts in the sibling Web project. The launcher
+checks the expected Vite page and its owned listener before invoking the pinned
+repository SDK with the explicit Native project, Debug configuration, Mac
+Catalyst TFM, in-tree/platform selectors, and supported `dotnet run -e` variables.
+No `eval`, JavaScript watcher, C# watch mode, or new SDK target is used.
+
+When ready, it prints the actual native PID/startup ID, inspection address, and
+an owner-only session directory under this sample's ignored `artifacts/`.
+The generated token is never printed; it is held in that directory's protected
+`token` file while the session runs. SDK output is redacted before being printed
+or saved. `state.json` records the authenticated native identity and inspection
+port. Use the token to make read-only probes while the launcher is running:
+
+```sh
+# Replace this path with the session directory printed by the launcher.
+session=/absolute/path/to/Controls.Sample.HybridWebApp/artifacts/session-...
+token=$(cat "$session/token")
+port=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["inspectionPort"])' "$session/state.json")
+curl --fail -H "Authorization: Bearer $token" "http://127.0.0.1:$port/probe"
+```
+
+The launcher keeps Vite alive after the SDK runner returns. Normal native process
+exit ends the session; Ctrl+C exits with 130. Build/startup/server failures exit
+nonzero. Cleanup targets only owned process groups and the verified launched
+native identity, with bounded TERM/KILL waits, then deletes the ephemeral token.
+Session logs and non-secret state remain for diagnosis.
+
 ## Manual Debug development session
 
-The root launcher is still pending. Start Vite with the command above in its own
+For lower-level diagnosis, start Vite with the command above in its own
 terminal and build the Debug native project with the documented Xcode override.
 Choose an unused inspection port and generate a token; keep that token out of
 source control and use the same token in the native and probe terminals:
@@ -171,7 +229,7 @@ DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
 artifacts/bin/Maui.Controls.Sample.HybridWebApp/Debug/net11.0-maccatalyst/maccatalyst-arm64/Maui.Controls.Sample.HybridWebApp.app/Contents/MacOS/Maui.Controls.Sample.HybridWebApp
 ```
 
-This manual validation command is not the future SDK-based root launcher.
+This manual validation command bypasses the SDK-based root launcher.
 For packaged-content inspection, omit `HYBRIDWEBAPP_DEV_URL` but retain the
 inspection token and port. With all three variables absent, no inspector starts.
 
@@ -238,8 +296,8 @@ integration are not part of this first demo.
 
 The packaged host, independent frontend, Debug development resource provider,
 internal stopped-task guard, and authenticated Debug-only WebView inspector are
-implemented. The root `run-demo.sh` and automated native/frontend process
-orchestration remain pending.
+implemented. The root `run-demo.sh` adds sample-local SDK-based launch and process
+supervision; launcher validation is recorded separately below.
 
 ### Milestone 1 validation
 
@@ -365,7 +423,47 @@ Evidence is retained only in ignored `artifacts/`, including
 `hybridwebapp-proxy-probe.json`, `hybridwebapp-proxy-source.html`,
 `hybridwebapp-proxy-snapshot.png`, `hybridwebapp-live-edits.jsonl`,
 `hybridwebapp-fixture-results.json`, `hybridwebapp-navigation-cancellation.json`,
-and `hybridwebapp-upstream-down.json`. The root launcher and its process-lifetime/
-Ctrl+C/failure-cleanup acceptance checks are the next milestone. Every owned
+and `hybridwebapp-upstream-down.json`. Root launcher validation is recorded below.
+Every owned
 native instance and frontend process was stopped after validation; the ephemeral
 inspection token was removed rather than committed.
+
+### Launcher validation
+
+Native was rebuilt after the redirect/HEAD correction `d446c92d8e` using the
+documented per-process Xcode 26.6 build command: **passed, zero warnings/errors**.
+Launcher checks used that corrected app:
+
+- `bash -n run-demo.sh`, `shellcheck run-demo.sh`, and parsing the embedded Python
+  with `ast.parse`: **passed**.
+- The documented `run-demo.sh --no-build` invocation from `src/Core/`, using an
+  absolute launcher path: **passed**. Supported SDK `-e` settings reached the
+  actual app; authenticated DOM, CSS, source, and native PNG probes passed.
+  HTML/TypeScript/CSS edits reached the already-running native instance with an
+  unchanged PID/startup ID after the SDK runner returned.
+- Normal app quit through `NSRunningApplication.terminate()`: **launcher exit 0**;
+  Vite and inspection listeners closed and the token was deleted. This tested app
+  quit, not merely closing a window while leaving its native process alive.
+- The default build/run invocation followed by SIGINT to the recorded
+  `launcherPid`: **exit 130**, with bounded owned-process cleanup and token removal.
+- An unrelated HTTP listener on Vite port 5173: **nonzero preflight exit**. The
+  listener was neither killed nor adopted and continued serving its fixture page.
+- Selected Xcode 27 without `DEVELOPER_DIR`: **nonzero preflight exit**, with
+  actionable compatibility guidance and no global selection change.
+- Injected native build failure:
+
+  ```sh
+  DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer \
+  MSBuildSDKsPath="$PWD/artifacts/nonexistent-sdk" \
+  ./src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.sh
+  ```
+
+  **Nonzero exit** after the SDK's `MSB4236` failure; the owned Vite process stopped
+  and no native app or token remained.
+- Terminating the recorded owned Vite process group after native readiness:
+  **exit 1**, with cleanup of the verified native instance and token.
+
+Logs for these checks are in ignored repository `artifacts/hybridwebapp-launcher-*`
+and the launcher's owner-only sample-local session directories. The frontend edits
+were restored to the original files; no launcher starts npm installation or changes
+global Xcode selection.
