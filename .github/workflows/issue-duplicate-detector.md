@@ -428,7 +428,8 @@ target, a placeholder `body`, and this `data` structure:
 Use actual fetched issue numbers and timestamps, not the example values. Never
 include a candidate without its probability or substitute a similarity score.
 The separate trusted publisher requires successful trusted discovery and an
-acceptable authoritative threat-detector conclusion, validates all scores and excerpts, re-fetches
+acceptable authoritative threat-detector conclusion for every completed outcome,
+including `noop`. For reports, it validates all scores and excerpts, re-fetches
 issue evidence, constructs the visible probability summary and expandable
 analysis/follow-up sections itself, and suppresses identical reports.
 Staged manual runs follow the same contract but do not post.

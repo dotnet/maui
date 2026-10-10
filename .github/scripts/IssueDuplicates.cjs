@@ -315,6 +315,10 @@ async function validate({
         Array.isArray(payload.items) && payload.items.length === 1,
         'Expected exactly one safe output.',
     );
+    assert(
+        detectionConclusion === 'success' || detectionConclusion === 'warning',
+        'Threat detection did not complete with an acceptable conclusion; refusing the result.',
+    );
     const item = payload.items[0];
     if (item.type === 'noop') {
         core.info('No duplicate report requested.');
@@ -323,10 +327,6 @@ async function validate({
     assert(
         item.type === 'add_comment',
         'Detection is incomplete or requested an unsupported output.',
-    );
-    assert(
-        detectionConclusion === 'success' || detectionConclusion === 'warning',
-        'Threat detection did not complete with an acceptable conclusion; refusing publication.',
     );
     assertKeys(
         item,

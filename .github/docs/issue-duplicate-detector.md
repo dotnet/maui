@@ -98,8 +98,9 @@ collects the service's run/source/hash-bound status, retains its diagnostics,
 and stops its exact process. The separate publisher rejects missing, failed,
 unfinished or empty discovery for both comments and completed no-match outcomes.
 It also requires the authoritative threat-detector conclusion to be `success`
-or an intentional `warning`; a successful detector job cannot mask a missing
-or failed verdict.
+or an intentional `warning` before branching on the output type. This applies to
+both comments and completed no-match outcomes; a successful detector job cannot
+mask a missing or failed verdict.
 An unchanged report is suppressed. Changed reports are posted as new comments;
 existing bot and human comments are never edited, deleted, or minimized.
 The fingerprint covers the trusted rendered summary, assessments, excerpts,
