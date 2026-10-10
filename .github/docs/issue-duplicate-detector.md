@@ -58,14 +58,48 @@ The network allowlist includes `img.shields.io` alongside `defaults` because
 gh-aw also uses it to sanitize published URLs. This allows the two badge images
 without disabling URL filtering or broadening the GitHub tool permissions.
 
-The GitHub gateway enforces eight `search_issues` calls and 30 `issue_read`
-calls per MCP session. These counters do not cover the trusted collector's or
-publisher's separate API reads. The 20 results per query, one page per query,
-and ten investigated candidates are **agent instructions**, not gateway
-parameter validators or investigation counters. The trusted collector/publisher
+Issue discovery uses the trusted, read-only
+[`IssueDuplicateSearch.cjs`](../scripts/IssueDuplicateSearch.cjs) MCP service.
+The pinned GitHub MCP versions force semantic search, whose shared installation
+quota rate-limited all five overlapping fork trials. The replacement makes
+ordinary REST issue searches with literal keyword/phrase inputs supplied by
+GPT, not title-only similarity. It fixes `repo:dotnet/maui is:issue`, searches
+open and closed reports, and returns only unscored candidate metadata. Full
+reports and chronology still come from the repository-scoped GitHub `issue_read`.
+
+The search service enforces eight logical queries, 20 results per query, one
+page, and at most 16 search HTTP attempts including retries for the entire
+agent job. It serializes requests, spaces them by at least seven seconds,
+honors both `Retry-After` and exhausted `x-ratelimit-reset` headers, and uses
+bounded exponential backoff for secondary limits without reset headers.
+There are at most three attempts per query, a 15-second HTTP timeout,
+120 seconds per wait, and 180 seconds of cumulative waiting. Missing evidence,
+bad inputs, exhausted budgets, incomplete API results and other HTTP errors
+fail explicitly; they never become empty search results. Runs share a
+workflow-wide `queue: max` concurrency group rather than per-issue groups,
+so different issues do not compete for quota or displace pending checks.
+GitHub permits at most 100 pending runs in that queue.
+
+The service runs outside the agent sandbox using the existing pinned gh-aw
+MCP transport, with no new dependencies or secrets. Its only GitHub credential
+is this read-only job's built-in `GITHUB_TOKEN`; it never rotates credentials to
+evade throttling. A fresh local authentication key is separate from that token.
+Keywords cannot inject qualifiers, change repositories, select an endpoint, or
+invoke commands. Public repository metadata and every returned issue's
+repository/URL are checked. Agent tools still grant neither shell nor file writes.
+
+The native GitHub gateway separately enforces 30 `issue_read` calls per MCP
+session. These limits do not include public repository checks or the trusted
+collector/publisher's API reads. Ten investigated candidates remain an **agent
+instruction**, not an investigation counter. The trusted collector/publisher
 enforces five published matches, 300 comments per issue, and 1 MiB regular JSON
-files. The agent job also has a 15-minute timeout. Missing required evidence
-is an incomplete run, not proof that there are no duplicates.
+files. The agent job also has a 15-minute timeout. A trusted post-agent step
+collects the service's run/source/hash-bound status, retains its diagnostics,
+and stops its exact process. The separate publisher rejects missing, failed,
+unfinished or empty discovery for both comments and completed no-match outcomes.
+It also requires the authoritative threat-detector conclusion to be `success`
+or an intentional `warning`; a successful detector job cannot mask a missing
+or failed verdict.
 An unchanged report is suppressed. Changed reports are posted as new comments;
 existing bot and human comments are never edited, deleted, or minimized.
 The fingerprint covers the trusted rendered summary, assessments, excerpts,
@@ -113,20 +147,22 @@ still download the completed collector's artifact; final freshness checks remain
 required before publication.
 
 The workflow uses the existing `copilot-pat-pool` environment and GPT-6.1 Sol
-configuration. No additional service, model provider, token, or secret is needed.
+configuration. No additional external service, model provider or repository secret is needed.
 The workflow-local PAT selector follows `issue-triage`'s existing pattern to
 keep the activation guard explicit with the pinned gh-aw v0.86.2 compiler.
 Prepared evidence and validator code come from trusted default-branch
 infrastructure; issue/reproduction content is never executed.
-The GitHub MCP's repository guard restricts both searches and issue reads to
-`dotnet/maui`; repository scope is enforced rather than left to the prompt.
+The GitHub MCP's repository guard restricts issue reads to `dotnet/maui`;
+the trusted discovery service separately enforces that same public repository.
+Repository scope is enforced rather than left to the prompt.
 The gateway's public-repository scope override is disabled so it cannot broaden
 that explicit scope to all public repositories.
 Exact repository scope conservatively carries the `private:dotnet/maui` secrecy
 label even for public reports. The workflow declares
-`private-to-public-flows: [safeoutputs]` for that built-in server only; its
-write-sink still accepts only `private:dotnet/maui`. The compiler omits sink
-visibility only for this exempted safe-output server, not for unrelated sinks,
+`private-to-public-flows: [safeoutputs, duplicate-search]` for the publication
+server and the fixed public-repository read-only search service only; their
+write-sinks still accept only `private:dotnet/maui`. The compiler omits sink
+visibility only for these two named servers, not for unrelated sinks,
 and does not emit a blanket `allow` or wildcard exemption.
 The trusted collector and validator check live repository metadata and reject
 anything other than public `dotnet/maui`, including a final check before a report
@@ -172,6 +208,7 @@ Commit the source, compilation helper, trusted publisher and compiled lock file 
 
 ```bash
 node --check .github/scripts/IssueDuplicates.cjs
+node --check .github/scripts/IssueDuplicateSearch.cjs
 bash .github/scripts/CompileIssueDuplicateDetector.sh
 shellcheck .github/scripts/CompileIssueDuplicateDetector.sh
 actionlint -oneline -ignore 'unexpected key "queue" for "concurrency" section' .github/workflows/issue-duplicate-detector.lock.yml

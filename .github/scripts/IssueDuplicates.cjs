@@ -1,6 +1,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { assertDiscovery } = require('./IssueDuplicateSearch.cjs');
 
 const maxComments = 300;
 const maxFileBytes = 1024 * 1024;
@@ -281,6 +282,7 @@ async function validate({
     context,
     issueNumber,
     staged,
+    detectionConclusion = process.env.GH_AW_DETECTION_CONCLUSION,
     contextDirectory,
     agentOutputPath,
 }) {
@@ -300,6 +302,12 @@ async function validate({
             /^[a-f0-9]{64}$/.test(expectedHash),
         'The trusted context artifact does not match the requested issue.',
     );
+    assertDiscovery(await readJson(path.join(contextDirectory, 'discovery.json')), {
+        issueNumber,
+        contextHash: expectedHash,
+        runId: context.runId,
+        sha: context.sha,
+    });
     const payload = await readJson(agentOutputPath);
     assertKeys(payload, ['items'], ['errors', 'warnings']);
     assert(!payload.errors?.length, 'The agent reported errors; refusing partial publication.');
@@ -315,6 +323,10 @@ async function validate({
     assert(
         item.type === 'add_comment',
         'Detection is incomplete or requested an unsupported output.',
+    );
+    assert(
+        detectionConclusion === 'success' || detectionConclusion === 'warning',
+        'Threat detection did not complete with an acceptable conclusion; refusing publication.',
     );
     assertKeys(
         item,

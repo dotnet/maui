@@ -43,7 +43,9 @@ on:
       with:
         ref: ${{ github.sha }}
         persist-credentials: false
-        sparse-checkout: .github/scripts/IssueDuplicates.cjs
+        sparse-checkout: |
+          .github/scripts/IssueDuplicates.cjs
+          .github/scripts/IssueDuplicateSearch.cjs
         sparse-checkout-cone-mode: false
     - name: Prepare bounded issue evidence
       id: context
@@ -135,16 +137,23 @@ sandbox:
 tools:
   bash: false
   edit: false
+  timeout: 240
   github:
     toolsets: [issues]
     allowed-repos: [dotnet/maui]
-    private-to-public-flows: [safeoutputs]
+    private-to-public-flows: [safeoutputs, duplicate-search]
     allowed:
-      - name: search_issues
-        max-calls: 8
       - name: issue_read
         max-calls: 30
     min-integrity: none
+
+mcp-servers:
+  duplicate-search:
+    type: http
+    url: http://host.docker.internal:8766
+    headers:
+      Authorization: ${{ steps.search_server.outputs.api_key }}
+    allowed: [search_issues]
 
 safe-outputs:
   runs-on: ubuntu-latest
@@ -219,18 +228,26 @@ safe-outputs:
       with:
         ref: ${{ github.sha }}
         persist-credentials: false
-        sparse-checkout: .github/scripts/IssueDuplicates.cjs
+        sparse-checkout: |
+          .github/scripts/IssueDuplicates.cjs
+          .github/scripts/IssueDuplicateSearch.cjs
         sparse-checkout-cone-mode: false
     - name: Download trusted context outside checkout
       uses: actions/download-artifact@v8.0.1
       with:
         name: issue-duplicate-context-${{ github.run_id }}
         path: ${{ runner.temp }}/issue-duplicate-context
+    - name: Download trusted discovery status outside checkout
+      uses: actions/download-artifact@v8.0.1
+      with:
+        name: issue-duplicate-search-${{ github.run_id }}
+        path: ${{ runner.temp }}/issue-duplicate-context
     - name: Validate scores, source evidence and current issue state
       uses: actions/github-script@v9.0.0
       env:
         ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         STAGED: ${{ github.event_name == 'workflow_dispatch' && inputs.staged == true }}
+        DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
       with:
         script: |
           const { validate } = require('./.github/scripts/IssueDuplicates.cjs');
@@ -238,11 +255,19 @@ safe-outputs:
             github, core, context,
             issueNumber: Number(process.env.ISSUE_NUMBER),
             staged: JSON.parse(process.env.STAGED),
+            detectionConclusion: process.env.DETECTION_CONCLUSION,
             contextDirectory: `${process.env.RUNNER_TEMP}/issue-duplicate-context`,
             agentOutputPath: '/tmp/gh-aw/agent_output.json'
           });
 
 steps:
+  - name: Checkout trusted rate-aware search service
+    uses: actions/checkout@v7.0.1
+    with:
+      ref: ${{ github.sha }}
+      persist-credentials: false
+      sparse-checkout: .github/scripts/IssueDuplicateSearch.cjs
+      sparse-checkout-cone-mode: false
   - name: Check official compiler base compatibility
     uses: actions/github-script@v9.0.0
     env:
@@ -257,11 +282,51 @@ steps:
     uses: actions/download-artifact@v8.0.1
     with:
       name: issue-duplicate-context-${{ github.run_id }}
+      path: ${{ runner.temp }}/issue-duplicate-context
+  - name: Start repository-scoped rate-aware issue search
+    id: search_server
+    uses: actions/github-script@v9.0.0
+    env:
+      ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+      GITHUB_SEARCH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      script: |
+        const { start } = require('./.github/scripts/IssueDuplicateSearch.cjs');
+        await start({ core, issueNumber: Number(process.env.ISSUE_NUMBER) });
+  - name: Copy prepared evidence into the read-only agent context
+    uses: actions/download-artifact@v8.0.1
+    with:
+      name: issue-duplicate-context-${{ github.run_id }}
       path: /tmp/gh-aw/agent/issue-duplicate-context
 
+post-steps:
+  - name: Retain authoritative discovery status and stop the search service
+    id: search_evidence
+    if: always() && steps.search_server.outcome == 'success'
+    uses: actions/github-script@v9.0.0
+    env:
+      ISSUE_DUPLICATE_SEARCH_API_KEY: ${{ steps.search_server.outputs.api_key }}
+      ISSUE_DUPLICATE_SEARCH_PID: ${{ steps.search_server.outputs.pid }}
+    with:
+      script: |
+        const { collect } = require('./.github/scripts/IssueDuplicateSearch.cjs');
+        await collect({ core });
+  - name: Retain trusted discovery evidence
+    if: always() && steps.search_evidence.outcome == 'success'
+    uses: actions/upload-artifact@v7.0.1
+    with:
+      name: issue-duplicate-search-${{ github.run_id }}
+      path: |
+        ${{ runner.temp }}/issue-duplicate-search/discovery.json
+        ${{ runner.temp }}/issue-duplicate-search/search.log
+      overwrite: true
+      retention-days: 7
+      if-no-files-found: error
+
 concurrency:
-  group: issue-duplicate-detector-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
+  group: issue-duplicate-detector
   cancel-in-progress: false
+  queue: max
 
 timeout-minutes: 15
 ---
@@ -291,12 +356,18 @@ the trusted target. Never label, close, reopen, or modify issues.
 1. Extract the actual control/API, platform and OS, MAUI version, handler generation,
    symptoms, reproduction conditions, exception frames, and regression boundaries.
    Issue-form boilerplate, existing labels and previous AI scores are not proof.
-2. Use up to **eight** `search_issues` calls, each scoped to
-   `repo:dotnet/maui is:issue`, with at most **20 results** and one page per query.
-   Combine distinctive error text, APIs and reproduction terms; broaden or rephrase
-   when necessary. Search both open and closed reports and exclude the target.
+2. Use up to **eight** `duplicate-search.search_issues` calls. Pass `terms` as an
+   array of one to four literal keywords or phrases, for example
+   `["TransactionTooLargeException", "Shell"]`. Terms are combined with AND;
+   the trusted service enforces `repo:dotnet/maui is:issue`, **20 results** and
+   one page. It uses ordinary lexical search, not semantic search. Broaden or
+   rephrase when necessary; do not pass qualifiers, URLs, Boolean operators or
+   another repository. Search both open and closed reports and exclude the target.
    Do not restrict discovery to existing labels: the opening-event labeler may
    still be running. Legacy title-only bot suggestions are candidate leads only.
+   The service serializes/paces HTTP requests and waits for GitHub rate-limit
+   resets within a bounded budget. Do not retry an unsuccessful tool call or
+   switch tools/credentials: call `report_incomplete`. Never score search results alone.
 3. Deduplicate results and fully investigate at most **ten** candidates. Fetch
    their actual title/body, state, `updated_at`, and relevant comment chronology
    with `issue_read`, within the **30-call** limit. Never score search snippets
@@ -356,7 +427,8 @@ target, a placeholder `body`, and this `data` structure:
 
 Use actual fetched issue numbers and timestamps, not the example values. Never
 include a candidate without its probability or substitute a similarity score.
-The separate trusted publisher validates all scores and excerpts, re-fetches
+The separate trusted publisher requires successful trusted discovery and an
+acceptable authoritative threat-detector conclusion, validates all scores and excerpts, re-fetches
 issue evidence, constructs the visible probability summary and expandable
 analysis/follow-up sections itself, and suppresses identical reports.
 Staged manual runs follow the same contract but do not post.
