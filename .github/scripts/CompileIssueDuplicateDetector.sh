@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-compiler_commit=8b600a3beee3591b7add4c79e595d9481a470cc4
+compiler_commit=86885522c56a777b4734e6b5d81b41ce244a513f
 compiler_version=v0.86.2+maui-duplicate-detector
 runtime_commit=6aab9e5b5c91c615506061f09bedd81a23babe3c
 cache_directory="${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw/$compiler_commit"

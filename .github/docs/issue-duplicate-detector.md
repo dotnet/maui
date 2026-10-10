@@ -176,11 +176,19 @@ during default-tool normalization, dropping their `max-calls` metadata, and
 grants filesystem-write permission even when `edit: false` is declared.
 [`CompileIssueDuplicateDetector.sh`](../scripts/CompileIssueDuplicateDetector.sh)
 builds an isolated compiler from the immutable
-[`8b600a3beee3591b7add4c79e595d9481a470cc4` correction](https://github.com/kubaflo/gh-aw/commit/8b600a3beee3591b7add4c79e595d9481a470cc4)
+[`86885522c56a777b4734e6b5d81b41ce244a513f` correction](https://github.com/kubaflo/gh-aw/commit/86885522c56a777b4734e6b5d81b41ce244a513f)
 on top of v0.86.2. The correction preserves both gateway call limits and
 Copilot's explicit tool permissions, honors disabled editing, and wires the
-scoped safe-output exemption consistently in strict validation and JSON/TOML
-configuration. It does not install or replace the user's `gh aw` extension.
+scoped server exemptions consistently in strict validation and JSON/TOML
+configuration. It derives a fresh policy for each server ID, omitting sink
+visibility only for explicitly named exemptions while retaining exact accept
+patterns and visibility enforcement for unlisted servers. The earlier
+`8b600a3beee3591b7add4c79e595d9481a470cc4` build omitted visibility only for
+`safeoutputs`; its explicit public `duplicate-search` sink still rejected
+refinement queries after scoped GitHub reads. The gateway exemption prevents
+default visibility injection but does not remove an explicitly emitted value.
+The new compiler corrects that rendering without changing runtime pins.
+It does not install or replace the user's `gh aw` extension.
 Compiler metadata identifies the patched build.
 Only the official MCP gateway is upgraded, to
 [`v0.4.30`](https://github.com/github/gh-aw-mcpg/releases/tag/v0.4.30), whose
@@ -201,7 +209,7 @@ sets `GOWORK=off`, so parent- or source-local `go.work` files cannot override th
 pinned module's dependency selection. This isolates Go workspace resolution,
 not every aspect of the build environment. Replace this helper with a fixed
 official compiler after verifying that it preserves the counter policy, explicit
-Copilot allowlist, disabled editing and scoped safe-output policy; do not
+Copilot allowlist, disabled editing and scoped per-server sink policies; do not
 regenerate with stock v0.86.2 or hand-edit the generated lock.
 
 Commit the source, compilation helper, trusted publisher and compiled lock file together:
