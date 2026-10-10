@@ -234,6 +234,14 @@ namespace Microsoft.Maui.Controls.Handlers
             _appearanceTracker?.Dispose();
             _shellContext ??= GetShellContext();
             _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
+
+
+            if (RuntimeFeature.IsMaterial3Enabled &&
+                _bottomNavigationView is not null &&
+                _appearanceTracker is ShellBottomNavViewAppearanceTracker concreteAppearanceTracker)
+            {
+                concreteAppearanceTracker.CaptureNativeAppearance(_bottomNavigationView);
+            }
         }
 
         /// <summary>
@@ -1034,6 +1042,13 @@ namespace Microsoft.Maui.Controls.Handlers
             // Set up toolbar tracker and appearance tracker
             _toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
             _toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
+
+
+            if (RuntimeFeature.IsMaterial3Enabled &&
+                _toolbarAppearanceTracker is ShellToolbarAppearanceTracker concreteToolbarAppearanceTracker)
+            {
+                concreteToolbarAppearanceTracker.CaptureNativeColors(_toolbar);
+            }
 
             // Set the toolbar reference
             if (_toolbarTracker is not null && _shellToolbar is not null)
