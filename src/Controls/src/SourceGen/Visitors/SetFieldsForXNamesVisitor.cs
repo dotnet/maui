@@ -41,8 +41,28 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 		if (IsVisualState(parentElement))
 			return;
 
+		var fieldName = (string)(node.Value);
 
-		Writer.WriteLine($"this.{EscapeIdentifier((string)(node.Value))} = {Context.Variables[(ElementNode)parentNode].ValueAccessor};");
+		// XAML Incremental Hot Reload: field declarations are additive-only (see
+		// CodeBehindCodeWriter.ReconcileNamedFieldsForHotReload / issue #38993), so a renamed/reused
+		// x:Name can resolve to a field whose declared (ghost) type no longer matches the element
+		// actually produced here. Assigning to it would be a straight type-mismatch compile error, so
+		// skip the assignment; the field keeps its original, unrelated value (default!).
+		if (Context.ProjectItem.EnableIncrementalHotReload)
+		{
+			var assemblyName = Context.Compilation.AssemblyName ?? string.Empty;
+			var targetFramework = Context.ProjectItem.TargetFramework ?? string.Empty;
+			var stateKey = Context.ProjectItem.HotReloadStateKey;
+			var accumulatedFields = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey);
+			if (accumulatedFields != null && accumulatedFields.TryGetValue(fieldName, out var accumulatedField))
+			{
+				var currentType = parentElement.XmlType.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, Context.TypeCache)?.ToFQDisplayString();
+				if (currentType != accumulatedField.Type)
+					return;
+			}
+		}
+
+		Writer.WriteLine($"this.{EscapeIdentifier(fieldName)} = {Context.Variables[(ElementNode)parentNode].ValueAccessor};");
 	}
 
 	public void Visit(MarkupNode node, INode parentNode)
