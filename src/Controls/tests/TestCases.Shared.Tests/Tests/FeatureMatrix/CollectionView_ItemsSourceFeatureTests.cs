@@ -1003,7 +1003,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
 		WaitForItemInItemsLayout("Kiwi", itemsLayout);
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name);
 	}
 
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListWhenRemoveItemsWithVerticalListItemsLayout")]
@@ -1031,7 +1031,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", "5");
 		App.WaitForNoElement("Spinach");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name);
 	}
 
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsObservableCollectionWhenMutatingWithVerticalListItemsLayout")]
@@ -1054,7 +1054,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		WaitForItemInItemsLayout("Kiwi", itemsLayout);
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("Kiwi");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name);
 	}
 
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListWhenMutatingByIndexWithVerticalListItemsLayout")]
@@ -1083,7 +1083,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("Kiwi");
 		App.WaitForElement("Apple");
-		VerifyScreenshot();
+		VerifyScreenshot(TestContext.CurrentContext.Test.Name);
 	}
 
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyModelItemsGroupedListMutation_WithVerticalList")]
