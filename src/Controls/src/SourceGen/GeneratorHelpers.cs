@@ -81,12 +81,15 @@ static class GeneratorHelpers
 		return conversion.Exists && conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference);
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, string? hotReloadSessionToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
 			return null;
 
-		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText));
+		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText))
+		{
+			HotReloadSessionToken = hotReloadSessionToken,
+		};
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 

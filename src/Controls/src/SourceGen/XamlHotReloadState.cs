@@ -44,20 +44,6 @@ internal static class XamlHotReloadState
 	// Maps (assemblyName, targetFramework, relativePath) → CacheEntry
 	static readonly Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> _cache = new();
 
-	/// <summary>
-	/// Identifies the current generator-driver "session": set once by <see cref="BeginSession"/>,
-	/// called from <see cref="XamlGenerator.Initialize"/>, which Roslyn invokes exactly once per
-	/// <c>IIncrementalGenerator</c> instance/driver. A live Hot Reload sequence keeps reusing the
-	/// SAME driver (and so the same token) across successive XAML edits - that's what lets
-	/// <see cref="CacheEntry.AccumulatedCodeBehindFields"/> legitimately grow across edits. A brand
-	/// new, unrelated build creates a brand new driver (and so a new token) even though this static
-	/// cache - hosted in a long-lived build-server process such as VBCSCompiler - is still populated
-	/// from a previous, unrelated build of the same file. Without this token, that stale entry would
-	/// be mistaken for "this build is continuing a live edit", incorrectly ghosting a field whose
-	/// x:Name was legitimately reused for a different, incompatible type in the new build.
-	/// </summary>
-	static string? _currentSessionToken;
-
 	internal sealed class CacheEntry
 	{
 		public string XamlText { get; set; } = string.Empty;
@@ -100,10 +86,14 @@ internal static class XamlHotReloadState
 		/// </summary>
 		public Dictionary<string, (string Type, string AccessModifier)>? AccumulatedCodeBehindFields { get; set; }
 		/// <summary>
-		/// The <see cref="_currentSessionToken"/> that was active when <see cref="AccumulatedCodeBehindFields"/>
-		/// was last stored. <see cref="GetAccumulatedCodeBehindFields"/> only returns the accumulated set when
-		/// this matches the token of the CURRENT session - otherwise the entry was written by a previous,
-		/// unrelated build and must be treated as if nothing had been accumulated yet.
+		/// The per-driver <c>ProjectItem.HotReloadSessionToken</c> that was active when
+		/// <see cref="AccumulatedCodeBehindFields"/> was last stored. <see cref="GetAccumulatedCodeBehindFields"/>
+		/// only returns the accumulated set when the caller passes the SAME token - otherwise the entry was
+		/// written by a different (e.g. previous, unrelated) generator-driver instance and must be treated as
+		/// if nothing had been accumulated yet. Minted once per driver in <see cref="XamlGenerator.Initialize"/>
+		/// (not stored as a single process-wide value here), so that an unrelated driver initializing
+		/// concurrently in the same long-lived build-server process (e.g. VBCSCompiler hosting multiple
+		/// projects) can never invalidate another, still-live driver's accumulated field history.
 		/// </summary>
 		public string? AccumulatedCodeBehindFieldsSessionToken { get; set; }
 		/// <summary>
@@ -194,15 +184,17 @@ internal static class XamlHotReloadState
 	/// <summary>
 	/// Returns a defensive copy of the fields <see cref="CodeBehindCodeWriter"/> has accumulated for
 	/// this file so far (see <see cref="CacheEntry.AccumulatedCodeBehindFields"/>), or
-	/// <see langword="null"/> if none have been recorded yet.
+	/// <see langword="null"/> if none have been recorded yet, or if the entry was written by a
+	/// different generator-driver instance (<paramref name="sessionToken"/> mismatch - see
+	/// <see cref="CacheEntry.AccumulatedCodeBehindFieldsSessionToken"/>).
 	/// </summary>
-	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath)
+	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, string? sessionToken)
 	{
 		lock (_lock)
 		{
 			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
 				&& entry.AccumulatedCodeBehindFields is not null
-				&& entry.AccumulatedCodeBehindFieldsSessionToken == _currentSessionToken)
+				&& entry.AccumulatedCodeBehindFieldsSessionToken == sessionToken)
 			{
 				return new Dictionary<string, (string, string)>(entry.AccumulatedCodeBehindFields, System.StringComparer.Ordinal);
 			}
@@ -212,11 +204,13 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Replaces the accumulated code-behind field set for the given file. Callers are expected to pass
-	/// the union of the previously accumulated fields and the fields parsed from the current XAML —
-	/// this method does not merge on its own, it only stores whatever the caller computed.
+	/// Replaces the accumulated code-behind field set for the given file, stamping it with
+	/// <paramref name="sessionToken"/> (see <see cref="CacheEntry.AccumulatedCodeBehindFieldsSessionToken"/>).
+	/// Callers are expected to pass the union of the previously accumulated fields and the fields parsed
+	/// from the current XAML — this method does not merge on its own, it only stores whatever the caller
+	/// computed.
 	/// </summary>
-	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields)
+	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields, string? sessionToken)
 	{
 		lock (_lock)
 		{
@@ -226,21 +220,7 @@ internal static class XamlHotReloadState
 				_cache[(assemblyName, targetFramework, relativePath)] = entry;
 			}
 			entry.AccumulatedCodeBehindFields = new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
-			entry.AccumulatedCodeBehindFieldsSessionToken = _currentSessionToken;
-		}
-	}
-
-	/// <summary>
-	/// Starts a new generator-driver session, invalidating any <see cref="CacheEntry.AccumulatedCodeBehindFields"/>
-	/// recorded by a previous session. Must be called from <see cref="XamlGenerator.Initialize"/>, which Roslyn
-	/// invokes exactly once per generator-driver instance - i.e. once per independent build, and only once (not
-	/// on every edit) for the lifetime of a driver that's kept alive and reused across a live Hot Reload sequence.
-	/// </summary>
-	public static void BeginSession()
-	{
-		lock (_lock)
-		{
-			_currentSessionToken = System.Guid.NewGuid().ToString("N");
+			entry.AccumulatedCodeBehindFieldsSessionToken = sessionToken;
 		}
 	}
 

@@ -312,6 +312,72 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 		Assert.Contains("this.NamedElement = ", icOutput2, StringComparison.Ordinal);
 	}
 
+	// Regression test for the interleaved-driver variant of the stale-cache bug: a single,
+	// process-wide session token (the first fix attempted) would let a totally unrelated
+	// generator-driver's Initialize() call - e.g. a different project, or just another build
+	// kicked off concurrently in the same long-lived build-server process such as VBCSCompiler -
+	// invalidate an ALREADY-LIVE driver's accumulated field history on its very next edit, even
+	// though that driver's own Hot Reload session never stopped. The token must therefore be
+	// scoped per-driver-instance (via ProjectItem.HotReloadSessionToken), not process-wide.
+	[Fact]
+	public void UnrelatedDriverInitializing_DoesNotInvalidateAnotherLiveDriversAccumulatedFields()
+	{
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.InterleavedDriverSession">
+				<Label x:Name="count" Text="0" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.InterleavedDriverSession">
+				<Label x:Name="total" Text="0" />
+			</ContentPage>
+			""";
+
+		var xamlFile = new AdditionalXamlFile("InterleavedDriverSession.xaml", xamlV1);
+		var compilation = CreateMauiCompilation();
+
+		// Driver A is kept alive and reused across two generations below, simulating a live
+		// Hot Reload edit sequence. In between those two generations, an entirely unrelated
+		// driver B runs a one-shot build of a DIFFERENT file - simulating another project (or
+		// another build of the same process) initializing concurrently - which must not disturb
+		// driver A's in-progress session.
+		var result = RunGeneratorWithChanges<XamlGenerator>(compilation, ApplyChanges, xamlFile);
+
+		var output1 = GetCbOutput(result.result1);
+		var output2 = GetCbOutput(result.result2);
+
+		Assert.Contains("Microsoft.Maui.Controls.Label count", output1, StringComparison.Ordinal);
+
+		// Driver A's rename must still be seen as additive - the original field preserved - even
+		// though driver B's unrelated Initialize() ran in between driver A's two generations.
+		Assert.Contains("count", output2, StringComparison.Ordinal);
+		Assert.Contains("Microsoft.Maui.Controls.Label total", output2, StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation comp)
+		{
+			// Driver B: a totally independent, unrelated generator/driver for a different file,
+			// interleaved between driver A's two generations. Under the (buggy) process-global
+			// token design, this call's Initialize() would overwrite the single static token and
+			// cause driver A's NEXT GetAccumulatedCodeBehindFields call to miss.
+			var unrelatedFile = new AdditionalXamlFile("UnrelatedDriverBFile.xaml", """
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				             x:Class="Test.UnrelatedDriverB">
+					<Label x:Name="SomeOtherField" />
+				</ContentPage>
+				""");
+			RunGenerator<XamlGenerator>(CreateMauiCompilation(), unrelatedFile);
+
+			var newXamlFile = new AdditionalXamlFile(xamlFile.Path, xamlV2);
+			driver = driver.ReplaceAdditionalText(xamlFile.Text, newXamlFile.Text);
+			return (driver, comp);
+		}
+	}
+
 	static void AssertNoErrors(System.Collections.Immutable.ImmutableArray<Diagnostic> generatorDiagnostics, Compilation updatedCompilation)
 	{
 		var generatorErrors = generatorDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();

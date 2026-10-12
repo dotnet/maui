@@ -468,7 +468,7 @@ static class CodeBehindCodeWriter
 		foreach (var (fname, ftype, faccess) in currentFields)
 			currentByName[fname] = (ftype, faccess);
 
-		var accumulated = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey)
+		var accumulated = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey, projItem.HotReloadSessionToken)
 			?? new Dictionary<string, (string Type, string AccessModifier)>(System.StringComparer.Ordinal);
 
 		var merged = new List<(string name, string type, string accessModifier)>();
@@ -501,7 +501,7 @@ static class CodeBehindCodeWriter
 		var toPersist = new Dictionary<string, (string Type, string AccessModifier)>(System.StringComparer.Ordinal);
 		foreach (var (fname, ftype, faccess) in merged)
 			toPersist[fname] = (ftype, faccess);
-		XamlHotReloadState.SetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey, toPersist);
+		XamlHotReloadState.SetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey, toPersist, projItem.HotReloadSessionToken);
 
 		return ghostFieldNames;
 	}

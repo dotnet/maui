@@ -57,7 +57,7 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 			var assemblyName = Context.Compilation.AssemblyName ?? string.Empty;
 			var targetFramework = Context.ProjectItem.TargetFramework ?? string.Empty;
 			var stateKey = Context.ProjectItem.HotReloadStateKey;
-			var accumulatedFields = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey);
+			var accumulatedFields = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey, Context.ProjectItem.HotReloadSessionToken);
 			if (accumulatedFields != null && accumulatedFields.TryGetValue(fieldName, out var accumulatedField))
 			{
 				var currentType = parentElement.XmlType.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, Context.TypeCache)?.ToFQDisplayString() ?? string.Empty;

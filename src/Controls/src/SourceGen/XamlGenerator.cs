@@ -24,11 +24,14 @@ public class XamlGenerator : IIncrementalGenerator
 	{
 		// Roslyn calls Initialize exactly once per generator-driver instance: once per independent
 		// build, but only once (not per edit) for a driver kept alive across a live Hot Reload
-		// sequence. Starting a new session here lets XamlHotReloadState tell "this build is
-		// continuing a live edit" apart from "this is a fresh, unrelated build that happens to
-		// share a long-lived build-server process (e.g. VBCSCompiler) with a previous one" - see
-		// XamlHotReloadState.BeginSession.
-		XamlHotReloadState.BeginSession();
+		// sequence. Minting this token here - and stamping every ProjectItem this driver computes
+		// with it (see ComputeProjectItem) - lets XamlHotReloadState tell "this build is continuing
+		// a live edit on THIS driver" apart from "this is a different driver" (an unrelated, fresh
+		// build, or another project/TFM) that happens to share a long-lived build-server process
+		// (e.g. VBCSCompiler) and its static cache with this one. Unlike a single process-wide
+		// token, this is scoped to this driver instance alone, so it can never be invalidated by,
+		// or leak into, another concurrently-running driver.
+		var hotReloadSessionToken = System.Guid.NewGuid().ToString("N");
 #if DEBUG
 		// if (!System.Diagnostics.Debugger.IsAttached)
 		// {
@@ -50,7 +53,7 @@ public class XamlGenerator : IIncrementalGenerator
 
 		var projectItemProvider = initContext.AdditionalTextsProvider
 			.Combine(initContext.AnalyzerConfigOptionsProvider)
-			.Select(ComputeProjectItem)
+			.Select((tuple, ct) => ComputeProjectItem(tuple, ct, hotReloadSessionToken))
 			.WithTrackingName(TrackingNames.ProjectItemProvider);
 
 		var xamlProjectItemProviderForCB = projectItemProvider
