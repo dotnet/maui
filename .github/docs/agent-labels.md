@@ -71,8 +71,8 @@ Review-PR.ps1
     └── Non-fatal: errors warn but don't fail the workflow
 ```
 
-The full outcome/alternative-fix labels above belong to local `Review-PR.ps1`
-reviews. The hosted `/review gate` command applies only the gate pass/fail signals
+The full outcome/alternative-fix labels above belong to hosted `/review` and
+local `Review-PR.ps1` reviews. The `/review gate` command applies only the gate pass/fail signals
 through `Post-PRGate.ps1`, never approval or full-review tracking labels, and only
 when the live PR head still matches the tested head. It assigns the existing
 gate labels without editing their repository-wide descriptions or colors.
@@ -80,7 +80,7 @@ Required label-operation failures make publication incomplete rather than
 silently reporting success.
 `s/agent-review-in-progress` remains the shared async lock. It normally clears in
 the Azure cleanup stage; very old locks are treated as stale so cancellation
-does not permanently block another gate.
+does not permanently block another review or gate.
 
 ### How Labels Are Parsed
 
@@ -152,9 +152,10 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/workflows/review-trigger.yml` | `/review gate` trigger that applies `s/agent-review-in-progress` before queuing test verification |
+| `.github/workflows/review-trigger.yml` | `/review` and `/review gate` trigger that applies the shared in-progress lock before queueing |
 | `.github/scripts/Post-PRGate.ps1` | Publishes the hosted gate report and commit-bound gate signals only |
-| `eng/pipelines/ci-copilot.yml` | Gate-only Azure pipeline that removes the in-progress lock in final cleanup |
+| `eng/pipelines/ci-copilot.yml` | Full review by default; selects gate-only stages when `GateOnly` is true |
+| `eng/pipelines/pr-review-gate.yml` | Gate-only verification, fresh publication, and shared-lock cleanup |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions

@@ -1,6 +1,6 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo: "eng/pipelines/ci-copilot.yml,eng/pipelines/pr-gate-setup.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/skills/trace-regression/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*,.github/workflows/issue-trace-regression.*"
+applyTo: "eng/pipelines/ci-copilot.yml,eng/pipelines/pr-review-gate.yml,eng/pipelines/pr-gate-setup.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/skills/trace-regression/**,.github/workflows/review-trigger.yml,.github/workflows/review-trigger-recovery.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*,.github/workflows/issue-trace-regression.*"
 ---
 
 # CI Copilot pipeline — security rules
@@ -15,7 +15,9 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 The hosted `/review gate` path runs only Setup, Gate, fresh-agent publication,
 and lock cleanup. Gate uses the immutable local snapshot with no GitHub/Copilot
-token in its task environment. Full-review phases remain local tooling only.
+token in its task environment. The existing hosted `/review` retains the full
+review phases; the pipeline's `GateOnly` parameter defaults to false and selects
+the separate gate stages at compile time only when explicitly requested.
 
 ## Rules
 
