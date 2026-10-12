@@ -5,21 +5,30 @@ import { runInNewContext } from 'node:vm'
 import { NativeClient, NativeError, asciiJson, object, ack, progress, isNativeOrigin, loadNativeBridge, connect, disconnect } from '@maui/api/core'
 import { clipboard } from '@maui/api/essentials/clipboard'
 import { preferences } from '@maui/api/essentials/preferences'
-import { getInfo } from '@maui/api/app/info'
+import { getAppInfo } from '@maui/api/essentials/app-info'
+import { getDeviceInfo } from '@maui/api/essentials/device-info'
 import * as api from '@maui/api'
 import { mock } from './bridge.mjs'
 
 const ready = { commands: ['app.info', 'clipboard.read'], preferenceNamespace: 'host-owned.', maximumTextLength: 4096 }
 const identity = { appName: 'Host', version: '1', build: '1', platform: 'test', osVersion: '1', model: 'test', architecture: 'arm64', pid: 1, startupId: 'startup', startedAt: '2026-10-12T00:00:00Z' }
+const appInfo = { appName: identity.appName, version: identity.version, build: identity.build }
+const deviceInfo = { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
 
-test('built public root and subpaths share the same API without eager browser access', async () => {
+test('built root contains only lifecycle infrastructure without eager browser access', async () => {
   assert.equal(api.NativeClient, NativeClient)
-  assert.equal(api.clipboard, clipboard)
-  assert.equal(api.preferences, preferences)
-  assert.equal(api.getInfo, getInfo)
   assert.equal(api.connect, connect)
   assert.equal(api.disconnect, disconnect)
+  assert.deepEqual(Object.keys(api).sort(), ['NativeClient', 'NativeError', 'connect', 'disconnect'])
   assert.equal(await loadNativeBridge(), undefined)
+})
+
+test('Essentials are explicit subpaths and removed/private paths are not exported', async () => {
+  for (const path of ['@maui/api/app/info', '@maui/api/essentials', '@maui/api/src/core.ts', '@maui/api/dist/core.js']) {
+    await assert.rejects(() => import(path), error => error.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED')
+  }
+  assert.deepEqual(Object.keys(await import('@maui/api/essentials/app-info')), ['getAppInfo'])
+  assert.deepEqual(Object.keys(await import('@maui/api/essentials/device-info')), ['getDeviceInfo'])
 })
 
 test('Unicode, escapes, null, arrays and DTOs survive ByteString headers and both framework serializations', async () => {
@@ -39,14 +48,58 @@ test('browser origin and unavailable transport never emulate native APIs', async
   assert.equal(isNativeOrigin('https://0.0.0.1/index.html'), true)
   const client = new NativeClient(undefined)
   try {
-    for (const action of [() => client.connect(), () => clipboard(client).readText(), () => preferences(client).get('example'), () => getInfo(client),
-      () => connect(), () => clipboard().readText(), () => preferences().get('example'), () => getInfo()]) {
+    for (const action of [() => client.connect(), () => clipboard(client).readText(), () => preferences(client).get('example'), () => getAppInfo(client), () => getDeviceInfo(client),
+      () => connect(), () => clipboard().readText(), () => preferences().get('example'), () => getAppInfo(), () => getDeviceInfo()]) {
       await assert.rejects(action, error => error instanceof NativeError && error.code === 'native_unavailable')
     }
   } finally { client.dispose(); disconnect() }
 })
 
-test('typed clipboard, preferences and identity helpers validate outputs and dispatch only provider commands', async () => {
+test('injected protocol transport supports Essentials without MAUI-origin bootstrap or UI framework dependencies', async () => {
+  const originalWindow = globalThis.window, originalDocument = globalThis.document
+  let scriptLoads = 0, listeners = 0
+  globalThis.window = {
+    location: { href: 'https://example.test/app' },
+    addEventListener() { listeners++ },
+    removeEventListener() {},
+  }
+  globalThis.document = { createElement() { scriptLoads++; throw new Error('No framework bootstrap is allowed') } }
+  const host = mock(request => {
+    if (request.command === 'core.connect') return ready
+    if (request.command === 'app.info') return identity
+    if (request.command === 'clipboard.read') return { text: 'injected native transport' }
+    if (request.command === 'clipboard.write') return { accepted: true }
+    return { key: request.args.key, value: request.command === 'preferences.remove' ? null : request.args.value ?? 'native setting' }
+  })
+  const client = new NativeClient(host.bridge)
+  try {
+    disconnect()
+    assert.equal(await loadNativeBridge(), undefined)
+    await assert.rejects(() => connect(), error => error instanceof NativeError && error.code === 'native_unavailable')
+    assert.deepEqual(await client.connect(), ready)
+    assert.deepEqual(await getAppInfo(client), appInfo)
+    assert.deepEqual(await getDeviceInfo(client), deviceInfo)
+    assert.equal(await clipboard(client).readText(), 'injected native transport')
+    assert.equal(await clipboard(client).writeText('你好'), true)
+    assert.deepEqual(await preferences(client).get('key'), { key: 'key', value: 'native setting' })
+    assert.deepEqual(await preferences(client).set('key', 'value'), { key: 'key', value: 'value' })
+    assert.deepEqual(await preferences(client).remove('key'), { key: 'key', value: null })
+    assert.ok(host.requests.every(request => request.session === client.session))
+    assert.equal(host.requests.filter(request => request.command === 'core.connect').length, 1)
+    assert.equal(scriptLoads, 0)
+    assert.equal(listeners, 0)
+    client.dispose()
+    await assert.rejects(() => getAppInfo(client), error => error instanceof NativeError && error.code === 'native_unavailable')
+    assert.deepEqual(host.messages, [{ session: client.session, kind: 'disconnect' }])
+  } finally {
+    client.dispose()
+    disconnect()
+    globalThis.window = originalWindow
+    globalThis.document = originalDocument
+  }
+})
+
+test('typed Essentials helpers validate outputs and dispatch only provider commands', async () => {
   const host = mock(request => {
     if (request.command === 'clipboard.read') return { text: null }
     if (request.command === 'clipboard.write') return { accepted: true }
@@ -60,11 +113,37 @@ test('typed clipboard, preferences and identity helpers validate outputs and dis
     assert.deepEqual(await preferences(client).get('key'), { key: 'key', value: 'é' })
     assert.deepEqual(await preferences(client).set('key', '你好'), { key: 'key', value: '你好' })
     assert.deepEqual(await preferences(client).remove('key'), { key: 'key', value: null })
-    assert.deepEqual(await getInfo(client), identity)
-    assert.deepEqual(host.requests.map(request => request.command), ['clipboard.read', 'clipboard.write', 'preferences.read', 'preferences.write', 'preferences.remove', 'app.info'])
+    assert.deepEqual(await getAppInfo(client), appInfo)
+    assert.deepEqual(await getDeviceInfo(client), deviceInfo)
+    assert.deepEqual(host.requests.map(request => request.command), ['clipboard.read', 'clipboard.write', 'preferences.read', 'preferences.write', 'preferences.remove', 'app.info', 'app.info'])
+    assert.ok(host.requests.every(request => request.session === client.session))
     host.bridge.InvokeDotNet = mock(() => ({ text: 42, key: 42, value: false })).bridge.InvokeDotNet
-    for (const action of [() => clipboard(client).readText(), () => clipboard(client).writeText('text'), () => preferences(client).get('key'), () => getInfo(client)]) {
+    for (const action of [() => clipboard(client).readText(), () => clipboard(client).writeText('text'), () => preferences(client).get('key'), () => getAppInfo(client), () => getDeviceInfo(client)]) {
       await assert.rejects(action, error => error.code === 'invalid_response')
+    }
+  } finally { client.dispose() }
+})
+
+test('AppInfo and DeviceInfo project only their own validated fields, never process diagnostics', async () => {
+  let result = { ...identity, architecture: false, pid: 'not a PID', startupId: null, startedAt: {} }
+  const host = mock(() => result)
+  const client = new NativeClient(host.bridge)
+  try {
+    assert.deepEqual(await getAppInfo(client), appInfo)
+    assert.deepEqual(await getDeviceInfo(client), deviceInfo)
+    result = { ...appInfo }
+    assert.deepEqual(await getAppInfo(client), appInfo)
+    await assert.rejects(() => getDeviceInfo(client), error => error.code === 'invalid_response')
+    result = { ...deviceInfo }
+    assert.deepEqual(await getDeviceInfo(client), deviceInfo)
+    await assert.rejects(() => getAppInfo(client), error => error.code === 'invalid_response')
+    for (const field of Object.keys(appInfo)) {
+      result = { ...appInfo, [field]: null }
+      await assert.rejects(() => getAppInfo(client), error => error.code === 'invalid_response')
+    }
+    for (const field of Object.keys(deviceInfo)) {
+      result = { ...deviceInfo, [field]: 42 }
+      await assert.rejects(() => getDeviceInfo(client), error => error.code === 'invalid_response')
     }
   } finally { client.dispose() }
 })
@@ -179,7 +258,7 @@ test('default feature calls share lazy startup, and teardown creates a new sessi
   try {
     disconnect()
     assert.equal(host.requests.length, 0)
-    assert.deepEqual(await Promise.all([clipboard().readText(), getInfo()]), ['native', identity])
+    assert.deepEqual(await Promise.all([clipboard().readText(), getAppInfo(), getDeviceInfo()]), ['native', appInfo, deviceInfo])
     const client = await connect()
     assert.equal(await connect(), client)
     assert.equal(host.requests.filter(request => request.command === 'core.connect').length, 1)

@@ -18,10 +18,20 @@ public sealed class HubTests
 	async Task Connect(HybridAppTargetObject hub, string? session = null) =>
 		Assert.Equal("success", (await Call(hub, "core.connect", new { }, session)).Status);
 
+	static HybridAppTargetObject CreateHub(IPlaygroundPlatform platform, Action<NativeEvent> send, TimeProvider? time = null)
+	{
+		var registry = new CommandRegistry();
+		EssentialsProvider.Register(registry, platform);
+		new SampleCommands().Register(registry);
+		return new HybridAppTargetObject(registry,
+			() => new ReadyResult(registry.Names, EssentialsProvider.PreferenceNamespace, EssentialsProvider.MaximumTextLength),
+			send, time);
+	}
+
 	[Fact]
 	public async Task UnicodeEscapesNullArraysAndAsyncDtoUseGeneratedMetadata()
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		var value = "你好 👋 café\n\"quotes\"\\\0";
 		var response = await Call(hub, "sample.echo", new { text = value, number = -4.25, flag = true, items = new[] { "é", "\\", "\n" } });
@@ -43,7 +53,7 @@ public sealed class HubTests
 	[InlineData("sample.echo", "invalid_arguments")]
 	public async Task FailuresAreDistinctAndHubRecovers(string command, string code)
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		var response = await Call(hub, command, new { });
 		Assert.Equal("error", response.Status);
@@ -59,7 +69,7 @@ public sealed class HubTests
 	[InlineData("null")]
 	public async Task InvalidDtoArgumentsAreRejected(string arguments)
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		using var document = JsonDocument.Parse(arguments);
 		var response = await Call(hub, "sample.echo", document.RootElement);
@@ -73,7 +83,7 @@ public sealed class HubTests
 	[InlineData("你好")]
 	public async Task MalformedProtocolIsRejected(string request)
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		var response = JsonSerializer.Deserialize(await hub.Invoke(request), PlaygroundJsonContext.Default.Response)!;
 		Assert.Equal("error", response.Status);
 		Assert.Equal("invalid_request", response.Error!.Code);
@@ -83,7 +93,7 @@ public sealed class HubTests
 	public async Task NamespaceAndSizeBoundsAreEnforcedBeforePlatformCalls()
 	{
 		var platform = new FakePlatform();
-		using var hub = new HybridAppTargetObject(platform, _ => { });
+		using var hub = CreateHub(platform, _ => { });
 		await Connect(hub);
 		foreach (var key in new[] { "", "../other", "a.b", new string('a', 49), "你好" })
 			Assert.Equal("invalid_arguments", (await Call(hub, "preferences.read", new { key })).Error!.Code);
@@ -100,7 +110,7 @@ public sealed class HubTests
 	{
 		var events = new List<NativeEvent>();
 		var progressed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var hub = new HybridAppTargetObject(new FakePlatform(), value =>
+		using var hub = CreateHub(new FakePlatform(), value =>
 		{
 			lock (events)
 				events.Add(value);
@@ -126,7 +136,7 @@ public sealed class HubTests
 	public async Task NewDocumentCancelsOldWorkAndOldSubscriptionsButPreservesService()
 	{
 		var events = new List<NativeEvent>();
-		using var hub = new HybridAppTargetObject(new FakePlatform(), value => events.Add(value));
+		using var hub = CreateHub(new FakePlatform(), value => events.Add(value));
 		await Connect(hub);
 		await Call(hub, "core.subscribe", new { topic = "service.changed" });
 		await Call(hub, "sample.echo", new { text = (string?)null, number = 0, flag = false, items = Array.Empty<string>() });
@@ -146,7 +156,7 @@ public sealed class HubTests
 	[Fact]
 	public async Task ReplayedConnectCannotReplaceANewerDocument()
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		var originalConnect = Wire("core.connect", new { });
 		Assert.Equal("success", JsonSerializer.Deserialize(await hub.Invoke(originalConnect), PlaygroundJsonContext.Default.Response)!.Status);
 		var next = Guid.NewGuid().ToString("D");
@@ -162,7 +172,7 @@ public sealed class HubTests
 	[Fact]
 	public async Task DisconnectedDocumentMustUseANewIdentityToReconnect()
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		hub.Disconnect();
 		Assert.Equal("stale_session", (await Call(hub, "core.connect", new { })).Error!.Code);
@@ -173,7 +183,7 @@ public sealed class HubTests
 	public async Task UnsubscribeAndDisposeReleaseDocumentWork()
 	{
 		var events = new List<NativeEvent>();
-		var hub = new HybridAppTargetObject(new FakePlatform(), value => events.Add(value));
+		var hub = CreateHub(new FakePlatform(), value => events.Add(value));
 		await Connect(hub);
 		await Call(hub, "core.subscribe", new { topic = "service.changed" });
 		await Call(hub, "core.unsubscribe", new { topic = "service.changed" });
@@ -191,7 +201,7 @@ public sealed class HubTests
 	public async Task LeaseExpiresAndHeartbeatKeepsDocumentAlive()
 	{
 		var time = new FakeTime();
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { }, time);
+		using var hub = CreateHub(new FakePlatform(), _ => { }, time);
 		await Connect(hub);
 		time.Now += TimeSpan.FromSeconds(14);
 		hub.ReceiveDocumentMessage(JsonSerializer.Serialize(new DocumentMessage(_session, "heartbeat"), PlaygroundJsonContext.Default.DocumentMessage));
@@ -208,7 +218,7 @@ public sealed class HubTests
 	[Fact]
 	public async Task DuplicateActiveRequestAndSuccessfulWorkAreHandled()
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		var id = Guid.NewGuid().ToString("D");
 		var running = Call(hub, "sample.work", new { steps = 1, delayMs = 100 }, id: id);
@@ -220,7 +230,7 @@ public sealed class HubTests
 	[Fact]
 	public async Task UnsupportedPlatformApiIsNotReportedAsSuccess()
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		var response = await Call(hub, "app.info", new { });
 		Assert.Equal("error", response.Status);
@@ -231,7 +241,7 @@ public sealed class HubTests
 	[Fact]
 	public async Task ConcurrentWorkIsBoundedAndDisconnectCancelsEveryCall()
 	{
-		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		using var hub = CreateHub(new FakePlatform(), _ => { });
 		await Connect(hub);
 		var running = Enumerable.Range(0, 16).Select(_ => Call(hub, "sample.work", new { steps = 20, delayMs = 100 })).ToArray();
 		Assert.Equal("busy", (await Call(hub, "sample.counter", new { })).Error!.Code);
@@ -252,6 +262,36 @@ public sealed class HubTests
 		var result = await registry.DispatchAsync("test.explicit", JsonSerializer.SerializeToElement(new TextArgs("test"), json.TextArgs),
 			new Operation(_session, Guid.NewGuid().ToString("D"), CancellationToken.None, (_, _) => { }));
 		Assert.Equal("test", result.Deserialize(json.TextResult)!.Text);
+	}
+
+	[Fact]
+	public async Task HostChoosesProvidersMetadataAndTopicsWithoutMauiUi()
+	{
+		var registry = new CommandRegistry();
+		var json = PlaygroundJsonContext.Default;
+		var events = new List<NativeEvent>();
+		registry.RegisterTopic("custom.changed");
+		Assert.Throws<InvalidOperationException>(() => registry.RegisterTopic("custom.changed"));
+		registry.Register("custom.echo", json.TextArgs, json.TextResult, (args, op) =>
+		{
+			var result = new TextResult(args.Text);
+			op.Publish("custom.changed", JsonSerializer.SerializeToElement(result, json.TextResult));
+			return Task.FromResult(result);
+		});
+		using var hub = new HybridAppTargetObject(registry, () => new ReadyResult(registry.Names, "native-host.", 128),
+			events.Add);
+		var response = await Call(hub, "core.connect", new { });
+		var ready = response.Result!.Value.Deserialize(json.ReadyResult)!;
+		Assert.Equal("native-host.", ready.PreferenceNamespace);
+		Assert.Equal(128, ready.MaximumTextLength);
+		Assert.Contains("custom.echo", ready.Commands);
+		Assert.DoesNotContain("app.info", ready.Commands);
+		Assert.DoesNotContain("sample.echo", ready.Commands);
+		Assert.Equal("unknown_command", (await Call(hub, "clipboard.read", new { })).Error!.Code);
+		Assert.Equal("unknown_topic", (await Call(hub, "core.subscribe", new { topic = "service.changed" })).Error!.Code);
+		Assert.Equal("success", (await Call(hub, "core.subscribe", new { topic = "custom.changed" })).Status);
+		Assert.Equal("success", (await Call(hub, "custom.echo", new { text = "native-only host" })).Status);
+		Assert.Equal("native-only host", Assert.Single(events).Data.GetProperty("text").GetString());
 	}
 
 	sealed class FakeTime : TimeProvider

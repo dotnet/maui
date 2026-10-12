@@ -11,8 +11,15 @@ The bootstrap recognizes `app://0.0.0.1` (Apple) and `https://0.0.0.1`
 `/_framework/hybridwebview.js`. Framework routes `/__hwvInvokeDotNet` and
 `/__hwvSendMessage` remain framework-owned. An ordinary `http://localhost` Vite
 page is not a native host even if a script supplies a similarly named global.
+That restriction applies to **automatic MAUI bootstrap**, not explicitly
+injected transports. `NativeClient(bridge)` accepts a compatible protocol
+transport independently of origin or Controls and performs no script loading.
+Injection changes neither envelope/error validation nor session/lifetime rules;
+custom hosts must supply their own forwarding registration, event delivery and
+document lease integration.
 
-`Bridge` requires these existing framework operations:
+`Bridge` uses the operation names provided by the existing MAUI framework;
+an explicit transport can implement the same contract:
 
 ```ts
 interface Bridge {
@@ -78,7 +85,7 @@ registration decision; this example topic is not part of the reference host.
 | `core.connect` | `{}` | `{ commands: string[], preferenceNamespace: string, maximumTextLength: number }` | Session establishment/retirement |
 | `core.cancel` | `{ requestId: string }` | `{ accepted: boolean }` | Cooperative request cancellation |
 | `core.subscribe`, `core.unsubscribe` | `{ topic: string }` | `{ accepted: boolean }` | Explicit allowed topic list |
-| `app.info` | `{}` | `Identity` fields in [API](API.md) | Identity provider |
+| `app.info` | `{}` | Combined native `IdentityResult` described below | Reference identity provider |
 | `clipboard.read` | `{}` | `{ text: string \| null }` | Clipboard provider |
 | `clipboard.write` | `{ text: string }` | `{ accepted: boolean }` | Clipboard provider |
 | `preferences.read`, `preferences.remove` | `{ key: string }` | `{ key: string, value: string \| null }` | Namespace-restricted settings provider |
@@ -91,6 +98,23 @@ are the source-backed reference. The host, not the SDK, selects its preferences
 namespace and OS adapters. The reference host also registers application-only
 `sample.*` commands and `service.changed` / `operation.progress` topics; those
 helpers remain in the playground and are **not** npm SDK features.
+
+### Preview AppInfo/DeviceInfo mapping
+
+The existing `app.info` result contains strings `appName`, `version`, `build`,
+`platform`, `osVersion`, `model`, `architecture`, `startupId`, `startedAt`, and
+numeric `pid`. This is the **native wire shape**, not an exported SDK Identity
+type. The Essentials `getAppInfo` decoder projects appName/version/build;
+`getDeviceInfo` projects platform/osVersion/model. Neither returns process
+diagnostics. Each validates only its own required fields.
+
+The playground alone decodes architecture/pid/startupId/startedAt and composes
+them with the installed Essentials helpers for its reload checks. Each helper
+currently issues an `app.info` call; the composition makes three reads on the
+same exact document client. No command rename, C# provider/DTO changes,
+reflection registration or AOT metadata changes are required. This preview
+mapping is explicit; future separate wire commands require coordinated
+SDK/native compatibility work, not a TypeScript-only assumption.
 
 ## Session ownership and bounded lifetime
 

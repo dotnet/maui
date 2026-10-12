@@ -2,7 +2,8 @@
 
 `@maui/api` is an app-independent, experimental JavaScript/TypeScript SDK in the
 .NET MAUI project. It provides typed native commands, document-scoped events
-and small feature modules for app information, clipboard and preferences.
+and Essentials feature modules for app information, device information,
+clipboard and preferences.
 
 **Preview availability:** `0.1.0-preview.1` is prepared for local tarball
 installation, not yet published to npm. The `@maui` scope and package name must
@@ -30,21 +31,56 @@ existing release**. See [release preparation](docs/RELEASING.md).
 ```ts
 import { clipboard } from '@maui/api/essentials/clipboard'
 import { preferences } from '@maui/api/essentials/preferences'
-import { getInfo } from '@maui/api/app/info'
+import { getAppInfo } from '@maui/api/essentials/app-info'
+import { getDeviceInfo } from '@maui/api/essentials/device-info'
 
 // Each feature lazily connects the shared document client on its first call.
-const identity = await getInfo()
-await clipboard().writeText(`Hello from ${identity.appName} — 你好 👋`)
+const app = await getAppInfo()
+const device = await getDeviceInfo()
+await clipboard().writeText(`Hello from ${app.appName} on ${device.platform} — 你好 👋`)
 const text = await clipboard().readText() // string | null, from the native OS
 await preferences().set('theme', 'dark') // host-owned namespace and restrictions
 ```
 
-No view object is needed in ordinary application code. A root import is also
-available: `import { connect, disconnect, clipboard, getInfo } from '@maui/api'`.
+No view object is needed in ordinary application code. The root contains only
+infrastructure/lifecycle APIs and core types:
+`import { connect, disconnect, NativeClient, NativeError } from '@maui/api'`.
+Essentials helpers and their DTOs belong to explicit `essentials/*` subpaths.
+These are module boundaries in **one npm package**, not separately published
+packages. Features depend on the core client contract, not the playground or
+Controls, leaving room for future packaging choices without introducing them now.
 Importing modules or creating a feature helper performs no native calls. An
-ordinary browser/Node process has no native host: asynchronous feature calls
+ordinary browser/Node process without an explicitly injected native transport has
+no native host: asynchronous default-client feature calls
 reject with `NativeError` code `native_unavailable`; they never fall back to web
-clipboard/storage or fake identity. Handle that rejection in your UI.
+clipboard/storage or fake app/device data. Handle that rejection in your UI.
+
+This **unpublished preview was intentionally reshaped**: the old `app/info`,
+`getInfo` and SDK `Identity` exports were removed, not aliased. AppInfo exposes
+only native appName/version/build; DeviceInfo exposes platform/osVersion/model.
+Both currently project their fields from the existing native `app.info` command.
+Process architecture, PID, startup UUID and timestamp are playground-owned
+diagnostics, not Essentials. This reshaping changes no native registration,
+reflection, JSON metadata or AOT behavior.
+
+## Source documentation and generated reference
+
+The public TypeScript symbols and members carry TSDoc comments that survive in
+the shipped `.d.ts` files, so editor tooltips include parameters, return values,
+errors, host requirements and session/limit notes without opening this README.
+Generate a local Markdown reference and DocFX navigation from those declarations:
+
+```sh
+npm --prefix src/HybridWebView/JavaScript run docs
+```
+
+Open `src/HybridWebView/JavaScript/artifacts/api-reference/index.md`. API Extractor
+and API Documenter process each actual package entrypoint separately and label
+its exact import path; feature APIs are not flattened into the root to generate
+docs. Generated reference output is ignored and not shipped in the npm tarball.
+See [the documentation/DocFX workflow](docs/RELEASING.md#source-reference-and-docfxmicrosoft-learn)
+for tool compatibility and Microsoft Learn onboarding requirements. Generating
+these files does **not** publish a Microsoft Learn page.
 
 ## Matching native host required
 
@@ -114,6 +150,40 @@ For custom transports/tests, construct `new NativeClient(bridge)`, attach it wit
 `attachToDocument()` in a browser, and `await client.connect()` before calling
 commands. Pass it explicitly to helpers, e.g. `clipboard(client)`. Always call
 `client.dispose()`. Injection never replaces production APIs with silent mocks.
+
+### Explicit transport without MAUI automatic bootstrap
+
+Automatic `connect()`/`loadNativeBridge()` is specifically a MAUI HybridWebView
+integration: it recognizes MAUI's virtual origin and loads MAUI's framework
+script. An explicit `NativeClient(transport)` does neither. A compatible native
+protocol transport can be supplied on another origin or in a non-Controls host:
+
+```ts
+import { NativeClient } from '@maui/api'
+import type { Bridge } from '@maui/api'
+import { getAppInfo } from '@maui/api/essentials/app-info'
+import { preferences } from '@maui/api/essentials/preferences'
+
+// The integration supplies a real transport implementing protocol 1, not a mock.
+async function useNative(transport: Bridge) {
+  const client = new NativeClient(transport)
+  try {
+    await client.connect() // instance handshake; no origin detection/script load
+    const app = await getAppInfo(client)
+    await preferences(client).set('theme', 'dark')
+    return app
+  } finally { client.dispose() }
+}
+```
+
+This preserves the same NativeError, runtime decoding, request limits,
+cancellation and document-session semantics. The host must still register the
+commands and own provider/permission policy; injection is not browser emulation
+or permission bypass. The integration owns event delivery and document lease:
+use `attachToDocument()` when supplying the framework-compatible browser events,
+or call `receive()` and manage heartbeats/teardown in a headless/custom host.
+There are no npm dependencies on .NET MAUI Core or Controls, and no alternative
+transport implementation/framework is shipped here.
 
 ## Compatibility and support
 

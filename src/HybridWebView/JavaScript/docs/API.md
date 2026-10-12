@@ -2,22 +2,49 @@
 
 All subpaths resolve to built `.js` and `.d.ts` files, never original `.ts`.
 There are no wildcard/private-source exports.
+Public symbols and members are documented in the TypeScript source and shipped
+declarations; this page explains organization and host compatibility. Generate
+the detailed source-derived reference with `npm run docs` (see [release
+documentation](RELEASING.md#source-reference-and-docfxmicrosoft-learn)).
 
 | Import | Exports |
 | --- | --- |
-| `@maui/api` | `connect`, `disconnect`, `NativeClient`, `NativeError`, `clipboard`, `preferences`, `getInfo`; types `Bridge`, `Json`, `Decoder`, `Ready`, `Operation`, `Progress`, `Identity` |
+| `@maui/api` | `connect`, `disconnect`, `NativeClient`, `NativeError`; core types `Bridge`, `Json`, `Decoder`, `Ready`, `Operation`, `Progress` only |
 | `@maui/api/core` | Transport/lifetime API above; `loadNativeBridge`, `isNativeOrigin`, `asciiJson`; validators `object`, `text`, `number`, `boolean`, `nullableText`, `strings`, `ack`, `progress` |
-| `@maui/api/app/info` | `getInfo(client?)`, `Identity` |
-| `@maui/api/essentials/clipboard` | `clipboard(client?)` |
-| `@maui/api/essentials/preferences` | `preferences(client?)` |
+| `@maui/api/essentials/app-info` | `getAppInfo(client?)`; type `AppInfo` |
+| `@maui/api/essentials/device-info` | `getDeviceInfo(client?)`; type `DeviceInfo` |
+| `@maui/api/essentials/clipboard` | `clipboard(client?)`; type `ClipboardApi` (not the DOM `Clipboard`) |
+| `@maui/api/essentials/preferences` | `preferences(client?)`; types `Preferences`, `Preference` |
+
+The earlier root re-export table described the code accurately, but mixed
+infrastructure with Essentials and process diagnostics. This unpublished preview
+now follows MAUI containers: features and feature DTOs are imported only from
+their Essentials subpaths. `@maui/api/app/info`, `getInfo` and SDK `Identity`
+were intentionally removed rather than retained as confusing aliases.
 
 Optional `client` means use the lazy shared connection. Supplying a client uses
 that exact instance: the helper does not connect/dispose it or attach listeners.
+All modules are in one npm package. Feature subpaths depend on core transport
+types and validators, not Controls or the playground; no extra packages or
+transport framework are introduced by this organization.
 
 ## Features
 
-`getInfo()` resolves an `Identity`: appName, version, build, platform, osVersion,
-model, architecture, numeric pid, startupId and startedAt, all from the host.
+`getAppInfo()` resolves an `AppInfo`: native appName, version and build.
+`getDeviceInfo()` resolves a `DeviceInfo`: native platform, osVersion and model.
+These are supported subsets of MAUI Essentials, not a claim that every .NET
+AppInfo/DeviceInfo member or every platform is implemented. There is no
+browser/user-agent/package-version fallback.
+
+Both helpers currently use the existing `app.info` wire command, validating and
+returning only their own fields. Extra wire fields are not leaked into the result
+and unrelated diagnostic fields do not affect their decoders. The reference
+host still returns combined app/device/process data; its native contracts,
+registration and AOT metadata are unchanged. Process architecture, numeric pid,
+startupId and startedAt belong only to the playground's `Web/src/native/sample.ts`.
+That app-owned helper composes the installed AppInfo/DeviceInfo helpers with its
+own diagnostics decoder to preserve the existing reload-identity UI.
+
 `clipboard().writeText(text)` resolves the native boolean acknowledgement;
 `readText()` resolves `string | null`. No web clipboard fallback exists.
 `preferences().get(key)`, `.set(key, value)` and `.remove(key)` resolve
@@ -26,8 +53,9 @@ This API handles only text settings. It does not expose a namespace override,
 clear-all operation or secure storage. Host metadata supplies the namespace;
 there is no sample namespace embedded in this library.
 
-Each helper validates result fields at runtime, including nullability and
-finite numbers. Inputs are typed but **native validation is authoritative**:
+Each helper validates its result fields at runtime, including nullability.
+Core numeric validators require finite numbers. Inputs are typed but
+**native validation is authoritative**:
 TypeScript is not a security boundary and JavaScript callers can supply invalid
 values. The reference provider bounds text to 4096 UTF-16 code units and keys
 to 1–48 ASCII letters/digits/underscore/hyphen. Other hosts must define their
@@ -56,6 +84,11 @@ async function run(bridge: Bridge) {
 
 The host must explicitly register `custom.greet` with matching native JSON
 metadata. No arbitrary native member invocation or command generation exists.
+The injected `Bridge` need not come from MAUI Controls or a MAUI virtual origin.
+`new NativeClient(bridge)` and its instance `connect()` do not invoke automatic
+bootstrap; the exact explicit client is used by all Essentials helpers.
+The shared root `connect()`/`loadNativeBridge()` remains MAUI-specific. See the
+[explicit transport example](../README.md#explicit-transport-without-maui-automatic-bootstrap).
 
 - `NativeClient(bridge | undefined)`: generates a document UUID on construction;
   `available` reports transport presence and non-disposed state, **not** provider

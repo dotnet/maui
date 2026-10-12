@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { NativeClient, NativeError } from '@maui/api/core'
-import { sample } from '../src/native/sample.ts'
+import { getIdentity, sample } from '../src/native/sample.ts'
 import { features, availableFeatures } from '../src/catalog.ts'
 
 // Explicit test double only: never imported by the UI or used as a browser fallback.
@@ -36,6 +36,35 @@ test('Unicode, escapes, null, arrays and DTOs survive ByteString headers and bot
   client.dispose()
 })
 
+test('playground reload identity composes installed Essentials helpers with app-owned diagnostics', async () => {
+  const identity = { appName: 'Native', version: '1', build: '2', platform: 'Android', osVersion: '16', model: 'Device',
+    architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
+  const host = mock(() => identity)
+  const client = new NativeClient(host.bridge)
+  try {
+    assert.deepEqual(await getIdentity(client), identity)
+    assert.deepEqual(await getIdentity(client), identity, 'the host owns process identity across repeated reads')
+    assert.deepEqual(host.requests.map(request => request.command), Array(6).fill('app.info'))
+    assert.ok(host.requests.every(request => request.session === client.session))
+    const source = await readFile(new URL('../src/native/sample.ts', import.meta.url), 'utf8')
+    assert.ok(source.includes("from '@maui/api/essentials/app-info'"))
+    assert.ok(source.includes("from '@maui/api/essentials/device-info'"))
+  } finally { client.dispose() }
+})
+
+test('app-owned diagnostics reject malformed native fields instead of inventing reload identity', async () => {
+  const identity = { appName: 'Native', version: '1', build: '2', platform: 'Android', osVersion: '16', model: 'Device',
+    architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
+  let output = identity
+  const client = new NativeClient(mock(() => output).bridge)
+  try {
+    for (const [field, value] of [['architecture', null], ['pid', '123'], ['pid', null], ['startupId', 42], ['startedAt', {}]]) {
+      output = { ...identity, [field]: value }
+      await assert.rejects(() => getIdentity(client), error => error.code === 'invalid_response')
+    }
+  } finally { client.dispose() }
+})
+
 test('catalog has all 121 families with 19 P0, and later families never claim implementation', () => {
   assert.equal(features.length, 121)
   assert.equal(new Set(features.map(feature => feature.id)).size, 121)
@@ -49,6 +78,9 @@ test('explorer shows implemented experiments with descriptions, without a priori
   assert.ok(availableFeatures.every(feature => features.includes(feature)))
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8')
   assert.ok(!html.includes('id="priority"'))
+  const browser = availableFeatures.find(feature => feature.id === 'browser')
+  assert.ok(browser.description.includes('Only implemented experiments are shown'))
+  assert.ok(!browser.description.includes('priority'))
 })
 
 test('native error, intentional failure and cancelled are not success-shaped', async () => {

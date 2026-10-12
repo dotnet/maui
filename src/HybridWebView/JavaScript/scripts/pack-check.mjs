@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process'
 import { copyFile, lstat, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ApiModel } from '@microsoft/api-extractor-model'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
@@ -38,9 +39,25 @@ npm(['ci', '--offline'], consumer)
 const installed = join(consumer, 'node_modules', '@maui', 'api')
 assert.equal((await lstat(installed)).isSymbolicLink(), false, 'The consumer must use the tarball, not a source symlink.')
 await assert.rejects(lstat(join(installed, 'src')), { code: 'ENOENT' })
+run(process.execPath, [join(root, 'scripts', 'docs.mjs'), installed])
+function publicSurface(item) {
+  return {
+    kind: item.kind,
+    name: item.displayName,
+    signature: item.excerpt?.text,
+    comment: item.tsdocComment?.emitAsTsdoc(),
+    members: item.members.map(publicSurface),
+  }
+}
+for (const subpath of Object.keys(manifest.exports)) {
+  const slug = subpath === '.' ? 'root' : subpath.slice(2)
+  const local = new ApiModel().loadPackage(join(artifacts, 'api-reference', slug, 'input', 'api.api.json'))
+  const packed = new ApiModel().loadPackage(join(artifacts, 'api-reference-packed', slug, 'input', 'api.api.json'))
+  assert.deepEqual(publicSurface(packed), publicSurface(local), `Packed API signatures, exports, members and TSDoc differ for ${subpath}.`)
+}
 for (const file of ['consumer.ts', 'tsconfig.json']) {
   await copyFile(join(root, 'tests', 'fixtures', file), join(consumer, file))
 }
 run(process.execPath, [join(root, 'node_modules', 'typescript', 'bin', 'tsc'), '-p', join(consumer, 'tsconfig.json')])
 run(process.execPath, [join(consumer, 'output', 'consumer.js')], consumer)
-console.log(`Verified ${entries.length} tarball files, clean offline install, public ESM exports, and published declarations.`)
+console.log(`Verified ${entries.length} tarball files, clean offline install, public ESM exports, and identical declaration API/TSDoc models for ${Object.keys(manifest.exports).length} entrypoints.`)

@@ -7,8 +7,17 @@ sealed class CommandRegistry
 {
 	readonly Dictionary<string, Func<JsonElement, Operation, Task<JsonElement>>> _commands = new(StringComparer.Ordinal);
 	readonly HashSet<string> _disabled = new(StringComparer.Ordinal);
+	readonly HashSet<string> _topics = new(StringComparer.Ordinal);
 
 	public string[] Names => _commands.Keys.Order(StringComparer.Ordinal).ToArray();
+
+	public void RegisterTopic(string name)
+	{
+		if (!_topics.Add(name))
+			throw new InvalidOperationException($"Duplicate topic registration: {name}");
+	}
+
+	public bool HasTopic(string name) => _topics.Contains(name);
 
 	public void Register<TArgs, TResult>(string name, JsonTypeInfo<TArgs> input, JsonTypeInfo<TResult> output,
 		Func<TArgs, Operation, Task<TResult>> handler, bool enabled = true)

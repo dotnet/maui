@@ -14,9 +14,13 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/core.js"
     },
-    "./app/info": {
-      "types": "./dist/app/info.d.ts",
-      "import": "./dist/app/info.js"
+    "./essentials/app-info": {
+      "types": "./dist/essentials/app-info.d.ts",
+      "import": "./dist/essentials/app-info.js"
+    },
+    "./essentials/device-info": {
+      "types": "./dist/essentials/device-info.d.ts",
+      "import": "./dist/essentials/device-info.js"
     },
     "./essentials/clipboard": {
       "types": "./dist/essentials/clipboard.d.ts",
@@ -32,8 +36,10 @@
     "dist/index.d.ts",
     "dist/core.js",
     "dist/core.d.ts",
-    "dist/app/info.js",
-    "dist/app/info.d.ts",
+    "dist/essentials/app-info.js",
+    "dist/essentials/app-info.d.ts",
+    "dist/essentials/device-info.js",
+    "dist/essentials/device-info.d.ts",
     "dist/essentials/clipboard.js",
     "dist/essentials/clipboard.d.ts",
     "dist/essentials/preferences.js",
@@ -60,11 +66,15 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "npm run build && node --test tests/*.test.mjs",
+    "test": "npm run docs && node --test tests/*.test.mjs",
+    "docs": "npm run build && node scripts/docs.mjs",
     "pack-check": "node scripts/pack-check.mjs",
     "prepack": "npm test"
   },
   "devDependencies": {
+    "@microsoft/api-documenter": "7.30.18",
+    "@microsoft/api-extractor": "7.59.4",
+    "@microsoft/api-extractor-model": "7.33.15",
     "typescript": "~7.0.2"
   }
 }

@@ -6,8 +6,7 @@ import { NativeClient, NativeError, loadNativeBridge, object, nullableText, numb
 import type { Operation, Progress } from '@maui/api/core'
 import { clipboard } from '@maui/api/essentials/clipboard'
 import { preferences } from '@maui/api/essentials/preferences'
-import { getInfo } from '@maui/api/app/info'
-import { sample } from './native/sample.ts'
+import { getIdentity, sample } from './native/sample.ts'
 
 function element<T extends HTMLElement>(selector: string, type: { new(): T }): T {
   const found = document.querySelector(selector)
@@ -113,7 +112,7 @@ function render(feature: Feature): void {
     case 'identity':
       controls.innerHTML = `<p class="input-help">Compare <code>pid</code>, <code>startupId</code> and <code>startedAt</code> before and after frontend reload.</p><div class="actions">${button('run', 'Read native identity', true)}${reload}</div>`
       bind('run', 'Read native identity', async () => {
-        const identity = await getInfo(client)
+        const identity = await getIdentity(client)
         element('#native-identity', HTMLPreElement).textContent = JSON.stringify(identity, null, 2)
         return identity
       })
@@ -207,7 +206,7 @@ function render(feature: Feature): void {
       break
     case 'development':
       controls.innerHTML = `<p class="input-help">Live-edit markers remain in the HTML title and host-details disclosure. Edit <code>Web/src/message.ts</code>, <code>details.ts</code>, <code>style.css</code> or <code>index.html</code>. For offline: <code>npm --prefix Web run stage</code>, then build native.</p><div class="actions">${button('identity', 'Read native startup identity', true)}${reload}</div>`
-      bind('identity', 'Read native startup identity', () => getInfo(client))
+      bind('identity', 'Read native startup identity', () => getIdentity(client))
       break
   }
   controls.querySelector<HTMLButtonElement>('[data-action="reload"]')?.addEventListener('click', () => location.reload())
@@ -269,7 +268,7 @@ async function bootstrap(): Promise<void> {
     }
     client.attachToDocument()
     const ready = await client.connect()
-    const identity = await getInfo(client)
+    const identity = await getIdentity(client)
     element('#native-identity', HTMLPreElement).textContent = JSON.stringify(identity, null, 2)
     host.textContent = `Native connected · ${identity.platform} · PID ${identity.pid}`
     host.dataset.state = 'ready'

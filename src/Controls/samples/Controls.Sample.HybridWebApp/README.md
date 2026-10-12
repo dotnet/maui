@@ -14,12 +14,26 @@ TypeScript declarations, MIT license and product/API/protocol/release docs are
 the standalone shipping artifact. `@maui/api` is a working name; scope/name
 ownership is unverified and nothing has been published to npm.
 
-Generic identity, clipboard, preferences and transport modules live in
+Generic app/device information, clipboard, preferences and transport modules live in
 `src/HybridWebView/JavaScript/`, not in this app. Custom `sample.*` helpers remain
 in `Web/src/native/sample.ts`; the SDK includes no UI, sample commands, Vite
 dependency or sample preferences namespace. Ordinary SDK consumers can use
-`clipboard()`/`preferences()`/`getInfo()` without supplying a view or client;
+`clipboard()`/`preferences()`/`getAppInfo()`/`getDeviceInfo()` without supplying a view or client;
 lazy startup still rejects browser-only native calls, never emulates them.
+
+This is one npm product with isolated modules, not per-feature packages. The
+root exports infrastructure/lifecycle and core types only; Essentials helpers
+live under `@maui/api/essentials/*`. The unpublished `app/info`, `getInfo` and
+SDK `Identity` exports were removed rather than retained as ambiguous aliases.
+The app owns process architecture, PID and startup diagnostics and composes
+them with the real SDK AppInfo/DeviceInfo helpers for its reload experiment.
+
+Public symbols and members are documented in TypeScript; emitted declarations
+retain the comments for editor tooltips. `npm --prefix src/HybridWebView/JavaScript run docs`
+generates an ignored per-entrypoint Markdown reference and DocFX navigation.
+The package's [release documentation](../../../HybridWebView/JavaScript/docs/RELEASING.md)
+explains standard tooling, packed-reference equality checks and the separate
+Microsoft Learn onboarding step. No Learn publication is performed.
 
 A matching native protocol host remains required. Stock MAUI 11 invocation does
 not automatically supply this app's command hub. The native registration and
@@ -68,7 +82,9 @@ Physical iOS-device networking is not configured by this loopback-only launcher.
 
 ## Experiments
 
-The development catalog records 121 families: 19 P0, 29 P1, 47 P2, 26 P3.
+The [implementation backlog](FEATURES.md) records 121 families and marks only
+fully implemented, verified experiment scopes. Partial work stays unchecked,
+with missing acceptance called out. The groups contain 19 P0, 29 P1, 47 P2 and 26 P3 items.
 The playground shows only implemented experiments, with category/search and
 short descriptions. Priorities and implementation tracking stay in the
 development document, not the user interface; later families are hidden and
@@ -107,6 +123,13 @@ native WebView touch scrolling is not globally disabled.
 ## Prototype architecture
 
 `Native/Playground/HybridAppTargetObject.cs` is instantiated once per WebView.
+`MainPage` composes the command registry, Essentials adapter and sample service,
+then supplies the router's readiness metadata and native event callback.
+Providers explicitly register their allowed event topics. The session/router
+does not choose sample providers, hard-code their topics or own MAUI UI objects.
+Complete registration before attaching the host; treat the registry as immutable
+while sessions are active.
+
 `MainPage` calls the existing .NET 11
 `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`.
 The narrow interface exposes only `Task<string> Invoke(string request)`.
@@ -123,9 +146,20 @@ generator has been implemented.** TypeScript modules are authored and tested:
 ```ts
 import { clipboard } from '@maui/api/essentials/clipboard'
 import { preferences } from '@maui/api/essentials/preferences'
-import { getInfo } from '@maui/api/app/info'
+import { getAppInfo } from '@maui/api/essentials/app-info'
+import { getDeviceInfo } from '@maui/api/essentials/device-info'
 import { sample } from './native/sample.ts'
 ```
+
+Feature helpers depend on the SDK client contract, not the app or Controls.
+An explicit `NativeClient(Bridge)` can use a compatible native transport without
+MAUI's automatic origin/script bootstrap. Automatic `connect()` remains a
+HybridWebView convenience. The integration owns events, leases and platform
+initialization; an alternative native .NET for Android/iOS host adapter is not
+implemented or shipped. Essentials and Graphics do not require Controls/Core,
+but MAUI Core contains UI handlers, so do not pull it into reusable service code
+merely to obtain a clipboard/preferences provider. No companion NuGet split,
+plugin discovery framework or placeholder Graphics API is introduced.
 
 All DTO/envelope runtime serialization uses System.Text.Json source-generated
 metadata with camelCase field names, nullable/required-constructor checks and
@@ -253,6 +287,7 @@ Mac Catalyst 17, Windows 10.0.17763.
 ```sh
 npm --prefix src/HybridWebView/JavaScript test
 npm --prefix src/HybridWebView/JavaScript run pack-check
+npm --prefix src/HybridWebView/JavaScript run docs
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web test
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run type-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
@@ -321,6 +356,24 @@ The package-backed Android Debug build then passed with zero warnings/errors.
 Its four APK frontend assets matched staging byte-for-byte. The same full
 native acceptance and touch-scroll checks passed in offline mode, with only
 packaged production assets and framework routes requested, not Vite resources.
+
+### Modular API and host-boundary evidence
+
+The Essentials AppInfo/DeviceInfo split, infrastructure-only root and source
+documentation passed 24 SDK tests and nine app tests. The 18-file tarball installs
+without SDK sources and exposes exactly the intended entrypoints. Generated
+local and packed references match all six entrypoints' exact signatures, public
+members and TSDoc; 97 modeled items match, rather than relying on counts alone.
+Explicit transport tests exercise the feature helpers without MAUI origin
+bootstrap or Controls.
+
+Host-owned providers, readiness metadata and event topics passed 25 pure .NET
+tests, including a custom host with no implicit Essentials/sample providers.
+The new Android Debug build passed with zero warnings/errors; its four SDK-backed
+assets matched staging. Full native acceptance, frontend reload/service lifetime,
+and independent touch scrolling passed again in its packaged offline app.
+Alternative native .NET for Android/iOS adapters and DocFX site rendering remain
+future integration work, not additional packages or verified runtime support.
 
 Evidence is kept in ignored `artifacts/playground-*`. Windows runtime, physical
 devices, actual Release execution, NativeAOT certification and signed

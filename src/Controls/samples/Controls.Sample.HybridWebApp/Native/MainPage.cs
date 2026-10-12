@@ -20,7 +20,12 @@ sealed class MainPage : ContentPage
 			HybridRoot = "wwwroot",
 			DefaultFile = "index.html"
 		};
-		_hub = new HybridAppTargetObject(new MauiPlaygroundPlatform(), SendEvent);
+		var registry = new CommandRegistry();
+		EssentialsProvider.Register(registry, new MauiPlaygroundPlatform());
+		new SampleCommands().Register(registry);
+		_hub = new HybridAppTargetObject(registry,
+			() => new ReadyResult(registry.Names, EssentialsProvider.PreferenceNamespace, EssentialsProvider.MaximumTextLength),
+			SendEvent);
 		_view.SetInvokeJavaScriptTarget<IHybridAppTarget>(_hub, PlaygroundJsonContext.Default);
 		_view.RawMessageReceived += RawMessageReceived;
 		_view.HandlerChanging += ViewHandlerChanging;

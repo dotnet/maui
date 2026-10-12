@@ -7,7 +7,8 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	const int MaximumRequestLength = 100000;
 	const int MaximumRetiredDocuments = 4096;
 	readonly object _gate = new();
-	readonly CommandRegistry _registry = new();
+	readonly CommandRegistry _registry;
+	readonly Func<ReadyResult> _ready;
 	readonly Dictionary<string, CancellationTokenSource> _operations = new(StringComparer.Ordinal);
 	readonly HashSet<string> _subscriptions = new(StringComparer.Ordinal);
 	readonly HashSet<string> _seen = new(StringComparer.Ordinal);
@@ -21,12 +22,12 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	DateTimeOffset _lastSeen;
 	bool _disposed;
 
-	public HybridAppTargetObject(IPlaygroundPlatform platform, Action<NativeEvent> send, TimeProvider? time = null)
+	public HybridAppTargetObject(CommandRegistry registry, Func<ReadyResult> ready, Action<NativeEvent> send, TimeProvider? time = null)
 	{
+		_registry = registry;
+		_ready = ready;
 		_send = send;
 		_time = time ?? TimeProvider.System;
-		EssentialsProvider.Register(_registry, platform);
-		new SampleCommands().Register(_registry);
 		RegisterSessionCommands();
 		_lease = new Timer(_ => ExpireDocument(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
 	}
@@ -35,7 +36,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	{
 		var json = PlaygroundJsonContext.Default;
 		_registry.Register("core.connect", json.EmptyArgs, json.ReadyResult, (_, _) =>
-			Task.FromResult(new ReadyResult(_registry.Names, EssentialsProvider.PreferenceNamespace, EssentialsProvider.MaximumTextLength)));
+			Task.FromResult(_ready()));
 		_registry.Register("core.subscribe", json.TopicArgs, json.Ack, (args, op) =>
 		{
 			ValidateTopic(args.Topic);
@@ -68,10 +69,10 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		});
 	}
 
-	static void ValidateTopic(string topic)
+	void ValidateTopic(string topic)
 	{
-		if (topic is not "service.changed" and not "operation.progress")
-			throw new CommandException("unknown_topic", "Only service.changed and operation.progress are available.");
+		if (!_registry.HasTopic(topic))
+			throw new CommandException("unknown_topic", "This event topic is not registered by the host.");
 	}
 
 	public async Task<string> Invoke(string request)

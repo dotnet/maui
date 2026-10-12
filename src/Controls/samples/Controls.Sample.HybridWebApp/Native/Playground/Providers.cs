@@ -59,6 +59,8 @@ sealed class SampleCommands
 	public void Register(CommandRegistry registry)
 	{
 		var json = PlaygroundJsonContext.Default;
+		registry.RegisterTopic("service.changed");
+		registry.RegisterTopic("operation.progress");
 		registry.Register("sample.counter", json.EmptyArgs, json.CounterResult, (_, _) =>
 			Task.FromResult(new CounterResult(Volatile.Read(ref _counter))));
 		registry.Register("sample.echo", json.EchoArgs, json.EchoResult, async (args, op) =>
