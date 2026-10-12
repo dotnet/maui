@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 		public new TPlatformView PlatformView
 		{
 			get => (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
-			private set => base.PlatformView = value;
+			private protected set => base.PlatformView = value;
 		}
 
 		public new TVirtualView VirtualView
