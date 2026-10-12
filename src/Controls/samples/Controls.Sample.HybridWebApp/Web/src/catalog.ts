@@ -49,7 +49,7 @@ planned('P2', 'Device & media', [
   'Battery', 'Display and DPI', 'Keep screen awake', 'Location', 'Geocoding', 'Launch system maps', 'Embedded native map',
   'Photo/video picker and capture', 'Screenshot', 'Text-to-speech', 'Haptic feedback', 'Vibration', 'Flashlight',
   'Accelerometer and shake', 'Gyroscope', 'Compass', 'Magnetometer', 'Barometer', 'Orientation sensor', 'Conversions',
-], `${maui}platform-integration/device/`)
+], `${maui}platform-integration/`)
 planned('P2', 'OS integration', [
   'Drag and drop', 'Tray/status icon', 'Global shortcuts', 'Deep links and file associations', 'Single instance', 'Notifications',
   'App actions', 'Version tracking', 'Persisted window state', 'Advanced window behaviour', 'Window positioning',
@@ -68,5 +68,7 @@ planned('P3', 'Extensions', [
 ], `${maui}platform-integration/`)
 planned('P3', 'Development', [
   'Native Hot Reload', 'Build/stage frontend assets', 'Installable artifacts', 'Signing and installed execution',
-  'Updates and distribution', 'Logging and diagnostics', 'Automated cross-platform checks', 'Performance and memory',
+  'Updates', 'Trimming and NativeAOT', 'Diagnostics and performance', 'Browser mocks and native automation',
 ], `${maui}deployment/`)
+
+export const availableFeatures = features.filter(feature => feature.experiment)

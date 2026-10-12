@@ -1,7 +1,7 @@
 <Project>
   <Import Project="../Web/dist/playground-assets.props" Condition="Exists('../Web/dist/playground-assets.props')" />
   <ItemGroup>
-    <MauiAsset Include="../Web/dist/**" Exclude="../Web/dist/playground-assets.props" LogicalName="wwwroot/%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="@(_PlaygroundStageAsset)" />
     <_PlaygroundCurrentSource Include="../Web/src/**;../Web/index.html;../Web/package.json;../Web/package-lock.json;../Web/tsconfig.json;../Web/vite.config.ts;../Web/stage.mjs" />
   </ItemGroup>
   <Target Name="ValidatePlaygroundFrontend" BeforeTargets="PrepareForBuild">

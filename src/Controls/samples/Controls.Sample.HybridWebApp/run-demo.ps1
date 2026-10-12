@@ -82,7 +82,9 @@ try {
 	if ($Platform -eq 'windows') { $tfm += $props.SelectSingleNode('//WindowsTargetFrameworkVersion').InnerText }
 	$common = @('-f', $tfm, '-c', $Configuration,
 		'--disable-build-servers', '-p:UseWorkload=false',
-		'-p:IncludeMacOSTargetFrameworks=false')
+		'-p:IncludeMacOSTargetFrameworks=false',
+		"-p:ArtifactsObjDir=$(Join-Path $repo "artifacts/obj/hybrid-playground/$Platform/")",
+		"-p:ArtifactsBinDir=$(Join-Path $repo "artifacts/bin/hybrid-playground/$Platform/")")
 	foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
 		$enabled = ($target.ToLowerInvariant() -eq $Platform).ToString().ToLowerInvariant()
 		$common += "-p:Include${target}TargetFrameworks=$enabled"
@@ -100,6 +102,12 @@ try {
 		}
 		if ($command -eq 'run') {
 			if (!$Offline) { $arguments += @('-e', "HYBRIDWEBAPP_DEV_URL=$url") }
+			if ($Configuration -eq 'Debug') {
+				foreach ($name in 'HYBRIDWEBAPP_INSPECT_TOKEN', 'HYBRIDWEBAPP_INSPECT_PORT') {
+					$value = [Environment]::GetEnvironmentVariable($name)
+					if ($null -ne $value) { $arguments += @('-e', "${name}=$value") }
+				}
+			}
 			if ($Device) { $arguments += @('--device', $Device) }
 			# Source references were built above; rebuilding them during Android deployment loses resource inputs.
 			if ($Platform -eq 'android') { $arguments += '-p:BuildProjectReferences=false' }

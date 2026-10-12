@@ -15,7 +15,8 @@ if (!assets.includes(join(root, 'dist', 'index.html'))) throw new Error('Build o
 async function item(path, name, base) {
   const hash = createHash('sha256').update(await readFile(path)).digest('hex').toUpperCase()
   const file = xml(relative(base, path).replaceAll('\\', '/'))
-  return `    <${name} Include="$(MSBuildThisFileDirectory)${file}" ExpectedHash="${hash}" />`
+  const logicalName = name === '_PlaygroundStageAsset' ? ` LogicalName="${xml(`wwwroot/${relative(base, path).replaceAll('\\', '/')}`)}"` : ''
+  return `    <${name} Include="$(MSBuildThisFileDirectory)${file}" ExpectedHash="${hash}"${logicalName} />`
 }
 const manifest = [
   '<Project>', '  <ItemGroup>',

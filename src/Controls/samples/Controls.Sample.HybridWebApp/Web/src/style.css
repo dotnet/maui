@@ -41,12 +41,12 @@ h3 { font-size: 1rem; margin: 0; }
 .workspace { display: grid; grid-template-columns: 292px minmax(0, 1fr); min-height: calc(100vh - 64px); }
 .catalog { padding: 1.2rem; background: var(--surface); border-right: 1px solid var(--border); }
 .catalog > label { margin-top: 0; }
-.filters { display: grid; grid-template-columns: 1fr 100px; gap: .65rem; }
+.filters { display: block; }
 .filters label { font-weight: 400; }
 .secondary { color: var(--muted); font-size: .8rem; margin: .8rem 0; line-height: 1.5; }
 #feature-list { display: grid; gap: 3px; overflow-y: auto; max-height: calc(100vh - 290px); padding: 4px; margin: 0 -4px; }
 #feature-list button { display: flex; flex-direction: column; text-align: left; gap: .3rem; border: 1px solid transparent; background: transparent; border-radius: 5px; padding: .7rem; font-size: .87rem; }
-#feature-list small { color: var(--muted); font-size: .72rem; }
+#feature-list small { color: var(--muted); font-size: .72rem; font-weight: 400; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 #feature-list button[aria-current="true"] { background: #e0edf7; border-color: #b3cede; color: #164b74; font-weight: 600; }
 main { padding: 2rem 2.4rem; max-width: 1060px; min-width: 0; width: 100%; }
 .experiment-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }

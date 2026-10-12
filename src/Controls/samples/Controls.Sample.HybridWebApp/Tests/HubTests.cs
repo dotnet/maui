@@ -102,7 +102,8 @@ public sealed class HubTests
 		var progressed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var hub = new HybridAppTargetObject(new FakePlatform(), value =>
 		{
-			lock (events) events.Add(value);
+			lock (events)
+				events.Add(value);
 			progressed.TrySetResult();
 		});
 		await Connect(hub);
@@ -140,6 +141,32 @@ public sealed class HubTests
 		Assert.Single(events);
 		hub.ReceiveDocumentMessage(JsonSerializer.Serialize(new DocumentMessage(_session, "disconnect"), PlaygroundJsonContext.Default.DocumentMessage));
 		Assert.True(hub.IsCurrent(next));
+	}
+
+	[Fact]
+	public async Task ReplayedConnectCannotReplaceANewerDocument()
+	{
+		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		var originalConnect = Wire("core.connect", new { });
+		Assert.Equal("success", JsonSerializer.Deserialize(await hub.Invoke(originalConnect), PlaygroundJsonContext.Default.Response)!.Status);
+		var next = Guid.NewGuid().ToString("D");
+		await Connect(hub, next);
+		var running = Call(hub, "sample.work", new { steps = 1, delayMs = 100 }, next);
+		var replay = JsonSerializer.Deserialize(await hub.Invoke(originalConnect), PlaygroundJsonContext.Default.Response)!;
+		Assert.Equal("stale_session", replay.Error!.Code);
+		Assert.True(hub.IsCurrent(next));
+		Assert.Equal("success", (await running).Status);
+		Assert.Equal("stale_session", (await Call(hub, "core.connect", new { })).Error!.Code);
+	}
+
+	[Fact]
+	public async Task DisconnectedDocumentMustUseANewIdentityToReconnect()
+	{
+		using var hub = new HybridAppTargetObject(new FakePlatform(), _ => { });
+		await Connect(hub);
+		hub.Disconnect();
+		Assert.Equal("stale_session", (await Call(hub, "core.connect", new { })).Error!.Code);
+		await Connect(hub, Guid.NewGuid().ToString("D"));
 	}
 
 	[Fact]
@@ -210,8 +237,9 @@ public sealed class HubTests
 		Assert.Equal("busy", (await Call(hub, "sample.counter", new { })).Error!.Code);
 		hub.Disconnect();
 		Assert.All(await Task.WhenAll(running), response => Assert.Equal("cancelled", response.Status));
-		await Connect(hub);
-		Assert.Equal("success", (await Call(hub, "sample.counter", new { })).Status);
+		var next = Guid.NewGuid().ToString("D");
+		await Connect(hub, next);
+		Assert.Equal("success", (await Call(hub, "sample.counter", new { }, next)).Status);
 	}
 
 	[Fact]
@@ -244,7 +272,10 @@ public sealed class HubTests
 		public Task<PreferenceResult> SetPreferenceAsync(string key, string? value, CancellationToken cancellation)
 		{
 			Calls++;
-			if (value is null) _preferences.Remove(key); else _preferences[key] = value;
+			if (value is null)
+				_preferences.Remove(key);
+			else
+				_preferences[key] = value;
 			return Task.FromResult(new PreferenceResult(key, value));
 		}
 	}

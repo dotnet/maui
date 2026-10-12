@@ -1,6 +1,6 @@
 import './style.css'
 import { message } from './message.ts'
-import { features } from './catalog.ts'
+import { availableFeatures } from './catalog.ts'
 import type { Feature } from './catalog.ts'
 import { NativeClient, NativeError, loadNativeBridge, object, nullableText, number, boolean, strings } from './maui/core.ts'
 import type { Operation, Progress } from './maui/core.ts'
@@ -21,7 +21,6 @@ const log = element('#operation-log', HTMLOListElement)
 const host = element('#host-status', HTMLDivElement)
 const search = element('#search', HTMLInputElement)
 const category = element('#category', HTMLSelectElement)
-const priority = element('#priority', HTMLSelectElement)
 const featureList = element('#feature-list', HTMLElement)
 const progressElement = element('#progress', HTMLProgressElement)
 let client = new NativeClient(undefined)
@@ -29,7 +28,7 @@ let busy = false
 let active: Operation<Progress> | undefined
 let unsubscribeCounter: (() => Promise<void>) | undefined
 let unsubscribeProgress: (() => Promise<void>) | undefined
-let selected: Feature = features[0]!
+let selected: Feature = availableFeatures[0]!
 let selectionVersion = 0
 
 element('#typescript-message', HTMLParagraphElement).textContent = `TypeScript edit target: ${message}`
@@ -99,7 +98,7 @@ function render(feature: Feature): void {
   selected = feature
   selectionVersion++
   element('#feature-title', HTMLHeadingElement).textContent = feature.title
-  element('#feature-meta', HTMLParagraphElement).textContent = `${feature.category} · ${feature.priority} · ${feature.experiment ? 'Available in native host' : 'Not implemented'}`
+  element('#feature-meta', HTMLParagraphElement).textContent = feature.category
   element('#feature-description', HTMLParagraphElement).textContent = feature.description
   const link = element('#api-link', HTMLAnchorElement)
   link.href = feature.docs
@@ -124,8 +123,9 @@ function render(feature: Feature): void {
 "Quotes", backslash \\ and a new line.</textarea><div class="actions">${button('copy', 'Copy to native clipboard', true)}${button('paste', 'Paste from native clipboard')}</div>`
       bind('copy', 'Copy to native clipboard', () => clipboard(client).writeText(area('clipboard-text')))
       bind('paste', 'Paste from native clipboard', async () => {
+        const target = element('#clipboard-text', HTMLTextAreaElement)
         const text = await clipboard(client).readText()
-        if (text !== null) element('#clipboard-text', HTMLTextAreaElement).value = text
+        if (text !== null && target.isConnected) target.value = text
         return { text }
       })
       break
@@ -133,8 +133,9 @@ function render(feature: Feature): void {
       controls.innerHTML = `<label for="preference-key">Key · 1–48 letters, digits, underscores or hyphens</label><input id="preference-key" value="example" maxlength="48" pattern="[a-zA-Z0-9_-]{1,48}" /><label for="preference-value">Value · maximum 4096 characters</label><textarea id="preference-value" rows="3" maxlength="4096">A setting saved by the playground.</textarea><p class="input-help">Native keys use <code>maui.playground.v1.</code>. No other app settings are accessible.</p><div class="actions">${button('save', 'Save setting', true)}${button('read', 'Read setting')}${button('remove', 'Remove setting')}</div>`
       bind('save', 'Save preference', () => preferences(client).set(field('preference-key'), area('preference-value')))
       bind('read', 'Read preference', async () => {
+        const target = element('#preference-value', HTMLTextAreaElement)
         const value = await preferences(client).get(field('preference-key'))
-        if (value.value !== null) element('#preference-value', HTMLTextAreaElement).value = value.value
+        if (value.value !== null && target.isConnected) target.value = value.value
         return value
       })
       bind('remove', 'Remove preference', () => preferences(client).remove(field('preference-key')))
@@ -181,6 +182,8 @@ function render(feature: Feature): void {
       controls.innerHTML = `<div class="work-inputs"><div><label for="steps">Steps · 1–50</label><input id="steps" type="number" min="1" max="50" value="20" /></div><div><label for="delay">Delay per step · 100–500 ms</label><input id="delay" type="number" min="100" max="500" step="100" value="300" /></div></div><p class="input-help">At most 15 seconds per operation. Progress comes from native code, not a JavaScript timer. Reload while running to test cleanup.</p><div class="actions">${button('work', 'Run native work', true)}${button('cancel', 'Cancel operation')}${reload}</div>`
       progressElement.hidden = false
       bind('work', 'Native work', async () => {
+        const steps = Number(field('steps'))
+        const delay = Number(field('delay'))
         unsubscribeProgress ??= await api.onProgress((value, id) => {
           if (active?.id !== id) return
           log.dataset.lastEventId = id
@@ -190,7 +193,7 @@ function render(feature: Feature): void {
           if (selected.experiment === 'work') showResult('Loading', { ...value, requestId: id })
         })
         progressElement.value = 0
-        active = api.work(Number(field('steps')), Number(field('delay')))
+        active = api.work(steps, delay)
         updateButtons()
         return active.result
       })
@@ -211,10 +214,11 @@ function render(feature: Feature): void {
   updateButtons()
 }
 function renderCatalog(): void {
-  const matches = features.filter(feature => (!category.value || feature.category === category.value) &&
-    (!priority.value || feature.priority === priority.value) &&
+  const matches = availableFeatures.filter(feature => (!category.value || feature.category === category.value) &&
     `${feature.title} ${feature.category} ${feature.description}`.toLowerCase().includes(search.value.toLowerCase()))
-  element('#catalog-count', HTMLParagraphElement).textContent = `${matches.length} of ${features.length} feature families`
+  element('#catalog-count', HTMLParagraphElement).textContent = matches.length === availableFeatures.length
+    ? `${availableFeatures.length} experiments`
+    : `${matches.length} of ${availableFeatures.length} experiments`
   featureList.replaceChildren()
   if (!matches.length) {
     const empty = document.createElement('p')
@@ -229,7 +233,7 @@ function renderCatalog(): void {
     const title = document.createElement('span')
     title.textContent = feature.title
     const note = document.createElement('small')
-    note.textContent = feature.experiment ? feature.priority : `${feature.priority} · Not implemented`
+    note.textContent = feature.description.split(/\.\s/)[0]
     item.append(title, note)
     item.addEventListener('click', () => {
       render(feature)
@@ -241,12 +245,12 @@ function renderCatalog(): void {
     featureList.append(item)
   }
 }
-for (const name of [...new Set(features.map(feature => feature.category))]) {
+for (const name of [...new Set(availableFeatures.map(feature => feature.category))]) {
   const option = document.createElement('option')
   option.textContent = name
   category.append(option)
 }
-for (const input of [search, category, priority]) input.addEventListener('input', renderCatalog)
+for (const input of [search, category]) input.addEventListener('input', renderCatalog)
 element('#clear-log', HTMLButtonElement).addEventListener('click', () => {
   log.innerHTML = '<li class="empty-log">Log cleared. New native requests and events will appear here.</li>'
 })

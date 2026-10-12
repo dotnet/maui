@@ -36,14 +36,22 @@ Native MSBuild never invokes npm. Release rejects live forwarding and excludes
 The standard Android/iOS/MacCatalyst/Windows heads and Apple scene delegates are
 retained. No Tizen target is included. iOS uses the host architecture's simulator
 RID; Android deployment uses `BuildProjectReferences=false` after the explicit
-build to preserve source-reference resource inputs. Android uses explicit
+build to preserve source-reference resource inputs. The launcher isolates each
+platform's intermediate and binary outputs under
+`artifacts/{obj,bin}/hybrid-playground/PLATFORM/`, so concurrent native launches
+cannot overwrite each other's restore graph. `-NoBuild` therefore reuses a build
+made by this launcher for that platform and configuration.
+Android uses explicit
 `adb -s DEVICE reverse tcp:5173 tcp:5173`; iOS simulators share host loopback.
 Physical iOS-device networking is not configured by this loopback-only launcher.
 
 ## Experiments
 
-The searchable catalog lists 121 families: 19 P0, 29 P1, 47 P2, 26 P3. The later
-families are **Not implemented**, not dummy commands. P0 foundations share
+The development catalog records 121 families: 19 P0, 29 P1, 47 P2, 26 P3.
+The playground shows only implemented experiments, with category/search and
+short descriptions. Priorities and implementation tracking stay in the
+development document, not the user interface; later families are hidden and
+have no dummy commands. P0 foundations share
 focused experiments rather than pretending each architectural concern is a
 different native API:
 
@@ -116,7 +124,11 @@ clean up; a new document connect cancels obsolete work. Heartbeats every two
 seconds maintain a 15-second lease for abrupt disconnects. If an OS suspends the
 frontend long enough to expire its lease, reload to reconnect. App/native
 service state remains. Native send callbacks recheck the session on the UI
-thread; stale events are also rejected by the frontend. Cancellation cannot undo
+thread; stale events are also rejected by the frontend. Retired document
+identities cannot reconnect over a newer document; after 4096 retired documents,
+restart the native app to begin a new bounded lifetime. Command failures log
+their command/code/exception type without request values or clipboard contents.
+Cancellation cannot undo
 an OS side effect already completed, such as copying text.
 
 The native origin stays `app://0.0.0.1/` on Apple and `https://0.0.0.1/` on
@@ -136,7 +148,8 @@ npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
 
 This runs type-check/build and records source/output SHA-256 hashes in an ignored
 `Web/dist/playground-assets.props`. `Native/FrontendAssets.targets` collects the
-dist tree as `wwwroot/`, preserving asset paths and dynamic chunks. Native builds
+manifest-listed assets as `wwwroot/`, preserving asset paths and dynamic chunks.
+Extra unstaged files are never packaged. Native builds
 fail on missing staging or stale source/output hashes. Regenerate with `stage`
 after edits, including `package.json`. Direct `npm run build` intentionally
 invalidates staging until `stage` is run. Generated output and `node_modules`
@@ -153,7 +166,9 @@ markers are `#html-message`, `#typescript-message` (`message.ts`),
 No inspector is needed for the command hub. Opt in with
 `HYBRIDWEBAPP_INSPECT_TOKEN` (32–128 random base64url characters) and
 `HYBRIDWEBAPP_INSPECT_PORT` (an unused 1024–65535 port other than 5173), inherited
-by the SDK launcher. Keep tokens out of logs/source control. The existing long
+by the launcher and explicitly passed to Debug apps with the SDK's environment
+handoff (mobile apps do not inherit the host shell environment). Keep tokens out
+of logs/source control. The existing long
 `run-demo.sh` is an optional Mac-only validation harness, **not** the user path;
 stage the frontend explicitly before using it.
 
@@ -207,3 +222,33 @@ Pure .NET tests link only the hub/contracts/providers, using a fake platform
 boundary (not a fake native UI). Node built-in tests exercise the actual
 TypeScript protocol/helpers with explicit test doubles. These checks do not
 claim Android/iOS/Windows native validation or store/signing readiness.
+
+### Native milestone evidence
+
+On 2026-10-12, actual Mac Catalyst, iOS 27 simulator and Android emulator WebViews
+completed the same bounded UI-driven acceptance sequence: native identity,
+Unicode clipboard, namespaced preferences, asynchronous DTO/array/NUL
+round-trips, explicit errors and recovery, subscribe/unsubscribe, correlated
+progress and terminal cancellation. Reload during native work preserved the
+native PID/startup ID and service counter, rejected a retired document's
+reconnect, and kept obsolete progress out of the new document.
+
+The final explorer hides unimplemented families and shows descriptions instead
+of priority or implementation-tracking labels. Desktop/mobile browser checks
+confirmed browser-only native actions stay disabled, search/category work, and
+there is no horizontal overflow. An explicit browser test double verified
+delayed paste/read and work startup while navigating between experiments; those
+results are not counted as native verification.
+
+The final targeted checks passed: `Web test` (11 tests), `Web run stage`, and
+`Playground.UnitTests.csproj` (24 tests). Release Mac Catalyst built with zero
+warnings/errors; its four packaged frontend assets matched staging
+byte-for-byte. Extra unlisted output was excluded from native asset collection.
+Android packaged Debug launched with no listener on Vite port 5173, reported
+`packaged` with zero proxy requests, and retained a native preference across an
+actual app restart. Temporary acceptance scripts were removed before staging.
+
+Evidence is kept in ignored `artifacts/playground-*`. Windows runtime, physical
+devices, actual Release execution, NativeAOT certification and signed
+installation remain unverified. Native runtime checks here do not establish CI
+or merge readiness.

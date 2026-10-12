@@ -1,11 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { NativeClient, NativeError, asciiJson, object, ack, progress, isNativeOrigin } from '../src/maui/core.ts'
 import { sample } from '../src/maui/app/sample.ts'
 import { clipboard } from '../src/maui/essentials/clipboard.ts'
 import { preferences } from '../src/maui/essentials/preferences.ts'
 import { getInfo } from '../src/maui/app/info.ts'
-import { features } from '../src/catalog.ts'
+import { features, availableFeatures } from '../src/catalog.ts'
 
 // Explicit test double only: never imported by the UI or used as a browser fallback.
 function mock(handler) {
@@ -43,6 +44,14 @@ test('catalog has all 121 families with 19 P0, and later families never claim im
   assert.equal(new Set(features.map(feature => feature.id)).size, 121)
   assert.deepEqual(['P0', 'P1', 'P2', 'P3'].map(priority => features.filter(feature => feature.priority === priority).length), [19, 29, 47, 26])
   assert.ok(features.filter(feature => feature.priority !== 'P0').every(feature => !feature.experiment && feature.description.startsWith('Not implemented')))
+})
+
+test('explorer shows implemented experiments with descriptions, without a priority filter', async () => {
+  assert.equal(availableFeatures.length, 19)
+  assert.ok(availableFeatures.every(feature => feature.experiment && feature.description))
+  assert.ok(availableFeatures.every(feature => features.includes(feature)))
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8')
+  assert.ok(!html.includes('id="priority"'))
 })
 
 test('browser origin and unavailable transport never emulate native APIs', async () => {
