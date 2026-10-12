@@ -10,15 +10,15 @@ public sealed class App : Application
 		var page = new MainPage();
 		var window = new Window(page)
 		{
-			Title = "Hybrid web app — packaged content",
-			Width = 1000,
-			Height = 750
+			Title = ".NET MAUI Playground — packaged",
+			Width = 1180,
+			Height = 820
 		};
 #if DEBUG
 		if (MauiProgram.Development?.Upstream is not null)
-			window.Title = "Hybrid web app — Vite development";
-		window.Destroying += (_, _) => page.StopDevelopment();
+			window.Title = ".NET MAUI Playground — Vite";
 #endif
+		window.Destroying += (_, _) => page.Stop();
 		return window;
 	}
 }

@@ -1,0 +1,15 @@
+<Project>
+  <Import Project="../Web/dist/playground-assets.props" Condition="Exists('../Web/dist/playground-assets.props')" />
+  <ItemGroup>
+    <MauiAsset Include="../Web/dist/**" Exclude="../Web/dist/playground-assets.props" LogicalName="wwwroot/%(RecursiveDir)%(Filename)%(Extension)" />
+    <_PlaygroundCurrentSource Include="../Web/src/**;../Web/index.html;../Web/package.json;../Web/package-lock.json;../Web/tsconfig.json;../Web/vite.config.ts;../Web/stage.mjs" />
+  </ItemGroup>
+  <Target Name="ValidatePlaygroundFrontend" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('../Web/dist/playground-assets.props')" Text="Playground frontend is not staged. Run npm --prefix ../Web run stage before building Native (Debug or Release)." />
+    <Error Condition="'@(_PlaygroundCurrentSource->Count())' != '@(_PlaygroundStageSource->Count())'" Text="Frontend source files changed. Run npm --prefix ../Web run stage." />
+    <GetFileHash Files="@(_PlaygroundStageSource);@(_PlaygroundStageAsset)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_PlaygroundCheckedFile" />
+    </GetFileHash>
+    <Error Condition="'%(_PlaygroundCheckedFile.FileHash)' != '%(_PlaygroundCheckedFile.ExpectedHash)'" Text="Stale playground source or packaged output: %(_PlaygroundCheckedFile.Identity). Run npm --prefix ../Web run stage." />
+  </Target>
+</Project>

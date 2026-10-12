@@ -43,9 +43,9 @@
 
   <ItemGroup>
     <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#14324F" />
-    <MauiAsset Include="Resources/Raw/**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <Import Project="FrontendAssets.targets" />
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition="'$(UseMaui)' != 'true'" />
 
 </Project>

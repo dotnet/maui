@@ -19,6 +19,21 @@ sealed class LoopbackInspector : IDisposable
 		  typescriptMessage: document.querySelector('#typescript-message')?.textContent ?? null,
 		  moduleMessage: document.querySelector('#module-message')?.textContent ?? null,
 		  packagedMessage: document.querySelector('#packaged-title')?.textContent ?? null,
+		  playground: {
+		    hostState: document.querySelector('#host-status')?.dataset.state ?? null,
+		    hostStatus: document.querySelector('#host-status')?.textContent ?? null,
+		    session: document.querySelector('#host-status')?.dataset.session ?? null,
+		    startupId: document.querySelector('#host-status')?.dataset.startupId ?? null,
+		    identity: document.querySelector('#native-identity')?.textContent ?? null,
+		    feature: document.querySelector('#feature-title')?.textContent ?? null,
+		    resultState: document.querySelector('#result-state')?.textContent ?? null,
+		    result: document.querySelector('#result-json')?.textContent ?? null,
+		    progress: document.querySelector('#progress')?.value ?? null,
+		    lastEventId: document.querySelector('#operation-log')?.dataset.lastEventId ?? null,
+		    log: Array.from(document.querySelectorAll('#operation-log li'), element => ({
+		      state: element.dataset.state ?? null, text: element.textContent
+		    })).slice(0, 40)
+		  },
 		  style: (() => {
 		    const element = document.querySelector('#style-target');
 		    if (!element) return null;

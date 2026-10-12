@@ -5,7 +5,10 @@ param(
 	[string] $Platform = $(if ($IsMacOS) { 'maccatalyst' } elseif ($IsWindows) { 'windows' } else { 'android' }),
 	[string] $Device,
 	[switch] $NoBuild,
-	[switch] $UseExistingWeb
+	[switch] $UseExistingWeb,
+	[switch] $Offline,
+	[ValidateSet('Debug', 'Release')]
+	[string] $Configuration = 'Debug'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,15 +25,28 @@ function Start-Child([string] $File, [string[]] $Arguments, [string] $Directory)
 	$info = [Diagnostics.ProcessStartInfo]::new($File)
 	$info.UseShellExecute = $false
 	$info.WorkingDirectory = $Directory
+	if ($Offline) { [void] $info.Environment.Remove('HYBRIDWEBAPP_DEV_URL') }
 	foreach ($argument in $Arguments) { $info.ArgumentList.Add($argument) }
 	return [Diagnostics.Process]::Start($info)
 }
 
 try {
+	if ($Configuration -eq 'Release' -and !$Offline) { throw 'Release never forwards to Vite. Specify -Offline.' }
+	if ($Offline -and $UseExistingWeb) { throw '-Offline cannot use a Vite server.' }
 	if ($Platform -in 'android', 'ios' -and !$Device) {
 		throw 'Specify -Device with an adb serial (Android) or simulator UDID (iOS); the script does not choose somebody else''s device.'
 	}
-	if (!$UseExistingWeb) {
+	if (!$NoBuild) {
+		$stager = if ($IsWindows) { Start-Child $env:ComSpec @('/d', '/c', 'npm.cmd run stage') $web } else { Start-Child 'npm' @('run', 'stage') $web }
+		try {
+			$stager.WaitForExit()
+			if ($stager.ExitCode) { throw "Frontend build/staging failed with code $($stager.ExitCode)." }
+		} finally {
+			if (!$stager.HasExited) { $stager.Kill($true); $stager.WaitForExit() }
+			$stager.Dispose()
+		}
+	}
+	if (!$Offline -and !$UseExistingWeb) {
 		# Refuse an occupied port rather than accidentally adopting or terminating its owner.
 		$port = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 5173)
 		try { $port.Start() } finally { $port.Stop() }
@@ -40,18 +56,20 @@ try {
 			Start-Child 'npm' @('run', 'dev') $web
 		}
 	}
-	$deadline = [DateTime]::UtcNow.AddSeconds(30)
-	do {
-		if ($vite -and $vite.HasExited) { throw "npm run dev exited with code $($vite.ExitCode)." }
-		try {
-			$response = Invoke-WebRequest $url -TimeoutSec 1 -NoProxy
-			$ready = $response.StatusCode -eq 200 -and $response.Content -match '/@vite/client' -and $response.Content -match 'id="html-message"'
-		} catch { $ready = $false }
-		if (!$ready) { Start-Sleep -Milliseconds 200 }
-	} until ($ready -or [DateTime]::UtcNow -ge $deadline)
-	if (!$ready) { throw 'The sample Vite frontend did not become ready on port 5173 within 30 seconds.' }
+	if (!$Offline) {
+		$deadline = [DateTime]::UtcNow.AddSeconds(30)
+		do {
+			if ($vite -and $vite.HasExited) { throw "npm run dev exited with code $($vite.ExitCode)." }
+			try {
+				$response = Invoke-WebRequest $url -TimeoutSec 1 -NoProxy
+				$ready = $response.StatusCode -eq 200 -and $response.Content -match '/@vite/client' -and $response.Content -match 'id="html-message"'
+			} catch { $ready = $false }
+			if (!$ready) { Start-Sleep -Milliseconds 200 }
+		} until ($ready -or [DateTime]::UtcNow -ge $deadline)
+		if (!$ready) { throw 'The sample Vite frontend did not become ready on port 5173 within 30 seconds.' }
+	}
 
-	if ($Platform -eq 'android') {
+	if ($Platform -eq 'android' -and !$Offline) {
 		$sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } elseif ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } elseif ($IsMacOS) { Join-Path $HOME 'Library/Android/sdk' }
 		$adb = if ($sdk) { Join-Path $sdk 'platform-tools/adb' } else { 'adb' }
 		& $adb -s $Device reverse tcp:5173 tcp:5173
@@ -62,7 +80,7 @@ try {
 	$minor = $props.SelectSingleNode('//_MauiDotNetVersionMinor').InnerText
 	$tfm = "net$major.$minor-$Platform"
 	if ($Platform -eq 'windows') { $tfm += $props.SelectSingleNode('//WindowsTargetFrameworkVersion').InnerText }
-	$common = @('-f', $tfm, '-c', 'Debug',
+	$common = @('-f', $tfm, '-c', $Configuration,
 		'--disable-build-servers', '-p:UseWorkload=false',
 		'-p:IncludeMacOSTargetFrameworks=false')
 	foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
@@ -72,16 +90,16 @@ try {
 	if ($Platform -eq 'ios') {
 		$common += @('--runtime', "iossimulator-$([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())")
 	}
-	Write-Host "Launching $tfm$(if ($Device) { " on $Device" }). Vite watches Web/; the SDK builds and launches Native/."
+	Write-Host "Launching $tfm$(if ($Device) { " on $Device" }). $(if ($Offline) { 'Packaged playground; no Vite.' } else { 'Vite watches Web/.' }) The SDK builds and launches Native/."
 	foreach ($command in 'build', 'run') {
 		if ($command -eq 'build' -and $NoBuild) { continue }
 		$arguments = if ($command -eq 'build') {
 			@('build', $project) + $common
 		} else {
-			@('run', '--project', $project, '--no-build', '--no-launch-profile',
-				'-e', "HYBRIDWEBAPP_DEV_URL=$url") + $common
+			@('run', '--project', $project, '--no-build', '--no-launch-profile') + $common
 		}
 		if ($command -eq 'run') {
+			if (!$Offline) { $arguments += @('-e', "HYBRIDWEBAPP_DEV_URL=$url") }
 			if ($Device) { $arguments += @('--device', $Device) }
 			# Source references were built above; rebuilding them during Android deployment loses resource inputs.
 			if ($Platform -eq 'android') { $arguments += '-p:BuildProjectReferences=false' }
@@ -104,7 +122,7 @@ try {
 		while (!$vite.WaitForExit(250)) { }
 		throw "Vite exited with code $($vite.ExitCode)."
 	}
-	Write-Host 'The existing Vite server was left running; stop it in its owning terminal.'
+	if (!$Offline) { Write-Host 'The existing Vite server was left running; stop it in its owning terminal.' }
 } catch {
 	Write-Error $_ -ErrorAction Continue
 	if (!$exitCode) { $exitCode = 1 }

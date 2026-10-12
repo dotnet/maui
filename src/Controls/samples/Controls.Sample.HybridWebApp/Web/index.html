@@ -3,20 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hybrid web app — Vite frontend</title>
+    <meta name="color-scheme" content="light" />
+    <title>.NET MAUI Playground</title>
   </head>
   <body>
-    <main>
-      <p class="mode">Vite frontend · vanilla TypeScript</p>
-      <h1 id="html-message">HTML edit target: hello from Vite</h1>
-      <p id="typescript-message" aria-live="polite"></p>
-      <section id="style-target">
-        <h2>CSS edit target</h2>
-        <p>Change the background, border, or spacing in <code>src/style.css</code>.</p>
-      </section>
-      <p id="module-message"></p>
-      <p>Native startup identity belongs to the host logs, not a JavaScript counter.</p>
-    </main>
+    <a class="skip-link" href="#experiment">Skip to experiment</a>
+    <header class="app-header">
+      <h1 id="html-message">.NET MAUI <span>Playground</span></h1>
+      <div id="host-status" class="host-status" role="status" data-state="loading">Connecting to native host…</div>
+    </header>
+    <div class="workspace">
+      <aside class="catalog" aria-label="Feature catalog">
+        <label for="search">Find a feature</label>
+        <input id="search" type="search" placeholder="Search features…" autocomplete="off" />
+        <div class="filters">
+          <div><label for="category">Category</label><select id="category"><option value="">All categories</option></select></div>
+          <div><label for="priority">Priority</label><select id="priority"><option value="">All</option><option>P0</option><option>P1</option><option>P2</option><option>P3</option></select></div>
+        </div>
+        <p id="catalog-count" class="secondary"></p>
+        <nav id="feature-list" aria-label="Experiments"></nav>
+      </aside>
+      <main id="experiment" tabindex="-1">
+        <div class="experiment-heading">
+          <div><p id="feature-meta" class="secondary"></p><h2 id="feature-title"></h2></div>
+          <a id="api-link" target="_blank" rel="noopener noreferrer">API documentation ↗</a>
+        </div>
+        <p id="feature-description" class="instructions"></p>
+        <div id="native-unavailable" class="notice" hidden>Native host unavailable. Open this playground in the MAUI app to run native experiments. No clipboard, preferences or device values are emulated here.</div>
+        <section id="controls" aria-label="Experiment inputs"></section>
+        <section class="result-section" aria-labelledby="result-title">
+          <div class="section-heading"><h3 id="result-title">Result</h3><span id="result-state" data-state="idle" role="status">Ready to run</span></div>
+          <progress id="progress" max="1" value="0" aria-label="Native work progress" hidden></progress>
+          <pre id="result-json" tabindex="0">Run an experiment to inspect its actual native result.</pre>
+        </section>
+        <section class="log-section" aria-labelledby="log-title">
+          <div class="section-heading"><h3 id="log-title">Operation log</h3><button id="clear-log" class="quiet">Clear log</button></div>
+          <p class="secondary">Most recent 40 entries. Frontend reload clears this log, not native service state.</p>
+          <ol id="operation-log" aria-live="polite" aria-relevant="additions"><li class="empty-log">Native requests and events will appear here.</li></ol>
+        </section>
+        <details class="host-details"><summary>Native identity and live-edit targets</summary>
+          <pre id="native-identity">No native identity received.</pre>
+          <div id="style-target"><p id="typescript-message"></p><p id="module-message"></p></div>
+        </details>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

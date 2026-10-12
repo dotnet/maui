@@ -7,6 +7,8 @@
     "dev": "vite",
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
+    "stage": "npm run build && node stage.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
   },
   "engines": {

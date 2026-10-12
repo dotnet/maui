@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <Compile Include="../Native/Playground/*.cs" Exclude="../Native/Playground/MauiPlaygroundPlatform.cs" Link="Playground/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
