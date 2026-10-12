@@ -232,13 +232,20 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
 		{
+			if (indicatorView.IndicatorLayout is IndicatorStackLayout oldLayout)
+			{
+				oldLayout.Remove();
+			}
+
 			if (newValue != null)
 			{
-				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
+				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView)
+				{
+					Spacing = DefaultPadding
+				};
 			}
-			else if (indicatorView.IndicatorLayout is not null)
+			else
 			{
-				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
 			}
 		}
