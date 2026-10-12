@@ -13,6 +13,8 @@ parameters:
       - ios
       - catalyst
       - windows
+  - name: GateTaskTimeoutMinutes
+    type: number
   - name: androidPool
     type: object
     default:
@@ -171,13 +173,13 @@ stages:
             name: RunGate
             displayName: 'Gate: verify existing PR tests'
             condition: and(succeededOrFailed(), eq(variables['RunSetup.setupResult'], 'COMPLETED'))
-            timeoutInMinutes: ${{ variables.GateTaskTimeoutMinutes }}
+            timeoutInMinutes: ${{ parameters.GateTaskTimeoutMinutes }}
             continueOnError: true
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
               BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
-              GATE_TASK_TIMEOUT_MINUTES: ${{ variables.GateTaskTimeoutMinutes }}
+              GATE_TASK_TIMEOUT_MINUTES: ${{ parameters.GateTaskTimeoutMinutes }}
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'

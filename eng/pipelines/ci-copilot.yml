@@ -86,6 +86,7 @@ stages:
     parameters:
       PRNumber: ${{ parameters.PRNumber }}
       Platform: ${{ parameters.Platform }}
+      GateTaskTimeoutMinutes: ${{ variables.GateTaskTimeoutMinutes }}
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
       macPool: ${{ parameters.macPool }}
