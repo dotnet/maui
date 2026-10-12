@@ -5,6 +5,27 @@ frontend. This in-tree prototype stays in the MAUI PR; a Labs migration and
 DevFlow integration are deferred. No accounts, backend, telemetry or mock native
 values are used by the app.
 
+## Standalone JavaScript SDK
+
+The frontend consumes the app-independent
+[`@maui/api` SDK](../../../HybridWebView/JavaScript/README.md) through a normal
+local npm dependency. Its prepared preview is `0.1.0-preview.1`: emitted ESM,
+TypeScript declarations, MIT license and product/API/protocol/release docs are
+the standalone shipping artifact. `@maui/api` is a working name; scope/name
+ownership is unverified and nothing has been published to npm.
+
+Generic identity, clipboard, preferences and transport modules live in
+`src/HybridWebView/JavaScript/`, not in this app. Custom `sample.*` helpers remain
+in `Web/src/native/sample.ts`; the SDK includes no UI, sample commands, Vite
+dependency or sample preferences namespace. Ordinary SDK consumers can use
+`clipboard()`/`preferences()`/`getInfo()` without supplying a view or client;
+lazy startup still rejects browser-only native calls, never emulates them.
+
+A matching native protocol host remains required. Stock MAUI 11 invocation does
+not automatically supply this app's command hub. The native registration and
+providers below are the current reference implementation; no companion NuGet
+SDK or template is shipped by this extraction.
+
 ## Run
 
 After the one-time prerequisites below, from any working directory:
@@ -94,10 +115,10 @@ The router needs no new forwarding switch. **No command attribute or client
 generator has been implemented.** TypeScript modules are authored and tested:
 
 ```ts
-import { clipboard } from './maui/essentials/clipboard.ts'
-import { preferences } from './maui/essentials/preferences.ts'
-import { getInfo } from './maui/app/info.ts'
-import { sample } from './maui/app/sample.ts'
+import { clipboard } from '@maui/api/essentials/clipboard'
+import { preferences } from '@maui/api/essentials/preferences'
+import { getInfo } from '@maui/api/app/info'
+import { sample } from './native/sample.ts'
 ```
 
 All DTO/envelope runtime serialization uses System.Text.Json source-generated
@@ -146,12 +167,17 @@ forwarding; this sample does not introduce a public lifecycle cancellation API.
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
 ```
 
-This runs type-check/build and records source/output SHA-256 hashes in an ignored
+This rebuilds the standalone SDK, type-checks/builds the app and records
+app/SDK input/output SHA-256 hashes in an ignored
 `Web/dist/playground-assets.props`. `Native/FrontendAssets.targets` collects the
 manifest-listed assets as `wwwroot/`, preserving asset paths and dynamic chunks.
 Extra unstaged files are never packaged. Native builds
-fail on missing staging or stale source/output hashes. Regenerate with `stage`
-after edits, including `package.json`. Direct `npm run build` intentionally
+fail on missing staging or stale source/output hashes. The generated manifest
+also checks added/deleted SDK source/output files without adding npm to native
+MSBuild. Staging verifies the SDK's deterministic build stamp, so modified SDK
+source cannot be marked fresh over obsolete emitted JavaScript.
+Regenerate with `stage` after edits, including SDK source/config/build scripts,
+package metadata and lockfiles. Direct `npm run build` intentionally
 invalidates staging until `stage` is run. Generated output and `node_modules`
 are not committed. Offline Debug and Release contain the same playground and
 load the framework bridge, not the old fallback page.
@@ -160,6 +186,11 @@ Vite remains strict-port `127.0.0.1:5173` with loopback HMR WebSocket. Live-edit
 markers are `#html-message`, `#typescript-message` (`message.ts`),
 `#module-message` (dynamically imported `details.ts`) and `#style-target`
 (`style.css`); the last three are in the native-identity disclosure.
+
+`dev`, `test`, `type-check` and `build` rebuild the local SDK dependency before
+running. SDK edits are not direct Vite TypeScript imports: run
+`npm --prefix …/Web run sdk:build` to update emitted modules, and restart Vite
+when changing dependency exports. UI-only edits retain normal Vite HMR.
 
 ## Optional Debug inspection
 
@@ -201,12 +232,21 @@ Use root `global.json`'s SDK via `bash eng/common/dotnet.sh` on macOS (the
 PowerShell wrapper on Windows), installed repository-local Apple/Android
 workloads and compiled `Microsoft.Maui.BuildTasks.slnf`. Keep the currently
 selected Xcode 27; do not downgrade `DEVELOPER_DIR`. Android requires OpenJDK 17
-and the matching SDK. Run `npm --prefix …/Web ci` once when dependencies are
-missing; Node 22.12+ is recommended (tests use Node's TypeScript stripping;
+and the matching SDK. Restore the standalone package and the frontend once
+before launch (the launcher does not restore either):
+
+```sh
+npm --prefix src/HybridWebView/JavaScript ci
+npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web ci
+```
+
+Node 22.18+ is required (app tests use Node's TypeScript stripping;
 verified with Node 24). The platform minimums remain Android 24, iOS 15,
 Mac Catalyst 17, Windows 10.0.17763.
 
 ```sh
+npm --prefix src/HybridWebView/JavaScript test
+npm --prefix src/HybridWebView/JavaScript run pack-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web test
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run type-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
@@ -220,7 +260,10 @@ bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebAp
 
 Pure .NET tests link only the hub/contracts/providers, using a fake platform
 boundary (not a fake native UI). Node built-in tests exercise the actual
-TypeScript protocol/helpers with explicit test doubles. These checks do not
+SDK's built public exports and app-owned helpers with explicit test doubles.
+Package `pack-check` additionally inspects the actual tarball, installs it in a
+fresh offline consumer and compiles/runs against shipped JS/declarations
+without the source tree. These checks do not
 claim Android/iOS/Windows native validation or store/signing readiness.
 
 ### Native milestone evidence

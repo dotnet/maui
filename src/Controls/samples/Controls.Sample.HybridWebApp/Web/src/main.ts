@@ -2,12 +2,12 @@ import './style.css'
 import { message } from './message.ts'
 import { availableFeatures } from './catalog.ts'
 import type { Feature } from './catalog.ts'
-import { NativeClient, NativeError, loadNativeBridge, object, nullableText, number, boolean, strings } from './maui/core.ts'
-import type { Operation, Progress } from './maui/core.ts'
-import { clipboard } from './maui/essentials/clipboard.ts'
-import { preferences } from './maui/essentials/preferences.ts'
-import { getInfo } from './maui/app/info.ts'
-import { sample } from './maui/app/sample.ts'
+import { NativeClient, NativeError, loadNativeBridge, object, nullableText, number, boolean, strings } from '@maui/api/core'
+import type { Operation, Progress } from '@maui/api/core'
+import { clipboard } from '@maui/api/essentials/clipboard'
+import { preferences } from '@maui/api/essentials/preferences'
+import { getInfo } from '@maui/api/app/info'
+import { sample } from './native/sample.ts'
 
 function element<T extends HTMLElement>(selector: string, type: { new(): T }): T {
   const found = document.querySelector(selector)

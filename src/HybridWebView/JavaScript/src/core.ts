@@ -47,7 +47,7 @@ export function isNativeOrigin(href: string): boolean {
   return (url.protocol === 'app:' || url.protocol === 'https:') && url.hostname === '0.0.0.1' && !url.port
 }
 export async function loadNativeBridge(): Promise<Bridge | undefined> {
-  if (!isNativeOrigin(location.href)) return undefined
+  if (typeof window === 'undefined' || typeof document === 'undefined' || !isNativeOrigin(window.location.href)) return undefined
   if (!window.HybridWebView) {
     await new Promise<void>((resolve, reject) => {
       const script = document.createElement('script')
@@ -97,7 +97,7 @@ export class NativeClient {
   private async request<T>(id: string, command: string, args: Json, decode: Decoder<T>): Promise<T> {
     if (!this.available || !this.bridge) throw new NativeError('native_unavailable', 'Native host unavailable. Launch the MAUI app; browser mode does not emulate native APIs.')
     const request = asciiJson({ version: 1, session: this.session, id, command, args })
-    if (request.length > 100000) throw new NativeError('invalid_arguments', 'Request exceeds the sample protocol size limit.')
+    if (request.length > 100000) throw new NativeError('invalid_arguments', 'Request exceeds the protocol size limit.')
     let timer: ReturnType<typeof setTimeout> | undefined
     const obsolete = new Promise<never>((_, reject) => {
       this.aborts.set(id, () => reject(new NativeError('cancelled', 'The frontend document disconnected.')))
@@ -149,9 +149,9 @@ export class NativeClient {
     } catch (error) { console.warn('Rejected malformed native event', error) }
   }
   attachToDocument(): void {
-    if (this.notices.length || !this.available) return
+    if (this.notices.length || !this.available || typeof window === 'undefined') return
     const receive = (event: Event) => {
-      if (event instanceof CustomEvent) this.receive(object(event.detail).message)
+      if (event instanceof CustomEvent && isRecord(event.detail)) this.receive(event.detail.message)
     }
     const disconnect = () => this.dispose()
     window.addEventListener('HybridWebViewMessageReceived', receive)
@@ -165,12 +165,50 @@ export class NativeClient {
   }
   dispose(): void {
     if (this.disposed) return
-    this.bridge?.SendRawMessage(asciiJson({ session: this.session, kind: 'disconnect' }))
     this.disposed = true
+    try { this.bridge?.SendRawMessage(asciiJson({ session: this.session, kind: 'disconnect' })) }
+    catch { /* The transport may already be gone; local cleanup must still complete. */ }
     this.listeners.clear()
     for (const abort of this.aborts.values()) abort()
     this.aborts.clear()
     for (const cleanup of this.notices) cleanup()
     this.notices.length = 0
   }
+}
+
+let defaultClient: NativeClient | undefined
+let defaultConnection: Promise<NativeClient> | undefined
+
+/** Connects the document's shared client lazily; rejects when no matching native host is available. */
+export function connect(): Promise<NativeClient> {
+  if (defaultClient?.available && !defaultConnection) return Promise.resolve(defaultClient)
+  if (defaultConnection) return defaultConnection
+  const connection = loadNativeBridge().then(async bridge => {
+    if (defaultConnection !== connection) throw new NativeError('cancelled', 'The frontend document disconnected.')
+    if (!bridge) throw new NativeError('native_unavailable', 'Native host unavailable. Launch a matching MAUI app; browser mode does not emulate native APIs.')
+    const client = new NativeClient(bridge)
+    defaultClient = client
+    try {
+      client.attachToDocument()
+      await client.connect()
+      if (!client.available || defaultConnection !== connection) throw new NativeError('cancelled', 'The frontend document disconnected.')
+      return client
+    } catch (error) {
+      client.dispose()
+      if (defaultClient === client) defaultClient = undefined
+      throw error
+    }
+  })
+  defaultConnection = connection
+  const clear = () => { if (defaultConnection === connection) defaultConnection = undefined }
+  void connection.then(clear, clear)
+  return connection
+}
+
+/** Disposes the shared client and cancels startup; a later connect creates a new session. */
+export function disconnect(): void {
+  const client = defaultClient
+  defaultClient = undefined
+  defaultConnection = undefined
+  client?.dispose()
 }

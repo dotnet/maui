@@ -1,5 +1,5 @@
-import { ack, boolean, nullableText, number, object, progress, strings } from '../core.ts'
-import type { NativeClient, Decoder } from '../core.ts'
+import { ack, boolean, nullableText, number, object, progress, strings } from '@maui/api/core'
+import type { NativeClient, Decoder } from '@maui/api/core'
 
 export interface EchoInput { text: string | null; number: number; flag: boolean; items: string[] }
 export interface EchoResult extends EchoInput { counter: number }

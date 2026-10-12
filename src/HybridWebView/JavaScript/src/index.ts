@@ -1,0 +1,6 @@
+export { NativeClient, NativeError, connect, disconnect } from './core.js'
+export type { Bridge, Json, Decoder, Ready, Operation, Progress } from './core.js'
+export { getInfo } from './app/info.js'
+export type { Identity } from './app/info.js'
+export { clipboard } from './essentials/clipboard.js'
+export { preferences } from './essentials/preferences.js'
