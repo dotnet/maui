@@ -17,6 +17,47 @@ public class ResizetizerTests : BaseBuildTest
 		""";
 
 	[Theory]
+	[InlineData("android", true)]
+	[InlineData("android", false)]
+	[InlineData("ios", true)]
+	[InlineData("ios", false)]
+	public void PackagedResizetizerRendersSvgFiltersAndText(string platform, bool isAppIcon)
+	{
+		SetTestIdentifier(platform, isAppIcon);
+
+		var projectFile = Path.Combine(TestDirectory, "SvgFilters.csproj");
+		File.WriteAllText(Path.Combine(TestDirectory, "filtered.svg"),
+			"""
+			<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+				<filter id="blur"><feGaussianBlur stdDeviation="8" /></filter>
+				<rect x="32" y="32" width="392" height="392" fill="#512BD4" filter="url(#blur)" />
+				<text x="64" y="256" font-family="Arial" font-size="64" fill="black">MAUI</text>
+			</svg>
+			""");
+		// Run the packaged task in MSBuild, not the test host's different SkiaSharp asset selection.
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+				<PropertyGroup>
+					<TargetFramework>{{DotNetCurrent}}</TargetFramework>
+				</PropertyGroup>
+				<ItemGroup>
+					<PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+					<Image Include="filtered.svg" IsAppIcon="{{isAppIcon}}" />
+				</ItemGroup>
+				<Target Name="RenderSvg">
+					<MakeDir Directories="rendered" />
+					<ResizetizeImages PlatformType="{{platform}}" IntermediateOutputPath="rendered" Images="@(Image)" />
+				</Target>
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "RenderSvg", properties: BuildProps, output: _output),
+			"Packaged Resizetizer failed to render SVG filters and text. Check test output for errors.");
+		Assert.NotEmpty(Directory.GetFiles(Path.Combine(TestDirectory, "rendered"), "*.png", SearchOption.AllDirectories));
+	}
+
+	[Theory]
 	// windows unpackaged/exe
 	[InlineData("maui", "classlib", true)] // net9.0
 	[InlineData("maui", "mauilib", true)] // net9.0-xxx
