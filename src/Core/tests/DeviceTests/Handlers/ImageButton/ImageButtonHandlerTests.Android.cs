@@ -22,6 +22,20 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(imageButton, expected);
 		}
 
+		[Fact(DisplayName = "Background renders when CornerRadius is larger than half the size")]
+		public async Task BackgroundRendersWhenCornerRadiusIsLargerThanHalfTheSize()
+		{
+			Color expected = Colors.Red;
+
+			var imageButton = new ImageButtonStub
+			{
+				Background = new SolidPaintStub(expected),
+				CornerRadius = 100
+			};
+
+			await ValidateHasColor(imageButton, expected);
+		}
+
 		Google.Android.Material.ImageView.ShapeableImageView GetPlatformImageButton(ImageButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
