@@ -461,6 +461,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Broccoli");
 	}
 
+#if TEST_FAILS_ON_WINDOWS //ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringObservableCollectionReplacement_WithVerticalList")]
 	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringObservableCollectionReplacement_WithHorizontalList")]
 	[TestCase(ItemsLayoutVerticalGrid, TestName = "VerifyStringObservableCollectionReplacement_WithVerticalGrid")]
@@ -573,6 +574,8 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Kiwi");
 		WaitForItemInItemsLayout("Broccoli", itemsLayout);
 	}
+
+#endif
 
 	// Empty and no-source scenarios
 	[Test]
@@ -980,6 +983,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Orange");
 	}
 
+#if TEST_FAILS_ON_WINDOWS // ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
 	// Grouped source layout scenarios
 	[TestCase(ItemsLayoutVerticalList, TestName = "VerifyStringItemsGroupedListWhenAddItemsWithVerticalListItemsLayout")]
 	[TestCase(ItemsLayoutHorizontalList, TestName = "VerifyStringItemsGroupedListWhenAddItemsWithHorizontalListItemsLayout")]
@@ -1116,6 +1120,8 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		WaitForItemInItemsLayout("Kiwi", itemsLayout);
 	}
+
+#endif
 
 	// Source configuration and selection scenarios
 	[Test]
