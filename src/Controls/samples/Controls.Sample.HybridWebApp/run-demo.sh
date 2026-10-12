@@ -8,13 +8,17 @@ case "${1:-}" in
   "") ;;
   --no-build) no_build=true ;;
   -h|--help)
-    printf 'Usage: %s [--no-build]\nSet DEVELOPER_DIR to a compatible installed Xcode; optional HYBRIDWEBAPP_INSPECT_PORT selects an unused inspection port.\n' "$0"
+    printf 'Usage: %s [--no-build]\nIn-tree Mac Catalyst validation harness only; use run-demo.ps1 for normal launches.\nSet DEVELOPER_DIR to a compatible installed Xcode; optional HYBRIDWEBAPP_INSPECT_PORT selects an unused inspection port.\n' "$0"
     exit 0 ;;
   *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
 if (( $# > 1 )); then
   printf 'Only --no-build is supported.\n' >&2
   exit 2
+fi
+if [[ ! -f "$repo_root/src/Maui.InTree.props" || ! -f "$repo_root/src/Core/src/Core.csproj" || ! -f "$repo_root/eng/common/dotnet.sh" ]]; then
+  printf 'run-demo.sh is an in-tree Mac Catalyst validation harness. A copied bundle must use run-demo.ps1 with -Offline -MauiVersion VERSION and a compatible .NET 11 SDK/workloads.\n' >&2
+  exit 1
 fi
 command -v python3 >/dev/null || { printf 'Python 3 is required for local process supervision.\n' >&2; exit 1; }
 

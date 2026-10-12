@@ -16,13 +16,15 @@ neither compiling original TypeScript nor Vite.
 
 ## Build and validate locally
 
-From the repository root, with Node 22.18+ (validated on Node 24.4.1/npm 11.5.2):
+From the source bundle root (`Controls.Sample.HybridWebApp/`), with Node 22.18+
+(validated on Node 24.4.1/npm 11.5.2). These same paths work after copying the
+whole bundle to another repository:
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript ci
-npm --prefix src/HybridWebView/JavaScript run build
-npm --prefix src/HybridWebView/JavaScript test
-npm --prefix src/HybridWebView/JavaScript run pack-check
+npm --prefix JavaScript ci
+npm --prefix JavaScript run build
+npm --prefix JavaScript test
+npm --prefix JavaScript run pack-check
 ```
 
 `ci` restores the locked TypeScript 7.0.2 development compiler and documentation
@@ -34,7 +36,9 @@ or credentials. The checked-in lockfile enables normal clean restores.
 
 Build cleans `dist`, compiles ESM and declarations with comments preserved, and
 writes an ignored deterministic input/output hash stamp. Node built-in contract tests import the
-**built public exports**. Tests also generate the reference and validate
+**built public exports**. The double-bootstrap regression executes the real
+framework's attributed test-only snapshot (`tests/fixtures/README.md`), not a
+MAUI checkout or a production SDK bootstrap. Tests also generate the reference and validate
 source documentation from emitted declarations. `prepack` runs build/docs/tests,
 so preparing a tarball cannot silently ship missing or untested output.
 
@@ -50,23 +54,23 @@ that every exported symbol/public member retains its source TSDoc. Packed-refere
 output goes to ignored `artifacts/api-reference-packed/`.
 Each entrypoint's exact exported symbols, nested public members, signatures and
 TSDoc are compared with its local model; counts alone are not acceptance evidence.
-The checked tarball remains under `src/HybridWebView/JavaScript/artifacts/`
+The checked tarball remains under `JavaScript/artifacts/`
 for local inspection.
 No registry upload or publish command is run by these scripts.
 
 For file-list-only inspection:
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript pack --dry-run
+npm --prefix JavaScript pack --dry-run
 ```
 
 ## Source reference and DocFX/Microsoft Learn
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript run docs
+npm --prefix JavaScript run docs
 ```
 
-The comments in `src/**/*.ts` are the public-symbol documentation source.
+The comments in `JavaScript/src/**/*.ts` are the public-symbol documentation source.
 The command builds with **TypeScript 7.0.2**, then runs **API Extractor 7.59.4**
 on each actual exported `.d.ts` entrypoint and **API Documenter 7.30.18**
 on each isolated `.api.json` model. It writes ignored
@@ -135,15 +139,15 @@ or a publication authorization. No live Learn reference is claimed here.
 ## Playground dependency and staging
 
 The playground consumes a normal
-`file:../../../../HybridWebView/JavaScript` npm dependency, not a TS alias or
+`file:../JavaScript` npm dependency, not a TS alias or
 source import. From a clean checkout restore both development environments:
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript ci
-npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web ci
-npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web test
-npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
-npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run dev
+npm --prefix JavaScript ci
+npm --prefix Web ci
+npm --prefix Web test
+npm --prefix Web run stage
+npm --prefix Web run dev
 ```
 
 Playground `dev`, `test`, `type-check` and `build` rebuild the SDK first; the
@@ -159,8 +163,13 @@ invalidate staging. Only manifest-listed Vite assets become native `wwwroot`.
 Direct `build` removes the staging manifest; native MSBuild never runs npm.
 After SDK edits/builds, rerun `stage` before a packaged native build.
 
-See the [consumer README](https://github.com/dotnet/maui/blob/b9809fe83750572310c7a871c36a0fc6aaac8395/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
-for the cross-platform launcher and native prerequisites.
+The current source bundle's README documents its copyable layout and native
+migration gates. The [last pushed consumer README](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+is a published reference for tarball readers, not evidence that this relocated
+revision is pushed. Pin matching source links before release. A copied native
+app requires an explicit MAUI 11 package version/feed and SDK/workloads;
+packaged Vite forwarding remains guarded until the consumed Core fix is
+validated. Pure .NET host tests require no native MAUI package.
 
 ## Authorized release checklist
 

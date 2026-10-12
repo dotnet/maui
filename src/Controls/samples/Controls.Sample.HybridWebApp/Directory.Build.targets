@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="$(HybridWebAppRepositoryRoot)Directory.Build.targets" Condition="'$(HybridWebAppInTree)' == 'true' and '$(MauiTestProject)' == 'true'" />
+  <Import Project="../Directory.Build.targets" Condition="'$(HybridWebAppInTree)' == 'true' and '$(MauiTestProject)' != 'true'" />
+</Project>

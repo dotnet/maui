@@ -7,12 +7,18 @@ param(
 	[switch] $NoBuild,
 	[switch] $UseExistingWeb,
 	[switch] $Offline,
+	[switch] $Packaged,
+	[string] $MauiVersion,
+	[string] $DotNetPath,
+	[switch] $PrintPlan,
 	[ValidateSet('Debug', 'Release')]
 	[string] $Configuration = 'Debug'
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../../..'))
+$inTree = !$Packaged -and (Test-Path (Join-Path $repo 'src/Maui.InTree.props')) -and
+	(Test-Path (Join-Path $repo 'src/Core/src/Core.csproj')) -and (Test-Path (Join-Path $repo 'Directory.Build.props'))
 $native = Join-Path $PSScriptRoot 'Native'
 $project = Join-Path $native 'Maui.Controls.Sample.HybridWebApp.csproj'
 $web = Join-Path $PSScriptRoot 'Web'
@@ -20,6 +26,10 @@ $url = 'http://127.0.0.1:5173/'
 $vite = $null
 $runner = $null
 $exitCode = 0
+$sdkFile = if ($DotNetPath) { $DotNetPath } elseif (!$inTree) { 'dotnet' } elseif ($IsWindows) { (Get-Process -Id $PID).Path } else { 'bash' }
+[string[]] $sdkPrefix = if ($DotNetPath -or !$inTree) { @() } elseif ($IsWindows) {
+	@('-NoProfile', '-File', (Join-Path $repo 'eng/common/dotnet.ps1'))
+} else { @((Join-Path $repo 'eng/common/dotnet.sh')) }
 
 function Start-Child([string] $File, [string[]] $Arguments, [string] $Directory) {
 	$info = [Diagnostics.ProcessStartInfo]::new($File)
@@ -30,11 +40,73 @@ function Start-Child([string] $File, [string[]] $Arguments, [string] $Directory)
 	return [Diagnostics.Process]::Start($info)
 }
 
+function Get-ProjectProperties([string[]] $Properties) {
+	$info = [Diagnostics.ProcessStartInfo]::new($sdkFile)
+	$info.UseShellExecute = $false
+	$info.WorkingDirectory = $native
+	$info.RedirectStandardOutput = $true
+	$info.RedirectStandardError = $true
+	foreach ($argument in ($sdkPrefix + @('msbuild', $project, '-nologo',
+		'-getProperty:HybridWebAppInTree,TargetFrameworks,UseMaui', "-p:Configuration=$Configuration") + $Properties)) {
+		$info.ArgumentList.Add($argument)
+	}
+	$child = [Diagnostics.Process]::Start($info)
+	try {
+		$output = $child.StandardOutput.ReadToEndAsync()
+		$errorOutput = $child.StandardError.ReadToEndAsync()
+		$child.WaitForExit()
+		if ($child.ExitCode) { throw "Project evaluation failed: $($errorOutput.Result) $($output.Result)" }
+		return ($output.Result | ConvertFrom-Json).Properties
+	} finally { $child.Dispose() }
+}
+
 try {
 	if ($Configuration -eq 'Release' -and !$Offline) { throw 'Release never forwards to Vite. Specify -Offline.' }
 	if ($Offline -and $UseExistingWeb) { throw '-Offline cannot use a Vite server.' }
 	if ($Platform -in 'android', 'ios' -and !$Device) {
 		throw 'Specify -Device with an adb serial (Android) or simulator UDID (iOS); the script does not choose somebody else''s device.'
+	}
+	if (!$inTree -and !$MauiVersion) { throw 'Packaged mode requires -MauiVersion with a compatible .NET MAUI 11 package, its NuGet feed and .NET 11 SDK/workloads. No version is assumed.' }
+	if (!$inTree -and !$Offline) { throw 'Packaged mode currently requires -Offline. Vite forwarding is guarded until the consumed MAUI version includes the Core stopped-task fix; do not bypass the guard.' }
+	[string[]] $modeProperties = if ($inTree) { @('-p:UseWorkload=false') } else {
+		@('-p:HybridWebAppInTree=false', "-p:MauiVersion=$MauiVersion")
+	}
+	$metadata = Get-ProjectProperties $modeProperties
+	$tfm = @($metadata.TargetFrameworks.Split(';') | Where-Object { $_ -match "^net11\.0-$Platform[0-9.]*$" } | Select-Object -First 1)
+	if (!$tfm.Count) { throw "The project does not offer a .NET 11 $Platform target on this host: $($metadata.TargetFrameworks)" }
+	$tfm = $tfm[0]
+	$output = Join-Path $PSScriptRoot "artifacts"
+	$common = @('-f', $tfm, '-c', $Configuration, '--disable-build-servers') + $modeProperties
+	if ($inTree) {
+		$common += @('-p:IncludeMacOSTargetFrameworks=false',
+			"-p:ArtifactsObjDir=$(Join-Path $output "obj/hybrid-playground/$Platform/")",
+			"-p:ArtifactsBinDir=$(Join-Path $output "bin/hybrid-playground/$Platform/")")
+		foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
+			$enabled = ($target.ToLowerInvariant() -eq $Platform).ToString().ToLowerInvariant()
+			$common += "-p:Include${target}TargetFrameworks=$enabled"
+		}
+	} else {
+		$common += @("-p:TargetFrameworks=$tfm",
+			"-p:BaseIntermediateOutputPath=$(Join-Path $output "obj/hybrid-playground/$Platform/")",
+			"-p:BaseOutputPath=$(Join-Path $output "bin/hybrid-playground/$Platform/")")
+	}
+	if ($Platform -eq 'ios') {
+		$common += @('--runtime', "iossimulator-$([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())")
+	}
+	if ($PrintPlan) {
+		[ordered]@{
+			Mode = if ($inTree) { 'in-tree' } else { 'packaged' }
+			ProjectMode = $metadata.HybridWebAppInTree
+			UseMaui = $metadata.UseMaui
+			TargetFramework = $tfm
+			Sdk = $sdkFile
+			SdkArguments = $sdkPrefix
+			BuildArguments = @('build', $project) + $common
+			RunArguments = @('run', '--project', $project, '--no-build', '--no-launch-profile') + $common +
+				$(if ($Device) { @('--device', $Device) } else { @() }) +
+				$(if ($Platform -eq 'android') { @('-p:BuildProjectReferences=false') } else { @() })
+		} | ConvertTo-Json -Depth 4
+		exit 0
 	}
 	if (!$NoBuild) {
 		$stager = if ($IsWindows) { Start-Child $env:ComSpec @('/d', '/c', 'npm.cmd run stage') $web } else { Start-Child 'npm' @('run', 'stage') $web }
@@ -75,23 +147,6 @@ try {
 		& $adb -s $Device reverse tcp:5173 tcp:5173
 		if ($LASTEXITCODE) { throw "adb reverse failed with code $LASTEXITCODE." }
 	}
-	[xml] $props = Get-Content (Join-Path $repo 'Directory.Build.props')
-	$major = $props.SelectSingleNode('//_MauiDotNetVersionMajor').InnerText
-	$minor = $props.SelectSingleNode('//_MauiDotNetVersionMinor').InnerText
-	$tfm = "net$major.$minor-$Platform"
-	if ($Platform -eq 'windows') { $tfm += $props.SelectSingleNode('//WindowsTargetFrameworkVersion').InnerText }
-	$common = @('-f', $tfm, '-c', $Configuration,
-		'--disable-build-servers', '-p:UseWorkload=false',
-		'-p:IncludeMacOSTargetFrameworks=false',
-		"-p:ArtifactsObjDir=$(Join-Path $repo "artifacts/obj/hybrid-playground/$Platform/")",
-		"-p:ArtifactsBinDir=$(Join-Path $repo "artifacts/bin/hybrid-playground/$Platform/")")
-	foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
-		$enabled = ($target.ToLowerInvariant() -eq $Platform).ToString().ToLowerInvariant()
-		$common += "-p:Include${target}TargetFrameworks=$enabled"
-	}
-	if ($Platform -eq 'ios') {
-		$common += @('--runtime', "iossimulator-$([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())")
-	}
 	Write-Host "Launching $tfm$(if ($Device) { " on $Device" }). $(if ($Offline) { 'Packaged playground; no Vite.' } else { 'Vite watches Web/.' }) The SDK builds and launches Native/."
 	foreach ($command in 'build', 'run') {
 		if ($command -eq 'build' -and $NoBuild) { continue }
@@ -112,11 +167,7 @@ try {
 			# Source references were built above; rebuilding them during Android deployment loses resource inputs.
 			if ($Platform -eq 'android') { $arguments += '-p:BuildProjectReferences=false' }
 		}
-		$runner = if ($IsWindows) {
-			Start-Child (Get-Process -Id $PID).Path (@('-NoProfile', '-File', (Join-Path $repo 'eng/common/dotnet.ps1')) + $arguments) $native
-		} else {
-			Start-Child 'bash' (@((Join-Path $repo 'eng/common/dotnet.sh')) + $arguments) $native
-		}
+		$runner = Start-Child $sdkFile ($sdkPrefix + $arguments) $native
 		while (!$runner.WaitForExit(250)) {
 			if ($vite -and $vite.HasExited) { throw "Vite exited with code $($vite.ExitCode)." }
 		}

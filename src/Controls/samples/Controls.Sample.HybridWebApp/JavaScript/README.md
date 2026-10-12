@@ -68,13 +68,14 @@ reflection, JSON metadata or AOT behavior.
 The public TypeScript symbols and members carry TSDoc comments that survive in
 the shipped `.d.ts` files, so editor tooltips include parameters, return values,
 errors, host requirements and session/limit notes without opening this README.
-Generate a local Markdown reference and DocFX navigation from those declarations:
+Generate a local Markdown reference and DocFX navigation from those declarations
+from the source bundle root (`Controls.Sample.HybridWebApp/`):
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript run docs
+npm --prefix JavaScript run docs
 ```
 
-Open `src/HybridWebView/JavaScript/artifacts/api-reference/index.md`. API Extractor
+Open `JavaScript/artifacts/api-reference/index.md`. API Extractor
 and API Documenter process each actual package entrypoint separately and label
 its exact import path; feature APIs are not flattened into the root to generate
 docs. Generated reference output is ignored and not shipped in the npm tarball.
@@ -90,19 +91,22 @@ providers, permissions or native registrations to an app. A compatible host must
 implement version 1 of [the protocol](docs/PROTOCOL.md), including
 `Task<string> Invoke(string request)`, session commands and explicit providers.
 
-The current source-backed reference host lives in
-[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native):
+The current reference host is the sibling `Native/` in the source bundle.
+For tarball readers, the links below pin the last pushed, protocol-compatible
+[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native).
+The current source further makes registry/readiness/topics host-composed;
+these pinned links do not claim that unpushed revision is published.
 
-- [`MainPage.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
+- [`MainPage.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
   registers `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`,
   handles raw document messages and sends session-checked events.
-- [`Contracts.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
-  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
-  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
+- [`Contracts.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
+  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
+  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
   define the versioned, source-generated JSON contracts and bounded allowlist.
-- [`Providers.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
+- [`Providers.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
   registers identity/clipboard/preferences;
-  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
+  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
   implements OS calls.
 
 No companion NuGet SDK or integration template is shipped by this extraction.
@@ -213,5 +217,8 @@ and never expose arbitrary native methods to untrusted scripts.
 
 See [API/errors/security](docs/API.md), [wire/native compatibility](docs/PROTOCOL.md),
 and [package validation/release](docs/RELEASING.md). The
-[playground README](https://github.com/dotnet/maui/blob/b9809fe83750572310c7a871c36a0fc6aaac8395/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
-documents this repository's consumer and explicit asset staging.
+[last pushed playground README](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+documents the consumer and staging. In the current source bundle the independently
+packable SDK is at `JavaScript/` beside `Native/`, `Web/` and `Tests/`; source
+commands here use that relocated layout. Refresh source links to the matching
+release commit/tag before publication.

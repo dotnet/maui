@@ -1,21 +1,21 @@
 # .NET MAUI Playground
 
 A feature-first .NET 11 HybridWebView playground with a sibling Vite/TypeScript
-frontend. This in-tree prototype stays in the MAUI PR; a Labs migration and
-DevFlow integration are deferred. No accounts, backend, telemetry or mock native
+frontend. The portable prototype is contained in this sample folder; a Labs
+migration and DevFlow integration are deferred. No accounts, backend, telemetry or mock native
 values are used by the app.
 
 ## Standalone JavaScript SDK
 
 The frontend consumes the app-independent
-[`@maui/api` SDK](../../../HybridWebView/JavaScript/README.md) through a normal
+[`@maui/api` SDK](JavaScript/README.md) through a normal
 local npm dependency. Its prepared preview is `0.1.0-preview.1`: emitted ESM,
 TypeScript declarations, MIT license and product/API/protocol/release docs are
 the standalone shipping artifact. `@maui/api` is a working name; scope/name
 ownership is unverified and nothing has been published to npm.
 
 Generic app/device information, clipboard, preferences and transport modules live in
-`src/HybridWebView/JavaScript/`, not in this app. Custom `sample.*` helpers remain
+the independently packable sibling `JavaScript/`, not in the frontend. Custom `sample.*` helpers remain
 in `Web/src/native/sample.ts`; the SDK includes no UI, sample commands, Vite
 dependency or sample preferences namespace. Ordinary SDK consumers can use
 `clipboard()`/`preferences()`/`getAppInfo()`/`getDeviceInfo()` without supplying a view or client;
@@ -29,9 +29,9 @@ The app owns process architecture, PID and startup diagnostics and composes
 them with the real SDK AppInfo/DeviceInfo helpers for its reload experiment.
 
 Public symbols and members are documented in TypeScript; emitted declarations
-retain the comments for editor tooltips. `npm --prefix src/HybridWebView/JavaScript run docs`
+retain the comments for editor tooltips. `npm --prefix JavaScript run docs` from this folder
 generates an ignored per-entrypoint Markdown reference and DocFX navigation.
-The package's [release documentation](../../../HybridWebView/JavaScript/docs/RELEASING.md)
+The package's [release documentation](JavaScript/docs/RELEASING.md)
 explains standard tooling, packed-reference equality checks and the separate
 Microsoft Learn onboarding step. No Learn publication is performed.
 
@@ -63,7 +63,8 @@ pwsh -File src/Controls/samples/Controls.Sample.HybridWebApp/run-demo.ps1 -Offli
 `-NoBuild` reuses previously staged/built output. Close the existing native app
 before relaunching with new environment settings. The launcher runs
 `npm run stage`, starts Vite for live development, then separately builds and
-deploys with the repository SDK. It never installs npm dependencies on launch.
+deploys with the repository SDK in-tree, or normal `dotnet` in packaged mode.
+`-DotNetPath` explicitly selects an installed executable. It never installs npm dependencies on launch.
 Ctrl+C stops only its owned child process tree; close the native app separately.
 Native MSBuild never invokes npm. Release rejects live forwarding and excludes
 `Development/**`, the inspector and its server.
@@ -73,12 +74,107 @@ retained. No Tizen target is included. iOS uses the host architecture's simulato
 RID; Android deployment uses `BuildProjectReferences=false` after the explicit
 build to preserve source-reference resource inputs. The launcher isolates each
 platform's intermediate and binary outputs under
-`artifacts/{obj,bin}/hybrid-playground/PLATFORM/`, so concurrent native launches
+this folder's `artifacts/{obj,bin}/hybrid-playground/PLATFORM/`, so concurrent native launches
 cannot overwrite each other's restore graph. `-NoBuild` therefore reuses a build
 made by this launcher for that platform and configuration.
 Android uses explicit
 `adb -s DEVICE reverse tcp:5173 tcp:5173`; iOS simulators share host loopback.
 Physical iOS-device networking is not configured by this loopback-only launcher.
+
+## Copying to MAUI Labs
+
+Copy this **whole folder**, not just `Web/`. `JavaScript/` remains one standalone
+npm product (`@maui/api` with six entrypoints), consumed via `file:../JavaScript`;
+it is not compiled as app source. `Native/` owns the host/providers/protocol,
+platform heads/assets and Debug forwarding/inspection; `Tests/`, staging,
+launchers, documentation and the [121-family backlog](FEATURES.md) travel with it.
+Do not copy generated `node_modules`, `dist`, `artifacts`, `bin`, `obj`, tarballs
+or stamps; restore and regenerate them in the destination.
+
+Sample-local `Directory.Build.props/targets` detect this specific MAUI checkout
+using its Core project and in-tree props. Only that mode imports MAUI repository
+build configuration and uses project references. A copied folder defaults to
+packaged `UseMaui=true` with its own outputs and explicit .NET 11 targets.
+`-p:HybridWebAppInTree=false` (launcher `-Packaged`) selects that mode explicitly,
+even in this checkout. It does not set `HYBRIDWEBAPP_IN_TREE`. Tests retain
+in-tree versions/targets; outside the checkout they explicitly reference xUnit
+2.9.3, test SDK 18.0.1 and VS runner 2.8.2, linking only pure .NET host files.
+
+The copied-folder check also controls SDK and NuGet configuration discovery:
+its ignored validation fixture has its own exact SDK selection and a dedicated
+NuGet configuration passed with `--configfile`. The 25 standalone tests pass
+with only that configuration recorded in restore assets, no MAUI project
+references or inherited MAUI build imports. The explicitly selected installed
+SDK was repository-local; this is not a claim that it exists on another machine
+or that an external native MAUI package has been run.
+
+From the copied bundle root, with Node 22.18+ and an explicitly installed .NET 11 SDK:
+
+```sh
+npm --prefix JavaScript ci
+npm --prefix Web ci
+npm --prefix JavaScript test
+npm --prefix JavaScript run pack-check
+npm --prefix Web test
+npm --prefix Web run type-check
+npm --prefix Web run stage
+dotnet test Tests/Playground.UnitTests.csproj --disable-build-servers
+pwsh -File Tests/launcher.test.ps1 -DotNetPath /absolute/path/to/an/installed/dotnet
+```
+
+The SDK's real-framework double-bootstrap regression uses an attributed,
+test-only [snapshot](JavaScript/tests/fixtures/README.md). It is neither shipped
+nor loaded in production; the runtime framework script stays in Core.
+
+External **native execution is a migration gate**, not proven by these portable
+tests. Supply a compatible .NET MAUI **11** package version and its NuGet feed,
+matching .NET 11 SDK/workloads and platform tooling. No working public package
+version/feed is guessed or automatically installed. For packaged launch:
+
+```powershell
+pwsh -File ./run-demo.ps1 -Offline -MauiVersion YOUR-MAUI-11-VERSION
+# Evaluate the selected TFM/mode/arguments without staging, launch or device changes.
+pwsh -File ./run-demo.ps1 -Offline -MauiVersion YOUR-MAUI-11-VERSION -PrintPlan
+# Optional: -DotNetPath /absolute/path/to/an/installed/dotnet
+```
+
+`Native/MauiProgram.cs` still rejects Vite forwarding in packaged builds.
+Consuming a MAUI version with the actual Core stopped-task fix and separately
+validating its runtime is required before reviewing that guard for removal.
+Never fake the in-tree define, reflect into private handlers or suppress it.
+Protocol registration, generated .NET 11 interop and platform APIs still depend
+on the consumed MAUI runtime. DevFlow integration, NuGet/SDK/feed readiness,
+Labs onboarding and native platform acceptance remain separate migration work.
+No npm/Learn/NuGet publication or full external native run is claimed.
+
+The framework-only keep-list (paths relative to `src/`) is:
+
+- `Core/src/Handlers/HybridWebView/HybridWebViewHandler.iOS.cs`
+- `Core/src/Platform/iOS/WebRequestInterceptingWebView.cs`
+- `Core/src/Primitives/WebResourceRequestedEventArgs.cs`
+- `Core/src/Primitives/WebViewRequestLifetime.cs`
+- `Controls/src/Core/WebRequestInterceptingWebView/PlatformWebViewWebResourceRequestedEventArgs.cs`
+- `Controls/src/Core/WebRequestInterceptingWebView/WebViewWebResourceRequestedEventArgs.cs`
+- `Core/AppleNative/PlatformInterop/MauiPlatformInterop.xcodeproj/project.pbxproj`
+- `Core/tests/UnitTests/WebViewRequestLifetimeTests.cs`
+
+These stay outside the bundle: native WebKit stopped-task lifetime,
+dispatch/tracking, event-args liveness and public remarks cannot safely be
+implemented by copying app code. Xcode deployment floors affect the native
+framework itself. The six targeted Core lifetime tests belong with those
+framework changes, not the portable host tests.
+
+The lifetime/adapter changes fix existing asynchronous response callbacks after
+WebKit stops a request or the handler disconnects; they are not new public APIs.
+The deployment floors are native build compatibility corrections. Unit coverage
+currently exercises the guard state machine; real Apple reload checks are
+recorded native acceptance, not a committed WebKit device regression test.
+
+`run-demo.sh` is intentionally an **in-tree Mac Catalyst validation harness**,
+not the portable launcher. It checks repository SDK/packs/build tasks and uses
+repository output paths; a copied bundle fails early with directions to
+`run-demo.ps1`. Its `--no-build` refers to its own in-tree build, not a PowerShell
+launcher's platform-isolated build.
 
 ## Experiments
 
@@ -276,7 +372,7 @@ and the matching SDK. Restore the standalone package and the frontend once
 before launch (the launcher does not restore either):
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript ci
+npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/JavaScript ci
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web ci
 ```
 
@@ -285,9 +381,9 @@ verified with Node 24). The platform minimums remain Android 24, iOS 15,
 Mac Catalyst 17, Windows 10.0.17763.
 
 ```sh
-npm --prefix src/HybridWebView/JavaScript test
-npm --prefix src/HybridWebView/JavaScript run pack-check
-npm --prefix src/HybridWebView/JavaScript run docs
+npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/JavaScript test
+npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/JavaScript run pack-check
+npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/JavaScript run docs
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web test
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run type-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
@@ -375,7 +471,34 @@ and independent touch scrolling passed again in its packaged offline app.
 Alternative native .NET for Android/iOS adapters and DocFX site rendering remain
 future integration work, not additional packages or verified runtime support.
 
-Evidence is kept in ignored `artifacts/playground-*`. Windows runtime, physical
+### Relocation verification
+
+The same SDK pack-check (including build/docs and 24 tests), 18-file offline
+tarball install, six-entrypoint API/TSDoc equality, nine frontend tests,
+type-check/stage and 25 pure .NET host tests passed after relocation.
+They also passed after copying **only this folder's source** into ignored
+`artifacts/portable-copy/Controls.Sample.HybridWebApp/`, restoring npm dependencies
+offline and restoring the test packages against nuget.org. The proof explicitly
+used the checkout's `.dotnet/dotnet` executable, not a claimed globally installed SDK.
+
+Copied native/test project evaluation and preprocessed imports showed
+`HybridWebAppInTree=false`, no root MAUI Directory.Build imports, project
+references, repository wrapper or `HYBRIDWEBAPP_IN_TREE` define. The copied
+launcher automatically chose packaged Android mode. Launcher plan tests passed
+for Android/iOS/MacCatalyst and confirmed explicit-version and Vite guards;
+the in-tree-only shell harness rejected the copy before starting any process.
+
+Copied staging rejected SDK source/script/config/metadata/output edits and
+source additions/deletions/output additions. Restoring those inputs restored
+freshness. Exactly four logical `wwwroot` assets were collected; unlisted
+output was excluded. An in-tree Android Debug build then succeeded with three
+existing Gradle Java-8 deprecation warnings and no errors, using the launcher's
+sample-owned platform output directories; all four APK frontend assets matched
+staging byte-for-byte. No native device launch or external NuGet native run was
+performed for this relocation.
+
+Evidence is kept in ignored `artifacts/playground-*`, `artifacts/relocation-*`,
+`artifacts/copied-*` and the isolated `artifacts/portable-copy/`. Windows runtime, physical
 devices, actual Release execution, NativeAOT certification and signed
 installation remain unverified. Native runtime checks here do not establish CI
 or merge readiness.

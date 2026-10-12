@@ -6,9 +6,14 @@
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <XunitPackageVersion Condition="'$(XunitPackageVersion)' == ''">2.9.3</XunitPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <Compile Include="../Native/Playground/*.cs" Exclude="../Native/Playground/MauiPlaygroundPlatform.cs" Link="Playground/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HybridWebAppInTree)' != 'true'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
   </ItemGroup>
 </Project>

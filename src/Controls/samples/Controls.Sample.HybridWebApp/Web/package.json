@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "sdk:build": "npm --prefix ../../../../HybridWebView/JavaScript run build",
+    "sdk:build": "npm --prefix ../JavaScript run build",
     "predev": "npm run sdk:build",
     "dev": "vite",
     "pretype-check": "npm run sdk:build",
@@ -20,7 +20,7 @@
     "node": ">=22.18.0"
   },
   "dependencies": {
-    "@maui/api": "file:../../../../HybridWebView/JavaScript"
+    "@maui/api": "file:../JavaScript"
   },
   "devDependencies": {
     "typescript": "~7.0.2",

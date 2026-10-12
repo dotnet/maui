@@ -377,7 +377,7 @@ test('a cancelled handshake finishes and retires before a replacement reaches na
 })
 
 test('disconnect during framework bootstrap does not initialize duplicate platform listeners', async () => {
-  const framework = await readFile(new URL('../../../Core/src/Handlers/HybridWebView/HybridWebView.js', import.meta.url), 'utf8')
+  const framework = await readFile(new URL('./fixtures/hybridwebview.js', import.meta.url), 'utf8')
   const original = globalThis.window, originalDocument = globalThis.document
   const target = new EventTarget(), scripts = [], platformListeners = []
   const host = mock(request => request.command === 'core.connect' ? ready : { accepted: true })

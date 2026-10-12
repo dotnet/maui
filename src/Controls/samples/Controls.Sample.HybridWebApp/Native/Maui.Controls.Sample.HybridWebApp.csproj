@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiSamplePlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' == 'true'">$(MauiSamplePlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' != 'true'">net11.0-android;net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' != 'true' and $([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.19041.0</TargetFrameworks>
+    <UseMaui Condition="'$(HybridWebAppInTree)' != 'true'">true</UseMaui>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
@@ -20,7 +23,7 @@
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <CodesignEntitlements Condition="$(TargetFramework.Contains('-maccatalyst'))">Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
-    <DefineConstants Condition="'$(UseMaui)' != 'true'">$(DefineConstants);HYBRIDWEBAPP_IN_TREE</DefineConstants>
+    <DefineConstants Condition="'$(HybridWebAppInTree)' == 'true' and '$(UseMaui)' != 'true'">$(DefineConstants);HYBRIDWEBAPP_IN_TREE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Debug'">
     <AndroidManifest>Platforms/Android/AndroidManifest.Debug.xml</AndroidManifest>
@@ -40,6 +43,17 @@
   <ItemGroup Condition="'$(UseMaui)' == 'true'">
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(HybridWebAppInTree)' != 'true'">
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-maccatalyst'))">17.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <Target Name="ValidatePlaygroundMauiVersion" BeforeTargets="CollectPackageReferences" Condition="'$(UseMaui)' == 'true'">
+    <Error Condition="'$(MauiVersion)' == ''" Text="Packaged mode requires an explicit .NET MAUI 11 version: -p:MauiVersion=VERSION, plus its .NET 11 SDK/workloads and NuGet feed. No package version is assumed." />
+  </Target>
 
   <ItemGroup>
     <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#14324F" />
