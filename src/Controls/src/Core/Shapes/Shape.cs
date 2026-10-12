@@ -72,8 +72,17 @@ namespace Microsoft.Maui.Controls.Shapes
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
+					var shape = (Shape)bindable;
+
 					if (newvalue != null)
-						(bindable as Shape)?.NotifyStrokeChanges();
+					{
+						shape.NotifyStrokeChanges();
+					}
+
+					if ((oldvalue is null) != (newvalue is null))
+					{
+						shape.InvalidateMeasure();
+					}
 				});
 
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
