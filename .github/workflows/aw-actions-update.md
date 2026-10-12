@@ -70,9 +70,12 @@ concurrency:
 pre-agent-steps:
   - name: Refresh action pins with the lock-pinned compiler
     shell: bash
+    timeout-minutes: 15
     env:
       GH_TOKEN: ${{ github.token }}
     run: |
+      # v0.86.2 omits custom step timeouts from the compiled lock.
+      timeout --signal=TERM --kill-after=30s 15m bash <<'GH_AW_ACTION_PIN_REFRESH'
       set -euo pipefail
       report=/tmp/gh-aw/action-pin-refresh.txt
       prs="$(gh pr list --state open --search '"[actions]" in:title' --author "app/github-actions" --json number,title,url --limit 20)"
@@ -98,16 +101,28 @@ pre-agent-steps:
         echo "::error::Failed to install gh-aw $version"
         exit 1
       fi
-      installed="$(gh aw --version)"
+      if ! installed="$(gh aw --version 2>&1)"; then
+        echo "::error::Failed to read the installed gh-aw version"
+        exit 1
+      fi
       if [ "$installed" != "gh aw version $version" ]; then
         echo "::error::Installed gh-aw does not match $version"
         exit 1
       fi
-      if ! gh aw update --verbose; then
+      update_log="$cli_home/update.log"
+      if ! gh aw update --verbose > "$update_log" 2>&1; then
+        cat "$update_log"
         echo "::error::Action-pin refresh failed; no PR may be created"
         exit 1
       fi
+      cat "$update_log"
+      # v0.86.2 logs action-lock failures without failing the update command.
+      if grep -Fq 'Could not update actions-lock.json:' "$update_log"; then
+        echo "::error::Action-pin lock refresh failed; no PR may be created"
+        exit 1
+      fi
       printf 'Completed gh aw update --verbose with %s.\n' "$version" > "$report"
+      GH_AW_ACTION_PIN_REFRESH
 
 timeout-minutes: 15
 
