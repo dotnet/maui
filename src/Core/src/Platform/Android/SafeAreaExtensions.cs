@@ -39,6 +39,27 @@ internal static class SafeAreaExtensions
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
 	}
 
+	// Only explicitly opted-in or already padded views need inset reapplication on resize.
+	internal static bool ShouldReapplyInsetsForResize(ICrossPlatformLayout? crossPlatformLayout, View view)
+	{
+		if (crossPlatformLayout is not null &&
+			GetSafeAreaView2(crossPlatformLayout) is { HasExplicitSafeAreaEdges: true } safeAreaView2)
+		{
+			for (var edge = 0; edge < 4; edge++)
+			{
+				var region = safeAreaView2.GetSafeAreaRegionsForEdge(edge);
+
+				// SoftInput-only views are tracked once the keyboard applies padding.
+				if (region != SafeAreaRegions.None && !SafeAreaEdges.IsOnlySoftInput(region))
+				{
+					return true;
+				}
+			}
+		}
+
+		return MauiWindowInsetListener.FindListenerForView(view)?.IsViewTracked(view) == true;
+	}
+
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(
 		WindowInsetsCompat windowInsets,
 		ICrossPlatformLayout crossPlatformLayout,
