@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -301,6 +302,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.AutomationId = bsi.AutomationId;
+					vm.AccessibilityView = (bool?)bsi.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == false ? AccessibilityView.Raw : AccessibilityView.Content;
 					vm.Content = bsi.Title;
 					vm.IsEnabled = bsi.IsEnabled;
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
