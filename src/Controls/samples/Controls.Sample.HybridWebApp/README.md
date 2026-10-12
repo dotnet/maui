@@ -98,6 +98,12 @@ unavailable** and disables native actions. There is no silent clipboard,
 preferences, identity, progress or device emulation. Test doubles are confined
 to `Tests/` and `Web/tests/`.
 
+The document is a fixed-height app shell, not a scrolling web page. The header
+stays in place; the catalog and experiment pane scroll independently, with
+contained overscroll. On narrow or keyboard-reduced viewports, navigation is
+bounded so the experiment remains reachable. Inputs/results can still scroll;
+native WebView touch scrolling is not globally disabled.
+
 ## Prototype architecture
 
 `Native/Playground/HybridAppTargetObject.cs` is instantiated once per WebView.
@@ -266,7 +272,7 @@ fresh offline consumer and compiles/runs against shipped JS/declarations
 without the source tree. These checks do not
 claim Android/iOS/Windows native validation or store/signing readiness.
 
-### Native milestone evidence
+### Initial native milestone evidence
 
 On 2026-10-12, actual Mac Catalyst, iOS 27 simulator and Android emulator WebViews
 completed the same bounded UI-driven acceptance sequence: native identity,
@@ -290,6 +296,31 @@ byte-for-byte. Extra unlisted output was excluded from native asset collection.
 Android packaged Debug launched with no listener on Vite port 5173, reported
 `packaged` with zero proxy requests, and retained a native preference across an
 actual app restart. Temporary acceptance scripts were removed before staging.
+
+### Standalone SDK milestone evidence
+
+After extraction, the package's 18 built-export tests passed, including delayed
+handshake cancellation/replacement, single framework initialization and bounded
+startup. `pack-check` verified the 16-file tarball, a fresh offline tarball
+installation, production ESM imports and declaration compilation without
+`skipLibCheck`. The seven app-owned contract tests and explicit staging passed.
+The test count moved from the app to the SDK with the reusable contracts.
+
+The actual Android WebView repeated the full native acceptance sequence using
+the package dependency. Additional native checks called lazy `getInfo()`,
+`clipboard()` and `preferences()` without a view/client argument, exercised
+custom commands/events/errors, and disconnected/reconnected without restarting
+native. Android touch gestures scrolled the catalog and experiment independently:
+the document remained at scroll offset zero and its height equalled the viewport;
+the header did not move. Browser geometry also passed desktop, phone, landscape
+and short-height viewports. The iOS 27 app remained connected after the package
+update; simulator touch automation was unavailable, so its touch/bounce/keyboard
+behavior is not claimed as verified by these new checks.
+
+The package-backed Android Debug build then passed with zero warnings/errors.
+Its four APK frontend assets matched staging byte-for-byte. The same full
+native acceptance and touch-scroll checks passed in offline mode, with only
+packaged production assets and framework routes requested, not Vite resources.
 
 Evidence is kept in ignored `artifacts/playground-*`. Windows runtime, physical
 devices, actual Release execution, NativeAOT certification and signed
