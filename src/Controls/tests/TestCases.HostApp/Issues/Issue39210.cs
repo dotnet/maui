@@ -1,6 +1,4 @@
 #if IOS
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 
 namespace Maui.Controls.Sample.Issues;
@@ -13,9 +11,6 @@ public class Issue39210 : TestNavigationPage
 
 	protected override void Init()
 	{
-#pragma warning disable CS0618 // The iOS-specific translucency API is obsolete but is required for this compatibility behavior.
-		On<iOS>().SetIsNavigationBarTranslucent(false);
-#pragma warning restore CS0618
 		BarBackgroundColor = Color.FromArgb("#042F42");
 		BarTextColor = Colors.White;
 
