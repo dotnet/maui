@@ -319,7 +319,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (id == MoreTabId)
 			{
 				var items = CreateTabList(ShellItem);
-				_bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, MauiContext, items, _bottomView.MaxItemCount);
+				var shellSections = ((IShellItemController)ShellItem).GetItems();
+				_bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
+					OnMoreItemSelected,
+					MauiContext,
+					items,
+					_bottomView.MaxItemCount,
+					(innerLayout, shellSectionIndex) =>
+					{
+						var automationId = shellSections[shellSectionIndex].CurrentItem?.AutomationId;
+						if (!string.IsNullOrEmpty(automationId))
+						{
+							ViewCompat.SetAccessibilityDelegate(
+								innerLayout,
+								new AutomationIdAccessibilityDelegate(automationId));
+						}
+					});
 				_bottomSheetDialog.Show();
 				_bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 			}
