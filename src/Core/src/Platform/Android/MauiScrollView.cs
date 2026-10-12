@@ -423,7 +423,9 @@ namespace Microsoft.Maui.Platform
 
 			_checkedForRtlScroll = true;
 
-			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
+			if (_isInsetListenerSet &&
+				(_didSafeAreaEdgeConfigurationChange ||
+					(changed && SafeAreaExtensions.ShouldReapplyInsetsForResize(CrossPlatformLayout, this))))
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
