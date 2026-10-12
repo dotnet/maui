@@ -263,6 +263,55 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 		}
 	}
 
+	// Regression test for the fresh-session cache leak flagged in PR #39281 review: XamlHotReloadState
+	// is a process-wide static cache that can outlive any single build in a long-lived build-server
+	// host (e.g. VBCSCompiler). Unlike every other test in this class - which reuses the SAME
+	// GeneratorDriver/generator instance across edits via RunGeneratorWithChanges, exactly like a live
+	// Hot Reload sequence does - this test makes two independent RunGenerator<T> calls (each creating
+	// its own fresh XamlGenerator/driver, like two unrelated `dotnet build` invocations) against the
+	// SAME file path, and deliberately does NOT call XamlHotReloadState.Reset() in between. A fresh,
+	// unrelated build reusing an x:Name for an incompatible type must treat it as a normal field
+	// declaration/assignment - not as a continuation of a previous, unrelated build's field history.
+	[Fact]
+	public void FreshGeneratorSession_DoesNotReuseAccumulatedFieldsFromPreviousSession()
+	{
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.FreshGeneratorSession">
+				<Label x:Name="NamedElement" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.FreshGeneratorSession">
+				<Button x:Name="NamedElement" />
+			</ContentPage>
+			""";
+
+		var compilation = CreateMauiCompilation();
+
+		// "Build 1": establishes NamedElement as an accumulated Label field in the static cache.
+		var file1 = new AdditionalXamlFile("FreshGeneratorSession.xaml", xamlV1);
+		RunGenerator<XamlGenerator>(compilation, file1);
+
+		// "Build 2": a brand-new generator/driver for the SAME file path - not a continuation of
+		// build 1 (no Reset() either, so the static cache is still populated from build 1, exactly
+		// as it would be in a long-lived build-server process).
+		var file2 = new AdditionalXamlFile("FreshGeneratorSession.xaml", xamlV2);
+		var result2 = RunGenerator<XamlGenerator>(compilation, file2);
+
+		var cbOutput2 = GetCbOutput(result2);
+		// The field must be declared as Button (the type in THIS build), not ghosted as a leftover
+		// Label from the unrelated previous build.
+		Assert.Contains("Microsoft.Maui.Controls.Button NamedElement", cbOutput2, StringComparison.Ordinal);
+		Assert.DoesNotContain("Microsoft.Maui.Controls.Label NamedElement", cbOutput2, StringComparison.Ordinal);
+
+		var icOutput2 = GetIcOutputFromResult(result2);
+		Assert.Contains("this.NamedElement = ", icOutput2, StringComparison.Ordinal);
+	}
+
 	static void AssertNoErrors(System.Collections.Immutable.ImmutableArray<Diagnostic> generatorDiagnostics, Compilation updatedCompilation)
 	{
 		var generatorErrors = generatorDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
@@ -287,4 +336,13 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 
 	static string GetCbOutput(GeneratorDriverRunResult result) =>
 		result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
+
+	// Same filtering as GetIcOutput, but reads straight off a GeneratorDriverRunResult's generated
+	// sources instead of a post-compile Compilation - for callers (like RunGenerator<T>, used for
+	// single, independent generations) that don't go through RunGeneratorWithChangesAndUpdateCompilation.
+	static string GetIcOutputFromResult(GeneratorDriverRunResult result) =>
+		string.Join("\n", result.Results.Single().GeneratedSources
+			.Where(gs => gs.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)
+				&& !gs.HintName.EndsWith(".uc.xsg.cs", StringComparison.OrdinalIgnoreCase))
+			.Select(gs => gs.SourceText.ToString()));
 }

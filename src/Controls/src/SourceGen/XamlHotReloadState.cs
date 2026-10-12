@@ -44,6 +44,20 @@ internal static class XamlHotReloadState
 	// Maps (assemblyName, targetFramework, relativePath) → CacheEntry
 	static readonly Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> _cache = new();
 
+	/// <summary>
+	/// Identifies the current generator-driver "session": set once by <see cref="BeginSession"/>,
+	/// called from <see cref="XamlGenerator.Initialize"/>, which Roslyn invokes exactly once per
+	/// <c>IIncrementalGenerator</c> instance/driver. A live Hot Reload sequence keeps reusing the
+	/// SAME driver (and so the same token) across successive XAML edits - that's what lets
+	/// <see cref="CacheEntry.AccumulatedCodeBehindFields"/> legitimately grow across edits. A brand
+	/// new, unrelated build creates a brand new driver (and so a new token) even though this static
+	/// cache - hosted in a long-lived build-server process such as VBCSCompiler - is still populated
+	/// from a previous, unrelated build of the same file. Without this token, that stale entry would
+	/// be mistaken for "this build is continuing a live edit", incorrectly ghosting a field whose
+	/// x:Name was legitimately reused for a different, incompatible type in the new build.
+	/// </summary>
+	static string? _currentSessionToken;
+
 	internal sealed class CacheEntry
 	{
 		public string XamlText { get; set; } = string.Empty;
@@ -85,6 +99,13 @@ internal static class XamlHotReloadState
 		/// https://github.com/dotnet/maui/issues/38993), even though the user never touched a C# field.
 		/// </summary>
 		public Dictionary<string, (string Type, string AccessModifier)>? AccumulatedCodeBehindFields { get; set; }
+		/// <summary>
+		/// The <see cref="_currentSessionToken"/> that was active when <see cref="AccumulatedCodeBehindFields"/>
+		/// was last stored. <see cref="GetAccumulatedCodeBehindFields"/> only returns the accumulated set when
+		/// this matches the token of the CURRENT session - otherwise the entry was written by a previous,
+		/// unrelated build and must be treated as if nothing had been accumulated yet.
+		/// </summary>
+		public string? AccumulatedCodeBehindFieldsSessionToken { get; set; }
 		/// <summary>
 		/// True once <see cref="Update"/> has run for this entry at least once (i.e. a real IC/UC
 		/// generation has happened for this file). An entry can exist in <see cref="_cache"/> without
@@ -180,7 +201,8 @@ internal static class XamlHotReloadState
 		lock (_lock)
 		{
 			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
-				&& entry.AccumulatedCodeBehindFields is not null)
+				&& entry.AccumulatedCodeBehindFields is not null
+				&& entry.AccumulatedCodeBehindFieldsSessionToken == _currentSessionToken)
 			{
 				return new Dictionary<string, (string, string)>(entry.AccumulatedCodeBehindFields, System.StringComparer.Ordinal);
 			}
@@ -204,6 +226,21 @@ internal static class XamlHotReloadState
 				_cache[(assemblyName, targetFramework, relativePath)] = entry;
 			}
 			entry.AccumulatedCodeBehindFields = new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
+			entry.AccumulatedCodeBehindFieldsSessionToken = _currentSessionToken;
+		}
+	}
+
+	/// <summary>
+	/// Starts a new generator-driver session, invalidating any <see cref="CacheEntry.AccumulatedCodeBehindFields"/>
+	/// recorded by a previous session. Must be called from <see cref="XamlGenerator.Initialize"/>, which Roslyn
+	/// invokes exactly once per generator-driver instance - i.e. once per independent build, and only once (not
+	/// on every edit) for the lifetime of a driver that's kept alive and reused across a live Hot Reload sequence.
+	/// </summary>
+	public static void BeginSession()
+	{
+		lock (_lock)
+		{
+			_currentSessionToken = System.Guid.NewGuid().ToString("N");
 		}
 	}
 

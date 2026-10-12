@@ -22,6 +22,13 @@ public class XamlGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
+		// Roslyn calls Initialize exactly once per generator-driver instance: once per independent
+		// build, but only once (not per edit) for a driver kept alive across a live Hot Reload
+		// sequence. Starting a new session here lets XamlHotReloadState tell "this build is
+		// continuing a live edit" apart from "this is a fresh, unrelated build that happens to
+		// share a long-lived build-server process (e.g. VBCSCompiler) with a previous one" - see
+		// XamlHotReloadState.BeginSession.
+		XamlHotReloadState.BeginSession();
 #if DEBUG
 		// if (!System.Diagnostics.Debugger.IsAttached)
 		// {
