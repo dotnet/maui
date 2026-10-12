@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 		public MauiShapeView()
 		{
 			BackgroundColor = UIColor.Clear;
+			ContentMode = UIViewContentMode.Redraw;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
