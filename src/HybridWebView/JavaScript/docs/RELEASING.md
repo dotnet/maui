@@ -79,7 +79,7 @@ invalidate staging. Only manifest-listed Vite assets become native `wwwroot`.
 Direct `build` removes the staging manifest; native MSBuild never runs npm.
 After SDK edits/builds, rerun `stage` before a packaged native build.
 
-See the [consumer README](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+See the [consumer README](https://github.com/dotnet/maui/blob/b9809fe83750572310c7a871c36a0fc6aaac8395/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
 for the cross-platform launcher and native prerequisites.
 
 ## Authorized release checklist
@@ -99,6 +99,7 @@ for the cross-platform launcher and native prerequisites.
 5. Review release notes/support status and any authentication/provenance
    requirements with the authorized maintainer. Keep credentials outside source
    and logs. Publication is a separate, explicit maintainer operation; this
-   preparation does not perform it.
+   preparation does not perform it. Pin source/reference links to the matching
+   release tag or commit; never link to unmerged files on a default branch.
 6. Only after successful publication, document the actual registry URL,
    distribution tag, verified install command and matching native-host version.

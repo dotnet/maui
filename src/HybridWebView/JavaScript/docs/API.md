@@ -79,14 +79,22 @@ metadata. No arbitrary native member invocation or command generation exists.
   no-op without `window`. An injected headless host must manage its lease itself.
 - `dispose()`: idempotently sends best-effort disconnect, cancels pending
   frontend waits, removes listeners, clears subscriptions and stops heartbeat.
-  A disposed client cannot be reused.
+  A disposed client cannot be reused. Disconnect delivery failure is warned
+  without preventing local cleanup.
 
 Root/core `connect(): Promise<NativeClient>` is the **shared** lifecycle function,
 not the instance method returning metadata. It loads the native bridge lazily,
 attaches document cleanup and awaits the handshake. Concurrent calls share one
 startup. `disconnect()` cancels/disposes that default instance; it does not own
 explicitly constructed clients. Startup failures clear the failed default;
-later calls can retry. No automatic reconnect/replay of operations exists.
+later calls can retry. A replacement waits for a cancelled native handshake to
+settle and retires its late session before connecting. Shared startup has a
+28-second overall deadline, including bridge loading and any predecessor wait.
+Framework bootstrap is shared independently: disconnect/reconnect cannot inject
+duplicate framework scripts/listeners. If its five-second deadline expires, a
+retry shares that same load until it actually finishes or errors; reload rather
+than injecting a second potentially executable script.
+No automatic reconnect/replay of operations exists.
 
 ## Errors and limits
 
@@ -97,7 +105,7 @@ never return error-shaped success values.
 | --- | --- |
 | `native_unavailable` | No recognized native host, or explicitly disposed/unavailable client. Launch the matching app; no fallback. |
 | `transport_error` | Bridge script/invocation failure or invalid JSON parsing. Script loading has a five-second deadline. |
-| `transport_timeout` | Frontend's 23-second deadline expired; disconnect is signalled. Reload to reconnect. |
+| `transport_timeout` | A call's 23-second deadline or shared startup's 28-second deadline expired; disconnect is signalled when a client exists. Reload to reconnect. |
 | `invalid_response` | Invalid typed output/envelope identity, version or state. Fix host/client compatibility. |
 | `invalid_arguments` | ASCII-escaped request exceeds 100000 characters, or provider input validation failed. |
 | `duplicate_subscription` | Unsubscribe before registering a second listener for the topic. |

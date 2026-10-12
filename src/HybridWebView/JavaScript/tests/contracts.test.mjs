@@ -1,5 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { runInNewContext } from 'node:vm'
 import { NativeClient, NativeError, asciiJson, object, ack, progress, isNativeOrigin, loadNativeBridge, connect, disconnect } from '@maui/api/core'
 import { clipboard } from '@maui/api/essentials/clipboard'
 import { preferences } from '@maui/api/essentials/preferences'
@@ -142,7 +144,7 @@ test('oversized ASCII-escaped requests are rejected before reaching native', asy
   } finally { client.dispose() }
 })
 
-test('disconnect rejects pending calls and emits a single cleanup message even if transport is gone', async () => {
+test('disconnect rejects pending calls and emits a single cleanup message even if transport is gone', async context => {
   let complete
   const host = mock(() => new Promise(resolve => { complete = resolve }))
   const client = new NativeClient(host.bridge)
@@ -154,8 +156,11 @@ test('disconnect rejects pending calls and emits a single cleanup message even i
   complete({ accepted: true })
   await assert.rejects(() => client.connect(), error => error.code === 'native_unavailable')
   const lost = new NativeClient({ ...host.bridge, SendRawMessage() { throw new Error('Disconnected transport') } })
+  const warning = context.mock.method(console, 'warn', () => {})
   assert.doesNotThrow(() => lost.dispose())
   assert.equal(lost.available, false)
+  assert.equal(warning.mock.callCount(), 1)
+  assert.equal(warning.mock.calls[0].arguments[0], 'Native disconnect notice could not be delivered')
 })
 
 test('default feature calls share lazy startup, and teardown creates a new session', async () => {
@@ -221,9 +226,11 @@ test('default startup failures are retriable and disconnect cancels an in-flight
     const client = await connect()
     assert.equal(client.available, true)
     disconnect()
-    host.bridge.InvokeDotNet = (...args) => new Promise(resolve => { complete = () => resolve(invoke(...args)) })
+    let started
+    const handshakeStarted = new Promise(resolve => { started = resolve })
+    host.bridge.InvokeDotNet = (...args) => new Promise(resolve => { complete = () => resolve(invoke(...args)); started() })
     const pending = connect()
-    await Promise.resolve()
+    await handshakeStarted
     disconnect()
     await assert.rejects(() => pending, error => error.code === 'cancelled')
     complete()
@@ -234,6 +241,166 @@ test('default startup failures are retriable and disconnect cancels an in-flight
     disconnect()
     globalThis.window = original
     globalThis.document = originalDocument
+  }
+})
+
+test('a cancelled handshake finishes and retires before a replacement reaches native', async () => {
+  const original = globalThis.window, originalDocument = globalThis.document
+  let releaseFirst, firstStarted, session
+  const firstArrival = new Promise(resolve => { releaseFirst = resolve })
+  const started = new Promise(resolve => { firstStarted = resolve })
+  const retired = new Set()
+  let connections = 0
+  const host = mock(async request => {
+    if (request.command === 'core.connect') {
+      if (++connections === 1) { firstStarted(); await firstArrival }
+      if (retired.has(request.session)) throw new NativeError('stale_session', 'Retired document')
+      if (session && session !== request.session) retired.add(session)
+      session = request.session
+      return ready
+    }
+    if (session !== request.session) throw new NativeError('stale_session', 'Disconnected document')
+    return { text: 'replacement still owns native' }
+  })
+  const send = host.bridge.SendRawMessage
+  host.bridge.SendRawMessage = wire => {
+    send(wire)
+    const notice = JSON.parse(wire)
+    if (notice.kind === 'disconnect' && notice.session === session) {
+      retired.add(session)
+      session = undefined
+    }
+  }
+  globalThis.window = { location: { href: 'app://0.0.0.1/' }, HybridWebView: host.bridge, addEventListener() {}, removeEventListener() {} }
+  globalThis.document = {}
+  let replacement
+  try {
+    disconnect()
+    const first = connect()
+    await started
+    disconnect()
+    await assert.rejects(() => first, error => error.code === 'cancelled')
+    replacement = connect()
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(connections, 1, 'replacement must not overtake the underlying handshake')
+    releaseFirst()
+    const client = await replacement
+    assert.equal(session, client.session)
+    assert.ok(retired.has(host.requests[0].session), 'late-established disposed session must be retired')
+    assert.equal(await clipboard(client).readText(), 'replacement still owns native')
+  } finally {
+    disconnect()
+    releaseFirst()
+    await replacement?.catch(() => {})
+    globalThis.window = original
+    globalThis.document = originalDocument
+  }
+})
+
+test('disconnect during framework bootstrap does not initialize duplicate platform listeners', async () => {
+  const framework = await readFile(new URL('../../../Core/src/Handlers/HybridWebView/HybridWebView.js', import.meta.url), 'utf8')
+  const original = globalThis.window, originalDocument = globalThis.document
+  const target = new EventTarget(), scripts = [], platformListeners = []
+  const host = mock(request => request.command === 'core.connect' ? ready : { accepted: true })
+  globalThis.window = {
+    location: { href: 'https://0.0.0.1/' },
+    addEventListener: target.addEventListener.bind(target), removeEventListener: target.removeEventListener.bind(target),
+    dispatchEvent: target.dispatchEvent.bind(target),
+    chrome: { webview: {
+      addEventListener(name, listener) { assert.equal(name, 'message'); platformListeners.push(listener) },
+      postMessage() {},
+    } },
+  }
+  globalThis.document = { createElement() { return {} }, head: { append(script) { scripts.push(script) } } }
+  const fetch = async (_, options) => {
+    const body = JSON.parse(options.headers['X-Maui-Request-Body'])
+    const result = await host.bridge.InvokeDotNet(body.MethodName, body.ParamValues.map(value => JSON.parse(value)))
+    return { json: async () => ({ IsJson: false, Result: result }) }
+  }
+  let first, replacement
+  try {
+    disconnect()
+    first = connect().catch(error => error)
+    await new Promise(resolve => setImmediate(resolve))
+    disconnect()
+    replacement = connect()
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(scripts.length, 1)
+    runInNewContext(framework, { window: globalThis.window, CustomEvent, fetch, console })
+    scripts[0].onload()
+    assert.equal((await first).code, 'cancelled')
+    const client = await replacement
+    let received = 0
+    await client.subscribe('custom.changed', ack, () => received++)
+    const message = JSON.stringify({ version: 1, session: client.session, id: 'event', topic: 'custom.changed', data: { accepted: true } })
+    for (const listener of platformListeners) listener({ data: encodeURIComponent(message) })
+    assert.equal(platformListeners.length, 1)
+    assert.equal(received, 1)
+  } finally {
+    disconnect()
+    for (const script of scripts) script.onerror()
+    await first
+    await replacement?.catch(() => {})
+    globalThis.window = original
+    globalThis.document = originalDocument
+  }
+})
+
+test('an unsettled cancelled handshake cannot leave replacement startup waiting forever', async context => {
+  context.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] })
+  const original = globalThis.window, originalDocument = globalThis.document
+  let complete, started, delayFirst = true
+  const handshakeStarted = new Promise(resolve => { started = resolve })
+  const host = mock(() => {
+    if (!delayFirst) return ready
+    delayFirst = false
+    return new Promise(resolve => { complete = resolve; started() })
+  })
+  globalThis.window = { location: { href: 'app://0.0.0.1/' }, HybridWebView: host.bridge, addEventListener() {}, removeEventListener() {} }
+  globalThis.document = {}
+  try {
+    disconnect()
+    const first = connect()
+    await handshakeStarted
+    disconnect()
+    await assert.rejects(() => first, error => error.code === 'cancelled')
+    const replacement = connect()
+    const rejected = assert.rejects(() => replacement, error => error.code === 'transport_timeout')
+    context.mock.timers.tick(28000)
+    await rejected
+    assert.equal(host.requests.length, 1)
+    complete(ready)
+    assert.equal((await connect()).available, true)
+  } finally {
+    disconnect()
+    complete?.(ready)
+    globalThis.window = original
+    globalThis.document = originalDocument
+    context.mock.timers.reset()
+  }
+})
+
+test('a timed-out framework script remains shared until it finishes or errors', async context => {
+  context.mock.timers.enable({ apis: ['setTimeout'] })
+  const original = globalThis.window, originalDocument = globalThis.document
+  const host = mock(() => ready), scripts = []
+  globalThis.window = { location: { href: 'app://0.0.0.1/' } }
+  globalThis.document = { createElement() { return {} }, head: { append(script) { scripts.push(script) } } }
+  try {
+    const pending = loadNativeBridge()
+    const rejected = assert.rejects(() => pending, error => error.code === 'transport_error')
+    context.mock.timers.tick(5000)
+    await rejected
+    await assert.rejects(() => loadNativeBridge(), error => error.code === 'transport_error')
+    assert.equal(scripts.length, 1)
+    globalThis.window.HybridWebView = host.bridge
+    scripts[0].onload()
+    assert.equal(await loadNativeBridge(), host.bridge)
+  } finally {
+    for (const script of scripts) script.onerror()
+    globalThis.window = original
+    globalThis.document = originalDocument
+    context.mock.timers.reset()
   }
 })
 

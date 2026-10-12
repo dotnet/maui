@@ -46,17 +46,25 @@ export function isNativeOrigin(href: string): boolean {
   const url = new URL(href)
   return (url.protocol === 'app:' || url.protocol === 'https:') && url.hostname === '0.0.0.1' && !url.port
 }
+const pendingBridgeLoads = new WeakMap<Document, Promise<void>>()
 export async function loadNativeBridge(): Promise<Bridge | undefined> {
   if (typeof window === 'undefined' || typeof document === 'undefined' || !isNativeOrigin(window.location.href)) return undefined
   if (!window.HybridWebView) {
-    await new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script')
-      script.src = '/_framework/hybridwebview.js'
-      const timeout = setTimeout(() => reject(new NativeError('transport_error', 'Native bridge script did not load. Reload to retry.')), 5000)
-      script.onload = () => { clearTimeout(timeout); resolve() }
-      script.onerror = () => { clearTimeout(timeout); reject(new NativeError('transport_error', 'Native bridge script failed to load.')) }
-      document.head.append(script)
-    })
+    const currentDocument = document
+    let bootstrap = pendingBridgeLoads.get(currentDocument)
+    if (!bootstrap) {
+      bootstrap = new Promise<void>((resolve, reject) => {
+        const script = currentDocument.createElement('script')
+        script.src = '/_framework/hybridwebview.js'
+        // A timed-out script can still execute. Keep its load shared until it actually finishes.
+        const timeout = setTimeout(() => reject(new NativeError('transport_error', 'Native bridge script did not load. Reload to retry.')), 5000)
+        script.onload = () => { clearTimeout(timeout); pendingBridgeLoads.delete(currentDocument); resolve() }
+        script.onerror = () => { clearTimeout(timeout); pendingBridgeLoads.delete(currentDocument); reject(new NativeError('transport_error', 'Native bridge script failed to load.')) }
+        currentDocument.head.append(script)
+      })
+      pendingBridgeLoads.set(currentDocument, bootstrap)
+    }
+    await bootstrap
   }
   if (!window.HybridWebView) throw new NativeError('transport_error', 'The native bridge was not initialized.')
   return window.HybridWebView
@@ -72,6 +80,7 @@ export const progress: Decoder<Progress> = value => {
   return { completed, total }
 }
 type Listener = (value: unknown, id: string) => void
+const handshakeCompletions = new WeakMap<NativeClient, Promise<void>>()
 
 export class NativeClient {
   readonly session = crypto.randomUUID()
@@ -103,11 +112,17 @@ export class NativeClient {
       this.aborts.set(id, () => reject(new NativeError('cancelled', 'The frontend document disconnected.')))
       timer = setTimeout(() => {
         reject(new NativeError('transport_timeout', 'The native call timed out; reload to reconnect.'))
-        this.bridge?.SendRawMessage(asciiJson({ session: this.session, kind: 'disconnect' }))
+        this.sendDisconnect()
       }, 23000)
     })
     try {
-      const wire = await Promise.race([this.bridge.InvokeDotNet('Invoke', [request]), obsolete])
+      const transport = this.bridge.InvokeDotNet('Invoke', [request])
+      if (command === 'core.connect') {
+        // Cancelling the frontend wait cannot abort the framework's in-flight native handshake.
+        const complete = () => { if (this.disposed) this.sendDisconnect() }
+        handshakeCompletions.set(this, transport.then(complete, complete))
+      }
+      const wire = await Promise.race([transport, obsolete])
       if (this.disposed) throw new NativeError('cancelled', 'The frontend document disconnected.')
       if (typeof wire !== 'string') throw new NativeError('invalid_response', 'Native envelope must be a JSON string.')
       const response = object(JSON.parse(wire))
@@ -166,31 +181,42 @@ export class NativeClient {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
-    try { this.bridge?.SendRawMessage(asciiJson({ session: this.session, kind: 'disconnect' })) }
-    catch { /* The transport may already be gone; local cleanup must still complete. */ }
+    this.sendDisconnect()
     this.listeners.clear()
     for (const abort of this.aborts.values()) abort()
     this.aborts.clear()
     for (const cleanup of this.notices) cleanup()
     this.notices.length = 0
   }
+  private sendDisconnect(): void {
+    try { this.bridge?.SendRawMessage(asciiJson({ session: this.session, kind: 'disconnect' })) }
+    catch (error) { console.warn('Native disconnect notice could not be delivered', error) }
+  }
 }
 
 let defaultClient: NativeClient | undefined
 let defaultConnection: Promise<NativeClient> | undefined
+let cancelDefaultStartup: ((error: NativeError) => void) | undefined
+let defaultHandshake: Promise<void> = Promise.resolve()
 
 /** Connects the document's shared client lazily; rejects when no matching native host is available. */
 export function connect(): Promise<NativeClient> {
   if (defaultClient?.available && !defaultConnection) return Promise.resolve(defaultClient)
   if (defaultConnection) return defaultConnection
-  const connection = loadNativeBridge().then(async bridge => {
+  const previousHandshake = defaultHandshake
+  let cancel!: (error: NativeError) => void
+  const cancelled = new Promise<never>((_, reject) => { cancel = reject })
+  const startup = loadNativeBridge().then(async bridge => {
+    await previousHandshake
     if (defaultConnection !== connection) throw new NativeError('cancelled', 'The frontend document disconnected.')
     if (!bridge) throw new NativeError('native_unavailable', 'Native host unavailable. Launch a matching MAUI app; browser mode does not emulate native APIs.')
     const client = new NativeClient(bridge)
     defaultClient = client
     try {
       client.attachToDocument()
-      await client.connect()
+      const handshake = client.connect()
+      defaultHandshake = handshakeCompletions.get(client) ?? Promise.resolve()
+      await handshake
       if (!client.available || defaultConnection !== connection) throw new NativeError('cancelled', 'The frontend document disconnected.')
       return client
     } catch (error) {
@@ -199,8 +225,21 @@ export function connect(): Promise<NativeClient> {
       throw error
     }
   })
+  const connection = Promise.race([startup, cancelled])
   defaultConnection = connection
-  const clear = () => { if (defaultConnection === connection) defaultConnection = undefined }
+  cancelDefaultStartup = cancel
+  const timeout = setTimeout(() => {
+    cancel(new NativeError('transport_timeout', 'Native connection startup did not finish. Reload to reconnect.'))
+    if (defaultConnection === connection) {
+      const client = defaultClient
+      defaultClient = undefined
+      client?.dispose()
+    }
+  }, 28000)
+  const clear = () => {
+    clearTimeout(timeout)
+    if (defaultConnection === connection) { defaultConnection = undefined; cancelDefaultStartup = undefined }
+  }
   void connection.then(clear, clear)
   return connection
 }
@@ -208,6 +247,8 @@ export function connect(): Promise<NativeClient> {
 /** Disposes the shared client and cancels startup; a later connect creates a new session. */
 export function disconnect(): void {
   const client = defaultClient
+  cancelDefaultStartup?.(new NativeError('cancelled', 'The frontend document disconnected.'))
+  cancelDefaultStartup = undefined
   defaultClient = undefined
   defaultConnection = undefined
   client?.dispose()

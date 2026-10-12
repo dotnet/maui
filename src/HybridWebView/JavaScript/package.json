@@ -54,7 +54,7 @@
   "bugs": {
     "url": "https://github.com/dotnet/maui/issues"
   },
-  "homepage": "https://github.com/dotnet/maui/tree/net11.0/src/HybridWebView/JavaScript",
+  "homepage": "https://github.com/dotnet/maui",
   "engines": {
     "node": ">=22.18.0"
   },

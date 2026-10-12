@@ -1,10 +1,12 @@
 # .NET MAUI JavaScript API
 
-`@maui/api` is the **working npm name** of an app-independent, experimental
-JavaScript/TypeScript SDK in the .NET MAUI project. The prepared artifact version
-is **`0.1.0-preview.1`**. It is not yet a released npm package: scope access and
-name ownership have not been verified. This name does not assert organization,
-trademark or registry rights, and this preview is not branded `@microsoft`.
+`@maui/api` is an app-independent, experimental JavaScript/TypeScript SDK in the
+.NET MAUI project. It provides typed native commands, document-scoped events
+and small feature modules for app information, clipboard and preferences.
+
+**Preview availability:** `0.1.0-preview.1` is prepared for local tarball
+installation, not yet published to npm. The `@maui` scope and package name must
+be confirmed by the release maintainer before registry publication.
 
 The shipping unit is an npm tarball containing ESM JavaScript, TypeScript
 declarations, API/protocol/release documentation and the repository MIT license.
@@ -53,18 +55,18 @@ implement version 1 of [the protocol](docs/PROTOCOL.md), including
 `Task<string> Invoke(string request)`, session commands and explicit providers.
 
 The current source-backed reference host lives in
-[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native):
+[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native):
 
-- [`MainPage.cs`](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
+- [`MainPage.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
   registers `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`,
   handles raw document messages and sends session-checked events.
-- [`Contracts.cs`](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
-  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
-  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
+- [`Contracts.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
+  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
+  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
   define the versioned, source-generated JSON contracts and bounded allowlist.
-- [`Providers.cs`](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
+- [`Providers.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
   registers identity/clipboard/preferences;
-  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
+  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/9ad591d8f6122d3ab96adcb1cbeda63a4c9b3773/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
   implements OS calls.
 
 No companion NuGet SDK or integration template is shipped by this extraction.
@@ -99,8 +101,12 @@ teardown; with Vite, use
 `if (import.meta.hot) import.meta.hot.dispose(() => disconnect())`.
 Vite is not required by the SDK.
 
-After disconnect, a later call creates a new session. There should be only one
-active client per WebView document: connecting another retires the old session.
+After disconnect, a later call creates a new session. If an old handshake is
+still in flight, replacement startup waits for it and cleans up its late
+session; cancellation cannot abort a request already sent to native. Shared
+startup is bounded to 28 seconds, including bridge loading and that wait.
+There should be only one active client per WebView document: connecting another
+retires the old session.
 After suspension, lease expiry or back/forward-cache restoration, reload the
 frontend to reconnect. Do not reuse an explicitly disposed `NativeClient`.
 
@@ -137,5 +143,5 @@ and never expose arbitrary native methods to untrusted scripts.
 
 See [API/errors/security](docs/API.md), [wire/native compatibility](docs/PROTOCOL.md),
 and [package validation/release](docs/RELEASING.md). The
-[playground README](https://github.com/dotnet/maui/blob/net11.0/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+[playground README](https://github.com/dotnet/maui/blob/b9809fe83750572310c7a871c36a0fc6aaac8395/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
 documents this repository's consumer and explicit asset staging.
