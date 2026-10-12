@@ -424,7 +424,9 @@ function Invoke-ExpertPrepare {
             continue
         }
         $worker = Read-ExpertJson (Copy-ExpertInput $source (Join-Path $imported "dimensions/$id.json") 1MB) 1MB
-        if (($worker.dimension -isnot [long] -and $worker.dimension -isnot [int]) -or
+        if ($worker -isnot [Collections.IDictionary] -or
+            (($worker.Keys | Sort-Object) -join ',') -cne 'complete,dimension,findings' -or
+            ($worker.dimension -isnot [long] -and $worker.dimension -isnot [int]) -or
             $worker.dimension -ne $id -or $worker.complete -isnot [bool]) {
             throw 'An independent dimension artifact has an invalid identity or completion flag.'
         }

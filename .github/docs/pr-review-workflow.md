@@ -394,6 +394,13 @@ The existing regression scanner uses its six-month/20-PR-per-file bounds with
 a frozen current diff and changed-path list, pinned base and strict evidence
 mode. Failed retrieval is a coverage gap, not CLEAN.
 
+Each independent result is `dimensions/{id}.json` with exactly `dimension`
+(integer), `complete` (boolean, not `completed`), and `findings` (the canonical
+array, including `[]`). Both the primary reviewer and trusted publisher
+validate this contract; worker text is not evidence of completion. Linked
+issue collection is bounded to 20 referenced issues, with an explicit gap
+when that bound is exceeded.
+
 A fresh native safe-output job imports bounded regular result files, checks
 the exact schema and persisted worker completion, reauthorizes the requester,
 and rechecks the open PR and frozen head/base. It stages up to 15 ordinary

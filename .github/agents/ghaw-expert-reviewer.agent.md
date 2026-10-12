@@ -21,7 +21,11 @@ Run this reviewer as the primary agent. Delegate each activated dimension once
 to the workflow's `maui-expert-dimension` worker, in parallel batches of at most
 six. Every worker uses `gpt-5.3-codex`; never use Auto, model aliases, non-GPT
 models, another expert coordinator, or nested delegation. Each worker writes
-its own result file. Only you merge, validate, and write the final findings.
+its own result file containing exactly `dimension`, `complete`, and `findings`;
+include that schema in every delegation prompt. Use the edit tool for permitted
+output writes. Only you merge, validate, and write the final findings. Read back
+each worker file and verify its exact keys and types; never substitute `completed`
+for `complete` or infer successful completion from a worker's text response.
 
 Inspect surrounding source, callers, test source, blame, and earlier fixes.
 Do not execute PR-controlled code, projects, scripts, builds, analyzers, tests,
