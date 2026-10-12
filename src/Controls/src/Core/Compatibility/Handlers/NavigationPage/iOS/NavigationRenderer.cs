@@ -1520,7 +1520,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					var childBounds = View.Bounds;
 
-					if (_navigation.TryGetTarget(out var navigation) &&
+					if (OperatingSystem.IsIOSVersionAtLeast(26) &&
+						_navigation.TryGetTarget(out var navigation) &&
 						!navigation.NavigationBarHidden &&
 						!navigation.NavigationBar.Translucent &&
 						Child is Page child &&
