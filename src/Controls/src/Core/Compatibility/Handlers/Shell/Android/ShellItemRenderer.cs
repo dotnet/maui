@@ -361,6 +361,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				DisposeMoreItemViews();
 				_bottomSheetDialog = CreateMoreBottomSheet(
 					(Action<int, BottomSheetDialog>)OnMoreItemSelected);
+				var items = CreateTabList(ShellItem);
+				var shellSections = ((IShellItemController)ShellItem).GetItems();
+				_bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
+					OnMoreItemSelected,
+					MauiContext,
+					items,
+					_bottomView.MaxItemCount,
+					(innerLayout, shellSectionIndex) =>
+					{
+						var automationId = shellSections[shellSectionIndex].CurrentItem?.AutomationId;
+						if (!string.IsNullOrEmpty(automationId))
+						{
+							ViewCompat.SetAccessibilityDelegate(
+								innerLayout,
+								new AutomationIdAccessibilityDelegate(automationId));
+						}
+					});
 				_bottomSheetDialog.Show();
 				_bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 				if (_bottomSheetDialog.Window?.DecorView is AView dialogView)
@@ -774,7 +791,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 	}
-	
+
 	sealed class AutomationIdAccessibilityDelegate : AccessibilityDelegateCompat
 	{
 		readonly string _automationId;
