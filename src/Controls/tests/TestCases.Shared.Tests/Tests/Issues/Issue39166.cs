@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+// Excludes Windows because SwipeView automation doesn't work on Windows (#14777).
+// Since the Appium swipe action does not behave correctly on macOS, the test has been disabled on that platform
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,3 +26,4 @@ public class Issue39166 : _IssuesUITest
 
 	}
 }
+#endif
