@@ -92,21 +92,20 @@ implement version 1 of [the protocol](docs/PROTOCOL.md), including
 `Task<string> Invoke(string request)`, session commands and explicit providers.
 
 The current reference host is the sibling `Native/` in the source bundle.
-For tarball readers, the links below pin the last pushed, protocol-compatible
-[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native).
-The current source further makes registry/readiness/topics host-composed;
-these pinned links do not claim that unpushed revision is published.
+For tarball readers, the links below pin the matching protocol-compatible
+[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native).
+The host composes its registry, readiness metadata and allowed event topics.
 
-- [`MainPage.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
+- [`MainPage.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
   registers `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`,
   handles raw document messages and sends session-checked events.
-- [`Contracts.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
-  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
-  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
+- [`Contracts.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
+  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
+  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
   define the versioned, source-generated JSON contracts and bounded allowlist.
-- [`Providers.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
+- [`Providers.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
   registers identity/clipboard/preferences;
-  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
+  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
   implements OS calls.
 
 No companion NuGet SDK or integration template is shipped by this extraction.
@@ -217,7 +216,7 @@ and never expose arbitrary native methods to untrusted scripts.
 
 See [API/errors/security](docs/API.md), [wire/native compatibility](docs/PROTOCOL.md),
 and [package validation/release](docs/RELEASING.md). The
-[last pushed playground README](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+[matching playground README](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
 documents the consumer and staging. In the current source bundle the independently
 packable SDK is at `JavaScript/` beside `Native/`, `Web/` and `Tests/`; source
 commands here use that relocated layout. Refresh source links to the matching

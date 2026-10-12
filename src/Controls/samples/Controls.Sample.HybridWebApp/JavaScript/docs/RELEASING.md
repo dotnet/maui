@@ -164,9 +164,9 @@ Direct `build` removes the staging manifest; native MSBuild never runs npm.
 After SDK edits/builds, rerun `stage` before a packaged native build.
 
 The current source bundle's README documents its copyable layout and native
-migration gates. The [last pushed consumer README](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
-is a published reference for tarball readers, not evidence that this relocated
-revision is pushed. Pin matching source links before release. A copied native
+migration gates. The [matching consumer README](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+pins the complete portable source layout for tarball readers. Pin source links
+to the selected release commit/tag before publication. A copied native
 app requires an explicit MAUI 11 package version/feed and SDK/workloads;
 packaged Vite forwarding remains guarded until the consumed Core fix is
 validated. Pure .NET host tests require no native MAUI package.

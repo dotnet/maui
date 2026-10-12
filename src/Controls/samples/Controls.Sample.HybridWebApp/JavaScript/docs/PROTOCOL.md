@@ -34,9 +34,9 @@ argument; the native target's only forwarding method is
 `IHybridAppTarget` with
 `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`
 in `Native/MainPage.cs` in the source bundle. For tarball readers,
-[MainPage.cs](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
-pins the last pushed, protocol-compatible host, not the unpushed host-composition
-revision. Refresh source links before publication.
+[MainPage.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
+pins the matching protocol-compatible host and its explicit service composition.
+Refresh source links to the selected release commit/tag before publication.
 The .NET 11 invocation source generator and explicit System.Text.Json
 `JsonTypeInfo<T>` metadata are required by that host. Installing the npm package
 does not add this registration or a native command hub.
@@ -94,9 +94,9 @@ registration decision; this example topic is not part of the reference host.
 | `preferences.read`, `preferences.remove` | `{ key: string }` | `{ key: string, value: string \| null }` | Namespace-restricted settings provider |
 | `preferences.write` | `{ key: string, value: string }` | Same preference result | Same provider |
 
-[Contracts.cs](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
-[CommandRegistry.cs](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
-and [Providers.cs](https://github.com/dotnet/maui/blob/b97fb3886f5910ab78079a76de4f1ec55f9b77e5/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
+[Contracts.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
+[CommandRegistry.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
+and [Providers.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
 are the same published reference; current source remains beside the SDK.
 The host, not the SDK, selects its preferences
 namespace and OS adapters. The reference host also registers application-only
