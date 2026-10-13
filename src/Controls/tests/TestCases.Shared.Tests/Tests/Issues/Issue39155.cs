@@ -15,8 +15,8 @@ public class Issue39155 : _IssuesUITest
 	[Category(UITestCategories.TitleView)]
 	public void VerifyTitleViewRenderingOnNavigation()
 	{
-		App.WaitForElement("Replace Window.Page");
-		App.Tap("Replace Window.Page");
+		App.WaitForElement("ReplaceWindowPageButton");
+		App.Tap("ReplaceWindowPageButton");
 		App.WaitForElement("PushTitleViewPage");
 		App.Tap("PushTitleViewPage");
 		App.WaitForElement("TitleView");

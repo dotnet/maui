@@ -23,7 +23,7 @@ public partial class Issue39155MainPage : ContentPage
 				new Button
 				{
 					Text = "1. Replace Window.Page",
-					AutomationId = "Replace Window.Page",
+					AutomationId = "ReplaceWindowPageButton",
 					Command = new Command(ReplaceWindowPage)
 				}
 			}
