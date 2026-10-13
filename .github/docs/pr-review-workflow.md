@@ -410,16 +410,21 @@ Credential values must never appear in findings. Exact RIGHT-side anchors
 become inline comments; legitimate file-level/unplaceable findings remain in
 the review body rather than disappearing or moving to an unrelated line.
 All comments are buffered into **one COMMENT review**, pinned to the reviewed
-commit. Prior feedback and deterministic result markers prevent duplicates.
+commit. Prior feedback prevents duplicate inline findings. Every authorized
+request publishes its own summary, even when it finds nothing new or repeats
+an earlier result; run markers prevent duplicate publication within that run.
 
 The summary is distinct from AzDO's `AI Summary` and does not hide or replace
 it. **Complete** includes a concise summary even with zero new findings;
 **incomplete** discloses missing workers, collection gaps, later feedback or
 interrupted validation, and never claims a clean review. A **stale snapshot** posts only a
 scoped notification with a run link, not stale inline findings. Detection or
-validation failures block publication and can post an authorized automation
-failure notification, not a code verdict or an unrelated issue. Source review
-does not establish test success or merge approval.
+validation failures block unsafe review output, not status comments. A trusted
+notification job runs after every authorized attempt, including failures,
+cancellations and skipped downstream jobs. If no result from that run is found
+on the PR, it posts an automation status comment, not a code verdict or an
+unrelated issue. A PR closing during the run does not silently suppress that
+notice. Source review does not establish test success or merge approval.
 
 The command stays visible until a completed review is independently found on
 the correct PR, bot identity and pinned commit. Incomplete/stale/failed runs
@@ -432,15 +437,15 @@ required in the form, so trusted intake enforces it:
 
 ```bash
 gh workflow run copilot-review-expert.lock.yml --repo dotnet/maui \
-  --ref main -f pr_number=12345 -f suppress_output=true
+  --ref main -f pr_number=12345
 ```
 
-`suppress_output=true` retains context, findings, dimension results, completion
-state and the validated publication plan for seven days, without **any** PR
-mutation: no review, notification, reaction or command minimization. Use a
-fresh dispatch or command, not **Re-run failed jobs**, to avoid mixing
-same-named artifacts from different attempts. There is no scheduled recovery
-for this standalone lane.
+**Manual dispatch publishes comments too.** This lane has no output-suppression
+or staged-only mode. Context, findings, dimension results, completion state
+and the validated publication plan are retained for seven days. Use a fresh
+dispatch or command, not **Re-run failed jobs**, to avoid mixing same-named
+artifacts from different attempts. There is no scheduled recovery for this
+standalone lane.
 
 Compile with the repository-pinned gh-aw **v0.86.2**:
 
@@ -456,11 +461,11 @@ existing empty-choice/shellcheck diagnostics are unchanged by routing this
 subcommand.
 
 The workflow and trusted scripts must land on the default branch before this
-new slash command can run. Registration is not an end-to-end canary: first
-inspect a suppressed-output run for routed independent GPT passes, validated
-findings and explicit gaps, then verify actual consolidated publication on an
-approved PR target. Do not treat the hosted lane as operational before that
-GitHub canary succeeds.
+new slash command can run. Registration is not an end-to-end canary: dispatch
+against an approved PR target and verify routed independent GPT passes,
+validated findings, explicit gaps and an actual published review/comment
+receipt. Artifacts or a publication preview alone do not prove publication.
+Do not treat the hosted lane as operational before that GitHub canary succeeds.
 
 ## `/review performance`: performance review
 

@@ -28,11 +28,6 @@ on:
         # Slash-command dispatch cannot require a manual input; intake enforces it.
         required: false
         type: number
-      suppress_output:
-        description: Validate and retain artifacts without any PR mutation
-        required: false
-        type: boolean
-        default: false
   steps:
     - name: Authorize exact /review expert-review command
       id: command
@@ -142,14 +137,13 @@ jobs:
     steps:
       - run: echo "Frozen expert-review publication target is ready."
   conclusion:
-    # This lane has its own scoped notifier, including complete dry-run suppression.
+    # This lane has its own authorized, receipt-aware notifier.
     if: 'false'
   complete_request:
     needs: [pre_activation, activation, safe_outputs]
     if: >-
       needs.safe_outputs.result == 'success' &&
       github.run_attempt == 1 &&
-      inputs.suppress_output != true &&
       !cancelled()
     runs-on: ubuntu-latest
     permissions:
@@ -181,15 +175,9 @@ jobs:
   notify_failure:
     needs: [pre_activation, activation, pat_pool, publication_context, agent, detection, safe_outputs, complete_request]
     if: >-
-      !cancelled() &&
+      always() &&
       github.run_attempt == 1 &&
-      needs.pre_activation.outputs.review_authorized == 'true' &&
-      inputs.suppress_output != true &&
-      (needs.pre_activation.result == 'failure' || needs.activation.result == 'failure' ||
-       needs.pat_pool.result == 'failure' || needs.publication_context.result == 'failure' ||
-       needs.agent.result == 'failure' ||
-       needs.detection.result == 'failure' || needs.safe_outputs.result == 'failure' ||
-       needs.complete_request.result == 'failure')
+      needs.pre_activation.outputs.review_authorized == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -200,7 +188,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Report authorized automation failure unless this run already published
+      - name: Ensure an authorized result or automation failure is visible on the PR
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
@@ -212,7 +200,7 @@ safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]
   github-token: ${{ secrets.GITHUB_TOKEN }}
-  staged: ${{ github.event_name == 'workflow_dispatch' && inputs.suppress_output == true }}
+  staged: false
   data: true
   threat-detection:
     continue-on-error: false
@@ -287,15 +275,13 @@ safe-outputs:
         GH_TOKEN: ${{ github.token }}
         PR_NUMBER: ${{ needs.publication_context.outputs.pr_number }}
         AGENT_OUTPUT_PATH: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-        SUPPRESS_OUTPUT: ${{ inputs.suppress_output == true }}
       run: |
         .github/scripts/Review-Expert.ps1 -Stage Prepare `
           -PRNumber ([int]$env:PR_NUMBER) -Repository $env:GITHUB_REPOSITORY `
           -ContextDirectory "$env:RUNNER_TEMP/expert-context" `
           -ResultDirectory "$env:RUNNER_TEMP/expert-results" `
           -OutputDirectory "$env:RUNNER_TEMP/expert-publication" `
-          -AgentOutputPath $env:AGENT_OUTPUT_PATH `
-          -SuppressOutput:($env:SUPPRESS_OUTPUT -eq 'true')
+          -AgentOutputPath $env:AGENT_OUTPUT_PATH
     - name: Retain validated publication plan and receipt
       uses: actions/upload-artifact@v7.0.1
       with:

@@ -22,8 +22,7 @@ param(
     [string]$OutputDirectory,
     [string]$ContextDirectory,
     [string]$ResultDirectory,
-    [string]$AgentOutputPath,
-    [switch]$SuppressOutput
+    [string]$AgentOutputPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -519,11 +518,12 @@ function Invoke-ExpertPrepare {
         }
         $existing = @($feedback.reviews | Where-Object {
             $_.user.login -ceq 'github-actions[bot]' -and $_.state -ceq 'COMMENTED' -and
-            $_.commit_id -ceq $context.head_sha -and ([string]$_.body).Contains($resultMarker)
+            $_.commit_id -ceq $context.head_sha -and ([string]$_.body).Contains($resultMarker) -and
+            ([string]$_.body).Contains($runMarker)
         } | Select-Object -First 1)
         if ($existing.Count) {
             $receipt.existing_review_id = $existing[0].id
-            $output.items = @(@{ type = 'noop'; message = 'The same expert review is already published on this PR revision.' })
+            $output.items = @(@{ type = 'noop'; message = 'This expert-review run already published its summary on this PR revision.' })
         } else {
             $body = "$runMarker`n$resultMarker`n`n## Expert Review - $status`n`n" +
                 "> **AI-generated review** using independent GPT dimension passes.`n`n" +
@@ -563,11 +563,10 @@ function Invoke-ExpertPrepare {
     }
     Write-ExpertJson (Join-Path $OutputDirectory 'publication.json') $receipt
     Write-ExpertJson $AgentOutputPath $output
-    Write-Host "Validated expert publication: $($receipt.status). Staged mode: $SuppressOutput."
+    Write-Host "Validated expert publication: $($receipt.status). A visible PR result is required."
 }
 
 function Invoke-ExpertComplete {
-    if ($SuppressOutput) { Write-Host 'Dry-run: command completion is suppressed.'; return }
     $request = Get-ExpertRequest
     if ($env:GITHUB_EVENT_NAME -ne 'issue_comment') { return }
     $context = Get-ExpertContext
@@ -614,25 +613,33 @@ function Invoke-ExpertComplete {
 }
 
 function Invoke-ExpertNotify {
-    if ($SuppressOutput) { Write-Host 'Dry-run: failure notification is suppressed.'; return }
     [void](Get-ExpertRequest)
     $pr = Invoke-ExpertGh -Arguments @("repos/$Repository/pulls/$PRNumber")
-    if ($pr.state -cne 'open') { Write-Host 'The PR is closed; no automation notification is needed.'; return }
     $runUrl = Get-ExpertRunUrl
     $marker = "<!-- review-expert-run:$runUrl -->"
-    $feedback = Get-ExpertFeedback
-    foreach ($item in @($feedback.reviews) + @($feedback.comments)) {
+    $reviews = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews"
+    $comments = Get-ExpertPages "repos/$Repository/issues/$PRNumber/comments"
+    foreach ($item in @($reviews | Where-Object { $_.state -ceq 'COMMENTED' }) + @($comments)) {
         if ($item.user.login -ceq 'github-actions[bot]' -and ([string]$item.body).Contains($marker)) {
             Write-Host 'This run already has an expert result or failure notification.'
             return
         }
     }
-    [void](Invoke-ExpertGh -Arguments @("repos/$Repository/issues/$PRNumber/comments", '--method', 'POST') -Body @{
-        body = "$marker`n<!-- review-expert-failure -->`n`n" +
-            "The ``/review expert-review`` workflow could not publish a validated review. " +
-            "[View the workflow run]($runUrl). This is an automation failure, not a code or test verdict. " +
-            'Request a fresh expert review after the failure is resolved.'
-    })
+    $body = "$marker`n<!-- review-expert-failure -->`n`n" +
+        "The ``/review expert-review`` workflow could not publish a validated review. " +
+        "[View the workflow run]($runUrl). This is an automation status notice, not a code or test verdict. "
+    $body += if ($pr.state -ceq 'open') {
+        'The run failed, was interrupted, or produced no publication receipt. Request a fresh expert review after resolving the cause.'
+    } else {
+        'The PR is now closed; no inline findings were posted.'
+    }
+    $notification = Invoke-ExpertGh -Arguments @("repos/$Repository/issues/$PRNumber/comments", '--method', 'POST') -Body @{
+        body = $body
+    }
+    if (-not $notification.id -or -not $notification.html_url -or $notification.body -cne $body) {
+        throw 'GitHub did not confirm the expert-review automation notification.'
+    }
+    Write-Host "Published expert-review automation notification: $($notification.html_url)"
 }
 
 switch ($Stage) {
