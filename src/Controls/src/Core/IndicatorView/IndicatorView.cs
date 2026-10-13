@@ -234,12 +234,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newValue != null)
 			{
-				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView)
-				{
-					Spacing = DefaultPadding
-				};
+				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 			}
-			else
+			else if (indicatorView.IndicatorLayout is not null)
 			{
 				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
