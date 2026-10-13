@@ -31,7 +31,7 @@ public class XamlGenerator : IIncrementalGenerator
 		// (e.g. VBCSCompiler) and its static cache with this one. Unlike a single process-wide
 		// token, this is scoped to this driver instance alone, so it can never be invalidated by,
 		// or leak into, another concurrently-running driver.
-		var hotReloadSessionToken = System.Guid.NewGuid().ToString("N");
+		var hotReloadSessionToken = new object();
 #if DEBUG
 		// if (!System.Diagnostics.Debugger.IsAttached)
 		// {

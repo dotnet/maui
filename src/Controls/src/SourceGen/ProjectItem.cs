@@ -139,7 +139,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	/// unrelated build kicked off while another project has a live Hot Reload session in progress - can never
 	/// have one driver's accumulated field history invalidated, or inherited, by another.
 	/// </summary>
-	public string? HotReloadSessionToken { get; init; }
+	public object? HotReloadSessionToken { get; init; }
 
 	public string? TargetFramework
 		=> Options.GetValueOrNull("build_property.targetFramework");

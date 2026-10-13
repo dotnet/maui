@@ -3,6 +3,7 @@
 
 #nullable enable
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -44,6 +45,10 @@ internal static class XamlHotReloadState
 	// Maps (assemblyName, targetFramework, relativePath) → CacheEntry
 	static readonly Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> _cache = new();
 
+	// Keeps additive code-behind field histories isolated per live generator driver. A weak key
+	// releases the complete history when Roslyn releases that driver's incremental pipeline.
+	static ConditionalWeakTable<object, Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), Dictionary<string, (string Type, string AccessModifier)>>> _accumulatedCodeBehindFieldsBySession = new();
+
 	internal sealed class CacheEntry
 	{
 		public string XamlText { get; set; } = string.Empty;
@@ -76,34 +81,11 @@ internal static class XamlHotReloadState
 		/// </summary>
 		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
 		/// <summary>
-		/// Every field (name, declared C# type, access modifier) <see cref="CodeBehindCodeWriter"/> has
-		/// ever emitted for this file during the current generator-host session. Unlike
-		/// <see cref="GeneratedFields"/> (a one-time seed), this set only ever grows: once a field has
-		/// been generated, it keeps being declared even if its x:Name is later renamed or removed, so a
-		/// live Hot Reload edit never turns into a field deletion/rename at the generated-source level.
-		/// Roslyn's EnC analyzer treats such deletions/renames as rude edits requiring a restart (see
-		/// https://github.com/dotnet/maui/issues/38993), even though the user never touched a C# field.
-		/// </summary>
-		public Dictionary<string, (string Type, string AccessModifier)>? AccumulatedCodeBehindFields { get; set; }
-		/// <summary>
-		/// The per-driver <c>ProjectItem.HotReloadSessionToken</c> that was active when
-		/// <see cref="AccumulatedCodeBehindFields"/> was last stored. <see cref="GetAccumulatedCodeBehindFields"/>
-		/// only returns the accumulated set when the caller passes the SAME token - otherwise the entry was
-		/// written by a different (e.g. previous, unrelated) generator-driver instance and must be treated as
-		/// if nothing had been accumulated yet. Minted once per driver in <see cref="XamlGenerator.Initialize"/>
-		/// (not stored as a single process-wide value here), so that an unrelated driver initializing
-		/// concurrently in the same long-lived build-server process (e.g. VBCSCompiler hosting multiple
-		/// projects) can never invalidate another, still-live driver's accumulated field history.
-		/// </summary>
-		public string? AccumulatedCodeBehindFieldsSessionToken { get; set; }
-		/// <summary>
 		/// True once <see cref="Update"/> has run for this entry at least once (i.e. a real IC/UC
 		/// generation has happened for this file). An entry can exist in <see cref="_cache"/> without
-		/// this being set — e.g. <see cref="SetAccumulatedCodeBehindFields"/> lazily creates an entry
-		/// purely to persist the CB field-additivity bookkeeping, which runs before the IC/UC pipeline
-		/// stage even on the very first generation. <see cref="TryGetPrevious"/> must not treat such a
-		/// bookkeeping-only entry as a real previous generation, or the UC diff logic will try to diff
-		/// against an empty/absent baseline and spuriously fail.
+		/// this being set. <see cref="TryGetPrevious"/> must not treat such an entry as a real previous
+		/// generation, or the UC diff logic will try to diff against an empty/absent baseline and
+		/// spuriously fail.
 		/// </summary>
 		public bool HasGeneratedOutput { get; set; }
 	}
@@ -183,20 +165,20 @@ internal static class XamlHotReloadState
 
 	/// <summary>
 	/// Returns a defensive copy of the fields <see cref="CodeBehindCodeWriter"/> has accumulated for
-	/// this file so far (see <see cref="CacheEntry.AccumulatedCodeBehindFields"/>), or
-	/// <see langword="null"/> if none have been recorded yet, or if the entry was written by a
-	/// different generator-driver instance (<paramref name="sessionToken"/> mismatch - see
-	/// <see cref="CacheEntry.AccumulatedCodeBehindFieldsSessionToken"/>).
+	/// this file in the given generator-driver session, or <see langword="null"/> if none have been
+	/// recorded yet.
 	/// </summary>
-	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, string? sessionToken)
+	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, object? sessionToken)
 	{
+		if (sessionToken is null)
+			return null;
+
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
-				&& entry.AccumulatedCodeBehindFields is not null
-				&& entry.AccumulatedCodeBehindFieldsSessionToken == sessionToken)
+			if (_accumulatedCodeBehindFieldsBySession.TryGetValue(sessionToken, out var sessionFields)
+				&& sessionFields.TryGetValue((assemblyName, targetFramework, relativePath), out var fields))
 			{
-				return new Dictionary<string, (string, string)>(entry.AccumulatedCodeBehindFields, System.StringComparer.Ordinal);
+				return new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
 			}
 
 			return null;
@@ -204,23 +186,20 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Replaces the accumulated code-behind field set for the given file, stamping it with
-	/// <paramref name="sessionToken"/> (see <see cref="CacheEntry.AccumulatedCodeBehindFieldsSessionToken"/>).
+	/// Replaces the accumulated code-behind field set for the given file and generator-driver session.
 	/// Callers are expected to pass the union of the previously accumulated fields and the fields parsed
-	/// from the current XAML — this method does not merge on its own, it only stores whatever the caller
-	/// computed.
+	/// from the current XAML.
 	/// </summary>
-	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields, string? sessionToken)
+	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields, object? sessionToken)
 	{
+		if (sessionToken is null)
+			return;
+
 		lock (_lock)
 		{
-			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
-			{
-				entry = new CacheEntry();
-				_cache[(assemblyName, targetFramework, relativePath)] = entry;
-			}
-			entry.AccumulatedCodeBehindFields = new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
-			entry.AccumulatedCodeBehindFieldsSessionToken = sessionToken;
+			var sessionFields = _accumulatedCodeBehindFieldsBySession.GetOrCreateValue(sessionToken);
+			sessionFields[(assemblyName, targetFramework, relativePath)] =
+				new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
 		}
 	}
 
@@ -258,6 +237,7 @@ internal static class XamlHotReloadState
 		lock (_lock)
 		{
 			_cache.Clear();
+			_accumulatedCodeBehindFieldsBySession = new();
 		}
 	}
 }
