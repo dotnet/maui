@@ -71,10 +71,12 @@
           Inputs="$(MSBuildAllProjects);$(_MemoryAdjustmentsReferencedAssembly);@(_MemoryAdjustments)"
           Outputs="@(_MemoryAdjustments->'$(IntermediateOutputPath)adjustments\%(Filename)%(Extension)')">
     <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
+    <!-- The adjustment task does not write an output when no reference change is needed. -->
+    <Copy SourceFiles="@(_MemoryAdjustments)"
+          DestinationFiles="@(_MemoryAdjustments->'$(IntermediateOutputPath)adjustments\%(Filename)%(Extension)')" />
     <AdjustReferencedAssemblyVersion
-      Assembly="%(_MemoryAdjustments.Identity)"
-      ReferencedAssembly="$(_MemoryAdjustmentsReferencedAssembly)"
-      OutputAssembly="$(IntermediateOutputPath)adjustments\%(_MemoryAdjustments.Filename)%(_MemoryAdjustments.Extension)" />
+      Assembly="$(IntermediateOutputPath)adjustments\%(_MemoryAdjustments.Filename)%(_MemoryAdjustments.Extension)"
+      ReferencedAssembly="$(_MemoryAdjustmentsReferencedAssembly)" />
     <ItemGroup>
       <FileWrites Include="@(_MemoryAdjustments->'$(IntermediateOutputPath)adjustments\%(Filename)%(Extension)')" />
     </ItemGroup>
