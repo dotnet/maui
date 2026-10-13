@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' == 'true'">net11.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' != 'true'">net11.0;net11.0-android;net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' != 'true' and $([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>$([MSBuild]::Unescape($([System.Text.RegularExpressions.Regex]::Replace('$(TargetFrameworks)', 'net11\.0-tizen[^;]*;?', ''))))</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <PackageId>Maui.HybridApp</PackageId>
+    <Version>0.1.0-preview.1</Version>
+    <PackageVersion>0.1.0-preview.1</PackageVersion>
+    <Description>Experimental native-only typed hybrid command host and independently registered Essentials providers. Working package identity, not an official MAUI release.</Description>
+    <Authors>.NET MAUI contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon></PackageIcon>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IsShipping>false</IsShipping>
+    <Serviceable>false</Serviceable>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://github.com/dotnet/maui</RepositoryUrl>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)../artifacts/packages</PackageOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-maccatalyst'))">17.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(HybridWebAppInTree)' == 'true'">
+    <ProjectReference Include="$(HybridWebAppRepositoryRoot)src/Essentials/src/Essentials.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HybridWebAppInTree)' != 'true'">
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="LICENSE.txt" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <Target Name="ValidateHybridAppMauiVersion" BeforeTargets="CollectPackageReferences" Condition="'$(HybridWebAppInTree)' != 'true'">
+    <Error Condition="'$(MauiVersion)' == ''" Text="The standalone library requires an explicit compatible Microsoft.Maui.Essentials 11 package version (-p:MauiVersion=VERSION) and its feed. No public .NET MAUI 11 package version is assumed." />
+  </Target>
+</Project>

@@ -37,8 +37,61 @@ Microsoft Learn onboarding step. No Learn publication is performed.
 
 A matching native protocol host remains required. Stock MAUI 11 invocation does
 not automatically supply this app's command hub. The native registration and
-providers below are the current reference implementation; no companion NuGet
-SDK or template is shipped by this extraction.
+providers below are the current reference implementation; no official NuGet
+release or template is claimed.
+
+## Managed product and sample separation
+
+[`Managed/Maui.HybridApp.csproj`](Managed/README.md) is one real independently
+packable class library, still under this samples folder while WIP. Its working
+identity `Maui.HybridApp` / `0.1.0-preview.1` is unverified and unpublished.
+`Native` references its assembly, not its source. Product code owns the generic
+session/registry/protocol and AppInfo, DeviceInfo, Clipboard and Preferences
+providers, each in one cohesive provider file with related DTOs and its own JSON context.
+They use the existing Essentials interfaces directly, with one small
+main-thread/cancellation boundary; there is no combined platform interface.
+The library has no Core/Controls or app dependency; only Essentials and minimal
+standard DI abstractions.
+
+Startup now has one product registration and one sample composition call:
+
+```csharp
+builder.Services
+    .AddHybridApp(new HybridAppOptions(SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength))
+    .AddPlayground(StartupId, StartedAt)
+    .AddScoped<MainPage>();
+```
+
+`AddHybridApp` owns the implemented product providers, default existing Essentials
+interfaces, dispatcher, clock, policy and scoped hub (which builds its registry
+once). It does not enable unimplemented APIs or grant OS permissions. Toolkit
+providers can append `AddHybridProvider<T>()`. Identical product registration is
+idempotent; conflicting policy fails explicitly, and host-supplied interfaces,
+dispatcher and clock are retained.
+
+`MainPage` receives the scoped hub and does only view/event glue. `App.CreateWindow`
+is the explicit owning composition root: it creates a service scope, resolves the
+page there, detaches page events on destruction and disposes that scope. Handler
+changes disconnect only the document; frontend reload preserves that scope's
+counter, while another native view/window has independent providers and state.
+Hub disposal cancels native work, releases the lease timer and clears listeners.
+No page factory cycle or startup `BuildServiceProvider` is introduced.
+
+The sample owns UI, platform heads, Development, workload/launching,
+`maui.playground.v1.` preference policy, all `sample.*` commands/demo topics,
+counter state and architecture/PID/startup diagnostics. `app.info` returns only
+appName/version/build, `device.info` only platform/osVersion/model, and
+`sample.diagnostics` only architecture/pid/startupId/startedAt. The app composes
+these reads into its unchanged visible identity shape. This is an internal wire
+change in the unpublished preview, not a public JavaScript API rename.
+Relaunch the native host after updating it; the old live host lacks the new commands.
+
+Assembly-based unit tests reference the managed project; only sample command
+source is shared for UI-free reload/cancel tests. `Tests/ExternalProvider` is a
+separate plugin assembly with its own generated DTO metadata.
+`Tests/PackageConsumer` references the locally packed NuGet, never product source.
+See the product README for build/package/standalone version gates and native
+AOT/publication limitations.
 
 ## Run
 
@@ -85,8 +138,8 @@ Physical iOS-device networking is not configured by this loopback-only launcher.
 
 Copy this **whole folder**, not just `Web/`. `JavaScript/` remains one standalone
 npm product (`@maui/api` with six entrypoints), consumed via `file:../JavaScript`;
-it is not compiled as app source. `Native/` owns the host/providers/protocol,
-platform heads/assets and Debug forwarding/inspection; `Tests/`, staging,
+it is not compiled as app source. `Managed/` is the standalone WIP C# product;
+`Native/` owns the host, sample providers, platform heads/assets and Debug forwarding/inspection; `Tests/`, staging,
 launchers, documentation and the [121-family backlog](FEATURES.md) travel with it.
 Do not copy generated `node_modules`, `dist`, `artifacts`, `bin`, `obj`, tarballs
 or stamps; restore and regenerate them in the destination.
@@ -96,13 +149,15 @@ using its Core project and in-tree props. Only that mode imports MAUI repository
 build configuration and uses project references. A copied folder defaults to
 packaged `UseMaui=true` with its own outputs and explicit .NET 11 targets.
 `-p:HybridWebAppInTree=false` (launcher `-Packaged`) selects that mode explicitly,
-even in this checkout. It does not set `HYBRIDWEBAPP_IN_TREE`. Tests retain
-in-tree versions/targets; outside the checkout they explicitly reference xUnit
-2.9.3, test SDK 18.0.1 and VS runner 2.8.2, linking only pure .NET host files.
+even in this checkout. It does not set `HYBRIDWEBAPP_IN_TREE`. The managed library
+has its own UI-free MSBuild island. Tests explicitly reference xUnit 2.9.3,
+test SDK 18.0.1 and VS runner 2.8.2, the product assembly/project and a separate
+provider assembly; only the sample command source is linked.
 
 The copied-folder check also controls SDK and NuGet configuration discovery:
 its ignored validation fixture has its own exact SDK selection and a dedicated
-NuGet configuration passed with `--configfile`. The 25 standalone tests pass
+NuGet configuration passed to `dotnet restore` with `--configfile`. The managed
+standalone tests use locally packed, genuine in-tree Essentials/Graphics dependencies,
 with only that configuration recorded in restore assets, no MAUI project
 references or inherited MAUI build imports. The explicitly selected installed
 SDK was repository-local; this is not a claim that it exists on another machine
@@ -118,7 +173,10 @@ npm --prefix JavaScript run pack-check
 npm --prefix Web test
 npm --prefix Web run type-check
 npm --prefix Web run stage
-dotnet test Tests/Playground.UnitTests.csproj --disable-build-servers
+dotnet restore Tests/Playground.UnitTests.csproj -p:TargetFrameworks=net11.0 \
+  -p:TargetFramework=net11.0 -p:MauiVersion=YOUR-MAUI-11-VERSION --configfile NuGet.Config
+dotnet test Tests/Playground.UnitTests.csproj -p:TargetFrameworks=net11.0 \
+  -p:TargetFramework=net11.0 -p:MauiVersion=YOUR-MAUI-11-VERSION --no-restore --disable-build-servers
 pwsh -File Tests/launcher.test.ps1 -DotNetPath /absolute/path/to/an/installed/dotnet
 ```
 
@@ -216,26 +274,60 @@ contained overscroll. On narrow or keyboard-reduced viewports, navigation is
 bounded so the experiment remains reachable. Inputs/results can still scroll;
 native WebView touch scrolling is not globally disabled.
 
+## Frontend structure
+
+The UI uses **Svelte 5 + TypeScript + Vite**, without SvelteKit, SSR or a server.
+`Web/src/main.ts` is startup-only; `shell.ts` mounts `App.svelte` and the native
+status component. Small `components/` files own navigation, the experiment frame,
+results, operation log and live-edit targets. The typed `registry.ts` maps ten
+experiment components to the nineteen implemented catalog families.
+
+Open one flat file in `Web/src/features/` to edit its template, form state and
+typed SDK/helper calls: `Identity.svelte`, `Clipboard.svelte`, `Preferences.svelte`,
+`Commands.svelte` (DTO echo), `Errors.svelte`, `Policy.svelte`, `Lifetime.svelte`,
+`Events.svelte`, `Work.svelte` or `Development.svelte`. Results, errors and logs
+are plain-text template bindings, never injected HTML.
+
+`connection.ts` connects once. `session.ts` shares the document's native client,
+result/log, busy guard, active work and subscriptions. Navigation unmounts only
+the form, not native work or subscriptions; returning to Work can still cancel.
+Delayed form reads cannot update replacement forms, and selection versions isolate
+results. Pagehide/HMR disposes the document client. App-specific command mapping
+remains in `native/sample.ts`: identity composes SDK `app.info` and `device.info`
+with app-owned `sample.diagnostics`; the SDK stays framework-independent.
+
+`npm --prefix Web test` runs Node SDK contracts and Vitest/jsdom tests compiled
+by the official Svelte Vite plugin, including navigation, delayed responses,
+subscriptions and cancellation. `npm --prefix Web run type-check` runs the
+existing TypeScript 7 compiler plus `svelte-check`. Its dev-only
+`tools/svelte-check` workspace isolates supported TypeScript 6 because the
+published checker does not yet support TypeScript 7; app/SDK compiler versions
+are unchanged. Svelte is the only added production UI dependency; compiler and
+test tools are not part of the independent SDK or packaged native assets.
+
 ## Prototype architecture
 
-`Native/Playground/HybridAppTargetObject.cs` is instantiated once per WebView.
-`MainPage` composes the command registry, Essentials adapter and sample service,
-then supplies the router's readiness metadata and native event callback.
+`Managed/HybridAppTargetObject.cs` is instantiated once per WebView.
+`MauiProgram` composes product/sample services through `AddHybridApp` and
+`AddPlayground`; the scoped hub receives the provider collection, registers its
+own registry once and derives readiness names from that registry. `MainPage`
+subscribes to native events and handles only WebView integration.
 Providers explicitly register their allowed event topics. The session/router
 does not choose sample providers, hard-code their topics or own MAUI UI objects.
 Complete registration before attaching the host; treat the registry as immutable
 while sessions are active.
 
 `MainPage` calls the existing .NET 11
-`SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`.
+`SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`.
 The narrow interface exposes only `Task<string> Invoke(string request)`.
 The framework source generator intercepts this call; there is no reflection
 fallback, assembly scanning or arbitrary-public-member invocation.
 
 Providers explicitly register names, typed handlers and source-generated
 `JsonTypeInfo<TArgs>` / `JsonTypeInfo<TResult>` in `CommandRegistry`.
-To add an application command, add DTO metadata to `PlaygroundJsonContext`,
-register it in an opted-in provider, and author its typed TypeScript helper.
+To add an application or external Toolkit command, give that provider its own DTO
+files and strict generated JSON context, register it explicitly, and author its
+typed TypeScript helper. Never add feature/plugin DTOs to the protocol context.
 The router needs no new forwarding switch. **No command attribute or client
 generator has been implemented.** TypeScript modules are authored and tested:
 
@@ -254,8 +346,9 @@ HybridWebView convenience. The integration owns events, leases and platform
 initialization; an alternative native .NET for Android/iOS host adapter is not
 implemented or shipped. Essentials and Graphics do not require Controls/Core,
 but MAUI Core contains UI handlers, so do not pull it into reusable service code
-merely to obtain a clipboard/preferences provider. No companion NuGet split,
-plugin discovery framework or placeholder Graphics API is introduced.
+merely to obtain a clipboard/preferences provider. The managed WIP NuGet split
+references Essentials only. No plugin discovery framework or placeholder Graphics
+API is introduced.
 
 All DTO/envelope runtime serialization uses System.Text.Json source-generated
 metadata with camelCase field names, nullable/required-constructor checks and
@@ -387,7 +480,8 @@ npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/JavaScript run do
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web test
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run type-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
-bash eng/common/dotnet.sh test src/Controls/samples/Controls.Sample.HybridWebApp/Tests/Playground.UnitTests.csproj --disable-build-servers
+bash eng/common/dotnet.sh test src/Controls/samples/Controls.Sample.HybridWebApp/Tests/Playground.UnitTests.csproj \
+  -p:TargetFrameworks=net11.0 -p:TargetFramework=net11.0 --disable-build-servers
 bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
   -f net11.0-maccatalyst -c Debug --disable-build-servers -p:UseWorkload=false \
   -p:IncludeAndroidTargetFrameworks=false -p:IncludeIosTargetFrameworks=false \
@@ -395,8 +489,9 @@ bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebAp
   -p:IncludeWindowsTargetFrameworks=false
 ```
 
-Pure .NET tests link only the hub/contracts/providers, using a fake platform
-boundary (not a fake native UI). Node built-in tests exercise the actual
+UI-free tests consume the actual product assembly and fake the existing
+individual Essentials interfaces, never a combined platform/service abstraction.
+Sample-only source sharing tests counter/reload/work behavior. Node built-in tests exercise the actual
 SDK's built public exports and app-owned helpers with explicit test doubles.
 Package `pack-check` additionally inspects the actual tarball, installs it in a
 fresh offline consumer and compiles/runs against shipped JS/declarations
@@ -470,6 +565,62 @@ assets matched staging. Full native acceptance, frontend reload/service lifetime
 and independent touch scrolling passed again in its packaged offline app.
 Alternative native .NET for Android/iOS adapters and DocFX site rendering remain
 future integration work, not additional packages or verified runtime support.
+
+### Managed product extraction evidence
+
+The managed extraction and DI refinement preserve the original session bounds (4096 retired
+documents, 256 request IDs, 16 active calls, native 20-second deadline/frontend
+23-second deadline) and source-generated narrow target. Unit tests now also cover
+actual separate-assembly providers, strict per-feature metadata, host preference
+prefix/text policy, OS/configuration errors and cancellation before/after native
+side effects. Scoped DI tests additionally verify two-view isolation, same-scope
+reload counter preservation, external metadata, idempotent product registration,
+host overrides and scope-owned cancellation/listener/timer/provider cleanup.
+The product package references Essentials and minimal standard DI abstractions;
+its genuine transitive dependency is Graphics, not Core/Controls.
+
+An offline fresh consumer with no product source/project uses the local NuGet,
+reflection-disabled JSON, plugin-owned DTO/context, Unicode, commands/events,
+disabled/unknown commands and duplicate rejections. A copied source bundle tests
+and packs against real local Essentials/Graphics NuGets with an explicit SDK pin
+and dedicated cleared NuGet sources; its product imports no ancestor MAUI
+configuration. These local `11.0.0-dev` dependency artifacts are not evidence of a
+public MAUI 11 feed/version. An in-tree Android Debug build succeeds; its emitted
+invocation adapter references `Maui.HybridApp.IHybridAppTarget` in the library and
+exposes only `Invoke(string)` with required generated string metadata.
+
+After the extraction, parent validation reran 58 managed tests and the real
+NuGet-only DI consumer. The consumer verifies separate provider assemblies,
+source-generated JSON without reflection, two independent scopes, commands,
+events and disposal without product source or sample types.
+
+### Svelte and scoped managed-host acceptance
+
+The frontend now uses actual Svelte 5 components, not HTML strings. The 34
+component tests and nine application contract tests passed; TypeScript and the
+isolated Svelte checker reported zero errors/warnings. The standalone npm
+package's 24 tests, 18-file tarball consumer and exact six-entrypoint API/TSDoc
+comparison still passed without including Svelte or sample UI.
+
+Native MSBuild accepted the Svelte source/config/checker freshness mirror and
+collected exactly four manifest-listed assets. Those assets matched the Android
+APK byte-for-byte. Actual packaged Android UI acceptance then passed the new
+`app.info`, `device.info` and sample diagnostics composition, Unicode clipboard,
+namespaced preferences, DTO arrays/NUL, errors/recovery, subscriptions/unsubscribe,
+progress/cancellation and reload during work. The native PID/startup identity and
+the actual numeric service counter survived reload; retired reconnects were
+rejected and obsolete progress did not reach the new document. Native touch
+gestures scrolled both panes independently while the root/header stayed fixed.
+The temporary harness dispatched real input events for Svelte bindings and waited
+for rendered navigation; it was not included in the app or package.
+
+Mac Catalyst also built with the current Xcode 27 with zero warnings/errors,
+launched the packaged Svelte/product-backed app and remained running. The full
+new UI-driven sequence above was performed on Android; it is not a claim of
+repeating every provider scenario on Apple, Windows or physical devices.
+Independent focused Svelte and managed DI/lifetime reviews found no significant
+issues. New code stays inside this sample bundle; the eight framework fixes and
+their existing regression tests remain unchanged.
 
 ### Relocation verification
 

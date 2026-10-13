@@ -18,7 +18,7 @@ export interface AppInfo {
  * @throws `NativeError` when native is unavailable, the host rejects the call, or the result is invalid.
  * @remarks
  * Requires a compatible protocol-1 host with the `app.info` provider registered.
- * This preview projects AppInfo fields from that existing combined wire command;
+ * The independently registered command returns only AppInfo fields;
  * device and process diagnostics are not returned. No browser/package metadata fallback exists.
  * An explicit client is neither connected nor disposed by this helper. Shared-client
  * calls follow the document session lifetime; no automatic operation replay occurs.

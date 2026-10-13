@@ -14,13 +14,15 @@ import type { DeviceInfo } from '@maui/api/essentials/device-info'
 function check(value: boolean): void { if (!value) throw new Error('Packed consumer assertion failed') }
 const identity = { appName: 'Consumer', version: '1', build: '1', platform: 'test', osVersion: '1', model: 'test',
   architecture: 'arm64', pid: 1, startupId: 'startup', startedAt: '2026-10-12T00:00:00Z' }
-const ready: Ready = { commands: ['clipboard.read', 'app.info'], preferenceNamespace: 'consumer.', maximumTextLength: 4096 }
+const ready: Ready = { commands: ['clipboard.read', 'app.info', 'device.info'], preferenceNamespace: 'consumer.', maximumTextLength: 4096 }
 const bridge: Bridge = {
   async InvokeDotNet(method, [wire]) {
     check(method === 'Invoke')
     const request = object(JSON.parse(wire!))
     const args = object(request.args)
-    const result: Json = request.command === 'core.connect' ? { ...ready } : request.command === 'app.info' ? { ...identity }
+    const result: Json = request.command === 'core.connect' ? { ...ready } : request.command === 'app.info'
+      ? { appName: identity.appName, version: identity.version, build: identity.build }
+      : request.command === 'device.info' ? { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
       : request.command === 'clipboard.read' ? { text: '你好 👋' } : request.command === 'preferences.read' ? { key: args.key as string, value: null }
       : request.command === 'custom.work' ? { completed: 1, total: 1 } : { accepted: true }
     return JSON.stringify({ version: 1, session: request.session, id: request.id, status: 'success', result, error: null })

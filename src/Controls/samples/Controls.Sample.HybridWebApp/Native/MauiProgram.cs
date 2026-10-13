@@ -1,5 +1,8 @@
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Maui.HybridApp;
+using Maui.Controls.Sample.HybridWebApp.Playground;
 
 namespace Maui.Controls.Sample.HybridWebApp;
 
@@ -25,8 +28,11 @@ static class MauiProgram
 #endif
 		Console.WriteLine($"HYBRIDWEBAPP_START pid={Environment.ProcessId} startup={StartupId} utc={StartedAt:O} content={mode}");
 
-		return MauiApp.CreateBuilder()
-			.UseMauiApp<App>()
-			.Build();
+		var builder = MauiApp.CreateBuilder().UseMauiApp<App>();
+		builder.Services
+			.AddHybridApp(new HybridAppOptions(SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength))
+			.AddPlayground(StartupId, StartedAt)
+			.AddScoped<MainPage>();
+		return builder.Build();
 	}
 }

@@ -58,10 +58,11 @@ clipboard/storage or fake app/device data. Handle that rejection in your UI.
 This **unpublished preview was intentionally reshaped**: the old `app/info`,
 `getInfo` and SDK `Identity` exports were removed, not aliased. AppInfo exposes
 only native appName/version/build; DeviceInfo exposes platform/osVersion/model.
-Both currently project their fields from the existing native `app.info` command.
+They use independently registered `app.info` and `device.info` commands.
 Process architecture, PID, startup UUID and timestamp are playground-owned
-diagnostics, not Essentials. This reshaping changes no native registration,
-reflection, JSON metadata or AOT behavior.
+diagnostics from `sample.diagnostics`, not Essentials. This unpublished preview's
+internal wire split requires the matching managed host; the public JavaScript
+module names and result types are unchanged.
 
 ## Source documentation and generated reference
 
@@ -91,24 +92,26 @@ providers, permissions or native registrations to an app. A compatible host must
 implement version 1 of [the protocol](docs/PROTOCOL.md), including
 `Task<string> Invoke(string request)`, session commands and explicit providers.
 
-The current reference host is the sibling `Native/` in the source bundle.
-For tarball readers, the links below pin the matching protocol-compatible
+The current reference host is the sibling `Native/`, referencing the independently
+packable `Managed/Maui.HybridApp.csproj` in the source bundle. The links below pin
+the **historical pre-extraction host**, not the new wire mapping:
 [`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native).
 The host composes its registry, readiness metadata and allowed event topics.
 
 - [`MainPage.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
-  registers `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`,
+  now registers `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`,
   handles raw document messages and sends session-checked events.
-- [`Contracts.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
-  [`HybridAppTargetObject.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/HybridAppTargetObject.cs)
-  and [`CommandRegistry.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
-  define the versioned, source-generated JSON contracts and bounded allowlist.
-- [`Providers.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
-  registers identity/clipboard/preferences;
-  [`MauiPlaygroundPlatform.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/MauiPlaygroundPlatform.cs)
-  implements OS calls.
+- `Managed/Protocol`, `Managed/HybridAppTargetObject.cs` and
+  `Managed/CommandRegistry.cs` own protocol/control metadata and the bounded hub.
+- `Managed/Essentials/{AppInfo,DeviceInfo,Clipboard,Preferences}Provider.cs` independently
+  register direct Essentials interfaces and feature-owned metadata.
+- `Native/Playground` owns every sample command/topic and process diagnostic.
 
-No companion NuGet SDK or integration template is shipped by this extraction.
+Refresh published source links to the commit containing this split before release;
+the historical links above are not a compatible install recipe for this preview.
+The WIP `Maui.HybridApp` NuGet identity is independently packable locally, but
+unverified and unpublished. It is not included in the npm artifact.
+No official companion NuGet release or integration template is claimed.
 A future template could own bootstrap, UI and host registration so developers
 rarely interact with the transport; that is a future integration, not a current
 deliverable. The npm SDK itself is a standalone product artifact.

@@ -17,8 +17,8 @@ export interface DeviceInfo {
  * @returns Validated device metadata from the native host.
  * @throws `NativeError` when native is unavailable, the host rejects the call, or the result is invalid.
  * @remarks
- * Requires a compatible protocol-1 host with the `app.info` provider registered.
- * This preview projects DeviceInfo fields from that existing combined wire command;
+ * Requires a compatible protocol-1 host with the `device.info` provider registered.
+ * The independently registered command returns only DeviceInfo fields;
  * process architecture, PID and startup diagnostics are deliberately excluded.
  * No user-agent or browser emulation exists. An explicit client is neither connected
  * nor disposed by this helper; shared-client calls follow the document session lifetime.
@@ -30,7 +30,7 @@ export interface DeviceInfo {
  * ```
  */
 export async function getDeviceInfo(client?: NativeClient): Promise<DeviceInfo> {
-  return (client ?? await connect()).invoke('app.info', {}, value => {
+  return (client ?? await connect()).invoke('device.info', {}, value => {
     const v = object(value)
     return { platform: text(v.platform), osVersion: text(v.osVersion), model: text(v.model) }
   })

@@ -10,42 +10,9 @@
     <a class="skip-link" href="#experiment">Skip to experiment</a>
     <header class="app-header">
       <h1 id="html-message">.NET MAUI <span>Playground</span></h1>
-      <div id="host-status" class="host-status" role="status" data-state="loading">Connecting to native host…</div>
+      <div id="connection"></div>
     </header>
-    <div class="workspace">
-      <aside class="catalog" aria-label="Feature catalog">
-        <label for="search">Find a feature</label>
-        <input id="search" type="search" placeholder="Search features…" autocomplete="off" />
-        <div class="filters">
-          <div><label for="category">Category</label><select id="category"><option value="">All categories</option></select></div>
-        </div>
-        <p id="catalog-count" class="secondary"></p>
-        <nav id="feature-list" aria-label="Experiments"></nav>
-      </aside>
-      <main id="experiment" tabindex="-1">
-        <div class="experiment-heading">
-          <div><p id="feature-meta" class="secondary"></p><h2 id="feature-title"></h2></div>
-          <a id="api-link" target="_blank" rel="noopener noreferrer">API documentation ↗</a>
-        </div>
-        <p id="feature-description" class="instructions"></p>
-        <div id="native-unavailable" class="notice" hidden>Native host unavailable. Open this playground in the MAUI app to run native experiments. No clipboard, preferences or device values are emulated here.</div>
-        <section id="controls" aria-label="Experiment inputs"></section>
-        <section class="result-section" aria-labelledby="result-title">
-          <div class="section-heading"><h3 id="result-title">Result</h3><span id="result-state" data-state="idle" role="status">Ready to run</span></div>
-          <progress id="progress" max="1" value="0" aria-label="Native work progress" hidden></progress>
-          <pre id="result-json" tabindex="0">Run an experiment to inspect its actual native result.</pre>
-        </section>
-        <section class="log-section" aria-labelledby="log-title">
-          <div class="section-heading"><h3 id="log-title">Operation log</h3><button id="clear-log" class="quiet">Clear log</button></div>
-          <p class="secondary">Most recent 40 entries. Frontend reload clears this log, not native service state.</p>
-          <ol id="operation-log" aria-live="polite" aria-relevant="additions"><li class="empty-log">Native requests and events will appear here.</li></ol>
-        </section>
-        <details class="host-details"><summary>Native identity and live-edit targets</summary>
-          <pre id="native-identity">No native identity received.</pre>
-          <div id="style-target"><p id="typescript-message"></p><p id="module-message"></p></div>
-        </details>
-      </main>
-    </div>
+    <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

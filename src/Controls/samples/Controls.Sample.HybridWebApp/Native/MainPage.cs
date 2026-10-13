@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
-using Maui.Controls.Sample.HybridWebApp.Playground;
+using Maui.HybridApp;
 
 namespace Maui.Controls.Sample.HybridWebApp;
 
@@ -9,24 +9,21 @@ sealed class MainPage : ContentPage
 {
 	readonly HybridWebView _view;
 	readonly HybridAppTargetObject _hub;
+	bool _stopped;
 #if DEBUG
 	readonly DevelopmentSession? _development;
 #endif
 
-	public MainPage()
+	public MainPage(HybridAppTargetObject hub)
 	{
+		_hub = hub;
 		_view = new HybridWebView
 		{
 			HybridRoot = "wwwroot",
 			DefaultFile = "index.html"
 		};
-		var registry = new CommandRegistry();
-		EssentialsProvider.Register(registry, new MauiPlaygroundPlatform());
-		new SampleCommands().Register(registry);
-		_hub = new HybridAppTargetObject(registry,
-			() => new ReadyResult(registry.Names, EssentialsProvider.PreferenceNamespace, EssentialsProvider.MaximumTextLength),
-			SendEvent);
-		_view.SetInvokeJavaScriptTarget<IHybridAppTarget>(_hub, PlaygroundJsonContext.Default);
+		_hub.NativeEventReceived += SendEvent;
+		_view.SetInvokeJavaScriptTarget<IHybridAppTarget>(_hub, ProtocolJsonContext.Default);
 		_view.RawMessageReceived += RawMessageReceived;
 		_view.HandlerChanging += ViewHandlerChanging;
 		Content = _view;
@@ -38,8 +35,8 @@ sealed class MainPage : ContentPage
 
 	void SendEvent(NativeEvent message) => MainThread.BeginInvokeOnMainThread(() =>
 	{
-		if (_hub.IsCurrent(message.Session) && _view.Handler is not null)
-			_view.SendRawMessage(JsonSerializer.Serialize(message, PlaygroundJsonContext.Default.NativeEvent));
+		if (!_stopped && _hub.IsCurrent(message.Session) && _view.Handler is not null)
+			_view.SendRawMessage(JsonSerializer.Serialize(message, ProtocolJsonContext.Default.NativeEvent));
 	});
 
 	void RawMessageReceived(object? sender, HybridWebViewRawMessageReceivedEventArgs e) =>
@@ -53,9 +50,12 @@ sealed class MainPage : ContentPage
 
 	internal void Stop()
 	{
+		if (_stopped)
+			return;
+		_stopped = true;
+		_hub.NativeEventReceived -= SendEvent;
 		_view.RawMessageReceived -= RawMessageReceived;
 		_view.HandlerChanging -= ViewHandlerChanging;
-		_hub.Dispose();
 #if DEBUG
 		_development?.Dispose();
 #endif

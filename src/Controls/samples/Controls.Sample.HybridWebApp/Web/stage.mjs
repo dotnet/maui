@@ -14,7 +14,7 @@ const xml = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').re
 const sdkBuild = JSON.parse(await readFile(join(sdk, 'dist', '.build.json'), 'utf8'))
 if (JSON.stringify(sdkBuild) !== JSON.stringify(await snapshot(sdk))) throw new Error('The SDK source or output changed since its build. Run npm run stage.')
 const sdkInputs = [...Object.keys(sdkBuild).map(path => join(sdk, path)), join(sdk, 'dist', '.build.json')]
-const source = [...await files(join(root, 'src')), ...['index.html', 'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'stage.mjs'].map(name => join(root, name)), ...sdkInputs]
+const source = [...await files(join(root, 'src')), ...['index.html', 'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'stage.mjs', 'tools/svelte-check/package.json'].map(name => join(root, name)), ...sdkInputs]
 const assets = (await files(join(root, 'dist'))).filter(path => !path.endsWith('playground-assets.props'))
 if (!assets.includes(join(root, 'dist', 'index.html'))) throw new Error('Build output is missing index.html. Run npm run stage.')
 async function item(path, name, base) {
@@ -25,6 +25,7 @@ async function item(path, name, base) {
 }
 const manifest = [
   '<Project>', '  <ItemGroup>',
+  '    <_PlaygroundCurrentSource Include="$(MSBuildThisFileDirectory)../tools/svelte-check/package.json" />',
   `    <_PlaygroundCurrentSource Include="${['src/**', 'scripts/**', 'dist/**', 'package.json', 'package-lock.json', 'tsconfig.json'].map(path => `$(MSBuildThisFileDirectory)${xml(relative(join(root, 'dist'), join(sdk, path)).replaceAll('\\', '/'))}`).join(';')}" />`,
   ...await Promise.all(source.map(path => item(path, '_PlaygroundStageSource', join(root, 'dist')))),
   ...await Promise.all(assets.map(path => item(path, '_PlaygroundStageAsset', join(root, 'dist')))),

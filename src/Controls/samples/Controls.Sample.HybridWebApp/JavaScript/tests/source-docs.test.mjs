@@ -34,7 +34,7 @@ test('TSDoc host requirements, session ownership, parameters, results and errors
     assert.ok(comment.returnsBlock)
     assert.ok(comment.remarksBlock)
     const source = comment.emitAsTsdoc()
-    assert.ok(source.includes('app.info'))
+    assert.ok(source.includes(slug.endsWith('app-info') ? 'app.info' : 'device.info'))
     assert.ok(source.includes('@throws'))
     assert.ok(source.includes('native'))
   }

@@ -39,12 +39,17 @@ test('Unicode, escapes, null, arrays and DTOs survive ByteString headers and bot
 test('playground reload identity composes installed Essentials helpers with app-owned diagnostics', async () => {
   const identity = { appName: 'Native', version: '1', build: '2', platform: 'Android', osVersion: '16', model: 'Device',
     architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
-  const host = mock(() => identity)
+  const host = mock(request => {
+    if (request.command === 'app.info') return { appName: identity.appName, version: identity.version, build: identity.build }
+    if (request.command === 'device.info') return { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
+    assert.equal(request.command, 'sample.diagnostics')
+    return { architecture: identity.architecture, pid: identity.pid, startupId: identity.startupId, startedAt: identity.startedAt }
+  })
   const client = new NativeClient(host.bridge)
   try {
     assert.deepEqual(await getIdentity(client), identity)
     assert.deepEqual(await getIdentity(client), identity, 'the host owns process identity across repeated reads')
-    assert.deepEqual(host.requests.map(request => request.command), Array(6).fill('app.info'))
+    assert.deepEqual(host.requests.map(request => request.command), ['app.info', 'device.info', 'sample.diagnostics', 'app.info', 'device.info', 'sample.diagnostics'])
     assert.ok(host.requests.every(request => request.session === client.session))
     const source = await readFile(new URL('../src/native/sample.ts', import.meta.url), 'utf8')
     assert.ok(source.includes("from '@maui/api/essentials/app-info'"))

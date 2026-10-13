@@ -3,27 +3,33 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": ["tools/svelte-check"],
   "scripts": {
     "sdk:build": "npm --prefix ../JavaScript run build",
     "predev": "npm run sdk:build",
     "dev": "vite",
     "pretype-check": "npm run sdk:build",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit && npm run check --workspace ./tools/svelte-check",
     "prebuild": "npm run sdk:build",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run type-check && vite build",
     "stage": "npm run build && node stage.mjs",
     "pretest": "npm run sdk:build",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test": "node --experimental-strip-types --test tests/contracts.test.mjs && vitest run",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
   },
   "engines": {
     "node": ">=22.18.0"
   },
   "dependencies": {
-    "@maui/api": "file:../JavaScript"
+    "@maui/api": "file:../JavaScript",
+    "svelte": "5.57.1"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "^24.0.0",
+    "jsdom": "^27.0.1",
     "typescript": "~7.0.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vitest": "5.0.3"
   }
 }

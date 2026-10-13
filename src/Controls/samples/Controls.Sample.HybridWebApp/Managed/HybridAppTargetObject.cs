@@ -1,8 +1,9 @@
 using System.Text.Json;
 
-namespace Maui.Controls.Sample.HybridWebApp.Playground;
+namespace Maui.HybridApp;
 
-sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
+/// <summary>Owns the bounded document session and command lifetime of one WebView; has no UI dependency.</summary>
+public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 {
 	const int MaximumRequestLength = 100000;
 	const int MaximumRetiredDocuments = 4096;
@@ -14,27 +15,66 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	readonly HashSet<string> _seen = new(StringComparer.Ordinal);
 	readonly HashSet<string> _retiredSessions = new(StringComparer.Ordinal);
 	readonly Queue<string> _seenOrder = new();
-	readonly Timer _lease;
+	readonly ITimer _lease;
 	readonly TimeProvider _time;
-	readonly Action<NativeEvent> _send;
 	CancellationTokenSource _document = new();
 	string? _session;
 	DateTimeOffset _lastSeen;
 	bool _disposed;
 
-	public HybridAppTargetObject(CommandRegistry registry, Func<ReadyResult> ready, Action<NativeEvent> send, TimeProvider? time = null)
+	/// <summary>Raised for a current, subscribed document while its originating operation is active.</summary>
+	/// <remarks>Hosts must marshal to their UI thread and recheck <see cref="IsCurrent"/> before sending. Disposal removes all listeners.</remarks>
+	public event Action<NativeEvent>? NativeEventReceived;
+
+	/// <summary>Creates and registers an exclusive registry once from the owning scope's explicitly supplied providers.</summary>
+	/// <param name="providers">The scoped provider collection, including any explicitly registered external plugins.</param>
+	/// <param name="options">Immutable host policy used for connection capabilities.</param>
+	/// <param name="time">Optional clock for document leases.</param>
+	public HybridAppTargetObject(IEnumerable<IHybridCommandProvider> providers, HybridAppOptions options, TimeProvider? time = null)
+		: this(CreateRegistry(providers), options, time)
 	{
+	}
+
+	HybridAppTargetObject(CommandRegistry registry, HybridAppOptions options, TimeProvider? time)
+		: this(registry, CreateReady(registry, options), null, time)
+	{
+	}
+
+	static Func<ReadyResult> CreateReady(CommandRegistry registry, HybridAppOptions options)
+	{
+		ArgumentNullException.ThrowIfNull(options);
+		return () => new ReadyResult(registry.Names, options.PreferenceNamespace, options.MaximumTextLength);
+	}
+
+	static CommandRegistry CreateRegistry(IEnumerable<IHybridCommandProvider> providers)
+	{
+		ArgumentNullException.ThrowIfNull(providers);
+		var registry = new CommandRegistry();
+		foreach (var provider in providers)
+			provider.Register(registry);
+		return registry;
+	}
+
+	/// <summary>Creates a hub after the host explicitly registers its providers.</summary>
+	/// <param name="registry">The registry exclusive to this hub.</param>
+	/// <param name="ready">Host-supplied connection capabilities; evaluated after control registration.</param>
+	/// <param name="send">Delivers events. The host must recheck the session on its UI thread before sending.</param>
+	/// <param name="time">Optional clock for document leases.</param>
+	public HybridAppTargetObject(CommandRegistry registry, Func<ReadyResult> ready, Action<NativeEvent>? send, TimeProvider? time = null)
+	{
+		ArgumentNullException.ThrowIfNull(registry);
+		ArgumentNullException.ThrowIfNull(ready);
 		_registry = registry;
 		_ready = ready;
-		_send = send;
+		NativeEventReceived = send;
 		_time = time ?? TimeProvider.System;
 		RegisterSessionCommands();
-		_lease = new Timer(_ => ExpireDocument(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+		_lease = _time.CreateTimer(_ => ExpireDocument(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
 	}
 
 	void RegisterSessionCommands()
 	{
-		var json = PlaygroundJsonContext.Default;
+		var json = ProtocolJsonContext.Default;
 		_registry.Register("core.connect", json.EmptyArgs, json.ReadyResult, (_, _) =>
 			Task.FromResult(_ready()));
 		_registry.Register("core.subscribe", json.TopicArgs, json.Ack, (args, op) =>
@@ -75,6 +115,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 			throw new CommandException("unknown_topic", "This event topic is not registered by the host.");
 	}
 
+	/// <inheritdoc />
 	public async Task<string> Invoke(string request)
 	{
 		Request? message = null;
@@ -83,7 +124,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		{
 			if (request.Length > MaximumRequestLength || request.Any(character => character > 127))
 				throw new CommandException("invalid_request", "Use an ASCII-escaped JSON request of at most 100000 characters.");
-			message = JsonSerializer.Deserialize(request, PlaygroundJsonContext.Default.Request)
+			message = JsonSerializer.Deserialize(request, ProtocolJsonContext.Default.Request)
 				?? throw new JsonException();
 			if (message.Version != 1 || !Guid.TryParseExact(message.Session, "D", out _) ||
 				!Guid.TryParseExact(message.Id, "D", out _) || message.Command.Length is < 1 or > 64)
@@ -158,7 +199,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 
 	static string Encode(Request? request, string status, JsonElement? result, CommandError? error) =>
 		JsonSerializer.Serialize(new Response(1, request?.Session ?? "", request?.Id ?? "", status, result, error),
-			PlaygroundJsonContext.Default.Response);
+			ProtocolJsonContext.Default.Response);
 
 	static void LogError(Request? request, string code, Exception exception)
 	{
@@ -174,16 +215,21 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		{
 			if (!_disposed && session == _session && _subscriptions.Contains(topic) &&
 				_operations.TryGetValue(id, out var operation) && !operation.IsCancellationRequested)
-				_send(new NativeEvent(1, session, id, topic, data));
+				NativeEventReceived?.Invoke(new NativeEvent(1, session, id, topic, data));
 		}
 	}
 
+	/// <summary>Rechecks document ownership immediately before host event delivery.</summary>
+	/// <param name="session">The event's document identity.</param>
+	/// <returns>Whether this document is still connected.</returns>
 	public bool IsCurrent(string session)
 	{
 		lock (_gate)
 			return !_disposed && _session == session;
 	}
 
+	/// <summary>Receives raw heartbeat/disconnect notices from the owning WebView.</summary>
+	/// <param name="value">The raw JSON notice, limited to 256 characters.</param>
 	public void ReceiveDocumentMessage(string? value)
 	{
 		if (value is null || value.Length > 256)
@@ -193,7 +239,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		}
 		try
 		{
-			var message = JsonSerializer.Deserialize(value, PlaygroundJsonContext.Default.DocumentMessage);
+			var message = JsonSerializer.Deserialize(value, ProtocolJsonContext.Default.DocumentMessage);
 			if (message is null || message.Kind is not "disconnect" and not "heartbeat" || !Guid.TryParseExact(message.Session, "D", out _))
 			{
 				Console.WriteLine("HYBRIDWEBAPP_DOCUMENT_MESSAGE_REJECTED reason=contract");
@@ -215,7 +261,8 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		}
 	}
 
-	internal void ExpireDocument()
+	/// <summary>Expires a document whose heartbeat lease elapsed; also called periodically by the hub.</summary>
+	public void ExpireDocument()
 	{
 		lock (_gate)
 		{
@@ -224,6 +271,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		}
 	}
 
+	/// <summary>Retires the current document and cooperatively cancels all its work.</summary>
 	public void Disconnect()
 	{
 		lock (_gate)
@@ -245,6 +293,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		_session = null;
 	}
 
+	/// <summary>Retires the document, cancels its work and releases the lease timer.</summary>
 	public void Dispose()
 	{
 		lock (_gate)
@@ -255,6 +304,7 @@ sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 			_disposed = true;
 			_document.Dispose();
 			_lease.Dispose();
+			NativeEventReceived = null;
 		}
 	}
 }

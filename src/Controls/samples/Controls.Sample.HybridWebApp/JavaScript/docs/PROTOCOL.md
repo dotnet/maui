@@ -32,10 +32,10 @@ The SDK calls **`InvokeDotNet('Invoke', [asciiEscapedRequest])`**, with one stri
 argument; the native target's only forwarding method is
 `Task<string> Invoke(string request)`. The reference host registers its narrow
 `IHybridAppTarget` with
-`SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, PlaygroundJsonContext.Default)`
+`SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`
 in `Native/MainPage.cs` in the source bundle. For tarball readers,
 [MainPage.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
-pins the matching protocol-compatible host and its explicit service composition.
+pins the historical pre-extraction host, not the new identity wire mapping.
 Refresh source links to the selected release commit/tag before publication.
 The .NET 11 invocation source generator and explicit System.Text.Json
 `JsonTypeInfo<T>` metadata are required by that host. Installing the npm package
@@ -88,37 +88,39 @@ registration decision; this example topic is not part of the reference host.
 | `core.connect` | `{}` | `{ commands: string[], preferenceNamespace: string, maximumTextLength: number }` | Session establishment/retirement |
 | `core.cancel` | `{ requestId: string }` | `{ accepted: boolean }` | Cooperative request cancellation |
 | `core.subscribe`, `core.unsubscribe` | `{ topic: string }` | `{ accepted: boolean }` | Explicit allowed topic list |
-| `app.info` | `{}` | Combined native `IdentityResult` described below | Reference identity provider |
+| `app.info` | `{}` | `{ appName: string, version: string, build: string }` | Independently registered IAppInfo provider |
+| `device.info` | `{}` | `{ platform: string, osVersion: string, model: string }` | Independently registered IDeviceInfo provider |
 | `clipboard.read` | `{}` | `{ text: string \| null }` | Clipboard provider |
 | `clipboard.write` | `{ text: string }` | `{ accepted: boolean }` | Clipboard provider |
 | `preferences.read`, `preferences.remove` | `{ key: string }` | `{ key: string, value: string \| null }` | Namespace-restricted settings provider |
 | `preferences.write` | `{ key: string, value: string }` | Same preference result | Same provider |
 
-[Contracts.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Contracts.cs),
-[CommandRegistry.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/CommandRegistry.cs)
-and [Providers.cs](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/Playground/Providers.cs)
-are the same published reference; current source remains beside the SDK.
-The host, not the SDK, selects its preferences
-namespace and OS adapters. The reference host also registers application-only
+Current source is the sibling `Managed` class library (`Protocol/`,
+`CommandRegistry.cs`, `HybridAppTargetObject.cs`, `Essentials/*`) plus the `Native`
+host app. The library has no Core/Controls or sample dependency. Feature providers
+own their generated contexts; the protocol context contains only envelopes and
+control DTOs. External Toolkit assemblies register their own commands/topics and
+strict generated `JsonTypeInfo<T>` explicitly, without global metadata edits.
+The host, not either SDK, selects its preferences
+namespace and the existing Essentials interfaces. The reference host also registers application-only
 `sample.*` commands and `service.changed` / `operation.progress` topics; those
 helpers remain in the playground and are **not** npm SDK features.
 
 ### Preview AppInfo/DeviceInfo mapping
 
-The existing `app.info` result contains strings `appName`, `version`, `build`,
-`platform`, `osVersion`, `model`, `architecture`, `startupId`, `startedAt`, and
-numeric `pid`. This is the **native wire shape**, not an exported SDK Identity
-type. The Essentials `getAppInfo` decoder projects appName/version/build;
-`getDeviceInfo` projects platform/osVersion/model. Neither returns process
-diagnostics. Each validates only its own required fields.
+`getAppInfo` invokes `app.info`; `getDeviceInfo` invokes `device.info`. Their
+public module names and result types are unchanged. These separate providers and
+DTOs cannot expose or depend on the sample's process identity. The sample-only
+`sample.diagnostics` command returns architecture/pid/startupId/startedAt.
+The playground composes the three reads on the same exact client into its
+unchanged visible reload-identity shape. The counter still belongs to the native
+sample instance and survives document reload.
 
-The playground alone decodes architecture/pid/startupId/startedAt and composes
-them with the installed Essentials helpers for its reload checks. Each helper
-currently issues an `app.info` call; the composition makes three reads on the
-same exact document client. No command rename, C# provider/DTO changes,
-reflection registration or AOT metadata changes are required. This preview
-mapping is explicit; future separate wire commands require coordinated
-SDK/native compatibility work, not a TypeScript-only assumption.
+This **unpublished preview's internal wire mapping changed** from the former
+combined `app.info` response. Update/relaunch the matching native host and stage
+the frontend together; an old host will correctly reject `device.info` rather
+than emulate data. The protocol version remains 1 because envelopes/lifetimes
+did not change; there is no existing published compatibility promise.
 
 ## Session ownership and bounded lifetime
 
@@ -153,5 +155,7 @@ The current native reference targets repository SDK
 `11.0.100-rtm.26480.113` and MAUI `net11.0`. Platform heads are not evidence that
 every provider has been validated on every OS. Custom hosts must preserve this
 wire contract and lifecycle or coordinate a protocol/package version change.
-There is no shipped NuGet companion, source-generated TypeScript catalog,
+The sibling `Maui.HybridApp` library is independently packable locally with an
+unverified working identity, not a published official NuGet release.
+There is no source-generated TypeScript catalog,
 automatic provider discovery or template in this preview.

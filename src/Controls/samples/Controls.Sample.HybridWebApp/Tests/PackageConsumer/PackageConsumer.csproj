@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <HybridAppPackageVersion Condition="'$(HybridAppPackageVersion)' == ''">0.1.0-preview.1</HybridAppPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion Condition="'$(MicrosoftExtensionsDependencyInjectionVersion)' == ''">11.0.0-rtm.26480.113</MicrosoftExtensionsDependencyInjectionVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Maui.HybridApp" Version="$(HybridAppPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <Compile Include="../ExternalProvider/Plugin*.cs" Link="Plugin/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

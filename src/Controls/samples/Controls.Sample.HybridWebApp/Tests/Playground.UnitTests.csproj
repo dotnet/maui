@@ -7,12 +7,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <XunitPackageVersion Condition="'$(XunitPackageVersion)' == ''">2.9.3</XunitPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion Condition="'$(MicrosoftExtensionsDependencyInjectionVersion)' == ''">11.0.0-rtm.26480.113</MicrosoftExtensionsDependencyInjectionVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-    <Compile Include="../Native/Playground/*.cs" Exclude="../Native/Playground/MauiPlaygroundPlatform.cs" Link="Playground/%(Filename)%(Extension)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <ProjectReference Include="../Managed/Maui.HybridApp.csproj" />
+    <ProjectReference Include="ExternalProvider/ExternalProvider.csproj" />
+    <Compile Remove="ExternalProvider/**;PackageConsumer/**" />
+    <!-- Only sample commands are shared with these UI-free tests; all product code comes from its assembly. -->
+    <Compile Include="../Native/Playground/*.cs" Link="Playground/%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="'$(HybridWebAppInTree)' != 'true'">
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" PrivateAssets="all" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
   </ItemGroup>

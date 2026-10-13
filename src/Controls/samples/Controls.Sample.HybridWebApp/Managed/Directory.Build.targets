@@ -1,0 +1,3 @@
+<Project>
+  <!-- Deliberately no ancestor targets, UI build tasks, or official framework packaging. -->
+</Project>

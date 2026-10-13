@@ -23,13 +23,13 @@ export interface Identity extends AppInfo, DeviceInfo, Diagnostics {}
  * Reads the playground's reload identity while exercising the installed SDK helpers.
  * @param client - Exact connected document client shared by all three native reads.
  * @returns App/device metadata and the app-owned process diagnostics.
- * @remarks Protocol 1's existing app.info command supplies all three subsets; no native contracts change.
+ * @remarks The three explicitly registered commands have isolated metadata. Diagnostics are sample-owned.
  */
 export async function getIdentity(client: NativeClient): Promise<Identity> {
   const [app, device, diagnostics] = await Promise.all([
     getAppInfo(client),
     getDeviceInfo(client),
-    client.invoke('app.info', {}, value => {
+    client.invoke('sample.diagnostics', {}, value => {
       const v = object(value)
       return { architecture: text(v.architecture), pid: number(v.pid), startupId: text(v.startupId), startedAt: text(v.startedAt) }
     }),

@@ -36,12 +36,13 @@ These are supported subsets of MAUI Essentials, not a claim that every .NET
 AppInfo/DeviceInfo member or every platform is implemented. There is no
 browser/user-agent/package-version fallback.
 
-Both helpers currently use the existing `app.info` wire command, validating and
-returning only their own fields. Extra wire fields are not leaked into the result
-and unrelated diagnostic fields do not affect their decoders. The reference
-host still returns combined app/device/process data; its native contracts,
-registration and AOT metadata are unchanged. Process architecture, numeric pid,
-startupId and startedAt belong only to the playground's `Web/src/native/sample.ts`.
+`getAppInfo` uses `app.info`; `getDeviceInfo` uses the independently registered
+`device.info`. Each native provider owns only its corresponding Essentials API,
+DTOs and generated JSON context. Extra fields are not leaked into helper results.
+This unpublished preview's internal wire mapping changed from the former combined
+identity response; public module names and return types remain unchanged.
+Process architecture, numeric pid, startupId and startedAt are returned only by
+the sample-owned `sample.diagnostics` command and decoded by `Web/src/native/sample.ts`.
 That app-owned helper composes the installed AppInfo/DeviceInfo helpers with its
 own diagnostics decoder to preserve the existing reload-identity UI.
 

@@ -10,10 +10,9 @@ import { getDeviceInfo } from '@maui/api/essentials/device-info'
 import * as api from '@maui/api'
 import { mock } from './bridge.mjs'
 
-const ready = { commands: ['app.info', 'clipboard.read'], preferenceNamespace: 'host-owned.', maximumTextLength: 4096 }
-const identity = { appName: 'Host', version: '1', build: '1', platform: 'test', osVersion: '1', model: 'test', architecture: 'arm64', pid: 1, startupId: 'startup', startedAt: '2026-10-12T00:00:00Z' }
-const appInfo = { appName: identity.appName, version: identity.version, build: identity.build }
-const deviceInfo = { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
+const ready = { commands: ['app.info', 'device.info', 'clipboard.read'], preferenceNamespace: 'host-owned.', maximumTextLength: 4096 }
+const appInfo = { appName: 'Host', version: '1', build: '1' }
+const deviceInfo = { platform: 'test', osVersion: '1', model: 'test' }
 
 test('built root contains only lifecycle infrastructure without eager browser access', async () => {
   assert.equal(api.NativeClient, NativeClient)
@@ -66,7 +65,8 @@ test('injected protocol transport supports Essentials without MAUI-origin bootst
   globalThis.document = { createElement() { scriptLoads++; throw new Error('No framework bootstrap is allowed') } }
   const host = mock(request => {
     if (request.command === 'core.connect') return ready
-    if (request.command === 'app.info') return identity
+    if (request.command === 'app.info') return appInfo
+    if (request.command === 'device.info') return deviceInfo
     if (request.command === 'clipboard.read') return { text: 'injected native transport' }
     if (request.command === 'clipboard.write') return { accepted: true }
     return { key: request.args.key, value: request.command === 'preferences.remove' ? null : request.args.value ?? 'native setting' }
@@ -103,7 +103,8 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
   const host = mock(request => {
     if (request.command === 'clipboard.read') return { text: null }
     if (request.command === 'clipboard.write') return { accepted: true }
-    if (request.command === 'app.info') return identity
+    if (request.command === 'app.info') return appInfo
+    if (request.command === 'device.info') return deviceInfo
     return { key: request.args.key, value: request.command === 'preferences.remove' ? null : request.args.value ?? 'é' }
   })
   const client = new NativeClient(host.bridge)
@@ -115,7 +116,7 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
     assert.deepEqual(await preferences(client).remove('key'), { key: 'key', value: null })
     assert.deepEqual(await getAppInfo(client), appInfo)
     assert.deepEqual(await getDeviceInfo(client), deviceInfo)
-    assert.deepEqual(host.requests.map(request => request.command), ['clipboard.read', 'clipboard.write', 'preferences.read', 'preferences.write', 'preferences.remove', 'app.info', 'app.info'])
+    assert.deepEqual(host.requests.map(request => request.command), ['clipboard.read', 'clipboard.write', 'preferences.read', 'preferences.write', 'preferences.remove', 'app.info', 'device.info'])
     assert.ok(host.requests.every(request => request.session === client.session))
     host.bridge.InvokeDotNet = mock(() => ({ text: 42, key: 42, value: false })).bridge.InvokeDotNet
     for (const action of [() => clipboard(client).readText(), () => clipboard(client).writeText('text'), () => preferences(client).get('key'), () => getAppInfo(client), () => getDeviceInfo(client)]) {
@@ -125,7 +126,7 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
 })
 
 test('AppInfo and DeviceInfo project only their own validated fields, never process diagnostics', async () => {
-  let result = { ...identity, architecture: false, pid: 'not a PID', startupId: null, startedAt: {} }
+  let result = { ...appInfo, ...deviceInfo, architecture: false, pid: 'not a PID', startupId: null, startedAt: {} }
   const host = mock(() => result)
   const client = new NativeClient(host.bridge)
   try {
@@ -247,7 +248,8 @@ test('default feature calls share lazy startup, and teardown creates a new sessi
   const originalDocument = globalThis.document
   const target = new EventTarget()
   let additions = 0, removals = 0
-  const host = mock(request => request.command === 'core.connect' ? ready : request.command === 'app.info' ? identity
+  const host = mock(request => request.command === 'core.connect' ? ready : request.command === 'app.info' ? appInfo
+    : request.command === 'device.info' ? deviceInfo
     : request.command === 'clipboard.read' ? { text: 'native' } : { accepted: true })
   globalThis.window = {
     location: { href: 'app://0.0.0.1/index.html' }, HybridWebView: host.bridge,

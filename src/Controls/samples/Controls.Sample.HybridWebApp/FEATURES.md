@@ -30,7 +30,7 @@ The reusable SDK ships built JavaScript and declarations, not app-local TypeScri
 | Custom command registration | Explicit typed providers and generated .NET invocation/JSON metadata | Opt-in attributes or generated provider registration |
 | Explicit exposure and permissions | Unknown/disabled command rejection, bounded inputs, distinct native error codes | An actual OS permission check/request/denial experiment |
 | Platform-aware results | Unsupported/permission/configuration error classification | Observable native scenarios for each classification, not just policy failures/test doubles |
-| Plugin/provider extension | Host-owned composition and an extensible command/topic registry | A complete optional provider experiment with its JS integration |
+| Plugin/provider extension | DI registration, scoped targets and a separate provider assembly verified through a real NuGet-only consumer | A complete optional provider playground experiment with its JS integration |
 | Installable artifacts; signing and installed execution | Debug native deployment and Mac Catalyst Release build/asset checks | Install and exercise the intended signed Release artifacts |
 | Diagnostics and performance | Startup identity, request metrics and bounded operation log | Reproducible command-latency, startup and memory scenarios |
 | Browser mocks and native automation | Committed contract tests and actual native acceptance evidence | A committed, repeatable native automation entrypoint |

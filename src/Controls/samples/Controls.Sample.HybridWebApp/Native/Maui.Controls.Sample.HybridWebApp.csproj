@@ -40,6 +40,15 @@
     <ProjectReference Include="$(MauiSrcDirectory)Controls/src/Xaml/Controls.Xaml.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Managed/Maui.HybridApp.csproj"
+                      Condition="'$(HybridWebAppInTree)' == 'true'"
+                      AdditionalProperties="ArtifactsObjDir=$(ArtifactsObjDir);ArtifactsBinDir=$(ArtifactsBinDir)" />
+    <ProjectReference Include="../Managed/Maui.HybridApp.csproj"
+                      Condition="'$(HybridWebAppInTree)' != 'true'"
+                      AdditionalProperties="BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)Maui.HybridApp/;BaseOutputPath=$(BaseOutputPath)Maui.HybridApp/" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(UseMaui)' == 'true'">
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
   </ItemGroup>

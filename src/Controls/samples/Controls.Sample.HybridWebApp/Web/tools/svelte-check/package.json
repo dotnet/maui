@@ -1,0 +1,13 @@
+{
+  "name": "maui-playground-svelte-check",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "svelte-check --tsconfig ../../tsconfig.json --fail-on-warnings"
+  },
+  "devDependencies": {
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3"
+  }
+}

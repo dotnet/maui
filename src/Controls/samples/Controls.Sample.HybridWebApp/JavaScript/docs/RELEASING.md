@@ -6,7 +6,11 @@
 .NET-project SDK. Registry name availability, scope ownership and publishing
 authorization are unverified. Do not advertise a registry release until one
 actually exists. There is no `@microsoft` branding, companion NuGet release or
-template release implicit in this npm artifact.
+template release implicit in this npm artifact. The sibling managed WIP product
+`Maui.HybridApp` / `0.1.0-preview.1` is now independently packable, with its own
+README/license/XML documentation. Its NuGet identity is likewise unverified;
+NuGet publication requires separate authorization and is not npm publication.
+The npm artifact never includes managed/sample binaries or source.
 
 The versioned deliverable is the allowlisted ESM/declaration/documentation/MIT
 tarball. Generated `dist`, npm caches, `node_modules`, tests, fixtures, package
@@ -163,13 +167,19 @@ invalidate staging. Only manifest-listed Vite assets become native `wwwroot`.
 Direct `build` removes the staging manifest; native MSBuild never runs npm.
 After SDK edits/builds, rerun `stage` before a packaged native build.
 
+The current identity wire mapping uses separate `app.info`, `device.info` and
+sample-owned `sample.diagnostics` commands, with unchanged public JS return types.
+Relaunch the matching native host before acceptance; the old combined response
+is not the current unpublished preview contract.
+
 The current source bundle's README documents its copyable layout and native
 migration gates. The [matching consumer README](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
 pins the complete portable source layout for tarball readers. Pin source links
 to the selected release commit/tag before publication. A copied native
-app requires an explicit MAUI 11 package version/feed and SDK/workloads;
+app and managed library require an explicit MAUI 11 package version/feed and SDK/workloads;
 packaged Vite forwarding remains guarded until the consumed Core fix is
-validated. Pure .NET host tests require no native MAUI package.
+validated. UI-free managed tests use the actual library/Essentials assemblies;
+in a copied bundle they need a compatible Essentials package/feed, not Core/Controls.
 
 ## Authorized release checklist
 
