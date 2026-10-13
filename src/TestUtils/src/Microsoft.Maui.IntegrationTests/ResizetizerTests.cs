@@ -17,13 +17,15 @@ public class ResizetizerTests : BaseBuildTest
 		""";
 
 	[Theory]
-	[InlineData("android", true)]
-	[InlineData("android", false)]
-	[InlineData("ios", true)]
-	[InlineData("ios", false)]
-	public void PackagedResizetizerRendersSvgFiltersAndText(string platform, bool isAppIcon)
+	[InlineData("android", true, false)]
+	[InlineData("android", false, false)]
+	[InlineData("ios", true, false)]
+	[InlineData("ios", false, false)]
+	[InlineData("android", false, true)]
+	[InlineData("ios", false, true)]
+	public void PackagedResizetizerRendersSvgFiltersAndText(string platform, bool isAppIcon, bool isSplashScreen)
 	{
-		SetTestIdentifier(platform, isAppIcon);
+		SetTestIdentifier(platform, isAppIcon, isSplashScreen);
 
 		var projectFile = Path.Combine(TestDirectory, "SvgFilters.csproj");
 		File.WriteAllText(Path.Combine(TestDirectory, "filtered.svg"),
@@ -43,11 +45,17 @@ public class ResizetizerTests : BaseBuildTest
 				</PropertyGroup>
 				<ItemGroup>
 					<PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
-					<Image Include="filtered.svg" IsAppIcon="{{isAppIcon}}" />
+					<Image Include="filtered.svg" IsAppIcon="{{isAppIcon}}" Condition="'{{isSplashScreen}}' != 'True'" />
+					<MauiSplashScreen Include="filtered.svg" Color="#512BD4" Condition="'{{isSplashScreen}}' == 'True'" />
 				</ItemGroup>
 				<Target Name="RenderSvg">
 					<MakeDir Directories="rendered" />
-					<ResizetizeImages PlatformType="{{platform}}" IntermediateOutputPath="rendered" Images="@(Image)" />
+					<ResizetizeImages PlatformType="{{platform}}" IntermediateOutputPath="rendered" Images="@(Image)"
+						Condition="'{{isSplashScreen}}' != 'True'" />
+					<GenerateSplashAndroidResources MauiSplashScreen="@(MauiSplashScreen)" IntermediateOutputPath="rendered"
+						Condition="'{{isSplashScreen}}' == 'True' and '{{platform}}' == 'android'" />
+					<GenerateSplashStoryboard MauiSplashScreen="@(MauiSplashScreen)" IntermediateOutputPath="rendered"
+						Condition="'{{isSplashScreen}}' == 'True' and '{{platform}}' == 'ios'" />
 				</Target>
 			</Project>
 			""");
@@ -55,6 +63,20 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "RenderSvg", properties: BuildProps, output: _output),
 			"Packaged Resizetizer failed to render SVG filters and text. Check test output for errors.");
 		Assert.NotEmpty(Directory.GetFiles(Path.Combine(TestDirectory, "rendered"), "*.png", SearchOption.AllDirectories));
+		if (isSplashScreen)
+		{
+			var outputDirectory = Path.Combine(TestDirectory, "rendered");
+			if (platform == "android")
+			{
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "values", "maui_colors.xml")));
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "drawable", "maui_splash_image.xml")));
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "drawable-v31", "maui_splash_image.xml")));
+			}
+			else
+			{
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "MauiSplash.storyboard")));
+			}
+		}
 	}
 
 	[Theory]
