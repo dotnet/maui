@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -12,6 +13,36 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+#if MACCATALYST
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task VisibleTabBarRestoresZeroAlpha(bool hidden)
+		{
+			if (!OperatingSystem.IsMacCatalystVersionAtLeast(18))
+				return;
+
+			await RunShellTabBarTests(_ => { }, shell =>
+			{
+				var context = (IShellContext)shell.Handler;
+				var renderer = Assert.IsType<ShellItemRenderer>(context.CurrentShellItemRenderer);
+				Assert.True(renderer.ShellItemController.ShowTabs);
+				renderer.TabBar.Hidden = hidden;
+				renderer.TabBar.Alpha = 0;
+
+				renderer.ViewWillLayoutSubviews();
+
+				Assert.False(renderer.TabBar.Hidden);
+				Assert.Equal(1, renderer.TabBar.Alpha);
+
+				Shell.SetTabBarIsVisible(shell.CurrentPage, false);
+				renderer.ViewWillLayoutSubviews();
+				Assert.True(renderer.TabBar.Hidden);
+				return Task.CompletedTask;
+			});
+		}
+#endif
+
 		UITabBar GetTabBar(ShellSection item)
 		{
 			var shellItem = item.Parent as ShellItem;

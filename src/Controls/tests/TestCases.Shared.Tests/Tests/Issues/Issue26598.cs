@@ -25,15 +25,18 @@ public class Issue26598 : _IssuesUITest
 		// Is a iOS issue; see https://github.com/dotnet/maui/issues/26598
 		// Initially TabBar for Issue26598Home is hidden 
 		App.WaitForElement("NavigateToInnerTab");
+		App.WaitForNoElement("RecentTab");
 		App.Click("NavigateToInnerTab");
 
 		// Case 1 - After navigating to Inner Page ,  the TabBar should be visible
 		App.WaitForElement("RecentTab");
+		App.WaitForElement("NavigateToTabBarPage");
 
 		// Case 2 - Navigate to the InnerTabPage where the TabBar is hidden
 		App.WaitForElement("NavigateToTabBarPage");
 		App.Click("NavigateToTabBarPage");
 		App.WaitForElement("Issue26589NonTab");
+		App.WaitForNoElement("RecentTab");
 
 		// Case 3 - Navigate back to the HomeTab, the TabBar should be visible
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -45,10 +48,12 @@ public class Issue26598 : _IssuesUITest
 			App.TapBackArrow(back);
 		}
 		App.WaitForElement("RecentTab");
+		App.WaitForElement("NavigateToTabBarPage");
 		App.Click("RecentTab");
+		App.WaitForElement("RecentTabContent");
 		App.WaitForElement("HomeTab");
 		App.Click("HomeTab");
+		App.WaitForElement("NavigateToTabBarPage");
 		App.WaitForElement("RecentTab");
 	}
 }
-

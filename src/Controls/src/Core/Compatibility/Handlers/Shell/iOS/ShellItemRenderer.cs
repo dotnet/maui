@@ -628,13 +628,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
 #if MACCATALYST
-				if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
+				if (TabBar != null &&
+					(TabBar.Hidden != !ShellItemController.ShowTabs ||
+						(ShellItemController.ShowTabs && TabBar.Alpha == 0)))
 				{
 					// Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar 
 					// which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
 					// This is a side effect of TabSidebar mode when there's no sidebar to show.
 
-					// Explicitly set Alpha and Hidden to override this incorrect system behavior.
+					// UIKit can restore Hidden without restoring Alpha when a hidden page is popped.
 					TabBar.Alpha = 1.0f;
 					TabBar.Hidden = !ShellItemController.ShowTabs;
 				}
