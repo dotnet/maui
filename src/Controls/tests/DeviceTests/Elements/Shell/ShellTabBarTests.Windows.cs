@@ -61,6 +61,104 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Disabled tab added dynamically after appearance inherits TabBarDisabledColor (Windows)")]
+		public async Task DynamicallyAddedDisabledTabInheritsTabBarDisabledColor()
+		{
+			SetupBuilder();
+
+			var disabledColor = Color.FromArgb("#FF00FF00");
+
+			var tab1 = new ShellContent
+			{
+				Route = "Tab1",
+				Title = "Tab1",
+				Content = new ContentPage(),
+				Icon = "white_tab.png"
+			};
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTabBarDisabledColor(shell, disabledColor);
+				shell.Items.Add(new TabBar() { Items = { tab1 } });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				// The appearance observer has fired and _shellAppearanceElement is set.
+				// Add a disabled tab after the Shell handler has been initialized.
+				var tab2 = new ShellContent
+				{
+					Route = "Tab2",
+					Title = "Tab2",
+					Content = new ContentPage(),
+					Icon = "white_tab.png",
+					IsEnabled = false
+				};
+
+				((TabBar)shell.Items[0]).Items.Add(tab2);
+
+				var navigationView = GetTabBarItems(shell.CurrentSection);
+				NavigationViewItemViewModel disabledItem = null;
+
+
+				var found = await WaitUntilAsync(() =>
+		{
+			disabledItem = GetNavigationViewItem(navigationView, tab2);
+
+			return disabledItem is not null &&
+				HasDisabledColor(disabledItem, disabledColor);
+		});
+
+				Assert.True(
+			found,
+			"The dynamically added disabled tab should use TabBarDisabledColor.");
+
+
+				Assert.NotNull(disabledItem);
+				Assert.True(
+					HasDisabledColor(disabledItem!, disabledColor),
+					"The dynamically added disabled tab should use TabBarDisabledColor.");
+			});
+		}
+
+		static async Task<bool> WaitUntilAsync(
+			Func<bool> condition,
+			int timeoutMilliseconds = 5000)
+		{
+			var start = DateTime.UtcNow;
+
+			while (DateTime.UtcNow - start <
+				   TimeSpan.FromMilliseconds(timeoutMilliseconds))
+			{
+				if (condition())
+					return true;
+
+				await Task.Delay(100);
+			}
+
+			return condition();
+		}
+
+		static NavigationViewItemViewModel GetNavigationViewItem(
+			NavigationView navigationView,
+			BaseShellItem item) =>
+			(navigationView.MenuItemsSource as
+				IEnumerable<NavigationViewItemViewModel>)?
+				.FirstOrDefault(viewModel => viewModel.Data == item);
+
+		static bool HasDisabledColor(
+			NavigationViewItemViewModel item,
+			Color expectedColor) =>
+			HasColor(item.DisabledForeground, expectedColor) &&
+			HasColor(item.Foreground, expectedColor) &&
+			HasColor(item.Icon?.Foreground, expectedColor);
+
+		static bool HasColor(
+			Microsoft.UI.Xaml.Media.Brush brush,
+			Color expectedColor) =>
+			brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush &&
+			expectedColor.Equals(solidColorBrush.Color.ToColor());
+
 		NavigationView GetTabBarItems(ShellSection section)
 		{
 			var shellItemHandler = section.FindParentOfType<Shell>().CurrentItem.Handler as ShellItemHandler;
