@@ -11,7 +11,7 @@ public class Issue35736 : _IssuesUITest
 	public override string Issue => "SearchHandler QueryIcon, ClearIcon, ClearPlaceholderIcon need to update visually at runtime";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void SearchHandlerQueryIconUpdatesAtRuntime()
 	{
 		App.WaitForElement("Issue35736QueryIconLabel");
@@ -27,7 +27,7 @@ public class Issue35736 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 #if WINDOWS
 	[Ignore("ClearPlaceholderIcon is not displayed in Shell SearchHander : https://github.com/dotnet/maui/issues/28619")]
 #endif
@@ -46,7 +46,7 @@ public class Issue35736 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 #if WINDOWS
 	[Ignore("ClearIcon is not displayed in Shell SearchHander : https://github.com/dotnet/maui/issues/28619")]
 #endif
@@ -68,7 +68,7 @@ public class Issue35736 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SearchHandlerResetAllRestoresDefaultIcons()
 	{
 		App.WaitForElement("Issue35736QueryIconLabel");

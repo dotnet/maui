@@ -13,7 +13,7 @@ public class Issue19219 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShouldExecuteCommandWhenTappingShellSearchItem()
 	{
 		App.WaitForElement("SearchHandlerLabel");
