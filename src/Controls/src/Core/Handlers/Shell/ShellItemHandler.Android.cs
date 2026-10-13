@@ -198,14 +198,15 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
+            var platformView = PlatformView;
+            PlatformView = null!;
             if (_platformViewConnected)
             {
-                DisconnectHandler(PlatformView);
+                DisconnectHandler(platformView);
             }
 
             _viewPager = null;
             _rootView = null;
-            PlatformView = null!;
         }
 
         internal void RemoveReleasedSectionFragments(Fragment parentFragment)
@@ -1072,7 +1073,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _shellToolbar = null;
                 _appBarLayout = null;
 
-                _releasedSectionFragmentTags = _adapter?.GetFragmentTags();
+                _releasedSectionFragmentTags = _adapter?.ReleaseRenderers();
                 platformView.Adapter = null;
                 _adapter = null;
                 _viewPager = null;
@@ -1581,6 +1582,20 @@ namespace Microsoft.Maui.Controls.Handlers
                     tags.Add(tag);
                 }
             }
+            return tags;
+        }
+
+        internal List<string> ReleaseRenderers()
+        {
+            // Dispose clears renderer fragment references, so capture the owned tags first.
+            var tags = GetFragmentTags();
+            foreach (var renderer in _renderers.Values)
+            {
+                renderer.Dispose();
+            }
+            _renderers.Clear();
+            _sectionIds.Clear();
+            _sections = Array.Empty<ShellSection>();
             return tags;
         }
     }

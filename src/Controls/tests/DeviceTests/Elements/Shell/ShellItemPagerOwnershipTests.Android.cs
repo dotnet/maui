@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Util;
@@ -106,6 +107,24 @@ namespace Microsoft.Maui.DeviceTests
 
 				for (var presentation = 2; presentation <= 3; presentation++)
 				{
+					var sections = fixture.Item.Items.ToArray();
+					await AssertEventually(() => sections.All(section => section.Handler is PagerTrackingShellSectionHandler));
+					var sectionHandlers = sections.Select(section => Assert.IsType<PagerTrackingShellSectionHandler>(section.Handler)).ToArray();
+					var renderers = Enumerable.Range(0, sections.Length)
+						.Select(index => Assert.IsType<ShellSectionHandlerAdapter>(oldAdapter.GetRenderer(index))).ToArray();
+					var sectionIds = Enumerable.Range(0, sections.Length).Select(oldAdapter.GetItemId).ToArray();
+					var rendererDisposals = new Dictionary<IShellSectionRenderer, int>();
+					foreach (var renderer in renderers)
+					{
+						Assert.NotNull(renderer);
+						rendererDisposals.Add(renderer, 0);
+						renderer.Destroyed += (_, _) => rendererDisposals[renderer]++;
+					}
+					for (var index = 0; index < sections.Length; index++)
+					{
+						AssertSectionSubscriptions(sections[index], sectionHandlers[index], subscribed: true);
+					}
+
 					fixture.Detach();
 
 					Assert.Null(fixture.ItemHandler._viewPager);
@@ -124,11 +143,26 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.False(((IShellSectionController)fixture.Item.CurrentItem)
 						.RemoveDisplayedPageObserver(fixture.ItemHandler));
 					Assert.Equal(presentation - 1, fixture.ItemHandler.DisconnectedPagers.Count);
+					Assert.Same(oldPager, fixture.ItemHandler.DisconnectedPagers.Last());
+					for (var index = 0; index < sections.Length; index++)
+					{
+						Assert.Null(((IElementHandler)sectionHandlers[index]).VirtualView);
+						Assert.Null(((IElementHandler)sectionHandlers[index]).PlatformView);
+						Assert.Null(sections[index].Handler);
+						Assert.Equal(1, sectionHandlers[index].DisconnectCount);
+						AssertSectionSubscriptions(sections[index], sectionHandlers[index], subscribed: false);
+						Assert.Equal(1, rendererDisposals[renderers[index]]);
+						Assert.Null(oldAdapter.GetRenderer(index));
+						Assert.False(oldAdapter.ContainsItem(sectionIds[index]));
+					}
+					Assert.Equal(0, oldAdapter.ItemCount);
+					Assert.Null(fixture.ItemHandler.PublishedPlatformViewsOnDisconnect.Last());
 
 					fixture.Item.CurrentItem = fixture.Item.Items[1];
 					fixture.Item.Items[0].BadgeText = presentation.ToString();
 					fixture.Attach();
 					await OnLoadedAsync(fixture.Shell.CurrentPage);
+					await AssertEventually(() => sections.All(section => section.Handler is PagerTrackingShellSectionHandler));
 
 					var pager = fixture.GetPager();
 					fixture.AssertPagerIdentity(pager);
@@ -143,6 +177,14 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(presentation, fixture.ItemHandler.ConnectedPagers.Count);
 					Assert.Equal(presentation, fixture.ItemHandler.MappedPagers.Count);
 					Assert.Equal(PagerTrackingShellItemHandler.Customization, pager.ContentDescription);
+					for (var index = 0; index < sections.Length; index++)
+					{
+						Assert.NotSame(sectionHandlers[index], sections[index].Handler);
+						Assert.Equal(1, sectionHandlers[index].DisconnectCount);
+						Assert.Equal(1, rendererDisposals[renderers[index]]);
+						AssertSectionSubscriptions(sections[index], sectionHandlers[index], subscribed: false);
+						AssertSectionSubscriptions(sections[index], sections[index].Handler, subscribed: true);
+					}
 					observedPagers.Add(pager);
 					Assert.Equal(presentation, observedPagers.Count);
 
@@ -170,6 +212,7 @@ namespace Microsoft.Maui.DeviceTests
 			RunWithShell(fixture =>
 			{
 				fixture.AssertPagerIdentity(fixture.GetPager());
+				var pager = fixture.GetPager();
 				fixture.Detach();
 				((IElementHandler)fixture.ItemHandler).DisconnectHandler();
 				((IElementHandler)fixture.ItemHandler).DisconnectHandler();
@@ -178,6 +221,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(((IElementHandler)fixture.ItemHandler).PlatformView);
 				Assert.Null(fixture.Item.Handler);
 				Assert.Single(fixture.ItemHandler.DisconnectedPagers);
+				Assert.Same(pager, fixture.ItemHandler.DisconnectedPagers[0]);
+				Assert.Null(Assert.Single(fixture.ItemHandler.PublishedPlatformViewsOnDisconnect));
 
 				fixture.Attach();
 				Assert.IsType<FrameLayout>(fixture.Fragment.View);
@@ -387,7 +432,7 @@ namespace Microsoft.Maui.DeviceTests
 				SetupShellHandlers(handlers);
 				handlers.AddHandler(typeof(Shell), typeof(PagerTrackingShellHandler));
 				handlers.AddHandler(typeof(ShellItem), itemHandlerType ?? typeof(PagerTrackingShellItemHandler));
-				handlers.AddHandler(typeof(ShellSection), typeof(ShellSectionHandler));
+				handlers.AddHandler(typeof(ShellSection), typeof(PagerTrackingShellSectionHandler));
 				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 			}));
 
@@ -421,6 +466,26 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		static void AssertSectionSubscriptions(ShellSection section, IElementHandler handler, bool subscribed)
+		{
+			Assert.Equal(subscribed ? 1 : 0,
+				GetEventSubscribers(section.Items, typeof(ShellElementCollection), "VisibleItemsChanged")
+					.Count(subscriber => ReferenceEquals(subscriber.Target, handler)));
+			foreach (var content in section.Items)
+			{
+				Assert.Equal(subscribed ? 1 : 0,
+					GetEventSubscribers(content, typeof(BindableObject), nameof(BindableObject.PropertyChanged))
+						.Count(subscriber => ReferenceEquals(subscriber.Target, handler)));
+			}
+		}
+
+		static Delegate[] GetEventSubscribers(object source, Type declaringType, string eventName)
+		{
+			var field = declaringType.GetField(eventName, BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			return (field.GetValue(source) as MulticastDelegate)?.GetInvocationList() ?? Array.Empty<Delegate>();
+		}
+
 		public class ProgrammaticPagerShellItemHandler : PagerTrackingShellItemHandler
 		{
 			protected override ViewPager2 CreatePlatformElement()
@@ -428,6 +493,17 @@ namespace Microsoft.Maui.DeviceTests
 				var pager = new ViewPager2(MauiContext.Context);
 				CreatedPagers.Add(pager);
 				return pager;
+			}
+		}
+
+		public class PagerTrackingShellSectionHandler : ShellSectionHandler
+		{
+			public int DisconnectCount { get; private set; }
+
+			protected override void DisconnectHandler(AView platformView)
+			{
+				DisconnectCount++;
+				base.DisconnectHandler(platformView);
 			}
 		}
 
@@ -517,6 +593,7 @@ namespace Microsoft.Maui.DeviceTests
 		public List<ViewPager2> CreatedPagers { get; } = new();
 		public List<ViewPager2> ConnectedPagers { get; } = new();
 		public List<ViewPager2> DisconnectedPagers { get; } = new();
+		public List<object> PublishedPlatformViewsOnDisconnect { get; } = new();
 		public List<ViewPager2> MappedPagers { get; } = new();
 		public BottomSheetDialog MoreDialog { get; private set; }
 		Action<int, BottomSheetDialog> _selectMoreItem;
@@ -536,6 +613,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected override void DisconnectHandler(ViewPager2 platformView)
 		{
+			PublishedPlatformViewsOnDisconnect.Add(((IElementHandler)this).PlatformView);
 			DisconnectedPagers.Add(platformView);
 			base.DisconnectHandler(platformView);
 		}
