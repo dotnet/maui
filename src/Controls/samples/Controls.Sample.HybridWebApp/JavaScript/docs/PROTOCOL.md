@@ -34,7 +34,7 @@ argument; the native target's only forwarding method is
 `IHybridAppTarget` with
 `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`
 in `Native/MainPage.cs` in the source bundle. For tarball readers,
-[MainPage.cs](https://github.com/dotnet/maui/blob/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
+[MainPage.cs](https://github.com/dotnet/maui/blob/370c152eb668c9911c94c6d3eb7e01e13a48bb10/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
 pins the matching scoped host and separate product/identity wire mapping.
 Refresh source links to the selected release commit/tag before publication.
 The .NET 11 invocation source generator and explicit System.Text.Json
