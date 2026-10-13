@@ -152,7 +152,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: Expert review native publication canary
           GH_AW_ENGINE_ID: copilot
           GH_AW_ENGINE_MODEL: gpt-5.3-codex
-          GH_AW_ALLOWED_DOMAINS: github.com,api.github.com
+          GH_AW_ALLOWED_DOMAINS: github.com,api.github.com,img.shields.io
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: >-
             {"add_comment":{"footer":false,"max":1,"target":"${{ inputs.pr_number }}"},
             "create_pull_request_review_comment":{"commit_id":"${{ steps.authority.outputs.head_sha }}","max":17,"side":"RIGHT","target":"${{ inputs.pr_number }}"},

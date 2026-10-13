@@ -198,6 +198,7 @@ safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]
   github-token: ${{ secrets.GITHUB_TOKEN }}
+  allowed-domains: [img.shields.io]
   staged: false
   data: true
   threat-detection:
