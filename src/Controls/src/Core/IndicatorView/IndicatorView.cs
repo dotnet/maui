@@ -232,11 +232,6 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
 		{
-			if (indicatorView.IndicatorLayout is IndicatorStackLayout oldLayout)
-			{
-				oldLayout.Remove();
-			}
-
 			if (newValue != null)
 			{
 				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView)
@@ -246,6 +241,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
 			}
 		}
