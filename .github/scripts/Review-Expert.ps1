@@ -132,7 +132,14 @@ function Get-ExpertContext {
         if ($context[$key] -notmatch '^[0-9a-f]{40}$') { throw 'Review context contains an invalid pinned revision.' }
     }
     if ($env:GITHUB_SHA -and $context.infrastructure_sha -cne $env:GITHUB_SHA) {
-        throw 'Review infrastructure does not match the workflow revision.'
+        if ($env:EXPERT_VERIFIED_EVIDENCE_SHA -cne $context.infrastructure_sha -or
+            $env:EXPERT_VERIFIED_EVIDENCE_SHA -notmatch '^[0-9a-f]{40}$' -or
+            $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or
+            $env:GITHUB_REF -cne 'refs/heads/kubaflo-expert-live-canary-39332' -or
+            $env:GITHUB_ACTOR -cne 'kubaflo' -or $env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or
+            $PRNumber -notin @(39332, 39345)) {
+            throw 'Review infrastructure does not match the workflow or verified producer revision.'
+        }
     }
     return $context
 }
@@ -152,7 +159,7 @@ function Get-ExpertRequest {
     $canary = $Repository -ceq 'dotnet/maui' -and
         $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-live-canary-39332' -and
         $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
-        $env:GITHUB_ACTOR -ceq 'kubaflo' -and $PRNumber -eq 39332
+        $env:GITHUB_ACTOR -ceq 'kubaflo' -and $PRNumber -in @(39332, 39345)
     if ($event.repository.full_name -cne $Repository -or
         ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'
@@ -399,7 +406,8 @@ function Invoke-ExpertPrepare {
         }
     }
     foreach ($key in @('target_repo', 'target-repo', 'repo', 'repository')) {
-        if ($message.Contains($key) -and $message[$key] -cne $Repository) {
+        if ($message.Contains($key) -and $message[$key] -cne $Repository -and
+            -not ($env:EXPERT_VERIFIED_EVIDENCE_SHA -and $message[$key] -ceq 'kubaflo/maui')) {
             throw 'Expert output selected an unexpected publication repository.'
         }
     }
@@ -547,6 +555,11 @@ function Invoke-ExpertPrepare {
                 foreach ($gap in $gaps) { $body += "`n- $([Net.WebUtility]::HtmlEncode($gap))`n" }
             }
             $body += "`n[Workflow run]($runUrl)`n"
+            if ($env:EXPERT_VERIFIED_EVIDENCE_RUN -match '^[1-9][0-9]*$') {
+                $body += "`n**Expert execution:** [Verified fork run]" +
+                    "(https://github.com/kubaflo/maui/actions/runs/$env:EXPERT_VERIFIED_EVIDENCE_RUN). " +
+                    "Inference and threat detection ran there; this separate trusted job performs native publication.`n"
+            }
             if ($body.Length -gt 60000) { throw 'The expert summary exceeds its publication limit.' }
             $items = [Collections.Generic.List[object]]::new()
             foreach ($finding in $inline) {

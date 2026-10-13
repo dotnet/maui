@@ -1,0 +1,191 @@
+name: Expert review native publication canary
+
+on:
+  push:
+    branches: [kubaflo-expert-live-canary-39332]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Approved upstream PR
+        required: true
+        type: choice
+        options: ['39332', '39345']
+      source_run:
+        description: Successful first-attempt expert run in kubaflo/maui
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: expert-native-publication-${{ inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'dotnet/maui' &&
+      github.ref == 'refs/heads/kubaflo-expert-live-canary-39332' &&
+      github.actor == 'kubaflo' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Authorize target and verify immutable expert-run provenance
+        id: authority
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_RUN: ${{ inputs.source_run }}
+        with:
+          script: |
+            const number = Number(process.env.PR_NUMBER);
+            const runId = process.env.SOURCE_RUN;
+            if (![39332, 39345].includes(number) || !/^[1-9][0-9]*$/.test(runId)) {
+              throw new Error('Unexpected publication target or evidence run.');
+            }
+            const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+              ...context.repo, username: 'kubaflo'
+            });
+            if (!['admin', 'maintain', 'write'].includes(permission.data.permission)) {
+              throw new Error('The requester no longer has upstream write access.');
+            }
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo, pull_number: number
+            });
+            if (pr.state !== 'open') throw new Error('The approved PR is closed.');
+            const { data: run } = await github.rest.actions.getWorkflowRun({
+              owner: 'kubaflo', repo: 'maui', run_id: runId
+            });
+            if (run.actor.login !== 'kubaflo' || run.event !== 'workflow_dispatch' ||
+                run.workflow_id !== 382256011 || run.run_attempt !== 1 ||
+                run.head_branch !== 'kubaflo-expert-review-canary-39332' ||
+                run.status !== 'completed' || run.conclusion !== 'success' ||
+                !/^[0-9a-f]{40}$/.test(run.head_sha)) {
+              throw new Error('Expert evidence is not from an approved successful producer.');
+            }
+            const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+              owner: 'kubaflo', repo: 'maui', run_id: runId, per_page: 100
+            });
+            for (const name of ['pre_activation', 'agent', 'detection', 'safe_outputs']) {
+              const matching = jobs.filter(job => job.name === name);
+              if (matching.length !== 1 || matching[0].conclusion !== 'success') {
+                throw new Error(`The independent ${name} evidence job did not succeed.`);
+              }
+            }
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('evidence_sha', run.head_sha);
+            core.setOutput('authorized', 'true');
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: github/gh-aw-actions/setup@6aab9e5b5c91c615506061f09bedd81a23babe3c # v0.86.2
+        with:
+          destination: ${{ runner.temp }}/gh-aw/actions
+          job-name: publish
+      - name: Download independently frozen context
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          repository: kubaflo/maui
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          name: expert-context-${{ inputs.source_run }}
+          path: ${{ runner.temp }}/expert-context
+      - name: Download validated original reviewer and worker records
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          repository: kubaflo/maui
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          name: expert-publication-${{ inputs.source_run }}
+          path: ${{ runner.temp }}/expert-evidence
+      - name: Download independent detector result
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          repository: kubaflo/maui
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          name: detection
+          path: ${{ runner.temp }}/expert-detection
+      - name: Revalidate detector, bounded results, permission, and snapshot freshness
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPERT_VERIFIED_EVIDENCE_SHA: ${{ steps.authority.outputs.evidence_sha }}
+          EXPERT_VERIFIED_EVIDENCE_RUN: ${{ inputs.source_run }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . .github/scripts/shared/Copy-BoundedDiagnosticFile.ps1
+          $logs = @(Get-ChildItem "$env:RUNNER_TEMP/expert-detection" -Recurse -File -Filter detection.log)
+          if ($logs.Count -ne 1) { throw 'Exactly one independent detector log is required.' }
+          $copy = Copy-BoundedDiagnosticFile -Source $logs[0].FullName `
+            -Destination "$env:RUNNER_TEMP/detection-verified.log" -MaxBytes 4MB
+          if ($copy.Truncated) { throw 'Detector evidence exceeded its limit.' }
+          $lines = @([IO.File]::ReadAllLines("$env:RUNNER_TEMP/detection-verified.log") |
+            Where-Object { $_ -match '^THREAT_DETECTION_RESULT:' })
+          if ($lines.Count -ne 1) { throw 'The independent detector verdict is missing or ambiguous.' }
+          $verdict = ConvertFrom-Json ($lines[0] -replace '^THREAT_DETECTION_RESULT:', '') -AsHashtable
+          foreach ($key in @('prompt_injection', 'secret_leak', 'malicious_patch')) {
+            if ($verdict[$key] -isnot [bool] -or $verdict[$key]) {
+              throw 'The independent GPT detector did not approve these results.'
+            }
+          }
+          .github/scripts/Review-Expert.ps1 -Stage Prepare -PRNumber ([int]$env:PR_NUMBER) `
+            -Repository dotnet/maui -ContextDirectory "$env:RUNNER_TEMP/expert-context" `
+            -ResultDirectory "$env:RUNNER_TEMP/expert-evidence/imported" `
+            -AgentOutputPath "$env:RUNNER_TEMP/expert-evidence/imported/agent-output.json" `
+            -OutputDirectory "$env:RUNNER_TEMP/expert-publication"
+      - name: Process live native review safe outputs
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/expert-evidence/imported/agent-output.json
+          GH_AW_SAFE_OUTPUTS_STAGED: 'false'
+          GH_AW_WORKFLOW_ID: copilot-review-expert
+          GH_AW_WORKFLOW_NAME: Expert review native publication canary
+          GH_AW_ENGINE_ID: copilot
+          GH_AW_ENGINE_MODEL: gpt-5.3-codex
+          GH_AW_ALLOWED_DOMAINS: github.com,api.github.com
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: >-
+            {"add_comment":{"footer":false,"max":1,"target":"${{ inputs.pr_number }}"},
+            "create_pull_request_review_comment":{"commit_id":"${{ steps.authority.outputs.head_sha }}","max":17,"side":"RIGHT","target":"${{ inputs.pr_number }}"},
+            "submit_pull_request_review":{"allowed_events":["COMMENT"],"commit_id":"${{ steps.authority.outputs.head_sha }}","footer":"none","max":1,"target":"${{ inputs.pr_number }}"},
+            "noop":{"max":1,"report-as-issue":"false"}}
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io, getOctokit);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/process_safe_outputs.cjs');
+            await main();
+      - name: Verify actual bot review receipt
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REVIEW_HEAD: ${{ steps.authority.outputs.head_sha }}
+        with:
+          script: |
+            const marker = `<!-- review-expert-run:${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId} -->`;
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              ...context.repo, pull_number: Number(process.env.PR_NUMBER), per_page: 100
+            });
+            const receipt = reviews.find(review => review.user.login === 'github-actions[bot]' &&
+              review.state === 'COMMENTED' && review.commit_id === process.env.REVIEW_HEAD &&
+              review.body.includes(marker));
+            if (!receipt?.id || !receipt.html_url) {
+              throw new Error('No real bot-posted expert review exists for this run and commit.');
+            }
+            core.notice(`Verified actual expert review: ${receipt.html_url}`);
+      - name: Publish a trusted failure notice if this attempt cannot publish
+        if: failure() && steps.authority.outputs.authorized == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          .github/scripts/Review-Expert.ps1 -Stage Notify -PRNumber ([int]$env:PR_NUMBER) `
+            -Repository dotnet/maui
