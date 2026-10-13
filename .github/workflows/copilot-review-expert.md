@@ -1,17 +1,11 @@
 ---
 description: Run the read-only MAUI expert reviewer with independent GPT dimension passes on an authorized PR.
 
-imports:
-  - uses: shared/pat_pool.md
-    with:
-      environment: copilot-pat-pool
-      condition: ${{ needs.pre_activation.outputs.review_ready == 'true' }}
-      random_seed: 0
-
-environment: copilot-pat-pool
 runs-on-slim: ubuntu-latest
 
 on:
+  push:
+    branches: [kubaflo-expert-live-canary-39332]
   slash_command:
     name: review
     events: [pull_request_comment]
@@ -39,7 +33,11 @@ on:
             core.info('Request a fresh expert review instead of rerunning earlier-attempt artifacts.');
             return;
           }
-          if (context.ref !== `refs/heads/${context.payload.repository.default_branch}`) {
+          const canary = context.repo.owner === 'dotnet' && context.repo.repo === 'maui' &&
+            context.ref === 'refs/heads/kubaflo-expert-live-canary-39332' &&
+            context.eventName === 'workflow_dispatch' && context.actor === 'kubaflo' &&
+            String(context.payload.inputs?.pr_number) === '39332';
+          if (context.ref !== `refs/heads/${context.payload.repository.default_branch}` && !canary) {
             core.info('Expert-review infrastructure must run from the default branch.');
             return;
           }
@@ -104,6 +102,7 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  copilot-requests: write
 
 model: gpt-5.3-codex
 models:
@@ -114,7 +113,6 @@ engine:
   bare: true
   env:
     COPILOT_PROVIDER_WIRE_API: responses
-    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 jobs:
   pre-activation:
@@ -125,7 +123,7 @@ jobs:
       review_head: ${{ steps.context.outputs.head_sha }}
       review_base: ${{ steps.context.outputs.base_sha }}
   agent:
-    needs: [pre_activation, activation, pat_pool, publication_context]
+    needs: [pre_activation, activation, publication_context]
   publication_context:
     needs: [pre_activation, activation]
     runs-on: ubuntu-slim
@@ -173,7 +171,7 @@ jobs:
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
   notify_failure:
-    needs: [pre_activation, activation, pat_pool, publication_context, agent, detection, safe_outputs, complete_request]
+    needs: [pre_activation, activation, publication_context, agent, detection, safe_outputs, complete_request]
     if: >-
       always() &&
       github.run_attempt == 1 &&
@@ -211,7 +209,6 @@ safe-outputs:
       bare: true
       env:
         COPILOT_PROVIDER_WIRE_API: responses
-        COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     prompt: |
       Analyze the full output without delegation. This is not an expert-review
       execution; do not load the expert adapter or run dimension workers.

@@ -149,8 +149,12 @@ function Get-ExpertRequest {
     if (-not $env:GITHUB_EVENT_PATH) { throw 'A trusted GitHub event is required for request completion.' }
     if ($env:GITHUB_RUN_ATTEMPT -cne '1') { throw 'Use a fresh expert-review request, not a workflow rerun.' }
     $event = Read-ExpertJson -Path $env:GITHUB_EVENT_PATH
+    $canary = $Repository -ceq 'dotnet/maui' -and
+        $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-live-canary-39332' -and
+        $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
+        $env:GITHUB_ACTOR -ceq 'kubaflo' -and $PRNumber -eq 39332
     if ($event.repository.full_name -cne $Repository -or
-        $env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)") {
+        ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'
     }
     if ($env:GITHUB_EVENT_NAME -eq 'issue_comment') {
