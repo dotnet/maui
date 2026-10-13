@@ -106,11 +106,10 @@ namespace Microsoft.Maui.Platform
 			get { return _icon; }
 			set
 			{
-				this.SetProperty(ref _icon, value, OnPropertyChanged);
-				// After the binding fires (and WinUI applies its initial visual-state transitions),
-				// re-apply the current Foreground to the new icon element so the custom disabled
-				// color isn't overridden by WinUI's default Disabled visual state.
-				UpdateForeground();
+				if (this.SetProperty(ref _icon, value, OnPropertyChanged))
+				{
+					UpdateForeground();
+				}
 			}
 		}
 
@@ -158,7 +157,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? TitleColor
 		{
-			get => IsSelected ? SelectedTitleColor : UnselectedTitleColor;
+			get => !IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedTitleColor : UnselectedTitleColor);
 		}
 
 		public WBrush? SelectedTitleColor
@@ -217,8 +216,11 @@ namespace Microsoft.Maui.Platform
 			get => _disabledForeground;
 			set
 			{
-				_disabledForeground = value;
-				UpdateForeground();
+				if (this.SetProperty(ref _disabledForeground, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
+				}
 			}
 		}
 
@@ -260,6 +262,7 @@ namespace Microsoft.Maui.Platform
 				{
 					_isEnabled = value;
 					OnPropertyChanged(nameof(IsEnabled));
+					OnPropertyChanged(nameof(TitleColor));
 					UpdateForeground();
 				}
 			}

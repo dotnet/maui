@@ -266,9 +266,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					vm.Content = bsi.Title;
 
-					// Set DisabledForeground BEFORE IsEnabled so that when the IsEnabled setter
-					// calls UpdateForeground(), DisabledForeground is already available.
-					vm.DisabledForeground = _shellAppearanceElement?.EffectiveTabBarDisabledColor?.ToPlatform();
 					vm.IsEnabled = bsi.IsEnabled;
 
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
@@ -292,6 +289,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
 				navView.SelectedItem = selectedItem;
+
+			if (_shellAppearanceElement is not null)
+			{
+				UpdateAppearance(_shellAppearanceElement);
+			}
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
@@ -682,6 +684,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
 			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
+			// Update the fallback resources before overriding them with the disabled color.
 			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
 			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
 			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);

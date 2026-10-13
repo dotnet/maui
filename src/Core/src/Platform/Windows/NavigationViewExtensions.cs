@@ -145,24 +145,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = paint?.ToPlatform();
 
-			if (navigationView.TopNavArea is not null)
+			if (navigationView.TopNavArea is not null && brush is not null)
 			{
-				if (brush is not null)
-				{
-					// Set both unselected-disabled and selected-disabled keys so the custom color
-					// applies regardless of whether the disabled tab is currently selected.
-					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
-					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
-				}
-				else
-				{
-					// When no disabled color is configured, only clear the selected-disabled key
-					// (which we own). Do NOT remove TopNavigationViewItemForegroundDisabled —
-					// UpdateTopNavigationViewItemTextColor may have set it as a fallback and
-					// removing it would revert disabled tabs to the WinUI system default, which
-					// is a regression for apps using TabBarUnselectedColor without TabBarDisabledColor.
-					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
-				}
+				// Set both unselected-disabled and selected-disabled keys so the custom color
+				// applies regardless of whether the disabled tab is currently selected.
+				navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
+				navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
 
 				navigationView.TopNavArea.RefreshThemeResources();
 			}

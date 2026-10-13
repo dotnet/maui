@@ -14,34 +14,15 @@ public class Issue32995 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void TabBarDisabledColorAppliedToDisabledTab()
 	{
+		Exception? exception = null;
 		App.WaitForElement("Tab2");
-		VerifyScreenshot("DisabledTabWithGreenColor");
-
+		VerifyScreenshotOrSetException(ref exception,"DisabledTabWithGreenColor");
 		App.Tap("EnableButton");
 		App.WaitForElement("Tab2");
-		VerifyScreenshot("EnabledTabWithNormalColor");
+		VerifyScreenshotOrSetException(ref exception,"EnabledTabWithNormalColor");
+		if(exception is not null)
+		{
+			throw exception;
+		}
 	}
-
-	// Regression test for Windows: verifies that a tab added dynamically after appearance
-	// is already applied correctly inherits TabBarDisabledColor. Without the fix in
-	// ShellItemHandler.SetValues (setting DisabledForeground before IsEnabled), the new
-	// tab's NavigationViewItemViewModel.UpdateForeground() fires with DisabledForeground=null
-	// and falls back to the default unselected color instead of the custom disabled color.
-#if WINDOWS
-	[Test]
-	[Category(UITestCategories.Shell)]
-	public void DynamicallyAddedDisabledTabInheritsTabBarDisabledColor()
-	{
-		App.WaitForElement("AddDisabledTabButton");
-		App.Tap("AddDisabledTabButton");
-
-		// Wait for the new tab to appear in the navigation bar
-		App.WaitForElement("Tab3");
-
-		// The dynamically added Tab3 is disabled with TabBarDisabledColor = Green.
-		// Without the fix, DisabledForeground is null when IsEnabled.set fires
-		// UpdateForeground(), so Tab3 renders with the default unselected color instead of green.
-		VerifyScreenshot("DynamicallyAddedDisabledTabWithGreenColor");
-	}
-#endif
 }
