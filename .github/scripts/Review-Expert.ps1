@@ -137,7 +137,7 @@ function Get-ExpertContext {
             $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or
             $env:GITHUB_REF -cne 'refs/heads/kubaflo-expert-live-canary-39332' -or
             $env:GITHUB_ACTOR -cne 'kubaflo' -or $env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or
-            $PRNumber -notin @(39332, 39345)) {
+            $PRNumber -notin @(39361, 39360, 39359, 39357, 39353, 39346, 39345, 39344, 39343, 39342)) {
             throw 'Review infrastructure does not match the workflow or verified producer revision.'
         }
     }
@@ -159,7 +159,8 @@ function Get-ExpertRequest {
     $canary = $Repository -ceq 'dotnet/maui' -and
         $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-live-canary-39332' -and
         $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
-        $env:GITHUB_ACTOR -ceq 'kubaflo' -and $PRNumber -in @(39332, 39345)
+        $env:GITHUB_ACTOR -ceq 'kubaflo' -and
+        $PRNumber -in @(39361, 39360, 39359, 39357, 39353, 39346, 39345, 39344, 39343, 39342)
     if ($event.repository.full_name -cne $Repository -or
         ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'
