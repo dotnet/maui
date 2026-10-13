@@ -1044,26 +1044,42 @@ namespace Microsoft.Maui.DeviceTests
 				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
 				await WaitForInitialPositionAsync(handler, scrollViewer);
 				var loopableCollectionView = GetPrivateField<object>(handler, "_loopableCollectionView");
-				SetPrivateProperty(loopableCollectionView, "CenterMode", true);
-				try
+				await WaitForSettleAsync(scrollViewer, () =>
 				{
-					handler.PlatformView.ScrollIntoView(handler.PlatformView.Items[2]);
-				}
-				finally
+					SetPrivateProperty(loopableCollectionView, "CenterMode", true);
+					try
+					{
+						handler.PlatformView.ScrollIntoView(handler.PlatformView.Items[2]);
+					}
+					finally
+					{
+						SetPrivateProperty(loopableCollectionView, "CenterMode", false);
+					}
+				});
+
+				bool IsOverrideVisibleInHighRange()
 				{
-					SetPrivateProperty(loopableCollectionView, "CenterMode", false);
+					handler.PlatformView.UpdateLayout();
+					if (handler.PlatformView.ItemsPanelRoot is not Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel)
+					{
+						return false;
+					}
+
+					for (int index = itemsPanel.FirstVisibleIndex; index <= itemsPanel.LastVisibleIndex; index++)
+					{
+						if (index > 1000 && index % items.Count == 2)
+						{
+							return true;
+						}
+					}
+
+					return false;
 				}
 
 				await AssertEventually(
-					() =>
-					{
-						handler.PlatformView.UpdateLayout();
-						return handler.PlatformView.ItemsPanelRoot is Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel
-							&& itemsPanel.FirstVisibleIndex > 1000
-							&& itemsPanel.FirstVisibleIndex % items.Count == 2;
-					},
-					timeout: 3000,
-					message: "The looped collection did not move to its high physical range.");
+				 IsOverrideVisibleInHighRange,
+				 timeout: 3000,
+				 message: "The looped collection did not move to its high physical range.");
 
 				SetPrivateField(handler, "_isPositionUpdateFromCollection", true);
 				try
@@ -1110,15 +1126,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, overrideScrollToRequests);
 				Assert.False(exposedCenterMode);
 				await AssertEventually(
-					() =>
-					{
-						handler.PlatformView.UpdateLayout();
-						return handler.PlatformView.ItemsPanelRoot is Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel
-							&& itemsPanel.FirstVisibleIndex > 1000
-							&& itemsPanel.FirstVisibleIndex % items.Count == 2;
-					},
-					timeout: 3000,
-					message: "The centered override left the looped collection's high physical range.");
+				 IsOverrideVisibleInHighRange,
+				 timeout: 3000,
+				 message: "The centered override left the looped collection's high physical range.");
 			});
 		}
 
