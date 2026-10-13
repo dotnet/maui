@@ -419,10 +419,18 @@ Publication uses the repository-scoped Actions token and appears as
 `github-actions[bot]`; it does not require a MauiBot publishing credential.
 
 The summary is distinct from AzDO's `AI Summary` and does not hide or replace
-it. **Complete** includes a concise summary even with zero new findings;
+it. It uses the same compact author/commit header, Scope/Commit badges, and
+closed **Expert Analysis** and **Follow-up** accordions as the other review
+reports. Status and new-finding counts stay visible; coverage, validation,
+unplaced findings, evidence gaps, and the source-only limitation are inside
+Expert Analysis. Already published inline findings are counted separately,
+not reported as a clean review. There are no visible workflow or producer-run
+links, including in stale/failure notices; hidden run/result markers and
+publication receipts retain provenance and deduplication.
+**Complete** includes a concise summary even with zero new findings;
 **incomplete** discloses missing workers, collection gaps, later feedback or
 interrupted validation, and never claims a clean review. A **stale snapshot** posts only a
-scoped notification with a run link, not stale inline findings. Detection or
+scoped expandable notification, not stale inline findings. Detection or
 validation failures block unsafe review output, not status comments. A trusted
 notification job runs after every authorized attempt, including failures,
 cancellations and skipped downstream jobs. If no result from that run is found

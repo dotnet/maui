@@ -27,6 +27,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/shared/Copy-BoundedDiagnosticFile.ps1"
+. "$PSScriptRoot/shared/New-ExpertReviewComment.ps1"
 
 function Write-ExpertJson {
     param([string]$Path, [AllowNull()][object]$Value)
@@ -468,10 +469,12 @@ function Invoke-ExpertPrepare {
     if ($current.state -cne 'open') { throw 'The target PR closed before expert-review publication.' }
     if ($current.head.sha -cne $context.head_sha -or $current.base.sha -cne $context.base_sha) {
         $receipt.status = 'stale'
-        $body = "$runMarker`n`n## Expert Review - stale snapshot`n`n" +
-            "The PR changed after the reviewed snapshot ``$($context.head_sha)`` was frozen. " +
-            "No stale inline findings were posted. [View the run]($runUrl) and request a fresh " +
-            "``/review expert-review``. This is not a code or test verdict."
+        $analysis = "The PR head or base changed after this snapshot was frozen. " +
+            'No stale inline findings were posted. This is an automation status notice, not a code or test verdict.'
+        $body = "$runMarker`n`n" + (New-ExpertReviewComment -Status stale `
+            -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
+            -ServerUrl $env:GITHUB_SERVER_URL -Summary 'No stale findings were published.' `
+            -Analysis $analysis -FollowUp '**Next action:** Request a fresh review of the current PR snapshot.')
         $output.items = @(@{ type = 'add_comment'; body = $body })
     } else {
         $feedback = Get-ExpertFeedback
@@ -503,13 +506,14 @@ function Invoke-ExpertPrepare {
             $lineMap[$file.filename] = $lines
         }
         $inline = [Collections.Generic.List[object]]::new()
+        $alreadyPostedCount = 0
         foreach ($finding in $findings) {
             $alreadyPosted = @($feedback.inline | Where-Object {
                 $_.path -ceq $finding.path -and $_.line -eq $finding.line -and
                 $_.commit_id -ceq $context.head_sha -and
                 ([string]$_.body).Contains($finding.body, [StringComparison]::Ordinal)
             }).Count -gt 0
-            if ($alreadyPosted) { continue }
+            if ($alreadyPosted) { $alreadyPostedCount++; continue }
             if ($lineMap.ContainsKey($finding.path) -and $lineMap[$finding.path].Contains($finding.line)) {
                 $inline.Add($finding)
             } else {
@@ -525,24 +529,34 @@ function Invoke-ExpertPrepare {
             $receipt.existing_review_id = $existing[0].id
             $output.items = @(@{ type = 'noop'; message = 'This expert-review run already published its summary on this PR revision.' })
         } else {
-            $body = "$runMarker`n$resultMarker`n`n## Expert Review - $status`n`n" +
-                "> **AI-generated review** using independent GPT dimension passes.`n`n" +
-                "**Reviewed commit:** ``$($context.head_sha)```n`n" +
-                "**Coverage:** $completed of $($dimensions.Count) routed dimensions completed; finding validation " +
-                "$(if ($state.validation_complete) { 'completed' } else { 'incomplete' }).`n`n" +
-                "**Findings:** $($inline.Count) new inline findings; $($unplaced.Count) review-body findings. " +
-                "$(if (-not $inline.Count -and -not $unplaced.Count -and $status -eq 'complete') {
-                    'No new actionable findings were found.'
-                })`n`nSource/history review only. No builds or tests were executed; this is not merge approval.`n"
+            $summary = "$($inline.Count) new inline $(if ($inline.Count -eq 1) { 'finding' } else { 'findings' }); " +
+                "$($unplaced.Count) review-body $(if ($unplaced.Count -eq 1) { 'finding' } else { 'findings' })."
+            $analysis = "> **AI-generated review** using independent GPT dimension passes.`n`n" +
+                "**Coverage:** $completed of $($dimensions.Count) routed dimensions completed.`n`n" +
+                "**Finding validation:** $(if ($state.validation_complete) { 'Completed' } else { 'Incomplete' }).`n"
+            if ($alreadyPostedCount) {
+                $analysis += "`n$alreadyPostedCount previously published inline " +
+                    "$(if ($alreadyPostedCount -eq 1) { 'finding was' } else { 'findings were' }) not repeated.`n"
+            } elseif (-not $inline.Count -and -not $unplaced.Count -and $status -eq 'complete') {
+                $analysis += "`nNo new actionable findings were found.`n"
+            }
             if ($unplaced.Count) {
-                $body += "`n### Findings without an inline anchor`n"
-                foreach ($text in $unplaced) { $body += "`n- $([Net.WebUtility]::HtmlEncode($text))`n" }
+                $analysis += "`n### Findings without an inline anchor`n"
+                foreach ($text in $unplaced) { $analysis += "`n- $([Net.WebUtility]::HtmlEncode($text))`n" }
             }
             if ($gaps.Count) {
-                $body += "`n### Incomplete evidence`n"
-                foreach ($gap in $gaps) { $body += "`n- $([Net.WebUtility]::HtmlEncode($gap))`n" }
+                $analysis += "`n### Incomplete evidence`n"
+                foreach ($gap in $gaps) { $analysis += "`n- $([Net.WebUtility]::HtmlEncode($gap))`n" }
             }
-            $body += "`n[Workflow run]($runUrl)`n"
+            $analysis += "`nSource/history review only. No builds or tests were executed; this is not merge approval.`n"
+            $followUp = if ($status -eq 'incomplete') {
+                '**Next action:** Account for the listed evidence gaps before treating this review as complete.'
+            } elseif ($findings.Count -or $unplaced.Count) {
+                '**Next action:** Review the inline comments and any findings without an inline anchor.'
+            } else { '' }
+            $body = "$runMarker`n$resultMarker`n`n" + (New-ExpertReviewComment -Status $status `
+                -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
+                -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis -FollowUp $followUp)
             if ($body.Length -gt 60000) { throw 'The expert summary exceeds its publication limit.' }
             $items = [Collections.Generic.List[object]]::new()
             foreach ($finding in $inline) {
@@ -625,14 +639,21 @@ function Invoke-ExpertNotify {
             return
         }
     }
-    $body = "$marker`n<!-- review-expert-failure -->`n`n" +
-        "The ``/review expert-review`` workflow could not publish a validated review. " +
-        "[View the workflow run]($runUrl). This is an automation status notice, not a code or test verdict. "
-    $body += if ($pr.state -ceq 'open') {
-        'The run failed, was interrupted, or produced no publication receipt. Request a fresh expert review after resolving the cause.'
+    $analysis = 'The `/review expert-review` workflow could not publish a validated review. ' +
+        'This is an automation status notice, not a code or test verdict. '
+    $analysis += if ($pr.state -ceq 'open') {
+        'The run failed, was interrupted, or produced no publication receipt.'
     } else {
         'The PR is now closed; no inline findings were posted.'
     }
+    $followUp = if ($pr.state -ceq 'open') {
+        '**Next action:** Resolve the automation failure and request a fresh expert review.'
+    } else { '' }
+    $body = "$marker`n<!-- review-expert-failure -->`n`n" + (New-ExpertReviewComment `
+        -Status $(if ($pr.state -ceq 'open') { 'failed' } else { 'closed' }) `
+        -HeadSha $pr.head.sha -Author $pr.user.login -Repository $Repository `
+        -ServerUrl $env:GITHUB_SERVER_URL -Summary 'No validated expert review was published.' `
+        -Analysis $analysis -FollowUp $followUp)
     $notification = Invoke-ExpertGh -Arguments @("repos/$Repository/issues/$PRNumber/comments", '--method', 'POST') -Body @{
         body = $body
     }
