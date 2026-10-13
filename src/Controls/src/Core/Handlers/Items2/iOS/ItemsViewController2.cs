@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _hasNoItems = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
+		bool _isReconfiguringItems;
 		bool _isRotating;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.CarouselViewController2ControllerDoesNotLeakAfterNavigationPop")]
 		NSObject _orientationObserver;
@@ -116,7 +117,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
+			// UIKit requires reconfiguration to dequeue the existing cell's reuse identifier,
+			// even when a template selector returns a new template instance.
+			var reuseId = _isReconfiguringItems
+				? collectionView.CellForItem(indexPath)?.ReuseIdentifier
+				: null;
+			var cell = collectionView.DequeueReusableCell(reuseId ?? DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
 
 			// We need to get the index path that is adjusted for the item source
 			// Some ItemsView like CarouselView have a loop feature that will make the index path different from the item source
@@ -283,9 +289,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					// the scroll position adjustment that would otherwise occur during the layout pass.
 					UIView.PerformWithoutAnimation(() =>
 					{
-						// Use ReconfigureItems (iOS 15+) which is designed for size changes
-						// without full cell recreation - more efficient than ReloadItems
-						collectionView.ReconfigureItems(indexPathsArray);
+						var wasReconfiguringItems = _isReconfiguringItems;
+						_isReconfiguringItems = true;
+						try
+						{
+							// Reconfigure size changes without recreating the existing cells.
+							collectionView.ReconfigureItems(indexPathsArray);
+						}
+						finally
+						{
+							_isReconfiguringItems = wasReconfiguringItems;
+						}
 					});
 				}
 
@@ -566,7 +580,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
 		// Exposed so the handler can avoid the expansive-size fallback without
 		// reaching into _emptyViewDisplayed or ItemsSource directly.
-		internal bool IsEmpty => _isEmpty && !_emptyViewDisplayed;
+		internal bool IsEmpty
+		{
+			get
+			{
+				// On macOS 27, UIKit can defer data-source callbacks until the CollectionView
+				// has usable bounds. Therefore, _isEmpty may still have its initial value
+				// during the first measurement.
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(27, 0))
+				{
+					return (ItemsSource?.ItemCount ?? 0) == 0 && !_emptyViewDisplayed;
+				}
+
+				return _isEmpty && !_emptyViewDisplayed;
+			}
+		}
 
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{

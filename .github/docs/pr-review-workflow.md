@@ -5,6 +5,8 @@ This guide explains the automated investigation commands used in dotnet/maui:
 - `/review`
 - `/review tests`
 - `/review performance`
+- `/evaluate-tests`
+- `/issue triage` (on open issues)
 - `/issue trace-regression` (on issues)
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
@@ -17,9 +19,50 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 | `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
+| `/evaluate-tests` | Repository users with write, maintain, or admin access | Evaluates test quality and coverage on an open PR with test source changes. | Posts one test evaluation report. |
+| `/issue triage` | Repository users with write, maintain, or admin access | Applies evidence-backed manual labels to an open issue. | Labels only; explanation retained in Actions artifacts, not a public report. |
 | `/issue trace-regression` | Repository users with write, maintain, or admin access | Traces an issue's reported regression through release boundaries and source history to candidate introducing commits or PRs. | Posts one expandable `Regression Trace` comment on the issue and hides older reports. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR or issue.
+
+## Command access and other entrypoints
+
+The [`dotnet/maui-external-partners` team](https://github.com/orgs/dotnet/teams/maui-external-partners)
+already has **write access to dotnet/maui**. Inherited team access satisfies the
+current repository-permission gates; the team's organization-wide default role
+is not its repository grant. These commands do not require public membership or
+a separate team-roster allowlist. Authorization still depends on the caller's
+current effective repository permission, not the team name alone.
+
+| Entrypoint | Permission gates and non-permission restrictions |
+| --- | --- |
+| [`/issue triage`](../workflows/issue-triage.md) | Native roles and pre-activation accept write/maintain/admin. Trusted `IssueTriage.ps1` rechecks that permission during Gather, Validate and Complete. Requires a new exact human command on an open issue, trusted default-branch infrastructure and attempt one; freshness, evidence authority and exact label postconditions remain mandatory. |
+| [`/issue trace-regression`](../workflows/issue-trace-regression.md) | Native roles, collector checks before/after gathering and command completion accept write/maintain/admin. Requires a new exact human issue comment; publication validates the triggering issue and completion requires the actual report receipt. |
+| [`/evaluate-tests`](../workflows/copilot-evaluate-tests.md) | Native roles accept write/maintain/admin. The compiled association prefilter retains OWNER/MEMBER/COLLABORATOR; collaborator access includes repository write access, not only public organization membership. Requires a PR comment and an open PR with test source changes. |
+| [`/review tests`](../workflows/copilot-review-tests.md) | Native roles, exact-command authorization/minimization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR; reporting uses the triggering target. |
+| [`/review performance`](../workflows/copilot-review-performance.md) | Native roles, pre-activation, publication reauthorization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR and trusted default-branch tooling; pinned evidence/report validation still applies. |
+| [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review tests` and `/review performance` are separate workflows; `/review rerun` is unsupported. |
+| [`/evaluate-skills`](../workflows/skill-validation.yml) | The slash gate accepts write/maintain/admin on PR comments. Static-only mode can disable live evaluation independently of caller access; trusted-source and evaluation-content validation still apply. |
+| [`/rebase`](../workflows/rebase.yml) | The commenter must have write/maintain/admin and post exactly `/rebase` on an open PR. Conflicts or unavailable maintainer edits can prevent branch updates after authorization. |
+| [`/backport [to] <branch>`](../workflows/backport.yml) | Delegates to `dotnet/arcade`'s `backport-base.yml@main`; its current caller gate accepts write/admin, so partner write access qualifies. Requires a merged source PR and an existing target branch; upstream behavior can change independently. |
+
+Post commands as new comments on the target type above, not inside an issue
+description, quotation or code fence. Issue commands are not PR commands and
+vice versa. Effective write access makes a caller eligible; it does not bypass
+command matching, target state, infrastructure, validation or safety checks.
+
+For `/issue triage`, absence of a public report is intentional. A successful
+validated no-change/withheld-only result uses `noop`; a blocked, warning or
+incomplete run keeps the command visible. Inspect Actions artifacts, detector
+logs and native handler outcomes before claiming delivery. See
+[`/issue triage`](issue-triage.md) for the artifact-only contract and
+non-atomic completion postconditions. A triggered or green workflow is not
+itself proof of applied labels.
+
+External `/azp` commands are owned by the Azure Pipelines GitHub integration.
+Its trust/service-connection permissions are separate from these repository
+workflows; repository YAML or a GitHub team grant alone does not configure
+Azure authorization.
 
 ## Choosing the right command
 
@@ -68,8 +111,12 @@ working/failing versions, exact release-tag SHAs, and a bounded release comparis
 The collected context is mounted read-only in the agent sandbox. A failed context
 download stops the agent before inference; no report is published without that
 snapshot. Only headings outside backtick or tilde fences are parsed as form fields.
-Duplicate version headings are ambiguous rather than silently selecting the first value;
-comment pages whose counts change during collection record an evidence gap.
+Conflicting duplicate version headings are ambiguous rather than silently selecting
+the first value. Repeated answers identifying the same precise version are
+consistent, including `v` prefixes, GA/SR qualifiers and a trailing parenthetical
+note that contains no other version. The raw issue body and first answer remain
+available; generic or conflicting answers are not normalized into a release.
+Comment pages whose counts change during collection record an evidence gap.
 The collector also revalidates the issue's comment count and update marker after
 pagination; concurrent changes or a failed revalidation make the comment evidence incomplete.
 The agent narrows that history to affected code and verifies candidate diffs,
@@ -77,8 +124,9 @@ platform applicability and shipped ancestry. API failures, missing versions,
 divergent branches and truncated history remain explicit evidence gaps.
 
 Optional context extensions provide a cheap boundary preflight, a diagnostic
-inventory and a trusted bounded source/history snapshot. Ambiguous headings or
-two unmapped reported versions select `boundary-only`: the agent reads existing
+inventory and a trusted bounded source/history snapshot. Conflicting headings or
+two unmapped versions without a usable supplemental source pair select
+`boundary-only`: the agent reads existing
 corrections/diagnostics and reports the missing exact installed versions without
 loading the full investigation skill or doing source/history searches. The
 trusted mode is exposed as a fixed workflow output, not inferred from issue
@@ -87,17 +135,56 @@ receipt/minimization guards still run. One exact boundary permits static leads,
 not regression attribution. Generic Preview/RC workload-set metadata is supplemental and does
 not verify the application's installed MAUI packages.
 Recoverable Preview/RC shorthand remains eligible for `metadata-resolution`
-(one 30-release list page and two matching published releases), rather than being
+(one 30-release list page and two matching published releases across collector
+and agent), rather than being
 discarded because its shorthand has no exact tag. Precise version values already
 provided in prose/tables are inventoried as supplemental, unverified leads;
 they never silently replace ambiguous form fields.
+An additive `investigation` record keeps a selected source pair and comparison
+separate from `boundaries.reportedGood`/`reportedBad` and the original comparison.
+An explicit good/bad pair from one human comment or issue text can select exact
+release snapshots, with at most four supplemental version lookups.
+Sources are considered in reverse frozen encounter order, not lexicographic
+permalink order, so later corrections take precedence across comment-ID lengths.
+Outcome cells or prose sentences must contain one version and fit 1,024 characters;
+fenced code and SDK/OS version labels are excluded. The twenty-observation cap
+retains early and late observations. Each selection retains author, outcome excerpt and permalink and
+does not establish equivalent-environment runtime confirmation.
+Statements such as "failed to reproduce" or "cannot reproduce" remain
+unclassified outcomes; inability to reproduce is not a failing version boundary
+or proof that a version works.
+Present- and past-tense negations are handled consistently: "did not work" is
+failing, while "did not reproduce" is a human-reported non-reproduction outcome,
+not a failing boundary or verified runtime proof.
+An explicit human "from/since version" failing observation can instead pair with
+a resolved working form answer; both origins remain visible and the observed
+failure is not claimed to be the first bad release.
+Preview/RC release metadata can supply a `mapped-source` lead from the published
+MAUI workload row, keeping the workload-set tag, package version and source commit
+distinct. It cannot resolve the application's installed package or justify a
+verified regression boundary.
+Mapping eligibility, shorthand matching and preflight use the same canonical
+version normalizer, including accepted parenthetical annotations, while retaining
+the raw reported answer for provenance.
+`investigation.releaseMetadata` records whether the list was requested and how
+many release reads were attempted so inference cannot repeat an already spent
+metadata budget.
 
-The trusted collector reads only `dotnet/maui`, at exact resolved release SHAs,
+The trusted collector reads only `dotnet/maui`, at exact resolved release SHAs
+or explicitly marked published-release source commits,
 using symptom-selected **fixed paths**, not agent-supplied endpoints. Its budget
-is six paths, 64 KiB per source file, ten commits per path and six commit diffs
+is six paths, 64 KiB per complete source file, ten commits per path and six commit diffs
 with 8,000-character patches. Every source/history record includes revision/path
-and API provenance; capped lists, renames not followed, missing/oversized files
-and unavailable patches remain explicit. This deliberately limited read-only
+and API provenance. For the large iOS `NavigationRenderer`, fixed trusted
+symbols permit at most 256 KiB decoded input and retain at most 16 KiB/240 lines
+of excerpts with original blob, size and line ranges. Such records explicitly
+have `complete: false`, `representation: symbol-excerpts` and `content: null`;
+omitted code cannot establish absence. Diff selection prefers commits in the
+visible bad-side comparison history and round-robins across paths. A divergent
+comparison remains non-linear even when it helps prioritize a source lead.
+Older history is excluded only for a complete forward comparison. Capped lists,
+renames not followed, missing/oversized files and unavailable patches remain
+explicit. This deliberately limited read-only
 snapshot restores useful leads without changing the MCP DIFC
 `min-integrity: approved` policy, visibility rules or shell allowlist. Original
 hosted failures included integrity-filtered history and separate shell permission
@@ -108,11 +195,17 @@ the frozen artifact has not been verified. That integration requires
 platform-owner evidence or an authorized non-production policy test; the hosted
 public-repository acceptance runs do not establish it.
 
-An explicit HybridWebView name selects its shared and native handlers
-before other groups and excludes the legacy WebView group.
+Title-matched groups precede incidental body/comment matches, and reported
+platforms filter native paths before applying the six-path cap. Fixed groups
+include Resizetizer versions/packaging, iOS NavigationPage TitleView,
+item safe-area/wrapper handling, Windows CollectionView selection/AOT,
+Android/iOS/Windows SwipeView and SourceGen resource generation. An explicit
+HybridWebView name selects its shared and applicable native handlers
+and excludes the legacy WebView group.
 `EvaluateJavaScriptAsync` is shared by both controls and does not independently
 select either group; method-only reports retain the unmatched-path gap. Legacy WebView
-selection includes shared, Android, iOS and Windows handlers; source presence at
+selection prioritizes Android's native view when Android is reported, followed
+by applicable platform and shared handlers; source presence at
 the exact release remains explicit, not proof that each platform is affected.
 
 Inline logs/code and author corrections are analyzed before requesting more
@@ -121,7 +214,10 @@ credentials, signed URLs, internal links and unrelated personal data and escapes
 dynamic HTML/badge components. These are prompt constraints, not proof of
 deterministic redaction.
 Inventory uses the issue body and human (`authorType: User`) comments,
-not bot reports. Public GitHub attachment links retain their originating
+not bot reports. Prior regression/AI-summary/replication reports are also excluded even
+when posted by an account GitHub identifies as a User; comments retain an
+`isPriorReport` marker so the first agent read can omit them.
+Public GitHub attachment links retain their originating
 comment; the twenty-mention cap retains the earliest ten and latest ten so a
 later correction can reach image selection. An inventory alone is **not
 analysis**. Trailing sentence periods are removed from inventoried attachment

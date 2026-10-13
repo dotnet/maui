@@ -2185,8 +2185,13 @@ These look like permission errors but are physical:
 - OData `$top` must be encoded as `%24top` in URLs.
 - Each bash call runs in a fresh subshell. Persist state to
   `/tmp/gh-aw/agent/<file>`.
-- Bash allowlist per frontmatter `tools.bash`: no `gh`, no `pwsh`, no
-  `python`. Use `curl` + `jq` for all API calls.
+- Bash allowlist per frontmatter `tools.bash`: no `gh`, no `python`.
+  Use `curl` + `jq` for all API calls.
+- `pwsh` is available for deterministic safe-output expectation registration
+  (`.github/scripts/Register-CiFixSafeOutputExpectation.ps1`) and transport
+  validation/registration (`.github/scripts/Test-CiFixTransport.ps1`). Run these
+  helpers as required by Hard Rule 11 and Step 5.6; never bypass their fail-closed
+  registration or transport checks.
 
 ## Output discipline
 

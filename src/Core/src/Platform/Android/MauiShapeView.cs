@@ -9,5 +9,7 @@ namespace Microsoft.Maui.Platform
 		{
 			ClipToOutline = true;
 		}
+
+		internal override float GetDisplayDensity() => Context!.GetDisplayDensity();
 	}
 }

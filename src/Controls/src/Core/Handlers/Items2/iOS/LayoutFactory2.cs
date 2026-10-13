@@ -606,14 +606,15 @@ internal static class LayoutFactory2
 		{
 			if (newBounds.Size.IsCloseTo(_currentSize))
 			{
-				// 	The CollectionView's own size hasn't actually changed, so there's no need to
-				// invalidate(and potentially reset scroll position / content offset).This is what
-				// prevents an unrelated sibling resize from jumping this CollectionView's scroll
-				// back to the start.
-				return false;
+				var currentBounds = CollectionView.Bounds;
+				// Preserve the scroll position for unrelated layout passes, but let the native
+				// compositional layout handle bounds-origin changes produced by scrolling.
+				return newBounds.X == currentBounds.X && newBounds.Y == currentBounds.Y
+					? false
+					: base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+			return true;
 		}
 
 		public override void FinalizeCollectionViewUpdates()

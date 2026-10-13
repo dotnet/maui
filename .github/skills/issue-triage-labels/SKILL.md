@@ -262,6 +262,14 @@ substitutes for current original issue/comment evidence.
   Every citation, including content labels and narrow removals, must survive
   prose filtering. Samples/code may inform analysis but are not authority quotes.
   Only a link's visible prose can support a decision.
+  Prepared sources expose unmodified `source.body` and citation-safe `source.prose`.
+  Choose contiguous verbatim quotes present in both strings with exact ordinal
+  matching; prefer short complete prose sentences that support the label.
+  Never strip markup or rewrite a quote, or cite across blanked code, quoted text
+  or link-metadata spans. `source.prose` is a citation aid only, not proof of
+  authority or semantic support; all provenance, policy and contradiction checks
+  still apply. Withhold a label if eligible evidence is unavailable rather than
+  emitting malformed evidence.
   Review/no-repro/version recommendations need the corresponding technical
   assessment, not merely a comment from an authorized author.
   Completed review and no-repro assessments must be unconditional and
@@ -461,7 +469,13 @@ a CLI transport. Do not manufacture a missing-tool signal for an unnecessary
 CLI path. Missing required evidence/tools still uses `report_incomplete`.
 
 Emit one `add_comment` intent with placeholder body `Triage proposal ready for
-trusted validation.` and that comment tool's `data.triage` of this shape:
+trusted validation.` and that comment tool's `data.triage`.
+
+This intent is internal typed evidence transport only. It must still be emitted
+for structured validation, including withheld-only proposals. Trusted code
+retains the explanation and decisions in Actions artifacts and always strips
+the comment intent before native publication; do not request a public report.
+Use this structured data shape:
 
 ```json
 {
@@ -509,7 +523,10 @@ After validation and report rendering, trusted code re-fetches the complete
 bounded snapshot, rechecks current authority and source-command/open-issue state,
 and requires an unchanged context hash before releasing native intents.
 Intervening changes require a fresh invocation, not a job rerun. This final
-freshness check does not make the later label/comment API writes atomic.
+freshness check does not make the later label API writes atomic. Only validated
+label intents are released. Withheld-only proposals become a native `noop`
+after the report and decisions are retained, without a public triage comment.
+Separate Policy Service replies triggered by feedback labels are unchanged.
 
 When no changes or substantive withheld decisions are needed, call `noop` with
 a short reason. Missing required evidence is incomplete, not a successful review;
