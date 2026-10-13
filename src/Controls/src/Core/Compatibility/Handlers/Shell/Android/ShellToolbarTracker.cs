@@ -883,7 +883,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						ADrawableCompat.SetTintList(IconBitmap, null); // Clear tint to preserve original icon colors
 					}
 
-					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
+					var bounds = Bounds;
+					var width = bounds.Width();
+					var height = bounds.Height();
+					var iconWidth = IconBitmap.IntrinsicWidth;
+					var iconHeight = IconBitmap.IntrinsicHeight;
+
+					if (iconWidth > 0 && iconHeight > 0)
+					{
+						var scale = Math.Min((float)width / iconWidth, (float)height / iconHeight);
+						width = (int)Math.Round(iconWidth * scale);
+						height = (int)Math.Round(iconHeight * scale);
+					}
+
+					var left = bounds.Left + (bounds.Width() - width) / 2;
+					var top = bounds.Top + (bounds.Height() - height) / 2;
+					IconBitmap.SetBounds(left, top, left + width, top + height);
 					IconBitmap.Draw(canvas);
 				}
 				else if (!string.IsNullOrEmpty(Text))

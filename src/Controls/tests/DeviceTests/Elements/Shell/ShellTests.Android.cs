@@ -117,6 +117,60 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Back button IconOverride keeps its aspect ratio")]
+		public async Task BackButtonIconOverrideKeepsItsAspectRatio()
+		{
+			SetupBuilder();
+
+			var icon = new FontImageSource { Glyph = "\u2039" };
+			var secondPage = new ContentPage();
+			Shell.SetBackButtonBehavior(secondPage, new BackButtonBehavior { IconOverride = icon });
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(secondPage);
+				await AssertEventually(() => GetPlatformToolbar(handler)?.NavigationIcon is not null);
+
+				var backButton = GetPlatformToolbar(handler).GetChildrenOfType<AppCompatImageButton>().First();
+				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
+
+				var iconDrawable = (await icon.GetPlatformImageAsync(MauiContext)).Value;
+				iconDrawable.SetBounds(0, 0, iconDrawable.IntrinsicWidth, iconDrawable.IntrinsicHeight);
+				using var iconBitmap = global::Android.Graphics.Bitmap.CreateBitmap(iconDrawable.IntrinsicWidth, iconDrawable.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+				using (var canvas = new global::Android.Graphics.Canvas(iconBitmap))
+				{
+					iconDrawable.Draw(canvas);
+				}
+
+				Assert.Equal(GetDrawnAspectRatio(iconBitmap), GetDrawnAspectRatio(backButtonBitmap), 0.15);
+			});
+
+			static double GetDrawnAspectRatio(global::Android.Graphics.Bitmap bitmap)
+			{
+				var pixels = new int[bitmap.Width * bitmap.Height];
+				bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+
+				int left = bitmap.Width, top = bitmap.Height, right = -1, bottom = -1;
+				for (int i = 0; i < pixels.Length; i++)
+				{
+					if (global::Android.Graphics.Color.GetAlphaComponent(pixels[i]) > 127)
+					{
+						left = Math.Min(left, i % bitmap.Width);
+						right = Math.Max(right, i % bitmap.Width);
+						top = Math.Min(top, i / bitmap.Width);
+						bottom = Math.Max(bottom, i / bitmap.Width);
+					}
+				}
+
+				return (double)(right - left + 1) / (bottom - top + 1);
+			}
+		}
+
 		[Fact(DisplayName = "Hidden Shell navigation bar clears app bar inset padding")]
 		public async Task HiddenShellNavigationBarClearsAppBarInsetPadding()
 		{
