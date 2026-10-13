@@ -173,7 +173,7 @@ Relaunch the matching native host before acceptance; the old combined response
 is not the current unpublished preview contract.
 
 The current source bundle's README documents its copyable layout and native
-migration gates. The [matching consumer README](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+migration gates. The [matching consumer README](https://github.com/dotnet/maui/blob/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
 pins the complete portable source layout for tarball readers. Pin source links
 to the selected release commit/tag before publication. A copied native
 app and managed library require an explicit MAUI 11 package version/feed and SDK/workloads;

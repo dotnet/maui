@@ -94,21 +94,22 @@ implement version 1 of [the protocol](docs/PROTOCOL.md), including
 
 The current reference host is the sibling `Native/`, referencing the independently
 packable `Managed/Maui.HybridApp.csproj` in the source bundle. The links below pin
-the **historical pre-extraction host**, not the new wire mapping:
-[`Controls.Sample.HybridWebApp/Native`](https://github.com/dotnet/maui/tree/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native).
-The host composes its registry, readiness metadata and allowed event topics.
+the matching product, scoped host and identity wire mapping:
+[`Controls.Sample.HybridWebApp`](https://github.com/dotnet/maui/tree/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp).
+`AddHybridApp` registers the product infrastructure and implemented Essentials
+providers; the host adds sample or external providers explicitly.
 
-- [`MainPage.cs`](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
-  now registers `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`,
+- [`MainPage.cs`](https://github.com/dotnet/maui/blob/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
+  attaches `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`,
   handles raw document messages and sends session-checked events.
-- `Managed/Protocol`, `Managed/HybridAppTargetObject.cs` and
-  `Managed/CommandRegistry.cs` own protocol/control metadata and the bounded hub.
-- `Managed/Essentials/{AppInfo,DeviceInfo,Clipboard,Preferences}Provider.cs` independently
-  register direct Essentials interfaces and feature-owned metadata.
+- [`Managed`](https://github.com/dotnet/maui/tree/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/Managed)
+  owns protocol/control metadata, the bounded hub, registry and DI registration.
+- [`Managed/Essentials`](https://github.com/dotnet/maui/tree/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/Managed/Essentials)
+  contains one cohesive provider file per API using existing Essentials interfaces
+  and feature-owned metadata.
 - `Native/Playground` owns every sample command/topic and process diagnostic.
 
-Refresh published source links to the commit containing this split before release;
-the historical links above are not a compatible install recipe for this preview.
+Refresh published source links to the selected release commit/tag before publication.
 The WIP `Maui.HybridApp` NuGet identity is independently packable locally, but
 unverified and unpublished. It is not included in the npm artifact.
 No official companion NuGet release or integration template is claimed.
@@ -219,7 +220,7 @@ and never expose arbitrary native methods to untrusted scripts.
 
 See [API/errors/security](docs/API.md), [wire/native compatibility](docs/PROTOCOL.md),
 and [package validation/release](docs/RELEASING.md). The
-[matching playground README](https://github.com/dotnet/maui/blob/97814dad58779409d7000d4b352976a21ac7fd2c/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
+[matching playground README](https://github.com/dotnet/maui/blob/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/README.md)
 documents the consumer and staging. In the current source bundle the independently
 packable SDK is at `JavaScript/` beside `Native/`, `Web/` and `Tests/`; source
 commands here use that relocated layout. Refresh source links to the matching
