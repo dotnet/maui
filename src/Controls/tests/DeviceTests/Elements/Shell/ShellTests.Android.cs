@@ -16,6 +16,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -29,6 +30,53 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
+		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			Shell.SetSearchHandler(page, new SearchHandler { SearchBoxVisibility = SearchBoxVisibility.Collapsible });
+
+			// The color is set on the TabBar, not on the page or on the Shell.
+			var tabBar = new TabBar { Items = { new ShellContent { Content = page } } };
+			Shell.SetBackgroundColor(tabBar, Colors.White);
+			Shell.SetTitleColor(tabBar, Colors.Black);
+			Shell.SetForegroundColor(tabBar, Colors.Red);
+
+			var shell = await CreateShellAsync(shell => shell.Items.Add(tabBar));
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page);
+
+				var toolbar = GetPlatformToolbar(handler);
+				Assert.Equal(1, toolbar.Menu.Size());
+
+				using (var bitmap = RenderSearchIcon(toolbar))
+					await bitmap.AssertContainsColor(Colors.Red);
+
+				Shell.SetForegroundColor(tabBar, Colors.Lime);
+
+				using (var bitmap = RenderSearchIcon(toolbar))
+				{
+					await bitmap.AssertContainsColor(Colors.Lime);
+					await bitmap.AssertDoesNotContainColor(Colors.Red);
+				}
+			});
+
+			static global::Android.Graphics.Bitmap RenderSearchIcon(MaterialToolbar toolbar)
+			{
+				// The collapsible SearchHandler is the only menu item.
+				var icon = toolbar.Menu.GetItem(0).Icon;
+				var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(icon.IntrinsicWidth, icon.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+				using var canvas = new global::Android.Graphics.Canvas(bitmap);
+				icon.SetBounds(0, 0, canvas.Width, canvas.Height);
+				icon.Draw(canvas);
+				return bitmap;
+			}
+		}
+
 		[Fact(DisplayName = "No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
 		public async Task GoingBackUsingGoToAsyncMethod()
 		{
