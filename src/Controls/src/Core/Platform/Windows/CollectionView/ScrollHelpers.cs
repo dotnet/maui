@@ -137,6 +137,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task JumpToOffsetAsync(ScrollViewer scrollViewer, double targetHorizontalOffset, double targetVerticalOffset)
 		{
+			targetHorizontalOffset = Math.Clamp(targetHorizontalOffset, 0, scrollViewer.ScrollableWidth);
+			targetVerticalOffset = Math.Clamp(targetVerticalOffset, 0, scrollViewer.ScrollableHeight);
+
+			if (scrollViewer.HorizontalOffset == targetHorizontalOffset
+				&& scrollViewer.VerticalOffset == targetVerticalOffset)
+			{
+				return;
+			}
+
 			var tcs = new TaskCompletionSource<object>();
 
 			void ViewChanged(object s, ScrollViewerViewChangedEventArgs e)
@@ -146,16 +155,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			try
 			{
-				if (scrollViewer.HorizontalOffset == targetHorizontalOffset
-					&& scrollViewer.VerticalOffset == targetVerticalOffset)
-				{
-					// We're already centered, no need to adjust
-					tcs.TrySetResult(null);
-				}
-
 				scrollViewer.ViewChanged += ViewChanged;
-				scrollViewer.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, true);
-				await tcs.Task;
+				if (scrollViewer.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, true))
+				{
+					await tcs.Task;
+				}
 			}
 			finally
 			{
@@ -232,6 +236,12 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// ScrollIntoView may not raise ViewChanged when the item is already at the leading edge.
+			if (await ScrollToItemAsync(list, targetItem, scrollViewer, scrollToPosition, isAnimated: false))
+			{
+				return;
+			}
+
 			var tcs = new TaskCompletionSource<object>();
 			Func<Task> adjust = null;
 
@@ -285,7 +295,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task<bool> ScrollToItemAsync(ListViewBase list, object targetItem, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition)
+		static async Task<bool> ScrollToItemAsync(ListViewBase list, object targetItem, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, bool isAnimated = true)
 		{
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
 
@@ -298,7 +308,7 @@ namespace Microsoft.Maui.Controls.Platform
 					height = GetHeaderHeight(list, targetContainer);
 				}
 
-				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height);
+				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height, isAnimated);
 				return true;
 			}
 
@@ -404,7 +414,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height)
+		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height, bool isAnimated = true)
 		{
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 			var position = transform?.TransformPoint(Zero);
@@ -438,7 +448,14 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 			}
 
-			await AnimateToOffsetAsync(scrollViewer, offset.X, offset.Y);
+			if (isAnimated)
+			{
+				await AnimateToOffsetAsync(scrollViewer, offset.X, offset.Y);
+			}
+			else
+			{
+				await JumpToOffsetAsync(scrollViewer, offset.X, offset.Y);
+			}
 		}
 	}
 }
