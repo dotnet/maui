@@ -130,6 +130,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
+				// Prevent UIKit from popping the active tab to root while its navigation transition is in progress.
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && ReferenceEquals(viewController, SelectedViewController) &&
+					SelectedViewController.GetTransitionCoordinator() is not null)
+				{
+					return false;
+				}
+
 				bool accept = true;
 				var renderer = RendererForViewController(viewController);
 				if (renderer is not null)
