@@ -55,6 +55,11 @@ param(
     [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
     [string]$TrustedGateResult = '',
 
+    # Supplied by the trusted pipeline parameter, never inferred from phase files.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('candidate-comparison', 'evidence-first')]
+    [string]$ReviewMode = 'candidate-comparison',
+
     # Optional review/deep-run platform supplied by the pipeline (${{ parameters.Platform }}).
     # Used ONLY as a fallback for the Platform status chip when the summary content carries no
     # "**Platform:**" line — e.g. a deep-only re-run with no code-review phase, where the
@@ -76,6 +81,7 @@ $ErrorActionPreference = "Stop"
 $MARKER = "<!-- AI Summary -->"
 
 . (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+. (Join-Path $PSScriptRoot 'shared/Test-ReviewerArtifactsComplete.ps1')
 
 $commentCleanupScript = Join-Path $PSScriptRoot "shared/Remove-StaleMauiBotComments.ps1"
 if (Test-Path $commentCleanupScript) {
@@ -854,7 +860,10 @@ function Get-AIReviewEventForRun {
         [Parameter(Mandatory = $true)]
         [string]$PRAgentDir,
 
-        [string]$TrustedGateResult
+        [string]$TrustedGateResult,
+
+        [ValidateSet('candidate-comparison', 'evidence-first')]
+        [string]$ReviewMode = 'candidate-comparison'
     )
 
     # Fail closed: the APPROVE veto must never run against an absent gate signal. Callers must
@@ -884,6 +893,11 @@ function Get-AIReviewEventForRun {
     # specific signal, so it wins over the Report LLM's prose recommendation.
     if ($reviewEvent -eq 'APPROVE' -and (Test-ExpertReviewIsBlocking -PRAgentDir $PRAgentDir)) {
         return 'REQUEST_CHANGES'
+    }
+
+    if ($reviewEvent -eq 'APPROVE' -and $ReviewMode -eq 'evidence-first' -and
+        -not (Test-ReviewerArtifactsComplete -PRAgentDir $PRAgentDir)) {
+        return 'COMMENT'
     }
 
     # Soften (not veto) a positive APPROVE when the deep-UI run produced no passing signal at
@@ -1084,7 +1098,12 @@ $gateContent
 # local/manual invocations that never post APPROVE, fall back to the non-blocking 'SKIPPED'
 # sentinel so the veto is a no-op rather than reading any agent-writable worktree file.
 $effectiveGateResult = if ([string]::IsNullOrWhiteSpace($TrustedGateResult)) { 'SKIPPED' } else { $TrustedGateResult }
-$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir -TrustedGateResult $effectiveGateResult
+$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir `
+    -TrustedGateResult $effectiveGateResult -ReviewMode $ReviewMode
+$reviewStatusNotice = ''
+if ($ReviewMode -eq 'evidence-first' -and -not (Test-ReviewerArtifactsComplete -PRAgentDir $PRAgentDir)) {
+    $reviewStatusNotice = '**Review status:** Evidence-first output is incomplete. Missing or skipped required artifacts cannot support approval; existing Gate and blocking findings remain authoritative.'
+}
 
 # ============================================================================
 # FETCH PR METADATA (commit + author)
@@ -1213,6 +1232,8 @@ $authorPing
 
 $statusChipRow
 
+$reviewStatusNotice
+
 ---
 
 $newSessionBlock
@@ -1305,6 +1326,8 @@ $MARKER
 $authorPing
 
 $statusChipRow
+
+$reviewStatusNotice
 
 ---
 

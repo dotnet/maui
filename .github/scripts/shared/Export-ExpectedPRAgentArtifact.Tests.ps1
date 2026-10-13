@@ -4,6 +4,16 @@ BeforeAll {
     . (Join-Path $PSScriptRoot 'Copy-BoundedDiagnosticFile.ps1')
     . (Join-Path $PSScriptRoot 'Export-ExpectedPRAgentArtifact.ps1')
     . (Join-Path $PSScriptRoot 'Import-ExpectedPRAgentArtifact.ps1')
+    $tokens = $null; $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+        (Join-Path $PSScriptRoot '../Review-PR.ps1'), [ref]$tokens, [ref]$errors)
+    foreach ($name in @('New-TryFixOmissionContent', 'Write-ReviewPhaseContent')) {
+        $function = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $name
+        }, $true)
+        Invoke-Expression $function.Extent.Text
+    }
 }
 
 Describe 'Export-ExpectedPRAgentArtifact' {
@@ -89,6 +99,23 @@ Describe 'Export-ExpectedPRAgentArtifact' {
         } | Should -Throw '*unsupported reparse point*'
 
         Test-Path -LiteralPath $script:DestinationRoot | Should -BeFalse
+    }
+
+    It 'preserves context and intentional omission through the bounded export/import path without new artifact types' {
+        $omission = New-TryFixOmissionContent
+        Write-ReviewPhaseContent -Path (Join-Path $script:PRAgentRoot 'try-fix/content.md') -Content $omission
+        Write-ReviewPhaseContent -Path (Join-Path $script:PRAgentRoot 'pre-flight/content.md') `
+            -Content "<!-- REVIEW-MODE: evidence-first -->`n## Pre-Flight Context`nSynthetic context."
+        Export-ExpectedPRAgentArtifact -RepositoryRoot $script:RepositoryRoot -PRNumber 38022 `
+            -DestinationRoot $script:DestinationRoot | Out-Null
+        $destination = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $result = Import-ExpectedPRAgentArtifact -ArtifactRoot $script:DestinationRoot -PRNumber 38022 `
+            -DestinationDirectory $destination
+        $result.CopiedFiles | Should -Be 2
+        Get-Content -Raw -LiteralPath (Join-Path $destination 'try-fix/content.md') | Should -BeExactly $omission
+        Get-Content -Raw -LiteralPath (Join-Path $destination 'pre-flight/content.md') |
+            Should -Match '^<!-- REVIEW-MODE: evidence-first -->'
+        Test-Path (Join-Path $destination 'try-fix-1') | Should -BeFalse
     }
 
     It 'rejects an oversized structured file before creating the artifact' {

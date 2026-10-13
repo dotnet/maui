@@ -42,6 +42,8 @@ BeforeAll {
         return $ScriptText.Substring($start, $end - $start + 1)
     }
 
+    function copilot { throw 'Copilot test double was not configured.' }
+
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TrxResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-DotNetTestResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-IsNumericValue')
@@ -64,8 +66,561 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateRetryFitsBudget')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Restore-TrustedScripts')
+    foreach ($name in @(
+        'Get-PreflightToolArguments', 'Get-PreparedReviewDiff', 'Write-ReviewPhaseContent',
+        'Update-PreflightCapture', 'Complete-PreflightCapture', 'New-TryFixOmissionContent',
+        'Get-EvidenceFirstReviewPolicy', 'Get-ReviewCandidatePolicy', 'Invoke-ReviewPreflight', 'Invoke-CopilotStep',
+        'Write-CopilotTokenUsageRecord'
+    )) {
+        Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName $name)
+    }
     $script:stopTrustedCatalystOverlayFailureBody = Get-FunctionBody -ScriptText $content -FunctionName 'Stop-TrustedCatalystOverlayFailure'
     . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
+    $script:trustedSkills = Join-Path $TestDrive 'trusted-github/skills'
+    $policyDir = Join-Path $script:trustedSkills 'pr-review/references'
+    New-Item -ItemType Directory -Path $policyDir -Force | Out-Null
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot '../skills/pr-review/references/evidence-first-policy.md') `
+        -Destination (Join-Path $policyDir 'evidence-first-policy.md')
+    $skillContent = Get-Content -Raw (Join-Path $PSScriptRoot '../skills/pr-review/SKILL.md')
+    $reportPolicyContent = Get-Content -Raw (Join-Path $PSScriptRoot '../pr-review/pr-report.md')
+    $sharedPolicy = Get-Content -Raw (Join-Path $policyDir 'evidence-first-policy.md')
+}
+
+AfterAll {
+    Remove-Item Function:\copilot -ErrorAction SilentlyContinue
+}
+
+Describe 'Opt-in reviewer routing' {
+    BeforeEach {
+        $script:DryRun = $false
+        $script:phaseRepo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:phaseRoot = Join-Path $script:phaseRepo 'CustomAgentLogsTmp/PRState/42/PRAgent'
+        New-Item -ItemType Directory -Path $script:phaseRoot -Force | Out-Null
+        Mock Get-PreparedReviewDiff { 'diff --git a/fixture.cs b/fixture.cs' }
+        Mock copilot { $global:LASTEXITCODE = 0; '--available-tools --deny-tool --disallow-temp-dir --allow-all-tools' }
+        Mock Invoke-CopilotStep {}
+    }
+
+    It 'preserves the default candidate prompt, call name, and credit cap without reading experimental inputs' {
+        Invoke-ReviewPreflight -CandidatePrompt 'original candidate prompt'
+        Should -Invoke Invoke-CopilotStep -Times 1 -Exactly -ParameterFilter {
+            $StepName -ceq 'STEP 5a: TRY-FIX' -and $Prompt -ceq 'original candidate prompt' -and
+            $MaxAiCredits -eq 2000 -and -not $ContextOutputPath
+        }
+        Should -Invoke Get-PreparedReviewDiff -Times 0
+        Should -Invoke copilot -Times 0
+    }
+
+    It 'routes opt-in to context only and writes the omission through the trusted driver' {
+        Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 `
+            -SkillsDir $script:trustedSkills `
+            -CandidatePrompt 'old instruction: attempt both alternatives' -ContextInstructions 'Required regression fixture.'
+        Should -Invoke Invoke-CopilotStep -Times 1 -Exactly -ParameterFilter {
+            $StepName -ceq 'STEP 5a: PREFLIGHT CONTEXT' -and $MaxAiCredits -eq 2000 -and
+            $ContextOutputPath -eq (Join-Path $script:phaseRoot 'pre-flight/content.md') -and
+            $ContextCompletionMarker -match '^<!-- PREFLIGHT-COMPLETE:[0-9a-f]{32} -->$' -and
+            $Prompt -match 'Required regression fixture' -and
+            $Prompt -notmatch 'old instruction: attempt both alternatives'
+        }
+        Get-Content -Raw (Join-Path $script:phaseRoot 'try-fix/content.md') |
+            Should -Match '<!-- TRY-FIX-STATUS: not-requested -->'
+    }
+
+    It 'rejects invalid modes before any CLI invocation' {
+        { Invoke-ReviewPreflight -ReviewMode invalid } | Should -Throw
+        Should -Invoke Invoke-CopilotStep -Times 0
+        $content | Should -Match '\[ValidateSet\(''candidate-comparison'', ''evidence-first''\)\]'
+        $content | Should -Match '\[string\]\$ReviewMode = ''candidate-comparison'''
+    }
+
+    It 'does not overwrite old alternative artifacts with an intentional-omission claim' {
+        New-Item -ItemType Directory -Path (Join-Path $script:phaseRoot 'try-fix-1') | Out-Null
+        { Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 -SkillsDir $script:trustedSkills } |
+            Should -Throw '*existing Try-Fix*'
+        Should -Invoke Invoke-CopilotStep -Times 0
+    }
+
+    It 'does not let prior experimental context survive a new incomplete run' {
+        $prior = Join-Path $script:phaseRoot 'pre-flight/content.md'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $prior) | Out-Null
+        Set-Content $prior 'Prior context.'
+        { Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 `
+            -SkillsDir $script:trustedSkills } | Should -Throw '*prior context or omission*'
+        Should -Invoke copilot -Times 0
+        Should -Invoke Invoke-CopilotStep -Times 0
+    }
+
+    It 'never falls back to permissive execution on an unsupported CLI' {
+        Mock copilot { $global:LASTEXITCODE = 0; 'old CLI help' }
+        { Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 -SkillsDir $script:trustedSkills } |
+            Should -Throw '*No permissive fallback*'
+        Should -Invoke Invoke-CopilotStep -Times 0
+    }
+
+    It 'does not claim omission if preflight failed' {
+        Mock Invoke-CopilotStep { throw 'Incomplete preflight fixture.' }
+        { Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 -SkillsDir $script:trustedSkills } |
+            Should -Throw '*Incomplete*'
+        Test-Path (Join-Path $script:phaseRoot 'try-fix/content.md') | Should -BeFalse
+    }
+
+    It 'can start without phase directories when Gate produced no local artifact tree' {
+        Remove-Item -LiteralPath $script:phaseRoot -Recurse
+        Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 -SkillsDir $script:trustedSkills
+        Should -Invoke Invoke-CopilotStep -Times 1 -Exactly
+        Test-Path (Join-Path $script:phaseRoot 'try-fix/content.md') | Should -BeTrue
+    }
+
+    It 'does not read experimental inputs or write omission artifacts during a dry-run' {
+        $script:DryRun = $true
+        Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42
+        Should -Invoke copilot -Times 0
+        Should -Invoke Invoke-CopilotStep -Times 0
+        Should -Invoke Get-PreparedReviewDiff -Times 0
+        Test-Path (Join-Path $script:phaseRoot 'try-fix/content.md') | Should -BeFalse
+    }
+
+    It 'fails closed before any CLI call if the trusted copied policy is absent' {
+        { Invoke-ReviewPreflight -ReviewMode evidence-first -RepoRoot $script:phaseRepo -PRNumber 42 `
+            -SkillsDir (Join-Path $TestDrive 'missing-skills') } | Should -Throw '*Missing*'
+        Should -Invoke copilot -Times 0
+        Should -Invoke Invoke-CopilotStep -Times 0
+        Test-Path (Join-Path $script:phaseRoot 'try-fix/content.md') | Should -BeFalse
+    }
+
+    It 'retains expert tracing and only evidence-backed actual candidates in the experimental policy' {
+        $policy = Get-ReviewCandidatePolicy -ReviewMode evidence-first -PRNumber 42 -RegressionInstructions 'Regression fixture.' -SkillsDir $script:trustedSkills
+        $policy.expert | Should -Match 'Preserve platform tracing and the existing dimension review'
+        $policy.refinement | Should -Match 'Cite that evidence before patching'
+        $policy.refinement | Should -Match 'Do not patch for style'
+        $policy.refinement | Should -Match 'single validation pass includes bounded, documented prerequisite setup'
+        $policy.refinement | Should -Match ([regex]::Escape('`-AutoProvision`'))
+        $policy.refinement | Should -Match 'Do not use.*-SkipBuild.*-SkipInstall.*candidate-built outputs'
+        $policy.refinement | Should -Match 'report blocked; do not retry or enlarge'
+        $policy.comparison | Should -Match 'sole candidate and still require REQUEST CHANGES'
+        $policy.comparison | Should -Match 'blocked, unvalidated'
+        $policy.validation | Should -BeExactly 'Regression fixture.'
+        (Get-ReviewCandidatePolicy -PRNumber 42).comparison | Should -Match 'Compare ALL candidates'
+    }
+
+}
+
+Describe 'Shared trusted evidence-first policy' {
+    It 'loads the copied Setup skills policy, never the PR worktree copy' {
+        $policy = Get-EvidenceFirstReviewPolicy -SkillsDir $script:trustedSkills -PRNumber 42
+        $policy.opening | Should -Match "PR #42's submitted fix"
+        $policy.context | Should -Match 'Do not invoke pr-review or try-fix, delegate agents'
+        $policy.workflow | Should -Match 'do not repeat legacy Pre-Flight code review'
+        $policy.comparison | Should -Match 'sole candidate and still require REQUEST CHANGES'
+        $policy.refinement | Should -BeExactly (
+            [regex]::Match($sharedPolicy, '(?ms)^## Refinement\r?\n(.+?)(?=^## |\z)').Groups[1].Value.Trim()
+        )
+        $content | Should -Match '\$SkillsDir\s+= if \(\$TrustedScriptsDir\)'
+        $content | Should -Match '(?s)Invoke-ReviewPreflight -ReviewMode \$ReviewMode.*?-SkillsDir \$SkillsDir'
+        $content | Should -Match '(?s)Get-ReviewCandidatePolicy -ReviewMode \$ReviewMode.*?-SkillsDir \$SkillsDir'
+        $pipelineContent | Should -Match 'cp -R .github/skills'
+        $pipelineContent | Should -Match 'Review-PR.ps1.*REVIEW_ARGS'
+    }
+
+    It 'routes the skill before legacy mandates and uses exactly the same reference' {
+        $skillContent.IndexOf('## Trusted mode routing') | Should -BeLessThan $skillContent.IndexOf('## Phase 1:')
+        $skillContent | Should -Match 'references/evidence-first-policy.md'
+        $skillContent | Should -Match 'Only a trusted caller'
+        $skillContent | Should -Match 'Do not fall through'
+        $skillContent | Should -Match 'remaining three-phase instructions apply to \*\*candidate-comparison only\*\*'
+        $skillContent | Should -Not -Match 'MANDATORY for every review, no exceptions|NEVER SKIP IT. NO EXCEPTIONS'
+    }
+
+    It 'locally scopes every mandatory two-model directive so mid-file readers cannot apply it to evidence-first' {
+        $directives = @($skillContent -split '\r?\n' | Where-Object {
+            $_ -match '(?i)MANDATORY.*multi-model|MUST.*both models|2-model exploration.*MANDATORY'
+        })
+        $directives.Count | Should -BeGreaterOrEqual 3
+        foreach ($directive in $directives) {
+            $directive | Should -Match 'candidate-comparison'
+        }
+        $skillContent | Should -Match 'Checklist \(candidate-comparison: you MUST complete ALL of these\)'
+        $reportPolicyContent | Should -Match 'In candidate-comparison, Phases 1-2.*must be complete'
+        $reportPolicyContent | Should -Match 'Code review SKIPPED \(candidate-comparison only\)'
+        $reportPolicyContent | Should -Match 'LGTM \(or SKIPPED in candidate-comparison only\)'
+        $reportPolicyContent | Should -Match 'In evidence-first, missing/skipped expert review cannot support approval'
+    }
+
+    It 'fails explicitly for missing, oversized, invalid version or absent/duplicate sections' {
+        $skills = Join-Path $TestDrive 'invalid-skills'
+        $dir = Join-Path $skills 'pr-review/references'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        $path = Join-Path $dir 'evidence-first-policy.md'
+        { Get-EvidenceFirstReviewPolicy -SkillsDir $skills } | Should -Throw '*Missing*'
+        Set-Content $path ('x' * (16KB + 1))
+        { Get-EvidenceFirstReviewPolicy -SkillsDir $skills } | Should -Throw '*oversized*'
+        Set-Content $path ($sharedPolicy.Replace('POLICY: 1', 'POLICY: 2'))
+        { Get-EvidenceFirstReviewPolicy -SkillsDir $skills } | Should -Throw '*version*'
+        Set-Content $path ($sharedPolicy.Replace('## Expert', '## Missing'))
+        { Get-EvidenceFirstReviewPolicy -SkillsDir $skills } | Should -Throw '*section: Expert*'
+        Set-Content $path ($sharedPolicy + "`n## Expert`nDuplicate.")
+        { Get-EvidenceFirstReviewPolicy -SkillsDir $skills } | Should -Throw '*section: Expert*'
+    }
+
+    It 'treats policy fragments as data, with numeric plain substitution only' {
+        $skills = Join-Path $TestDrive 'literal-skills'
+        $dir = Join-Path $skills 'pr-review/references'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        $literal = '$([IO.File]::WriteAllText("forbidden", "executed"))'
+        Set-Content (Join-Path $dir 'evidence-first-policy.md') ($sharedPolicy.Replace('## Opening', "$literal`n## Opening"))
+        (Get-EvidenceFirstReviewPolicy -SkillsDir $skills -PRNumber 42).context | Should -Match ([regex]::Escape($literal))
+        $loader = Get-FunctionBody $content 'Get-EvidenceFirstReviewPolicy'
+        $loader | Should -Not -Match 'Invoke-Expression|ExpandString'
+    }
+
+    It 'rejects invalid UTF-8 rather than silently substituting replacement characters' {
+        $skills = Join-Path $TestDrive 'invalid-encoding-skills'
+        $dir = Join-Path $skills 'pr-review/references'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        [IO.File]::WriteAllBytes((Join-Path $dir 'evidence-first-policy.md'), [byte[]]@(0xff, 0xff))
+        { Get-EvidenceFirstReviewPolicy -SkillsDir $skills } | Should -Throw
+    }
+
+    It 'rejects a reparse-point trusted skills directory without needing Windows symlink privilege' {
+        $link = Join-Path $TestDrive 'linked-skills'
+        if ($IsWindows) {
+            New-Item -ItemType Junction -Path $link -Target $script:trustedSkills -ErrorAction Stop | Out-Null
+        } else {
+            New-Item -ItemType SymbolicLink -Path $link -Target $script:trustedSkills -ErrorAction Stop | Out-Null
+        }
+        try {
+            { Get-EvidenceFirstReviewPolicy -SkillsDir $link } | Should -Throw '*regular data*'
+        } finally {
+            Remove-Item -LiteralPath $link -Force
+        }
+    }
+}
+
+Describe 'Prepared snapshot with real local Git objects' {
+        It 'uses the actual Setup commit identity rather than a synthetic matching tree SHA' {
+            $root = Join-Path $TestDrive 'snapshot-git-fixture'
+            New-Item -ItemType Directory -Path $root | Out-Null
+            & git -C $root -c init.templateDir= init -q -b fixture-review
+            $LASTEXITCODE | Should -Be 0
+            Set-Content -LiteralPath (Join-Path $root 'fixture.txt') -Value 'before'
+            & git -C $root add -- fixture.txt
+            & git -C $root -c core.hooksPath= -c commit.gpgsign=false -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm "Fixture base`n`nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+            $LASTEXITCODE | Should -Be 0
+            $base = (& git -C $root rev-parse HEAD).Trim()
+            Set-Content -LiteralPath (Join-Path $root 'fixture.txt') -Value 'after'
+            & git -C $root add -- fixture.txt
+            & git -C $root -c core.hooksPath= -c commit.gpgsign=false -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm "Fixture reviewed change`n`nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+            $LASTEXITCODE | Should -Be 0
+
+            $tokens = $null; $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($content, [ref]$tokens, [ref]$errors)
+            $assignment = $ast.Find({
+                $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $args[0].Left.Extent.Text -eq '$reviewedTreeSha' -and
+                $args[0].Right.Extent.Text -match 'git rev-parse HEAD'
+            }, $true)
+            Push-Location $root
+            try {
+                Invoke-Expression $assignment.Extent.Text
+                $actualTree = (& git rev-parse 'HEAD^{tree}').Trim()
+            } finally { Pop-Location }
+            $reviewedTreeSha | Should -Not -Be $actualTree
+            $snapshot = Join-Path $root 'review-snapshot.json'
+            @{ baseSha = $base; reviewTreeSha = $reviewedTreeSha } | ConvertTo-Json | Set-Content $snapshot
+            Set-Content -LiteralPath (Join-Path $root 'fixture.txt') -Value 'dirty infrastructure overlay'
+            $diff = Get-PreparedReviewDiff -RepoRoot $root -SnapshotPath $snapshot
+            $diff | Should -Match '\+after'
+            $diff | Should -Not -Match 'dirty infrastructure overlay'
+            @{ baseSha = $base; reviewTreeSha = $actualTree } | ConvertTo-Json | Set-Content $snapshot
+            { Get-PreparedReviewDiff -RepoRoot $root -SnapshotPath $snapshot } | Should -Throw '*does not match*'
+        }
+    }
+
+Describe 'Reviewer mode publication wiring' {
+    It 'keeps auto in the pipeline and forwards only the frozen concrete mode' {
+        $pipelineContent | Should -Match '(?s)name: ReviewMode.*?default: auto.*?values:.*?- auto.*?candidate-comparison.*?evidence-first'
+        $pipelineContent | Should -Match ([regex]::Escape('-ReviewMode "${PARAM_REVIEW_MODE}"'))
+        $pipelineContent | Should -Match ([regex]::Escape('PARAM_REVIEW_MODE: ${{ variables.EffectiveReviewMode }}'))
+        $content | Should -Match 'Invoke-ReviewPreflight -ReviewMode \$ReviewMode'
+        $content | Should -Match 'Get-ReviewCandidatePolicy -ReviewMode \$ReviewMode'
+        ([regex]::Matches($pipelineContent, 'PARAM_REVIEW_MODE: \$\{\{ variables.EffectiveReviewMode \}\}')).Count |
+            Should -Be 4
+        $pipelineContent | Should -Not -Match 'PARAM_REVIEW_MODE: \$\{\{ parameters.ReviewMode \}\}'
+        $pipelineContent | Should -Not -Match '\$\(EffectiveReviewMode\)'
+        $pipelineContent | Should -Match ([regex]::Escape('-ReviewMode "$env:PARAM_REVIEW_MODE"'))
+        $content | Should -Match '(?s)Apply-AgentLabels.*-ReviewMode \$ReviewMode'
+    }
+
+    It 'honors either explicit mode before considering the experiment source ref' {
+        $pipelineContent | Should -Match ([regex]::Escape(@'
+- name: EffectiveReviewMode
+    ${{ if ne(parameters.ReviewMode, 'auto') }}:
+      value: ${{ parameters.ReviewMode }}
+    ${{ elseif eq(variables['Build.SourceBranch'], 'refs/heads/pureween-reviewer-evidence-first') }}:
+      value: evidence-first
+    ${{ else }}:
+      value: candidate-comparison
+'@))
+    }
+
+    It 'uses the trusted full pipeline ref, never a PR branch or loose branch-name match' {
+        $routing = [regex]::Match($pipelineContent, '(?s)- name: EffectiveReviewMode\r?\n.*?(?=\r?\n  #)').Value
+        $routing | Should -Not -BeNullOrEmpty
+        $routing | Should -Match ([regex]::Escape("variables['Build.SourceBranch']"))
+        $routing | Should -Not -Match 'SourceBranchName|PullRequest|contains\(|startsWith\(|endsWith\(|\$\('
+        $routing | Should -Match 'value: candidate-comparison'
+    }
+
+    It 'logs and validates the resolved mode before running PR-controlled code' {
+        $pipelineContent | Should -Match 'case "\$\{PARAM_REVIEW_MODE\}" in'
+        $pipelineContent | Should -Match 'ReviewMode did not resolve to a supported concrete mode'
+        $pipelineContent | Should -Match 'Review mode: \$\{PARAM_REVIEW_MODE\} \(requested: \$\{PARAM_REQUESTED_REVIEW_MODE\}\)'
+        $pipelineContent.IndexOf('ReviewMode did not resolve') |
+            Should -BeLessThan $pipelineContent.IndexOf('Capture trusted test infrastructure')
+    }
+}
+
+Describe 'Trusted reviewer model selection' {
+    BeforeEach {
+        $script:previousReviewMode = $script:ReviewMode
+        $script:previousPlatform = $script:Platform
+        $script:ReviewMode = 'evidence-first'
+        $script:Platform = 'windows'
+        $fixtureId = [Guid]::NewGuid().ToString('N')
+        $script:trustedRoot = Join-Path $TestDrive "model-policy-trusted-$fixtureId"
+        $script:reviewRoot = Join-Path $TestDrive "model-policy-review-$fixtureId"
+        New-Item -ItemType Directory -Path (Join-Path $script:reviewRoot '.github/agents') -Force | Out-Null
+    }
+
+    AfterEach {
+        $script:ReviewMode = $script:previousReviewMode
+        $script:Platform = $script:previousPlatform
+    }
+
+    It 'restores the trusted agent definition over a PR-provided model selection' {
+        $trustedAgents = Join-Path $script:trustedRoot 'agents'
+        New-Item -ItemType Directory -Path $trustedAgents -Force | Out-Null
+        Set-Content (Join-Path $trustedAgents 'maui-expert-reviewer.md') 'Trusted GPT-only model policy'
+        Set-Content (Join-Path $script:reviewRoot '.github/agents/maui-expert-reviewer.md') 'PR-provided model selection'
+
+        Restore-TrustedScripts -TrustedScriptsDir $script:trustedRoot -RepoRoot $script:reviewRoot
+
+        Get-Content -Raw (Join-Path $script:reviewRoot '.github/agents/maui-expert-reviewer.md') |
+            Should -Match 'Trusted GPT-only model policy'
+    }
+
+    It 'stops experimental execution when the trusted agent copy is missing' {
+        { Restore-TrustedScripts -TrustedScriptsDir $script:trustedRoot -RepoRoot $script:reviewRoot } |
+            Should -Throw '*Trusted reviewer agent definitions are missing*'
+    }
+
+    It 'does not accept an empty trusted agent directory as a model policy' {
+        New-Item -ItemType Directory -Path (Join-Path $script:trustedRoot 'agents') -Force | Out-Null
+        { Restore-TrustedScripts -TrustedScriptsDir $script:trustedRoot -RepoRoot $script:reviewRoot } |
+            Should -Throw '*Trusted reviewer agent definitions are missing*'
+    }
+
+    It 'copies agent definitions before Setup changes the reviewed worktree' {
+        $pipelineContent | Should -Match ([regex]::Escape('cp -r .github/agents  "$TRUSTED/agents"'))
+        $pipelineContent.IndexOf('cp -r .github/agents') |
+            Should -BeLessThan $pipelineContent.IndexOf('-Phase Setup')
+    }
+
+    It 'pins the expert and its dimension workers to the existing GPT model' {
+        $expert = Get-Content -Raw (Join-Path $PSScriptRoot '../agents/maui-expert-reviewer.md')
+        $codeReview = Get-Content -Raw (Join-Path $PSScriptRoot '../skills/code-review/SKILL.md')
+        $expert | Should -Match 'Use `model: "gpt-5.3-codex"` explicitly for every dimension sub-agent'
+        $codeReview | Should -Match 'with model `gpt-5.3-codex`'
+        $content | Should -Match 'Pass an explicit ``model`` on every delegated task, including nested dimension tasks'
+        $content | Should -Match 'Do not use automatic model selection, Anthropic models'
+    }
+}
+
+Describe 'Immutable preflight diff context' {
+    BeforeEach {
+        $script:snapshotPath = Join-Path $TestDrive 'review-snapshot.json'
+        @{ baseSha = 'a' * 40; reviewTreeSha = 'b' * 40 } |
+            ConvertTo-Json | Set-Content $script:snapshotPath
+        Mock Invoke-ReviewGitCommand {
+            param($Arguments)
+            if ($Arguments -contains 'rev-parse') { return @{ ExitCode = 0; Output = 'b' * 40 } }
+            return @{ ExitCode = 0; Output = 'diff --git a/old.cs b/new.cs' }
+        }
+    }
+
+    It 'reads commits, not the dirty overlay, and disables executable diff helpers' {
+        Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath $script:snapshotPath |
+            Should -BeExactly 'diff --git a/old.cs b/new.cs'
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -ParameterFilter {
+            $Arguments -contains 'diff' -and $Arguments -contains '--no-ext-diff' -and
+            $Arguments -contains '--no-textconv' -and $Arguments -contains ('a' * 40) -and
+            $Arguments -contains 'HEAD'
+        }
+    }
+
+    It 'labels an oversized Unicode diff partial with a bounded, unbroken UTF-8 prefix' {
+        Mock Invoke-ReviewGitCommand {
+            param($Arguments)
+            if ($Arguments -contains 'rev-parse') { return @{ ExitCode = 0; Output = 'b' * 40 } }
+            return @{ ExitCode = 0; Output = ([char]0x20ac).ToString() * 10000 }
+        }
+        $text = Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath $script:snapshotPath
+        $text | Should -Match '^PARTIAL DIFF:'
+        [Text.Encoding]::UTF8.GetByteCount($text) | Should -BeLessOrEqual 16000
+        $prefix = ($text -split "`n", 2)[1]
+        [Text.Encoding]::UTF8.GetByteCount($prefix) | Should -BeLessOrEqual 16000
+        $prefix.Contains([char]0xfffd) | Should -BeFalse
+    }
+
+    It 'preserves binary and rename descriptions as data' {
+        Mock Invoke-ReviewGitCommand {
+            param($Arguments)
+            if ($Arguments -contains 'rev-parse') { return @{ ExitCode = 0; Output = 'b' * 40 } }
+            return @{ ExitCode = 0; Output = "rename from old.cs`nrename to new.cs`nBinary files a/image.png and b/image.png differ" }
+        }
+        Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath $script:snapshotPath |
+            Should -Match 'Binary files'
+    }
+
+    It 'fails for missing, abbreviated, mismatched, or unreachable snapshot identities' {
+        { Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath (Join-Path $TestDrive 'missing.json') } |
+            Should -Throw '*requires the bounded*'
+        @{ baseSha = 'abcd'; reviewTreeSha = 'b' * 40 } | ConvertTo-Json | Set-Content $script:snapshotPath
+        { Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath $script:snapshotPath } |
+            Should -Throw '*full base*'
+        @{ baseSha = 'a' * 40; reviewTreeSha = 'c' * 40 } | ConvertTo-Json | Set-Content $script:snapshotPath
+        { Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath $script:snapshotPath } |
+            Should -Throw '*does not match*'
+        @{ baseSha = 'a' * 40; reviewTreeSha = 'b' * 40 } | ConvertTo-Json | Set-Content $script:snapshotPath
+        Mock Invoke-ReviewGitCommand {
+            param($Arguments)
+            if ($Arguments -contains 'rev-parse') { return @{ ExitCode = 0; Output = 'b' * 40 } }
+            return @{ ExitCode = 128; Output = 'missing base' }
+        }
+        { Get-PreparedReviewDiff -RepoRoot $TestDrive -SnapshotPath $script:snapshotPath } |
+            Should -Throw '*base commit available*'
+    }
+}
+
+Describe 'Preflight capture contract' {
+    BeforeEach {
+        $script:capture = @{ content = ''; resultEventSeen = $false }
+        $script:marker = '<!-- PREFLIGHT-COMPLETE:fixture -->'
+        $script:contextPath = Join-Path $TestDrive "$([guid]::NewGuid())/content.md"
+    }
+
+    It 'uses the final complete message, not deltas, prior turns, or tool-only messages' {
+        Update-PreflightCapture $script:capture @{ type = 'assistant.message'; data = @{ content = 'Earlier progress.' } }
+        Update-PreflightCapture $script:capture @{ type = 'tool.execution_start' }
+        Update-PreflightCapture $script:capture @{ type = 'assistant.message'; data = @{ content = '' } }
+        Update-PreflightCapture $script:capture @{ type = 'assistant.message_delta'; data = @{ deltaContent = 'Ignored delta.' } }
+        Update-PreflightCapture $script:capture @{ type = 'assistant.message'; data = @{ content = "## Pre-Flight Context`nFinal context.`n$script:marker" } }
+        Update-PreflightCapture $script:capture @{ type = 'result' }
+        Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath
+        $text = Get-Content -Raw $script:contextPath
+        $text | Should -Match '^<!-- REVIEW-MODE: evidence-first -->'
+        $text | Should -Match 'Final context'
+        $text | Should -Not -Match 'Earlier progress|Ignored delta|PREFLIGHT-COMPLETE'
+    }
+
+    It 'rejects a delta-only stream instead of guessing how to join turns' {
+        Update-PreflightCapture $script:capture @{ type = 'assistant.message_delta'; data = @{ deltaContent = "## Pre-Flight Context`nPartial.`n$script:marker" } }
+        Update-PreflightCapture $script:capture @{ type = 'result' }
+        { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } |
+            Should -Throw '*Incomplete*'
+    }
+
+    It 'requires a successful exit and terminal result, regardless of a marker' {
+        $script:capture.content = "## Pre-Flight Context`nContext.`n$script:marker"
+        { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } | Should -Throw '*terminal result*'
+        $script:capture.resultEventSeen = $true
+        { Complete-PreflightCapture $script:capture 1 $script:marker $script:contextPath } | Should -Throw '*successful CLI exit*'
+        Test-Path $script:contextPath | Should -BeFalse
+    }
+
+    It 'does not accept a prior result as terminal after a new assistant message or tool call' {
+        foreach ($type in @('assistant.message', 'tool.execution_start', 'assistant.turn_start', 'assistant.message_delta')) {
+            $script:capture.resultEventSeen = $true
+            Update-PreflightCapture $script:capture @{ type = $type; data = @{ content = "## Pre-Flight Context`nContext.`n$script:marker" } }
+            { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } | Should -Throw '*terminal result*'
+        }
+    }
+
+    It 'rejects missing, mid-message, quoted, stale, or non-final markers' {
+        $script:capture.resultEventSeen = $true
+        foreach ($body in @(
+            "## Pre-Flight Context`nContext.",
+            "## Pre-Flight Context`n$script:marker`nLater text.",
+            "## Pre-Flight Context`nContext.`n> $script:marker",
+            "## Pre-Flight Context`nContext.`n<!-- PREFLIGHT-COMPLETE:old-run -->"
+        )) {
+            $script:capture.content = $body
+            { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } |
+                Should -Throw '*completion marker*'
+        }
+        $script:capture.content = "## Pre-Flight Context`nContext.`n$script:marker"
+        Update-PreflightCapture $script:capture @{ type = 'tool.execution_start' }
+        { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } | Should -Throw '*terminal result*'
+    }
+
+    It 'rejects empty or oversized context without clipping it into success' {
+        $script:capture.resultEventSeen = $true
+        $script:capture.content = "## Pre-Flight Context`n`n$script:marker"
+        { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } | Should -Throw '*body is empty*'
+        $script:capture.content = "## Pre-Flight Context`n$('x' * 128KB)`n$script:marker"
+        { Complete-PreflightCapture $script:capture 0 $script:marker $script:contextPath } | Should -Throw '*128 KiB*'
+        Test-Path $script:contextPath | Should -BeFalse
+    }
+
+    It 'enforces the exact output byte ceiling' {
+        Write-ReviewPhaseContent $script:contextPath ('x' * 128KB)
+        (Get-Item $script:contextPath).Length | Should -Be (128KB)
+        { Write-ReviewPhaseContent $script:contextPath ('x' * (128KB + 1)) } | Should -Throw '*128 KiB*'
+    }
+}
+
+Describe 'Copilot CLI adapter permissions' {
+    BeforeEach {
+        $script:DryRun = $false
+        $script:ReviewMode = 'candidate-comparison'
+        $script:PRNumber = 42
+        $script:Platform = 'ios'
+        $script:Phase = 'CopilotReview'
+        $script:TokenUsageOutputDir = Join-Path $TestDrive 'usage'
+        $script:cliArguments = @()
+        Mock Write-CopilotTokenUsageRecord {}
+        Mock copilot {
+            $script:cliArguments = @($args)
+            $global:LASTEXITCODE = 0
+            '{"type":"assistant.message","data":{"content":"## Pre-Flight Context\nFixture context.\n<!-- PREFLIGHT-COMPLETE:fixture -->"}}'
+            '{"type":"result","usage":{"totalApiDurationMs":1}}'
+        }
+    }
+
+    It 'preserves the original default argv, model, context, effort, cap, and secret stripping' {
+        Invoke-CopilotStep -StepName 'STEP 5a: TRY-FIX' -Prompt 'fixture' -MaxAiCredits 2000 | Should -Be 0
+        ($script:cliArguments -join '|') | Should -BeExactly (
+            '-p|fixture|--allow-all|--output-format|json|--model|gpt-5.6-sol|--context|long_context|--effort|max|--max-ai-credits|2000|--secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN'
+        )
+    }
+
+    It 'uses a closed read-only tool universe without all-path permissions and captures through the real adapter' {
+        $script:ReviewMode = 'evidence-first'
+        $path = Join-Path $TestDrive 'captured/content.md'
+        Invoke-CopilotStep -StepName 'STEP 5a: PREFLIGHT CONTEXT' -Prompt 'fixture' -MaxAiCredits 2000 `
+            -ContextOutputPath $path -ContextCompletionMarker '<!-- PREFLIGHT-COMPLETE:fixture -->' | Should -Be 0
+        $script:cliArguments | Should -Contain '--deny-tool=write'
+        $script:cliArguments | Should -Contain '--deny-tool=shell'
+        $script:cliArguments | Should -Contain '--allow-all-tools'
+        $script:cliArguments | Should -Contain '--disallow-temp-dir'
+        $script:cliArguments | Should -Not -Contain '--allow-all'
+        $script:cliArguments | Should -Not -Contain '--allow-all-paths'
+        $available = @($script:cliArguments | Where-Object { $_ -like '--available-tools=*' })[0]
+        $available | Should -BeExactly '--available-tools=view,grep,glob,report_intent,github-mcp-server-pull_request_read,github-mcp-server-issue_read,github-mcp-server-get_file_contents,github-mcp-server-search_code'
+        Get-Content -Raw $path | Should -Match 'Fixture context'
+        Should -Invoke Write-CopilotTokenUsageRecord -Times 1 -ParameterFilter { $Record.reviewMode -eq 'evidence-first' }
+    }
 }
 
 Describe 'Phase worktree requirements' {
@@ -351,7 +906,7 @@ Describe 'Reviewer pipeline timeout containment' {
     }
 
     It 'treats the Task 3 safety timeout as non-blocking' {
-        $task3Start = $pipelineContent.IndexOf("displayName: 'Task 3: Copilot Review (expert review + try-fix)'")
+        $task3Start = $pipelineContent.IndexOf("displayName: 'Task 3: Copilot Review'")
         $task3Start | Should -BeGreaterThan -1
         $task3Block = $pipelineContent.Substring($task3Start, [Math]::Min(1400, $pipelineContent.Length - $task3Start))
         $task3Block | Should -Match 'timeoutInMinutes: 180'
@@ -382,6 +937,16 @@ Describe 'Reviewer pipeline timeout containment' {
         $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree prune --expire now'))
         $content | Should -Match 'Could not fully remove pr-plus-reviewer sandbox'
         $content | Should -Match 'The sandbox is temporary and must not be copied into review artifacts'
+    }
+
+    It 'requires candidate-local prerequisites without widening the validation budget' {
+        $content | Should -Match 'Copied build tasks do not provide a candidate-local SDK'
+        $content | Should -Match ([regex]::Escape('``Run-IntegrationTests.ps1 -AutoProvision``'))
+        $content | Should -Match 'candidate-built outputs and installed packs match the current candidate'
+        $content | Should -Match "Never borrow the raw PR's SDK or installed templates as candidate evidence"
+        $content | Should -Match 'record blocked and stop; do not retry or enlarge the execution bound'
+        $skillContent | Should -Match 'one targeted validation pass includes.*documented prerequisite'
+        $skillContent | Should -Match "Never validate against the raw PR's installed templates"
     }
 
     It 'runs regression tests through trusted scripts overlaid into the review worktree' {
@@ -1418,10 +1983,10 @@ Describe 'Pipeline pre-trusted command safety' {
         $sanitizer = "2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
 
         ([regex]::Matches($pipelineContent, [regex]::Escape($sanitizer))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = 'bash'"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in @('-o','pipefail','-c',`$buildCommand))"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape('& bash -o pipefail -c $buildCommand'))).Count | Should -Be 2
-        $pipelineContent | Should -Not -Match ([regex]::Escape("`$psi.FileName = 'pwsh'"))
+        ([regex]::Matches($pipelineContent, [regex]::Escape("`$buildShell = if (`$IsWindows) { 'pwsh' } else { 'bash' }"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = `$buildShell"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in `$buildArguments)"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape('& $buildShell @buildArguments'))).Count | Should -Be 2
     }
 
     It 'uses non-interactive sudo for CoreSimulator recovery before falling back' {
@@ -1446,6 +2011,108 @@ Describe 'Pipeline pre-trusted command safety' {
         $gateBlock = $pipelineContent.Substring($gateStart, $gateEnd - $gateStart)
         $gateBlock | Should -Match ([regex]::Escape('if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then'))
         $gateBlock | Should -Not -Match 'buildtasks-failed\.marker'
+    }
+}
+
+Describe 'Platform-specific MSBuild watchdog commands' {
+    BeforeAll {
+        $watchdogConfigurations = @(
+            foreach ($step in [regex]::Matches($pipelineContent, "(?m)^ {12}displayName: 'Build MSBuild Tasks'")) {
+                $start = $pipelineContent.LastIndexOf('          - pwsh: |', $step.Index)
+                $scriptText = (($pipelineContent.Substring($start, $step.Index - $start) -split '\r?\n' |
+                    Select-Object -Skip 1) -replace '^ {14}', '') -join "`n"
+                $parseErrors = $null
+                $ast = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]$null, [ref]$parseErrors)
+                if ($parseErrors) { throw ($parseErrors.Message -join '; ') }
+                $assignments = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                    $node.Left.Extent.Text -in '$buildCommand', '$buildShell', '$buildArguments'
+                }, $false)
+                $configurationScript = ($assignments.Extent.Text -join "`n") -replace '\$IsWindows\b', '$UseWindows'
+                [scriptblock]::Create(@"
+param([bool]`$UseWindows)
+$configurationScript
+[pscustomobject]@{ Shell = `$buildShell; Arguments = `$buildArguments; Command = `$buildCommand }
+"@)
+            }
+        )
+    }
+
+    It 'uses native PowerShell on Windows in both watchdogs' {
+        $watchdogConfigurations.Count | Should -Be 2
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $true
+            $launch.Shell | Should -Be 'pwsh'
+            $launch.Arguments[0..3] | Should -Be @('-NoLogo', '-NoProfile', '-NonInteractive', '-Command')
+            $launch.Arguments[4] | Should -Be $launch.Command
+        }
+    }
+
+    It 'preserves the POSIX pipefail command in both watchdogs' {
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $false
+            $launch.Shell | Should -Be 'bash'
+            $launch.Arguments[0..2] | Should -Be @('-o', 'pipefail', '-c')
+            $launch.Command | Should -Be "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
+        }
+    }
+
+    It 'fails explicitly when the Windows build script is missing' -Skip:(-not $IsWindows) {
+        $fixtureRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $fixtureRoot | Out-Null
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $true
+            $launchArguments = $launch.Arguments
+            Push-Location $fixtureRoot
+            try {
+                $output = & $launch.Shell @launchArguments 2>&1
+                $LASTEXITCODE | Should -Not -Be 0
+                $output | Should -Not -BeNullOrEmpty
+            } finally {
+                Pop-Location
+            }
+        }
+    }
+
+    It 'sanitizes real Windows child output and preserves exit <ExitCode>' -Skip:(-not $IsWindows) -ForEach @(
+        @{ ExitCode = 0 }
+        @{ ExitCode = 7 }
+    ) {
+        $fixtureRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $fixtureRoot | Out-Null
+        @'
+Write-Output "stdout`r##vso[task.setvariable variable=fixture]stdout-payload"
+[Console]::Error.WriteLine("stderr`r##vso[task.setvariable variable=fixture]stderr-payload")
+Write-Host "host`r##vso[task.setvariable variable=fixture]host-payload"
+'@ + "`nexit $ExitCode" | Set-Content -LiteralPath (Join-Path $fixtureRoot 'build.ps1')
+
+        foreach ($configuration in $watchdogConfigurations) {
+            $launch = & $configuration $true
+            $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+            $startInfo.FileName = $launch.Shell
+            foreach ($argument in $launch.Arguments) { [void]$startInfo.ArgumentList.Add($argument) }
+            $startInfo.WorkingDirectory = $fixtureRoot
+            $startInfo.UseShellExecute = $false
+            $startInfo.RedirectStandardOutput = $true
+            $startInfo.RedirectStandardError = $true
+            $process = [System.Diagnostics.Process]::Start($startInfo)
+            try {
+                $stdout = $process.StandardOutput.ReadToEndAsync()
+                $stderr = $process.StandardError.ReadToEndAsync()
+                $process.WaitForExit(30000) | Should -BeTrue
+                $process.ExitCode | Should -Be $ExitCode
+                $output = $stdout.GetAwaiter().GetResult() + $stderr.GetAwaiter().GetResult()
+                $output | Should -Not -Match '##vso\['
+                $output.Replace("`r`n", "`n") | Should -Not -Match '\r'
+                foreach ($payload in 'stdout-payload', 'stderr-payload', 'host-payload') {
+                    $output | Should -Match $payload
+                }
+            } finally {
+                if (-not $process.HasExited) { $process.Kill($true); $process.WaitForExit() }
+                $process.Dispose()
+            }
+        }
     }
 }
 

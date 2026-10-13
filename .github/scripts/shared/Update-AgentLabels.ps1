@@ -23,13 +23,14 @@ if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
     throw "Required GitHub retry helper not found: $ghRetryHelper"
 }
 . $ghRetryHelper
+. (Join-Path $PSScriptRoot 'Test-ReviewerArtifactsComplete.ps1')
 
 # ============================================================
 # Label definitions
 # ============================================================
 
 $script:OutcomeLabels = @{
-    's/agent-approved'          = @{ Description = 'AI agent recommends approval - PR fix is correct and optimal'; Color = '2E7D32' }
+    's/agent-approved'          = @{ Description = 'AI agent recommends approval of the submitted PR'; Color = '2E7D32' }
     's/agent-changes-requested' = @{ Description = 'AI agent recommends changes - found a better alternative or issues'; Color = 'E65100' }
     's/agent-review-incomplete' = @{ Description = 'AI agent could not complete all phases (blocker, timeout, error)'; Color = 'B71C1C' }
 }
@@ -47,7 +48,7 @@ $script:ManualLabels = @{
 }
 
 $script:TrackingLabel = @{
-    's/agent-reviewed' = @{ Description = 'PR was reviewed by AI agent workflow (full 4-phase review)'; Color = '1565C0' }
+    's/agent-reviewed' = @{ Description = 'PR was processed by the AI agent review workflow'; Color = '1565C0' }
 }
 
 # All label definitions combined
@@ -615,7 +616,9 @@ function Parse-PhaseOutcomes {
         [Parameter(Mandatory)] [string]$PRNumber,
         [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
         [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
-        [string]$TrustedGateResult = ''
+        [string]$TrustedGateResult = '',
+        [ValidateSet('candidate-comparison', 'evidence-first')]
+        [string]$ReviewMode = 'candidate-comparison'
     )
 
     $baseDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
@@ -746,6 +749,14 @@ function Parse-PhaseOutcomes {
         $result.Outcome = 'changes-requested'
     }
 
+    if ($ReviewMode -eq 'evidence-first') {
+        # No routine alternative search ran, so neither "beat PR" nor "could not beat PR" applies.
+        $result.FixResult = $null
+        if ($result.Outcome -eq 'approved' -and -not (Test-ReviewerArtifactsComplete -PRAgentDir $baseDir)) {
+            $result.Outcome = 'review-incomplete'
+        }
+    }
+
     return $result
 }
 
@@ -805,6 +816,8 @@ function Apply-AgentLabels {
         [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
         [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
         [string]$TrustedGateResult = '',
+        [ValidateSet('candidate-comparison', 'evidence-first')]
+        [string]$ReviewMode = 'candidate-comparison',
         [string]$ExpectedHeadSha = '',
         [string]$Owner = 'dotnet',
         [string]$Repo = 'maui'
@@ -825,7 +838,8 @@ function Apply-AgentLabels {
     $outcomes = Parse-PhaseOutcomes `
         -PRNumber $PRNumber `
         -RepoRoot $RepoRoot `
-        -TrustedGateResult $TrustedGateResult
+        -TrustedGateResult $TrustedGateResult `
+        -ReviewMode $ReviewMode
     Write-Host "  📊 Parsed outcomes:" -ForegroundColor Gray
     Write-Host "     Outcome:    $($outcomes.Outcome ?? '(none)')" -ForegroundColor Gray
     Write-Host "     Gate:       $($outcomes.GateResult ?? '(skipped)')" -ForegroundColor Gray

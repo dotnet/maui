@@ -583,6 +583,9 @@ These apply regardless of file paths: Logic and Correctness, Regression Preventi
 
 ### Wave 1 — Find (parallel sub-agents, batches of 6)
 
+Use `model: "gpt-5.3-codex"` explicitly for every dimension sub-agent, matching the
+expert model selected by the code-review caller. Do not rely on automatic model selection.
+
 For each activated dimension, launch a sub-agent. The sub-agent:
 1. Walks every changed hunk relevant to that dimension
 2. Evaluates each CHECK rule against the diff

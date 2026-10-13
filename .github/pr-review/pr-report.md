@@ -10,7 +10,15 @@
 
 ## Prerequisites
 
-- Phases 1-2 (Pre-Flight, Try-Fix) must be complete before starting
+For an explicitly trusted `ReviewMode=evidence-first` caller, follow
+`pr-review/references/evidence-first-policy.md` in the trusted skill package instead
+of requiring legacy two-attempt completion below. Display Try-Fix as **not requested**,
+compare only actual candidates, and do not treat missing/skipped expert review as
+approval evidence. The caller still requires winner, inline, and submitted-HEAD
+pr-finalize artifacts; its explicit metadata assessment does not authorize mutation.
+These exceptions do not change candidate-comparison or any Gate/blocking veto.
+
+- In candidate-comparison, Phases 1-2 (Pre-Flight, Try-Fix) must be complete before starting
 - Gate result is available from the prompt (ran separately before this skill)
 - **Read `pre-flight/content.md`** for issue/PR context
 - **Read `expert-pr-eval/content.md`** for the code-review verdict, confidence, and findings
@@ -28,11 +36,11 @@
    | 2 | Gate failed (tests fail with fix) | `⚠️ REQUEST CHANGES` — fix doesn't work |
    | 3 | `pr-plus-reviewer` or a `try-fix-*` candidate wins | `⚠️ REQUEST CHANGES` — submitted PR needs the winning changes |
    | 4 | Code review verdict is `NEEDS_DISCUSSION` | `⚠️ REQUEST CHANGES` — include code review concerns |
-   | 5 | Raw `pr` candidate wins AND Gate permits approval AND code review is LGTM or SKIPPED | `✅ APPROVE` |
+   | 5 | Raw `pr` candidate wins AND Gate permits approval AND code review is LGTM (or SKIPPED in candidate-comparison only) | `✅ APPROVE` |
 
    **🚨 Hard gate:** If the expert code review has verdict `NEEDS_CHANGES`, the final recommendation MUST be `REQUEST CHANGES` regardless of Gate or Try-Fix results. Code-review ❌ Errors cannot be overridden by passing tests alone.
 
-   **Code review SKIPPED:** If the code-review sub-agent failed or timed out (verdict = `SKIPPED`), the hard gate does NOT apply. Proceed as if code review was not available — base the recommendation on Gate and Try-Fix results only. Note in the report that code review was unavailable.
+   **Code review SKIPPED (candidate-comparison only):** If the code-review sub-agent failed or timed out (verdict = `SKIPPED`), the hard gate does NOT apply. Proceed as if code review was not available — base the recommendation on Gate and Try-Fix results only. Note in the report that code review was unavailable. In evidence-first, missing/skipped expert review cannot support approval.
 
 2. **Write output files** — Save recommendation to `content.md`
 
