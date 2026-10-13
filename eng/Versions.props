@@ -175,10 +175,20 @@
     <!-- Android SDK package versions and info -->
     <!-- Build Tools and CmdLine Tools versions -->
     <AndroidSdkCmdLineToolsVersion>13.0</AndroidSdkCmdLineToolsVersion>
+    <!-- Keep emulator binaries pinned while investigating Shell retry hangs on 37.2.12. -->
+    <AndroidSdkEmulatorVersion>37.1.11</AndroidSdkEmulatorVersion>
+    <AndroidSdkEmulatorBuildId>15917651</AndroidSdkEmulatorBuildId>
     <!-- Device Type for creating AVD's -->
     <AndroidSdkAvdDeviceType>Nexus 5X</AndroidSdkAvdDeviceType>
   </PropertyGroup>
   <!-- Android API Levels to install platform sdks and emulator images for -->
+  <!-- Official archives and SHA-256 hashes: https://developer.android.com/studio/emulator_archive -->
+  <ItemGroup>
+    <AndroidSdkEmulatorArchives Include="linux-X64" ArchiveName="emulator-linux_x64-$(AndroidSdkEmulatorBuildId).zip" Sha256="95771e0ae431897b2a4bd2d97fa095f29a8b0624a7b216baf529f9306161c266" />
+    <AndroidSdkEmulatorArchives Include="macos-X64" ArchiveName="emulator-darwin_x64-$(AndroidSdkEmulatorBuildId).zip" Sha256="c1a3890f95b8868198918fad05ffca16fa20404d93547ba545ff5a5867ee7005" />
+    <AndroidSdkEmulatorArchives Include="macos-Arm64" ArchiveName="emulator-darwin_aarch64-$(AndroidSdkEmulatorBuildId).zip" Sha256="22530de9363f34ea945ecb5cad74523abd4b615f27f3c1a9899efb183ea9e144" />
+    <AndroidSdkEmulatorArchives Include="windows-X64" ArchiveName="emulator-windows_x64-$(AndroidSdkEmulatorBuildId).zip" Sha256="5ff441f3b12ace9b13e9cf96fb0007d233967718652a8110705e995ac47bfeb7" />
+  </ItemGroup>
   <ItemGroup>
     <AndroidSdkApiLevels Include="23" SystemImageType="google_apis" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="24" SystemImageType="google_apis" DeviceType="$(AndroidSdkAvdDeviceType)" />

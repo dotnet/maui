@@ -54,6 +54,19 @@
 		<!-- Install SDK Common Packages -->
 		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
 
+		<!-- sdkmanager cannot install historical emulator revisions; replace its package with the official archive. -->
+		<PropertyGroup>
+			<_AndroidSdkEmulatorHostOs Condition=" '$(IsWindows)' == 'True' ">windows</_AndroidSdkEmulatorHostOs>
+			<_AndroidSdkEmulatorHostOs Condition=" '$(IsMacOS)' == 'True' ">macos</_AndroidSdkEmulatorHostOs>
+			<_AndroidSdkEmulatorHostOs Condition=" '$(IsLinux)' == 'True' ">linux</_AndroidSdkEmulatorHostOs>
+			<_AndroidSdkEmulatorHost>$(_AndroidSdkEmulatorHostOs)-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</_AndroidSdkEmulatorHost>
+		</PropertyGroup>
+		<ItemGroup>
+			<_AndroidSdkEmulatorArchive Include="@(AndroidSdkEmulatorArchives)" Condition=" '%(Identity)' == '$(_AndroidSdkEmulatorHost)' " />
+		</ItemGroup>
+		<Error Condition=" '@(_AndroidSdkEmulatorArchive)' == '' " Text="No pinned Android emulator archive is configured for $(_AndroidSdkEmulatorHost)." />
+		<Exec Command="dotnet tool run pwsh -- -NoProfile -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/install-android-emulator.ps1&quot; -Version &quot;$(AndroidSdkEmulatorVersion)&quot; -ArchiveFileName &quot;%(_AndroidSdkEmulatorArchive.ArchiveName)&quot; -ArchiveSha256 &quot;%(_AndroidSdkEmulatorArchive.Sha256)&quot;" />
+
 		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 

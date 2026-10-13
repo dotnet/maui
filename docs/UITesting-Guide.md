@@ -43,6 +43,26 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Set `JAVA_HOME` environment variable
 - Install Android API 30 SDK with x86/x64 emulator image
 
+The shared CI provisioning target pins the **emulator engine to 37.1.11** while
+investigating Shell retry hangs observed after the 37.2.12 update. The **Nexus 5X**
+AVD profile and Android API/system-image versions are unchanged. This pin applies
+to all jobs using `ProvisionAndroidSdkCommonPackages`, not just the Shell shard.
+
+To apply the same pin locally (this replaces the emulator in the SDK selected by
+the MAUI CLI):
+
+```bash
+dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAndroidSdkCommonPackages
+```
+
+Stop any running emulators before provisioning. The target downloads Google's
+archived binaries, verifies SHA-256 and the executable version, and updates the
+SDK package metadata. Both the provisioning log and `dotnet maui android sdk list`
+should report 37.1.11. Version, archive build ID, and platform-specific checksums
+are maintained together in `eng/Versions.props`; update all three when changing
+the pin. A Shell-lane rerun is still needed to determine whether this downgrade
+resolves the retry hangs.
+
 ### iOS/MacCatalyst-Specific
 
 - macOS required
