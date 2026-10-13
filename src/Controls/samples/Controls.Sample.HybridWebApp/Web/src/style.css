@@ -8,6 +8,16 @@
   --muted: #566576;
   --surface: #f4f6f8;
 }
+:root[data-theme="dark"] { color-scheme: dark; color: #e5eaf0; background: #151b22; --accent: #8ec9f4; --border: #506074; --muted: #b5c0cd; --surface: #222c38; }
+:root[data-theme="dark"] button, :root[data-theme="dark"] input, :root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select { color: #e5eaf0; background: #222c38; }
+:root[data-theme="dark"] button.primary { color: #152f47; background: #8ec9f4; }
+:root[data-theme="dark"] button:disabled { color: #a9b6c5; background: #2d3743; border-color: #506074; }
+:root[data-theme="dark"] .instructions, :root[data-theme="dark"] .input-help,
+:root[data-theme="dark"] #operation-log pre { color: #c6d2df; }
+:root[data-theme="dark"] #feature-list button[aria-current="page"] { color: #c9e9ff; background: #264762; border-color: #597b94; }
+:root[data-theme="dark"] #feature-list .group-toggle[data-selected="true"] { color: #c9e9ff; }
+:root[data-theme="dark"] a { color: #8ec9f4; }
 * { box-sizing: border-box; }
 html { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body { margin: 0; height: 100%; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; overscroll-behavior: none; }
@@ -50,7 +60,20 @@ h3 { font-size: 1rem; margin: 0; }
 #feature-list { flex: 1; min-height: 60px; display: grid; align-content: start; gap: 3px; overflow-y: auto; overscroll-behavior: contain; padding: 4px; margin: 0 -4px; }
 #feature-list button { display: flex; flex-direction: column; text-align: left; gap: .3rem; border: 1px solid transparent; background: transparent; border-radius: 5px; padding: .7rem; font-size: .87rem; }
 #feature-list small { color: var(--muted); font-size: .72rem; font-weight: 400; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-#feature-list button[aria-current="true"] { background: #e0edf7; border-color: #b3cede; color: #164b74; font-weight: 600; }
+#feature-list button[aria-current="page"] { background: #e0edf7; border-color: #b3cede; color: #164b74; font-weight: 600; }
+#feature-list .group-toggle { flex-direction: row; justify-content: space-between; font-weight: 600; margin-top: .5rem; }
+#feature-list .group-state { font-size: .72rem; color: var(--muted); font-weight: 400; }
+#feature-list .group-toggle[data-selected="true"] { color: #164b74; }
+.nav-group > div { padding-left: .3rem; }
+.guide-links { display: flex; gap: .75rem 1.2rem; flex-wrap: wrap; margin: 1.2rem 0 2rem; }
+.guide-section { margin-top: 1.8rem; }
+.guide-section h3 { margin-bottom: .6rem; }
+.guide-section p { max-width: 70ch; line-height: 1.65; }
+.guide-section + .guide-section { padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.guide-log { margin-top: 1.5rem; }
+.file-preview { margin-top: 1rem; max-height: 320px; overflow: auto; padding: 1rem; background: var(--surface); border: 1px solid var(--border); }
+.browser-slot { width: 100%; height: 440px; border: 1px solid var(--border); background: var(--surface); overflow: hidden; }
+.browser-slot p { padding: 1rem; color: var(--muted); font-size: .85rem; }
 main { padding: 2rem 2.4rem; max-width: 1060px; min-width: 0; min-height: 0; width: 100%; overflow-y: auto; overscroll-behavior: contain; }
 .experiment-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
 .experiment-heading .secondary { margin: 0; }
@@ -89,8 +112,11 @@ summary { cursor: pointer; font-size: .85rem; color: var(--muted); padding: .4re
 @media (max-width: 760px) {
   .workspace { display: flex; flex-direction: column; }
   .app-header { padding: 1rem; }
-  .catalog { flex: none; max-height: min(360px, 48%); padding: 1rem; border-right: 0; border-bottom: 1px solid var(--border); }
-  #feature-list { flex: 0 0 120px; min-height: 0; }
+  .catalog { flex: 0 1 215px; min-height: 130px; max-height: 32%; padding: .7rem 1rem; border-right: 0; border-bottom: 1px solid var(--border); overflow: hidden; }
+  .catalog > label { font-size: .8rem; margin-bottom: .3rem; }
+  .catalog > input { padding: .4rem .6rem; }
+  .catalog > .secondary { margin: .3rem 0; }
+  #feature-list { flex: 1; min-height: 0; }
   #feature-list button { padding: .5rem .6rem; }
   main { flex: 1; padding: 1.5rem 1rem; }
   .experiment-heading { display: block; }

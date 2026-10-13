@@ -47,4 +47,8 @@ public sealed class NativeDispatcher
 		}).ConfigureAwait(false);
 		return result;
 	}
+	/// <summary>Posts scoped native event source setup/teardown without blocking a bridge invocation.</summary>
+	/// <param name="action">The owning native source operation; invalidate stale callbacks before posting teardown.</param>
+	/// <returns>Completion on the configured native thread.</returns>
+	public Task PostAsync(Action action) => _dispatch(() => { action(); return Task.CompletedTask; });
 }

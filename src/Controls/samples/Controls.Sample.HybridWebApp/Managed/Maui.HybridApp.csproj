@@ -10,7 +10,7 @@
     <PackageId>Maui.HybridApp</PackageId>
     <Version>0.1.0-preview.1</Version>
     <PackageVersion>0.1.0-preview.1</PackageVersion>
-    <Description>Experimental native-only typed hybrid command host and independently registered Essentials providers. Working package identity, not an official MAUI release.</Description>
+    <Description>Experimental typed hybrid command host with independent Essentials and MAUI UI providers. Working package identity, not an official MAUI release.</Description>
     <Authors>.NET MAUI contributors</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -32,15 +32,17 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(HybridWebAppInTree)' == 'true'">
     <ProjectReference Include="$(HybridWebAppRepositoryRoot)src/Essentials/src/Essentials.csproj" />
+    <ProjectReference Include="$(HybridWebAppRepositoryRoot)src/Controls/src/Core/Controls.Core.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(HybridWebAppInTree)' != 'true'">
     <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Core" Version="$(MauiVersion)" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="/" />
     <None Include="LICENSE.txt" Pack="true" PackagePath="/" />
   </ItemGroup>
   <Target Name="ValidateHybridAppMauiVersion" BeforeTargets="CollectPackageReferences" Condition="'$(HybridWebAppInTree)' != 'true'">
-    <Error Condition="'$(MauiVersion)' == ''" Text="The standalone library requires an explicit compatible Microsoft.Maui.Essentials 11 package version (-p:MauiVersion=VERSION) and its feed. No public .NET MAUI 11 package version is assumed." />
+    <Error Condition="'$(MauiVersion)' == ''" Text="The standalone library requires explicit compatible Microsoft.Maui.Essentials and Microsoft.Maui.Controls.Core 11 packages (-p:MauiVersion=VERSION) and their actual dependency feed. No public .NET MAUI 11 package version is assumed." />
   </Target>
 </Project>

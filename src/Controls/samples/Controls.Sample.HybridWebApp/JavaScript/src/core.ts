@@ -13,7 +13,8 @@ export type Decoder<T> = (value: unknown) => T
  * @remarks
  * MAUI HybridWebView provides these operations, but an explicit implementation can
  * deliver the same wire contract without automatic MAUI-origin bootstrap or Controls.
- * The client/Essentials helpers require the protocol, not a particular UI framework.
+ * The JavaScript client/helpers require the protocol; a native UI provider may
+ * additionally require a concrete page/window supplied by its managed host.
  */
 export interface Bridge {
   /**
@@ -183,6 +184,12 @@ export interface Ready {
   preferenceNamespace: string
   /** Host-advertised text limit in UTF-16 code units; native input validation remains authoritative. */
   maximumTextLength: number
+  /** Explicit OS-interactive commands allowed to outlive normal deadlines; omitted by older hosts. */
+  interactiveCommands?: string[]
+  /** Native OS-interactive budget, at most 300000 milliseconds; the client adds three transport seconds. */
+  interactiveTimeoutMilliseconds?: number
+  /** Validated bundle-relative entry URL; routing semantics are owned by the frontend. */
+  initialLocation?: string
 }
 /**
  * Correlated native work and its cooperative cancellation handle.
@@ -222,13 +229,74 @@ export const progress: Decoder<Progress> = value => {
 }
 type Listener = (value: unknown, id: string) => void
 const handshakeCompletions = new WeakMap<NativeClient, Promise<void>>()
+interface SharedTopic {
+  listeners: Set<(value: unknown, id: string) => void>
+  release: Promise<() => Promise<void>>
+  stopping?: Promise<void>
+}
+const sharedTopics = new WeakMap<NativeClient, Map<string, SharedTopic>>()
+
+/**
+ * Multiplexes explicit resource listeners over one native document-topic subscription.
+ * @typeParam T - Provider-owned validated event payload.
+ * @param client - Exact owning connected client; no global window substitution.
+ * @param topic - Explicit provider-registered topic.
+ * @param decode - Per-listener runtime data validator.
+ * @param listener - Receives validated native data and event identity.
+ * @returns Idempotent unsubscribe; the last listener detaches the native source.
+ * @throws `NativeError` when native subscription fails.
+ * @remarks Multiple resource callbacks share one NativeClient listener. Decoders
+ * remain provider-owned, and disposal/reset still retires the native document.
+ */
+export async function subscribeShared<T>(client: NativeClient, topic: string, decode: Decoder<T>,
+  listener: (value: T, id: string) => void): Promise<() => Promise<void>> {
+  let topics = sharedTopics.get(client)
+  if (!topics) { topics = new Map(); sharedTopics.set(client, topics) }
+  let entry = topics.get(topic)
+  while (entry?.stopping) {
+    try { await entry.stopping } catch { /* The retiring subscriber owns its cleanup error. */ }
+    entry = topics.get(topic)
+  }
+  if (!entry) {
+    const listeners = new Set<(value: unknown, id: string) => void>()
+    entry = { listeners, release: client.subscribe(topic, value => value, (value, id) => {
+      for (const callback of [...listeners]) {
+        if (!listeners.has(callback)) continue
+        try { callback(value, id) }
+        catch (error) { console.warn('Rejected resource event callback', error) }
+      }
+    }) }
+    topics.set(topic, entry)
+  }
+  const callback = (value: unknown, id: string) => listener(decode(value), id)
+  entry.listeners.add(callback)
+  let release: () => Promise<void>
+  try { release = await entry.release }
+  catch (error) {
+    entry.listeners.delete(callback)
+    if (topics.get(topic) === entry) topics.delete(topic)
+    throw error
+  }
+  let stopped = false
+  return async () => {
+    if (stopped) return
+    stopped = true
+    entry.listeners.delete(callback)
+    if (entry.listeners.size === 0 && topics.get(topic) === entry) {
+      entry.stopping = release()
+      try { await entry.stopping }
+      finally { if (topics.get(topic) === entry) topics.delete(topic) }
+    }
+  }
+}
 
 /**
  * Low-level client for one native WebView document session.
  * @remarks
  * A compatible, explicitly registered protocol-1 command host is required.
  * An injected Bridge does not use automatic origin detection/framework loading
- * and need not depend on MAUI Controls. Feature helpers use the exact supplied client.
+ * and need not depend on MAUI Controls. Ordinary feature functions use the one
+ * shared document connection configured by core setup, not an explicit client parameter.
  * Construction does not handshake or attach browser listeners. Call the instance's
  * connect method before commands and dispose at teardown. Only one session should
  * own a WebView document: a new native handshake retires the previous document.
@@ -242,6 +310,11 @@ export class NativeClient {
   private readonly aborts = new Map<string, () => void>()
   private readonly notices: (() => void)[] = []
   private readonly bridge: Bridge | undefined
+  private interactive = new Set<string>()
+  private interactiveTimeout = 300000
+  private readyValue: Ready | undefined
+  /** Last successful native handshake metadata; descriptive only, never a permission grant. */
+  get readiness(): Ready | undefined { return this.readyValue }
   /**
    * Creates an unconnected client without native calls.
    * @param bridge - Injected protocol transport, or undefined for an unavailable client; no origin check or fallback is inferred.
@@ -250,12 +323,12 @@ export class NativeClient {
    * ```ts
    * import { NativeClient } from '@maui/api'
    * import type { Bridge } from '@maui/api'
-   * import { getAppInfo } from '@maui/api/essentials/app-info'
-   * async function readApp(transport: Bridge) {
+   * import { object, text } from '@maui/api/core'
+   * async function greet(transport: Bridge) {
    *   const client = new NativeClient(transport)
    *   try {
    *     await client.connect()
-   *     return await getAppInfo(client)
+   *     return await client.invoke('custom.greet', {}, value => text(object(value).message))
    *   } finally { client.dispose() }
    * }
    * ```
@@ -270,10 +343,26 @@ export class NativeClient {
    * @remarks Unlike root connect, this method does not bootstrap or attach document cleanup.
    */
   async connect(): Promise<Ready> {
-    return this.invoke('core.connect', {}, value => {
+    const ready = await this.invoke('core.connect', {}, value => {
       const v = object(value)
-      return { commands: strings(v.commands), preferenceNamespace: text(v.preferenceNamespace), maximumTextLength: number(v.maximumTextLength) }
+      const ready: Ready = { commands: strings(v.commands), preferenceNamespace: text(v.preferenceNamespace), maximumTextLength: number(v.maximumTextLength) }
+      this.interactive = new Set()
+      this.interactiveTimeout = 300000
+      if (v.initialLocation !== undefined && v.initialLocation !== null) ready.initialLocation = text(v.initialLocation)
+      if (v.interactiveCommands !== undefined && v.interactiveCommands !== null) {
+        const commands = strings(v.interactiveCommands)
+        const timeout = number(v.interactiveTimeoutMilliseconds)
+        if (!Number.isInteger(timeout) || timeout < 1000 || timeout > 300000 || commands.some(name => !ready.commands.includes(name)))
+          throw new NativeError('invalid_response', 'Invalid interactive command policy.')
+        ready.interactiveCommands = commands
+        ready.interactiveTimeoutMilliseconds = timeout
+        this.interactive = new Set(commands)
+        this.interactiveTimeout = timeout
+      }
+      return ready
     })
+    this.readyValue = ready
+    return ready
   }
   /**
    * Invokes one explicitly registered command and validates its completion value.
@@ -286,7 +375,9 @@ export class NativeClient {
    * @remarks
    * Requests are bounded to 100000 ASCII-escaped characters. Frontend waits have a
    * 23-second deadline and signal disconnect on timeout; the reference host's deadline
-   * is 20 seconds with 16 simultaneous calls. No automatic replay or OS undo occurs.
+   * is 20 seconds with 16 simultaneous calls. Explicit interactive metadata from
+   * connect extends only those commands to at most five minutes plus three transport
+   * seconds. Disposal still cancels immediately. No automatic replay or OS undo occurs.
    */
   invoke<T>(command: string, args: Json, decode: Decoder<T>): Promise<T> { return this.start(command, args, decode).result }
   /**
@@ -313,7 +404,7 @@ export class NativeClient {
       timer = setTimeout(() => {
         reject(new NativeError('transport_timeout', 'The native call timed out; reload to reconnect.'))
         this.sendDisconnect()
-      }, 23000)
+      }, this.interactive.has(command) ? this.interactiveTimeout + 3000 : 23000)
     })
     try {
       const transport = this.bridge.InvokeDotNet('Invoke', [request])
@@ -423,9 +514,39 @@ export class NativeClient {
 }
 
 let defaultClient: NativeClient | undefined
+let boundBridge: Bridge | undefined
+let hasBoundBridge = false
+let connectionGeneration = 0
+/** Infrastructure generation for lazy resource bindings; changes when the shared document client is retired. */
+export function documentConnectionGeneration(): number { return connectionGeneration }
 let defaultConnection: Promise<NativeClient> | undefined
 let cancelDefaultStartup: ((error: NativeError) => void) | undefined
 let defaultHandshake: Promise<void> = Promise.resolve()
+
+/**
+ * Configures one explicit protocol transport before the document's shared feature connection.
+ * @param bridge - Explicit host/test transport; undefined deliberately represents no native host.
+ * @returns Unconnected low-level client for infrastructure/bootstrap inspection; ordinary features still use shared connect.
+ * @remarks Infrastructure setup only. Retires the old shared client using normal
+ * disconnect/handshake ordering; feature/resource APIs never accept clients.
+ * A custom transport is not inferred on an ordinary browser and grants no native permissions.
+ */
+export function configureBridge(bridge: Bridge | undefined): NativeClient {
+  disconnect()
+  boundBridge = bridge
+  hasBoundBridge = true
+  defaultClient = new NativeClient(bridge)
+  return defaultClient
+}
+/**
+ * Clears explicit transport setup and retires the shared document connection.
+ * @remarks Restores normal native-origin bootstrap; existing resources retain their retired client and cannot rebind.
+ */
+export function resetBridge(): void {
+  disconnect()
+  boundBridge = undefined
+  hasBoundBridge = false
+}
 
 /**
  * Lazily connects the shared client for the current frontend document.
@@ -447,16 +568,16 @@ let defaultHandshake: Promise<void> = Promise.resolve()
  * ```
  */
 export function connect(): Promise<NativeClient> {
-  if (defaultClient?.available && !defaultConnection) return Promise.resolve(defaultClient)
+  if (defaultClient?.available && defaultClient.readiness && !defaultConnection) return Promise.resolve(defaultClient)
   if (defaultConnection) return defaultConnection
   const previousHandshake = defaultHandshake
   let cancel!: (error: NativeError) => void
   const cancelled = new Promise<never>((_, reject) => { cancel = reject })
-  const startup = loadNativeBridge().then(async bridge => {
+  const startup = (hasBoundBridge ? Promise.resolve(boundBridge) : loadNativeBridge()).then(async bridge => {
     await previousHandshake
     if (defaultConnection !== connection) throw new NativeError('cancelled', 'The frontend document disconnected.')
     if (!bridge) throw new NativeError('native_unavailable', 'Native host unavailable. Launch a matching MAUI app; browser mode does not emulate native APIs.')
-    const client = new NativeClient(bridge)
+    const client = hasBoundBridge && defaultClient?.available && !defaultClient.readiness ? defaultClient : new NativeClient(bridge)
     defaultClient = client
     try {
       client.attachToDocument()
@@ -498,6 +619,7 @@ export function connect(): Promise<NativeClient> {
  * are rejected as cancelled; completed OS side effects are not undone.
  */
 export function disconnect(): void {
+  connectionGeneration++
   const client = defaultClient
   cancelDefaultStartup?.(new NativeError('cancelled', 'The frontend document disconnected.'))
   cancelDefaultStartup = undefined

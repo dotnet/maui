@@ -10,10 +10,8 @@
     number: 42.5, flag: true, items: ['first', '第二'],
   }, null, 2))
 
-  function echo(): void {
-    void session.run('Async native DTO echo', async () => {
-      return sample(session.client).echo(parseEcho(input))
-    })
+  async function echo(): Promise<unknown> {
+    return sample(session.client).echo(parseEcho(input))
   }
 </script>
 
@@ -26,5 +24,5 @@
 <div class="actions">
   <Action {session} action="echo" title="Run native echo" primary onclick={echo} />
   <Action {session} action="counter" title="Read native counter"
-    onclick={() => { void session.run('Read native service counter', () => sample(session.client).getCounter()) }} />
+    onclick={() => sample(session.client).getCounter()} />
 </div>

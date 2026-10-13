@@ -1,43 +1,26 @@
-import { ack, connect, nullableText, object } from '../core.js'
-import type { NativeClient } from '../core.js'
-
-/** Native text clipboard operations; no browser clipboard fallback is provided. */
-export interface ClipboardApi {
-  /**
-   * Replaces the native clipboard's text.
-   * @param text - Text to copy, including Unicode; the reference host allows at most 4096 UTF-16 code units.
-   * @returns The native acknowledgement; not a guarantee that another app can read the clipboard.
-   * @throws `NativeError` for unavailable native, invalid arguments, OS/provider rejection or invalid output.
-   * @remarks Requires the host's `clipboard.write` provider; native input validation and OS policy are authoritative.
-   */
-  writeText(text: string): Promise<boolean>
-  /**
-   * Reads text from the native clipboard.
-   * @returns Native text, or null when no text is available.
-   * @throws `NativeError` for unavailable native, OS/provider rejection or invalid output.
-   * @remarks Requires the host's `clipboard.read` provider. Reading may be restricted by OS policy.
-   */
-  readText(): Promise<string | null>
-}
-
+import { ack, boolean, connect, nullableText, object, subscribeShared } from '../core.js'
 /**
- * Creates native clipboard helpers without making a native call.
- * @param client - Exact connected client to use; omitted to lazily connect the shared document client on each operation.
- * @returns Text clipboard operations with runtime-validated results.
- * @remarks
- * Requires a compatible protocol-1 host with explicitly registered clipboard providers.
- * An explicit client is neither connected, attached nor disposed by the helper.
- * Shared-client operations use the current document session and are not replayed after disconnect.
- * @example
- * ```ts
- * import { clipboard } from '@maui/api/essentials/clipboard'
- * await clipboard().writeText('Hello — 你好 👋')
- * const text = await clipboard().readText()
- * ```
+ * Replaces native clipboard text using the shared document connection.
+ * @param text - Native Unicode text; host text policy/OS permission remains authoritative.
+ * @returns Native acknowledgement, not a browser clipboard emulation.
+ * @throws `NativeError` on invalid input, unavailable native or OS failure.
  */
-export function clipboard(client?: NativeClient): ClipboardApi {
-  return {
-    writeText: async (text: string) => (client ?? await connect()).invoke('clipboard.write', { text }, ack),
-    readText: async () => (client ?? await connect()).invoke('clipboard.read', {}, value => nullableText(object(value).text)),
-  }
+export async function setText(text: string): Promise<boolean> {
+  return (await connect()).invoke('clipboard.write', { text }, ack)
+}
+/** Reads actual native clipboard text. @returns Native text or null, never web fallback. */
+export async function getText(): Promise<string | null> {
+  return (await connect()).invoke('clipboard.read', {}, value => nullableText(object(value).text))
+}
+/** Reads actual native text availability. @returns Native HasText; OS policy remains authoritative. */
+export async function hasText(): Promise<boolean> {
+  return (await connect()).invoke('clipboard.hasText', {}, value => boolean(object(value).hasText))
+}
+/**
+ * Observes actual native clipboard content changes without automatically reading private text.
+ * @param listener - Runs on native change; call getText explicitly when wanted.
+ * @returns Unsubscribe; multiple listeners share one native handler.
+ */
+export async function onContentChanged(listener: () => void): Promise<() => Promise<void>> {
+  return subscribeShared(await connect(), 'clipboard.changed', ack, () => listener())
 }

@@ -10,14 +10,11 @@
     number: 42.5, flag: true, items: ['first', '第二'],
   }, null, 2))
 
-  function echo(): void {
-    void session.run('Async native DTO echo', async () => {
-      return sample(session.client).echo(parseEcho(input))
-    })
+  async function echo(): Promise<unknown> {
+    return sample(session.client).echo(parseEcho(input))
   }
 
-  function subscribe(): void {
-    void session.run('Subscribe to native changes', async () => {
+  async function subscribe(): Promise<unknown> {
       if (!session.unsubscribeCounter) {
         const unsubscribe = await sample(session.client).onCounter((counter, id) => {
           session.writeEvent('Native service.changed', { counter, requestId: id }, id)
@@ -29,15 +26,12 @@
         session.unsubscribeCounter = unsubscribe
       }
       return { subscribed: true, topic: 'service.changed' }
-    })
   }
 
-  function unsubscribe(): void {
-    void session.run('Unsubscribe from native changes', async () => {
+  async function unsubscribe(): Promise<unknown> {
       await session.unsubscribeCounter?.()
       session.unsubscribeCounter = undefined
       return { subscribed: false, topic: 'service.changed' }
-    })
   }
 </script>
 

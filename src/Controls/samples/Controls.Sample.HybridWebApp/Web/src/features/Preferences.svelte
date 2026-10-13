@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { preferences } from '@maui/api/essentials/preferences'
+  import * as preferences from '@maui/api/essentials/preferences'
   import Action from '../components/Action.svelte'
   import type { FeatureProps } from '../session.ts'
 
@@ -10,12 +10,10 @@
   let mounted = true
   onDestroy(() => { mounted = false })
 
-  function read(): void {
-    void session.run('Read preference', async () => {
-      const result = await preferences(session.client).get(key)
-      if (mounted && !session.disposed && result.value !== null) value = result.value
-      return result
-    })
+  async function read(): Promise<unknown> {
+    const result = await preferences.get(key, '')
+    if (mounted) value = result
+    return { key, value: result }
   }
 </script>
 
@@ -28,8 +26,8 @@
 </p>
 <div class="actions">
   <Action {session} action="save" title="Save setting" primary
-    onclick={() => { void session.run('Save preference', () => preferences(session.client).set(key, value)) }} />
+    onclick={async () => { await preferences.set(key, value); return { key, value } }} />
   <Action {session} action="read" title="Read setting" onclick={read} />
   <Action {session} action="remove" title="Remove setting"
-    onclick={() => { void session.run('Remove preference', () => preferences(session.client).remove(key)) }} />
+    onclick={async () => { await preferences.remove(key); return { key, value: null } }} />
 </div>

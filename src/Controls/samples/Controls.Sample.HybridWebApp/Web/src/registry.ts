@@ -11,6 +11,16 @@ import Lifetime from './features/Lifetime.svelte'
 import Events from './features/Events.svelte'
 import Work from './features/Work.svelte'
 import Development from './features/Development.svelte'
+import Welcome from './features/Welcome.svelte'
+import Showcase from './features/Showcase.svelte'
+import Windows from './features/Windows.svelte'
+import Dialogs from './features/Dialogs.svelte'
+import FilePicker from './features/FilePicker.svelte'
+import RemoteWebView from './features/RemoteWebView.svelte'
+import Battery from './features/Battery.svelte'
+import Display from './features/Display.svelte'
+import NativeMenus from './features/NativeMenus.svelte'
+import Theme from './features/Theme.svelte'
 
 export const components: Record<Experiment, Component<FeatureProps>> = {
   identity: Identity,
@@ -23,4 +33,14 @@ export const components: Record<Experiment, Component<FeatureProps>> = {
   events: Events,
   work: Work,
   development: Development,
+  welcome: Welcome,
+  showcase: Showcase,
+  windows: Windows,
+  dialogs: Dialogs,
+  filePicker: FilePicker,
+  remoteWebView: RemoteWebView,
+  battery: Battery,
+  display: Display,
+  menus: NativeMenus,
+  theme: Theme,
 }

@@ -1,8 +1,13 @@
 import { writable } from 'svelte/store'
 import { NativeClient, NativeError } from '@maui/api/core'
 import type { Operation, Progress } from '@maui/api/core'
-import { availableFeatures } from './catalog.ts'
+import { guidePages } from './catalog.ts'
 import type { Feature } from './catalog.ts'
+import type { WindowCapabilities } from '@maui/api/ui/windows'
+import type { BrowserView } from '@maui/api/ui/remote-webview'
+import { navigationPages } from './catalog.ts'
+import type { Menu } from '@maui/api/ui/menus'
+import type { Window } from '@maui/api/ui/windows'
 
 export interface LogEntry {
   id: number
@@ -28,7 +33,24 @@ export class PlaygroundSession {
   active: Operation<Progress> | undefined
   unsubscribeCounter: (() => Promise<void>) | undefined
   unsubscribeProgress: (() => Promise<void>) | undefined
-  selected: Feature = availableFeatures[0]!
+  selected: Feature = guidePages[0]!
+  navigate: ((page: Feature) => void) | undefined
+  initialLocation: ((url: string) => void) | undefined
+  windowCapabilities: WindowCapabilities | undefined
+  browserSupported: boolean | undefined
+  browser: BrowserView | undefined
+  menu: Menu | undefined
+  menuWindow: Window | undefined
+  menuSupportsChecked = false
+  theme: 'light' | 'dark' | undefined
+  themeRelease: (() => Promise<void>) | undefined
+  reloadFrontend: (() => void) | undefined
+
+  navigateNative(id: string): void {
+    const page = navigationPages.find(page => page.id === id)
+    if (!page) { this.showResult('Error', { code: 'invalid_route', message: 'Native menu requested an unknown internal page.' }); return }
+    this.select(page)
+  }
   selectionVersion = 0
   disposed = false
   resultStatus = 'Ready to run'
@@ -57,6 +79,7 @@ export class PlaygroundSession {
   }
 
   select(feature: Feature): void {
+    this.navigate?.(feature)
     this.selected = feature
     this.selectionVersion++
     this.showResult(this.busy ? 'Loading' : 'Ready to run', this.busy
@@ -94,6 +117,9 @@ export class PlaygroundSession {
   isDisabled(action: string): boolean {
     if (action === 'reload') return false
     if (this.disposed || this.connecting || !this.client.available) return true
+    if (action === 'bounds' && !this.windowCapabilities?.resize) return true
+    if (action === 'open-window' && !this.windowCapabilities?.multiWindow) return true
+    if (action === 'center' && !this.windowCapabilities?.center) return true
     if (action === 'cancel') return !this.active
     if (action === 'unsubscribe') return this.busy || !this.unsubscribeCounter
     if (action === 'subscribe') return this.busy || !!this.unsubscribeCounter

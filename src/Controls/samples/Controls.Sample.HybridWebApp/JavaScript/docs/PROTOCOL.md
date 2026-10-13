@@ -85,19 +85,39 @@ registration decision; this example topic is not part of the reference host.
 
 | Name | Args | Result | Requirement |
 | --- | --- | --- | --- |
-| `core.connect` | `{}` | `{ commands: string[], preferenceNamespace: string, maximumTextLength: number }` | Session establishment/retirement |
+| `core.connect` | `{}` | Commands, namespace, text limit; optional interactiveCommands / interactiveTimeoutMilliseconds / initialLocation | Session establishment/retirement |
 | `core.cancel` | `{ requestId: string }` | `{ accepted: boolean }` | Cooperative request cancellation |
 | `core.subscribe`, `core.unsubscribe` | `{ topic: string }` | `{ accepted: boolean }` | Explicit allowed topic list |
 | `app.info` | `{}` | `{ appName: string, version: string, build: string }` | Independently registered IAppInfo provider |
 | `device.info` | `{}` | `{ platform: string, osVersion: string, model: string }` | Independently registered IDeviceInfo provider |
 | `clipboard.read` | `{}` | `{ text: string \| null }` | Clipboard provider |
 | `clipboard.write` | `{ text: string }` | `{ accepted: boolean }` | Clipboard provider |
-| `preferences.read`, `preferences.remove` | `{ key: string }` | `{ key: string, value: string \| null }` | Namespace-restricted settings provider |
-| `preferences.write` | `{ key: string, value: string }` | Same preference result | Same provider |
+| `clipboard.hasText` | `{}` | `{ hasText: boolean }` | Actual native clipboard state |
+| `preferences.get`, `preferences.set` | key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Host-namespaced primitive settings |
+| `preferences.contains`, `preferences.delete`, `preferences.clear` | key/container or container only | `{ accepted: boolean }` | Clear removes only tracked namespace-owned keys |
+| `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | Direct IBattery snapshot |
+| `display.info` | `{}` | width/height/density/orientation/rotation/refreshRate | Direct IDeviceDisplay snapshot |
+| `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | `{ file }`/`{ files }` metadata/resources | Actual OS selection, interactive policy; cancellation null/empty |
+| `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
+| `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | base64/eof or acceptance | ≤65536 bytes per read; real partial/EOF/seek/close |
+| `dialogs.alert`, `dialogs.confirm` | title/message + native labels/flowDirection | `{ accepted: boolean }` | Calling native page, interactive policy |
+| `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet options | Prompt cancellation/text or selected action | Calling native page, interactive policy |
+| `window.info`, `window.title`, `window.size`, `window.position` | Optional target ID/private lease + corresponding changes | Private native snapshot or acceptance | Scoped MAUI window; writes validate actual capability |
+| `window.find`, `window.center`, `window.activate` | ID or native target/private lease | Snapshot/acceptance | Caller-owned lookup; center Windows work-area adapter |
+| `window.open` | `{ url, options? }` | `{ id, windowLease }` | Generic safe bundle-relative URL, immutable optional developer ID; no remote bridge destinations |
+| `window.list`, `window.close`, `window.closeCurrent` | `{}`, `{ id, windowLease }`, `{}` | `{ windows }`, `{ accepted }` | Caller-owned current/child generations; no cross-window hub |
+| `remote.info`, `remote.open` | `{}`, `{ url }` | supported/open/id/url/status/canGoBack/canGoForward | Desktop ordinary browser guest, initially hidden |
+| `remote.bounds` | id + CSS slot/clip/viewport geometry + visible | Same guest state | Scoped guest identity and finite clipped geometry |
+| `remote.control` | `{ id, action }` | Same guest state | Allowlisted back/forward/reload/focus/hide/close only |
+| `remote.navigate` | `{ id, url }` | Guest navigation state | Same validated top-level HTTPS policy |
+| `menus.info`, `menus.install`, `menus.clear` | windowId + descriptions/sourceId | Native capabilities/installation identity | TypeScript-defined real desktop menus; callbacks never serialized |
+| `menus.item`, `menus.update` | windowId/sourceId/item ID + tiny patch | Native item state/capabilities | Installation/document ownership, not global item-ID authority |
+| `application.theme`, `application.setTheme` | `{}`, `{ theme }` | Effective theme/preference | Application-level native preference, not Window/remote theme |
 
 Current source is the sibling `Managed` class library (`Protocol/`,
 `CommandRegistry.cs`, `HybridAppTargetObject.cs`, `Essentials/*`) plus the `Native`
-host app. The library has no Core/Controls or sample dependency. Feature providers
+host app. The one WIP managed library now references Controls.Core/Core for UI
+providers, but has no sample dependency. Feature providers
 own their generated contexts; the protocol context contains only envelopes and
 control DTOs. External Toolkit assemblies register their own commands/topics and
 strict generated `JsonTypeInfo<T>` explicitly, without global metadata edits.
@@ -105,6 +125,14 @@ The host, not either SDK, selects its preferences
 namespace and the existing Essentials interfaces. The reference host also registers application-only
 `sample.*` commands and `service.changed` / `operation.progress` topics; those
 helpers remain in the playground and are **not** npm SDK features.
+
+Product notification topics include `clipboard.changed`, `window.geometryChanged`,
+`application.themeChanged`, `menus.clicked` and `remote.changed`. They originate
+from typed provider-owned sources and use current-document/subscription checks.
+First/last subscriptions attach/detach native sources; JS listeners share a topic
+multiplexer. Progress retains its separate active originating-operation validation.
+Private window leases bind acquisition to a native generation; never substitute a
+lookup by reused ID when replaying a stale handle. Neither leases nor UUIDs are authentication.
 
 ### Preview AppInfo/DeviceInfo mapping
 
@@ -139,9 +167,29 @@ does not resume old work. Reload creates a fresh session.
 
 The reference host allows 16 simultaneous calls and a 20-second native
 deadline. SDK frontend waits have a 23-second deadline and signal disconnect on
-timeout. Cancel is an additional correlated native call, not Promise abortion
+timeout. Explicit `Register(..., interactive: true)` metadata opts only native
+dialogs and file selection into a 300000 ms budget; the handshake advertises
+their names and budget, and the SDK allows 3000 additional transport milliseconds.
+Older hosts without interactive metadata retain the default timeout. Invalid,
+unregistered or unbounded interactive policies are rejected by the client.
+An active interactive operation holds the native heartbeat lease while OS UI
+pauses browser timers. On completion, a fresh bounded lease starts. Explicit
+disconnect, cancellation and window/scope destruction still retire it immediately.
+Native handlers that lack cancellation must not delay the hub's cancelled
+response or apply their late result to a new document. Stock MAUI dialogs/pickers
+cannot be force-dismissed through their public API; dismiss remaining OS UI yourself.
+
+Cancel is an additional correlated native call, not Promise abortion
 or an undo guarantee. A cancelled request has explicit cancellation state;
 service state and completed OS writes can survive a frontend reload.
+
+Provider-owned `remote.changed` and `menus.clicked` notifications can originate
+outside an active command. The scoped source/hub validates current document,
+registered topic and subscription before emitting an independent UUID. Existing
+operation progress publishing still requires its originating active request.
+Native menu OS UI may hold only the current document lease for a maximum five
+minutes; reset/disposal retires that hold. No arbitrary callback or JS expression
+is accepted by these commands.
 
 Cancelling a frontend promise does not abort the framework transport. The shared
 SDK client waits for an old handshake's transport completion before sending a

@@ -1,9 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { NativeClient, NativeError } from '@maui/api/core'
+import { NativeClient, NativeError, configureBridge, connect, resetBridge } from '@maui/api/core'
 import { getIdentity, sample } from '../src/native/sample.ts'
-import { features, availableFeatures } from '../src/catalog.ts'
+import { features, availableFeatures, navigationPages } from '../src/catalog.ts'
 
 // Explicit test double only: never imported by the UI or used as a browser fallback.
 function mock(handler) {
@@ -40,45 +40,49 @@ test('playground reload identity composes installed Essentials helpers with app-
   const identity = { appName: 'Native', version: '1', build: '2', platform: 'Android', osVersion: '16', model: 'Device',
     architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
   const host = mock(request => {
+    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
     if (request.command === 'app.info') return { appName: identity.appName, version: identity.version, build: identity.build }
     if (request.command === 'device.info') return { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
     assert.equal(request.command, 'sample.diagnostics')
     return { architecture: identity.architecture, pid: identity.pid, startupId: identity.startupId, startedAt: identity.startedAt }
   })
-  const client = new NativeClient(host.bridge)
+  configureBridge(host.bridge)
+  const client = await connect()
   try {
     assert.deepEqual(await getIdentity(client), identity)
     assert.deepEqual(await getIdentity(client), identity, 'the host owns process identity across repeated reads')
-    assert.deepEqual(host.requests.map(request => request.command), ['app.info', 'device.info', 'sample.diagnostics', 'app.info', 'device.info', 'sample.diagnostics'])
+    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'sample.diagnostics', 'app.info', 'device.info', 'sample.diagnostics', 'app.info', 'device.info'])
     assert.ok(host.requests.every(request => request.session === client.session))
     const source = await readFile(new URL('../src/native/sample.ts', import.meta.url), 'utf8')
     assert.ok(source.includes("from '@maui/api/essentials/app-info'"))
     assert.ok(source.includes("from '@maui/api/essentials/device-info'"))
-  } finally { client.dispose() }
+  } finally { resetBridge() }
 })
 
 test('app-owned diagnostics reject malformed native fields instead of inventing reload identity', async () => {
   const identity = { appName: 'Native', version: '1', build: '2', platform: 'Android', osVersion: '16', model: 'Device',
     architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
   let output = identity
-  const client = new NativeClient(mock(() => output).bridge)
+  configureBridge(mock(request => request.command === 'core.connect'
+    ? { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 } : output).bridge)
+  const client = await connect()
   try {
     for (const [field, value] of [['architecture', null], ['pid', '123'], ['pid', null], ['startupId', 42], ['startedAt', {}]]) {
       output = { ...identity, [field]: value }
       await assert.rejects(() => getIdentity(client), error => error.code === 'invalid_response')
     }
-  } finally { client.dispose() }
+  } finally { resetBridge() }
 })
 
 test('catalog has all 121 families with 19 P0, and later families never claim implementation', () => {
   assert.equal(features.length, 121)
   assert.equal(new Set(features.map(feature => feature.id)).size, 121)
   assert.deepEqual(['P0', 'P1', 'P2', 'P3'].map(priority => features.filter(feature => feature.priority === priority).length), [19, 29, 47, 26])
-  assert.ok(features.filter(feature => feature.priority !== 'P0').every(feature => !feature.experiment && feature.description.startsWith('Not implemented')))
+  assert.ok(features.filter(feature => !feature.experiment).every(feature => feature.description.startsWith('Not implemented')))
 })
 
 test('explorer shows implemented experiments with descriptions, without a priority filter', async () => {
-  assert.equal(availableFeatures.length, 19)
+  assert.equal(availableFeatures.length, 28)
   assert.ok(availableFeatures.every(feature => feature.experiment && feature.description))
   assert.ok(availableFeatures.every(feature => features.includes(feature)))
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8')
@@ -86,6 +90,13 @@ test('explorer shows implemented experiments with descriptions, without a priori
   const browser = availableFeatures.find(feature => feature.id === 'browser')
   assert.ok(browser.description.includes('Only implemented experiments are shown'))
   assert.ok(!browser.description.includes('priority'))
+})
+
+test('implemented routes are owned by frontend configuration rather than a C# feature catalog', async () => {
+  assert.equal(navigationPages.length, 30)
+  assert.ok(!navigationPages.some(page => page.id.startsWith('planned-')))
+  const connection = await readFile(new URL('../src/connection.ts', import.meta.url), 'utf8')
+  assert.doesNotMatch(connection, /registerWindowRoutes|window\.routes/)
 })
 
 test('native error, intentional failure and cancelled are not success-shaped', async () => {

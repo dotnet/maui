@@ -11,11 +11,11 @@
 | **P2 - Need to have** | 47 items: add broad UI, device and desktop integration coverage. | 0 |
 | **P3 - Good to have** | 26 items: add specialised integrations, extension mechanisms and distribution scenarios. | 1 |
 
-**Completion rule:** A checked item means the complete experiment described in that row is implemented end-to-end and verified within the documented scope below. It does not mean every member of the corresponding .NET API is wrapped, or that every OS/release configuration is certified. Partially implemented acceptance targets stay unchecked. For example, the completed clipboard experiment covers text read/write, not clipboard change notifications; preferences covers bounded text settings, not every `IPreferences` value type.
+**Completion rule:** A checked item means the complete experiment described in that row is implemented end-to-end and verified within the documented scope below. It does not mean every member of the corresponding .NET API is wrapped, or that every OS/release configuration is certified. Partially implemented acceptance targets stay unchecked. For example, historical clipboard/preferences acceptance covered text read/write and bounded text settings. New typed preference and clipboard-event contracts have automated coverage but still require native acceptance.
 
-**API notes:** A MAUI documentation link does not imply a built-in JavaScript wrapper. The standalone experimental `@maui/api` package currently exposes a deliberately small Essentials subset. Tauri plugins also require native registration and permissions. Entries marked **adapter/package** need additional .NET or platform code; they are not first-party MAUI API equivalents.
+**API notes:** A MAUI documentation link does not imply a built-in JavaScript wrapper. The standalone experimental `@maui/api` package currently exposes a deliberately small Essentials and MAUI UI subset through separate modules. Tauri plugins also require native registration and permissions. Entries marked **adapter/package** need additional .NET or platform code; they are not first-party MAUI API equivalents.
 
-**Implementation home:** [This sample][sample-readme] hosts the native app and frontend. The [standalone JavaScript SDK][sdk-readme] is one npm package with isolated infrastructure/feature modules. Native command routing and provider contracts remain independent of Controls; the app owns provider composition and the MAUI WebView attachment. Alternative native hosts and future Graphics/Controls wrappers are not implemented. A Labs migration and DevFlow integration remain deferred.
+**Implementation home:** [This sample][sample-readme] hosts the native app and frontend. The [standalone JavaScript SDK][sdk-readme] is one npm package with isolated infrastructure/feature modules. The single WIP managed product now includes reusable MAUI UI providers and depends on Controls.Core/Core alongside Essentials, as explicitly approved. It never depends on sample counters, diagnostics or catalog. The app binds an owning page/window and trusted factory; alternative native backends, a future Essentials-only split, Labs migration and DevFlow integration remain deferred.
 
 ## Completion evidence and remaining acceptance
 
@@ -24,6 +24,18 @@ The initial native milestone verified app identity, text clipboard/preferences, 
 The reusable SDK ships built JavaScript and declarations, not app-local TypeScript. Its packed-consumer checks use a real tarball without the source tree. Source comments document public APIs. These are local preview artifacts, not evidence of npm publication or registry-scope ownership.
 
 **Platform/release gaps:** Windows runtime, physical devices, installed Release execution, NativeAOT and signed installation are unverified. The updated iOS app connected, but the new simulator touch/bounce/keyboard checks were not completed. Local success does not establish CI or merge readiness.
+
+The expanded milestone additionally exercised real Android battery/display and
+light/dark/system CSS, confirmation accept/cancel beyond the ordinary timeout,
+Unicode prompt acceptance/cancellation, picker cancellation/Unicode content
+streams/large preview truncation/binary rejection, and a selected-route child
+window with an independent counter. OS Back released that child's scope; the
+parent retained its own counter after reconnecting its suspended document.
+Mac exercised native title/size and actual size events, shared theme subscribers,
+and the BrowserPanel's real HTTPS redirect/load/focus/feature teardown. Native menu
+click/shortcut/check/focus acceptance is reserved for manual testing. Visual guest
+clipping/DPI and runtime bridge-isolation checks remain outstanding.
+This is partial family acceptance, not a reason to check the wider rows below.
 
 | Unchecked item with partial implementation | What exists | What remains |
 |---|---|---|
@@ -34,6 +46,19 @@ The reusable SDK ships built JavaScript and declarations, not app-local TypeScri
 | Installable artifacts; signing and installed execution | Debug native deployment and Mac Catalyst Release build/asset checks | Install and exercise the intended signed Release artifacts |
 | Diagnostics and performance | Startup identity, request metrics and bounded operation log | Reproducible command-latency, startup and memory scenarios |
 | Browser mocks and native automation | Committed contract tests and actual native acceptance evidence | A committed, repeatable native automation entrypoint |
+| Window basics / Multiple windows | One Window resource, immutable developer IDs/private generations, generic bundled URLs; Mac title/size/native-size events and Android child-route/counter isolation/OS-close cleanup accepted | Native placement/activation/caller-close; Windows center/move runtime and other platform checks |
+| Native dialogs | Page-owned dialogs/options; Android confirmation accept/cancel, Unicode prompt/cancel and >25-second interactive wait accepted | Actual alert/action-sheet interaction and other platforms |
+| File picker | Native Android cancel, Unicode content stream, >64 KiB selection/explicit preview truncation and binary UTF-8 rejection accepted | Multiple selection and native seek; 64 KiB is only per-message budget |
+| Theme and appearance | Native Android/Mac system/light/dark preference and effective Svelte CSS accepted | Actual OS theme change while following system and cross-window event acceptance; remote sites are not forced themed |
+| Battery / Display and DPI | Actual Android read-only charge/power/energy-saver and display dimensions/density/orientation/refresh accepted | Native change subscriptions intentionally deferred; other platforms unverified |
+| Remote WebView controls | Measured BrowserPanel native guest; actual Mac HTTPS redirect/load/focus/feature teardown accepted | Visual clipping/DPI and runtime bridge-isolation evidence; mobile guests unsupported |
+| Native menus, toolbars and context menus | JS-defined native menus, stable installation/item handles, tiny property patches, JS callbacks and Cmd/Ctrl accelerators; Mac actual checks, Windows checks explicitly unsupported | Actual OS-menu/focus/shortcut/callback acceptance; toolbar/context-menu experiments remain unimplemented |
+
+Welcome and Try it hands-on are distinct guide pages outside this 121-family
+inventory. Grouped navigation and internal fragment routes do not implement OS
+deep links, custom schemes or app-action activation. The new native families
+remain unchecked while their described acceptance scope is partial, even when
+the implemented subset has native evidence and unit tests/builds pass.
 
 ## P0 - Critical for v1
 

@@ -2,8 +2,9 @@
 
 `@maui/api` is an app-independent, experimental JavaScript/TypeScript SDK in the
 .NET MAUI project. It provides typed native commands, document-scoped events
-and Essentials feature modules for app information, device information,
-clipboard and preferences.
+and separate Essentials / MAUI UI feature modules for app/device information,
+clipboard, preferences, battery/display, selected-file/read-stream resources, page-owned
+dialogs and scoped windows.
 
 **Preview availability:** `0.1.0-preview.1` is prepared for local tarball
 installation, not yet published to npm. The `@maui` scope and package name must
@@ -29,27 +30,28 @@ After an authorized release exists, the intended registry install is
 existing release**. See [release preparation](docs/RELEASING.md).
 
 ```ts
-import { clipboard } from '@maui/api/essentials/clipboard'
-import { preferences } from '@maui/api/essentials/preferences'
+import { getText, setText } from '@maui/api/essentials/clipboard'
+import { set } from '@maui/api/essentials/preferences'
 import { getAppInfo } from '@maui/api/essentials/app-info'
 import { getDeviceInfo } from '@maui/api/essentials/device-info'
 
 // Each feature lazily connects the shared document client on its first call.
 const app = await getAppInfo()
 const device = await getDeviceInfo()
-await clipboard().writeText(`Hello from ${app.appName} on ${device.platform} — 你好 👋`)
-const text = await clipboard().readText() // string | null, from the native OS
-await preferences().set('theme', 'dark') // host-owned namespace and restrictions
+await setText(`Hello from ${app.appName} on ${device.platform} — 你好 👋`)
+const text = await getText() // string | null, from the native OS
+await set('theme', 'dark') // host-owned namespace and restrictions
 ```
 
 No view object is needed in ordinary application code. The root contains only
 infrastructure/lifecycle APIs and core types:
 `import { connect, disconnect, NativeClient, NativeError } from '@maui/api'`.
-Essentials helpers and their DTOs belong to explicit `essentials/*` subpaths.
+Essentials helpers and their DTOs belong to explicit `essentials/*` subpaths;
+page/window helpers belong to `ui/*`.
 These are module boundaries in **one npm package**, not separately published
 packages. Features depend on the core client contract, not the playground or
 Controls, leaving room for future packaging choices without introducing them now.
-Importing modules or creating a feature helper performs no native calls. An
+Importing modules or acquiring a local currentWindow handle performs no native calls. An
 ordinary browser/Node process without an explicitly injected native transport has
 no native host: asynchronous default-client feature calls
 reject with `NativeError` code `native_unavailable`; they never fall back to web
@@ -96,8 +98,11 @@ The current reference host is the sibling `Native/`, referencing the independent
 packable `Managed/Maui.HybridApp.csproj` in the source bundle. The links below pin
 the matching product, scoped host and identity wire mapping:
 [`Controls.Sample.HybridWebApp`](https://github.com/dotnet/maui/tree/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp).
-`AddHybridApp` registers the product infrastructure and implemented Essentials
+`AddHybridApp` registers the product infrastructure and implemented Essentials/UI
 providers; the host adds sample or external providers explicitly.
+The single WIP managed package now depends on Controls.Core/Core for reusable UI
+providers. Its earlier Essentials-only boundary has intentionally changed; it
+still has no sample dependency and no second integration NuGet.
 
 - [`MainPage.cs`](https://github.com/dotnet/maui/blob/7b631a9f255d7b69e74e90746df43cd70934b258/src/Controls/samples/Controls.Sample.HybridWebApp/Native/MainPage.cs)
   attaches `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`,
@@ -153,10 +158,12 @@ retires the old session.
 After suspension, lease expiry or back/forward-cache restoration, reload the
 frontend to reconnect. Do not reuse an explicitly disposed `NativeClient`.
 
-For custom transports/tests, construct `new NativeClient(bridge)`, attach it with
-`attachToDocument()` in a browser, and `await client.connect()` before calling
-commands. Pass it explicitly to helpers, e.g. `clipboard(client)`. Always call
-`client.dispose()`. Injection never replaces production APIs with silent mocks.
+For custom transports/tests, configure the connection once through
+`configureBridge(bridge)` in the infrastructure `core` module before startup.
+All stock feature calls then use that same document connection; no feature
+accepts a NativeClient parameter. Call `resetBridge()` at test teardown.
+The advanced NativeClient constructor remains available for custom commands,
+not as a second client for stock features. Injection never silently emulates native APIs.
 
 ### Explicit transport without MAUI automatic bootstrap
 
@@ -166,20 +173,21 @@ script. An explicit `NativeClient(transport)` does neither. A compatible native
 protocol transport can be supplied on another origin or in a non-Controls host:
 
 ```ts
-import { NativeClient } from '@maui/api'
+import { connect, disconnect } from '@maui/api'
+import { configureBridge } from '@maui/api/core'
 import type { Bridge } from '@maui/api'
 import { getAppInfo } from '@maui/api/essentials/app-info'
-import { preferences } from '@maui/api/essentials/preferences'
+import { set } from '@maui/api/essentials/preferences'
 
 // The integration supplies a real transport implementing protocol 1, not a mock.
 async function useNative(transport: Bridge) {
-  const client = new NativeClient(transport)
+  configureBridge(transport)
   try {
-    await client.connect() // instance handshake; no origin detection/script load
-    const app = await getAppInfo(client)
-    await preferences(client).set('theme', 'dark')
+    await connect() // one shared handshake; no automatic origin/script load for this transport
+    const app = await getAppInfo()
+    await set('theme', 'dark')
     return app
-  } finally { client.dispose() }
+  } finally { disconnect() }
 }
 ```
 
@@ -188,7 +196,7 @@ cancellation and document-session semantics. The host must still register the
 commands and own provider/permission policy; injection is not browser emulation
 or permission bypass. The integration owns event delivery and document lease:
 use `attachToDocument()` when supplying the framework-compatible browser events,
-or call `receive()` and manage heartbeats/teardown in a headless/custom host.
+or call the connected client's `receive()` and manage heartbeats/teardown in a headless/custom host.
 There are no npm dependencies on .NET MAUI Core or Controls, and no alternative
 transport implementation/framework is shipped here.
 

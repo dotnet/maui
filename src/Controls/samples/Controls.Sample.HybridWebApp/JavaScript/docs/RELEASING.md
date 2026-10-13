@@ -178,8 +178,10 @@ pins the complete portable source layout for tarball readers. Pin source links
 to the selected release commit/tag before publication. A copied native
 app and managed library require an explicit MAUI 11 package version/feed and SDK/workloads;
 packaged Vite forwarding remains guarded until the consumed Core fix is
-validated. UI-free managed tests use the actual library/Essentials assemblies;
-in a copied bundle they need a compatible Essentials package/feed, not Core/Controls.
+validated. Managed-only tests use the actual library, Essentials and Controls/Core
+assemblies. The current single WIP managed product deliberately includes MAUI UI
+providers; a copied bundle needs real compatible Essentials, Controls.Core,
+Core and transitive dependencies. It no longer has an Essentials-only boundary.
 
 ## Authorized release checklist
 

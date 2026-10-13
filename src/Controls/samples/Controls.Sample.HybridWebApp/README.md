@@ -14,16 +14,18 @@ TypeScript declarations, MIT license and product/API/protocol/release docs are
 the standalone shipping artifact. `@maui/api` is a working name; scope/name
 ownership is unverified and nothing has been published to npm.
 
-Generic app/device information, clipboard, preferences and transport modules live in
+Generic app/device information, clipboard, preferences, power/display, file-picking,
+page/window UI and transport modules live in
 the independently packable sibling `JavaScript/`, not in the frontend. Custom `sample.*` helpers remain
 in `Web/src/native/sample.ts`; the SDK includes no UI, sample commands, Vite
 dependency or sample preferences namespace. Ordinary SDK consumers can use
-`clipboard()`/`preferences()`/`getAppInfo()`/`getDeviceInfo()` without supplying a view or client;
+direct `getText()`/`setText()`, preference `get()`/`set()`, `getAppInfo()` and `getDeviceInfo()` without supplying a view or client;
 lazy startup still rejects browser-only native calls, never emulates them.
 
 This is one npm product with isolated modules, not per-feature packages. The
 root exports infrastructure/lifecycle and core types only; Essentials helpers
-live under `@maui/api/essentials/*`. The unpublished `app/info`, `getInfo` and
+live under `@maui/api/essentials/*`; page/window helpers live under
+`@maui/api/ui/*`. The unpublished `app/info`, `getInfo` and
 SDK `Identity` exports were removed rather than retained as ambiguous aliases.
 The app owns process architecture, PID and startup diagnostics and composes
 them with the real SDK AppInfo/DeviceInfo helpers for its reload experiment.
@@ -46,12 +48,15 @@ release or template is claimed.
 packable class library, still under this samples folder while WIP. Its working
 identity `Maui.HybridApp` / `0.1.0-preview.1` is unverified and unpublished.
 `Native` references its assembly, not its source. Product code owns the generic
-session/registry/protocol and AppInfo, DeviceInfo, Clipboard and Preferences
+session/registry/protocol, AppInfo, DeviceInfo, Clipboard, Preferences,
+Battery, Display, FilePicker and MAUI page/window UI
 providers, each in one cohesive provider file with related DTOs and its own JSON context.
 They use the existing Essentials interfaces directly, with one small
 main-thread/cancellation boundary; there is no combined platform interface.
-The library has no Core/Controls or app dependency; only Essentials and minimal
-standard DI abstractions.
+The current user-approved WIP boundary keeps UI providers in this same managed
+product. It now depends on Controls.Core and Core transitively, in addition to
+Essentials and minimal standard DI abstractions; it still has no sample/app
+dependency. There is no second integration NuGet. An Essentials-only split is deferred.
 
 Startup now has one product registration and one sample composition call:
 
@@ -69,13 +74,17 @@ providers can append `AddHybridProvider<T>()`. Identical product registration is
 idempotent; conflicting policy fails explicitly, and host-supplied interfaces,
 dispatcher and clock are retained.
 
-`MainPage` receives the scoped hub and does only view/event glue. `App.CreateWindow`
+`MainPage` receives the scoped hub and view context and does only view/event glue. `App.CreateWindow`
 is the explicit owning composition root: it creates a service scope, resolves the
 page there, detaches page events on destruction and disposes that scope. Handler
 changes disconnect only the document; frontend reload preserves that scope's
 counter, while another native view/window has independent providers and state.
 Hub disposal cancels native work, releases the lease timer and clears listeners.
 No page factory cycle or startup `BuildServiceProvider` is introduced.
+The NavigationPage is constructed before assigning the Window's page, rather
+than reparenting an already window-owned ContentPage. Context binding checks the
+actual page/window relationship; a detached page cannot silently report a
+cancelled dialog that was never displayed.
 
 The sample owns UI, platform heads, Development, workload/launching,
 `maui.playground.v1.` preference policy, all `sample.*` commands/demo topics,
@@ -87,11 +96,141 @@ change in the unpublished preview, not a public JavaScript API rename.
 Relaunch the native host after updating it; the old live host lacks the new commands.
 
 Assembly-based unit tests reference the managed project; only sample command
-source is shared for UI-free reload/cancel tests. `Tests/ExternalProvider` is a
+source is shared for managed-only reload/cancel tests. `Tests/ExternalProvider` is a
 separate plugin assembly with its own generated DTO metadata.
 `Tests/PackageConsumer` references the locally packed NuGet, never product source.
 See the product README for build/package/standalone version gates and native
 AOT/publication limitations.
+
+## Welcome, navigation and native interaction milestone
+
+Welcome is the default landing page; its second page, **Try it hands-on**, uses
+the same public SDK modules as the detailed experiments. These two guides are
+not additions to the 121-family backlog. Search spans collapsible navigation
+groups and temporarily reveals matches without replacing collapse preferences.
+The header/document remain fixed; navigation and content scroll independently.
+On mobile the bounded navigation leaves the majority of the viewport to content.
+`MainPage.SafeAreaEdges = All` delegates status-bar, home-indicator and keyboard
+insets to MAUI, without hardcoded CSS/native offsets.
+
+Routes are `#/welcome`, `#/showcase` or `#/<implemented-feature-id>`.
+Unknown/malformed fragments show explicit recovery. Back/forward/hash changes
+and frontend reload retain the selected route. A child window receives its validated bundle-relative location at native handshake
+bootstrap; only the frontend knows the fragment's route meaning, and reload preserves any newer hash.
+These are **internal app routes**, not OS deep links. Custom schemes, universal
+links and app actions remain deferred, with no activation manifests added.
+
+| Feature | Implemented scope / capability | Native acceptance |
+| --- | --- | --- |
+| Window basics | Owning ID/title/bounds; title writes; finite desktop size/position requests | Mac title/size setters and native size events passed; Android capabilities/mobile placement rejection passed. Position/activation/Windows runtime remain unverified. |
+| Multiple windows | Trusted bundle-relative URLs; immutable optional developer IDs/private generations; independent scope/hub/counter; sample budget four; caller may list/close its children | Android child opened on the selected route with an independent counter; OS Back closed its scope and the parent retained its counter after reconnect. Caller-driven close and other platforms remain unverified. |
+| Native dialogs | Calling-page alert/confirmation/prompt/action sheet with native options; ordinary user cancellation | Android actual confirmation accept/cancel, Unicode prompt acceptance/cancellation and a visible dialog pending beyond 25 seconds passed. Alert/action-sheet interaction remains unverified. |
+| File picker | Single/multiple system selection and metadata; separate OpenReadAsync readers with ≤64 KiB binary/incremental UTF-8 chunks, seeking where supported; no arbitrary paths/persistent handles | Android picker cancellation, 54-byte Unicode content stream, 200035-byte selection with explicit 64 KiB preview truncation and binary selection/UTF-8 rejection passed. Multiple selection and native seek remain unverified. |
+| Battery / Display | Native read/refresh only, no background streams or keep-screen-awake changes | Actual Android charge/power/energy-saver and 1080×2424/density/orientation/refresh-rate reads passed. Other platforms and change streams are not claimed. |
+| Desktop browser guest | Ordinary unbridged WebView anchored to a measured CSS slot in BrowserPanel; real HTML toolbar; viewport/ancestor clipping, resize/DPI mapping, visibility and disposal | Mac actual navigation followed dot.net/maui to the Microsoft MAUI website, reached loaded, accepted focus and closed on feature exit. Visual clipping/DPI and runtime bridge-isolation acceptance remain outstanding. |
+| Desktop native menu bar | Real Page.MenuBarItems on a NavigationPage host with hidden navigation bar; scoped File/Navigate/View/Help callbacks and Cmd/Ctrl accelerators | Mac startup installed the TypeScript-defined menu. Actual native clicks/shortcuts/checks/focus are reserved for manual testing. |
+| Application theme / window events | App-wide system/light/dark preference and effective native theme callbacks repaint web CSS; coalesced actual size changes; Windows-only move observation/centering adapter | Android/Mac dark/light/system and native effective CSS passed; Mac size callbacks passed with shared theme subscribers. Windows center/move and manual drag/mixed-DPI checks remain unverified. |
+
+Desktop bounds are supported on Windows and Mac Catalyst, not mobile. Multiple
+windows are supported by MAUI on Windows, Mac Catalyst, Android and iPad; iPhone
+returns explicit unsupported. Android uses `LaunchMode.Multiple`: app-owned
+windows become separate activities instead of reusing SingleTop. This is not
+an OS deep-link implementation. Existing Apple scene delegates are reused with
+multiple-scenes enabled. Windows/iPad/iPhone runtime behavior is not certified
+by a local Android build. Mac Catalyst sandbox grants only user-selected
+read-only file access; Android adds no broad storage permission. Its battery
+provider requires the Essentials `BATTERY_STATS` manifest declaration, not a
+runtime permission prompt.
+
+Debug Vite forwarding is per view. The configured loopback inspector port has
+one owning development view, normally the first window; additional windows do
+not bind a duplicate socket or acquire cross-window command dispatch. Its existing
+probe/selectors continue to describe that owning window. Closing it releases its
+listener; a subsequently created development view may own the port. Runtime
+commands and child windows never depend on inspection.
+
+Dialogs and file selection use an explicit five-minute interactive budget,
+advertised by typed registration metadata at connect. All other commands keep
+the 20-second native / 23-second client deadlines and 15-second heartbeat lease.
+Only a live interactive operation holds that lease while OS UI pauses heartbeats.
+Disconnect/disposal still cancels immediately; stock MAUI cannot forcibly dismiss
+its alert/prompt/picker UI, so cancellation does not undo OS effects. The file sample previews the first 64 KiB as text and labels truncation; that is
+sample presentation, not a product whole-file limit. Bodies are excluded from the operation log.
+
+The desktop browser is a separate native compositing surface, **not a DOM
+WebView element**. Its HTML address/back/forward/reload/focus/close controls live
+in `BrowserPanel.svelte`; a real ordinary MAUI WebView overlays only its measured
+placeholder. The trusted HybridWebView keeps its full layout: no separate window,
+modal, iframe or native split row. CSS geometry is intersected with the viewport
+and scrolling ancestors, then scaled to actual native host dimensions rather than
+guessing OS offsets/DPI. A clipped native container preserves the full guest size
+when partially scrolled. Geometry updates are bounded to 10/s, with a 250 ms
+visibility/resize pulse and one in-flight update. Native resize hides stale geometry.
+
+The guest closes on feature teardown, document disconnect and scope destruction.
+Native compositing cannot participate in arbitrary HTML z-order: standard DOM
+dialogs/popovers are detected, and custom overlays must mark
+`data-browser-obscured="true"` and await the public `hide` control before showing.
+Mac Catalyst and Windows are the first proof; mobile rejects guest creation, with
+no iframe fallback or framing-header bypass. `https://dot.net/maui` is explicitly
+HTTPS; the redirected Microsoft page blocks ordinary cross-origin iframes.
+Actual Mac navigation/focus/teardown were exercised through the same public SDK
+and Svelte controls over normal Vite content. Visual clipping/DPI and the remote
+guest's runtime bridge/inspector absence still need acceptance; source inspection
+and a successful build are not that proof.
+
+Menus use the same product window actions as JS. Typed current-document
+`menus.clicked` notifications have independent UUIDs, registered-topic/subscription
+checks and scope disposal. They do not loosen active `operation.progress` checks.
+Out-of-band OS interactions hold only that document's lease for up to five minutes;
+disconnect/disposal still cancels it. No arbitrary JavaScript is evaluated.
+All sample menu definitions/actions are TypeScript in `Web/src/native/menus.ts`.
+`Window.menu()/setMenu()` explicitly gets/attaches the resource; item getters and
+tiny setters preserve installation/callback ownership. Mac Catalyst renders the
+focused owning page in the application menubar, not independent hardware window
+menus; native checks work there, while the Windows MAUI check adapter rejects.
+The OS-owned application menu is untouched; mobile exposes no fake HTML menubar.
+
+Feature handlers are plain async public SDK snippets. Shared `Action.svelte`
+presentation owns busy/availability/error/result/cancel/log isolation rather than
+requiring `session.run` wrappers or client injection in each example. SDK contents
+are never automatically logged. See the [public export/parity audit](JavaScript/docs/API.md).
+
+### Native acceptance checklist for this milestone
+
+Automated contracts/builds do not certify these OS interactions. On the owning
+test app, after explicitly staging/building and relaunching the matching host:
+
+- Open Welcome, the hands-on page and grouped feature pages; test an unknown hash,
+  history/reload and Android status/home/keyboard insets without CSS offsets.
+- Open a second bundled feature URL with a distinct ID, change its title and
+  counter, reload, verify independent state and close from its owner. A duplicate
+  ID must reject; reopen after close and verify old resources cannot target it.
+- Exercise alert/confirmation/prompt/action-sheet labels and picker cancellation.
+  Select Unicode text, a binary file and a file larger than 64 KiB; multiple
+  selection and incremental reads must remain genuine resources, with preview
+  truncation shown and no private contents/paths in logs.
+- Drag/resize the native window manually, not just through setters; verify size
+  callbacks and remount/unsubscribe cleanup. Test native moves and resize-then-
+  center on Windows with mixed-density monitors; Mac/mobile must report unsupported.
+- Set light/dark/system; change the OS theme while following system. The native
+  effective event must repaint every connected trusted frontend without listeners
+  multiplying after feature remount/reload. The remote site must not be forced themed.
+- On desktop, verify real OS menu focus/accelerators/actions, Mac native checks,
+  item text/enabled patches without callback replacement and stale-item rejection.
+  Windows checks/mobile menus must reject explicitly, not simulate glyphs.
+- Scroll/resize/zoom the browser slot and show an obscuring DOM dialog; verify
+  native clipping/focus/hiding/teardown and the remote guest's absence of bridge,
+  SDK/invoke target/messages/inspector. Mobile guest creation stays unsupported.
+
+Keep partially accepted FEATURES families unchecked. The current automated
+checks pass 132 managed tests, 38 SDK tests, 43 Svelte/geometry tests and 10
+frontend contracts. The SDK's real 38-file tarball, 14 entrypoints and 292
+declaration/TSDoc members passed fresh offline-consumer equality checks.
+A refreshed NuGet-only consumer also passed with a fresh package cache and
+reflection serialization disabled. Both selected Android/Mac Debug builds passed
+with zero warnings/errors. These counts belong to this milestone, not the older
+evidence below.
 
 ## Run
 
@@ -137,7 +276,7 @@ Physical iOS-device networking is not configured by this loopback-only launcher.
 ## Copying to MAUI Labs
 
 Copy this **whole folder**, not just `Web/`. `JavaScript/` remains one standalone
-npm product (`@maui/api` with six entrypoints), consumed via `file:../JavaScript`;
+npm product (`@maui/api` with fourteen WIP entrypoints), consumed via `file:../JavaScript`;
 it is not compiled as app source. `Managed/` is the standalone WIP C# product;
 `Native/` owns the host, sample providers, platform heads/assets and Debug forwarding/inspection; `Tests/`, staging,
 launchers, documentation and the [121-family backlog](FEATURES.md) travel with it.
@@ -150,7 +289,8 @@ build configuration and uses project references. A copied folder defaults to
 packaged `UseMaui=true` with its own outputs and explicit .NET 11 targets.
 `-p:HybridWebAppInTree=false` (launcher `-Packaged`) selects that mode explicitly,
 even in this checkout. It does not set `HYBRIDWEBAPP_IN_TREE`. The managed library
-has its own UI-free MSBuild island. Tests explicitly reference xUnit 2.9.3,
+has its own MSBuild island with explicit MAUI UI dependencies but no app/sample
+SDK import. Tests explicitly reference xUnit 2.9.3,
 test SDK 18.0.1 and VS runner 2.8.2, the product assembly/project and a separate
 provider assembly; only the sample command source is linked.
 
@@ -481,7 +621,10 @@ npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web test
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run type-check
 npm --prefix src/Controls/samples/Controls.Sample.HybridWebApp/Web run stage
 bash eng/common/dotnet.sh test src/Controls/samples/Controls.Sample.HybridWebApp/Tests/Playground.UnitTests.csproj \
-  -p:TargetFrameworks=net11.0 -p:TargetFramework=net11.0 --disable-build-servers
+  --framework net11.0 --disable-build-servers \
+  -p:IncludeAndroidTargetFrameworks=false -p:IncludeIosTargetFrameworks=false \
+  -p:IncludeMacCatalystTargetFrameworks=false -p:IncludeWindowsTargetFrameworks=false \
+  -p:IncludeMacOSTargetFrameworks=false
 bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebApp/Native/Maui.Controls.Sample.HybridWebApp.csproj \
   -f net11.0-maccatalyst -c Debug --disable-build-servers -p:UseWorkload=false \
   -p:IncludeAndroidTargetFrameworks=false -p:IncludeIosTargetFrameworks=false \
@@ -489,7 +632,7 @@ bash eng/common/dotnet.sh build src/Controls/samples/Controls.Sample.HybridWebAp
   -p:IncludeWindowsTargetFrameworks=false
 ```
 
-UI-free tests consume the actual product assembly and fake the existing
+Managed-only tests consume the actual product assembly and fake the existing
 individual Essentials interfaces, never a combined platform/service abstraction.
 Sample-only source sharing tests counter/reload/work behavior. Node built-in tests exercise the actual
 SDK's built public exports and app-owned helpers with explicit test doubles.

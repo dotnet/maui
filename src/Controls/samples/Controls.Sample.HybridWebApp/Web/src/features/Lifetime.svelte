@@ -11,9 +11,8 @@
 </p>
 <div class="actions">
   <Action {session} action="increment" title="Increment native counter" primary
-    onclick={() => { void session.run('Increment service counter', () =>
-      sample(session.client).echo({ text: null, number: 0, flag: false, items: [] })) }} />
+    onclick={() => sample(session.client).echo({ text: null, number: 0, flag: false, items: [] })} />
   <Action {session} action="counter" title="Read native counter"
-    onclick={() => { void session.run('Read service counter', () => sample(session.client).getCounter()) }} />
+    onclick={() => sample(session.client).getCounter()} />
   <Action {session} action="reload" title="Reload frontend" onclick={reload} />
 </div>

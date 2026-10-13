@@ -10,7 +10,7 @@
 </p>
 <div class="actions">
   <Action {session} action="fail" title="Run deliberate failure" primary
-    onclick={() => { void session.run('Intentional native failure', () => sample(session.client).fail()) }} />
+    onclick={() => sample(session.client).fail()} />
   <Action {session} action="counter" title="Verify bridge still works"
-    onclick={() => { void session.run('Read counter after error', () => sample(session.client).getCounter()) }} />
+    onclick={() => sample(session.client).getCounter()} />
 </div>

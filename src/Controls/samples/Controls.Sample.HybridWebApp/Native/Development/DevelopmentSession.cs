@@ -8,6 +8,7 @@ namespace Maui.Controls.Sample.HybridWebApp;
 sealed class DevelopmentSession : IDisposable
 {
 	const int MaximumAssetBytes = 8 * 1024 * 1024;
+	static DevelopmentSession? _inspectorOwner;
 	readonly HybridWebView _view;
 	readonly DevelopmentSettings _settings;
 	readonly CancellationTokenSource _shutdown = new();
@@ -41,8 +42,20 @@ sealed class DevelopmentSession : IDisposable
 		_platform = new DevelopmentPlatform(StartingDocument);
 		view.WebResourceRequested += ResourceRequested;
 		view.WebViewInitialized += Initialized;
-		if (settings.Token is not null)
-			_inspector = new LoopbackInspector(this, view, settings);
+		// Each view forwards independently, but the configured inspector port has one owner.
+		if (settings.Token is not null && Interlocked.CompareExchange(ref _inspectorOwner, this, null) is null)
+		{
+			try
+			{
+				_inspector = new LoopbackInspector(this, view, settings);
+			}
+			catch
+			{
+				Interlocked.CompareExchange(ref _inspectorOwner, null, this);
+				Dispose();
+				throw;
+			}
+		}
 	}
 
 	void Initialized(object? sender, WebViewInitializedEventArgs e)
@@ -269,7 +282,8 @@ sealed class DevelopmentSession : IDisposable
 		_view.WebResourceRequested -= ResourceRequested;
 		_view.WebViewInitialized -= Initialized;
 		_client.Dispose();
-		_inspector?.Dispose();
+		try { _inspector?.Dispose(); }
+		finally { Interlocked.CompareExchange(ref _inspectorOwner, null, this); }
 		_platform.Dispose();
 		_document.Dispose();
 		_shutdown.Dispose();

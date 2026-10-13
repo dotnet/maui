@@ -2,12 +2,13 @@ import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { setImmediate } from 'node:timers/promises'
 import { flushSync } from 'svelte'
-import { NativeClient } from '@maui/api/core'
-import { availableFeatures } from '../src/catalog.ts'
+import { NativeClient, configureBridge, resetBridge } from '@maui/api/core'
+import { availableFeatures, navigationPages } from '../src/catalog.ts'
 import { components } from '../src/registry.ts'
 import { PlaygroundSession } from '../src/session.ts'
 import { mountShell } from '../src/shell.ts'
 import { createConnection } from '../src/connection.ts'
+import { readRoute } from '../src/routes.ts'
 import html from '../index.html?raw'
 
 const identity = { appName: 'Native', version: '1', build: '2', platform: 'MacCatalyst', osVersion: '27', model: 'Mac',
@@ -17,6 +18,11 @@ const actions = {
   echo: ['echo', 'counter'], errors: ['fail', 'counter'], policy: ['missing', 'disabled', 'invalid'],
   lifetime: ['increment', 'counter', 'reload'], events: ['echo', 'subscribe', 'unsubscribe'],
   work: ['work', 'cancel', 'reload'], development: ['identity', 'reload'],
+  welcome: [], showcase: ['title', 'copy', 'prompt', 'device', 'open-window'],
+  windows: ['window-info', 'title', 'bounds', 'center', 'open-window'], dialogs: ['alert', 'confirm', 'prompt'],
+  filePicker: ['pick-file'], remoteWebView: ['browser-info', 'remote', 'browser-back', 'browser-forward', 'browser-reload', 'browser-focus', 'browser-close'],
+  battery: ['battery'], display: ['display'], menus: ['menus-install', 'menus-remove', 'menu-rename', 'menu-enable', 'menu-check'],
+  theme: ['theme-system', 'theme-light', 'theme-dark'],
 }
 const deferred = () => {
   let resolve
@@ -28,14 +34,21 @@ const failure = (code, status = 'error') => ({ status, error: { code, message: `
 // Only this test fixture supplies a transport; production never emulates native APIs.
 function transport(handler) {
   const requests = [], messages = []
+  let browserState, menuSource = null
   const bridge = {
     async InvokeDotNet(method, [wire]) {
       assert.equal(method, 'Invoke')
       const request = JSON.parse(wire)
       requests.push(request)
-      const output = await handler(request)
+      let output = await handler(request)
+      if (request.command === 'remote.open') browserState = output
+      if (request.command === 'remote.info' && browserState) output = browserState
+      if (request.command === 'remote.control' && request.args.action === 'close') browserState = undefined
+      if (request.command === 'menus.install') menuSource = 'menu-source'
+      if (request.command === 'menus.clear') menuSource = null
+      if (request.command === 'menus.info') output = { ...output, sourceId: menuSource }
       return JSON.stringify({ version: 1, session: request.session, id: request.id,
-        status: output?.status ?? 'success', result: output?.error ? null : output, error: output?.error ?? null })
+        status: output?.error ? output.status : 'success', result: output?.error ? null : output, error: output?.error ?? null })
     },
     SendRawMessage(wire) { messages.push(JSON.parse(wire)) },
   }
@@ -55,23 +68,51 @@ function defaultResult(request) {
     case 'preferences.read':
     case 'preferences.write': return { key: request.args.key, value: request.args.value ?? 'Native preference' }
     case 'preferences.remove': return { key: request.args.key, value: null }
+    case 'preferences.get': return { kind: 'string', text: 'Native preference' }
+    case 'preferences.set':
+    case 'preferences.delete': return { accepted: true }
     case 'sample.work': return { completed: request.args.steps, total: request.args.steps }
+    case 'window.info':
+    case 'window.title':
+    case 'window.bounds': return { id: 'native-window', title: request.args.title ?? 'Native window',
+      x: 80, y: 80, width: 1000, height: 760, canResize: true, canPosition: true, canOpenWindows: true,
+      initialLocation: 'index.html#/showcase', windowLease: 'private-lease' }
+    case 'window.find': return { window: { id: request.args.id, title: 'Child', x: 80, y: 80, width: 1000, height: 760,
+      canResize: true, canPosition: true, canOpenWindows: true, initialLocation: 'index.html#/showcase', windowLease: 'child-lease' } }
+    case 'window.list': return { windows: [] }
+    case 'window.open': return { id: 'child-window' }
+    case 'dialogs.prompt': return { cancelled: true, text: null }
+    case 'filePicker.pick': return { file: null }
+    case 'battery.info': return { chargeLevel: 0.5, state: 'Charging', powerSource: 'AC', energySaverStatus: 'Off' }
+    case 'display.info': return { width: 1080, height: 1920, density: 3, orientation: 'Portrait', rotation: 'Rotation0', refreshRate: 60 }
+    case 'remote.info': return { supported: true, open: false, id: null, url: null, status: 'closed', canGoBack: false, canGoForward: false }
+    case 'remote.open': return { supported: true, open: true, id: 'guest', url: request.args.url, status: 'loading', canGoBack: false, canGoForward: false }
+    case 'remote.bounds':
+    case 'remote.control': return { supported: true, open: false, id: null, url: null, status: 'closed', canGoBack: false, canGoForward: false }
+    case 'menus.info': return { supported: true, supportsChecked: true, sourceId: null }
+    case 'menus.install': return { supported: true, supportsChecked: true, sourceId: 'menu-source' }
+    case 'menus.update':
+    case 'menus.clear': return { supported: true, supportsChecked: true, sourceId: request.command === 'menus.clear' ? null : 'menu-source' }
+    case 'application.theme': return { effective: 'light', preference: 'system' }
+    case 'application.setTheme': return { effective: request.args.theme === 'dark' ? 'dark' : 'light', preference: request.args.theme }
     default: return { accepted: true }
   }
 }
 
 function fixture(t, handler = defaultResult, { native = true, compact = false } = {}) {
   document.body.innerHTML = new DOMParser().parseFromString(html, 'text/html').body.innerHTML
+  window.history.replaceState(null, '', '/')
   const dom = { window }
   const host = transport(handler)
   const session = new PlaygroundSession()
-  if (native) session.setClient(new NativeClient(host.bridge))
+  if (native) session.setClient(configureBridge(host.bridge))
   let reloads = 0
   let shell = mountShell(dom.window.document, session, () => { reloads++ }, () => compact)
   flushSync()
   t.onTestFinished(() => {
     shell.dispose()
     session.dispose()
+    resetBridge()
     flushSync()
     document.body.replaceChildren()
   })
@@ -111,36 +152,43 @@ function fixture(t, handler = defaultResult, { native = true, compact = false } 
   }
 }
 
-test('typed registry mounts every experiment for all 19 catalog families with existing actions and metadata', t => {
+test('typed registry mounts implemented experiments and both guides with actions and metadata', t => {
   const app = fixture(t)
   assert.deepEqual(Object.keys(components).sort(), Object.keys(actions).sort())
-  assert.equal(app.find('#catalog-count').textContent, '19 experiments')
-  for (const feature of availableFeatures) {
+  assert.equal(app.find('#catalog-count').textContent, '28 experiments · 2 guides')
+  for (const feature of navigationPages) {
     app.select(feature.id)
     assert.equal(app.find('#feature-title').textContent, feature.title)
     assert.equal(app.find('#feature-meta').textContent, feature.category)
     assert.equal(app.find('#feature-description').textContent, feature.description)
     assert.equal(app.find('#api-link').href, feature.docs)
-    assert.equal(app.find(`[data-feature="${feature.id}"]`).getAttribute('aria-current'), 'true')
+    assert.equal(app.find(`[data-feature="${feature.id}"]`).getAttribute('aria-current'), 'page')
     assert.deepEqual([...app.find('#controls').querySelectorAll('[data-action]')].map(button => button.dataset.action), actions[feature.experiment])
     assert.equal(app.find('#progress').hidden, feature.experiment !== 'work')
   }
   assert.equal(app.host.requests.length, 0, 'mounting never makes a native call')
 })
 
-test('search/category filtering and desktop keyboard focus retain the catalog behaviour', t => {
+test('search temporarily reveals grouped matches and preserves collapse preferences and keyboard focus', t => {
   const app = fixture(t)
   app.select('clipboard')
   assert.equal(app.dom.window.document.activeElement.dataset.feature, 'clipboard')
+  app.find('[data-group="Development"]').click()
+  assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'false')
   app.input('#search', 'TEXT CLIPBOARD')
-  assert.equal(app.find('#catalog-count').textContent, '1 of 19 experiments')
+  assert.equal(app.find('#catalog-count').textContent, '1 matching pages')
   assert.equal(app.find('#feature-list').children.length, 1)
-  app.input('#category', 'Development')
+  app.input('#search', 'no matching phrase')
   assert.match(app.find('#feature-list').textContent, /No matching features/)
+  app.input('#search', 'Vite')
+  assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'true')
   app.input('#search', '')
-  assert.equal(app.find('#catalog-count').textContent, '3 of 19 experiments')
-  app.input('#category', '')
-  assert.equal(app.find('#catalog-count').textContent, '19 experiments')
+  assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'false')
+  assert.equal(app.find('#catalog-count').textContent, '28 experiments · 2 guides')
+  app.find('[data-group="Essentials"]').click()
+  app.session.writeLog('A native refresh', 'Success', { accepted: true })
+  assert.equal(app.find('[data-group="Essentials"]').getAttribute('aria-expanded'), 'false',
+    'unrelated session refresh must not replace an active group collapse preference')
 })
 
 test('compact navigation focuses the experiment instead of a replaced catalog button', t => {
@@ -169,7 +217,7 @@ test('browser-only actions remain disabled on every page, with only Reload enabl
   assert.equal(app.reloads, 1)
 })
 
-test('replacement removes old form/navigation handlers and shell remount does not multiply handlers or categories', async t => {
+test('replacement removes old form/navigation handlers and shell remount does not multiply handlers or groups', async t => {
   const app = fixture(t)
   app.select('arguments')
   const oldAction = app.find('[data-action="counter"]')
@@ -177,10 +225,10 @@ test('replacement removes old form/navigation handlers and shell remount does no
   oldAction.click()
   assert.equal(app.session.selected.id, 'registration')
   assert.equal(app.host.requests.length, 0)
-  const categoryCount = app.find('#category').options.length
+  const categoryCount = app.find('#feature-list').querySelectorAll('[data-group]').length
   app.remount()
   app.remount()
-  assert.equal(app.find('#category').options.length, categoryCount)
+  assert.equal(app.find('#feature-list').querySelectorAll('[data-group]').length, categoryCount)
   app.click('counter')
   await app.idle()
   assert.equal(app.host.requests.length, 1)
@@ -210,22 +258,23 @@ test('clipboard and preference pages own actual SDK calls, values, defaults and 
   app.input('#preference-value', 'Saved text')
   app.click('save')
   await app.idle()
-  assert.deepEqual(app.host.requests.at(-1).args, { key: 'custom_key', value: 'Saved text' })
+  assert.deepEqual(app.host.requests.at(-1).args, { key: 'custom_key', value: { kind: 'string', text: 'Saved text' }, sharedName: null })
   app.click('read')
   await app.idle()
   assert.equal(app.find('#preference-value').value, 'Native preference')
   app.click('remove')
   await app.idle()
-  assert.equal(app.host.requests.at(-1).command, 'preferences.remove')
+  assert.equal(app.host.requests.at(-1).command, 'preferences.delete')
   assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { key: 'custom_key', value: null })
 })
 
 test('commands validate input and identity/lifetime/development pages call the app helpers', async t => {
   const app = fixture(t)
+  app.select('identity')
   app.click('run')
   await app.idle()
   assert.deepEqual(JSON.parse(app.find('#native-identity').textContent), identity)
-  assert.deepEqual(app.host.requests.map(request => request.command), ['app.info', 'device.info', 'sample.diagnostics'])
+  assert.deepEqual(app.host.requests.map(request => request.command), ['sample.diagnostics', 'core.connect', 'app.info', 'device.info'])
   app.select('arguments')
   const dto = { text: null, number: 2.5, flag: false, items: ['Unicode 👋'] }
   app.input('#echo-input', JSON.stringify(dto))
@@ -237,7 +286,7 @@ test('commands validate input and identity/lifetime/development pages call the a
   await app.idle()
   assert.equal(app.find('#result-state').dataset.state, 'error')
   assert.equal(JSON.parse(app.find('#result-json').textContent).code, 'input_error')
-  assert.equal(app.host.requests.length, 4)
+  assert.equal(app.host.requests.length, 5)
   app.select('lifetime')
   app.click('increment')
   await app.idle()
@@ -284,7 +333,7 @@ test('transport failures are distinct from native errors in the shared result', 
 
 for (const [feature, action, selector, command, output] of [
   ['clipboard', 'paste', '#clipboard-text', 'clipboard.read', { text: 'Late clipboard' }],
-  ['preferences', 'read', '#preference-value', 'preferences.read', { key: 'example', value: 'Late setting' }],
+  ['preferences', 'read', '#preference-value', 'preferences.get', { kind: 'string', text: 'Late setting' }],
 ]) {
   test(`delayed ${command} captures its original input and cannot paint into a replacement page`, async t => {
     const pending = deferred()
@@ -308,6 +357,159 @@ for (const [feature, action, selector, command, output] of [
     assert.match(app.find('#operation-log').textContent, /Late/)
   })
 }
+
+test('Welcome is the default, hands-on is distinct, and route parsing accepts only implemented pages', t => {
+  const app = fixture(t)
+  assert.equal(app.session.selected.id, 'welcome')
+  assert.match(app.find('#controls').textContent, /Web-first/)
+  app.select('showcase')
+  assert.equal(window.location.hash, '#/showcase')
+  assert.match(app.find('#controls').textContent, /Make this window yours/)
+  for (const fragment of ['#/planned-90', '#/not-implemented', '#/%2fshowcase', '#/showcase?url=evil', '#https://example.com'])
+    assert.equal(readRoute(fragment).page.id, 'welcome')
+  assert.ok(readRoute('#/planned-90').error)
+  assert.equal(readRoute('#/clipboard').page.id, 'clipboard')
+})
+
+test('native initial routes apply query and fragment without rewriting the loaded document path', t => {
+  const app = fixture(t)
+  const path = window.location.pathname
+  app.session.initialLocation('index.html?mode=preview#/showcase')
+  assert.equal(window.location.pathname, path, 'the native host already loaded the bundled document')
+  assert.equal(window.location.search, '?mode=preview')
+  assert.equal(window.location.hash, '#/showcase')
+  assert.equal(app.session.selected.id, 'showcase')
+})
+
+test('hash navigation, remount, unknown-route recovery and native initial routes preserve trusted routing', async t => {
+  const app = fixture(t)
+  app.session.initialLocation('index.html#/showcase')
+  assert.equal(window.location.hash, '#/showcase')
+  assert.equal(app.session.selected.id, 'showcase')
+  window.history.replaceState(null, '', '#/clipboard')
+  window.dispatchEvent(new HashChangeEvent('hashchange'))
+  app.find('#clipboard-text')
+  app.remount()
+  assert.equal(app.session.selected.id, 'clipboard')
+  app.session.initialLocation('index.html#/showcase')
+  assert.equal(app.session.selected.id, 'clipboard', 'frontend route wins over the initial host route on reload')
+  window.history.replaceState(null, '', '#/unknown')
+  window.dispatchEvent(new HashChangeEvent('hashchange'))
+  assert.equal(app.session.selected.id, 'welcome')
+  assert.equal(app.find('#result-state').textContent, 'Error')
+  app.select('showcase')
+  assert.equal(app.find('#result-state').textContent, 'Ready to run')
+  assert.equal(app.host.requests.length, 0, 'fragment routes never become native command names')
+})
+
+test('browser history back and forward restore the selected internal feature without native calls', async t => {
+  const app = fixture(t)
+  app.select('showcase')
+  await setImmediate()
+  app.select('clipboard')
+  await setImmediate()
+  const back = new Promise(resolve => window.addEventListener('hashchange', resolve, { once: true }))
+  window.history.back()
+  await back
+  assert.equal(app.session.selected.id, 'showcase')
+  const forward = new Promise(resolve => window.addEventListener('hashchange', resolve, { once: true }))
+  window.history.forward()
+  await forward
+  assert.equal(app.session.selected.id, 'clipboard')
+  assert.equal(app.host.requests.length, 0)
+})
+
+test('native Windows, dialogs, device and embedded remote pages use the same SDK modules as hands-on', async t => {
+  const app = fixture(t)
+  app.select('windows')
+  assert.equal(app.find('[data-action="bounds"]').disabled, true)
+  app.click('window-info')
+  await app.idle()
+  assert.equal(app.find('[data-action="bounds"]').disabled, false)
+  app.input('#window-title', 'Native window 👋')
+  app.click('title')
+  await app.idle()
+  assert.deepEqual(app.host.requests.at(-1).args, { title: 'Native window 👋', windowId: 'native-window', windowLease: 'private-lease' })
+  app.click('bounds')
+  await app.idle()
+  assert.deepEqual(app.host.requests.at(-1).args, { x: 80, y: 80, windowId: 'native-window', windowLease: 'private-lease' })
+  app.click('open-window')
+  await app.idle()
+  assert.ok(app.host.requests.some(request => request.command === 'window.open' && request.args.url === 'index.html#/showcase'))
+  app.select('dialogs')
+  app.click('prompt')
+  await app.idle()
+  assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { cancelled: true, text: null })
+  for (const [page, action, command] of [['battery', 'battery', 'battery.info'], ['display', 'display', 'display.info'],
+    ['showcase', 'prompt', 'dialogs.prompt']]) {
+    app.select(page)
+    app.click(action)
+    await app.idle()
+    assert.equal(app.host.requests.at(-1).command, command)
+  }
+  app.select('remote-webview')
+  app.click('browser-info')
+  await app.idle()
+  app.click('remote')
+  await app.idle()
+  assert.match(app.find('#result-json').textContent, /guest/)
+})
+
+test('selected text is rendered as text and excluded from result logs, with ordinary picker dismissal', async t => {
+  let cancelled = false
+  const app = fixture(t, request => {
+    if (request.command === 'filePicker.pick') return { file: cancelled ? null : { id: 'selected', name: 'example.txt', contentType: 'text/plain' } }
+    if (request.command === 'file.openRead') return { id: 'reader', canSeek: true, maximumChunkBytes: 65536 }
+    if (request.command === 'file.readBytes') return { base64: btoa('<script>private</script>'), eof: true }
+    return defaultResult(request)
+  })
+  app.select('file-picker')
+  app.click('pick-file')
+  await app.idle()
+  assert.equal(app.find('#file-preview').textContent, '<script>private</script>')
+  assert.equal(app.find('#file-preview').children.length, 0)
+  assert.doesNotMatch(app.find('#operation-log').textContent, /private/)
+  assert.doesNotMatch(app.find('#result-json').textContent, /private/)
+  cancelled = true
+  app.click('pick-file')
+  await app.idle()
+  assert.equal(app.find('#file-cancelled').textContent, 'No file selected.')
+  assert.equal(document.querySelector('#file-preview'), null)
+})
+
+test('delayed file selection cannot populate a new page or fresh picker form after navigation', async t => {
+  const selected = deferred()
+  const app = fixture(t, request => request.command === 'filePicker.pick' ? selected.promise : defaultResult(request))
+  app.select('file-picker')
+  app.click('pick-file')
+  app.select('clipboard')
+  app.select('file-picker')
+  selected.resolve({ file: { id: 'old-selection', name: 'old.txt', contentType: 'text/plain' } })
+  await app.idle()
+  assert.equal(document.querySelector('#file-preview'), null)
+  assert.equal(app.find('#result-state').textContent, 'Ready to run')
+})
+
+test('TypeScript creates the actual native menu tree and handles native item IDs through public modules', async t => {
+  const app = fixture(t)
+  app.select('menus')
+  app.click('menus-install')
+  await app.idle()
+  const installed = app.host.requests.find(request => request.command === 'menus.install')
+  assert.equal(installed.args.windowId, 'native-window')
+  assert.deepEqual(installed.args.items.map(item => item.text), ['File', 'Navigate', 'View', 'Help'])
+  assert.equal(installed.args.items[0].items[0].action, undefined)
+  app.event('menus.clicked', { sourceId: 'menu-source', id: 'clipboard', checked: false }, 'native-menu-click')
+  await app.idle()
+  assert.equal(app.session.selected.id, 'clipboard')
+  app.select('menus')
+  app.input('#menu-text', 'Updated from TS')
+  app.click('menu-rename')
+  await app.idle()
+  assert.deepEqual(app.host.requests.at(-1).args, {
+    windowId: 'native-window', sourceId: 'menu-source', id: 'showcase', text: 'Updated from TS',
+  })
+})
 
 test('busy guard blocks concurrent form actions but Reload remains available on replacement pages', async t => {
   const pending = deferred()
@@ -562,6 +764,7 @@ test('connection starts once, attaches native listeners once, and pagehide/dispo
 
 test('connection failure disables native actions without inventing host metadata', async t => {
   const app = fixture(t, () => failure('connection_failed'), { native: false })
+  app.select('identity')
   const connection = createConnection(app.session, async () => app.host.bridge)
   await connection.start()
   assert.equal(app.find('#host-status').dataset.state, 'error')
@@ -696,7 +899,7 @@ test('late identity bootstrap cannot paint after document disposal', async t => 
   const started = connection.start()
   await setImmediate()
   assert.deepEqual(app.host.requests.map(request => request.command),
-    ['core.connect', 'app.info', 'device.info', 'sample.diagnostics'])
+    ['core.connect', 'sample.diagnostics', 'app.info', 'device.info'])
   app.session.dispose()
   metadata.resolve({ appName: 'Late', version: '9', build: '9' })
   await started
@@ -708,7 +911,7 @@ test('late identity bootstrap cannot paint after document disposal', async t => 
 
 test('pending preference reads capture the original key before await and preserve replacement state', async t => {
   const read = deferred()
-  const app = fixture(t, request => request.command === 'preferences.read' ? read.promise : defaultResult(request))
+  const app = fixture(t, request => request.command === 'preferences.get' ? read.promise : defaultResult(request))
   app.select('preferences')
   app.input('#preference-key', 'original_key')
   app.click('read')
@@ -716,9 +919,10 @@ test('pending preference reads capture the original key before await and preserv
   app.select('clipboard')
   app.select('preferences')
   app.input('#preference-value', 'New component state')
-  read.resolve({ key: 'original_key', value: 'Original setting' })
+  read.resolve({ kind: 'string', text: 'Original setting' })
   await app.idle()
-  assert.deepEqual(app.host.requests[0].args, { key: 'original_key' })
+  assert.deepEqual(app.host.requests.find(request => request.command === 'preferences.get').args,
+    { key: 'original_key', defaultValue: { kind: 'string', text: '' }, sharedName: null })
   assert.equal(app.find('#preference-key').value, 'example')
   assert.equal(app.find('#preference-value').value, 'New component state')
   assert.equal(app.find('#result-state').textContent, 'Ready to run')
@@ -750,7 +954,7 @@ test('bootstrap disables native actions until metadata is ready without replacin
 
 for (const [feature, action, selector, command, output] of [
   ['clipboard', 'paste', '#clipboard-text', 'clipboard.read', { text: 'Late clipboard' }],
-  ['preferences', 'read', '#preference-value', 'preferences.read', { key: 'example', value: 'Late setting' }],
+  ['preferences', 'read', '#preference-value', 'preferences.get', { kind: 'string', text: 'Late setting' }],
 ]) {
   test(`shell remount isolates pending ${command} completion even without navigation`, async t => {
     const pending = deferred()

@@ -7,34 +7,32 @@
   let steps = $state<number | undefined>(20)
   let delay = $state<number | undefined>(300)
 
-  function work(): void {
+  async function work(): Promise<unknown> {
     // Capture this form before awaiting the document-owned progress subscription.
     const capturedSteps = Number(steps)
     const capturedDelay = Number(delay)
-    void session.run('Native work', async () => {
-      const api = sample(session.client)
-      if (!session.unsubscribeProgress) {
-        const unsubscribe = await api.onProgress((value, id) => {
-          if (session.disposed || session.active?.id !== id) return
-          session.writeEvent('Native operation.progress', { ...value, requestId: id }, id)
-          if (session.selected.experiment === 'work') {
-            session.progressMaximum = value.total
-            session.progressValue = value.completed
-            session.showResult('Loading', { ...value, requestId: id })
-          }
-        })
-        if (session.disposed) {
-          await unsubscribe()
-          return
+    const api = sample(session.client)
+    if (!session.unsubscribeProgress) {
+      const unsubscribe = await api.onProgress((value, id) => {
+        if (session.disposed || session.active?.id !== id) return
+        session.writeEvent('Native operation.progress', { ...value, requestId: id }, id)
+        if (session.selected.experiment === 'work') {
+          session.progressMaximum = value.total
+          session.progressValue = value.completed
+          session.showResult('Loading', { ...value, requestId: id })
         }
-        session.unsubscribeProgress = unsubscribe
+      })
+      if (session.disposed) {
+        await unsubscribe()
+        return
       }
-      if (session.disposed) return
-      if (session.selected.experiment === 'work') session.progressValue = 0
-      session.active = api.work(capturedSteps, capturedDelay)
-      session.refresh()
-      return session.active.result
-    })
+      session.unsubscribeProgress = unsubscribe
+    }
+    if (session.disposed) return
+    if (session.selected.experiment === 'work') session.progressValue = 0
+    session.active = api.work(capturedSteps, capturedDelay)
+    session.refresh()
+    return session.active.result
   }
 
   async function cancel(): Promise<void> {

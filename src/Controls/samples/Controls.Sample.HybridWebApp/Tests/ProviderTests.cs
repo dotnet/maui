@@ -108,6 +108,99 @@ public sealed class ProviderTests
 			Dispatch(clipboardRegistry, "clipboard.read", "{}"))).Code);
 	}
 
+	[Theory]
+	[InlineData("preferences.set", "{\"key\":\"overflow\",\"value\":{\"kind\":\"string\",\"text\":\"rejected\"}}")]
+	[InlineData("preferences.write", "{\"key\":\"overflow\",\"value\":\"rejected\"}")]
+	public async Task PreferenceCapacityRejectsBeforeWritingAndRemovalReleasesOwnership(string command, string args)
+	{
+		var preferences = new FakePreferences();
+		var keys = Enumerable.Range(0, 4096).Select(index => $"key{index}").ToArray();
+		preferences.Values["host.@owned-keys"] = JsonSerializer.Serialize(keys);
+		foreach (var key in keys)
+			preferences.Values["host." + key] = "owned";
+		preferences.Values["other.key"] = "unrelated";
+		var registry = new CommandRegistry();
+		new PreferencesProvider(preferences, Inline, "host.").Register(registry);
+
+		Assert.Equal("resource_limit", (await Assert.ThrowsAsync<CommandException>(() =>
+			Dispatch(registry, command, args))).Code);
+		Assert.False(preferences.Values.ContainsKey("host.overflow"));
+		await Dispatch(registry, "preferences.delete", "{\"key\":\"key0\"}");
+		await Dispatch(registry, command, args);
+		Assert.Equal("rejected", preferences.Values["host.overflow"]);
+		await Dispatch(registry, "preferences.clear", "{}");
+		Assert.Equal(new[] { "other.key" }, preferences.Values.Keys);
+	}
+
+	[Fact]
+	public async Task LegacyPreferenceRemovalReleasesOwnershipCapacity()
+	{
+		var preferences = new FakePreferences();
+		var keys = Enumerable.Range(0, 4096).Select(index => $"key{index}").ToArray();
+		preferences.Values["host.@owned-keys"] = JsonSerializer.Serialize(keys);
+		preferences.Values["host.key0"] = "owned";
+		var registry = new CommandRegistry();
+		new PreferencesProvider(preferences, Inline, "host.").Register(registry);
+		await Dispatch(registry, "preferences.remove", "{\"key\":\"key0\"}");
+		await Dispatch(registry, "preferences.write", "{\"key\":\"new_key\",\"value\":\"new\"}");
+		Assert.Equal("new", preferences.Values["host.new_key"]);
+		var tracked = JsonSerializer.Deserialize<string[]>((string)preferences.Values["host.@owned-keys"])!;
+		Assert.DoesNotContain("key0", tracked);
+		Assert.Contains("new_key", tracked);
+	}
+
+	[Theory]
+	[InlineData("host.@owned-keys", false)]
+	[InlineData("host.key", true)]
+	public async Task FailedPreferenceStorageCannotLeaveAnUntrackedValue(string failingKey, bool writeBeforeFailure)
+	{
+		var preferences = new FakePreferences { FailingSetKey = failingKey, WriteBeforeFailure = writeBeforeFailure };
+		var registry = new CommandRegistry();
+		new PreferencesProvider(preferences, Inline, "host.").Register(registry);
+		await Assert.ThrowsAsync<IOException>(() =>
+			Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"private\"}}"));
+		Assert.False(preferences.Values.ContainsKey("host.key"));
+		preferences.FailingSetKey = null;
+		await Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"recovered\"}}");
+		await Dispatch(registry, "preferences.clear", "{}");
+		Assert.Empty(preferences.Values);
+	}
+
+	[Theory]
+	[InlineData("preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"replacement\"}}", false)]
+	[InlineData("preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"replacement\"}}", true)]
+	[InlineData("preferences.write", "{\"key\":\"key\",\"value\":\"replacement\"}", false)]
+	[InlineData("preferences.write", "{\"key\":\"key\",\"value\":\"replacement\"}", true)]
+	public async Task FailedUpdatesPreservePreviouslyPersistedValuesWithoutAnOwnershipIndex(string command, string args, bool partialWrite)
+	{
+		var preferences = new FakePreferences { FailingSetKey = "host.key", WriteBeforeFailure = partialWrite };
+		preferences.Values["host.key"] = "original";
+		var registry = new CommandRegistry();
+		new PreferencesProvider(preferences, Inline, "host.").Register(registry);
+		await Assert.ThrowsAsync<IOException>(() => Dispatch(registry, command, args));
+		Assert.Equal(partialWrite ? "replacement" : "original", preferences.Values["host.key"]);
+		Assert.Contains("key", JsonSerializer.Deserialize<string[]>((string)preferences.Values["host.@owned-keys"])!);
+		preferences.FailingSetKey = null;
+		await Dispatch(registry, "preferences.clear", "{}");
+		Assert.Empty(preferences.Values);
+	}
+
+	[Theory]
+	[InlineData("{\"kind\":\"string\",\"text\":\"too long\"}")]
+	[InlineData("{\"kind\":\"boolean\"}")]
+	[InlineData("{\"kind\":\"dateTime\",\"text\":\"not a date\"}")]
+	[InlineData("{\"kind\":\"float\",\"number\":1e300}")]
+	[InlineData("{\"kind\":\"int\",\"integer\":2147483648}")]
+	public async Task InvalidPreferenceValuesAreValidatedBeforeOwnershipReservation(string scalar)
+	{
+		var preferences = new FakePreferences();
+		var registry = new CommandRegistry();
+		new PreferencesProvider(preferences, Inline, "host.", 4).Register(registry);
+		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
+			Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":" + scalar + "}"))).Code);
+		Assert.Empty(preferences.Values);
+	}
+
 	[Fact]
 	public async Task MainThreadBoundaryChecksBeforeSideEffectsAndAfterCompletedWrites()
 	{
@@ -171,8 +264,17 @@ public sealed class ProviderTests
 	public void ProductAssemblyContainsNoSampleUiOrFakes()
 	{
 		var assembly = typeof(CommandRegistry).Assembly;
-		Assert.DoesNotContain(assembly.GetReferencedAssemblies(), name => name.Name is "Microsoft.Maui" or "Microsoft.Maui.Controls");
+		Assert.Contains(assembly.GetReferencedAssemblies(), name => name.Name == "Microsoft.Maui.Controls");
 		Assert.DoesNotContain(assembly.GetTypes(), type => type.FullName!.Contains("Sample", StringComparison.Ordinal) || type.Name.Contains("Fake", StringComparison.Ordinal) || type.Name is "IdentityResult" or "IPlaygroundPlatform");
-		Assert.All(assembly.GetTypes(), type => Assert.StartsWith("Maui.HybridApp", type.Namespace, StringComparison.Ordinal));
+		Assert.All(assembly.GetTypes(), type =>
+		{
+			if (type.Namespace is null)
+			{
+				Assert.True(type.Name == "<PrivateImplementationDetails>" || type.DeclaringType?.Name == "<PrivateImplementationDetails>");
+				Assert.False(type.IsPublic);
+			}
+			else
+				Assert.StartsWith("Maui.HybridApp", type.Namespace, StringComparison.Ordinal);
+		});
 	}
 }

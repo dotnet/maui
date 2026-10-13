@@ -34,6 +34,14 @@ var ready = connect.Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyR
 Check(ready.PreferenceNamespace == "consumer." && ready.Commands.Contains("app.info", StringComparer.Ordinal) &&
 	ready.Commands.Contains("device.info", StringComparer.Ordinal) && ready.Commands.Contains("preferences.write", StringComparer.Ordinal),
 	"Product convenience did not register its implemented APIs and actual policy.");
+Check(ready.Commands.Contains("window.info", StringComparer.Ordinal) && ready.Commands.Contains("battery.info", StringComparer.Ordinal) &&
+	ready.Commands.Contains("display.info", StringComparer.Ordinal) && ready.Commands.Contains("filePicker.pick", StringComparer.Ordinal),
+	"UI/device modules did not survive real package consumption.");
+Check(ready.InteractiveCommands is not null && ready.InteractiveCommands.Contains("dialogs.prompt", StringComparer.Ordinal) &&
+	ready.InteractiveCommands.Contains("filePicker.pick", StringComparer.Ordinal) && ready.InteractiveTimeoutMilliseconds == 300000,
+	"Typed interactive handshake policy did not survive packaging.");
+Check(typeof(CommandRegistry).Assembly.GetReferencedAssemblies().Any(name => name.Name == "Microsoft.Maui.Controls"),
+	"The current WIP product must declare its actual Controls dependency.");
 Check((await Call("core.subscribe", "{\"topic\":\"plugin.changed\"}")).Status == "success", "Subscribe failed.");
 var response = await Call("plugin.echo", "{\"text\":\"\\u4f60\\u597d \\ud83d\\udc4b\"}");
 Check(response.Status == "success" && response.Result!.Value.Deserialize(PluginJsonContext.Default.PluginResult)!.Text == "你好 👋", "Generated plugin JSON failed.");

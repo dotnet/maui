@@ -1,12 +1,14 @@
 <script lang="ts">
   import type { PlaygroundSession } from '../session.ts'
+  import { presentAction } from '../action.ts'
 
-  let { session, action, title, primary = false, onclick }: {
+  let { session, action, title, primary = false, disabled = false, onclick }: {
     session: PlaygroundSession
     action: string
     title: string
     primary?: boolean
-    onclick: () => void
+    disabled?: boolean
+    onclick: () => unknown | Promise<unknown>
   } = $props()
 </script>
 
@@ -14,6 +16,10 @@
   type="button"
   data-action={action}
   class:primary
-  disabled={$session.isDisabled(action)}
-  onclick={() => { if (!session.isDisabled(action)) onclick() }}
+  disabled={disabled || $session.isDisabled(action)}
+  onclick={() => {
+    if (disabled || session.isDisabled(action)) return
+    if (action === 'reload' || action === 'cancel') { void onclick(); return }
+    void presentAction(session, title, onclick)
+  }}
 >{title}</button>

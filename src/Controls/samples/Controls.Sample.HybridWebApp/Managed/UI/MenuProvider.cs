@@ -1,0 +1,278 @@
+using System.Text.Json.Serialization;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
+
+namespace Maui.HybridApp.UI;
+
+/// <summary>Renders JS-authored owning-window menus; native click callbacks emit IDs, never execute C# feature recipes.</summary>
+public sealed class HybridMenus : IDisposable
+{
+	readonly HybridViewContext _context;
+	readonly IDeviceInfo _device;
+	readonly NativeNotifications _notifications;
+	Installation? _current;
+	bool _disposed;
+	sealed class Installation : IDisposable
+	{
+		internal string Source { get; } = Guid.NewGuid().ToString("D");
+		internal List<MenuBarItem> Bars { get; } = [];
+		internal Dictionary<string, (MenuNode Node, MenuFlyoutItem? Item, MenuBarItem? Bar)> Items { get; } = new(StringComparer.Ordinal);
+		internal List<(MenuFlyoutItem Item, EventHandler Click, EventHandler Changed)> Handlers { get; } = [];
+		public void Dispose()
+		{
+			foreach (var (item, click, changed) in Handlers) { item.Clicked -= click; item.HandlerChanged -= changed; }
+			Handlers.Clear();
+		}
+	}
+	/// <summary>Creates a scoped renderer with no app menu definitions or global page lookup.</summary>
+	/// <param name="context">Owning page/window binding.</param>
+	/// <param name="device">Native platform metadata.</param>
+	/// <param name="notifications">Current-document native item-ID event source.</param>
+	public HybridMenus(HybridViewContext context, IDeviceInfo device, NativeNotifications notifications)
+	{
+		_context = context; _device = device; _notifications = notifications;
+		context.DocumentEnded += DocumentEnded;
+	}
+	bool Supported => _device.Platform == DevicePlatform.MacCatalyst || _device.Platform == DevicePlatform.WinUI;
+	bool Checks => _device.Platform == DevicePlatform.MacCatalyst;
+	internal MenuInfo Read() => new(Supported, Checks, _current?.Source);
+	internal void ValidateOwner(string id)
+	{
+		if (id != _context.Id) throw new CommandException("invalid_window", "This menu does not belong to the calling window.");
+	}
+	KeyboardAcceleratorModifiers Modifiers(MenuShortcut shortcut)
+	{
+		if (shortcut.Key.Length is < 1 or > 64 || shortcut.Key.Any(char.IsControl) ||
+			shortcut.Modifiers.Length > 5 || shortcut.Modifiers.Distinct(StringComparer.Ordinal).Count() != shortcut.Modifiers.Length)
+			throw new CommandException("invalid_arguments", "Use a native key string and at most five unique accelerator modifiers.");
+		var result = KeyboardAcceleratorModifiers.None;
+		foreach (var modifier in shortcut.Modifiers)
+		{
+			var flag = modifier switch
+			{
+				"primary" => Checks ? KeyboardAcceleratorModifiers.Cmd : KeyboardAcceleratorModifiers.Ctrl,
+				"shift" => KeyboardAcceleratorModifiers.Shift, "ctrl" => KeyboardAcceleratorModifiers.Ctrl,
+				"alt" => KeyboardAcceleratorModifiers.Alt,
+				"cmd" when Checks => KeyboardAcceleratorModifiers.Cmd,
+				"windows" when _device.Platform == DevicePlatform.WinUI => KeyboardAcceleratorModifiers.Windows,
+				"cmd" or "windows" => throw new NotSupportedException("This accelerator modifier is not supported by the native platform."),
+				_ => throw new CommandException("invalid_arguments", "Unknown accelerator modifier."),
+			};
+			if ((result & flag) != 0) throw new CommandException("invalid_arguments", "Accelerator modifiers resolve to duplicate native flags.");
+			result |= flag;
+		}
+		return result;
+	}
+	void Validate(MenuNode[] nodes)
+	{
+		if (nodes.Length is < 1 or > 8 || nodes.Any(node => node.Kind != "submenu"))
+			throw new CommandException("invalid_arguments", "Install one to eight top-level submenus.");
+		var ids = new HashSet<string>(StringComparer.Ordinal);
+		void Node(MenuNode node, int depth)
+		{
+			if (depth > 4 || ids.Count >= 128 || node.Id.Length is < 1 or > 64 ||
+				node.Id.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '-') || !ids.Add(node.Id) ||
+				node.Text.Length > 160 || node.Kind is not ("submenu" or "item" or "check" or "separator") ||
+				(node.Kind == "submenu" ? node.Items is null : node.Items is not null))
+				throw new CommandException("invalid_arguments", "Use unique bounded IDs/labels, valid kinds and at most four nesting levels/128 nodes.");
+			if ((node.Checked || node.Kind == "check") && !Checks)
+				throw new NotSupportedException("Native checked menu items currently require Mac Catalyst.");
+			if (node.Shortcut is not null)
+			{
+				if (node.Kind is not ("item" or "check"))
+					throw new CommandException("unsupported", "Native accelerators require an actionable menu item.");
+				Modifiers(node.Shortcut);
+			}
+			if (node.Items is not null) foreach (var child in node.Items) Node(child, depth + 1);
+		}
+		foreach (var node in nodes) Node(node, 0);
+	}
+	internal MenuInfo Install(MenuNode[] nodes)
+	{
+		if (!Supported) throw new NotSupportedException("Native menu bars require Mac Catalyst or Windows.");
+		ObjectDisposedException.ThrowIf(_disposed, this);
+		Validate(nodes);
+		var page = _context.Page;
+		var prepared = new Installation();
+		try
+		{
+			foreach (var node in nodes)
+			{
+				var bar = new MenuBarItem { Text = node.Text, IsEnabled = node.Enabled };
+				prepared.Items.Add(node.Id, (node, null, bar));
+				foreach (var child in node.Items!) bar.Add(Create(child, prepared));
+				prepared.Bars.Add(bar);
+			}
+		}
+		catch { prepared.Dispose(); throw; }
+		var previous = _current;
+		try
+		{
+			foreach (var bar in prepared.Bars) page.MenuBarItems.Add(bar);
+			foreach (var id in prepared.Items.Keys) SyncCheck(prepared, id);
+			if (previous is not null) foreach (var bar in previous.Bars) page.MenuBarItems.Remove(bar);
+			_current = prepared;
+			previous?.Dispose();
+			return Read();
+		}
+		catch
+		{
+			try
+			{
+				foreach (var bar in prepared.Bars) if (page.MenuBarItems.Contains(bar)) page.MenuBarItems.Remove(bar);
+				if (previous is not null) foreach (var bar in previous.Bars) if (!page.MenuBarItems.Contains(bar)) page.MenuBarItems.Add(bar);
+				_current = previous;
+			}
+			catch
+			{
+				_current = null;
+				previous?.Dispose();
+				throw new CommandException("menu_restore_failed", "Native menu replacement and restoration failed. Reinstall the owning window menu.");
+			}
+			finally { prepared.Dispose(); }
+			throw;
+		}
+	}
+	IMenuElement Create(MenuNode node, Installation installation)
+	{
+		if (node.Kind == "separator")
+		{
+			installation.Items.Add(node.Id, (node, null, null));
+			return new MenuFlyoutSeparator();
+		}
+		if (node.Kind == "submenu")
+		{
+			var sub = new MenuFlyoutSubItem { Text = node.Text, IsEnabled = node.Enabled };
+			installation.Items.Add(node.Id, (node, sub, null));
+			foreach (var child in node.Items!) sub.Add(Create(child, installation));
+			return sub;
+		}
+		var item = new MenuFlyoutItem { Text = node.Text, IsEnabled = node.Enabled };
+		installation.Items.Add(node.Id, (node, item, null));
+		if (node.Shortcut is not null)
+			item.KeyboardAccelerators.Add(new KeyboardAccelerator { Key = node.Shortcut.Key, Modifiers = Modifiers(node.Shortcut) });
+		EventHandler click = (_, _) =>
+		{
+			if (_disposed || !ReferenceEquals(_current, installation) ||
+				!installation.Items.TryGetValue(node.Id, out var current) || !current.Node.Enabled) return;
+			if (current.Node.Kind == "check")
+			{
+				installation.Items[node.Id] = (current.Node with { Checked = !current.Node.Checked }, current.Item, current.Bar);
+				SyncCheck(installation, node.Id);
+			}
+			_notifications.Publish("menus.clicked", new MenuClick(installation.Source, node.Id, installation.Items[node.Id].Node.Checked), MenuJsonContext.Default.MenuClick);
+		};
+		EventHandler changed = (_, _) => SyncCheck(installation, node.Id);
+		item.Clicked += click; item.HandlerChanged += changed;
+		installation.Handlers.Add((item, click, changed));
+		return item;
+	}
+	static void SyncCheck(Installation installation, string id)
+	{
+#if MACCATALYST
+		if (!installation.Items.TryGetValue(id, out var current) || current.Node.Kind != "check") return;
+		var state = current.Node.Checked ? global::UIKit.UIMenuElementState.On : global::UIKit.UIMenuElementState.Off;
+		if (current.Item?.Handler?.PlatformView is global::UIKit.UICommand command) command.State = state;
+		else if (current.Item?.Handler?.PlatformView is global::UIKit.UIAction action) action.State = state;
+#endif
+	}
+	internal MenuInfo Update(MenuUpdate args)
+	{
+		var installation = _current;
+		if (installation?.Source != args.SourceId || !installation.Items.TryGetValue(args.Id, out var current) || current.Node.Kind == "separator")
+			throw new CommandException("invalid_menu", "This menu item does not belong to the calling live installation.");
+		if (args.Text?.Length > 160) throw new CommandException("invalid_arguments", "Native labels are limited to 160 characters.");
+		if (args.Checked is not null && (!Checks || current.Node.Kind != "check"))
+			throw new NotSupportedException("Native checked updates require a Mac Catalyst check item.");
+		var node = current.Node with { Text = args.Text ?? current.Node.Text, Enabled = args.Enabled ?? current.Node.Enabled, Checked = args.Checked ?? current.Node.Checked };
+		installation.Items[args.Id] = (node, current.Item, current.Bar);
+		if (current.Item is not null) { current.Item.Text = node.Text; current.Item.IsEnabled = node.Enabled; }
+		if (current.Bar is not null) { current.Bar.Text = node.Text; current.Bar.IsEnabled = node.Enabled; }
+		SyncCheck(installation, args.Id);
+		return Read();
+	}
+	internal MenuItemState Item(MenuItemArgs args)
+	{
+		var installation = _current;
+		if (installation?.Source != args.SourceId || !installation.Items.TryGetValue(args.Id, out var current))
+			throw new CommandException("invalid_menu", "This item does not belong to the calling live menu installation.");
+		bool? check = null;
+		if (current.Node.Kind == "check")
+		{
+#if MACCATALYST
+			if (current.Item?.Handler?.PlatformView is global::UIKit.UICommand command) check = command.State == global::UIKit.UIMenuElementState.On;
+			else if (current.Item?.Handler?.PlatformView is global::UIKit.UIAction action) check = action.State == global::UIKit.UIMenuElementState.On;
+			else throw new CommandException("context_unavailable", "The native check item is not attached.");
+#else
+			throw new NotSupportedException("Native check item state requires Mac Catalyst.");
+#endif
+		}
+		return new(current.Item?.Text ?? current.Bar?.Text ?? current.Node.Text,
+			current.Item?.IsEnabled ?? current.Bar?.IsEnabled ?? current.Node.Enabled, check, current.Node.Kind);
+	}
+	void DocumentEnded()
+	{
+		var installation = _current;
+		Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => { if (ReferenceEquals(_current, installation)) Clear(); });
+	}
+	internal void Clear()
+	{
+		var installation = _current;
+		if (installation is null) return;
+		foreach (var bar in installation.Bars) _context.Page.MenuBarItems.Remove(bar);
+		installation.Dispose(); _current = null;
+	}
+	/// <summary>Detaches this installation's native controls/listeners.</summary>
+	public void Dispose()
+	{
+		_context.DocumentEnded -= DocumentEnded;
+		Clear(); _disposed = true;
+	}
+}
+/// <summary>Typed native menu rendering/updates and actual item-ID events for the calling window.</summary>
+public sealed class MenuProvider(HybridMenus menus, NativeDispatcher dispatcher) : IHybridCommandProvider
+{
+	/// <inheritdoc />
+	public void Register(CommandRegistry registry)
+	{
+		var json = MenuJsonContext.Default;
+		registry.RegisterTopic("menus.clicked");
+		registry.Register("menus.info", json.MenuOwner, json.MenuInfo, (args, op) => dispatcher.RunAsync(() => { menus.ValidateOwner(args.WindowId); return Task.FromResult(menus.Read()); }, op.Cancellation));
+		registry.Register("menus.install", json.MenuInstall, json.MenuInfo, (args, op) => dispatcher.RunAsync(() => { menus.ValidateOwner(args.WindowId); return Task.FromResult(menus.Install(args.Items)); }, op.Cancellation));
+		registry.Register("menus.update", json.MenuUpdate, json.MenuInfo, (args, op) => dispatcher.RunAsync(() => { menus.ValidateOwner(args.WindowId); return Task.FromResult(menus.Update(args)); }, op.Cancellation));
+		registry.Register("menus.item", json.MenuItemArgs, json.MenuItemState, (args, op) => dispatcher.RunAsync(() =>
+		{
+			menus.ValidateOwner(args.WindowId);
+			return Task.FromResult(menus.Item(args));
+		}, op.Cancellation));
+		registry.Register("menus.clear", json.MenuClear, json.MenuInfo, (args, op) => dispatcher.RunAsync(() =>
+		{
+			menus.ValidateOwner(args.WindowId);
+			if (menus.Read().SourceId != args.SourceId) throw new CommandException("invalid_menu", "This menu installation has been replaced.");
+			menus.Clear(); return Task.FromResult(menus.Read());
+		}, op.Cancellation));
+	}
+}
+sealed record MenuOwner(string WindowId);
+sealed record MenuClear(string WindowId, string SourceId);
+sealed record MenuInstall(string WindowId, MenuNode[] Items);
+sealed record MenuShortcut(string Key, string[] Modifiers);
+sealed record MenuNode(string Id, string Text, string Kind, bool Enabled, bool Checked, MenuNode[]? Items, MenuShortcut? Shortcut = null);
+sealed record MenuUpdate(string WindowId, string SourceId, string Id, string? Text = null, bool? Enabled = null, bool? Checked = null);
+sealed record MenuItemArgs(string WindowId, string SourceId, string Id);
+sealed record MenuItemState(string Text, bool Enabled, bool? Checked, string Kind);
+sealed record MenuInfo(bool Supported, bool SupportsChecked, string? SourceId);
+sealed record MenuClick(string SourceId, string Id, bool Checked);
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
+[JsonSerializable(typeof(MenuOwner))]
+[JsonSerializable(typeof(MenuClear))]
+[JsonSerializable(typeof(MenuInstall))]
+[JsonSerializable(typeof(MenuUpdate))]
+[JsonSerializable(typeof(MenuItemArgs))]
+[JsonSerializable(typeof(MenuItemState))]
+[JsonSerializable(typeof(MenuInfo))]
+[JsonSerializable(typeof(MenuClick))]
+partial class MenuJsonContext : JsonSerializerContext;

@@ -27,8 +27,8 @@ export interface Identity extends AppInfo, DeviceInfo, Diagnostics {}
  */
 export async function getIdentity(client: NativeClient): Promise<Identity> {
   const [app, device, diagnostics] = await Promise.all([
-    getAppInfo(client),
-    getDeviceInfo(client),
+    getAppInfo(),
+    getDeviceInfo(),
     client.invoke('sample.diagnostics', {}, value => {
       const v = object(value)
       return { architecture: text(v.architecture), pid: number(v.pid), startupId: text(v.startupId), startedAt: text(v.startedAt) }

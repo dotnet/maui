@@ -31,6 +31,13 @@
     {/key}
   </section>
   <Result {session} />
-  <OperationLog {session} />
+  {#if feature.guide}
+    <details class="guide-log" open={$session.resultStatus === 'Error'}>
+      <summary>Native operation log</summary>
+      <OperationLog {session} />
+    </details>
+  {:else}
+    <OperationLog {session} />
+  {/if}
   <HostDetails {session} />
 </main>

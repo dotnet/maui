@@ -7,6 +7,10 @@ using Maui.HybridApp.Essentials.AppInfo;
 using Maui.HybridApp.Essentials.Clipboard;
 using Maui.HybridApp.Essentials.DeviceInfo;
 using Maui.HybridApp.Essentials.Preferences;
+using Maui.HybridApp.Essentials.Battery;
+using Maui.HybridApp.Essentials.Display;
+using Maui.HybridApp.Essentials.FilePicker;
+using Maui.HybridApp.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
@@ -18,6 +22,12 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 
 public sealed class DependencyInjectionTests
 {
+	static readonly string[] NewCommands = ["battery.info", "display.info", "clipboard.hasText",
+		"preferences.get", "preferences.set", "preferences.contains", "preferences.delete", "preferences.clear",
+		"filePicker.pick", "filePicker.pickMultiple",
+		"file.openRead", "file.readBytes", "file.seek", "file.closeReader", "file.release",
+		"dialogs.alert", "dialogs.confirm", "dialogs.prompt", "dialogs.actionSheet", "remote.open", "remote.info", "remote.bounds", "remote.control", "remote.navigate", "menus.info", "menus.install", "menus.update", "menus.item", "menus.clear", "window.find", "window.closeCurrent", "window.activate", "window.center", "window.size", "window.position", "window.info", "window.title", "application.theme", "application.setTheme",
+		"window.bounds", "window.open", "window.list", "window.close"];
 	static ServiceProvider Build(ServiceCollection services) =>
 		services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 
@@ -54,13 +64,16 @@ public sealed class DependencyInjectionTests
 		Assert.Same(preferences, scope.ServiceProvider.GetRequiredService<IPreferences>());
 		Assert.Same(dispatcher, scope.ServiceProvider.GetRequiredService<NativeDispatcher>());
 		Assert.Same(clock, scope.ServiceProvider.GetRequiredService<TimeProvider>());
-		Assert.Equal(new[] { typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(ClipboardProvider), typeof(PreferencesProvider) },
+		Assert.Equal(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
+			typeof(WindowProvider), typeof(DialogProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(WindowEventsProvider), typeof(ApplicationProvider),
+			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(ClipboardProvider), typeof(PreferencesProvider) },
 			scope.ServiceProvider.GetServices<IHybridCommandProvider>().Select(provider => provider.GetType()));
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
-			"core.subscribe", "core.unsubscribe", "device.info", "preferences.read", "preferences.remove", "preferences.write" }, ready.Commands);
+			"core.subscribe", "core.unsubscribe", "device.info", "preferences.read", "preferences.remove", "preferences.write" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
+		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple" }, ready.InteractiveCommands);
 		Assert.Equal("host-policy.", ready.PreferenceNamespace);
 		Assert.Equal(8, ready.MaximumTextLength);
 		Assert.Equal("unknown_command", (await Call(hub, session, "camera.capture")).Error!.Code);
@@ -90,7 +103,7 @@ public sealed class DependencyInjectionTests
 		Assert.Same(hub, scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>());
 		Assert.Same(clipboard, scope.ServiceProvider.GetRequiredService<IClipboard>());
 		Assert.Same(preferences, scope.ServiceProvider.GetRequiredService<IPreferences>());
-		Assert.Equal(5, scope.ServiceProvider.GetServices<IHybridCommandProvider>().Count());
+		Assert.Equal(14, scope.ServiceProvider.GetServices<IHybridCommandProvider>().Count());
 		Assert.NotEqual(typeof(PluginProvider).Assembly, typeof(HybridAppTargetObject).Assembly);
 		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginArgs)));
 		var session = Guid.NewGuid().ToString("D");
@@ -98,7 +111,7 @@ public sealed class DependencyInjectionTests
 		Assert.Equal("di-host.", ready.PreferenceNamespace);
 		Assert.Equal(4, ready.MaximumTextLength);
 		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect", "core.subscribe",
-			"core.unsubscribe", "device.info", "plugin.disabled", "plugin.echo", "preferences.read", "preferences.remove", "preferences.write" }, ready.Commands);
+			"core.unsubscribe", "device.info", "plugin.disabled", "plugin.echo", "preferences.read", "preferences.remove", "preferences.write" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
 		Assert.Equal("Test app", (await Call(hub, session, "app.info")).Result!.Value.GetProperty("appName").GetString());
 		Assert.Equal("Android", (await Call(hub, session, "device.info")).Result!.Value.GetProperty("platform").GetString());
 		Assert.Equal("success", (await Call(hub, session, "preferences.write", "{\"key\":\"key\",\"value\":\"1234\"}")).Status);
@@ -298,21 +311,22 @@ public sealed class DependencyInjectionTests
 
 		public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
 		{
-			Assert.Equal(TimeSpan.FromSeconds(2), dueTime);
-			Assert.Equal(TimeSpan.FromSeconds(2), period);
-			var timer = new TrackedTimer(callback, state);
+			Assert.True(dueTime == TimeSpan.FromSeconds(2) || dueTime == TimeSpan.FromSeconds(20) || dueTime == TimeSpan.FromSeconds(300));
+			Assert.True(period == TimeSpan.FromSeconds(2) || period == Timeout.InfiniteTimeSpan);
+			var timer = new TrackedTimer(callback, state, period);
 			_timers.Add(timer);
 			return timer;
 		}
 
 		public void Tick()
 		{
-			foreach (var timer in _timers.Where(timer => !timer.Disposed))
+			foreach (var timer in _timers.Where(timer => !timer.Disposed && timer.Period == TimeSpan.FromSeconds(2)))
 				timer.Tick();
 		}
 
-		sealed class TrackedTimer(TimerCallback callback, object? state) : ITimer
+		sealed class TrackedTimer(TimerCallback callback, object? state, TimeSpan period) : ITimer
 		{
+			public TimeSpan Period { get; } = period;
 			public bool Disposed { get; private set; }
 			public bool Change(TimeSpan dueTime, TimeSpan period) => !Disposed;
 			public void Tick() => callback(state);

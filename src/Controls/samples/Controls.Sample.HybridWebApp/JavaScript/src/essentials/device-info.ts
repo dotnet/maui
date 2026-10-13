@@ -1,5 +1,4 @@
 import { connect, object, text } from '../core.js'
-import type { NativeClient } from '../core.js'
 
 /** Supported native device metadata; this preview does not expose every MAUI Essentials DeviceInfo property. */
 export interface DeviceInfo {
@@ -13,15 +12,14 @@ export interface DeviceInfo {
 
 /**
  * Reads the native device platform, operating-system version and model.
- * @param client - Exact connected client to use; omitted to lazily connect the shared document client.
  * @returns Validated device metadata from the native host.
  * @throws `NativeError` when native is unavailable, the host rejects the call, or the result is invalid.
  * @remarks
  * Requires a compatible protocol-1 host with the `device.info` provider registered.
  * The independently registered command returns only DeviceInfo fields;
  * process architecture, PID and startup diagnostics are deliberately excluded.
- * No user-agent or browser emulation exists. An explicit client is neither connected
- * nor disposed by this helper; shared-client calls follow the document session lifetime.
+ * No user-agent or browser emulation exists. The shared connection owns startup
+ * and disposal; calls follow this document's native session lifetime.
  * @example
  * ```ts
  * import { getDeviceInfo } from '@maui/api/essentials/device-info'
@@ -29,8 +27,8 @@ export interface DeviceInfo {
  * console.log(device.platform, device.osVersion, device.model)
  * ```
  */
-export async function getDeviceInfo(client?: NativeClient): Promise<DeviceInfo> {
-  return (client ?? await connect()).invoke('device.info', {}, value => {
+export async function getDeviceInfo(): Promise<DeviceInfo> {
+  return (await connect()).invoke('device.info', {}, value => {
     const v = object(value)
     return { platform: text(v.platform), osVersion: text(v.osVersion), model: text(v.model) }
   })

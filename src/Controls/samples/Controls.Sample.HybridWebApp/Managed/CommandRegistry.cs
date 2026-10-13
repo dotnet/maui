@@ -10,6 +10,16 @@ public sealed class CommandRegistry
 	readonly Dictionary<string, Func<JsonElement, Operation, Task<JsonElement>>> _commands = new(StringComparer.Ordinal);
 	readonly HashSet<string> _disabled = new(StringComparer.Ordinal);
 	readonly HashSet<string> _topics = new(StringComparer.Ordinal);
+	readonly Dictionary<string, (Func<Task> Start, Action Stop)> _topicSources = new(StringComparer.Ordinal);
+	readonly HashSet<string> _interactive = new(StringComparer.Ordinal);
+
+	/// <summary>Gets commands explicitly permitted to await OS interaction for up to five minutes.</summary>
+	public string[] InteractiveCommands => _interactive.Order(StringComparer.Ordinal).ToArray();
+
+	/// <summary>Checks the registered execution policy, not the command's name.</summary>
+	/// <param name="name">An explicitly registered command.</param>
+	/// <returns>Whether this command may hold the document lease while awaiting native UI.</returns>
+	public bool IsInteractive(string name) => _interactive.Contains(name);
 
 	/// <summary>Gets the registered command names, including explicitly disabled commands.</summary>
 	public string[] Names => _commands.Keys.Order(StringComparer.Ordinal).ToArray();
@@ -22,6 +32,18 @@ public sealed class CommandRegistry
 		if (!_topics.Add(name))
 			throw new InvalidOperationException($"Duplicate topic registration: {name}");
 	}
+	/// <summary>Registers an explicit native event source whose first/last document subscription owns OS handlers.</summary>
+	/// <param name="name">The registered topic.</param>
+	/// <param name="start">Starts the scoped native source; must handle UI-thread dispatch.</param>
+	/// <param name="stop">Invalidates queued delivery and detaches this source on unsubscribe/reset/disposal.</param>
+	public void RegisterTopic(string name, Func<Task> start, Action stop)
+	{
+		ArgumentNullException.ThrowIfNull(start); ArgumentNullException.ThrowIfNull(stop);
+		RegisterTopic(name);
+		_topicSources.Add(name, (start, stop));
+	}
+	internal Task StartTopicAsync(string name) => _topicSources.TryGetValue(name, out var source) ? source.Start() : Task.CompletedTask;
+	internal void StopTopic(string name) { if (_topicSources.TryGetValue(name, out var source)) source.Stop(); }
 
 	/// <summary>Checks whether the host explicitly registered a topic.</summary>
 	/// <param name="name">The topic name.</param>
@@ -36,8 +58,9 @@ public sealed class CommandRegistry
 	/// <param name="output">Source-generated output metadata.</param>
 	/// <param name="handler">The typed handler. Honor cancellation before and after native side effects.</param>
 	/// <param name="enabled">Whether host policy enables this command; this is not an OS permission.</param>
+	/// <param name="interactive">Whether this command may await OS UI for a bounded five-minute budget instead of twenty seconds.</param>
 	public void Register<TArgs, TResult>(string name, JsonTypeInfo<TArgs> input, JsonTypeInfo<TResult> output,
-		Func<TArgs, Operation, Task<TResult>> handler, bool enabled = true)
+		Func<TArgs, Operation, Task<TResult>> handler, bool enabled = true, bool interactive = false)
 	{
 		ValidateName(name);
 		ArgumentNullException.ThrowIfNull(handler);
@@ -62,6 +85,8 @@ public sealed class CommandRegistry
 			throw new InvalidOperationException($"Duplicate command registration: {name}");
 		if (!enabled)
 			_disabled.Add(name);
+		else if (interactive)
+			_interactive.Add(name);
 	}
 
 	/// <summary>Dispatches a registered command, rejecting unknown or disabled commands.</summary>
@@ -85,7 +110,7 @@ public sealed class CommandRegistry
 			throw new ArgumentException("Names must be 1–64 ASCII letters, digits, dots, underscores or hyphens.", nameof(name));
 	}
 
-	static void ValidateMetadata(JsonTypeInfo info)
+	internal static void ValidateMetadata(JsonTypeInfo info)
 	{
 		ArgumentNullException.ThrowIfNull(info);
 		if (info.OriginatingResolver is not JsonSerializerContext ||

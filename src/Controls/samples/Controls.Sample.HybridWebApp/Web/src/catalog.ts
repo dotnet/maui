@@ -1,5 +1,5 @@
-export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development'
-export interface Feature { id: string; title: string; category: string; priority: string; experiment?: Experiment; description: string; docs: string }
+export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme'
+export interface Feature { id: string; title: string; category: string; priority: string; experiment?: Experiment; description: string; docs: string; guide?: boolean }
 const maui = 'https://learn.microsoft.com/dotnet/maui/'
 const hybrid = `${maui}user-interface/controls/hybridwebview?view=net-maui-11.0`
 const feature = (id: string, title: string, category: string, experiment: Experiment, description: string, docs = hybrid): Feature =>
@@ -10,7 +10,7 @@ export const features: Feature[] = [
   feature('clipboard', 'Text clipboard', 'Essentials', 'clipboard', 'Copy text to the OS clipboard, then explicitly paste it back. Try Unicode, emoji, quotes and multiple lines. No automatic clipboard reads.', `${maui}platform-integration/data/clipboard`),
   feature('preferences', 'Preferences', 'Essentials', 'preferences', 'Save, read and remove one namespaced setting. Restart the native app to verify persistence. Never put secrets here.', `${maui}platform-integration/storage/preferences`),
   feature('arguments', 'Arguments and return values', 'Bridge', 'echo', 'An asynchronous native service round-trips a typed DTO containing text or null, a number, a boolean and an array. Each successful echo increments its native instance counter.'),
-  feature('registration', 'Custom command registration', 'Bridge', 'echo', 'SampleCommands registers typed handlers and JSON metadata explicitly. Add a provider without editing a forwarding switch. There is no attribute or TypeScript generator in this prototype.'),
+  feature('registration', 'Custom command registration', 'Bridge', 'echo', 'DI providers register typed handlers and their own JSON metadata explicitly. Add a provider without editing a forwarding switch. There is no attribute or TypeScript generator in this prototype.'),
   feature('modules', 'Typed JavaScript modules', 'Bridge', 'echo', 'The UI imports named clipboard, preferences, info and application helpers. Authored decoders validate native outputs. Wire strings belong to these modules, not UI handlers.'),
   feature('hub', 'One native target hub', 'Bridge', 'echo', 'One per-WebView HybridAppTargetObject exposes only Invoke(string). The .NET 11 generated invocation bridge routes into explicitly registered typed providers.'),
   feature('errors', 'Errors and operation log', 'Bridge', 'errors', 'Deliberately reject a native command. The operation log distinguishes native errors from transport failures, cancellation and successful results.'),
@@ -20,7 +20,7 @@ export const features: Feature[] = [
   feature('events', 'Events and subscriptions', 'Bridge', 'events', 'Subscribe to native service changes, echo a DTO to emit a change, then unsubscribe. One listener per topic per document; repeated subscription is rejected.'),
   feature('work', 'Progress and cancellation', 'Bridge', 'work', 'Start bounded asynchronous native work, receive correlated progress events and cancel it. Cancelled is a terminal state, never a success-shaped value.'),
   feature('readiness', 'Bridge bootstrap and readiness', 'Bridge', 'identity', 'Load the framework bridge from the native origin and connect a document session. Browser-only mode lists the catalog but never emulates native APIs.'),
-  feature('browser', 'Feature browser', 'Playground', 'development', 'Search implemented experiments, filter by category, and follow API documentation. Only implemented experiments are shown.'),
+  feature('browser', 'Feature browser', 'Development', 'development', 'Search implemented experiments, collapse navigation groups, and follow API documentation. Only implemented experiments are shown.'),
   feature('vite', 'Vite live development', 'Development', 'development', 'Edit the HTML title, TypeScript message, CSS surface and dynamically imported details module. Only frontend code reloads; native startup identity must stay unchanged.'),
   feature('offline', 'Packaged offline content', 'Development', 'development', 'Build and stage Web/dist explicitly before native asset collection. The packaged app uses this same playground UI and native bridge without Vite.'),
   feature('inspection', 'Native inspection and repeatable checks', 'Development', 'identity', 'Optional authenticated Debug probes inspect actual DOM/results and native startup identity. Runtime commands work without the inspector. Test mocks are never enabled in the app.'),
@@ -71,4 +71,35 @@ planned('P3', 'Development', [
   'Updates', 'Trimming and NativeAOT', 'Diagnostics and performance', 'Browser mocks and native automation',
 ], `${maui}deployment/`)
 
+function promote(title: string, id: string, category: string, experiment: Experiment, description: string, docs: string): void {
+  const entry = features.find(feature => feature.title === title && !feature.experiment)
+  if (!entry) throw new Error(`Missing backlog family: ${title}`)
+  Object.assign(entry, { id, category, experiment, description, docs })
+}
+promote('Window basics', 'windows', 'App & windows', 'windows',
+  'Read this native window, change its title and request desktop placement. Mobile resizing and positioning are explicitly unsupported.', `${maui}user-interface/controls/window`)
+promote('Multiple windows', 'multi-window', 'App & windows', 'windows',
+  'Open a known bundled page in a fresh window and provider scope. List or close children opened here. iPhone has no separate windows; internal routes are not OS deep links.', `${maui}user-interface/controls/window`)
+promote('Native dialogs', 'dialogs', 'App & windows', 'dialogs',
+  'Show an actual native alert, confirmation or text prompt on the calling page. User cancellation is normal; interactive calls have a bounded five-minute budget.', `${maui}user-interface/pop-ups`)
+promote('File picker', 'file-picker', 'Essentials', 'filePicker',
+  'Choose a file with the system document picker. Preview complete UTF-8 text up to 64 KiB; binary, other encodings and oversized files are rejected. No arbitrary file paths or saved handles.', `${maui}platform-integration/storage/file-picker`)
+promote('WebView controls', 'remote-webview', 'App & windows', 'remoteWebView',
+  'Load a real unbridged desktop native browser guest anchored to a measured slot inside the web UI. No iframe, separate window or native split-row layout.', `${maui}user-interface/controls/webview`)
+promote('Native menus, toolbars and context menus', 'menus', 'App & windows', 'menus',
+  'Use a real desktop native menu bar for scoped windows, internal navigation, reload and native About. Mobile menu bars are explicitly unsupported.', `${maui}user-interface/menu-bar`)
+promote('Theme and appearance', 'theme', 'App & windows', 'theme',
+  'Choose native application light/dark/system preference from TypeScript and apply effective native theme-change events to Svelte CSS. This is not a per-window or remote-site theme.', `${maui}user-interface/system-theme-changes`)
+promote('Battery', 'battery', 'Essentials', 'battery',
+  'Refresh native battery charge, power source and energy-saver state. No browser battery values or background monitoring.', `${maui}platform-integration/device/battery`)
+promote('Display and DPI', 'display', 'Essentials', 'display',
+  'Refresh main-display pixel dimensions, density, orientation and rotation from the native OS. These are not CSS viewport dimensions.', `${maui}platform-integration/device/display`)
+
 export const availableFeatures = features.filter(feature => feature.experiment)
+export const guidePages: Feature[] = [
+  { ...feature('welcome', 'Welcome to the playground', 'Welcome', 'welcome',
+    'A real web interface, a real native host. Explore the surface here; launch the MAUI app to try its native capabilities.'), priority: 'guide', guide: true },
+  { ...feature('showcase', 'Try it hands-on', 'Welcome', 'showcase',
+    'Change your own window, ask the OS for input and read the device. These quick actions use the same public SDK as the detailed feature pages.'), priority: 'guide', guide: true },
+]
+export const navigationPages = [...guidePages, ...availableFeatures]

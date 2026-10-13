@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Maui.HybridApp;
 
-/// <summary>Owns the bounded document session and command lifetime of one WebView; has no UI dependency.</summary>
+/// <summary>Owns the bounded document session and command lifetime of one WebView without executing UI operations itself.</summary>
 public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 {
 	const int MaximumRequestLength = 100000;
@@ -11,6 +11,7 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	readonly CommandRegistry _registry;
 	readonly Func<ReadyResult> _ready;
 	readonly Dictionary<string, CancellationTokenSource> _operations = new(StringComparer.Ordinal);
+	readonly HashSet<string> _interactiveOperations = new(StringComparer.Ordinal);
 	readonly HashSet<string> _subscriptions = new(StringComparer.Ordinal);
 	readonly HashSet<string> _seen = new(StringComparer.Ordinal);
 	readonly HashSet<string> _retiredSessions = new(StringComparer.Ordinal);
@@ -21,29 +22,51 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	string? _session;
 	DateTimeOffset _lastSeen;
 	bool _disposed;
+	NativeNotifications? _notifications;
 
 	/// <summary>Raised for a current, subscribed document while its originating operation is active.</summary>
 	/// <remarks>Hosts must marshal to their UI thread and recheck <see cref="IsCurrent"/> before sending. Disposal removes all listeners.</remarks>
 	public event Action<NativeEvent>? NativeEventReceived;
 
+	/// <summary>Raised when a document is retired; the host must marshal UI teardown to its owning thread.</summary>
+	public event Action? DocumentDisconnected;
+
 	/// <summary>Creates and registers an exclusive registry once from the owning scope's explicitly supplied providers.</summary>
 	/// <param name="providers">The scoped provider collection, including any explicitly registered external plugins.</param>
 	/// <param name="options">Immutable host policy used for connection capabilities.</param>
 	/// <param name="time">Optional clock for document leases.</param>
-	public HybridAppTargetObject(IEnumerable<IHybridCommandProvider> providers, HybridAppOptions options, TimeProvider? time = null)
-		: this(CreateRegistry(providers), options, time)
+	/// <param name="viewContext">Optional scoped page/window binding for the bundled bootstrap location.</param>
+	/// <param name="notifications">Optional scoped, typed native notification source.</param>
+	public HybridAppTargetObject(IEnumerable<IHybridCommandProvider> providers, HybridAppOptions options, TimeProvider? time = null,
+		UI.HybridViewContext? viewContext = null, NativeNotifications? notifications = null)
+		: this(CreateRegistry(providers), options, time, viewContext)
+	{
+		_notifications = notifications;
+		if (notifications is not null)
+		{
+			notifications.Received += Notify;
+		}
+	}
+
+
+	void Notify(string topic, JsonElement data, Func<bool>? isCurrent)
+	{
+		lock (_gate)
+			if (!_disposed && _session is not null && _registry.HasTopic(topic) && _subscriptions.Contains(topic) &&
+				(isCurrent is null || isCurrent()))
+				NativeEventReceived?.Invoke(new NativeEvent(1, _session, Guid.NewGuid().ToString("D"), topic, data));
+	}
+
+	HybridAppTargetObject(CommandRegistry registry, HybridAppOptions options, TimeProvider? time, UI.HybridViewContext? viewContext)
+		: this(registry, CreateReady(registry, options, viewContext), null, time)
 	{
 	}
 
-	HybridAppTargetObject(CommandRegistry registry, HybridAppOptions options, TimeProvider? time)
-		: this(registry, CreateReady(registry, options), null, time)
-	{
-	}
-
-	static Func<ReadyResult> CreateReady(CommandRegistry registry, HybridAppOptions options)
+	static Func<ReadyResult> CreateReady(CommandRegistry registry, HybridAppOptions options, UI.HybridViewContext? viewContext)
 	{
 		ArgumentNullException.ThrowIfNull(options);
-		return () => new ReadyResult(registry.Names, options.PreferenceNamespace, options.MaximumTextLength);
+		return () => new ReadyResult(registry.Names, options.PreferenceNamespace, options.MaximumTextLength,
+			registry.InteractiveCommands, InitialLocation: viewContext?.InitialLocation);
 	}
 
 	static CommandRegistry CreateRegistry(IEnumerable<IHybridCommandProvider> providers)
@@ -77,15 +100,19 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		var json = ProtocolJsonContext.Default;
 		_registry.Register("core.connect", json.EmptyArgs, json.ReadyResult, (_, _) =>
 			Task.FromResult(_ready()));
-		_registry.Register("core.subscribe", json.TopicArgs, json.Ack, (args, op) =>
+		_registry.Register("core.subscribe", json.TopicArgs, json.Ack, async (args, op) =>
 		{
 			ValidateTopic(args.Topic);
+			bool start;
 			lock (_gate)
 			{
 				op.Cancellation.ThrowIfCancellationRequested();
-				_subscriptions.Add(args.Topic);
+				start = _subscriptions.Add(args.Topic);
 			}
-			return Task.FromResult(new Ack(true));
+			try
+			{ if (start) await _registry.StartTopicAsync(args.Topic).ConfigureAwait(false); }
+			catch { lock (_gate) _subscriptions.Remove(args.Topic); throw; }
+			return new Ack(true);
 		});
 		_registry.Register("core.unsubscribe", json.TopicArgs, json.Ack, (args, op) =>
 		{
@@ -93,7 +120,8 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 			lock (_gate)
 			{
 				op.Cancellation.ThrowIfCancellationRequested();
-				_subscriptions.Remove(args.Topic);
+				if (_subscriptions.Remove(args.Topic))
+					_registry.StopTopic(args.Topic);
 			}
 			return Task.FromResult(new Ack(true));
 		});
@@ -120,6 +148,7 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	{
 		Request? message = null;
 		CancellationTokenSource? cancellation = null;
+		CancellationTokenSource? deadline = null;
 		try
 		{
 			if (request.Length > MaximumRequestLength || request.Any(character => character > 127))
@@ -152,13 +181,17 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 				_seenOrder.Enqueue(message.Id);
 				if (_seenOrder.Count > 256)
 					_seen.Remove(_seenOrder.Dequeue());
-				cancellation = CancellationTokenSource.CreateLinkedTokenSource(_document.Token);
-				cancellation.CancelAfter(TimeSpan.FromSeconds(20));
+				var interactive = _registry.IsInteractive(message.Command);
+				deadline = new CancellationTokenSource(TimeSpan.FromSeconds(interactive ? 300 : 20), _time);
+				cancellation = CancellationTokenSource.CreateLinkedTokenSource(_document.Token, deadline.Token);
 				_operations.Add(message.Id, cancellation);
+				if (interactive)
+					_interactiveOperations.Add(message.Id);
 			}
 			var operation = new Operation(message.Session, message.Id, cancellation.Token,
 				(topic, data) => Publish(message.Session, message.Id, topic, data));
-			var result = await _registry.DispatchAsync(message.Command, message.Args, operation).ConfigureAwait(false);
+			var result = await _registry.DispatchAsync(message.Command, message.Args, operation)
+				.WaitAsync(cancellation.Token).ConfigureAwait(false);
 			cancellation.Token.ThrowIfCancellationRequested();
 			return Encode(message, "success", result, null);
 		}
@@ -190,8 +223,14 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 				lock (_gate)
 				{
 					if (_operations.TryGetValue(message.Id, out var current) && ReferenceEquals(current, cancellation))
+					{
 						_operations.Remove(message.Id);
+						_interactiveOperations.Remove(message.Id);
+						if (_registry.IsInteractive(message.Command))
+							_lastSeen = _time.GetUtcNow();
+					}
 					cancellation.Dispose();
+					deadline?.Dispose();
 				}
 			}
 		}
@@ -266,7 +305,9 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	{
 		lock (_gate)
 		{
-			if (!_disposed && _session is not null && _time.GetUtcNow() - _lastSeen > TimeSpan.FromSeconds(15))
+			if (!_disposed && _session is not null &&
+				!_interactiveOperations.Any(id => _operations.TryGetValue(id, out var op) && !op.IsCancellationRequested) &&
+				_time.GetUtcNow() - _lastSeen > TimeSpan.FromSeconds(15))
 				ResetDocument();
 		}
 	}
@@ -281,16 +322,22 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 
 	void ResetDocument()
 	{
+		var hadDocument = _session is not null;
 		if (_session is not null)
 			_retiredSessions.Add(_session);
 		_document.Cancel();
 		_document.Dispose();
 		_document = new CancellationTokenSource();
 		_operations.Clear();
+		_interactiveOperations.Clear();
+		foreach (var topic in _subscriptions)
+			_registry.StopTopic(topic);
 		_subscriptions.Clear();
 		_seen.Clear();
 		_seenOrder.Clear();
 		_session = null;
+		if (hadDocument)
+			DocumentDisconnected?.Invoke();
 	}
 
 	/// <summary>Retires the document, cancels its work and releases the lease timer.</summary>
@@ -305,6 +352,12 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 			_document.Dispose();
 			_lease.Dispose();
 			NativeEventReceived = null;
+			DocumentDisconnected = null;
+			if (_notifications is not null)
+			{
+				_notifications.Received -= Notify;
+			}
+			_notifications = null;
 		}
 	}
 }

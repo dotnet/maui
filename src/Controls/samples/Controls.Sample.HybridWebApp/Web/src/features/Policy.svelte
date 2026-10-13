@@ -11,9 +11,9 @@
 </p>
 <div class="actions">
   <Action {session} action="missing" title="Try missing command" primary
-    onclick={() => { void session.run('Unknown native command', () => sample(session.client).missing()) }} />
+    onclick={() => sample(session.client).missing()} />
   <Action {session} action="disabled" title="Try disabled command"
-    onclick={() => { void session.run('Disabled native command', () => sample(session.client).disabled()) }} />
+    onclick={() => sample(session.client).disabled()} />
   <Action {session} action="invalid" title="Send invalid DTO"
-    onclick={() => { void session.run('Invalid native arguments', () => sample(session.client).invalid()) }} />
+    onclick={() => sample(session.client).invalid()} />
 </div>

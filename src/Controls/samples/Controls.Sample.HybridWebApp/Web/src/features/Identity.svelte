@@ -5,15 +5,13 @@
 
   let { session, reload }: FeatureProps = $props()
 
-  function read(): void {
-    void session.run('Read native identity', async () => {
+  async function read(): Promise<unknown> {
       const identity = await getIdentity(session.client)
       if (!session.disposed) {
         session.identityText = JSON.stringify(identity, null, 2)
         session.refresh()
       }
       return identity
-    })
   }
 </script>
 

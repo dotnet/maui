@@ -10,20 +10,32 @@ documentation](RELEASING.md#source-reference-and-docfxmicrosoft-learn)).
 | Import | Exports |
 | --- | --- |
 | `@maui/api` | `connect`, `disconnect`, `NativeClient`, `NativeError`; core types `Bridge`, `Json`, `Decoder`, `Ready`, `Operation`, `Progress` only |
-| `@maui/api/core` | Transport/lifetime API above; `loadNativeBridge`, `isNativeOrigin`, `asciiJson`; validators `object`, `text`, `number`, `boolean`, `nullableText`, `strings`, `ack`, `progress` |
-| `@maui/api/essentials/app-info` | `getAppInfo(client?)`; type `AppInfo` |
-| `@maui/api/essentials/device-info` | `getDeviceInfo(client?)`; type `DeviceInfo` |
-| `@maui/api/essentials/clipboard` | `clipboard(client?)`; type `ClipboardApi` (not the DOM `Clipboard`) |
-| `@maui/api/essentials/preferences` | `preferences(client?)`; types `Preferences`, `Preference` |
+| `@maui/api/core` | Infrastructure above, `configureBridge`, `resetBridge`, connection generation/readiness, `subscribeShared`, bootstrap and JSON validators |
+| `@maui/api/application` | Services `windows`, `window(id)`, `openWindow(options)`, `getTheme`, `setTheme`, `onThemeChanged`; theme types |
+| `@maui/api/essentials/app-info` | Service `getAppInfo()`; `AppInfo` |
+| `@maui/api/essentials/device-info` | Service `getDeviceInfo()`; `DeviceInfo` |
+| `@maui/api/essentials/clipboard` | Services `getText`, `setText`, `hasText`, `onContentChanged` |
+| `@maui/api/essentials/preferences` | Services `get`, `set`, `contains`, `remove`, `clear`; `PreferenceValue`, `PreferenceOptions` |
+| `@maui/api/essentials/battery` | Service `getBatteryInfo()`; `BatteryInfo` |
+| `@maui/api/essentials/display` | Service `getDisplayInfo()`; `DisplayInfo` |
+| `@maui/api/essentials/file-picker` | Services `pickFile(options?)`, `pickMultipleFiles(options?)`; resources `PickedFile`, `FileReader`; picker/chunk types |
+| `@maui/api/ui/windows` | Synchronous local acquisition `currentWindow(): Window`; single resource class `Window`; size/position/options/capability types |
+| `@maui/api/ui/dialogs` | Async services `alert(message?, options?)`, `confirm`, `prompt`, `actionSheet`; native option/result types |
+| `@maui/api/ui/remote-webview` | Capability `supportsBrowserView`; resource creation `createBrowserView`; `BrowserView`, geometry/navigation types |
+| `@maui/api/ui/menus` | Resource `Menu.create`; item resource `MenuItem`; definition/shortcut/patch/capability types |
 
 The earlier root re-export table described the code accurately, but mixed
 infrastructure with Essentials and process diagnostics. This unpublished preview
 now follows MAUI containers: features and feature DTOs are imported only from
-their Essentials subpaths. `@maui/api/app/info`, `getInfo` and SDK `Identity`
+their Essentials or UI subpaths. `@maui/api/app/info`, `getInfo` and SDK `Identity`
 were intentionally removed rather than retained as confusing aliases.
 
-Optional `client` means use the lazy shared connection. Supplying a client uses
-that exact instance: the helper does not connect/dispose it or attach listeners.
+All stock feature functions/factories are client-free. Infrastructure configures
+one shared connection per WebView document/realm before connect, and the sample
+bootstrap uses that same connection. Native windows have separate realms/scopes,
+not a process-global client. Resource handles capture their exact private client
+and generation; disconnect/reload cannot rebind an old handle. This unpublished
+preview removes factory/client/controller aliases rather than retaining two contracts.
 All modules are in one npm package. Feature subpaths depend on core transport
 types and validators, not Controls or the playground; no extra packages or
 transport framework are introduced by this organization.
@@ -46,13 +58,15 @@ the sample-owned `sample.diagnostics` command and decoded by `Web/src/native/sam
 That app-owned helper composes the installed AppInfo/DeviceInfo helpers with its
 own diagnostics decoder to preserve the existing reload-identity UI.
 
-`clipboard().writeText(text)` resolves the native boolean acknowledgement;
-`readText()` resolves `string | null`. No web clipboard fallback exists.
-`preferences().get(key)`, `.set(key, value)` and `.remove(key)` resolve
-`{ key: string; value: string | null }`; remove/missing value is null.
-This API handles only text settings. It does not expose a namespace override,
-clear-all operation or secure storage. Host metadata supplies the namespace;
-there is no sample namespace embedded in this library.
+Clipboard has direct `setText(text)`, `getText(): Promise<string|null>`,
+`hasText()` and `onContentChanged(listener)` with explicit unsubscribe.
+No browser clipboard fallback exists. Preferences use
+`get(key, defaultValue, options?)`, `set(key, primitive, options?)`, `contains`,
+`remove` and `clear`. String/bool/number/Date are supported with native numeric
+representation options; JS long values must be safe integers. Optional shared
+containers remain host-namespaced. Clear deletes only tracked owned keys, never
+the whole native store. Preferences are not SecureStorage or a JSON-object store.
+No sample namespace is embedded in the product.
 
 Each helper validates its result fields at runtime, including nullability.
 Core numeric validators require finite numbers. Inputs are typed but
@@ -61,6 +75,102 @@ TypeScript is not a security boundary and JavaScript callers can supply invalid
 values. The reference provider bounds text to 4096 UTF-16 code units and keys
 to 1–48 ASCII letters/digits/underscore/hyphen. Other hosts must define their
 limits consistently with their registration/contracts.
+
+`currentWindow()` is synchronous and performs no IPC. Its single `Window` handle
+offers async `id()`, `title()/setTitle`, `size()/setSize`, `position()/setPosition`,
+`url`, `capabilities`, `close`, `activate`, `center`, `onSizeChanged` and
+`onPositionChanged`. Identity is native-authoritative and async, never a fake
+placeholder or a title/route alias. Application `windows`, `window(id)` and
+`openWindow` return the same resource type, not CurrentWindow/ChildWindow DTOs.
+Acquisition retains native private generations; closed/reopened IDs do not let
+stale handles target a replacement. Duplicate IDs reject.
+
+```ts
+import * as app from '@maui/api/application'
+import { currentWindow } from '@maui/api/ui/windows'
+
+await currentWindow().setTitle('Hello World')
+const settings = await app.openWindow({
+  id: 'settings', url: 'index.html#/settings', title: 'Settings',
+})
+await settings.setSize({ width: 900, height: 650 })
+if ((await settings.capabilities()).center) await settings.center()
+```
+
+Bundle-relative URLs/query/fragments are generic frontend locations, not native
+route registrations. Remote/special-scheme/traversal destinations cannot inherit
+the trusted bridge through window opening. IDs are 1–64 ASCII
+letters/digits/dot/underscore/hyphen, unique and immutable within the app registry.
+New scopes isolate providers/counters, not the OS process. Separate windows are
+unsupported on iPhone. Mac/Windows desktop geometry uses logical units; Windows
+centering uses actual current-monitor work area/size/density. Mac/mobile center
+and Mac native position observation explicitly reject until a verified adapter exists.
+
+Dialogs use the calling native page for alerts, confirmations, prompts and action sheets;
+false confirmation or `{ cancelled: true, text: null }` prompt is normal user
+dismissal. Both dialog and file-picker commands require interactive handshake
+metadata for their bounded five-minute native budget.
+
+Options expose native labels/title/placeholder/initial value/maxLength/keyboard
+and flow direction; unsupported custom dialog kinds/layouts are not fabricated.
+These services return promises, not synchronous browser globals.
+
+`pickFile`/`pickMultipleFiles` select with actual MAUI pickerTitle/platform
+fileTypes. Selection returns metadata and a PickedFile resource, not contents.
+`openRead()` returns a distinct reader with bounded binary/incremental strict
+UTF-8 reads, partial-read/EOF states, actual seek where supported, and close.
+Reads/seek/close are serialized per reader. 65536 bytes is the per-message chunk
+budget, **not file capacity**; binary/large files remain genuine selected resources.
+Invalid UTF-8 rejects text decoding but binary reading is available from another
+reader. Folder/save/defaultPath require another adapter and reject here.
+No FullPath, arbitrary read path or persistent authority is exposed. Release
+unused files/readers; document teardown invalidates them. Treat file text as
+private, render it as text and omit it from logs.
+Battery and Display helpers read/refresh native snapshots without web fallbacks,
+subscriptions, sensor streaming or keep-screen-awake changes.
+
+`createBrowserView()` creates a hidden ordinary desktop guest, then accepts measured
+CSS slot/viewport/clipping bounds and allowlisted back/forward/reload/focus/hide/close
+controls. It is native composition, not an iframe or DOM element. Close on
+component teardown; hide before custom DOM overlays. Mobile guests reject
+explicitly. Remote content receives no native target, SDK, messages or inspector.
+Menus are TypeScript definitions/callbacks, not C# recipes. Use
+`const menu = Menu.create(definitions); await currentWindow().setMenu(menu)`,
+`await currentWindow().menu()` and `menu.item(id)` getter/setter resources.
+`setMenu(null)` removes. Item text/enabled/checked patches contain only the
+installation/window/item/property, preserve callbacks, and reject replaced handles.
+Explicit setters perform IPC; ordinary object assignment does not.
+Mac Catalyst checks use real UIKit state; Windows MAUI checks reject explicitly.
+Mac focused owning-page menus render in the app menubar, not separate per-hardware-
+window menubars. Mobile native menus/desktop guests reject; no HTML/iframe fallback.
+Scoped `menus.clicked` notifications carry native item/source IDs. A
+notification UUID is not an active operation's correlation ID.
+
+Theme is application-level: `getTheme`, `setTheme('system'|'light'|'dark')`,
+`onThemeChanged`. Native effective callbacks apply trusted frontend CSS; the
+native preference alone cannot paint the webpage, and remote websites are not
+force-themed. Geometry/theme/clipboard callbacks observe native sources,
+multiplex JS listeners and detach the last source; teardown suppresses stale events.
+
+## MAUI / Tauri parity audit
+
+This is a bounded implemented subset, not complete parity with either framework.
+Primary contracts: [MAUI APIs](https://learn.microsoft.com/dotnet/maui/),
+[Tauri dialog](https://v2.tauri.app/reference/javascript/dialog/),
+[filesystem](https://v2.tauri.app/reference/javascript/fs/),
+[window](https://v2.tauri.app/reference/javascript/api/namespacewindow/) and
+[menu](https://v2.tauri.app/reference/javascript/api/namespacemenu/).
+
+| Family | Actual implementation / difference |
+| --- | --- |
+| Picker/readers | MAUI PickAsync/PickMultipleAsync + FileResult.OpenReadAsync; Tauri-style distinct selection/read lifetimes. No save/folder/defaultPath/persistent path authority. |
+| Dialogs | Native MAUI Page options and promises; no arbitrary Tauri custom kinds/layouts. Cancellation is a normal result. |
+| Windows | MAUI title/size/position/activation/lifecycle plus guarded desktop center adapter. Frontend owns URL/router; generation token is private and developer ID is immutable. No OS deep-link activation in this milestone. |
+| Menus | Page.MenuBarItems/KeyboardAccelerators; actual Mac checks, Windows check gap explicit. Logical owning page becomes focused Mac app menu. Item updates supported; general append/prepend/remove/reparent trees remain future work. |
+| Clipboard/preferences | Text/change native clipboard; MAUI primitive preferences/defaults/existence/owned removal/clear/shared containers. No binary clipboard/secure storage/JSON store. |
+| Battery/display | Charge may be -1; native charge/state/power/energy-saver and main-display dimensions/density/orientation. Events, KeepScreenOn and all-monitor enumeration remain unimplemented. |
+| Browser guest | Ordinary desktop MAUI WebView in a measured clipped native surface, no bridge/inspector; not Tauri WebviewWindow or DOM iframe, not a DNS/subresource firewall. |
+| Theme/events | Native Application effective theme + coalesced actual window frames; Windows move source only. No per-window general theme or forced remote website theme. |
 
 ## Low-level client
 
@@ -87,7 +197,7 @@ The host must explicitly register `custom.greet` with matching native JSON
 metadata. No arbitrary native member invocation or command generation exists.
 The injected `Bridge` need not come from MAUI Controls or a MAUI virtual origin.
 `new NativeClient(bridge)` and its instance `connect()` do not invoke automatic
-bootstrap; the exact explicit client is used by all Essentials helpers.
+bootstrap. Stock features instead use core's configured shared connection.
 The shared root `connect()`/`loadNativeBridge()` remains MAUI-specific. See the
 [explicit transport example](../README.md#explicit-transport-without-maui-automatic-bootstrap).
 

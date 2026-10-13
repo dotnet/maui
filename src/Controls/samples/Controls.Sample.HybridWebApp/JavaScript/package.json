@@ -14,6 +14,10 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/core.js"
     },
+    "./application": {
+      "types": "./dist/application.d.ts",
+      "import": "./dist/application.js"
+    },
     "./essentials/app-info": {
       "types": "./dist/essentials/app-info.d.ts",
       "import": "./dist/essentials/app-info.js"
@@ -26,6 +30,34 @@
       "types": "./dist/essentials/clipboard.d.ts",
       "import": "./dist/essentials/clipboard.js"
     },
+    "./essentials/battery": {
+      "types": "./dist/essentials/battery.d.ts",
+      "import": "./dist/essentials/battery.js"
+    },
+    "./essentials/display": {
+      "types": "./dist/essentials/display.d.ts",
+      "import": "./dist/essentials/display.js"
+    },
+    "./essentials/file-picker": {
+      "types": "./dist/essentials/file-picker.d.ts",
+      "import": "./dist/essentials/file-picker.js"
+    },
+    "./ui/windows": {
+      "types": "./dist/ui/windows.d.ts",
+      "import": "./dist/ui/windows.js"
+    },
+    "./ui/dialogs": {
+      "types": "./dist/ui/dialogs.d.ts",
+      "import": "./dist/ui/dialogs.js"
+    },
+    "./ui/remote-webview": {
+      "types": "./dist/ui/remote-webview.d.ts",
+      "import": "./dist/ui/remote-webview.js"
+    },
+    "./ui/menus": {
+      "types": "./dist/ui/menus.d.ts",
+      "import": "./dist/ui/menus.js"
+    },
     "./essentials/preferences": {
       "types": "./dist/essentials/preferences.d.ts",
       "import": "./dist/essentials/preferences.js"
@@ -36,6 +68,12 @@
     "dist/index.d.ts",
     "dist/core.js",
     "dist/core.d.ts",
+    "dist/application.js",
+    "dist/application.d.ts",
+    "dist/internal/window-ownership.js",
+    "dist/internal/window-ownership.d.ts",
+    "dist/internal/menu-installation.js",
+    "dist/internal/menu-installation.d.ts",
     "dist/essentials/app-info.js",
     "dist/essentials/app-info.d.ts",
     "dist/essentials/device-info.js",
@@ -44,6 +82,20 @@
     "dist/essentials/clipboard.d.ts",
     "dist/essentials/preferences.js",
     "dist/essentials/preferences.d.ts",
+    "dist/essentials/battery.js",
+    "dist/essentials/battery.d.ts",
+    "dist/essentials/display.js",
+    "dist/essentials/display.d.ts",
+    "dist/essentials/file-picker.js",
+    "dist/essentials/file-picker.d.ts",
+    "dist/ui/windows.js",
+    "dist/ui/windows.d.ts",
+    "dist/ui/dialogs.js",
+    "dist/ui/dialogs.d.ts",
+    "dist/ui/remote-webview.js",
+    "dist/ui/remote-webview.d.ts",
+    "dist/ui/menus.js",
+    "dist/ui/menus.d.ts",
     "README.md",
     "docs/API.md",
     "docs/PROTOCOL.md",

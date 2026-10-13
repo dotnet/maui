@@ -13,6 +13,6 @@
 </p>
 <div class="actions">
   <Action {session} action="identity" title="Read native startup identity" primary
-    onclick={() => { void session.run('Read native startup identity', () => getIdentity(session.client)) }} />
+    onclick={() => getIdentity(session.client)} />
   <Action {session} action="reload" title="Reload frontend" onclick={reload} />
 </div>
