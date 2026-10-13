@@ -14,8 +14,15 @@ public class Issue34975 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellTitleViewWithXNameShouldNotLeakMemory()
 	{
-		App.WaitForElement("NavigateButton");
-		App.Tap("NavigateButton");
+		// Render the second instance so accessibility can release its reference to the first.
+		for (int i = 0; i < 2; i++)
+		{
+			App.WaitForElement("NavigateButton");
+			App.Tap("NavigateButton");
+			App.WaitForElement("SecondPageLabel");
+			App.Tap("ReturnButton");
+			App.WaitForNoElement("SecondPageLabel");
+		}
 
 		App.WaitForElement("CheckMemoryButton");
 		App.Tap("CheckMemoryButton");

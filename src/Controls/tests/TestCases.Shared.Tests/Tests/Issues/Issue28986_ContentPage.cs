@@ -7,13 +7,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue28986_ContentPage : _IssuesUITest
 {
-    public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
+	public override string Issue => "Test SafeArea ContentPage for per-edge safe area control";
 
-    public Issue28986_ContentPage(TestDevice device) : base(device)
-    {
-    }
+	protected override bool ResetAfterEachTest => true;
 
-    [Test]
+	public Issue28986_ContentPage(TestDevice device) : base(device)
+	{
+	}
+
+	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaMainGridBasicFunctionality()
 	{
@@ -136,6 +138,10 @@ public class Issue28986_ContentPage : _IssuesUITest
 	public void SafeAreaNoWhiteSpaceAfterKeyboardDismissAndEdgeToggle()
 	{
 		App.WaitForElement("ContentGrid");
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
+		Assert.That(App.WaitForKeyboardToHide(), Is.True,
+			"Keyboard should be hidden before measuring the baseline safe area");
 
 		App.Tap("GridResetAllButton");
 		var baselinePosition = App.WaitForElement("ContentGrid").GetRect();

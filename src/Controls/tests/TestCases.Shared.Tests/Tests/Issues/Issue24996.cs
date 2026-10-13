@@ -21,11 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			for (int i = 0; i < 4; i++)
 			{
 				App.Tap("Stats");
-				// The app updates the "Stats" text asynchronously ~100ms after the tap.
-				// Waiting only for the element to exist (WaitForElement) races with that
-				// update and can read stale text, so wait for the expected text instead.
-				bool textUpdated = App.WaitForTextToBePresentInElement("Stats", "Lvl1[0/0]");
-				Assert.That(textUpdated, Is.True);
+				bool completed = App.WaitForTextToBePresentInElement("Stats", $"Step {i + 1}:");
+				Assert.That(completed, Is.True, $"Translation step {i + 1} did not complete.");
+				Assert.That(App.FindElement("Stats").GetText(), Does.Contain("Lvl1[0/0]"));
 			}
 		}
 	}

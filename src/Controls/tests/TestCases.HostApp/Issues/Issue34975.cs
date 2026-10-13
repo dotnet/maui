@@ -18,45 +18,42 @@ public class Issue34975 : Shell
 		{
 			Text = "Check Memory",
 			AutomationId = "CheckMemoryButton",
-			IsVisible = false,
 		};
 
 		var statusLabel = new Label
 		{
-			Text = "1. Tap Navigate, then Tap Check Memory",
+			Text = "Navigate and return twice, then tap Check Memory",
 			FontSize = 14,
 			HorizontalOptions = LayoutOptions.Center,
 			AutomationId = "StatusLabel",
 		};
 
-		WeakReference[] pageRefs = [];
+		Issue34975SecondPage.Instances.Clear();
 
 		navigateButton.Clicked += async (s, e) =>
 		{
-			Issue34975SecondPage.Instances.Clear();
 			await Shell.Current.GoToAsync("Issue34975_second");
-			await Shell.Current.GoToAsync("..");
-			await Task.Delay(500);
-			pageRefs = Issue34975SecondPage.Instances.ToArray();
-
-			// Round 2: on macCatalyst under Appium, the accessibility subsystem holds
-			// native refs to the most-recently-visible page. A second navigation
-			// replaces those refs, releasing Round 1's page for GC.
-			await Shell.Current.GoToAsync("Issue34975_second");
-			await Shell.Current.GoToAsync("..");
-
-			checkButton.IsVisible = true;
-			statusLabel.Text = "Now tap Check Memory";
 		};
 
 		checkButton.Clicked += async (s, e) =>
 		{
+			if (Issue34975SecondPage.Instances.Count != 2)
+			{
+				statusLabel.Text = $"Expected two rendered page instances, found {Issue34975SecondPage.Instances.Count}";
+				Console.Error.WriteLine(statusLabel.Text);
+				return;
+			}
+
+			var pageRefs = Issue34975SecondPage.Instances.Take(1).ToArray();
 			statusLabel.Text = "Checking...";
 			try
 			{
 				await GarbageCollectionHelper.WaitForGC(5000, pageRefs);
 			}
-			catch { }
+			catch (Exception ex) when (ex.Message == "Assertion timed out")
+			{
+				// A retained first page must still be reported as a failed memory check.
+			}
 
 			var alive = pageRefs.Count(wr => wr.IsAlive);
 			statusLabel.Text = $"Still alive: {alive}";

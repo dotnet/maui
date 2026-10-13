@@ -98,6 +98,7 @@ public partial class BlazorWebViewTests
 	[InlineData("android-app")]
 	public async Task StructuredIntentUriWithExplicitComponentDoesNotLaunchActivity(string uriScheme)
 	{
+		var originalActivity = await GetTestActivityAsync();
 		var activityLaunch = ActivityLaunchMonitor<ExplicitIntentTestActivity>.PrepareForLaunch();
 		var intentUri = uriScheme == "intent"
 			? $"intent:#Intent;component={ExternalNavigationTestData.ApplicationId}/{ExternalNavigationTestData.ExplicitActivityName};S.test=value;end"
@@ -113,12 +114,14 @@ public partial class BlazorWebViewTests
 		finally
 		{
 			ActivityLaunchMonitor<ExplicitIntentTestActivity>.Reset();
+			await RestoreTestActivityAsync(originalActivity);
 		}
 	}
 
 	[Fact]
 	public async Task IntentUriWithoutBrowsableHandlerDoesNotLaunchActivity()
 	{
+		var originalActivity = await GetTestActivityAsync();
 		var activityLaunch = ActivityLaunchMonitor<NonBrowsableIntentTestActivity>.PrepareForLaunch();
 		var intentUri =
 			$"intent://open/item#Intent;scheme={ExternalNavigationTestData.NonBrowsableScheme};package={ExternalNavigationTestData.ApplicationId};action={ExternalNavigationTestData.NonBrowsableAction};end";
@@ -133,12 +136,14 @@ public partial class BlazorWebViewTests
 		finally
 		{
 			ActivityLaunchMonitor<NonBrowsableIntentTestActivity>.Reset();
+			await RestoreTestActivityAsync(originalActivity);
 		}
 	}
 
 	[Fact]
 	public async Task IntentUriWithBrowsableHandlerLaunchesActivity()
 	{
+		var originalActivity = await GetTestActivityAsync();
 		var activityLaunch = ActivityLaunchMonitor<BrowsableIntentTestActivity>.PrepareForLaunch();
 		var intentUri =
 			$"intent://open/item/42#Intent;scheme={ExternalNavigationTestData.BrowsableScheme};package={ExternalNavigationTestData.ApplicationId};action={ExternalNavigationTestData.BrowsableAction};S.source=blazor;i.highlight=7;B.preview=true;end";
@@ -158,8 +163,31 @@ public partial class BlazorWebViewTests
 		finally
 		{
 			ActivityLaunchMonitor<BrowsableIntentTestActivity>.Reset();
+			await RestoreTestActivityAsync(originalActivity);
 		}
 	}
+
+	Task<global::Android.App.Activity> GetTestActivityAsync() =>
+		InvokeOnMainThreadAsync(() => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity
+			?? throw new InvalidOperationException("The intent test requires a current Android activity."));
+
+	Task RestoreTestActivityAsync(global::Android.App.Activity activity) =>
+		InvokeOnMainThreadAsync(async () =>
+		{
+			// Sanitized intents can open Android's resolver without launching the monitored activity.
+			if (!activity.HasWindowFocus)
+			{
+				using var intent = new Intent(activity, activity.Class);
+				intent.AddFlags(ActivityFlags.ReorderToFront | ActivityFlags.SingleTop);
+				activity.StartActivity(intent);
+			}
+
+			await Microsoft.Maui.DeviceTests.AssertHelpers.AssertEventually(
+				() => ReferenceEquals(Microsoft.Maui.ApplicationModel.Platform.CurrentActivity, activity)
+					&& activity.HasWindowFocus,
+				timeout: (int)ActivityLaunchTimeout.TotalMilliseconds,
+				message: "The test activity did not regain focus after external navigation.");
+		});
 
 	async Task NavigateToExternalUriAsync(string uri, string uriScheme = "intent")
 	{

@@ -12,4 +12,7 @@ public partial class Issue34975SecondPage : ContentPage
 		InitializeComponent();
 		Instances.Add(new WeakReference(this));
 	}
+
+	async void OnReturnClicked(object sender, EventArgs e)
+		=> await Shell.Current.GoToAsync("..");
 }
