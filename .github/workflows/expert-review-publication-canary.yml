@@ -9,7 +9,7 @@ on:
         description: Approved upstream PR
         required: true
         type: choice
-        options: ['39361', '39360', '39359', '39357', '39353', '39346', '39345', '39344', '39343', '39342']
+        options: ['39361', '39360', '39359', '39357', '39353', '39346', '39345', '39344', '39343', '39342', '37137']
       source_run:
         description: Successful first-attempt expert run in kubaflo/maui
         required: true
@@ -45,7 +45,7 @@ jobs:
           script: |
             const number = Number(process.env.PR_NUMBER);
             const runId = process.env.SOURCE_RUN;
-            const approved = [39361, 39360, 39359, 39357, 39353, 39346, 39345, 39344, 39343, 39342];
+            const approved = [39361, 39360, 39359, 39357, 39353, 39346, 39345, 39344, 39343, 39342, 37137];
             if (!approved.includes(number) || !/^[1-9][0-9]*$/.test(runId)) {
               throw new Error('Unexpected publication target or evidence run.');
             }
