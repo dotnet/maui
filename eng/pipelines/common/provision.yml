@@ -545,6 +545,7 @@ steps:
   - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK (maui cli)'
     condition: succeeded()
+    retryCountOnTaskFailure: 2
 
   - pwsh: |
       $sourceDirectory = '/etc/apt/sources.list.d'

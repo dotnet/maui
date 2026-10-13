@@ -1075,14 +1075,50 @@ string GetMSBuildForwardingLoggerPath()
     var loggerDir = MakeAbsolute(Directory("./artifacts/msbuildlogger"));
     EnsureDirectoryExists(loggerDir);
     var loggerZip = loggerDir.CombineWithFilePath("msbuildlogger.zip");
+    var loggerDll = loggerDir.CombineWithFilePath("Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll");
 
-    if (!FileExists(loggerZip))
+    if (!FileExists(loggerDll))
     {
-        DownloadFile(loggerUrl, loggerZip.FullPath);
+        const int maxAttempts = 3;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                DownloadFile(loggerUrl, loggerZip.FullPath);
+                break;
+            }
+            catch (Exception ex) when (attempt < maxAttempts && IsTransientLoggerDownloadFailure(ex))
+            {
+                Warning("MSBuild logger download attempt {0}/{1} failed: {2}", attempt, maxAttempts, ex.Message);
+                if (FileExists(loggerZip))
+                    DeleteFile(loggerZip);
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(attempt * 2));
+            }
+        }
+
         Unzip(loggerZip.FullPath, loggerDir.FullPath);
+        if (!FileExists(loggerDll))
+            throw new InvalidOperationException("The downloaded archive did not contain the MSBuild forwarding logger.");
     }
 
-    var loggerArg = $"-dl:CentralLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"*ForwardingLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"";
+    var loggerArg = $"-dl:CentralLogger,\"{loggerDll}\"*ForwardingLogger,\"{loggerDll}\"";
 
     return loggerArg;
+}
+
+bool IsTransientLoggerDownloadFailure(Exception exception)
+{
+    if (exception is AggregateException aggregate)
+    {
+        var innerExceptions = aggregate.Flatten().InnerExceptions;
+        return innerExceptions.Count > 0 && innerExceptions.All(IsTransientLoggerDownloadFailure);
+    }
+
+    if (exception is System.Net.Http.HttpRequestException request)
+        return request.StatusCode == null ||
+            request.StatusCode == System.Net.HttpStatusCode.RequestTimeout ||
+            (int)request.StatusCode == 429 ||
+            (int)request.StatusCode >= 500;
+
+    return exception is System.Threading.Tasks.TaskCanceledException;
 }
