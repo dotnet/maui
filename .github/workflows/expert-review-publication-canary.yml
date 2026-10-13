@@ -58,6 +58,8 @@ jobs:
             const { data: pr } = await github.rest.pulls.get({
               ...context.repo, pull_number: number
             });
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('authorized', 'true');
             if (pr.state !== 'open') throw new Error('The approved PR is closed.');
             const { data: run } = await github.rest.actions.getWorkflowRun({
               owner: 'kubaflo', repo: 'maui', run_id: runId
@@ -78,10 +80,9 @@ jobs:
                 throw new Error(`The independent ${name} evidence job did not succeed.`);
               }
             }
-            core.setOutput('head_sha', pr.head.sha);
             core.setOutput('evidence_sha', run.head_sha);
-            core.setOutput('authorized', 'true');
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: always() && steps.authority.outputs.authorized == 'true'
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
