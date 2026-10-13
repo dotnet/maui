@@ -413,6 +413,8 @@ All comments are buffered into **one COMMENT review**, pinned to the reviewed
 commit. Prior feedback prevents duplicate inline findings. Every authorized
 request publishes its own summary, even when it finds nothing new or repeats
 an earlier result; run markers prevent duplicate publication within that run.
+Publication uses the repository-scoped Actions token and appears as
+`github-actions[bot]`; it does not require a MauiBot publishing credential.
 
 The summary is distinct from AzDO's `AI Summary` and does not hide or replace
 it. **Complete** includes a concise summary even with zero new findings;
