@@ -5,6 +5,7 @@ This guide explains the automated investigation commands used in dotnet/maui:
 - `/review`
 - `/review tests`
 - `/review performance`
+- `/review expert-review`
 - `/evaluate-tests`
 - `/issue triage` (on open issues)
 - `/issue trace-regression` (on issues)
@@ -19,6 +20,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 | `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
+| `/review expert-review` | Repository users with write, maintain, or admin access | Runs only the read-only MAUI expert reviewer on GitHub, with independent GPT dimension passes. | Posts one consolidated COMMENT review with inline findings and an `Expert Review` summary. |
 | `/evaluate-tests` | Repository users with write, maintain, or admin access | Evaluates test quality and coverage on an open PR with test source changes. | Posts one test evaluation report. |
 | `/issue triage` | Repository users with write, maintain, or admin access | Applies evidence-backed manual labels to an open issue. | Labels only; explanation retained in Actions artifacts, not a public report. |
 | `/issue trace-regression` | Repository users with write, maintain, or admin access | Traces an issue's reported regression through release boundaries and source history to candidate introducing commits or PRs. | Posts one expandable `Regression Trace` comment on the issue and hides older reports. |
@@ -41,7 +43,8 @@ current effective repository permission, not the team name alone.
 | [`/evaluate-tests`](../workflows/copilot-evaluate-tests.md) | Native roles accept write/maintain/admin. The compiled association prefilter retains OWNER/MEMBER/COLLABORATOR; collaborator access includes repository write access, not only public organization membership. Requires a PR comment and an open PR with test source changes. |
 | [`/review tests`](../workflows/copilot-review-tests.md) | Native roles, exact-command authorization/minimization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR; reporting uses the triggering target. |
 | [`/review performance`](../workflows/copilot-review-performance.md) | Native roles, pre-activation, publication reauthorization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR and trusted default-branch tooling; pinned evidence/report validation still applies. |
-| [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review tests` and `/review performance` are separate workflows; `/review rerun` is unsupported. |
+| [`/review expert-review`](../workflows/copilot-review-expert.md) | Native roles, exact human-command intake, collector, publisher and completion recheck current write/maintain/admin. Requires an open PR, default-branch infrastructure and a fresh run. PAT-pool access follows successful frozen-context collection; completion verifies the actual review receipt. |
+| [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review tests`, `/review performance` and `/review expert-review` are separate workflows; `/review rerun` is unsupported. |
 | [`/evaluate-skills`](../workflows/skill-validation.yml) | The slash gate accepts write/maintain/admin on PR comments. Static-only mode can disable live evaluation independently of caller access; trusted-source and evaluation-content validation still apply. |
 | [`/rebase`](../workflows/rebase.yml) | The commenter must have write/maintain/admin and post exactly `/rebase` on an open PR. Conflicts or unavailable maintainer edits can prevent branch updates after authorization. |
 | [`/backport [to] <branch>`](../workflows/backport.yml) | Delegates to `dotnet/arcade`'s `backport-base.yml@main`; its current caller gate accepts write/admin, so partner write access qualifies. Requires a merged source PR and an existing target branch; upstream behavior can change independently. |
@@ -67,6 +70,10 @@ Azure authorization.
 ## Choosing the right command
 
 Use `/review` when you want the complete automated PR review. This is the normal entry point for maintainers reviewing a PR.
+
+Use `/review expert-review` for the experimental GitHub-hosted expert reviewer
+alone: code/history review and inline findings, without the AzDO test gate,
+fix candidates, UI tests, CI attribution, review labels or merge verdict.
 
 Use `/review tests` when the question is specifically about CI/test failures, for example:
 
@@ -302,9 +309,10 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 5. queues the DevDiv `maui-copilot` Azure DevOps pipeline;
 6. minimizes (collapses) the command comment as resolved once authorized.
 
-The workflow intentionally does not handle `/review tests` or `/review performance`;
+The workflow intentionally does not handle `/review tests`, `/review performance`
+or `/review expert-review`;
 those subcommands belong to their focused gh-aw workflows. The full-review
-missed-command recovery and rerun option parser also exclude both subcommands.
+missed-command recovery and rerun option parser also exclude these subcommands.
 
 GitHub Actions webhook deliveries can occasionally be delayed or dropped during an Actions incident. A deterministic scheduled fallback (`.github/workflows/review-trigger-recovery.yml`) polls recent commands, waits 25 minutes so both bounded trigger jobs have time to finish, rechecks the commenter's current repository permission, and dispatches the same trusted review workflow. The default-branch commit used by the first scheduled run is a permanent lower bound, preventing already-handled commands from being replayed when the fallback is introduced. Processed commands are marked so a delayed webhook cannot trigger a duplicate review.
 
@@ -340,6 +348,136 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 7. review labels.
 
 The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
+
+## `/review expert-review`: standalone expert review
+
+Post exactly `/review expert-review` as a new standalone human comment on an
+open PR. Edited comments, issues, quoted/fenced commands, extra arguments,
+other subcommands and unauthorized users do not activate this lane. It never
+queues AzDO, including through full-review missed-command recovery. Per-PR
+concurrency uses the maximum pending queue so unrelated comments cannot
+replace an authorized pending request.
+
+The gh-aw source is
+[`copilot-review-expert.md`](../workflows/copilot-review-expert.md), paired with
+its generated `.lock.yml`. The hosted adapter
+[`ghaw-expert-reviewer.agent.md`](../agents/ghaw-expert-reviewer.agent.md) reuses
+the canonical [`maui-expert-reviewer.md`](../agents/maui-expert-reviewer.md);
+the 31-dimension rulebook is not duplicated. The primary expert, its fresh
+single-level dimension workers, and the separately configured threat detector
+all use **`gpt-5.3-codex`**. The primary review sandbox's inference-proxy
+allowlist also blocks non-GPT requests, including worker requests. The pinned
+gh-aw version does not propagate that allowlist to the separate detector:
+its model is explicitly pinned and delegation is forbidden by its prompt.
+Standard Copilot proxy routing does not substitute unavailable models.
+There is no Auto/model-alias fallback or non-GPT worker.
+The existing `copilot-pat-pool` supplies Copilot authentication; no new
+secret, Azure pipeline or service connection is needed.
+
+The four canonical waves are preserved: code-first briefing and platform/
+dimension routing, independent passes in batches of at most six, candidate
+validation against surrounding source/callers/tests/blame, and required
+findings-file output. Path routing takes the union of matching rows; Logic
+and Correctness, Regression Prevention and Complexity Reduction always run.
+Only test source is inspected: no builds, analyzers, tests, native devices,
+repro applications or PR-controlled scripts execute. The workflow does not
+invoke the full `pr-review` or `code-review` orchestration, produce a candidate
+patch, change source/labels, approve or request changes.
+
+Trusted collection freezes the infrastructure, PR head, base and merge-base,
+full diff, changed paths, linked issue context, and all three feedback surfaces:
+review bodies, inline comments and issue comments. Narrative stays separate
+until the independent briefing. Full feedback is retained, with an explicit
+bounded-collection failure instead of silent truncation. PR source is a
+separate read-only snapshot; its `.github/` cannot replace trusted rules.
+The existing regression scanner uses its six-month/20-PR-per-file bounds with
+a frozen current diff and changed-path list, pinned base and strict evidence
+mode. Failed retrieval is a coverage gap, not CLEAN.
+
+Each independent result is `dimensions/{id}.json` with exactly `dimension`
+(integer), `complete` (boolean, not `completed`), and `findings` (the canonical
+array, including `[]`). Both the primary reviewer and trusted publisher
+validate this contract; worker text is not evidence of completion. Linked
+issue collection is bounded to 20 referenced issues, with an explicit gap
+when that bound is exceeded.
+Finding headers use only `critical`, `major`, `moderate`, or `minor`; aliases
+such as `medium` are invalid, including in discarded worker candidates.
+
+A fresh native safe-output job imports bounded regular result files, checks
+the exact schema and persisted worker completion, reauthorizes the requester,
+and rechecks the open PR and frozen head/base. It stages up to 15 ordinary
+findings plus the canonical committed-credential and archive/path-escape
+exceptions (up to 17 total), preserving the dimension-31 severity cap.
+Credential values must never appear in findings. Exact RIGHT-side anchors
+become inline comments; legitimate file-level/unplaceable findings remain in
+the review body rather than disappearing or moving to an unrelated line.
+All comments are buffered into **one COMMENT review**, pinned to the reviewed
+commit. Prior feedback prevents duplicate inline findings. Every authorized
+request publishes its own summary, even when it finds nothing new or repeats
+an earlier result; run markers prevent duplicate publication within that run.
+Publication uses the repository-scoped Actions token and appears as
+`github-actions[bot]`; it does not require a MauiBot publishing credential.
+
+The summary is distinct from AzDO's `AI Summary` and does not hide or replace
+it. It uses the same compact author/commit header, Scope/Commit badges, and
+closed **Expert Analysis** and **Follow-up** accordions as the other review
+reports. Status and new-finding counts stay visible; coverage, validation,
+unplaced findings, evidence gaps, and the source-only limitation are inside
+Expert Analysis. Already published inline findings are counted separately,
+not reported as a clean review. There are no visible workflow or producer-run
+links, including in stale/failure notices; hidden run/result markers and
+publication receipts retain provenance and deduplication.
+**Complete** includes a concise summary even with zero new findings;
+**incomplete** discloses missing workers, collection gaps, later feedback or
+interrupted validation, and never claims a clean review. A **stale snapshot** posts only a
+scoped expandable notification, not stale inline findings. Detection or
+validation failures block unsafe review output, not status comments. A trusted
+notification job runs after every authorized attempt, including failures,
+cancellations and skipped downstream jobs. If no result from that run is found
+on the PR, it posts an automation status comment, not a code verdict or an
+unrelated issue. A PR closing during the run does not silently suppress that
+notice. Source review does not establish test success or merge approval.
+
+The command stays visible until a completed review is independently found on
+the correct PR, bot identity and pinned commit. Incomplete/stale/failed runs
+leave it visible. The completion job then rechecks the command and requester
+before minimizing only that command.
+
+Manual dispatch requires the default branch and a positive integer
+`pr_number`; the shared slash-command trigger prevents marking that input
+required in the form, so trusted intake enforces it:
+
+```bash
+gh workflow run copilot-review-expert.lock.yml --repo dotnet/maui \
+  --ref main -f pr_number=12345
+```
+
+**Manual dispatch publishes comments too.** This lane has no output-suppression
+or staged-only mode. Context, findings, dimension results, completion state
+and the validated publication plan are retained for seven days. Use a fresh
+dispatch or command, not **Re-run failed jobs**, to avoid mixing same-named
+artifacts from different attempts. There is no scheduled recovery for this
+standalone lane.
+
+Compile with the repository-pinned gh-aw **v0.86.2**:
+
+```bash
+gh aw compile copilot-review-expert --strict --actionlint --no-check-update
+```
+
+The compiler's `--actionlint` runner requires Docker. Without Docker, compile
+without that flag and run the installed `actionlint` on the generated lock.
+Older linters may not recognize GitHub's supported `queue: max`; exclude only
+that exact schema diagnostic, not other errors. The ordinary AzDO trigger's
+existing empty-choice/shellcheck diagnostics are unchanged by routing this
+subcommand.
+
+The workflow and trusted scripts must land on the default branch before this
+new slash command can run. Registration is not an end-to-end canary: dispatch
+against an approved PR target and verify routed independent GPT passes,
+validated findings, explicit gaps and an actual published review/comment
+receipt. Artifacts or a publication preview alone do not prove publication.
+Do not treat the hosted lane as operational before that GitHub canary succeeds.
 
 ## `/review performance`: performance review
 
@@ -437,7 +575,7 @@ Because gh-aw slash commands match only the first command token, the workflow li
 The workflow uses one skill,
 [`review-test-failures`](../skills/review-test-failures/SKILL.md), for both analysis
 and comment formatting. The local runner uses that same skill. The hosted workflow,
-like the other gh-aw workflows, uses GPT-6.1 Sol (`gpt-6.1-sol`) through the Responses
+uses GPT-6.1 Sol (`gpt-6.1-sol`) through the Responses
 API. The local runner and offline evaluations keep their independently configured
 models.
 
@@ -604,6 +742,14 @@ Missing results produce `/azp run` guidance, not a long evaluation.
 This is not merge approval; incomplete evidence remains explicit in its pipeline.
 The canonical layout lives in the skill rather than a separate caller template.
 
+### Expert Review
+
+`/review expert-review` posts a consolidated PR review, not the full pipeline's
+`AI Summary` or a test-failure report. Read its reviewed commit, completed
+dimension count, inline findings, body-only findings and evidence gaps. An
+empty incomplete review is not a clean result. Request a fresh command after
+new commits; history/source review is never a test pass or human approval.
+
 ## Recommended workflow for maintainers
 
 1. Make sure the PR has appropriate `area-*` and `platform/*` labels. The agentic labeler normally handles this on PR open/reopen.
@@ -630,6 +776,8 @@ Important safeguards:
 
 - `/review` requires repository write-level permissions and queues a trusted AzDO pipeline.
 - `/review tests` is comment-only and uses gh-aw safe outputs for PR comments.
+- `/review expert-review` inspects frozen read-only source and publishes only
+  through a fresh validated native COMMENT-review job with GPT-only detection.
 - The full review pipeline keeps PR-controlled code separated from trusted scripts where possible.
 - Review comments should be treated as assistant-generated evidence, not as a substitute for human review.
 
@@ -640,6 +788,8 @@ Important safeguards:
 | `/review` does nothing | The commenter does not have write/maintain/admin access, the comment is not on a PR, or GitHub Actions delayed the webhook. | Authorized commands should be recovered automatically within about 35 minutes. Check GitHub Status if Actions is degraded. |
 | `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
+| `/review expert-review` is stale, incomplete or failed | The PR changed, a worker/evidence source was unavailable, or trusted publication rejected the output. | Inspect the linked run and artifacts; request a fresh command after resolving the gap. Do not rerun old jobs. |
+| `/review expert-review` does not start | The new workflow is not registered on the default branch, the command/target is invalid, or permission is insufficient. | Check default-branch rollout and exact command syntax; the standalone lane has no scheduled recovery. |
 | The AI Summary looks stale | New commits or author comments landed after the last review. | Ask a maintainer to run `/review` for a fresh review. |
 | There are multiple old AI Summary comments | Each comment holds only the latest session (keyed to its HEAD commit); previous review comments are minimized and hidden as outdated. | Expand the **Review Sessions** section in the newest comment — it reflects the current HEAD commit. |
 | Command comment is still visible | The commenter may lack authorization, or the command was malformed. | Check actor permissions and command syntax. Authorized commands are minimized after processing. |
@@ -653,6 +803,10 @@ Important safeguards:
 - `eng/pipelines/ci-copilot.yml` — Azure DevOps PR review pipeline.
 - `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
+- `.github/workflows/copilot-review-expert.md` — standalone gh-aw expert-review source.
+- `.github/agents/ghaw-expert-reviewer.agent.md` — trusted hosted adapter.
+- `.github/agents/maui-expert-reviewer.md` — canonical expert dimensions and review contract.
+- `.github/scripts/Review-Expert.ps1` — frozen context, validated publication and receipt checks.
 - `.github/workflows/copilot-review-tests.md` — gh-aw source for `/review tests`.
 - `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.
 - `.github/scripts/Review-Tests.ps1` — local runner for `/review tests`.
