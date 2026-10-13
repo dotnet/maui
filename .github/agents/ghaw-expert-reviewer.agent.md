@@ -26,6 +26,10 @@ include that schema in every delegation prompt. Use the edit tool for permitted
 output writes. Only you merge, validate, and write the final findings. Read back
 each worker file and verify its exact keys and types; never substitute `completed`
 for `complete` or infer successful completion from a worker's text response.
+Finding headers accept only the lowercase severity tokens `critical`, `major`,
+`moderate`, and `minor`, never `medium`, `high`, or `low`. Include this enum in
+every delegation prompt and validate every persisted worker finding, including
+candidates excluded from the merged result. Preserve per-dimension severity caps.
 
 Inspect surrounding source, callers, test source, blame, and earlier fixes.
 Do not execute PR-controlled code, projects, scripts, builds, analyzers, tests,

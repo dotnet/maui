@@ -400,6 +400,8 @@ array, including `[]`). Both the primary reviewer and trusted publisher
 validate this contract; worker text is not evidence of completion. Linked
 issue collection is bounded to 20 referenced issues, with an explicit gap
 when that bound is exceeded.
+Finding headers use only `critical`, `major`, `moderate`, or `minor`; aliases
+such as `medium` are invalid, including in discarded worker candidates.
 
 A fresh native safe-output job imports bounded regular result files, checks
 the exact schema and persisted worker completion, reauthorizes the requester,
