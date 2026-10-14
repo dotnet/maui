@@ -532,10 +532,21 @@ foreach ($filePath in $FilePaths) {
         # to inflight/current (or another branch) won't be in a PR targeting main.
         if ($prBaseRef -and $meta.MergeCommit) {
             git merge-base --is-ancestor $meta.MergeCommit $prBaseRef 2>$null
+            $ancestryExitCode = $LASTEXITCODE
             if ($StrictEvidence -and $LASTEXITCODE -gt 1) {
-                throw "Could not verify ancestry of historical PR #$recentPR."
+                if ($meta.MergeCommit -notmatch '^[0-9a-f]{40}$' -or
+                    $prBaseRef -notmatch '^[0-9a-f]{40}$') {
+                    throw "Could not verify ancestry of historical PR #$recentPR."
+                }
+                # Other-branch merge objects may be absent from the trusted checkout.
+                $comparison = gh api "repos/$Repo/compare/$($meta.MergeCommit)...$prBaseRef" --jq '.status'
+                if ($LASTEXITCODE -ne 0 -or $comparison -notin @('ahead', 'identical', 'behind', 'diverged')) {
+                    throw "Could not verify remote ancestry of historical PR #$recentPR."
+                }
+                $ancestryExitCode = if ($comparison -in @('ahead', 'identical')) { 0 } else { 1 }
+                Write-Host "    Verified pinned ancestry via GitHub comparison: $comparison" -ForegroundColor DarkGray
             }
-            if ($LASTEXITCODE -ne 0) {
+            if ($ancestryExitCode -ne 0) {
                 Write-Host "    ⏭️ fix not in PR's base branch (merged to different branch)" -ForegroundColor DarkGray
                 continue
             }

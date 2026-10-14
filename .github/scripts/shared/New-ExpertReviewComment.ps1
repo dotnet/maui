@@ -27,7 +27,9 @@ function New-ExpertReviewComment {
         [Parameter(Mandatory = $true)]
         [string]$Analysis,
 
-        [bool]$MergeReady = $false
+        [bool]$MergeReady = $false,
+
+        [string]$DecisionReason = ''
     )
 
     $shortSha = $HeadSha.Substring(0, 7)
@@ -56,6 +58,10 @@ function New-ExpertReviewComment {
             'failed' { '**Merge recommendation: NO.** No validated expert review is available from this attempt.' }
             'closed' { '**Merge recommendation: NO.** This PR is closed.' }
         }
+    }
+
+    if ($DecisionReason) {
+        $decision += "`n`n**Reason:** $([Net.WebUtility]::HtmlEncode($DecisionReason))"
     }
 
     $body = @"

@@ -172,6 +172,31 @@ function Get-ExpertRequest {
     return @{ event = $event; actor = $login }
 }
 
+function Get-ExpertDiscussionContent {
+    param([Collections.IDictionary]$Feedback)
+
+    $content = [ordered]@{}
+    foreach ($surface in @('reviews', 'inline', 'comments')) {
+        $content[$surface] = @(
+            foreach ($item in ($Feedback[$surface] | Sort-Object -Property id)) {
+                $entry = [ordered]@{
+                    author_id = $item.user.id
+                    author = $item.user.login
+                    author_type = $item.user.type
+                }
+                foreach ($field in @('id', 'body', 'state', 'commit_id', 'original_commit_id',
+                    'path', 'line', 'original_line', 'start_line', 'original_start_line',
+                    'side', 'start_side', 'diff_hunk', 'in_reply_to_id', 'pull_request_review_id',
+                    'created_at', 'updated_at', 'submitted_at')) {
+                    $entry[$field] = $item[$field]
+                }
+                $entry
+            }
+        )
+    }
+    return $content
+}
+
 function Get-ExpertRunUrl {
     if (-not $env:GITHUB_RUN_ID -or $env:GITHUB_RUN_ID -notmatch '^[1-9][0-9]*$') {
         throw 'A trusted GitHub run identity is required.'
@@ -480,7 +505,7 @@ function Invoke-ExpertPrepare {
     } else {
         $feedback = Get-ExpertFeedback
         $frozenFeedback = Read-ExpertJson (Join-Path $ContextDirectory 'prior-feedback.json')
-        if (-not (Test-ExpertJsonEqual $frozenFeedback $feedback)) {
+        if (-not (Test-ExpertJsonEqual (Get-ExpertDiscussionContent $frozenFeedback) (Get-ExpertDiscussionContent $feedback))) {
             $gaps.Add('PR feedback changed after the briefing; the latest discussion has not been reconciled.')
             $status = 'incomplete'
             $receipt.status = $status
@@ -551,9 +576,15 @@ function Invoke-ExpertPrepare {
             }
             $analysis += "`nSource/history review only. No builds or tests were executed; this is not merge approval.`n"
             $mergeReady = $status -eq 'complete' -and $findings.Count -eq 0 -and $unplaced.Count -eq 0
+            $decisionReason = "$completed of $($dimensions.Count) expert dimensions completed; " +
+                "finding validation $(if ($state.validation_complete) { 'completed' } else { 'incomplete' }). "
+            $decisionReason += if ($gaps.Count) { $gaps -join ' ' } elseif ($findings.Count -or $unplaced.Count) {
+                'The reported findings must be addressed, including previously posted findings that were not repeated.'
+            } else { 'The full-PR expert assessment identified no actionable findings.' }
             $body = "$runMarker`n$resultMarker`n`n" + (New-ExpertReviewComment -Status $status `
                 -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
-                -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis -MergeReady $mergeReady)
+                -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis `
+                -MergeReady $mergeReady -DecisionReason $decisionReason)
             if ($body.Length -gt 60000) { throw 'The expert summary exceeds its publication limit.' }
             $items = [Collections.Generic.List[object]]::new()
             foreach ($finding in $inline) {

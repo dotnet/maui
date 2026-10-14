@@ -438,6 +438,15 @@ The visible **Merge recommendation** is YES only for a complete expert review
 with no outstanding findings, including findings suppressed as already posted.
 Otherwise it is NO, with the reason stated. YES is source-review advice, not a
 substitute for required CI checks or human approval. There is no Follow-up section.
+The visible reason identifies completed expert passes, finding validation, and
+specific evidence blockers rather than hiding them inside the analysis accordion.
+Discussion freshness compares authors, full text, review states, timestamps and
+inline anchors; incidental API metadata such as author association and reaction
+counts does not invalidate an otherwise unchanged discussion.
+For strict pinned history scans, an unavailable local historical merge object is
+checked against the exact base SHA using GitHub's comparison API. A divergent
+other-branch fix is excluded only after ancestry is established; failed or unknown
+comparisons still block complete evidence.
 After verifying an actual bot publication, the trusted notification job minimizes
 older expert summaries and status notices using GitHub's native **OUTDATED**
 classifier. The newest result stays visible, including overlapping runs that
