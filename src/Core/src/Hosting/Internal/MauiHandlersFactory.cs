@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 
@@ -9,18 +10,43 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
-		readonly ConcurrentDictionary<Type, Lazy<Type?>> _serviceCache = new();
-		readonly ConcurrentDictionary<Type, Lazy<ElementHandlerAttributeResolution>> _elementHandlerAttributeCache = new();
-
-		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
-		readonly Func<Type, Lazy<Type?>> _serviceCacheValueFactory;
+		readonly object _cacheLock = new();
+		HandlerCache? _cache;
 
 		public MauiHandlersFactory(IMauiHandlersCollection collection)
 			: base(collection)
 		{
-			_registeredHandlerServiceTypeSet = RegisteredHandlerServiceTypeSet.GetInstance(collection);
-			_serviceCacheValueFactory = viewType => new Lazy<Type?>(
-				() => _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType(viewType));
+		}
+
+		HandlerCache GetCache()
+		{
+			var version = (InternalCollection as MauiServiceCollection)?.Version;
+			var generation = HotReload.MauiHotReloadHelper.HandlerCacheGeneration;
+			var current = Volatile.Read(ref _cache);
+			if (version is not null && current is not null
+				&& current.CollectionVersion == version && current.HotReloadGeneration == generation)
+				return current;
+
+			lock (_cacheLock)
+			{
+				version = (InternalCollection as MauiServiceCollection)?.Version;
+				generation = HotReload.MauiHotReloadHelper.HandlerCacheGeneration;
+				if (version is not null && _cache is not null
+					&& _cache.CollectionVersion == version && _cache.HotReloadGeneration == generation)
+					return _cache;
+
+				var cache = new HandlerCache(version, generation);
+				foreach (var descriptor in InternalCollection)
+				{
+					if (typeof(IElement).IsAssignableFrom(descriptor.ServiceType))
+						cache.RegisteredServiceTypes.Add(descriptor.ServiceType);
+				}
+
+				// Custom collections do not expose a mutation version, so their resolution
+				// results cannot safely be retained between requests.
+				Volatile.Write(ref _cache, version is not null ? cache : null);
+				return cache;
+			}
 		}
 
 		public IElementHandler? GetHandler(Type type) =>
@@ -28,6 +54,78 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		internal IElementHandler? GetHandler(Type type, IMauiContext mauiContext) =>
 			GetHandler(type, new HandlerActivationServiceProvider(this, mauiContext));
+
+		internal static IElementHandler? GetHandlerWithInjection(IMauiHandlersFactory handlers, Type viewType, IMauiContext mauiContext)
+		{
+			var activationServices = handlers is MauiHandlersFactory factory
+				? new HandlerActivationServiceProvider(factory, mauiContext, useConstructorInjection: true)
+				: null;
+			try
+			{
+				if (activationServices is not null && handlers is MauiHandlersFactory handlersFactory)
+					return handlersFactory.GetHandler(viewType, activationServices);
+
+				return handlers.GetHandler(viewType, mauiContext);
+			}
+			catch (MissingMethodException) when (activationServices?.ConstructorInjectionAttempted != true)
+			{
+				return CreateTypeWithInjection(handlers, viewType, mauiContext);
+			}
+			catch (HandlerNotFoundException ex) when (ex.InnerException is MissingMethodException
+				&& activationServices?.ConstructorInjectionAttempted != true)
+			{
+				return CreateTypeWithInjection(handlers, viewType, mauiContext);
+			}
+		}
+
+		protected override object? CreateInstance(ServiceDescriptor item, IServiceProvider implementationFactoryServiceProvider)
+		{
+			if (item.ImplementationType is Type handlerType
+				&& typeof(IElementHandler).IsAssignableFrom(handlerType)
+				&& implementationFactoryServiceProvider is HandlerActivationServiceProvider { UseConstructorInjection: true } provider)
+				return CreateHandlerInstance(handlerType, provider);
+
+			return base.CreateInstance(item, implementationFactoryServiceProvider);
+		}
+
+		static IElementHandler CreateHandlerInstance(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
+			HandlerActivationServiceProvider? activationServices)
+		{
+			if (activationServices is null)
+				return (IElementHandler)Activator.CreateInstance(handlerType)!;
+
+			if (handlerType.IsValueType || handlerType.GetConstructor(Type.EmptyTypes) is not null)
+				return (IElementHandler)Activator.CreateInstance(handlerType)!;
+
+			// A dependency failure must propagate without retrying the entire injection.
+			activationServices.ConstructorInjectionAttempted = true;
+			return CreateTypeWithInjection(handlerType, activationServices.MauiContext);
+		}
+
+		static IElementHandler? CreateTypeWithInjection(IMauiHandlersFactory handlers, Type viewType, IMauiContext mauiContext)
+		{
+			var handlerType = handlers.GetHandlerType(viewType);
+
+			if (handlerType == null)
+				return null;
+
+			return CreateTypeWithInjection(handlerType, mauiContext);
+		}
+
+		static IElementHandler CreateTypeWithInjection(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType,
+			IMauiContext mauiContext)
+		{
+#if ANDROID
+			if (mauiContext.Context != null)
+			{
+				return (IElementHandler)ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+			}
+#endif
+
+			return (IElementHandler)ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
+		}
 
 		IElementHandler? GetHandler(Type type, IServiceProvider implementationFactoryServiceProvider)
 		{
@@ -44,7 +142,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			// precedence of an exact built-in registration over assignable registrations.
 			if (TryGetDirectElementHandlerAttribute(type, out var directElementHandlerAttribute))
 			{
-				return CreateAttributeHandler(type, directElementHandlerAttribute);
+				return CreateAttributeHandler(type, directElementHandlerAttribute, implementationFactoryServiceProvider);
 			}
 
 			// 3. Assignable DI registration. AddHandler<Button, CustomButtonHandler>() still
@@ -62,7 +160,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			// types that do not declare or register their own handler.
 			if (TryGetInheritedElementHandlerAttribute(type, out var inheritedElementHandlerAttribute))
 			{
-				return CreateAttributeHandler(type, inheritedElementHandlerAttribute);
+				return CreateAttributeHandler(type, inheritedElementHandlerAttribute, implementationFactoryServiceProvider);
 			}
 
 			// 5. ContentView fallback
@@ -137,7 +235,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		}
 
 		private ElementHandlerAttributeResolution GetElementHandlerAttributeResolution(Type viewType) =>
-			_elementHandlerAttributeCache.GetOrAdd(
+			GetCache().ElementHandlerAttributes.GetOrAdd(
 				viewType,
 				static type => new Lazy<ElementHandlerAttributeResolution>(
 					() => FindElementHandlerAttributes(type))).Value;
@@ -164,20 +262,26 @@ namespace Microsoft.Maui.Hosting.Internal
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
-			=> _serviceCache.GetOrAdd(type, _serviceCacheValueFactory).Value;
+		{
+			var cache = GetCache();
+			return cache.ServiceTypes.GetOrAdd(type, cache.ServiceTypeFactory).Value;
+		}
 
 		new object? GetService(Type serviceType, IServiceProvider implementationFactoryServiceProvider) =>
 			base.GetService(serviceType, implementationFactoryServiceProvider);
 
-		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
+		private IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute, IServiceProvider implementationFactoryServiceProvider)
 		{
 			var handlerType = GetValidatedHandlerType(viewType, elementHandlerAttribute);
 
 			try
 			{
-				return (IElementHandler)Activator.CreateInstance(handlerType)!;
+				var activationServices = implementationFactoryServiceProvider is HandlerActivationServiceProvider { UseConstructorInjection: true } provider
+					? provider
+					: null;
+				return CreateHandlerInstance(handlerType, activationServices);
 			}
-			catch (MissingMethodException ex)
+			catch (MissingMethodException ex) when (implementationFactoryServiceProvider is not HandlerActivationServiceProvider { ConstructorInjectionAttempted: true })
 			{
 				throw new HandlerNotFoundException(
 					$"Unable to create the {nameof(IElementHandler)} {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
@@ -206,16 +310,39 @@ namespace Microsoft.Maui.Hosting.Internal
 			ElementHandlerAttribute? Direct,
 			ElementHandlerAttribute? Inherited);
 
+		sealed class HandlerCache
+		{
+			public HandlerCache(long? collectionVersion, long hotReloadGeneration)
+			{
+				CollectionVersion = collectionVersion;
+				HotReloadGeneration = hotReloadGeneration;
+				ServiceTypeFactory = viewType => new Lazy<Type?>(
+					() => RegisteredServiceTypes.ResolveVirtualViewToRegisteredHandlerServiceType(viewType));
+			}
+
+			public long? CollectionVersion { get; }
+			public long HotReloadGeneration { get; }
+			public RegisteredHandlerServiceTypeSet RegisteredServiceTypes { get; } = new();
+			public Func<Type, Lazy<Type?>> ServiceTypeFactory { get; }
+			public ConcurrentDictionary<Type, Lazy<Type?>> ServiceTypes { get; } = new();
+			public ConcurrentDictionary<Type, Lazy<ElementHandlerAttributeResolution>> ElementHandlerAttributes { get; } = new();
+		}
+
 		sealed class HandlerActivationServiceProvider : IServiceProvider
 		{
 			readonly MauiHandlersFactory _handlerServices;
 			readonly IMauiContext _mauiContext;
 
-			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext)
+			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext, bool useConstructorInjection = false)
 			{
 				_handlerServices = handlerServices;
 				_mauiContext = mauiContext;
+				UseConstructorInjection = useConstructorInjection;
 			}
+
+			public IMauiContext MauiContext => _mauiContext;
+			public bool UseConstructorInjection { get; }
+			public bool ConstructorInjectionAttempted { get; set; }
 
 			public object? GetService(Type serviceType)
 			{
@@ -238,6 +365,9 @@ namespace Microsoft.Maui.Hosting.Internal
 
 	static class MauiHandlersFactoryExtensions
 	{
+		internal static IElementHandler? GetHandlerWithInjection(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
+			MauiHandlersFactory.GetHandlerWithInjection(handlers, type, mauiContext);
+
 		internal static IElementHandler? GetHandler(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
 			handlers is MauiHandlersFactory handlersFactory
 				? handlersFactory.GetHandler(type, mauiContext)

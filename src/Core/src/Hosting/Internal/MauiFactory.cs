@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			return typeInstance;
 		}
 
-		static object? CreateInstance(ServiceDescriptor item, IServiceProvider implementationFactoryServiceProvider)
+		protected virtual object? CreateInstance(ServiceDescriptor item, IServiceProvider implementationFactoryServiceProvider)
 		{
 			if (item.ImplementationType != null)
 			{
