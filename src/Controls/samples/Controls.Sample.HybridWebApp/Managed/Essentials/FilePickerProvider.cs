@@ -10,7 +10,7 @@ public sealed class HybridFileLimits
 	/// <summary>Creates bounded selected-file/reader/chunk budgets.</summary>
 	/// <param name="selectedFiles">Maximum simultaneous user-selected file handles.</param>
 	/// <param name="readers">Maximum simultaneous open read streams.</param>
-	/// <param name="chunkBytes">Maximum raw bytes in one base64 transport response.</param>
+	/// <param name="chunkBytes">Maximum raw bytes in one binary transport response.</param>
 	public HybridFileLimits(int selectedFiles = 128, int readers = 16, int chunkBytes = 65536)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(selectedFiles);
@@ -125,10 +125,13 @@ public sealed class FilePickerProvider : IDisposable
 		await reader.Lock.WaitAsync(linked.Token);
 		try
 		{
+			linked.Token.ThrowIfCancellationRequested();
 			if (!reader.Stream.CanSeek) throw new NotSupportedException("This selected native stream does not support seeking.");
 			reader.Stream.Seek(position, SeekOrigin.Begin);
+			linked.Token.ThrowIfCancellationRequested();
 			return new FileAccepted(true);
 		}
+		catch (ObjectDisposedException) when (reader.Lifetime.IsCancellationRequested) { throw new OperationCanceledException(linked.Token); }
 		finally { reader.Lock.Release(); }
 	}
 
@@ -162,7 +165,7 @@ public sealed class FilePickerProvider : IDisposable
 			return !_disposed && _readers.TryGetValue(id, out var reader) ? reader : throw InvalidFile();
 	}
 	[HybridAction("file.readBytes")]
-	internal async Task<ReadResult> ReadAsync(string id, int count, CancellationToken cancellation)
+	internal async Task<byte[]> ReadAsync(string id, int count, CancellationToken cancellation)
 	{
 		if (count <= 0 || count > _limits.ChunkBytes)
 			throw new CommandException("invalid_arguments", $"Read count must be between 1 and the {_limits.ChunkBytes}-byte transport chunk budget.");
@@ -172,7 +175,11 @@ public sealed class FilePickerProvider : IDisposable
 		try
 		{
 			var result = await ReadChunkAsync(reader.Stream, count, linked.Token);
-			return new(Convert.ToBase64String(result.Bytes), result.Eof);
+			// One bounded discriminator byte preserves exact EOF, including partial/nonseekable reads.
+			var response = new byte[result.Bytes.Length + 1];
+			response[0] = result.Eof ? (byte)1 : (byte)0;
+			result.Bytes.CopyTo(response, 1);
+			return response;
 		}
 		catch (ObjectDisposedException) when (reader.Lifetime.IsCancellationRequested) { throw new OperationCanceledException(linked.Token); }
 		finally { reader.Lock.Release(); }
@@ -240,5 +247,4 @@ public sealed class FilePickerProvider : IDisposable
 sealed record FileMetadata(string Id, string Name, string? ContentType);
 sealed record PickMultipleResult(FileMetadata[] Files);
 sealed record ReaderMetadata(string Id, bool CanSeek, int MaximumChunkBytes);
-sealed record ReadResult(string Base64, bool Eof);
 sealed record FileAccepted(bool Accepted);

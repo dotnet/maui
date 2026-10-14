@@ -35,6 +35,9 @@ Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment
 Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapperFragment() -> void
 Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapperFragment(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler) -> void
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.Controls.HybridWebView.BinaryInvoker.get -> Microsoft.Maui.HybridWebViewBinaryInvoker?
+Microsoft.Maui.Controls.HybridWebView.BinaryInvoker.set -> void
+static readonly Microsoft.Maui.Controls.HybridWebView.BinaryInvokerProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void

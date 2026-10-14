@@ -41,12 +41,14 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			.Where(static type => type is not null && type.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Maui.HybridApp.HybridActionAssemblyAttribute")).Collect();
 		context.RegisterSourceOutput(methods.Combine(events).Combine(topics).Combine(context.CompilationProvider).Combine(assemblies),
 			static (output, inputs) => Generate(output, inputs.Left.Left.Left.Left, inputs.Left.Left.Left.Right,
-				inputs.Left.Left.Right, inputs.Left.Right.AssemblyName!, inputs.Right));
+				inputs.Left.Left.Right, inputs.Left.Right, inputs.Right));
 	}
 
 	static void Generate(SourceProductionContext output, ImmutableArray<IMethodSymbol> methods, ImmutableArray<IMethodSymbol> events,
-		ImmutableArray<INamedTypeSymbol> topics, string assembly, ImmutableArray<INamedTypeSymbol?> registeredAssemblies)
+		ImmutableArray<INamedTypeSymbol> topics, Compilation compilation, ImmutableArray<INamedTypeSymbol?> registeredAssemblies)
 	{
+		var assembly = compilation.AssemblyName!;
+		var textType = compilation.GetSpecialType(SpecialType.System_String);
 		var registeredNames = new HashSet<string>(StringComparer.Ordinal);
 		foreach (var method in methods.Distinct(SymbolEqualityComparer.Default).OfType<IMethodSymbol>())
 			if (!registeredNames.Add(Name(method)))
@@ -106,12 +108,21 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 					continue;
 				}
 				bool good = true;
+				if (method.Parameters.Count(p => Bytes(p.Type)) > 1 ||
+					Bytes(Result(method)) && Nullable(Result(method)!) ||
+					method.Parameters.Any(p => Bytes(p.Type) && (Nullable(p.Type) || p.HasExplicitDefaultValue)) ||
+					method.Parameters.Any(p => Bytes(p.Type)) && !Bytes(Result(method)) ||
+					method.Parameters.Any(p => Channel(p.Type) is not null && (Nullable(p.Type) || p.HasExplicitDefaultValue)))
+				{
+					output.ReportDiagnostic(Diagnostic.Create(InvalidBinding, method.Locations[0], method.Name));
+					good = false;
+				}
 				foreach (var parameter in method.Parameters)
 				{
 					var attributes = parameter.GetAttributes();
 					var services = attributes.Count(a => a.AttributeClass?.ToDisplayString() is "Maui.HybridApp.FromServicesAttribute" or "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
 					var keyed = attributes.FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
-					if (services > 1 || (services != 0 && Special(parameter.Type)) || keyed is not null && keyed.ConstructorArguments.Length != 1)
+					if (services > 1 || (services != 0 && (Special(parameter.Type) || Channel(parameter.Type) is not null)) || keyed is not null && keyed.ConstructorArguments.Length != 1)
 					{
 						output.ReportDiagnostic(Diagnostic.Create(InvalidBinding, parameter.Locations[0], parameter.Name));
 						good = false;
@@ -119,9 +130,14 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				}
 				try
 				{
-					foreach (var parameter in method.Parameters.Where(Ordinary)) graph.Add(parameter.Type);
+					foreach (var parameter in method.Parameters.Where(Ordinary))
+					{
+						var channel = Channel(parameter.Type);
+						graph.Add(channel is null ? parameter.Type : textType);
+						if (channel is not null && !Bytes(channel)) graph.Add(channel);
+					}
 					var result = Result(method);
-					if (result is not null) graph.Add(result);
+					if (result is not null && !Bytes(result)) graph.Add(result);
 				}
 				catch (JsonContractException error)
 				{
@@ -133,7 +149,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			}
 			if (!contractsValid) continue;
 			// One provider owns its metadata, including private implementation DTOs accessible within this assembly.
-			var emitter = new Emitter(provider, valid, graph, index++, declaredTopics, hooks);
+			var emitter = new Emitter(provider, valid, graph, index++, declaredTopics, hooks, textType);
 			output.AddSource(emitter.Id + ".g.cs", emitter.Emit());
 			emitters.Add((provider, emitter.Id, valid.Any(method => !method.IsStatic) || hooks.Count != 0));
 		}
@@ -176,7 +192,10 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		return null;
 	}
 	static string Identity(ITypeSymbol type) => type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString();
-	static bool Special(ITypeSymbol type) => Identity(type) is "System.Threading.CancellationToken" or "Maui.HybridApp.HybridActionContext";
+	static bool Bytes(ITypeSymbol? type) => type is IArrayTypeSymbol { Rank: 1, ElementType.SpecialType: SpecialType.System_Byte };
+	static ITypeSymbol? Channel(ITypeSymbol type) => type is INamedTypeSymbol { Name: "HybridChannel", Arity: 1 } channel &&
+		channel.ContainingNamespace.ToDisplayString() == "Maui.HybridApp" ? channel.TypeArguments[0] : null;
+	static bool Special(ITypeSymbol type) => Bytes(type) || Identity(type) is "System.Threading.CancellationToken" or "Maui.HybridApp.HybridActionContext";
 	static bool Ordinary(IParameterSymbol parameter) => !Special(parameter.Type) &&
 		!parameter.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() is "Maui.HybridApp.FromServicesAttribute" or "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
 	static ITypeSymbol? Result(IMethodSymbol method)
@@ -232,6 +251,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		internal void Add(ITypeSymbol type)
 		{
 			if (Index(type) >= 0) return;
+			if (Bytes(type)) throw new JsonContractException(type, "byte arrays require the separate binary transport or a raw-byte channel");
 			if (type.TypeKind is TypeKind.TypeParameter or TypeKind.Pointer or TypeKind.FunctionPointer or TypeKind.Delegate or TypeKind.Dynamic ||
 				type.SpecialType == SpecialType.System_Object || type is INamedTypeSymbol { IsRefLikeType: true })
 				throw new JsonContractException(type, "use a concrete JSON contract, not object, dynamic, a delegate, pointer or ref-like type");
@@ -392,7 +412,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 	};
 
 	sealed class Emitter(INamedTypeSymbol provider, List<IMethodSymbol> methods, JsonGraph graph, int index,
-		string[] topics, List<(string Name, string Start, string Stop)> hooks)
+		string[] topics, List<(string Name, string Start, string Stop)> hooks, ITypeSymbol textType)
 	{
 		readonly StringBuilder _code = new();
 		internal string Id => "HybridActions_" + index.ToString(CultureInfo.InvariantCulture) + "_" + provider.Name;
@@ -434,23 +454,32 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		{
 			var ordinary = method.Parameters.Where(Ordinary).ToArray();
 			var result = Result(method);
-			var infos = ordinary.Select(p => p.Type).Concat(result is null ? Enumerable.Empty<ITypeSymbol>() : new[] { result })
+			var binary = Bytes(result);
+			var infos = ordinary.Select(p => Channel(p.Type) is null ? p.Type : textType)
+				.Concat(ordinary.Select(p => Channel(p.Type)).Where(t => t is not null && !Bytes(t)).OfType<ITypeSymbol>())
+				.Concat(result is null || binary ? Enumerable.Empty<ITypeSymbol>() : new[] { result })
 				.Distinct(SymbolEqualityComparer.Default).OfType<ITypeSymbol>();
 			var metadata = infos.Select(Info).ToList();
 			if (result is null) metadata.Add("Json.Default.Null");
-			Line("registry.RegisterGenerated(" + Literal(Name(method)) + ", new JsonTypeInfo[] { " + string.Join(", ", metadata) + " }, async (json, operation) =>");
+			Line("registry." + (binary ? "RegisterGeneratedBinary" : "RegisterGenerated") + "(" + Literal(Name(method)) + ", new JsonTypeInfo[] { " + string.Join(", ", metadata) + " }, async (json, operation) =>");
 			Line("{");
+			if (binary && !method.Parameters.Any(p => Bytes(p.Type)))
+				Line("if (operation.BinaryPayload.Length != 0) throw new global::Maui.HybridApp.CommandException(\"invalid_arguments\", \"This byte-result action has no binary input parameter.\");");
 			Line("var args = new global::Maui.HybridApp.HybridActionArguments(json, new string[] { " + string.Join(", ", ordinary.Select(p => Literal(p.Name))) + " });");
 			for (int i = 0; i < ordinary.Length; i++)
 			{
 				var parameter = ordinary[i];
-				var read = "args.Read(" + i + ", " + Info(parameter.Type) + ", " + (Nullable(parameter.Type) ? "true" : "false") + ")";
+				var read = "args.Read(" + i + ", " + Info(Channel(parameter.Type) is null ? parameter.Type : textType) + ", " + (Nullable(parameter.Type) ? "true" : "false") + ")";
+				var channel = Channel(parameter.Type);
+				if (channel is not null)
+					read = "operation.BindChannel<" + TypeName(channel) + ">(" + read + ", " + (Bytes(channel) ? "null" : Info(channel)) + ")";
 				Line("var arg" + i + " = " + (parameter.HasExplicitDefaultValue ? "args.Has(" + i + ") ? " + read + " : " + Default(parameter) : read) + ";");
 			}
-			Line("Task<JsonElement> Invoke()"); Line("{");
+			Line("Task<" + (binary ? "byte[]" : "JsonElement") + "> Invoke()"); Line("{");
 			var arguments = method.Parameters.Select(parameter =>
 			{
 				if (Ordinary(parameter)) return "arg" + Array.IndexOf(ordinary, parameter);
+				if (Bytes(parameter.Type)) return "operation.BinaryPayload";
 				if (Identity(parameter.Type) == "System.Threading.CancellationToken") return "operation.Cancellation";
 				if (Identity(parameter.Type) == "Maui.HybridApp.HybridActionContext") return "new global::Maui.HybridApp.HybridActionContext(operation)";
 				var keyed = parameter.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
@@ -463,7 +492,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			if (Awaitable(method))
 			{
 				Line("return Await();");
-				Line("async Task<JsonElement> Await()"); Line("{");
+				Line("async Task<" + (binary ? "byte[]" : "JsonElement") + "> Await()"); Line("{");
 				Line((result is null ? "" : "var result = ") + "await " + call + ";");
 				EmitResult(result, false);
 				Line("}");
@@ -484,7 +513,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		{
 			if (result is { IsReferenceType: true } && !Nullable(result))
 				Line("if (result is null) throw new JsonException(\"An action returned null for a nonnullable contract.\");");
-			var expression = result is null ? "global::System.Text.Json.JsonSerializer.SerializeToElement<object?>(null, Json.Default.Null)" :
+			var expression = Bytes(result) ? "result" : result is null ? "global::System.Text.Json.JsonSerializer.SerializeToElement<object?>(null, Json.Default.Null)" :
 				"global::System.Text.Json.JsonSerializer.SerializeToElement(result" + (result.IsReferenceType ? "!" : "") + ", " + Info(result) + ")";
 			Line("return " + (task ? "Task.FromResult(" + expression + ")" : expression) + ";");
 		}

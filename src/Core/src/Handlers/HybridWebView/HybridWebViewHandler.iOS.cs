@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Foundation;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		private const string ScriptMessageHandlerName = "webwindowinterop";
 		SchemeHandler? _schemeHandler;
+		IDisposable? _binaryLoadingObserver;
 
 		protected override WKWebView CreatePlatformView()
 		{
@@ -117,6 +119,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(WKWebView platformView)
 		{
 			base.ConnectHandler(platformView);
+			ConfigureBinaryNavigationObserver();
 
 			using var nsUrl = new NSUrl(new Uri(AppOriginUri, "/").ToString());
 			using var request = new NSUrlRequest(nsUrl);
@@ -124,8 +127,31 @@ namespace Microsoft.Maui.Handlers
 			platformView.LoadRequest(request);
 		}
 
+		void ConfigureBinaryNavigationObserver()
+		{
+			if ((VirtualView as IHybridWebViewBinary)?.BinaryInvoker is null)
+			{
+				_binaryLoadingObserver?.Dispose();
+				_binaryLoadingObserver = null;
+				return;
+			}
+			if (_binaryLoadingObserver is not null || PlatformView is not { } platformView)
+				return;
+			_binaryLoadingObserver = platformView.AddObserver("loading", NSKeyValueObservingOptions.New, _ =>
+			{
+				if (platformView.IsLoading)
+				{
+					ResetBinaryInvocation();
+					_schemeHandler?.StopAll();
+				}
+			});
+		}
+
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			_binaryLoadingObserver?.Dispose();
+			_binaryLoadingObserver = null;
+			ResetBinaryInvocation(disconnected: true);
 			_schemeHandler?.StopAll();
 			_schemeHandler = null;
 			platformView.Configuration.UserContentController.RemoveScriptMessageHandler(ScriptMessageHandlerName);
@@ -184,9 +210,20 @@ namespace Microsoft.Maui.Handlers
 
 				var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
 				var taskHandle = urlSchemeTask.Handle;
+				var cancellation = IsBinaryRequest(new Uri(url)) ? new CancellationTokenSource() : null;
 				var lifetime = new WebViewRequestLifetime(
 					callback => webView.InvokeOnMainThread(callback),
-					() => _requests.Remove(taskHandle));
+					() =>
+					{
+						_requests.Remove(taskHandle);
+						try
+						{ cancellation?.Cancel(); }
+						catch (AggregateException exception)
+						{
+							logger?.LogError(exception, "A binary scheme request cancellation callback failed.");
+						}
+						cancellation?.Dispose();
+					});
 				_requests.Add(taskHandle, lifetime);
 
 				try
@@ -194,7 +231,8 @@ namespace Microsoft.Maui.Handlers
 					logger?.LogDebug("Intercepting request for {Url}.", url);
 
 					// 1. First check if the app wants to modify or override the request.
-					if (WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, webView, urlSchemeTask, url, logger, lifetime))
+					if (!IsBinaryRequest(new Uri(url)) &&
+						WebRequestInterceptingWebView.TryInterceptResponseStream(Handler, webView, urlSchemeTask, url, logger, lifetime))
 					{
 						return;
 					}
@@ -205,7 +243,7 @@ namespace Microsoft.Maui.Handlers
 						logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
 
 						// 2.a. Check if the request is for a local resource
-						var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
+						var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger, cancellation?.Token ?? default);
 						using var responseBytes = bytes;
 
 						// 2.b. Return the response header
@@ -250,7 +288,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
+			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger, CancellationToken cancellationToken)
 			{
 				if (Handler is null)
 				{
@@ -271,10 +309,30 @@ namespace Microsoft.Maui.Handlers
 					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath!, Handler.VirtualView.HybridRoot!);
 
 					// 1.a. Try the special "_framework/hybridwebview.js" path
+					if (relativePath == InvokeDotNetBinaryPath)
+					{
+						var headers = new List<KeyValuePair<string, string>>();
+						if (request.Headers is { } nativeHeaders)
+							foreach (var header in nativeHeaders)
+								headers.Add(new KeyValuePair<string, string>(header.Key.ToString() ?? "", header.Value.ToString() ?? ""));
+						// Empty NSData has a null pointer and cannot be exposed through AsStream.
+						using var body = request.Body switch
+						{
+							{ Length: 0 } => Stream.Null,
+							{ } data => data.AsStream(),
+							_ => request.BodyStream is { } input ? new AppleBinaryBodyStream(input) : null
+						};
+						var bytes = await Handler.InvokeDotNetBinaryAsync(headers, request.HttpMethod,
+							IsBinaryAppDocument(request.MainDocumentURL?.AbsoluteString) &&
+							IsBinaryAppDocument(Handler.PlatformView?.Url?.AbsoluteString),
+							fragmented: false, body, cancellationToken);
+						return (NSData.FromArray(bytes), "application/octet-stream", 200);
+					}
+
 					if (relativePath == HybridWebViewDotJsPath)
 					{
 						logger?.LogDebug("Request for {Url} will return the hybrid web view script.", url);
-						var jsStream = GetEmbeddedStream(HybridWebViewDotJsPath);
+						using var jsStream = Handler.GetHybridScriptStream();
 						if (jsStream is not null)
 						{
 							return (NSData.FromStream(jsStream), ContentType: "application/javascript", StatusCode: 200);
@@ -369,6 +427,41 @@ namespace Microsoft.Maui.Handlers
 				var requests = new List<WebViewRequestLifetime>(_requests.Values);
 				foreach (var lifetime in requests)
 					lifetime.Stop();
+			}
+
+			sealed class AppleBinaryBodyStream : Stream
+			{
+				readonly NSInputStream _input;
+				internal AppleBinaryBodyStream(NSInputStream input)
+				{
+					_input = input;
+					_input.Open();
+				}
+
+				public override int Read(byte[] buffer, int offset, int count)
+				{
+					var read = _input.Read(buffer, offset, (nuint)count);
+					if (read < 0)
+						throw new IOException("Could not read binary request body.");
+					return checked((int)read);
+				}
+
+				protected override void Dispose(bool disposing)
+				{
+					if (disposing)
+						_input.Close();
+					base.Dispose(disposing);
+				}
+
+				public override bool CanRead => true;
+				public override bool CanSeek => false;
+				public override bool CanWrite => false;
+				public override long Length => throw new NotSupportedException();
+				public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+				public override void Flush() => throw new NotSupportedException();
+				public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+				public override void SetLength(long value) => throw new NotSupportedException();
+				public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 			}
 		}
 	}

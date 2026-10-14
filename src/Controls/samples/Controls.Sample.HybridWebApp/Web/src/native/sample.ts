@@ -1,5 +1,5 @@
 import { ack, boolean, nullableText, number, object, progress, strings, text } from '@maui/api/core'
-import type { NativeClient, Decoder } from '@maui/api/core'
+import type { NativeClient, Decoder, BinaryInput, Channel } from '@maui/api/core'
 import { getAppInfo } from '@maui/api/essentials/app-info'
 import type { AppInfo } from '@maui/api/essentials/app-info'
 import { getDeviceInfo } from '@maui/api/essentials/device-info'
@@ -41,6 +41,10 @@ export interface EchoInput { text: string | null; number: number; flag: boolean;
 export interface EchoResult extends EchoInput { counter: number }
 export const counter: Decoder<number> = value => number(object(value).counter)
 export const sample = (client: NativeClient) => ({
+  binaryEcho: (payload: BinaryInput) => client.invokeBinary('sample.binaryEcho', {}, payload),
+  binaryDocument: () => client.invokeBinary('sample.binaryDocument'),
+  binaryChunks: (chunks: Channel<Uint8Array>, updates: Channel<number>) =>
+    client.start('sample.binaryChunks', { chunks, progress: updates, count: 4, chunkBytes: 65536 }, object),
   echo: (input: EchoInput) => client.invoke('sample.echo', { ...input }, value => {
     const v = object(value)
     return { text: nullableText(v.text), number: number(v.number), flag: boolean(v.flag), items: strings(v.items), counter: number(v.counter) }

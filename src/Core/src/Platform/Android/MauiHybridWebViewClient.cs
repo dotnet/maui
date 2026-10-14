@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiHybridWebViewClient : WebViewClient
 	{
 		private readonly WeakReference<HybridWebViewHandler?> _handler;
+		volatile string? _documentUrl;
 
 		public MauiHybridWebViewClient(HybridWebViewHandler handler)
 		{
@@ -30,6 +31,8 @@ namespace Microsoft.Maui.Platform
 		// OnPageStarted — calls Reset() to clear stale scroll state.
 		public override void OnPageStarted(AWebView? view, string? url, Bitmap? favicon)
 		{
+			_documentUrl = url;
+			Handler?.ResetBinaryInvocation();
 			RefreshViewWebViewScrollCapture.Reset(view);
 			base.OnPageStarted(view, url, favicon);
 		}
@@ -145,6 +148,9 @@ namespace Microsoft.Maui.Platform
 				return true;
 			}
 
+			if (relativePath == HybridWebViewHandler.InvokeDotNetBinaryPath)
+				return true;
+
 			if (relativePath == HybridWebViewHandler.InvokeDotNetPath ||
 				relativePath == HybridWebViewHandler.SendMessagePath)
 			{
@@ -176,13 +182,28 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 1.a. Try the special "_framework/hybridwebview.js" path
+			if (relativePath == HybridWebViewHandler.InvokeDotNetBinaryPath)
+			{
+				var handler = Handler;
+				var session = handler.BinaryDocumentSession;
+				var cancellation = new System.Threading.CancellationTokenSource();
+				var bytesTask = handler.InvokeDotNetBinaryAsync(request.RequestHeaders, request.Method,
+					!request.IsForMainFrame && HybridWebViewHandler.IsBinaryAppDocument(_documentUrl),
+					fragmented: true, cancellationToken: cancellation.Token);
+				var stream = new HybridWebViewBinaryResponseStream(bytesTask, cancellation,
+					() => handler.BinaryDocumentSession == session);
+				return new WebResourceResponse("application/octet-stream", null, 200, "OK",
+					new Dictionary<string, string> { ["Cache-Control"] = "no-store" }, stream);
+			}
+
 			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
 			{
 				logger?.LogDebug("Request for {Url} will return the hybrid web view script.", fullUrl);
-				var jsStream = HybridWebViewHandler.GetEmbeddedStream(HybridWebViewHandler.HybridWebViewDotJsPath);
+				var jsStream = Handler.GetHybridScriptStream();
 				if (jsStream is not null)
 				{
-					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), jsStream);
+					return new WebResourceResponse("application/javascript", "UTF-8", 200, "OK",
+						new Dictionary<string, string> { ["Cache-Control"] = "no-store" }, jsStream);
 				}
 			}
 
@@ -325,6 +346,8 @@ namespace Microsoft.Maui.Platform
 
 		internal void Disconnect()
 		{
+			_documentUrl = null;
+			Handler?.ResetBinaryInvocation(disconnected: true);
 			_handler.SetTarget(null);
 		}
 	}

@@ -10,6 +10,45 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 
 public sealed class ActionGeneratorTests
 {
+	[Fact]
+	public void BinaryAndChannelsCompileWithDirectCallsAndOnlyJsonPayloadMetadata()
+	{
+		var generated = Generate("""
+			using System.Threading; using System.Threading.Tasks; using Maui.HybridApp;
+			public sealed record Progress(int Count);
+			public class Provider {
+				[HybridAction("bytes.echo", MainThread = true)] public static byte[] Echo(byte[] bytes, int count, CancellationToken cancellation, HybridActionContext context) => bytes;
+				[HybridAction("bytes.instance")] public Task<byte[]> Instance(byte[] bytes, [FromServices] System.IServiceProvider services) => Task.FromResult(bytes);
+				[HybridAction("bytes.stream")] public async Task<int> Stream(HybridChannel<byte[]> bytes, HybridChannel<Progress> progress) {
+					await bytes.SendAsync(new byte[]{0,255}); await progress.SendAsync(new Progress(1)); return 1;
+				}
+			}
+			""");
+		Assert.Empty(generated.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(generated.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var code = string.Join("\n", generated.Result.GeneratedTrees);
+		Assert.Contains("RegisterGeneratedBinary", code, StringComparison.Ordinal);
+		Assert.Contains("operation.BinaryPayload", code, StringComparison.Ordinal);
+		Assert.Contains("operation.BindChannel<byte[]>", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("JsonTypeInfo<byte[]>", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("GetMethod", code, StringComparison.Ordinal);
+	}
+
+	[Theory]
+	[InlineData("public byte[] Method(byte[] a, byte[] b) => a;", "HYBRID005")]
+	[InlineData("public int Method(byte[] a) => 1;", "HYBRID005")]
+	[InlineData("public byte[] Method(byte[]? a) => a!;", "HYBRID005")]
+	[InlineData("public byte[]? Method() => null;", "HYBRID005")]
+	[InlineData("public byte[][] Method() => [];", "HYBRID004")]
+	[InlineData("public int Method(HybridChannel<System.IO.Stream> stream) => 1;", "HYBRID004")]
+	[InlineData("public int Method([FromServices] HybridChannel<int> channel) => 1;", "HYBRID005")]
+	public void InvalidBinaryOrChannelShapesAreDiagnosticNotRuntimeSerialization(string method, string diagnostic)
+	{
+		var generated = Generate("using Maui.HybridApp; public class Provider { [HybridAction(\"bytes\")] " + method + " }");
+		Assert.Contains(generated.Result.Diagnostics, d => d.Id == diagnostic);
+		Assert.DoesNotContain(generated.Result.Diagnostics, d => d.Id == "CS8785");
+	}
+
 	static readonly MetadataReference[] References = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
 		.Concat([typeof(HybridActionAttribute).Assembly.Location, typeof(IServiceCollection).Assembly.Location,
 			typeof(ServiceCollection).Assembly.Location, typeof(PluginActions).Assembly.Location]).Distinct(StringComparer.Ordinal).Select(path => MetadataReference.CreateFromFile(path)).ToArray();

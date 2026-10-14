@@ -86,6 +86,23 @@ Check((await Call("core.connect", "{}", secondHub, secondSession)).Status == "su
 Check((await Call("plugin.echo", "{\"text\":\"second\"}", secondHub, secondSession)).Status == "success", "Second scope plugin failed.");
 Check((await Call("plugin.action.count", "{}", secondHub, secondSession)).Result!.Value.GetInt32() == 1, "Generated provider state leaked between scopes.");
 Check(events.Count == 1 && hub.IsCurrent(session), "A second view changed the first view's session/events.");
+using (var emptyArgs = JsonDocument.Parse("{}"))
+{
+	var metadata = JsonSerializer.Serialize(new Request(1, session, Guid.NewGuid().ToString("D"),
+		"consumer.bytes", emptyArgs.RootElement), ProtocolJsonContext.Default.Request);
+	var bytes = Enumerable.Range(0, 262144).Select(i => (byte)(i % 256)).ToArray();
+	var result = await hub.InvokeBinary(metadata, bytes);
+	Check(bytes.SequenceEqual(result), "Packed analyzer binary binding failed.");
+}
+var channelId = Guid.NewGuid().ToString("D");
+var channelWork = Call("consumer.channel", $$"""{"values":"{{channelId}}"}""");
+var channelEvent = events[^1];
+Check(channelEvent.Topic == "core.channel" && channelEvent.Data.GetProperty("value").GetInt32() == 41,
+	"Packed analyzer did not generate typed channel metadata.");
+Check((await Call("core.channel.ack", $$"""{"channelId":"{{channelId}}","ownerId":"{{channelEvent.Id}}","sequence":1,"accepted":true}""")).Status == "success",
+	"Packed channel consumption acknowledgement failed.");
+Check((await channelWork).Result!.Value.GetInt32() == 42 &&
+	events[^1].Data.GetProperty("kind").GetString() == "complete", "Packed channel completion failed.");
 var registry = scope.ServiceProvider.GetRequiredService<CommandRegistry>();
 try
 {
@@ -105,11 +122,21 @@ scope.Dispose();
 Check(!hub.IsCurrent(session), "Scope disposal must retire the native document.");
 Check(secondHub.IsCurrent(secondSession), "Disposing one view must not disconnect another.");
 Check((await Call("plugin.echo", "{\"text\":\"after\"}")).Error?.Code == "disconnected", "Disposed hub accepted work.");
-Console.WriteLine("PACKED_CONSUMER_PASS NuGet-only host + separate attributed plugin assembly, automatic action metadata with reflection disabled, DTOs/scalars/enums/nullability/collections, named/positional/default binding, DI/keyed/scoped calls, Unicode, events, strict schema, policy and duplicates; no product source.");
+Console.WriteLine("PACKED_CONSUMER_PASS NuGet-only host + separate attributed plugin assembly, automatic action metadata with reflection disabled, DTOs/scalars/enums/nullability/collections, named/positional/default binding, DI/keyed/scoped calls, Unicode, events, binary payloads, typed acknowledged channels, strict schema, policy and duplicates; no product source.");
 
 public sealed record ConsumerActionValue(string Text, int Number);
 public sealed class ConsumerActions
 {
 	[HybridAction("consumer.action")]
 	public ValueTask<ConsumerActionValue> Echo(string text, int number) => ValueTask.FromResult(new ConsumerActionValue(text, number));
+
+	[HybridAction("consumer.bytes")]
+	public byte[] EchoBytes(byte[] payload) => payload;
+
+	[HybridAction("consumer.channel")]
+	public async Task<int> Send(HybridChannel<int> values)
+	{
+		await values.SendAsync(41);
+		return 42;
+	}
 }

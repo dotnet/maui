@@ -1,6 +1,7 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { setImmediate } from 'node:timers/promises'
+import { Blob as NodeBlob } from 'node:buffer'
 import { flushSync } from 'svelte'
 import { NativeClient, configureBridge, resetBridge } from '@maui/api/core'
 import { availableFeatures, navigationPages } from '../src/catalog.ts'
@@ -23,7 +24,7 @@ const identity = { appName: 'Native', version: '1', build: '2', platform: 'MacCa
   architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
 const actions = {
   identity: ['run', 'reload'], clipboard: ['copy', 'paste'], preferences: ['save', 'read', 'remove'],
-  echo: ['echo', 'counter'], errors: ['fail', 'counter'], policy: ['missing', 'disabled', 'invalid'],
+  echo: ['echo', 'counter', 'binary-roundtrip', 'binary-document', 'binary-chunks', 'cancel'], errors: ['fail', 'counter'], policy: ['missing', 'disabled', 'invalid'],
   lifetime: ['increment', 'counter', 'reload'], events: ['echo', 'subscribe', 'unsubscribe'],
   work: ['work', 'cancel', 'reload'], development: ['identity', 'reload'],
   welcome: [], showcase: ['title', 'copy', 'prompt', 'device', 'open-window'],
@@ -48,6 +49,14 @@ function transport(handler) {
   const requests = [], messages = []
   let browserState, menuSource = null
   const bridge = {
+    async InvokeDotNetBinary(method, bytes, options) {
+      assert.equal(method, 'hybrid.invoke')
+      const request = JSON.parse(Object.entries(options.headers).sort(([a], [b]) => a.localeCompare(b)).map(([, value]) => value).join(''))
+      requests.push(request)
+      const output = await handler(request, bytes)
+      assert.ok(output instanceof Uint8Array)
+      return Uint8Array.from(output).buffer
+    },
     async InvokeDotNet(method, [wire]) {
       assert.equal(method, 'Invoke')
       const request = JSON.parse(wire)
@@ -179,6 +188,64 @@ test('typed registry mounts implemented experiments and both guides with actions
   }
   assert.ok(app.host.requests.every(request => request.command === 'window.info'),
     'only the live current-window page starts a native observation on mount')
+})
+
+test('binary experiment roundtrips a real browser Blob over the separate byte primitive and reports exact proof', async t => {
+  // jsdom's Blob omits arrayBuffer; supply the standard binary API, not a native transport fallback.
+  const previousBlob = globalThis.Blob
+  globalThis.Blob = NodeBlob
+  t.onTestFinished(() => { globalThis.Blob = previousBlob })
+  const app = fixture(t, (request, input) => {
+    if (request.command !== 'sample.binaryEcho') return defaultResult(request)
+    assert.deepEqual(request.args, {})
+    assert.equal(input.byteLength, 262144)
+    const bytes = new Uint8Array(input)
+    assert.ok(bytes.every((value, index) => value === index % 256))
+    return bytes
+  })
+  app.select('arguments')
+  app.click('binary-roundtrip')
+  await app.idle()
+  assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { exact: true, bytes: 262144, all256Values: true, transport: 'Core binary' })
+  assert.equal(app.host.requests.filter(request => request.command === 'sample.binaryEcho').length, 1)
+})
+
+test('binary experiment consumes ordered chunks and progress after async work using the shared operation cancellation pattern', async t => {
+  const buffers = new Map(), pending = new Map(), consumed = []
+  let app
+  app = fixture(t, async request => {
+    if (request.command === 'core.channel.fetch') return buffers.get(request.args.dataId)
+    if (request.command === 'core.channel.ack') {
+      assert.equal(request.args.accepted, true)
+      consumed.push(request.args.channelId)
+      pending.get(request.args.channelId).resolve()
+      return { accepted: true }
+    }
+    if (request.command !== 'sample.binaryChunks') return defaultResult(request)
+    for (let i = 1; i <= 4; i++) {
+      const dataId = crypto.randomUUID(), raw = deferred()
+      buffers.set(dataId, Uint8Array.from({ length: 65536 }, (_, n) => n % 256))
+      pending.set(request.args.chunks, raw)
+      app.event('core.channel', { channelId: request.args.chunks, sequence: i, kind: 'bytes', dataId }, request.id)
+      await raw.promise
+      const update = deferred()
+      pending.set(request.args.progress, update)
+      app.event('core.channel', { channelId: request.args.progress, sequence: i, kind: 'json', value: { completed: i, total: 4 } }, request.id)
+      await update.promise
+    }
+    for (const id of [request.args.chunks, request.args.progress])
+      app.event('core.channel', { channelId: id, sequence: 5, kind: 'complete' }, request.id)
+    return { accepted: true }
+  })
+  app.select('arguments')
+  app.click('binary-chunks')
+  assert.equal(app.find('[data-action="cancel"]').disabled, false)
+  for (let i = 0; i < 100 && app.session.busy; i++) await new Promise(resolve => setTimeout(resolve, 10))
+  await app.idle()
+  assert.equal(consumed.length, 8)
+  assert.ok(app.find('[data-testid="binary-stream-proof"]').textContent.includes('4 ordered chunks'))
+  assert.ok(app.find('#result-json').textContent.includes('262144'))
+  assert.equal(app.find('[data-action="cancel"]').disabled, true)
 })
 
 test('navigation groups are heading disclosures with a decorative arrow, not collapse-label buttons', t => {
@@ -897,7 +964,7 @@ test('selected text is rendered as text and excluded from result logs, with ordi
   const app = fixture(t, request => {
     if (request.command === 'filePicker.pick') return cancelled ? null : { id: 'selected', name: 'example.txt', contentType: 'text/plain' }
     if (request.command === 'file.openRead') return { id: 'reader', canSeek: true, maximumChunkBytes: 65536 }
-    if (request.command === 'file.readBytes') return { base64: btoa('<script>private</script>'), eof: true }
+    if (request.command === 'file.readBytes') return Uint8Array.of(1, ...new TextEncoder().encode('<script>private</script>'))
     return defaultResult(request)
   })
   app.select('file-picker')

@@ -1,6 +1,16 @@
 #nullable enable
 Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
 Microsoft.Maui.HybridWebViewInvoker
+Microsoft.Maui.HybridWebViewBinaryInvoker
+Microsoft.Maui.HybridWebViewBinaryInvoker.HybridWebViewBinaryInvoker() -> void
+Microsoft.Maui.HybridWebViewBinaryRequest
+Microsoft.Maui.HybridWebViewBinaryRequest.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.Maui.HybridWebViewBinaryRequest.MethodName.get -> string!
+Microsoft.Maui.HybridWebViewBinaryRequest.Payload.get -> byte[]!
+Microsoft.Maui.IHybridWebViewBinary
+Microsoft.Maui.IHybridWebViewBinary.BinaryInvoker.get -> Microsoft.Maui.HybridWebViewBinaryInvoker?
+abstract Microsoft.Maui.HybridWebViewBinaryInvoker.InvokeAsync(Microsoft.Maui.HybridWebViewBinaryRequest! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<byte[]!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapBinaryInvoker(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! view) -> void
 Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
 Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.IHybridWebView.Invoker.set -> void

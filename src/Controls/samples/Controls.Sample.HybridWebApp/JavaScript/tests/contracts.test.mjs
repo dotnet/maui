@@ -19,7 +19,7 @@ test('built root contains only lifecycle infrastructure without eager browser ac
   assert.equal(api.NativeClient, NativeClient)
   assert.equal(api.connect, connect)
   assert.equal(api.disconnect, disconnect)
-  assert.deepEqual(Object.keys(api).sort(), ['NativeClient', 'NativeError', 'connect', 'disconnect', 'invoke'])
+  assert.deepEqual(Object.keys(api).sort(), ['Channel', 'NativeClient', 'NativeError', 'binaryBlob', 'connect', 'disconnect', 'invoke', 'invokeBinary'])
   assert.equal(await loadNativeBridge(), undefined)
 })
 

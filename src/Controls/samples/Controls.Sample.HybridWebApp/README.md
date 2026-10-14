@@ -112,6 +112,54 @@ SDK-level annotations, referenced-interface discovery, contextual page service
 resolution and structural Share unions are design investigations, not shipped
 bridge features.
 
+### Binary data: three established paths
+
+The prototype follows Tauri's API patterns with an independently implemented
+MAUI transport:
+
+| Path | Public surface | Ownership |
+|---|---|---|
+| Whole-buffer invocation | `invokeBinary` accepts Blob/ArrayBuffer/views and returns Uint8Array; `binaryBlob` supplies caller-known MIME | The existing scoped hub authorizes the action, document and request |
+| Ordered native output | `Channel<T>` / `HybridChannel<T>`; `Channel.bytes` for raw chunks | The owning action; native sends await JS consumption acknowledgements |
+| Native reader resources | Selected-file `openRead`, `readBytes`, `readText`, `seek`, `close` | The owning document; existing readers now return binary chunks, not base64 JSON |
+
+Core supplies an optional `IHybridWebViewBinary` capability. The host explicitly
+sets `HybridWebView.BinaryInvoker` before boot; `HybridAppBinaryInvoker` admits
+only the SDK's authorized route. Existing framework JSON invocation remains
+unchanged. Whole input/output buffers are at most 4 MiB each; binary action
+metadata has a separate 2400-character budget, not the JSON action's 100000
+budget. Apple/Windows use raw request bodies; Android uses sequential bounded
+encoded fragments because intercepted requests expose no body. All three
+return raw resource response bytes. This is not zero-copy or arbitrary
+Stream serialization.
+
+Channels have one send in flight and at most four channels per action.
+An async JS consumer is awaited before acknowledging consumption. Binary
+chunks use binary fetches; small typed messages use generated JSON metadata.
+Three ordinary binary actions leave one Core transfer slot for serialized
+channel fetches; four reserved native control slots remain available alongside
+the 16 ordinary hub operations. The SDK's control queue is bounded to 64 calls.
+Completion, consumer errors, cancellation and document retirement release
+pending channel data. Channels do not outlive their action. Core's 30-second
+binary transfer deadline still applies, even to an interactive binary action;
+ordinary JSON dialogs retain their existing five-minute budget.
+
+The existing Arguments experiment demonstrates a 256 KiB Blob roundtrip,
+a native-produced PDF returned as a browser Blob, and ordered raw chunks with
+typed progress. PDF browser download is not native OS sharing. Selected-file
+handles remain read-only; no arbitrary paths, native file writer or live-stream
+upload API is exposed. See the managed and SDK documentation for signatures,
+limits and explicit native host requirements.
+
+Actual Mac Catalyst and Android acceptance round-trips empty, all-byte-value,
+256 KiB and exact 4 MiB buffers, validates sliced-view offsets, receives a
+native PDF and ordered raw chunks with awaited consumers, rejects oversized
+input, recovers after consumer failure and repeats after document reload.
+Android additionally selects a real 200035-byte file, reads four binary chunks
+with EOF, seeks/reads, releases its resources and cancels the real picker.
+Windows runtime and iOS/physical-device acceptance of these new paths remain
+unverified.
+
 For custom web calls, the shared-client core/root `invoke` function avoids a
 client factory at each call site:
 

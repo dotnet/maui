@@ -31,15 +31,17 @@ function hostFor(bytes, { partial = 3, seekable = true } = {}) {
         const id = `reader-${++readers}`; positions.set(id, 0)
         return { id, canSeek: seekable, maximumChunkBytes: 65536 }
       }
-      case 'file.readBytes': {
-        offset = positions.get(request.args.id)
-        const chunk = bytes.subarray(offset, offset + Math.min(partial, request.args.count))
-        offset += chunk.length; positions.set(request.args.id, offset)
-        return { base64: Buffer.from(chunk).toString('base64'), eof: offset >= bytes.length }
-      }
       case 'file.seek': positions.set(request.args.id, request.args.position); return { accepted: true }
       default: return { accepted: true }
     }
+  }, request => {
+    assert.equal(request.command, 'file.readBytes')
+    {
+        offset = positions.get(request.args.id)
+        const chunk = bytes.subarray(offset, offset + Math.min(partial, request.args.count))
+        offset += chunk.length; positions.set(request.args.id, offset)
+        return Uint8Array.of(offset >= bytes.length ? 1 : 0, ...chunk)
+      }
   })
   return host
 }

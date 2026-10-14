@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Web;
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Handlers
 
 		void Disconnect(WebView2 platformView)
 		{
+			ResetBinaryInvocation(disconnected: true);
 			platformView.Loaded -= OnWebViewLoaded;
 			_proxy.Disconnect(platformView);
 			if (platformView.CoreWebView2 is not null)
@@ -125,7 +127,8 @@ namespace Microsoft.Maui.Handlers
 			logger?.LogDebug("Intercepting request for {Url}.", url);
 
 			// 1. First check if the app wants to modify or override the request.
-			if (WebRequestInterceptingWebView.TryInterceptResponseStream(this, sender, eventArgs, url, logger))
+			if (!IsBinaryRequest(new Uri(url)) &&
+				WebRequestInterceptingWebView.TryInterceptResponseStream(this, sender, eventArgs, url, logger))
 			{
 				return;
 			}
@@ -142,7 +145,8 @@ namespace Microsoft.Maui.Handlers
 				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(url, eventArgs.Request, logger);
 
 				// 2.c. Create the response header
-				var headers = "";
+				var headers = IsBinaryRequest(uri) || uri.AbsolutePath == "/" + HybridWebViewDotJsPath
+					? $"Cache-Control: no-store{Environment.NewLine}" : "";
 				if (stream?.Size is { } contentLength && contentLength > 0)
 				{
 					headers += $"Content-Length: {contentLength}{Environment.NewLine}";
@@ -185,10 +189,24 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				// 1.a. Try the special "_framework/hybridwebview.js" path
+				if (relativePath == InvokeDotNetBinaryPath)
+				{
+					var session = BinaryDocumentSession;
+					var headers = new List<KeyValuePair<string, string>>();
+					foreach (var header in request.Headers)
+						headers.Add(header);
+					using var body = request.Content?.AsStreamForRead();
+					var bytes = await InvokeDotNetBinaryAsync(headers, request.Method,
+						IsBinaryAppDocument(PlatformView?.Source?.AbsoluteUri), fragmented: false, body);
+					if (BinaryDocumentSession != session)
+						return (null, null, 409, "Stale Document");
+					return (await CopyContentToRandomAccessStreamAsync(bytes.AsBuffer()), "application/octet-stream", 200, "OK");
+				}
+
 				if (relativePath == HybridWebViewDotJsPath)
 				{
 					logger?.LogDebug("Request for {Url} will return the hybrid web view script.", url);
-					var jsStream = GetEmbeddedStream(HybridWebViewDotJsPath);
+					using var jsStream = GetHybridScriptStream();
 					if (jsStream is not null)
 					{
 						var ras = await CopyContentToRandomAccessStreamAsync(jsStream);
@@ -335,6 +353,7 @@ namespace Microsoft.Maui.Handlers
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
+				webView.CoreWebView2.ContentLoading += OnContentLoading;
 
 				return true;
 			}
@@ -343,6 +362,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				Handler?.OnWebResourceRequested(sender, args);
 			}
+
+			void OnContentLoading(CoreWebView2 sender, CoreWebView2ContentLoadingEventArgs args) =>
+				Handler?.ResetBinaryInvocation();
 
 			public void Connect(Window window)
 			{
@@ -354,6 +376,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				platformView.WebMessageReceived -= OnWebMessageReceived;
 				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
+				platformView.CoreWebView2.ContentLoading -= OnContentLoading;
 
 				if (platformView.CoreWebView2 is CoreWebView2 webView2)
 				{

@@ -24,6 +24,8 @@ an explicit transport can implement the same contract:
 ```ts
 interface Bridge {
   InvokeDotNet(method: string, args: string[]): Promise<unknown>
+  InvokeDotNetBinary?(method: string, payload: ArrayBuffer | ArrayBufferView,
+    options?: { headers?: Record<string, string>; signal?: AbortSignal }): Promise<ArrayBuffer>
   SendRawMessage(message: string): void
 }
 ```
@@ -42,6 +44,60 @@ The .NET 11 invocation source generator and explicit System.Text.Json
 does not add this registration or a native command hub.
 
 ## Envelopes (camelCase)
+
+### Binary actions and ordered channels
+
+The host explicitly assigns `BinaryInvoker = new HybridAppBinaryInvoker(hub)`
+before document boot. Only `hybrid.invoke` is approved. The SDK calls
+`InvokeDotNetBinary('hybrid.invoke', payload, { headers, signal })`.
+`headers` contains **1–10** consecutive `maui-request-00` … `maui-request-09`
+values, each **1–240 printable ASCII characters**. Concatenating their values
+reconstructs the **same protocol-1 request** below, limited to **2400 ASCII-escaped
+characters**, containing version/session/id/command/args and **no byte payload**.
+Unknown/missing/extra fragments reject. Core's separate metadata envelope remains
+bounded (16 header entries, names ≤64, values ≤256, decoded JSON ≤8 KiB).
+No JSON/base64 success bytes or arbitrary stream serialization are used.
+
+The hub rejects binary connect; establish core.connect on JSON first. It shares
+the same authorization, replay cache, 16 ordinary-operation budget and registered action
+policies. Core separately bounds inputs/results to 4 MiB, active transfers to
+four and their lifetime to 30 seconds. Android transparently fragments upload
+under that Core primitive; SDK actions still receive/return whole byte buffers.
+The hub reserves four additional control slots. Ordinary binary actions are
+limited to three, leaving one Core slot for channel data fetches. The SDK
+serializes channel fetch/ack/close and cancellation through a 64-call control
+queue; normal topic unsubscribe keeps its existing immediate dispatch.
+The adapter throws genuine Core errors with a bounded `{code,message}` JSON
+exception message; the SDK maps that rejection to NativeError. A successful
+ArrayBuffer can never be a coded-error fallback.
+
+Channel arguments serialize to UUIDs, bound by generated native HybridChannel<T>
+parameters. Internal `core.channel` events do **not** require topic subscription:
+their session and event `id` identify the exact owning action. Event `data` has
+`channelId`, increasing `sequence`, `kind` (`json`, `bytes`, `complete`, `error`,
+`cancelled`), optional JSON `value`, raw `dataId`, or terminal `code`. At most four
+channels/action and one message in flight/channel; 16 KiB JSON or 64 KiB raw.
+Terminal notifications also consume the next sequence.
+
+`core.channel.fetch` is a binary action with empty input and structured args
+`{channelId,ownerId,dataId,sequence}`; result is exactly the chunk bytes. Fetch is
+single-consumption. `core.channel.ack` is JSON with
+`{channelId,ownerId,sequence,accepted}`; accepted true is valid only after any
+raw fetch and awaited JS callback, accepted false fails the send with
+`consumer_error`. `core.channel.close` is JSON `{channelId,ownerId}`. Unknown,
+late/replayed, wrong-owner/session or premature requests reject
+`invalid_channel`, never obtain another owner's bytes. Disposal/unsubscribe and
+owner completion/error/cancel drop pending callbacks, byte data and ack waiters.
+Channels do not survive command lifetime.
+
+Selected-file `file.readBytes` now uses this binary invocation with empty input
+and `{id,count}` args. Result is one explicit EOF byte (0 or 1) followed by
+0–count bytes (count ≤65536). The SDK removes that **resource-specific** marker;
+ordinary byte-result actions have no SDK prefix. This retains exact partial and
+nonseekable EOF while reusing safe FileResult authority, serialized reader
+read/seek/close and strict incremental UTF-8. No arbitrary path/writer exists.
+
+### JSON request and response
 
 Request, serialized as an ASCII-only JSON **string**, with canonical `D` UUIDs:
 
@@ -103,7 +159,7 @@ registration decision; this example topic is not part of the reference host.
 | `display.info` | `{}` | width/height/density/orientation/rotation/refreshRate | Direct IDeviceDisplay snapshot |
 | `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | nullable file metadata/`{ files }` resources | Actual OS selection, interactive policy; cancellation null/empty |
 | `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
-| `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | base64/eof or acceptance | ≤65536 bytes per read; real partial/EOF/seek/close |
+| `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | raw binary EOF byte + bytes, or JSON acceptance | ≤65536 file bytes per read; real partial/EOF/seek/close |
 | `dialogs.alert`, `dialogs.confirm` | title/message + native labels/flowDirection | `{ accepted: boolean }` | Calling native page, interactive policy |
 | `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet options | Prompt cancellation/text or selected action | Calling native page, interactive policy |
 | `window.info`, `window.title`, `window.size`, `window.position` | Optional target ID/private lease + corresponding changes | Private native snapshot or acceptance | Scoped MAUI window; writes validate actual capability |
@@ -173,7 +229,8 @@ kind/UUID and caps notices at 256 characters. A 15-second lease covers abrupt
 disconnects; host handler/window destruction must also clean up. Lease expiry
 does not resume old work. Reload creates a fresh session.
 
-The reference host allows 16 simultaneous calls and a 20-second native
+The reference host allows 16 ordinary simultaneous calls, four reserved control
+calls, and a 20-second native
 deadline. SDK frontend waits have a 23-second deadline and signal disconnect on
 timeout. Explicit `[HybridAction(..., Interactive = true)]` metadata opts only native
 dialogs and file selection into a 300000 ms budget; the handshake advertises

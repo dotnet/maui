@@ -14,6 +14,9 @@ Microsoft.Maui.Controls.Window.StatusBarTheme.get -> Microsoft.Maui.StatusBarThe
 Microsoft.Maui.Controls.Window.StatusBarTheme.set -> void
 static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.Controls.HybridWebView.BinaryInvoker.get -> Microsoft.Maui.HybridWebViewBinaryInvoker?
+Microsoft.Maui.Controls.HybridWebView.BinaryInvoker.set -> void
+static readonly Microsoft.Maui.Controls.HybridWebView.BinaryInvokerProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo

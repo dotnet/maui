@@ -90,13 +90,10 @@ function picked(value: unknown, client: NativeClient): PickedFile {
         if (closed || disposed) throw new NativeError('invalid_file', 'The selected file or reader was closed.')
         if (!Number.isInteger(count) || count <= 0 || count > opened.maximumChunkBytes)
           throw new NativeError('invalid_arguments', 'Read count must fit the native transport chunk budget.')
-        return client.invoke('file.readBytes', { id: opened.id, count }, value => {
-          const v = object(value), base64 = text(v.base64)
-          let decoded: string
-          try { decoded = atob(base64) } catch { throw new NativeError('invalid_response', 'Native file read was not valid base64.') }
-          if (decoded.length > count) throw new NativeError('invalid_response', 'Native file read exceeded requested count.')
-          return { bytes: Uint8Array.from(decoded, character => character.charCodeAt(0)), eof: boolean(v.eof) }
-        })
+        const result = await client.invokeBinary('file.readBytes', { id: opened.id, count })
+        if (result.length < 1 || result.length > count + 1 || result[0]! > 1)
+          throw new NativeError('invalid_response', 'Invalid bounded native file bytes/EOF response.')
+        return { bytes: result.subarray(1), eof: result[0] === 1 }
       }
       return {
         ...opened,

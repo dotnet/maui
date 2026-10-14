@@ -63,7 +63,7 @@ complete or requiring every platform to be certified.
 | Native dialogs | Alert, confirmation, prompt and action sheet; native Android acceptance, editable labels and normal cancellation | Additional native platform acceptance |
 | Multiple windows | Native Mac attached child windows and generated owner-close; Android selected route, independent counters/documents, parent-state preservation and OS-close cleanup | Windows/iPad runtime |
 | Window basics | Native title and size setters, live size events, separate current-window page; tested Mac display-origin centering math and compiled adapter | Manual centering/multiple displays, activation/close and Windows move events |
-| File picker | Actual Android content-backed stream and normal cancellation repeated with the modern nullable result contract; user-confirmed Mac preview, binary reads and bounded preview truncation | Multiple selection UI/native acceptance and native seek |
+| File picker | Actual Android content-backed stream, binary chunks/EOF, seek/read and normal cancellation; user-confirmed Mac preview and bounded preview truncation | Multiple selection UI/native acceptance and additional platform seek acceptance |
 | Theme | Native Android/Mac system/light/dark setting and effective CSS subscriptions | OS-originated theme changes and multi-window propagation acceptance |
 | Native menus | TypeScript-authored definitions/callbacks, item getters/setters, owning-window snapshot rebuild regressions | User confirmation of visible rename/check updates; toolbar/context menus |
 | Explorer shell | Unique feature pages; collapsible desktop panes, draggable/keyboard diagnostics divider, mobile flyouts and refresh in diagnostics | Broader native/mobile accessibility acceptance |
@@ -114,6 +114,31 @@ before UI, native speech locale/options binding, menu kind/modifier binding and
 rename, and separate browser status/error/navigation-result callbacks. Native
 menu check readback still needs the UIKit menu snapshot to be built; visible
 check/click acceptance remains manual and is not claimed by this milestone.
+
+The three-path binary implementation adds whole-buffer invocation, ordered
+action-owned channels and raw binary selected-file reads. The existing Arguments
+page demonstrates a 256 KiB Blob roundtrip, a native-produced PDF/browser Blob
+and async-consumed raw chunks with typed progress, without adding a duplicate
+experiment or checking another feature family. Native OS sharing and writeable
+file handles are not implemented. Whole transfers are bounded to 4 MiB;
+Android uploads use bounded encoded fragments while responses are binary.
+Channels await explicit consumption acknowledgements and retire with the action.
+Portable validation passes 308 managed tests, 67 SDK tests and 74 UI tests plus
+11 contracts; the actual 44-file tarball preserves 17 entrypoints and 358
+documented public declarations/members. Core's targeted binary/lifetime suite
+passes 37 tests plus 16 framework-JavaScript tests. Native acceptance is recorded
+separately; source-level coverage is not a platform runtime or NativeAOT claim.
+Actual Mac/Android hosts register 67 actions and pass exact empty/all-byte-value,
+256 KiB/4 MiB Blob roundtrips, sliced-view offsets, a native PDF, ordered raw
+chunks with awaited JS consumption, typed progress, consumer-error recovery
+and full repetition after document reload. Android also verifies a real
+200035-byte selection, four binary reads/EOF, seek/read, close/release and picker
+cancellation. Independent reviews reproduced and corrected completion-token
+cancellation, cancelled Windows-navigation retirement, consumer-rejection
+channel reuse and control-plane starvation; regressions cover the affected
+state machines. Native Mac exposed empty NSData.AsStream failing before
+dispatch, now corrected. Windows execution remains unverified; the general
+Controls unit project is blocked by pre-existing RS0030 calls outside this work.
 
 The new-window follow-up reproduced a Mac build-cache failure: the compiled
 Info.plist still disabled multiple scenes after the source enabled them. The

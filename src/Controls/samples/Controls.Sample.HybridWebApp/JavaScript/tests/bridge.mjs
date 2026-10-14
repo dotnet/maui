@@ -1,10 +1,21 @@
 import assert from 'node:assert/strict'
 
-export function mock(handler) {
-  const requests = [], messages = []
+export function mock(handler, binaryHandler) {
+  const requests = [], messages = [], binaries = []
   return {
-    requests, messages,
+    requests, messages, binaries,
     bridge: {
+      ...(binaryHandler ? {
+        async InvokeDotNetBinary(method, bytes, options) {
+          assert.equal(method, 'hybrid.invoke')
+          const metadata = Object.entries(options.headers).sort(([a], [b]) => a.localeCompare(b)).map(([, value]) => value).join('')
+          const request = JSON.parse(metadata)
+          requests.push(request); binaries.push({ request, bytes, options })
+          const output = await binaryHandler(request, bytes, options)
+          assert.ok(output instanceof Uint8Array)
+          return Uint8Array.from(output).buffer
+        },
+      } : {}),
       async InvokeDotNet(method, values) {
         assert.equal(method, 'Invoke')
         assert.equal(values.length, 1)

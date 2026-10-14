@@ -74,10 +74,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IHybridWebViewBinary.BinaryInvoker)] = MapBinaryInvoker,
 #if WINDOWS || IOS || MACCATALYST
 			[nameof(IView.FlowDirection)] = MapFlowDirection,
 #endif
 		};
+
+		/// <summary>Invalidates binary invocations when the optional invoker configuration changes.</summary>
+		public static void MapBinaryInvoker(IHybridWebViewHandler handler, IHybridWebView view)
+		{
+			if (handler is HybridWebViewHandler hybridHandler)
+			{
+				hybridHandler.ResetBinaryInvocation();
+#if IOS || MACCATALYST
+				hybridHandler.ConfigureBinaryNavigationObserver();
+#endif
+			}
+		}
 
 		public static CommandMapper<IHybridWebView, IHybridWebViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
@@ -268,6 +281,8 @@ namespace Microsoft.Maui.Handlers
 		[JsonSerializable(typeof(JSInvokeMethodData))]
 		[JsonSerializable(typeof(JSInvokeError))]
 		[JsonSerializable(typeof(DotNetInvokeResult))]
+		[JsonSerializable(typeof(BinaryBeginData))]
+		[JsonSerializable(typeof(BinaryError))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}

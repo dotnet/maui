@@ -25,6 +25,96 @@ or per-operation Args records. Plugin constructors and minimal host/protocol
 contracts are public; feature wire DTOs and notification codecs are implementation
 details.
 
+## Separate binary transport and operation-owned channels
+
+This WIP uses the new **opt-in Core binary primitive**, not a stock published
+MAUI package capability. Before the document boots, the owning host sets
+`view.BinaryInvoker = new HybridAppBinaryInvoker(hub)` alongside the existing
+JSON target. This approves only `hybrid.invoke`; the adapter forwards into the
+same scoped hub's session authorization, command registry, replay cache, shared
+16 ordinary-operation budget, deadline and cancellation boundaries. Four
+additional bounded control slots keep acknowledgements, fetches and cancellation
+available when owners fill that budget. Never install an
+independent Core delegate that bypasses the hub. This assignment is explicit per
+view, not automatic/global opt-in.
+Three ordinary binary owners leave the fourth Core transfer slot for channel
+fetches; SDK control calls are serialized through a bounded 64-call queue.
+
+The same generated assembly extension registers both action kinds:
+
+```csharp
+public sealed record ChunkInfo(int Index);
+public sealed class Documents
+{
+    [HybridAction("documents.echo")]
+    public static byte[] Echo(byte[] payload, string label) => payload;
+
+    [HybridAction("documents.chunks")]
+    public static async Task<int> Chunks(HybridChannel<byte[]> chunks,
+        HybridChannel<ChunkInfo> progress, CancellationToken cancellation)
+    {
+        for (var i = 0; i < 4; i++)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            await chunks.SendAsync(new byte[] { 0, 128, 255 });
+            await progress.SendAsync(new ChunkInfo(i));
+        }
+        return 4;
+    }
+}
+```
+
+The compiler treats a top-level `byte[]` result (including Task/ValueTask) as a
+binary action; at most one nonnullable, required `byte[]` input binds the
+separate payload and consumes no named/positional JSON argument. Such an input
+requires a byte-result action. No Stream, base64, numeric-array serialization,
+provider interface, runtime reflection or manual action mega-registration is
+introduced. Structured args, services, keyed services, context, cancellation,
+static/instance methods and main-thread policy retain their generated binders.
+`HybridChannel<T>` parameters consume a caller channel UUID argument; the
+compiler generates the typed JSON metadata for T or the raw-byte binder itself.
+Application code supplies neither channel JSON metadata nor a delegate from web.
+
+Whole buffers are limited to **4 MiB input and result**. Structured binary
+metadata is a complete version-1 request with session/id/command/args, limited
+to **2400 ASCII-escaped characters**, split into **1–10** consecutive
+`maui-request-00` … `maui-request-09` headers of at most **240 characters**.
+The adapter rejects missing, nonconsecutive, extra or invalid fragments.
+This fits Core's independent 16-header/256-character value and encoded metadata
+budgets (including heavily escaped text) without changing its policy. JSON commands retain the stock **100000**
+request-character limit. Core additionally bounds active transfers to four and
+their lifetime to 30 seconds, so a binary action cannot promise the full
+five-minute interactive policy (the hub still applies that policy).
+Raw results use Core's bytes response. Target exceptions remain genuine Core
+failures: the adapter throws a bounded JSON-coded error message which the SDK
+maps to NativeError, never returning success-shaped error bytes.
+
+Channels are **action-owned**, not background subscriptions. At most four per
+action, one send in flight per channel, 64 KiB per raw message or 16 KiB per
+ASCII JSON message. Await every SendAsync; concurrent sends reject `channel_busy`
+rather than accumulating an unbounded queue. Each send carries a sequence;
+raw events carry only a scoped, single-consumption data UUID. JS fetches bytes
+over the binary path, awaits decoding and the async consumer, then acknowledges.
+Native validates session, owner request, channel, data id and sequence; early,
+late, replayed and wrong-owner fetch/acks reject. Consumer exceptions send a
+negative ack (`consumer_error`); unsubscribe, operation cancel/deadline, document
+reload/disconnect and owner completion discard pending bytes and waiters.
+Old document callbacks cannot fetch or acknowledge new document data.
+Host event delivery still needs the existing UI-thread/current-session recheck.
+
+Selected `FileResult` authority and the existing read-stream resources are reused,
+not duplicated. `file.readBytes` now returns binary **one EOF byte (0/1) followed
+by at most 65536 actual file bytes**; this explicit marker preserves partial,
+empty and nonseekable EOF semantics. JS readBytes/readText reuse that route,
+retain serialized read/seek/close, and preserve strict incremental UTF-8 decoder
+state/reset behavior. Files remain read-only: there is no arbitrary filesystem
+path, writable-file API or OS-share claim.
+
+The playground's Arguments page (`#/arguments`) demonstrates a 256 KiB Blob
+roundtrip, a controlled native-produced PDF as bytes/Blob, and four ordered
+64 KiB chunks with awaited consumers. It uses annotated `sample.binaryEcho`,
+`sample.binaryDocument`, `sample.binaryChunks`, not fake native APIs.
+
 ## One startup registration
 
 ```csharp

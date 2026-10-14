@@ -13,4 +13,6 @@ namespace Maui.HybridApp;
 [JsonSerializable(typeof(DocumentMessage))]
 [JsonSerializable(typeof(ReadyResult))]
 [JsonSerializable(typeof(Ack))]
+[JsonSerializable(typeof(CommandError))]
+[JsonSerializable(typeof(ChannelMessage))]
 public partial class ProtocolJsonContext : JsonSerializerContext;

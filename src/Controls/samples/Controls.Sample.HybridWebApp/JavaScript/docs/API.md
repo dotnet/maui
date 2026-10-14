@@ -9,7 +9,7 @@ documentation](RELEASING.md#source-reference-and-docfxmicrosoft-learn)).
 
 | Import | Exports |
 | --- | --- |
-| `@maui/api` | `connect`, `disconnect`, `NativeClient`, `NativeError`; core types `Bridge`, `Json`, `Decoder`, `Ready`, `Operation`, `Progress` only |
+| `@maui/api` | `connect`, `disconnect`, `invoke`, `invokeBinary`, `Channel`, `binaryBlob`, `NativeClient`, `NativeError`; core/binary/channel argument types |
 | `@maui/api/core` | Infrastructure above, `configureBridge`, `resetBridge`, connection generation/readiness, `subscribeShared`, bootstrap and JSON validators |
 | `@maui/api/application` | Services `windows`, `window(id)`, `openWindow(options)`, `getTheme`, `setTheme`, `onThemeChanged`; theme types |
 | `@maui/api/essentials/app-info` | Service `getAppInfo()`; `AppInfo` |
@@ -44,6 +44,38 @@ types and validators, not Controls or the playground; no extra packages or
 transport framework are introduced by this organization.
 
 ## Features
+
+### Binary actions and channels
+
+`invokeBinary(command, args?, payload?, options?)` shares the document client.
+`payload` is Blob/ArrayBuffer/ArrayBufferView, defaults empty, and remains separate
+from JSON. Success is Uint8Array; `binaryBlob(bytes, mimeType)` requires an
+explicit known MIME type. Named/positional args exclude the native byte parameter
+and may contain Channel values at the top level. Byte input/result is at most
+4 MiB; metadata is at most 2400 ASCII-escaped characters, split into up to ten
+240-character headers, not one unbounded JSON header. `options.signal` cancels
+the actual Core transfer. Missing opt-in is `binary_unavailable`; real coded
+native errors remain NativeError, never successful byte buffers.
+
+`new Channel<T>(decoder, asyncConsumer)` and `Channel.bytes(asyncConsumer)` are
+single-use arguments to an attributed native action. `completion` resolves on
+owner completion or rejects on error/cancel; `unsubscribe()` invalidates local
+delivery and releases the pending native send. Native sends one message in flight
+per channel, at most four channels per action, 16 KiB JSON or 64 KiB raw chunks.
+Consumption ack follows awaited callback processing. Native checks sequence,
+owner/session, and single-use byte-data id. Consumer throw reports `consumer_error`
+and releases backpressure. Action end, cancel/deadline, document reload/disposal
+invalidate the channel; no background lifetime or OS share is promised.
+
+The matching `HybridAppBinaryInvoker` approves only the hub route and retains
+its session, 16 ordinary-operation, replay and interaction policy, with four
+reserved native control slots. Three binary owners leave one Core slot for
+serialized channel data fetches; the SDK control queue is bounded to 64 calls.
+Core independently
+limits four native binary calls and 30 seconds per transfer; binary interactive
+actions therefore cannot promise the five-minute JSON interaction duration.
+Android input uses Core's transparent bounded fragmentation, not SDK base64 JSON.
+See [wire details](PROTOCOL.md#binary-actions-and-ordered-channels).
 
 `getAppInfo()` resolves an `AppInfo`: native appName, version and build.
 `getDeviceInfo()` resolves a `DeviceInfo`: native platform, osVersion and model.
@@ -335,7 +367,8 @@ Native codes also include `invalid_request`, `unknown_command`,
 `duplicate_request`, `busy`, `disconnected`, `unsupported`, `permission_denied`
 and `native_error`. They are preserved, not conflated with browser availability.
 Unknown/disabled exposure is host policy; it is not an OS permission prompt.
-The reference host allows 16 simultaneous calls, a 20-second deadline, a
+The reference host allows 16 ordinary simultaneous calls, four reserved control
+calls, a 20-second deadline, a
 15-second document lease and 4096 retired documents. Reload after a stale lease;
 restart the native app after its retired-document limit.
 

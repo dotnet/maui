@@ -26,7 +26,8 @@ sealed class MainPage : ContentPage
 		_view = new HybridWebView
 		{
 			HybridRoot = "wwwroot",
-			DefaultFile = "index.html"
+			DefaultFile = "index.html",
+			BinaryInvoker = new HybridAppBinaryInvoker(hub)
 		};
 		_hub.NativeEventReceived += SendEvent;
 		_view.SetInvokeJavaScriptTarget<IHybridAppTarget>(_hub, ProtocolJsonContext.Default);

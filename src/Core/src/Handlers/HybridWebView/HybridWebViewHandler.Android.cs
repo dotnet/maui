@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			ResetBinaryInvocation(disconnected: true);
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				if (platformView.WebViewClient is MauiHybridWebViewClient webViewClient)

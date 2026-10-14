@@ -1,2 +1,2 @@
-export { NativeClient, NativeError, connect, disconnect, invoke } from './core.js'
-export type { Bridge, Json, Decoder, Ready, Operation, Progress } from './core.js'
+export { NativeClient, NativeError, Channel, binaryBlob, connect, disconnect, invoke, invokeBinary } from './core.js'
+export type { Bridge, Json, ActionArgs, BinaryInput, BinaryOptions, Decoder, Ready, Operation, Progress } from './core.js'

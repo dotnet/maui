@@ -1,5 +1,5 @@
 import * as root from '@maui/api'
-import { NativeError, connect, disconnect } from '@maui/api'
+import { NativeError, Channel, binaryBlob, invokeBinary, connect, disconnect } from '@maui/api'
 import type { Bridge, Json } from '@maui/api'
 import { configureBridge, resetBridge } from '@maui/api/core'
 import { getAppInfo } from '@maui/api/essentials/app-info'
@@ -44,6 +44,10 @@ const snapshot = { id: 'main', windowLease: 'private-lease', initialLocation: 'i
   title: 'Native', x: 80, y: 90, width: 800, height: 600, canResize: true, canPosition: true,
   canOpenWindows: true, canObservePosition: true, canCenter: true }
 const bridge: Bridge = {
+  async InvokeDotNetBinary(method, input) {
+    check(method === 'hybrid.invoke')
+    return input instanceof ArrayBuffer ? input.slice(0) : Uint8Array.from(new Uint8Array(input.buffer, input.byteOffset, input.byteLength)).buffer
+  },
   async InvokeDotNet(_, [wire]) {
     const request = JSON.parse(wire!) as { command: string; args: Record<string, Json>; id: string; session: string }
     if (request.command === 'menus.install') menuSource = 'menu'
@@ -83,7 +87,12 @@ configureBridge(bridge)
 const own: Window = currentWindow()
 try {
   const client = await connect()
-  check(Object.keys(root).sort().join(',') === 'NativeClient,NativeError,connect,disconnect,invoke')
+  check(Object.keys(root).sort().join(',') === 'Channel,NativeClient,NativeError,binaryBlob,connect,disconnect,invoke,invokeBinary')
+  const binary = await invokeBinary('consumer.echo', [7], new Blob([Uint8Array.of(0, 128, 255).buffer]))
+  check(binary.length === 3 && binary[1] === 128)
+  check(binaryBlob(binary, 'application/octet-stream').size === 3)
+  const channel: Channel<Uint8Array> = Channel.bytes(async bytes => { check(bytes.length <= 65536) })
+  await channel.unsubscribe()
   check((await getAppInfo()).appName === 'Consumer')
   check((await getDeviceInfo()).platform === 'test')
   check(await getText() === '你好 👋'); check(await setText('é')); check(await hasText())

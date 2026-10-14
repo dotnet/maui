@@ -1,5 +1,14 @@
 /** JSON-compatible arguments for the version-1 native command protocol. */
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json }
+/** Named/positional JSON arguments with operation-owned channels at the top level. */
+export type ActionArgs = Json | Record<string, Json | Channel<unknown>> | Array<Json | Channel<unknown>>
+/** Whole-buffer binary input; Blob MIME is descriptive metadata, not inferred from raw bytes. */
+export type BinaryInput = ArrayBuffer | ArrayBufferView | Blob
+/** Cooperative Core transport cancellation for a binary operation. */
+export interface BinaryOptions {
+  /** Cancels transfer and the owning native operation. Completed side effects are not undone. */
+  signal?: AbortSignal
+}
 /**
  * Validates untrusted native result or event data and returns its typed value.
  * @typeParam T - Validated result type.
@@ -17,6 +26,15 @@ export type Decoder<T> = (value: unknown) => T
  * additionally require a concrete page/window supplied by its managed host.
  */
 export interface Bridge {
+  /**
+   * Optional explicitly opted-in Core binary primitive. Success is raw bytes, never base64 JSON.
+   * @param method - Approved native forwarding route.
+   * @param payload - Separate whole-buffer bytes.
+   * @param options - Bounded action metadata and cooperative cancellation.
+   * @returns Raw native bytes; rejects genuine Core invocation failures.
+   */
+  InvokeDotNetBinary?(method: string, payload: ArrayBuffer | ArrayBufferView,
+    options?: { headers?: Record<string, string>; signal?: AbortSignal }): Promise<ArrayBuffer>
   /**
    * Invokes a registered native forwarding method.
    * @param method - Forwarding method name; this SDK uses `Invoke`.
@@ -241,6 +259,132 @@ export const progress: Decoder<Progress> = value => {
   return { completed, total }
 }
 type Listener = (value: unknown, id: string) => void
+interface ChannelBinding {
+  client: NativeClient
+  owner: string
+  sequence: number
+  busy: boolean
+}
+
+/**
+ * One typed, ordered native-to-JS channel supplied as an annotated action argument.
+ * @typeParam T - Runtime-validated message type.
+ * @remarks Single-use and operation-owned, with one native message in flight. Native
+ * SendAsync waits for decoding, async consumption and an explicit ack. No background
+ * survival after the action completes. Unsubscribe/consumer failure cancels delivery.
+ */
+export class Channel<T> {
+  /** Scoped channel identity, not native method or filesystem authority. */
+  readonly id = crypto.randomUUID()
+  private binding?: ChannelBinding
+  private used = false
+  private stopped = false
+  private readonly decodeValue: (value: unknown) => unknown
+  private readonly consume: (value: unknown) => void | Promise<void>
+  private resolve!: () => void
+  private reject!: (error: NativeError) => void
+  /** Completes when the native owner action ends; rejects on cancel/error/consumer failure. */
+  readonly completion = new Promise<void>((resolve, reject) => { this.resolve = resolve; this.reject = reject })
+  /**
+   * Creates a channel without native calls.
+   * @param decode - Validates each JSON message (or Uint8Array for raw messages).
+   * @param consumer - Awaited consumer; throwing reports consumer_error without blocking native indefinitely.
+   */
+  constructor(decode: Decoder<T>, consumer: (value: T) => void | Promise<void>) {
+    this.decodeValue = decode
+    this.consume = value => consumer(value as T)
+    // A caller may use only the owning action result; don't create unhandled rejection noise.
+    void this.completion.catch(() => {})
+  }
+  /**
+   * Creates a raw-byte channel; chunks are fetched over the approved binary path.
+   * @param consumer - Awaited bounded-chunk consumer.
+   * @returns Single-use operation-owned channel.
+   */
+  static bytes(consumer: (bytes: Uint8Array) => void | Promise<void>): Channel<Uint8Array> {
+    return new Channel(value => {
+      if (!(value instanceof Uint8Array)) throw new NativeError('invalid_response', 'Expected raw channel bytes.')
+      return value
+    }, consumer)
+  }
+  /** Stops this channel and releases native pending data. @returns Native close completion if bound. */
+  async unsubscribe(): Promise<void> {
+    if (this.stopped) return
+    const binding = this.binding
+    this.finish(new NativeError('cancelled', 'The channel was unsubscribed.'))
+    if (binding?.client.available)
+      await binding.client.invoke('core.channel.close', { channelId: this.id, ownerId: binding.owner }, ack)
+  }
+  /** @internal Binds once to the exact owning action/client. */
+  bind(client: NativeClient, owner: string): void {
+    if (this.used || this.stopped) throw new NativeError('invalid_channel', 'A channel may only belong to one action.')
+    this.used = true
+    this.binding = { client, owner, sequence: 0, busy: false }
+  }
+  /** @internal Invalidates callbacks and pending local bytes. */
+  finish(error?: NativeError): void {
+    if (this.stopped) return
+    this.stopped = true
+    this.binding = undefined
+    if (error) this.reject(error)
+    else this.resolve()
+  }
+  /** @internal Receives only the owning document's correlated native channel event. */
+  async receive(value: unknown, owner: string): Promise<void> {
+    const binding = this.binding
+    if (!binding || this.stopped || binding.owner !== owner) return
+    try {
+      const message = object(value), sequence = number(message.sequence), kind = text(message.kind)
+      if (!Number.isInteger(sequence) || sequence !== binding.sequence + 1)
+        throw new NativeError('invalid_response', 'Channel message is out of order or replayed.')
+      if (kind === 'complete' || kind === 'cancelled' || kind === 'error') {
+        binding.sequence = sequence
+        this.finish(kind === 'complete' ? undefined : new NativeError(kind === 'error' ? text(message.code) : 'cancelled', 'Native channel owner ended.'))
+        return
+      }
+      if (binding.busy || (kind !== 'json' && kind !== 'bytes'))
+        throw new NativeError('invalid_response', 'Channel message exceeded its one-in-flight bound.')
+      binding.sequence = sequence
+      binding.busy = true
+      const data = kind === 'bytes'
+        ? await binding.client.invokeBinary('core.channel.fetch', {
+          channelId: this.id, ownerId: binding.owner, dataId: text(message.dataId), sequence,
+        })
+        : message.value
+      if (this.binding !== binding || this.stopped || !binding.client.available) return
+      if (kind === 'bytes' ? !(data instanceof Uint8Array) || data.length > 65536 : asciiJson(data as Json).length > 16384)
+        throw new NativeError('invalid_response', 'Channel message exceeded its documented size bound.')
+      await this.consume(this.decodeValue(data))
+      if (this.binding !== binding || this.stopped || !binding.client.available) return
+      // Release the local flight before the ack: native can synchronously emit its next message.
+      binding.busy = false
+      await binding.client.invoke('core.channel.ack', { channelId: this.id, ownerId: binding.owner, sequence, accepted: true }, ack)
+    } catch (error) {
+      if (this.binding !== binding || this.stopped) return
+      const failure = error instanceof NativeError ? error : new NativeError('consumer_error', 'Channel consumer failed.')
+      this.finish(failure)
+      if (binding.client.available) {
+        try {
+          await binding.client.invoke('core.channel.ack', { channelId: this.id, ownerId: binding.owner, sequence: binding.sequence, accepted: false }, ack)
+        } catch {
+          // Malformed delivery may not have a valid acknowledgement; cancel the owning action instead.
+          try { await binding.client.invoke('core.cancel', { requestId: binding.owner }, ack) } catch { /* Document teardown owns cleanup. */ }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Creates a Blob from raw bytes with an explicit caller-known MIME type.
+ * @param bytes - Binary invocation result.
+ * @param mimeType - Known document type; raw bytes do not identify it.
+ * @returns Browser Blob without a native OS share claim.
+ */
+export function binaryBlob(bytes: Uint8Array, mimeType: string): Blob {
+  return new Blob([Uint8Array.from(bytes).buffer], { type: mimeType })
+}
+
 const handshakeCompletions = new WeakMap<NativeClient, Promise<void>>()
 interface SharedTopic {
   listeners: Set<(value: unknown, id: string) => void>
@@ -322,6 +466,10 @@ export class NativeClient {
   private readonly listeners = new Map<string, Listener>()
   private readonly aborts = new Map<string, () => void>()
   private readonly notices: (() => void)[] = []
+  private readonly channels = new Map<string, { owner: string; channel: Channel<unknown> }>()
+  private binaryActive = 0
+  private controlPending = 0
+  private controlTail: Promise<void> = Promise.resolve()
   private readonly bridge: Bridge | undefined
   private interactive = new Set<string>()
   private interactiveTimeout = 300000
@@ -388,11 +536,11 @@ export class NativeClient {
    * @remarks
    * Requests are bounded to 100000 ASCII-escaped characters. Frontend waits have a
    * 23-second deadline and signal disconnect on timeout; the reference host's deadline
-   * is 20 seconds with 16 simultaneous calls. Explicit interactive metadata from
+   * is 20 seconds with 16 ordinary calls and four reserved control calls. Explicit interactive metadata from
    * connect extends only those commands to at most five minutes plus three transport
    * seconds. Disposal still cancels immediately. No automatic replay or OS undo occurs.
    */
-  invoke<T>(command: string, args: Json, decode: Decoder<T>): Promise<T> { return this.start(command, args, decode).result }
+  invoke<T>(command: string, args: ActionArgs, decode: Decoder<T>): Promise<T> { return this.start(command, args, decode).result }
   /**
    * Starts correlated native work with a cooperative cancellation handle.
    * @typeParam T - Validated completion type.
@@ -402,15 +550,49 @@ export class NativeClient {
    * @returns Request UUID, completion promise and cancellation method.
    * @remarks Same session/error/size/deadline behavior as invoke; cancellation is an additional native call, not Promise abortion or undo.
    */
-  start<T>(command: string, args: Json, decode: Decoder<T>): Operation<T> {
+  start<T>(command: string, args: ActionArgs, decode: Decoder<T>): Operation<T> {
     const id = crypto.randomUUID()
-    const result = this.request(id, command, args, decode)
+    const control = ['core.cancel', 'core.channel.ack', 'core.channel.close'].includes(command)
+    const result = control
+      ? this.scheduleControl(() => this.request(id, command, args, decode))
+      : this.request(id, command, args, decode)
     return { id, result, cancel: () => this.invoke('core.cancel', { requestId: id }, ack) }
   }
-  private async request<T>(id: string, command: string, args: Json, decode: Decoder<T>): Promise<T> {
+  private scheduleControl<T>(work: () => Promise<T>): Promise<T> {
+    if (this.controlPending >= 64) return Promise.reject(new NativeError('busy', 'The bounded channel control queue is full.'))
+    this.controlPending++
+    const result = this.controlTail.then(work)
+    this.controlTail = result.then(() => {}, () => {})
+    return result.finally(() => { this.controlPending-- })
+  }
+  private bindArgs(id: string, args: ActionArgs): Json {
+    const bind = (value: Json | Channel<unknown>): Json => {
+      if (!(value instanceof Channel)) return value
+      if ([...this.channels.values()].filter(entry => entry.owner === id).length >= 4)
+        throw new NativeError('channel_limit', 'At most four channels may belong to one action.')
+      value.bind(this, id)
+      this.channels.set(value.id, { owner: id, channel: value })
+      return value.id
+    }
+    try {
+      if (Array.isArray(args)) return args.map(bind)
+      if (isRecord(args)) return Object.fromEntries(Object.entries(args).map(([key, value]) => [key, bind(value)]))
+      return args
+    } catch (error) {
+      const failure = error instanceof NativeError ? error : new NativeError('invalid_arguments', 'Action argument binding failed.')
+      this.finishChannels(id, failure)
+      throw failure
+    }
+  }
+  private finishChannels(id: string, error?: NativeError): void {
+    for (const [key, entry] of this.channels) if (entry.owner === id) {
+      this.channels.delete(key)
+      entry.channel.finish(error)
+    }
+  }
+  private async request<T>(id: string, command: string, args: ActionArgs, decode: Decoder<T>): Promise<T> {
     if (!this.available || !this.bridge) throw new NativeError('native_unavailable', 'Native host unavailable. Launch the MAUI app; browser mode does not emulate native APIs.')
-    const request = asciiJson({ version: 1, session: this.session, id, command, args })
-    if (request.length > 100000) throw new NativeError('invalid_arguments', 'Request exceeds the protocol size limit.')
+    let failure: NativeError | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     const obsolete = new Promise<never>((_, reject) => {
       this.aborts.set(id, () => reject(new NativeError('cancelled', 'The frontend document disconnected.')))
@@ -420,6 +602,8 @@ export class NativeClient {
       }, this.interactive.has(command) ? this.interactiveTimeout + 3000 : 23000)
     })
     try {
+      const request = asciiJson({ version: 1, session: this.session, id, command, args: this.bindArgs(id, args) })
+      if (request.length > 100000) throw new NativeError('invalid_arguments', 'Request exceeds the protocol size limit.')
       const transport = this.bridge.InvokeDotNet('Invoke', [request])
       if (command === 'core.connect') {
         // Cancelling the frontend wait cannot abort the framework's in-flight native handshake.
@@ -439,11 +623,82 @@ export class NativeClient {
       const error = object(response.error)
       throw new NativeError(response.status === 'cancelled' ? 'cancelled' : text(error.code), text(error.message))
     } catch (error) {
-      if (error instanceof NativeError) throw error
-      throw new NativeError('transport_error', error instanceof Error ? error.message : 'Native transport failed.')
+      failure = error instanceof NativeError ? error : new NativeError('transport_error', error instanceof Error ? error.message : 'Native transport failed.')
+      throw failure
     } finally {
       clearTimeout(timer)
       this.aborts.delete(id)
+      this.finishChannels(id, failure)
+    }
+  }
+  /**
+   * Invokes an approved byte-result action with separate bytes and bounded structured arguments.
+   * @param command - Registered binary action route.
+   * @param args - Named/positional JSON arguments and optional operation-owned channels.
+   * @param payload - Separate Blob, buffer or view; defaults to empty input.
+   * @param options - Cooperative transfer cancellation.
+   * @returns Exact native bytes as Uint8Array.
+   * @remarks 4 MiB input/result; 2400 ASCII metadata characters, at most ten
+   * 240-character headers. Same hub session, 16-operation/replay/deadline policies;
+   * Three binary actions may run concurrently; one Core transfer slot is reserved
+   * for serialized channel data fetches. Core has a 30-second transfer lifetime.
+   * Thus binary actions cannot promise the full five-minute interactive duration.
+   */
+  async invokeBinary(command: string, args: ActionArgs = {}, payload: BinaryInput = new Uint8Array(), options: BinaryOptions = {}): Promise<Uint8Array> {
+    if (command === 'core.channel.fetch')
+      return this.scheduleControl(() => this.binaryRequest(command, args, payload, options, false))
+    if (this.binaryActive >= 3) throw new NativeError('busy', 'At most three binary actions may be active; channel data has a reserved transfer slot.')
+    return this.binaryRequest(command, args, payload, options, true)
+  }
+  private async binaryRequest(command: string, args: ActionArgs, payload: BinaryInput, options: BinaryOptions, ordinary: boolean): Promise<Uint8Array> {
+    if (!this.available || !this.bridge?.InvokeDotNetBinary)
+      throw new NativeError('binary_unavailable', 'The host did not explicitly opt in to Core binary invocation.')
+    if (ordinary) this.binaryActive++
+    const id = crypto.randomUUID(), controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout> | undefined, failure: NativeError | undefined
+    const abort = () => controller.abort()
+    const obsolete = new Promise<never>((_, reject) => {
+      this.aborts.set(id, () => { abort(); reject(new NativeError('cancelled', 'The binary operation was cancelled.')) })
+      timer = setTimeout(() => { abort(); reject(new NativeError('transport_timeout', 'The binary action timed out.')); this.sendDisconnect() },
+        this.interactive.has(command) ? Math.min(this.interactiveTimeout + 3000, 33000) : 23000)
+      controller.signal.addEventListener('abort', () => reject(new NativeError('cancelled', 'The binary operation was cancelled.')), { once: true })
+    })
+    options.signal?.addEventListener('abort', abort, { once: true })
+    if (options.signal?.aborted) abort()
+    try {
+      const work = async () => {
+        try {
+          const size = payload instanceof Blob ? payload.size : payload.byteLength
+          if (size > 4 * 1024 * 1024) throw new NativeError('binary_limit', 'Binary input exceeds 4 MiB.')
+          const bytes = payload instanceof Blob ? await payload.arrayBuffer() : payload
+          if (controller.signal.aborted || this.disposed) throw new NativeError('cancelled', 'The binary operation was cancelled.')
+          const request = asciiJson({ version: 1, session: this.session, id, command, args: this.bindArgs(id, args) })
+          if (request.length > 2400) throw new NativeError('invalid_arguments', 'Binary action metadata exceeds 2400 ASCII characters.')
+          const headers: Record<string, string> = {}
+          for (let i = 0; i < request.length; i += 240)
+            headers[`maui-request-${String(i / 240).padStart(2, '0')}`] = request.slice(i, i + 240)
+          const result = await this.bridge!.InvokeDotNetBinary!('hybrid.invoke', bytes, { headers, signal: controller.signal })
+          if (!(result instanceof ArrayBuffer) || result.byteLength > 4 * 1024 * 1024)
+            throw new NativeError('invalid_response', 'Expected a bounded raw binary result.')
+          return new Uint8Array(result)
+        } finally {
+          if (ordinary) this.binaryActive--
+        }
+      }
+      const result = await Promise.race([work(), obsolete])
+      if (this.disposed || controller.signal.aborted) throw new NativeError('cancelled', 'The binary operation was cancelled.')
+      return result
+    } catch (error) {
+      failure = error instanceof NativeError ? error : new NativeError('transport_error', error instanceof Error ? error.message : 'Binary transport failed.')
+      if (!(error instanceof NativeError) && error instanceof Error && 'dotNetErrorType' in error) {
+        try { const value = object(JSON.parse(error.message)); failure = new NativeError(text(value.code), text(value.message)) } catch { /* Genuine unknown Core failure remains a transport error. */ }
+      }
+      throw failure
+    } finally {
+      clearTimeout(timer)
+      options.signal?.removeEventListener('abort', abort)
+      this.aborts.delete(id)
+      this.finishChannels(id, failure)
     }
   }
   /**
@@ -481,6 +736,12 @@ export class NativeClient {
     try {
       const event = object(JSON.parse(raw))
       if (event.version !== 1 || event.session !== this.session) return
+      if (event.topic === 'core.channel') {
+        const message = object(event.data)
+        const entry = this.channels.get(text(message.channelId))
+        if (entry) void entry.channel.receive(message, text(event.id))
+        return
+      }
       this.listeners.get(text(event.topic))?.(event.data, text(event.id))
     } catch (error) { console.warn('Rejected malformed native event', error) }
   }
@@ -515,6 +776,8 @@ export class NativeClient {
     this.disposed = true
     this.sendDisconnect()
     this.listeners.clear()
+    for (const entry of this.channels.values()) entry.channel.finish(new NativeError('cancelled', 'The frontend document disconnected.'))
+    this.channels.clear()
     for (const abort of this.aborts.values()) abort()
     this.aborts.clear()
     for (const cleanup of this.notices) cleanup()
@@ -634,7 +897,7 @@ export function connect(): Promise<NativeClient> {
  * validated against their declared method contracts. Service, context and cancellation
  * parameters consume neither object keys nor array positions.
  */
-export function invoke(command: string, args?: Json): Promise<unknown>
+export function invoke(command: string, args?: ActionArgs): Promise<unknown>
 /**
  * Invokes an opted-in native action and validates its result.
  * @typeParam T - The type produced by the supplied runtime decoder.
@@ -644,9 +907,22 @@ export function invoke(command: string, args?: Json): Promise<unknown>
  * @returns The validated result from the shared native client.
  * @throws {@link NativeError} for invocation or result-validation failures.
  */
-export function invoke<T>(command: string, args: Json, decode: Decoder<T>): Promise<T>
-export async function invoke(command: string, args: Json = {}, decode: Decoder<unknown> = value => value): Promise<unknown> {
+export function invoke<T>(command: string, args: ActionArgs, decode: Decoder<T>): Promise<T>
+export async function invoke(command: string, args: ActionArgs = {}, decode: Decoder<unknown> = value => value): Promise<unknown> {
   return (await connect()).invoke(command, args, decode)
+}
+
+/**
+ * Invokes a registered byte-result action on the shared document connection.
+ * @param command - Approved binary action name.
+ * @param args - Bounded named/positional arguments, including optional channels.
+ * @param payload - Separate whole-buffer bytes or Blob, up to 4 MiB.
+ * @param options - Cooperative transfer cancellation.
+ * @returns Exact bytes; use binaryBlob with an explicitly known MIME type.
+ * @throws NativeError for missing opt-in, invalid metadata/input, native failure or cancellation.
+ */
+export async function invokeBinary(command: string, args: ActionArgs = {}, payload: BinaryInput = new Uint8Array(), options: BinaryOptions = {}): Promise<Uint8Array> {
+  return (await connect()).invokeBinary(command, args, payload, options)
 }
 
 /**

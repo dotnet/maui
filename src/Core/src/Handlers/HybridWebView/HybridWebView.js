@@ -6,11 +6,132 @@
  * directly. To make changes, modify the TypeScript file and then recompile it.
  */
 (() => {
-    // Must stay in sync with HybridWebViewHandler.InvokeDotNetPath / SendMessagePath.
+    // Must stay in sync with HybridWebViewHandler's reserved endpoint paths.
     const InvokeDotNetEndpoint = '__hwvInvokeDotNet';
     const SendMessageEndpoint = '__hwvSendMessage';
+    const BinaryEndpoint = '__hwvInvokeDotNetBinary';
     // Cached function to send messages to the host application.
     let sendMessageFunction = null;
+    // Replaced by the native handler when serving the framework script. Never cache this script.
+    const binarySession = '__MAUI_BINARY_DOCUMENT_SESSION__';
+    let binaryId = 0;
+    let binaryActive = 0;
+    let binaryBeginQueue = Promise.resolve();
+    const binaryAborts = new Set();
+    window.addEventListener('pagehide', () => {
+        for (const controller of binaryAborts)
+            controller.abort();
+    });
+    /**
+     * Invokes an explicitly approved native command with complete binary bytes.
+     * Limits: 4 MiB in either direction, four active calls, 30 seconds per transfer.
+     * Android uploads sequential 12 KiB base64 fragments; results are always raw binary.
+     */
+    async function invokeDotNetBinary(methodName, payload, options = {}) {
+        if (!/^[0-9a-f]{32}$/.test(binarySession) || window.top !== window ||
+            !/^(app|https):\/\/0\.0\.0\.1$/.test(window.location.origin)) {
+            throw new Error('Binary invocation is available only in an opted-in local top-level document.');
+        }
+        if (!/^[A-Za-z0-9_.:-]{1,128}$/.test(methodName))
+            throw new Error('Invalid binary command name.');
+        if (!(payload instanceof ArrayBuffer) && !ArrayBuffer.isView(payload))
+            throw new TypeError('Expected binary bytes.');
+        const source = payload instanceof ArrayBuffer ? new Uint8Array(payload) :
+            new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength);
+        if (source.byteLength > 4 * 1024 * 1024)
+            throw new Error('Binary payloads are limited to 4 MiB.');
+        if (binaryActive >= 4)
+            throw new Error('At most four binary invocations may be active.');
+        const metadata = encodeURIComponent(JSON.stringify({ MethodName: methodName, Length: source.byteLength, Headers: options.headers }));
+        if (metadata.length > 16384)
+            throw new Error('Binary metadata is too large.');
+        if (binaryId >= 2147483647)
+            throw new Error('Binary request ids exhausted; reload the document.');
+        const id = ++binaryId;
+        const bytes = source.slice(); // Snapshot before awaits; caller mutation cannot alter the upload.
+        const controller = new AbortController();
+        const abort = () => controller.abort();
+        options.signal?.addEventListener('abort', abort, { once: true });
+        if (options.signal?.aborted)
+            controller.abort();
+        binaryActive++;
+        binaryAborts.add(controller);
+        let begun = false;
+        const timer = setTimeout(abort, 30000);
+        const fragmented = !(window.chrome?.webview || window.webkit?.messageHandlers?.webwindowinterop);
+        async function request(operation, extra = {}, body, signal = controller.signal) {
+            const response = await fetch(`${window.location.origin}/${BinaryEndpoint}`, {
+                method: 'POST',
+                cache: 'no-store',
+                signal,
+                headers: {
+                    'Content-Type': 'application/octet-stream',
+                    'X-Maui-Binary-Token': 'HybridWebView/1',
+                    'X-Maui-Binary-Session': binarySession,
+                    'X-Maui-Binary-Id': String(id),
+                    'X-Maui-Binary-Operation': operation,
+                    ...extra
+                },
+                body
+            });
+            const result = await response.arrayBuffer();
+            const marker = new Uint8Array(result)[0];
+            if (marker === 1) {
+                const failure = JSON.parse(new TextDecoder().decode(result.slice(1)));
+                const error = new Error(failure.ErrorMessage || 'Binary invocation failed.');
+                error.dotNetErrorType = failure.ErrorType;
+                throw error;
+            }
+            if (!response.ok || marker !== 0 || result.byteLength > 4 * 1024 * 1024 + 1) {
+                throw new Error('Invalid binary invocation response.');
+            }
+            return result.slice(1);
+        }
+        try {
+            // Only four calls can enter this queue; serialize starts to make ids replay-proof.
+            const begin = binaryBeginQueue.then(async () => {
+                begun = true;
+                await request('begin', { 'X-Maui-Binary-Metadata': metadata });
+            });
+            binaryBeginQueue = begin.catch(() => { });
+            await begin;
+            if (fragmented) {
+                for (let offset = 0, index = 0; offset < bytes.length; offset += 12 * 1024, index++) {
+                    let characters = '';
+                    for (const byte of bytes.subarray(offset, offset + 12 * 1024))
+                        characters += String.fromCharCode(byte);
+                    await request('chunk', {
+                        'X-Maui-Binary-Index': String(index),
+                        'X-Maui-Binary-Fragment': btoa(characters)
+                    });
+                }
+            }
+            return await request('invoke', {}, fragmented ? undefined : bytes);
+        }
+        catch (error) {
+            if (begun) {
+                // Best effort, never retry the host invocation. Native timeout is the final cleanup.
+                const cleanup = new AbortController();
+                const cleanupTimer = setTimeout(() => cleanup.abort(), 1000);
+                try {
+                    await request('cancel', {}, undefined, cleanup.signal);
+                }
+                catch {
+                    // The original failure is authoritative, including an already-completed request.
+                }
+                finally {
+                    clearTimeout(cleanupTimer);
+                }
+            }
+            throw error;
+        }
+        finally {
+            clearTimeout(timer);
+            options.signal?.removeEventListener('abort', abort);
+            binaryAborts.delete(controller);
+            binaryActive--;
+        }
+    }
     /*
      * Initialize the HybridWebView messaging system.
      * This method is called once when the page is loaded.
@@ -240,6 +361,8 @@
     const HybridWebView = {
         SendRawMessage: sendRawMessage,
         InvokeDotNet: invokeDotNet,
+        ...(/^[0-9a-f]{32}$/.test(binarySession) && window.top === window && /^(app|https):\/\/0\.0\.0\.1$/.test(window.location.origin)
+            ? { InvokeDotNetBinary: invokeDotNetBinary } : {}),
         __InvokeJavaScript: invokeJavaScript
     };
     // Make the following APIs available in global scope for invocation from JS

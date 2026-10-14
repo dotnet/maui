@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace Maui.HybridApp;
 
 /// <summary>Owns the bounded document session and command lifetime of one WebView without executing UI operations itself.</summary>
-public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
+public sealed partial class HybridAppTargetObject : IHybridAppTarget, IDisposable
 {
 	const int MaximumRequestLength = 100000;
 	const int MaximumRetiredDocuments = 4096;
@@ -135,6 +135,8 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		Request? message = null;
 		CancellationTokenSource? cancellation = null;
 		CancellationTokenSource? deadline = null;
+		CancellationTokenRegistration registration = default;
+		var channelStatus = "error";
 		try
 		{
 			if (request.Length > MaximumRequestLength || request.Any(character => character > 127))
@@ -144,41 +146,13 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 			if (message.Version != 1 || !Guid.TryParseExact(message.Session, "D", out _) ||
 				!Guid.TryParseExact(message.Id, "D", out _) || message.Command.Length is < 1 or > 64)
 				throw new CommandException("invalid_request", "Expected protocol version 1 and UUID session/request identities.");
-			lock (_gate)
-			{
-				if (_disposed)
-					throw new CommandException("disconnected", "The native WebView has been destroyed.");
-				if (message.Command == "core.connect" && _session != message.Session)
-				{
-					if (_retiredSessions.Contains(message.Session))
-						throw new CommandException("stale_session", "This document has been retired. Reload to create a new document identity.");
-					if (_retiredSessions.Count >= MaximumRetiredDocuments)
-						throw new CommandException("document_limit", "The document lifetime limit was reached. Restart the native app.");
-					ResetDocument();
-					_session = message.Session;
-				}
-				if (_session != message.Session)
-					throw new CommandException("stale_session", "This document is disconnected. Reload to reconnect.");
-				_lastSeen = _time.GetUtcNow();
-				if (_operations.Count >= 16)
-					throw new CommandException("busy", "At most 16 native calls may be active per document.");
-				if (_operations.ContainsKey(message.Id) || !_seen.Add(message.Id))
-					throw new CommandException("duplicate_request", "A request identity may only be used once.");
-				_seenOrder.Enqueue(message.Id);
-				if (_seenOrder.Count > 256)
-					_seen.Remove(_seenOrder.Dequeue());
-				var interactive = _registry.IsInteractive(message.Command);
-				deadline = new CancellationTokenSource(TimeSpan.FromSeconds(interactive ? 300 : 20), _time);
-				cancellation = CancellationTokenSource.CreateLinkedTokenSource(_document.Token, deadline.Token);
-				_operations.Add(message.Id, cancellation);
-				if (interactive)
-					_interactiveOperations.Add(message.Id);
-			}
-			var operation = new Operation(message.Session, message.Id, cancellation.Token,
-				(topic, data) => Publish(message.Session, message.Id, topic, data));
+			(cancellation, deadline) = BeginOperation(message, default);
+			registration = cancellation.Token.Register(() => FinishChannels(message.Id, "cancelled"));
+			var operation = CreateOperation(message, cancellation.Token);
 			var result = await _registry.DispatchAsync(message.Command, message.Args, operation)
 				.WaitAsync(cancellation.Token).ConfigureAwait(false);
 			cancellation.Token.ThrowIfCancellationRequested();
+			channelStatus = "complete";
 			return Encode(message, "success", result, null);
 		}
 		catch (OperationCanceledException)
@@ -204,6 +178,9 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		}
 		finally
 		{
+			if (message is not null && cancellation is not null)
+				FinishChannels(message.Id, cancellation.IsCancellationRequested ? "cancelled" : channelStatus);
+			registration.Dispose();
 			if (cancellation is not null && message is not null)
 			{
 				lock (_gate)
@@ -211,6 +188,8 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 					if (_operations.TryGetValue(message.Id, out var current) && ReferenceEquals(current, cancellation))
 					{
 						_operations.Remove(message.Id);
+						_controlOperations.Remove(message.Id);
+						_binaryOperations.Remove(message.Id);
 						_interactiveOperations.Remove(message.Id);
 						if (_registry.IsInteractive(message.Command))
 							_lastSeen = _time.GetUtcNow();
@@ -312,9 +291,9 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		if (_session is not null)
 			_retiredSessions.Add(_session);
 		_document.Cancel();
+		foreach (var channel in _channels.Values.ToArray()) EndChannel(channel, "cancelled");
 		_document.Dispose();
 		_document = new CancellationTokenSource();
-		_operations.Clear();
 		_interactiveOperations.Clear();
 		foreach (var topic in _subscriptions)
 			_registry.StopTopic(topic);

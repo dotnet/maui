@@ -46,7 +46,7 @@ await set('theme', 'dark') // host-owned namespace and restrictions
 
 No view object is needed in ordinary application code. The root contains only
 infrastructure/lifecycle APIs and core types:
-`import { connect, disconnect, NativeClient, NativeError } from '@maui/api'`.
+`import { connect, disconnect, invoke, invokeBinary, Channel, binaryBlob, NativeClient, NativeError } from '@maui/api'`.
 Essentials helpers and their DTOs belong to explicit `essentials/*` subpaths;
 page/window helpers belong to `ui/*`.
 These are module boundaries in **one npm package**, not separately published
@@ -124,6 +124,55 @@ rarely interact with the transport; that is a future integration, not a current
 deliverable. The npm SDK itself is a standalone product artifact.
 
 ## Lifetime
+
+### Whole buffers, ordered channels and read handles
+
+The matching host must explicitly set
+`HybridWebView.BinaryInvoker = new HybridAppBinaryInvoker(hub)` **before boot**.
+Installing this npm package does not opt in stock Core or grant native methods.
+The WIP requires the new Core binary capability; missing opt-in rejects
+`binary_unavailable`, never silently falling back to JSON/base64.
+
+```ts
+import { invoke, invokeBinary, Channel, binaryBlob } from '@maui/api'
+import { number, object } from '@maui/api/core'
+
+// These routes must be attributed and explicitly registered by your own host.
+const input = Uint8Array.from({ length: 262144 }, (_, i) => i % 256)
+const echoed = await invokeBinary('documents.echo', { label: 'example' }, new Blob([input.buffer]))
+const documentBytes = await invokeBinary('documents.pdf')
+const pdf = binaryBlob(documentBytes, 'application/pdf') // MIME is known metadata, not inferred from bytes
+const chunks = Channel.bytes(async bytes => { await consumeBytes(bytes) })
+const updates = new Channel(value => number(object(value).index), async index => { console.log(index) })
+await invoke('documents.chunks', { chunks, progress: updates })
+await Promise.all([chunks.completion, updates.completion])
+```
+
+`consumeBytes` above is an application function. `invokeBinary(command, args?,
+payload?, { signal }?)` accepts Blob, ArrayBuffer or ArrayBufferView input and
+returns Uint8Array; omitted payload is empty. Structured args are bounded to
+2400 ASCII-escaped request characters, split into at most ten 240-character
+metadata headers. Whole input/output is at most 4 MiB. The same hub session,
+16 ordinary-operation, replay and cancellation policies apply, with four reserved
+native control slots. Three ordinary binary actions leave one Core slot for
+serialized channel fetches; the control queue is bounded to 64 calls. Core has
+its own four-transfer and 30-second limit. No global server, arbitrary Stream, binary
+JSON arrays or transport compatibility alias exists.
+
+Channels are single-use and **end when their owning action ends**, not durable
+background subscriptions. Native allows four per action and one send in flight
+per channel; raw chunks are at most 64 KiB and JSON messages 16 KiB. Native
+SendAsync waits until JS has fetched raw bytes, decoded and **awaited** the
+consumer, then sent an explicit consumption acknowledgement. Sequence, owner,
+session and single-use data IDs are checked. Throwing consumers fail with
+`consumer_error` without leaving the native send blocked. `unsubscribe()`,
+disconnect, reload, cancellation/deadline and completion clear pending state.
+An old channel cannot be rebound to a new document.
+
+Existing selected-file FileReader handles reuse the binary path for readBytes
+and strict incremental UTF-8 readText. Their 64 KiB reads, partial/EOF behavior,
+seek/reset, serialized calls and close/owner teardown are unchanged. Files stay
+read-only; no arbitrary path/write or OS share support is claimed.
 
 ```ts
 import { connect, disconnect } from '@maui/api'

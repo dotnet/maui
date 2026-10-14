@@ -78,7 +78,8 @@ public sealed class DependencyInjectionTests
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
-			"core.subscribe", "core.unsubscribe", "device.info" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
+			"core.subscribe", "core.unsubscribe", "core.channel.ack", "core.channel.close", "core.channel.fetch",
+			"device.info" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
 		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "launcher.openUrl", "speech.speak" }, ready.InteractiveCommands);
 		Assert.Equal("host-policy.", ready.PreferenceNamespace);
 		Assert.Equal(8, ready.MaximumTextLength);

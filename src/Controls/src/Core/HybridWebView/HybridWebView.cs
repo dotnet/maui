@@ -12,12 +12,14 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	public class HybridWebView : View, IHybridWebView
+	public class HybridWebView : View, IHybridWebViewBinary
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty;
 		/// <summary>Bindable property for <see cref="HybridRoot"/>.</summary>
 		public static readonly BindableProperty HybridRootProperty;
+		/// <summary>Bindable property for <see cref="BinaryInvoker"/>.</summary>
+		public static readonly BindableProperty BinaryInvokerProperty;
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
 		[UnconditionalSuppressMessage("Trimming", "IL3050:RequiresDynamicCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
@@ -25,6 +27,14 @@ namespace Microsoft.Maui.Controls
 		{
 			DefaultFileProperty = BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
 			HybridRootProperty = BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
+			BinaryInvokerProperty = BindableProperty.Create(nameof(BinaryInvoker), typeof(HybridWebViewBinaryInvoker), typeof(HybridWebView));
+		}
+
+		/// <inheritdoc/>
+		public HybridWebViewBinaryInvoker? BinaryInvoker
+		{
+			get => (HybridWebViewBinaryInvoker?)GetValue(BinaryInvokerProperty);
+			set => SetValue(BinaryInvokerProperty, value);
 		}
 
 		/// <inheritdoc/>
