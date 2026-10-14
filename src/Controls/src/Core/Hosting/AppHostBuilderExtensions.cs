@@ -79,7 +79,7 @@ public static partial class AppHostBuilderExtensions
 		builder.EnableElementHandlerDefaults();
 
 		// HybridWebView remains registered through DI because it is not declared with [ElementHandler].
-		builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<HybridWebView, HybridWebViewHandler>());
+		builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<HybridWebView>(static _ => new HybridWebViewHandler()));
 		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 
 		builder.ConfigureMauiControlsDiagnostics();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Hosting.Internal;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
 using BasePlatformType = ObjCRuntime.INativeObject;
@@ -32,6 +33,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ElementExtensions
 	{
+		static HashSet<Type> handlersWithConstructors = new HashSet<Type>();
+
 		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
 		{
 			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
@@ -73,15 +76,22 @@ namespace Microsoft.Maui.Platform
 				var viewType = view.GetType();
 				try
 				{
-					handler = context.Handlers.GetHandler(viewType);
+					if (handlersWithConstructors.Contains(viewType))
+						handler = viewType.CreateTypeWithInjection(context);
+					else
+						handler = context.Handlers.GetHandler(viewType, context);
 				}
 				catch (MissingMethodException)
 				{
 					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
 				}
 				catch (HandlerNotFoundException ex) when (ex.InnerException is MissingMethodException)
 				{
 					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
 				}
 			}
 
@@ -143,7 +153,7 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(element.GetType());
+				handler = context.Handlers.GetHandler(element.GetType(), context);
 
 			if (handler == null)
 				throw new Exception($"Handler not found for window {element}.");

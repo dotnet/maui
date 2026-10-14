@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, ButtonHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button>(static _ => new ButtonHandlerStub()))
 				.Build();
 
 			Assert.NotNull(mauiApp.Services);
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TryAddHandlerDoesNotReplaceEnabledElementHandlerDefault()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<Button, ButtonHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<Button>(static _ => new ButtonHandlerStub()))
 				.UseMauiApp<ApplicationStub>()
 				.Build();
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TryAddHandlerRegistersDerivedTypeWithoutDirectElementHandlerDefault()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<FancyButton, ButtonHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<FancyButton>(static _ => new ButtonHandlerStub()))
 				.UseMauiApp<ApplicationStub>()
 				.Build();
 
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TryAddHandlerRegistersWhenElementHandlerDefaultsAreDisabled()
 		{
 			var mauiApp = MauiApp.CreateBuilder(useDefaults: false)
-				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<Button, ButtonHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<Button>(static _ => new ButtonHandlerStub()))
 				.Build();
 
 			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
@@ -100,7 +100,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Assert.Same(handlers, handlers.AddMauiControlsHandlers());
 					Assert.Equal(registrationCount, handlers.Count);
 
-					handlers.TryAddHandler<Button, ButtonHandlerStub>();
+#pragma warning disable RS0030 // This test verifies compatibility with type-based handler registrations.
+					handlers.TryAddHandler(typeof(Button), typeof(ButtonHandlerStub));
+#pragma warning restore RS0030
 
 					registrationCount = handlers.Count;
 					Assert.Same(handlers, handlers.AddMauiControlsHandlers());
@@ -231,7 +233,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, ButtonHandlerStub>())
+				.ConfigureMauiHandlers(handlers =>
+				{
+#pragma warning disable RS0030 // This test verifies compatibility with type-based handler registrations.
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandlerStub));
+#pragma warning restore RS0030
+				})
 				.Build();
 
 			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();

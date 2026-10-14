@@ -23,12 +23,20 @@ namespace Microsoft.Maui.Hosting.Internal
 				() => _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType(viewType));
 		}
 
-		public IElementHandler? GetHandler(Type type)
+		public IElementHandler? GetHandler(Type type) =>
+			GetHandler(type, this);
+
+		internal IElementHandler? GetHandler(Type type, IMauiContext mauiContext) =>
+			GetHandler(type, new HandlerActivationServiceProvider(this, mauiContext));
+
+		IElementHandler? GetHandler(Type type, IServiceProvider implementationFactoryServiceProvider)
 		{
 			// 1. Exact DI registration (allows overriding attribute-based defaults)
-			if (InternalCollection.TryGetService(type, out _)
-				&& GetService(type) is IElementHandler exactHandler)
+			if (InternalCollection.TryGetService(type, out ServiceDescriptor? exactDescriptor)
+				&& exactDescriptor is not null
+				&& GetService(type, implementationFactoryServiceProvider) is IElementHandler exactHandler)
 			{
+				HotReload.MauiHotReloadHelper.RegisterHandlerType(exactDescriptor, exactHandler.GetType());
 				return exactHandler;
 			}
 
@@ -42,8 +50,11 @@ namespace Microsoft.Maui.Hosting.Internal
 			// 3. Assignable DI registration. AddHandler<Button, CustomButtonHandler>() still
 			// applies to FancyButton when FancyButton does not declare its own handler.
 			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler assignedHandler)
+				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? assignedDescriptor)
+				&& assignedDescriptor is not null
+				&& GetService(serviceType, implementationFactoryServiceProvider) is IElementHandler assignedHandler)
 			{
+				HotReload.MauiHotReloadHelper.RegisterHandlerType(assignedDescriptor, assignedHandler.GetType());
 				return assignedHandler;
 			}
 
@@ -155,6 +166,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _serviceCacheValueFactory).Value;
 
+		new object? GetService(Type serviceType, IServiceProvider implementationFactoryServiceProvider) =>
+			base.GetService(serviceType, implementationFactoryServiceProvider);
+
 		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
 		{
 			var handlerType = GetValidatedHandlerType(viewType, elementHandlerAttribute);
@@ -191,5 +205,42 @@ namespace Microsoft.Maui.Hosting.Internal
 		private readonly record struct ElementHandlerAttributeResolution(
 			ElementHandlerAttribute? Direct,
 			ElementHandlerAttribute? Inherited);
+
+		sealed class HandlerActivationServiceProvider : IServiceProvider
+		{
+			readonly MauiHandlersFactory _handlerServices;
+			readonly IMauiContext _mauiContext;
+
+			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext)
+			{
+				_handlerServices = handlerServices;
+				_mauiContext = mauiContext;
+			}
+
+			public object? GetService(Type serviceType)
+			{
+				if (serviceType == typeof(IServiceProvider))
+					return this;
+
+				if (serviceType == typeof(IMauiContext))
+					return _mauiContext;
+
+#if ANDROID
+				if (serviceType == typeof(global::Android.Content.Context))
+					return _mauiContext.Context;
+#endif
+
+				return _handlerServices.GetService(serviceType, this)
+					?? _mauiContext.Services.GetService(serviceType);
+			}
+		}
+	}
+
+	static class MauiHandlersFactoryExtensions
+	{
+		internal static IElementHandler? GetHandler(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
+			handlers is MauiHandlersFactory handlersFactory
+				? handlersFactory.GetHandler(type, mauiContext)
+				: handlers.GetHandler(type);
 	}
 }
