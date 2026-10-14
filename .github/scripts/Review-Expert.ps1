@@ -63,14 +63,31 @@ function Invoke-ExpertGh {
 
     $stderr = [IO.Path]::GetTempFileName()
     try {
-        $raw = if ($null -ne $Body) {
-            (ConvertTo-Json -InputObject $Body -Depth 50 -Compress) |
-                & gh api @Arguments --input - 2>$stderr
-        } else {
-            & gh api @Arguments 2>$stderr
-        }
-        if ($LASTEXITCODE -ne 0) {
-            throw "GitHub API collection/publication failed for $($Arguments[0])."
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            $raw = if ($null -ne $Body) {
+                (ConvertTo-Json -InputObject $Body -Depth 50 -Compress) |
+                    & gh api @Arguments --input - 2>$stderr
+            } else {
+                & gh api @Arguments 2>$stderr
+            }
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -eq 0) { break }
+            $diagnostic = [IO.File]::ReadAllText($stderr)
+            $http = [regex]::Match($diagnostic, '\(HTTP ([0-9]{3})\)')
+            $httpStatus = if ($http.Success) { [int]$http.Groups[1].Value } else { 0 }
+            $transport = -not $httpStatus -and $diagnostic -match
+                '(?i)dial tcp|TLS handshake timeout|i/o timeout|connection reset by peer|unexpected EOF'
+            $category = if ($httpStatus) {
+                "HTTP $httpStatus"
+            } elseif ($transport) { 'network transport failure' } else { 'unclassified CLI failure' }
+            # Never echo raw API/CLI diagnostics: they can contain credentials or PR-controlled text.
+            $retryable = $httpStatus -in @(502, 503, 504) -or $transport
+            if ($null -eq $Body -and $retryable -and $attempt -lt 3) {
+                Write-Warning "GitHub evidence read failed ($category; exit $exitCode); retrying attempt $($attempt + 1)/3."
+                Start-Sleep -Seconds (2 * $attempt)
+                continue
+            }
+            throw "GitHub API collection/publication failed for $($Arguments[0]) ($category; exit $exitCode; attempt $attempt)."
         }
         $text = $raw -join "`n"
         if ([string]::IsNullOrWhiteSpace($text)) { throw 'GitHub returned no JSON evidence.' }
@@ -463,7 +480,7 @@ function Invoke-ExpertPrepare {
         $label = "$id. $([Net.WebUtility]::HtmlEncode($dimensionNames[$id]))"
         $source = Join-Path $ResultDirectory "dimensions/$id.json"
         if (-not (Test-Path -LiteralPath $source)) {
-            $gaps.Add("Dimension $id did not persist an independent result.")
+            $gaps.Add("The $($dimensionNames[$id]) check did not return a saved result.")
             $dimensionDetails.Add("- &#x26A0;&#xFE0F; $label (no result)")
             continue
         }
@@ -479,11 +496,11 @@ function Invoke-ExpertPrepare {
             $completed++
             $dimensionDetails.Add("- &#x2705; $label")
         } else {
-            $gaps.Add("Dimension $id did not complete.")
+            $gaps.Add("The $($dimensionNames[$id]) check did not finish.")
             $dimensionDetails.Add("- &#x26A0;&#xFE0F; $label (incomplete)")
         }
     }
-    if (-not $state.validation_complete) { $gaps.Add('The reviewer did not complete finding validation.') }
+    if (-not $state.validation_complete) { $gaps.Add('The final check of potential findings did not finish.') }
     $exceptionKeys = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($exception in $state.input_path_exceptions) {
         if ($exception.kind -notin @('committed-credential', 'archive-path-escape') -or
@@ -582,6 +599,11 @@ function Invoke-ExpertPrepare {
             $summary = "**Coverage:** $completed/$($dimensions.Count) dimensions; " +
                 "finding validation $(if ($state.validation_complete) { 'complete' } else { 'incomplete' })."
             $analysis = "**Dimensions:**`n" + ($dimensionDetails -join "`n") + "`n"
+            if ($gaps.Count) {
+                $analysis += "`n**Why the review is incomplete:**`n"
+                foreach ($gap in $gaps) { $analysis += "- $([Net.WebUtility]::HtmlEncode($gap))`n" }
+                $analysis += "`nMissing review results are not confirmed defects in the PR.`n"
+            }
             if ($findings.Count -or $unplaced.Count) {
                 $analysis += "`n**Findings:** $($inline.Count) new inline, $($unplaced.Count) in this comment, " +
                     "$alreadyPostedCount already posted (not repeated).`n"
@@ -593,13 +615,15 @@ function Invoke-ExpertPrepare {
             $analysis += "`nAI source/history review only; no builds or tests run. Required CI and human approval still apply.`n"
             $mergeReady = $status -eq 'complete' -and $findings.Count -eq 0 -and $unplaced.Count -eq 0
             $findingCount = $inline.Count + $alreadyPostedCount + $unplaced.Count
-            $decisionReason = if ($gaps.Count) { 'Review incomplete: ' + ($gaps -join ' ') } elseif ($findings.Count -or $unplaced.Count) {
+            $decisionReason = if ($findings.Count -or $unplaced.Count) {
                 "$findingCount actionable $(if ($findingCount -eq 1) { 'finding' } else { 'findings' }); address before merging."
+            } elseif ($gaps.Count) {
+                'Review incomplete; see the missing checks below. This is not a confirmed defect in the PR.'
             } else { 'No actionable findings.' }
             $body = "$runMarker`n$resultMarker`n`n" + (New-ExpertReviewComment -Status $status `
                 -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
                 -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis `
-                -MergeReady $mergeReady -DecisionReason $decisionReason)
+                -MergeReady $mergeReady -HasFindings:($findingCount -gt 0) -DecisionReason $decisionReason)
             if ($body.Length -gt 60000) { throw 'The expert summary exceeds its publication limit.' }
             $items = [Collections.Generic.List[object]]::new()
             foreach ($finding in $inline) {

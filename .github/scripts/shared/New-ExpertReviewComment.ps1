@@ -29,6 +29,8 @@ function New-ExpertReviewComment {
 
         [bool]$MergeReady = $false,
 
+        [bool]$HasFindings = $false,
+
         [string]$DecisionReason = ''
     )
 
@@ -66,7 +68,10 @@ function New-ExpertReviewComment {
             'closed' { 'PR is closed.' }
         }
     }
-    $decision = "$icon **Merge recommendation: $(if ($MergeReady) { 'YES' } else { 'NO' }).** " +
+    $recommendation = if ($MergeReady) { 'YES' } elseif ($Status -eq 'complete' -or $HasFindings) {
+        'NO'
+    } else { 'UNAVAILABLE' }
+    $decision = "$icon **Merge recommendation: $recommendation.** " +
         [Net.WebUtility]::HtmlEncode($reason)
 
     $body = @"

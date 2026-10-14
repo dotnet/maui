@@ -407,7 +407,11 @@ conditional rule, detect platforms, and always activate dimensions 5, 6, and
 16. Scan otherwise unmapped files against Principles 1-8.
 
 Run a fresh `maui-expert-dimension` worker per routed dimension in parallel
-batches of at most six. Give it the concrete dimension ID/name, applicable
+batches of at most two. Wait for both workers before starting the next batch;
+do not overlap batches. For an explicit model HTTP 429/502/503/504 or network
+timeout only, wait 60 seconds and retry that failed dimension once, sequentially,
+using its same output path. Never replace a completed result. Keep exhausted
+failures explicit. Give it the concrete dimension ID/name, applicable
 CHECK rules, relevant changed paths/hunks, platform and trusted instructions,
 pinned source/history, prior feedback, and its unique output path. Pin every
 worker to `gpt-6.1-sol`. Workers may not delegate or publish. Do not replace
@@ -416,6 +420,14 @@ completed.
 
 Validate each candidate with surrounding code, callers, PR test source, git
 blame, and earlier fixes. Do not execute tests or compare CI outcomes. Preserve
+source-only completion: unavailable runtime/device/build execution is not a
+failed dimension or incomplete finding validation. Evaluate the original
+reproduction and regression-test adequacy from source; report concrete coverage
+defects when supported. Completion certifies only this source/history pass,
+not a test run. Use built-in read/search tools to check JSON keys, types and
+candidate evidence; do not depend on Python/jq or interactive shell approval.
+If a read-only shell command is denied, use permitted built-in tools instead,
+without relaxing permissions. Preserve
 the canonical severity caps, concrete failing scenarios, grouping, and
 exclusion of prior feedback. Keep the top 15 ordinary findings; retain the
 representative committed-credential and archive/path-escape exceptions from
@@ -500,6 +512,10 @@ finding fields and at most 17 prioritized candidates. Finding headers accept
 only `critical`, `major`, `moderate`, and `minor`, never `medium`, `high`, or `low`;
 read back and validate every header while preserving per-dimension severity caps.
 Keep `complete: false`
-when unable to finish. Use a changed `path:1` for file-level concerns; return a
+when unable to finish the source/history pass. Unavailable device, test or
+build execution alone is not incomplete: runtime execution is outside this
+lane. Assess reproduction paths and test adequacy from source, and never claim
+tests passed. Validate your JSON with the built-in read tool, not a dependency
+on shell/Python/jq approval. Use a changed `path:1` for file-level concerns; return a
 bounded text fallback to the primary reviewer only if no changed file can
 carry the concern. Read back your JSON and report only its path and completion.

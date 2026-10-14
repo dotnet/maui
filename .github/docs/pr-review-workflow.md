@@ -377,7 +377,7 @@ The existing `copilot-pat-pool` supplies Copilot authentication; no new
 secret, Azure pipeline or service connection is needed.
 
 The four canonical waves are preserved: code-first briefing and platform/
-dimension routing, independent passes in batches of at most six, candidate
+dimension routing, independent passes in batches of at most two, candidate
 validation against surrounding source/callers/tests/blame, and required
 findings-file output. Path routing takes the union of matching rows; Logic
 and Correctness, Regression Prevention and Complexity Reduction always run.
@@ -431,11 +431,12 @@ not a single-commit review scope. Prior feedback deduplicates comments without
 reducing that scope.
 The recommendation and its reason are visible; coverage, validation,
 finding counts, unplaced findings and the source-only limitation live in one
-closed **Review details** accordion. Evidence blockers appear once in the
-recommendation. The details list each routed dimension's ID and canonical
+closed **Review details** accordion. Evidence blockers appear in plain language
+in the details rather than a long list of internal errors in the recommendation.
+The details list each routed dimension's ID and canonical
 rulebook name, with a check for an independently completed pass or an explicit
 incomplete/missing-result warning. Names come from the trusted rulebook, not
-model-authored labels. Evidence blockers are not repeated in the details.
+model-authored labels.
 One flat-square **Expert review** status
 badge uses the existing review-lane colors, with a verdict emoji and a microscope
 on the details expander. No Gate, test or confidence badge is inferred from source
@@ -446,10 +447,26 @@ links, including in stale/failure notices; hidden run/result markers and
 publication receipts retain provenance and deduplication.
 The visible **Merge recommendation** is YES only for a complete expert review
 with no outstanding findings, including findings suppressed as already posted.
-Otherwise it is NO, with the reason stated. YES is source-review advice, not a
+It is NO when actionable findings exist. Incomplete reviews without findings,
+stale snapshots, publication failures and closed PRs report **UNAVAILABLE**,
+not a negative code verdict. YES is source-review advice, not a
 substitute for required CI checks or human approval. There is no Follow-up section.
-The visible reason states the actionable finding count or specific evidence
-blockers; a clean complete review simply says **No actionable findings**.
+The visible reason states the actionable finding count or a brief incomplete/
+unavailable explanation; a clean complete review simply says **No actionable findings**.
+GitHub evidence reads retry only recognized network failures or HTTP 502/503/504,
+at most three attempts with bounded backoff. Writes and authorization/rate-limit
+failures are not retried. Errors retain the CLI exit code and HTTP status or a
+fixed transport classification, never raw response bodies or stderr that could
+expose credentials or PR-controlled content.
+Hosted dimension workers run in non-overlapping batches of at most two to
+reduce model throttling. A worker that explicitly hits model HTTP 429/502/503/504
+or a network timeout may be retried once sequentially after 60 seconds; no model
+fallback or fabricated completion is allowed. Source/history assessment and
+JSON validation define completion. Lack of device/build/test execution does not
+make a dimension incomplete; runtime certification remains outside this lane.
+Workers assess test adequacy from source and can still report concrete missing
+coverage. Built-in read/search tools avoid requiring interactive shell approval
+for source and JSON validation.
 Discussion freshness compares authors, full text, review states, timestamps and
 inline anchors; incidental API metadata such as author association and reaction
 counts does not invalidate an otherwise unchanged discussion.
