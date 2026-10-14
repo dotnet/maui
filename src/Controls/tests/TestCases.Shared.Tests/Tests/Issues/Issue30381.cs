@@ -34,7 +34,6 @@ public class Issue30381 : _IssuesUITest
     {
         App.RetryAssert(() =>
         {
-            App.Tap("UpdateStatusButton");
             Assert.That(App.WaitForElement("DocumentStatusLabel").GetText(), Is.EqualTo($"Document: {document}"));
             Assert.That(App.WaitForElement("CanGoBackLabel").GetText(), Is.EqualTo($"CanGoBack: {canGoBack}"));
             Assert.That(App.WaitForElement("CanGoForwardLabel").GetText(), Is.EqualTo($"CanGoForward: {canGoForward}"));

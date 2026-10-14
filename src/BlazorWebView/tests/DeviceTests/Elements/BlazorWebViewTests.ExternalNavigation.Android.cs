@@ -174,11 +174,11 @@ public partial class BlazorWebViewTests
 	Task RestoreTestActivityAsync(global::Android.App.Activity activity) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
-			// Sanitized intents can open Android's resolver without launching the monitored activity.
 			if (!activity.HasWindowFocus)
 			{
+				// The resolver can be above the runner in the same task; retain the runner when clearing it.
 				using var intent = new Intent(activity, activity.Class);
-				intent.AddFlags(ActivityFlags.ReorderToFront | ActivityFlags.SingleTop);
+				intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
 				activity.StartActivity(intent);
 			}
 

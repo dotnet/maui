@@ -15,8 +15,9 @@ public class Issue30381 : ContentPage
 	public Issue30381()
 	{
 		CreateUI();
-		SetupWebView();
+		MyWebView.Navigating += (_, _) => DocumentStatusLabel.Text = "Document: loading";
 		MyWebView.Navigated += OnWebViewNavigated;
+		SetupWebView();
 	}
 
 	void CreateUI()
@@ -63,11 +64,25 @@ public class Issue30381 : ContentPage
 		};
 		UpdateStatusButton.Clicked += OnUpdateStatusClicked;
 
-		var buttonLayout = new HorizontalStackLayout
+		var buttonLayout = new Grid
 		{
-			Spacing = 10,
-			Children = { GoBackButton, GoForwardButton, ClickLinkButton, UpdateStatusButton }
+			ColumnSpacing = 10,
+			RowSpacing = 10,
+			ColumnDefinitions =
+			{
+				new ColumnDefinition(GridLength.Star),
+				new ColumnDefinition(GridLength.Star)
+			},
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto)
+			}
 		};
+		buttonLayout.Add(GoBackButton, 0, 0);
+		buttonLayout.Add(GoForwardButton, 1, 0);
+		buttonLayout.Add(ClickLinkButton, 0, 1);
+		buttonLayout.Add(UpdateStatusButton, 1, 1);
 
 		CanGoBackLabel = new Label
 		{
@@ -136,13 +151,15 @@ public class Issue30381 : ContentPage
 	{
 		// Use JavaScript to programmatically click the link
 		await MyWebView.EvaluateJavaScriptAsync("document.getElementById('testLink').click();");
-		// Don't update status here - user needs to click Update Status button
 	}
 
-	async void OnUpdateStatusClicked(object sender, EventArgs e)
+	async void OnUpdateStatusClicked(object sender, EventArgs e) =>
+		await UpdateStatusAsync();
+
+	async Task UpdateStatusAsync()
 	{
 		var page = await MyWebView.EvaluateJavaScriptAsync("document.body ? document.body.dataset.page : 'loading'");
-		DocumentStatusLabel.Text = $"Document: {page?.Trim('\"')}";
+		DocumentStatusLabel.Text = $"Document: {page?.Trim('\"') ?? "unavailable"}";
 		UpdateNavigationStatus();
 	}
 
@@ -172,8 +189,15 @@ public class Issue30381 : ContentPage
 		CanGoForwardLabel.Text = $"CanGoForward: {MyWebView.CanGoForward}";
 	}
 
-	void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
+	async void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
 	{
-		UpdateNavigationStatus();
+		if (e.Result != WebNavigationResult.Success)
+		{
+			DocumentStatusLabel.Text = $"Document: navigation {e.Result}";
+			UpdateNavigationStatus();
+			return;
+		}
+
+		await UpdateStatusAsync();
 	}
 }
