@@ -37,7 +37,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void AFlyoutTests()
 	{
 		App.WaitForElement("PageLoaded");

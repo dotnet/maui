@@ -19,7 +19,7 @@ public class Issue11214 : _IssuesUITest
 	public override string Issue => "When adding FlyoutItems during Navigating only first one is shown";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void FlyoutItemChangesPropagateCorrectlyToPlatformForShellElementsNotCurrentlyActive()
 	{
 		App.WaitForElement("PageLoaded");

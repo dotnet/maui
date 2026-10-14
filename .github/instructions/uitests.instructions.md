@@ -33,7 +33,7 @@ This document provides specific guidance for GitHub Copilot when writing UI test
    - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
    - Include one functional `[Category(UITestCategories.XYZ)]` attribute per test
    - CollectionView tests use `[ShardedTestCategory(UITestCategories.CollectionView, shard: N)]`, which exposes both the `CollectionView` umbrella and one numbered CI shard category
-   - Shell tests use `[ShardedTestCategory(UITestCategories.Shell, shard: N)]`; Android Mono/CoreCLR CI uses `Shell1` and `Shell2`, while other platforms and local umbrella runs continue to use `Shell`
+   - Shell tests use `[ShardedTestCategory(UITestCategories.Shell, shard: N)]`; CI uses `Shell1` and `Shell2` on Android, iOS, Windows, and MacCatalyst, while local umbrella runs continue to use `Shell`
    - Omitted `shard` defaults to shard 1 so a new test cannot silently cease running; the rebalancing skill assigns the durable shard
    - Put `ShardedTestCategory` on each test method; never put it on the class
    - A fixture split across shards must initialize every shard in `FixtureSetup`; never use an `Order(1)` test as setup for later tests

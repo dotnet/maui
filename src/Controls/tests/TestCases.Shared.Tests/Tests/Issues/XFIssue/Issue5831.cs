@@ -15,7 +15,7 @@ public class Issue5831 : _IssuesUITest
 	public override string Issue => "Navigating away from CollectionView and coming back leaves weird old items";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void CollectionViewRenderingWhenLeavingAndReturningViaFlyout()
 	{
 		App.TapInShellFlyout(flyoutOtherTitle);

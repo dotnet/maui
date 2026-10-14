@@ -35,7 +35,7 @@ public class ShellTitleView : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TitleWidthWithToolBarItemMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure and ToolBarItem (13949)");

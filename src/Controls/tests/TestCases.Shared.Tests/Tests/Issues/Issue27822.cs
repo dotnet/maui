@@ -15,7 +15,7 @@ public class Issue27822 : _IssuesUITest
 
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void Issue27822Test()
 	{
 		App.SetOrientationLandscape();

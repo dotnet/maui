@@ -48,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void SwappingShellInstancesRecreatesPages()
 		{
 			// Navigate to Scoped Page so we can test that it's resued in Swapped Shell

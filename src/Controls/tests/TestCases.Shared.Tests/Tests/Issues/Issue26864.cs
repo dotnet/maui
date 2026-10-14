@@ -14,7 +14,7 @@ public class Issue26864 : _IssuesUITest
 	public override string Issue => "Shell Content Title Not Rendering in Full-Screen Mode on Mac Catalyst";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShellContentTitleNotRendering()
 	{
 		App.WaitForElement("Settings");

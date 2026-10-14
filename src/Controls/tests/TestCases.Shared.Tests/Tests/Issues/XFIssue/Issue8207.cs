@@ -13,7 +13,7 @@ public class Issue8207 : _IssuesUITest
 	public override string Issue => "[Bug] Shell Flyout Items on UWP aren't showing the Title";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutItemShouldShowTitle()
 	{
 		App.TapInShellFlyout("Dashboard");

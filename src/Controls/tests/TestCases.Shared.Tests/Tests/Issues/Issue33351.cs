@@ -13,7 +13,7 @@ public class Issue33351 : _IssuesUITest
     public override string Issue => "Changing Shell Tab Visibility when navigating back multiple pages ignores Shell Tab Visibility";
 
     [Test]
-    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void TabBarVisibilityAfterMultiLevelPopToRoot()
     {
         App.WaitForElement("Tab 1");

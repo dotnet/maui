@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "IsEnabled does not work in BackButtonBehavior";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void IsEnabledShouldWorkInBackButtonBehavior()
 		{
 			NavigateBack();

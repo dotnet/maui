@@ -14,7 +14,7 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 	public override string Issue => "Shell Flyout Header Behavior";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeaderBehaviorFixed()
 	{
 		App.WaitForElement("Fixed");
@@ -40,7 +40,7 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 	}
 
 	[Test] // Skip this for iOS, because FindElements returns count eventhough the element is scrolled up and hidded from the UI.
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeaderBehaviorScroll()
 	{
 		App.WaitForElement("Scroll");

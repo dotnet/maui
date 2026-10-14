@@ -18,7 +18,7 @@ public class Issue6878 : _IssuesUITest
 	public override string Issue => "ShellItem.Items.Clear() crashes when the ShellItem has bottom tabs";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellItemItemsClearTests()
 	{
 		App.WaitForElement(ClearShellItems);

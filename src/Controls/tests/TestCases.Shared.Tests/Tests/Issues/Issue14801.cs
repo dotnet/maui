@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void PopShellPageBeforeBackImageIsReady()
 		{
 			App.WaitForElement("goToChildPage");

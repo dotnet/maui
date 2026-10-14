@@ -12,7 +12,7 @@ public class Issue34343 : _IssuesUITest
 
 #if ANDROID
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabBarShouldDisplayCorrectTabsAfterFirstTabBecomesInvisible()
 	{
 		App.WaitForElement("HideAndNavigateButton");

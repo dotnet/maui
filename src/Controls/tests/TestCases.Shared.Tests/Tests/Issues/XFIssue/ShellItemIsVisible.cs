@@ -16,7 +16,7 @@ public class ShellItemIsVisible : _IssuesUITest
 	public override string Issue => "Shell Items IsVisible Test";
 
 	[Test, Order(1)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void FlyoutItemVisible()
 	{
 		App.WaitForElement("ToggleFlyoutItem3");
@@ -28,7 +28,7 @@ public class ShellItemIsVisible : _IssuesUITest
 	}
 
 	[Test, Order(6)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void HideActiveShellContent()
 	{
 		App.WaitForElement("Item1 Flyout");
@@ -43,7 +43,7 @@ public class ShellItemIsVisible : _IssuesUITest
 
 
 	[Test, Order(5)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void HideFlyoutItem()
 	{
 		App.TapInShellFlyout("Item2 Flyout");
@@ -63,7 +63,7 @@ public class ShellItemIsVisible : _IssuesUITest
 
 #if !IOS // This test fails on CI for iOS. But in local it not replicate.
 	[Test, Order(2)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ClearAndRecreateShellElements()
 	{
 		App.WaitForElement("Item1 Flyout");
@@ -77,7 +77,7 @@ public class ShellItemIsVisible : _IssuesUITest
 
 #if !WINDOWS // The test fails on Windows and throws an exception: "Navigation still processing" when tapping ClearAndRecreate after tapping ToggleItem1. MoreInformation:https://github.com/dotnet/maui/issues/17608
 	[Test, Order(4)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ClearAndRecreateFromSecondaryPage()
 	{
 		App.WaitForElement("ClearAndRecreate");
@@ -93,7 +93,7 @@ public class ShellItemIsVisible : _IssuesUITest
 	}
 #endif
 	[Test, Order(3)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ClearAndRecreateShellContent()
 	{
 #if IOS // TODO: Remove this once enabled the test order 2 in iOS

@@ -12,7 +12,7 @@ public class Issue29559 : _IssuesUITest
 	public override string Issue => "Add An API to SearchHandler so users can hide or show the softkeyboard";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void Issue29559KeyboardDismissonSearchHander()
 	{
 		App.WaitForElement("ShowKeyboardButton");

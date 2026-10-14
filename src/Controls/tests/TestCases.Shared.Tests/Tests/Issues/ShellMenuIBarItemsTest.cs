@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shell MenuBarItems Test";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void SettingMenuBarItemColorsWork()
 		{
 			Task.Delay(millisecondsDelay: 100).Wait();

@@ -14,7 +14,7 @@ public class Issue11107 : _IssuesUITest
 	public override string Issue => "[Bug][iOS] Shell Navigation implicitly adds Tabbar";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void TabShouldntBeVisibleWhenThereIsOnlyOnePage()
 	{

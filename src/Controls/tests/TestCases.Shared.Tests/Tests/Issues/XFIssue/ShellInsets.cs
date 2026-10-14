@@ -37,7 +37,7 @@ public class ShellInsets : _IssuesUITest
 
 #if ANDROID || IOS // Keyboard test is only applicable for mobile platforms.
 	[Test, Order(4)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void EntryScrollTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -70,7 +70,7 @@ public class ShellInsets : _IssuesUITest
 
 #if !MACCATALYST // This test fails on Catalyt while running on CI, but locally its not failing.
 	[Test, Order(5)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ListViewScrollTest()
 	{
 		App.WaitForElement(ResetButton);
@@ -117,7 +117,7 @@ public class ShellInsets : _IssuesUITest
 #endif
 
 	[Test, Order(1)]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void PaddingWithoutSafeArea()
 	{
 

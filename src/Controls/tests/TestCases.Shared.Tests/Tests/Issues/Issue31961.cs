@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] App crash with NullReferenceException in ShellSectionRenderer";
 		[Test]
-		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void VerifyShellNavigationWithModalNavigation()
 		{
 			App.WaitForElement("MainPage");

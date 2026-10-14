@@ -29,7 +29,7 @@ public class Issue20685 : _IssuesUITest
     }
 
     [Test]
-    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void MenuFlyoutItem_ClickedEventWorks()
     {
         OpenMenuAndTapItem(ClickedEventItem);
@@ -45,7 +45,7 @@ public class Issue20685 : _IssuesUITest
     }
 
     [Test]
-    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void MenuFlyoutItem_CommandWithParameterWorks()
     {
         OpenMenuAndTapItem(CommandWithParamItem);

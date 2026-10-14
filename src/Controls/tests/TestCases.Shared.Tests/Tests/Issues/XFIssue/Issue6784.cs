@@ -24,7 +24,7 @@ public class Issue6784 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void OneMoreControllerOpensOnFirstClick()
 	{
 		App.WaitForElement("More");
@@ -44,7 +44,7 @@ public class Issue6784 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TwoMoreControllerDoesNotShowEditButton()
 	{
 		App.WaitForElement("More");

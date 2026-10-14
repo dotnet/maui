@@ -11,7 +11,7 @@ public class Issue32476 : _IssuesUITest
 	}
 	public override string Issue => "Binding RTL FlowDirection in Shell causes Flyout MenuIcon and native window controls to overlap";
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellRTLFlowDirectionShouldNotCauseOverlap()
 	{
 		App.WaitForElement("ToggleButton");

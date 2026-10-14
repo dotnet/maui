@@ -13,7 +13,7 @@ public class Issue25599_1 : _IssuesUITest
 	public override string Issue => "Shell Navigating event shows identical Current and Target on tab click";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyNavigatingEventOnTabReselection()
 	{
 		App.WaitForElement("PushButton");

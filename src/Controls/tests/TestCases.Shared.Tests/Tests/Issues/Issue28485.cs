@@ -14,7 +14,7 @@ public class Issue28485 : _IssuesUITest
 	public override string Issue => "Back-navigation with swipe-back navigates back twice";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SwipeBackGestureShouldNavigateOnce()
 	{
 		App.WaitForElement("GotoPage2");

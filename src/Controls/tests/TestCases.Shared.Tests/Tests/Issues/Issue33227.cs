@@ -14,7 +14,7 @@ public class Issue33227 : _IssuesUITest
     public override string Issue => "Shell NavigationBar colors persist when navigating between pages";
 
     [Test]
-    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void ShellColorsResetOnNavigation()
     {
 #if WINDOWS

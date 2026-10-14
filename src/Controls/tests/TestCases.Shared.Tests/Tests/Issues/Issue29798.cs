@@ -14,7 +14,7 @@ public class Issue29798 : _IssuesUITest
 	public override string Issue => "Tab becomes blank after specific navigation pattern";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabShouldNotBeBlackAfterTabNavigation()
 	{
 		App.WaitForElement("GotoPage2");

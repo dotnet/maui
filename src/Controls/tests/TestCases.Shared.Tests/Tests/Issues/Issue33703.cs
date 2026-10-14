@@ -12,7 +12,7 @@ public class Issue33703 : _IssuesUITest
 	public Issue33703(TestDevice device) : base(device) { }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabBarShouldNotHaveEmptySpaceAfterNavigatingBack()
 	{
 		App.WaitForElement("NavigateButton");

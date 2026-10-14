@@ -8,7 +8,6 @@ parameters:
   iosVersions: [ 'latest' ]
   androidApiLevels: [ 30 ]
   androidApiLevelsExtended: [ 36 ] # Separate API level for tests requiring Pixel 3 XL
-  androidShellShards: [ 'Shell1', 'Shell2' ]
   provisionatorChannel: 'latest'
   defaultiOSVersion: '26.0'
   timeoutInMinutes: 180
@@ -47,7 +46,9 @@ parameters:
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
-    - 'Shell'
+    # Shell remains the umbrella category for local runs. CI uses Shell1 and Shell2 on every platform.
+    - 'Shell1'
+    - 'Shell2'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
@@ -162,11 +163,7 @@ stages:
                   matrix:
                     # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ if eq(categoryGroup, 'Shell') }}:
-                        ${{ each shard in parameters.androidShellShards }}:
-                          ${{ shard }}:
-                            CATEGORYGROUP: ${{ shard }}
-                      ${{ if and(ne(categoryGroup, 'SafeAreaEdges'), ne(categoryGroup, 'Shell')) }}:
+                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
@@ -212,11 +209,7 @@ stages:
                   matrix:
                     # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ if eq(categoryGroup, 'Shell') }}:
-                        ${{ each shard in parameters.androidShellShards }}:
-                          ${{ shard }}:
-                            CATEGORYGROUP: ${{ shard }}
-                      ${{ if and(ne(categoryGroup, 'SafeAreaEdges'), ne(categoryGroup, 'Shell')) }}:
+                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling

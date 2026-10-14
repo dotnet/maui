@@ -14,7 +14,7 @@ public class Issue35390 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutIconShouldRespectForegroundColorAfterNavigation()
 	{
 		App.WaitForElement("Issue35390GoToSubPage");

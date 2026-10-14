@@ -14,7 +14,7 @@ public class Issue27846 : _IssuesUITest
 	public override string Issue => "[iOS] More tab doesn't respect shell nav bar customization";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void MoreTabShouldRespectNavBarCustomization()
 	{
 		App.WaitForElement("More");

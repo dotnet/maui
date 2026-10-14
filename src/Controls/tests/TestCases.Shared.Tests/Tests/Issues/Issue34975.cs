@@ -11,7 +11,7 @@ public class Issue34975 : _IssuesUITest
 	public Issue34975(TestDevice device) : base(device) { }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellTitleViewWithXNameShouldNotLeakMemory()
 	{
 		App.WaitForElement("NavigateButton");

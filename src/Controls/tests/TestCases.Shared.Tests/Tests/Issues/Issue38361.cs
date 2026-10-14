@@ -14,7 +14,7 @@ public class Issue38361 : _IssuesUITest
         "A singleton modal page with a manual disconnect policy renders blank when presented a second time on iOS";
 
     [Test]
-    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void SingletonModalPageContentRemainsVisibleAfterSecondPresentation()
     {
         AssertModalContentIsVisible();

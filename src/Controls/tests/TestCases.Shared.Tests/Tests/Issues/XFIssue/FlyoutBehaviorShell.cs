@@ -81,7 +81,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void WhenFlyoutIsLockedButtonsAreStillVisible()
 	{
 		// FlyoutLocked ensure that the flyout and buttons are still visible

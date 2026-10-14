@@ -11,7 +11,7 @@ public Issue32526(TestDevice device) : base(device) { }
 public override string Issue => "Shell content page title position incorrect/clipped";
 
 [Test]
-[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
+[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 public void ShellNavigationPageTitleNotClipped()
 {
 // Wait for the main page to load

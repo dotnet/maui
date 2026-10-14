@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 		public override string Issue => "Shell Title View Test";
 		[Test]
-		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void TitleViewHeightDoesntOverflow()
 		{
 			var titleView = App.WaitForElement("TitleViewId").GetRect();
