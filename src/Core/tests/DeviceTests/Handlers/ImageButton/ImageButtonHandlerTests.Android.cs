@@ -69,6 +69,42 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+		[Fact(DisplayName = "CornerRadius mapping is reapplied only when the size changes")]
+		public async Task CornerRadiusMappingIsReappliedOnlyWhenTheSizeChanges()
+		{
+			var mappingCount = 0;
+			var imageButton = new ImageButtonStub
+			{
+				Background = new SolidPaintStub(Colors.Red),
+				CornerRadius = 100,
+				PropertyMapperOverrides = new PropertyMapper<IImageButton, IImageButtonHandler>(ImageButtonHandler.Mapper)
+				{
+					[nameof(IImageButton.CornerRadius)] = (handler, view) =>
+					{
+						ImageButtonHandler.MapCornerRadius(handler, view);
+						mappingCount++;
+					}
+				}
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(imageButton);
+
+				await handler.PlatformView.AttachAndRun(() =>
+				{
+					var platformView = handler.PlatformView;
+
+					var countBeforeMove = mappingCount;
+					platformView.Layout(platformView.Left + 10, platformView.Top, platformView.Right + 10, platformView.Bottom);
+					Assert.Equal(countBeforeMove, mappingCount);
+
+					platformView.Layout(platformView.Left, platformView.Top, platformView.Right + 10, platformView.Bottom);
+					Assert.Equal(countBeforeMove + 1, mappingCount);
+				});
+			});
+		}
+
 
 
 		Google.Android.Material.ImageView.ShapeableImageView GetPlatformImageButton(ImageButtonHandler buttonHandler) =>

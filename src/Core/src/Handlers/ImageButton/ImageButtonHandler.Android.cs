@@ -89,7 +89,11 @@ namespace Microsoft.Maui.Handlers
 			if (sender is ShapeableImageView platformView && VirtualView is not null)
 			{
 				platformView.UpdateBackground(VirtualView);
-				UpdateValue(nameof(IImageButton.CornerRadius));
+
+				if (e.Right - e.Left != e.OldRight - e.OldLeft || e.Bottom - e.Top != e.OldBottom - e.OldTop)
+				{
+					UpdateValue(nameof(IImageButton.CornerRadius));
+				}
 			}
 		}
 
