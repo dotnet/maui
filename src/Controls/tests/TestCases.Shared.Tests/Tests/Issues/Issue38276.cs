@@ -1,3 +1,4 @@
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -55,4 +56,38 @@ public class Issue38276 : _IssuesUITest
 			Is.GreaterThan(singleItemHeight),
 			"CollectionView height should increase when ItemsSource changes from 1 item to 10 items.");
 	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void CollectionViewHeightUpdatesAfterPopulatedEmptyPopulatedTransitions()
+	{
+		App.WaitForElement("EmptyItemsButton");
+		App.WaitForElement("LargeItemsButton");
+		var populatedMarkerY = App.WaitForElement("AfterCollectionLabel").GetRect().Y;
+
+		App.Tap("EmptyItemsButton");
+
+		App.RetryAssert(() =>
+		{
+			var markerY = App.FindElement("AfterCollectionLabel").GetRect().Y;
+			Assert.That(
+				markerY,
+				Is.LessThan(populatedMarkerY),
+				"The element after the CollectionView should move up when ItemsSource becomes empty.");
+		});
+
+		var emptyMarkerY = App.FindElement("AfterCollectionLabel").GetRect().Y;
+
+		App.Tap("LargeItemsButton");
+
+		App.RetryAssert(() =>
+		{
+			var markerY = App.FindElement("AfterCollectionLabel").GetRect().Y;
+			Assert.That(
+				markerY,
+				Is.GreaterThan(emptyMarkerY),
+				"The element after the CollectionView should move down when ItemsSource is populated again.");
+		});
+	}
 }
+#endif
