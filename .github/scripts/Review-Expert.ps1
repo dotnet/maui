@@ -28,6 +28,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/shared/Copy-BoundedDiagnosticFile.ps1"
 . "$PSScriptRoot/shared/New-ExpertReviewComment.ps1"
+. "$PSScriptRoot/shared/Hide-StaleExpertReviewComments.ps1"
 
 function Write-ExpertJson {
     param([string]$Path, [AllowNull()][object]$Value)
@@ -487,7 +488,7 @@ function Invoke-ExpertPrepare {
         $body = "$runMarker`n`n" + (New-ExpertReviewComment -Status stale `
             -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
             -ServerUrl $env:GITHUB_SERVER_URL -Summary 'No stale findings were published.' `
-            -Analysis $analysis -FollowUp '**Next action:** Request a fresh review of the current PR snapshot.')
+            -Analysis $analysis)
         $output.items = @(@{ type = 'add_comment'; body = $body })
     } else {
         $feedback = Get-ExpertFeedback
@@ -566,14 +567,10 @@ function Invoke-ExpertPrepare {
                 $analysis += "`n**Expert execution:** Inference and threat detection ran in ``kubaflo/maui``; " +
                     "this separate trusted job performs native publication of the verified results.`n"
             }
-            $followUp = if ($status -eq 'incomplete') {
-                '**Next action:** Account for the listed evidence gaps before treating this review as complete.'
-            } elseif ($findings.Count -or $unplaced.Count) {
-                '**Next action:** Review the inline comments and any findings without an inline anchor.'
-            } else { '' }
+            $mergeReady = $status -eq 'complete' -and $findings.Count -eq 0 -and $unplaced.Count -eq 0
             $body = "$runMarker`n$resultMarker`n`n" + (New-ExpertReviewComment -Status $status `
                 -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
-                -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis -FollowUp $followUp)
+                -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis -MergeReady $mergeReady)
             if ($body.Length -gt 60000) { throw 'The expert summary exceeds its publication limit.' }
             $items = [Collections.Generic.List[object]]::new()
             foreach ($finding in $inline) {
@@ -653,6 +650,7 @@ function Invoke-ExpertNotify {
     foreach ($item in @($reviews | Where-Object { $_.state -ceq 'COMMENTED' }) + @($comments)) {
         if ($item.user.login -ceq 'github-actions[bot]' -and ([string]$item.body).Contains($marker)) {
             Write-Host 'This run already has an expert result or failure notification.'
+            Hide-StaleExpertReviewComments -Repository $Repository -PRNumber $PRNumber -RunUrl $runUrl
             return
         }
     }
@@ -663,14 +661,11 @@ function Invoke-ExpertNotify {
     } else {
         'The PR is now closed; no inline findings were posted.'
     }
-    $followUp = if ($pr.state -ceq 'open') {
-        '**Next action:** Resolve the automation failure and request a fresh expert review.'
-    } else { '' }
     $body = "$marker`n<!-- review-expert-failure -->`n`n" + (New-ExpertReviewComment `
         -Status $(if ($pr.state -ceq 'open') { 'failed' } else { 'closed' }) `
         -HeadSha $pr.head.sha -Author $pr.user.login -Repository $Repository `
         -ServerUrl $env:GITHUB_SERVER_URL -Summary 'No validated expert review was published.' `
-        -Analysis $analysis -FollowUp $followUp)
+        -Analysis $analysis)
     $notification = Invoke-ExpertGh -Arguments @("repos/$Repository/issues/$PRNumber/comments", '--method', 'POST') -Body @{
         body = $body
     }
@@ -678,6 +673,7 @@ function Invoke-ExpertNotify {
         throw 'GitHub did not confirm the expert-review automation notification.'
     }
     Write-Host "Published expert-review automation notification: $($notification.html_url)"
+    Hide-StaleExpertReviewComments -Repository $Repository -PRNumber $PRNumber -RunUrl $runUrl
 }
 
 switch ($Stage) {

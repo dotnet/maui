@@ -27,7 +27,7 @@ function New-ExpertReviewComment {
         [Parameter(Mandatory = $true)]
         [string]$Analysis,
 
-        [string]$FollowUp = ''
+        [bool]$MergeReady = $false
     )
 
     $shortSha = $HeadSha.Substring(0, 7)
@@ -40,10 +40,19 @@ function New-ExpertReviewComment {
         'closed' { 'PR closed' }
     }
     $scope = if ($Status -in @('complete', 'incomplete')) { 'expert review' } else { 'expert-review status' }
-    $refresh = if ($Status -eq 'closed') {
-        '> Expert reviews can only be requested on an open PR.'
+    if ($MergeReady -and $Status -ne 'complete') {
+        throw 'Only a complete expert review can recommend merging.'
+    }
+    $decision = if ($MergeReady) {
+        '**Merge recommendation: YES, from expert review.** No outstanding findings were identified. Required CI checks and human approval must still pass.'
     } else {
-        '> Maintainers: comment `/review expert-review` to refresh this report.'
+        switch ($Status) {
+            'complete' { '**Merge recommendation: NO.** Address the reported findings before merging.' }
+            'incomplete' { '**Merge recommendation: NO.** Review evidence is incomplete; merge readiness has not been established.' }
+            'stale' { '**Merge recommendation: NO.** The reviewed snapshot is outdated; review the current revision first.' }
+            'failed' { '**Merge recommendation: NO.** No validated expert review is available from this attempt.' }
+            'closed' { '**Merge recommendation: NO.** This PR is closed.' }
+        }
     }
 
     $body = @"
@@ -58,6 +67,8 @@ function New-ExpertReviewComment {
 
 **Status:** $statusLabel. $Summary
 
+$decision
+
 ---
 
 <details>
@@ -65,18 +76,6 @@ function New-ExpertReviewComment {
 <br/>
 
 $Analysis
-
-</details>
-
----
-
-<details>
-<summary><strong>&#x1F9ED; Follow-up</strong> &#x2014; actions and refresh</summary>
-<br/>
-
-$FollowUp
-
-$refresh
 
 </details>
 "@

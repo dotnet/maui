@@ -191,3 +191,13 @@ jobs:
         run: |
           .github/scripts/Review-Expert.ps1 -Stage Notify -PRNumber ([int]$env:PR_NUMBER) `
             -Repository dotnet/maui
+      - name: Collapse superseded expert summaries as outdated
+        if: always() && steps.authority.outputs.authorized == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Hide-StaleExpertReviewComments.ps1
+          Hide-StaleExpertReviewComments -Repository dotnet/maui -PRNumber ([int]$env:PR_NUMBER) `
+            -RunUrl "$env:GITHUB_SERVER_URL/dotnet/maui/actions/runs/$env:GITHUB_RUN_ID"
