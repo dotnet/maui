@@ -1,3 +1,10 @@
+function Test-ExpertPublicationRun {
+    param([string]$Body, [string]$RunUrl)
+
+    return $Body.Contains("<!-- review-expert-run:$RunUrl -->") -or
+        $Body.Contains("workflow_id: copilot-review-expert, run: $RunUrl -->")
+}
+
 function Hide-StaleExpertReviewComments {
     [CmdletBinding()]
     param(
@@ -27,9 +34,10 @@ function Hide-StaleExpertReviewComments {
                 $body = [string]$item.body
                 if ($item.user.login -cne 'github-actions[bot]' -or
                     ($item.ContainsKey('state') -and $item.state -cne 'COMMENTED') -or
-                    $body -cnotmatch '(?m)^## Expert Review\s*$') { continue }
-                $hasMarker = $body -cmatch '<!-- review-expert-run:https://[^<>\s]+/actions/runs/[1-9][0-9]* -->' -or
-                    $body -cmatch '<!-- gh-aw-agentic-workflow: [^\r\n]*workflow_id: copilot-review-expert, run: https://[^<>\s]+/actions/runs/[1-9][0-9]* -->'
+                    $body -cnotmatch '(?m)^## Expert Review(?: - [^\r\n]+)?\r?$') { continue }
+                $runPattern = "https://[A-Za-z0-9.-]+(?::[0-9]+)?/$([regex]::Escape($Repository))/actions/runs/[1-9][0-9]*"
+                $hasMarker = $body -cmatch "<!-- review-expert-run:$runPattern -->" -or
+                    $body -cmatch "<!-- gh-aw-agentic-workflow: [^\r\n]*workflow_id: copilot-review-expert, run: $runPattern -->"
                 if (-not $hasMarker) { continue }
                 $timestamp = if ($item.submitted_at) { $item.submitted_at } else { $item.created_at }
                 $artifacts.Add(@{
@@ -42,8 +50,7 @@ function Hide-StaleExpertReviewComments {
         }
     }
     if (-not @($artifacts | Where-Object {
-        $_.body.Contains("<!-- review-expert-run:$RunUrl -->") -or
-        $_.body.Contains("workflow_id: copilot-review-expert, run: $RunUrl -->")
+        Test-ExpertPublicationRun -Body $_.body -RunUrl $RunUrl
     }).Count) {
         throw 'No actual expert publication exists for this run; older results must remain visible.'
     }

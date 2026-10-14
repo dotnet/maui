@@ -648,7 +648,8 @@ function Invoke-ExpertNotify {
     $reviews = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews"
     $comments = Get-ExpertPages "repos/$Repository/issues/$PRNumber/comments"
     foreach ($item in @($reviews | Where-Object { $_.state -ceq 'COMMENTED' }) + @($comments)) {
-        if ($item.user.login -ceq 'github-actions[bot]' -and ([string]$item.body).Contains($marker)) {
+        if ($item.user.login -ceq 'github-actions[bot]' -and
+            (Test-ExpertPublicationRun -Body ([string]$item.body) -RunUrl $runUrl)) {
             Write-Host 'This run already has an expert result or failure notification.'
             Hide-StaleExpertReviewComments -Repository $Repository -PRNumber $PRNumber -RunUrl $runUrl
             return
