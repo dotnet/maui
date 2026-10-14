@@ -100,6 +100,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void GeneratedQueryPropertyAndIQueryAttributableBothRun()
+		{
+			var content = CreateQueryStringContent(
+				"value=A%2BB&other=second",
+				() => new GeneratedQueryAttributablePage());
+			CreateShell(content);
+
+			var page = GetPage<GeneratedQueryAttributablePage>(content);
+
+			Assert.Equal(1, page.ApplyCount);
+			Assert.Equal("second", page.LastQuery["other"]);
+			Assert.Equal("A+B", page.Value);
+		}
+
+		[Fact]
+		public void ReflectionQueryPropertyAndIQueryAttributableBothRun()
+		{
+			var content = CreateQueryStringContent(
+				"value=A%2BB&other=second",
+				() => new LegacyQueryAttributablePage());
+			CreateShell(content);
+
+			var page = GetPage<LegacyQueryAttributablePage>(content);
+
+			Assert.Equal(1, page.ApplyCount);
+			Assert.Equal("second", page.LastQuery["other"]);
+			Assert.Equal("A+B", page.Value);
+		}
+
+		[Fact]
+		public void DerivedQueryPropertyFallsBackWhenGeneratedBaseCannotCoverConcreteType()
+		{
+			var content = CreateQueryStringContent(
+				"baseValue=base&derivedValue=derived",
+				() => new LegacyDerivedQueryPropertyPage());
+			CreateShell(content);
+
+			var page = GetPage<LegacyDerivedQueryPropertyPage>(content);
+
+			Assert.Equal(0, page.GeneratedApplyCount);
+			Assert.Equal("base", page.BaseValue);
+			Assert.Equal("derived", page.DerivedValue);
+		}
+
+		[Fact]
 		public void QueryStringDecodesQueryProperty()
 		{
 			var content = CreateQueryStringContent(
@@ -1088,6 +1133,68 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LastQuery = new Dictionary<string, object>(query);
 				Value = query.TryGetValue("value", out var value) ? (string)value : null;
 			}
+		}
+
+		[QueryProperty(nameof(Value), "value")]
+		sealed class GeneratedQueryAttributablePage : ContentPage, IQueryAttributable, IQueryPropertyAttributable
+		{
+			public int ApplyCount { get; private set; }
+			public IDictionary<string, object> LastQuery { get; private set; }
+			public string Value { get; set; }
+
+			Type IQueryPropertyAttributable.QueryPropertyTargetType => typeof(GeneratedQueryAttributablePage);
+
+			public void ApplyQueryAttributes(IDictionary<string, object> query)
+			{
+				ApplyCount++;
+				LastQuery = new Dictionary<string, object>(query);
+			}
+
+			void IQueryPropertyAttributable.ApplyQueryPropertyAttributes(QueryPropertyAttributeContext query)
+			{
+				if (query.TryGetValue("value", typeof(string), out var value))
+					Value = (string)value;
+				else if (query.WasRemoved("value"))
+					Value = default;
+			}
+		}
+
+		[QueryProperty(nameof(Value), "value")]
+		sealed class LegacyQueryAttributablePage : ContentPage, IQueryAttributable
+		{
+			public int ApplyCount { get; private set; }
+			public IDictionary<string, object> LastQuery { get; private set; }
+			public string Value { get; set; }
+
+			public void ApplyQueryAttributes(IDictionary<string, object> query)
+			{
+				ApplyCount++;
+				LastQuery = new Dictionary<string, object>(query);
+			}
+		}
+
+		[QueryProperty(nameof(BaseValue), "baseValue")]
+		class GeneratedBaseQueryPropertyPage : ContentPage, IQueryPropertyAttributable
+		{
+			public int GeneratedApplyCount { get; private set; }
+			public string BaseValue { get; set; }
+
+			Type IQueryPropertyAttributable.QueryPropertyTargetType => typeof(GeneratedBaseQueryPropertyPage);
+
+			void IQueryPropertyAttributable.ApplyQueryPropertyAttributes(QueryPropertyAttributeContext query)
+			{
+				GeneratedApplyCount++;
+				if (query.TryGetValue("baseValue", typeof(string), out var value))
+					BaseValue = (string)value;
+				else if (query.WasRemoved("baseValue"))
+					BaseValue = default;
+			}
+		}
+
+		[QueryProperty(nameof(DerivedValue), "derivedValue")]
+		sealed class LegacyDerivedQueryPropertyPage : GeneratedBaseQueryPropertyPage
+		{
+			public string DerivedValue { get; set; }
 		}
 
 		[QueryProperty(nameof(Value), "value")]

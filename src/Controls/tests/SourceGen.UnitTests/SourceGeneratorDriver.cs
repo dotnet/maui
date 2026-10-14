@@ -46,7 +46,9 @@ public static class SourceGeneratorDriver
 		{
 			var compilationErrors = updatedCompilation.GetDiagnostics()
 				.Where(d => d.Severity == DiagnosticSeverity.Error)
-				.Where(d => d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+				.Where(d =>
+					d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true ||
+					d.Location.SourceTree?.FilePath?.EndsWith("_QueryProperty.g.cs", StringComparison.OrdinalIgnoreCase) == true)
 				.ToArray();
 
 			if (compilationErrors.Length > 0)
@@ -139,7 +141,17 @@ public static class SourceGeneratorDriver
 			_additionalFiles = additionalFiles.ToImmutableDictionary(f => f.Text.Path, f => f);
 		}
 
-		public override AnalyzerConfigOptions GlobalOptions => throw new System.NotImplementedException();
+		public override AnalyzerConfigOptions GlobalOptions => EmptyAnalyzerConfigOptions.Instance;
+
+		private sealed class EmptyAnalyzerConfigOptions : AnalyzerConfigOptions
+		{
+			public static readonly EmptyAnalyzerConfigOptions Instance = new();
+			public override bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value)
+			{
+				value = null;
+				return false;
+			}
+		}
 
 		public override AnalyzerConfigOptions GetOptions(SyntaxTree tree)
 		{

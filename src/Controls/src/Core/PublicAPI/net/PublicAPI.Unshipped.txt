@@ -42,6 +42,9 @@ Microsoft.Maui.Controls.BoxView.~BoxView() -> void
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.Controls.IQueryPropertyAttributable
+~Microsoft.Maui.Controls.IQueryPropertyAttributable.ApplyQueryPropertyAttributes(Microsoft.Maui.Controls.QueryPropertyAttributeContext query) -> void
+~Microsoft.Maui.Controls.IQueryPropertyAttributable.QueryPropertyTargetType.get -> System.Type
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
@@ -73,6 +76,9 @@ Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Ma
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
 ~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.get -> System.Globalization.CultureInfo
 ~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.set -> void
+Microsoft.Maui.Controls.QueryPropertyAttributeContext
+~Microsoft.Maui.Controls.QueryPropertyAttributeContext.TryGetValue(string queryId, System.Type targetType, out object value) -> bool
+~Microsoft.Maui.Controls.QueryPropertyAttributeContext.WasRemoved(string queryId) -> bool
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Type targetType, System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
 Microsoft.Maui.Controls.Span.InvalidateStyle() -> void

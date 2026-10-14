@@ -35,3 +35,10 @@ MAUIX2016 | XamlParsing | Error | XCodeRequiresXClass
 MAUIX2017 | XamlInflation | Warning | DuplicatePropertyAssignment
 MAUIX2018 | XamlParsing | Warning | StructIntermediateNotSettable
 MAUIX2019 | XamlParsing | Error | LambdaMethodGroupReference
+MAUI1200 | QueryPropertyGenerator | Info | QueryPropertyClassMustBePartial
+MAUI1201 | QueryPropertyGenerator | Info | QueryPropertyNotFound
+MAUI1202 | QueryPropertyGenerator | Info | QueryPropertySetterNotPublic
+MAUI1203 | QueryPropertyGenerator | Info | QueryPropertyAttributeInvalidArguments
+MAUI1204 | QueryPropertyGenerator | Error | QueryPropertyClassMustBePartialNoFallback
+MAUI1205 | QueryPropertyGenerator | Info | QueryPropertyContainingClassMustBePartial
+MAUI1206 | QueryPropertyGenerator | Info | QueryPropertyTypeNotSupported
