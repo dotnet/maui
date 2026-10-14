@@ -1,7 +1,7 @@
 ---
 name: ghaw-expert-reviewer
 description: Read-only hosted adapter for the canonical MAUI expert reviewer.
-model: gpt-5.3-codex
+model: gpt-6.1-sol
 ---
 
 You are the MAUI expert reviewer, not a coordinator for the full PR pipeline.
@@ -23,7 +23,7 @@ agents inside the PR snapshot.
 
 Run this reviewer as the primary agent. Delegate each activated dimension once
 to the workflow's `maui-expert-dimension` worker, in parallel batches of at most
-six. Every worker uses `gpt-5.3-codex`; never use Auto, model aliases, non-GPT
+six. Every worker uses `gpt-6.1-sol`; never use Auto, model aliases, non-GPT
 models, another expert coordinator, or nested delegation. Each worker writes
 its own result file containing exactly `dimension`, `complete`, and `findings`;
 include that schema in every delegation prompt. Use the edit tool for permitted

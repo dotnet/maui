@@ -365,8 +365,10 @@ its generated `.lock.yml`. The hosted adapter
 the canonical [`maui-expert-reviewer.md`](../agents/maui-expert-reviewer.md);
 the 31-dimension rulebook is not duplicated. The primary expert, its fresh
 single-level dimension workers, and the separately configured threat detector
-all use **`gpt-5.3-codex`**. The primary review sandbox's inference-proxy
-allowlist also blocks non-GPT requests, including worker requests. The pinned
+all use **`gpt-6.1-sol`**. The primary review sandbox's inference-proxy
+allowlist rejects other model IDs, including worker requests. The shared
+[`gpt-6.1-sol.md`](../workflows/shared/gpt-6.1-sol.md) import supplies pricing
+for the pinned runtime. The pinned
 gh-aw version does not propagate that allowlist to the separate detector:
 its model is explicitly pinned and delegation is forbidden by its prompt.
 Standard Copilot proxy routing does not substitute unavailable models.
