@@ -575,6 +575,7 @@ steps:
   - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Common Packages (maui cli)'
     condition: succeeded()
+    retryCountOnTaskFailure: 2
 
 # Provisioning Android - Android environment variables
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:

@@ -328,6 +328,7 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
 | JDK provisioning HTTP 504 | `Provision JDK (maui cli)` | The isolated provisioning task retries twice; exhaustion still fails setup. Tests are not retried by this policy. |
+| Android SDK `ZipFile unknown archive` | `Provision Android SDK - Common Packages (maui cli)` | The isolated package-provisioning task retries twice; exhaustion still fails setup. Integration jobs initialize their log directory before provisioning so its binlog survives an early setup failure. Missing test results after that failure do not mean tests ran. |
 | MSBuild forwarding-logger download DNS/HTTP failure | UI test setup | Retry transient downloads up to three attempts. Only the extracted logger DLL counts as a ready cache; missing or invalid logger artifacts still fail setup. |
 
 ## Merge-readiness criteria
