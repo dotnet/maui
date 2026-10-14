@@ -191,25 +191,21 @@ namespace Microsoft.Maui.Devices
 				UIInterfaceOrientation.LandscapeRight => DisplayRotation.Rotation90,
 				_ => DisplayRotation.Unknown,
 			};
-#if !MACCATALYST
+
 		static UIInterfaceOrientation GetInterfaceOrientation()
 		{
-
 			var windowScene = GetWindowScene();
 
-			if (windowScene is not null)
-			{
-				return windowScene.InterfaceOrientation;
-			}
+			if (windowScene is null)
+				return UIInterfaceOrientation.Unknown;
 
-			return UIInterfaceOrientation.Unknown;
+			return windowScene.InterfaceOrientation;
 		}
 
 		static UIWindowScene? GetWindowScene()
 		{
 			using var scenes = UIApplication.SharedApplication.ConnectedScenes;
 			UIWindowScene? inactiveWindowScene = null;
-
 			foreach (var scene in scenes)
 			{
 				if (scene is not UIWindowScene windowScene)
@@ -221,9 +217,7 @@ namespace Microsoft.Maui.Devices
 				if (windowScene.ActivationState == UISceneActivationState.ForegroundInactive)
 					inactiveWindowScene ??= windowScene;
 			}
-
 			return inactiveWindowScene;
 		}
-#endif
 	}
 }
