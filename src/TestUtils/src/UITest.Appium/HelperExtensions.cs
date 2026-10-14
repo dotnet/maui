@@ -3057,6 +3057,34 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Clears text from the search handler element for the shell.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		public static void ClearTextInShellSearchHandler(this IApp app)
+		{
+			if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement("TextBox");
+				app.ClearText("TextBox");
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
+			{
+				IQuery query;
+				if (app is AppiumAndroidApp)
+				{
+					query = AppiumQuery.ByXPath("//android.widget.EditText");
+				}
+				else
+				{
+					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+				}
+
+				app.WaitForElement(query);
+				app.ClearText(query);
+			}
+		}
+
+		/// <summary>
 		/// Executes a function with a timeout to prevent tests from hanging indefinitely
 		/// when the application becomes unresponsive (e.g., due to an infinite layout loop).
 		/// WDA (WebDriverAgent) waits for the app's main thread to be idle before executing
