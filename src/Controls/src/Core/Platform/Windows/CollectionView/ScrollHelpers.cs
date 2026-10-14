@@ -36,37 +36,59 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
 		{
-			if (point.Y > (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
+			var offset = scrollViewer.VerticalOffset;
+			var viewportStart = offset + headerHeight;
+			var viewportEnd = offset + scrollViewer.ViewportHeight;
+			var itemEnd = point.Y + itemSize.Height;
+			var isOversized = itemSize.Height > scrollViewer.ViewportHeight - headerHeight;
+
+			if (point.Y < viewportStart)
 			{
-				return AdjustToEndVertical(point, itemSize, scrollViewer);
+				if (!isOversized)
+				{
+					offset = point.Y - headerHeight;
+				}
+				else if (itemEnd < viewportEnd)
+				{
+					offset = itemEnd - scrollViewer.ViewportHeight;
+				}
+			}
+			else if (itemEnd > viewportEnd)
+			{
+				offset = isOversized
+					? point.Y - headerHeight
+					: itemEnd - scrollViewer.ViewportHeight;
 			}
 
-			if (point.Y >= scrollViewer.VerticalOffset + headerHeight
-				&& point.Y < (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
-			{
-				// The target is already in the viewport and not hidden behind the sticky header
-				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
-			}
-
-			// Scroll to position, accounting for any sticky group header
-			return new UWPPoint(point.X, point.Y - headerHeight);
+			return new UWPPoint(scrollViewer.HorizontalOffset, offset);
 		}
 
 		static UWPPoint AdjustToMakeVisibleHorizontal(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
-			if (point.X > (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth))
+			var offset = scrollViewer.HorizontalOffset;
+			var viewportEnd = offset + scrollViewer.ViewportWidth;
+			var itemEnd = point.X + itemSize.Width;
+			var isOversized = itemSize.Width > scrollViewer.ViewportWidth;
+
+			if (point.X < offset)
 			{
-				return AdjustToEndHorizontal(point, itemSize, scrollViewer);
+				if (!isOversized)
+				{
+					offset = point.X;
+				}
+				else if (itemEnd < viewportEnd)
+				{
+					offset = itemEnd - scrollViewer.ViewportWidth;
+				}
+			}
+			else if (itemEnd > viewportEnd)
+			{
+				offset = isOversized
+					? point.X
+					: itemEnd - scrollViewer.ViewportWidth;
 			}
 
-			if (point.X >= scrollViewer.HorizontalOffset
-				&& point.X < (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
-			{
-				// The target is already in the viewport, no reason to scroll at all
-				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
-			}
-
-			return point;
+			return new UWPPoint(offset, scrollViewer.VerticalOffset);
 		}
 
 		static UWPPoint AdjustToEnd(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
