@@ -49,11 +49,11 @@ packable class library, still under this samples folder while WIP. Its working
 identity `Maui.HybridApp` / `0.1.0-preview.1` is unverified and unpublished.
 `Native` references its assembly, not its source. Product code owns the generic
 session/registry/protocol, AppInfo, DeviceInfo, Clipboard, Preferences,
-Battery, Display, FilePicker, Connectivity, TextToSpeech, external URL launching
-and MAUI page/window UI plugins. Each feature family is one attributed class with
-typed parameters, real options/results and owned event/resource lifecycle.
-They use the existing Essentials interfaces directly, with one small
-main-thread/cancellation boundary; there is no combined platform interface.
+Battery, Display, FilePicker, Connectivity, TextToSpeech, external URL launching,
+Geolocation, Share and MAUI page/window integration. Curated native contracts
+replace routine clipboard, geolocation and page-dialog wrappers; deliberate
+feature adapters retain resource, interaction and policy boundaries. Native
+SDK annotations alone do not expose any API.
 The Catalyst battery correction now belongs to **Essentials**, not this product:
 `Battery.Default` reads actual IOKit capacity, charging and power-source state
 and uses native power-source change notifications. UIKit had returned about 1%
@@ -69,18 +69,25 @@ Startup now has one product registration and one sample composition call:
 ```csharp
 builder.Services
     .AddHybridApp(new HybridAppOptions(SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength))
-    .AddPlayground(StartupId, StartedAt)
-    .AddScoped<MainPage>();
+    .AddPlayground(StartupId, StartedAt);
 ```
 
-`AddHybridApp` owns the implemented product providers, default existing Essentials
-interfaces, dispatcher, clock, policy and scoped registry/hub. It calls the
+`AddHybridApp` registers configuration, local factories and shared infrastructure,
+not a global hub, registry, notifications, context or plugin instances. It calls the
 generated `AddMauiHybridAppActions()` once for the entire managed assembly.
 A Toolkit assembly has its own single generated extension, such as
 `AddMyToolkitActions()`. Identical product registration is
 idempotent; conflicting policy fails explicitly, and host-supplied interfaces,
 dispatcher and clock are retained.
+At each owning window, `CreateHybridAppProvider()` overlays that window's
+host scope. Generated constructor factories receive the overlay, so contextual
+and ordinary/keyed method injection agree with constructor injection. Locally
+created targets are owned by the overlay; forwarded services and explicitly
+supplied shared business targets retain host ownership. Each view has a separate
+hub, document, resources and subscriptions even when a business target is shared.
 
+Metadata-only attributes now live in `Microsoft.Maui.Interop` in the existing
+Essentials assembly, below Core/Controls, without a bridge/JSON runtime dependency.
 Annotate accessible methods with `[HybridAction("name")]`; the compiler gathers
 the entire assembly into one explicit registration method. The app's
 `AddPlayground` calls `AddMauiControlsSampleHybridWebAppActions()` once for all
@@ -91,6 +98,11 @@ resolve only native DI services. Cancellation and operation context never come
 from web input. Instance actions use the owning window's scope rather than a
 root/global service instance. See [the managed product](Managed/README.md) for
 the supported signatures, diagnostics and package-analyzer details.
+`[assembly: HybridExport(typeof(IClipboard))]` explicitly imports annotated native
+members from referenced assemblies. The generator calls the selected interface,
+preserving host overrides, and honors the declaring contract for inherited
+methods/getters/events. Page, primary WebView, Window/IWindow and dispatcher are
+resolved from the live logical owner; detached or foreign-window views fail.
 `HybridTopic` and paired `HybridEvent` start/stop attributes declare subscription
 lifecycle without another provider interface. Generated bindings capture the
 owning scoped plugin, so teardown can detach native handlers during DI disposal.
@@ -107,10 +119,30 @@ duplicate flags reject before invocation. The SDK exposes matching closed
 TypeScript unions and runtime validation. `unspecified` is the native theme
 preference that follows the OS, not the old `system` wire alias.
 Text-to-speech accepts native `SpeechOptions` and returns native `Locale` data
-without duplicate managed DTOs. DevicePlatform remains an extensible string.
-SDK-level annotations, referenced-interface discovery, contextual page service
-resolution and structural Share unions are design investigations, not shipped
-bridge features.
+without duplicate managed DTOs. Geolocation uses native GeolocationRequest and
+Location; altitude reference names follow the same strict enum policy.
+Typed converter attributes and explicitly rooted strict source-generated JSON
+contexts support native contracts such as extensible DevicePlatform and .NET 11
+structural Share unions. There is no reflection JSON fallback or assumption that
+one generator's emitted sources will be processed by another generator.
+
+Share stages bounded browser-produced PDF/text bytes into app-owned files and
+returns opaque document-owned handles. A separate JSON interactive request invokes
+native text/file/multi-file sharing. Nested file conversion accepts only those
+handles, never browser-supplied FullPath. Released shared files retain a bounded
+24-hour recipient lifetime; releasing authority is not immediate OS-file deletion.
+The Share page's browser-generated one-page PDF is not a general PDF editor.
+The Location page requests native OS location; it does not invent coordinates.
+OS permissions, configuration and platform support remain authoritative.
+Actual Android acceptance granted the native permission dialog, then injected
+a controlled emulator OS fix after the request started. The generated native
+action returned the expected coordinates and the named `geoid` altitude
+reference. This is not physical-device GPS, permission-denial or continuous
+location-update certification. Native `isFromMockProvider` is returned as-is.
+Android's real two-file chooser also delivered granted content URIs to an owned
+temporary recipient, with exact staged lengths and SHA256 matches; that receiver
+was removed and the clean app reinstalled. Native PDF recipient consumption,
+Windows/iOS runtime and signed Release/AOT acceptance remain unverified.
 
 ### Binary data: three established paths
 
@@ -180,11 +212,13 @@ it is not an HTTP reachability probe. Text-to-speech exposes actual installed
 locales, native options and operation-specific cancellation. External links use
 the OS launcher with the existing bounded public-HTTPS policy, not a guest,
 custom scheme or shell command. Their separate Svelte pages bring navigation to
-22 unique experiments plus the two guides.
+24 unique experiments plus the two guides.
 
-`MainPage` receives the scoped hub and view context and does only view/event glue. `App.CreateWindow`
-is the explicit owning composition root: it creates a service scope, resolves the
-page there, detaches page events on destruction and disposes that scope. Handler
+`MainPage` receives the local hub and view context and does only view/event glue. `App.CreateWindow`
+is the explicit owning composition root: it creates the host scope and hybrid
+provider overlay, constructs the page with local services, binds its window,
+detaches page events on destruction and awaits local cleanup before retiring the
+host scope. Handler
 changes disconnect only the document; frontend reload preserves that scope's
 counter, while another native view/window has independent providers and state.
 Hub disposal cancels native work, releases the lease timer and clears listeners.
@@ -217,7 +251,7 @@ the same public SDK modules as the detailed experiments. These two guides are
 not additions to the 121-family backlog. Search spans collapsible navigation
 groups and temporarily reveals matches without replacing collapse preferences.
 Each group is a keyboard-operable heading disclosure with a chevron, without
-separate Collapse/Expand button copy. There are 22 unique experiments and two guides.
+separate Collapse/Expand button copy. There are 24 unique experiments and two guides.
 Alert, confirmation, prompt and action sheet share one sectioned Native dialogs page.
 Bridge/development family aliases no longer create duplicate navigation entries;
 old fragment bookmarks resolve to the corresponding canonical experiment.

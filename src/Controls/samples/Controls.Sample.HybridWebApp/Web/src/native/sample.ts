@@ -40,6 +40,10 @@ export async function getIdentity(client: NativeClient): Promise<Identity> {
 export interface EchoInput { text: string | null; number: number; flag: boolean; items: string[] }
 export interface EchoResult extends EchoInput { counter: number }
 export const counter: Decoder<number> = value => number(object(value).counter)
+const targetCounter = (value: unknown) => {
+  const v = object(value)
+  return { instanceId: text(v.instanceId), count: number(v.count) }
+}
 export const sample = (client: NativeClient) => ({
   binaryEcho: (payload: BinaryInput) => client.invokeBinary('sample.binaryEcho', {}, payload),
   binaryDocument: () => client.invokeBinary('sample.binaryDocument'),
@@ -50,6 +54,8 @@ export const sample = (client: NativeClient) => ({
     return { text: nullableText(v.text), number: number(v.number), flag: boolean(v.flag), items: strings(v.items), counter: number(v.counter) }
   }),
   getCounter: () => client.invoke('sample.counter', {}, counter),
+  localCounter: (increment = 0) => client.invoke('sample.localCounter', { increment }, targetCounter),
+  sharedCounter: (increment = 0) => client.invoke('sample.sharedCounter', { increment }, targetCounter),
   fail: () => client.invoke('sample.fail', {}, ack),
   disabled: () => client.invoke('sample.disabled', {}, ack),
   missing: () => client.invoke('sample.notRegistered', {}, ack),

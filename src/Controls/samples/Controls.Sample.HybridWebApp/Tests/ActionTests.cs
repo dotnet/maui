@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 
 public sealed class ActionTests
 {
-	static ServiceProvider Services(Action<ServiceCollection>? configure = null)
+	static TestComposition.TestHost Services(Action<ServiceCollection>? configure = null)
 	{
 		var services = new ServiceCollection();
 		services.AddScoped<ActionState>();
@@ -23,7 +23,7 @@ public sealed class ActionTests
 		}));
 		services.AddPlayground(new("test", DateTimeOffset.UtcNow));
 		configure?.Invoke(services);
-		return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+		return new(services);
 	}
 
 	// Keep dispatch accounting outside the provider so dispatch-once is observable.
@@ -178,7 +178,7 @@ public sealed class ActionTests
 		var registrations = services.Count;
 		services.AddPlayground(new("test", DateTimeOffset.UtcNow));
 		Assert.Equal(registrations, services.Count);
-		using var root = services.BuildServiceProvider();
+		using var root = new TestComposition.TestHost(services);
 		using var scope = root.CreateScope();
 		var registry = Registry(scope.ServiceProvider);
 		Assert.Contains("actions.ui", registry.InteractiveCommands);
@@ -214,7 +214,7 @@ public sealed class ActionTests
 		services.AddScoped<PluginActionState>();
 		services.AddKeyedScoped<PluginActionState>("action-key", (_, _) => new() { Calls = 10 });
 		services.AddExternalProviderActions();
-		using var root = services.BuildServiceProvider();
+		using var root = new TestComposition.TestHost(services);
 		using var first = root.CreateScope();
 		using var second = root.CreateScope();
 		var one = Registry(first.ServiceProvider);
@@ -237,7 +237,7 @@ public sealed class ActionTests
 		var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 		services.AddScoped<PluginActionState>();
 		services.AddExternalProviderActions();
-		using var root = services.BuildServiceProvider();
+		using var root = new TestComposition.TestHost(services);
 		using var scope = root.CreateScope();
 		var registry = Registry(scope.ServiceProvider);
 		Assert.Equal("second", (await Call(registry, "plugin.action.enumDefault")).GetString());

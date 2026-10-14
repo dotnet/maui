@@ -1,8 +1,12 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using HybridApp.ExternalProvider;
 using Maui.HybridApp;
 using Maui.HybridApp.Generated;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Devices;
+
+[assembly: HybridJsonContext(typeof(DevicePlatform), typeof(ConsumerPlatformJsonContext))]
 
 var services = new ServiceCollection();
 services.AddHybridApp(new HybridAppOptions("consumer."));
@@ -10,9 +14,11 @@ services.AddScoped<PluginActionState>();
 services.AddKeyedScoped<PluginActionState>("action-key", (_, _) => new() { Calls = 10 });
 services.AddExternalProviderActions();
 services.AddPackageConsumerActions();
+services.AddScoped<INativeCounterContract>(_ => new ConsumerCounter());
 using var root = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
-using var scope = root.CreateScope();
-var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
+using var hostScope = root.CreateScope();
+using var scope = hostScope.ServiceProvider.CreateHybridAppProvider();
+var hub = scope.GetRequiredService<HybridAppTargetObject>();
 var events = new List<NativeEvent>();
 hub.NativeEventReceived += events.Add;
 var session = Guid.NewGuid().ToString("D");
@@ -31,6 +37,7 @@ void Check(bool condition, string message)
 }
 
 Check(!JsonSerializer.IsReflectionEnabledByDefault, "Reflection serialization must be disabled.");
+Check(typeof(HybridActionAttribute).Assembly.GetName().Name == "Microsoft.Maui.Essentials", "Metadata must remain in existing Essentials, below the optional runtime.");
 Check(typeof(CommandRegistry).Assembly != typeof(PluginActions).Assembly, "The plugin must live in a separate assembly.");
 Check(typeof(PluginActions).Assembly != typeof(ConsumerActions).Assembly, "Generated plugin actions must live in a separate provider assembly.");
 Check(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginActionValue)) is null, "Automatic action DTO metadata must remain provider-owned.");
@@ -71,20 +78,25 @@ Check((await Call("plugin.action.echo", """{"value":{"text":"x","kind":"first","
 Check((await Call("plugin.action.echo", """{"value":{"text":"x","kind":0}}""")).Error?.Code == "invalid_arguments", "Numeric enum input was accepted.");
 Check((await Call("consumer.action", """{"text":"host","number":7}""")).Result!.Value.GetProperty("text").GetString() == "host", "NuGet analyzer did not generate host action metadata.");
 Check((await Call("consumer.action", """["array",7]""")).Result!.Value.GetProperty("number").GetInt32() == 7, "Packed host positional parameters failed.");
+Check((await Call("consumer.platform", """{"platform":"CustomDesktop"}""")).Result!.Value.GetString() == "CustomDesktop", "Consumer source context/converter did not preserve an extensible native value.");
+Check((await Call("plugin.contract.add", """{"increment":3}""")).Result!.Value.GetInt32() == 3, "Packed consuming assembly did not import its curated referenced interface.");
+Check((await Call("plugin.contract.value", "{}")).Result!.Value.GetInt32() == 3, "Packed referenced getter did not call the scoped interface override.");
 Check((await Call("plugin.disabled", "{\"text\":\"no\"}")).Error?.Code == "disabled_command", "Disabled policy failed.");
 Check((await Call("plugin.echo", "{\"text\":null}")).Error?.Code == "invalid_arguments", "Strict plugin nullability failed.");
 Check((await Call("plugin.echo", "{\"text\":\"ok\",\"extra\":true}")).Error?.Code == "invalid_arguments", "Strict plugin schema failed.");
 Check((await Call("essentials.notRegistered", "{}")).Error?.Code == "unknown_command", "Unimplemented Essentials commands must not be exposed.");
 Check((await Call("sample.echo", "{}")).Error?.Code == "unknown_command", "Sample code must not ship.");
-using var secondScope = root.CreateScope();
-var secondHub = secondScope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
+using var secondHostScope = root.CreateScope();
+using var secondScope = secondHostScope.ServiceProvider.CreateHybridAppProvider();
+var secondHub = secondScope.GetRequiredService<HybridAppTargetObject>();
 Check(!ReferenceEquals(hub, secondHub), "The target must be scoped, never shared across WebViews.");
-Check(!ReferenceEquals(scope.ServiceProvider.GetRequiredService<PluginActions>(),
-	secondScope.ServiceProvider.GetRequiredService<PluginActions>()), "Plugin instances must be scoped.");
+Check(!ReferenceEquals(scope.GetRequiredService<PluginActions>(),
+	secondScope.GetRequiredService<PluginActions>()), "Plugin instances must be scoped.");
 var secondSession = Guid.NewGuid().ToString("D");
 Check((await Call("core.connect", "{}", secondHub, secondSession)).Status == "success", "Second scope connect failed.");
 Check((await Call("plugin.echo", "{\"text\":\"second\"}", secondHub, secondSession)).Status == "success", "Second scope plugin failed.");
 Check((await Call("plugin.action.count", "{}", secondHub, secondSession)).Result!.Value.GetInt32() == 1, "Generated provider state leaked between scopes.");
+Check((await Call("plugin.contract.value", "{}", secondHub, secondSession)).Result!.Value.GetInt32() == 0, "Imported interface overrides must remain owned by the original host scope.");
 Check(events.Count == 1 && hub.IsCurrent(session), "A second view changed the first view's session/events.");
 using (var emptyArgs = JsonDocument.Parse("{}"))
 {
@@ -103,7 +115,7 @@ Check((await Call("core.channel.ack", $$"""{"channelId":"{{channelId}}","ownerId
 	"Packed channel consumption acknowledgement failed.");
 Check((await channelWork).Result!.Value.GetInt32() == 42 &&
 	events[^1].Data.GetProperty("kind").GetString() == "complete", "Packed channel completion failed.");
-var registry = scope.ServiceProvider.GetRequiredService<CommandRegistry>();
+var registry = scope.GetRequiredService<CommandRegistry>();
 try
 {
 	registry.RegisterTopic("plugin.changed");
@@ -127,6 +139,8 @@ Console.WriteLine("PACKED_CONSUMER_PASS NuGet-only host + separate attributed pl
 public sealed record ConsumerActionValue(string Text, int Number);
 public sealed class ConsumerActions
 {
+	[HybridAction("consumer.platform")]
+	public static DevicePlatform Platform(DevicePlatform platform) => platform;
 	[HybridAction("consumer.action")]
 	public ValueTask<ConsumerActionValue> Echo(string text, int number) => ValueTask.FromResult(new ConsumerActionValue(text, number));
 
@@ -139,4 +153,25 @@ public sealed class ConsumerActions
 		await values.SendAsync(41);
 		return 42;
 	}
+}
+
+public sealed class ConsumerCounter : INativeCounterContract
+{
+	public int Value { get; private set; }
+	public int Add(int increment) => Value += increment;
+}
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+	AllowDuplicateProperties = false, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true,
+	Converters = [typeof(ConsumerPlatformConverter)])]
+[JsonSerializable(typeof(DevicePlatform))]
+internal partial class ConsumerPlatformJsonContext : JsonSerializerContext;
+
+internal sealed class ConsumerPlatformConverter : JsonConverter<DevicePlatform>
+{
+	public override DevicePlatform Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) =>
+		reader.TokenType == JsonTokenType.String && !string.IsNullOrWhiteSpace(reader.GetString()) ?
+		DevicePlatform.Create(reader.GetString()!) : throw new JsonException();
+	public override void Write(Utf8JsonWriter writer, DevicePlatform value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString());
 }

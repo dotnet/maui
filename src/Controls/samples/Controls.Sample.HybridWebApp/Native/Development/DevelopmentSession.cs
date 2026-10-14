@@ -84,7 +84,6 @@ sealed class DevelopmentSession : IDisposable
 		var path = Uri.UnescapeDataString(e.Uri.AbsolutePath);
 		if (path is "/_framework/hybridwebview.js" or "/__hwvInvokeDotNet" or "/__hwvSendMessage")
 		{
-			Console.WriteLine($"HYBRIDWEBAPP_NATIVE_ROUTE {e.Uri.PathAndQuery}");
 			return;
 		}
 

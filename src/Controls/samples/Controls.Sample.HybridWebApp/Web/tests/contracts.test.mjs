@@ -4,6 +4,20 @@ import { readFile } from 'node:fs/promises'
 import { NativeClient, NativeError, configureBridge, connect, resetBridge } from '@maui/api/core'
 import { getIdentity, sample } from '../src/native/sample.ts'
 import { features, availableFeatures, navigationPages } from '../src/catalog.ts'
+import { createPdf } from '../src/browser-pdf.ts'
+
+test('browser-generated edited text recreates a valid small PDF with exact object offsets', () => {
+  const pdf = new TextDecoder().decode(createPdf('Edited text (with parentheses) and \\ slash'))
+  assert.ok(pdf.startsWith('%PDF-1.4\n'))
+  assert.match(pdf, /Edited text \\\(with parentheses\\\) and \\\\ slash/)
+  const xref = Number(/startxref\n(\d+)/.exec(pdf)[1])
+  assert.equal(pdf.slice(xref, xref + 4), 'xref')
+  for (const [index, line] of pdf.slice(xref).split('\n').slice(3, 8).entries())
+    assert.equal(pdf.slice(Number(line.slice(0, 10)), Number(line.slice(0, 10)) + 7), `${index + 1} 0 obj`)
+  assert.notDeepEqual(createPdf('First text'), createPdf('Edited text'))
+  assert.throws(() => createPdf('Not supported 👋'))
+  assert.throws(() => createPdf(''))
+})
 
 // Explicit test double only: never imported by the UI or used as a browser fallback.
 function mock(handler) {
@@ -82,7 +96,7 @@ test('catalog has all 121 families with 19 P0, and later families never claim im
 })
 
 test('explorer shows implemented experiments with descriptions, without a priority filter', async () => {
-  assert.equal(availableFeatures.length, 22)
+  assert.equal(availableFeatures.length, 24)
   assert.ok(availableFeatures.every(feature => feature.experiment && feature.description))
   assert.ok(availableFeatures.every(feature => features.includes(feature)))
   assert.equal(new Set(availableFeatures.map(feature => feature.experiment)).size, availableFeatures.length)
@@ -95,7 +109,7 @@ test('explorer shows implemented experiments with descriptions, without a priori
 })
 
 test('implemented routes are owned by frontend configuration rather than a C# feature catalog', async () => {
-  assert.equal(navigationPages.length, 24)
+  assert.equal(navigationPages.length, 26)
   assert.ok(!navigationPages.some(page => page.id.startsWith('planned-')))
   const connection = await readFile(new URL('../src/connection.ts', import.meta.url), 'utf8')
   assert.doesNotMatch(connection, /registerWindowRoutes|window\.routes/)

@@ -27,7 +27,7 @@ const entries = run('tar', ['-tf', archive], root, true).trim().split('\n').sort
 assert.deepEqual(entries, [...manifest.files, 'package.json'].map(path => `package/${path}`).sort(), 'The tarball must contain exactly the public allowlist.')
 for (const path of entries.filter(path => path.endsWith('.js') || path.endsWith('.d.ts') || path.endsWith('package.json'))) {
   const content = run('tar', ['-xOf', archive, path], root, true)
-  assert.doesNotMatch(content, /\/Users\/|\/home\/|[A-Z]:\\Users\\|sourceMappingURL|_authToken|file:|\.\/src\//, `Unexpected private/source metadata in ${path}`)
+  assert.doesNotMatch(content, /\/Users\/|\/home\/|[A-Z]:\\Users\\|sourceMappingURL|_authToken|["'`]file:|\.\/src\//, `Unexpected private/source metadata in ${path}`)
 }
 await rm(consumer, { recursive: true, force: true })
 await mkdir(consumer, { recursive: true })

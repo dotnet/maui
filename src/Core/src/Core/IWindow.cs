@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Direction in which the UI elements are scanned by the eye.
 		/// </summary>
-		FlowDirection FlowDirection { get; }
+		FlowDirection FlowDirection { [Microsoft.Maui.Interop.HybridAction("window.flowDirection", MainThread = true)] get; }
 
 		/// <summary>
 		/// Adds a Window Overlay to the current Window.

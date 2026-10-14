@@ -1,4 +1,31 @@
 #nullable enable
+Microsoft.Maui.Interop.FromServicesAttribute
+Microsoft.Maui.Interop.FromServicesAttribute.FromServicesAttribute() -> void
+Microsoft.Maui.Interop.HybridActionAttribute
+Microsoft.Maui.Interop.HybridActionAttribute.Enabled.get -> bool
+Microsoft.Maui.Interop.HybridActionAttribute.Enabled.set -> void
+Microsoft.Maui.Interop.HybridActionAttribute.HybridActionAttribute(string! name) -> void
+Microsoft.Maui.Interop.HybridActionAttribute.Interactive.get -> bool
+Microsoft.Maui.Interop.HybridActionAttribute.Interactive.set -> void
+Microsoft.Maui.Interop.HybridActionAttribute.MainThread.get -> bool
+Microsoft.Maui.Interop.HybridActionAttribute.MainThread.set -> void
+Microsoft.Maui.Interop.HybridActionAttribute.Name.get -> string!
+Microsoft.Maui.Interop.HybridEventAttribute
+Microsoft.Maui.Interop.HybridEventAttribute.HybridEventAttribute(string! name, Microsoft.Maui.Interop.HybridEventLifecycle lifecycle) -> void
+Microsoft.Maui.Interop.HybridEventAttribute.Lifecycle.get -> Microsoft.Maui.Interop.HybridEventLifecycle
+Microsoft.Maui.Interop.HybridEventAttribute.Name.get -> string!
+Microsoft.Maui.Interop.HybridEventLifecycle
+Microsoft.Maui.Interop.HybridEventLifecycle.Start = 0 -> Microsoft.Maui.Interop.HybridEventLifecycle
+Microsoft.Maui.Interop.HybridEventLifecycle.Stop = 1 -> Microsoft.Maui.Interop.HybridEventLifecycle
+Microsoft.Maui.Interop.HybridExportAttribute
+Microsoft.Maui.Interop.HybridExportAttribute.Contract.get -> System.Type!
+Microsoft.Maui.Interop.HybridExportAttribute.HybridExportAttribute(System.Type! contract) -> void
+Microsoft.Maui.Interop.HybridNativeEventAttribute
+Microsoft.Maui.Interop.HybridNativeEventAttribute.HybridNativeEventAttribute(string! name) -> void
+Microsoft.Maui.Interop.HybridNativeEventAttribute.Name.get -> string!
+Microsoft.Maui.Interop.HybridTopicAttribute
+Microsoft.Maui.Interop.HybridTopicAttribute.HybridTopicAttribute(string! name) -> void
+Microsoft.Maui.Interop.HybridTopicAttribute.Name.get -> string!
 Microsoft.Maui.ApplicationModel.IPermissions
 Microsoft.Maui.ApplicationModel.IPermissions.CheckStatusAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>!
 Microsoft.Maui.ApplicationModel.IPermissions.RequestAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>!

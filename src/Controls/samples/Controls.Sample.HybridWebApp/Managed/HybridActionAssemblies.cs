@@ -20,19 +20,36 @@ public static class HybridActionAssemblies
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(identity);
 		ArgumentNullException.ThrowIfNull(register);
-		if (!services.Any(descriptor => descriptor.ImplementationInstance is AssemblyActions actions && actions.Identity == identity))
-			services.AddSingleton(new AssemblyActions(identity, register));
-		services.TryAddScoped<NativeDispatcher>();
-		services.TryAddScoped(provider =>
+		var configuration = Configuration(services);
+		configuration.Assemblies.TryAdd(identity, register);
+		Target(services, _ => new NativeDispatcher());
+		Target(services, provider =>
 		{
 			var registry = new CommandRegistry();
-			foreach (var assembly in provider.GetServices<AssemblyActions>())
-				assembly.Register(registry, provider);
+			foreach (var assembly in configuration.Assemblies.Values) assembly(registry, provider);
 			return registry;
-		});
+		}, perViewOnly: true);
 		return services;
 	}
-	sealed record AssemblyActions(Type Identity, Action<CommandRegistry, IServiceProvider> Register);
+	internal static HybridLocalConfiguration Configuration(IServiceCollection services)
+	{
+		var configuration = services.Select(d => d.ImplementationInstance).OfType<HybridLocalConfiguration>().SingleOrDefault();
+		if (configuration is not null) return configuration;
+		configuration = new(services);
+		services.AddSingleton(configuration);
+		return configuration;
+	}
+
+	/// <summary>Records a generated typed constructor without adding its target to the global host collection.</summary>
+	/// <typeparam name="T">The local target.</typeparam>
+	/// <param name="services">The composing host collection.</param><param name="factory">A typed proxy-aware constructor.</param>
+	/// <param name="perViewOnly">Rejects global singleton overrides for targets that capture view/session resources.</param>
+	public static void Target<T>(IServiceCollection services, Func<IServiceProvider, T> factory, bool perViewOnly = false) where T : class
+	{
+		var configuration = Configuration(services);
+		configuration.Factories.TryAdd(typeof(T), provider => factory(provider));
+		if (perViewOnly) configuration.PerViewOnly.Add(typeof(T));
+	}
 }
 
 /// <summary>Strict named-object or positional-array binding used only by compiler-generated action handlers.</summary>

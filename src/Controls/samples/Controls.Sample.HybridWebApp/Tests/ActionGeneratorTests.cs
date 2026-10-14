@@ -11,6 +11,170 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 public sealed class ActionGeneratorTests
 {
 	[Fact]
+	public void ReferencedContractsRequireAnExplicitRootAndOnlyAnnotatedMembersAreImported()
+	{
+		var none = Generate("public class Nothing {}");
+		Assert.Empty(none.Result.GeneratedTrees);
+		var wrong = Generate("[assembly: Microsoft.Maui.Interop.HybridExport(typeof(System.IComparable))] public class Nothing {}");
+		Assert.Empty(wrong.Result.GeneratedTrees);
+		var source = """
+			[assembly: Microsoft.Maui.Interop.HybridExport(typeof(Microsoft.Maui.ApplicationModel.DataTransfer.IClipboard))]
+			public class Nothing {}
+			""";
+		var imported = Generate(source);
+		Assert.Empty(imported.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(imported.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var code = string.Join("\n", imported.Result.GeneratedTrees);
+		Assert.Contains("GetRequiredService<global::Microsoft.Maui.ApplicationModel.DataTransfer.IClipboard>()", code, StringComparison.Ordinal);
+		Assert.Contains(".@HasText", code, StringComparison.Ordinal);
+		Assert.Contains("HybridNativeEvents.Register", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("ClipboardImplementation", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("Target<global::Microsoft.Maui.ApplicationModel.DataTransfer.IClipboard>", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("GetMethod", code, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InheritedInterfaceMembersBindToTheSelectedRootAndConflictsAreDiagnostics()
+	{
+		var source = """
+			[assembly: Microsoft.Maui.Interop.HybridExport(typeof(ISelected))]
+			public interface IBase { [HybridAction("base.count")] int Count(); }
+			public interface ISelected : IBase { bool Unannotated { get; } }
+			""";
+		var result = Generate(source);
+		Assert.Empty(result.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Contains("GetRequiredService<global::ISelected>()", string.Join("\n", result.Result.GeneratedTrees), StringComparison.Ordinal);
+		Assert.DoesNotContain("Unannotated", string.Join("\n", result.Result.GeneratedTrees), StringComparison.Ordinal);
+		var duplicate = Generate(source.Replace("public interface IBase", "[assembly: HybridExport(typeof(IBase))]\npublic interface IBase", StringComparison.Ordinal));
+		Assert.Contains(duplicate.Result.Diagnostics, d => d.Id == "HYBRID007");
+		var unsupported = Generate("""
+			[assembly: HybridExport(typeof(IUnsupported))]
+			public interface IUnsupported { [HybridAction("bad")] void Call(ref int value); }
+			""");
+		Assert.Contains(unsupported.Result.Diagnostics, d => d.Id == "HYBRID002");
+	}
+
+	[Fact]
+	public async Task ImportedShadowsInvokeOnlyTheAnnotatedDeclaringContract()
+	{
+		var result = Generate("""
+			using System;
+			[assembly: HybridExport(typeof(ISelected))]
+			public interface IBase {
+				[HybridAction("shadow.base.method")] int Count();
+				int Value { [HybridAction("shadow.base.getter")] get; }
+				[HybridNativeEvent("shadow.base.changed")] event EventHandler<EventArgs> Changed;
+			}
+			public interface ISelected : IBase {
+				new int Count(); new int Value {get;}
+				new event EventHandler<EventArgs> Changed;
+			}
+			public class Implementation : ISelected {
+				EventHandler<EventArgs>? basis, selected;
+				int IBase.Count() => 7; int IBase.Value => 8;
+				public int Count() => 99; public int Value => 100;
+				event EventHandler<EventArgs> IBase.Changed {add=>basis+=value;remove=>basis-=value;}
+				public event EventHandler<EventArgs> Changed {add=>selected+=value;remove=>selected-=value;}
+				public void RaiseBase()=>basis?.Invoke(this,EventArgs.Empty);
+				public void RaiseSelected()=>selected?.Invoke(this,EventArgs.Empty);
+			}
+			""");
+		Assert.Empty(result.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		using var image = new MemoryStream();
+		Assert.True(result.Output.Emit(image).Success);
+		var assembly = System.Reflection.Assembly.Load(image.ToArray());
+		var implementationType = assembly.GetType("Implementation")!;
+		var implementation = Activator.CreateInstance(implementationType)!;
+		var services = new ServiceCollection();
+		services.AddHybridApp(new("shadow."));
+		services.AddSingleton(new NativeDispatcher(action => action()));
+		services.AddSingleton(assembly.GetType("ISelected")!, implementation);
+		assembly.GetType("Maui.HybridApp.Generated.ActionCompilationActionAssembly")!
+			.GetMethod("AddActionCompilationActions")!.Invoke(null, [services]);
+		using var host = services.BuildServiceProvider();
+		using var scope = host.CreateScope();
+		using var local = scope.ServiceProvider.CreateHybridAppProvider();
+		var hub = local.GetRequiredService<HybridAppTargetObject>();
+		var session = Guid.NewGuid().ToString("D");
+		async Task<Response> Call(string command, string arguments = "{}")
+		{
+			using var args = System.Text.Json.JsonDocument.Parse(arguments);
+			return System.Text.Json.JsonSerializer.Deserialize(await hub.Invoke(
+				System.Text.Json.JsonSerializer.Serialize(new Request(1, session, Guid.NewGuid().ToString("D"),
+					command, args.RootElement), ProtocolJsonContext.Default.Request)), ProtocolJsonContext.Default.Response)!;
+		}
+		Assert.Equal("success", (await Call("core.connect")).Status);
+		Assert.Equal(7, (await Call("shadow.base.method")).Result!.Value.GetInt32());
+		Assert.Equal(8, (await Call("shadow.base.getter")).Result!.Value.GetInt32());
+		var messages = new List<NativeEvent>();
+		hub.NativeEventReceived += messages.Add;
+		Assert.Equal("success", (await Call("core.subscribe", """{"topic":"shadow.base.changed"}""")).Status);
+		implementationType.GetMethod("RaiseSelected")!.Invoke(implementation, null);
+		Assert.Empty(messages);
+		implementationType.GetMethod("RaiseBase")!.Invoke(implementation, null);
+		Assert.Single(messages);
+		Assert.Equal("success", (await Call("core.unsubscribe", """{"topic":"shadow.base.changed"}""")).Status);
+		implementationType.GetMethod("RaiseBase")!.Invoke(implementation, null);
+		Assert.Single(messages);
+	}
+
+	[Fact]
+	public void CustomConverterHandlesNullableAndNonnullableSymbolsInTheSameGraph()
+	{
+		var result = Generate("""
+			using System; using System.Text.Json; using System.Text.Json.Serialization;
+			[JsonConverter(typeof(ValueConverter))] public record Value(string Text);
+			public class ValueConverter : JsonConverter<Value> {
+				public override Value Read(ref Utf8JsonReader r, Type t, JsonSerializerOptions o) => new(r.GetString()!);
+				public override void Write(Utf8JsonWriter w, Value v, JsonSerializerOptions o) => w.WriteStringValue(v.Text);
+			}
+			public class Provider {
+				[HybridAction("converted")] public static Value? Echo(Value value) => value;
+				[HybridAction("converted.nonnull")] public static Value EchoNullable(Value? value) => value ?? new("default");
+			}
+			""");
+		Assert.Empty(result.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(result.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Contains("converted.nonnull", string.Join("\n", result.Result.GeneratedTrees), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TypedCustomConvertersAndDeclaredStrictContextsAreNotReflectionFallbacks()
+	{
+		var result = Generate("""
+			using System; using System.Text.Json; using System.Text.Json.Serialization;
+			[JsonConverter(typeof(ValueConverter))] public record Value(string Text);
+			public class ValueConverter : JsonConverter<Value> {
+				public override Value Read(ref Utf8JsonReader r, Type t, JsonSerializerOptions o) => new(r.GetString()!);
+				public override void Write(Utf8JsonWriter w, Value v, JsonSerializerOptions o) => w.WriteStringValue(v.Text);
+			}
+			public class Provider { [HybridAction("converted")] public static Value Echo(Value value) => value; }
+			""");
+		Assert.Empty(result.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(result.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Contains("static readonly global::ValueConverter CustomConverter", string.Join("\n", result.Result.GeneratedTrees), StringComparison.Ordinal);
+		Assert.DoesNotContain("Activator", string.Join("\n", result.Result.GeneratedTrees), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TypedConstructorFactoriesHonorValueDefaultsAndTypeKeysWithoutReflectionConstruction()
+	{
+		var result = Generate("""
+			using System; using Microsoft.Extensions.DependencyInjection;
+			public class Service {}
+			public class Provider([FromKeyedServices(typeof(Service))] Service service, int count = 7, int? missing = null) {
+				[HybridAction("constructor.defaults")] public int Count() => count;
+			}
+			""");
+		Assert.Empty(result.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(result.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var code = string.Join("\n", result.Result.GeneratedTrees);
+		Assert.Contains("GetRequiredKeyedService<global::Service>(typeof(global::Service))", code, StringComparison.Ordinal);
+		Assert.Contains("services.GetService(typeof(int)) is int", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("Activator", code, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void BinaryAndChannelsCompileWithDirectCallsAndOnlyJsonPayloadMetadata()
 	{
 		var generated = Generate("""
@@ -50,13 +214,13 @@ public sealed class ActionGeneratorTests
 	}
 
 	static readonly MetadataReference[] References = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
-		.Concat([typeof(HybridActionAttribute).Assembly.Location, typeof(IServiceCollection).Assembly.Location,
+		.Concat([typeof(HybridActionAttribute).Assembly.Location, typeof(HybridAppTargetObject).Assembly.Location, typeof(IServiceCollection).Assembly.Location,
 			typeof(ServiceCollection).Assembly.Location, typeof(PluginActions).Assembly.Location]).Distinct(StringComparer.Ordinal).Select(path => MetadataReference.CreateFromFile(path)).ToArray();
 
 	static (Compilation Output, GeneratorDriverRunResult Result) Generate(string source)
 	{
 		var parse = new CSharpParseOptions(LanguageVersion.Preview);
-		var compilation = CSharpCompilation.Create("ActionCompilation", [CSharpSyntaxTree.ParseText(source, parse)],
+		var compilation = CSharpCompilation.Create("ActionCompilation", [CSharpSyntaxTree.ParseText("global using Microsoft.Maui.Interop;\n" + source, parse)],
 			References, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([new HybridActionGenerator().AsSourceGenerator()], parseOptions: parse);
 		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out _);
@@ -100,7 +264,6 @@ public sealed class ActionGeneratorTests
 		foreach (var declaration in new[]
 		{
 			"""public enum Mode { [JsonStringEnumMemberName("same")] First, [JsonStringEnumMemberName("same")] Second }""",
-			"""[JsonConverter(typeof(JsonStringEnumConverter<Mode>))] public enum Mode { First, Second }""",
 		})
 		{
 			var generated = Generate("using System.Text.Json.Serialization; using Maui.HybridApp; " + declaration +

@@ -4,7 +4,8 @@
 .NET MAUI project. It provides typed native commands, document-scoped events
 and separate Essentials / MAUI UI feature modules for app/device information,
 clipboard, preferences, battery/display, native connectivity events, cancellable
-text-to-speech, external HTTPS launching, selected-file/read-stream resources, page-owned
+text-to-speech, external HTTPS launching, actual native geolocation, bounded native
+text/file/multi-file sharing, selected-file/read-stream resources, page-owned
 dialogs and scoped windows.
 
 **Preview availability:** `0.1.0-preview.1` is prepared for local tarball
@@ -57,6 +58,30 @@ ordinary browser/Node process without an explicitly injected native transport ha
 no native host: asynchronous default-client feature calls
 reject with `NativeError` code `native_unavailable`; they never fall back to web
 clipboard/storage or fake app/device data. Handle that rejection in your UI.
+
+Native SDK members are deliberately curated by metadata in the existing
+Essentials assembly (`Microsoft.Maui.Interop`), below the optional integration
+runtime. The managed generator imports only explicitly rooted annotated
+contracts; annotations alone expose nothing. The matching managed host creates
+one local provider overlay per view over its owning business-service scope.
+Clipboard and routine dialogs now decode actual native scalar/void results,
+not the previous preview's wrapper DTOs; no compatibility aliases are retained.
+
+```ts
+import { stageFile, share, releaseFile } from '@maui/api/essentials/share'
+import { getLocation } from '@maui/api/essentials/geolocation'
+
+const file = await stageFile('browser.pdf', 'application/pdf', browserProducedPdfBytes)
+await share({ file, title: 'Share browser document' }) // OS UI, not a browser download
+await releaseFile(file) // revoke handle; OS files retain their finite reading window
+const request = await getLocation({ desiredAccuracy: 'medium', timeout: '00:00:20' })
+const location = await request.result // actual Location or null; never a web fallback
+```
+
+Sharing stages raw bytes separately from the longer interactive JSON request.
+Native files remain opaque document-owned resources, not accepted browser paths.
+Chooser completion (especially Android) is not recipient consumption. See
+[policy and retention](docs/API.md#native-sharing-and-location) before use.
 
 This **unpublished preview was intentionally reshaped**: the old `app/info`,
 `getInfo` and SDK `Identity` exports were removed, not aliased. AppInfo exposes

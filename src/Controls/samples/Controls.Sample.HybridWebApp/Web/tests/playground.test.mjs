@@ -25,7 +25,7 @@ const identity = { appName: 'Native', version: '1', build: '2', platform: 'MacCa
 const actions = {
   identity: ['run', 'reload'], clipboard: ['copy', 'paste'], preferences: ['save', 'read', 'remove'],
   echo: ['echo', 'counter', 'binary-roundtrip', 'binary-document', 'binary-chunks', 'cancel'], errors: ['fail', 'counter'], policy: ['missing', 'disabled', 'invalid'],
-  lifetime: ['increment', 'counter', 'reload'], events: ['echo', 'subscribe', 'unsubscribe'],
+  lifetime: ['increment', 'counter', 'reload', 'local-target', 'shared-target', 'read-targets', 'targets-window'], events: ['echo', 'subscribe', 'unsubscribe'],
   work: ['work', 'cancel', 'reload'], development: ['identity', 'reload'],
   welcome: [], showcase: ['title', 'copy', 'prompt', 'device', 'open-window'],
   windows: ['window-info', 'title', 'bounds', 'position', 'center'], multiWindow: ['window-list', 'open-window'],
@@ -36,6 +36,8 @@ const actions = {
   connectivity: ['connectivity-read', 'connectivity-subscribe', 'connectivity-unsubscribe'],
   textToSpeech: ['speech-locales', 'speech-speak', 'cancel'],
   launcher: ['launch-url'],
+  share: ['share-text', 'share-stage-pdf', 'share-pdf', 'share-multiple'],
+  geolocation: ['geolocation-read', 'cancel'],
 }
 const deferred = () => {
   let resolve
@@ -77,7 +79,7 @@ function transport(handler) {
   return { requests, messages, bridge }
 }
 
-function defaultResult(request) {
+function defaultResult(request, bytes) {
   switch (request.command) {
     case 'core.connect': return { commands: ['app.info', 'sample.echo'], preferenceNamespace: 'maui.playground.v1.', maximumTextLength: 4096 }
     case 'app.info': return { appName: identity.appName, version: identity.version, build: identity.build }
@@ -86,7 +88,20 @@ function defaultResult(request) {
       startupId: identity.startupId, startedAt: identity.startedAt }
     case 'sample.echo': return { ...request.args, counter: 7 }
     case 'sample.counter': return { counter: 7 }
-    case 'clipboard.read': return { text: 'Native clipboard 👋' }
+    case 'clipboard.read': return 'Native clipboard 👋'
+    case 'clipboard.hasText': return true
+    case 'clipboard.write':
+    case 'dialogs.alert': return null
+    case 'dialogs.confirm': return false
+    case 'dialogs.actionSheet': return 'Choice'
+    case 'window.flowDirection': return 'matchParent'
+    case 'sample.localCounter':
+    case 'sample.sharedCounter': return { instanceId: request.command, count: request.args.increment ?? 0 }
+    case 'share.stage': return Uint8Array.from(new TextEncoder().encode(JSON.stringify({ id: crypto.randomUUID(),
+      fileName: request.args.fileName, contentType: request.args.contentType, size: bytes.byteLength })))
+    case 'geolocation.location': return { latitude: 51.5, longitude: -0.12, timestamp: '2026-10-14T00:00:00Z',
+      altitude: null, accuracy: 8, verticalAccuracy: null, reducedAccuracy: false,
+      speed: null, course: null, isFromMockProvider: false, altitudeReferenceSystem: 'unspecified' }
     case 'preferences.get': return { kind: 'string', text: 'Native preference' }
     case 'preferences.set':
     case 'preferences.remove': return { accepted: true }
@@ -175,7 +190,7 @@ function fixture(t, handler = defaultResult, { native = true, compact = false } 
 test('typed registry mounts implemented experiments and both guides with actions and metadata', t => {
   const app = fixture(t)
   assert.deepEqual(Object.keys(components).sort(), Object.keys(actions).sort())
-  assert.equal(app.find('#catalog-count').textContent, '22 experiments · 2 guides')
+  assert.equal(app.find('#catalog-count').textContent, '24 experiments · 2 guides')
   for (const feature of navigationPages) {
     app.select(feature.id)
     assert.equal(app.find('#feature-title').textContent, feature.title)
@@ -188,6 +203,63 @@ test('typed registry mounts implemented experiments and both guides with actions
   }
   assert.ok(app.host.requests.every(request => request.command === 'window.info'),
     'only the live current-window page starts a native observation on mount')
+})
+
+test('share page stages browser PDF bytes then invokes native single/multi/text shapes without claiming consumption', async t => {
+  const previousCreate = URL.createObjectURL, previousRevoke = URL.revokeObjectURL
+  URL.createObjectURL = () => 'blob:browser-pdf-test'
+  URL.revokeObjectURL = () => {}
+  t.onTestFinished(() => { URL.createObjectURL = previousCreate; URL.revokeObjectURL = previousRevoke })
+  const app = fixture(t, (request, bytes) => {
+    if (request.command === 'share.stage' && request.args.contentType === 'application/pdf')
+      assert.equal(new TextDecoder().decode(bytes).slice(0, 8), '%PDF-1.4')
+    return defaultResult(request, bytes)
+  })
+  app.select('share')
+  assert.equal(app.find('[data-action="share-pdf"]').disabled, true)
+  app.input('#pdf-message', 'Edited browser-generated document')
+  app.click('share-stage-pdf')
+  await app.idle()
+  assert.equal(app.find('[data-action="share-pdf"]').disabled, false, app.find('#result-json').textContent)
+  app.click('share-pdf')
+  await app.idle()
+  const shared = app.host.requests.findLast(request => request.command === 'share.request')
+  assert.ok(shared, app.find('#result-json').textContent)
+  const single = shared.args.request
+  assert.deepEqual(Object.keys(single.file), ['id'])
+  assert.equal(single.title, 'Share browser-produced PDF')
+  assert.match(app.find('#result-json').textContent, /not known/)
+  app.click('share-multiple')
+  await app.idle()
+  assert.equal(app.host.requests.findLast(request => request.command === 'share.request').args.request.files.length, 2)
+  app.click('share-text')
+  await app.idle()
+  assert.equal(typeof app.host.requests.findLast(request => request.command === 'share.request').args.request.text, 'string')
+  app.select('clipboard')
+  await app.idle()
+  assert.equal(app.host.requests.filter(request => request.command === 'share.release').length, 2)
+})
+
+test('geolocation panel displays explicitly requested native coordinates without copying them into operation logs', async t => {
+  const app = fixture(t)
+  app.select('geolocation')
+  assert.equal(app.host.requests.some(request => request.command === 'geolocation.location'), false)
+  app.click('geolocation-read')
+  await app.idle()
+  assert.match(app.find('[data-result="native-location"]').textContent, /51.5/)
+  assert.doesNotMatch(app.find('#result-json').textContent, /51\.5|latitude|longitude/)
+  assert.deepEqual(app.host.requests.find(request => request.command === 'geolocation.location').args,
+    { request: { desiredAccuracy: 'medium', timeout: '00:00:20', requestFullAccuracy: false } })
+})
+
+test('lifetime page reads local and explicitly shared target identities through normal annotated actions', async t => {
+  const app = fixture(t)
+  app.select('lifetime')
+  app.click('read-targets')
+  await app.idle()
+  const result = JSON.parse(app.find('#result-json').textContent)
+  assert.equal(result.local.instanceId, 'sample.localCounter')
+  assert.equal(result.shared.instanceId, 'sample.sharedCounter')
 })
 
 test('binary experiment roundtrips a real browser Blob over the separate byte primitive and reports exact proof', async t => {
@@ -263,7 +335,7 @@ test('navigation groups are heading disclosures with a decorative arrow, not col
 test('action sheet passes editable native labels/options and preserves selection, cancel and dismissal', async t => {
   let selection = 'Share'
   const app = fixture(t, request => request.command === 'dialogs.actionSheet'
-    ? { selection } : defaultResult(request))
+    ? selection : defaultResult(request))
   app.select('dialogs')
   assert.deepEqual([...app.find('#controls').querySelectorAll('.dialog-section h3')].map(heading => heading.textContent),
     ['Alert', 'Confirmation', 'Text prompt', 'Action sheet'])
@@ -318,7 +390,7 @@ test('search temporarily reveals grouped matches and preserves collapse preferen
   assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'true')
   app.input('#search', '')
   assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'false')
-  assert.equal(app.find('#catalog-count').textContent, '22 experiments · 2 guides')
+  assert.equal(app.find('#catalog-count').textContent, '24 experiments · 2 guides')
   app.find('[data-group="Essentials"]').click()
   app.session.writeLog('A native refresh', 'Success', { accepted: true })
   assert.equal(app.find('[data-group="Essentials"]').getAttribute('aria-expanded'), 'false',
@@ -808,7 +880,7 @@ test('transport failures are distinct from native errors in the shared result', 
 })
 
 for (const [feature, action, selector, command, output] of [
-  ['clipboard', 'paste', '#clipboard-text', 'clipboard.read', { text: 'Late clipboard' }],
+  ['clipboard', 'paste', '#clipboard-text', 'clipboard.read', 'Late clipboard'],
   ['preferences', 'read', '#preference-value', 'preferences.get', { kind: 'string', text: 'Late setting' }],
 ]) {
   test(`delayed ${command} captures its original input and cannot paint into a replacement page`, async t => {
@@ -1294,7 +1366,7 @@ test('disposing during bridge load prevents a late attach or connection after HM
 
 test('raw native values, error messages and shared log text are rendered only as plain text', async t => {
   const markup = '<img src=x onerror="alert(1)">\n<script>throw new Error("injected")</script>'
-  const app = fixture(t, request => request.command === 'clipboard.read' ? { text: markup }
+  const app = fixture(t, request => request.command === 'clipboard.read' ? markup
     : request.command === 'sample.fail' ? { status: 'error', error: { code: 'intentional_error', message: markup } }
     : defaultResult(request))
   app.select('clipboard')
@@ -1457,7 +1529,7 @@ test('bootstrap disables native actions until metadata is ready without replacin
 })
 
 for (const [feature, action, selector, command, output] of [
-  ['clipboard', 'paste', '#clipboard-text', 'clipboard.read', { text: 'Late clipboard' }],
+  ['clipboard', 'paste', '#clipboard-text', 'clipboard.read', 'Late clipboard'],
   ['preferences', 'read', '#preference-value', 'preferences.get', { kind: 'string', text: 'Late setting' }],
 ]) {
   test(`shell remount isolates pending ${command} completion even without navigation`, async t => {

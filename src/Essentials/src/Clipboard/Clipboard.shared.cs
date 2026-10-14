@@ -12,7 +12,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// <summary>
 		/// Gets a value indicating whether there is any text on the clipboard.
 		/// </summary>
-		bool HasText { get; }
+		bool HasText { [Microsoft.Maui.Interop.HybridAction("clipboard.hasText", MainThread = true)] get; }
 
 		/// <summary>
 		/// Sets the contents of the clipboard to be the specified text.
@@ -20,17 +20,20 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// <param name="text">The text to put on the clipboard.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		/// <remarks>This method returns immediately and does not guarantee that the text is on the clipboard by the time this method returns.</remarks>
+		[Microsoft.Maui.Interop.HybridAction("clipboard.write", MainThread = true)]
 		Task SetTextAsync(string? text);
 
 		/// <summary>
 		/// Returns any text that is on the clipboard.
 		/// </summary>
 		/// <returns>Text content that is on the clipboard, or <see langword="null"/> if there is none.</returns>
+		[Microsoft.Maui.Interop.HybridAction("clipboard.read", MainThread = true)]
 		Task<string?> GetTextAsync();
 
 		/// <summary>
 		/// Occurs when the clipboard content changes.
 		/// </summary>
+		[Microsoft.Maui.Interop.HybridNativeEvent("clipboard.changed")]
 		event EventHandler<EventArgs> ClipboardContentChanged;
 	}
 

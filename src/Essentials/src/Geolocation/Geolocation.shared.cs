@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <param name="cancelToken">A token that can be used for cancelling the operation.</param>
 		/// <remarks>The location permissions will be requested at runtime if needed. You might still need to declare something in your app manifest.</remarks>
 		/// <returns>A <see cref="Location"/> object containing current location information or <see langword="null"/> if no location could be determined.</returns>
+		[Microsoft.Maui.Interop.HybridAction("geolocation.location", MainThread = true, Interactive = true)]
 		Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
 
 		/// <summary>

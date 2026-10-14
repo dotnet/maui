@@ -11,15 +11,18 @@ namespace Maui.HybridApp.Generators;
 [Generator]
 public sealed class HybridActionGenerator : IIncrementalGenerator
 {
-	const string AttributeName = "Maui.HybridApp.HybridActionAttribute";
-	const string EventAttributeName = "Maui.HybridApp.HybridEventAttribute";
-	const string TopicAttributeName = "Maui.HybridApp.HybridTopicAttribute";
+	const string AttributeName = "Microsoft.Maui.Interop.HybridActionAttribute";
+	const string EventAttributeName = "Microsoft.Maui.Interop.HybridEventAttribute";
+	const string TopicAttributeName = "Microsoft.Maui.Interop.HybridTopicAttribute";
+	const string ExportAttributeName = "Microsoft.Maui.Interop.HybridExportAttribute";
+	const string NativeEventAttributeName = "Microsoft.Maui.Interop.HybridNativeEventAttribute";
 	static readonly DiagnosticDescriptor InvalidName = Rule("HYBRID001", "Invalid action name", "Action '{0}' has an invalid wire name");
 	static readonly DiagnosticDescriptor InvalidMethod = Rule("HYBRID002", "Unsupported action method", "Action '{0}' must be accessible, nongeneric and non-async-void, without ref/out/in or delegate parameters: {1}");
 	static readonly DiagnosticDescriptor Duplicate = Rule("HYBRID003", "Duplicate action name", "Action or topic name '{0}' is duplicated within an assembly or explicitly registered assemblies");
 	static readonly DiagnosticDescriptor InvalidJson = Rule("HYBRID004", "Unsupported JSON contract", "Action '{0}' cannot generate strict JSON for '{1}': {2}");
 	static readonly DiagnosticDescriptor InvalidBinding = Rule("HYBRID005", "Invalid parameter binding", "Action parameter '{0}' has conflicting or unsupported service/context/cancellation binding");
 	static readonly DiagnosticDescriptor InvalidEvent = Rule("HYBRID006", "Invalid event lifecycle", "Topic '{0}' requires exactly one accessible instance Task start and void stop method without parameters");
+	static readonly DiagnosticDescriptor InvalidRoot = Rule("HYBRID007", "Invalid native contract root", "Contract '{0}' cannot be imported or constructed: {1}");
 
 	static DiagnosticDescriptor Rule(string id, string title, string message) =>
 		new(id, title, message, "Maui.HybridApp", DiagnosticSeverity.Error, true);
@@ -27,7 +30,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var methods = context.SyntaxProvider.ForAttributeWithMetadataName(AttributeName,
-			static (node, _) => node is MethodDeclarationSyntax,
+			static (node, _) => node is MethodDeclarationSyntax or AccessorDeclarationSyntax,
 			static (syntax, _) => (IMethodSymbol)syntax.TargetSymbol).Collect();
 		var events = context.SyntaxProvider.ForAttributeWithMetadataName(EventAttributeName,
 			static (node, _) => node is MethodDeclarationSyntax,
@@ -49,6 +52,57 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 	{
 		var assembly = compilation.AssemblyName!;
 		var textType = compilation.GetSpecialType(SpecialType.System_String);
+		var targets = new Dictionary<IMethodSymbol, INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		var selected = methods.Where(m => m.ContainingType.TypeKind == TypeKind.Class).ToList();
+		foreach (var method in selected) targets[method] = method.ContainingType;
+		var nativeEvents = new Dictionary<INamedTypeSymbol, List<IEventSymbol>>(SymbolEqualityComparer.Default);
+		var imported = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		foreach (var root in compilation.Assembly.GetAttributes().Where(a => a.AttributeClass?.ToDisplayString() == ExportAttributeName))
+		{
+			if (root.ConstructorArguments.FirstOrDefault().Value is not INamedTypeSymbol type ||
+				type.TypeKind is not (TypeKind.Class or TypeKind.Interface) || !Accessible(type) || type.Arity != 0)
+			{
+				output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, Location.None, root.ToString(), "use an accessible nongeneric interface or class"));
+				continue;
+			}
+			if (!imported.Add(type))
+			{
+				output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, Location.None, type.Name, "duplicate root"));
+				continue;
+			}
+			foreach (var member in Members(type).Distinct(SymbolEqualityComparer.Default))
+			{
+				var method = member is IMethodSymbol { MethodKind: MethodKind.Ordinary } ordinary ? ordinary : (member as IPropertySymbol)?.GetMethod;
+				if (method is not null && method.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == AttributeName))
+				{
+					if (targets.ContainsKey(method))
+						output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, Location.None, type.Name, "member is imported more than once"));
+					else { selected.Add(method); targets[method] = type; }
+				}
+				if (member is IEventSymbol ev && ev.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == NativeEventAttributeName))
+				{
+					if (ev.IsStatic || ev.Type.ToDisplayString() != "System.EventHandler<System.EventArgs>" || !Accessible(ev))
+						output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, Location.None, type.Name, "native change events require instance EventHandler<EventArgs>"));
+					else
+					{
+						if (!nativeEvents.TryGetValue(type, out var list)) nativeEvents[type] = list = new();
+						list.Add(ev);
+					}
+				}
+			}
+		}
+		methods = selected.ToImmutableArray();
+		var contexts = new Dictionary<ITypeSymbol, INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		foreach (var root in compilation.Assembly.GetAttributes().Where(a => a.AttributeClass?.ToDisplayString() == "Maui.HybridApp.HybridJsonContextAttribute"))
+		{
+			if (root.ConstructorArguments.Length == 2 && root.ConstructorArguments[0].Value is ITypeSymbol contract &&
+				root.ConstructorArguments[1].Value is INamedTypeSymbol context &&
+				context.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "System.Text.Json.Serialization.JsonSerializableAttribute" &&
+					SymbolEqualityComparer.Default.Equals(a.ConstructorArguments[0].Value as ITypeSymbol, contract)) &&
+				!contexts.ContainsKey(contract))
+				contexts.Add(contract, context);
+			else output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, Location.None, root.ToString(), "root the exact type in one source-declared JsonSerializerContext"));
+		}
 		var registeredNames = new HashSet<string>(StringComparer.Ordinal);
 		foreach (var method in methods.Distinct(SymbolEqualityComparer.Default).OfType<IMethodSymbol>())
 			if (!registeredNames.Add(Name(method)))
@@ -58,14 +112,14 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				if (attribute.ConstructorArguments[0].Value is string name && !registeredNames.Add(name))
 					output.ReportDiagnostic(Diagnostic.Create(Duplicate, methods.FirstOrDefault(m => Name(m) == name)?.Locations.FirstOrDefault() ?? Location.None, name));
 
-		var providers = methods.Concat(events).Select(method => method.ContainingType).Concat(topics)
+		var providers = methods.Select(method => targets[method]).Concat(events.Select(method => method.ContainingType)).Concat(topics).Concat(nativeEvents.Keys)
 			.Distinct(SymbolEqualityComparer.Default).OfType<INamedTypeSymbol>().OrderBy(type => type.ToDisplayString(), StringComparer.Ordinal);
 		var emitters = new List<(INamedTypeSymbol Type, string Id, bool Instance)>();
 		var topicNames = new HashSet<string>(StringComparer.Ordinal);
 		int index = 0;
 		foreach (var provider in providers)
 		{
-			var group = methods.Where(method => SymbolEqualityComparer.Default.Equals(method.ContainingType, provider));
+			var group = methods.Where(method => SymbolEqualityComparer.Default.Equals(targets[method], provider));
 			var lifecycle = events.Where(method => SymbolEqualityComparer.Default.Equals(method.ContainingType, provider)).ToArray();
 			var declaredTopics = provider.GetAttributes().Where(a => a.AttributeClass?.ToDisplayString() == TopicAttributeName)
 				.Select(a => a.ConstructorArguments[0].Value as string ?? "").ToArray();
@@ -84,7 +138,14 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				if (!ValidName(topic)) output.ReportDiagnostic(Diagnostic.Create(InvalidName, provider.Locations[0], topic));
 				if (!topicNames.Add(topic)) output.ReportDiagnostic(Diagnostic.Create(Duplicate, provider.Locations[0], topic));
 			}
-			var graph = new JsonGraph();
+			var selectedNativeEvents = nativeEvents.TryGetValue(provider, out var value) ? value : new List<IEventSymbol>();
+			foreach (var ev in selectedNativeEvents)
+			{
+				var name = ev.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == NativeEventAttributeName).ConstructorArguments[0].Value as string ?? "";
+				if (!ValidName(name)) output.ReportDiagnostic(Diagnostic.Create(InvalidName, Location.None, name));
+				if (!topicNames.Add(name)) output.ReportDiagnostic(Diagnostic.Create(Duplicate, Location.None, name));
+			}
+			var graph = new JsonGraph(contexts);
 			var valid = new List<IMethodSymbol>();
 			var names = new HashSet<string>(StringComparer.Ordinal);
 			bool contractsValid = true;
@@ -93,18 +154,20 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				var name = Name(method);
 				if (!ValidName(name))
 				{
-					output.ReportDiagnostic(Diagnostic.Create(InvalidName, method.Locations[0], method.Name));
+					output.ReportDiagnostic(Diagnostic.Create(InvalidName, method.Locations.FirstOrDefault(), method.Name));
 					continue;
 				}
 				if (!names.Add(name))
 				{
-					output.ReportDiagnostic(Diagnostic.Create(Duplicate, method.Locations[0], name));
+					output.ReportDiagnostic(Diagnostic.Create(Duplicate, method.Locations.FirstOrDefault(), name));
 					continue;
 				}
-				var issue = MethodIssue(method);
+				var issue = MethodIssue(method, imported.Contains(provider));
+				if (issue is null && !compilation.IsSymbolAccessibleWithin(method, compilation.Assembly))
+					issue = "referenced member is not accessible to the consuming assembly";
 				if (issue is not null)
 				{
-					output.ReportDiagnostic(Diagnostic.Create(InvalidMethod, method.Locations[0], method.Name, issue));
+					output.ReportDiagnostic(Diagnostic.Create(InvalidMethod, method.Locations.FirstOrDefault(), method.Name, issue));
 					continue;
 				}
 				bool good = true;
@@ -114,17 +177,18 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 					method.Parameters.Any(p => Bytes(p.Type)) && !Bytes(Result(method)) ||
 					method.Parameters.Any(p => Channel(p.Type) is not null && (Nullable(p.Type) || p.HasExplicitDefaultValue)))
 				{
-					output.ReportDiagnostic(Diagnostic.Create(InvalidBinding, method.Locations[0], method.Name));
+					output.ReportDiagnostic(Diagnostic.Create(InvalidBinding, method.Locations.FirstOrDefault(), method.Name));
 					good = false;
 				}
 				foreach (var parameter in method.Parameters)
 				{
 					var attributes = parameter.GetAttributes();
-					var services = attributes.Count(a => a.AttributeClass?.ToDisplayString() is "Maui.HybridApp.FromServicesAttribute" or "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
+					var services = attributes.Count(a => a.AttributeClass?.ToDisplayString() is "Microsoft.Maui.Interop.FromServicesAttribute" or "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
 					var keyed = attributes.FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
-					if (services > 1 || (services != 0 && (Special(parameter.Type) || Channel(parameter.Type) is not null)) || keyed is not null && keyed.ConstructorArguments.Length != 1)
+					if (services > 1 || (services != 0 && (Special(parameter.Type) || Channel(parameter.Type) is not null)) ||
+						keyed is not null && (keyed.ConstructorArguments.Length != 1 || !SupportedKey(keyed.ConstructorArguments[0])))
 					{
-						output.ReportDiagnostic(Diagnostic.Create(InvalidBinding, parameter.Locations[0], parameter.Name));
+						output.ReportDiagnostic(Diagnostic.Create(InvalidBinding, parameter.Locations.FirstOrDefault(), parameter.Name));
 						good = false;
 					}
 				}
@@ -141,7 +205,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				}
 				catch (JsonContractException error)
 				{
-					output.ReportDiagnostic(Diagnostic.Create(InvalidJson, method.Locations[0], method.Name, error.Type.ToDisplayString(), error.Message));
+					output.ReportDiagnostic(Diagnostic.Create(InvalidJson, method.Locations.FirstOrDefault(), method.Name, error.Type.ToDisplayString(), error.Message));
 					good = false;
 					contractsValid = false;
 				}
@@ -149,9 +213,9 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			}
 			if (!contractsValid) continue;
 			// One provider owns its metadata, including private implementation DTOs accessible within this assembly.
-			var emitter = new Emitter(provider, valid, graph, index++, declaredTopics, hooks, textType);
+			var emitter = new Emitter(provider, valid, graph, index++, declaredTopics, hooks, textType, selectedNativeEvents, imported.Contains(provider));
 			output.AddSource(emitter.Id + ".g.cs", emitter.Emit());
-			emitters.Add((provider, emitter.Id, valid.Any(method => !method.IsStatic) || hooks.Count != 0));
+			emitters.Add((provider, emitter.Id, !imported.Contains(provider) && (valid.Any(method => !method.IsStatic) || hooks.Count != 0)));
 		}
 		if (emitters.Count == 0) return;
 		var id = string.Concat(assembly.Where(char.IsLetterOrDigit));
@@ -165,7 +229,23 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		code.AppendLine("/// <param name=\"services\">The owning host's service collection.</param><returns>The same collection.</returns>");
 		code.AppendLine("public static IServiceCollection Add" + id + "Actions(this IServiceCollection services) {");
 		foreach (var emitter in emitters.Where(e => e.Instance))
-			code.AppendLine("services.TryAddScoped<" + TypeName(emitter.Type) + ">();");
+		{
+			var constructors = emitter.Type.InstanceConstructors.Where(Accessible).ToArray();
+			var marked = constructors.Where(c => c.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Microsoft.Extensions.DependencyInjection.ActivatorUtilitiesConstructorAttribute")).ToArray();
+			var constructor = marked.Length == 1 ? marked[0] : constructors.Length == 1 ? constructors[0] : null;
+			if (constructor is null || emitter.Type.IsAbstract || constructor.Parameters.Any(p => p.RefKind != RefKind.None ||
+				p.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute" &&
+					(a.ConstructorArguments.Length != 1 || !SupportedKey(a.ConstructorArguments[0])))))
+			{
+				output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, emitter.Type.Locations.FirstOrDefault(), emitter.Type.Name, "select exactly one accessible typed constructor"));
+				continue;
+			}
+			code.AppendLine("global::Maui.HybridApp.HybridActionAssemblies.Target<" + TypeName(emitter.Type) + ">(services, services => new " +
+				TypeName(emitter.Type) + "(" + string.Join(", ", constructor.Parameters.Select(ServiceArgument)) + "), perViewOnly: " +
+				(constructor.Parameters.Any(p => Identity(p.Type) is "Maui.HybridApp.UI.HybridViewContext" or "Maui.HybridApp.NativeNotifications" or
+					"Maui.HybridApp.HybridAppTargetObject" or "Maui.HybridApp.CommandRegistry" or "Microsoft.Maui.Controls.Page" or
+					"Microsoft.Maui.Controls.Window" or "Microsoft.Maui.Controls.HybridWebView" or "Microsoft.Maui.Dispatching.IDispatcher") ? "true" : "false") + ");");
+		}
 		code.AppendLine("return global::Maui.HybridApp.HybridActionAssemblies.Add(services, typeof(" + id + "ActionAssembly), Register); }");
 		code.AppendLine("static void Register(global::Maui.HybridApp.CommandRegistry registry, global::System.IServiceProvider services) {");
 		foreach (var emitter in emitters) code.AppendLine(emitter.Id + ".Register(registry, services);");
@@ -173,19 +253,41 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		output.AddSource(id + ".Actions.g.cs", code.ToString());
 	}
 
+	static IEnumerable<ISymbol> Members(INamedTypeSymbol type)
+	{
+		for (var current = type; current is not null; current = current.BaseType)
+			foreach (var member in current.GetMembers()) yield return member;
+		foreach (var inherited in type.AllInterfaces)
+			foreach (var member in inherited.GetMembers()) yield return member;
+	}
+	static string ServiceArgument(IParameterSymbol parameter)
+	{
+		var keyed = parameter.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
+		if (parameter.HasExplicitDefaultValue)
+		{
+			var lookup = keyed is null ? "services.GetService(typeof(" + TypeName(parameter.Type) + "))" :
+				"services.GetKeyedService(typeof(" + TypeName(parameter.Type) + "), " + Emitter.Constant(keyed.ConstructorArguments[0]) + ")";
+			var pattern = parameter.Type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable ? nullable.TypeArguments[0] : parameter.Type;
+			var value = "__service" + parameter.Ordinal;
+			return "(" + lookup + " is " + TypeName(pattern) + " " + value + " ? " + value + " : (" + AnnotatedTypeName(parameter.Type) + ")" + Default(parameter) + ")";
+		}
+		if (keyed is not null) return "services.GetRequiredKeyedService<" + TypeName(parameter.Type) + ">(" + Emitter.Constant(keyed.ConstructorArguments[0]) + ")";
+		return "services.GetRequiredService<" + TypeName(parameter.Type) + ">()";
+	}
+	static bool SupportedKey(TypedConstant key) => key.Kind is TypedConstantKind.Primitive or TypedConstantKind.Enum or TypedConstantKind.Type;
 	static bool ValidName(string name) => name.Length is >= 1 and <= 64 && name.All(c => c <= 127 && (char.IsLetterOrDigit(c) || c is '.' or '_' or '-'));
 	static AttributeData Attribute(IMethodSymbol method) => method.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == AttributeName);
 	static string Name(IMethodSymbol method) => Attribute(method).ConstructorArguments[0].Value as string ?? "";
 	static bool Policy(IMethodSymbol method, string name) => Attribute(method).NamedArguments.Any(pair => pair.Key == name && pair.Value.Value is true);
 	static bool Accessible(ISymbol symbol) => symbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal;
-	static string? MethodIssue(IMethodSymbol method)
+	static string? MethodIssue(IMethodSymbol method, bool imported = false)
 	{
-		if (method.ContainingType.TypeKind != TypeKind.Class)
+		if (method.ContainingType.TypeKind != TypeKind.Class && !imported)
 			return "use a plugin class (its action methods may be static)";
 		if (!Accessible(method)) return "method is not accessible from generated code";
 		for (var type = method.ContainingType; type is not null; type = type.ContainingType)
 			if (!Accessible(type) || type.Arity != 0 || type.IsFileLocal) return "containing type is inaccessible, file-local or generic";
-		if (method.IsGenericMethod || method.IsAbstract || method.ReturnsByRef || method.ReturnsByRefReadonly) return "generic, abstract or by-reference method";
+		if (method.IsGenericMethod || method.IsAbstract && !imported || method.ReturnsByRef || method.ReturnsByRefReadonly) return "generic, abstract or by-reference method";
 		if (method.IsAsync && method.ReturnsVoid) return "async void is not awaitable";
 		if (method.Parameters.Any(p => p.RefKind != RefKind.None || p.Type.TypeKind == TypeKind.Delegate)) return "by-reference or delegate parameter";
 		if (method.ReturnType.TypeKind == TypeKind.Delegate) return "delegate result";
@@ -197,7 +299,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		channel.ContainingNamespace.ToDisplayString() == "Maui.HybridApp" ? channel.TypeArguments[0] : null;
 	static bool Special(ITypeSymbol type) => Bytes(type) || Identity(type) is "System.Threading.CancellationToken" or "Maui.HybridApp.HybridActionContext";
 	static bool Ordinary(IParameterSymbol parameter) => !Special(parameter.Type) &&
-		!parameter.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() is "Maui.HybridApp.FromServicesAttribute" or "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
+		!parameter.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() is "Microsoft.Maui.Interop.FromServicesAttribute" or "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute");
 	static ITypeSymbol? Result(IMethodSymbol method)
 	{
 		if (method.ReturnsVoid) return null;
@@ -212,7 +314,8 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 	static string TypeName(ITypeSymbol type) => type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString(TypeFormat);
 	static string AnnotatedTypeName(ITypeSymbol type) => type.ToDisplayString(TypeFormat);
-	static bool Nullable(ITypeSymbol type) => type.NullableAnnotation == NullableAnnotation.Annotated ||
+	static bool Nullable(ITypeSymbol type) => type.IsReferenceType && type.NullableAnnotation == NullableAnnotation.None ||
+		type.NullableAnnotation == NullableAnnotation.Annotated ||
 		type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
 	static string Literal(string value) => SymbolDisplay.FormatLiteral(value, true);
 	static string Default(IParameterSymbol parameter)
@@ -242,8 +345,10 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		internal ITypeSymbol Type { get; } = type;
 	}
 
-	sealed class JsonGraph
+	sealed class JsonGraph(Dictionary<ITypeSymbol, INamedTypeSymbol> contexts)
 	{
+		internal readonly Dictionary<ITypeSymbol, INamedTypeSymbol> Contexts = contexts;
+		internal readonly Dictionary<ITypeSymbol, INamedTypeSymbol> Converters = new(SymbolEqualityComparer.IncludeNullability);
 		internal readonly List<ITypeSymbol> Types = new();
 		internal readonly Dictionary<ITypeSymbol, ObjectShape> Objects = new(SymbolEqualityComparer.IncludeNullability);
 		internal readonly Dictionary<ITypeSymbol, EnumShape> Enums = new(SymbolEqualityComparer.IncludeNullability);
@@ -256,10 +361,29 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				type.SpecialType == SpecialType.System_Object || type is INamedTypeSymbol { IsRefLikeType: true })
 				throw new JsonContractException(type, "use a concrete JSON contract, not object, dynamic, a delegate, pointer or ref-like type");
 			Types.Add(type);
+			if (Contexts.ContainsKey(type)) return;
+			var custom = type.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == "System.Text.Json.Serialization.JsonConverterAttribute");
+			if (custom is not null)
+			{
+				if (custom.ConstructorArguments.FirstOrDefault().Value is not INamedTypeSymbol converter || !Accessible(converter) ||
+					!converter.InstanceConstructors.Any(c => Accessible(c) && c.Parameters.Length == 0) ||
+					!ConverterFor(converter, type))
+					throw new JsonContractException(type, "use an accessible parameterless JsonConverter<T> or root a strict source-declared context");
+				Converters.Add(type, converter);
+				return;
+			}
 			if (type is INamedTypeSymbol { TypeKind: TypeKind.Enum } enumType)
 			{
 				Enums.Add(type, new EnumShape(enumType));
 				return;
+			}
+
+			static bool ConverterFor(INamedTypeSymbol converter, ITypeSymbol type)
+			{
+				for (var current = converter; current is not null; current = current.BaseType)
+					if (current.OriginalDefinition.ToDisplayString() == "System.Text.Json.Serialization.JsonConverter<T>" &&
+						SymbolEqualityComparer.Default.Equals(current.TypeArguments[0], type)) return true;
+				return false;
 			}
 			if (Scalar(type) is not null || type.ToDisplayString() == "System.Text.Json.JsonElement") return;
 			if (type is IArrayTypeSymbol array)
@@ -412,12 +536,13 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 	};
 
 	sealed class Emitter(INamedTypeSymbol provider, List<IMethodSymbol> methods, JsonGraph graph, int index,
-		string[] topics, List<(string Name, string Start, string Stop)> hooks, ITypeSymbol textType)
+		string[] topics, List<(string Name, string Start, string Stop)> hooks, ITypeSymbol textType, List<IEventSymbol> nativeEvents, bool imported)
 	{
 		readonly StringBuilder _code = new();
 		internal string Id => "HybridActions_" + index.ToString(CultureInfo.InvariantCulture) + "_" + provider.Name;
 		void Line(string text = "") => _code.AppendLine(text);
-		string Info(ITypeSymbol type) => "Json.Default.T" + graph.Index(type);
+		string Info(ITypeSymbol type) => graph.Contexts.TryGetValue(type, out var context) ?
+			"global::Maui.HybridApp.HybridJsonContracts.Get<" + TypeName(type) + ">(" + TypeName(context) + ".Default)" : "Json.Default.T" + graph.Index(type);
 		string Read(ITypeSymbol type, string value) => "Read" + graph.Index(type) + "(" + value + ", " + (Nullable(type) ? "true" : "false") + ")";
 		string Write(ITypeSymbol type, string value) => "Write" + graph.Index(type) + "(writer, " + value + (type.IsReferenceType ? "!" : "") + ", " + (Nullable(type) ? "true" : "false") + ");";
 		internal string Emit()
@@ -443,6 +568,13 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			{
 				// Scope disposal has already disabled service resolution when the hub detaches active topics.
 				Line("registry.RegisterTopic(" + Literal(hook.Name) + ", source.@" + hook.Start + ", source.@" + hook.Stop + ");");
+			}
+			foreach (var ev in nativeEvents)
+			{
+				var name = ev.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == NativeEventAttributeName).ConstructorArguments[0].Value as string ?? "";
+				Line("var nativeSource" + ev.Name + " = (" + TypeName(ev.ContainingType) + ")services.GetRequiredService<" + target + ">();");
+				Line("global::Maui.HybridApp.HybridNativeEvents.Register(registry, services, " + Literal(name) +
+					", handler => nativeSource" + ev.Name + ".@" + ev.Name + " += handler, handler => nativeSource" + ev.Name + ".@" + ev.Name + " -= handler);");
 			}
 			foreach (var method in methods) EmitAction(method, target);
 			Line("}");
@@ -475,6 +607,8 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 					read = "operation.BindChannel<" + TypeName(channel) + ">(" + read + ", " + (Bytes(channel) ? "null" : Info(channel)) + ")";
 				Line("var arg" + i + " = " + (parameter.HasExplicitDefaultValue ? "args.Has(" + i + ") ? " + read + " : " + Default(parameter) : read) + ";");
 			}
+			if (imported)
+				Line("global::Maui.HybridApp.HybridNativePolicy.Validate(services, " + Literal(Name(method)) + ", json);");
 			Line("Task<" + (binary ? "byte[]" : "JsonElement") + "> Invoke()"); Line("{");
 			var arguments = method.Parameters.Select(parameter =>
 			{
@@ -487,13 +621,17 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				return "(services ?? throw new InvalidOperationException(\"This action requires the owning service scope.\"))." +
 					(keyed is null ? "GetRequiredService" : "GetRequiredKeyedService") + "<" + TypeName(parameter.Type) + ">(" + key.TrimStart(',', ' ') + ")";
 			});
-			var call = (method.IsStatic ? target : "services.GetRequiredService<" + target + ">()") +
-				".@" + method.Name + "(" + string.Join(", ", arguments) + ")";
+			var receiver = method.IsStatic ? TypeName(method.ContainingType) : "services.GetRequiredService<" + target + ">()";
+			if (imported && !method.IsStatic && !SymbolEqualityComparer.Default.Equals(method.ContainingType, provider))
+				receiver = "((" + TypeName(method.ContainingType) + ")" + receiver + ")";
+			var call = method.MethodKind == MethodKind.PropertyGet ? receiver + ".@" + method.AssociatedSymbol!.Name :
+				receiver + ".@" + method.Name + "(" + string.Join(", ", arguments) + ")";
 			if (Awaitable(method))
 			{
 				Line("return Await();");
 				Line("async Task<" + (binary ? "byte[]" : "JsonElement") + "> Await()"); Line("{");
 				Line((result is null ? "" : "var result = ") + "await " + call + ";");
+				if (Name(method) == "clipboard.read") Line("global::Maui.HybridApp.HybridNativePolicy.ValidateText(services, result);");
 				EmitResult(result, false);
 				Line("}");
 			}
@@ -503,7 +641,9 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				EmitResult(result, true);
 			}
 			Line("}");
-			if (Policy(method, "MainThread"))
+			if (provider.ToDisplayString() is "Microsoft.Maui.Controls.Page" or "Microsoft.Maui.Devices.Sensors.IGeolocation")
+				Line("return await services.GetRequiredService<global::Maui.HybridApp.NativeDispatcher>().RunAsync(() => services.GetRequiredService<global::Maui.HybridApp.UI.HybridViewContext>().InteractAsync(Invoke, operation.Cancellation), operation.Cancellation).ConfigureAwait(false);");
+			else if (Policy(method, "MainThread"))
 				Line("return await services.GetRequiredService<global::Maui.HybridApp.NativeDispatcher>().RunAsync(Invoke, operation.Cancellation).ConfigureAwait(false);");
 			else Line("return await Invoke().ConfigureAwait(false);");
 			var enabled = !Attribute(method).NamedArguments.Any(pair => pair.Key == "Enabled" && pair.Value.Value is false);
@@ -517,8 +657,9 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				"global::System.Text.Json.JsonSerializer.SerializeToElement(result" + (result.IsReferenceType ? "!" : "") + ", " + Info(result) + ")";
 			Line("return " + (task ? "Task.FromResult(" + expression + ")" : expression) + ";");
 		}
-		static string Constant(TypedConstant constant)
+		internal static string Constant(TypedConstant constant)
 		{
+			if (constant.Kind == TypedConstantKind.Type && constant.Value is ITypeSymbol keyType) return "typeof(" + TypeName(keyType) + ")";
 			if (constant.Value is ITypeSymbol type) return "typeof(" + TypeName(type) + ")";
 			if (constant.Type?.TypeKind == TypeKind.Enum)
 				return "(" + TypeName(constant.Type) + ")" + Convert.ToString(constant.Value, CultureInfo.InvariantCulture);
@@ -566,12 +707,36 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		void EmitType(int index, ITypeSymbol type)
 		{
 			var name = TypeName(type);
+			if (graph.Converters.TryGetValue(type, out var converter))
+				Line("static readonly " + TypeName(converter) + " CustomConverter" + index + " = new();");
 			Line("sealed class Converter" + index + " : JsonConverter<" + name + "> {");
 			Line("public override bool HandleNull => true;");
 			Line("public override " + name + " Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) { using var document = JsonDocument.ParseValue(ref reader); return Read" + index + "(document.RootElement, true); }");
 			Line("public override void Write(Utf8JsonWriter writer, " + name + " value, JsonSerializerOptions options) => Write" + index + "(writer, value, true);");
 			Line("}");
 			Line("static " + name + " Read" + index + "(JsonElement json, bool nullable) {");
+			if (graph.Contexts.ContainsKey(type) || graph.Converters.ContainsKey(type))
+			{
+				Line("if (json.ValueKind == JsonValueKind.Null && !nullable) throw new JsonException(\"Null is not allowed.\");");
+				if (type.IsReferenceType && graph.Converters.ContainsKey(type))
+					Line("if (json.ValueKind == JsonValueKind.Null && !CustomConverter" + index + ".HandleNull) return default!;");
+				if (graph.Contexts.ContainsKey(type))
+					Line("return JsonSerializer.Deserialize(json, " + Info(type) + ")!;");
+				else
+				{
+					Line("var reader = new Utf8JsonReader(global::System.Text.Encoding.UTF8.GetBytes(json.GetRawText())); reader.Read();");
+					Line("return CustomConverter" + index + ".Read(ref reader, typeof(" + name + "), Json.Default.Options)!;");
+				}
+				Line("}");
+				Line("static void Write" + index + "(Utf8JsonWriter writer, " + name + " value, bool nullable) {");
+				if (type.IsReferenceType) Line("if (value is null && !nullable) throw new JsonException(\"Null is not allowed.\");");
+				if (type.IsReferenceType && graph.Converters.ContainsKey(type))
+					Line("if (value is null && !CustomConverter" + index + ".HandleNull) { writer.WriteNullValue(); return; }");
+				if (graph.Contexts.ContainsKey(type)) Line("JsonSerializer.Serialize<" + name + ">(writer, value!, " + Info(type) + ");");
+				else Line("CustomConverter" + index + ".Write(writer, value!, Json.Default.Options);");
+				Line("}");
+				return;
+			}
 			if (type.IsReferenceType || Nullable(type))
 				Line("if (json.ValueKind == JsonValueKind.Null) { if (!nullable) throw new JsonException(\"Null is not allowed.\"); return default!; }");
 			var scalar = Scalar(type);

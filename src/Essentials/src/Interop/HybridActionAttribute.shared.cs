@@ -1,4 +1,7 @@
-namespace Maui.HybridApp;
+#nullable enable
+using System;
+
+namespace Microsoft.Maui.Interop;
 
 /// <summary>Exposes an accessible method through an explicitly opted-in hybrid action provider.</summary>
 /// <param name="name">The unique, bounded native wire-command name.</param>
@@ -49,12 +52,22 @@ public sealed class HybridEventAttribute(string name, HybridEventLifecycle lifec
 	public HybridEventLifecycle Lifecycle { get; } = lifecycle;
 }
 
-/// <summary>Compiler-emitted wire-name manifest for diagnosing conflicts between explicitly registered assemblies.</summary>
-/// <param name="name">An action exposed by the generated assembly extension.</param>
-[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-public sealed class HybridActionAssemblyAttribute(string name) : Attribute
+/// <summary>Opts one annotated referenced contract into this assembly's generated action registration.</summary>
+/// <param name="contract">The interface or class containing explicitly annotated members.</param>
+/// <remarks>Annotations alone expose nothing. A consuming host must use a generator and explicitly register its output.</remarks>
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+public sealed class HybridExportAttribute(Type contract) : Attribute
 {
-	/// <summary>Gets the action wire name.</summary>
+	/// <summary>Gets the selected referenced contract.</summary>
+	public Type Contract { get; } = contract;
+}
+
+/// <summary>Declares a sender-free change notification for an explicitly imported native event.</summary>
+/// <param name="name">The unique event topic.</param>
+/// <remarks>The optional integration owns attach/detach and document delivery. Only EventHandler&lt;EventArgs&gt; is supported.</remarks>
+[AttributeUsage(AttributeTargets.Event, AllowMultiple = false, Inherited = false)]
+public sealed class HybridNativeEventAttribute(string name) : Attribute
+{
+	/// <summary>Gets the event topic.</summary>
 	public string Name { get; } = name;
 }

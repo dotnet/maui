@@ -6,6 +6,7 @@ namespace Maui.HybridApp;
 public sealed class NativeDispatcher
 {
 	readonly Func<Func<Task>, Task> _dispatch;
+	readonly Func<Func<Task>, Task> _post;
 
 	/// <summary>Creates the boundary using the existing Essentials main-thread dispatcher.</summary>
 	public NativeDispatcher() : this(action => MainThread.InvokeOnMainThreadAsync(action))
@@ -18,7 +19,9 @@ public sealed class NativeDispatcher
 	{
 		ArgumentNullException.ThrowIfNull(dispatch);
 		_dispatch = dispatch;
+		_post = dispatch;
 	}
+	internal NativeDispatcher(Func<Func<Task>, Task> dispatch, Func<Func<Task>, Task> post) : this(dispatch) => _post = post;
 
 	/// <summary>Checks cancellation on the host thread before and after an OS operation.</summary>
 	/// <typeparam name="T">The operation result type.</typeparam>
@@ -50,5 +53,5 @@ public sealed class NativeDispatcher
 	/// <summary>Posts scoped native event source setup/teardown without blocking a bridge invocation.</summary>
 	/// <param name="action">The owning native source operation; invalidate stale callbacks before posting teardown.</param>
 	/// <returns>Completion on the configured native thread.</returns>
-	public Task PostAsync(Action action) => _dispatch(() => { action(); return Task.CompletedTask; });
+	public Task PostAsync(Action action) => _post(() => { action(); return Task.CompletedTask; });
 }

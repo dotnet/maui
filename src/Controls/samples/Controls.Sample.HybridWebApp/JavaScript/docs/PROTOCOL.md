@@ -146,9 +146,9 @@ registration decision; this example topic is not part of the reference host.
 | `core.subscribe`, `core.unsubscribe` | `{ topic: string }` | `{ accepted: boolean }` | Explicit allowed topic list |
 | `app.info` | `{}` | `{ appName: string, version: string, build: string }` | Independently registered IAppInfo provider |
 | `device.info` | `{}` | `{ platform: string, osVersion: string, model: string }` | Independently registered IDeviceInfo provider |
-| `clipboard.read` | `{}` | `{ text: string \| null }` | Clipboard provider |
-| `clipboard.write` | `{ text: string }` | `{ accepted: boolean }` | Clipboard provider |
-| `clipboard.hasText` | `{}` | `{ hasText: boolean }` | Actual native clipboard state |
+| `clipboard.read` | `{}` | `string \| null` | Curated native `IClipboard.GetTextAsync` |
+| `clipboard.write` | `{ text: string \| null }` | `null` (void completion) | Curated native `IClipboard.SetTextAsync`, host text budget |
+| `clipboard.hasText` | `{}` | `boolean` | Curated native `IClipboard.HasText` accessor |
 | `preferences.get`, `preferences.set` | key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Host-namespaced primitive settings |
 | `preferences.contains`, `preferences.remove`, `preferences.clear` | key/container or container only | `{ accepted: boolean }` | Clear removes only tracked namespace-owned keys |
 | `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | IBattery on every platform; the Catalyst IOKit correction now belongs to Essentials itself |
@@ -160,8 +160,13 @@ registration decision; this example topic is not part of the reference host.
 | `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | nullable file metadata/`{ files }` resources | Actual OS selection, interactive policy; cancellation null/empty |
 | `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
 | `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | raw binary EOF byte + bytes, or JSON acceptance | ≤65536 file bytes per read; real partial/EOF/seek/close |
-| `dialogs.alert`, `dialogs.confirm` | title/message + native labels/flowDirection | `{ accepted: boolean }` | Calling native page, interactive policy |
-| `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet options | Prompt cancellation/text or selected action | Calling native page, interactive policy |
+| `dialogs.alert`, `dialogs.confirm` | title/message + required native labels/flowDirection | `null` / `boolean` | Curated calling Page methods, labels and interactive ownership policy |
+| `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet options | Prompt cancellation/text DTO / native `string \| null` selection | Keyboard adapter / curated Page method |
+| `window.flowDirection` | `{}` | Native flow-direction enum name | Curated contextual Core `IWindow` getter |
+| `geolocation.location` | `{ request: GeolocationRequest }` | Actual native `Location \| null` | Curated native interface, permission/timeout/owning interaction policy |
+| `share.stage` | `{fileName, contentType}` plus raw binary bytes | Small UTF-8 JSON resource metadata as bytes | Bounded app-owned staging, no native paths |
+| `share.request` | `{request: native text/file/multi-file shape}` | `{ accepted }` | Explicit .NET 11 structural union and authorized nested file converter |
+| `share.release` | `{id}` | `{ accepted }` | Revokes document authority without deleting young OS-retained files |
 | `window.info`, `window.title`, `window.size`, `window.position` | Optional target ID/private lease + corresponding changes | Private native snapshot or acceptance | Scoped MAUI window; writes validate actual capability |
 | `window.find`, `window.center`, `window.activate` | ID or native target/private lease | Snapshot/acceptance | Caller-owned lookup; center Windows work area or Mac global display coordinates |
 | `window.open` | `{ url, options? }` | `{ id, windowLease }` | Generic safe bundle-relative URL, immutable optional developer ID; no remote bridge destinations |
@@ -181,7 +186,10 @@ providers, but has no sample dependency. Feature providers
 own automatically generated action codecs; the protocol context contains only envelopes and
 control DTOs. External Toolkit assemblies opt into their one compiler-generated
 assembly extension, without global metadata edits or runtime assembly scanning.
-Methods declare actions with `[HybridAction]`; ordinary parameters bind directly
+Methods/accessors declare metadata with `[Microsoft.Maui.Interop.HybridAction]`;
+referenced contracts require explicit assembly `[HybridExport(typeof(T))]` roots.
+These attributes live below the optional runtime in existing Essentials; they
+do not register bridge services themselves. Ordinary parameters bind directly
 from named objects or positional arrays, not per-operation Args wrappers.
 Class `[HybridTopic]` declarations expose progress/notification topics, while
 paired `[HybridEvent(topic, Start/Stop)]` methods bind first/last subscription lifetimes.

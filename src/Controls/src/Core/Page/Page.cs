@@ -322,6 +322,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="buttons">Text labels for additional buttons.</param>
 		/// <returns>A <see cref="Task"/> that displays an action sheet and returns the string caption of the button pressed by the user.</returns>
 		/// <remarks>Developers should be aware that Windows line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
+		[Microsoft.Maui.Interop.HybridAction("dialogs.actionSheet", MainThread = true, Interactive = true)]
 		public Task<string> DisplayActionSheetAsync(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
@@ -387,6 +388,7 @@ namespace Microsoft.Maui.Controls
 			=> DisplayAlertAsync(title, message, accept, cancel, FlowDirection.MatchParent);
 
 		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		[Microsoft.Maui.Interop.HybridAction("dialogs.alert", MainThread = true, Interactive = true)]
 		public Task DisplayAlertAsync(string title, string message, string cancel, FlowDirection flowDirection)
 			=> DisplayAlertAsync(title, message, null, cancel, flowDirection);
 
@@ -400,6 +402,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="flowDirection">The flow direction to be used by the alert.</param>
 		/// <returns>A <see cref="Task"/> that contains the user's choice as a <see cref="bool"/> value. <see langword="true"/> indicates that the user accepted the alert. <see langword="false"/> indicates that the user cancelled the alert.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="cancel"/> is <see langword="null"/> or empty.</exception>
+		[Microsoft.Maui.Interop.HybridAction("dialogs.confirm", MainThread = true, Interactive = true)]
 		public Task<bool> DisplayAlertAsync(string title, string message, string accept, string cancel, FlowDirection flowDirection)
 		{
 			if (string.IsNullOrEmpty(cancel))
@@ -925,7 +928,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 #endif
-				
+
 				if (!this.IsLoaded)
 				{
 					this.DisconnectHandlers();

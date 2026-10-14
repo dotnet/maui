@@ -1,4 +1,4 @@
-export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'multiWindow' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme' | 'connectivity' | 'textToSpeech' | 'launcher'
+export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'multiWindow' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme' | 'connectivity' | 'textToSpeech' | 'launcher' | 'share' | 'geolocation'
 export interface Feature { id: string; title: string; category: string; priority: string; experiment?: Experiment; description: string; docs: string; guide?: boolean }
 const maui = 'https://learn.microsoft.com/dotnet/maui/'
 const hybrid = `${maui}user-interface/controls/hybridwebview?view=net-maui-11.0`
@@ -100,6 +100,10 @@ promote('Text-to-speech', 'text-to-speech', 'Essentials', 'textToSpeech',
   'Speak on an explicit click with native locales, pitch, volume and rate. Cancel only this speech through its actual native operation token.', `${maui}platform-integration/device-media/text-to-speech`)
 promote('Open external links', 'launcher', 'Essentials', 'launcher',
   'Launch a validated public HTTPS website with the native system launcher on an explicit click. Never an in-app browser or embedded guest.', `${maui}platform-integration/appmodel/launcher`)
+promote('Location', 'geolocation', 'Essentials', 'geolocation',
+  'Request actual native location with MAUI request fields, explicit permission and cancellable timeout. Coordinates stay in this panel, not the operation log.', `${maui}platform-integration/device/geolocation`)
+promote('Share text and files', 'share', 'Essentials', 'share',
+  'Stage browser-produced PDF/text bytes with opaque document authority, then explicitly open the OS text/file/multi-file share UI. Native request completion is not file consumption.', `${maui}platform-integration/data/share`)
 
 const canonicalRoutes: Partial<Record<Experiment, string>> = {
   identity: 'identity', echo: 'arguments', policy: 'policy', work: 'work', development: 'vite',

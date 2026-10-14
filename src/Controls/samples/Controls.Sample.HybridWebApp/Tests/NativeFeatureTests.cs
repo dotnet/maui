@@ -312,7 +312,9 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		var trusted = new HybridWebView();
+		var page = context.Page;
 		var layout = context.CreateLayout(trusted);
+		((ContentPage)page).Content = layout;
 		Assert.Single(layout.Children);
 		var registry = new CommandRegistry();
 		registry = TestComposition.CreateRegistry(new RemoteWebViewProvider(context, new WindowDevice("MacCatalyst", false), new NativeNotifications()));

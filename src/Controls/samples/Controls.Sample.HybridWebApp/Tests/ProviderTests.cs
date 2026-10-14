@@ -2,7 +2,6 @@ using System.Text.Json;
 using Maui.HybridApp;
 using Maui.HybridApp.Essentials.AppInfo;
 using Maui.HybridApp.Essentials.DeviceInfo;
-using Maui.HybridApp.Essentials.Clipboard;
 using Maui.HybridApp.Essentials.Preferences;
 using Microsoft.Maui.ApplicationModel;
 using Xunit;
@@ -40,7 +39,6 @@ public sealed class ProviderTests
 
 	[Theory]
 	[InlineData("clipboard.write", "{}")]
-	[InlineData("clipboard.write", "{\"text\":null}")]
 	[InlineData("clipboard.write", "{\"text\":42}")]
 	[InlineData("clipboard.write", "{\"text\":\"ok\",\"extra\":true}")]
 	[InlineData("clipboard.read", "{\"extra\":true}")]
@@ -61,7 +59,7 @@ public sealed class ProviderTests
 		var registry = new CommandRegistry();
 		var clipboard = new FakeClipboard();
 		var preferences = new FakePreferences();
-		registry = TestComposition.CreateRegistry(new ClipboardProvider(clipboard, Inline, new("host."), new()),
+		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, Inline,
 			new PreferencesProvider(preferences, new("host.")),
 			new AppInfoProvider(new FakeAppInfo { Error = new InvalidOperationException("Must not run") }), new DeviceInfoProvider(new FakeDeviceInfo()));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
@@ -97,7 +95,7 @@ public sealed class ProviderTests
 
 		var clipboardRegistry = new CommandRegistry();
 		var clipboard = new FakeClipboard();
-		clipboardRegistry = TestComposition.CreateRegistry(new ClipboardProvider(clipboard, Inline, new("host.", 4), new()));
+		clipboardRegistry = TestComposition.CreateRegistryWithOptions(new("host.", 4), clipboard, Inline);
 		await Dispatch(clipboardRegistry, "clipboard.write", "{\"text\":\"你好👋\"}");
 		Assert.Equal("你好👋", clipboard.Text);
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
@@ -208,14 +206,14 @@ public sealed class ProviderTests
 			cancel.Cancel();
 			return action();
 		});
-		registry = TestComposition.CreateRegistry(new ClipboardProvider(clipboard, boundary, new("host."), new()), boundary);
+		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, boundary);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Dispatch(registry, "clipboard.write", "{\"text\":\"before\"}", cancel.Token));
 		Assert.Equal(0, clipboard.Calls);
 
 		using var after = new CancellationTokenSource();
 		clipboard.OnWrite = after.Cancel;
 		registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new ClipboardProvider(clipboard, Inline, new("host."), new()));
+		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, Inline);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Dispatch(registry, "clipboard.write", "{\"text\":\"persisted\"}", after.Token));
 		Assert.Equal("persisted", clipboard.Text);
 		Assert.Equal(1, clipboard.Calls);
@@ -241,7 +239,7 @@ public sealed class ProviderTests
 				_ => new InvalidOperationException("Sensitive native detail must not be sent")
 			}
 		};
-		registry = TestComposition.CreateRegistry(new ClipboardProvider(clipboard, Inline, new("host."), new()));
+		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, Inline);
 		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "", 4096), _ => { });
 		var session = Guid.NewGuid().ToString("D");
 		async Task<Response> Call(string command) => JsonSerializer.Deserialize(await hub.Invoke(JsonSerializer.Serialize(

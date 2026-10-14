@@ -77,8 +77,9 @@ test('injected protocol transport supports Essentials without MAUI-origin bootst
     if (request.command === 'core.connect') return ready
     if (request.command === 'app.info') return appInfo
     if (request.command === 'device.info') return deviceInfo
-    if (request.command === 'clipboard.read') return { text: 'injected native transport' }
-    if (request.command === 'clipboard.write' || request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
+    if (request.command === 'clipboard.read') return 'injected native transport'
+    if (request.command === 'clipboard.write') return null
+    if (request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
     return { kind: 'string', text: 'native setting' }
   })
   let client
@@ -92,7 +93,7 @@ test('injected protocol transport supports Essentials without MAUI-origin bootst
     assert.deepEqual(await getAppInfo(), appInfo)
     assert.deepEqual(await getDeviceInfo(), deviceInfo)
     assert.equal(await getText(), 'injected native transport')
-    assert.equal(await setText('你好'), true)
+    assert.equal(await setText('你好'), undefined)
     assert.equal(await preferences.get('key', ''), 'native setting')
     await preferences.set('key', 'value')
     await preferences.remove('key')
@@ -115,8 +116,8 @@ test('injected protocol transport supports Essentials without MAUI-origin bootst
 test('typed Essentials helpers validate outputs and dispatch only provider commands', async () => {
   const host = mock(request => {
     if (request.command === 'core.connect') return ready
-    if (request.command === 'clipboard.read') return { text: null }
-    if (request.command === 'clipboard.write') return { accepted: true }
+    if (request.command === 'clipboard.read') return null
+    if (request.command === 'clipboard.write') return null
     if (request.command === 'app.info') return appInfo
     if (request.command === 'device.info') return deviceInfo
     if (request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
@@ -126,7 +127,7 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
   const client = await connect()
   try {
     assert.equal(await getText(), null)
-    assert.equal(await setText('你好 👋'), true)
+    assert.equal(await setText('你好 👋'), undefined)
     assert.equal(await preferences.get('key', ''), 'é')
     await preferences.set('key', '你好')
     await preferences.remove('key')
@@ -267,7 +268,7 @@ test('default feature calls share lazy startup, and teardown creates a new sessi
   let additions = 0, removals = 0
   const host = mock(request => request.command === 'core.connect' ? ready : request.command === 'app.info' ? appInfo
     : request.command === 'device.info' ? deviceInfo
-    : request.command === 'clipboard.read' ? { text: 'native' } : { accepted: true })
+    : request.command === 'clipboard.read' ? 'native' : { accepted: true })
   globalThis.window = {
     location: { href: 'app://0.0.0.1/index.html' }, HybridWebView: host.bridge,
     addEventListener(...args) { additions++; target.addEventListener(...args) },
@@ -358,7 +359,7 @@ test('a cancelled handshake finishes and retires before a replacement reaches na
       return ready
     }
     if (session !== request.session) throw new NativeError('stale_session', 'Disconnected document')
-    return { text: 'replacement still owns native' }
+    return 'replacement still owns native'
   })
   const send = host.bridge.SendRawMessage
   host.bridge.SendRawMessage = wire => {

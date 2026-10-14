@@ -19,5 +19,5 @@
 				Square150x150Logo="appicon.png" Square44x44Logo="appicon.png" BackgroundColor="transparent" />
 		</Application>
 	</Applications>
-	<Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>
+	<Capabilities><rescap:Capability Name="runFullTrust" /><DeviceCapability Name="location" /></Capabilities>
 </Package>

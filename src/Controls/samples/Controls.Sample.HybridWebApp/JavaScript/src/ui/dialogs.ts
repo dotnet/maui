@@ -1,4 +1,4 @@
-import { ack, boolean, connect, enumValue, NativeError, nullableText, object } from '../core.js'
+import { boolean, connect, enumValue, NativeError, nullableText, object } from '../core.js'
 
 /** Native MAUI popup text direction; matchParent is the native default. */
 export type FlowDirection = 'matchParent' | 'leftToRight' | 'rightToLeft'
@@ -71,13 +71,15 @@ function direction(value: FlowDirection = 'matchParent'): void {
  * Displays an asynchronous native page-owned alert, not browser window.alert.
  * @param message - Native message; defaults to empty, never a preset sample question.
  * @param options - Native title/button/direction overrides.
- * @returns Native acknowledgement.
+ * @returns Native completion after dismissal.
  * @throws `NativeError` on invalid options, native absence or OS failure.
  */
-export async function alert(message = '', options: AlertOptions = {}): Promise<boolean> {
+export async function alert(message = '', options: AlertOptions = {}): Promise<void> {
   labels(options.cancel ?? 'OK')
   direction(options.flowDirection)
-  return (await connect()).invoke('dialogs.alert', { title: '', message, ...options }, ack)
+  return (await connect()).invoke('dialogs.alert', { title: options.title ?? '', message, cancel: options.cancel ?? 'OK', flowDirection: options.flowDirection ?? 'matchParent' }, value => {
+    if (value !== null) throw new NativeError('invalid_response', 'Expected native void completion.')
+  })
 }
 /**
  * Displays asynchronous native confirmation with caller-chosen labels.
@@ -89,7 +91,7 @@ export async function alert(message = '', options: AlertOptions = {}): Promise<b
 export async function confirm(message = '', options: ConfirmOptions = {}): Promise<boolean> {
   labels(options.accept ?? 'OK', options.cancel ?? 'Cancel')
   direction(options.flowDirection)
-  return (await connect()).invoke('dialogs.confirm', { title: '', message, ...options }, ack)
+  return (await connect()).invoke('dialogs.confirm', { title: options.title ?? '', message, accept: options.accept ?? 'OK', cancel: options.cancel ?? 'Cancel', flowDirection: options.flowDirection ?? 'matchParent' }, boolean)
 }
 /**
  * Displays asynchronous native text input using normal MAUI prompt options.
@@ -132,5 +134,5 @@ export async function actionSheet(options: ActionSheetOptions = {}): Promise<str
   if (options.cancel) labels(options.cancel)
   if (options.destruction) labels(options.destruction)
   labels(...(options.buttons ?? []))
-  return (await connect()).invoke('dialogs.actionSheet', { title: '', ...options }, value => nullableText(object(value).selection))
+  return (await connect()).invoke('dialogs.actionSheet', { title: options.title ?? '', cancel: options.cancel ?? null, destruction: options.destruction ?? null, buttons: options.buttons ?? [], flowDirection: options.flowDirection ?? 'matchParent' }, nullableText)
 }

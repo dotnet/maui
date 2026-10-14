@@ -14,8 +14,9 @@ public sealed class MenuProvider : IDisposable
 	readonly NativeNotifications _notifications;
 	Installation? _current;
 	bool _disposed;
-	sealed class Installation : IDisposable
+	sealed class Installation(Page page) : IDisposable
 	{
+		internal Page Page { get; } = page;
 		internal string Source { get; } = Guid.NewGuid().ToString("D");
 		internal List<MenuBarItem> Bars { get; } = [];
 		internal Dictionary<string, (MenuNode Node, MenuFlyoutItem? Item, MenuBarItem? Bar)> Items { get; } = new(StringComparer.Ordinal);
@@ -101,7 +102,7 @@ public sealed class MenuProvider : IDisposable
 		ObjectDisposedException.ThrowIf(_disposed, this);
 		Validate(nodes);
 		var page = _context.Page;
-		var prepared = new Installation();
+		var prepared = new Installation(page);
 		try
 		{
 			foreach (var node in nodes)
@@ -118,7 +119,7 @@ public sealed class MenuProvider : IDisposable
 		{
 			foreach (var bar in prepared.Bars) page.MenuBarItems.Add(bar);
 			foreach (var id in prepared.Items.Keys) SyncCheck(prepared, id);
-			if (previous is not null) foreach (var bar in previous.Bars) page.MenuBarItems.Remove(bar);
+			if (previous is not null) foreach (var bar in previous.Bars) previous.Page.MenuBarItems.Remove(bar);
 			_current = prepared;
 			previous?.Dispose();
 			return Read();
@@ -128,7 +129,7 @@ public sealed class MenuProvider : IDisposable
 			try
 			{
 				foreach (var bar in prepared.Bars) if (page.MenuBarItems.Contains(bar)) page.MenuBarItems.Remove(bar);
-				if (previous is not null) foreach (var bar in previous.Bars) if (!page.MenuBarItems.Contains(bar)) page.MenuBarItems.Add(bar);
+				if (previous is not null) foreach (var bar in previous.Bars) if (!previous.Page.MenuBarItems.Contains(bar)) previous.Page.MenuBarItems.Add(bar);
 				_current = previous;
 			}
 			catch
@@ -238,13 +239,14 @@ public sealed class MenuProvider : IDisposable
 	void DocumentEnded()
 	{
 		var installation = _current;
+		if (installation is null) return;
 		Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => { if (ReferenceEquals(_current, installation)) Clear(); });
 	}
 	internal void Clear()
 	{
 		var installation = _current;
 		if (installation is null) return;
-		foreach (var bar in installation.Bars) _context.Page.MenuBarItems.Remove(bar);
+		foreach (var bar in installation.Bars) installation.Page.MenuBarItems.Remove(bar);
 		installation.Dispose(); _current = null;
 	}
 	/// <summary>Detaches this installation's native controls/listeners.</summary>

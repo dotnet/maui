@@ -43,6 +43,7 @@ public sealed partial class HybridAppTargetObject : IHybridAppTarget, IDisposabl
 		: this(registry, CreateReady(registry, options, viewContext), null, time)
 	{
 		_notifications = notifications;
+		if (viewContext is not null) DocumentDisconnected += viewContext.RetireDocument;
 		if (notifications is not null)
 		{
 			notifications.Received += Notify;
@@ -312,17 +313,17 @@ public sealed partial class HybridAppTargetObject : IHybridAppTarget, IDisposabl
 		{
 			if (_disposed)
 				return;
-			ResetDocument();
-			_disposed = true;
-			_document.Dispose();
-			_lease.Dispose();
-			NativeEventReceived = null;
-			DocumentDisconnected = null;
-			if (_notifications is not null)
+			try { ResetDocument(); }
+			finally
 			{
-				_notifications.Received -= Notify;
+				_disposed = true;
+				_document.Dispose();
+				_lease.Dispose();
+				NativeEventReceived = null;
+				DocumentDisconnected = null;
+				if (_notifications is not null) _notifications.Received -= Notify;
+				_notifications = null;
 			}
-			_notifications = null;
 		}
 	}
 }

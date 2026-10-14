@@ -15,7 +15,7 @@ const base = { id: 'main', windowLease: 'private', initialLocation: 'index.html'
   x: 80, y: 90, width: 800, height: 600, canResize: true, canPosition: true, canOpenWindows: true }
 
 test('public modules expose direct services and synchronous Window acquisition without client/factory aliases', async () => {
-  assert.deepEqual(Object.keys(await import('@maui/api/ui/windows')), ['Window', 'currentWindow'])
+  assert.deepEqual(Object.keys(await import('@maui/api/ui/windows')), ['Window', 'currentWindow', 'getCurrentFlowDirection'])
   assert.deepEqual(Object.keys(await import('@maui/api/ui/remote-webview')), ['createBrowserView', 'supportsBrowserView'])
   assert.deepEqual(Object.keys(await import('@maui/api/ui/dialogs')), ['actionSheet', 'alert', 'confirm', 'prompt'])
   assert.deepEqual(Object.keys(await import('@maui/api/essentials/file-picker')), ['pickFile', 'pickMultipleFiles'])

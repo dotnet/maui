@@ -473,7 +473,12 @@ namespace Microsoft.Maui.Handlers
 				// Is this from a local script
 				var urlValue = value?.TrimEnd('/');
 				hasExpectedOrigin = hasExpectedOrigin || IsExpectedHeader((name, urlValue), ("Origin", expectedOrigin));
-				hasExpectedReferer = hasExpectedReferer || IsExpectedHeader((name, urlValue), ("Referer", expectedOrigin));
+				hasExpectedReferer = hasExpectedReferer ||
+					(string.Equals(name, "Referer", StringComparison.OrdinalIgnoreCase) &&
+					Uri.TryCreate(value, UriKind.Absolute, out var referer) && referer.UserInfo.Length == 0 &&
+					string.Equals(referer.Scheme, AppOriginUri.Scheme, StringComparison.OrdinalIgnoreCase) &&
+					string.Equals(referer.Host, AppOriginUri.Host, StringComparison.OrdinalIgnoreCase) &&
+					referer.Port == AppOriginUri.Port);
 
 				if (hasExpectedToken && (hasExpectedOrigin || hasExpectedReferer))
 					return true;

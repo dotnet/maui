@@ -104,10 +104,10 @@ The packed analyzer also runs in a fresh-cache NuGet-only host with reflection
 serialization disabled. Matching Mac Catalyst and Android Debug builds have
 zero warnings/errors. Native enums use strict camelCase names across actions
 and callbacks, with explicit flags arrays; speech uses actual MAUI
-SpeechOptions/Locale contracts. These contract improvements do not complete
-additional feature families. Lower-layer SDK annotations, contextual page
-injection, geolocation and structural Share dispatch remain unimplemented;
-isolated JSON serialization proofs are not native feature acceptance.
+SpeechOptions/Locale contracts. These contract improvements did not complete
+additional feature families. At that milestone, lower-layer SDK annotations,
+contextual page injection, geolocation and structural Share dispatch were
+unimplemented; the later annotation prototype below supersedes that status.
 Fresh native Mac acceptance confirms named battery/network/display reads,
 light/dark theme callbacks, numeric/unknown enum and invalid flags rejection
 before UI, native speech locale/options binding, menu kind/modifier binding and
@@ -119,8 +119,9 @@ The three-path binary implementation adds whole-buffer invocation, ordered
 action-owned channels and raw binary selected-file reads. The existing Arguments
 page demonstrates a 256 KiB Blob roundtrip, a native-produced PDF/browser Blob
 and async-consumed raw chunks with typed progress, without adding a duplicate
-experiment or checking another feature family. Native OS sharing and writeable
-file handles are not implemented. Whole transfers are bounded to 4 MiB;
+experiment or checking another feature family. At that milestone native OS sharing and writeable
+file handles were not implemented; the later Share prototype below adds sharing,
+not writeable handles. Whole transfers are bounded to 4 MiB;
 Android uploads use bounded encoded fragments while responses are binary.
 Channels await explicit consumption acknowledgements and retire with the action.
 Portable validation passes 308 managed tests, 67 SDK tests and 74 UI tests plus
@@ -139,6 +140,51 @@ channel reuse and control-plane starvation; regressions cover the affected
 state machines. Native Mac exposed empty NSData.AsStream failing before
 dispatch, now corrected. Windows execution remains unverified; the general
 Controls unit project is blocked by pre-existing RS0030 calls outside this work.
+
+### Native annotation and hybrid-local service prototype
+
+Metadata-only attributes now live in `Microsoft.Maui.Interop` in the existing
+Essentials assembly, with no new metadata package or bridge runtime dependency.
+Curated assembly roots import annotated native interfaces, getters and supported
+events. Generated factories construct local targets through an owning provider
+overlay; normal/keyed business services and explicitly shared targets retain host
+ownership. Contextual Page/WebView/Window/dispatcher lookups follow the live owner.
+This replaces the earlier proposal-only status without exposing every loaded SDK.
+
+Native clipboard and selected page APIs are projected directly. Geolocation uses
+real request/result types and named native enum values. Typed converters and
+explicit strict STJ contexts support extensible DevicePlatform and actual .NET 11
+structural Share unions; unknown, duplicate, ambiguous and unauthorized file
+shapes reject. PDF/text bytes stage into bounded app-owned files with opaque
+document authority and finite post-share retention. Prompt/keyboard, preferences
+and complex native resources remain deliberate adapters.
+
+The new Geolocation and Share pages bring navigation to 24 experiments plus two
+guides. The Lifetime page demonstrates local versus explicitly shared targets.
+Portable validation passes 353 managed tests, 71 SDK tests and 77 UI tests plus
+12 contracts; the packed SDK has 48 files/19 entrypoints/398 documented members.
+Fresh-cache reflection-disabled NuGet-only generation and neutral SDK API
+validation pass. Independent review regressions cover custom-converter nullability,
+inherited member shadows, geolocation timeout policy, concurrent disposal and
+factory reentrant retirement. These are implementation evidence, not complete
+platform or release certification.
+
+Actual Mac Catalyst and Android acceptance verifies the imported clipboard
+methods/getter/change event/unsubscribe and contextual window getter. Mac queried
+child windows reach ready, have different local target IDs and the same explicit
+shared target ID, and retain exact 256 KiB binary transfers. The Core request
+guard now accepts a parsed same-origin document Referer with a path/query while
+preserving token, exact origin, scheme/host/port and credential checks; 49 targeted
+Core header/binary/lifetime tests and 16 framework JavaScript tests pass.
+Android's real two-file share chooser grants recipient URIs whose bytes match
+the staged lengths and SHA256 hashes. The temporary proof receiver was removed
+and the clean APK reinstalled. Native PDF recipient consumption is not claimed.
+The actual Android permission dialog was granted and the generated geolocation
+action returned the controlled emulator OS fix (51.5, -0.12), including the named
+`geoid` altitude reference. This is emulator location injection, not physical GPS
+or proof of permission denial/settings-disabled behavior. The native Location's
+`isFromMockProvider` field is reported unchanged, not inferred from the fixture.
+Location updates and wider platform/physical-device acceptance remain deferred.
 
 The new-window follow-up reproduced a Mac build-cache failure: the compiled
 Info.plist still disabled multiple scenes after the source enabled them. The
@@ -159,7 +205,7 @@ are still not certified.
 | Diagnostics and performance | Startup identity, request metrics and bounded operation log | Reproducible command-latency, startup and memory scenarios |
 | Browser mocks and native automation | Committed contract tests and actual native acceptance evidence | A committed, repeatable native automation entrypoint |
 | Window basics | Live current-window page; Mac size events and compiled global-display centering adapter | Manual/mixed-display Mac centering, activation/close; Windows runtime |
-| File picker | Android stream/large preview/binary/cancel acceptance; user-confirmed Mac selected-file preview after removing demo sandbox | Multiple selection and native seek; 64 KiB is only per-message budget |
+| File picker | Android stream/large preview/binary/seek/cancel acceptance; user-confirmed Mac selected-file preview after removing demo sandbox | Multiple selection and additional platform seek acceptance; 64 KiB is only per-message budget |
 | Theme and appearance | Native Android/Mac system/light/dark preference and effective Svelte CSS accepted | Actual OS theme change while following system and cross-window event acceptance; remote sites are not forced themed |
 | Battery / Display and DPI | Android readouts plus corrected Catalyst IOKit capacity/state matching actual Mac power output | Native change subscriptions deferred; broader platform runtime unverified |
 | Remote WebView controls | Measured BrowserPanel native guest; actual Mac HTTPS redirect/load/focus/feature teardown accepted | Visual clipping/DPI and runtime bridge-isolation evidence; mobile guests unsupported |

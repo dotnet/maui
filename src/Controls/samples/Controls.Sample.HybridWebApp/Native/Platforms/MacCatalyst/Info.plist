@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Read your location only when you request the native location experiment.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>TemporaryFullAccuracyUsageDescription</key>
+		<string>Use precise location only for this explicitly requested experiment.</string>
+	</dict>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>2</integer>

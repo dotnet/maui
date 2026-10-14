@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { currentWindow } from '@maui/api/ui/windows'
+  import { currentWindow, getCurrentFlowDirection } from '@maui/api/ui/windows'
   import type { WindowCapabilities, WindowPosition, WindowSize } from '@maui/api/ui/windows'
   import Action from '../components/Action.svelte'
   import type { FeatureProps } from '../session.ts'
@@ -35,6 +35,7 @@
     const own = windowHandle()
     const version = ++readVersion, sizes = sizeEvents, positions = positionEvents
     const support = await own.capabilities()
+    const nativeFlowDirection = await getCurrentFlowDirection()
     if (!live || session.disposed) return
     const [actualId, actualTitle, actualSize, actualPosition] = await Promise.all([
       own.id(), own.title(), own.size(), support.position ? own.position() : Promise.resolve(undefined),
@@ -46,7 +47,7 @@
     session.windowCapabilities = support
     session.refresh()
     observationState = 'Reading the actual native window. Resize it to see live events.'
-    return { id, title: actualTitle, size: actualSize, position: actualPosition ?? 'unsupported', capabilities: support }
+    return { id, title: actualTitle, size: actualSize, position: actualPosition ?? 'unsupported', capabilities: support, flowDirection: nativeFlowDirection }
   }
   async function observe(): Promise<void> {
     const own = windowHandle()

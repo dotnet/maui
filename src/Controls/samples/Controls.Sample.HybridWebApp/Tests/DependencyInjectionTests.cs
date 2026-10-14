@@ -5,7 +5,6 @@ using Maui.Controls.Sample.HybridWebApp.Playground;
 using Maui.HybridApp;
 using Maui.HybridApp.Generated;
 using Maui.HybridApp.Essentials.AppInfo;
-using Maui.HybridApp.Essentials.Clipboard;
 using Maui.HybridApp.Essentials.DeviceInfo;
 using Maui.HybridApp.Essentials.Preferences;
 using Maui.HybridApp.Essentials.Battery;
@@ -27,14 +26,14 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 public sealed class DependencyInjectionTests
 {
 	static readonly string[] NewCommands = ["battery.info", "display.info", "clipboard.hasText",
+		"geolocation.location", "share.request", "share.stage", "share.release",
 		"connectivity.info", "speech.locales", "speech.speak", "launcher.openUrl",
 		"preferences.get", "preferences.set", "preferences.contains", "preferences.remove", "preferences.clear",
 		"filePicker.pick", "filePicker.pickMultiple",
 		"file.openRead", "file.readBytes", "file.seek", "file.closeReader", "file.release",
 		"dialogs.alert", "dialogs.confirm", "dialogs.prompt", "dialogs.actionSheet", "remote.open", "remote.info", "remote.bounds", "remote.control", "remote.navigate", "menus.info", "menus.install", "menus.update", "menus.item", "menus.clear", "window.find", "window.closeCurrent", "window.activate", "window.center", "window.size", "window.position", "window.info", "window.title", "application.theme", "application.setTheme",
 		"window.bounds", "window.open", "window.list", "window.close"];
-	static ServiceProvider Build(ServiceCollection services) =>
-		services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+	static TestComposition.TestHost Build(ServiceCollection services) => new(services);
 
 	static async Task<Response> Call(HybridAppTargetObject hub, string session, string command, string args = "{}")
 	{
@@ -72,15 +71,15 @@ public sealed class DependencyInjectionTests
 		Assert.All(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
 			typeof(ConnectivityProvider), typeof(TextToSpeechProvider), typeof(LauncherProvider),
 			typeof(WindowProvider), typeof(DialogProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(ApplicationProvider),
-			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(ClipboardProvider), typeof(PreferencesProvider) },
-			type => Assert.Contains(services, descriptor => descriptor.ServiceType == type && descriptor.Lifetime == ServiceLifetime.Scoped));
+			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(PreferencesProvider) },
+			type => Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == type));
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
 			"core.subscribe", "core.unsubscribe", "core.channel.ack", "core.channel.close", "core.channel.fetch",
-			"device.info" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
-		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "launcher.openUrl", "speech.speak" }, ready.InteractiveCommands);
+			"device.info", "window.flowDirection" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
+		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "geolocation.location", "launcher.openUrl", "share.request", "speech.speak" }, ready.InteractiveCommands);
 		Assert.Equal("host-policy.", ready.PreferenceNamespace);
 		Assert.Equal(8, ready.MaximumTextLength);
 		Assert.Equal("unknown_command", (await Call(hub, session, "camera.capture")).Error!.Code);
@@ -254,6 +253,27 @@ public sealed class DependencyInjectionTests
 	}
 
 	[Fact]
+	public async Task AFailingDocumentCleanupCannotLeaveTheHubLeaseOrSessionAlive()
+	{
+		var clock = new TrackedTimeProvider();
+		var services = new ServiceCollection();
+		services.AddSingleton<TimeProvider>(clock);
+		services.AddHybridApp(new("cleanup."));
+		using var root = Build(services);
+		using var scope = root.CreateScope();
+		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
+		var session = Guid.NewGuid().ToString("D");
+		Assert.Equal("success", (await Call(hub, session, "core.connect")).Status);
+		Assert.True(hub.IsCurrent(session));
+		hub.DocumentDisconnected += () => throw new InvalidOperationException("Cleanup failed");
+		Assert.Throws<AggregateException>(scope.Dispose);
+		Assert.Equal(0, clock.ActiveTimers);
+		Assert.False(hub.IsCurrent(session));
+		hub.Dispose();
+		Assert.Equal("disconnected", (await Call(hub, session, "missing")).Error!.Code);
+	}
+
+	[Fact]
 	public async Task DeclarativeSourcesAreBoundBeforeSubscriptionsAndStopAfterScopeResolutionIsDisabled()
 	{
 		var services = new ServiceCollection();
@@ -315,7 +335,6 @@ public sealed class DependencyInjectionTests
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddSingleton<IPreferences>(new FakePreferences());
 		services.AddSingleton(new HybridAppOptions("host."));
-		services.AddScoped<HybridAppTargetObject>();
 		services.AddSingleton(new NativeDispatcher(action => action()));
 		services.AddHybridApp(new HybridAppOptions("host."));
 		using var root = Build(services);

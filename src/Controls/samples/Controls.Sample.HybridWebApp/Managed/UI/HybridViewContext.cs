@@ -9,6 +9,7 @@ public sealed class HybridViewContext : IDisposable
 	readonly SemaphoreSlim _interaction = new(1, 1);
 	Page? _page;
 	Window? _window;
+	HybridWebView? _primary;
 	bool _disposed;
 	HybridViewLayout? _layout;
 	long _remoteGeneration;
@@ -20,17 +21,33 @@ public sealed class HybridViewContext : IDisposable
 	/// <summary>Gets the unique identity of this view's native window, not its document or process.</summary>
 	public string Id { get; private set; } = Guid.NewGuid().ToString("D");
 	internal string Lease { get; } = Guid.NewGuid().ToString("D");
+	internal Microsoft.Maui.Dispatching.IDispatcher TeardownDispatcher => !_disposed && _window is not null ? _window.Dispatcher :
+		throw new CommandException("context_unavailable", "The owning dispatcher is unavailable.");
 
 	/// <summary>Gets the host-validated initial bundled location for frontend bootstrap.</summary>
 	public string InitialLocation { get; private set; } = "index.html";
 
 	/// <summary>Gets the owning live page, never Application.Current.MainPage.</summary>
-	public Page Page => !_disposed && _page is not null ? _page :
-		throw new CommandException("context_unavailable", "The owning native page is not available.");
+	public Page Page
+	{
+		get
+		{
+			if (!_disposed && _page is not null)
+			{
+				if (_primary is null && ReferenceEquals(_page.Window, _window)) return _page;
+				for (Element? current = _primary; current is not null; current = current.Parent)
+					if (current is Page page && ReferenceEquals(page.Window, _window)) return page;
+			}
+			throw new CommandException("context_unavailable", "The owning native page is detached or unavailable.");
+		}
+	}
 
 	/// <summary>Gets the owning live window.</summary>
-	public Window Window => !_disposed && _window is not null ? _window :
+	public Window Window => Page.Window ??
 		throw new CommandException("context_unavailable", "The owning native window is not available.");
+
+	/// <summary>Gets the currently attached primary view, never another window's view.</summary>
+	public HybridWebView WebView { get { _ = Page; return _primary ?? throw new CommandException("context_unavailable", "No primary hybrid view is bound."); } }
 
 	/// <summary>Creates this view's native layout slot for isolated remote content, without HTML coordinates or overlays.</summary>
 	/// <param name="primary">The trusted host view, normally a HybridWebView.</param>
@@ -40,6 +57,7 @@ public sealed class HybridViewContext : IDisposable
 		ObjectDisposedException.ThrowIf(_disposed, this);
 		if (_layout is not null)
 			throw new InvalidOperationException("This view's native content is already bound.");
+		_primary = primary as HybridWebView;
 		return _layout = new HybridViewLayout(primary);
 	}
 
@@ -56,7 +74,6 @@ public sealed class HybridViewContext : IDisposable
 	/// <summary>Closes remote content on document disconnect; delayed teardown cannot close a newer presentation.</summary>
 	public void DisconnectRemote()
 	{
-		DocumentEnded?.Invoke();
 		var generation = Interlocked.Increment(ref _remoteGeneration);
 		Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 		{
@@ -64,6 +81,7 @@ public sealed class HybridViewContext : IDisposable
 				_layout?.Close();
 		});
 	}
+	internal void RetireDocument() => DocumentEnded?.Invoke();
 
 	/// <summary>Binds this scope once to the host-created page/window and trusted bundled location.</summary>
 	/// <param name="page">The page resolving this scope's hub.</param>
@@ -110,6 +128,7 @@ public sealed class HybridViewContext : IDisposable
 		_disposed = true;
 		_page = null;
 		_window = null;
+		_primary = null;
 		_layout?.Dispose();
 		_layout = null;
 		Bound = null;

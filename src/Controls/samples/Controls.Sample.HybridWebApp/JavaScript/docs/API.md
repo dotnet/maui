@@ -21,8 +21,10 @@ documentation](RELEASING.md#source-reference-and-docfxmicrosoft-learn)).
 | `@maui/api/essentials/connectivity` | Services `getConnectivity()`, `onConnectivityChanged(listener)`; `ConnectivityInfo` |
 | `@maui/api/essentials/text-to-speech` | Services `getLocales()`, `speak(text, options?)`; `SpeechLocale`, `SpeechOptions`; core `Operation<void>` cancellation |
 | `@maui/api/essentials/launcher` | Service `openUrl(url)`; public HTTPS external native system launch only |
+| `@maui/api/essentials/geolocation` | Service `getLocation(request)`; actual `GeolocationRequest`, `Location`, cancellable core `Operation<Location|null>` |
+| `@maui/api/essentials/share` | `stageFile`, `share`, `releaseFile`; opaque `StagedFile` and explicit native text/file/multi-file request shapes |
 | `@maui/api/essentials/file-picker` | Services `pickFile(options?)`, `pickMultipleFiles(options?)`; resources `PickedFile`, `FileReader`; picker/chunk types |
-| `@maui/api/ui/windows` | Synchronous local acquisition `currentWindow(): Window`; single resource class `Window`; size/position/options/capability types |
+| `@maui/api/ui/windows` | Synchronous local acquisition `currentWindow(): Window`; single resource class `Window`; contextual Core getter `getCurrentFlowDirection`; size/position/options/capability types |
 | `@maui/api/ui/dialogs` | Async services `alert(message?, options?)`, `confirm`, `prompt`, `actionSheet`; native option/result types |
 | `@maui/api/ui/remote-webview` | Capability `supportsBrowserView`; resource creation `createBrowserView`; `BrowserView`, geometry/navigation types |
 | `@maui/api/ui/menus` | Resource `Menu.create`; item resource `MenuItem`; definition/shortcut/patch/capability types |
@@ -93,7 +95,7 @@ the sample-owned `sample.diagnostics` command and decoded by `Web/src/native/sam
 That app-owned helper composes the installed AppInfo/DeviceInfo helpers with its
 own diagnostics decoder to preserve the existing reload-identity UI.
 
-Clipboard has direct `setText(text)`, `getText(): Promise<string|null>`,
+Clipboard has direct `setText(text): Promise<void>`, `getText(): Promise<string|null>`,
 `hasText()` and `onContentChanged(listener)` with explicit unsubscribe.
 No browser clipboard fallback exists. Preferences use
 `get(key, defaultValue, options?)`, `set(key, primitive, options?)`, `contains`,
@@ -102,6 +104,35 @@ representation options; JS long values must be safe integers. Optional shared
 containers remain host-namespaced. Clear deletes only tracked owned keys, never
 the whole native store. Preferences are not SecureStorage or a JSON-object store.
 No sample namespace is embedded in the product.
+
+### Native sharing and location
+
+`getLocation({ timeout: '00:00:20', desiredAccuracy: 'medium',
+requestFullAccuracy: false })` returns a cancellable native operation whose
+result is actual MAUI `Location|null`. Accuracy is a request, not a guarantee.
+`altitudeReferenceSystem` uses only the native camelCase names `unspecified`,
+`terrain`, `ellipsoid`, `geoid`, and `surface`. Numeric enum values are rejected.
+Native TimeSpan is positive and at most two minutes. The managed host must
+declare its platform permissions; OS denial, disabled settings and unsupported
+APIs remain explicit errors. There is no browser geolocation or mock fallback.
+
+`stageFile(name, contentType, bytes)` uses the existing raw binary primitive:
+4 MiB per PDF/text file, plain ASCII file name (never a path), at most eight
+resources / 8 MiB per document. Its opaque resource is accepted only in the
+current view/document. `share({text})`, `share({file})` and `share({files})`
+use a separate interactive JSON request with an explicit closed native union
+and structural classifier. Null, empty, ambiguous and unknown request shapes
+reject; only nested authorized handles can become native `ShareFile` objects.
+No FullPath is accepted or returned.
+
+`releaseFile` revokes handle authority and document capacity. Unshared bytes are
+removed; already shared OS files keep finite retention. The retained app cache
+is bounded to 32 files / 64 MiB, prunes after 24 hours on native startup/subsequent
+calls/cleanup, and never evicts young shared files simply to admit new writes.
+Active native requests cannot be pruned. Chooser task completion is not file
+consumption, and browser download previews do not prove native sharing.
+These deliberate resource/permission adapters coexist with direct curated SDK
+calls; the optional runtime does not blindly import the whole native SDK.
 
 Connectivity reads current native `IConnectivity.NetworkAccess` and
 `ConnectionProfiles`. `onConnectivityChanged` delivers actual native

@@ -50,6 +50,14 @@
       "types": "./dist/essentials/launcher.d.ts",
       "import": "./dist/essentials/launcher.js"
     },
+    "./essentials/geolocation": {
+      "types": "./dist/essentials/geolocation.d.ts",
+      "import": "./dist/essentials/geolocation.js"
+    },
+    "./essentials/share": {
+      "types": "./dist/essentials/share.d.ts",
+      "import": "./dist/essentials/share.js"
+    },
     "./essentials/file-picker": {
       "types": "./dist/essentials/file-picker.d.ts",
       "import": "./dist/essentials/file-picker.js"
@@ -104,6 +112,10 @@
     "dist/essentials/text-to-speech.d.ts",
     "dist/essentials/launcher.js",
     "dist/essentials/launcher.d.ts",
+    "dist/essentials/geolocation.js",
+    "dist/essentials/geolocation.d.ts",
+    "dist/essentials/share.js",
+    "dist/essentials/share.d.ts",
     "dist/essentials/file-picker.js",
     "dist/essentials/file-picker.d.ts",
     "dist/ui/windows.js",

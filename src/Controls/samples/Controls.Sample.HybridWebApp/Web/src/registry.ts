@@ -25,6 +25,8 @@ import Theme from './features/Theme.svelte'
 import Connectivity from './features/Connectivity.svelte'
 import TextToSpeech from './features/TextToSpeech.svelte'
 import Launcher from './features/Launcher.svelte'
+import Share from './features/Share.svelte'
+import Geolocation from './features/Geolocation.svelte'
 
 export const components: Record<Experiment, Component<FeatureProps>> = {
   identity: Identity,
@@ -51,4 +53,6 @@ export const components: Record<Experiment, Component<FeatureProps>> = {
   connectivity: Connectivity,
   textToSpeech: TextToSpeech,
   launcher: Launcher,
+  share: Share,
+  geolocation: Geolocation,
 }

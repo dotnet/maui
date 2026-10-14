@@ -12,9 +12,11 @@ import { getConnectivity, onConnectivityChanged } from '@maui/api/essentials/con
 import { getLocales, speak } from '@maui/api/essentials/text-to-speech'
 import type { SpeechLocale, SpeechOptions } from '@maui/api/essentials/text-to-speech'
 import { openUrl } from '@maui/api/essentials/launcher'
+import { getLocation } from '@maui/api/essentials/geolocation'
+import { stageFile, share, releaseFile } from '@maui/api/essentials/share'
 import { pickFile, pickMultipleFiles } from '@maui/api/essentials/file-picker'
 import { alert, confirm, prompt, actionSheet } from '@maui/api/ui/dialogs'
-import { currentWindow } from '@maui/api/ui/windows'
+import { currentWindow, getCurrentFlowDirection } from '@maui/api/ui/windows'
 import type { Window, WindowSize, WindowPosition } from '@maui/api/ui/windows'
 import { Menu } from '@maui/api/ui/menus'
 import type { MenuDefinition } from '@maui/api/ui/menus'
@@ -44,8 +46,13 @@ const snapshot = { id: 'main', windowLease: 'private-lease', initialLocation: 'i
   title: 'Native', x: 80, y: 90, width: 800, height: 600, canResize: true, canPosition: true,
   canOpenWindows: true, canObservePosition: true, canCenter: true }
 const bridge: Bridge = {
-  async InvokeDotNetBinary(method, input) {
+  async InvokeDotNetBinary(method, input, options) {
     check(method === 'hybrid.invoke')
+    const metadata = Object.entries(options?.headers ?? {}).sort(([a], [b]) => a.localeCompare(b)).map(([, value]) => value).join('')
+    const request = JSON.parse(metadata) as { command: string; args: Record<string, Json> }
+    if (request.command === 'share.stage')
+      return new TextEncoder().encode(JSON.stringify({ id: '00000000-0000-0000-0000-000000000001',
+        fileName: request.args.fileName, contentType: request.args.contentType, size: input.byteLength })).buffer
     return input instanceof ArrayBuffer ? input.slice(0) : Uint8Array.from(new Uint8Array(input.buffer, input.byteOffset, input.byteLength)).buffer
   },
   async InvokeDotNet(_, [wire]) {
@@ -56,14 +63,15 @@ const bridge: Bridge = {
       'core.connect': { commands: [], preferenceNamespace: 'consumer.', maximumTextLength: 4096 },
       'app.info': { appName: 'Consumer', version: '1', build: '2' },
       'device.info': { platform: 'test', osVersion: '1', model: 'test' },
-      'clipboard.read': { text: '你好 👋' }, 'clipboard.hasText': { hasText: true },
+      'clipboard.read': '你好 👋', 'clipboard.hasText': true, 'clipboard.write': null,
       'preferences.get': request.args.defaultValue ?? { kind: 'string', text: '' },
       'battery.info': { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' },
       'display.info': { width: 1000, height: 700, density: 2, orientation: 'landscape', rotation: 'rotation0', refreshRate: 60 },
       'connectivity.info': { networkAccess: 'internet', connectionProfiles: ['wiFi'] },
       'speech.locales': { locales: [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }] },
       'filePicker.pick': null, 'filePicker.pickMultiple': { files: [] },
-      'dialogs.prompt': { cancelled: true, text: null }, 'dialogs.actionSheet': { selection: 'Cancel' },
+      'dialogs.prompt': { cancelled: true, text: null }, 'dialogs.actionSheet': 'Cancel', 'dialogs.alert': null, 'dialogs.confirm': true,
+      'geolocation.location': null, 'window.flowDirection': 'matchParent',
       'window.info': { ...snapshot, id: request.args.windowId ?? snapshot.id, windowLease: request.args.windowLease ?? snapshot.windowLease },
       'window.title': { ...snapshot, title: 'Updated' },
       'window.open': { id: 'child', windowLease: 'child-lease' },
@@ -95,7 +103,7 @@ try {
   await channel.unsubscribe()
   check((await getAppInfo()).appName === 'Consumer')
   check((await getDeviceInfo()).platform === 'test')
-  check(await getText() === '你好 👋'); check(await setText('é')); check(await hasText())
+  check(await getText() === '你好 👋'); await setText('é'); check(await hasText())
   check(await preferences.get('key', true))
   const enabled: boolean = await preferences.get('enabled', true)
   const savedTheme: string = await preferences.get('theme', 'system')
@@ -113,9 +121,16 @@ try {
   await speech.result
   await openUrl('https://dot.net/maui')
   check(await pickFile({ pickerTitle: 'Pick from TypeScript' }) === null); check((await pickMultipleFiles()).length === 0)
-  check(await alert('Native message')); check(await confirm('Confirm native'))
+  await alert('Native message'); check(await confirm('Confirm native'))
   check((await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: 'email', maxLength: 10000 })).cancelled)
   check(await actionSheet({ buttons: ['Choice'], cancel: 'Cancel' }) === 'Cancel')
+  check(await getCurrentFlowDirection() === 'matchParent')
+  const location = await getLocation({ desiredAccuracy: 'medium', timeout: '00:00:20' })
+  check(await location.result === null)
+  const staged = await stageFile('browser.pdf', 'application/pdf', Uint8Array.of(37, 80, 68, 70))
+  await share({ file: staged, title: 'Native PDF' })
+  await share({ text: 'Native text' })
+  await releaseFile(staged)
   check(await own.id() === 'main'); check(await own.title() === 'Native')
   const size: WindowSize = await own.size(), position: WindowPosition = await own.position()
   await own.setTitle('Unicode 👋'); await own.setSize(size); await own.setPosition(position)

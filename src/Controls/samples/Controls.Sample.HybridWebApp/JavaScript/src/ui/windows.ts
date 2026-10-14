@@ -1,4 +1,4 @@
-import { ack, connect, documentConnectionGeneration, NativeError, number, object, subscribeShared } from '../core.js'
+import { ack, connect, documentConnectionGeneration, enumValue, NativeError, number, object, subscribeShared } from '../core.js'
 import type { NativeClient } from '../core.js'
 import { createWindowMenu } from '../internal/menu-installation.js'
 import type { WindowMenu } from '../internal/menu-installation.js'
@@ -49,6 +49,11 @@ export interface WindowCapabilities {
   positionChanged: boolean
 }
 interface Binding { client: NativeClient; owner: WindowSnapshot; callerId: string; menu: WindowMenu }
+
+/** Reads the calling window's actual Core IWindow getter through its curated native contract. */
+export async function getCurrentFlowDirection(): Promise<'matchParent' | 'leftToRight' | 'rightToLeft'> {
+  return (await connect()).invoke('window.flowDirection', {}, value => enumValue(value, ['matchParent', 'leftToRight', 'rightToLeft']))
+}
 
 /** One behavioral native window resource, independent of whether acquired as current/listed/opened. */
 export class Window {

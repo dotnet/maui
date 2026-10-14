@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Maui.HybridApp;
 using Maui.HybridApp.Essentials.AppInfo;
-using Maui.HybridApp.Essentials.Clipboard;
 using Maui.HybridApp.Essentials.Preferences;
 using HybridApp.ExternalProvider;
 using Maui.Controls.Sample.HybridWebApp.Playground;
@@ -29,7 +28,7 @@ public sealed class HubTests
 		var dispatcher = new NativeDispatcher(action => action());
 		var registry = TestComposition.CreateRegistry(
 			new AppInfoProvider(new FakeAppInfo { Error = new NotSupportedException("Tests do not invent native app support.") }),
-			new ClipboardProvider(clipboard, dispatcher, new(SamplePolicy.PreferenceNamespace), new()),
+			clipboard, dispatcher,
 			new PreferencesProvider(preferences ?? new FakePreferences(), new(SamplePolicy.PreferenceNamespace)),
 			new SamplePlugin(),
 			new SampleDiagnosticsProvider(new SampleStartupIdentity("test-startup", DateTimeOffset.UtcNow)));

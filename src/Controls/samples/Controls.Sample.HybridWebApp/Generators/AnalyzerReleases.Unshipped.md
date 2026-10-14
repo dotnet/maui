@@ -10,3 +10,4 @@ HYBRID003 | Maui.HybridApp | Error | Duplicate names across an assembly or expli
 HYBRID004 | Maui.HybridApp | Error | Unsupported automatic JSON contract
 HYBRID005 | Maui.HybridApp | Error | Invalid service/context/cancellation parameter classification
 HYBRID006 | Maui.HybridApp | Error | Invalid declarative first/last subscription lifecycle
+HYBRID007 | Maui.HybridApp | Error | Invalid curated root or typed target construction

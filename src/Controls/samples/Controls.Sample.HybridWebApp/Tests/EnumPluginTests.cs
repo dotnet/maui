@@ -79,6 +79,7 @@ public sealed class EnumPluginTests
 		var page = new ContentPage();
 		context.Bind(page, new Window(page), "index.html");
 		var layout = context.CreateLayout(new HybridWebView());
+		page.Content = layout;
 		using var notifications = new NativeNotifications();
 		var plugin = new RemoteWebViewProvider(context, new Desktop(), notifications);
 		using var hub = TestComposition.CreateHub([plugin], new HybridAppOptions("test."), notifications: notifications);

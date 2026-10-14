@@ -17,7 +17,9 @@ Controls.Core (and Core transitively), plus the standard DI abstractions supplie
 by .NET 11. There is no second integration NuGet. The product never references
 the sample namespace, MauiProgram, its counter/diagnostics/catalog, development
 forwarding or test doubles. A future Essentials-only split is deferred.
-Each API family is one cohesive attributed plugin class, with directly typed
+Routine clipboard methods/getters/events and alert/confirm/action-sheet calls now
+come directly from deliberately curated SDK contracts. Other API families remain
+cohesive policy/resource plugins, with directly typed
 method parameters and genuine structured options/results. Window actions and
 event ownership share `WindowProvider`; menu actions and rendering share
 `MenuProvider`. There are no per-API DI extensions, command-provider interfaces
@@ -43,6 +45,8 @@ fetches; SDK control calls are serialized through a bounded 64-call queue.
 The same generated assembly extension registers both action kinds:
 
 ```csharp
+using Microsoft.Maui.Interop;
+
 public sealed record ChunkInfo(int Index);
 public sealed class Documents
 {
@@ -107,8 +111,9 @@ not duplicated. `file.readBytes` now returns binary **one EOF byte (0/1) followe
 by at most 65536 actual file bytes**; this explicit marker preserves partial,
 empty and nonseekable EOF semantics. JS readBytes/readText reuse that route,
 retain serialized read/seek/close, and preserve strict incremental UTF-8 decoder
-state/reset behavior. Files remain read-only: there is no arbitrary filesystem
-path, writable-file API or OS-share claim.
+state/reset behavior. Selected files remain read-only: there is no arbitrary filesystem
+path or writable-file API. The separate share cache below stages only bounded
+browser-produced PDF/text bytes, not arbitrary native filesystem writes.
 
 The playground's Arguments page (`#/arguments`) demonstrates a 256 KiB Blob
 roundtrip, a controlled native-produced PDF as bytes/Blob, and four ordered
@@ -125,27 +130,30 @@ builder.Services
     .AddMyToolkitActions(); // Generated in the MyToolkit assembly.
 ```
 
-`AddHybridApp(IServiceCollection, HybridAppOptions)` registers the scoped
-`HybridAppTargetObject`, immutable policy, scoped `NativeDispatcher`, default
-`TimeProvider.System` clock and **only implemented** product providers:
+`AddHybridApp(IServiceCollection, HybridAppOptions)` records typed local factories,
+immutable policy, a default `TimeProvider.System` clock and **only implemented** product providers:
 AppInfo, DeviceInfo, Clipboard, Preferences, Battery, Display, FilePicker resources,
-Connectivity, TextToSpeech, HTTPS Launcher and MAUI page/window UI providers. It supplies their real
-existing Essentials interface defaults with
-`TryAdd`; host overrides registered before it are retained. Repeating equal
+Connectivity, TextToSpeech, HTTPS Launcher, native Geolocation, bounded Share and
+MAUI page/window UI providers. It supplies borrowed real
+Essentials interface defaults in the local overlay; host overrides are retained.
+Hubs, registries, notifications, contextual objects and plugin targets are
+**not registered as global host services**. Repeating equal
 namespace/text policy is idempotent, without duplicate providers; conflicting
 policy is rejected instead of silently advertised with different native limits.
 There is no scanning, permission grant or switch enabling every Essentials API.
 
 `AddHybridApp` calls `AddMauiHybridAppActions` once. The compiler finds every
 annotated plugin in that assembly and emits one explicit extension that registers
-all its scoped plugins, direct action delegates and declarative topics. External
+all its local plugin factories, direct action delegates and declarative topics. External
 assemblies each have their own single generated extension; importing a DLL alone
-does not opt it in. The scoped registry is constructed **once per scope** from
+does not opt it in. The local registry is constructed **once per view overlay** from
 these explicit assembly registrations. Connection metadata contains the actual
 compiled command names and that same immutable policy.
 Providers use existing Essentials
 interfaces directly, not new service wrappers. `NativeDispatcher` is only a
-main-thread/cancellation boundary; its default delegates to Essentials MainThread.
+main-thread/cancellation boundary; product actions use the attached Page dispatcher,
+while teardown can still use that same owning Window dispatcher after logical
+detachment. Explicit host/test dispatchers are preserved.
 The app must supply its nonempty preference prefix; no sample prefix or default
 entire-store namespace is embedded in the product. Text defaults to 4096 UTF-16 units; keys remain 1–48 ASCII
 letters, digits, underscores or hyphens. Typed string/bool/numeric/Date values
@@ -166,8 +174,9 @@ process diagnostics remain a separate app-only plugin.
 
 DI `Scoped` does not automatically mean one page/window. At the application
 composition root, `App.CreateWindow` explicitly creates an `IServiceScope`,
-resolves `MainPage` from it, and disposes it on `Window.Destroying` (also on
-construction failure). This scope owns the hub, timer and disposable providers.
+then a `HybridServiceProvider` over that owning scope. It constructs `MainPage`
+with the **local** hub/context, and disposes local resources before the host
+scope on `Window.Destroying` (also on construction failure).
 Do not resolve the hub from the root container or share it across WebViews.
 Construct a NavigationPage wrapper before assigning Window.Page. Assigning a
 ContentPage to a Window and then wrapping that same page can detach its logical
@@ -181,7 +190,19 @@ marshals to the UI thread and rechecks both its stopped state and current docume
 before sending. `Stop` detaches host event/view handlers and Development resources;
 the owning scope disposes the hub. Handler replacement disconnects its document
 without disposing the still-live scope. Frontend reload keeps scoped providers and
-counter state; another window gets independent instances.
+counter state; another window gets independent local instances.
+Unowned ordinary/keyed lookups forward to the original scope, not a handler's
+alternate scope. Generated typed constructors receive the proxy, so local plugin
+constructor and method injection use the same provider. Host factories for local
+targets also receive the proxy. Explicit singleton/instance overrides stay
+host-owned/shared; forwarded business services are never disposed by the overlay.
+Async-only owned plugins require awaited `DisposeAsync`, including concurrent
+callers; never dispose their host scope before that await finishes.
+The sample's `SharedCounterTarget` is explicitly supplied as a host singleton;
+`LocalCounterTarget` is generated locally. `#/lifetime` compares both in child
+windows and across frontend reload.
+View/session-capturing targets reject global singleton overrides. Ordinary and
+keyed business registrations still forward unchanged to the owning host scope.
 
 The app binds `HybridWindowHost` once to its own application, a scope-owning
 factory accepting a validated bundle-relative URL/query/fragment. It has no
@@ -198,6 +219,92 @@ evidence.
 Hub disposal is idempotent: it cancels work, retires the document, disposes its
 `TimeProvider` lease timer and clears all native-event listeners. There is no page
 callback factory, page/hub DI cycle or `BuildServiceProvider` call in app startup.
+
+## Metadata below the optional runtime
+
+`HybridAction`, `FromServices`, `HybridTopic`, `HybridEvent`, `HybridExport` and
+`HybridNativeEvent` live in **`Microsoft.Maui.Interop` in the existing Essentials
+assembly**. They depend only on `System.Attribute`/`System.Type`, not Core,
+Controls, DI, JSON or the hybrid runtime. There is no metadata package.
+SDK annotations alone expose nothing, run no SDK generator and register no bridge.
+
+```csharp
+using Microsoft.Maui.Interop;
+using Maui.HybridApp;
+using Maui.HybridApp.Generated;
+using Microsoft.Extensions.DependencyInjection;
+
+// Curated member import, not "scan all loaded assemblies".
+[assembly: HybridExport(typeof(Microsoft.Maui.ApplicationModel.DataTransfer.IClipboard))]
+
+// Your source plugins can still use ordinary typed methods.
+public sealed class MyActions([FromKeyedServices("business")] MyBusiness service)
+{
+    [HybridAction("my.count")]
+    public int Count([FromServices] IServiceProvider owner) => service.Count();
+}
+
+// Configure once at startup. Do not duplicate the product's own IClipboard root
+// if you also call AddHybridApp; cross-assembly conflicts are diagnosed/rejected.
+builder.Services.AddMyToolkitActions();
+using var hostScope = owningProvider.CreateScope();
+await using var local = hostScope.ServiceProvider.CreateHybridAppProvider();
+var hub = local.GetRequiredService<HybridAppTargetObject>();
+```
+
+The product imports `IClipboard`, `IGeolocation`, `IWindow` and selected annotated
+`Page` overloads in one generated assembly registration. Imported interfaces and
+abstract/contextual classes are never constructed. Calls resolve the exact
+interface override (`GetRequiredService<IClipboard>()`), or the live nearest
+logical Page/owning Window/primary HybridWebView at invocation. Detached views
+and foreign windows fail `context_unavailable`; there is no MainPage fallback.
+Sender-free `EventHandler<EventArgs>` change metadata owns epoch-guarded attach/
+detach on first/last subscription and document retirement. Other event payloads
+keep explicit scoped lifecycle plugins.
+
+## Native JSON and deliberate adapters
+
+Automatic scalar/DTO/default/enum/TimeSpan metadata remains reflection-free.
+Accessible, parameterless, typed `JsonConverter<T>` attributes are honored by
+direct construction. Complex contracts may explicitly declare
+`[assembly: HybridJsonContext(typeof(T), typeof(MyJsonContext))]`, rooted in a
+**source-declared** strict STJ context. Generated contexts cannot feed the STJ
+generator in the same pass. Runtime registration verifies exact typed metadata,
+duplicate/unknown-member rejection and nullable/constructor enforcement. Unsupported
+polymorphism/property converters still diagnose unless the whole contract is
+rooted in a suitable consumer context. No global mega-type registry is required.
+The consumer proof roundtrips extensible `DevicePlatform.Create("CustomDesktop")`
+through a consumer converter rather than a closed platform switch.
+
+`geolocation.location` takes the actual `GeolocationRequest` and returns actual
+`Location?`, using an explicit STJ context for Location. Native timeout must be
+positive and at most two minutes. The native host declares Android coarse/fine
+location, Apple when-in-use/temporary precise descriptions, and Windows location
+capability. OS permission/settings/unsupported failures remain explicit. No
+coordinates are logged by the demonstration.
+
+`ShareProvider` remains a deliberate policy/resource adapter. It uses a real
+.NET 11 `NativeShareRequest(ShareTextRequest, ShareFileRequest,
+ShareMultipleFilesRequest)` union with `JsonUnionTypeStructuralClassifier`,
+not an annotated open base class. Zero/multiple candidates, null/default/empty
+requests and unknown members reject. Classification examines root property
+names, not nested content; its nested `ShareFile` converter alone accepts an
+authorized `{ "id": "opaque UUID" }`. It never accepts/serializes `FullPath`.
+
+`share.stage` receives raw binary bytes and returns small UTF-8 staged metadata
+bytes. `share.request` is a separate interactive **JSON** call, not a binary UI
+wait. Only PDF/text, plain ASCII file names, 4 MiB per file, eight resources /
+8 MiB per document are enabled. The shared app-owned retained cache rejects
+overflow at 32 files / 64 MiB, rather than deleting young recipient files.
+`share.release` revokes handle authority/capacity and removes unshared bytes;
+it never deletes young OS-retained files. Unshared files are also removed on document/scope cleanup. Shared files survive
+chooser task completion, reload and scope disposal for a finite 24-hour
+retention from actual native completion; active native requests cannot be pruned.
+The app calls `PruneHybridShareCache` at startup without creating a hub; subsequent
+staging/share calls and cache activation also prune expired files. There is no permanent storage
+promise and no proof recipients have consumed a file. Native Essentials still
+owns platform URI/read grants. Parent native acceptance must inspect actual
+chooser/recipient behavior, not a browser download.
 
 ### Interactive OS UI and read-only device data
 
@@ -271,6 +378,7 @@ Position observation remains Windows-only; mobile centering is unsupported.
 
 ```csharp
 using Maui.HybridApp;
+using Microsoft.Maui.Interop;
 using Maui.HybridApp.Generated;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 
@@ -281,7 +389,7 @@ builder.Services
 
 public sealed record EchoMessage(string Text, int Count);
 
-// A normal nonpartial class. Instance providers are registered scoped automatically.
+// A normal nonpartial class. Its typed constructor is registered locally automatically.
 public sealed class MyActions(IClipboard clipboard)
 {
     [HybridAction("app.echo")]
@@ -300,22 +408,26 @@ allows it. Envelopes must be named objects or positional arrays: missing require
 unknown, duplicate, excess and malformed arguments fail with `invalid_arguments`
 before invoking native code. DTO JSON names use camelCase, with explicit
 `JsonPropertyName` support. Ordinary method parameter names are the exact object keys.
-Enums use their numeric JSON representation, matching the default native serializer.
+Automatic enum metadata uses strict camel-case member names (flags use arrays of
+names), not numeric JSON. The declared Location context follows the same policy
+with an AOT-safe generic string-enum converter and integer values disabled.
 
 Methods may be public or internal, static or instance, on accessible nonpartial
 classes. No registration interface or partial class is required. Instance
-actions call `GetRequiredService<T>()` on the owning scope at invocation, never a
+actions call `GetRequiredService<T>()` on the owning local proxy at invocation, never a
 cached root provider. The generated assembly extension is idempotent and preserves
-existing explicit plugin factories and their lifetimes. Use scoped registrations
-for native/resource providers; deliberately choosing a singleton shares that
-action instance across windows, just like ordinary .NET DI.
+existing explicit plugin factories. Singleton overrides are allowed for explicitly
+shared business targets, not targets whose typed constructors capture a Page,
+Window, dispatcher, hub, view context or notification source. The generator marks
+those targets as per-view-only; the overlay rejects accidental singleton capture.
+Host singleton/instance targets remain externally owned.
 Static-only methods need no registered provider instance or constructor dependencies.
 Fully static classes are composed by the same assembly extension, not another
 per-type registration method. Extension names strip non-letter/digit characters
 from the assembly name: `My.Toolkit` emits `AddMyToolkitActions` in
 `Maui.HybridApp.Generated`.
 
-Mark method parameters with **`Maui.HybridApp.FromServices`** or the existing
+Mark method parameters with **`Microsoft.Maui.Interop.FromServices`** or the existing
 `Microsoft.Extensions.DependencyInjection.FromKeyedServices` to inject services
 from the same current scope. There is no fake Microsoft DI attribute or ASP.NET
 dependency. `CancellationToken` always comes from the current `Operation`.
@@ -340,7 +452,9 @@ process another generator's added `[JsonSerializable]` types in the same pass.
 Scalars, nullable values, concrete DTO constructors/records, enums, one-dimensional
 arrays, generic lists/sets and string-keyed dictionaries have automatic strict
 metadata. There is no user-maintained action DTO registry or reflection JSON
-fallback. Custom converters, polymorphism, `object`/`dynamic`, delegates,
+fallback. Typed parameterless converters and declared strict source contexts
+are supported as described above. Unrooted polymorphism/property converters,
+`object`/`dynamic`, delegates,
 multidimensional arrays, unsupported framework contracts and inaccessible or
 unconstructible DTO shapes receive compile-time diagnostics. Read-only members
 must bind to constructor parameters; optional init-only members must also bind
