@@ -1,4 +1,4 @@
-import { boolean, nullableText, object, text, NativeError } from '../core.js'
+import { boolean, enumValue, nullableText, object, text, NativeError } from '../core.js'
 import type { NativeClient, Json } from '../core.js'
 import type { Menu, MenuDefinition, MenuInfo, MenuItem, MenuPatch } from '../ui/menus.js'
 interface MenuState {
@@ -94,18 +94,18 @@ export function prepare(items: MenuDefinition[]): { tree: Json[]; callbacks: Map
     if (!item || depth > 4 || callbacks.size >= 128 || typeof item.id !== 'string' ||
       !/^[a-zA-Z0-9-]{1,64}$/.test(item.id) || callbacks.has(item.id) ||
       typeof item.text !== 'string' || item.text.length > 160 ||
-      !['submenu', 'item', 'check', 'separator'].includes(item.kind) ||
       (item.kind === 'submenu' ? !Array.isArray(item.items) : item.items !== undefined) ||
       (item.action !== undefined && typeof item.action !== 'function'))
       throw new NativeError('invalid_arguments', 'Use valid unique menu IDs/kinds, bounded labels and at most four levels/128 nodes.')
+    enumValue(item.kind, ['submenu', 'item', 'check', 'separator'], 'invalid_arguments')
     if (item.shortcut && (typeof item.shortcut.key !== 'string' || item.shortcut.key.length < 1 ||
       item.shortcut.key.length > 64 || /[\u0000-\u001f\u007f]/.test(item.shortcut.key) ||
       !['item', 'check'].includes(item.kind)))
       throw new NativeError('invalid_arguments', 'Native accelerators require an actionable item and native key string.')
     const modifiers = item.shortcut?.modifiers ?? ['primary']
-    if (modifiers.length > 5 || new Set(modifiers).size !== modifiers.length ||
-      modifiers.some(value => !['primary', 'shift', 'ctrl', 'alt', 'cmd', 'windows'].includes(value)))
+    if (!Array.isArray(modifiers) || modifiers.length > 5 || new Set(modifiers).size !== modifiers.length)
       throw new NativeError('invalid_arguments', 'Use unique supported accelerator modifiers.')
+    for (const modifier of modifiers) enumValue(modifier, ['primary', 'shift', 'ctrl', 'alt', 'cmd', 'windows'], 'invalid_arguments')
     callbacks.set(item.id, item.action ?? (() => {}))
     return { id: item.id, text: item.text, kind: item.kind, enabled: item.enabled ?? true,
       checked: item.checked ?? false, items: item.items?.map(child => serialize(child, depth + 1)) ?? null,
@@ -174,7 +174,8 @@ export function createWindowMenu(client: NativeClient, windowId: string): Window
             if (menu.retired) throw new NativeError('disconnected', 'This menu installation was replaced or removed.')
             return c.invoke('menus.item', { windowId, sourceId, id }, value => {
               const v = object(value)
-              return { text: text(v.text), enabled: boolean(v.enabled), checked: v.checked === null ? null : boolean(v.checked) }
+              return { text: text(v.text), enabled: boolean(v.enabled), checked: v.checked === null ? null : boolean(v.checked),
+                kind: enumValue(v.kind, ['submenu', 'item', 'check', 'separator']) }
             })
           }
           return {

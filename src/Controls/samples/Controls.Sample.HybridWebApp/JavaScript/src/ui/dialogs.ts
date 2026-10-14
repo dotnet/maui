@@ -1,4 +1,7 @@
-import { ack, boolean, connect, NativeError, nullableText, object } from '../core.js'
+import { ack, boolean, connect, enumValue, NativeError, nullableText, object } from '../core.js'
+
+/** Native MAUI popup text direction; matchParent is the native default. */
+export type FlowDirection = 'matchParent' | 'leftToRight' | 'rightToLeft'
 
 /** Native informational popup options; callbacks and UX choices stay in TypeScript. */
 export interface AlertOptions {
@@ -7,7 +10,7 @@ export interface AlertOptions {
   /** Dismiss/acknowledgement label; defaults to OK. */
   cancel?: string
   /** MAUI popup text direction. */
-  flowDirection?: 'matchParent' | 'leftToRight' | 'rightToLeft'
+  flowDirection?: FlowDirection
 }
 /** Native confirmation options and both button labels. */
 export interface ConfirmOptions extends AlertOptions {
@@ -15,9 +18,9 @@ export interface ConfirmOptions extends AlertOptions {
   accept?: string
 }
 /** Named native MAUI keyboards supported by DisplayPromptAsync. */
-export type PromptKeyboard = 'default' | 'plain' | 'chat' | 'text' | 'email' | 'numeric' | 'telephone' | 'url' | 'date' | 'time' | 'password' | 'custom'
+export type KeyboardKind = 'default' | 'plain' | 'chat' | 'text' | 'email' | 'numeric' | 'telephone' | 'url' | 'date' | 'time' | 'password' | 'custom'
 /** MAUI custom keyboard behavior flags. */
-export type PromptKeyboardFlag = 'capitalizeSentence' | 'spellcheck' | 'suggestions' | 'capitalizeWord' | 'capitalizeCharacter' | 'capitalizeNone'
+export type KeyboardFlag = 'none' | 'capitalizeSentence' | 'spellcheck' | 'suggestions' | 'capitalizeWord' | 'capitalizeCharacter' | 'capitalizeNone' | 'all'
 /** Options actually supported by the native MAUI text prompt. */
 export interface PromptOptions {
   /** Native title; defaults to empty. */
@@ -31,9 +34,9 @@ export interface PromptOptions {
   /** Native maximum text length; -1 (default) is unspecified. */
   maxLength?: number
   /** Native named keyboard; defaults to default. */
-  keyboard?: PromptKeyboard
-  /** Custom flags, used only with keyboard custom. */
-  keyboardFlags?: PromptKeyboardFlag[]
+  keyboard?: KeyboardKind
+  /** Native flags used only with custom; [] means none, and none/all must stand alone. */
+  keyboardFlags?: KeyboardFlag[]
   /** Native initial input; defaults to empty. */
   initialValue?: string
 }
@@ -55,11 +58,14 @@ export interface ActionSheetOptions {
   /** Actual native action buttons; defaults to empty. */
   buttons?: string[]
   /** MAUI action-sheet text direction. */
-  flowDirection?: 'matchParent' | 'leftToRight' | 'rightToLeft'
+  flowDirection?: FlowDirection
 }
 function labels(...values: string[]): void {
   if (values.some(value => typeof value !== 'string' || !value.trim()))
     throw new NativeError('invalid_arguments', 'Native button labels must not be blank.')
+}
+function direction(value: FlowDirection = 'matchParent'): void {
+  enumValue(value, ['matchParent', 'leftToRight', 'rightToLeft'], 'invalid_arguments')
 }
 /**
  * Displays an asynchronous native page-owned alert, not browser window.alert.
@@ -70,6 +76,7 @@ function labels(...values: string[]): void {
  */
 export async function alert(message = '', options: AlertOptions = {}): Promise<boolean> {
   labels(options.cancel ?? 'OK')
+  direction(options.flowDirection)
   return (await connect()).invoke('dialogs.alert', { title: '', message, ...options }, ack)
 }
 /**
@@ -81,6 +88,7 @@ export async function alert(message = '', options: AlertOptions = {}): Promise<b
  */
 export async function confirm(message = '', options: ConfirmOptions = {}): Promise<boolean> {
   labels(options.accept ?? 'OK', options.cancel ?? 'Cancel')
+  direction(options.flowDirection)
   return (await connect()).invoke('dialogs.confirm', { title: '', message, ...options }, ack)
 }
 /**
@@ -94,6 +102,15 @@ export async function confirm(message = '', options: ConfirmOptions = {}): Promi
  */
 export async function prompt(message = '', options: PromptOptions = {}): Promise<PromptResult> {
   labels(options.accept ?? 'OK', options.cancel ?? 'Cancel')
+  const keyboard = enumValue(options.keyboard ?? 'default', ['default', 'plain', 'chat', 'text', 'email', 'numeric', 'telephone', 'url', 'date', 'time', 'password', 'custom'], 'invalid_arguments')
+  if (options.keyboardFlags !== undefined) {
+    const flags = options.keyboardFlags
+    if (keyboard !== 'custom' || !Array.isArray(flags) || new Set(flags).size !== flags.length ||
+      (flags.length !== 1 && flags.some(flag => flag === 'none' || flag === 'all')))
+      throw new NativeError('invalid_arguments', 'Use custom keyboard with distinct native flags; none/all must stand alone.')
+    for (const flag of flags)
+      enumValue(flag, ['none', 'capitalizeSentence', 'spellcheck', 'suggestions', 'capitalizeWord', 'capitalizeCharacter', 'capitalizeNone', 'all'], 'invalid_arguments')
+  }
   const max = options.maxLength ?? -1
   if (!Number.isInteger(max) || max < -1 || max > 2147483647 || (max >= 0 && (options.initialValue?.length ?? 0) > max))
     throw new NativeError('invalid_arguments', 'Use maxLength -1 or a nonnegative native integer that fits initial text.')
@@ -111,6 +128,7 @@ export async function prompt(message = '', options: PromptOptions = {}): Promise
  * @throws `NativeError` on invalid options, native absence or OS failure.
  */
 export async function actionSheet(options: ActionSheetOptions = {}): Promise<string | null> {
+  direction(options.flowDirection)
   if (options.cancel) labels(options.cancel)
   if (options.destruction) labels(options.destruction)
   labels(...(options.buttons ?? []))

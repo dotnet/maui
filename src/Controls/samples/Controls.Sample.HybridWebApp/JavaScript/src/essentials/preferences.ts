@@ -1,13 +1,15 @@
-import { ack, connect, NativeError, object, text, boolean, number } from '../core.js'
+import { ack, connect, enumValue, NativeError, object, text, boolean, number } from '../core.js'
 import type { Json } from '../core.js'
 /** Supported MAUI primitive preference values; SecureStorage is a different API. */
 export type PreferenceValue = string | boolean | number | Date
+/** Closed native primitive discriminator; public values remain ordinary JS primitives. */
+export type PreferenceKind = 'string' | 'boolean' | 'double' | 'int' | 'long' | 'float' | 'dateTime'
 /** Native preference container/number-storage options; host namespaces remain authoritative. */
 export interface PreferenceOptions {
   /** Optional shared store name, isolated inside the host-owned namespace. */
   sharedName?: string
   /** Native numeric primitive representation; defaults to double. */
-  numberType?: 'int' | 'long' | 'float' | 'double'
+  numberType?: Extract<PreferenceKind, 'int' | 'long' | 'float' | 'double'>
 }
 function encode(value: PreferenceValue, options: PreferenceOptions): Json {
   if (typeof value === 'string') return { kind: 'string', text: value }
@@ -17,14 +19,14 @@ function encode(value: PreferenceValue, options: PreferenceOptions): Json {
     return { kind: 'dateTime', text: value.toISOString() }
   }
   if (typeof value !== 'number' || !Number.isFinite(value)) throw new NativeError('invalid_arguments', 'Use a supported native primitive preference.')
-  const kind = options.numberType ?? 'double'
+  const kind = enumValue(options.numberType ?? 'double', ['int', 'long', 'float', 'double'], 'invalid_arguments')
   if (kind === 'int' && (!Number.isInteger(value) || value < -2147483648 || value > 2147483647) ||
     kind === 'long' && !Number.isSafeInteger(value) || kind === 'float' && !Number.isFinite(Math.fround(value)))
     throw new NativeError('invalid_arguments', 'Numeric value does not fit the requested native primitive.')
   return kind === 'int' || kind === 'long' ? { kind, integer: value } : { kind, number: value }
 }
 function decode(value: unknown): PreferenceValue {
-  const v = object(value), kind = text(v.kind)
+  const v = object(value), kind = enumValue(v.kind, ['string', 'boolean', 'double', 'int', 'long', 'float', 'dateTime'])
   switch (kind) {
     case 'string': return text(v.text)
     case 'boolean': return boolean(v.boolean)
@@ -51,7 +53,8 @@ function decode(value: unknown): PreferenceValue {
  * @returns Actual native primitive, including defaults when absent.
  */
 export async function get<T extends PreferenceValue>(key: string, defaultValue: T, options: PreferenceOptions = {}): Promise<T extends Date ? Date : T extends string ? string : T extends boolean ? boolean : number> {
-  return (await connect()).invoke('preferences.get', { key, defaultValue: encode(defaultValue, options), sharedName: options.sharedName ?? null }, value => {
+  const scalar = encode(defaultValue, options)
+  return (await connect()).invoke('preferences.get', { key, defaultValue: scalar, sharedName: options.sharedName ?? null }, value => {
     const result = decode(value)
     if (typeof result !== typeof defaultValue || (result instanceof Date) !== (defaultValue instanceof Date))
       throw new NativeError('invalid_response', 'Native preference does not match the requested primitive type.')
@@ -66,7 +69,8 @@ export async function get<T extends PreferenceValue>(key: string, defaultValue: 
  * @returns Native completion.
  */
 export async function set(key: string, value: PreferenceValue, options: PreferenceOptions = {}): Promise<void> {
-  await (await connect()).invoke('preferences.set', { key, value: encode(value, options), sharedName: options.sharedName ?? null }, ack)
+  const scalar = encode(value, options)
+  await (await connect()).invoke('preferences.set', { key, value: scalar, sharedName: options.sharedName ?? null }, ack)
 }
 /**
  * Tests native key existence.

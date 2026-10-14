@@ -99,6 +99,19 @@ use get/set/contains/remove/clear, and single-file picking returns nullable
 metadata directly, not a legacy `{ file }` envelope. No compatibility adapters
 or old command aliases remain.
 
+Native enum contracts now use exact camelCase names rather than numeric values
+or handwritten string switches. Dialog flow direction, application theme,
+battery/network/display results and native event payloads use the actual MAUI
+enums; flags use explicit arrays of names. Unknown names, numeric input and
+duplicate flags reject before invocation. The SDK exposes matching closed
+TypeScript unions and runtime validation. `unspecified` is the native theme
+preference that follows the OS, not the old `system` wire alias.
+Text-to-speech accepts native `SpeechOptions` and returns native `Locale` data
+without duplicate managed DTOs. DevicePlatform remains an extensible string.
+SDK-level annotations, referenced-interface discovery, contextual page service
+resolution and structural Share unions are design investigations, not shipped
+bridge features.
+
 For custom web calls, the shared-client core/root `invoke` function avoids a
 client factory at each call site:
 

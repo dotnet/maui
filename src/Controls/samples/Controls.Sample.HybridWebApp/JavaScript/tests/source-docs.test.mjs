@@ -24,7 +24,7 @@ test('emitted declarations document the real root and feature boundaries', () =>
   assert.deepEqual(device.members.map(item => item.displayName), ['DeviceInfo', 'getDeviceInfo'])
   assert.deepEqual(member(device, 'DeviceInfo').members.map(item => item.displayName), ['model', 'osVersion', 'platform'])
   assert.deepEqual(entry('essentials/clipboard').members.map(item => item.displayName), ['getText', 'hasText', 'onContentChanged', 'setText'])
-  assert.deepEqual(entry('essentials/preferences').members.map(item => item.displayName), ['clear', 'contains', 'get', 'PreferenceOptions', 'PreferenceValue', 'remove', 'set'])
+  assert.deepEqual(entry('essentials/preferences').members.map(item => item.displayName), ['clear', 'contains', 'get', 'PreferenceKind', 'PreferenceOptions', 'PreferenceValue', 'remove', 'set'])
 })
 
 test('TSDoc host requirements, session ownership, parameters, results and errors survive declaration emit', () => {

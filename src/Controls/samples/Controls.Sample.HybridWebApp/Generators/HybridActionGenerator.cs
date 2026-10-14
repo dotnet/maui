@@ -227,6 +227,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 	{
 		internal readonly List<ITypeSymbol> Types = new();
 		internal readonly Dictionary<ITypeSymbol, ObjectShape> Objects = new(SymbolEqualityComparer.IncludeNullability);
+		internal readonly Dictionary<ITypeSymbol, EnumShape> Enums = new(SymbolEqualityComparer.IncludeNullability);
 		internal int Index(ITypeSymbol type) => Types.FindIndex(t => SymbolEqualityComparer.IncludeNullability.Equals(t, type));
 		internal void Add(ITypeSymbol type)
 		{
@@ -235,7 +236,12 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				type.SpecialType == SpecialType.System_Object || type is INamedTypeSymbol { IsRefLikeType: true })
 				throw new JsonContractException(type, "use a concrete JSON contract, not object, dynamic, a delegate, pointer or ref-like type");
 			Types.Add(type);
-			if (Scalar(type) is not null || type.TypeKind == TypeKind.Enum || type.ToDisplayString() == "System.Text.Json.JsonElement") return;
+			if (type is INamedTypeSymbol { TypeKind: TypeKind.Enum } enumType)
+			{
+				Enums.Add(type, new EnumShape(enumType));
+				return;
+			}
+			if (Scalar(type) is not null || type.ToDisplayString() == "System.Text.Json.JsonElement") return;
 			if (type is IArrayTypeSymbol array)
 			{
 				if (array.Rank != 1) throw new JsonContractException(type, "only one-dimensional arrays are supported");
@@ -300,6 +306,45 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 					!constructor.Parameters.Any(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase)))
 					throw new JsonContractException(type, "optional init-only properties must bind to constructor parameters");
 			return new ObjectShape(properties, constructor);
+		}
+	}
+	sealed class EnumShape
+	{
+		internal readonly List<(string Field, string Wire, ulong Bits)> Members;
+		internal readonly bool Flags;
+		internal readonly ulong WidthMask;
+		internal readonly ulong KnownBits;
+		internal EnumShape(INamedTypeSymbol type)
+		{
+			if (!Accessible(type) || type.GetAttributes().Any(a => a.AttributeClass?.Name == "JsonConverterAttribute"))
+				throw new JsonContractException(type, "inaccessible or custom-converter enum");
+			Flags = type.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "System.FlagsAttribute");
+			WidthMask = type.EnumUnderlyingType!.SpecialType switch
+			{
+				SpecialType.System_Byte or SpecialType.System_SByte => byte.MaxValue,
+				SpecialType.System_Int16 or SpecialType.System_UInt16 => ushort.MaxValue,
+				SpecialType.System_Int32 or SpecialType.System_UInt32 => uint.MaxValue,
+				_ => ulong.MaxValue,
+			};
+			Members = type.GetMembers().OfType<IFieldSymbol>().Where(field => field.HasConstantValue)
+				.OrderBy(field => field.Name, StringComparer.Ordinal).Select(field =>
+				{
+					var wire = field.GetAttributes().FirstOrDefault(a =>
+						a.AttributeClass?.ToDisplayString() == "System.Text.Json.Serialization.JsonStringEnumMemberNameAttribute")?.ConstructorArguments[0].Value as string ??
+						CamelCase(field.Name);
+					var bits = field.ConstantValue switch
+					{
+						sbyte value => unchecked((ulong)value), short value => unchecked((ulong)value),
+						int value => unchecked((ulong)value), long value => unchecked((ulong)value),
+						_ => Convert.ToUInt64(field.ConstantValue, CultureInfo.InvariantCulture),
+					};
+					return (field.Name, wire, bits & WidthMask);
+				}).ToList();
+			if (Members.Any(member => member.Wire.Length == 0) ||
+				Members.GroupBy(member => member.Wire, StringComparer.Ordinal).Any(group => group.Select(member => member.Bits).Distinct().Count() > 1))
+				throw new JsonContractException(type, "enum wire names must be nonempty and unambiguous");
+			// All = ~0 is a declared sentinel, not permission to pass arbitrary undeclared bits.
+			foreach (var member in Members.Where(member => member.Bits != WidthMask)) KnownBits |= member.Bits;
 		}
 	}
 	sealed class ObjectShape(List<IPropertySymbol> properties, IMethodSymbol constructor)
@@ -508,7 +553,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			else if (scalar == "Uri") Line("return new global::System.Uri(json.GetString()!, global::System.UriKind.RelativeOrAbsolute);");
 			else if (scalar is not null) Line("return json.Get" + scalar + "()" + (scalar == "String" ? "!" : "") + ";");
 			else if (type.TypeKind == TypeKind.Enum)
-				Line("return (" + name + ")json.Get" + Scalar(((INamedTypeSymbol)type).EnumUnderlyingType!) + "();");
+				EmitReadEnum(type, graph.Enums[type]);
 			else if (type.ToDisplayString() == "System.Text.Json.JsonElement") Line("return json.Clone();");
 			else if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableType)
 				Line("return " + Read(nullableType.TypeArguments[0], "json") + ";");
@@ -528,7 +573,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			else if (scalar == "Boolean") Line("writer.WriteBooleanValue(value);");
 			else if (scalar is not null) Line("writer.WriteNumberValue(value);");
 			else if (type.TypeKind == TypeKind.Enum)
-				Line("writer.WriteNumberValue((" + TypeName(((INamedTypeSymbol)type).EnumUnderlyingType!) + ")value);");
+				EmitWriteEnum(type, graph.Enums[type]);
 			else if (type.ToDisplayString() == "System.Text.Json.JsonElement") Line("value.WriteTo(writer);");
 			else if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } wrapper)
 				Line(Write(wrapper.TypeArguments[0], "value.Value"));
@@ -546,6 +591,57 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				Line("writer.WriteEndObject();");
 			}
 			Line("}");
+		}
+		void EmitReadEnum(ITypeSymbol type, EnumShape shape)
+		{
+			var name = TypeName(type);
+			if (shape.Flags)
+			{
+				Line("if (json.ValueKind != JsonValueKind.Array) throw new JsonException(\"Expected a flag-name array.\");");
+				Line("ulong bits = 0; var seen = new global::System.Collections.Generic.HashSet<ulong>();");
+				Line("foreach (var item in json.EnumerateArray()) {");
+				Line("if (item.ValueKind != JsonValueKind.String) throw new JsonException(\"Expected a flag name.\");");
+				Line("ulong flag = item.GetString() switch {");
+				foreach (var member in shape.Members.GroupBy(member => member.Wire).Select(group => group.First()))
+					Line(Literal(member.Wire) + " => " + member.Bits.ToString(CultureInfo.InvariantCulture) + "UL,");
+				Line("_ => throw new JsonException(\"Unknown flag name.\") };");
+				Line("if (!seen.Add(flag) || ((flag == 0 || flag == " + shape.WidthMask + "UL) && json.GetArrayLength() != 1)) throw new JsonException(\"Use distinct flag values; zero and all must stand alone.\");");
+				Line("bits |= flag; }");
+				Line("if (bits != " + shape.WidthMask + "UL && (bits & ~" + shape.KnownBits + "UL) != 0) throw new JsonException(\"Undefined flag bits.\");");
+				Line("return unchecked((" + name + ")(" + TypeName(((INamedTypeSymbol)type).EnumUnderlyingType!) + ")bits);");
+			}
+			else
+			{
+				Line("if (json.ValueKind != JsonValueKind.String) throw new JsonException(\"Expected an enum name.\");");
+				Line("return json.GetString() switch {");
+				foreach (var member in shape.Members.GroupBy(member => member.Wire).Select(group => group.First()))
+					Line(Literal(member.Wire) + " => " + name + ".@" + member.Field + ",");
+				Line("_ => throw new JsonException(\"Unknown enum name.\") };");
+			}
+		}
+		void EmitWriteEnum(ITypeSymbol type, EnumShape shape)
+		{
+			var name = TypeName(type);
+			var canonical = shape.Members.GroupBy(member => member.Bits).Select(group => group.First()).ToArray();
+			Line("switch (value) {");
+			foreach (var member in canonical)
+				Line("case " + name + ".@" + member.Field + ": " + (shape.Flags ? "writer.WriteStartArray(); " : "") +
+					"writer.WriteStringValue(" + Literal(member.Wire) + "); " + (shape.Flags ? "writer.WriteEndArray(); " : "") + "return;");
+			Line("}");
+			if (!shape.Flags)
+			{
+				Line("throw new JsonException(\"Undefined native enum value.\");");
+				return;
+			}
+			Line("var bits = unchecked((ulong)(" + TypeName(((INamedTypeSymbol)type).EnumUnderlyingType!) + ")value) & " + shape.WidthMask + "UL;");
+			Line("if ((bits & ~" + shape.KnownBits + "UL) != 0) throw new JsonException(\"Undefined native flag bits.\");");
+			Line("ulong covered = 0; var names = new global::System.Collections.Generic.List<string>();");
+			foreach (var member in canonical.Where(member => member.Bits != 0 && member.Bits != shape.WidthMask)
+				.OrderBy(member => member.Bits))
+				Line("if ((bits & " + member.Bits + "UL) == " + member.Bits + "UL && (covered & " + member.Bits + "UL) != " + member.Bits +
+					"UL) { covered |= " + member.Bits + "UL; names.Add(" + Literal(member.Wire) + "); }");
+			Line("if (covered != bits) throw new JsonException(\"Native flags cannot be expressed using declared names.\");");
+			Line("writer.WriteStartArray(); foreach (var flag in names) writer.WriteStringValue(flag); writer.WriteEndArray();");
 		}
 		void EmitReadCollection(ITypeSymbol element, string kind, string name)
 		{

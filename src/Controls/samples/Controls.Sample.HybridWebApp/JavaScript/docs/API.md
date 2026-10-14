@@ -189,12 +189,24 @@ unused files/readers; document teardown invalidates them. Treat file text as
 private, render it as text and omit it from logs.
 Battery and Display helpers read/refresh native snapshots without web fallbacks,
 subscriptions, sensor streaming or keep-screen-awake changes.
+Closed native enums have constrained TypeScript unions and validated exact camelCase
+wire names: `charging`, `notCharging`, `ac`, `off`, `internet`, `wiFi`,
+`portrait`, `rotation0`. Unknown, numeric and legacy PascalCase values reject.
+DevicePlatform remains an extensible string, not a closed enum.
+Dialogs expose `FlowDirection`, `KeyboardKind` and `KeyboardFlag`; custom native
+flags are arrays. `[]` means none, while `['none']`/`['all']` must stand alone.
+The native action decoder independently rejects invalid/duplicate flags even if
+callers bypass JavaScript validation. PreferenceKind is a closed native storage
+discriminator; public preference get/set values remain ordinary JS primitives.
 
 `createBrowserView()` creates a hidden ordinary desktop guest, then accepts measured
 CSS slot/viewport/clipping bounds and allowlisted back/forward/reload/focus/hide/close
 controls. It is native composition, not an iframe or DOM element. Close on
 component teardown; hide before custom DOM overlays. Mobile guests reject
 explicitly. Remote content receives no native target, SDK, messages or inspector.
+`BrowserNavigation.status` is a closed BrowserStatus union, separate from nullable
+`error` text and native `navigationResult` (`success/cancel/timeout/failure`).
+Both reads and actual native callbacks validate the same enum names.
 Menus are TypeScript definitions/callbacks, not C# recipes. Use
 `const menu = Menu.create(definitions); await currentWindow().setMenu(menu)`,
 `await currentWindow().menu()` and `menu.item(id)` getter/setter resources.
@@ -207,11 +219,13 @@ window menubars. Mobile native menus/desktop guests reject; no HTML/iframe fallb
 Scoped `menus.clicked` notifications carry native item/source IDs. A
 notification UUID is not an active operation's correlation ID.
 
-Theme is application-level: `getTheme`, `setTheme('system'|'light'|'dark')`,
+Theme is application-level: `getTheme`, `setTheme('unspecified'|'light'|'dark')`,
 `onThemeChanged`. Native effective callbacks apply trusted frontend CSS; the
 native preference alone cannot paint the webpage, and remote websites are not
 force-themed. Geometry/theme/clipboard callbacks observe native sources,
 multiplex JS listeners and detach the last source; teardown suppresses stale events.
+`unspecified` is the actual native AppTheme name and restores OS following; an
+unspecified native effective theme is reported honestly, not replaced with light/dark.
 
 ## MAUI / Tauri parity audit
 

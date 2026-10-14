@@ -1,4 +1,11 @@
-import { boolean, connect, NativeError, nullableText, object, subscribeShared, text } from '../core.js'
+import { boolean, connect, enumValue, NativeError, nullableText, object, subscribeShared } from '../core.js'
+
+/** SDK actions forwarded to the owning native guest; no remote script execution. */
+export type BrowserAction = 'back' | 'forward' | 'reload' | 'focus' | 'hide' | 'close'
+/** Closed native guest lifecycle/navigation state, separate from error text. */
+export type BrowserStatus = 'closed' | 'loading' | 'loaded' | 'failed' | 'blocked'
+/** Actual MAUI navigation completion result, or null before completion. */
+export type WebNavigationResult = 'success' | 'cancel' | 'timeout' | 'failure'
 
 /** Measured CSS slot/viewport clipping geometry; native maps to actual host DPI/layout. */
 export interface BrowserBounds {
@@ -27,8 +34,12 @@ export interface BrowserBounds {
 }
 /** Native navigation feedback only, never a remote DOM readback. */
 export interface BrowserNavigation {
-  /** Loading/loaded/failed/blocked feedback. */
-  status: string
+  /** Closed/loading/loaded/failed/blocked feedback, never combined with error text. */
+  status: BrowserStatus
+  /** Native policy error detail, null when absent; not a status discriminator. */
+  error: string | null
+  /** Actual native completion result, null before navigation completes. */
+  navigationResult: WebNavigationResult | null
   /** Current native back-history availability. */
   canGoBack: boolean
   /** Current native forward-history availability. */
@@ -77,7 +88,10 @@ interface Snapshot extends BrowserNavigation { supported: boolean; open: boolean
 function decode(value: unknown): Snapshot {
   const v = object(value)
   return { supported: boolean(v.supported), open: boolean(v.open), id: nullableText(v.id), url: nullableText(v.url),
-    status: text(v.status), canGoBack: boolean(v.canGoBack), canGoForward: boolean(v.canGoForward) }
+    status: enumValue(v.status, ['closed', 'loading', 'loaded', 'failed', 'blocked']),
+    error: nullableText(v.error),
+    navigationResult: v.navigationResult === null ? null : enumValue<WebNavigationResult>(v.navigationResult, ['success', 'cancel', 'timeout', 'failure']),
+    canGoBack: boolean(v.canGoBack), canGoForward: boolean(v.canGoForward) }
 }
 function validateUrl(url: string): void {
   let parsed: URL
@@ -111,12 +125,12 @@ export async function createBrowserView(url: string): Promise<BrowserView> {
     if (value.id !== id) throw new NativeError('invalid_view', 'This browser resource was closed or replaced.')
     return value
   }
-  const control = async (action: string) => { await c.invoke('remote.control', { id, action }, decode) }
+  const control = async (action: BrowserAction) => { await c.invoke('remote.control', { id, action }, decode) }
   return {
     id,
     url: async () => { const value = await read(); if (!value.url) throw new NativeError('invalid_response', 'Native guest URL unavailable.'); return value.url },
     navigate: async url => { validateUrl(url); await c.invoke('remote.navigate', { id, url }, decode) },
-    navigation: async () => { const v = await read(); return { status: v.status, canGoBack: v.canGoBack, canGoForward: v.canGoForward } },
+    navigation: async () => { const v = await read(); return { status: v.status, error: v.error, navigationResult: v.navigationResult, canGoBack: v.canGoBack, canGoForward: v.canGoForward } },
     goBack: () => control('back'), goForward: () => control('forward'), reload: () => control('reload'), focus: () => control('focus'),
     hide: () => control('hide'), close: () => control('close'),
     setBounds: async bounds => {
@@ -124,7 +138,7 @@ export async function createBrowserView(url: string): Promise<BrowserView> {
       await c.invoke('remote.bounds', { id, ...bounds }, decode)
     },
     onNavigation: listener => subscribeShared(c, 'remote.changed', decode, value => {
-      if (value.id === id) listener({ status: value.status, canGoBack: value.canGoBack, canGoForward: value.canGoForward })
+      if (value.id === id) listener({ status: value.status, error: value.error, navigationResult: value.navigationResult, canGoBack: value.canGoBack, canGoForward: value.canGoForward })
     }),
   }
 }

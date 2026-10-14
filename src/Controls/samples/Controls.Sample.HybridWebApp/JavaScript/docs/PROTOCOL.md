@@ -207,6 +207,16 @@ unsettled predecessor requires reload, not overlapping session establishment.
 
 ## Compatibility boundaries
 
+Closed enums use exact native camelCase strings, not numeric values or case-insensitive
+names. Flags use arrays of declared names; zero/all stand alone and undefined bits
+reject. Nullable/default enum contracts preserve null/omission semantics.
+Native theme `unspecified` replaces the former preview-only `system` mapping.
+Battery/display/connectivity names likewise use native camelCase (`charging`,
+`portrait`, `internet`, `wiFi`). Browser navigation uses a closed `status`, separate
+nullable `error` text and typed `navigationResult`. Update the matching native host
+and frontend together; these unpublished preview wire changes do not change protocol
+1 envelopes, resource authority or guest isolation.
+
 The current native reference targets repository SDK
 `11.0.100-rtm.26480.113` and MAUI `net11.0`. Platform heads are not evidence that
 every provider has been validated on every OS. Custom hosts must preserve this

@@ -41,7 +41,7 @@ public sealed class RemoteWebViewProvider(HybridViewContext context, IDeviceInfo
 	{
 		var uri = RemoteWebAddress.Validate(url);
 		RequireDesktop();
-		context.ShowRemote(uri, () => notifications.Publish("remote.changed", State(), RemoteWebViewJsonContext.Default.RemoteState));
+		context.ShowRemote(uri, () => notifications.Publish("remote.changed", State(), RemoteWebViewJsonContext.Wire.RemoteState));
 		return State();
 	}
 	[HybridAction("remote.bounds", MainThread = true)]
@@ -53,7 +53,7 @@ public sealed class RemoteWebViewProvider(HybridViewContext context, IDeviceInfo
 		return State();
 	}
 	[HybridAction("remote.control", MainThread = true)]
-	internal RemoteState Control(string id, string action)
+	internal RemoteState Control(string id, BrowserAction action)
 	{
 		RequireDesktop();
 		context.Layout.Control(id, action);
@@ -84,7 +84,9 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 	Action? _changed;
 	string? _id;
 	string? _url;
-	string _status = "closed";
+	BrowserStatus _status = BrowserStatus.Closed;
+	string? _error;
+	WebNavigationResult? _navigationResult;
 	bool _disposed;
 
 	/// <summary>Creates the full-size native host without changing the frontend's layout.</summary>
@@ -109,7 +111,8 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 		Close();
 		_id = Guid.NewGuid().ToString("D");
 		_url = address.AbsoluteUri;
-		_status = "loading";
+		_status = BrowserStatus.Loading;
+		_error = null; _navigationResult = null;
 		_changed = changed;
 		_clip = new AbsoluteLayout { IsClippedToBounds = true, IsVisible = false };
 		_web = new WebView { AutomationId = "remote-webview" };
@@ -121,7 +124,7 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 	}
 
 	internal RemoteState Read(bool supported) => new(supported, _web is not null, _id, _url,
-		_status, _web?.CanGoBack ?? false, _web?.CanGoForward ?? false);
+		_status, _web?.CanGoBack ?? false, _web?.CanGoForward ?? false, _error, _navigationResult);
 
 	internal void Place(RemoteBounds args)
 	{
@@ -154,17 +157,17 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 		_clip!.IsVisible = true;
 	}
 
-	internal void Control(string id, string action)
+	internal void Control(string id, BrowserAction action)
 	{
 		RequireId(id);
 		switch (action)
 		{
-			case "back": if (_web!.CanGoBack) _web.GoBack(); break;
-			case "forward": if (_web!.CanGoForward) _web.GoForward(); break;
-			case "reload": _web!.Reload(); break;
-			case "focus": if (!_web!.Focus()) throw new CommandException("focus_unavailable", "Native browser focus was not accepted."); break;
-			case "hide": _clip!.IsVisible = false; break;
-			case "close": Close(); break;
+			case BrowserAction.Back: if (_web!.CanGoBack) _web.GoBack(); break;
+			case BrowserAction.Forward: if (_web!.CanGoForward) _web.GoForward(); break;
+			case BrowserAction.Reload: _web!.Reload(); break;
+			case BrowserAction.Focus: if (!_web!.Focus()) throw new CommandException("focus_unavailable", "Native browser focus was not accepted."); break;
+			case BrowserAction.Hide: _clip!.IsVisible = false; break;
+			case BrowserAction.Close: Close(); break;
 			default: throw new CommandException("invalid_arguments", "Unknown browser control.");
 		}
 	}
@@ -178,18 +181,25 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 	internal void Navigate(string id, Uri address)
 	{
 		RequireId(id);
-		_url = address.AbsoluteUri; _status = "loading";
+		_url = address.AbsoluteUri; _status = BrowserStatus.Loading;
+		_error = null; _navigationResult = null;
 		_web!.Source = address.AbsoluteUri;
 	}
 	void Navigating(object? sender, WebNavigatingEventArgs e)
 	{
-		try { _url = RemoteWebAddress.Validate(e.Url).AbsoluteUri; _status = "loading"; }
-		catch (CommandException) { e.Cancel = true; _status = "blocked: only public HTTPS navigation is allowed"; }
+		_error = null; _navigationResult = null;
+		try { _url = RemoteWebAddress.Validate(e.Url).AbsoluteUri; _status = BrowserStatus.Loading; }
+		catch (CommandException) { e.Cancel = true; _status = BrowserStatus.Blocked; _error = "Only public HTTPS navigation is allowed."; }
 		_changed?.Invoke();
 	}
 	void Navigated(object? sender, WebNavigatedEventArgs e)
 	{
-		_status = e.Result == WebNavigationResult.Success ? "loaded" : $"failed: {e.Result}";
+		if (_status != BrowserStatus.Blocked)
+		{
+			_navigationResult = e.Result;
+			_status = e.Result == WebNavigationResult.Success ? BrowserStatus.Loaded : BrowserStatus.Failed;
+			_error = null;
+		}
 		_changed?.Invoke();
 	}
 
@@ -207,7 +217,8 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 		_web = null;
 		_id = null;
 		_url = null;
-		_status = "closed";
+		_status = BrowserStatus.Closed;
+		_error = null; _navigationResult = null;
 		_changed?.Invoke();
 		_changed = null;
 	}
@@ -223,9 +234,27 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 
 sealed record RemoteBounds(string Id, double X, double Y, double Width, double Height,
 	double ClipX, double ClipY, double ClipWidth, double ClipHeight, double ViewportWidth, double ViewportHeight, bool Visible);
-sealed record RemoteState(bool Supported, bool Open, string? Id, string? Url, string Status, bool CanGoBack, bool CanGoForward);
+enum BrowserAction { Back, Forward, Reload, Focus, Hide, Close }
+enum BrowserStatus { Closed, Loading, Loaded, Failed, Blocked }
+sealed record RemoteState(bool Supported, bool Open, string? Id, string? Url, BrowserStatus Status, bool CanGoBack, bool CanGoForward,
+	string? Error, WebNavigationResult? NavigationResult);
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
 	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
 	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
 [JsonSerializable(typeof(RemoteState))]
-partial class RemoteWebViewJsonContext : JsonSerializerContext;
+partial class RemoteWebViewJsonContext : JsonSerializerContext
+{
+	internal static RemoteWebViewJsonContext Wire { get; } = new(WireOptions());
+	static System.Text.Json.JsonSerializerOptions WireOptions()
+	{
+		var options = new System.Text.Json.JsonSerializerOptions
+		{
+			PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+			UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+			RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true,
+		};
+		options.Converters.Add(new JsonStringEnumConverter<BrowserStatus>(System.Text.Json.JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+		options.Converters.Add(new JsonStringEnumConverter<WebNavigationResult>(System.Text.Json.JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+		return options;
+	}
+}

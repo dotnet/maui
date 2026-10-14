@@ -20,6 +20,23 @@ import { Menu } from '@maui/api/ui/menus'
 import type { MenuDefinition } from '@maui/api/ui/menus'
 import * as app from '@maui/api/application'
 import { createBrowserView, supportsBrowserView } from '@maui/api/ui/remote-webview'
+import type { BatteryState } from '@maui/api/essentials/battery'
+import type { NetworkAccess } from '@maui/api/essentials/connectivity'
+import type { BrowserStatus } from '@maui/api/ui/remote-webview'
+import type { FlowDirection } from '@maui/api/ui/dialogs'
+
+function closedEnumTypeProof(): void {
+  // @ts-expect-error Native enums are closed and use exact camelCase names.
+  const battery: BatteryState = 'Charging'
+  // @ts-expect-error Unknown network values cannot be public result types.
+  const network: NetworkAccess = 'arbitrary'
+  // @ts-expect-error Error detail is not part of the browser status enum.
+  const browser: BrowserStatus = 'failed: Timeout'
+  // @ts-expect-error FlowDirection is not a numeric enum on the wire.
+  const direction: FlowDirection = 1
+  void battery; void network; void browser; void direction
+}
+void closedEnumTypeProof
 
 function check(value: boolean): void { if (!value) throw new Error('Packed API consumer assertion failed') }
 let menuSource: string | null = null
@@ -37,9 +54,9 @@ const bridge: Bridge = {
       'device.info': { platform: 'test', osVersion: '1', model: 'test' },
       'clipboard.read': { text: '你好 👋' }, 'clipboard.hasText': { hasText: true },
       'preferences.get': request.args.defaultValue ?? { kind: 'string', text: '' },
-      'battery.info': { chargeLevel: -1, state: 'Unknown', powerSource: 'AC', energySaverStatus: 'Off' },
-      'display.info': { width: 1000, height: 700, density: 2, orientation: 'Landscape', rotation: 'Rotation0', refreshRate: 60 },
-      'connectivity.info': { networkAccess: 'Internet', connectionProfiles: ['WiFi'] },
+      'battery.info': { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' },
+      'display.info': { width: 1000, height: 700, density: 2, orientation: 'landscape', rotation: 'rotation0', refreshRate: 60 },
+      'connectivity.info': { networkAccess: 'internet', connectionProfiles: ['wiFi'] },
       'speech.locales': { locales: [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }] },
       'filePicker.pick': null, 'filePicker.pickMultiple': { files: [] },
       'dialogs.prompt': { cancelled: true, text: null }, 'dialogs.actionSheet': { selection: 'Cancel' },
@@ -53,11 +70,11 @@ const bridge: Bridge = {
       'menus.update': { supported: true, supportsChecked: true, sourceId: menuSource },
       'menus.clear': { supported: true, supportsChecked: true, sourceId: menuSource },
       'menus.item': { text: 'Native label', enabled: true, checked: null, kind: 'item' },
-      'application.theme': { effective: 'dark', preference: 'system' },
-      'application.setTheme': { effective: 'light', preference: request.args.theme ?? 'system' },
+      'application.theme': { effective: 'dark', preference: 'unspecified' },
+      'application.setTheme': { effective: 'light', preference: request.args.theme ?? 'unspecified' },
     }
     const result = request.command.startsWith('remote.')
-      ? { supported: true, open: true, id: 'guest', url: 'https://dot.net/maui', status: 'loaded', canGoBack: false, canGoForward: false }
+      ? { supported: true, open: true, id: 'guest', url: 'https://dot.net/maui', status: 'loaded', error: null, navigationResult: 'success', canGoBack: false, canGoForward: false }
       : Object.hasOwn(results, request.command) ? results[request.command] : { accepted: true }
     return JSON.stringify({ version: 1, session: request.session, id: request.id, status: 'success', result, error: null })
   }, SendRawMessage() {},
@@ -78,7 +95,7 @@ try {
   await preferences.set('date', new Date('2026-10-13T00:00:00Z'))
   check(await preferences.contains('date')); await preferences.remove('date'); await preferences.clear()
   check((await getBatteryInfo()).chargeLevel === -1); check((await getDisplayInfo()).density === 2)
-  check((await getConnectivity()).networkAccess === 'Internet')
+  check((await getConnectivity()).networkAccess === 'internet')
   const stopNetwork = await onConnectivityChanged(value => check(Array.isArray(value.connectionProfiles)))
   await stopNetwork()
   const locales: SpeechLocale[] = await getLocales()
@@ -97,7 +114,7 @@ try {
   check(await child.id() === 'child')
   await child.close()
   check((await app.windows()).length === 1)
-  check(await app.getTheme() === 'dark'); await app.setTheme('system')
+  check(await app.getTheme() === 'dark'); await app.setTheme('unspecified')
   const definitions: MenuDefinition[] = [{ id: 'file', text: 'File', kind: 'submenu', items: [
     { id: 'click', text: 'JS action', kind: 'item', shortcut: { key: 'K', modifiers: ['primary', 'shift'] }, action: () => {} },
   ] }]

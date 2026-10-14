@@ -257,6 +257,55 @@ must bind to constructor parameters; optional init-only members must also bind
 to a constructor. Required writable members and optional constructor defaults
 are enforced without removing constructor/property initializers.
 
+### Native enums and wire names
+
+Action arguments/results use actual native enum types wherever MAUI exposes one:
+`FlowDirection`, `KeyboardFlags`, `AppTheme`, battery/power/energy-saver enums,
+network access/profiles and display orientation/rotation. Native speech also uses
+`SpeechOptions` and `Locale` directly; constructor defaults and null-to-empty locale
+normalization remain native behavior. The SDK retains small enums only where the
+native API uses different objects/classes: keyboard kinds select `Keyboard`
+instances, menu kinds select native menu classes, and portable menu `Primary`
+still maps to Cmd on Mac Catalyst or Ctrl on Windows. Preference primitive kinds
+and browser actions/statuses are closed SDK enums, not arbitrary strings.
+
+Generated enum codecs are reflection-free, exact **camelCase name strings**, never
+numeric casts: `AppTheme.Unspecified` is `"unspecified"` (OS following),
+`BatteryState.NotCharging` is `"notCharging"`, `BatteryPowerSource.AC` is `"ac"`,
+`ConnectionProfile.WiFi` is `"wiFi"` and `DisplayRotation.Rotation90` is
+`"rotation90"`. Unknown names, wrong casing, numeric JSON and undeclared numeric strings
+reject before the native method is called (explicit member-name overrides are
+declared names, not numeric coercion). Undefined enum values returned by
+native code fail serialization rather than leaking numbers. Nullable enums and
+optional parameter/constructor defaults retain the same name policy.
+`JsonStringEnumMemberName` overrides are honored verbatim. All aliases are accepted;
+the ordinal-first C# member name for a numeric value determines its canonical
+output. Conflicting wire names for different values are a `HYBRID004` diagnostic.
+
+`[Flags]` enums use **arrays of exact names**, for example
+`keyboardFlags: ["spellcheck", "suggestions"]`. Empty arrays mean zero; named zero
+and all-bits sentinels must stand alone (`["none"]`, `["all"]`).
+Duplicate values, including alias duplicates, reject. Exact declared composites
+use one canonical name; other expressible combinations use deterministic
+ascending-bit-value names. Signed/high-bit values and `All = ~0` are supported,
+but All does **not** authorize otherwise undeclared bits. Undefined or
+unexpressible output combinations fail clearly. Menu modifiers remain arrays
+of individual SDK enum values with additional native platform/duplicate-flag checks.
+
+Scoped theme, connectivity and browser event contexts use AOT-safe generic
+`JsonStringEnumConverter<T>` with camelCase names and integer values disabled,
+matching their generated action-result names. Current event contracts contain
+no flags; any future flag-bearing event must also use the array policy, not STJ's
+comma-separated flag string default. Browser `status` is closed
+(`closed/loading/loaded/failed/blocked`); separate nullable `error` text and native
+`WebNavigationResult` fields preserve navigation detail without overloading it.
+
+`DevicePlatform` is an extensible value struct, **not** a closed enum. It remains
+an extensible string here. File names/keys, text, errors, MIME types and similar
+open values remain strings; this does not authorize serializing native resources
+or arbitrary object graphs. Custom `JsonConverter` binding and structural unions
+remain separate work, not an implicit relaxation of strict generated contracts.
+
 | Diagnostic | Contract failure |
 | --- | --- |
 | `HYBRID001` | Invalid bounded ASCII action name |

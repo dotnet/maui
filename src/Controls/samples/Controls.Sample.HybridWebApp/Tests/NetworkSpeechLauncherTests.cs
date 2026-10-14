@@ -34,12 +34,12 @@ public sealed class NetworkSpeechLauncherTests
 		var registry = new CommandRegistry();
 		registry = TestComposition.CreateRegistry(provider);
 		Assert.True(registry.HasTopic("connectivity.changed"));
-		Assert.Equal("Internet", (await Dispatch(registry, "connectivity.info")).GetProperty("networkAccess").GetString());
+		Assert.Equal("internet", (await Dispatch(registry, "connectivity.info")).GetProperty("networkAccess").GetString());
 		native.Access = NetworkAccess.Local;
 		native.Profiles = [ConnectionProfile.Ethernet, ConnectionProfile.Ethernet];
 		var value = await Dispatch(registry, "connectivity.info");
-		Assert.Equal("Local", value.GetProperty("networkAccess").GetString());
-		Assert.Equal(new[] { "Ethernet" }, value.GetProperty("connectionProfiles").EnumerateArray().Select(item => item.GetString()));
+		Assert.Equal("local", value.GetProperty("networkAccess").GetString());
+		Assert.Equal(new[] { "ethernet" }, value.GetProperty("connectionProfiles").EnumerateArray().Select(item => item.GetString()));
 		Assert.Equal(0, native.Adds);
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
 			Dispatch(registry, "connectivity.info", "{\"probeUrl\":\"https://example.com\"}"))).Code);
@@ -69,7 +69,7 @@ public sealed class NetworkSpeechLauncherTests
 		Assert.Empty(events1);
 		var retired = native.Handler;
 		native.Change(NetworkAccess.None, []);
-		Assert.Equal("None", Assert.Single(events1).Data.GetProperty("networkAccess").GetString());
+		Assert.Equal("none", Assert.Single(events1).Data.GetProperty("networkAccess").GetString());
 		Assert.Single(events2);
 		await Call(hub1, session1, "core.unsubscribe", new { topic = "connectivity.changed" });
 		Assert.Equal(1, native.Listeners);
@@ -82,6 +82,8 @@ public sealed class NetworkSpeechLauncherTests
 		retired?.Invoke(native, new ConnectivityChangedEventArgs(NetworkAccess.Local, []));
 		Assert.Single(events1);
 		native.Change(NetworkAccess.ConstrainedInternet, [ConnectionProfile.Cellular]);
+		Assert.Equal("constrainedInternet", events1.Last().Data.GetProperty("networkAccess").GetString());
+		Assert.Equal("cellular", events1.Last().Data.GetProperty("connectionProfiles")[0].GetString());
 		Assert.Equal(session1, events1.Last().Session);
 		Assert.Equal(2, events1.Count);
 		hub1.Dispose();
@@ -131,6 +133,23 @@ public sealed class NetworkSpeechLauncherTests
 		Assert.Equal("native", native.Options.Locale!.Id);
 	}
 
+	[Fact]
+	public async Task NativeSpeechOptionsDefaultsAndLocaleNullNormalizationArePreserved()
+	{
+		var native = new Speech();
+		var registry = TestComposition.CreateRegistry(new TextToSpeechProvider(native, new HybridAppOptions("test.")));
+		await Dispatch(registry, "speech.speak", """{"text":"Hello","options":{"locale":{"id":null,"language":"en","country":null,"name":null}}}""");
+		Assert.IsType<SpeechOptions>(native.Options);
+		Assert.IsType<Locale>(native.Options!.Locale);
+		Assert.Equal("", native.Options.Locale!.Id);
+		Assert.Equal("en", native.Options.Locale.Language);
+		Assert.Equal("", native.Options.Locale.Country);
+		Assert.Equal("", native.Options.Locale.Name);
+		Assert.Null(native.Options.Pitch);
+		Assert.Null(native.Options.Volume);
+		Assert.Null(native.Options.Rate);
+	}
+
 	[Theory]
 	[InlineData("{}")]
 	[InlineData("{\"text\":null}")]
@@ -140,7 +159,7 @@ public sealed class NetworkSpeechLauncherTests
 	[InlineData("{\"text\":\"Hello\",\"options\":{\"pitch\":2.1}}")]
 	[InlineData("{\"text\":\"Hello\",\"options\":{\"volume\":-0.1}}")]
 	[InlineData("{\"text\":\"Hello\",\"options\":{\"rate\":0}}")]
-	[InlineData("{\"text\":\"Hello\",\"options\":{\"locale\":{\"id\":null,\"language\":\"en\",\"country\":\"\",\"name\":\"\"}}}")]
+	[InlineData("{\"text\":\"Hello\",\"options\":{\"locale\":{\"id\":42,\"language\":\"en\",\"country\":\"\",\"name\":\"\"}}}")]
 	public async Task InvalidSpeechContractsAreRejectedBeforeAnyNativeSpeech(string args)
 	{
 		var native = new Speech();

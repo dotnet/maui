@@ -11,7 +11,7 @@ import { PlaygroundSession } from '../src/session.ts'
 const locale = { id: 'voice', language: 'en-US', country: '', name: 'Native voice' }
 const ready = { commands: ['speech.speak', 'launcher.openUrl'], interactiveCommands: ['speech.speak', 'launcher.openUrl'],
   interactiveTimeoutMilliseconds: 300000, maximumTextLength: 4096, preferenceNamespace: 'test.' }
-const network = { networkAccess: 'Internet', connectionProfiles: ['WiFi'] }
+const network = { networkAccess: 'internet', connectionProfiles: ['wiFi'] }
 const defaults = request => request.command === 'core.connect' ? ready :
   request.command === 'connectivity.info' ? network :
     request.command === 'speech.locales' ? { locales: [locale] } : { accepted: true }
@@ -82,12 +82,12 @@ test('connectivity refresh and actual events update the page; leaving removes on
   const other = []
   const releaseOther = await onConnectivityChanged(value => other.push(value))
   app.click('connectivity-read'); await app.idle()
-  assert.ok(app.find('#network-access').textContent.includes('Internet'))
+  assert.ok(app.find('#network-access').textContent.includes('internet'))
   app.click('connectivity-subscribe'); await app.idle()
   assert.equal(app.requests.filter(request => request.command === 'core.subscribe').length, 1)
   assert.ok(app.find('#network-listening').textContent.includes('0 changes'))
-  app.event({ networkAccess: 'None', connectionProfiles: [] })
-  assert.ok(app.find('#network-access').textContent.includes('None'))
+  app.event({ networkAccess: 'none', connectionProfiles: [] })
+  assert.ok(app.find('#network-access').textContent.includes('none'))
   assert.ok(app.find('#network-listening').textContent.includes('1 changes'))
   await app.destroy(); await setImmediate()
   assert.equal(app.requests.filter(request => request.command === 'core.unsubscribe').length, 0)
@@ -101,8 +101,8 @@ test('explicit unsubscribe prevents late network callbacks', async t => {
   app.click('connectivity-subscribe'); await app.idle()
   app.event(network)
   app.click('connectivity-unsubscribe'); await app.idle()
-  app.event({ networkAccess: 'None', connectionProfiles: [] })
-  assert.ok(app.find('#network-access').textContent.includes('Internet'))
+  app.event({ networkAccess: 'none', connectionProfiles: [] })
+  assert.ok(app.find('#network-access').textContent.includes('internet'))
   assert.ok(app.find('#network-listening').textContent.includes('Not listening'))
   assert.ok(app.find('#network-listening').textContent.includes('1 changes'))
 })

@@ -77,7 +77,7 @@ test('window-owned JS menu definitions/actions, native clicks, updates and repla
 
 test('concurrent installations share one source listener and item handles retain native patches and callbacks', async () => {
   let source = null, index = 0
-  const item = { text: 'Native', enabled: true, checked: null }
+  const item = { text: 'Native', enabled: true, checked: null, kind: 'item' }
   const host = mock(request => {
     if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
     if (request.command === 'window.info') return windowInfo

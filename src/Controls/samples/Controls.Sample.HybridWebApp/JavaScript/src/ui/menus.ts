@@ -1,6 +1,8 @@
 import { NativeError } from '../core.js'
 import { menuStates, prepare } from '../internal/menu-installation.js'
 
+/** SDK descriptor kind selecting a concrete native menu class, not an open string. */
+export type MenuKind = 'submenu' | 'item' | 'check' | 'separator'
 /** TypeScript menu node; functions stay in JS and are never serialized/evaluated by native. */
 export interface MenuDefinition {
   /** Unique installation-local ID, 1–64 ASCII letters/digits/hyphens. */
@@ -8,7 +10,7 @@ export interface MenuDefinition {
   /** Native label, at most 160 characters. */
   text: string
   /** Actual native submenu/item/check/separator kind. */
-  kind: 'submenu' | 'item' | 'check' | 'separator'
+  kind: MenuKind
   /** Whether native enables the item; defaults true. */
   enabled?: boolean
   /** Native check state; requires capability supportsChecked. */

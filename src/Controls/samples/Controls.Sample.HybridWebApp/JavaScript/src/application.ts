@@ -1,17 +1,16 @@
-import { connect, NativeError, object, text, subscribeShared } from './core.js'
+import { connect, enumValue, NativeError, object, subscribeShared } from './core.js'
 import { Window } from './ui/windows.js'
 import type { WindowOptions } from './ui/windows.js'
 import { acquiredWindows, windowIdentity } from './internal/window-ownership.js'
 
 /** Actual native effective application theme; not a per-window/remote website setting. */
-export type AppTheme = 'light' | 'dark'
-/** Native Application.UserAppTheme preference; system restores Unspecified. */
-export type AppThemePreference = 'system' | 'light' | 'dark'
+export type AppTheme = 'unspecified' | 'light' | 'dark'
+/** Native Application.UserAppTheme preference; unspecified restores OS following. */
+export type AppThemePreference = AppTheme
 function decodeTheme(value: unknown): AppTheme {
-  const effective = text(object(value).effective)
-  if (effective !== 'light' && effective !== 'dark')
-    throw new NativeError('unsupported', 'The native application has not reported its effective theme.')
-  return effective
+  const v = object(value)
+  enumValue(v.preference, ['unspecified', 'light', 'dark'])
+  return enumValue(v.effective, ['unspecified', 'light', 'dark'])
 }
 /**
  * Enumerates caller-authorized app-owned window resources.
@@ -56,20 +55,20 @@ export async function openWindow(options: WindowOptions = {}): Promise<Window> {
   acquiredWindows.set(handle, { client, owner })
   return handle
 }
-/** Reads actual Application.RequestedTheme. @returns Effective native light/dark state, or explicit unsupported error. */
+/** Reads actual Application.RequestedTheme. @returns Native unspecified/light/dark state without inventing a fallback. */
 export async function getTheme(): Promise<AppTheme> { return (await connect()).invoke('application.theme', {}, decodeTheme) }
 /**
  * Sets application-level native theme preference.
- * @param preference - System/light/dark; system restores OS following.
+ * @param preference - Unspecified/light/dark; unspecified restores OS following.
  * @returns Native setting acceptance; web CSS updates through actual theme events.
  */
 export async function setTheme(preference: AppThemePreference): Promise<void> {
-  if (!['system', 'light', 'dark'].includes(preference)) throw new NativeError('invalid_arguments', 'Use system, light or dark application theme.')
-  await (await connect()).invoke('application.setTheme', { theme: preference }, object)
+  enumValue(preference, ['unspecified', 'light', 'dark'], 'invalid_arguments')
+  await (await connect()).invoke('application.setTheme', { theme: preference }, decodeTheme)
 }
 /**
  * Observes actual native effective theme changes, including OS-originated changes.
- * @param listener - Receives native light/dark state.
+ * @param listener - Receives native unspecified/light/dark state.
  * @returns Idempotent unsubscribe; multiple listeners share one native handler.
  */
 export async function onThemeChanged(listener: (theme: AppTheme) => void): Promise<() => Promise<void>> {

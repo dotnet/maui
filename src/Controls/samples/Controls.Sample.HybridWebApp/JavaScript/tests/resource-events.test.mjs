@@ -10,7 +10,7 @@ test('native geometry and app theme events multiplex listeners and detach only a
     ? { id: 'own', windowLease: 'private', initialLocation: 'index.html', title: 'Native', x: 0, y: 0, width: 800, height: 600, canResize: true,
       canPosition: true, canOpenWindows: true, canObservePosition: true, canCenter: true }
     : request.command === 'core.connect' ? { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
-    : request.command === 'application.theme' ? { effective: 'dark', preference: 'system' }
+    : request.command === 'application.theme' ? { effective: 'dark', preference: 'unspecified' }
     : { accepted: true })
   configureBridge(host.bridge)
   const client = await connect()
@@ -35,10 +35,10 @@ test('native geometry and app theme events multiplex listeners and detach only a
     assert.equal(host.requests.filter(request => request.command === 'core.unsubscribe').length, 1)
     const t1 = await app.onThemeChanged(value => themes.push(value))
     const t2 = await app.onThemeChanged(value => themes.push(value))
-    emit('application.themeChanged', { effective: 'light', preference: 'system' })
+    emit('application.themeChanged', { effective: 'light', preference: 'unspecified' })
     assert.deepEqual(themes, ['light', 'light'])
     await t1(); await t2()
-    emit('application.themeChanged', { effective: 'dark', preference: 'system' })
+    emit('application.themeChanged', { effective: 'dark', preference: 'unspecified' })
     assert.equal(themes.length, 2)
     const resumed = await own.onSizeChanged(value => sizes.push(['resumed', value]))
     emit('window.geometryChanged', { windowId: 'own', size: { width: 900, height: 600 }, position: null }, 'retired')
@@ -61,7 +61,7 @@ test('remount waits for the retiring native unsubscribe and ignores late callbac
   try {
     const client = await connect(), themes = []
     const emit = () => client.receive(JSON.stringify({ version: 1, session: client.session,
-      id: crypto.randomUUID(), topic: 'application.themeChanged', data: { effective: 'dark' } }))
+      id: crypto.randomUUID(), topic: 'application.themeChanged', data: { effective: 'dark', preference: 'unspecified' } }))
     const release = await app.onThemeChanged(theme => themes.push(theme))
     const stopping = release()
     const mounting = app.onThemeChanged(theme => themes.push(theme))

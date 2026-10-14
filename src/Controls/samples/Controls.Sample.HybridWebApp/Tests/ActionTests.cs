@@ -67,10 +67,10 @@ public sealed class ActionTests
 		using var root = Services();
 		using var scope = root.CreateScope();
 		var registry = Registry(scope.ServiceProvider);
-		const string dto = """{"value":{"text":"你好 👋","mode":1,"values":[1,2],"map":{"first":["x",null]},"note":null}}""";
+		const string dto = """{"value":{"text":"你好 👋","mode":"second","values":[1,2],"map":{"first":["x",null]},"note":null}}""";
 		var result = await Call(registry, "actions.dto", dto);
 		Assert.Equal("你好 👋", result.GetProperty("text").GetString());
-		Assert.Equal(1, result.GetProperty("mode").GetInt32());
+		Assert.Equal("second", result.GetProperty("mode").GetString());
 		Assert.Equal(new[] { 1, 2 }, result.GetProperty("values").EnumerateArray().Select(p => p.GetInt32()));
 		Assert.Equal(JsonValueKind.Null, result.GetProperty("map").GetProperty("first")[1].ValueKind);
 		Assert.Equal(JsonValueKind.Null, result.GetProperty("note").ValueKind);
@@ -103,10 +103,10 @@ public sealed class ActionTests
 	[InlineData("actions.bind", """{"count":"1","text":"x"}""")]
 	[InlineData("actions.bind", "null")]
 	[InlineData("actions.bind", "1")]
-	[InlineData("actions.dto", """{"value":{"text":"x","mode":0,"values":[],"map":{},"extra":true}}""")]
-	[InlineData("actions.dto", """{"value":{"text":null,"mode":0,"values":[],"map":{}}}""")]
+	[InlineData("actions.dto", """{"value":{"text":"x","mode":"first","values":[],"map":{},"extra":true}}""")]
+	[InlineData("actions.dto", """{"value":{"text":null,"mode":"first","values":[],"map":{}}}""")]
 	[InlineData("actions.dto", """{"value":{"text":"x","values":[],"map":{}}}""")]
-	[InlineData("actions.dto", """{"value":{"text":"x","mode":0,"values":[null],"map":{}}}""")]
+	[InlineData("actions.dto", """{"value":{"text":"x","mode":"first","values":[null],"map":{}}}""")]
 	[InlineData("actions.nonNullItems", "[[null]]")]
 	[InlineData("actions.properties", """[{"number":1}]""")]
 	[InlineData("actions.properties", """[{"urlValue":null,"number":1}]""")]
@@ -224,9 +224,9 @@ public sealed class ActionTests
 		Assert.Equal(1, (await Call(one, "plugin.action.count")).GetInt32());
 		Assert.Equal(1, (await Call(two, "plugin.action.count")).GetInt32());
 		Assert.Equal(11, (await Call(one, "plugin.action.services")).GetInt32());
-		var result = await Call(one, "plugin.action.echo", """[{"text":"hello","kind":1}]""");
+		var result = await Call(one, "plugin.action.echo", """[{"text":"hello","kind":"second"}]""");
 		Assert.Equal("hello", result.GetProperty("text").GetString());
-		Assert.Equal(1, result.GetProperty("kind").GetInt32());
+		Assert.Equal("second", result.GetProperty("kind").GetString());
 		Assert.Equal("typed", (await Call(one, "plugin.action.static", """{"value":"typed"}""")).GetString());
 		Assert.Equal(6, (await Call(one, "plugin.action.staticClass", "[3]")).GetInt32());
 	}
@@ -240,11 +240,11 @@ public sealed class ActionTests
 		using var root = services.BuildServiceProvider();
 		using var scope = root.CreateScope();
 		var registry = Registry(scope.ServiceProvider);
-		Assert.Equal(1, (await Call(registry, "plugin.action.enumDefault")).GetInt32());
-		Assert.Equal(1, (await Call(registry, "plugin.action.enumDefault", "[]")).GetInt32());
+		Assert.Equal("second", (await Call(registry, "plugin.action.enumDefault")).GetString());
+		Assert.Equal("second", (await Call(registry, "plugin.action.enumDefault", "[]")).GetString());
 		Assert.Equal(JsonValueKind.Null, (await Call(registry, "plugin.action.enumDefault", "[null]")).ValueKind);
-		Assert.Equal(1, (await Call(registry, "plugin.action.dtoDefault", """{"value":{}}""")).GetProperty("kind").GetInt32());
-		Assert.Equal(1, (await Call(registry, "plugin.action.dtoDefault", "[{}]")).GetProperty("kind").GetInt32());
+		Assert.Equal("second", (await Call(registry, "plugin.action.dtoDefault", """{"value":{}}""")).GetProperty("kind").GetString());
+		Assert.Equal("second", (await Call(registry, "plugin.action.dtoDefault", "[{}]")).GetProperty("kind").GetString());
 		Assert.Equal("", (await Call(registry, "plugin.action.normalized", """{"value":{"text":null}}""")).GetProperty("text").GetString());
 		Assert.Equal("", (await Call(registry, "plugin.action.normalized", """[{"text":null}]""")).GetProperty("text").GetString());
 		Assert.Equal("native", (await Call(registry, "plugin.action.normalized", """[{"text":"native"}]""")).GetProperty("text").GetString());

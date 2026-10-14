@@ -132,25 +132,25 @@ public sealed class PreferencesProvider
 			PreferencesJsonContext.Default.StringArray), container);
 	PreferenceScalar ReadScalar(string key, PreferenceScalar value, string? container) => value.Kind switch
 	{
-		"string" => new("string", CheckedText(_preferences.Get(key, CheckedText(value.Text), container))),
-		"boolean" => new("boolean", Boolean: _preferences.Get(key, value.Boolean ?? throw InvalidScalar(), container)),
-		"double" => new("double", Number: _preferences.Get(key, Finite(value.Number), container)),
-		"int" => new("int", Integer: _preferences.Get(key, checked((int)(value.Integer ?? throw InvalidScalar())), container)),
-		"long" => new("long", Integer: _preferences.Get(key, value.Integer ?? throw InvalidScalar(), container)),
-		"float" => new("float", Number: _preferences.Get(key, (float)Finite(value.Number), container)),
-		"dateTime" => new("dateTime", _preferences.Get(key, DateTime.Parse(value.Text ?? throw InvalidScalar(), CultureInfo.InvariantCulture,
+		PreferenceKind.String => new(PreferenceKind.String, CheckedText(_preferences.Get(key, CheckedText(value.Text), container))),
+		PreferenceKind.Boolean => new(PreferenceKind.Boolean, Boolean: _preferences.Get(key, value.Boolean ?? throw InvalidScalar(), container)),
+		PreferenceKind.Double => new(PreferenceKind.Double, Number: _preferences.Get(key, Finite(value.Number), container)),
+		PreferenceKind.Int => new(PreferenceKind.Int, Integer: _preferences.Get(key, checked((int)(value.Integer ?? throw InvalidScalar())), container)),
+		PreferenceKind.Long => new(PreferenceKind.Long, Integer: _preferences.Get(key, value.Integer ?? throw InvalidScalar(), container)),
+		PreferenceKind.Float => new(PreferenceKind.Float, Number: _preferences.Get(key, (float)Finite(value.Number), container)),
+		PreferenceKind.DateTime => new(PreferenceKind.DateTime, _preferences.Get(key, DateTime.Parse(value.Text ?? throw InvalidScalar(), CultureInfo.InvariantCulture,
 			DateTimeStyles.RoundtripKind), container).ToString("O", CultureInfo.InvariantCulture)),
 		_ => throw InvalidScalar(),
 	};
 	Action PrepareScalarWrite(string key, PreferenceScalar value, string? container) => value.Kind switch
 	{
-		"string" => Setter(key, CheckedText(value.Text), container),
-		"boolean" => Setter(key, value.Boolean ?? throw InvalidScalar(), container),
-		"double" => Setter(key, Finite(value.Number), container),
-		"int" => Setter(key, CheckedInt(value.Integer), container),
-		"long" => Setter(key, value.Integer ?? throw InvalidScalar(), container),
-		"float" => Setter(key, CheckedFloat(value.Number), container),
-		"dateTime" => Setter(key, CheckedDate(value.Text), container),
+		PreferenceKind.String => Setter(key, CheckedText(value.Text), container),
+		PreferenceKind.Boolean => Setter(key, value.Boolean ?? throw InvalidScalar(), container),
+		PreferenceKind.Double => Setter(key, Finite(value.Number), container),
+		PreferenceKind.Int => Setter(key, CheckedInt(value.Integer), container),
+		PreferenceKind.Long => Setter(key, value.Integer ?? throw InvalidScalar(), container),
+		PreferenceKind.Float => Setter(key, CheckedFloat(value.Number), container),
+		PreferenceKind.DateTime => Setter(key, CheckedDate(value.Text), container),
 		_ => throw InvalidScalar(),
 	};
 	Action Setter<T>(string key, T value, string? container) => () => _preferences.Set(key, value, container);
@@ -174,7 +174,8 @@ public sealed class PreferencesProvider
 	static CommandException InvalidScalar() => new("invalid_arguments", "Use a native supported preference primitive and matching value.");
 }
 
-sealed record PreferenceScalar(string Kind, string? Text = null, bool? Boolean = null, double? Number = null, long? Integer = null);
+enum PreferenceKind { String, Boolean, Double, Int, Long, Float, DateTime }
+sealed record PreferenceScalar(PreferenceKind Kind, string? Text = null, bool? Boolean = null, double? Number = null, long? Integer = null);
 sealed record PreferenceAccepted(bool Accepted);
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

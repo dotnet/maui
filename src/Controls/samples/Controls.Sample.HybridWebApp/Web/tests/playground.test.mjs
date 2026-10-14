@@ -59,8 +59,9 @@ function transport(handler) {
       if (request.command === 'menus.install') menuSource = 'menu-source'
       if (request.command === 'menus.clear') menuSource = null
       if (request.command === 'menus.info') output = { ...output, sourceId: menuSource }
+      const failed = output?.error && typeof output.error === 'object' && typeof output.error.code === 'string'
       return JSON.stringify({ version: 1, session: request.session, id: request.id,
-        status: output?.error ? output.status : 'success', result: output?.error ? null : output, error: output?.error ?? null })
+        status: failed ? output.status : 'success', result: failed ? null : output, error: failed ? output.error : null })
     },
     SendRawMessage(wire) { messages.push(JSON.parse(wire)) },
   }
@@ -92,17 +93,17 @@ function defaultResult(request) {
     case 'window.open': return { id: 'child-window' }
     case 'dialogs.prompt': return { cancelled: true, text: null }
     case 'filePicker.pick': return null
-    case 'battery.info': return { chargeLevel: 0.5, state: 'Charging', powerSource: 'AC', energySaverStatus: 'Off' }
-    case 'display.info': return { width: 1080, height: 1920, density: 3, orientation: 'Portrait', rotation: 'Rotation0', refreshRate: 60 }
-    case 'remote.info': return { supported: true, open: false, id: null, url: null, status: 'closed', canGoBack: false, canGoForward: false }
-    case 'remote.open': return { supported: true, open: true, id: 'guest', url: request.args.url, status: 'loading', canGoBack: false, canGoForward: false }
+    case 'battery.info': return { chargeLevel: 0.5, state: 'charging', powerSource: 'ac', energySaverStatus: 'off' }
+    case 'display.info': return { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 }
+    case 'remote.info': return { supported: true, open: false, id: null, url: null, status: 'closed', error: null, navigationResult: null, canGoBack: false, canGoForward: false }
+    case 'remote.open': return { supported: true, open: true, id: 'guest', url: request.args.url, status: 'loading', error: null, navigationResult: null, canGoBack: false, canGoForward: false }
     case 'remote.bounds':
-    case 'remote.control': return { supported: true, open: false, id: null, url: null, status: 'closed', canGoBack: false, canGoForward: false }
+    case 'remote.control': return { supported: true, open: false, id: null, url: null, status: 'closed', error: null, navigationResult: null, canGoBack: false, canGoForward: false }
     case 'menus.info': return { supported: true, supportsChecked: true, sourceId: null }
     case 'menus.install': return { supported: true, supportsChecked: true, sourceId: 'menu-source' }
     case 'menus.update':
     case 'menus.clear': return { supported: true, supportsChecked: true, sourceId: request.command === 'menus.clear' ? null : 'menu-source' }
-    case 'application.theme': return { effective: 'light', preference: 'system' }
+    case 'application.theme': return { effective: 'light', preference: 'unspecified' }
     case 'application.setTheme': return { effective: request.args.theme === 'dark' ? 'dark' : 'light', preference: request.args.theme }
     default: return { accepted: true }
   }
@@ -226,7 +227,7 @@ test('action sheet passes editable native labels/options and preserves selection
 test('battery presentation formats a native float as a percentage without changing its raw result', async t => {
   const level = 0.009999999776482582
   const app = fixture(t, request => request.command === 'battery.info'
-    ? { chargeLevel: level, state: 'Charging', powerSource: 'AC', energySaverStatus: 'Off' }
+    ? { chargeLevel: level, state: 'charging', powerSource: 'ac', energySaverStatus: 'off' }
     : defaultResult(request))
   app.select('battery')
   app.click('battery')
@@ -876,6 +877,19 @@ test('native Windows, dialogs, device and embedded remote pages use the same SDK
   app.click('remote')
   await app.idle()
   assert.match(app.find('#result-json').textContent, /guest/)
+  const guest = defaultResult({ command: 'remote.open', args: { url: 'https://dot.net/maui' } })
+  app.event('remote.changed', { ...guest, status: 'failed', navigationResult: 'timeout' }, crypto.randomUUID())
+  assert.match(app.find('#browser-status').textContent, /failed.*timeout/)
+  app.event('remote.changed', { ...guest, status: 'blocked', error: 'Only public HTTPS navigation is allowed.' }, crypto.randomUUID())
+  assert.match(app.find('#browser-status').textContent, /blocked.*Only public HTTPS/)
+})
+
+test('follow-system theme button sends actual native unspecified without a string remapping', async t => {
+  const app = fixture(t)
+  app.select('theme')
+  app.click('theme-system')
+  await app.idle()
+  assert.deepEqual(app.host.requests.findLast(request => request.command === 'application.setTheme').args, { theme: 'unspecified' })
 })
 
 test('selected text is rendered as text and excluded from result logs, with ordinary picker dismissal', async t => {

@@ -7,10 +7,10 @@ public sealed class TextToSpeechProvider(ITextToSpeech speech, HybridAppOptions 
 {
 	[HybridAction("speech.locales", MainThread = true)]
 	internal async Task<SpeechLocales> Locales() =>
-		new((await speech.GetLocalesAsync()).Select(locale => new SpeechLocale(locale.Id, locale.Language, locale.Country, locale.Name)).ToArray());
+		new((await speech.GetLocalesAsync()).ToArray());
 
 	[HybridAction("speech.speak", MainThread = true, Interactive = true)]
-	internal async Task<SpeechCompleted> Speak(string text, CancellationToken cancellation, SpeechSettings? options = null)
+	internal async Task<SpeechCompleted> Speak(string text, CancellationToken cancellation, SpeechOptions? options = null)
 	{
 		if (string.IsNullOrWhiteSpace(text) || text.Length > policy.MaximumTextLength)
 			throw new CommandException("invalid_arguments", $"Speech requires nonblank text within the host's {policy.MaximumTextLength}-character UTF-16 budget.");
@@ -18,7 +18,7 @@ public sealed class TextToSpeechProvider(ITextToSpeech speech, HybridAppOptions 
 		return new(true);
 	}
 
-	static SpeechOptions? Options(SpeechSettings? args)
+	static SpeechOptions? Options(SpeechOptions? args)
 	{
 		if (args is null) return null;
 		static void Range(float? value, float min, float max)
@@ -32,15 +32,9 @@ public sealed class TextToSpeechProvider(ITextToSpeech speech, HybridAppOptions 
 		if (args.Locale is { } locale &&
 			new[] { locale.Id, locale.Language, locale.Country, locale.Name }.Any(value => value.Length > 512))
 			throw new CommandException("invalid_arguments", "Use bounded native speech locale values.");
-		return new SpeechOptions
-		{
-			Pitch = args.Pitch, Volume = args.Volume, Rate = args.Rate,
-			Locale = args.Locale is { } selected ? new Locale(selected.Language, selected.Country, selected.Name, selected.Id) : null,
-		};
+		return args;
 	}
 }
 
-sealed record SpeechLocale(string Id, string Language, string Country, string Name);
-sealed record SpeechLocales(SpeechLocale[] Locales);
-sealed record SpeechSettings(SpeechLocale? Locale = null, float? Pitch = null, float? Volume = null, float? Rate = null);
+sealed record SpeechLocales(Locale[] Locales);
 sealed record SpeechCompleted(bool Accepted);

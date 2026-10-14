@@ -98,6 +98,23 @@ reload invariants and the new selected-file/cancel contract. Both native builds
 passed without warnings. The independent assembly/lifecycle review found no
 significant issues.
 
+The enum-contract migration additionally passes 277 managed tests, 55 SDK tests,
+72 Svelte/geometry tests and 11 contracts; TypeScript/Svelte checking is clean.
+The packed analyzer also runs in a fresh-cache NuGet-only host with reflection
+serialization disabled. Matching Mac Catalyst and Android Debug builds have
+zero warnings/errors. Native enums use strict camelCase names across actions
+and callbacks, with explicit flags arrays; speech uses actual MAUI
+SpeechOptions/Locale contracts. These contract improvements do not complete
+additional feature families. Lower-layer SDK annotations, contextual page
+injection, geolocation and structural Share dispatch remain unimplemented;
+isolated JSON serialization proofs are not native feature acceptance.
+Fresh native Mac acceptance confirms named battery/network/display reads,
+light/dark theme callbacks, numeric/unknown enum and invalid flags rejection
+before UI, native speech locale/options binding, menu kind/modifier binding and
+rename, and separate browser status/error/navigation-result callbacks. Native
+menu check readback still needs the UIKit menu snapshot to be built; visible
+check/click acceptance remains manual and is not claimed by this milestone.
+
 The new-window follow-up reproduced a Mac build-cache failure: the compiled
 Info.plist still disabled multiple scenes after the source enabled them. The
 installed Apple SDK tracked the manifest path string but omitted the primary

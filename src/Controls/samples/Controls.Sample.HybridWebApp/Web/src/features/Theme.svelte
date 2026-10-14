@@ -18,9 +18,9 @@
 <p class="input-help">Theme belongs to the native application, not a window. TypeScript chooses
   Application.UserAppTheme and observes the actual effective RequestedThemeChanged event.
   The web interface applies its own CSS from that event; native theme alone cannot paint Svelte.
-  System restores OS theme following. Remote websites are not forced to this application's CSS.</p>
+  Unspecified restores OS theme following. Remote websites are not forced to this application's CSS.</p>
 <div class="actions">
-  <Action {session} action="theme-system" title="Follow system" primary onclick={() => set('system')} />
+  <Action {session} action="theme-system" title="Follow system" primary onclick={() => set('unspecified')} />
   <Action {session} action="theme-light" title="Use light theme" onclick={() => set('light')} />
   <Action {session} action="theme-dark" title="Use dark theme" onclick={() => set('dark')} />
 </div>

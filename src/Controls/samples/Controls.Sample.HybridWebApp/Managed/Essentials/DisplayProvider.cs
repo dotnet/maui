@@ -10,8 +10,8 @@ public sealed class DisplayProvider(IDeviceDisplay display)
 	internal DisplayResult Info()
 	{
 		var info = display.MainDisplayInfo;
-		return new(info.Width, info.Height, info.Density, info.Orientation.ToString(), info.Rotation.ToString(), info.RefreshRate);
+		return new(info.Width, info.Height, info.Density, info.Orientation, info.Rotation, info.RefreshRate);
 	}
 }
 
-sealed record DisplayResult(double Width, double Height, double Density, string Orientation, string Rotation, double RefreshRate);
+sealed record DisplayResult(double Width, double Height, double Density, DisplayOrientation Orientation, DisplayRotation Rotation, double RefreshRate);

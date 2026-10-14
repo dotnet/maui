@@ -86,7 +86,7 @@ test('browser resources capture the private shared client and use behavior rathe
   const host = mock(request => {
     if (request.command === 'core.connect') return ready
     if (request.command === 'remote.navigate') address = request.args.url
-    return { supported: true, open: true, id: 'guest', url: address, status: 'loaded', canGoBack: true, canGoForward: false }
+    return { supported: true, open: true, id: 'guest', url: address, status: 'loaded', error: null, navigationResult: 'success', canGoBack: true, canGoForward: false }
   })
   configureBridge(host.bridge)
   assert.equal(await supportsBrowserView(), true)
@@ -100,7 +100,7 @@ test('browser navigation listeners share one native source and detach after the 
   const host = mock(request => request.command === 'core.connect' ? ready
     : request.command.startsWith('core.') ? { accepted: true }
     : { supported: true, open: true, id: 'guest', url: 'https://dot.net/maui',
-      status: 'loaded', canGoBack: true, canGoForward: false })
+      status: 'loaded', error: null, navigationResult: 'success', canGoBack: true, canGoForward: false })
   configureBridge(host.bridge)
   const view = await createBrowserView('https://dot.net/maui')
   const client = await connect()
@@ -110,7 +110,7 @@ test('browser navigation listeners share one native source and detach after the 
   const emit = id => client.receive(JSON.stringify({ version: 1, session: client.session,
     id: crypto.randomUUID(), topic: 'remote.changed',
     data: { supported: true, open: true, id, url: 'https://dot.net/maui',
-      status: 'loaded', canGoBack: true, canGoForward: false } }))
+      status: 'loaded', error: null, navigationResult: 'success', canGoBack: true, canGoForward: false } }))
   assert.equal(host.requests.filter(request => request.command === 'core.subscribe').length, 1)
   emit('foreign'); assert.deepEqual(received, [])
   emit('guest'); assert.deepEqual(received, [['first', 'loaded'], ['second', 'loaded']])
@@ -124,8 +124,8 @@ test('direct picker/dialog calls and coherent device readouts use one hidden con
   const host = mock(request => request.command === 'core.connect' ? ready
     : request.command === 'filePicker.pick' ? null
     : request.command === 'dialogs.prompt' ? { cancelled: true, text: null }
-    : request.command === 'battery.info' ? { chargeLevel: -1, state: 'Unknown', powerSource: 'AC', energySaverStatus: 'Off' }
-    : { width: 1080, height: 1920, density: 3, orientation: 'Portrait', rotation: 'Rotation0', refreshRate: 60 })
+    : request.command === 'battery.info' ? { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' }
+    : { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 })
   configureBridge(host.bridge)
   assert.equal(await pickFile(), null)
   assert.deepEqual(await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: 'email', maxLength: 10000 }),

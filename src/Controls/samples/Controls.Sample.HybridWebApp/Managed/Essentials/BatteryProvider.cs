@@ -8,7 +8,7 @@ public sealed class BatteryProvider(IBattery battery)
 {
 	[HybridAction("battery.info", MainThread = true)]
 	internal BatteryResult Read() =>
-		new(battery.ChargeLevel, battery.State.ToString(), battery.PowerSource.ToString(), battery.EnergySaverStatus.ToString());
+		new(battery.ChargeLevel, battery.State, battery.PowerSource, battery.EnergySaverStatus);
 }
 
-sealed record BatteryResult(double ChargeLevel, string State, string PowerSource, string EnergySaverStatus);
+sealed record BatteryResult(double ChargeLevel, BatteryState State, BatteryPowerSource PowerSource, EnergySaverStatus EnergySaverStatus);

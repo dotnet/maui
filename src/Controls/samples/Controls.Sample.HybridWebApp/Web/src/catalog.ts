@@ -89,7 +89,7 @@ promote('WebView controls', 'remote-webview', 'App & windows', 'remoteWebView',
 promote('Native menus, toolbars and context menus', 'menus', 'App & windows', 'menus',
   'Use a real desktop native menu bar for scoped windows, internal navigation, reload and native About. Mobile menu bars are explicitly unsupported.', `${maui}user-interface/menu-bar`)
 promote('Theme and appearance', 'theme', 'App & windows', 'theme',
-  'Choose native application light/dark/system preference from TypeScript and apply effective native theme-change events to Svelte CSS. This is not a per-window or remote-site theme.', `${maui}user-interface/system-theme-changes`)
+  'Choose native application light/dark/unspecified preference from TypeScript; unspecified follows the OS. Apply actual native theme-change events to Svelte CSS. This is not a per-window or remote-site theme.', `${maui}user-interface/system-theme-changes`)
 promote('Battery', 'battery', 'Essentials', 'battery',
   'Refresh native battery charge, power source and energy-saver state. No browser battery values or background monitoring.', `${maui}platform-integration/device/battery`)
 promote('Display and DPI', 'display', 'Essentials', 'display',

@@ -5,6 +5,7 @@ import { guidePages } from './catalog.ts'
 import type { Feature } from './catalog.ts'
 import type { WindowCapabilities } from '@maui/api/ui/windows'
 import type { BrowserView } from '@maui/api/ui/remote-webview'
+import type { AppTheme } from '@maui/api/application'
 import { navigationPages } from './catalog.ts'
 import type { Menu } from '@maui/api/ui/menus'
 import type { Window } from '@maui/api/ui/windows'
@@ -44,7 +45,7 @@ export class PlaygroundSession {
   menu: Menu | undefined
   menuWindow: Window | undefined
   menuSupportsChecked = false
-  theme: 'light' | 'dark' | undefined
+  theme: AppTheme | undefined
   themeRelease: (() => Promise<void>) | undefined
   reloadFrontend: (() => void) | undefined
 

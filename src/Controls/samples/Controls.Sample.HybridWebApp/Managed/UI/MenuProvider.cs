@@ -51,19 +51,19 @@ public sealed class MenuProvider : IDisposable
 	KeyboardAcceleratorModifiers Modifiers(MenuShortcut shortcut)
 	{
 		if (shortcut.Key.Length is < 1 or > 64 || shortcut.Key.Any(char.IsControl) ||
-			shortcut.Modifiers.Length > 5 || shortcut.Modifiers.Distinct(StringComparer.Ordinal).Count() != shortcut.Modifiers.Length)
+			shortcut.Modifiers.Length > 5 || shortcut.Modifiers.Distinct().Count() != shortcut.Modifiers.Length)
 			throw new CommandException("invalid_arguments", "Use a native key string and at most five unique accelerator modifiers.");
 		var result = KeyboardAcceleratorModifiers.None;
 		foreach (var modifier in shortcut.Modifiers)
 		{
 			var flag = modifier switch
 			{
-				"primary" => Checks ? KeyboardAcceleratorModifiers.Cmd : KeyboardAcceleratorModifiers.Ctrl,
-				"shift" => KeyboardAcceleratorModifiers.Shift, "ctrl" => KeyboardAcceleratorModifiers.Ctrl,
-				"alt" => KeyboardAcceleratorModifiers.Alt,
-				"cmd" when Checks => KeyboardAcceleratorModifiers.Cmd,
-				"windows" when _device.Platform == DevicePlatform.WinUI => KeyboardAcceleratorModifiers.Windows,
-				"cmd" or "windows" => throw new NotSupportedException("This accelerator modifier is not supported by the native platform."),
+				MenuModifier.Primary => Checks ? KeyboardAcceleratorModifiers.Cmd : KeyboardAcceleratorModifiers.Ctrl,
+				MenuModifier.Shift => KeyboardAcceleratorModifiers.Shift, MenuModifier.Ctrl => KeyboardAcceleratorModifiers.Ctrl,
+				MenuModifier.Alt => KeyboardAcceleratorModifiers.Alt,
+				MenuModifier.Cmd when Checks => KeyboardAcceleratorModifiers.Cmd,
+				MenuModifier.Windows when _device.Platform == DevicePlatform.WinUI => KeyboardAcceleratorModifiers.Windows,
+				MenuModifier.Cmd or MenuModifier.Windows => throw new NotSupportedException("This accelerator modifier is not supported by the native platform."),
 				_ => throw new CommandException("invalid_arguments", "Unknown accelerator modifier."),
 			};
 			if ((result & flag) != 0) throw new CommandException("invalid_arguments", "Accelerator modifiers resolve to duplicate native flags.");
@@ -73,21 +73,21 @@ public sealed class MenuProvider : IDisposable
 	}
 	void Validate(MenuNode[] nodes)
 	{
-		if (nodes.Length is < 1 or > 8 || nodes.Any(node => node.Kind != "submenu"))
+		if (nodes.Length is < 1 or > 8 || nodes.Any(node => node.Kind != MenuKind.Submenu))
 			throw new CommandException("invalid_arguments", "Install one to eight top-level submenus.");
 		var ids = new HashSet<string>(StringComparer.Ordinal);
 		void Node(MenuNode node, int depth)
 		{
 			if (depth > 4 || ids.Count >= 128 || node.Id.Length is < 1 or > 64 ||
 				node.Id.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '-') || !ids.Add(node.Id) ||
-				node.Text.Length > 160 || node.Kind is not ("submenu" or "item" or "check" or "separator") ||
-				(node.Kind == "submenu" ? node.Items is null : node.Items is not null))
+				node.Text.Length > 160 ||
+				(node.Kind == MenuKind.Submenu ? node.Items is null : node.Items is not null))
 				throw new CommandException("invalid_arguments", "Use unique bounded IDs/labels, valid kinds and at most four nesting levels/128 nodes.");
-			if ((node.Checked || node.Kind == "check") && !Checks)
+			if ((node.Checked || node.Kind == MenuKind.Check) && !Checks)
 				throw new NotSupportedException("Native checked menu items currently require Mac Catalyst.");
 			if (node.Shortcut is not null)
 			{
-				if (node.Kind is not ("item" or "check"))
+				if (node.Kind is not (MenuKind.Item or MenuKind.Check))
 					throw new CommandException("unsupported", "Native accelerators require an actionable menu item.");
 				Modifiers(node.Shortcut);
 			}
@@ -143,12 +143,12 @@ public sealed class MenuProvider : IDisposable
 	}
 	IMenuElement Create(MenuNode node, Installation installation)
 	{
-		if (node.Kind == "separator")
+		if (node.Kind == MenuKind.Separator)
 		{
 			installation.Items.Add(node.Id, (node, null, null));
 			return new MenuFlyoutSeparator();
 		}
-		if (node.Kind == "submenu")
+		if (node.Kind == MenuKind.Submenu)
 		{
 			var sub = new MenuFlyoutSubItem { Text = node.Text, IsEnabled = node.Enabled };
 			installation.Items.Add(node.Id, (node, sub, null));
@@ -163,7 +163,7 @@ public sealed class MenuProvider : IDisposable
 		{
 			if (_disposed || !ReferenceEquals(_current, installation) ||
 				!installation.Items.TryGetValue(node.Id, out var current) || !current.Node.Enabled) return;
-			if (current.Node.Kind == "check")
+			if (current.Node.Kind == MenuKind.Check)
 			{
 				installation.Items[node.Id] = (current.Node with { Checked = !current.Node.Checked }, current.Item, current.Bar);
 				Refresh(installation, node.Id);
@@ -178,7 +178,7 @@ public sealed class MenuProvider : IDisposable
 	static void SyncCheck(Installation installation, string id)
 	{
 #if MACCATALYST
-		if (!installation.Items.TryGetValue(id, out var current) || current.Node.Kind != "check") return;
+		if (!installation.Items.TryGetValue(id, out var current) || current.Node.Kind != MenuKind.Check) return;
 		// Apple handlers are disconnected after BuildMenu; retain the native snapshot, not the handler.
 		if (current.Item?.Handler?.PlatformView is global::UIKit.UIMenuElement snapshot &&
 			snapshot is global::UIKit.UICommand or global::UIKit.UIAction)
@@ -201,10 +201,10 @@ public sealed class MenuProvider : IDisposable
 	{
 		ValidateOwner(windowId);
 		var installation = _current;
-		if (installation?.Source != sourceId || !installation.Items.TryGetValue(id, out var current) || current.Node.Kind == "separator")
+		if (installation?.Source != sourceId || !installation.Items.TryGetValue(id, out var current) || current.Node.Kind == MenuKind.Separator)
 			throw new CommandException("invalid_menu", "This menu item does not belong to the calling live installation.");
 		if (text?.Length > 160) throw new CommandException("invalid_arguments", "Native labels are limited to 160 characters.");
-		if (@checked is not null && (!Checks || current.Node.Kind != "check"))
+		if (@checked is not null && (!Checks || current.Node.Kind != MenuKind.Check))
 			throw new NotSupportedException("Native checked updates require a Mac Catalyst check item.");
 		var node = current.Node with { Text = text ?? current.Node.Text, Enabled = enabled ?? current.Node.Enabled, Checked = @checked ?? current.Node.Checked };
 		installation.Items[id] = (node, current.Item, current.Bar);
@@ -221,7 +221,7 @@ public sealed class MenuProvider : IDisposable
 		if (installation?.Source != sourceId || !installation.Items.TryGetValue(id, out var current))
 			throw new CommandException("invalid_menu", "This item does not belong to the calling live menu installation.");
 		bool? check = null;
-		if (current.Node.Kind == "check")
+		if (current.Node.Kind == MenuKind.Check)
 		{
 #if MACCATALYST
 			if (!installation.CheckSnapshots.TryGetValue(id, out var native))
@@ -274,9 +274,11 @@ public sealed class MenuProvider : IDisposable
 		return Read();
 	}
 }
-sealed record MenuShortcut(string Key, string[] Modifiers);
-sealed record MenuNode(string Id, string Text, string Kind, bool Enabled, bool Checked, MenuNode[]? Items, MenuShortcut? Shortcut = null);
-sealed record MenuItemState(string Text, bool Enabled, bool? Checked, string Kind);
+enum MenuKind { Submenu, Item, Check, Separator }
+enum MenuModifier { Primary, Shift, Ctrl, Alt, Cmd, Windows }
+sealed record MenuShortcut(string Key, MenuModifier[] Modifiers);
+sealed record MenuNode(string Id, string Text, MenuKind Kind, bool Enabled, bool Checked, MenuNode[]? Items, MenuShortcut? Shortcut = null);
+sealed record MenuItemState(string Text, bool Enabled, bool? Checked, MenuKind Kind);
 sealed record MenuInfo(bool Supported, bool SupportsChecked, string? SourceId);
 sealed record MenuClick(string SourceId, string Id, bool Checked);
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

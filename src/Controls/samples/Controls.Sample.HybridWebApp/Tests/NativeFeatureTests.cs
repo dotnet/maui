@@ -154,10 +154,15 @@ public sealed class NativeFeatureTests
 		var display = new ReadOnlyDisplay();
 		var registry = new CommandRegistry();
 		registry = TestComposition.CreateRegistry(new BatteryProvider(battery), new DisplayProvider(display));
-		Assert.Equal(0.42, (await Dispatch(registry, "battery.info")).GetProperty("chargeLevel").GetDouble());
+		var power = await Dispatch(registry, "battery.info");
+		Assert.Equal(0.42, power.GetProperty("chargeLevel").GetDouble());
+		Assert.Equal("charging", power.GetProperty("state").GetString());
+		Assert.Equal("ac", power.GetProperty("powerSource").GetString());
+		Assert.Equal("off", power.GetProperty("energySaverStatus").GetString());
 		var result = await Dispatch(registry, "display.info");
 		Assert.Equal(3, result.GetProperty("density").GetDouble());
-		Assert.Equal("Portrait", result.GetProperty("orientation").GetString());
+		Assert.Equal("portrait", result.GetProperty("orientation").GetString());
+		Assert.Equal("rotation0", result.GetProperty("rotation").GetString());
 		Assert.False(display.KeepScreenOn);
 		Assert.False(registry.IsInteractive("battery.info"));
 		Assert.False(registry.IsInteractive("display.info"));

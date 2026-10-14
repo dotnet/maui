@@ -25,6 +25,53 @@ public sealed class ActionGeneratorTests
 	}
 
 	[Theory]
+	[InlineData("byte", "128")]
+	[InlineData("sbyte", "-128")]
+	[InlineData("short", "-32768")]
+	[InlineData("ushort", "32768")]
+	[InlineData("int", "int.MinValue")]
+	[InlineData("uint", "2147483648U")]
+	[InlineData("long", "long.MinValue")]
+	[InlineData("ulong", "9223372036854775808UL")]
+	public void EveryEnumUnderlyingWidthGeneratesStrictReflectionFreeCode(string underlying, string high)
+	{
+		var generated = Generate($$"""
+			using System;
+			using System.Text.Json.Serialization;
+			using Maui.HybridApp;
+			[Flags] public enum Bits : {{underlying}} { None = 0, Low = 1, High = {{high}}, Alias = High }
+			public enum Mode { First, Alias = First, [JsonStringEnumMemberName("chosen-name")] Second }
+			public sealed record Dto(Mode? Mode = Mode.Second, Bits Bits = Bits.High);
+			public class Provider { [HybridAction("test.enum")] public static Dto Echo(Dto value) => value; }
+			""");
+		Assert.Empty(generated.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(generated.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var code = string.Join("\n", generated.Result.GeneratedTrees);
+		Assert.Contains("\"chosen-name\"", code, StringComparison.Ordinal);
+		Assert.Contains("JsonValueKind.String", code, StringComparison.Ordinal);
+		Assert.Contains("JsonValueKind.Array", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("Enum.Parse", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("Enum.Get", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("writer.WriteNumberValue((", code, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ConflictingWireNamesAndCustomEnumConvertersRemainCompileTimeErrors()
+	{
+		foreach (var declaration in new[]
+		{
+			"""public enum Mode { [JsonStringEnumMemberName("same")] First, [JsonStringEnumMemberName("same")] Second }""",
+			"""[JsonConverter(typeof(JsonStringEnumConverter<Mode>))] public enum Mode { First, Second }""",
+		})
+		{
+			var generated = Generate("using System.Text.Json.Serialization; using Maui.HybridApp; " + declaration +
+				""" public class Provider { [HybridAction("enum")] public static Mode Echo(Mode value) => value; }""");
+			Assert.Contains(generated.Result.Diagnostics, d => d.Id == "HYBRID004");
+			Assert.DoesNotContain(generated.Result.Diagnostics, d => d.Id == "CS8785");
+		}
+	}
+
+	[Theory]
 	[InlineData("", "HYBRID001")]
 	[InlineData("space name", "HYBRID001")]
 	[InlineData("é", "HYBRID001")]

@@ -53,21 +53,22 @@ Check((await Call("core.subscribe", "{\"topic\":\"plugin.changed\"}")).Status ==
 var response = await Call("plugin.echo", "{\"text\":\"\\u4f60\\u597d \\ud83d\\udc4b\"}");
 Check(response.Status == "success" && response.Result!.Value.Deserialize(PluginJsonContext.Default.PluginResult)!.Text == "你好 👋", "Generated plugin JSON failed.");
 Check(events.Count == 1 && events[0].Session == session && events[0].Data.Deserialize(PluginJsonContext.Default.PluginResult)!.Text == "你好 👋", "Plugin event failed.");
-var action = await Call("plugin.action.echo", """{"value":{"text":"automatic 你好 👋","kind":1,"note":null,"values":[1,2]}}""");
+var action = await Call("plugin.action.echo", """{"value":{"text":"automatic 你好 👋","kind":"second","note":null,"values":[1,2]}}""");
 Check(action.Status == "success" && action.Result!.Value.GetProperty("text").GetString() == "automatic 你好 👋" &&
-	action.Result.Value.GetProperty("kind").GetInt32() == 1 &&
+	action.Result.Value.GetProperty("kind").GetString() == "second" &&
 	action.Result.Value.GetProperty("note").ValueKind == JsonValueKind.Null &&
 	action.Result.Value.GetProperty("values").GetArrayLength() == 2, "Automatic external action DTO metadata failed with reflection disabled.");
-Check((await Call("plugin.action.echo", """[{"text":"array","kind":0}]""")).Result!.Value.GetProperty("text").GetString() == "array", "Positional external DTO binding failed.");
+Check((await Call("plugin.action.echo", """[{"text":"array","kind":"first"}]""")).Result!.Value.GetProperty("text").GetString() == "array", "Positional external DTO binding failed.");
 Check((await Call("plugin.action.count", "{}")).Result!.Value.GetInt32() == 1, "Optional action defaults failed.");
 Check((await Call("plugin.action.services", "{}")).Result!.Value.GetInt32() == 11, "Current-scope/keyed action services failed.");
 Check((await Call("plugin.action.static", """{"value":"static"}""")).Result!.Value.GetString() == "static", "Static direct call failed.");
 Check((await Call("plugin.action.staticClass", "[3]")).Result!.Value.GetInt32() == 6, "Generated static-class opt-in failed.");
-Check((await Call("plugin.action.enumDefault", "{}")).Result!.Value.GetInt32() == 1, "Nullable enum parameter defaults failed.");
-Check((await Call("plugin.action.dtoDefault", "[{}]")).Result!.Value.GetProperty("kind").GetInt32() == 1, "Nullable enum constructor defaults failed.");
+Check((await Call("plugin.action.enumDefault", "{}")).Result!.Value.GetString() == "second", "Nullable enum parameter defaults failed.");
+Check((await Call("plugin.action.dtoDefault", "[{}]")).Result!.Value.GetProperty("kind").GetString() == "second", "Nullable enum constructor defaults failed.");
 Check((await Call("plugin.action.normalized", """[{"text":null}]""")).Result!.Value.GetProperty("text").GetString() == "", "Constructor parameter nullability was confused with its nonnullable property.");
-Check((await Call("plugin.action.echo", """{"value":{"text":null,"kind":0}}""")).Error?.Code == "invalid_arguments", "Automatic action nullability was not enforced.");
-Check((await Call("plugin.action.echo", """{"value":{"text":"x","kind":0,"extra":1}}""")).Error?.Code == "invalid_arguments", "Automatic action DTO unknown members were accepted.");
+Check((await Call("plugin.action.echo", """{"value":{"text":null,"kind":"first"}}""")).Error?.Code == "invalid_arguments", "Automatic action nullability was not enforced.");
+Check((await Call("plugin.action.echo", """{"value":{"text":"x","kind":"first","extra":1}}""")).Error?.Code == "invalid_arguments", "Automatic action DTO unknown members were accepted.");
+Check((await Call("plugin.action.echo", """{"value":{"text":"x","kind":0}}""")).Error?.Code == "invalid_arguments", "Numeric enum input was accepted.");
 Check((await Call("consumer.action", """{"text":"host","number":7}""")).Result!.Value.GetProperty("text").GetString() == "host", "NuGet analyzer did not generate host action metadata.");
 Check((await Call("consumer.action", """["array",7]""")).Result!.Value.GetProperty("number").GetInt32() == 7, "Packed host positional parameters failed.");
 Check((await Call("plugin.disabled", "{\"text\":\"no\"}")).Error?.Code == "disabled_command", "Disabled policy failed.");

@@ -8,7 +8,7 @@ test('new Essentials export allowlist and source-derived API models cover every 
   const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   const navigation = await readFile(new URL('../artifacts/api-reference/index.md', import.meta.url), 'utf8')
   for (const [module, exports] of [
-    ['connectivity', ['ConnectivityInfo', 'getConnectivity', 'onConnectivityChanged']],
+    ['connectivity', ['ConnectionProfile', 'ConnectivityInfo', 'NetworkAccess', 'getConnectivity', 'onConnectivityChanged']],
     ['text-to-speech', ['getLocales', 'speak', 'SpeechLocale', 'SpeechOptions']],
     ['launcher', ['openUrl']],
   ]) {

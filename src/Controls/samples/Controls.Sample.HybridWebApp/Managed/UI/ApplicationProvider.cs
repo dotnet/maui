@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Maui.Controls;
 using Application = Microsoft.Maui.Controls.Application;
+using AppTheme = Microsoft.Maui.ApplicationModel.AppTheme;
 
 namespace Maui.HybridApp.UI;
 
@@ -15,27 +16,15 @@ public sealed class ApplicationProvider(HybridWindowHost host, NativeDispatcher 
 	internal ApplicationTheme Theme() => Read();
 
 	[HybridAction("application.setTheme", MainThread = true)]
-	internal ApplicationTheme SetTheme(string theme)
+	internal ApplicationTheme SetTheme(AppTheme theme)
 	{
-		host.Application.UserAppTheme = theme switch
-		{
-			"system" => Microsoft.Maui.ApplicationModel.AppTheme.Unspecified,
-			"light" => Microsoft.Maui.ApplicationModel.AppTheme.Light,
-			"dark" => Microsoft.Maui.ApplicationModel.AppTheme.Dark,
-			_ => throw new CommandException("invalid_arguments", "Use system, light or dark application theme."),
-		};
+		host.Application.UserAppTheme = theme;
 		return Read();
 	}
 	ApplicationTheme Read()
 	{
 		var app = host.Application;
-		static string Effective(Microsoft.Maui.ApplicationModel.AppTheme theme) => theme switch
-		{
-			Microsoft.Maui.ApplicationModel.AppTheme.Light => "light",
-			Microsoft.Maui.ApplicationModel.AppTheme.Dark => "dark",
-			_ => "unknown",
-		};
-		return new(Effective(app.RequestedTheme), app.UserAppTheme == Microsoft.Maui.ApplicationModel.AppTheme.Unspecified ? "system" : Effective(app.UserAppTheme));
+		return new(app.RequestedTheme, app.UserAppTheme);
 	}
 	[HybridEvent("application.themeChanged", HybridEventLifecycle.Start)]
 	internal Task StartAsync()
@@ -48,7 +37,7 @@ public sealed class ApplicationProvider(HybridWindowHost host, NativeDispatcher 
 			_handler = (_, _) =>
 			{
 				if (_active && epoch == Volatile.Read(ref _epoch))
-					notifications.PublishCurrent("application.themeChanged", Read(), ApplicationJsonContext.Default.ApplicationTheme,
+					notifications.PublishCurrent("application.themeChanged", Read(), ApplicationJsonContext.Wire.ApplicationTheme,
 						() => Volatile.Read(ref _active) && epoch == Volatile.Read(ref _epoch));
 			};
 			_application.RequestedThemeChanged += _handler;
@@ -65,9 +54,23 @@ public sealed class ApplicationProvider(HybridWindowHost host, NativeDispatcher 
 	/// <summary>Detaches this view's native application-theme subscription and ignores stale callbacks.</summary>
 	public void Dispose() => Stop();
 }
-sealed record ApplicationTheme(string Effective, string Preference);
+sealed record ApplicationTheme(AppTheme Effective, AppTheme Preference);
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
 	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
 	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
 [JsonSerializable(typeof(ApplicationTheme))]
-partial class ApplicationJsonContext : JsonSerializerContext;
+partial class ApplicationJsonContext : JsonSerializerContext
+{
+	internal static ApplicationJsonContext Wire { get; } = new(WireOptions());
+	static System.Text.Json.JsonSerializerOptions WireOptions()
+	{
+		var options = new System.Text.Json.JsonSerializerOptions
+		{
+			PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+			UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+			RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true,
+		};
+		options.Converters.Add(new JsonStringEnumConverter<AppTheme>(System.Text.Json.JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+		return options;
+	}
+}

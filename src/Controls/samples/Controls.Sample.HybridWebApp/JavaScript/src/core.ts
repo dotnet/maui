@@ -77,6 +77,19 @@ export function text(value: unknown): string {
   return value
 }
 /**
+ * Validates a closed string enum without coercion or unchecked casts.
+ * @typeParam T - The declared enum-name union.
+ * @param value - Untrusted wire value or JavaScript argument.
+ * @param values - Exact allowed names, normally native camelCase.
+ * @param code - Response validation by default; use invalid_arguments for input.
+ * @returns The matching declared name.
+ * @throws {@link NativeError} for unknown, numeric or incorrectly cased names.
+ */
+export function enumValue<T extends string>(value: unknown, values: readonly T[], code: 'invalid_response' | 'invalid_arguments' = 'invalid_response'): T {
+  for (const candidate of values) if (value === candidate) return candidate
+  throw new NativeError(code, 'Unknown enum name.')
+}
+/**
  * Validates a finite number without coercion.
  * @param value - Untrusted native value.
  * @returns The original finite number; integrality/range require additional checks.
@@ -617,8 +630,9 @@ export function connect(): Promise<NativeClient> {
  * @param args - Named JSON arguments or a positional array; defaults to an empty object.
  * @returns The native JSON result as unknown; validate it before use.
  * @throws {@link NativeError} for native absence, invalid arguments, host rejection or transport failure.
- * @remarks Generated native actions accept objects and arrays; legacy providers retain their
- * declared contract. Service and cancellation parameters are never web arguments.
+ * @remarks Attribute-only native actions accept named objects or positional arrays,
+ * validated against their declared method contracts. Service, context and cancellation
+ * parameters consume neither object keys nor array positions.
  */
 export function invoke(command: string, args?: Json): Promise<unknown>
 /**

@@ -100,6 +100,8 @@
   </div>
   <p id="browser-status" class="input-help" aria-live="polite">
     {supported === false ? 'Native guests are unsupported on this mobile host; no iframe fallback.' : navigation?.status ?? 'Check native support before loading a website.'}
+    {#if navigation?.navigationResult} — {navigation.navigationResult}{/if}
+    {#if navigation?.error} — {navigation.error}{/if}
   </p>
   <div id="browser-slot" class="browser-slot" bind:this={slot} aria-label="Native browser surface position">
     <p>The ordinary native browser surface appears here on supported desktop hosts.</p>

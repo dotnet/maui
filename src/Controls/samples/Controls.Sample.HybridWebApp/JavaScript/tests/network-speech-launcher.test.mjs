@@ -24,13 +24,13 @@ test('new service modules import without native calls and never fall back in a b
 })
 
 test('fresh reads and native change listeners share one client and detach only after the last unsubscribe', async () => {
-  let snapshot = { networkAccess: 'Internet', connectionProfiles: ['WiFi'] }
+  let snapshot = { networkAccess: 'internet', connectionProfiles: ['wiFi'] }
   const host = mock(request => request.command === 'core.connect' ? ready :
     request.command === 'connectivity.info' ? snapshot : { accepted: true })
   configureBridge(host.bridge)
   const client = await connect()
   assert.deepEqual(await getConnectivity(), snapshot)
-  snapshot = { networkAccess: 'None', connectionProfiles: [] }
+  snapshot = { networkAccess: 'none', connectionProfiles: [] }
   assert.deepEqual(await getConnectivity(), snapshot)
   const first = [], second = []
   const release1 = await onConnectivityChanged(value => first.push(value))
@@ -40,7 +40,7 @@ test('fresh reads and native change listeners share one client and detach only a
   const emit = (value, session = client.session) => client.receive(JSON.stringify({
     version: 1, session, id: crypto.randomUUID(), topic: 'connectivity.changed', data: value,
   }))
-  emit({ networkAccess: 'Local', connectionProfiles: ['Ethernet'] })
+  emit({ networkAccess: 'local', connectionProfiles: ['ethernet'] })
   assert.equal(first.length, 1); assert.equal(second.length, 1)
   await release1(); await release1()
   assert.equal(host.requests.filter(request => request.command === 'core.unsubscribe').length, 0)
@@ -70,9 +70,9 @@ test('native network events validate output and a throwing callback cannot stop 
   const emit = data => client.receive(JSON.stringify({ version: 1, session: client.session,
     id: crypto.randomUUID(), topic: 'connectivity.changed', data }))
   emit({ networkAccess: null, connectionProfiles: [] })
-  emit({ networkAccess: 'Internet', connectionProfiles: [42] })
+  emit({ networkAccess: 'internet', connectionProfiles: [42] })
   assert.deepEqual(values, [])
-  emit({ networkAccess: 'Internet', connectionProfiles: ['Cellular'] })
+  emit({ networkAccess: 'internet', connectionProfiles: ['cellular'] })
   assert.equal(values.length, 1)
   assert.equal(warnings.length, 5)
   await release1(); await release2()
@@ -84,7 +84,7 @@ test('speech uses real locales/options and operation-specific cancellation throu
     if (request.command === 'core.connect') return ready
     if (request.command === 'speech.locales') return { locales: [locale] }
     if (request.command === 'speech.speak') return new Promise(resolve => { finish = resolve })
-    if (request.command === 'connectivity.info') return { networkAccess: 'Local', connectionProfiles: [] }
+    if (request.command === 'connectivity.info') return { networkAccess: 'local', connectionProfiles: [] }
     return { accepted: true }
   })
   const invoke = host.bridge.InvokeDotNet
@@ -106,7 +106,7 @@ test('speech uses real locales/options and operation-specific cancellation throu
   assert.equal(host.requests.find(request => request.command === 'core.cancel').args.requestId, operation.id)
   finish({ cancelled: true })
   await cancelled
-  assert.equal((await getConnectivity()).networkAccess, 'Local', 'speech cancellation does not disconnect other features')
+  assert.equal((await getConnectivity()).networkAccess, 'local', 'speech cancellation does not disconnect other features')
   assert.deepEqual(await getLocales(), [locale])
 })
 
@@ -151,7 +151,7 @@ test('malformed native feature outputs are explicit errors and launch refusal is
   configureBridge(host.bridge)
   for (const [value, call] of [
     [{ networkAccess: null, connectionProfiles: [] }, getConnectivity],
-    [{ networkAccess: 'Internet', connectionProfiles: 'WiFi' }, getConnectivity],
+    [{ networkAccess: 'internet', connectionProfiles: 'wiFi' }, getConnectivity],
     [{ locales: null }, getLocales], [{ locales: [{ ...locale, name: null }] }, getLocales],
     [{ accepted: 'yes' }, async () => (await speak('Hello')).result],
     [{ accepted: false }, async () => (await speak('Hello')).result],
