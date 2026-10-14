@@ -419,7 +419,14 @@ Publication uses the repository-scoped Actions token and appears as
 `github-actions[bot]`; it does not require a MauiBot publishing credential.
 
 The summary is distinct from AzDO's `AI Summary` and does not hide or replace
-it. It uses the same compact author/commit header, Scope/Commit badges, and
+it.
+The review always covers the entire merge-base-to-head PR diff across all
+commits and changed files, not only the latest commit or changes since a prior
+review. The header says **full PR expert review**, with **Scope: Full PR** and
+**Head** badges; the head SHA identifies the frozen snapshot and inline anchors,
+not a single-commit review scope. Prior feedback deduplicates comments without
+reducing that scope.
+It uses the same compact author/head header, Scope/Head badges, and
 closed **Expert Analysis** accordion as the other review
 reports. Status and new-finding counts stay visible; coverage, validation,
 unplaced findings, evidence gaps, and the source-only limitation are inside

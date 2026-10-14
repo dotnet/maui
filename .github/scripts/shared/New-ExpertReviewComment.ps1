@@ -39,7 +39,10 @@ function New-ExpertReviewComment {
         'failed' { 'Not published' }
         'closed' { 'PR closed' }
     }
-    $scope = if ($Status -in @('complete', 'incomplete')) { 'expert review' } else { 'expert-review status' }
+    $scope = if ($Status -in @('complete', 'incomplete')) { 'full PR expert review' } else { 'expert-review status' }
+    $reviewScope = if ($Status -in @('complete', 'incomplete')) {
+        '**Review scope:** The entire PR diff from merge base to reviewed head, across all commits and changed files; not just the latest commit.'
+    } else { '' }
     if ($MergeReady -and $Status -ne 'complete') {
         throw 'Only a complete expert review can recommend merging.'
     }
@@ -58,12 +61,14 @@ function New-ExpertReviewComment {
     $body = @"
 ## Expert Review
 
-> @$Author &#x2014; $scope for commit [``$shortSha``]($commitUrl).
+> @$Author &#x2014; $scope at PR head [``$shortSha``]($commitUrl).
 
 <p align="left">
-  <img alt="Scope source review" src="https://img.shields.io/badge/Scope-Source%20review-1f6feb?labelColor=30363d&amp;style=flat-square">
-  <img alt="Commit $shortSha" src="https://img.shields.io/badge/Commit-$shortSha-1f6feb?labelColor=30363d&amp;style=flat-square">
+  <img alt="Scope full PR" src="https://img.shields.io/badge/Scope-Full%20PR-1f6feb?labelColor=30363d&amp;style=flat-square">
+  <img alt="PR head $shortSha" src="https://img.shields.io/badge/Head-$shortSha-1f6feb?labelColor=30363d&amp;style=flat-square">
 </p>
+
+$reviewScope
 
 **Status:** $statusLabel. $Summary
 
