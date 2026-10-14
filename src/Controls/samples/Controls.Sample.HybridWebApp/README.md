@@ -108,6 +108,14 @@ Welcome is the default landing page; its second page, **Try it hands-on**, uses
 the same public SDK modules as the detailed experiments. These two guides are
 not additions to the 121-family backlog. Search spans collapsible navigation
 groups and temporarily reveals matches without replacing collapse preferences.
+Each group is a keyboard-operable heading disclosure with a chevron, without
+separate Collapse/Expand button copy. There are 19 unique experiments and two guides.
+Alert, confirmation, prompt and action sheet share one sectioned Native dialogs page.
+Bridge/development family aliases no longer create duplicate navigation entries;
+old fragment bookmarks resolve to the corresponding canonical experiment.
+Desktop navigation and session diagnostics can collapse; diagnostics has a
+draggable/keyboard-resizable divider. On mobile both panes are modal flyouts,
+not miniature permanent strips. Frontend reload is in session diagnostics.
 The header/document remain fixed; navigation and content scroll independently.
 On mobile the bounded navigation leaves the majority of the viewport to content.
 `MainPage.SafeAreaEdges = All` delegates status-bar, home-indicator and keyboard
@@ -123,13 +131,13 @@ links and app actions remain deferred, with no activation manifests added.
 | Feature | Implemented scope / capability | Native acceptance |
 | --- | --- | --- |
 | Window basics | Owning ID/title/bounds; title writes; finite desktop size/position requests | Mac title/size setters and native size events passed; Android capabilities/mobile placement rejection passed. Position/activation/Windows runtime remain unverified. |
-| Multiple windows | Trusted bundle-relative URLs; immutable optional developer IDs/private generations; independent scope/hub/counter; sample budget four; caller may list/close its children | Android child opened on the selected route with an independent counter; OS Back closed its scope and the parent retained its counter after reconnect. Caller-driven close and other platforms remain unverified. |
-| Native dialogs | Calling-page alert/confirmation/prompt/action sheet with native options; ordinary user cancellation | Android actual confirmation accept/cancel, Unicode prompt acceptance/cancellation and a visible dialog pending beyond 25 seconds passed. Alert/action-sheet interaction remains unverified. |
+| Multiple windows | Trusted bundle-relative URLs; immutable optional developer IDs/private generations; independent scope/hub/counter; sample budget four; caller may list/close its children | Android child-route/counter isolation and OS-close cleanup passed; corrected Mac compiled scene manifest opened two actual attached windows. Caller-driven close and other platforms remain unverified. |
+| Native dialogs | Calling-page alert/confirmation/prompt/action sheet with native options; ordinary user cancellation | Android actual alert acknowledgement, confirmation accept/cancel, Unicode prompt/cancel, action-sheet normal/cancel/destructive selection and a visible dialog pending beyond 25 seconds passed. Other platforms remain unverified. |
 | File picker | Single/multiple system selection and metadata; separate OpenReadAsync readers with ≤64 KiB binary/incremental UTF-8 chunks, seeking where supported; no arbitrary paths/persistent handles | Android picker cancellation, 54-byte Unicode content stream, 200035-byte selection with explicit 64 KiB preview truncation and binary selection/UTF-8 rejection passed. Multiple selection and native seek remain unverified. |
 | Battery / Display | Native read/refresh only, no background streams or keep-screen-awake changes | Actual Android charge/power/energy-saver and 1080×2424/density/orientation/refresh-rate reads passed. Other platforms and change streams are not claimed. |
 | Desktop browser guest | Ordinary unbridged WebView anchored to a measured CSS slot in BrowserPanel; real HTML toolbar; viewport/ancestor clipping, resize/DPI mapping, visibility and disposal | Mac actual navigation followed dot.net/maui to the Microsoft MAUI website, reached loaded, accepted focus and closed on feature exit. Visual clipping/DPI and runtime bridge-isolation acceptance remain outstanding. |
 | Desktop native menu bar | Real Page.MenuBarItems on a NavigationPage host with hidden navigation bar; scoped File/Navigate/View/Help callbacks and Cmd/Ctrl accelerators | Mac startup installed the TypeScript-defined menu. Actual native clicks/shortcuts/checks/focus are reserved for manual testing. |
-| Application theme / window events | App-wide system/light/dark preference and effective native theme callbacks repaint web CSS; coalesced actual size changes; Windows-only move observation/centering adapter | Android/Mac dark/light/system and native effective CSS passed; Mac size callbacks passed with shared theme subscribers. Windows center/move and manual drag/mixed-DPI checks remain unverified. |
+| Application theme / window events | App-wide theme/CSS; coalesced native size changes; Windows move events and Windows/Mac centering | Theme/size evidence retained; Mac global-coordinate centering compiled/reviewed, manual/mixed-display checks remain outstanding. |
 
 Desktop bounds are supported on Windows and Mac Catalyst, not mobile. Multiple
 windows are supported by MAUI on Windows, Mac Catalyst, Android and iPad; iPhone
@@ -137,10 +145,24 @@ returns explicit unsupported. Android uses `LaunchMode.Multiple`: app-owned
 windows become separate activities instead of reusing SingleTop. This is not
 an OS deep-link implementation. Existing Apple scene delegates are reused with
 multiple-scenes enabled. Windows/iPad/iPhone runtime behavior is not certified
-by a local Android build. Mac Catalyst sandbox grants only user-selected
-read-only file access; Android adds no broad storage permission. Its battery
+by a local Android build. This Mac Catalyst demo deliberately runs without App
+Sandbox, matching the Essentials sample; no App Store readiness is claimed.
+MAUI's Open-mode picker requests read/write sandbox extensions, so the former
+read-only selected-file grant returned null even after selection. Removing that
+demo-only sandbox configuration restored actual file selection and preview.
+The JavaScript reader API remains read-only. Android adds no broad storage permission. Its battery
 provider requires the Essentials `BATTERY_STATS` manifest declaration, not a
 runtime permission prompt.
+
+Apple's current SDK omitted the primary Info.plist from its incremental manifest
+inputs. A cached compiled bundle could therefore retain single-scene support
+after the source enabled multiple windows. `Native/Directory.Build.targets`
+tracks that primary file for iOS/Mac Catalyst; a normal incremental rebuild now
+updates the signed bundle without requiring a clean. Native Apple window opening
+checks actual multiple-scene support before allocating a child, so a disabled
+compiled configuration rejects instead of returning a phantom handle.
+`Tests/apple-manifest.test.ps1 -DotNetPath PATH-TO-DOTNET` checks the actual SDK
+input item lists on both Apple targets.
 
 Debug Vite forwarding is per view. The configured loopback inspector port has
 one owning development view, normally the first window; additional windows do
@@ -148,6 +170,8 @@ not bind a duplicate socket or acquire cross-window command dispatch. Its existi
 probe/selectors continue to describe that owning window. Closing it releases its
 listener; a subsequently created development view may own the port. Runtime
 commands and child windows never depend on inspection.
+The authenticated read-only state endpoint also reports actual application
+windows and native handler attachment, independently of the product registry.
 
 Dialogs and file selection use an explicit five-minute interactive budget,
 advertised by typed registration metadata at connect. All other commands keep
@@ -212,7 +236,7 @@ test app, after explicitly staging/building and relaunching the matching host:
   truncation shown and no private contents/paths in logs.
 - Drag/resize the native window manually, not just through setters; verify size
   callbacks and remount/unsubscribe cleanup. Test native moves and resize-then-
-  center on Windows with mixed-density monitors; Mac/mobile must report unsupported.
+  center on Windows/Mac with multiple displays; mobile must report unsupported.
 - Set light/dark/system; change the OS theme while following system. The native
   effective event must repaint every connected trusted frontend without listeners
   multiplying after feature remount/reload. The remote site must not be forced themed.
@@ -224,7 +248,7 @@ test app, after explicitly staging/building and relaunching the matching host:
   SDK/invoke target/messages/inspector. Mobile guest creation stays unsupported.
 
 Keep partially accepted FEATURES families unchecked. The current automated
-checks pass 132 managed tests, 38 SDK tests, 43 Svelte/geometry tests and 10
+checks pass 137 managed tests, 39 SDK tests, 59 Svelte/geometry tests and 11
 frontend contracts. The SDK's real 38-file tarball, 14 entrypoints and 292
 declaration/TSDoc members passed fresh offline-consumer equality checks.
 A refreshed NuGet-only consumer also passed with a fresh package cache and

@@ -14,7 +14,7 @@ export function measureBrowserSlot(slot: HTMLElement): BrowserBounds {
       top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom)
     }
   }
-  const obscured = !!document.querySelector('dialog[open], [aria-modal="true"]:not([hidden]), [data-browser-obscured="true"]') ||
+  const obscured = !!document.querySelector('dialog[open]:not([data-browser-obscured="false"]), [aria-modal="true"]:not([hidden]), [data-browser-obscured="true"]') ||
     (typeof CSS !== 'undefined' && CSS.supports?.('selector(:popover-open)') && !!document.querySelector(':popover-open'))
   return { x: rect.left, y: rect.top, width: rect.width, height: rect.height,
     clipX: left, clipY: top, clipWidth: Math.max(0, right - left), clipHeight: Math.max(0, bottom - top),

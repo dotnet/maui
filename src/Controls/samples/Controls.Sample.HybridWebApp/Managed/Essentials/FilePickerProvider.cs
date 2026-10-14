@@ -66,9 +66,19 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 			var options = Options(args);
 			return _dispatcher.RunAsync(() => _context.InteractAsync(async () =>
 			{
+#if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
+				Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=before-await mainThread={Microsoft.Maui.ApplicationModel.MainThread.IsMainThread} cancellation={op.Cancellation.IsCancellationRequested} ownerAttached={_context.Window.Handler is not null} pageOwned={ReferenceEquals(_context.Page.Window, _context.Window)} picker={_picker.GetType().FullName}");
+#endif
 				var file = await _picker.PickAsync(options);
+#if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
+				Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=after-await selected={file is not null} cancellation={op.Cancellation.IsCancellationRequested} disposed={_disposed}");
+#endif
 				op.Cancellation.ThrowIfCancellationRequested();
-				return new PickResult(file is null ? null : AddFiles([file]).Single());
+				var result = new PickResult(file is null ? null : AddFiles([file]).Single());
+#if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
+				Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=return selected={result.File is not null} cancellation={op.Cancellation.IsCancellationRequested}");
+#endif
+				return result;
 			}, op.Cancellation), op.Cancellation);
 		}, interactive: true);
 		registry.Register("filePicker.pickMultiple", json.PickerOptions, json.PickMultipleResult, (args, op) =>

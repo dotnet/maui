@@ -82,21 +82,34 @@ test('catalog has all 121 families with 19 P0, and later families never claim im
 })
 
 test('explorer shows implemented experiments with descriptions, without a priority filter', async () => {
-  assert.equal(availableFeatures.length, 28)
+  assert.equal(availableFeatures.length, 19)
   assert.ok(availableFeatures.every(feature => feature.experiment && feature.description))
   assert.ok(availableFeatures.every(feature => features.includes(feature)))
+  assert.equal(new Set(availableFeatures.map(feature => feature.experiment)).size, availableFeatures.length)
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8')
   assert.ok(!html.includes('id="priority"'))
-  const browser = availableFeatures.find(feature => feature.id === 'browser')
+  const browser = features.find(feature => feature.id === 'browser')
   assert.ok(browser.description.includes('Only implemented experiments are shown'))
   assert.ok(!browser.description.includes('priority'))
+  assert.ok(!availableFeatures.some(feature => feature.id === 'browser'), 'catalog explanation is not a duplicate developer page')
 })
 
 test('implemented routes are owned by frontend configuration rather than a C# feature catalog', async () => {
-  assert.equal(navigationPages.length, 30)
+  assert.equal(navigationPages.length, 21)
   assert.ok(!navigationPages.some(page => page.id.startsWith('planned-')))
   const connection = await readFile(new URL('../src/connection.ts', import.meta.url), 'utf8')
   assert.doesNotMatch(connection, /registerWindowRoutes|window\.routes/)
+})
+
+test('duplicate family bookmarks resolve to unique canonical experiments', async () => {
+  const { readRoute } = await import('../src/routes.ts')
+  for (const [alias, canonical] of [['registration', 'arguments'], ['modules', 'arguments'], ['hub', 'arguments'],
+    ['cleanup', 'work'], ['readiness', 'identity'], ['inspection', 'identity'],
+    ['platform', 'policy'], ['browser', 'vite'], ['offline', 'vite'], ['action-sheet', 'dialogs']]) {
+    assert.equal(readRoute(`#/${alias}`).page.id, canonical)
+    assert.equal(readRoute(`#/${alias}`).error, undefined)
+    assert.ok(!navigationPages.some(page => page.id === alias))
+  }
 })
 
 test('native error, intentional failure and cancelled are not success-shaped', async () => {

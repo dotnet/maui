@@ -210,6 +210,15 @@ sealed class LoopbackInspector : IDisposable
 			json.WriteString("startedAt", MauiProgram.StartedAt);
 			json.WriteString("uri", _session.Platform.Uri);
 			json.WriteString("mode", _session.Mode);
+			json.WriteStartArray("windows");
+			foreach (var window in Application.Current?.Windows ?? [])
+			{
+				json.WriteStartObject();
+				json.WriteString("title", window.Title);
+				json.WriteBoolean("attached", window.Handler is not null);
+				json.WriteEndObject();
+			}
+			json.WriteEndArray();
 			var metrics = _session.GetMetrics();
 			json.WriteNumber("requests", metrics.Total);
 			json.WriteNumber("active", metrics.Active);

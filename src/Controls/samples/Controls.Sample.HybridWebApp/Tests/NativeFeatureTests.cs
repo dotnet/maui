@@ -163,6 +163,17 @@ public sealed class NativeFeatureTests
 	}
 
 	[Fact]
+	public async Task BatteryPreservesTheNativeSinglePrecisionValueWithoutScalingOrRounding()
+	{
+		var level = (double)0.01f;
+		var registry = new CommandRegistry();
+		new BatteryProvider(new ReadOnlyBattery(level), Inline).Register(registry);
+		var result = await Dispatch(registry, "battery.info");
+		Assert.Equal(0.009999999776482582, result.GetProperty("chargeLevel").GetDouble());
+		Assert.Equal(level, result.GetProperty("chargeLevel").GetDouble());
+	}
+
+	[Fact]
 	public async Task WindowContextIsBoundOnceAndMobilePlacementIsExplicitlyUnsupported()
 	{
 		using var first = Bind();
@@ -228,6 +239,17 @@ public sealed class NativeFeatureTests
 		await Dispatch(registry, "window.position", "{\"x\":20000,\"y\":-20000}");
 		Assert.Equal(20000, context.Window.X);
 		Assert.Equal(-20000, context.Window.Y);
+	}
+
+	[Fact]
+	public void DesktopCenterUsesActualDisplayOriginAndWindowSize()
+	{
+		var position = WindowCenter.Position(new Microsoft.Maui.Graphics.Rect(1920, 40, 1440, 900),
+			new Microsoft.Maui.Graphics.Size(1000, 600));
+		Assert.Equal(2140, position.X);
+		Assert.Equal(190, position.Y);
+		Assert.Equal("native_error", Assert.Throws<CommandException>(() =>
+			WindowCenter.Position(new(0, 0, 0, 900), new(1000, 600))).Code);
 	}
 
 	[Theory]
@@ -484,6 +506,158 @@ public sealed class NativeFeatureTests
 		Assert.Empty(page.MenuBarItems);
 	}
 
+	[Theory]
+	[InlineData("MacCatalyst", true)]
+	[InlineData("WinUI", false)]
+	public async Task DesktopMenuLabelUpdatesKeepResourcesAndInvalidateTheOwningAppleMenu(string platform, bool rebuilds)
+	{
+		using var context = Bind();
+		using var notifications = new NativeNotifications();
+		using var menus = new HybridMenus(context, new WindowDevice(platform, false), notifications);
+		var registry = new CommandRegistry();
+		var provider = new MenuProvider(menus, Inline);
+		provider.Register(registry);
+		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("menus."), notifications: notifications);
+		var events = await SubscribeMenuClicks(hub);
+		var definitions = new[] { new { id = "bar", text = "Original bar", kind = "submenu", enabled = true, @checked = false,
+			items = new[] { new { id = "group", text = "Original group", kind = "submenu", enabled = true, @checked = false,
+				items = new[] { new { id = "item", text = "Original item", kind = "item", enabled = true, @checked = false,
+					shortcut = new { key = "r", modifiers = new[] { "primary", "shift" } }, items = (object?)null } } } } } };
+		var installed = await Dispatch(registry, "menus.install", JsonSerializer.Serialize(new { windowId = context.Id, items = definitions }));
+		var sourceId = installed.GetProperty("sourceId").GetString();
+		var bar = context.Page.MenuBarItems[0];
+		var group = (MenuFlyoutSubItem)bar[0];
+		var item = (MenuFlyoutItem)group[0];
+		var shortcut = Assert.Single(item.KeyboardAccelerators);
+		var handler = new MenuWindowHandler();
+		context.Window.Handler = handler;
+		handler.Rebuilds = 0;
+
+		foreach (var id in new[] { "item", "group", "bar" })
+			await Dispatch(registry, "menus.update", JsonSerializer.Serialize(new
+			{
+				windowId = context.Id, sourceId, id, text = $"Renamed {id}"
+			}));
+		Assert.Equal(rebuilds ? 3 : 0, handler.Rebuilds);
+		Assert.Equal("Renamed item", item.Text);
+		Assert.Equal("Renamed group", group.Text);
+		Assert.Equal("Renamed bar", bar.Text);
+		Assert.Same(bar, context.Page.MenuBarItems[0]);
+		Assert.Same(group, bar[0]);
+		Assert.Same(item, group[0]);
+		Assert.Same(shortcut, Assert.Single(item.KeyboardAccelerators));
+		Assert.Equal(sourceId, (await Dispatch(registry, "menus.info",
+			JsonSerializer.Serialize(new { windowId = context.Id }))).GetProperty("sourceId").GetString());
+		Assert.Equal("Renamed item", (await Dispatch(registry, "menus.item",
+			JsonSerializer.Serialize(new { windowId = context.Id, sourceId, id = "item" }))).GetProperty("text").GetString());
+
+		((IMenuElement)item).Clicked();
+		Assert.Equal(sourceId, Assert.Single(events).GetProperty("sourceId").GetString());
+		Assert.Equal("item", events[0].GetProperty("id").GetString());
+		Assert.Equal("invalid_window", (await Assert.ThrowsAsync<CommandException>(() =>
+			Dispatch(registry, "menus.update", JsonSerializer.Serialize(new
+			{
+				windowId = "foreign", sourceId, id = "item", text = "Wrong window"
+			})))).Code);
+		Assert.Equal("invalid_menu", (await Assert.ThrowsAsync<CommandException>(() =>
+			Dispatch(registry, "menus.update", JsonSerializer.Serialize(new
+			{
+				windowId = context.Id, sourceId = "retired", id = "item", text = "Wrong source"
+			})))).Code);
+		Assert.Equal(rebuilds ? 3 : 0, handler.Rebuilds);
+	}
+
+	[Fact]
+	public async Task DesktopMenuCheckUpdatesAndClicksRebuildWithoutAttachedItemHandlers()
+	{
+		using var context = Bind();
+		using var notifications = new NativeNotifications();
+		using var menus = new HybridMenus(context, new WindowDevice("MacCatalyst", false), notifications);
+		var registry = new CommandRegistry();
+		var provider = new MenuProvider(menus, Inline);
+		provider.Register(registry);
+		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("menus."), notifications: notifications);
+		var events = await SubscribeMenuClicks(hub);
+		var definitions = new[] { new { id = "bar", text = "View", kind = "submenu", enabled = true, @checked = false,
+			items = new[] { new { id = "check", text = "Checked item", kind = "check", enabled = true, @checked = true,
+				shortcut = new { key = "k", modifiers = new[] { "primary" } }, items = (object?)null } } } };
+		var installed = await Dispatch(registry, "menus.install", JsonSerializer.Serialize(new { windowId = context.Id, items = definitions }));
+		var sourceId = installed.GetProperty("sourceId").GetString();
+		var item = (MenuFlyoutItem)context.Page.MenuBarItems[0][0];
+		var shortcut = Assert.Single(item.KeyboardAccelerators);
+		var handler = new MenuWindowHandler();
+		context.Window.Handler = handler;
+		handler.Rebuilds = 0;
+		foreach (var value in new[] { false, true, false })
+		{
+			Assert.Null(item.Handler); // Apple handlers exist only during BuildMenu.
+			await Dispatch(registry, "menus.update", JsonSerializer.Serialize(new
+			{
+				windowId = context.Id, sourceId, id = "check", @checked = value
+			}));
+		}
+		Assert.Equal(3, handler.Rebuilds);
+		((IMenuElement)item).Clicked();
+		((IMenuElement)item).Clicked();
+		Assert.Equal(new[] { true, false }, events.Select(value => value.GetProperty("checked").GetBoolean()));
+		Assert.All(events, value => Assert.Equal(sourceId, value.GetProperty("sourceId").GetString()));
+		Assert.Equal(5, handler.Rebuilds);
+		Assert.Equal(sourceId, (await Dispatch(registry, "menus.info",
+			JsonSerializer.Serialize(new { windowId = context.Id }))).GetProperty("sourceId").GetString());
+		Assert.Same(item, context.Page.MenuBarItems[0][0]);
+		Assert.Same(shortcut, Assert.Single(item.KeyboardAccelerators));
+
+		await Dispatch(registry, "menus.update", JsonSerializer.Serialize(new
+		{
+			windowId = context.Id, sourceId, id = "check", enabled = false
+		}));
+		((IMenuElement)item).Clicked();
+		Assert.Equal(2, events.Count);
+		Assert.Equal(6, handler.Rebuilds);
+		var replacement = await Dispatch(registry, "menus.install", JsonSerializer.Serialize(new { windowId = context.Id, items = definitions }));
+		var replacementSourceId = replacement.GetProperty("sourceId").GetString();
+		Assert.NotEqual(sourceId, replacementSourceId);
+		handler.Rebuilds = 0;
+		((IMenuElement)item).Clicked();
+		var liveItem = (MenuFlyoutItem)context.Page.MenuBarItems[0][0];
+		((IMenuElement)liveItem).Clicked();
+		Assert.Equal(3, events.Count);
+		Assert.Equal(replacementSourceId, events[^1].GetProperty("sourceId").GetString());
+		Assert.False(events[^1].GetProperty("checked").GetBoolean());
+		Assert.Equal(1, handler.Rebuilds);
+		await Dispatch(registry, "menus.clear", JsonSerializer.Serialize(new { windowId = context.Id, sourceId = replacementSourceId }));
+		handler.Rebuilds = 0;
+		((IMenuElement)liveItem).Clicked();
+		Assert.Equal(3, events.Count);
+		Assert.Equal(0, handler.Rebuilds);
+	}
+
+	static async Task<List<JsonElement>> SubscribeMenuClicks(HybridAppTargetObject hub)
+	{
+		var session = Guid.NewGuid().ToString("D");
+		foreach (var (command, args) in new[] { ("core.connect", "{}"), ("core.subscribe", "{\"topic\":\"menus.clicked\"}") })
+		{
+			using var document = JsonDocument.Parse(args);
+			var request = new Request(1, session, Guid.NewGuid().ToString("D"), command, document.RootElement);
+			var response = JsonSerializer.Deserialize(await hub.Invoke(JsonSerializer.Serialize(request, ProtocolJsonContext.Default.Request)),
+				ProtocolJsonContext.Default.Response)!;
+			Assert.Equal("success", response.Status);
+		}
+		var events = new List<JsonElement>();
+		hub.NativeEventReceived += value => events.Add(value.Data);
+		return events;
+	}
+
+	sealed class MenuWindowHandler : Microsoft.Maui.Handlers.ElementHandler<IWindow, object>
+	{
+		public int Rebuilds { get; set; }
+		public MenuWindowHandler() : base(new PropertyMapper<IWindow, MenuWindowHandler>(ElementMapper)
+		{
+			[nameof(IMenuBarElement.MenuBar)] = (handler, _) => handler.Rebuilds++
+		}) { }
+		protected override object CreatePlatformElement() => new();
+	}
+
 	[Fact]
 	public async Task NativeDeveloperWindowIdsAreUniqueAndClosedGenerationsCanBeReused()
 	{
@@ -522,9 +696,9 @@ public sealed class NativeFeatureTests
 		}
 		public Task<IEnumerable<FileResult>?> PickMultipleAsync(PickOptions? options = null) => throw new NotSupportedException();
 	}
-	sealed class ReadOnlyBattery : IBattery
+	sealed class ReadOnlyBattery(double level = 0.42) : IBattery
 	{
-		public double ChargeLevel => 0.42;
+		public double ChargeLevel => level;
 		public BatteryState State => BatteryState.Charging;
 		public BatteryPowerSource PowerSource => BatteryPowerSource.AC;
 		public EnergySaverStatus EnergySaverStatus => EnergySaverStatus.Off;

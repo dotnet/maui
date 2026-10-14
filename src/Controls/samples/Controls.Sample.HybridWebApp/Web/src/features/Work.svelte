@@ -15,10 +15,10 @@
     if (!session.unsubscribeProgress) {
       const unsubscribe = await api.onProgress((value, id) => {
         if (session.disposed || session.active?.id !== id) return
+        session.progressMaximum = value.total
+        session.progressValue = value.completed
         session.writeEvent('Native operation.progress', { ...value, requestId: id }, id)
         if (session.selected.experiment === 'work') {
-          session.progressMaximum = value.total
-          session.progressValue = value.completed
           session.showResult('Loading', { ...value, requestId: id })
         }
       })
@@ -29,22 +29,13 @@
       session.unsubscribeProgress = unsubscribe
     }
     if (session.disposed) return
-    if (session.selected.experiment === 'work') session.progressValue = 0
+    session.progressValue = 0
+    session.progressMaximum = capturedSteps
     session.active = api.work(capturedSteps, capturedDelay)
     session.refresh()
     return session.active.result
   }
 
-  async function cancel(): Promise<void> {
-    if (!session.active || session.disposed || !session.client.available) return
-    try {
-      const accepted = await session.active.cancel()
-      if (!session.disposed) session.writeLog('Cancellation requested', 'Loading', { accepted })
-    } catch (error) {
-      if (!session.disposed)
-        session.writeLog('Cancel request', 'Error', error instanceof Error ? error.message : 'Cancel request failed.')
-    }
-  }
 </script>
 
 <div class="work-inputs">
@@ -63,6 +54,6 @@
 </p>
 <div class="actions">
   <Action {session} action="work" title="Run native work" primary onclick={work} />
-  <Action {session} action="cancel" title="Cancel operation" onclick={() => { void cancel() }} />
+  <Action {session} action="cancel" title="Cancel operation" onclick={() => session.cancelOperation()} />
   <Action {session} action="reload" title="Reload frontend" onclick={reload} />
 </div>

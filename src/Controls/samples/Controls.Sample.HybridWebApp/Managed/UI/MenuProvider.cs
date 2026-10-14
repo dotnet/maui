@@ -19,10 +19,16 @@ public sealed class HybridMenus : IDisposable
 		internal List<MenuBarItem> Bars { get; } = [];
 		internal Dictionary<string, (MenuNode Node, MenuFlyoutItem? Item, MenuBarItem? Bar)> Items { get; } = new(StringComparer.Ordinal);
 		internal List<(MenuFlyoutItem Item, EventHandler Click, EventHandler Changed)> Handlers { get; } = [];
+#if MACCATALYST
+		internal Dictionary<string, global::UIKit.UIMenuElement> CheckSnapshots { get; } = new(StringComparer.Ordinal);
+#endif
 		public void Dispose()
 		{
 			foreach (var (item, click, changed) in Handlers) { item.Clicked -= click; item.HandlerChanged -= changed; }
 			Handlers.Clear();
+#if MACCATALYST
+			CheckSnapshots.Clear();
+#endif
 		}
 	}
 	/// <summary>Creates a scoped renderer with no app menu definitions or global page lookup.</summary>
@@ -159,7 +165,7 @@ public sealed class HybridMenus : IDisposable
 			if (current.Node.Kind == "check")
 			{
 				installation.Items[node.Id] = (current.Node with { Checked = !current.Node.Checked }, current.Item, current.Bar);
-				SyncCheck(installation, node.Id);
+				Refresh(installation, node.Id);
 			}
 			_notifications.Publish("menus.clicked", new MenuClick(installation.Source, node.Id, installation.Items[node.Id].Node.Checked), MenuJsonContext.Default.MenuClick);
 		};
@@ -172,10 +178,22 @@ public sealed class HybridMenus : IDisposable
 	{
 #if MACCATALYST
 		if (!installation.Items.TryGetValue(id, out var current) || current.Node.Kind != "check") return;
+		// Apple handlers are disconnected after BuildMenu; retain the native snapshot, not the handler.
+		if (current.Item?.Handler?.PlatformView is global::UIKit.UIMenuElement snapshot &&
+			snapshot is global::UIKit.UICommand or global::UIKit.UIAction)
+			installation.CheckSnapshots[id] = snapshot;
+		if (!installation.CheckSnapshots.TryGetValue(id, out var native)) return;
 		var state = current.Node.Checked ? global::UIKit.UIMenuElementState.On : global::UIKit.UIMenuElementState.Off;
-		if (current.Item?.Handler?.PlatformView is global::UIKit.UICommand command) command.State = state;
-		else if (current.Item?.Handler?.PlatformView is global::UIKit.UIAction action) action.State = state;
+		if (native is global::UIKit.UICommand command) command.State = state;
+		else if (native is global::UIKit.UIAction action) action.State = state;
 #endif
+	}
+	void Refresh(Installation installation, string id)
+	{
+		SyncCheck(installation, id);
+		// Apple menu labels/checks are build-time snapshots, with no live Text mapper.
+		// The owning window mapper requests a rebuild and HandlerChanged reapplies check state.
+		if (Checks) _context.Window.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 	}
 	internal MenuInfo Update(MenuUpdate args)
 	{
@@ -189,7 +207,7 @@ public sealed class HybridMenus : IDisposable
 		installation.Items[args.Id] = (node, current.Item, current.Bar);
 		if (current.Item is not null) { current.Item.Text = node.Text; current.Item.IsEnabled = node.Enabled; }
 		if (current.Bar is not null) { current.Bar.Text = node.Text; current.Bar.IsEnabled = node.Enabled; }
-		SyncCheck(installation, args.Id);
+		Refresh(installation, args.Id);
 		return Read();
 	}
 	internal MenuItemState Item(MenuItemArgs args)
@@ -201,9 +219,10 @@ public sealed class HybridMenus : IDisposable
 		if (current.Node.Kind == "check")
 		{
 #if MACCATALYST
-			if (current.Item?.Handler?.PlatformView is global::UIKit.UICommand command) check = command.State == global::UIKit.UIMenuElementState.On;
-			else if (current.Item?.Handler?.PlatformView is global::UIKit.UIAction action) check = action.State == global::UIKit.UIMenuElementState.On;
-			else throw new CommandException("context_unavailable", "The native check item is not attached.");
+			if (!installation.CheckSnapshots.TryGetValue(args.Id, out var native))
+				throw new CommandException("context_unavailable", "The native check item has not been built.");
+			if (native is global::UIKit.UICommand command) check = command.State == global::UIKit.UIMenuElementState.On;
+			else if (native is global::UIKit.UIAction action) check = action.State == global::UIKit.UIMenuElementState.On;
 #else
 			throw new NotSupportedException("Native check item state requires Mac Catalyst.");
 #endif

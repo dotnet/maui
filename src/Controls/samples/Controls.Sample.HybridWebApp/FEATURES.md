@@ -7,7 +7,7 @@
 | Group | Meaning | Complete |
 |---|---|---|
 | **P0 - Critical for v1** | 19 items: make a useful playground that proves the real native bridge. | 16 |
-| **P1 - Must have** | 29 items: cover the normal day-to-day native app toolkit. | 0 |
+| **P1 - Must have** | 29 items: cover the normal day-to-day native app toolkit. | 1 |
 | **P2 - Need to have** | 47 items: add broad UI, device and desktop integration coverage. | 0 |
 | **P3 - Good to have** | 26 items: add specialised integrations, extension mechanisms and distribution scenarios. | 1 |
 
@@ -35,7 +35,32 @@ Mac exercised native title/size and actual size events, shared theme subscribers
 and the BrowserPanel's real HTTPS redirect/load/focus/feature teardown. Native menu
 click/shortcut/check/focus acceptance is reserved for manual testing. Visual guest
 clipping/DPI and runtime bridge-isolation checks remain outstanding.
-This is partial family acceptance, not a reason to check the wider rows below.
+Most of this remains partial family acceptance. Native dialogs now have complete
+Android experiment evidence: actual alert acknowledgement, confirmation accept/
+cancel, prompt text/cancel, and action-sheet normal/cancel/destructive selection.
+Action sheets now share the sectioned Native dialogs page with alerts,
+confirmations and prompts. There are 19 unique experiments and two guides:
+duplicate Bridge/Development family pages were consolidated, while this
+121-family inventory and aliases for old bookmarks remain.
+Navigation and session diagnostics collapse on desktop; diagnostics resizes
+with a pointer or keyboard. Mobile uses flyouts, not permanent miniature panes.
+Refresh is in session diagnostics. Window basics shows live native geometry;
+Multiple windows is a separate page.
+The Mac picker returned null because its Open-mode native picker requested a
+read/write sandbox extension that the demo's read-only grant rejected. Logs
+confirmed our cancellation token stayed false. The user requested the same
+unsandboxed configuration as Essentials and confirmed selection/preview works.
+No store deployment work or App Store readiness is intended.
+
+The new-window follow-up reproduced a Mac build-cache failure: the compiled
+Info.plist still disabled multiple scenes after the source enabled them. The
+installed Apple SDK tracked the manifest path string but omitted the primary
+file from its incremental inputs. The sample now tracks the actual primary
+manifest for iOS/Mac Catalyst. A rebuild without cleaning changed the signed
+bundle's flag to true and opened two actual attached Mac windows instead of
+returning a registry-only handle. Native Apple preflight rejects disabled
+multiple-scene configuration explicitly. Windows and wider lifecycle acceptance
+are still not certified.
 
 | Unchecked item with partial implementation | What exists | What remains |
 |---|---|---|
@@ -46,9 +71,8 @@ This is partial family acceptance, not a reason to check the wider rows below.
 | Installable artifacts; signing and installed execution | Debug native deployment and Mac Catalyst Release build/asset checks | Install and exercise the intended signed Release artifacts |
 | Diagnostics and performance | Startup identity, request metrics and bounded operation log | Reproducible command-latency, startup and memory scenarios |
 | Browser mocks and native automation | Committed contract tests and actual native acceptance evidence | A committed, repeatable native automation entrypoint |
-| Window basics / Multiple windows | One Window resource, immutable developer IDs/private generations, generic bundled URLs; Mac title/size/native-size events and Android child-route/counter isolation/OS-close cleanup accepted | Native placement/activation/caller-close; Windows center/move runtime and other platform checks |
-| Native dialogs | Page-owned dialogs/options; Android confirmation accept/cancel, Unicode prompt/cancel and >25-second interactive wait accepted | Actual alert/action-sheet interaction and other platforms |
-| File picker | Native Android cancel, Unicode content stream, >64 KiB selection/explicit preview truncation and binary UTF-8 rejection accepted | Multiple selection and native seek; 64 KiB is only per-message budget |
+| Window basics / Multiple windows | Distinct live current-window and child-window pages; Mac attached windows, size events and compiled global-display centering adapter; Android isolation/OS-close cleanup | Manual/mixed-display Mac centering, activation/caller-close; Windows runtime |
+| File picker | Android stream/large preview/binary/cancel acceptance; user-confirmed Mac selected-file preview after removing demo sandbox | Multiple selection and native seek; 64 KiB is only per-message budget |
 | Theme and appearance | Native Android/Mac system/light/dark preference and effective Svelte CSS accepted | Actual OS theme change while following system and cross-window event acceptance; remote sites are not forced themed |
 | Battery / Display and DPI | Actual Android read-only charge/power/energy-saver and display dimensions/density/orientation/refresh accepted | Native change subscriptions intentionally deferred; other platforms unverified |
 | Remote WebView controls | Measured BrowserPanel native guest; actual Mac HTTPS redirect/load/focus/feature teardown accepted | Visual clipping/DPI and runtime bridge-isolation evidence; mobile guests unsupported |
@@ -104,7 +128,7 @@ the implemented subset has native evidence and unit tests/builds pass.
 
 ### OS interactions
 
-- [ ] **Native dialogs** - Display alerts, confirmations, prompts and action sheets. [MAUI][m-dialogs] / [Tauri][t-dialog].
+- [x] **Native dialogs** - Display alerts, confirmations, prompts and action sheets. Verified Android calling-page acknowledgement, text/selection and normal cancellation; other platforms remain unverified. [MAUI][m-dialogs] / [Tauri][t-dialog].
 - [ ] **Open external links** - Open an allowed URL in the system browser or another app. [MAUI Launcher][m-launcher] / [Tauri opener][t-opener].
 - [ ] **In-app browser** - Open documentation in the platform browser presentation, separate from the embedded app WebView. [MAUI Browser][m-browser].
 - [ ] **Share text and files** - Invoke the native share experience. [MAUI][m-share]. Tauri may need a mobile/platform adapter.

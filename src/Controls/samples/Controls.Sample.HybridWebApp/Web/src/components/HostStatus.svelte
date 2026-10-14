@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { PlaygroundSession } from '../session.ts'
-  let { session }: { session: PlaygroundSession } = $props()
+  let { session, id = 'host-status' }: { session: PlaygroundSession; id?: string } = $props()
 </script>
 
 <div
-  id="host-status"
+  {id}
   class="host-status"
   role="status"
   data-state={$session.hostState}

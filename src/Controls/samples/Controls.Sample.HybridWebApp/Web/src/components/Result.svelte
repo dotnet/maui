@@ -8,13 +8,6 @@
     <h3 id="result-title">Result</h3>
     <span id="result-state" data-state={$session.resultStatus.toLowerCase()} role="status">{$session.resultStatus}</span>
   </div>
-  <progress
-    id="progress"
-    max={$session.progressMaximum}
-    value={$session.progressValue}
-    aria-label="Native work progress"
-    hidden={$session.selected.experiment !== 'work'}
-  ></progress>
   <div id="result-json" tabindex="0" role="textbox" aria-readonly="true" aria-multiline="true"
     aria-label="Native operation result"><pre>{$session.resultText}</pre></div>
 </section>

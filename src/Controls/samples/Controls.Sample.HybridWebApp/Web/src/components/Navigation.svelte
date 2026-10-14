@@ -4,7 +4,9 @@
   import type { Feature } from '../catalog.ts'
   import type { PlaygroundSession } from '../session.ts'
 
-  let { session, compact }: { session: PlaygroundSession; compact: () => boolean } = $props()
+  let { session, compact, onselect = () => {} }: {
+    session: PlaygroundSession; compact: () => boolean; onselect?: () => void
+  } = $props()
   let search = $state('')
   let collapsed = $state<Record<string, boolean>>({})
   let navigation: HTMLElement
@@ -19,6 +21,7 @@
 
   function select(feature: Feature, button: HTMLButtonElement): void {
     session.select(feature)
+    onselect()
     if (compact()) {
       navigation.ownerDocument.querySelector<HTMLElement>('#experiment')?.focus()
     } else {
@@ -39,11 +42,16 @@
       {@const expanded = !!search || !collapsed[group]}
       {#if pages.length}
         <section class="nav-group">
-          <button type="button" class="group-toggle" data-group={group} data-selected={$session.selected.category === group}
-            aria-expanded={expanded} aria-controls={`nav-group-${index}`}
-            onclick={() => { collapsed = { ...collapsed, [group]: !collapsed[group] } }}>
-            <span>{group}</span><span class="group-state">{expanded ? 'Collapse' : 'Expand'}</span>
-          </button>
+          <h3 class="group-heading">
+            <button type="button" class="group-toggle" data-group={group} data-selected={$session.selected.category === group}
+              aria-expanded={expanded} aria-controls={`nav-group-${index}`}
+              onclick={() => { collapsed = { ...collapsed, [group]: !collapsed[group] } }}>
+              <svg class="group-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>{group}</span>
+            </button>
+          </h3>
           <div id={`nav-group-${index}`} hidden={!expanded}>
             {#each pages as feature (feature.id)}
               <button

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { components } from '../registry.ts'
   import Result from './Result.svelte'
-  import OperationLog from './OperationLog.svelte'
-  import HostDetails from './HostDetails.svelte'
   import type { FeatureProps } from '../session.ts'
 
   let { session, reload }: FeatureProps = $props()
@@ -31,13 +29,4 @@
     {/key}
   </section>
   <Result {session} />
-  {#if feature.guide}
-    <details class="guide-log" open={$session.resultStatus === 'Error'}>
-      <summary>Native operation log</summary>
-      <OperationLog {session} />
-    </details>
-  {:else}
-    <OperationLog {session} />
-  {/if}
-  <HostDetails {session} />
 </main>

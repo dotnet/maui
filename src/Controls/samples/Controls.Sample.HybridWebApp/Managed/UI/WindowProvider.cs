@@ -67,6 +67,10 @@ public sealed class HybridWindowHost(HybridAppOptions? options = null)
 			throw new CommandException("configuration_required", "The host has not supplied a trusted window factory.");
 		if (_application.Handler is null)
 			throw new CommandException("context_unavailable", "The native application is not attached.");
+#if IOS || MACCATALYST
+		if (!UIKit.UIApplication.SharedApplication.SupportsMultipleScenes)
+			throw new CommandException("configuration_required", "Enable UIApplicationSupportsMultipleScenes in the compiled native app manifest before opening separate windows.");
+#endif
 		if (_windows.Count >= _maximumWindows)
 			throw new CommandException("window_limit", $"The host's native window resource budget of {_maximumWindows} was reached.");
 		var window = _factory(new HybridWindowRequest(location, id));

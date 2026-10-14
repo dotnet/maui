@@ -14,6 +14,7 @@ import Development from './features/Development.svelte'
 import Welcome from './features/Welcome.svelte'
 import Showcase from './features/Showcase.svelte'
 import Windows from './features/Windows.svelte'
+import MultiWindow from './features/MultiWindow.svelte'
 import Dialogs from './features/Dialogs.svelte'
 import FilePicker from './features/FilePicker.svelte'
 import RemoteWebView from './features/RemoteWebView.svelte'
@@ -36,6 +37,7 @@ export const components: Record<Experiment, Component<FeatureProps>> = {
   welcome: Welcome,
   showcase: Showcase,
   windows: Windows,
+  multiWindow: MultiWindow,
   dialogs: Dialogs,
   filePicker: FilePicker,
   remoteWebView: RemoteWebView,

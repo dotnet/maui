@@ -1,4 +1,4 @@
-export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme'
+export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'multiWindow' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme'
 export interface Feature { id: string; title: string; category: string; priority: string; experiment?: Experiment; description: string; docs: string; guide?: boolean }
 const maui = 'https://learn.microsoft.com/dotnet/maui/'
 const hybrid = `${maui}user-interface/controls/hybridwebview?view=net-maui-11.0`
@@ -77,11 +77,11 @@ function promote(title: string, id: string, category: string, experiment: Experi
   Object.assign(entry, { id, category, experiment, description, docs })
 }
 promote('Window basics', 'windows', 'App & windows', 'windows',
-  'Read this native window, change its title and request desktop placement. Mobile resizing and positioning are explicitly unsupported.', `${maui}user-interface/controls/window`)
-promote('Multiple windows', 'multi-window', 'App & windows', 'windows',
+  'Read and control the current native window. Observe actual OS size changes live; move events and centering are Windows-only. Mobile placement is unsupported.', `${maui}user-interface/controls/window`)
+promote('Multiple windows', 'multi-window', 'App & windows', 'multiWindow',
   'Open a known bundled page in a fresh window and provider scope. List or close children opened here. iPhone has no separate windows; internal routes are not OS deep links.', `${maui}user-interface/controls/window`)
 promote('Native dialogs', 'dialogs', 'App & windows', 'dialogs',
-  'Show an actual native alert, confirmation or text prompt on the calling page. User cancellation is normal; interactive calls have a bounded five-minute budget.', `${maui}user-interface/pop-ups`)
+  'Try native alerts, confirmations, text prompts and action sheets in separate sections on the calling page. User cancellation is normal.', `${maui}user-interface/pop-ups`)
 promote('File picker', 'file-picker', 'Essentials', 'filePicker',
   'Choose a file with the system document picker. Preview complete UTF-8 text up to 64 KiB; binary, other encodings and oversized files are rejected. No arbitrary file paths or saved handles.', `${maui}platform-integration/storage/file-picker`)
 promote('WebView controls', 'remote-webview', 'App & windows', 'remoteWebView',
@@ -95,7 +95,11 @@ promote('Battery', 'battery', 'Essentials', 'battery',
 promote('Display and DPI', 'display', 'Essentials', 'display',
   'Refresh main-display pixel dimensions, density, orientation and rotation from the native OS. These are not CSS viewport dimensions.', `${maui}platform-integration/device/display`)
 
-export const availableFeatures = features.filter(feature => feature.experiment)
+const canonicalRoutes: Partial<Record<Experiment, string>> = {
+  identity: 'identity', echo: 'arguments', policy: 'policy', work: 'work', development: 'vite',
+}
+export const availableFeatures = features.filter(feature => feature.experiment &&
+  (!canonicalRoutes[feature.experiment] || canonicalRoutes[feature.experiment] === feature.id))
 export const guidePages: Feature[] = [
   { ...feature('welcome', 'Welcome to the playground', 'Welcome', 'welcome',
     'A real web interface, a real native host. Explore the surface here; launch the MAUI app to try its native capabilities.'), priority: 'guide', guide: true },

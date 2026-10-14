@@ -93,6 +93,10 @@ each independent `HybridViewContext` to its page/window before attaching native
 handlers. Context construction does not resolve a page or hub, so there is no
 page/hub/provider factory cycle. Window commands own title and desktop bounds;
 the app does not hide those operations in sample providers.
+Apple window opening checks UIApplication's actual multiple-scene support
+before creating a child. A compiled single-scene app reports
+`configuration_required`; source Info.plist contents alone are not capability
+evidence.
 
 Hub disposal is idempotent: it cancels work, retires the document, disposes its
 `TimeProvider` lease timer and clears all native-event listeners. There is no page
@@ -154,9 +158,10 @@ five-minute lease hold; old callbacks cannot extend a replacement document.
 Application theme uses UserAppTheme/RequestedTheme/RequestedThemeChanged, not a
 per-window theme. Native effective callbacks repaint the trusted frontend CSS;
 remote sites are not forced into that theme. Window geometry callbacks coalesce
-actual frame/property changes; position observation and current-monitor/DPI-aware
-centering have a Windows adapter only. Mac/mobile reject those unsupported
-operations rather than approximating another monitor or fabricating events.
+actual frame/property changes. Centering supports Windows current-monitor work
+areas and Mac global CoreGraphics display rectangles with the scene's actual
+system frame. It requests MAUI native X/Y; it does not guess the primary screen.
+Position observation remains Windows-only; mobile centering is unsupported.
 
 ## External providers
 

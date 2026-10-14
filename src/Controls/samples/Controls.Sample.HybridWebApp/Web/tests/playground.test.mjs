@@ -9,7 +9,15 @@ import { PlaygroundSession } from '../src/session.ts'
 import { mountShell } from '../src/shell.ts'
 import { createConnection } from '../src/connection.ts'
 import { readRoute } from '../src/routes.ts'
+import { sessionWidthLimit } from '../src/panes.ts'
+import { measureBrowserSlot } from '../src/browser-geometry.ts'
 import html from '../index.html?raw'
+
+// jsdom omits the dialog lifecycle; this shim supplies DOM behavior, never native APIs.
+if (!HTMLDialogElement.prototype.close) {
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute('open') }
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', '') }
+}
 
 const identity = { appName: 'Native', version: '1', build: '2', platform: 'MacCatalyst', osVersion: '27', model: 'Mac',
   architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
@@ -19,7 +27,8 @@ const actions = {
   lifetime: ['increment', 'counter', 'reload'], events: ['echo', 'subscribe', 'unsubscribe'],
   work: ['work', 'cancel', 'reload'], development: ['identity', 'reload'],
   welcome: [], showcase: ['title', 'copy', 'prompt', 'device', 'open-window'],
-  windows: ['window-info', 'title', 'bounds', 'center', 'open-window'], dialogs: ['alert', 'confirm', 'prompt'],
+  windows: ['window-info', 'title', 'bounds', 'position', 'center'], multiWindow: ['window-list', 'open-window'],
+  dialogs: ['alert', 'confirm', 'prompt', 'action-sheet'],
   filePicker: ['pick-file'], remoteWebView: ['browser-info', 'remote', 'browser-back', 'browser-forward', 'browser-reload', 'browser-focus', 'browser-close'],
   battery: ['battery'], display: ['display'], menus: ['menus-install', 'menus-remove', 'menu-rename', 'menu-enable', 'menu-check'],
   theme: ['theme-system', 'theme-light', 'theme-dark'],
@@ -107,7 +116,8 @@ function fixture(t, handler = defaultResult, { native = true, compact = false } 
   const session = new PlaygroundSession()
   if (native) session.setClient(configureBridge(host.bridge))
   let reloads = 0
-  let shell = mountShell(dom.window.document, session, () => { reloads++ }, () => compact)
+  const compactMode = () => typeof compact === 'function' ? compact() : compact
+  let shell = mountShell(dom.window.document, session, () => { reloads++ }, compactMode)
   flushSync()
   t.onTestFinished(() => {
     shell.dispose()
@@ -137,7 +147,7 @@ function fixture(t, handler = defaultResult, { native = true, compact = false } 
     },
     remount: () => {
       shell.dispose()
-      shell = mountShell(dom.window.document, session, () => { reloads++ }, () => compact)
+      shell = mountShell(dom.window.document, session, () => { reloads++ }, compactMode)
       flushSync()
     },
     event: (topic, data, id, eventSession = session.client.session) => {
@@ -155,7 +165,7 @@ function fixture(t, handler = defaultResult, { native = true, compact = false } 
 test('typed registry mounts implemented experiments and both guides with actions and metadata', t => {
   const app = fixture(t)
   assert.deepEqual(Object.keys(components).sort(), Object.keys(actions).sort())
-  assert.equal(app.find('#catalog-count').textContent, '28 experiments · 2 guides')
+  assert.equal(app.find('#catalog-count').textContent, '19 experiments · 2 guides')
   for (const feature of navigationPages) {
     app.select(feature.id)
     assert.equal(app.find('#feature-title').textContent, feature.title)
@@ -164,9 +174,65 @@ test('typed registry mounts implemented experiments and both guides with actions
     assert.equal(app.find('#api-link').href, feature.docs)
     assert.equal(app.find(`[data-feature="${feature.id}"]`).getAttribute('aria-current'), 'page')
     assert.deepEqual([...app.find('#controls').querySelectorAll('[data-action]')].map(button => button.dataset.action), actions[feature.experiment])
-    assert.equal(app.find('#progress').hidden, feature.experiment !== 'work')
+    assert.equal(app.find('#progress').hidden, true, 'session progress waits for an active operation')
   }
-  assert.equal(app.host.requests.length, 0, 'mounting never makes a native call')
+  assert.ok(app.host.requests.every(request => request.command === 'window.info'),
+    'only the live current-window page starts a native observation on mount')
+})
+
+test('navigation groups are heading disclosures with a decorative arrow, not collapse-label buttons', t => {
+  const app = fixture(t)
+  const disclosure = app.find('[data-group="Welcome"]')
+  assert.equal(disclosure.closest('h3')?.className, 'group-heading')
+  assert.equal(disclosure.textContent.trim(), 'Welcome')
+  assert.equal(disclosure.querySelector('svg')?.getAttribute('aria-hidden'), 'true')
+  disclosure.click()
+  flushSync()
+  assert.equal(disclosure.getAttribute('aria-expanded'), 'false')
+  assert.equal(app.find(`#${disclosure.getAttribute('aria-controls')}`).hidden, true)
+})
+
+test('action sheet passes editable native labels/options and preserves selection, cancel and dismissal', async t => {
+  let selection = 'Share'
+  const app = fixture(t, request => request.command === 'dialogs.actionSheet'
+    ? { selection } : defaultResult(request))
+  app.select('dialogs')
+  assert.deepEqual([...app.find('#controls').querySelectorAll('.dialog-section h3')].map(heading => heading.textContent),
+    ['Alert', 'Confirmation', 'Text prompt', 'Action sheet'])
+  app.input('#action-sheet-title', 'Choose an action')
+  app.input('#action-sheet-buttons', 'Duplicate\nShare\nExport')
+  app.input('#action-sheet-cancel', 'Not now')
+  app.input('#action-sheet-destruction', 'Delete')
+  app.input('#action-sheet-direction', 'rightToLeft')
+  app.click('action-sheet')
+  await app.idle()
+  assert.deepEqual(app.host.requests.at(-1).args, {
+    title: 'Choose an action', buttons: ['Duplicate', 'Share', 'Export'],
+    cancel: 'Not now', destruction: 'Delete', flowDirection: 'rightToLeft',
+  })
+  assert.equal(app.find('#result-json').textContent, 'Share')
+  selection = 'Not now'
+  app.click('action-sheet')
+  await app.idle()
+  assert.equal(app.find('#result-json').textContent, 'Not now')
+  selection = null
+  app.input('#action-sheet-destruction', '')
+  app.click('action-sheet')
+  await app.idle()
+  assert.equal(app.host.requests.at(-1).args.destruction, null)
+  assert.equal(JSON.parse(app.find('#result-json').textContent), null)
+})
+
+test('battery presentation formats a native float as a percentage without changing its raw result', async t => {
+  const level = 0.009999999776482582
+  const app = fixture(t, request => request.command === 'battery.info'
+    ? { chargeLevel: level, state: 'Charging', powerSource: 'AC', energySaverStatus: 'Off' }
+    : defaultResult(request))
+  app.select('battery')
+  app.click('battery')
+  await app.idle()
+  assert.match(app.find('#battery-charge').textContent, /1%/)
+  assert.equal(JSON.parse(app.find('#result-json').textContent).chargeLevel, level)
 })
 
 test('search temporarily reveals grouped matches and preserves collapse preferences and keyboard focus', t => {
@@ -184,7 +250,7 @@ test('search temporarily reveals grouped matches and preserves collapse preferen
   assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'true')
   app.input('#search', '')
   assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'false')
-  assert.equal(app.find('#catalog-count').textContent, '28 experiments · 2 guides')
+  assert.equal(app.find('#catalog-count').textContent, '19 experiments · 2 guides')
   app.find('[data-group="Essentials"]').click()
   app.session.writeLog('A native refresh', 'Success', { accepted: true })
   assert.equal(app.find('[data-group="Essentials"]').getAttribute('aria-expanded'), 'false',
@@ -193,8 +259,350 @@ test('search temporarily reveals grouped matches and preserves collapse preferen
 
 test('compact navigation focuses the experiment instead of a replaced catalog button', t => {
   const app = fixture(t, defaultResult, { compact: true })
+  app.find('#navigation-toggle').click()
+  flushSync()
   app.select('preferences')
   assert.equal(app.dom.window.document.activeElement.id, 'experiment')
+})
+
+test('desktop panes collapse without unmounting or clearing shared session state; refresh belongs to Session', t => {
+  const app = fixture(t, defaultResult, { native: false })
+  app.session.writeLog('Persistent entry', 'Success', { value: 7 })
+  const browser = { id: 'retained-native-guest' }
+  const menu = { id: 'retained-native-menu' }
+  const release = async () => {}
+  app.session.browser = browser
+  app.session.menu = menu
+  app.session.unsubscribeCounter = release
+  const navigation = app.find('#feature-list')
+  const log = app.find('#operation-log')
+  for (const toggle of ['navigation', 'session']) {
+    const button = app.find(`#${toggle}-toggle`)
+    button.click(); flushSync()
+    assert.equal(button.getAttribute('aria-expanded'), 'false')
+    assert.equal(app.find(`#${toggle}-pane`).open, false)
+    button.click(); flushSync()
+    assert.equal(button.getAttribute('aria-expanded'), 'true')
+    assert.equal(app.find(`#${toggle}-pane`).open, true)
+  }
+  assert.equal(app.find('#feature-list'), navigation)
+  assert.equal(app.find('#operation-log'), log)
+  assert.match(log.textContent, /Persistent entry/)
+  assert.equal(app.session.browser, browser)
+  assert.equal(app.session.menu, menu)
+  assert.equal(app.session.unsubscribeCounter, release)
+  assert.equal(app.find('.app-header').querySelector('#frontend-refresh'), null)
+  assert.equal(app.find('#frontend-refresh').closest('#session-pane'), app.find('#session-pane'))
+  app.find('#frontend-refresh').click()
+  assert.equal(app.reloads, 1)
+  assert.equal(app.host.requests.length, 0, 'refresh does not issue a native restart/navigation command')
+})
+
+test('mobile flyouts are mutually exclusive, Escape returns focus, selection closes navigation', async t => {
+  const app = fixture(t, defaultResult, { compact: true })
+  const navigation = app.find('#navigation-pane'), diagnostics = app.find('#session-pane')
+  assert.equal(navigation.open, false)
+  assert.equal(diagnostics.open, false)
+  app.find('#navigation-toggle').click()
+  flushSync()
+  await setImmediate(); flushSync()
+  assert.equal(navigation.open, true)
+  assert.equal(navigation.getAttribute('aria-modal'), 'true')
+  assert.equal(navigation.dataset.browserObscured, 'true')
+  assert.equal(document.activeElement.id, 'search')
+  app.find('#session-toggle').click()
+  flushSync()
+  await setImmediate(); flushSync()
+  assert.equal(navigation.open, false)
+  assert.equal(diagnostics.open, true)
+  assert.equal(app.find('#navigation-toggle').getAttribute('aria-expanded'), 'false')
+  diagnostics.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  flushSync()
+  assert.equal(diagnostics.open, false)
+  assert.equal(document.activeElement.id, 'session-toggle')
+  assert.equal(diagnostics.dataset.browserObscured, 'false')
+  app.find('#navigation-toggle').click(); flushSync()
+  app.select('clipboard')
+  assert.equal(navigation.open, false)
+  assert.equal(document.activeElement.id, 'experiment')
+  assert.equal(app.find('#navigation-toggle').getAttribute('aria-expanded'), 'false')
+})
+
+test('flyouts contain keyboard focus and close only for actual outside clicks; mobile refresh uses the same document', async t => {
+  const app = fixture(t, defaultResult, { compact: true, native: false })
+  app.find('#session-toggle').click(); flushSync()
+  await setImmediate(); flushSync()
+  const dialog = app.find('#session-pane'), first = dialog.querySelector('.pane-close')
+  const clear = app.find('#clear-log')
+  // Summary follows the log and remains a focusable control when details are closed.
+  const summary = dialog.querySelector('summary')
+  summary.focus()
+  summary.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }))
+  assert.equal(document.activeElement, first)
+  first.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }))
+  assert.equal(document.activeElement, summary)
+  app.find('#frontend-refresh').click(); flushSync()
+  assert.equal(app.reloads, 1)
+  assert.equal(dialog.open, true)
+  dialog.getBoundingClientRect = () => new DOMRect(30, 0, 360, 844)
+  clear.click(); flushSync()
+  assert.equal(dialog.open, true, 'interacting with panel content is not an outside click')
+  dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 10, clientY: 400 }))
+  flushSync()
+  assert.equal(dialog.open, false)
+  assert.equal(document.activeElement.id, 'session-toggle')
+  assert.equal(app.host.requests.length, 0)
+})
+
+test('session separator supports keyboard and pointer resizing, clamps both ends and becomes inactive on mobile', t => {
+  let compact = false
+  const app = fixture(t, defaultResult, { compact: () => compact })
+  const separator = app.find('.pane-separator')
+  const key = name => {
+    separator.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }))
+    flushSync()
+  }
+  const width = () => Number(separator.getAttribute('aria-valuenow'))
+  assert.equal(width(), 300)
+  key('ArrowLeft'); assert.equal(width(), 324)
+  key('ArrowRight'); assert.equal(width(), 300)
+  key('Home'); assert.equal(width(), 240)
+  key('ArrowRight'); assert.equal(width(), 240)
+  key('End'); assert.equal(width(), Number(separator.getAttribute('aria-valuemax')))
+  const pointer = (target, name, x, id = 7) => {
+    const event = new Event(name, { bubbles: true, cancelable: true })
+    Object.assign(event, { clientX: x, pointerId: id, button: 0 })
+    target.dispatchEvent(event); flushSync()
+  }
+  pointer(separator, 'pointerdown', 700)
+  pointer(window, 'pointermove', 3000)
+  assert.equal(width(), 240)
+  pointer(window, 'pointermove', -3000)
+  assert.equal(width(), Number(separator.getAttribute('aria-valuemax')))
+  pointer(window, 'pointerup', 700)
+  const previous = width()
+  pointer(window, 'pointermove', 500)
+  assert.equal(width(), previous)
+  assert.equal(sessionWidthLimit(1100, true), 440)
+  assert.equal(sessionWidthLimit(1001, true), 381)
+  compact = true
+  window.dispatchEvent(new Event('resize')); flushSync()
+  assert.equal(separator.hidden, true)
+  assert.equal(separator.tabIndex, -1)
+  assert.equal(app.find('#navigation-pane').open, false)
+  assert.equal(app.find('#session-pane').open, false)
+  key('Home')
+  assert.equal(width(), previous)
+  pointer(separator, 'pointerdown', 700)
+  pointer(window, 'pointermove', 3000)
+  assert.equal(width(), previous)
+})
+
+test('session progress and cancellation remain accessible after navigating and collapsing diagnostics', async t => {
+  const work = deferred()
+  const app = fixture(t, request => request.command === 'sample.work' ? work.promise : defaultResult(request))
+  app.select('work'); app.click('work')
+  await setImmediate(); flushSync()
+  const request = app.session.active.id
+  app.select('preferences')
+  app.find('#session-toggle').click(); flushSync()
+  app.event('operation.progress', { completed: 5, total: 20 }, request)
+  assert.equal(app.find('#progress').value, 5)
+  assert.equal(app.find('#progress').closest('#session-pane'), app.find('#session-pane'))
+  assert.match(app.find('#current-operation').textContent, /Run native work/)
+  app.find('#header-cancel').click()
+  await setImmediate()
+  assert.equal(app.host.requests.at(-1).command, 'core.cancel')
+  assert.equal(app.host.requests.at(-1).args.requestId, request)
+  app.find('#session-toggle').click(); flushSync()
+  assert.equal(app.find('#progress').value, 5)
+  assert.equal(app.host.requests.filter(request => request.command === 'core.subscribe').length, 1)
+  work.resolve(failure('cancelled', 'cancelled'))
+  await app.idle()
+})
+
+test('desktop panes do not obscure native guests, mobile flyouts use the existing geometry contract', t => {
+  let compact = false
+  const app = fixture(t, defaultResult, { compact: () => compact })
+  const slot = document.createElement('div')
+  slot.getBoundingClientRect = () => new DOMRect(300, 100, 400, 300)
+  app.find('#experiment').append(slot)
+  assert.equal(measureBrowserSlot(slot).visible, true)
+  compact = true
+  window.dispatchEvent(new Event('resize')); flushSync()
+  assert.equal(measureBrowserSlot(slot).visible, true)
+  app.find('#navigation-toggle').click(); flushSync()
+  assert.equal(measureBrowserSlot(slot).visible, false)
+  app.find('#navigation-pane').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  flushSync()
+  assert.equal(measureBrowserSlot(slot).visible, true)
+})
+
+test('current window readouts follow real scoped callbacks and unregister on teardown; Mac never subscribes to move events', async t => {
+  const app = fixture(t)
+  app.select('windows')
+  await setImmediate(); flushSync()
+  assert.equal(app.find('#window-live-size').textContent, '1000 × 760')
+  assert.equal(app.find('[data-action="center"]').disabled, true)
+  const sources = app.host.requests.filter(request => request.command === 'core.subscribe' && request.args.topic === 'window.geometryChanged')
+  assert.equal(sources.length, 1)
+  app.event('window.geometryChanged', { windowId: 'native-window', size: { width: 930, height: 680 },
+    position: { x: 20, y: 30 } }, 'geometry-1')
+  assert.equal(app.find('#window-live-size').textContent, '930 × 680')
+  assert.equal(app.find('#window-live-position').textContent, '80, 80', 'unverified Mac move callback is ignored')
+  assert.equal(app.find('#window-live-events').textContent, '1 size · 0 position')
+  app.event('window.geometryChanged', { windowId: 'another-window', size: { width: 500, height: 400 }, position: null }, 'geometry-2')
+  assert.equal(app.find('#window-live-size').textContent, '930 × 680')
+  app.select('preferences')
+  await setImmediate(); flushSync()
+  assert.equal(app.host.requests.filter(request => request.command === 'core.unsubscribe').length, 1)
+  const entries = app.session.entries.length
+  app.event('window.geometryChanged', { windowId: 'native-window', size: { width: 900, height: 600 }, position: null }, 'geometry-late')
+  assert.equal(app.session.entries.length, entries)
+  app.select('windows')
+  await setImmediate(); flushSync()
+  assert.equal(app.host.requests.filter(request => request.command === 'core.subscribe').length, 2)
+})
+
+test('Windows supports real position callbacks and shares one native geometry subscription', async t => {
+  const app = fixture(t, request => {
+    const value = defaultResult(request)
+    return request.command === 'window.info' ? { ...value, canCenter: true, canObservePosition: true } : value
+  })
+  app.select('windows')
+  await setImmediate(); flushSync()
+  assert.equal(app.find('[data-action="center"]').disabled, false)
+  app.event('window.geometryChanged', { windowId: 'native-window', size: { width: 900, height: 600 },
+    position: { x: 37, y: 91 } }, 'windows-frame')
+  assert.equal(app.find('#window-live-size').textContent, '900 × 600')
+  assert.equal(app.find('#window-live-position').textContent, '37, 91')
+  assert.equal(app.find('#window-live-events').textContent, '1 size · 1 position')
+  assert.equal(app.host.requests.filter(request => request.command === 'core.subscribe').length, 1)
+  app.select('clipboard')
+  await setImmediate()
+  assert.equal(app.host.requests.filter(request => request.command === 'core.unsubscribe').length, 1)
+})
+
+test('an older async window read cannot overwrite a newer native geometry callback', async t => {
+  const snapshot = deferred()
+  let delay = false
+  const app = fixture(t, request => {
+    if (request.command === 'window.info' && delay) { delay = false; return snapshot.promise }
+    return defaultResult(request)
+  })
+  app.select('windows')
+  await setImmediate(); flushSync()
+  delay = true
+  app.click('window-info')
+  app.event('window.geometryChanged', { windowId: 'native-window',
+    size: { width: 975, height: 690 }, position: null }, 'newer-frame')
+  snapshot.resolve(defaultResult({ command: 'window.info', args: {} }))
+  await app.idle()
+  assert.equal(app.find('#window-live-size').textContent, '975 × 690')
+})
+
+test('unsupported mobile placement is disabled while actual native size observation remains useful', async t => {
+  const app = fixture(t, request => request.command === 'window.info'
+    ? { ...defaultResult(request), canResize: false, canPosition: false, canOpenWindows: false }
+    : defaultResult(request))
+  app.select('windows')
+  await setImmediate(); flushSync()
+  for (const action of ['bounds', 'position', 'center']) {
+    assert.equal(app.find(`[data-action="${action}"]`).disabled, true)
+    app.click(action)
+  }
+  assert.equal(app.find('#window-live-position').textContent, 'Unsupported on this host')
+  app.event('window.geometryChanged', { windowId: 'native-window',
+    size: { width: 390, height: 844 }, position: null }, 'mobile-frame')
+  assert.equal(app.find('#window-live-size').textContent, '390 × 844')
+  assert.equal(app.host.requests.some(request => ['window.size', 'window.position', 'window.center'].includes(request.command)), false)
+})
+
+test('opening a flyout queues immediate native guest hiding behind an in-flight bounds update', async t => {
+  const firstBounds = deferred()
+  let count = 0
+  const app = fixture(t, request => request.command === 'remote.bounds' && ++count === 1
+    ? firstBounds.promise : defaultResult(request), { compact: true })
+  app.select('remote-webview')
+  app.find('#browser-slot').getBoundingClientRect = () => new DOMRect(10, 100, 300, 300)
+  app.click('browser-info'); await app.idle()
+  app.click('remote')
+  await setImmediate(); flushSync()
+  assert.equal(app.host.requests.find(request => request.command === 'remote.bounds').args.visible, true)
+  app.find('#session-toggle').click(); flushSync()
+  await setImmediate()
+  firstBounds.resolve(defaultResult({ command: 'remote.bounds', args: {} }))
+  await app.idle()
+  assert.equal(app.host.requests.filter(request => request.command === 'remote.bounds').at(-1).args.visible, false)
+  assert.equal(app.host.requests.filter(request => request.command === 'remote.bounds').length, 2,
+    'overlay hiding is sent as soon as the in-flight geometry request finishes')
+})
+
+test('late window registration is released and late setters do not read or mutate a replacement page', async t => {
+  const registration = deferred(), title = deferred()
+  const app = fixture(t, request => request.command === 'core.subscribe' ? registration.promise
+    : request.command === 'window.title' ? title.promise : defaultResult(request))
+  app.select('windows')
+  await setImmediate()
+  app.select('clipboard')
+  const requests = app.host.requests.length
+  registration.resolve({ accepted: true })
+  await setImmediate()
+  assert.equal(app.host.requests.length, requests + 1)
+  assert.equal(app.host.requests.at(-1).command, 'core.unsubscribe')
+  app.select('windows')
+  await setImmediate(); flushSync()
+  app.click('title')
+  app.select('preferences')
+  const before = app.host.requests.filter(request => request.command === 'window.info').length
+  title.resolve(defaultResult({ command: 'window.title', args: { title: 'My MAUI window' } }))
+  await app.idle()
+  assert.equal(app.host.requests.filter(request => request.command === 'window.info').length, before,
+    'late setter completion does not start fresh native reads')
+  assert.equal(app.session.selected.id, 'preferences')
+})
+
+test('multiple windows owns creation options and closes only retained caller-owned child generations', async t => {
+  let opened = false
+  const child = { id: 'child-window', windowLease: 'private-child-generation' }
+  const app = fixture(t, request => {
+    if (request.command === 'window.open') { opened = true; return child }
+    if (request.command === 'window.list') return { windows: [
+      { id: 'native-window', windowLease: 'private-lease' },
+      { id: 'not-our-child', windowLease: 'other-generation' },
+      ...(opened ? [child] : []),
+    ] }
+    if (request.command === 'window.info' && request.args.windowId && request.args.windowId !== 'native-window')
+      return { ...defaultResult(request), id: request.args.windowId,
+        title: 'Child title', initialLocation: 'index.html#/clipboard',
+        windowLease: request.args.windowId === child.id ? child.windowLease : 'other-generation' }
+    return defaultResult(request)
+  })
+  app.select('multi-window')
+  assert.equal(app.find('#controls').querySelector('#window-title'), null)
+  assert.equal(app.find('#controls').querySelector('[data-action="bounds"]'), null)
+  app.click('window-list'); await app.idle()
+  assert.equal(app.find('#owned-windows').querySelectorAll('[data-action^="close-"]').length, 0)
+  app.input('#child-url', 'index.html?example=1#/clipboard')
+  app.input('#child-id', 'my-child')
+  app.input('#child-title', 'Child title')
+  app.find('#child-custom-size').click(); flushSync()
+  app.input('#child-width', '900'); app.input('#child-height', '650')
+  app.click('open-window'); await app.idle()
+  assert.deepEqual(app.host.requests.find(request => request.command === 'window.open').args, {
+    url: 'index.html?example=1#/clipboard', options: { id: 'my-child', title: 'Child title', width: 900, height: 650 },
+  })
+  assert.equal(app.find('#owned-windows').querySelectorAll('[data-action^="close-"]').length, 1)
+  const handle = app.session.childWindows.get(child.id)
+  app.select('clipboard'); app.select('multi-window')
+  app.click('window-list'); await app.idle()
+  assert.equal(app.session.childWindows.get(child.id), handle)
+  app.click('close-child-window'); await app.idle()
+  assert.deepEqual(app.host.requests.find(request => request.command === 'window.close').args, {
+    id: child.id, windowLease: child.windowLease,
+  })
+  assert.equal(app.host.requests.some(request => request.command === 'window.closeCurrent'), false)
+  assert.equal(app.session.childWindows.has(child.id), false)
 })
 
 test('browser-only actions remain disabled on every page, with only Reload enabled and no emulation', async t => {
@@ -221,9 +629,9 @@ test('replacement removes old form/navigation handlers and shell remount does no
   const app = fixture(t)
   app.select('arguments')
   const oldAction = app.find('[data-action="counter"]')
-  app.select('registration')
+  app.select('arguments')
   oldAction.click()
-  assert.equal(app.session.selected.id, 'registration')
+  assert.equal(app.session.selected.id, 'arguments')
   assert.equal(app.host.requests.length, 0)
   const categoryCount = app.find('#feature-list').querySelectorAll('[data-group]').length
   app.remount()
@@ -408,11 +816,19 @@ test('browser history back and forward restore the selected internal feature wit
   await setImmediate()
   app.select('clipboard')
   await setImmediate()
-  const back = new Promise(resolve => window.addEventListener('hashchange', resolve, { once: true }))
+  const changedTo = hash => new Promise(resolve => {
+    const changed = () => {
+      if (window.location.hash !== hash) return
+      window.removeEventListener('hashchange', changed)
+      resolve()
+    }
+    window.addEventListener('hashchange', changed)
+  })
+  const back = changedTo('#/showcase')
   window.history.back()
   await back
   assert.equal(app.session.selected.id, 'showcase')
-  const forward = new Promise(resolve => window.addEventListener('hashchange', resolve, { once: true }))
+  const forward = changedTo('#/clipboard')
   window.history.forward()
   await forward
   assert.equal(app.session.selected.id, 'clipboard')
@@ -429,10 +845,17 @@ test('native Windows, dialogs, device and embedded remote pages use the same SDK
   app.input('#window-title', 'Native window 👋')
   app.click('title')
   await app.idle()
-  assert.deepEqual(app.host.requests.at(-1).args, { title: 'Native window 👋', windowId: 'native-window', windowLease: 'private-lease' })
+  assert.deepEqual(app.host.requests.findLast(request => request.command === 'window.title').args,
+    { title: 'Native window 👋', windowId: 'native-window', windowLease: 'private-lease' })
   app.click('bounds')
   await app.idle()
-  assert.deepEqual(app.host.requests.at(-1).args, { x: 80, y: 80, windowId: 'native-window', windowLease: 'private-lease' })
+  assert.deepEqual(app.host.requests.findLast(request => request.command === 'window.size').args,
+    { width: 1000, height: 760, windowId: 'native-window', windowLease: 'private-lease' })
+  app.click('position')
+  await app.idle()
+  assert.deepEqual(app.host.requests.findLast(request => request.command === 'window.position').args,
+    { x: 80, y: 80, windowId: 'native-window', windowLease: 'private-lease' })
+  app.select('multi-window')
   app.click('open-window')
   await app.idle()
   assert.ok(app.host.requests.some(request => request.command === 'window.open' && request.args.url === 'index.html#/showcase'))
@@ -562,7 +985,7 @@ test('work captures both inputs before awaited subscription and navigation, then
   const request = app.host.requests.find(request => request.command === 'sample.work')
   assert.deepEqual(request.args, { steps: 3, delayMs: 100 })
   assert.equal(app.session.active.id, request.id)
-  assert.equal(app.find('#progress').hidden, true)
+  assert.equal(app.find('#progress').hidden, false, 'session progress remains available after changing pages')
   const otherResult = app.find('#result-json').textContent
   app.event('operation.progress', { completed: 1, total: 3 }, request.id)
   assert.equal(app.find('#result-json').textContent, otherResult)
@@ -599,8 +1022,8 @@ test('progress requires the active correlation/session, and shared work subscrip
   const replacement = app.find('#result-json').textContent
   app.event('operation.progress', { completed: 3, total: 20 }, id)
   assert.equal(app.find('#result-json').textContent, replacement)
-  assert.equal(app.find('#progress').value, 2, 'hidden progress must not repaint another page')
-  app.select('cleanup')
+  assert.equal(app.find('#progress').value, 3, 'session progress updates without repainting the feature result')
+  app.select('work')
   app.event('operation.progress', { completed: 4, total: 20 }, id)
   assert.equal(app.find('#progress').value, 4, 'catalog families share the work renderer')
   work.resolve({ completed: 20, total: 20 })

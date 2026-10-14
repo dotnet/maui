@@ -22,7 +22,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <CodesignEntitlements Condition="$(TargetFramework.Contains('-maccatalyst'))">Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
     <DefineConstants Condition="'$(HybridWebAppInTree)' == 'true' and '$(UseMaui)' != 'true'">$(DefineConstants);HYBRIDWEBAPP_IN_TREE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Debug'">

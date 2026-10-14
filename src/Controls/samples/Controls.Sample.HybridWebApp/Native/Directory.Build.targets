@@ -5,4 +5,11 @@
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
   </PropertyGroup>
+  <Target Name="TrackPlaygroundAppleManifest" AfterTargets="_CompileAppManifestInputs"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <!-- This Apple SDK's incremental inputs omit the primary Info.plist. -->
+    <ItemGroup>
+      <_CompileAppManifestInputFile Include="$(AppBundleManifest)" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -11,15 +11,22 @@
   let browser = $state<BrowserView>()
   let navigation = $state<BrowserNavigation>()
   let slot: HTMLElement
-  let live = true, sending = false, lastSent = 0
+  let live = true, sending = false, pending = false, lastSent = 0
   let release: (() => Promise<void>) | undefined
   let cleanup: (() => void) | undefined
   async function place(): Promise<void> {
-    if (!live || sending || !browser || !slot || performance.now() - lastSent < 100) return
+    if (!live || !browser || !slot) return
+    if (sending) { pending = true; return }
+    const bounds = measureBrowserSlot(slot)
+    // Hiding behind a DOM overlay cannot wait for the ordinary resize throttle.
+    if (bounds.visible && performance.now() - lastSent < 100) return
     sending = true; lastSent = performance.now()
-    try { await browser.setBounds(measureBrowserSlot(slot)) }
+    try { await browser.setBounds(bounds) }
     catch (error) { if (live && !session.disposed) session.showResult('Error', error instanceof Error ? error.message : 'Native geometry failed.') }
-    finally { sending = false }
+    finally {
+      sending = false
+      if (pending) { pending = false; void place() }
+    }
   }
   async function read(): Promise<unknown> {
       const result = await supportsBrowserView()

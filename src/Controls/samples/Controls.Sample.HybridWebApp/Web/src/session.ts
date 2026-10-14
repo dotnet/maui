@@ -29,6 +29,7 @@ const format = (value: unknown): string =>
 export class PlaygroundSession {
   client = new NativeClient(undefined)
   busy = false
+  activeLabel = ''
   connecting = false
   active: Operation<Progress> | undefined
   unsubscribeCounter: (() => Promise<void>) | undefined
@@ -37,6 +38,7 @@ export class PlaygroundSession {
   navigate: ((page: Feature) => void) | undefined
   initialLocation: ((url: string) => void) | undefined
   windowCapabilities: WindowCapabilities | undefined
+  readonly childWindows = new Map<string, Window>()
   browserSupported: boolean | undefined
   browser: BrowserView | undefined
   menu: Menu | undefined
@@ -83,7 +85,7 @@ export class PlaygroundSession {
     this.selected = feature
     this.selectionVersion++
     this.showResult(this.busy ? 'Loading' : 'Ready to run', this.busy
-      ? 'A native operation is running. Return to Progress and cancellation to cancel it.'
+      ? 'A native operation is running. Inspect Session or use Cancel operation in the header.'
       : 'Run an experiment to inspect its actual native result.')
   }
 
@@ -118,6 +120,7 @@ export class PlaygroundSession {
     if (action === 'reload') return false
     if (this.disposed || this.connecting || !this.client.available) return true
     if (action === 'bounds' && !this.windowCapabilities?.resize) return true
+    if (action === 'position' && !this.windowCapabilities?.position) return true
     if (action === 'open-window' && !this.windowCapabilities?.multiWindow) return true
     if (action === 'center' && !this.windowCapabilities?.center) return true
     if (action === 'cancel') return !this.active
@@ -130,9 +133,22 @@ export class PlaygroundSession {
     this.changes.set(this)
   }
 
+  async cancelOperation(): Promise<void> {
+    const operation = this.active
+    if (!operation || this.disposed || !this.client.available) return
+    try {
+      const accepted = await operation.cancel()
+      if (!this.disposed) this.writeLog('Cancellation requested', 'Loading', { accepted })
+    } catch (error) {
+      if (!this.disposed)
+        this.writeLog('Cancel request', 'Error', error instanceof Error ? error.message : 'Cancel request failed.')
+    }
+  }
+
   async run(label: string, action: () => Promise<unknown>): Promise<void> {
     if (this.busy || this.disposed || this.connecting || !this.client.available) return
     this.busy = true
+    this.activeLabel = label
     const version = this.selectionVersion
     this.showResult('Loading', `${label}…`)
     try {
@@ -149,6 +165,7 @@ export class PlaygroundSession {
       if (version === this.selectionVersion) this.showResult(status, value)
     } finally {
       this.busy = false
+      this.activeLabel = ''
       this.active = undefined
       if (!this.disposed) {
         if (version !== this.selectionVersion && this.resultStatus === 'Loading')
@@ -165,6 +182,7 @@ export class PlaygroundSession {
     this.active = undefined
     this.unsubscribeCounter = undefined
     this.unsubscribeProgress = undefined
+    this.childWindows.clear()
     this.refresh()
   }
 }

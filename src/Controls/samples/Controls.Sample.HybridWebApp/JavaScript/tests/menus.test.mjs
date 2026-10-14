@@ -110,3 +110,69 @@ test('concurrent installations share one source listener and item handles retain
   assert.equal(host.requests.filter(request => request.command === 'core.unsubscribe').length, 1)
   assert.equal(client.available, true)
 })
+
+test('repeated label/check setters and native clicks retain the installation, shortcut and JS callback', async () => {
+  // Transport double: native snapshot invalidation is covered by managed menu tests.
+  let source = null, items = new Map()
+  const host = mock(request => {
+    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    if (request.command === 'window.info') return windowInfo
+    if (request.command === 'core.subscribe' || request.command === 'core.unsubscribe') return { accepted: true }
+    if (request.command === 'menus.install') {
+      source = 'native-source'
+      const collect = nodes => nodes.forEach(node => { items.set(node.id, structuredClone(node)); if (node.items) collect(node.items) })
+      collect(request.args.items)
+    }
+    if (request.command === 'menus.item' || request.command === 'menus.update' || request.command === 'menus.clear') {
+      assert.equal(request.args.windowId, windowInfo.id)
+      assert.equal(request.args.sourceId, source)
+    }
+    if (request.command === 'menus.item') return items.get(request.args.id)
+    if (request.command === 'menus.update') {
+      const item = items.get(request.args.id)
+      for (const key of ['text', 'enabled', 'checked']) if (key in request.args) item[key] = request.args[key]
+    }
+    if (request.command === 'menus.clear') source = null
+    return { supported: true, supportsChecked: true, sourceId: source }
+  })
+  configureBridge(host.bridge)
+  const client = await connect(), clicks = []
+  const own = currentWindow()
+  const installed = await own.setMenu(Menu.create([{ id: 'view', text: 'View', kind: 'submenu', items: [{
+    id: 'check', text: 'Checked item', kind: 'check', checked: true,
+    shortcut: { key: 'k', modifiers: ['primary', 'shift'] }, action: checked => clicks.push(checked),
+  }] }]))
+  const item = installed.item('check'), sourceId = installed.sourceId
+  const shortcut = structuredClone(items.get('check').shortcut)
+  for (const checked of [false, true, false]) {
+    await item.setText(checked ? 'On' : 'Off')
+    await item.setChecked(checked)
+    assert.equal(await item.text(), checked ? 'On' : 'Off')
+    assert.equal(await item.checked(), checked)
+    assert.equal(installed.sourceId, sourceId)
+    assert.equal(await own.menu(), installed)
+  }
+  const event = (checked, session = client.session) => client.receive(JSON.stringify({
+    version: 1, session, id: crypto.randomUUID(), topic: 'menus.clicked', data: { sourceId, id: 'check', checked },
+  }))
+  items.get('check').checked = true
+  event(true)
+  event(false, 'retired-document')
+  await Promise.resolve(); await Promise.resolve()
+  assert.deepEqual(clicks, [true])
+  assert.equal(await item.checked(), true)
+  await item.setChecked(!await item.checked())
+  assert.equal(await item.checked(), false, 'web controls toggle the native state, not a stale local flag')
+  await installed.update('view', { text: 'Renamed menu' })
+  assert.equal(await installed.item('view').text(), 'Renamed menu')
+  assert.deepEqual(items.get('check').shortcut, shortcut)
+  assert.equal(host.requests.filter(request => request.command === 'menus.install').length, 1)
+  assert.equal(host.requests.filter(request => request.command === 'core.subscribe').length, 1)
+  assert.ok(host.requests.filter(request => request.command === 'menus.update').every(request =>
+    request.args.windowId === windowInfo.id && request.args.sourceId === sourceId))
+  await installed.dispose()
+  await assert.rejects(() => item.setText('retired'), error => error.code === 'disconnected')
+  event(false)
+  await Promise.resolve(); await Promise.resolve()
+  assert.deepEqual(clicks, [true])
+})

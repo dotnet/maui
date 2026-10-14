@@ -1,15 +1,13 @@
 import { mount, unmount } from 'svelte'
 import App from './App.svelte'
-import HostStatus from './components/HostStatus.svelte'
 import type { PlaygroundSession } from './session.ts'
 import { readRoute } from './routes.ts'
 
 export function mountShell(document: Document, session: PlaygroundSession,
   reload = () => document.defaultView?.location.reload(),
-  compact = () => document.defaultView?.matchMedia('(max-width: 760px)').matches ?? false) {
+  compact = () => document.defaultView?.matchMedia('(max-width: 1000px)').matches ?? false) {
   const target = document.querySelector('#app')
-  const header = document.querySelector('#connection')
-  if (!target || !header) throw new Error('Missing playground mount targets.')
+  if (!target) throw new Error('Missing playground mount target.')
   const window = document.defaultView
   const navigate = (page: { id: string }) => {
     if (window && window.location.hash !== `#/${page.id}`) window.location.hash = `/${page.id}`
@@ -33,7 +31,6 @@ export function mountShell(document: Document, session: PlaygroundSession,
   session.initialLocation = initialLocation
   window?.addEventListener('hashchange', changed)
   const app = mount(App, { target, props: { session, reload, compact } })
-  const host = mount(HostStatus, { target: header, props: { session } })
   return {
     dispose: () => {
       window?.removeEventListener('hashchange', changed)
@@ -41,7 +38,6 @@ export function mountShell(document: Document, session: PlaygroundSession,
       if (session.reloadFrontend === reload) session.reloadFrontend = undefined
       if (session.initialLocation === initialLocation) session.initialLocation = undefined
       void unmount(app)
-      void unmount(host)
     },
   }
 }

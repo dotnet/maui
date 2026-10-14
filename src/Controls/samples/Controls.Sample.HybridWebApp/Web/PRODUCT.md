@@ -69,6 +69,17 @@ Registry publication and migration to MAUI Labs are separate decisions.
 - The interface is a playground, not an implementation-tracking dashboard.
   Unimplemented experiments and priorities do not appear in normal navigation.
 - The document and header stay fixed; navigation and content scroll independently.
+- Header controls collapse the feature navigation and session pane. Frontend
+  reload lives in the diagnostics pane and reloads only the current document.
+  Session diagnostics, progress and logs
+  belong to the document, not a feature page; cancellation remains in the header.
+- Desktop session diagnostics can be resized with a pointer or keyboard separator.
+  At compact widths, both panes are full-height flyouts rather than persistent
+  miniature strips. Only one flyout opens at a time, with Escape, outside-click,
+  focus containment and focus return. Native browser guests hide behind overlays.
+- Window basics observes the current native window's real size events; position
+  events and centering are capability-gated Windows operations. Multiple windows
+  separately owns trusted URL/ID/title/options and caller-owned child resources.
 - A remote website must not receive the playground's native command bridge.
 - The next feature batch includes native windows, dialogs, file picking,
   device readouts and a browser tab/pane inside the web app's own layout.
