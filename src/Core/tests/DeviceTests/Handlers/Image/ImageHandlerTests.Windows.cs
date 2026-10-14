@@ -133,11 +133,13 @@ namespace Microsoft.Maui.DeviceTests
 				Aspect = Aspect.AspectFit,
 				HorizontalLayoutAlignment = LayoutAlignment.Center,
 				VerticalLayoutAlignment = LayoutAlignment.Center,
-				Source = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(60, 30, Colors.Red)),
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
+				// CreateBitmapFile makes a WriteableBitmap, so it has to run on the UI thread.
+				image.Source = new FileImageSourceStub(BaseImageSourceServiceTests.CreateBitmapFile(60, 30, Colors.Red));
+
 				var handler = CreateHandler(image);
 				var platformView = handler.PlatformView;
 

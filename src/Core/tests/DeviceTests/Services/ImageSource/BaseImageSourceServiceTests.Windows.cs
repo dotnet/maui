@@ -54,6 +54,9 @@ namespace Microsoft.Maui.DeviceTests
 				96,
 				bitmap.PixelBuffer.ToArray());
 
+			// The encoder writes nothing to the stream until it is flushed.
+			encoder.FlushAsync().GetAwaiter().GetResult();
+
 			stream.Position = 0;
 
 			return stream;
