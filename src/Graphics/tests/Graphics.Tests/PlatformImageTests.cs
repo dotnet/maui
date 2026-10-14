@@ -11,13 +11,15 @@ public class PlatformImageTests
 	[InlineData(false)]
 	public void PlatformImageFromStreamTest(bool seekable)
 	{
-		byte[] orange1x1pxPngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4v5ThPwAG7wKklwQ/bwAAAABJRU5ErkJggg==");
-		using MemoryStream memoryStream = new(orange1x1pxPngBytes);
+		byte[] orange2x3pxPngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAACXBIWXMAAAABAAAAAQBPJcTWAAAAE0lEQVR4nGP8u5SBgYGBBUTAKQAggQGsd/BKkQAAAABJRU5ErkJggg==");
+		using MemoryStream memoryStream = new(orange2x3pxPngBytes);
 		Stream stream = seekable ? memoryStream : new NonSeekableReadOnlyStream(memoryStream);
 
 		var image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
 
 		Assert.NotNull(image);
+		Assert.Equal(2f, image.Width);
+		Assert.Equal(3f, image.Height);
 	}
 
 	private class NonSeekableReadOnlyStream(Stream stream) : Stream
