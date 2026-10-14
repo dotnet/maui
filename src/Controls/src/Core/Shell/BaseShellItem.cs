@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -673,5 +674,17 @@ namespace Microsoft.Maui.Controls
 	public interface IQueryAttributable
 	{
 		void ApplyQueryAttributes(IDictionary<string, object> query);
+	}
+
+	/// <summary>Provides source-generated setters for properties declared by <see cref="QueryPropertyAttribute"/>.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public interface IQueryPropertyAttributable
+	{
+		/// <summary>Gets the type whose complete query property hierarchy is handled by the generated implementation.</summary>
+		Type QueryPropertyTargetType { get; }
+
+		/// <summary>Applies query property values using the shared Shell conversion context.</summary>
+		/// <param name="query">The current query property context.</param>
+		void ApplyQueryPropertyAttributes(QueryPropertyAttributeContext query);
 	}
 }
