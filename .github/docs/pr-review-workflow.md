@@ -447,9 +447,15 @@ links, including in stale/failure notices; hidden run/result markers and
 publication receipts retain provenance and deduplication.
 The visible **Merge recommendation** is YES only for a complete expert review
 with no outstanding findings, including findings suppressed as already posted.
-It is NO when actionable findings exist. Incomplete reviews without findings,
-stale snapshots, publication failures and closed PRs report **UNAVAILABLE**,
-not a negative code verdict. YES is source-review advice, not a
+It is NO when actionable findings exist. The verdict concerns the frozen code,
+not gh-aw capability or publication health. Historical collection limits and
+discussion arriving after the frozen briefing are disclosed separately in
+**Context limitations (not code findings)** and do not change YES into NO.
+Unavailable runtime execution never constitutes a code finding.
+An unfinished source assessment, stale snapshot, publication failure or closed
+PR produces **Review status**, without a merge-recommendation field. No
+UNAVAILABLE recommendation or fabricated clean verdict is published.
+YES is source-review advice, not a
 substitute for required CI checks or human approval. There is no Follow-up section.
 The visible reason states the actionable finding count or a brief incomplete/
 unavailable explanation; a clean complete review simply says **No actionable findings**.
@@ -467,13 +473,15 @@ make a dimension incomplete; runtime certification remains outside this lane.
 Workers assess test adequacy from source and can still report concrete missing
 coverage. Built-in read/search tools avoid requiring interactive shell approval
 for source and JSON validation.
-Discussion freshness compares authors, full text, review states, timestamps and
-inline anchors; incidental API metadata such as author association and reaction
-counts does not invalidate an otherwise unchanged discussion.
+Discussion comparison uses authors, full text, review states, timestamps and
+inline anchors. A meaningful change is a contextual caveat: the recommendation
+still assesses the frozen code and the discussion available at review start.
+Head/base freshness remains a hard publication boundary; stale code never
+receives a new recommendation. Incidental metadata does not add a caveat.
 For strict pinned history scans, an unavailable local historical merge object is
 checked against the exact base SHA using GitHub's comparison API. A divergent
 other-branch fix is excluded only after ancestry is established; failed or unknown
-comparisons still block complete evidence.
+comparisons remain explicit context limitations, never a CLEAN history result.
 After verifying an actual bot publication, the trusted notification job minimizes
 older expert summaries and status notices using GitHub's native **OUTDATED**
 classifier. The newest result stays visible, including overlapping runs that
@@ -481,8 +489,10 @@ finish out of order. Inline findings, human comments, and other review lanes
 are never minimized by expert cleanup. Failed publication leaves older results
 visible; cleanup failures are surfaced rather than silently ignored.
 **Complete** includes a concise summary even with zero new findings;
-**incomplete** discloses missing workers, collection gaps, later feedback or
-interrupted validation, and never claims a clean review. A **stale snapshot** posts only a
+**incomplete** discloses missing workers or interrupted source validation and
+does not produce a code recommendation. Collection gaps and later discussion
+are separate context limitations on a completed source assessment.
+A **stale snapshot** posts only a
 scoped expandable notification, not stale inline findings. Detection or
 validation failures block unsafe review output, not status comments. A trusted
 notification job runs after every authorized attempt, including failures,

@@ -379,6 +379,10 @@ Finish and record your independent code-first briefing before opening
 comments. Do not truncate review text. Historical evidence is in
 `regression-check/risks.json` when collection succeeded; its absence or a
 context gap is not CLEAN. Verify suspected reverts against source/history.
+Missing historical cross-reference data is a disclosed context limitation, not
+an automatic negative verdict or an incomplete source pass. Do not claim that
+unavailable history was checked successfully. Assess the frozen diff/source
+and available evidence; concrete source-supported findings drive the verdict.
 
 The only writable review files are under
 `CustomAgentLogsTmp/PRState/{PR}/PRAgent/`. Use the context's validated numeric
@@ -465,6 +469,11 @@ and `minor` are valid lowercase severity tokens. An exception entry is
 retained `[major] Input and Path Correctness` finding. Do not invent exceptions.
 Preserve missing/incomplete worker files; the trusted publisher computes
 coverage independently and will disclose gaps.
+Only unfinished source passes or candidate/JSON validation make this assessment
+incomplete. Expected execution restrictions, unavailable historical context or
+discussion added after the frozen briefing must not set `validation_complete`
+false. The publisher reports these limits separately; a finished source
+assessment receives YES/NO based on actionable findings, never on gh-aw limits.
 
 ## Stage one result, never publish directly
 

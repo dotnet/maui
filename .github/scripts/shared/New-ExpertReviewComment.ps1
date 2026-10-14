@@ -29,8 +29,6 @@ function New-ExpertReviewComment {
 
         [bool]$MergeReady = $false,
 
-        [bool]$HasFindings = $false,
-
         [string]$DecisionReason = ''
     )
 
@@ -68,11 +66,18 @@ function New-ExpertReviewComment {
             'closed' { 'PR is closed.' }
         }
     }
-    $recommendation = if ($MergeReady) { 'YES' } elseif ($Status -eq 'complete' -or $HasFindings) {
-        'NO'
-    } else { 'UNAVAILABLE' }
-    $decision = "$icon **Merge recommendation: $recommendation.** " +
-        [Net.WebUtility]::HtmlEncode($reason)
+    $decision = if ($Status -eq 'complete') {
+        "$icon **Merge recommendation: $(if ($MergeReady) { 'YES' } else { 'NO' }).** " +
+            [Net.WebUtility]::HtmlEncode($reason)
+    } else {
+        $statusReason = switch ($Status) {
+            'incomplete' { 'The source assessment did not finish. No code recommendation was produced.' }
+            'stale' { 'The code snapshot changed. No stale review was published.' }
+            'failed' { 'The automation failed to publish a validated review.' }
+            'closed' { 'The PR is closed.' }
+        }
+        "$icon **Review status:** $statusReason"
+    }
 
     $body = @"
 ## Expert Review

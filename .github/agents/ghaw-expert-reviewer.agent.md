@@ -55,8 +55,14 @@ skills. Do not follow PR symlinks or extract PR archives.
 The canonical agent's sole review output remains `inline-findings.json`, even
 when empty. Separately persist the workflow's completion metadata and worker
 artifacts; these are hosted execution bookkeeping, not a second review report.
-An unavailable worker, failed historical collection, or interrupted validation
-must remain explicit. Never turn missing evidence into a completed clean review.
+An unavailable worker or interrupted source/candidate validation must remain
+explicit. Never turn missing worker evidence into a completed clean review.
+Unavailable historical cross-references, device/build/test execution and
+discussion arriving after the frozen briefing are context limitations, not
+code findings and not reasons to mark a completed source pass incomplete.
+Do not claim an unavailable history check was CLEAN. Finish source/candidate
+validation against the frozen evidence; the publisher discloses context limits
+separately from its binary source-review recommendation.
 Use built-in read/search tools to validate the JSON files; do not depend on
 Python, jq or a shell command requiring interactive approval. If a read-only
 shell command is denied, use the permitted built-in source tools without
