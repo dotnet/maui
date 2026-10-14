@@ -147,28 +147,64 @@ namespace Microsoft.Maui.DeviceTests
 					iconDrawable.Draw(canvas);
 				}
 
-				Assert.Equal(GetDrawnAspectRatio(iconBitmap), GetDrawnAspectRatio(backButtonBitmap), 0.15);
+				var expected = GetDrawnBounds(iconBitmap);
+				var actual = GetDrawnBounds(backButtonBitmap);
+				Assert.Equal((double)expected.Width() / expected.Height(), (double)actual.Width() / actual.Height(), 0.15);
+			});
+		}
+
+		[Fact(DisplayName = "Back button IconOverride with an extreme aspect ratio is still drawn")]
+		public async Task BackButtonIconOverrideWithExtremeAspectRatioIsDrawn()
+		{
+			SetupBuilder();
+
+			byte[] iconBytes;
+			using (var iconBitmap = global::Android.Graphics.Bitmap.CreateBitmap(1000, 1, global::Android.Graphics.Bitmap.Config.Argb8888))
+			using (var stream = new System.IO.MemoryStream())
+			{
+				iconBitmap.EraseColor(global::Android.Graphics.Color.White);
+				iconBitmap.Compress(global::Android.Graphics.Bitmap.CompressFormat.Png, 100, stream);
+				iconBytes = stream.ToArray();
+			}
+
+			var secondPage = new ContentPage();
+			Shell.SetBackButtonBehavior(secondPage, new BackButtonBehavior { IconOverride = ImageSource.FromStream(() => new System.IO.MemoryStream(iconBytes)) });
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
 			});
 
-			static double GetDrawnAspectRatio(global::Android.Graphics.Bitmap bitmap)
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var pixels = new int[bitmap.Width * bitmap.Height];
-				bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+				await shell.Navigation.PushAsync(secondPage);
+				await AssertEventually(() => GetPlatformToolbar(handler)?.NavigationIcon is not null);
 
-				int left = bitmap.Width, top = bitmap.Height, right = -1, bottom = -1;
-				for (int i = 0; i < pixels.Length; i++)
+				var backButton = GetPlatformToolbar(handler).GetChildrenOfType<AppCompatImageButton>().First();
+				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
+
+				Assert.False(GetDrawnBounds(backButtonBitmap).IsEmpty);
+			});
+		}
+
+		static global::Android.Graphics.Rect GetDrawnBounds(global::Android.Graphics.Bitmap bitmap)
+		{
+			var pixels = new int[bitmap.Width * bitmap.Height];
+			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+
+			int left = bitmap.Width, top = bitmap.Height, right = -1, bottom = -1;
+			for (int i = 0; i < pixels.Length; i++)
+			{
+				if (global::Android.Graphics.Color.GetAlphaComponent(pixels[i]) > 127)
 				{
-					if (global::Android.Graphics.Color.GetAlphaComponent(pixels[i]) > 127)
-					{
-						left = Math.Min(left, i % bitmap.Width);
-						right = Math.Max(right, i % bitmap.Width);
-						top = Math.Min(top, i / bitmap.Width);
-						bottom = Math.Max(bottom, i / bitmap.Width);
-					}
+					left = Math.Min(left, i % bitmap.Width);
+					right = Math.Max(right, i % bitmap.Width);
+					top = Math.Min(top, i / bitmap.Width);
+					bottom = Math.Max(bottom, i / bitmap.Width);
 				}
-
-				return (double)(right - left + 1) / (bottom - top + 1);
 			}
+
+			return new global::Android.Graphics.Rect(left, top, right + 1, bottom + 1);
 		}
 
 		[Fact(DisplayName = "Hidden Shell navigation bar clears app bar inset padding")]

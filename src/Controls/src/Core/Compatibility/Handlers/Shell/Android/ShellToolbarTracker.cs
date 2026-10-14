@@ -892,8 +892,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (iconWidth > 0 && iconHeight > 0)
 					{
 						var scale = Math.Min((float)width / iconWidth, (float)height / iconHeight);
-						width = (int)Math.Round(iconWidth * scale);
-						height = (int)Math.Round(iconHeight * scale);
+						width = Math.Max(1, (int)Math.Round(iconWidth * scale));
+						height = Math.Max(1, (int)Math.Round(iconHeight * scale));
 					}
 
 					var left = bounds.Left + (bounds.Width() - width) / 2;
