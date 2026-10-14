@@ -35,7 +35,7 @@ $script:OutcomeLabels = @{
 }
 
 $script:SignalLabels = @{
-    's/agent-gate-passed' = @{ Description = 'AI verified tests catch the bug (fail without fix, pass with fix)'; Color = '4CAF50' }
+    's/agent-gate-passed' = @{ Description = 'Selected PR-test verification passed; see the pinned report for mode and coverage'; Color = '4CAF50' }
     's/agent-gate-failed' = @{ Description = 'AI could not verify tests catch the bug'; Color = 'FF9800' }
     's/agent-fix-win'     = @{ Description = 'AI found a better alternative fix than the PR'; Color = '66BB6A' }
     's/agent-fix-pr-picked'    = @{ Description = 'AI could not beat the PR fix - PR is the best among all candidates'; Color = 'FF7043' }

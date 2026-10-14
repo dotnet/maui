@@ -3,6 +3,7 @@ description: Apply evidence-backed manual issue labels for an authorized /issue 
 
 imports:
   - shared/gpt-6.1-sol.md
+  - shared/threat-detection.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
@@ -219,13 +220,6 @@ tools:
 network: defaults
 
 safe-outputs:
-  threat-detection:
-    prompt: |
-      Perform the full security analysis without delegating to subagents.
-      Emit exactly one final THREAT_DETECTION_RESULT object, never an intermediate
-      or example result. Include all three boolean fields (prompt_injection,
-      secret_leak, malicious_patch) and reasons as an array, including [] when empty.
-      Do not repeat the result in a second format or omit reasons.
   runs-on: ubuntu-latest
   needs: [pat_pool]
   github-token: ${{ secrets.GITHUB_TOKEN }}
