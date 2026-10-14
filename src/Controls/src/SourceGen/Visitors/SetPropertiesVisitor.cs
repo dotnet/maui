@@ -498,7 +498,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				styleNode.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), null);
 				styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
 				styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
+				Writer.WriteLine("return true;");
 			}
+			Writer.WriteLine("return false;");
 		}
 	}
 

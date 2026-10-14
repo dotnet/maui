@@ -302,22 +302,9 @@ static class SetPropertyHelpers
 		// Type.FullName uses metadata names and '+' between nested types. Constructed generic
 		// types include assembly-qualified type arguments, so retain the Type overload for them.
 		if (!targetType.IsGenericType)
-			return SymbolDisplay.FormatLiteral(GetMetadataFullName(targetType), true);
+			return SymbolDisplay.FormatLiteral(targetType.GetMetadataFullName(), true);
 
 		return $"typeof({targetType.ToFQDisplayString()})";
-	}
-
-	static string GetMetadataFullName(INamedTypeSymbol type)
-	{
-		var nestedTypeNames = new Stack<string>();
-		for (var current = type; current is not null; current = current.ContainingType)
-			nestedTypeNames.Push(current.MetadataName);
-
-		var namespaceNames = new Stack<string>();
-		for (var current = type.ContainingNamespace; !current.IsGlobalNamespace; current = current.ContainingNamespace)
-			namespaceNames.Push(current.MetadataName);
-
-		return $"{string.Join(".", namespaceNames)}{(namespaceNames.Count > 0 ? "." : string.Empty)}{string.Join("+", nestedTypeNames)}";
 	}
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)

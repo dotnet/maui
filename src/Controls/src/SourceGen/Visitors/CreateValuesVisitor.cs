@@ -426,12 +426,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 		if (targetType is null)
 			return false;
 
-		// Generate the assembly-qualified name (without global:: prefix, with assembly name)
-		// Type.GetType() expects format: "Namespace.TypeName, AssemblyName"
-#pragma warning disable RS0030 // Use banned ToDisplayString to get name without global:: prefix
-		var typeFullName = targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
-#pragma warning restore RS0030
-		var assemblyQualifiedName = $"{typeFullName}, {targetType.ContainingAssembly.Name}";
+		var assemblyQualifiedName = targetType.GetAssemblyQualifiedName();
 
 		// Create the Style variable with the trimmable constructor
 		var variableName = NamingHelpers.CreateUniqueVariableName(context, styleType);
@@ -463,7 +458,7 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 		}
 
 		// Write the Style constructor
-		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(\"{assemblyQualifiedName}\");");
+		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(\"{CSharpExpressionHelpers.EscapeForString(assemblyQualifiedName)}\");");
 
 		// Register the Style variable
 		variables[node] = new LocalVariable(styleType, variableName);

@@ -60,11 +60,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Sets the initializer action that populates the style's Setters, Behaviors, and Triggers.
+		/// Sets the initializer that populates the style's Setters, Behaviors, and Triggers.
 		/// This property is intended for source generator use only.
 		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Action<Style, BindableObject> LazyInitialization { internal get; set; }
+		public Func<Style, BindableObject, bool> LazyInitialization { internal get; set; }
 
 		/// <summary>
 		/// Gets or sets whether the style can be applied to types derived from <see cref="TargetType"/>.
@@ -143,9 +143,9 @@ namespace Microsoft.Maui.Controls
 		{
 			lock (_initializerLock)
 			{
-				if (LazyInitialization is not null)
+				var lazyInitialization = LazyInitialization;
+				if (lazyInitialization is not null && lazyInitialization(this, bindable))
 				{
-					LazyInitialization(this, bindable);
 					LazyInitialization = null;
 				}
 			}
