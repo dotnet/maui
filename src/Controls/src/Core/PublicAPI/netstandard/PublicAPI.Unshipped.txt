@@ -365,3 +365,9 @@ static readonly Microsoft.Maui.Controls.Animations.SharedTransition.NameProperty
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.RepeatBehaviorProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.SpeedRatioProperty -> Microsoft.Maui.Controls.BindableProperty!
 [MAUIANIM0001]static readonly Microsoft.Maui.Controls.Animations.Storyboard.TargetNameProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.IQueryPropertyAttributable
+~Microsoft.Maui.Controls.IQueryPropertyAttributable.ApplyQueryPropertyAttributes(Microsoft.Maui.Controls.QueryPropertyAttributeContext query) -> void
+~Microsoft.Maui.Controls.IQueryPropertyAttributable.QueryPropertyTargetType.get -> System.Type
+Microsoft.Maui.Controls.QueryPropertyAttributeContext
+~Microsoft.Maui.Controls.QueryPropertyAttributeContext.TryGetValue(string queryId, System.Type targetType, out object value) -> bool
+~Microsoft.Maui.Controls.QueryPropertyAttributeContext.WasRemoved(string queryId) -> bool

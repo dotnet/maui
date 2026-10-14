@@ -39,3 +39,10 @@ MAUIX2020 | XamlInflation | Warning | ConflictingXmlnsType
 MAUIX2021 | XamlInflation | Error | ExtensionPropertyAmbiguous
 MAUIX2022 | XamlInflation | Error | ExtensionPropertyResolution
 MAUIX2023 | XamlParsing | Error | XCodeRequiresSourceGen
+MAUI1200 | QueryPropertyGenerator | Info | QueryPropertyClassMustBePartial
+MAUI1201 | QueryPropertyGenerator | Info | QueryPropertyNotFound
+MAUI1202 | QueryPropertyGenerator | Info | QueryPropertySetterNotPublic
+MAUI1203 | QueryPropertyGenerator | Info | QueryPropertyAttributeInvalidArguments
+MAUI1204 | QueryPropertyGenerator | Error | QueryPropertyClassMustBePartialNoFallback
+MAUI1205 | QueryPropertyGenerator | Info | QueryPropertyContainingClassMustBePartial
+MAUI1206 | QueryPropertyGenerator | Info | QueryPropertyTypeNotSupported
