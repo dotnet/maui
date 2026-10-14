@@ -285,6 +285,20 @@ function Get-ExpertDimensions {
     return $ids
 }
 
+function Get-ExpertDimensionNames {
+    $rulebook = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '../agents/maui-expert-reviewer.md'))
+    $names = @{}
+    foreach ($heading in [regex]::Matches($rulebook, '(?m)^### ([1-9][0-9]?)\. (.+?) `\[(?:critical|major|moderate|minor)\]`\r?$')) {
+        $id = [int]$heading.Groups[1].Value
+        if ($id -gt 31 -or $names.ContainsKey($id)) {
+            throw 'The trusted expert rulebook contains an invalid or duplicate dimension heading.'
+        }
+        $names.Add($id, $heading.Groups[2].Value)
+    }
+    if ($names.Count -ne 31) { throw 'The trusted expert rulebook must name all 31 dimensions.' }
+    return $names
+}
+
 function Get-ExpertHash {
     param([object]$Value)
 
@@ -453,13 +467,17 @@ function Invoke-ExpertPrepare {
     foreach ($path in $context.paths) { Assert-ExpertPath $path; [void]$paths.Add($path) }
     $findings = Get-ExpertFindings $rawFindings $paths
     $dimensions = Get-ExpertDimensions $state.activated_dimensions
+    $dimensionNames = Get-ExpertDimensionNames
+    $dimensionDetails = [Collections.Generic.List[string]]::new()
     $gaps = [Collections.Generic.List[string]]::new()
     foreach ($gap in $context.gaps) { $gaps.Add([string]$gap) }
     $completed = 0
     foreach ($id in $dimensions | Sort-Object) {
+        $label = "$id. $([Net.WebUtility]::HtmlEncode($dimensionNames[$id]))"
         $source = Join-Path $ResultDirectory "dimensions/$id.json"
         if (-not (Test-Path -LiteralPath $source)) {
             $gaps.Add("Dimension $id did not persist an independent result.")
+            $dimensionDetails.Add("- &#x26A0;&#xFE0F; $label (no result)")
             continue
         }
         $worker = Read-ExpertJson (Copy-ExpertInput $source (Join-Path $imported "dimensions/$id.json") 1MB) 1MB
@@ -470,7 +488,13 @@ function Invoke-ExpertPrepare {
             throw 'An independent dimension artifact has an invalid identity or completion flag.'
         }
         [void](Get-ExpertFindings $worker.findings $paths)
-        if ($worker.complete) { $completed++ } else { $gaps.Add("Dimension $id did not complete.") }
+        if ($worker.complete) {
+            $completed++
+            $dimensionDetails.Add("- &#x2705; $label")
+        } else {
+            $gaps.Add("Dimension $id did not complete.")
+            $dimensionDetails.Add("- &#x26A0;&#xFE0F; $label (incomplete)")
+        }
     }
     if (-not $state.validation_complete) { $gaps.Add('The reviewer did not complete finding validation.') }
     $exceptionKeys = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -570,9 +594,9 @@ function Invoke-ExpertPrepare {
         } else {
             $summary = "**Coverage:** $completed/$($dimensions.Count) dimensions; " +
                 "finding validation $(if ($state.validation_complete) { 'complete' } else { 'incomplete' })."
-            $analysis = ''
+            $analysis = "**Dimensions:**`n" + ($dimensionDetails -join "`n") + "`n"
             if ($findings.Count -or $unplaced.Count) {
-                $analysis = "**Findings:** $($inline.Count) new inline, $($unplaced.Count) in this comment, " +
+                $analysis += "`n**Findings:** $($inline.Count) new inline, $($unplaced.Count) in this comment, " +
                     "$alreadyPostedCount already posted (not repeated).`n"
             }
             if ($unplaced.Count) {
