@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Foundation;
 using UIKit;
@@ -153,7 +154,6 @@ namespace Microsoft.Maui.Devices
 				rate: rate);
 		}
 
-		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
 		protected override void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
@@ -163,14 +163,18 @@ namespace Microsoft.Maui.Devices
 			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
 			observer = notificationCenter.AddObserver(ScreenParametersChangedNotification, OnMainDisplayInfoChanged);
 #else
-			// On iOS, use status bar orientation changes (deprecated but still works)
-			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
-			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
+			observer = notificationCenter.AddObserver(
+				UIDevice.OrientationDidChangeNotification,
+				OnMainDisplayInfoChanged);
+			UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 #endif
 		}
 
 		protected override void StopScreenMetricsListeners()
 		{
+#if !MACCATALYST
+			UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+#endif
 			observer?.Dispose();
 			observer = null;
 		}
@@ -178,15 +182,13 @@ namespace Microsoft.Maui.Devices
 		void OnMainDisplayInfoChanged(NSNotification obj) =>
 			OnMainDisplayInfoChanged();
 
-#pragma warning disable CA1416 // UIApplication.StatusBarOrientation has [UnsupportedOSPlatform("ios9.0")]. (Deprecated but still works)
-#pragma warning disable CA1422 // Validate platform compatibility
 		static DisplayOrientation CalculateOrientation() =>
-			UIApplication.SharedApplication.StatusBarOrientation.IsLandscape()
+			GetInterfaceOrientation().IsLandscape()
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
 
 		static DisplayRotation CalculateRotation() =>
-			UIApplication.SharedApplication.StatusBarOrientation switch
+			GetInterfaceOrientation() switch
 			{
 				UIInterfaceOrientation.Portrait => DisplayRotation.Rotation0,
 				UIInterfaceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
@@ -195,7 +197,44 @@ namespace Microsoft.Maui.Devices
 				_ => DisplayRotation.Unknown,
 			};
 
-#pragma warning restore CA1422 // Validate platform compatibility
+		static UIInterfaceOrientation GetInterfaceOrientation()
+		{
+#if !MACCATALYST
+			var windowScene = GetWindowScene();
+
+			if (windowScene is not null)
+			{
+#pragma warning disable CA1422 // UIWindowScene.InterfaceOrientation is available across the supported iOS versions.
+				return windowScene.InterfaceOrientation;
+#pragma warning restore CA1422
+			}
+
+			return UIInterfaceOrientation.Unknown;
+#else
+#pragma warning disable CA1416 // UIApplication.StatusBarOrientation is required on Mac Catalyst.
+#pragma warning disable CA1422 // UIApplication.StatusBarOrientation is required on Mac Catalyst.
+			return UIApplication.SharedApplication.StatusBarOrientation;
+#pragma warning restore CA1422
 #pragma warning restore CA1416
+#endif
+		}
+
+#if !MACCATALYST
+		static UIWindowScene? GetWindowScene()
+		{
+			try
+			{
+				using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+				var windowScenes = scenes.ToArray().OfType<UIWindowScene>().ToArray();
+
+				return windowScenes.FirstOrDefault(scene => scene.ActivationState == UISceneActivationState.ForegroundActive)
+					?? windowScenes.FirstOrDefault(scene => scene.ActivationState == UISceneActivationState.ForegroundInactive);
+			}
+			catch (InvalidCastException)
+			{
+				return null;
+			}
+		}
+#endif
 	}
 }
