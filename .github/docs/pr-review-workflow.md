@@ -3,6 +3,7 @@
 This guide explains the automated investigation commands used in dotnet/maui:
 
 - `/review`
+- `/review gate`
 - `/review tests`
 - `/review performance`
 - `/evaluate-tests`
@@ -15,8 +16,10 @@ It is intended for Microsoft maintainers and community contributors who want to 
 
 | Command | Who can run it | What it does | Output |
 | --- | --- | --- | --- |
-| `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
-| `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
+| `/review` | Repository users with write, maintain, or admin access | Queues the existing full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
+| `/review <platform>` | Repository users with write, maintain, or admin access | Runs the full review on `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
+| `/review gate` | Repository users with write, maintain, or admin access | Verifies the existing PR tests without and with the fix. | Posts one expandable, commit-pinned `PR gate` comment. |
+| `/review gate <platform>` | Repository users with write, maintain, or admin access | Runs the gate on `android`, `ios`, `catalyst`, or `windows`. | Posts the same gate-only report for the selected platform. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 | `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
 | `/evaluate-tests` | Repository users with write, maintain, or admin access | Evaluates test quality and coverage on an open PR with test source changes. | Posts one test evaluation report. |
@@ -66,7 +69,12 @@ Azure authorization.
 
 ## Choosing the right command
 
-Use `/review` when you want the complete automated PR review. This is the normal entry point for maintainers reviewing a PR.
+Use `/review` for the existing complete automated PR review, including expert
+code review, alternative fixes, and the selected deep UI categories.
+
+Use `/review gate` when you only want to verify whether the PR's existing tests
+catch the bug and pass with the fix. This is additive: it does not replace or
+shorten `/review`.
 
 Use `/review tests` when the question is specifically about CI/test failures, for example:
 
@@ -79,7 +87,7 @@ Do not use `/review tests` as a substitute for a code review. It does not approv
 
 Use `/issue trace-regression` on an **issue** to investigate which change introduced
 the reported behavior. This is different from the full PR review's regression-risk
-check, which detects removal of earlier fixes.
+check, which detects removal of earlier fixes; `/review gate` does not run that check.
 
 ## `/issue trace-regression`: trace an introducing change
 
@@ -273,24 +281,39 @@ reproduction details; older reports are collapsed automatically.
 
 ## `/review`: full PR review
 
+Comment `/review` on a pull request to keep the existing full review process.
+The same platform and branch options remain supported, for example
+`/review ios` or `/review --platform android --branch main`.
+
+The Azure pipeline defaults to `GateOnly: false`. It retains Setup, Gate,
+Copilot review and alternative-fix analysis, fresh-agent full-review
+publication, selected Deep UI tests, final AI Summary updates, lock cleanup,
+and token-usage aggregation. Local full-review tooling remains available too.
+
+`/review tests` and `/review performance` remain independent commands;
+`/review rerun` remains unsupported. Both full review and gate-only requests use
+the same permission checks, per-PR concurrency, and in-progress lock.
+
+## `/review gate`: verify existing PR tests
+
 ### Trigger
 
-Comment `/review` on a pull request.
+Comment `/review gate` on an open pull request.
 
 Optional platform argument:
 
 ```text
-/review android
-/review ios
-/review catalyst
-/review windows
+/review gate android
+/review gate ios
+/review gate catalyst
+/review gate windows
 ```
 
 You can also use explicit flags:
 
 ```text
-/review --platform ios
-/review --branch main
+/review gate --platform ios
+/review gate --branch main
 ```
 
 The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
@@ -300,11 +323,14 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 3. parses the platform and optional pipeline branch;
 4. infers the platform from `platform/*` labels when no platform was supplied;
 5. queues the DevDiv `maui-copilot` Azure DevOps pipeline;
-6. minimizes (collapses) the command comment as resolved once authorized.
+6. acknowledges and minimizes the command only after queueing or a handled,
+   deterministic skip. Transient failures remain unacknowledged for recovery.
 
-The workflow intentionally does not handle `/review tests` or `/review performance`;
-those subcommands belong to their focused gh-aw workflows. The full-review
-missed-command recovery and rerun option parser also exclude both subcommands.
+The trigger, shared parser, and scheduled missed-command recovery recognize
+both `/review` and `/review gate`. Only the explicit `gate` subcommand selects
+gate-only execution. Existing full-review arguments retain their behavior.
+`/review rerun` remains unsupported, while `/review tests` and
+`/review performance` retain their separate gh-aw workflows.
 
 GitHub Actions webhook deliveries can occasionally be delayed or dropped during an Actions incident. A deterministic scheduled fallback (`.github/workflows/review-trigger-recovery.yml`) polls recent commands, waits 25 minutes so both bounded trigger jobs have time to finish, rechecks the commenter's current repository permission, and dispatches the same trusted review workflow. The default-branch commit used by the first scheduled run is a permanent lower bound, preventing already-handled commands from being replayed when the fallback is introduced. Processed commands are marked so a delayed webhook cannot trigger a duplicate review.
 
@@ -321,25 +347,87 @@ If you do not specify a platform, the trigger looks at PR labels:
 
 If labels are inconclusive, it defaults to Android. If that is wrong for the PR, use an explicit platform argument.
 
-### What the review pipeline does
+### What the gate pipeline does
 
-The Azure DevOps review pipeline is defined in `eng/pipelines/ci-copilot.yml`. At a high level it has three stages:
+The existing `maui-copilot` definition remains on
+`eng/pipelines/ci-copilot.yml`; no new Azure definition or secret is required.
+With `GateOnly: true`, it selects `eng/pipelines/pr-review-gate.yml` at compile
+time; no full-review, Deep UI, or inference jobs are included in that run.
+Gate-only platform provisioning uses `eng/pipelines/pr-gate-setup.yml`. This
+mode contains only test verification, fresh-agent publication, and lock cleanup:
 
-1. **ReviewPR**: checks out the PR, prepares the target platform, runs the Copilot PR review script, and publishes the initial review artifacts.
-2. **RunDeepUITests**: runs detected UI test categories on the correct platform pool when the review identifies relevant UI tests.
-3. **UpdateAISummaryComment**: updates the PR's `AI Summary` comment with review results and deep UI test results.
+1. **Setup:** prepares the target platform, captures trusted infrastructure before
+   introducing PR code, and freezes the PR head, baseline, and review-tree SHAs.
+2. **Gate:** calls `Review-PR.ps1 -Phase Gate -GateOnly`, then the existing
+   `verify-tests-fail.ps1` verifier. Detection uses the pinned local diff. No
+   GitHub or Copilot credential is passed to the Gate task.
+3. **PostGate:** a fresh hosted agent checks out the pipeline revision, imports
+   bounded diagnostic data outside the checkout, and calls `Post-PRGate.ps1`.
+4. **Cleanup:** releases `s/agent-review-in-progress` only when no other run for
+   the same PR owns it.
 
-The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the core review phases:
+Unit, XAML, device, and UI test runners retain their existing verification,
+retry, and infrastructure-error classification. Detection resolves the class
+scope containing each test attribute, excluding closed nested helpers. Nested
+unit and XAML fixtures are grouped by their containing outer class or page rather
+than generic `Resize` or `Test` filters that would match unrelated fixtures.
+Native selection remains capped at two device and two UI groups by default, with
+newly added groups prioritized.
+Setup's MSBuild-task watchdog uses native PowerShell on Windows rather than
+requiring WSL, while preserving its timeout, sanitized output, and build exit code.
+Dropped groups are reported as coverage gaps and receive no subsequent deep
+category sweep. A test-only PR keeps failure-only verification; it does not claim
+a with-fix pass. Both modes use the same early-loaded result parser, so genuine
+assertion failures in test-only mode remain reproduction evidence rather than
+being lost to a missing parser helper. A PR without runnable tests is `SKIPPED`;
+missing tests are not generated.
 
-1. branch setup and PR merge for review;
-2. UI category detection;
-3. regression cross-reference;
-4. gate verification;
-5. candidate review and fix exploration;
-6. AI summary posting;
-7. review labels.
+The report follows the compact test-failure-analysis layout: an author/commit
+quote, result/platform/commit badges, a closed **Gate analysis** section,
+and readable phase-result tables grouped by test type.
+Only known diagnostic fields are rendered; bounded execution-log excerpts
+remain escaped in a separate collapsed section rather than displaying the
+entire raw Markdown report. Compilation-dependent baselines and test-only mode
+are explicit, and build-blocked or unmatched filters are never shown as expected
+runtime failures. Native recordings and generated patches are not claimed.
+Setup/build/environment blockers are `INCONCLUSIVE`, not a
+failed fix. A missing verdict, including a killed or timed-out Gate task, is
+`INCONCLUSIVE`; no timeout is inferred solely from an absent result.
+Only `s/agent-gate-passed` or `s/agent-gate-failed` signals are applied, and only
+while the live PR head still matches the tested head. The command never submits
+a PR review, approves, requests changes, applies full-review outcome labels, or
+edits the title/description. A pass signal means the selected verification mode
+passed, not that every test ran or that a test-only PR includes a fix. The existing
+full-verification rule accepts at least one genuine failure-to-pass pair with no
+genuine with-fix regression. Unmatched or inconclusive groups are not successful
+execution evidence; inspect the diagnostic table and coverage limitations even
+when another group satisfies the passing rule.
 
-The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
+Comments are idempotent per Azure run. Only the authenticated publisher's owned
+gate comments can be updated or collapsed. A stale run remains visibly tied to
+its old commit and cannot hide newer gate reports or change result labels.
+Bounded execution diagnostics are retained in `GateLogs` and `BuildLogs`.
+The allowlist includes both full-verification and failure-only execution logs.
+Oversized allowlisted execution transcripts are explicitly tail-truncated; they
+do not discard the structured gate report or relax artifact size limits.
+
+Manual branch validation is supported by the existing dispatcher:
+
+```bash
+gh workflow run review-trigger.yml --repo dotnet/maui --ref main \
+  -f pr_number=12345 -f platform=android \
+  -f pipeline_ref=your-gate-branch -f gate_only=true
+```
+
+After the additive trigger is deployed, the dispatcher stays on `main` to reuse
+its existing OIDC trust; `pipeline_ref` selects the branch containing the
+candidate Azure YAML and trusted scripts. Omitting `gate_only` preserves full
+review. Before deployment, the old dispatcher cannot select the new mode:
+use existing Azure queue access with `GateOnly=true` to validate a gate branch.
+Before merge, dispatching the workflow itself from a custom branch may require
+an already-authorized branch credential. Existing Azure queue access can also
+exercise the same definition directly. Do not add credentials just to bypass
+that identity boundary.
 
 ## `/review performance`: performance review
 
@@ -420,9 +508,13 @@ Comment `/review tests` on a pull request.
 
 The trigger is implemented by `.github/workflows/copilot-review-tests.md`, compiled to `.github/workflows/copilot-review-tests.lock.yml`.
 
-Because gh-aw slash commands match only the first command token, the workflow listens for `/review` and then neutrally skips unless the comment uses the canonical `/review tests` subcommand. The regular `/review` trigger excludes `/review tests` so the two workflows do not both run.
+Because gh-aw slash commands match only the first command token, the workflow
+listens for `/review` and neutrally skips unless the comment uses the canonical
+`/review tests` subcommand. The full/gate trigger excludes `/review tests`,
+so the two workflows do not both run.
 
-**Note**: Like `/review`, the command comment is minimized (collapsed as "Resolved") after authorization to reduce conversation clutter.
+**Note**: Like `/review gate`, the command comment is minimized (collapsed as
+"Resolved") after authorization and processing to reduce conversation clutter.
 
 ### What it does
 
@@ -569,23 +661,20 @@ Do not treat `Insufficient data` as "unrelated." It means a human or a rerun wit
 
 ## How to read the review comments
 
-### AI Summary
+### PR gate
 
-The full `/review` pipeline posts an `AI Summary` comment. It may include:
+`/review gate` posts a `PR gate` comment with a closed **Gate analysis**
+section. Expand the analysis for the platform, pinned PR head and
+baseline, verification verdict, coverage limitations, and diagnostic transcript.
 
-- gate status;
-- UI test results;
-- regression cross-reference;
-- pre-flight context;
-- code review findings;
-- fix/candidate analysis;
-- final recommendation.
-
-The review sessions are collapsed by default — expand the **Review Sessions** section to read the latest session, which is keyed to the current HEAD commit. Previous review comments are minimized and hidden as outdated.
+`/review` continues to publish `AI Summary` comments, and local full-review
+skills remain available. The hosted gate does not produce their code-review, alternative
+fix, deep-category, or merge-recommendation sections.
 
 ### Test Failure Review
 
-`/review tests` posts a separate `Test Failure Review` comment. This comment is intentionally separate from the `AI Summary` so readers can quickly answer, "Why is CI red?" without reading the full review.
+`/review tests` posts a separate failure-attribution comment. It answers "Why is
+CI red?" rather than checking the gate's without-fix/with-fix test outcomes.
 
 The top-level title is always:
 
@@ -607,20 +696,20 @@ The canonical layout lives in the skill rather than a separate caller template.
 ## Recommended workflow for maintainers
 
 1. Make sure the PR has appropriate `area-*` and `platform/*` labels. The agentic labeler normally handles this on PR open/reopen.
-2. Run `/review` when a PR is ready for automated review.
-3. Read the `AI Summary` comment and check whether the review found actionable issues.
+2. Run `/review` for the complete review, or `/review gate` when only existing-test verification is needed.
+3. Read the `AI Summary` or `PR gate` comment and inspect the evidence.
 4. If CI is red or ambiguous, run `/review tests` to get a focused failure-causality report.
-5. If the author pushes fixes or adds material context, run `/review` for a fresh review.
+5. If the author changes the fix or tests, repeat the relevant command for a fresh snapshot.
 6. Use human judgment for merge decisions. These workflows provide evidence and recommendations, not final approval authority.
 
 ## Recommended workflow for community contributors
 
 1. Open the PR with a clear description and linked issue when possible.
 2. Wait for labels and CI to run.
-3. If you need an automated review, ask a maintainer to run `/review`.
+3. Ask a maintainer to run `/review` for a full review or `/review gate` to verify existing regression tests.
 4. If CI is red and you are unsure whether it is caused by your changes, ask a maintainer to run `/review tests`.
 5. When an automated comment is posted, read the summary first, then expand evidence sections for details.
-6. Push fixes or reply with clarifying information, then ask a maintainer to run `/review` for a fresh review.
+6. Push fixes or tests, then ask a maintainer to repeat the relevant review command.
 
 ## Safety and trust boundaries
 
@@ -628,30 +717,34 @@ The review automation analyzes untrusted PR code and untrusted comments. The wor
 
 Important safeguards:
 
-- `/review` requires repository write-level permissions and queues a trusted AzDO pipeline.
+- `/review` and `/review gate` require repository write-level permissions and queue a trusted Azure pipeline.
 - `/review tests` is comment-only and uses gh-aw safe outputs for PR comments.
-- The full review pipeline keeps PR-controlled code separated from trusted scripts where possible.
+- The gate uses trusted runner copies, a credential-free test task, and a fresh hosted publisher that imports only bounded diagnostics.
 - Review comments should be treated as assistant-generated evidence, not as a substitute for human review.
 
 ## Troubleshooting
 
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
-| `/review` does nothing | The commenter does not have write/maintain/admin access, the comment is not on a PR, or GitHub Actions delayed the webhook. | Authorized commands should be recovered automatically within about 35 minutes. Check GitHub Status if Actions is degraded. |
-| `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
+| `/review` does nothing | The commenter lacks write/maintain/admin access, the PR is closed, or the webhook was delayed. | Authorized commands should be recovered within about 35 minutes. Check GitHub Status if Actions is degraded. |
+| `/review gate` does nothing | The commenter lacks write/maintain/admin access, the PR is closed, or the webhook was delayed. | Authorized commands should be recovered within about 35 minutes. Check GitHub Status if Actions is degraded. |
+| `/review gate` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review gate ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
-| The AI Summary looks stale | New commits or author comments landed after the last review. | Ask a maintainer to run `/review` for a fresh review. |
-| There are multiple old AI Summary comments | Each comment holds only the latest session (keyed to its HEAD commit); previous review comments are minimized and hidden as outdated. | Expand the **Review Sessions** section in the newest comment — it reflects the current HEAD commit. |
+| A gate report is outdated | The PR head changed after Setup captured its snapshot. | Run `/review gate` again; an outdated run does not update result labels. |
+| There are multiple gate reports | Separate Azure runs have separate commit-pinned comments. | Read the newest non-minimized report; only owned older reports are collapsed. |
 | Command comment is still visible | The commenter may lack authorization, or the command was malformed. | Check actor permissions and command syntax. Authorized commands are minimized after processing. |
 
 ## Related files
 
-- `.github/workflows/review-trigger.yml` — GitHub comment trigger for `/review`.
-- `.github/workflows/review-trigger-recovery.yml` — scheduled fallback for missed `/review` webhooks.
+- `.github/workflows/review-trigger.yml` — GitHub comment trigger for `/review` and `/review gate`.
+- `.github/workflows/review-trigger-recovery.yml` — scheduled fallback for missed full/gate review webhooks.
 - `.github/scripts/Recover-MissedReviewCommands.ps1` — deterministic recovery and duplicate-prevention logic.
 - `.github/scripts/shared/ReviewCommandHelpers.ps1` — command parsing and authorization helpers for manual review recovery.
-- `eng/pipelines/ci-copilot.yml` — Azure DevOps PR review pipeline.
-- `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
+- `eng/pipelines/ci-copilot.yml` — full-review Azure pipeline with a default-false `GateOnly` selector.
+- `eng/pipelines/pr-review-gate.yml` — gate-only verification, publication, and cleanup stages.
+- `eng/pipelines/pr-gate-setup.yml` — platform provisioning before PR code is merged.
+- `.github/scripts/Post-PRGate.ps1` — expandable gate-only report publisher.
+- `.github/scripts/Review-PR.ps1` — orchestrates full-review phases or Setup/Gate only with `-GateOnly`.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
 - `.github/workflows/copilot-review-tests.md` — gh-aw source for `/review tests`.
 - `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.
