@@ -19,16 +19,16 @@ public sealed class InteractivePolicyTests
 	public async Task OnlyExplicitInteractiveMetadataExtendsDeadlineAndHoldsLease(bool interactive)
 	{
 		var clock = new ManualTime();
-		var registry = new CommandRegistry();
-		var completion = new TaskCompletionSource<Ack>(TaskCreationOptions.RunContinuationsAsynchronously);
-		registry.Register("test.wait", ProtocolJsonContext.Default.EmptyArgs, ProtocolJsonContext.Default.Ack,
-			(_, _) => completion.Task, interactive: interactive);
-		using var hub = new HybridAppTargetObject(registry, () => new ReadyResult(registry.Names, "", 4096,
+		var plugin = new TestComposition.InteractiveWait();
+		var completion = plugin.Completion;
+		var registry = TestComposition.CreateRegistry(plugin);
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "", 4096,
 			registry.InteractiveCommands), null, clock);
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value;
-		Assert.Equal(interactive ? 1 : 0, ready.GetProperty("interactiveCommands").GetArrayLength());
-		var pending = Call(hub, session, "test.wait");
+		Assert.Contains("test.interactiveWait", ready.GetProperty("interactiveCommands").EnumerateArray().Select(value => value.GetString()));
+		Assert.DoesNotContain("test.wait", ready.GetProperty("interactiveCommands").EnumerateArray().Select(value => value.GetString()));
+		var pending = Call(hub, session, interactive ? "test.interactiveWait" : "test.wait");
 		clock.Advance(TimeSpan.FromSeconds(24));
 		hub.ExpireDocument();
 		if (!interactive)
@@ -55,14 +55,13 @@ public sealed class InteractivePolicyTests
 	public async Task InteractiveCallsCancelImmediatelyWithoutWaitingForOSDismissal(string outcome)
 	{
 		var clock = new ManualTime();
-		var registry = new CommandRegistry();
-		var completion = new TaskCompletionSource<Ack>(TaskCreationOptions.RunContinuationsAsynchronously);
-		registry.Register("test.wait", ProtocolJsonContext.Default.EmptyArgs, ProtocolJsonContext.Default.Ack,
-			(_, _) => completion.Task, interactive: true);
-		using var hub = new HybridAppTargetObject(registry, () => new ReadyResult(registry.Names, "", 4096), null, clock);
+		var plugin = new TestComposition.InteractiveWait();
+		var completion = plugin.Completion;
+		var registry = TestComposition.CreateRegistry(plugin);
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "", 4096), null, clock);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect");
-		var pending = Call(hub, session, "test.wait");
+		var pending = Call(hub, session, "test.interactiveWait");
 		if (outcome == "disconnect") hub.Disconnect();
 		else if (outcome == "dispose") hub.Dispose();
 		else clock.Advance(TimeSpan.FromSeconds(301));

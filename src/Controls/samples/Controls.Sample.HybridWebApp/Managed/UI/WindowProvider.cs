@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using Application = Microsoft.Maui.Controls.Application;
@@ -162,7 +161,8 @@ public sealed record HybridWindowOptions(string? Title = null, double? Width = n
 public sealed record HybridWindowRequest(string Location, string Id);
 
 /// <summary>Scoped native implementation of TypeScript window creation and lifecycle operations.</summary>
-public sealed class HybridWindowActions(HybridViewContext context, HybridWindowHost host, IDeviceInfo device, NativeDispatcher dispatcher)
+public sealed partial class WindowProvider(HybridViewContext context, HybridWindowHost host, IDeviceInfo device,
+	NativeDispatcher dispatcher, NativeNotifications notifications, TimeProvider time) : IDisposable
 {
 	/// <summary>Gets the actual MAUI multi-window platform capability; iPhone is excluded.</summary>
 	public bool CanOpenWindows => device.Platform == DevicePlatform.WinUI || device.Platform == DevicePlatform.MacCatalyst ||
@@ -188,93 +188,87 @@ public sealed class HybridWindowActions(HybridViewContext context, HybridWindowH
 			return Task.FromResult(new WindowOpenResult(id, host.Lease(context, id)));
 		}, cancellation);
 	}
-	/// <summary>Closes the native window owning this callback, never a global current window.</summary>
-	/// <param name="cancellation">The owning callback lifetime.</param>
-	/// <returns>Native close acceptance; destruction cancels this scope.</returns>
-	public Task<bool> CloseCurrentAsync(CancellationToken cancellation = default) =>
-		dispatcher.RunAsync(() => { host.CloseCurrent(context); return Task.FromResult(true); }, cancellation);
-}
-
-/// <summary>Typed MAUI window operations scoped to the calling view.</summary>
-public sealed class WindowProvider(HybridViewContext context, HybridWindowHost host,
-	IDeviceInfo device, NativeDispatcher dispatcher, HybridWindowActions? actions = null) : IHybridCommandProvider
-{
-	readonly HybridWindowActions _actions = actions ?? new(context, host, device, dispatcher);
 	bool Desktop => device.Platform == DevicePlatform.WinUI || device.Platform == DevicePlatform.MacCatalyst;
-	bool Multiple => _actions.CanOpenWindows;
+	bool Multiple => CanOpenWindows;
 
-	/// <inheritdoc />
-	public void Register(CommandRegistry registry)
+	[HybridAction("window.find", MainThread = true)]
+	internal WindowFindResult Find(string id)
 	{
-		var json = WindowJsonContext.Default;
-		registry.Register("window.find", json.WindowFindArgs, json.WindowFindResult, (args, op) => dispatcher.RunAsync(() =>
-		{
-			WindowIdentity.Validate(args.Id);
-			return Task.FromResult(new WindowFindResult(host.Find(context, args.Id, Desktop, Multiple, device.Platform == DevicePlatform.WinUI)));
-		}, op.Cancellation));
-		registry.Register("window.center", json.WindowTargetArgs, json.WindowAccepted, (args, op) => dispatcher.RunAsync(() =>
-		{
-			WindowCenter.Apply(host.Target(context, args.WindowId, args.WindowLease));
-			return Task.FromResult(new WindowAccepted(true));
-		}, op.Cancellation));
-		registry.Register("window.activate", json.WindowTargetArgs, json.WindowAccepted, (args, op) => dispatcher.RunAsync(() =>
-		{
-			if (!Desktop) throw new NotSupportedException("Native activation is desktop-only.");
-			host.Activate(context, args.WindowId, args.WindowLease);
-			return Task.FromResult(new WindowAccepted(true));
-		}, op.Cancellation));
-		registry.Register("window.size", json.WindowSizeArgs, json.WindowAccepted, (args, op) => dispatcher.RunAsync(() =>
-		{
-			if (!Desktop) throw new NotSupportedException("Native resizing is unsupported on mobile.");
-			if (!double.IsFinite(args.Width) || !double.IsFinite(args.Height) || args.Width <= 0 || args.Height <= 0)
-				throw new CommandException("invalid_arguments", "Use finite positive desktop dimensions; native OS constraints apply.");
-			var window = host.Target(context, args.WindowId, args.WindowLease);
-			window.Width = args.Width; window.Height = args.Height;
-			return Task.FromResult(new WindowAccepted(true));
-		}, op.Cancellation));
-		registry.Register("window.position", json.WindowPositionArgs, json.WindowAccepted, (args, op) => dispatcher.RunAsync(() =>
-		{
-			if (!Desktop) throw new NotSupportedException("Native positioning is unsupported on mobile.");
-			if (!double.IsFinite(args.X) || !double.IsFinite(args.Y))
-				throw new CommandException("invalid_arguments", "Use finite native coordinates; OS work-area constraints apply.");
-			var window = host.Target(context, args.WindowId, args.WindowLease);
-			window.X = args.X; window.Y = args.Y;
-			return Task.FromResult(new WindowAccepted(true));
-		}, op.Cancellation));
-		registry.Register("window.closeCurrent", json.WindowEmptyArgs, json.WindowAccepted, async (_, op) =>
-			new WindowAccepted(await _actions.CloseCurrentAsync(op.Cancellation)));
-		registry.Register("window.info", json.WindowTargetArgs, json.WindowInfo, (args, op) => dispatcher.RunAsync(
-			() => Task.FromResult(Read(args.WindowId, args.WindowLease)), op.Cancellation));
-		registry.Register("window.title", json.WindowTitleArgs, json.WindowInfo, (args, op) => dispatcher.RunAsync(() =>
-		{
-			if (args.Title.Any(char.IsControl))
-				throw new CommandException("invalid_arguments", "Native titles must not contain control characters.");
-			host.Target(context, args.WindowId, args.WindowLease).Title = args.Title;
-			return Task.FromResult(Read(args.WindowId, args.WindowLease));
-		}, op.Cancellation));
-		registry.Register("window.bounds", json.WindowBoundsArgs, json.WindowInfo, (args, op) => dispatcher.RunAsync(() =>
-		{
-			if (!Desktop)
-				throw new NotSupportedException("Window bounds cannot be changed on mobile.");
-			if (!double.IsFinite(args.X) || !double.IsFinite(args.Y) || !double.IsFinite(args.Width) || !double.IsFinite(args.Height) ||
-				args.Width <= 0 || args.Height <= 0)
-				throw new CommandException("invalid_arguments", "Use finite coordinates and positive dimensions; native OS constraints apply.");
-			var window = context.Window;
-			window.X = args.X;
-			window.Y = args.Y;
-			window.Width = args.Width;
-			window.Height = args.Height;
-			return Task.FromResult(Read());
-		}, op.Cancellation));
-		registry.Register("window.open", json.WindowOpenArgs, json.WindowOpenResult, (args, op) =>
-			_actions.OpenAsync(args.Url, op.Cancellation, args.Options));
-		registry.Register("window.list", json.WindowEmptyArgs, json.WindowListResult, (_, op) => dispatcher.RunAsync(
-			() => Task.FromResult(new WindowListResult(host.List(context))), op.Cancellation));
-		registry.Register("window.close", json.WindowCloseArgs, json.WindowAccepted, (args, op) => dispatcher.RunAsync(() =>
-		{
-			host.Close(context, args.Id, args.WindowLease);
-			return Task.FromResult(new WindowAccepted(true));
-		}, op.Cancellation));
+		WindowIdentity.Validate(id);
+		return new(host.Find(context, id, Desktop, Multiple, device.Platform == DevicePlatform.WinUI));
+	}
+	[HybridAction("window.center", MainThread = true)]
+	internal WindowAccepted Center(string? windowId = null, string? windowLease = null)
+	{
+		WindowCenter.Apply(host.Target(context, windowId, windowLease));
+		return new(true);
+	}
+	[HybridAction("window.activate", MainThread = true)]
+	internal WindowAccepted Activate(string? windowId = null, string? windowLease = null)
+	{
+		if (!Desktop) throw new NotSupportedException("Native activation is desktop-only.");
+		host.Activate(context, windowId, windowLease);
+		return new(true);
+	}
+	[HybridAction("window.size", MainThread = true)]
+	internal WindowAccepted Size(double width, double height, string? windowId = null, string? windowLease = null)
+	{
+		if (!Desktop) throw new NotSupportedException("Native resizing is unsupported on mobile.");
+		if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 0 || height <= 0)
+			throw new CommandException("invalid_arguments", "Use finite positive desktop dimensions; native OS constraints apply.");
+		var window = host.Target(context, windowId, windowLease);
+		window.Width = width; window.Height = height;
+		return new(true);
+	}
+	[HybridAction("window.position", MainThread = true)]
+	internal WindowAccepted Position(double x, double y, string? windowId = null, string? windowLease = null)
+	{
+		if (!Desktop) throw new NotSupportedException("Native positioning is unsupported on mobile.");
+		if (!double.IsFinite(x) || !double.IsFinite(y))
+			throw new CommandException("invalid_arguments", "Use finite native coordinates; OS work-area constraints apply.");
+		var window = host.Target(context, windowId, windowLease);
+		window.X = x; window.Y = y;
+		return new(true);
+	}
+	[HybridAction("window.closeCurrent", MainThread = true)]
+	internal WindowAccepted CloseCurrent()
+	{
+		host.CloseCurrent(context);
+		return new(true);
+	}
+	[HybridAction("window.info", MainThread = true)]
+	internal WindowInfo Info(string? windowId = null, string? windowLease = null) => Read(windowId, windowLease);
+
+	[HybridAction("window.title", MainThread = true)]
+	internal WindowInfo Title(string title, string? windowId = null, string? windowLease = null)
+	{
+		if (title.Any(char.IsControl))
+			throw new CommandException("invalid_arguments", "Native titles must not contain control characters.");
+		host.Target(context, windowId, windowLease).Title = title;
+		return Read(windowId, windowLease);
+	}
+	[HybridAction("window.bounds", MainThread = true)]
+	internal WindowInfo Bounds(double x, double y, double width, double height)
+	{
+		if (!Desktop) throw new NotSupportedException("Window bounds cannot be changed on mobile.");
+		if (!double.IsFinite(x) || !double.IsFinite(y) || !double.IsFinite(width) || !double.IsFinite(height) || width <= 0 || height <= 0)
+			throw new CommandException("invalid_arguments", "Use finite coordinates and positive dimensions; native OS constraints apply.");
+		var window = context.Window;
+		window.X = x; window.Y = y; window.Width = width; window.Height = height;
+		return Read();
+	}
+	[HybridAction("window.open")]
+	internal Task<WindowOpenResult> Open(CancellationToken cancellation, string url = "index.html", HybridWindowOptions? options = null) =>
+		OpenAsync(url, cancellation, options);
+
+	[HybridAction("window.list", MainThread = true)]
+	internal WindowListResult List() => new(host.List(context));
+
+	[HybridAction("window.close", MainThread = true)]
+	internal WindowAccepted Close(string id, string? windowLease = null)
+	{
+		host.Close(context, id, windowLease);
+		return new(true);
 	}
 
 	WindowInfo Read(string? id = null, string? lease = null)
@@ -286,15 +280,6 @@ public sealed class WindowProvider(HybridViewContext context, HybridWindowHost h
 	static double? Finite(double value) => double.IsFinite(value) ? value : null;
 }
 
-sealed record WindowEmptyArgs;
-sealed record WindowTargetArgs(string? WindowId = null, string? WindowLease = null);
-sealed record WindowSizeArgs(double Width, double Height, string? WindowId = null, string? WindowLease = null);
-sealed record WindowPositionArgs(double X, double Y, string? WindowId = null, string? WindowLease = null);
-sealed record WindowTitleArgs(string Title, string? WindowId = null, string? WindowLease = null);
-sealed record WindowBoundsArgs(double X, double Y, double Width, double Height);
-sealed record WindowOpenArgs(string Url = "index.html", HybridWindowOptions? Options = null);
-sealed record WindowCloseArgs(string Id, string? WindowLease = null);
-sealed record WindowFindArgs(string Id);
 sealed record WindowFindResult(WindowInfo? Window);
 sealed record WindowAccepted(bool Accepted);
 sealed record WindowOpenResult(string Id, string WindowLease);
@@ -302,22 +287,3 @@ sealed record WindowInfo(string Id, string Title, double? X, double? Y, double? 
 	bool CanResize, bool CanPosition, bool CanOpenWindows, string InitialLocation, bool CanObservePosition, bool CanCenter, string WindowLease);
 sealed record WindowSummary(string Id, string Title, string Url, bool CanClose, string WindowLease);
 sealed record WindowListResult(WindowSummary[] Windows);
-
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
-[JsonSerializable(typeof(WindowEmptyArgs))]
-[JsonSerializable(typeof(WindowTargetArgs))]
-[JsonSerializable(typeof(WindowFindArgs))]
-[JsonSerializable(typeof(WindowFindResult))]
-[JsonSerializable(typeof(WindowSizeArgs))]
-[JsonSerializable(typeof(WindowPositionArgs))]
-[JsonSerializable(typeof(WindowTitleArgs))]
-[JsonSerializable(typeof(WindowBoundsArgs))]
-[JsonSerializable(typeof(WindowOpenArgs))]
-[JsonSerializable(typeof(WindowCloseArgs))]
-[JsonSerializable(typeof(WindowAccepted))]
-[JsonSerializable(typeof(WindowOpenResult))]
-[JsonSerializable(typeof(WindowInfo))]
-[JsonSerializable(typeof(WindowListResult))]
-partial class WindowJsonContext : JsonSerializerContext;

@@ -5,13 +5,27 @@ import { pickFile } from '@maui/api/essentials/file-picker'
 import { mock } from './bridge.mjs'
 afterEach(() => resetBridge())
 
+test('single selection returns direct nullable metadata and rejects obsolete wrapper envelopes', async () => {
+  let result = null
+  const host = mock(request => request.command === 'core.connect'
+    ? { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 } : result)
+  configureBridge(host.bridge)
+  assert.equal(await pickFile(), null)
+  result = { id: 'selected', name: 'real.txt', contentType: 'text/plain' }
+  assert.equal((await pickFile()).name, 'real.txt')
+  for (const file of [null, result]) {
+    result = { file }
+    await assert.rejects(() => pickFile(), error => error.code === 'invalid_response')
+  }
+})
+
 function hostFor(bytes, { partial = 3, seekable = true } = {}) {
   let offset = 0, readers = 0
   const positions = new Map()
   const host = mock(request => {
     switch (request.command) {
       case 'core.connect': return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
-      case 'filePicker.pick': return { file: { id: 'file', name: 'selected.bin', contentType: 'application/octet-stream' } }
+      case 'filePicker.pick': return { id: 'file', name: 'selected.bin', contentType: 'application/octet-stream' }
       case 'filePicker.pickMultiple': return { files: [{ id: 'file', name: 'selected.bin', contentType: 'application/octet-stream' }] }
       case 'file.openRead': {
         const id = `reader-${++readers}`; positions.set(id, 0)

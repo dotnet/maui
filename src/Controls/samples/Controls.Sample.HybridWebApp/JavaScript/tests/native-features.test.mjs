@@ -122,7 +122,7 @@ test('browser navigation listeners share one native source and detach after the 
 })
 test('direct picker/dialog calls and coherent device readouts use one hidden connection', async () => {
   const host = mock(request => request.command === 'core.connect' ? ready
-    : request.command === 'filePicker.pick' ? { file: null }
+    : request.command === 'filePicker.pick' ? null
     : request.command === 'dialogs.prompt' ? { cancelled: true, text: null }
     : request.command === 'battery.info' ? { chargeLevel: -1, state: 'Unknown', powerSource: 'AC', energySaverStatus: 'Off' }
     : { width: 1080, height: 1920, density: 3, orientation: 'Portrait', rotation: 'Rotation0', refreshRate: 60 })

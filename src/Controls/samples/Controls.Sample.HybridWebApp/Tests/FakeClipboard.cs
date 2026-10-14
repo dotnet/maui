@@ -10,6 +10,7 @@ sealed class FakeClipboard : IClipboard
 	public Action? OnWrite { get; set; }
 	public Exception? Error { get; set; }
 	public event EventHandler<EventArgs>? ClipboardContentChanged;
+	public int ListenerCount => ClipboardContentChanged?.GetInvocationList().Length ?? 0;
 
 	public Task<string?> GetTextAsync()
 	{

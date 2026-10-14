@@ -50,53 +50,15 @@ public sealed class CommandRegistry
 	/// <returns>Whether this topic is available.</returns>
 	public bool HasTopic(string name) => _topics.Contains(name);
 
-	/// <summary>Registers a command with provider-owned, strict source-generated JSON metadata.</summary>
-	/// <typeparam name="TArgs">The provider's input contract.</typeparam>
-	/// <typeparam name="TResult">The provider's output contract.</typeparam>
-	/// <param name="name">A unique command name, at most 64 ASCII letters, digits, dots, underscores or hyphens.</param>
-	/// <param name="input">Source-generated input metadata with strict constructor, member and nullability validation.</param>
-	/// <param name="output">Source-generated output metadata.</param>
-	/// <param name="handler">The typed handler. Honor cancellation before and after native side effects.</param>
-	/// <param name="enabled">Whether host policy enables this command; this is not an OS permission.</param>
-	/// <param name="interactive">Whether this command may await OS UI for a bounded five-minute budget instead of twenty seconds.</param>
-	public void Register<TArgs, TResult>(string name, JsonTypeInfo<TArgs> input, JsonTypeInfo<TResult> output,
-		Func<TArgs, Operation, Task<TResult>> handler, bool enabled = true, bool interactive = false)
-	{
-		ValidateName(name);
-		ArgumentNullException.ThrowIfNull(handler);
-		ValidateMetadata(input);
-		ValidateMetadata(output);
-		if (!_commands.TryAdd(name, async (json, operation) =>
-		{
-			TArgs args;
-			try
-			{
-				args = json.Deserialize(input) ?? throw new JsonException("Arguments must not be null.");
-			}
-			catch (JsonException)
-			{
-				throw new CommandException("invalid_arguments", "Arguments do not match the declared command contract.");
-			}
-			operation.Cancellation.ThrowIfCancellationRequested();
-			var result = await handler(args, operation).ConfigureAwait(false);
-			operation.Cancellation.ThrowIfCancellationRequested();
-			return JsonSerializer.SerializeToElement(result, output);
-		}))
-			throw new InvalidOperationException($"Duplicate command registration: {name}");
-		if (!enabled)
-			_disabled.Add(name);
-		else if (interactive)
-			_interactive.Add(name);
-	}
-
 	/// <summary>Registers a compiler-generated direct-call action with strictly source-originated metadata.</summary>
 	/// <param name="name">The unique native wire-command name.</param>
 	/// <param name="metadata">Generated metadata for every ordinary argument and result type.</param>
 	/// <param name="handler">The generated typed handler and binder, without runtime method discovery.</param>
 	/// <param name="interactive">Whether the existing bounded native interaction policy applies.</param>
+	/// <param name="enabled">Explicit compiled host availability, independent of OS permission.</param>
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	public void RegisterGenerated(string name, JsonTypeInfo[] metadata, Func<JsonElement, Operation, Task<JsonElement>> handler,
-		bool interactive = false)
+		bool interactive = false, bool enabled = true)
 	{
 		ValidateName(name);
 		ArgumentNullException.ThrowIfNull(metadata);
@@ -112,7 +74,8 @@ public sealed class CommandRegistry
 			return result;
 		}))
 			throw new InvalidOperationException($"Duplicate command registration: {name}");
-		if (interactive) _interactive.Add(name);
+		if (!enabled) _disabled.Add(name);
+		else if (interactive) _interactive.Add(name);
 	}
 
 	/// <summary>Dispatches a registered command, rejecting unknown or disabled commands.</summary>

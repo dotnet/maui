@@ -32,14 +32,15 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 	public event Action? DocumentDisconnected;
 
 	/// <summary>Creates and registers an exclusive registry once from the owning scope's explicitly supplied providers.</summary>
-	/// <param name="providers">The scoped provider collection, including any explicitly registered external plugins.</param>
+	/// <param name="registry">The scoped registry compiled from explicitly opted-in assemblies.</param>
 	/// <param name="options">Immutable host policy used for connection capabilities.</param>
 	/// <param name="time">Optional clock for document leases.</param>
 	/// <param name="viewContext">Optional scoped page/window binding for the bundled bootstrap location.</param>
 	/// <param name="notifications">Optional scoped, typed native notification source.</param>
-	public HybridAppTargetObject(IEnumerable<IHybridCommandProvider> providers, HybridAppOptions options, TimeProvider? time = null,
+	[Microsoft.Extensions.DependencyInjection.ActivatorUtilitiesConstructor]
+	public HybridAppTargetObject(CommandRegistry registry, HybridAppOptions options, TimeProvider? time = null,
 		UI.HybridViewContext? viewContext = null, NativeNotifications? notifications = null)
-		: this(CreateRegistry(providers), options, time, viewContext)
+		: this(registry, CreateReady(registry, options, viewContext), null, time)
 	{
 		_notifications = notifications;
 		if (notifications is not null)
@@ -57,25 +58,11 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 				NativeEventReceived?.Invoke(new NativeEvent(1, _session, Guid.NewGuid().ToString("D"), topic, data));
 	}
 
-	HybridAppTargetObject(CommandRegistry registry, HybridAppOptions options, TimeProvider? time, UI.HybridViewContext? viewContext)
-		: this(registry, CreateReady(registry, options, viewContext), null, time)
-	{
-	}
-
 	static Func<ReadyResult> CreateReady(CommandRegistry registry, HybridAppOptions options, UI.HybridViewContext? viewContext)
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		return () => new ReadyResult(registry.Names, options.PreferenceNamespace, options.MaximumTextLength,
 			registry.InteractiveCommands, InitialLocation: viewContext?.InitialLocation);
-	}
-
-	static CommandRegistry CreateRegistry(IEnumerable<IHybridCommandProvider> providers)
-	{
-		ArgumentNullException.ThrowIfNull(providers);
-		var registry = new CommandRegistry();
-		foreach (var provider in providers)
-			provider.Register(registry);
-		return registry;
 	}
 
 	/// <summary>Creates a hub after the host explicitly registers its providers.</summary>
@@ -91,50 +78,49 @@ public sealed class HybridAppTargetObject : IHybridAppTarget, IDisposable
 		_ready = ready;
 		NativeEventReceived = send;
 		_time = time ?? TimeProvider.System;
-		RegisterSessionCommands();
 		_lease = _time.CreateTimer(_ => ExpireDocument(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
 	}
 
-	void RegisterSessionCommands()
+	[HybridAction("core.connect")]
+	internal ReadyResult Connect() => _ready();
+
+	[HybridAction("core.subscribe")]
+	internal async Task<Ack> Subscribe(string topic, CancellationToken cancellation)
 	{
-		var json = ProtocolJsonContext.Default;
-		_registry.Register("core.connect", json.EmptyArgs, json.ReadyResult, (_, _) =>
-			Task.FromResult(_ready()));
-		_registry.Register("core.subscribe", json.TopicArgs, json.Ack, async (args, op) =>
+		ValidateTopic(topic);
+		bool start;
+		lock (_gate)
 		{
-			ValidateTopic(args.Topic);
-			bool start;
-			lock (_gate)
-			{
-				op.Cancellation.ThrowIfCancellationRequested();
-				start = _subscriptions.Add(args.Topic);
-			}
-			try
-			{ if (start) await _registry.StartTopicAsync(args.Topic).ConfigureAwait(false); }
-			catch { lock (_gate) _subscriptions.Remove(args.Topic); throw; }
-			return new Ack(true);
-		});
-		_registry.Register("core.unsubscribe", json.TopicArgs, json.Ack, (args, op) =>
+			cancellation.ThrowIfCancellationRequested();
+			start = _subscriptions.Add(topic);
+		}
+		try
+		{ if (start) await _registry.StartTopicAsync(topic).ConfigureAwait(false); }
+		catch { lock (_gate) _subscriptions.Remove(topic); throw; }
+		return new(true);
+	}
+	[HybridAction("core.unsubscribe")]
+	internal Ack Unsubscribe(string topic, CancellationToken cancellation)
+	{
+		ValidateTopic(topic);
+		lock (_gate)
 		{
-			ValidateTopic(args.Topic);
-			lock (_gate)
-			{
-				op.Cancellation.ThrowIfCancellationRequested();
-				if (_subscriptions.Remove(args.Topic))
-					_registry.StopTopic(args.Topic);
-			}
-			return Task.FromResult(new Ack(true));
-		});
-		_registry.Register("core.cancel", json.CancelArgs, json.Ack, (args, op) =>
+			cancellation.ThrowIfCancellationRequested();
+			if (_subscriptions.Remove(topic))
+				_registry.StopTopic(topic);
+		}
+		return new(true);
+	}
+	[HybridAction("core.cancel")]
+	internal Ack Cancel(string requestId, CancellationToken cancellation)
+	{
+		lock (_gate)
 		{
-			lock (_gate)
-			{
-				op.Cancellation.ThrowIfCancellationRequested();
-				var found = _operations.TryGetValue(args.RequestId, out var operation);
-				operation?.Cancel();
-				return Task.FromResult(new Ack(found));
-			}
-		});
+			cancellation.ThrowIfCancellationRequested();
+			var found = _operations.TryGetValue(requestId, out var operation);
+			operation?.Cancel();
+			return new(found);
+		}
 	}
 
 	void ValidateTopic(string topic)

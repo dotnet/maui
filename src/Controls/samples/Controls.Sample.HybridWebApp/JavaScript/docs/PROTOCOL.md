@@ -94,14 +94,14 @@ registration decision; this example topic is not part of the reference host.
 | `clipboard.write` | `{ text: string }` | `{ accepted: boolean }` | Clipboard provider |
 | `clipboard.hasText` | `{}` | `{ hasText: boolean }` | Actual native clipboard state |
 | `preferences.get`, `preferences.set` | key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Host-namespaced primitive settings |
-| `preferences.contains`, `preferences.delete`, `preferences.clear` | key/container or container only | `{ accepted: boolean }` | Clear removes only tracked namespace-owned keys |
-| `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | IBattery; Catalyst reads actual IOKit capacity instead of the incorrect UIKit value |
+| `preferences.contains`, `preferences.remove`, `preferences.clear` | key/container or container only | `{ accepted: boolean }` | Clear removes only tracked namespace-owned keys |
+| `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | IBattery on every platform; the Catalyst IOKit correction now belongs to Essentials itself |
 | `connectivity.info` | `{}` | networkAccess/connectionProfiles | Actual IConnectivity snapshot, not an endpoint reachability test |
 | `speech.locales` | `{}` | `{ locales }` | Actual installed native speech locales |
 | `speech.speak` | text + optional native locale/pitch/volume/rate | `{ accepted }` | User-triggered ITextToSpeech; interactive deadline and operation-specific cancellation |
 | `launcher.openUrl` | `{ url }` | `{ accepted }` | Actual OS external launch; bounded public HTTPS policy, not arbitrary schemes/paths |
 | `display.info` | `{}` | width/height/density/orientation/rotation/refreshRate | Direct IDeviceDisplay snapshot |
-| `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | `{ file }`/`{ files }` metadata/resources | Actual OS selection, interactive policy; cancellation null/empty |
+| `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | nullable file metadata/`{ files }` resources | Actual OS selection, interactive policy; cancellation null/empty |
 | `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
 | `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | base64/eof or acceptance | ≤65536 bytes per read; real partial/EOF/seek/close |
 | `dialogs.alert`, `dialogs.confirm` | title/message + native labels/flowDirection | `{ accepted: boolean }` | Calling native page, interactive policy |
@@ -122,9 +122,13 @@ Current source is the sibling `Managed` class library (`Protocol/`,
 `CommandRegistry.cs`, `HybridAppTargetObject.cs`, `Essentials/*`) plus the `Native`
 host app. The one WIP managed library now references Controls.Core/Core for UI
 providers, but has no sample dependency. Feature providers
-own their generated contexts; the protocol context contains only envelopes and
-control DTOs. External Toolkit assemblies register their own commands/topics and
-strict generated `JsonTypeInfo<T>` explicitly, without global metadata edits.
+own automatically generated action codecs; the protocol context contains only envelopes and
+control DTOs. External Toolkit assemblies opt into their one compiler-generated
+assembly extension, without global metadata edits or runtime assembly scanning.
+Methods declare actions with `[HybridAction]`; ordinary parameters bind directly
+from named objects or positional arrays, not per-operation Args wrappers.
+Class `[HybridTopic]` declarations expose progress/notification topics, while
+paired `[HybridEvent(topic, Start/Stop)]` methods bind first/last subscription lifetimes.
 The host, not either SDK, selects its preferences
 namespace and the existing Essentials interfaces. The reference host also registers application-only
 `sample.*` commands and `service.changed` / `operation.progress` topics; those
@@ -171,7 +175,7 @@ does not resume old work. Reload creates a fresh session.
 
 The reference host allows 16 simultaneous calls and a 20-second native
 deadline. SDK frontend waits have a 23-second deadline and signal disconnect on
-timeout. Explicit `Register(..., interactive: true)` metadata opts only native
+timeout. Explicit `[HybridAction(..., Interactive = true)]` metadata opts only native
 dialogs and file selection into a 300000 ms budget; the handshake advertises
 their names and budget, and the SDK allows 3000 additional transport milliseconds.
 Older hosts without interactive metadata retain the default timeout. Invalid,

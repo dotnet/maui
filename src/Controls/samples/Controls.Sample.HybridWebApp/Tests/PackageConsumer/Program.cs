@@ -5,13 +5,11 @@ using Maui.HybridApp.Generated;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
-services.AddHybridApp(new HybridAppOptions("consumer.")).AddHybridProvider<PluginProvider>();
+services.AddHybridApp(new HybridAppOptions("consumer."));
 services.AddScoped<PluginActionState>();
 services.AddKeyedScoped<PluginActionState>("action-key", (_, _) => new() { Calls = 10 });
-services.AddHybridActions<PluginActions>();
-services.AddPluginStaticActionsHybridActions();
-services.AddHybridActions<PluginConstructorActions>();
-services.AddHybridActions<ConsumerActions>();
+services.AddExternalProviderActions();
+services.AddPackageConsumerActions();
 using var root = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 using var scope = root.CreateScope();
 var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
@@ -33,15 +31,15 @@ void Check(bool condition, string message)
 }
 
 Check(!JsonSerializer.IsReflectionEnabledByDefault, "Reflection serialization must be disabled.");
-Check(typeof(CommandRegistry).Assembly != typeof(PluginProvider).Assembly, "The plugin must live in a separate assembly.");
+Check(typeof(CommandRegistry).Assembly != typeof(PluginActions).Assembly, "The plugin must live in a separate assembly.");
 Check(typeof(PluginActions).Assembly != typeof(ConsumerActions).Assembly, "Generated plugin actions must live in a separate provider assembly.");
 Check(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginActionValue)) is null, "Automatic action DTO metadata must remain provider-owned.");
-Check(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginArgs)) is null, "Plugin DTOs must not enter global metadata.");
+Check(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginResult)) is null, "Plugin DTOs must not enter global metadata.");
 var connect = await Call("core.connect", "{}");
 Check(connect.Status == "success", "Connect failed.");
 var ready = connect.Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 Check(ready.PreferenceNamespace == "consumer." && ready.Commands.Contains("app.info", StringComparer.Ordinal) &&
-	ready.Commands.Contains("device.info", StringComparer.Ordinal) && ready.Commands.Contains("preferences.write", StringComparer.Ordinal),
+	ready.Commands.Contains("device.info", StringComparer.Ordinal) && ready.Commands.Contains("preferences.set", StringComparer.Ordinal),
 	"Product convenience did not register its implemented APIs and actual policy.");
 Check(ready.Commands.Contains("window.info", StringComparer.Ordinal) && ready.Commands.Contains("battery.info", StringComparer.Ordinal) &&
 	ready.Commands.Contains("display.info", StringComparer.Ordinal) && ready.Commands.Contains("filePicker.pick", StringComparer.Ordinal),
@@ -70,7 +68,8 @@ Check((await Call("plugin.action.dtoDefault", "[{}]")).Result!.Value.GetProperty
 Check((await Call("plugin.action.normalized", """[{"text":null}]""")).Result!.Value.GetProperty("text").GetString() == "", "Constructor parameter nullability was confused with its nonnullable property.");
 Check((await Call("plugin.action.echo", """{"value":{"text":null,"kind":0}}""")).Error?.Code == "invalid_arguments", "Automatic action nullability was not enforced.");
 Check((await Call("plugin.action.echo", """{"value":{"text":"x","kind":0,"extra":1}}""")).Error?.Code == "invalid_arguments", "Automatic action DTO unknown members were accepted.");
-Check((await Call("consumer.action", """{"input":{"text":"host","number":7}}""")).Result!.Value.GetProperty("text").GetString() == "host", "NuGet analyzer did not generate host action metadata.");
+Check((await Call("consumer.action", """{"text":"host","number":7}""")).Result!.Value.GetProperty("text").GetString() == "host", "NuGet analyzer did not generate host action metadata.");
+Check((await Call("consumer.action", """["array",7]""")).Result!.Value.GetProperty("number").GetInt32() == 7, "Packed host positional parameters failed.");
 Check((await Call("plugin.disabled", "{\"text\":\"no\"}")).Error?.Code == "disabled_command", "Disabled policy failed.");
 Check((await Call("plugin.echo", "{\"text\":null}")).Error?.Code == "invalid_arguments", "Strict plugin nullability failed.");
 Check((await Call("plugin.echo", "{\"text\":\"ok\",\"extra\":true}")).Error?.Code == "invalid_arguments", "Strict plugin schema failed.");
@@ -79,15 +78,14 @@ Check((await Call("sample.echo", "{}")).Error?.Code == "unknown_command", "Sampl
 using var secondScope = root.CreateScope();
 var secondHub = secondScope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 Check(!ReferenceEquals(hub, secondHub), "The target must be scoped, never shared across WebViews.");
-Check(!ReferenceEquals(scope.ServiceProvider.GetServices<IHybridCommandProvider>().OfType<PluginProvider>().Single(),
-	secondScope.ServiceProvider.GetServices<IHybridCommandProvider>().OfType<PluginProvider>().Single()), "Provider instances must be scoped.");
+Check(!ReferenceEquals(scope.ServiceProvider.GetRequiredService<PluginActions>(),
+	secondScope.ServiceProvider.GetRequiredService<PluginActions>()), "Plugin instances must be scoped.");
 var secondSession = Guid.NewGuid().ToString("D");
 Check((await Call("core.connect", "{}", secondHub, secondSession)).Status == "success", "Second scope connect failed.");
 Check((await Call("plugin.echo", "{\"text\":\"second\"}", secondHub, secondSession)).Status == "success", "Second scope plugin failed.");
 Check((await Call("plugin.action.count", "{}", secondHub, secondSession)).Result!.Value.GetInt32() == 1, "Generated provider state leaked between scopes.");
 Check(events.Count == 1 && hub.IsCurrent(session), "A second view changed the first view's session/events.");
-var registry = new CommandRegistry();
-new PluginProvider().Register(registry);
+var registry = scope.ServiceProvider.GetRequiredService<CommandRegistry>();
 try
 {
 	registry.RegisterTopic("plugin.changed");
@@ -96,8 +94,8 @@ try
 catch (InvalidOperationException) { }
 try
 {
-	registry.Register("plugin.echo", PluginJsonContext.Default.PluginArgs, PluginJsonContext.Default.PluginResult,
-		(args, _) => Task.FromResult(new PluginResult(args.Text)));
+	registry.RegisterGenerated("plugin.echo", [PluginJsonContext.Default.PluginResult],
+		(_, _) => Task.FromResult(default(JsonElement)));
 	throw new Exception("Duplicate command allowed.");
 }
 catch (InvalidOperationException) { }
@@ -112,5 +110,5 @@ public sealed record ConsumerActionValue(string Text, int Number);
 public sealed class ConsumerActions
 {
 	[HybridAction("consumer.action")]
-	public ValueTask<ConsumerActionValue> Echo(ConsumerActionValue input) => ValueTask.FromResult(input);
+	public ValueTask<ConsumerActionValue> Echo(string text, int number) => ValueTask.FromResult(new ConsumerActionValue(text, number));
 }

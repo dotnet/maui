@@ -6,7 +6,8 @@ using Microsoft.Maui.Devices;
 namespace Maui.HybridApp.UI;
 
 /// <summary>Renders JS-authored owning-window menus; native click callbacks emit IDs, never execute C# feature recipes.</summary>
-public sealed class HybridMenus : IDisposable
+[HybridTopic("menus.clicked")]
+public sealed class MenuProvider : IDisposable
 {
 	readonly HybridViewContext _context;
 	readonly IDeviceInfo _device;
@@ -35,7 +36,7 @@ public sealed class HybridMenus : IDisposable
 	/// <param name="context">Owning page/window binding.</param>
 	/// <param name="device">Native platform metadata.</param>
 	/// <param name="notifications">Current-document native item-ID event source.</param>
-	public HybridMenus(HybridViewContext context, IDeviceInfo device, NativeNotifications notifications)
+	public MenuProvider(HybridViewContext context, IDeviceInfo device, NativeNotifications notifications)
 	{
 		_context = context; _device = device; _notifications = notifications;
 		context.DocumentEnded += DocumentEnded;
@@ -195,31 +196,35 @@ public sealed class HybridMenus : IDisposable
 		// The owning window mapper requests a rebuild and HandlerChanged reapplies check state.
 		if (Checks) _context.Window.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 	}
-	internal MenuInfo Update(MenuUpdate args)
+	[HybridAction("menus.update", MainThread = true)]
+	internal MenuInfo Update(string windowId, string sourceId, string id, string? text = null, bool? enabled = null, bool? @checked = null)
 	{
+		ValidateOwner(windowId);
 		var installation = _current;
-		if (installation?.Source != args.SourceId || !installation.Items.TryGetValue(args.Id, out var current) || current.Node.Kind == "separator")
+		if (installation?.Source != sourceId || !installation.Items.TryGetValue(id, out var current) || current.Node.Kind == "separator")
 			throw new CommandException("invalid_menu", "This menu item does not belong to the calling live installation.");
-		if (args.Text?.Length > 160) throw new CommandException("invalid_arguments", "Native labels are limited to 160 characters.");
-		if (args.Checked is not null && (!Checks || current.Node.Kind != "check"))
+		if (text?.Length > 160) throw new CommandException("invalid_arguments", "Native labels are limited to 160 characters.");
+		if (@checked is not null && (!Checks || current.Node.Kind != "check"))
 			throw new NotSupportedException("Native checked updates require a Mac Catalyst check item.");
-		var node = current.Node with { Text = args.Text ?? current.Node.Text, Enabled = args.Enabled ?? current.Node.Enabled, Checked = args.Checked ?? current.Node.Checked };
-		installation.Items[args.Id] = (node, current.Item, current.Bar);
+		var node = current.Node with { Text = text ?? current.Node.Text, Enabled = enabled ?? current.Node.Enabled, Checked = @checked ?? current.Node.Checked };
+		installation.Items[id] = (node, current.Item, current.Bar);
 		if (current.Item is not null) { current.Item.Text = node.Text; current.Item.IsEnabled = node.Enabled; }
 		if (current.Bar is not null) { current.Bar.Text = node.Text; current.Bar.IsEnabled = node.Enabled; }
-		Refresh(installation, args.Id);
+		Refresh(installation, id);
 		return Read();
 	}
-	internal MenuItemState Item(MenuItemArgs args)
+	[HybridAction("menus.item", MainThread = true)]
+	internal MenuItemState Item(string windowId, string sourceId, string id)
 	{
+		ValidateOwner(windowId);
 		var installation = _current;
-		if (installation?.Source != args.SourceId || !installation.Items.TryGetValue(args.Id, out var current))
+		if (installation?.Source != sourceId || !installation.Items.TryGetValue(id, out var current))
 			throw new CommandException("invalid_menu", "This item does not belong to the calling live menu installation.");
 		bool? check = null;
 		if (current.Node.Kind == "check")
 		{
 #if MACCATALYST
-			if (!installation.CheckSnapshots.TryGetValue(args.Id, out var native))
+			if (!installation.CheckSnapshots.TryGetValue(id, out var native))
 				throw new CommandException("context_unavailable", "The native check item has not been built.");
 			if (native is global::UIKit.UICommand command) check = command.State == global::UIKit.UIMenuElementState.On;
 			else if (native is global::UIKit.UIAction action) check = action.State == global::UIKit.UIMenuElementState.On;
@@ -248,50 +253,34 @@ public sealed class HybridMenus : IDisposable
 		_context.DocumentEnded -= DocumentEnded;
 		Clear(); _disposed = true;
 	}
-}
-/// <summary>Typed native menu rendering/updates and actual item-ID events for the calling window.</summary>
-public sealed class MenuProvider(HybridMenus menus, NativeDispatcher dispatcher) : IHybridCommandProvider
-{
-	/// <inheritdoc />
-	public void Register(CommandRegistry registry)
+	[HybridAction("menus.info", MainThread = true)]
+	internal MenuInfo Info(string windowId)
 	{
-		var json = MenuJsonContext.Default;
-		registry.RegisterTopic("menus.clicked");
-		registry.Register("menus.info", json.MenuOwner, json.MenuInfo, (args, op) => dispatcher.RunAsync(() => { menus.ValidateOwner(args.WindowId); return Task.FromResult(menus.Read()); }, op.Cancellation));
-		registry.Register("menus.install", json.MenuInstall, json.MenuInfo, (args, op) => dispatcher.RunAsync(() => { menus.ValidateOwner(args.WindowId); return Task.FromResult(menus.Install(args.Items)); }, op.Cancellation));
-		registry.Register("menus.update", json.MenuUpdate, json.MenuInfo, (args, op) => dispatcher.RunAsync(() => { menus.ValidateOwner(args.WindowId); return Task.FromResult(menus.Update(args)); }, op.Cancellation));
-		registry.Register("menus.item", json.MenuItemArgs, json.MenuItemState, (args, op) => dispatcher.RunAsync(() =>
-		{
-			menus.ValidateOwner(args.WindowId);
-			return Task.FromResult(menus.Item(args));
-		}, op.Cancellation));
-		registry.Register("menus.clear", json.MenuClear, json.MenuInfo, (args, op) => dispatcher.RunAsync(() =>
-		{
-			menus.ValidateOwner(args.WindowId);
-			if (menus.Read().SourceId != args.SourceId) throw new CommandException("invalid_menu", "This menu installation has been replaced.");
-			menus.Clear(); return Task.FromResult(menus.Read());
-		}, op.Cancellation));
+		ValidateOwner(windowId);
+		return Read();
+	}
+	[HybridAction("menus.install", MainThread = true)]
+	internal MenuInfo Install(string windowId, MenuNode[] items)
+	{
+		ValidateOwner(windowId);
+		return Install(items);
+	}
+	[HybridAction("menus.clear", MainThread = true)]
+	internal MenuInfo Clear(string windowId, string sourceId)
+	{
+		ValidateOwner(windowId);
+		if (Read().SourceId != sourceId) throw new CommandException("invalid_menu", "This menu installation has been replaced.");
+		Clear();
+		return Read();
 	}
 }
-sealed record MenuOwner(string WindowId);
-sealed record MenuClear(string WindowId, string SourceId);
-sealed record MenuInstall(string WindowId, MenuNode[] Items);
 sealed record MenuShortcut(string Key, string[] Modifiers);
 sealed record MenuNode(string Id, string Text, string Kind, bool Enabled, bool Checked, MenuNode[]? Items, MenuShortcut? Shortcut = null);
-sealed record MenuUpdate(string WindowId, string SourceId, string Id, string? Text = null, bool? Enabled = null, bool? Checked = null);
-sealed record MenuItemArgs(string WindowId, string SourceId, string Id);
 sealed record MenuItemState(string Text, bool Enabled, bool? Checked, string Kind);
 sealed record MenuInfo(bool Supported, bool SupportsChecked, string? SourceId);
 sealed record MenuClick(string SourceId, string Id, bool Checked);
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
 	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
 	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
-[JsonSerializable(typeof(MenuOwner))]
-[JsonSerializable(typeof(MenuClear))]
-[JsonSerializable(typeof(MenuInstall))]
-[JsonSerializable(typeof(MenuUpdate))]
-[JsonSerializable(typeof(MenuItemArgs))]
-[JsonSerializable(typeof(MenuItemState))]
-[JsonSerializable(typeof(MenuInfo))]
 [JsonSerializable(typeof(MenuClick))]
 partial class MenuJsonContext : JsonSerializerContext;

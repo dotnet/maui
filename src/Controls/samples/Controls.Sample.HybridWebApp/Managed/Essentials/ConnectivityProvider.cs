@@ -5,7 +5,7 @@ namespace Maui.HybridApp.Essentials.Connectivity;
 
 /// <summary>Fresh native network reads and scoped actual OS change notifications, not reachability probes.</summary>
 public sealed class ConnectivityProvider(IConnectivity connectivity, NativeDispatcher dispatcher,
-	NativeNotifications notifications) : IHybridCommandProvider, IDisposable
+	NativeNotifications notifications) : IDisposable
 {
 	readonly object _gate = new();
 	EventHandler<ConnectivityChangedEventArgs>? _handler;
@@ -13,19 +13,14 @@ public sealed class ConnectivityProvider(IConnectivity connectivity, NativeDispa
 	bool _active;
 	bool _disposed;
 
-	/// <inheritdoc />
-	public void Register(CommandRegistry registry)
-	{
-		var json = ConnectivityJsonContext.Default;
-		registry.Register("connectivity.info", json.ConnectivityArgs, json.ConnectivityResult, (_, op) =>
-			dispatcher.RunAsync(() => Task.FromResult(Read(connectivity.NetworkAccess, connectivity.ConnectionProfiles)), op.Cancellation));
-		registry.RegisterTopic("connectivity.changed", StartAsync, Stop);
-	}
+	[HybridAction("connectivity.info", MainThread = true)]
+	internal ConnectivityResult Info() => Read(connectivity.NetworkAccess, connectivity.ConnectionProfiles);
 
 	static ConnectivityResult Read(NetworkAccess access, IEnumerable<ConnectionProfile> profiles) =>
 		new(access.ToString(), profiles.Distinct().Select(profile => profile.ToString()).ToArray());
 
-	Task StartAsync()
+	[HybridEvent("connectivity.changed", HybridEventLifecycle.Start)]
+	internal Task StartAsync()
 	{
 		long epoch;
 		lock (_gate)
@@ -61,7 +56,8 @@ public sealed class ConnectivityProvider(IConnectivity connectivity, NativeDispa
 		}, CancellationToken.None);
 	}
 
-	void Stop()
+	[HybridEvent("connectivity.changed", HybridEventLifecycle.Stop)]
+	internal void Stop()
 	{
 		EventHandler<ConnectivityChangedEventArgs>? handler;
 		lock (_gate)
@@ -82,11 +78,9 @@ public sealed class ConnectivityProvider(IConnectivity connectivity, NativeDispa
 	}
 }
 
-sealed record ConnectivityArgs;
 sealed record ConnectivityResult(string NetworkAccess, string[] ConnectionProfiles);
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
 	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
 	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
-[JsonSerializable(typeof(ConnectivityArgs))]
 [JsonSerializable(typeof(ConnectivityResult))]
 partial class ConnectivityJsonContext : JsonSerializerContext;

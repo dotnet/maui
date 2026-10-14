@@ -17,18 +17,22 @@ Controls.Core (and Core transitively), plus the standard DI abstractions supplie
 by .NET 11. There is no second integration NuGet. The product never references
 the sample namespace, MauiProgram, its counter/diagnostics/catalog, development
 forwarding or test doubles. A future Essentials-only split is deferred.
-Each API is one cohesive `Essentials/*Provider.cs` file containing its provider,
-related small DTOs, DI extension and private generated JSON context. Unrelated
-APIs never share a contracts/provider file. Existing namespaces/types are unchanged.
-Provider constructors, DI extensions and the minimal host/protocol contracts are public;
-feature wire DTOs and contexts are implementation details.
+Each API family is one cohesive attributed plugin class, with directly typed
+method parameters and genuine structured options/results. Window actions and
+event ownership share `WindowProvider`; menu actions and rendering share
+`MenuProvider`. There are no per-API DI extensions, command-provider interfaces
+or per-operation Args records. Plugin constructors and minimal host/protocol
+contracts are public; feature wire DTOs and notification codecs are implementation
+details.
 
 ## One startup registration
 
 ```csharp
+using Maui.HybridApp.Generated;
+
 builder.Services
     .AddHybridApp(new HybridAppOptions("my-app.hybrid.", maximumTextLength: 4096))
-    .AddHybridProvider<MyToolkitProvider>();
+    .AddMyToolkitActions(); // Generated in the MyToolkit assembly.
 ```
 
 `AddHybridApp(IServiceCollection, HybridAppOptions)` registers the scoped
@@ -42,9 +46,13 @@ namespace/text policy is idempotent, without duplicate providers; conflicting
 policy is rejected instead of silently advertised with different native limits.
 There is no scanning, permission grant or switch enabling every Essentials API.
 
-The hub receives `IEnumerable<IHybridCommandProvider>` and constructs/registers
-its own exclusive command registry **once per scope**. Connection metadata
-contains actual registered command names and that same immutable policy.
+`AddHybridApp` calls `AddMauiHybridAppActions` once. The compiler finds every
+annotated plugin in that assembly and emits one explicit extension that registers
+all its scoped plugins, direct action delegates and declarative topics. External
+assemblies each have their own single generated extension; importing a DLL alone
+does not opt it in. The scoped registry is constructed **once per scope** from
+these explicit assembly registrations. Connection metadata contains the actual
+compiled command names and that same immutable policy.
 Providers use existing Essentials
 interfaces directly, not new service wrappers. `NativeDispatcher` is only a
 main-thread/cancellation boundary; its default delegates to Essentials MainThread.
@@ -60,10 +68,9 @@ An existing value from an older preview without an index is never deleted by
 that rollback; ownership is retained after a failed update. An OS write that
 partially changed an existing value cannot generally be undone.
 
-The app adds its own `AddPlayground(...)` registration for sample-only commands,
-shared scoped counter and process diagnostics. Each small sample provider lives
-in one flat `Native/Playground/Sample*Provider.cs` with its related DTO/context.
-The shared `SampleCounter` is a separate scoped state object used by Counter/Echo.
+The app's `AddPlayground(...)` calls `AddMauiControlsSampleHybridWebAppActions`
+once. `SamplePlugin` owns its scoped counter, echo, deliberate failures and work;
+process diagnostics remain a separate app-only plugin.
 
 ### Owning scopes and native events
 
@@ -104,7 +111,7 @@ callback factory, page/hub DI cycle or `BuildServiceProvider` call in app startu
 
 ### Interactive OS UI and read-only device data
 
-Registry metadata opts dialogs and FilePicker into `interactive: true`. The
+`[HybridAction(..., Interactive = true)]` opts native OS interactions into the extended budget. The
 handshake advertises those exact registered commands and the 300000 ms native
 budget. Only these commands extend the normal 20-second native / 23-second
 client deadlines. Their active operation holds the 15-second document heartbeat
@@ -126,13 +133,11 @@ non-UTF8 is explicit and binary bytes remain available. Picker dismissal
 is normal cancellation. No file body or full path is logged by native.
 Battery and Display are fresh read-only snapshots using `IBattery` and
 `IDeviceDisplay`, without subscriptions or keep-screen-awake writes.
-Mac Catalyst is an explicit battery-source exception: the current Essentials
-UIKit path reports an incorrect fixed value on the test Mac. The product reads
-actual internal battery capacities and charging/source state from IOKit, keeping
-the native snapshot alive until borrowed descriptions are consumed. Capacities
-are weighted across present batteries, zero charge is valid, no battery is -1,
-and invalid native data is an error rather than a fabricated full charge.
-This is a native adapter, not a JavaScript correction or shell command.
+The product has no platform-specific battery adapter. The Catalyst IOKit fix is
+in Essentials itself, so the same `IBattery` read is used on every platform.
+Essentials now supplies actual Mac capacity/state/power and native change
+notifications instead of UIKit's incorrect Catalyst value. Unit regressions and
+the plain Essentials sample verify this independently of the bridge.
 Android hosts must declare the Essentials `android.permission.BATTERY_STATS`
 manifest permission for Battery; no runtime request or broad storage permission
 is needed for these implemented read/document-picker flows.
@@ -151,7 +156,7 @@ Native resize hides stale geometry. Feature/document/scope teardown removes it.
 
 The host uses NavigationPage with its unneeded navigation bar hidden so the
 calling ContentPage's MenuBarItems have supported native hosting. Product
-`HybridMenus` validates and renders TypeScript-defined menu descriptions, owns
+`MenuProvider` validates and renders TypeScript-defined menu descriptions, owns
 actual native controls and emits installation/item identities. Every sample menu
 definition/action is in `Web/src/native/menus.ts`, not a C# action switch.
 Item patches retain installation/window/document ownership and callbacks.
@@ -176,11 +181,13 @@ Position observation remains Windows-only; mobile centering is unsupported.
 
 ```csharp
 using Maui.HybridApp;
+using Maui.HybridApp.Generated;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 
+// This application's assembly is named MyHost.
 builder.Services
     .AddHybridApp(new HybridAppOptions("my-app.hybrid."))
-    .AddHybridActions<MyActions>();
+    .AddMyHostActions();
 
 public sealed record EchoMessage(string Text, int Count);
 
@@ -188,16 +195,16 @@ public sealed record EchoMessage(string Text, int Count);
 public sealed class MyActions(IClipboard clipboard)
 {
     [HybridAction("app.echo")]
-    public EchoMessage Echo(EchoMessage message, int increment = 1) =>
-        message with { Count = message.Count + increment };
+    public EchoMessage Echo(string text, int count, int increment = 1) =>
+        new(text, count + increment);
 
     [HybridAction("app.clipboardText", MainThread = true)]
     public Task<string?> ReadClipboard() => clipboard.GetTextAsync();
 }
 ```
 
-`app.echo` accepts either `{"message":{"text":"hello","count":0},"increment":2}`
-or `[{"text":"hello","count":0},2]`. Omitted optional parameters use their C#
+`app.echo` accepts either `{"text":"hello","count":0,"increment":2}`
+or `["hello",0,2]`. Omitted optional parameters use their C#
 defaults. Explicit `null` is allowed only where the declared parameter/member
 allows it. Envelopes must be named objects or positional arrays: missing required,
 unknown, duplicate, excess and malformed arguments fail with `invalid_arguments`
@@ -206,16 +213,17 @@ before invoking native code. DTO JSON names use camelCase, with explicit
 Enums use their numeric JSON representation, matching the default native serializer.
 
 Methods may be public or internal, static or instance, on accessible nonpartial
-classes. The opt-in requires no `IHybridCommandProvider` implementation. Instance
+classes. No registration interface or partial class is required. Instance
 actions call `GetRequiredService<T>()` on the owning scope at invocation, never a
-cached root provider. `AddHybridActions<T>()` is idempotent and preserves an
-existing explicit provider factory and its lifetime. Use scoped registrations
+cached root provider. The generated assembly extension is idempotent and preserves
+existing explicit plugin factories and their lifetimes. Use scoped registrations
 for native/resource providers; deliberately choosing a singleton shares that
 action instance across windows, just like ordinary .NET DI.
 Static-only methods need no registered provider instance or constructor dependencies.
-For a fully static class (which C# forbids as a generic type argument), the analyzer
-emits `Add<ClassName>HybridActions()` in `Maui.HybridApp.Generated`; import that
-namespace and call the generated extension instead.
+Fully static classes are composed by the same assembly extension, not another
+per-type registration method. Extension names strip non-letter/digit characters
+from the assembly name: `My.Toolkit` emits `AddMyToolkitActions` in
+`Maui.HybridApp.Generated`.
 
 Mark method parameters with **`Maui.HybridApp.FromServices`** or the existing
 `Microsoft.Extensions.DependencyInjection.FromKeyedServices` to inject services
@@ -253,47 +261,61 @@ are enforced without removing constructor/property initializers.
 | --- | --- |
 | `HYBRID001` | Invalid bounded ASCII action name |
 | `HYBRID002` | Inaccessible, generic, by-reference, delegate or async-void method |
-| `HYBRID003` | Duplicate names in a provider or statically known host opt-ins |
+| `HYBRID003` | Duplicate names across the whole assembly or known opted-in assemblies |
 | `HYBRID004` | Unsupported automatic JSON contract |
 | `HYBRID005` | Conflicting service/context/cancellation binding |
+| `HYBRID006` | Invalid or unpaired first/last event subscription hooks |
 
-Per-provider module initialization installs only its compiled registration into
-its generic slot. Host opt-in is still explicit; initialization performs no
-assembly scan, runtime method discovery, `MethodInfo` or expression compilation.
-External assemblies ship their generated binding themselves. Registrations
-composed dynamically across assemblies are additionally checked for duplicate
-commands at registry construction. The existing Core HybridWebView invocation
-generator is not replaced or widened.
+There is no module initializer, per-type global slot, runtime assembly scan,
+method discovery, `MethodInfo` dispatch or expression compilation. Each opted-in
+assembly ships its own generated bindings and wire-name diagnostic manifest.
+Runtime registry construction additionally rejects conflicts across assembled
+registrations before the hub starts its lease timer. The existing Core
+HybridWebView invocation generator is not replaced or widened.
 
-Clipboard, Preferences and FilePicker command handlers now use annotations,
-preserving every existing JS command name, input/result shape, text/key limits,
-namespace, preference ownership reservation/rollback and interactive policy.
-Their existing public constructors and direct `Register(registry)` composition
-remain usable. Clipboard explicitly implements `IHybridActionSource` for its
-manual topic/start/stop lifecycle; resource and native event ownership are not
-invented by action generation. FilePicker keeps document-owned `FileResult`
+All implemented product and sample actions use annotations, including internal
+session controls. SDK wrappers send named arguments matching the method's
+ordinary parameters. Preferences use `get/set/contains/remove/clear` with native
+primitives; old string `read/write/delete` commands are removed. Single-file
+selection returns nullable metadata directly, not an outer `{ file }` wrapper.
+This WIP has no compatibility aliases; deploy the matching native and JS versions
+together. Namespace limits, preference reservation/rollback and interactive
+policy remain intact. FilePicker keeps document-owned `FileResult`
 handles and owned read streams: reader locks serialize read/seek, reader lifetime
 cancellation stops active reads, rejected/late opens dispose their streams, and
 reader close/file release/document retirement/scope disposal release resources.
 Picker cancellation stops the response but cannot force-dismiss stock OS UI;
 the native interaction slot remains owned until actual dismissal.
 
-### Manual command and source providers
+### Declarative event ownership
 
-A Toolkit assembly implements `IHybridCommandProvider.Register(registry)` or
-calls `registry.Register<TArgs,TResult>(name, inputInfo, outputInfo, handler)`.
-The host opts in with `AddHybridProvider<TProvider>()` after `AddHybridApp`, or
-explicit registry composition in a custom native host. The generic hub itself
-does not choose Essentials/sample providers. Providers own their DTOs, generated contexts and
-topics (`RegisterTopic`). The manual path needs no attributes, scanning, reflection
-router, catalog or edits to the protocol context. Duplicate names/topics are rejected.
-Metadata must originate from a source-generated context with
-`UnmappedMemberHandling=Disallow`, `RespectNullableAnnotations=true` and
-`RespectRequiredConstructorParameters=true`; use camelCase on the wire.
-An explicitly disabled command returns `disabled_command`, not a permission error.
-See the separate `Tests/ExternalProvider` assembly for an executable example.
+Use `[HybridTopic("operation.progress")]` on a plugin class for an operation or
+native callback-published topic that has no attach/detach subscription hooks.
+OS source ownership uses paired explicit attributes on the **same** plugin:
 
-The generic registry/hub does not choose any provider. Hosts remain responsible
+```csharp
+[HybridEvent("clipboard.changed", HybridEventLifecycle.Start)]
+internal Task StartAsync() { /* dispatch and attach this scope's handler */ return Task.CompletedTask; }
+
+[HybridEvent("clipboard.changed", HybridEventLifecycle.Stop)]
+internal void Stop() { /* invalidate queued delivery before dispatching detach */ }
+```
+
+The start hook must return `Task`; the stop hook must be synchronous `void`;
+both are accessible instance methods with no parameters. Generated bindings
+capture the current scoped source during registry composition, but attach OS
+handlers only on the first subscription. This also lets disposal call Stop after
+DI has disabled service resolution. Source constructors depend on host/scoped
+infrastructure, not the hub being constructed. Bindings never cache a root
+provider or invent event/resource ownership. Stop must invalidate queued callbacks before
+posting native teardown and must not synchronously wait on the hub while holding
+a plugin gate. Native payload/progress codecs may use a small source-generated
+context, with strict nullable/required/unknown-member options; action arguments
+and results require no manual metadata lists. See `Tests/ExternalProvider` for
+separate-assembly package-consumer evidence.
+
+`[HybridAction(..., Enabled = false)]` returns `disabled_command`, not a permission
+error. Hosts remain responsible
 for trusted content, allowed origins, opt-in capabilities, OS permissions and
 platform configuration. There is no browser fallback. Cancellation is checked
 before/after OS side effects, but does not undo a completed write. Denied,

@@ -61,13 +61,13 @@ complete or requiring every platform to be certified.
 | Capability | Implemented and verified | Remaining |
 |---|---|---|
 | Native dialogs | Alert, confirmation, prompt and action sheet; native Android acceptance, editable labels and normal cancellation | Additional native platform acceptance |
-| Multiple windows | Native Mac attached child windows; Android selected route, independent counters/documents, parent-state preservation and OS-close cleanup | Windows/iPad runtime and caller-driven close acceptance |
+| Multiple windows | Native Mac attached child windows and generated owner-close; Android selected route, independent counters/documents, parent-state preservation and OS-close cleanup | Windows/iPad runtime |
 | Window basics | Native title and size setters, live size events, separate current-window page; tested Mac display-origin centering math and compiled adapter | Manual centering/multiple displays, activation/close and Windows move events |
-| File picker | Real single-file selection/cancellation and streams on Android; user-confirmed Mac preview, binary reads and bounded preview truncation | Multiple selection UI/native acceptance and native seek |
+| File picker | Actual Android content-backed stream and normal cancellation repeated with the modern nullable result contract; user-confirmed Mac preview, binary reads and bounded preview truncation | Multiple selection UI/native acceptance and native seek |
 | Theme | Native Android/Mac system/light/dark setting and effective CSS subscriptions | OS-originated theme changes and multi-window propagation acceptance |
 | Native menus | TypeScript-authored definitions/callbacks, item getters/setters, owning-window snapshot rebuild regressions | User confirmation of visible rename/check updates; toolbar/context menus |
 | Explorer shell | Unique feature pages; collapsible desktop panes, draggable/keyboard diagnostics divider, mobile flyouts and refresh in diagnostics | Broader native/mobile accessibility acceptance |
-| Battery | Native Android reads; Catalyst now uses IOKit capacities/state. Actual app read 100%/Full/AC matched pmset 100%, replacing the incorrect UIKit 1% reading | Battery change subscriptions remain unfinished |
+| Battery | Product uses IBattery everywhere. Catalyst capacity/state and power-source notifications are fixed in Essentials; all 528 Essentials tests pass, including 19 battery cases. Plain Essentials sample read 100%/Full/AC matching pmset and repeated native subscription/removal passed | Live power-change delivery and JS battery-change experiment remain unverified |
 | Connectivity | Native Mac Internet/WiFi read, shared listener setup/unsubscribe; automated actual-provider event/lifetime tests | Live OS network-change delivery and other platforms unverified; no network settings changed during acceptance |
 | Text-to-speech | Native Mac reported 180 installed locales and completed SpeakAsync; typed options and operation cancellation tested | Physical audio listening/cancellation and other platform runtime acceptance |
 | Open external links | Real Mac OS accepted public HTTPS launch; URL validation and launch failures tested | Other platform runtime; acceptance does not prove website loading |
@@ -77,11 +77,26 @@ implemented experiments, bringing navigation to 22 unique experiments plus two
 guides without changing the 121-family inventory. Native Mac acceptance uses
 the real shared SDK connection; the network was not toggled or mocked.
 Attributed actions and automatic binding are implemented, not only proposed:
-clipboard, preferences and file-picker commands migrated with unchanged wire
-contracts and resource lifetimes. The packed analyzer executes in a fresh
+all product, sample and core actions now use annotations. One generated method
+registers each entire assembly, with no command-provider interface, per-type
+registration or compatibility layer. Window actions/events and menu
+actions/rendering are consolidated into one class per feature; sample work and
+counter actions share one sample plugin. Simple actions use typed multiple
+parameters instead of per-operation request records.
+The WIP JS contracts were updated with native code: obsolete preference commands
+and the single-picker result envelope were removed, not aliased. Resource
+lifetimes and window/document isolation remain. The packed analyzer executes in a fresh
 NuGet-only host and separate plugin with reflection serialization disabled.
 Independent review found nullable-enum defaults and normalized constructor
 nullability reader bugs; isolated compilation/runtime regressions cover both.
+The complete assembly migration passes 220 managed tests, 50 SDK tests and
+71 Svelte/geometry tests plus 11 contracts. A fresh NuGet-only host/external
+assembly consumes the packed analyzer with reflection JSON disabled. Native Mac
+registered 61 actions and exercised named/positional calls, geometry events and
+child open/close; Android repeated the original native bridge/event/cancellation/
+reload invariants and the new selected-file/cancel contract. Both native builds
+passed without warnings. The independent assembly/lifecycle review found no
+significant issues.
 
 The new-window follow-up reproduced a Mac build-cache failure: the compiled
 Info.plist still disabled multiple scenes after the source enabled them. The

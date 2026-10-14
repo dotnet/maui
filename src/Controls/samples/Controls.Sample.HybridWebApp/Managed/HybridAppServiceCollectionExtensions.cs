@@ -1,16 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
+using Maui.HybridApp.Generated;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Maui.HybridApp.Essentials.AppInfo;
-using Maui.HybridApp.Essentials.Clipboard;
-using Maui.HybridApp.Essentials.DeviceInfo;
-using Maui.HybridApp.Essentials.Preferences;
-using Maui.HybridApp.Essentials.Battery;
-using Maui.HybridApp.Essentials.Display;
 using Maui.HybridApp.Essentials.FilePicker;
-using Maui.HybridApp.Essentials.Connectivity;
-using Maui.HybridApp.Essentials.TextToSpeech;
-using Maui.HybridApp.Essentials.Launcher;
 using Maui.HybridApp.UI;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
@@ -51,8 +42,6 @@ public static class HybridAppServiceCollectionExtensions
 		services.TryAddScoped<HybridViewContext>();
 		services.TryAddSingleton<HybridWindowHost>();
 		services.TryAddScoped<NativeNotifications>();
-		services.TryAddScoped<HybridWindowActions>();
-		services.TryAddScoped<HybridMenus>();
 		services.TryAddSingleton<HybridFileLimits>();
 		services.TryAddSingleton<IBattery>(_ => Microsoft.Maui.Devices.Battery.Default);
 		services.TryAddSingleton<IDeviceDisplay>(_ => DeviceDisplay.Current);
@@ -60,35 +49,10 @@ public static class HybridAppServiceCollectionExtensions
 		services.TryAddSingleton<IConnectivity>(_ => Microsoft.Maui.Networking.Connectivity.Current);
 		services.TryAddSingleton<ITextToSpeech>(_ => Microsoft.Maui.Media.TextToSpeech.Default);
 		services.TryAddSingleton<ILauncher>(_ => Microsoft.Maui.ApplicationModel.Launcher.Default);
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, BatteryProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, DisplayProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, FilePickerProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, ConnectivityProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, TextToSpeechProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, LauncherProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, WindowProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, DialogProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, RemoteWebViewProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, MenuProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, WindowEventsProvider>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, ApplicationProvider>());
-		return services
-			.AddHybridAppInfo()
-			.AddHybridDeviceInfo()
-			.AddHybridClipboard()
-			.AddHybridPreferences();
-	}
-
-	/// <summary>Adds an explicitly opted-in scoped provider to the collection consumed by the hub.</summary>
-	/// <typeparam name="TProvider">A provider with public constructors whose dependencies are registered by its host or plugin.</typeparam>
-	/// <param name="services">The host's service registrations.</param>
-	/// <returns>The same collection for further explicit registrations.</returns>
-	/// <remarks>Providers own their generated JSON metadata. Registering conflicting providers fails during hub construction, before its lease timer starts.</remarks>
-	public static IServiceCollection AddHybridProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(
-		this IServiceCollection services) where TProvider : class, IHybridCommandProvider
-	{
-		ArgumentNullException.ThrowIfNull(services);
-		services.AddScoped<IHybridCommandProvider, TProvider>();
-		return services;
+		services.TryAddSingleton<IAppInfo>(_ => Microsoft.Maui.ApplicationModel.AppInfo.Current);
+		services.TryAddSingleton<IDeviceInfo>(_ => Microsoft.Maui.Devices.DeviceInfo.Current);
+		services.TryAddSingleton<Microsoft.Maui.ApplicationModel.DataTransfer.IClipboard>(_ => Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default);
+		services.TryAddSingleton<IPreferences>(_ => Microsoft.Maui.Storage.Preferences.Default);
+		return services.AddMauiHybridAppActions();
 	}
 }

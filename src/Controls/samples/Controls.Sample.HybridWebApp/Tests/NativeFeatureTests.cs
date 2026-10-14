@@ -16,6 +16,8 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 public sealed class NativeFeatureTests
 {
 	static readonly NativeDispatcher Inline = new(action => action());
+	static WindowProvider WindowPlugin(HybridViewContext context, HybridWindowHost host, IDeviceInfo device) =>
+		new(context, host, device, Inline, new NativeNotifications(), TimeProvider.System);
 
 	static async Task<JsonElement> Dispatch(CommandRegistry registry, string name, string args = "{}", CancellationToken cancellation = default)
 	{
@@ -134,9 +136,9 @@ public sealed class NativeFeatureTests
 		using var context = Bind();
 		var picker = new CancelledPicker();
 		var registry = new CommandRegistry();
-		new FilePickerProvider(picker, context, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new FilePickerProvider(picker, context));
 		var result = await Dispatch(registry, "filePicker.pick", "{\"pickerTitle\":\"From TypeScript\",\"fileTypes\":{\"android\":[\"text/plain\"]}}");
-		Assert.Equal(JsonValueKind.Null, result.GetProperty("file").ValueKind);
+		Assert.Equal(JsonValueKind.Null, result.ValueKind);
 		Assert.Equal(1, picker.Calls);
 		Assert.True(registry.IsInteractive("filePicker.pick"));
 		Assert.True(registry.IsInteractive("filePicker.pickMultiple"));
@@ -151,14 +153,14 @@ public sealed class NativeFeatureTests
 		var battery = new ReadOnlyBattery();
 		var display = new ReadOnlyDisplay();
 		var registry = new CommandRegistry();
-		new BatteryProvider(battery, Inline).Register(registry);
-		new DisplayProvider(display, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new BatteryProvider(battery), new DisplayProvider(display));
 		Assert.Equal(0.42, (await Dispatch(registry, "battery.info")).GetProperty("chargeLevel").GetDouble());
 		var result = await Dispatch(registry, "display.info");
 		Assert.Equal(3, result.GetProperty("density").GetDouble());
 		Assert.Equal("Portrait", result.GetProperty("orientation").GetString());
 		Assert.False(display.KeepScreenOn);
-		Assert.Empty(registry.InteractiveCommands);
+		Assert.False(registry.IsInteractive("battery.info"));
+		Assert.False(registry.IsInteractive("display.info"));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "battery.info", "{\"extra\":true}"))).Code);
 	}
 
@@ -167,7 +169,7 @@ public sealed class NativeFeatureTests
 	{
 		var level = (double)0.01f;
 		var registry = new CommandRegistry();
-		new BatteryProvider(new ReadOnlyBattery(level), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new BatteryProvider(new ReadOnlyBattery(level)));
 		var result = await Dispatch(registry, "battery.info");
 		Assert.Equal(0.009999999776482582, result.GetProperty("chargeLevel").GetDouble());
 		Assert.Equal(level, result.GetProperty("chargeLevel").GetDouble());
@@ -181,7 +183,7 @@ public sealed class NativeFeatureTests
 		Assert.NotEqual(first.Id, second.Id);
 		Assert.Throws<InvalidOperationException>(() => first.Bind(first.Page, first.Window, "welcome"));
 		var registry = new CommandRegistry();
-		new WindowProvider(first, new HybridWindowHost(), new FakeDeviceInfo(), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(WindowPlugin(first, new HybridWindowHost(), new FakeDeviceInfo()));
 		var result = await Dispatch(registry, "window.info");
 		Assert.Equal(first.Id, result.GetProperty("id").GetString());
 		Assert.False(result.GetProperty("canResize").GetBoolean());
@@ -204,7 +206,7 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		var registry = new CommandRegistry();
-		new WindowProvider(context, new HybridWindowHost(), new WindowDevice(platform, tablet), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(WindowPlugin(context, new HybridWindowHost(), new WindowDevice(platform, tablet)));
 		var result = await Dispatch(registry, "window.info");
 		Assert.Equal(multiple, result.GetProperty("canOpenWindows").GetBoolean());
 		Assert.Equal(platform != "iOS", result.GetProperty("canResize").GetBoolean());
@@ -221,7 +223,7 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		var registry = new CommandRegistry();
-		new WindowProvider(context, new HybridWindowHost(), new WindowDevice("MacCatalyst", false), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(WindowPlugin(context, new HybridWindowHost(), new WindowDevice("MacCatalyst", false)));
 		var name = args.Contains("title", StringComparison.Ordinal) ? "window.title" : "window.bounds";
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, name, args))).Code);
 		Assert.Equal("Owning window", context.Window.Title);
@@ -232,7 +234,7 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		var registry = new CommandRegistry();
-		new WindowProvider(context, new HybridWindowHost(), new WindowDevice("MacCatalyst", false), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(WindowPlugin(context, new HybridWindowHost(), new WindowDevice("MacCatalyst", false)));
 		await Dispatch(registry, "window.size", "{\"width\":200,\"height\":6000}");
 		Assert.Equal(200, context.Window.Width);
 		Assert.Equal(6000, context.Window.Height);
@@ -260,7 +262,7 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		var registry = new CommandRegistry();
-		new DialogProvider(context, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new DialogProvider(context));
 		Assert.True(registry.IsInteractive(command));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
 	}
@@ -276,7 +278,7 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		var registry = new CommandRegistry();
-		new DialogProvider(context, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new DialogProvider(context));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
 	}
 
@@ -292,7 +294,7 @@ public sealed class NativeFeatureTests
 		host.Bind(new Application(), _ => { calls++; return new Window(); });
 		using var context = Bind();
 		var registry = new CommandRegistry();
-		new WindowProvider(context, host, new FakeDeviceInfo(), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(WindowPlugin(context, host, new FakeDeviceInfo()));
 		Assert.Equal("invalid_location", (await Assert.ThrowsAsync<CommandException>(() =>
 			Dispatch(registry, "window.open", JsonSerializer.Serialize(new { url = route })))).Code);
 		Assert.Equal(0, calls);
@@ -308,7 +310,7 @@ public sealed class NativeFeatureTests
 		var layout = context.CreateLayout(trusted);
 		Assert.Single(layout.Children);
 		var registry = new CommandRegistry();
-		new RemoteWebViewProvider(context, new WindowDevice("MacCatalyst", false), Inline, new NativeNotifications()).Register(registry);
+		registry = TestComposition.CreateRegistry(new RemoteWebViewProvider(context, new WindowDevice("MacCatalyst", false), new NativeNotifications()));
 		var result = await Dispatch(registry, "remote.open", "{\"url\":\"https://dot.net/maui\"}");
 		Assert.True(result.GetProperty("supported").GetBoolean());
 		var id = result.GetProperty("id").GetString();
@@ -338,7 +340,7 @@ public sealed class NativeFeatureTests
 		using var context = Bind();
 		context.CreateLayout(new HybridWebView());
 		var registry = new CommandRegistry();
-		new RemoteWebViewProvider(context, new FakeDeviceInfo(), Inline, new NativeNotifications()).Register(registry);
+		registry = TestComposition.CreateRegistry(new RemoteWebViewProvider(context, new FakeDeviceInfo(), new NativeNotifications()));
 		Assert.False((await Dispatch(registry, "remote.info")).GetProperty("supported").GetBoolean());
 		await Assert.ThrowsAsync<NotSupportedException>(() => Dispatch(registry, "remote.open", "{\"url\":\"https://dot.net/maui\"}"));
 	}
@@ -348,7 +350,7 @@ public sealed class NativeFeatureTests
 	{
 		using var notifications = new NativeNotifications();
 		var provider = new NotificationProvider();
-		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("notifications."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("notifications."), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		async Task Call(string command, string args)
 		{
@@ -371,9 +373,9 @@ public sealed class NativeFeatureTests
 		Assert.Single(received);
 	}
 
-	sealed class NotificationProvider : IHybridCommandProvider
+	[HybridTopic("menu.test")]
+	internal sealed class NotificationProvider
 	{
-		public void Register(CommandRegistry registry) => registry.RegisterTopic("menu.test");
 	}
 
 	[Theory]
@@ -384,8 +386,8 @@ public sealed class NativeFeatureTests
 		using var context = Bind();
 		using var notifications = new NativeNotifications();
 		var clock = new InteractivePolicyTests.ManualTime();
-		using var provider = new WindowEventsProvider(context, new WindowDevice(platform, false), Inline, notifications, clock);
-		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("geometry."), time: clock, notifications: notifications);
+		using var provider = new WindowProvider(context, new HybridWindowHost(), new WindowDevice(platform, false), Inline, notifications, clock);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("geometry."), time: clock, notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		async Task Call(string command, string args = "{}")
 		{
@@ -434,8 +436,8 @@ public sealed class NativeFeatureTests
 		using var context = Bind();
 		using var notifications = new NativeNotifications();
 		var clock = new InteractivePolicyTests.ManualTime();
-		using var provider = new WindowEventsProvider(context, new WindowDevice("WinUI", false), Inline, notifications, clock);
-		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("geometry."), time: clock, notifications: notifications);
+		using var provider = new WindowProvider(context, new HybridWindowHost(), new WindowDevice("WinUI", false), Inline, notifications, clock);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("geometry."), time: clock, notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		async Task Call(string command, string args = "{}")
 		{
@@ -466,11 +468,11 @@ public sealed class NativeFeatureTests
 	{
 		using var context = new HybridViewContext();
 		using var notifications = new NativeNotifications();
-		using var menus = new HybridMenus(context, new WindowDevice("MacCatalyst", false), notifications);
+		using var menus = new MenuProvider(context, new WindowDevice("MacCatalyst", false), notifications);
 		var page = new ContentPage();
 		context.Bind(page, new Window(new NavigationPage(page)), "welcome");
 		var registry = new CommandRegistry();
-		new MenuProvider(menus, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(menus);
 		var definitions = new[] { new { id = "navigation", text = "Navigate", kind = "submenu", enabled = true, @checked = false,
 			items = new[] { new { id = "item", text = "JS item", kind = "item", enabled = true, @checked = false,
 				shortcut = new { key = "Enter", modifiers = new[] { "cmd", "shift", "alt" } }, items = (object?)null } } } };
@@ -513,11 +515,11 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		using var notifications = new NativeNotifications();
-		using var menus = new HybridMenus(context, new WindowDevice(platform, false), notifications);
+		using var menus = new MenuProvider(context, new WindowDevice(platform, false), notifications);
 		var registry = new CommandRegistry();
-		var provider = new MenuProvider(menus, Inline);
-		provider.Register(registry);
-		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("menus."), notifications: notifications);
+		var provider = menus;
+		registry = TestComposition.CreateRegistry(provider);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("menus."), notifications: notifications);
 		var events = await SubscribeMenuClicks(hub);
 		var definitions = new[] { new { id = "bar", text = "Original bar", kind = "submenu", enabled = true, @checked = false,
 			items = new[] { new { id = "group", text = "Original group", kind = "submenu", enabled = true, @checked = false,
@@ -572,11 +574,11 @@ public sealed class NativeFeatureTests
 	{
 		using var context = Bind();
 		using var notifications = new NativeNotifications();
-		using var menus = new HybridMenus(context, new WindowDevice("MacCatalyst", false), notifications);
+		using var menus = new MenuProvider(context, new WindowDevice("MacCatalyst", false), notifications);
 		var registry = new CommandRegistry();
-		var provider = new MenuProvider(menus, Inline);
-		provider.Register(registry);
-		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("menus."), notifications: notifications);
+		var provider = menus;
+		registry = TestComposition.CreateRegistry(provider);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("menus."), notifications: notifications);
 		var events = await SubscribeMenuClicks(hub);
 		var definitions = new[] { new { id = "bar", text = "View", kind = "submenu", enabled = true, @checked = false,
 			items = new[] { new { id = "check", text = "Checked item", kind = "check", enabled = true, @checked = true,
@@ -671,7 +673,7 @@ public sealed class NativeFeatureTests
 		duplicate.Bind(duplicatePage, new Window(duplicatePage), "index.html", "settings");
 		Assert.Equal("duplicate_window_id", Assert.Throws<CommandException>(() => host.Track(duplicate)).Code);
 		var registry = new CommandRegistry();
-		new WindowProvider(first, host, new WindowDevice("MacCatalyst", false), Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(WindowPlugin(first, host, new WindowDevice("MacCatalyst", false)));
 		var before = await Dispatch(registry, "window.info");
 		Assert.Equal("invalid_window", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "window.title",
 			"{\"windowId\":\"settings\",\"windowLease\":\"stale\",\"title\":\"Wrong generation\"}"))).Code);
@@ -680,7 +682,7 @@ public sealed class NativeFeatureTests
 		((IWindow)first.Window).Destroying();
 		host.Track(duplicate);
 		var replacementRegistry = new CommandRegistry();
-		new WindowProvider(duplicate, host, new WindowDevice("MacCatalyst", false), Inline).Register(replacementRegistry);
+		replacementRegistry = TestComposition.CreateRegistry(WindowPlugin(duplicate, host, new WindowDevice("MacCatalyst", false)));
 		var after = await Dispatch(replacementRegistry, "window.info");
 		Assert.NotEqual(before.GetProperty("windowLease").GetString(), after.GetProperty("windowLease").GetString());
 	}

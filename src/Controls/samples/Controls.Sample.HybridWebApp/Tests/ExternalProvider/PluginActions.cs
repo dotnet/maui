@@ -8,8 +8,20 @@ public sealed record PluginActionValue(string Text, PluginActionKind Kind, strin
 public enum PluginActionKind { First, Second }
 public sealed class PluginActionState { public int Calls { get; set; } }
 
+[HybridTopic("plugin.changed")]
 public sealed class PluginActions(PluginActionState state)
 {
+	[HybridAction("plugin.echo")]
+	public PluginResult Echo(string text, HybridActionContext context)
+	{
+		var result = new PluginResult(text);
+		context.Publish("plugin.changed", result, PluginJsonContext.Default.PluginResult);
+		return result;
+	}
+
+	[HybridAction("plugin.disabled", Enabled = false)]
+	public PluginResult Disabled(string text) => new(text);
+
 	[HybridAction("plugin.action.echo")]
 	public PluginActionValue Echo(PluginActionValue value) => value;
 

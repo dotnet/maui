@@ -3,6 +3,7 @@ using System.Text.Json;
 using HybridApp.ExternalProvider;
 using Maui.Controls.Sample.HybridWebApp.Playground;
 using Maui.HybridApp;
+using Maui.HybridApp.Generated;
 using Maui.HybridApp.Essentials.AppInfo;
 using Maui.HybridApp.Essentials.Clipboard;
 using Maui.HybridApp.Essentials.DeviceInfo;
@@ -27,7 +28,7 @@ public sealed class DependencyInjectionTests
 {
 	static readonly string[] NewCommands = ["battery.info", "display.info", "clipboard.hasText",
 		"connectivity.info", "speech.locales", "speech.speak", "launcher.openUrl",
-		"preferences.get", "preferences.set", "preferences.contains", "preferences.delete", "preferences.clear",
+		"preferences.get", "preferences.set", "preferences.contains", "preferences.remove", "preferences.clear",
 		"filePicker.pick", "filePicker.pickMultiple",
 		"file.openRead", "file.readBytes", "file.seek", "file.closeReader", "file.release",
 		"dialogs.alert", "dialogs.confirm", "dialogs.prompt", "dialogs.actionSheet", "remote.open", "remote.info", "remote.bounds", "remote.control", "remote.navigate", "menus.info", "menus.install", "menus.update", "menus.item", "menus.clear", "window.find", "window.closeCurrent", "window.activate", "window.center", "window.size", "window.position", "window.info", "window.title", "application.theme", "application.setTheme",
@@ -68,16 +69,16 @@ public sealed class DependencyInjectionTests
 		Assert.Same(preferences, scope.ServiceProvider.GetRequiredService<IPreferences>());
 		Assert.Same(dispatcher, scope.ServiceProvider.GetRequiredService<NativeDispatcher>());
 		Assert.Same(clock, scope.ServiceProvider.GetRequiredService<TimeProvider>());
-		Assert.Equal(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
+		Assert.All(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
 			typeof(ConnectivityProvider), typeof(TextToSpeechProvider), typeof(LauncherProvider),
-			typeof(WindowProvider), typeof(DialogProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(WindowEventsProvider), typeof(ApplicationProvider),
+			typeof(WindowProvider), typeof(DialogProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(ApplicationProvider),
 			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(ClipboardProvider), typeof(PreferencesProvider) },
-			scope.ServiceProvider.GetServices<IHybridCommandProvider>().Select(provider => provider.GetType()));
+			type => Assert.Contains(services, descriptor => descriptor.ServiceType == type && descriptor.Lifetime == ServiceLifetime.Scoped));
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
-			"core.subscribe", "core.unsubscribe", "device.info", "preferences.read", "preferences.remove", "preferences.write" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
+			"core.subscribe", "core.unsubscribe", "device.info" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
 		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "launcher.openUrl", "speech.speak" }, ready.InteractiveCommands);
 		Assert.Equal("host-policy.", ready.PreferenceNamespace);
 		Assert.Equal(8, ready.MaximumTextLength);
@@ -100,7 +101,8 @@ public sealed class DependencyInjectionTests
 		services.AddSingleton<IPreferences>(preferences);
 		services.AddScoped(_ => new NativeDispatcher(action => action()));
 		services.AddHybridApp(new HybridAppOptions("di-host.", 4))
-			.AddHybridProvider<PluginProvider>();
+			.AddExternalProviderActions();
+		services.AddScoped<PluginActionState>();
 		using var root = Build(services);
 		Assert.Throws<InvalidOperationException>(() => root.GetRequiredService<HybridAppTargetObject>());
 		using var scope = root.CreateScope();
@@ -108,20 +110,20 @@ public sealed class DependencyInjectionTests
 		Assert.Same(hub, scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>());
 		Assert.Same(clipboard, scope.ServiceProvider.GetRequiredService<IClipboard>());
 		Assert.Same(preferences, scope.ServiceProvider.GetRequiredService<IPreferences>());
-		Assert.Equal(17, scope.ServiceProvider.GetServices<IHybridCommandProvider>().Count());
-		Assert.NotEqual(typeof(PluginProvider).Assembly, typeof(HybridAppTargetObject).Assembly);
-		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginArgs)));
+		Assert.NotEqual(typeof(PluginActions).Assembly, typeof(HybridAppTargetObject).Assembly);
+		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginResult)));
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 		Assert.Equal("di-host.", ready.PreferenceNamespace);
 		Assert.Equal(4, ready.MaximumTextLength);
-		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect", "core.subscribe",
-			"core.unsubscribe", "device.info", "plugin.disabled", "plugin.echo", "preferences.read", "preferences.remove", "preferences.write" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
+		Assert.Contains("plugin.action.enumDefault", ready.Commands);
+		Assert.Contains("plugin.echo", ready.Commands);
+		Assert.DoesNotContain("preferences.write", ready.Commands);
 		Assert.Equal("Test app", (await Call(hub, session, "app.info")).Result!.Value.GetProperty("appName").GetString());
 		Assert.Equal("Android", (await Call(hub, session, "device.info")).Result!.Value.GetProperty("platform").GetString());
-		Assert.Equal("success", (await Call(hub, session, "preferences.write", "{\"key\":\"key\",\"value\":\"1234\"}")).Status);
+		Assert.Equal("success", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"1234\"}}")).Status);
 		Assert.Equal("1234", preferences.Values["di-host.key"]);
-		Assert.Equal("invalid_arguments", (await Call(hub, session, "preferences.write", "{\"key\":\"key\",\"value\":\"12345\"}")).Error!.Code);
+		Assert.Equal("invalid_arguments", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"12345\"}}")).Error!.Code);
 		Assert.Equal("invalid_arguments", (await Call(hub, session, "clipboard.write", "{\"text\":\"12345\"}")).Error!.Code);
 		var events = new List<NativeEvent>();
 		hub.NativeEventReceived += events.Add;
@@ -143,10 +145,9 @@ public sealed class DependencyInjectionTests
 		var hub1 = first.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		var hub2 = second.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		Assert.NotSame(hub1, hub2);
-		Assert.NotSame(first.ServiceProvider.GetRequiredService<SampleCounter>(), second.ServiceProvider.GetRequiredService<SampleCounter>());
-		var providers1 = first.ServiceProvider.GetServices<IHybridCommandProvider>().ToArray();
-		var providers2 = second.ServiceProvider.GetServices<IHybridCommandProvider>().ToArray();
-		Assert.All(providers1.Zip(providers2), pair => Assert.NotSame(pair.First, pair.Second));
+		Assert.NotSame(first.ServiceProvider.GetRequiredService<SamplePlugin>(), second.ServiceProvider.GetRequiredService<SamplePlugin>());
+		Assert.NotSame(first.ServiceProvider.GetRequiredService<WindowProvider>(), second.ServiceProvider.GetRequiredService<WindowProvider>());
+		Assert.NotSame(first.ServiceProvider.GetRequiredService<MenuProvider>(), second.ServiceProvider.GetRequiredService<MenuProvider>());
 		var session1 = Guid.NewGuid().ToString("D");
 		var session2 = Guid.NewGuid().ToString("D");
 		var events1 = new List<NativeEvent>();
@@ -182,8 +183,7 @@ public sealed class DependencyInjectionTests
 		var clock = new TrackedTimeProvider();
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddScoped<ScopeProbeState>();
-		services.AddHybridApp(new HybridAppOptions("scope-test.")).AddPlayground("test-startup", DateTimeOffset.UtcNow)
-			.AddHybridProvider<ScopeProbeProvider>();
+		services.AddHybridApp(new HybridAppOptions("scope-test.")).AddPlayground("test-startup", DateTimeOffset.UtcNow);
 		using var root = Build(services);
 		using var first = root.CreateScope();
 		using var second = root.CreateScope();
@@ -192,13 +192,17 @@ public sealed class DependencyInjectionTests
 		var hub1 = first.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		var hub2 = second.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		Assert.Same(hub1, first.ServiceProvider.GetRequiredService<HybridAppTargetObject>());
-		Assert.Equal(1, state1.Registrations);
-		Assert.Equal(1, state2.Registrations);
+		Assert.Equal(0, state1.Registrations);
+		Assert.Equal(0, state2.Registrations);
 		Assert.Equal(2, clock.ActiveTimers);
 		var session1 = Guid.NewGuid().ToString("D");
 		var session2 = Guid.NewGuid().ToString("D");
 		await Call(hub1, session1, "core.connect");
 		await Call(hub2, session2, "core.connect");
+		await Call(hub1, session1, "scope.probe");
+		await Call(hub2, session2, "scope.probe");
+		Assert.Equal(1, state1.Registrations);
+		Assert.Equal(1, state2.Registrations);
 		await Call(hub1, session1, "core.subscribe", "{\"topic\":\"operation.progress\"}");
 		var events = new List<NativeEvent>();
 		var progressed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -231,42 +235,70 @@ public sealed class DependencyInjectionTests
 	}
 
 	[Fact]
-	public async Task GenericHubCanStillUseOnlyExplicitExternalProvidersWithoutImplicitEssentials()
+	public async Task ExternalAssemblyRegistrationDoesNotImplicitlyOptIntoProductAssembly()
 	{
 		var services = new ServiceCollection();
-		services.AddSingleton(new HybridAppOptions("custom-host."));
-		services.AddScoped<HybridAppTargetObject>();
-		services.AddHybridProvider<PluginProvider>();
+		services.AddScoped<PluginActionState>();
+		services.AddExternalProviderActions();
 		using var root = Build(services);
 		using var scope = root.CreateScope();
-		Assert.Single(scope.ServiceProvider.GetServices<IHybridCommandProvider>());
-		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
-		var session = Guid.NewGuid().ToString("D");
-		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
-		Assert.Equal(new[] { "core.cancel", "core.connect", "core.subscribe", "core.unsubscribe", "plugin.disabled", "plugin.echo" }, ready.Commands);
-		Assert.Equal("custom-host.", ready.PreferenceNamespace);
-		Assert.Equal(4096, ready.MaximumTextLength);
-		Assert.Equal("unknown_command", (await Call(hub, session, "app.info")).Error!.Code);
-		Assert.Equal("unknown_command", (await Call(hub, session, "sample.counter")).Error!.Code);
-		Assert.Equal("unknown_topic", (await Call(hub, session, "core.subscribe", "{\"topic\":\"service.changed\"}")).Error!.Code);
+		var registry = scope.ServiceProvider.GetRequiredService<CommandRegistry>();
+		Assert.All(registry.Names, name => Assert.StartsWith("plugin.", name, StringComparison.Ordinal));
+		using var json = JsonDocument.Parse("[2]");
+		Assert.Equal(2, (await registry.DispatchAsync("plugin.action.count", json.RootElement,
+			new Operation("session", "request", default, (_, _) => { }))).GetInt32());
+		Assert.DoesNotContain("core.connect", registry.Names);
+		Assert.DoesNotContain("app.info", registry.Names);
+		Assert.Null(scope.ServiceProvider.GetService<HybridAppTargetObject>());
 	}
 
 	[Fact]
-	public void ConflictingProvidersFailBeforeStartingALeaseAndAreDisposedByTheirScope()
+	public async Task DeclarativeSourcesAreBoundBeforeSubscriptionsAndStopAfterScopeResolutionIsDisabled()
+	{
+		var services = new ServiceCollection();
+		var clipboard = new FakeClipboard();
+		services.AddSingleton<IClipboard>(clipboard);
+		services.AddSingleton(new NativeDispatcher(action => action()));
+		services.AddHybridApp(new HybridAppOptions("events."));
+		using var root = Build(services);
+		using var first = root.CreateScope();
+		using var second = root.CreateScope();
+		var hub1 = first.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
+		var hub2 = second.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
+		Assert.Equal(0, clipboard.ListenerCount);
+		var session1 = Guid.NewGuid().ToString("D");
+		var session2 = Guid.NewGuid().ToString("D");
+		await Call(hub1, session1, "core.connect");
+		await Call(hub2, session2, "core.connect");
+		await Call(hub1, session1, "core.subscribe", """{"topic":"clipboard.changed"}""");
+		await Call(hub2, session2, "core.subscribe", """{"topic":"clipboard.changed"}""");
+		Assert.Equal(2, clipboard.ListenerCount);
+		first.Dispose();
+		Assert.Equal(1, clipboard.ListenerCount);
+		Assert.False(hub1.IsCurrent(session1));
+		Assert.True(hub2.IsCurrent(session2));
+		second.Dispose();
+		Assert.Equal(0, clipboard.ListenerCount);
+	}
+
+	[Fact]
+	public void ConflictingAssembliesFailBeforeStartingALease()
 	{
 		var services = new ServiceCollection();
 		var clock = new TrackedTimeProvider();
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddScoped<ScopeProbeState>();
-		services.AddHybridApp(new HybridAppOptions("scope-test.")).AddHybridProvider<ScopeProbeProvider>().AddHybridProvider<ScopeProbeProvider>();
+		services.AddHybridApp(new HybridAppOptions("scope-test."));
+		HybridActionAssemblies.Add(services, typeof(DependencyInjectionTests), (registry, _) =>
+			registry.RegisterGenerated("app.info", [ProtocolJsonContext.Default.Ack], (_, _) => Task.FromResult(default(JsonElement))));
 		using var root = Build(services);
 		using var scope = root.CreateScope();
 		var state = scope.ServiceProvider.GetRequiredService<ScopeProbeState>();
 		Assert.Throws<InvalidOperationException>(() => scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>());
-		Assert.Equal(2, state.Registrations);
+		Assert.Equal(0, state.Registrations);
 		Assert.Equal(0, clock.ActiveTimers);
 		scope.Dispose();
-		Assert.Equal(2, state.Disposals);
+		Assert.Equal(0, state.Disposals);
 	}
 
 	[Fact]
@@ -276,18 +308,21 @@ public sealed class DependencyInjectionTests
 		Assert.Throws<ArgumentNullException>(() => new HybridAppOptions(null!));
 		Assert.Throws<ArgumentException>(() => new HybridAppOptions(""));
 		Assert.Throws<ArgumentOutOfRangeException>(() => new HybridAppOptions("host.", maximumTextLength: 0));
-		Assert.Throws<ArgumentNullException>(() => new HybridAppTargetObject(Array.Empty<IHybridCommandProvider>(), null!, clock));
+		Assert.Throws<ArgumentNullException>(() => new HybridAppTargetObject(new CommandRegistry(), (HybridAppOptions)null!, clock));
 		Assert.Equal(0, clock.ActiveTimers);
 		var services = new ServiceCollection();
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddSingleton<IPreferences>(new FakePreferences());
 		services.AddSingleton(new HybridAppOptions("host."));
 		services.AddScoped<HybridAppTargetObject>();
-		services.AddScoped<IHybridCommandProvider>(provider => new PreferencesProvider(
-			provider.GetRequiredService<IPreferences>(), new NativeDispatcher(action => action()), ""));
+		services.AddSingleton(new NativeDispatcher(action => action()));
+		services.AddHybridApp(new HybridAppOptions("host."));
 		using var root = Build(services);
 		using var scope = root.CreateScope();
-		Assert.Throws<ArgumentException>(() => scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>());
+		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
+		Assert.Throws<ArgumentNullException>(() => new PreferencesProvider(new FakePreferences(), null!));
+		Assert.NotNull(scope.ServiceProvider.GetRequiredService<PreferencesProvider>());
+		scope.Dispose();
 		Assert.Equal(0, clock.ActiveTimers);
 	}
 
@@ -297,14 +332,16 @@ public sealed class DependencyInjectionTests
 		public int Disposals { get; set; }
 	}
 
-	public sealed class ScopeProbeProvider(ScopeProbeState state) : IHybridCommandProvider, IDisposable
+	public sealed class ScopeProbeProvider : IDisposable
 	{
-		public void Register(CommandRegistry registry)
+		readonly ScopeProbeState state;
+		public ScopeProbeProvider(ScopeProbeState state)
 		{
+			this.state = state;
 			state.Registrations++;
-			registry.Register("scope.probe", ProtocolJsonContext.Default.EmptyArgs, ProtocolJsonContext.Default.Ack,
-				(_, _) => Task.FromResult(new Ack(true)));
 		}
+		[HybridAction("scope.probe")]
+		public Ack Probe() => new(true);
 
 		public void Dispose() => state.Disposals++;
 	}

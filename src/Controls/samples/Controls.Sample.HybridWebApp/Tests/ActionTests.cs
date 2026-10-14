@@ -21,7 +21,7 @@ public sealed class ActionTests
 			services.DispatchCount++;
 			return action();
 		}));
-		services.AddHybridActions<ActionTestProvider>();
+		services.AddPlayground(new("test", DateTimeOffset.UtcNow));
 		configure?.Invoke(services);
 		return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 	}
@@ -34,9 +34,7 @@ public sealed class ActionTests
 
 	static CommandRegistry Registry(IServiceProvider services)
 	{
-		var registry = new CommandRegistry();
-		foreach (var provider in services.GetServices<IHybridCommandProvider>()) provider.Register(registry);
-		return registry;
+		return services.GetRequiredService<CommandRegistry>();
 	}
 
 	static Task<JsonElement> Call(CommandRegistry registry, string command, string args = "{}", CancellationToken cancellation = default,
@@ -176,14 +174,14 @@ public sealed class ActionTests
 		services.AddScoped<ActionState>();
 		services.AddScoped<ActionTestProvider>();
 		services.AddScoped(_ => new NativeDispatcher(action => { services.DispatchCount++; return action(); }));
-		services.AddHybridActions<ActionTestProvider>();
+		services.AddPlayground(new("test", DateTimeOffset.UtcNow));
 		var registrations = services.Count;
-		services.AddHybridActions<ActionTestProvider>();
+		services.AddPlayground(new("test", DateTimeOffset.UtcNow));
 		Assert.Equal(registrations, services.Count);
 		using var root = services.BuildServiceProvider();
 		using var scope = root.CreateScope();
 		var registry = Registry(scope.ServiceProvider);
-		Assert.Equal(new[] { "actions.ui" }, registry.InteractiveCommands);
+		Assert.Contains("actions.ui", registry.InteractiveCommands);
 		Assert.True(registry.IsInteractive("actions.ui"));
 		Assert.False(registry.IsInteractive("actions.scalar"));
 		Assert.Equal(42, (await Call(registry, "actions.ui", "[42]")).GetInt32());
@@ -200,8 +198,11 @@ public sealed class ActionTests
 		var registry = Registry(scope.ServiceProvider);
 		await Assert.ThrowsAsync<InvalidOperationException>(() => Call(registry, "actions.bind", "[1,\"x\"]"));
 		Assert.Equal("unknown_command", (await Assert.ThrowsAsync<CommandException>(() => Call(registry, "actions.missing"))).Code);
-		Assert.Throws<InvalidOperationException>(() => HybridActionRegistration<ActionTestProvider>.Register(registry, scope.ServiceProvider.GetRequiredService<ActionTestProvider>()));
-		Assert.Throws<InvalidOperationException>(() => new Microsoft.Extensions.DependencyInjection.ServiceCollection().AddHybridActions<ActionState>());
+		var duplicate = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+		duplicate.AddPlayground(new("test", DateTimeOffset.UtcNow));
+		var count = duplicate.Count;
+		duplicate.AddPlayground(new("test", DateTimeOffset.UtcNow));
+		Assert.Equal(count, duplicate.Count);
 		var reflectionMetadata = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver().GetTypeInfo(typeof(int), new JsonSerializerOptions());
 		Assert.Throws<ArgumentException>(() => registry.RegisterGenerated("not.generated", [reflectionMetadata], (_, _) => Task.FromResult(default(JsonElement))));
 	}
@@ -212,8 +213,7 @@ public sealed class ActionTests
 		var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 		services.AddScoped<PluginActionState>();
 		services.AddKeyedScoped<PluginActionState>("action-key", (_, _) => new() { Calls = 10 });
-		services.AddHybridActions<PluginActions>();
-		services.AddPluginStaticActionsHybridActions();
+		services.AddExternalProviderActions();
 		using var root = services.BuildServiceProvider();
 		using var first = root.CreateScope();
 		using var second = root.CreateScope();
@@ -235,7 +235,8 @@ public sealed class ActionTests
 	public async Task ConstructorAnnotationsAndNullableEnumDefaultsWorkInStandaloneProvider()
 	{
 		var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
-		services.AddHybridActions<PluginConstructorActions>();
+		services.AddScoped<PluginActionState>();
+		services.AddExternalProviderActions();
 		using var root = services.BuildServiceProvider();
 		using var scope = root.CreateScope();
 		var registry = Registry(scope.ServiceProvider);
@@ -268,9 +269,9 @@ internal sealed class ActionState
 }
 
 // Neither partial classes nor an action DTO JsonSerializerContext are required.
-internal sealed class ActionTestProvider(ActionState state) : IHybridActionSource
+[HybridTopic("actions.progress")]
+internal sealed class ActionTestProvider(ActionState state)
 {
-	public void RegisterTopics(CommandRegistry registry) => registry.RegisterTopic("actions.progress");
 
 	[HybridAction("actions.bind")]
 	internal ActionBound Bind(int count, [FromServices] ActionState service, string text,

@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Maui.HybridApp.UI;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
@@ -29,11 +28,10 @@ public sealed class HybridFileLimits
 }
 
 /// <summary>System selection with JS-supplied MAUI options and document-owned FileResult/read-stream resources.</summary>
-public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
+public sealed class FilePickerProvider : IDisposable
 {
 	readonly IFilePicker _picker;
 	readonly HybridViewContext _context;
-	readonly NativeDispatcher _dispatcher;
 	readonly HybridFileLimits _limits;
 	readonly object _gate = new();
 	readonly Dictionary<string, FileResult> _files = new(StringComparer.Ordinal);
@@ -50,21 +48,16 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 	/// <summary>Creates a picker/resource provider using actual existing Essentials interfaces.</summary>
 	/// <param name="picker">Actual native system picker.</param>
 	/// <param name="context">Calling view/document lifetime boundary.</param>
-	/// <param name="dispatcher">Native UI thread boundary.</param>
 	/// <param name="limits">Optional host resource/message budgets, not file capacity.</param>
-	public FilePickerProvider(IFilePicker picker, HybridViewContext context, NativeDispatcher dispatcher, HybridFileLimits? limits = null)
+	public FilePickerProvider(IFilePicker picker, HybridViewContext context, HybridFileLimits? limits = null)
 	{
-		_picker = picker; _context = context; _dispatcher = dispatcher; _limits = limits ?? new HybridFileLimits();
+		_picker = picker; _context = context; _limits = limits ?? new HybridFileLimits();
 		context.DocumentEnded += Clear;
 	}
-	/// <inheritdoc />
-	public void Register(CommandRegistry registry)
-		=> HybridActionRegistration<FilePickerProvider>.Register(registry, this, _dispatcher);
-
 	[HybridAction("filePicker.pick", MainThread = true, Interactive = true)]
-	internal Task<PickResult> Pick(CancellationToken cancellation, string? pickerTitle = null, Dictionary<string, string[]>? fileTypes = null)
+	internal Task<FileMetadata?> Pick(CancellationToken cancellation, string? pickerTitle = null, Dictionary<string, string[]>? fileTypes = null)
 	{
-		var options = Options(new(pickerTitle, fileTypes));
+		var options = Options(pickerTitle, fileTypes);
 		// The native API cannot be force-dismissed. InteractAsync retains the OS interaction slot until dismissal,
 		// while request/document cancellation prevents the late selection from becoming a document-owned resource.
 		return _context.InteractAsync(async () =>
@@ -77,9 +70,9 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 			Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=after-await selected={file is not null} cancellation={cancellation.IsCancellationRequested} disposed={_disposed}");
 #endif
 			cancellation.ThrowIfCancellationRequested();
-			var result = new PickResult(file is null ? null : AddFiles([file]).Single());
+			var result = file is null ? null : AddFiles([file]).Single();
 #if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
-			Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=return selected={result.File is not null} cancellation={cancellation.IsCancellationRequested}");
+			Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=return selected={result is not null} cancellation={cancellation.IsCancellationRequested}");
 #endif
 			return result;
 		}, cancellation);
@@ -88,7 +81,7 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 	[HybridAction("filePicker.pickMultiple", MainThread = true, Interactive = true)]
 	internal Task<PickMultipleResult> PickMultiple(CancellationToken cancellation, string? pickerTitle = null, Dictionary<string, string[]>? fileTypes = null)
 	{
-		var options = Options(new(pickerTitle, fileTypes));
+		var options = Options(pickerTitle, fileTypes);
 		return _context.InteractAsync(async () =>
 		{
 			var files = await _picker.PickMultipleAsync(options);
@@ -213,16 +206,16 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 			}).ToArray();
 		}
 	}
-	static PickOptions Options(PickerOptions args)
+	static PickOptions Options(string? pickerTitle, Dictionary<string, string[]>? fileTypes)
 	{
-		if (args.FileTypes?.Count > 4 || args.FileTypes?.Any(pair => pair.Value.Length > 64 ||
+		if (fileTypes?.Count > 4 || fileTypes?.Any(pair => pair.Value.Length > 64 ||
 			pair.Value.Any(value => string.IsNullOrWhiteSpace(value) || value.Length > 256)) == true)
 			throw new CommandException("invalid_arguments", "Use bounded native platform file-type filters.");
-		var options = new PickOptions { PickerTitle = args.PickerTitle };
-		if (args.FileTypes is not null)
+		var options = new PickOptions { PickerTitle = pickerTitle };
+		if (fileTypes is not null)
 		{
 			var types = new Dictionary<DevicePlatform, IEnumerable<string>>();
-			foreach (var (platform, values) in args.FileTypes)
+			foreach (var (platform, values) in fileTypes)
 				types.Add(platform switch
 				{
 					"android" => DevicePlatform.Android, "ios" => DevicePlatform.iOS, "maccatalyst" => DevicePlatform.MacCatalyst,
@@ -244,26 +237,8 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 	/// <summary>Releases all selected-file/read-stream resources on owning scope destruction.</summary>
 	public void Dispose() { _context.DocumentEnded -= Clear; lock (_gate) { _disposed = true; Clear(); } }
 }
-sealed record PickerOptions(string? PickerTitle = null, Dictionary<string, string[]>? FileTypes = null);
 sealed record FileMetadata(string Id, string Name, string? ContentType);
-sealed record PickResult(FileMetadata? File);
 sealed record PickMultipleResult(FileMetadata[] Files);
-sealed record FileIdArgs(string Id);
 sealed record ReaderMetadata(string Id, bool CanSeek, int MaximumChunkBytes);
-sealed record ReadArgs(string Id, int Count);
-sealed record SeekArgs(string Id, long Position);
 sealed record ReadResult(string Base64, bool Eof);
 sealed record FileAccepted(bool Accepted);
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
-[JsonSerializable(typeof(PickerOptions))]
-[JsonSerializable(typeof(PickResult))]
-[JsonSerializable(typeof(PickMultipleResult))]
-[JsonSerializable(typeof(FileIdArgs))]
-[JsonSerializable(typeof(ReaderMetadata))]
-[JsonSerializable(typeof(ReadArgs))]
-[JsonSerializable(typeof(SeekArgs))]
-[JsonSerializable(typeof(ReadResult))]
-[JsonSerializable(typeof(FileAccepted))]
-partial class FilePickerJsonContext : JsonSerializerContext;

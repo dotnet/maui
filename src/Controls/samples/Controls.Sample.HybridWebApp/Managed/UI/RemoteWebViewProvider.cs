@@ -28,46 +28,43 @@ public static class RemoteWebAddress
 }
 
 /// <summary>A scoped desktop browser guest with explicit geometry, navigation and teardown, never a command target.</summary>
-public sealed class RemoteWebViewProvider(HybridViewContext context, IDeviceInfo device,
-	NativeDispatcher dispatcher, NativeNotifications notifications) : IHybridCommandProvider
+[HybridTopic("remote.changed")]
+public sealed class RemoteWebViewProvider(HybridViewContext context, IDeviceInfo device, NativeNotifications notifications)
 {
 	bool Supported => device.Platform == DevicePlatform.MacCatalyst || device.Platform == DevicePlatform.WinUI;
 
-	/// <inheritdoc />
-	public void Register(CommandRegistry registry)
+	[HybridAction("remote.info", MainThread = true)]
+	internal RemoteState Info() => State();
+
+	[HybridAction("remote.open", MainThread = true)]
+	internal RemoteState Open(string url)
 	{
-		var json = RemoteWebViewJsonContext.Default;
-		registry.RegisterTopic("remote.changed");
-		registry.Register("remote.info", json.RemoteEmptyArgs, json.RemoteState, (_, op) =>
-			dispatcher.RunAsync(() => Task.FromResult(State()), op.Cancellation));
-		registry.Register("remote.open", json.RemoteOpenArgs, json.RemoteState, (args, op) =>
-		{
-			var uri = RemoteWebAddress.Validate(args.Url);
-			return dispatcher.RunAsync(() =>
-			{
-				RequireDesktop();
-				context.ShowRemote(uri, () => notifications.Publish("remote.changed", State(), json.RemoteState));
-				return Task.FromResult(State());
-			}, op.Cancellation);
-		});
-		registry.Register("remote.bounds", json.RemoteBounds, json.RemoteState, (args, op) => dispatcher.RunAsync(() =>
-		{
-			RequireDesktop();
-			context.Layout.Place(args);
-			return Task.FromResult(State());
-		}, op.Cancellation));
-		registry.Register("remote.control", json.RemoteControlArgs, json.RemoteState, (args, op) => dispatcher.RunAsync(() =>
-		{
-			RequireDesktop();
-			context.Layout.Control(args);
-			return Task.FromResult(State());
-		}, op.Cancellation));
-		registry.Register("remote.navigate", json.RemoteNavigateArgs, json.RemoteState, (args, op) => dispatcher.RunAsync(() =>
-		{
-			RequireDesktop();
-			context.Layout.Navigate(args.Id, RemoteWebAddress.Validate(args.Url));
-			return Task.FromResult(State());
-		}, op.Cancellation));
+		var uri = RemoteWebAddress.Validate(url);
+		RequireDesktop();
+		context.ShowRemote(uri, () => notifications.Publish("remote.changed", State(), RemoteWebViewJsonContext.Default.RemoteState));
+		return State();
+	}
+	[HybridAction("remote.bounds", MainThread = true)]
+	internal RemoteState Bounds(string id, double x, double y, double width, double height, double clipX, double clipY,
+		double clipWidth, double clipHeight, double viewportWidth, double viewportHeight, bool visible)
+	{
+		RequireDesktop();
+		context.Layout.Place(new(id, x, y, width, height, clipX, clipY, clipWidth, clipHeight, viewportWidth, viewportHeight, visible));
+		return State();
+	}
+	[HybridAction("remote.control", MainThread = true)]
+	internal RemoteState Control(string id, string action)
+	{
+		RequireDesktop();
+		context.Layout.Control(id, action);
+		return State();
+	}
+	[HybridAction("remote.navigate", MainThread = true)]
+	internal RemoteState Navigate(string id, string url)
+	{
+		RequireDesktop();
+		context.Layout.Navigate(id, RemoteWebAddress.Validate(url));
+		return State();
 	}
 
 	void RequireDesktop()
@@ -157,10 +154,10 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 		_clip!.IsVisible = true;
 	}
 
-	internal void Control(RemoteControlArgs args)
+	internal void Control(string id, string action)
 	{
-		RequireId(args.Id);
-		switch (args.Action)
+		RequireId(id);
+		switch (action)
 		{
 			case "back": if (_web!.CanGoBack) _web.GoBack(); break;
 			case "forward": if (_web!.CanGoForward) _web.GoForward(); break;
@@ -224,20 +221,11 @@ public sealed class HybridViewLayout : AbsoluteLayout, IDisposable
 	}
 }
 
-sealed record RemoteEmptyArgs;
-sealed record RemoteOpenArgs(string Url);
-sealed record RemoteControlArgs(string Id, string Action);
-sealed record RemoteNavigateArgs(string Id, string Url);
 sealed record RemoteBounds(string Id, double X, double Y, double Width, double Height,
 	double ClipX, double ClipY, double ClipWidth, double ClipHeight, double ViewportWidth, double ViewportHeight, bool Visible);
 sealed record RemoteState(bool Supported, bool Open, string? Id, string? Url, string Status, bool CanGoBack, bool CanGoForward);
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
 	UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
 	RespectNullableAnnotations = true, RespectRequiredConstructorParameters = true)]
-[JsonSerializable(typeof(RemoteEmptyArgs))]
-[JsonSerializable(typeof(RemoteOpenArgs))]
-[JsonSerializable(typeof(RemoteControlArgs))]
-[JsonSerializable(typeof(RemoteNavigateArgs))]
-[JsonSerializable(typeof(RemoteBounds))]
 [JsonSerializable(typeof(RemoteState))]
 partial class RemoteWebViewJsonContext : JsonSerializerContext;

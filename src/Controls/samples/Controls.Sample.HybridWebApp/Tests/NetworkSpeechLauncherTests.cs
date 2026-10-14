@@ -32,7 +32,7 @@ public sealed class NetworkSpeechLauncherTests
 		using var notifications = new NativeNotifications();
 		using var provider = new ConnectivityProvider(native, Inline, notifications);
 		var registry = new CommandRegistry();
-		provider.Register(registry);
+		registry = TestComposition.CreateRegistry(provider);
 		Assert.True(registry.HasTopic("connectivity.changed"));
 		Assert.Equal("Internet", (await Dispatch(registry, "connectivity.info")).GetProperty("networkAccess").GetString());
 		native.Access = NetworkAccess.Local;
@@ -53,8 +53,8 @@ public sealed class NetworkSpeechLauncherTests
 		using var notices2 = new NativeNotifications();
 		using var provider1 = new ConnectivityProvider(native, Inline, notices1);
 		using var provider2 = new ConnectivityProvider(native, Inline, notices2);
-		using var hub1 = new HybridAppTargetObject([provider1], new HybridAppOptions("test."), notifications: notices1);
-		using var hub2 = new HybridAppTargetObject([provider2], new HybridAppOptions("test."), notifications: notices2);
+		using var hub1 = TestComposition.CreateHub([provider1], new HybridAppOptions("test."), notifications: notices1);
+		using var hub2 = TestComposition.CreateHub([provider2], new HybridAppOptions("test."), notifications: notices2);
 		var events1 = new List<NativeEvent>();
 		var events2 = new List<NativeEvent>();
 		hub1.NativeEventReceived += events1.Add;
@@ -99,7 +99,7 @@ public sealed class NetworkSpeechLauncherTests
 		var native = new Network { SubscribeError = new PermissionException("Denied") };
 		using var notifications = new NativeNotifications();
 		using var provider = new ConnectivityProvider(native, Inline, notifications);
-		using var hub = new HybridAppTargetObject([provider], new HybridAppOptions("test."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("test."), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		Assert.Equal("permission_denied", (await Call(hub, session, "core.subscribe", new { topic = "connectivity.changed" })).Error!.Code);
@@ -114,7 +114,7 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new Speech();
 		var registry = new CommandRegistry();
-		new TextToSpeechProvider(native, Inline, new HybridAppOptions("test.", 32)).Register(registry);
+		registry = TestComposition.CreateRegistry(new TextToSpeechProvider(native, new HybridAppOptions("test.", 32)));
 		var locale = Assert.Single((await Dispatch(registry, "speech.locales")).GetProperty("locales").EnumerateArray());
 		Assert.Equal("Native voice", locale.GetProperty("name").GetString());
 		Assert.Equal("", locale.GetProperty("country").GetString());
@@ -145,7 +145,7 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new Speech();
 		var registry = new CommandRegistry();
-		new TextToSpeechProvider(native, Inline, new HybridAppOptions("test.", 8)).Register(registry);
+		registry = TestComposition.CreateRegistry(new TextToSpeechProvider(native, new HybridAppOptions("test.", 8)));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "speech.speak", args))).Code);
 		Assert.Equal(0, native.Speaks);
 	}
@@ -156,7 +156,7 @@ public sealed class NetworkSpeechLauncherTests
 		var native = new Speech { Wait = true };
 		using var notifications = new NativeNotifications();
 		using var network = new ConnectivityProvider(new Network(), Inline, notifications);
-		using var hub = new HybridAppTargetObject([new TextToSpeechProvider(native, Inline, new HybridAppOptions("test.")), network],
+		using var hub = TestComposition.CreateHub([new TextToSpeechProvider(native, new HybridAppOptions("test.")), network],
 			new HybridAppOptions("test."), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
@@ -175,7 +175,7 @@ public sealed class NetworkSpeechLauncherTests
 	public async Task DisconnectCancelsActualNativeSpeech()
 	{
 		var native = new Speech { Wait = true };
-		using var hub = new HybridAppTargetObject([new TextToSpeechProvider(native, Inline, new HybridAppOptions("test."))], new HybridAppOptions("test."));
+		using var hub = TestComposition.CreateHub([new TextToSpeechProvider(native, new HybridAppOptions("test."))], new HybridAppOptions("test."));
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		var pending = Call(hub, session, "speech.speak", new { text = "Disconnect me" });
@@ -202,7 +202,7 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new SystemLauncher();
 		var registry = new CommandRegistry();
-		new LauncherProvider(native, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new LauncherProvider(native));
 		var args = JsonSerializer.Serialize(new { url });
 		Assert.Equal("invalid_url", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "launcher.openUrl", args))).Code);
 		Assert.Equal(0, native.Opens);
@@ -213,7 +213,7 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new SystemLauncher();
 		var registry = new CommandRegistry();
-		new LauncherProvider(native, Inline).Register(registry);
+		registry = TestComposition.CreateRegistry(new LauncherProvider(native));
 		Assert.True((await Dispatch(registry, "launcher.openUrl", "{\"url\":\"https://dot.net/maui\"}")).GetProperty("accepted").GetBoolean());
 		Assert.Equal("https://dot.net/maui", native.Uri!.AbsoluteUri);
 		Assert.Equal(1, native.Opens);
@@ -238,8 +238,8 @@ public sealed class NetworkSpeechLauncherTests
 		var launcher = new SystemLauncher { Error = new NotSupportedException() };
 		using var notifications = new NativeNotifications();
 		using var network = new ConnectivityProvider(new Network { ReadError = new NotSupportedException() }, Inline, notifications);
-		using var hub = new HybridAppTargetObject([
-			new TextToSpeechProvider(speech, Inline, new HybridAppOptions("test.")), new LauncherProvider(launcher, Inline), network
+		using var hub = TestComposition.CreateHub([
+			new TextToSpeechProvider(speech, new HybridAppOptions("test.")), new LauncherProvider(launcher), network
 		], new HybridAppOptions("test."), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });

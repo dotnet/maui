@@ -84,7 +84,7 @@ export async function contains(key: string, options: PreferenceOptions = {}): Pr
  * @returns Native completion.
  */
 export async function remove(key: string, options: PreferenceOptions = {}): Promise<void> {
-  await (await connect()).invoke('preferences.delete', { key, sharedName: options.sharedName ?? null }, ack)
+  await (await connect()).invoke('preferences.remove', { key, sharedName: options.sharedName ?? null }, ack)
 }
 /**
  * Clears only tracked keys owned by this host namespace/container, never arbitrary native preference stores.

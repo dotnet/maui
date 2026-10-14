@@ -11,9 +11,6 @@ namespace Maui.HybridApp;
 [JsonSerializable(typeof(Response))]
 [JsonSerializable(typeof(NativeEvent))]
 [JsonSerializable(typeof(DocumentMessage))]
-[JsonSerializable(typeof(EmptyArgs))]
 [JsonSerializable(typeof(ReadyResult))]
 [JsonSerializable(typeof(Ack))]
-[JsonSerializable(typeof(TopicArgs))]
-[JsonSerializable(typeof(CancelArgs))]
 public partial class ProtocolJsonContext : JsonSerializerContext;

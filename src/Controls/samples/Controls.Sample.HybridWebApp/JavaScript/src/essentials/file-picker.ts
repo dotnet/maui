@@ -146,10 +146,7 @@ function options(value: PickOptions): Json {
  */
 export async function pickFile(value: PickOptions = {}): Promise<PickedFile | null> {
   const c = await connect()
-  return c.invoke('filePicker.pick', options(value), result => {
-    const file = object(result).file
-    return file === null ? null : picked(file, c)
-  })
+  return c.invoke('filePicker.pick', options(value), result => result === null ? null : picked(result, c))
 }
 /**
  * Opens native multiple selection without whole-file reads or a file-capacity limit.

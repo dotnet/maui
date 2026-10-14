@@ -5,9 +5,8 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.HybridApp.UI;
 
-/// <summary>Observes actual owning-window geometry, with paired/coalesced payloads and last-subscription native teardown.</summary>
-public sealed class WindowEventsProvider(HybridViewContext context, IDeviceInfo device, NativeDispatcher dispatcher,
-	NativeNotifications notifications, TimeProvider time) : IHybridCommandProvider, IDisposable
+// Geometry observation belongs to the same scoped plugin as window actions.
+public sealed partial class WindowProvider
 {
 	readonly object _gate = new();
 	Window? _window;
@@ -19,15 +18,14 @@ public sealed class WindowEventsProvider(HybridViewContext context, IDeviceInfo 
 	double _width, _height, _x, _y;
 	bool PositionSupported => device.Platform == DevicePlatform.WinUI;
 
-	/// <inheritdoc />
-	public void Register(CommandRegistry registry) => registry.RegisterTopic("window.geometryChanged", StartAsync, Stop);
-	Task StartAsync()
+	[HybridEvent("window.geometryChanged", HybridEventLifecycle.Start)]
+	internal Task StartAsync()
 	{
 		long epoch;
 		lock (_gate)
 		{
 			if (_disposed)
-				throw new ObjectDisposedException(nameof(WindowEventsProvider));
+				throw new ObjectDisposedException(nameof(WindowProvider));
 			_active = true;
 			epoch = ++_epoch;
 		}
@@ -87,7 +85,8 @@ public sealed class WindowEventsProvider(HybridViewContext context, IDeviceInfo 
 					() => Volatile.Read(ref _active) && Interlocked.Read(ref _epoch) == epoch);
 		});
 	}
-	void Stop()
+	[HybridEvent("window.geometryChanged", HybridEventLifecycle.Stop)]
+	internal void Stop()
 	{
 		Window? window;
 		PropertyChangedEventHandler? handler;

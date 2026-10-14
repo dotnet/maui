@@ -12,11 +12,14 @@ namespace Maui.HybridApp.Generators;
 public sealed class HybridActionGenerator : IIncrementalGenerator
 {
 	const string AttributeName = "Maui.HybridApp.HybridActionAttribute";
+	const string EventAttributeName = "Maui.HybridApp.HybridEventAttribute";
+	const string TopicAttributeName = "Maui.HybridApp.HybridTopicAttribute";
 	static readonly DiagnosticDescriptor InvalidName = Rule("HYBRID001", "Invalid action name", "Action '{0}' has an invalid wire name");
 	static readonly DiagnosticDescriptor InvalidMethod = Rule("HYBRID002", "Unsupported action method", "Action '{0}' must be accessible, nongeneric and non-async-void, without ref/out/in or delegate parameters: {1}");
-	static readonly DiagnosticDescriptor Duplicate = Rule("HYBRID003", "Duplicate action name", "Action name '{0}' is duplicated within a provider or known host registrations");
+	static readonly DiagnosticDescriptor Duplicate = Rule("HYBRID003", "Duplicate action name", "Action or topic name '{0}' is duplicated within an assembly or explicitly registered assemblies");
 	static readonly DiagnosticDescriptor InvalidJson = Rule("HYBRID004", "Unsupported JSON contract", "Action '{0}' cannot generate strict JSON for '{1}': {2}");
 	static readonly DiagnosticDescriptor InvalidBinding = Rule("HYBRID005", "Invalid parameter binding", "Action parameter '{0}' has conflicting or unsupported service/context/cancellation binding");
+	static readonly DiagnosticDescriptor InvalidEvent = Rule("HYBRID006", "Invalid event lifecycle", "Topic '{0}' requires exactly one accessible instance Task start and void stop method without parameters");
 
 	static DiagnosticDescriptor Rule(string id, string title, string message) =>
 		new(id, title, message, "Maui.HybridApp", DiagnosticSeverity.Error, true);
@@ -26,28 +29,59 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		var methods = context.SyntaxProvider.ForAttributeWithMetadataName(AttributeName,
 			static (node, _) => node is MethodDeclarationSyntax,
 			static (syntax, _) => (IMethodSymbol)syntax.TargetSymbol).Collect();
-		var registrations = context.SyntaxProvider.CreateSyntaxProvider(
-			static (node, _) => node is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name: GenericNameSyntax { Identifier.ValueText: "AddHybridActions" } } } ||
-				node is InvocationExpressionSyntax { Expression: GenericNameSyntax { Identifier.ValueText: "AddHybridActions" } },
-			static (syntax, _) => (syntax.SemanticModel.GetSymbolInfo(syntax.Node).Symbol as IMethodSymbol)?.TypeArguments.FirstOrDefault())
-			.Where(static symbol => symbol is INamedTypeSymbol).Collect();
-		context.RegisterSourceOutput(methods.Combine(registrations), static (output, inputs) => Generate(output, inputs.Left, inputs.Right));
+		var events = context.SyntaxProvider.ForAttributeWithMetadataName(EventAttributeName,
+			static (node, _) => node is MethodDeclarationSyntax,
+			static (syntax, _) => (IMethodSymbol)syntax.TargetSymbol).Collect();
+		var topics = context.SyntaxProvider.ForAttributeWithMetadataName(TopicAttributeName,
+			static (node, _) => node is ClassDeclarationSyntax,
+			static (syntax, _) => (INamedTypeSymbol)syntax.TargetSymbol).Collect();
+		var assemblies = context.SyntaxProvider.CreateSyntaxProvider(
+			static (node, _) => node is InvocationExpressionSyntax,
+			static (syntax, _) => (syntax.SemanticModel.GetSymbolInfo(syntax.Node).Symbol as IMethodSymbol)?.ContainingType)
+			.Where(static type => type is not null && type.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Maui.HybridApp.HybridActionAssemblyAttribute")).Collect();
+		context.RegisterSourceOutput(methods.Combine(events).Combine(topics).Combine(context.CompilationProvider).Combine(assemblies),
+			static (output, inputs) => Generate(output, inputs.Left.Left.Left.Left, inputs.Left.Left.Left.Right,
+				inputs.Left.Left.Right, inputs.Left.Right.AssemblyName!, inputs.Right));
 	}
 
-	static void Generate(SourceProductionContext output, ImmutableArray<IMethodSymbol> methods, ImmutableArray<ITypeSymbol?> registrations)
+	static void Generate(SourceProductionContext output, ImmutableArray<IMethodSymbol> methods, ImmutableArray<IMethodSymbol> events,
+		ImmutableArray<INamedTypeSymbol> topics, string assembly, ImmutableArray<INamedTypeSymbol?> registeredAssemblies)
 	{
 		var registeredNames = new HashSet<string>(StringComparer.Ordinal);
-		foreach (var provider in registrations.Distinct(SymbolEqualityComparer.Default).OfType<INamedTypeSymbol>())
-			foreach (var method in provider.GetMembers().OfType<IMethodSymbol>().Where(IsAction))
-				if (!registeredNames.Add(Name(method)))
-					output.ReportDiagnostic(Diagnostic.Create(Duplicate, method.Locations.FirstOrDefault(), Name(method)));
+		foreach (var method in methods.Distinct(SymbolEqualityComparer.Default).OfType<IMethodSymbol>())
+			if (!registeredNames.Add(Name(method)))
+				output.ReportDiagnostic(Diagnostic.Create(Duplicate, method.Locations.FirstOrDefault(), Name(method)));
+		foreach (var registered in registeredAssemblies.Distinct(SymbolEqualityComparer.Default).OfType<INamedTypeSymbol>())
+			foreach (var attribute in registered.GetAttributes().Where(a => a.AttributeClass?.ToDisplayString() == "Maui.HybridApp.HybridActionAssemblyAttribute"))
+				if (attribute.ConstructorArguments[0].Value is string name && !registeredNames.Add(name))
+					output.ReportDiagnostic(Diagnostic.Create(Duplicate, methods.FirstOrDefault(m => Name(m) == name)?.Locations.FirstOrDefault() ?? Location.None, name));
 
-		var groups = methods.Distinct(SymbolEqualityComparer.Default).OfType<IMethodSymbol>()
-			.GroupBy(method => method.ContainingType, SymbolEqualityComparer.Default);
+		var providers = methods.Concat(events).Select(method => method.ContainingType).Concat(topics)
+			.Distinct(SymbolEqualityComparer.Default).OfType<INamedTypeSymbol>().OrderBy(type => type.ToDisplayString(), StringComparer.Ordinal);
+		var emitters = new List<(INamedTypeSymbol Type, string Id, bool Instance)>();
+		var topicNames = new HashSet<string>(StringComparer.Ordinal);
 		int index = 0;
-		foreach (var group in groups)
+		foreach (var provider in providers)
 		{
-			var provider = (INamedTypeSymbol)group.Key!;
+			var group = methods.Where(method => SymbolEqualityComparer.Default.Equals(method.ContainingType, provider));
+			var lifecycle = events.Where(method => SymbolEqualityComparer.Default.Equals(method.ContainingType, provider)).ToArray();
+			var declaredTopics = provider.GetAttributes().Where(a => a.AttributeClass?.ToDisplayString() == TopicAttributeName)
+				.Select(a => a.ConstructorArguments[0].Value as string ?? "").ToArray();
+			var hooks = new List<(string Name, string Start, string Stop)>();
+			foreach (var eventGroup in lifecycle.GroupBy(method => method.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == EventAttributeName).ConstructorArguments[0].Value as string ?? ""))
+			{
+				var starts = eventGroup.Where(method => (int)method.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == EventAttributeName).ConstructorArguments[1].Value! == 0).ToArray();
+				var stops = eventGroup.Where(method => (int)method.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == EventAttributeName).ConstructorArguments[1].Value! == 1).ToArray();
+				if (starts.Length != 1 || stops.Length != 1 || eventGroup.Any(method => MethodIssue(method) is not null || method.IsStatic || method.Parameters.Length != 0) ||
+					starts[0].ReturnType.ToDisplayString() != "System.Threading.Tasks.Task" || !stops[0].ReturnsVoid)
+					output.ReportDiagnostic(Diagnostic.Create(InvalidEvent, provider.Locations[0], eventGroup.Key));
+				else hooks.Add((eventGroup.Key, starts[0].Name, stops[0].Name));
+			}
+			foreach (var topic in declaredTopics.Concat(hooks.Select(hook => hook.Name)))
+			{
+				if (!ValidName(topic)) output.ReportDiagnostic(Diagnostic.Create(InvalidName, provider.Locations[0], topic));
+				if (!topicNames.Add(topic)) output.ReportDiagnostic(Diagnostic.Create(Duplicate, provider.Locations[0], topic));
+			}
 			var graph = new JsonGraph();
 			var valid = new List<IMethodSymbol>();
 			var names = new HashSet<string>(StringComparer.Ordinal);
@@ -55,7 +89,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			foreach (var method in group)
 			{
 				var name = Name(method);
-				if (name.Length is < 1 or > 64 || name.Any(c => c > 127 || !(char.IsLetterOrDigit(c) || c is '.' or '_' or '-')))
+				if (!ValidName(name))
 				{
 					output.ReportDiagnostic(Diagnostic.Create(InvalidName, method.Locations[0], method.Name));
 					continue;
@@ -97,14 +131,33 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				}
 				if (good) valid.Add(method);
 			}
-			if (valid.Count == 0 || !contractsValid) continue;
+			if (!contractsValid) continue;
 			// One provider owns its metadata, including private implementation DTOs accessible within this assembly.
-			var emitter = new Emitter(provider, valid, graph, index++);
+			var emitter = new Emitter(provider, valid, graph, index++, declaredTopics, hooks);
 			output.AddSource(emitter.Id + ".g.cs", emitter.Emit());
+			emitters.Add((provider, emitter.Id, valid.Any(method => !method.IsStatic) || hooks.Count != 0));
 		}
+		if (emitters.Count == 0) return;
+		var id = string.Concat(assembly.Where(char.IsLetterOrDigit));
+		if (id.Length == 0 || char.IsDigit(id[0])) id = "Assembly" + id;
+		var code = new StringBuilder("// <auto-generated/>\n#nullable enable\nusing Microsoft.Extensions.DependencyInjection;\nusing Microsoft.Extensions.DependencyInjection.Extensions;\nnamespace Maui.HybridApp.Generated;\n");
+		code.AppendLine("/// <summary>Explicitly registers every attributed plugin compiled in " + assembly + ".</summary>");
+		foreach (var name in methods.Select(Name).Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal))
+			code.AppendLine("[global::Maui.HybridApp.HybridActionAssembly(" + Literal(name) + ")]");
+		code.AppendLine("public static class " + id + "ActionAssembly {");
+		code.AppendLine("/// <summary>Adds this assembly's scoped actions and declarative event lifecycles, preserving host overrides.</summary>");
+		code.AppendLine("/// <param name=\"services\">The owning host's service collection.</param><returns>The same collection.</returns>");
+		code.AppendLine("public static IServiceCollection Add" + id + "Actions(this IServiceCollection services) {");
+		foreach (var emitter in emitters.Where(e => e.Instance))
+			code.AppendLine("services.TryAddScoped<" + TypeName(emitter.Type) + ">();");
+		code.AppendLine("return global::Maui.HybridApp.HybridActionAssemblies.Add(services, typeof(" + id + "ActionAssembly), Register); }");
+		code.AppendLine("static void Register(global::Maui.HybridApp.CommandRegistry registry, global::System.IServiceProvider services) {");
+		foreach (var emitter in emitters) code.AppendLine(emitter.Id + ".Register(registry, services);");
+		code.AppendLine("} }");
+		output.AddSource(id + ".Actions.g.cs", code.ToString());
 	}
 
-	static bool IsAction(IMethodSymbol method) => method.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == AttributeName);
+	static bool ValidName(string name) => name.Length is >= 1 and <= 64 && name.All(c => c <= 127 && (char.IsLetterOrDigit(c) || c is '.' or '_' or '-'));
 	static AttributeData Attribute(IMethodSymbol method) => method.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == AttributeName);
 	static string Name(IMethodSymbol method) => Attribute(method).ConstructorArguments[0].Value as string ?? "";
 	static bool Policy(IMethodSymbol method, string name) => Attribute(method).NamedArguments.Any(pair => pair.Key == name && pair.Value.Value is true);
@@ -112,7 +165,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 	static string? MethodIssue(IMethodSymbol method)
 	{
 		if (method.ContainingType.TypeKind != TypeKind.Class)
-			return "use a provider class (its action methods may be static)";
+			return "use a plugin class (its action methods may be static)";
 		if (!Accessible(method)) return "method is not accessible from generated code";
 		for (var type = method.ContainingType; type is not null; type = type.ContainingType)
 			if (!Accessible(type) || type.Arity != 0 || type.IsFileLocal) return "containing type is inaccessible, file-local or generic";
@@ -293,7 +346,8 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		},
 	};
 
-	sealed class Emitter(INamedTypeSymbol provider, List<IMethodSymbol> methods, JsonGraph graph, int index)
+	sealed class Emitter(INamedTypeSymbol provider, List<IMethodSymbol> methods, JsonGraph graph, int index,
+		string[] topics, List<(string Name, string Start, string Stop)> hooks)
 	{
 		readonly StringBuilder _code = new();
 		internal string Id => "HybridActions_" + index.ToString(CultureInfo.InvariantCulture) + "_" + provider.Name;
@@ -305,7 +359,6 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 		{
 			Line("// <auto-generated/>");
 			Line("#nullable enable");
-			Line("#pragma warning disable CS1591, CA2255");
 			Line("using System;");
 			Line("using System.Linq;");
 			Line("using System.Threading.Tasks;");
@@ -314,22 +367,18 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			Line("using System.Text.Json.Serialization.Metadata;");
 			Line("using Microsoft.Extensions.DependencyInjection;");
 			Line("namespace Maui.HybridApp.Generated;");
-			Line((provider.IsStatic ? "public" : "internal") + " static class " + Id);
+			Line("internal static class " + Id);
 			Line("{");
 			var target = TypeName(provider);
-			var registrationType = provider.IsStatic ? "ProviderMarker" : target;
-			if (provider.IsStatic)
-			{
-				Line("sealed class ProviderMarker { public ProviderMarker() { } }");
-				Line("/// <summary>Explicitly opts in to the direct calls generated for " + provider.Name + ".</summary>");
-				Line("public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection Add" + provider.Name +
-					"HybridActions(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => global::Maui.HybridApp.HybridActionServiceCollectionExtensions.AddHybridActions<ProviderMarker>(services);");
-			}
-			Line("[global::System.Runtime.CompilerServices.ModuleInitializer]");
-			var requiresInstance = methods.Any(method => !method.IsStatic) || provider.AllInterfaces.Any(type => type.ToDisplayString() == "Maui.HybridApp.IHybridActionSource");
-			Line("internal static void Initialize() => global::Maui.HybridApp.HybridActionRegistration<" + registrationType + ">.Initialize(Register, requiresInstance: " + (requiresInstance ? "true" : "false") + ");");
-			Line("static void Register(global::Maui.HybridApp.CommandRegistry registry, global::System.IServiceProvider? services, " + registrationType + "? instance, global::Maui.HybridApp.NativeDispatcher? dispatcher)");
+			Line("internal static void Register(global::Maui.HybridApp.CommandRegistry registry, global::System.IServiceProvider services)");
 			Line("{");
+			foreach (var topic in topics) Line("registry.RegisterTopic(" + Literal(topic) + ");");
+			if (hooks.Count != 0) Line("var source = services.GetRequiredService<" + target + ">();");
+			foreach (var hook in hooks)
+			{
+				// Scope disposal has already disabled service resolution when the hub detaches active topics.
+				Line("registry.RegisterTopic(" + Literal(hook.Name) + ", source.@" + hook.Start + ", source.@" + hook.Stop + ");");
+			}
 			foreach (var method in methods) EmitAction(method, target);
 			Line("}");
 			EmitJson();
@@ -364,7 +413,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				return "(services ?? throw new InvalidOperationException(\"This action requires the owning service scope.\"))." +
 					(keyed is null ? "GetRequiredService" : "GetRequiredKeyedService") + "<" + TypeName(parameter.Type) + ">(" + key.TrimStart(',', ' ') + ")";
 			});
-			var call = (method.IsStatic ? target : "(instance ?? (services ?? throw new InvalidOperationException(\"This action requires its owning service scope.\")).GetRequiredService<" + target + ">())") +
+			var call = (method.IsStatic ? target : "services.GetRequiredService<" + target + ">()") +
 				".@" + method.Name + "(" + string.Join(", ", arguments) + ")";
 			if (Awaitable(method))
 			{
@@ -381,9 +430,10 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			}
 			Line("}");
 			if (Policy(method, "MainThread"))
-				Line("return await (dispatcher ?? (services ?? throw new InvalidOperationException(\"This action requires a native dispatcher.\")).GetRequiredService<global::Maui.HybridApp.NativeDispatcher>()).RunAsync(Invoke, operation.Cancellation).ConfigureAwait(false);");
+				Line("return await services.GetRequiredService<global::Maui.HybridApp.NativeDispatcher>().RunAsync(Invoke, operation.Cancellation).ConfigureAwait(false);");
 			else Line("return await Invoke().ConfigureAwait(false);");
-			Line("}, interactive: " + (Policy(method, "Interactive") ? "true" : "false") + ");");
+			var enabled = !Attribute(method).NamedArguments.Any(pair => pair.Key == "Enabled" && pair.Value.Value is false);
+			Line("}, interactive: " + (Policy(method, "Interactive") ? "true" : "false") + ", enabled: " + (enabled ? "true" : "false") + ");");
 		}
 		void EmitResult(ITypeSymbol? result, bool task)
 		{

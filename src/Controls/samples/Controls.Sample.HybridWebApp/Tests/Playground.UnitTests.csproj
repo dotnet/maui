@@ -19,6 +19,7 @@
     <Compile Remove="ExternalProvider/**;PackageConsumer/**" />
     <!-- Only sample commands are shared with these UI-free tests; all product code comes from its assembly. -->
     <Compile Include="../Native/Playground/*.cs" Link="Playground/%(Filename)%(Extension)" />
+    <Compile Remove="../Native/Playground/SampleServiceCollectionExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" PrivateAssets="all" />

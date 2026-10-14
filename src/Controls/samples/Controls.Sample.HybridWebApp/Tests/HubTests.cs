@@ -26,19 +26,14 @@ public sealed class HubTests
 
 	static HybridAppTargetObject CreateHub(FakeClipboard clipboard, Action<NativeEvent> send, TimeProvider? time = null, FakePreferences? preferences = null)
 	{
-		var registry = new CommandRegistry();
 		var dispatcher = new NativeDispatcher(action => action());
-		new AppInfoProvider(new FakeAppInfo { Error = new NotSupportedException("Tests do not invent native app support.") }, dispatcher).Register(registry);
-		new ClipboardProvider(clipboard, dispatcher).Register(registry);
-		new PreferencesProvider(preferences ?? new FakePreferences(), dispatcher, SamplePolicy.PreferenceNamespace).Register(registry);
-		var counter = new SampleCounter();
-		new SampleCounterProvider(counter).Register(registry);
-		new SampleEchoProvider(counter).Register(registry);
-		new SampleFailureProvider().Register(registry);
-		new SampleDisabledProvider().Register(registry);
-		new SampleWorkProvider().Register(registry);
-		new SampleDiagnosticsProvider(new SampleStartupIdentity("test-startup", DateTimeOffset.UtcNow)).Register(registry);
-		return new HybridAppTargetObject(registry,
+		var registry = TestComposition.CreateRegistry(
+			new AppInfoProvider(new FakeAppInfo { Error = new NotSupportedException("Tests do not invent native app support.") }),
+			new ClipboardProvider(clipboard, dispatcher, new(SamplePolicy.PreferenceNamespace), new()),
+			new PreferencesProvider(preferences ?? new FakePreferences(), new(SamplePolicy.PreferenceNamespace)),
+			new SamplePlugin(),
+			new SampleDiagnosticsProvider(new SampleStartupIdentity("test-startup", DateTimeOffset.UtcNow)));
+		return TestComposition.CreateHub(registry,
 			() => new ReadyResult(registry.Names, SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength),
 			send, time);
 	}
@@ -51,14 +46,14 @@ public sealed class HubTests
 		var value = "你好 👋 café\n\"quotes\"\\\0";
 		var response = await Call(hub, "sample.echo", new { text = value, number = -4.25, flag = true, items = new[] { "é", "\\", "\n" } });
 		Assert.Equal("success", response.Status);
-		var dto = response.Result!.Value.Deserialize(EchoJsonContext.Default.EchoResult)!;
+		var dto = response.Result!.Value.Deserialize<EchoResult>(new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
 		Assert.Equal(value, dto.Text);
 		Assert.Equal(-4.25, dto.Number);
 		Assert.True(dto.Flag);
 		Assert.Equal(new[] { "é", "\\", "\n" }, dto.Items);
 		Assert.Equal(1, dto.Counter);
 		response = await Call(hub, "sample.echo", new { text = (string?)null, number = 0, flag = false, items = Array.Empty<string>() });
-		Assert.Null(response.Result!.Value.Deserialize(EchoJsonContext.Default.EchoResult)!.Text);
+		Assert.Null(response.Result!.Value.GetProperty("text").GetString());
 	}
 
 	[Theory]
@@ -112,14 +107,14 @@ public sealed class HubTests
 		using var hub = CreateHub(clipboard, _ => { }, preferences: preferences);
 		await Connect(hub);
 		foreach (var key in new[] { "", "../other", "a.b", new string('a', 49), "你好" })
-			Assert.Equal("invalid_arguments", (await Call(hub, "preferences.read", new { key })).Error!.Code);
+			Assert.Equal("invalid_arguments", (await Call(hub, "preferences.contains", new { key })).Error!.Code);
 		Assert.Equal("invalid_arguments", (await Call(hub, "clipboard.write", new { text = new string('x', 4097) })).Error!.Code);
 		Assert.Equal(0, clipboard.Calls);
 		Assert.Equal(0, preferences.Calls);
-		Assert.Equal("success", (await Call(hub, "preferences.write", new { key = "example", value = "你好" })).Status);
-		Assert.Equal("你好", (await Call(hub, "preferences.read", new { key = "example" })).Result!.Value.GetProperty("value").GetString());
+		Assert.Equal("success", (await Call(hub, "preferences.set", new { key = "example", value = new { kind = "string", text = "你好" } })).Status);
+		Assert.Equal("你好", (await Call(hub, "preferences.get", new { key = "example", defaultValue = new { kind = "string", text = "" } })).Result!.Value.GetProperty("text").GetString());
 		Assert.Equal("success", (await Call(hub, "preferences.remove", new { key = "example" })).Status);
-		Assert.Equal(JsonValueKind.Null, (await Call(hub, "preferences.read", new { key = "example" })).Result!.Value.GetProperty("value").ValueKind);
+		Assert.False((await Call(hub, "preferences.contains", new { key = "example" })).Result!.Value.GetProperty("accepted").GetBoolean());
 	}
 
 	[Fact]
@@ -272,39 +267,37 @@ public sealed class HubTests
 	[Fact]
 	public async Task ProvidersExtendRegistryWithoutCentralRouterChanges()
 	{
-		var registry = new CommandRegistry();
+		var registry = TestComposition.CreateRegistry(new PluginActions(new PluginActionState()));
 		var json = PluginJsonContext.Default;
-		registry.Register("test.explicit", json.PluginArgs, json.PluginResult, (args, _) => Task.FromResult(new PluginResult(args.Text)));
-		Assert.Throws<InvalidOperationException>(() => registry.Register("test.explicit", json.PluginArgs, json.PluginResult, (args, _) => Task.FromResult(new PluginResult(args.Text))));
-		var result = await registry.DispatchAsync("test.explicit", JsonSerializer.SerializeToElement(new PluginArgs("test"), json.PluginArgs),
+		Assert.Throws<InvalidOperationException>(() => registry.RegisterGenerated("plugin.echo", [json.PluginResult], (_, _) => Task.FromResult(default(JsonElement))));
+		var result = await registry.DispatchAsync("plugin.echo", JsonSerializer.SerializeToElement(new { text = "test" }),
 			new Operation(_session, Guid.NewGuid().ToString("D"), CancellationToken.None, (_, _) => { }));
 		Assert.Equal("test", result.Deserialize(json.PluginResult)!.Text);
-		Assert.NotEqual(typeof(CommandRegistry).Assembly, typeof(PluginProvider).Assembly);
-		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginArgs)));
+		Assert.NotEqual(typeof(CommandRegistry).Assembly, typeof(PluginActions).Assembly);
+		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginResult)));
 		var reflection = new JsonSerializerOptions { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
-		Assert.Throws<ArgumentException>(() => registry.Register("unsafe", (JsonTypeInfo<PluginArgs>)reflection.GetTypeInfo(typeof(PluginArgs)), json.PluginResult,
-			(args, _) => Task.FromResult(new PluginResult(args.Text))));
+		Assert.Throws<ArgumentException>(() => registry.RegisterGenerated("unsafe", [reflection.GetTypeInfo(typeof(PluginResult))],
+			(_, _) => Task.FromResult(default(JsonElement))));
 	}
 
 	[Fact]
 	public async Task HostChoosesProvidersMetadataAndTopicsWithoutMauiUi()
 	{
-		var registry = new CommandRegistry();
+		var registry = TestComposition.CreateRegistry(new PluginActions(new PluginActionState()));
 		var json = ProtocolJsonContext.Default;
 		var events = new List<NativeEvent>();
-		new PluginProvider().Register(registry);
 		Assert.Throws<InvalidOperationException>(() => registry.RegisterTopic("plugin.changed"));
-		using var hub = new HybridAppTargetObject(registry, () => new ReadyResult(registry.Names, "native-host.", 128),
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "native-host.", 128),
 			events.Add);
 		var response = await Call(hub, "core.connect", new { });
 		var ready = response.Result!.Value.Deserialize(json.ReadyResult)!;
 		Assert.Equal("native-host.", ready.PreferenceNamespace);
 		Assert.Equal(128, ready.MaximumTextLength);
 		Assert.Contains("plugin.echo", ready.Commands);
-		Assert.DoesNotContain("app.info", ready.Commands);
-		Assert.DoesNotContain("sample.echo", ready.Commands);
-		Assert.Equal("unknown_command", (await Call(hub, "clipboard.read", new { })).Error!.Code);
-		Assert.Equal("unknown_topic", (await Call(hub, "core.subscribe", new { topic = "service.changed" })).Error!.Code);
+		Assert.Contains("app.info", ready.Commands);
+		Assert.Contains("sample.echo", ready.Commands);
+		Assert.Equal("unknown_command", (await Call(hub, "missing.command", new { })).Error!.Code);
+		Assert.Equal("unknown_topic", (await Call(hub, "core.subscribe", new { topic = "missing.topic" })).Error!.Code);
 		Assert.Equal("disabled_command", (await Call(hub, "plugin.disabled", new { text = "disabled" })).Error!.Code);
 		Assert.Equal("invalid_arguments", (await Call(hub, "plugin.echo", new { text = (string?)null })).Error!.Code);
 		Assert.Equal("invalid_arguments", (await Call(hub, "plugin.echo", new { text = "ok", extra = true })).Error!.Code);

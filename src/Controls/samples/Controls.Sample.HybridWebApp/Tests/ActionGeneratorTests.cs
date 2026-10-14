@@ -79,17 +79,17 @@ public sealed class ActionGeneratorTests
 	}
 
 	[Fact]
-	public void DuplicateNamesAreDiagnosedOnlyWithinProviderOrKnownOptIns()
+	public void DuplicateNamesAreDiagnosedAcrossTheWholeAssembly()
 	{
 		var source = """
 			using Maui.HybridApp;
 			using Microsoft.Extensions.DependencyInjection;
 			public class One { [HybridAction("same")] public static int A() => 1; }
 			public class Two { [HybridAction("same")] public static int B() => 2; }
-			public class Startup { public void Register(IServiceCollection services) { services.AddHybridActions<One>(); services.AddHybridActions<Two>(); } }
+			public class Startup { }
 			""";
 		Assert.Contains(Generate(source).Result.Diagnostics, diagnostic => diagnostic.Id == "HYBRID003");
-		Assert.DoesNotContain(Generate(source.Replace("services.AddHybridActions<Two>();", "", StringComparison.Ordinal)).Result.Diagnostics, diagnostic => diagnostic.Id == "HYBRID003");
+		Assert.DoesNotContain(Generate(source.Replace("""[HybridAction("same")] public static int B()""", """[HybridAction("different")] public static int B()""", StringComparison.Ordinal)).Result.Diagnostics, diagnostic => diagnostic.Id == "HYBRID003");
 		var withinProvider = """using Maui.HybridApp; public class One { [HybridAction("same")] public void A() {} [HybridAction("same")] public void B() {} }""";
 		Assert.Contains(Generate(withinProvider).Result.Diagnostics, diagnostic => diagnostic.Id == "HYBRID003");
 	}
@@ -133,8 +133,9 @@ public sealed class ActionGeneratorTests
 			using Maui.HybridApp;
 			using Microsoft.Extensions.DependencyInjection;
 			using HybridApp.ExternalProvider;
+			using Maui.HybridApp.Generated;
 			public class LocalProvider { [HybridAction("plugin.action.echo")] public static int Echo() => 1; }
-			public class Startup { public void Register(IServiceCollection services) { services.AddHybridActions<LocalProvider>(); services.AddHybridActions<PluginActions>(); } }
+			public class Startup { public void Register(IServiceCollection services) { services.AddExternalProviderActions(); } }
 			""";
 		Assert.Contains(Generate(source).Result.Diagnostics, diagnostic => diagnostic.Id == "HYBRID003");
 	}
@@ -148,7 +149,42 @@ public sealed class ActionGeneratorTests
 			""");
 		Assert.Empty(generated.Result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
 		Assert.Empty(generated.Output.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
-		Assert.Contains("AddMathActionsHybridActions", string.Join("\n", generated.Result.GeneratedTrees), StringComparison.Ordinal);
+		Assert.Contains("AddActionCompilationActions", string.Join("\n", generated.Result.GeneratedTrees), StringComparison.Ordinal);
+		Assert.DoesNotContain("ModuleInitializer", string.Join("\n", generated.Result.GeneratedTrees), StringComparison.Ordinal);
+	}
+
+	[Theory]
+	[InlineData("""[HybridEvent("changed", HybridEventLifecycle.Start)] public Task Start() => Task.CompletedTask;""")]
+	[InlineData("""[HybridEvent("changed", HybridEventLifecycle.Start)] private Task Start() => Task.CompletedTask; [HybridEvent("changed", HybridEventLifecycle.Stop)] public void Stop() {}""")]
+	[InlineData("""[HybridEvent("changed", HybridEventLifecycle.Start)] public void Start() {} [HybridEvent("changed", HybridEventLifecycle.Stop)] public void Stop() {}""")]
+	public void InvalidEventLifecyclesAreCompileTimeErrors(string source)
+	{
+		var generated = Generate("using System.Threading.Tasks; using Maui.HybridApp; public class Plugin { " + source + " }");
+		Assert.Contains(generated.Result.Diagnostics, diagnostic => diagnostic.Id == "HYBRID006");
+		Assert.DoesNotContain(generated.Result.Diagnostics, diagnostic => diagnostic.Id == "CS8785");
+	}
+
+	[Fact]
+	public void OneAssemblyExtensionComposesActionsTopicsAndBoundScopedLifecycleHooks()
+	{
+		var generated = Generate("""
+			using System.Threading.Tasks;
+			using Maui.HybridApp;
+			[HybridTopic("progress")]
+			public class First {
+				[HybridAction("first")] public int Action(int count, string text = "default") => count;
+				[HybridEvent("changed", HybridEventLifecycle.Start)] public Task Start() => Task.CompletedTask;
+				[HybridEvent("changed", HybridEventLifecycle.Stop)] public void Stop() {}
+			}
+			public class Second { [HybridAction("second")] public static void Action() {} }
+			""");
+		Assert.Empty(generated.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(generated.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var sources = generated.Result.GeneratedTrees.Select(tree => tree.GetText().ToString()).ToArray();
+		Assert.Single(sources, text => text.Contains("public static IServiceCollection Add", StringComparison.Ordinal));
+		Assert.Contains(sources, text => text.Contains("var source = services.GetRequiredService<global::First>();", StringComparison.Ordinal) &&
+			text.Contains("""registry.RegisterTopic("changed", source.@Start, source.@Stop);""", StringComparison.Ordinal));
+		Assert.DoesNotContain(sources, text => text.Contains("GetTypes(", StringComparison.Ordinal) || text.Contains("ModuleInitializer", StringComparison.Ordinal));
 	}
 
 	[Theory]

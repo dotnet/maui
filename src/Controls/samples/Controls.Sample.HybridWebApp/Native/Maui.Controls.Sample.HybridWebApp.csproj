@@ -40,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Generators/Maui.HybridApp.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="../Managed/Maui.HybridApp.csproj"
                       Condition="'$(HybridWebAppInTree)' == 'true'"
                       AdditionalProperties="ArtifactsObjDir=$(ArtifactsObjDir);ArtifactsBinDir=$(ArtifactsBinDir)" />

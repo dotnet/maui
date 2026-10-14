@@ -163,8 +163,9 @@ the trusted bridge through window opening. IDs are 1–64 ASCII
 letters/digits/dot/underscore/hyphen, unique and immutable within the app registry.
 New scopes isolate providers/counters, not the OS process. Separate windows are
 unsupported on iPhone. Mac/Windows desktop geometry uses logical units; Windows
-centering uses actual current-monitor work area/size/density. Mac/mobile center
-and Mac native position observation explicitly reject until a verified adapter exists.
+centering uses actual current-monitor work area/size/density. Mac centering uses
+global CoreGraphics display bounds and the owning scene's effective system frame.
+Mobile centering and Mac native position observation explicitly reject.
 
 Dialogs use the calling native page for alerts, confirmations, prompts and action sheets;
 false confirmation or `{ cancelled: true, text: null }` prompt is normal user

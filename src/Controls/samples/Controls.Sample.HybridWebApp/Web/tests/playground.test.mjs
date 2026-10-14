@@ -77,12 +77,9 @@ function defaultResult(request) {
     case 'sample.echo': return { ...request.args, counter: 7 }
     case 'sample.counter': return { counter: 7 }
     case 'clipboard.read': return { text: 'Native clipboard 👋' }
-    case 'preferences.read':
-    case 'preferences.write': return { key: request.args.key, value: request.args.value ?? 'Native preference' }
-    case 'preferences.remove': return { key: request.args.key, value: null }
     case 'preferences.get': return { kind: 'string', text: 'Native preference' }
     case 'preferences.set':
-    case 'preferences.delete': return { accepted: true }
+    case 'preferences.remove': return { accepted: true }
     case 'sample.work': return { completed: request.args.steps, total: request.args.steps }
     case 'window.info':
     case 'window.title':
@@ -94,7 +91,7 @@ function defaultResult(request) {
     case 'window.list': return { windows: [] }
     case 'window.open': return { id: 'child-window' }
     case 'dialogs.prompt': return { cancelled: true, text: null }
-    case 'filePicker.pick': return { file: null }
+    case 'filePicker.pick': return null
     case 'battery.info': return { chargeLevel: 0.5, state: 'Charging', powerSource: 'AC', energySaverStatus: 'Off' }
     case 'display.info': return { width: 1080, height: 1920, density: 3, orientation: 'Portrait', rotation: 'Rotation0', refreshRate: 60 }
     case 'remote.info': return { supported: true, open: false, id: null, url: null, status: 'closed', canGoBack: false, canGoForward: false }
@@ -675,7 +672,7 @@ test('clipboard and preference pages own actual SDK calls, values, defaults and 
   assert.equal(app.find('#preference-value').value, 'Native preference')
   app.click('remove')
   await app.idle()
-  assert.equal(app.host.requests.at(-1).command, 'preferences.delete')
+  assert.equal(app.host.requests.at(-1).command, 'preferences.remove')
   assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { key: 'custom_key', value: null })
 })
 
@@ -884,7 +881,7 @@ test('native Windows, dialogs, device and embedded remote pages use the same SDK
 test('selected text is rendered as text and excluded from result logs, with ordinary picker dismissal', async t => {
   let cancelled = false
   const app = fixture(t, request => {
-    if (request.command === 'filePicker.pick') return { file: cancelled ? null : { id: 'selected', name: 'example.txt', contentType: 'text/plain' } }
+    if (request.command === 'filePicker.pick') return cancelled ? null : { id: 'selected', name: 'example.txt', contentType: 'text/plain' }
     if (request.command === 'file.openRead') return { id: 'reader', canSeek: true, maximumChunkBytes: 65536 }
     if (request.command === 'file.readBytes') return { base64: btoa('<script>private</script>'), eof: true }
     return defaultResult(request)

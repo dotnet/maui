@@ -78,7 +78,7 @@ test('injected protocol transport supports Essentials without MAUI-origin bootst
     if (request.command === 'app.info') return appInfo
     if (request.command === 'device.info') return deviceInfo
     if (request.command === 'clipboard.read') return { text: 'injected native transport' }
-    if (request.command === 'clipboard.write' || request.command === 'preferences.set' || request.command === 'preferences.delete') return { accepted: true }
+    if (request.command === 'clipboard.write' || request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
     return { kind: 'string', text: 'native setting' }
   })
   let client
@@ -119,7 +119,7 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
     if (request.command === 'clipboard.write') return { accepted: true }
     if (request.command === 'app.info') return appInfo
     if (request.command === 'device.info') return deviceInfo
-    if (request.command === 'preferences.set' || request.command === 'preferences.delete') return { accepted: true }
+    if (request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
     return { kind: 'string', text: 'é' }
   })
   configureBridge(host.bridge)
@@ -132,7 +132,7 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
     await preferences.remove('key')
     assert.deepEqual(await getAppInfo(), appInfo)
     assert.deepEqual(await getDeviceInfo(), deviceInfo)
-    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'clipboard.read', 'clipboard.write', 'preferences.get', 'preferences.set', 'preferences.delete', 'app.info', 'device.info'])
+    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'clipboard.read', 'clipboard.write', 'preferences.get', 'preferences.set', 'preferences.remove', 'app.info', 'device.info'])
     assert.ok(host.requests.every(request => request.session === client.session))
     host.bridge.InvokeDotNet = mock(() => ({ text: 42, key: 42, value: false })).bridge.InvokeDotNet
     for (const action of [() => getText(), () => setText('text'), () => preferences.get('key', ''), () => getAppInfo(), () => getDeviceInfo()]) {

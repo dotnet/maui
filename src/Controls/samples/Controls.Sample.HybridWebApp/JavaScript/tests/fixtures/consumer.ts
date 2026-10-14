@@ -41,7 +41,7 @@ const bridge: Bridge = {
       'display.info': { width: 1000, height: 700, density: 2, orientation: 'Landscape', rotation: 'Rotation0', refreshRate: 60 },
       'connectivity.info': { networkAccess: 'Internet', connectionProfiles: ['WiFi'] },
       'speech.locales': { locales: [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }] },
-      'filePicker.pick': { file: null }, 'filePicker.pickMultiple': { files: [] },
+      'filePicker.pick': null, 'filePicker.pickMultiple': { files: [] },
       'dialogs.prompt': { cancelled: true, text: null }, 'dialogs.actionSheet': { selection: 'Cancel' },
       'window.info': { ...snapshot, id: request.args.windowId ?? snapshot.id, windowLease: request.args.windowLease ?? snapshot.windowLease },
       'window.title': { ...snapshot, title: 'Updated' },
@@ -58,7 +58,7 @@ const bridge: Bridge = {
     }
     const result = request.command.startsWith('remote.')
       ? { supported: true, open: true, id: 'guest', url: 'https://dot.net/maui', status: 'loaded', canGoBack: false, canGoForward: false }
-      : results[request.command] ?? { accepted: true }
+      : Object.hasOwn(results, request.command) ? results[request.command] : { accepted: true }
     return JSON.stringify({ version: 1, session: request.session, id: request.id, status: 'success', result, error: null })
   }, SendRawMessage() {},
 }

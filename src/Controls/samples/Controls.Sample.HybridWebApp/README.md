@@ -50,14 +50,15 @@ identity `Maui.HybridApp` / `0.1.0-preview.1` is unverified and unpublished.
 `Native` references its assembly, not its source. Product code owns the generic
 session/registry/protocol, AppInfo, DeviceInfo, Clipboard, Preferences,
 Battery, Display, FilePicker, Connectivity, TextToSpeech, external URL launching
-and MAUI page/window UI
-providers, each in one cohesive provider file with related DTOs and its own JSON context.
+and MAUI page/window UI plugins. Each feature family is one attributed class with
+typed parameters, real options/results and owned event/resource lifecycle.
 They use the existing Essentials interfaces directly, with one small
 main-thread/cancellation boundary; there is no combined platform interface.
-Mac battery capacity is the one native-source correction: the prototype reads
-IOKit on Catalyst because UIKit returned about 1% while macOS reported about
-60%. Other battery platforms still use `IBattery`; JavaScript preserves the
-native result and formats percentages only for presentation.
+The Catalyst battery correction now belongs to **Essentials**, not this product:
+`Battery.Default` reads actual IOKit capacity, charging and power-source state
+and uses native power-source change notifications. UIKit had returned about 1%
+while macOS reported about 60%. The product uses `IBattery` on every platform;
+no sample-specific power adapter or numerical correction remains.
 The current user-approved WIP boundary keeps UI providers in this same managed
 product. It now depends on Controls.Core and Core transitively, in addition to
 Essentials and minimal standard DI abstractions; it still has no sample/app
@@ -73,21 +74,30 @@ builder.Services
 ```
 
 `AddHybridApp` owns the implemented product providers, default existing Essentials
-interfaces, dispatcher, clock, policy and scoped hub (which builds its registry
-once). It does not enable unimplemented APIs or grant OS permissions. Toolkit
-providers can append `AddHybridProvider<T>()`. Identical product registration is
+interfaces, dispatcher, clock, policy and scoped registry/hub. It calls the
+generated `AddMauiHybridAppActions()` once for the entire managed assembly.
+A Toolkit assembly has its own single generated extension, such as
+`AddMyToolkitActions()`. Identical product registration is
 idempotent; conflicting policy fails explicitly, and host-supplied interfaces,
 dispatcher and clock are retained.
 
-The action-authoring milestone adds an explicit compile-time opt-in alongside
-manual lifecycle providers: annotate accessible methods with
-`[HybridAction("name")]` and register the action class with
-`AddHybridActions<T>()`. Ordinary parameters come from named JSON arguments or
+Annotate accessible methods with `[HybridAction("name")]`; the compiler gathers
+the entire assembly into one explicit registration method. The app's
+`AddPlayground` calls `AddMauiControlsSampleHybridWebAppActions()` once for all
+sample actions. There is no `IHybridCommandProvider`, per-type opt-in or manual
+command registration layer. Ordinary parameters come from named JSON arguments or
 a positional array; `[FromServices]` and the existing `[FromKeyedServices]`
 resolve only native DI services. Cancellation and operation context never come
 from web input. Instance actions use the owning window's scope rather than a
 root/global service instance. See [the managed product](Managed/README.md) for
 the supported signatures, diagnostics and package-analyzer details.
+`HybridTopic` and paired `HybridEvent` start/stop attributes declare subscription
+lifecycle without another provider interface. Generated bindings capture the
+owning scoped plugin, so teardown can detach native handlers during DI disposal.
+The WIP wire contracts were modernized together with the JS modules: preferences
+use get/set/contains/remove/clear, and single-file picking returns nullable
+metadata directly, not a legacy `{ file }` envelope. No compatibility adapters
+or old command aliases remain.
 
 For custom web calls, the shared-client core/root `invoke` function avoids a
 client factory at each call site:
@@ -285,13 +295,20 @@ test app, after explicitly staging/building and relaunching the matching host:
   SDK/invoke target/messages/inspector. Mobile guest creation stays unsupported.
 
 Keep partially accepted FEATURES families unchecked. The current automated
-checks pass 224 managed tests, 49 SDK tests, 71 Svelte/geometry tests and 11
+checks pass 220 managed tests, 50 SDK tests, 71 Svelte/geometry tests and 11
 frontend contracts. The SDK's real 44-file tarball, 17 entrypoints and 314
 declaration/TSDoc members passed fresh offline-consumer equality checks.
 A refreshed NuGet-only consumer also passed with a fresh package cache and
 reflection serialization disabled. Both selected Android/Mac Debug builds passed
 with zero warnings/errors. These counts belong to this milestone, not the older
 evidence below.
+The upstream Essentials suite separately passes 528 tests, including 19 battery
+cases. Actual Android acceptance repeated identity/clipboard/preferences/DTOs,
+events, progress/cancellation, reload/state retention and stale-session isolation,
+then selected a content-backed file through the new nullable picker contract.
+Normal picker cancellation passed after waiting for the actual system picker
+to be foreground. Mac registered 61 generated actions and exercised real geometry
+events, child-window creation/owner close and direct upstream `IBattery` reads.
 
 ## Run
 
@@ -416,12 +433,20 @@ The framework-only keep-list (paths relative to `src/`) is:
 - `Controls/src/Core/WebRequestInterceptingWebView/WebViewWebResourceRequestedEventArgs.cs`
 - `Core/AppleNative/PlatformInterop/MauiPlatformInterop.xcodeproj/project.pbxproj`
 - `Core/tests/UnitTests/WebViewRequestLifetimeTests.cs`
+- `Essentials/src/Battery/Battery.ios.watchos.cs`
+- `Essentials/src/Battery/Battery.maccatalyst.cs`
+- `Essentials/src/Battery/BatteryCapacity.shared.cs`
+- `Essentials/test/UnitTests/Battery_Tests.cs`
 
 These stay outside the bundle: native WebKit stopped-task lifetime,
 dispatch/tracking, event-args liveness and public remarks cannot safely be
 implemented by copying app code. Xcode deployment floors affect the native
 framework itself. The six targeted Core lifetime tests belong with those
 framework changes, not the portable host tests.
+Likewise, Mac battery readings and notifications are an Essentials correctness
+fix. Its capacity/state regressions live in Essentials tests, not copied product
+adapters. The separately requested Apple scene adoption in the existing
+Essentials sample also remains outside the portable bundle.
 
 The lifetime/adapter changes fix existing asynchronous response callbacks after
 WebKit stops a request or the handler disconnects; they are not new public APIs.
@@ -510,10 +535,10 @@ test tools are not part of the independent SDK or packaged native assets.
 
 `Managed/HybridAppTargetObject.cs` is instantiated once per WebView.
 `MauiProgram` composes product/sample services through `AddHybridApp` and
-`AddPlayground`; the scoped hub receives the provider collection, registers its
-own registry once and derives readiness names from that registry. `MainPage`
+`AddPlayground`; one scoped registry is built from explicit generated assembly
+registrations and the hub derives readiness names from it. `MainPage`
 subscribes to native events and handles only WebView integration.
-Providers explicitly register their allowed event topics. The session/router
+Plugins declare their event topics and paired lifecycle hooks with attributes. The session/router
 does not choose sample providers, hard-code their topics or own MAUI UI objects.
 Complete registration before attaching the host; treat the registry as immutable
 while sessions are active.
@@ -526,9 +551,10 @@ fallback, assembly scanning or arbitrary-public-member invocation.
 
 Attributed providers generate names, typed handlers and strict automatic JSON
 metadata for `CommandRegistry`. Add an application/Toolkit action with
-`HybridAction` and explicit `AddHybridActions<T>()` opt-in, without a handwritten
-request DTO or registration function for every scalar method. Manual providers
-remain available for native event/resource lifecycle and specialized metadata.
+`HybridAction` and one generated assembly-level opt-in, without a handwritten
+request DTO or registration function for every scalar method. Subscription
+lifecycle is declared with `HybridEvent`; small notification/index JSON codecs
+remain where they describe actual stored or published data.
 Never add feature/plugin DTOs to the protocol context. No application TypeScript
 generator is claimed; TypeScript modules are authored and tested:
 
