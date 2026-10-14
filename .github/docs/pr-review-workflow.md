@@ -422,15 +422,15 @@ The summary is distinct from AzDO's `AI Summary` and does not hide or replace
 it.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
-review. The header says **full PR expert review**, with **Scope: Full PR** and
-**Head** badges; the head SHA identifies the frozen snapshot and inline anchors,
+review. One metadata line identifies the author, **Full PR (all commits)** and
+linked head SHA. The SHA identifies the frozen snapshot and inline anchors,
 not a single-commit review scope. Prior feedback deduplicates comments without
 reducing that scope.
-It uses the same compact author/head header, Scope/Head badges, and
-closed **Expert Analysis** accordion as the other review
-reports. Status and new-finding counts stay visible; coverage, validation,
-unplaced findings, evidence gaps, and the source-only limitation are inside
-Expert Analysis. Already published inline findings are counted separately,
+The recommendation and its reason are visible; coverage, validation,
+finding counts, unplaced findings and the source-only limitation live in one
+closed **Review details** accordion. Evidence blockers appear once in the
+recommendation, not again in the details. There are no badges or repeated
+scope/status/verdict paragraphs. Already published inline findings are counted separately,
 not reported as a clean review. There are no visible workflow or producer-run
 links, including in stale/failure notices; hidden run/result markers and
 publication receipts retain provenance and deduplication.
@@ -438,8 +438,8 @@ The visible **Merge recommendation** is YES only for a complete expert review
 with no outstanding findings, including findings suppressed as already posted.
 Otherwise it is NO, with the reason stated. YES is source-review advice, not a
 substitute for required CI checks or human approval. There is no Follow-up section.
-The visible reason identifies completed expert passes, finding validation, and
-specific evidence blockers rather than hiding them inside the analysis accordion.
+The visible reason states the actionable finding count or specific evidence
+blockers; a clean complete review simply says **No actionable findings**.
 Discussion freshness compares authors, full text, review states, timestamps and
 inline anchors; incidental API metadata such as author association and reaction
 counts does not invalidate an otherwise unchanged discussion.

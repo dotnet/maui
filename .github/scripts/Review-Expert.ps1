@@ -555,32 +555,23 @@ function Invoke-ExpertPrepare {
             $receipt.existing_review_id = $existing[0].id
             $output.items = @(@{ type = 'noop'; message = 'This expert-review run already published its summary on this PR revision.' })
         } else {
-            $summary = "$($inline.Count) new inline $(if ($inline.Count -eq 1) { 'finding' } else { 'findings' }); " +
-                "$($unplaced.Count) review-body $(if ($unplaced.Count -eq 1) { 'finding' } else { 'findings' })."
-            $analysis = "> **AI-generated review** using independent GPT dimension passes.`n`n" +
-                "**Coverage:** $completed of $($dimensions.Count) routed dimensions completed.`n`n" +
-                "**Finding validation:** $(if ($state.validation_complete) { 'Completed' } else { 'Incomplete' }).`n"
-            if ($alreadyPostedCount) {
-                $analysis += "`n$alreadyPostedCount previously published inline " +
-                    "$(if ($alreadyPostedCount -eq 1) { 'finding was' } else { 'findings were' }) not repeated.`n"
-            } elseif (-not $inline.Count -and -not $unplaced.Count -and $status -eq 'complete') {
-                $analysis += "`nNo new actionable findings were found.`n"
+            $summary = "**Coverage:** $completed/$($dimensions.Count) dimensions; " +
+                "finding validation $(if ($state.validation_complete) { 'complete' } else { 'incomplete' })."
+            $analysis = ''
+            if ($findings.Count -or $unplaced.Count) {
+                $analysis = "**Findings:** $($inline.Count) new inline, $($unplaced.Count) in this comment, " +
+                    "$alreadyPostedCount already posted (not repeated).`n"
             }
             if ($unplaced.Count) {
                 $analysis += "`n### Findings without an inline anchor`n"
                 foreach ($text in $unplaced) { $analysis += "`n- $([Net.WebUtility]::HtmlEncode($text))`n" }
             }
-            if ($gaps.Count) {
-                $analysis += "`n### Incomplete evidence`n"
-                foreach ($gap in $gaps) { $analysis += "`n- $([Net.WebUtility]::HtmlEncode($gap))`n" }
-            }
-            $analysis += "`nSource/history review only. No builds or tests were executed; this is not merge approval.`n"
+            $analysis += "`nAI source/history review only; no builds or tests run. Required CI and human approval still apply.`n"
             $mergeReady = $status -eq 'complete' -and $findings.Count -eq 0 -and $unplaced.Count -eq 0
-            $decisionReason = "$completed of $($dimensions.Count) expert dimensions completed; " +
-                "finding validation $(if ($state.validation_complete) { 'completed' } else { 'incomplete' }). "
-            $decisionReason += if ($gaps.Count) { $gaps -join ' ' } elseif ($findings.Count -or $unplaced.Count) {
-                'The reported findings must be addressed, including previously posted findings that were not repeated.'
-            } else { 'The full-PR expert assessment identified no actionable findings.' }
+            $findingCount = $inline.Count + $alreadyPostedCount + $unplaced.Count
+            $decisionReason = if ($gaps.Count) { 'Review incomplete: ' + ($gaps -join ' ') } elseif ($findings.Count -or $unplaced.Count) {
+                "$findingCount actionable $(if ($findingCount -eq 1) { 'finding' } else { 'findings' }); address before merging."
+            } else { 'No actionable findings.' }
             $body = "$runMarker`n$resultMarker`n`n" + (New-ExpertReviewComment -Status $status `
                 -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
                 -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis `
