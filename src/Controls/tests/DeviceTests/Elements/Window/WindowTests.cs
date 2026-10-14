@@ -253,12 +253,15 @@ namespace Microsoft.Maui.DeviceTests
 				Content = new Label { Text = "Replacement page" }
 			};
 			var shell = new Shell { CurrentItem = shellPage };
-			var window = new Window(shell);
-
-			shellPage.Loaded += OnShellPageLoaded;
+			// Use a placeholder until the host fragment resumes; replacing its initial root from Loaded can stall setup.
+			var window = new Window(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
+				shellPage.Loaded += OnShellPageLoaded;
+				// Install the Shell root after the test host is ready.
+				window.Page = shell;
+
 				await OnLoadedAsync(replacementPage);
 				AssertPageAttachedToRoot(replacementPage, handler.MauiContext.GetNavigationRootManager());
 			});
@@ -266,6 +269,7 @@ namespace Microsoft.Maui.DeviceTests
 			void OnShellPageLoaded(object sender, EventArgs e)
 			{
 				shellPage.Loaded -= OnShellPageLoaded;
+				// Preserve the regression scenario: replace the root from the child's Loaded event.
 				window.Page = replacementPage;
 			}
 		}
@@ -289,12 +293,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Content = new Label { Text = "Replacement page" }
 			};
-			var window = new Window(rootPage);
-
-			detailPage.Loaded += OnDetailPageLoaded;
+			// Use a placeholder until the host fragment resumes; replacing its initial root from Loaded can stall setup.
+			var window = new Window(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
+				detailPage.Loaded += OnDetailPageLoaded;
+				// Install the FlyoutPage root after the test host is ready.
+				window.Page = rootPage;
+
 				await OnLoadedAsync(replacementPage);
 				AssertPageAttachedToRoot(replacementPage, handler.MauiContext.GetNavigationRootManager());
 			});
@@ -302,6 +309,7 @@ namespace Microsoft.Maui.DeviceTests
 			void OnDetailPageLoaded(object sender, EventArgs e)
 			{
 				detailPage.Loaded -= OnDetailPageLoaded;
+				// Preserve the regression scenario: replace the root from the child's Loaded event.
 				window.Page = replacementPage;
 			}
 		}
