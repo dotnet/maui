@@ -487,7 +487,8 @@ function Invoke-ExpertPrepare {
     $dimensionNames = Get-ExpertDimensionNames
     $dimensionDetails = [Collections.Generic.List[string]]::new()
     $gaps = [Collections.Generic.List[string]]::new()
-    foreach ($gap in $context.gaps) { $gaps.Add([string]$gap) }
+    $limitations = [Collections.Generic.List[string]]::new()
+    foreach ($gap in $context.gaps) { $limitations.Add([string]$gap) }
     $completed = 0
     foreach ($id in $dimensions | Sort-Object) {
         $label = "$id. $([Net.WebUtility]::HtmlEncode($dimensionNames[$id]))"
@@ -560,12 +561,11 @@ function Invoke-ExpertPrepare {
         $feedback = Get-ExpertFeedback
         $frozenFeedback = Read-ExpertJson (Join-Path $ContextDirectory 'prior-feedback.json')
         if (-not (Test-ExpertJsonEqual (Get-ExpertDiscussionContent $frozenFeedback) (Get-ExpertDiscussionContent $feedback))) {
-            $gaps.Add('PR feedback changed after the briefing; the latest discussion has not been reconciled.')
-            $status = 'incomplete'
-            $receipt.status = $status
+            $limitations.Add('Discussion changed during the review. This recommendation assesses the frozen code and discussion available at review start.')
         }
         $resultHash = Get-ExpertHash ([ordered]@{
             findings = $findings; unplaced = $unplaced.ToArray(); gaps = $gaps.ToArray()
+            limitations = $limitations.ToArray()
             status = $status; completed = $completed; dimensions = @($dimensions | Sort-Object)
         })
         $resultMarker = "<!-- review-expert-result:$($context.head_sha):$resultHash -->"
@@ -613,9 +613,15 @@ function Invoke-ExpertPrepare {
                 "finding validation $(if ($state.validation_complete) { 'complete' } else { 'incomplete' })."
             $analysis = "**Dimensions:**`n" + ($dimensionDetails -join "`n") + "`n"
             if ($gaps.Count) {
-                $analysis += "`n**Why the review is incomplete:**`n"
+                $analysis += "`n**Automation status:**`n"
                 foreach ($gap in $gaps) { $analysis += "- $([Net.WebUtility]::HtmlEncode($gap))`n" }
-                $analysis += "`nMissing review results are not confirmed defects in the PR.`n"
+                $analysis += "`nThe source assessment did not finish; no code recommendation was produced.`n"
+            }
+            if ($limitations.Count) {
+                $analysis += "`n**Context limitations (not code findings):**`n"
+                foreach ($limitation in $limitations) {
+                    $analysis += "- $([Net.WebUtility]::HtmlEncode($limitation))`n"
+                }
             }
             if ($findings.Count -or $unplaced.Count) {
                 $analysis += "`n**Findings:** $($inline.Count) new inline, $($unplaced.Count) in this comment, " +
@@ -630,13 +636,11 @@ function Invoke-ExpertPrepare {
             $findingCount = $inline.Count + $alreadyPostedCount + $unplaced.Count
             $decisionReason = if ($findings.Count -or $unplaced.Count) {
                 "$findingCount actionable $(if ($findingCount -eq 1) { 'finding' } else { 'findings' }); address before merging."
-            } elseif ($gaps.Count) {
-                'Review incomplete; see the missing checks below. This is not a confirmed defect in the PR.'
             } else { 'No actionable findings.' }
             $body = "$runMarker`n$resultMarker`n`n" + (New-ExpertReviewComment -Status $status `
                 -HeadSha $context.head_sha -Author $current.user.login -Repository $Repository `
                 -ServerUrl $env:GITHUB_SERVER_URL -Summary $summary -Analysis $analysis `
-                -MergeReady $mergeReady -HasFindings:($findingCount -gt 0) -DecisionReason $decisionReason)
+                -MergeReady $mergeReady -DecisionReason $decisionReason)
             if ($body.Length -gt 60000) { throw 'The expert summary exceeds its publication limit.' }
             $items = [Collections.Generic.List[object]]::new()
             foreach ($finding in $inline) {
