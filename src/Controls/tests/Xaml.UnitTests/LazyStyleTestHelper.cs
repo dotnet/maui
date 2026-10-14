@@ -14,10 +14,8 @@ static class LazyStyleTestHelper
 	/// </summary>
 	internal static void ForceInitialize(this Style style, BindableObject target)
 	{
-		if (style.LazyInitialization is not null)
-		{
-			style.LazyInitialization(style, target);
+		var lazyInitialization = style.LazyInitialization;
+		if (lazyInitialization is not null && lazyInitialization(style, target))
 			style.LazyInitialization = null;
-		}
 	}
 }

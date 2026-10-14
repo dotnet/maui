@@ -131,7 +131,7 @@ public partial class StyleTests : ContentPage
 			Assert.False(result.Diagnostics.Any());
 			var initComp = result.GeneratedInitializeComponent();
 			// Trimmable styles use string-based constructor for AOT compatibility
-			Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", initComp, StringComparison.InvariantCulture);
+			Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", initComp, StringComparison.InvariantCulture);
 		}
 	}
 }

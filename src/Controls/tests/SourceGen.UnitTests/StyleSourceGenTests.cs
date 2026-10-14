@@ -56,7 +56,7 @@ static string GetGeneratedCode(GeneratorDriverRunResult result)
 
 		// Find the actual generated code (the .xsg.cs file)
 		var generatedCode = GetGeneratedCode(result);
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
 	}
@@ -87,6 +87,8 @@ static string GetGeneratedCode(GeneratorDriverRunResult result)
 		Assert.Contains("__root.Resources.AddFactory(\"Microsoft.Maui.Controls.Label\", () =>", generatedCode, StringComparison.Ordinal);
 		Assert.DoesNotContain("AddFactory(typeof(global::Microsoft.Maui.Controls.Label)", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("if (__target is global::Microsoft.Maui.Controls.Label target)", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("return true;", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("return false;", generatedCode, StringComparison.Ordinal);
 		Assert.DoesNotContain("InitializeStyle", generatedCode, StringComparison.Ordinal);
 		Assert.DoesNotContain("NoInlining", generatedCode, StringComparison.Ordinal);
 		Assert.DoesNotContain("KeepAlive", generatedCode, StringComparison.Ordinal);
@@ -96,6 +98,31 @@ static string GetGeneratedCode(GeneratorDriverRunResult result)
 		var additionIndex = generatedCode.IndexOf("__style.Setters", StringComparison.Ordinal);
 		Assert.True(guardIndex < setterIndex);
 		Assert.True(setterIndex < additionIndex);
+	}
+
+	[Fact]
+	public void LazyInitializationIsRetainedUntilTargetMatches()
+	{
+		var style = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Button).AssemblyQualifiedName)
+		{
+			LazyInitialization = static (s, target) =>
+			{
+				if (target is not global::Microsoft.Maui.Controls.Button)
+					return false;
+
+				s.Setters.Add(new global::Microsoft.Maui.Controls.Setter
+				{
+					Property = global::Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty,
+					Value = global::Microsoft.Maui.Graphics.Colors.Red
+				});
+				return true;
+			}
+		};
+
+		_ = new global::Microsoft.Maui.Controls.Label { Style = style };
+		var button = new global::Microsoft.Maui.Controls.Button { Style = style };
+
+		Assert.Equal(global::Microsoft.Maui.Graphics.Colors.Red, button.BackgroundColor);
 	}
 
 	[Fact]
@@ -140,6 +167,8 @@ public class GenericLabel<T> : global::Microsoft.Maui.Controls.Label
 		var generatedCode = GetGeneratedCode(result);
 		Assert.Contains("__root.Resources.AddFactory(\"Test.StyleTargets+NestedLabel\", () =>", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("typeof(global::Test.GenericLabel", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Test.StyleTargets+NestedLabel, SourceGeneratorDriver.Generated", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("Test.GenericLabel`1[[System.String, System.Private.CoreLib", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -169,7 +198,7 @@ public class GenericLabel<T> : global::Microsoft.Maui.Controls.Label
 		Assert.Empty(errors);
 
 		var generatedCode = GetGeneratedCode(result);
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.FontSizeProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.FontAttributesProperty", generatedCode, StringComparison.Ordinal);
@@ -238,7 +267,7 @@ public class GenericLabel<T> : global::Microsoft.Maui.Controls.Label
 		var generatedCode = GetGeneratedCode(result);
 
 		// Verify key elements exist
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, style)", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);

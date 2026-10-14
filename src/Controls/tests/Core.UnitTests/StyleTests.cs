@@ -1347,8 +1347,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					initializerCalled = true;
 					if (target is not Label)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
+					return true;
 				}
 			};
 
@@ -1368,9 +1369,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Label)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "test" });
 					s.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Red });
+					return true;
 				}
 			};
 
@@ -1396,8 +1398,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Label)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "works" });
+					return true;
 				}
 			};
 
@@ -1415,8 +1418,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					callCount++;
 					if (target is not Label)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "once" });
+					return true;
 				}
 			};
 
@@ -1460,8 +1464,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Label)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "from RD" });
+					return true;
 				}
 			};
 
@@ -1480,9 +1485,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LazyInitialization = (s, target) =>
 				{
 					if (target is not Entry)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "with behavior" });
 					s.Behaviors.Add(behavior);
+					return true;
 				}
 			};
 
@@ -1500,7 +1506,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Entry)
-						return;
+						return false;
 					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "default" });
 					s.Triggers.Add(new Trigger(typeof(Entry))
 					{
@@ -1508,6 +1514,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						Value = true,
 						Setters = { new Setter { Property = Entry.TextProperty, Value = "password mode" } }
 					});
+					return true;
 				}
 			};
 
@@ -1517,6 +1524,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			entry.IsPassword = true;
 			Assert.Equal("password mode", entry.Text);
+		}
+
+		[Fact]
+		public void LazyStyleWithWrongFirstTargetInitializesForMatchingTarget()
+		{
+			var style = new Style(typeof(Button).AssemblyQualifiedName)
+			{
+				LazyInitialization = static (s, target) =>
+				{
+					if (target is not Button)
+						return false;
+					s.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
+					return true;
+				}
+			};
+
+			var label = new Label { Style = style };
+			Assert.NotNull(style.LazyInitialization);
+
+			var button = new Button { Style = style };
+			Assert.Equal(Colors.Red, button.BackgroundColor);
+			Assert.Null(style.LazyInitialization);
 		}
 
 		#endregion
