@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
 public class HeaderFooterShellFlyout : _IssuesUITest
 {
 
@@ -28,6 +27,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 
 #if IOS
     [Test]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
     {
         App.Tap("ZeroMarginHeader");
@@ -37,6 +37,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 #endif
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void AFlyoutTests()
 	{
 		App.WaitForElement("PageLoaded");

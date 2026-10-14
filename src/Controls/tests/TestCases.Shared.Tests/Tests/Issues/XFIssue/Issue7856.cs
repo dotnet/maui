@@ -13,7 +13,7 @@ public class Issue7856 : _IssuesUITest
 	public override string Issue => "[Bug] Shell BackButtonBehaviour TextOverride breaks back";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehaviorTest()
 	{
 		App.WaitForElementTillPageNavigationSettled("Tap to Navigate To the Page With BackButtonBehavior");

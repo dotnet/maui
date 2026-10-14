@@ -13,7 +13,7 @@ public class Issue38813 : _IssuesUITest
     public override string Issue => "Shell flyout should not hang";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void ShellFlyoutShouldNotHang()
     {
         App.WaitForElement("Issue38813Button");

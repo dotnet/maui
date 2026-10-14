@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "BackButtonBehavior IsVisible=False does not hide the back button";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void BackButtonBehaviorIsVisibleWorksWithCustomIcon()
 		{
 			App.WaitForElement("button");

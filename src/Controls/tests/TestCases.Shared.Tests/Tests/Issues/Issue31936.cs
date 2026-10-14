@@ -14,7 +14,7 @@ public class Issue31936 : _IssuesUITest
 	public override string Issue => "Back button FontImageSource glyph is not vertically centered on iOS 26";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FontImageSourceBackGlyphIsVerticallyCentered()
 	{
 		var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");

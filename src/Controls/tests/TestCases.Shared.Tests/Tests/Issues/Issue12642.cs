@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Rapid ShellContent Navigation Causes Blank Screens";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ClickingQuicklyBetweenTopTabsBreaksContent()
 		{
 			App.WaitForElement("AutomatedRun");
