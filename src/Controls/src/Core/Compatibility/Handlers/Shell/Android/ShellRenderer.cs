@@ -382,6 +382,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				(_flyoutView as IDisposable)?.Dispose();
 
+			if (ReferenceEquals(Element.Handler, this))
+			{
+				Element.Handler = null;
+			}
+
 			// FragmentManager owns deferred destruction, which still reads IShellContext.Shell.
 		}
 	}
