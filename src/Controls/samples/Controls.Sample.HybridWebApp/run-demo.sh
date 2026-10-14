@@ -330,7 +330,7 @@ try:
         try:
             with opener.open("http://127.0.0.1:5173/", timeout=1) as response:
                 page = response.read(65537)
-                if response.status == 200 and b"/@vite/client" in page and b'id="html-message"' in page:
+                if response.status == 200 and b"/@vite/client" in page and b'id="app"' in page:
                     listeners = subprocess.run(["lsof", "-nP", "-iTCP:5173", "-sTCP:LISTEN", "-t"],
                                                capture_output=True, text=True, timeout=3)
                     snapshot = processes()

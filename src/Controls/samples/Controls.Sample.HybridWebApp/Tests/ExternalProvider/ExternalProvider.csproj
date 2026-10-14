@@ -5,8 +5,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <HybridAppPackageVersion Condition="'$(HybridAppPackageVersion)' == ''">0.1.0-preview.1</HybridAppPackageVersion>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(HybridAppPackageConsumer)' != 'true'">
     <ProjectReference Include="../../Managed/Maui.HybridApp.csproj" />
+    <ProjectReference Include="../../Generators/Maui.HybridApp.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HybridAppPackageConsumer)' == 'true'">
+    <PackageReference Include="Maui.HybridApp" Version="$(HybridAppPackageVersion)" />
   </ItemGroup>
 </Project>

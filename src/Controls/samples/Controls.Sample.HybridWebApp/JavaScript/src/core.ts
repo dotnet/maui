@@ -612,6 +612,30 @@ export function connect(): Promise<NativeClient> {
 }
 
 /**
+ * Invokes an opted-in native action through the shared document connection.
+ * @param command - The host-registered action name, never an arbitrary native member.
+ * @param args - Named JSON arguments or a positional array; defaults to an empty object.
+ * @returns The native JSON result as unknown; validate it before use.
+ * @throws {@link NativeError} for native absence, invalid arguments, host rejection or transport failure.
+ * @remarks Generated native actions accept objects and arrays; legacy providers retain their
+ * declared contract. Service and cancellation parameters are never web arguments.
+ */
+export function invoke(command: string, args?: Json): Promise<unknown>
+/**
+ * Invokes an opted-in native action and validates its result.
+ * @typeParam T - The type produced by the supplied runtime decoder.
+ * @param command - The host-registered action name.
+ * @param args - Named JSON arguments or a positional array.
+ * @param decode - Runtime result validator; TypeScript types alone do not validate native data.
+ * @returns The validated result from the shared native client.
+ * @throws {@link NativeError} for invocation or result-validation failures.
+ */
+export function invoke<T>(command: string, args: Json, decode: Decoder<T>): Promise<T>
+export async function invoke(command: string, args: Json = {}, decode: Decoder<unknown> = value => value): Promise<unknown> {
+  return (await connect()).invoke(command, args, decode)
+}
+
+/**
  * Cancels shared startup and disposes the default document client.
  * @remarks
  * Idempotent; does not own explicitly constructed clients. A later connect creates

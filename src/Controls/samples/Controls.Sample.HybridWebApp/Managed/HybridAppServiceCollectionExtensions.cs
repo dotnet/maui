@@ -8,9 +8,15 @@ using Maui.HybridApp.Essentials.Preferences;
 using Maui.HybridApp.Essentials.Battery;
 using Maui.HybridApp.Essentials.Display;
 using Maui.HybridApp.Essentials.FilePicker;
+using Maui.HybridApp.Essentials.Connectivity;
+using Maui.HybridApp.Essentials.TextToSpeech;
+using Maui.HybridApp.Essentials.Launcher;
 using Maui.HybridApp.UI;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.Networking;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Maui.HybridApp;
 
@@ -51,9 +57,15 @@ public static class HybridAppServiceCollectionExtensions
 		services.TryAddSingleton<IBattery>(_ => Microsoft.Maui.Devices.Battery.Default);
 		services.TryAddSingleton<IDeviceDisplay>(_ => DeviceDisplay.Current);
 		services.TryAddSingleton<IFilePicker>(_ => Microsoft.Maui.Storage.FilePicker.Default);
+		services.TryAddSingleton<IConnectivity>(_ => Microsoft.Maui.Networking.Connectivity.Current);
+		services.TryAddSingleton<ITextToSpeech>(_ => Microsoft.Maui.Media.TextToSpeech.Default);
+		services.TryAddSingleton<ILauncher>(_ => Microsoft.Maui.ApplicationModel.Launcher.Default);
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, BatteryProvider>());
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, DisplayProvider>());
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, FilePickerProvider>());
+		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, ConnectivityProvider>());
+		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, TextToSpeechProvider>());
+		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, LauncherProvider>());
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, WindowProvider>());
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, DialogProvider>());
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<IHybridCommandProvider, RemoteWebViewProvider>());

@@ -8,6 +8,10 @@ import { getText, setText, hasText } from '@maui/api/essentials/clipboard'
 import * as preferences from '@maui/api/essentials/preferences'
 import { getBatteryInfo } from '@maui/api/essentials/battery'
 import { getDisplayInfo } from '@maui/api/essentials/display'
+import { getConnectivity, onConnectivityChanged } from '@maui/api/essentials/connectivity'
+import { getLocales, speak } from '@maui/api/essentials/text-to-speech'
+import type { SpeechLocale, SpeechOptions } from '@maui/api/essentials/text-to-speech'
+import { openUrl } from '@maui/api/essentials/launcher'
 import { pickFile, pickMultipleFiles } from '@maui/api/essentials/file-picker'
 import { alert, confirm, prompt, actionSheet } from '@maui/api/ui/dialogs'
 import { currentWindow } from '@maui/api/ui/windows'
@@ -35,6 +39,8 @@ const bridge: Bridge = {
       'preferences.get': request.args.defaultValue ?? { kind: 'string', text: '' },
       'battery.info': { chargeLevel: -1, state: 'Unknown', powerSource: 'AC', energySaverStatus: 'Off' },
       'display.info': { width: 1000, height: 700, density: 2, orientation: 'Landscape', rotation: 'Rotation0', refreshRate: 60 },
+      'connectivity.info': { networkAccess: 'Internet', connectionProfiles: ['WiFi'] },
+      'speech.locales': { locales: [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }] },
       'filePicker.pick': { file: null }, 'filePicker.pickMultiple': { files: [] },
       'dialogs.prompt': { cancelled: true, text: null }, 'dialogs.actionSheet': { selection: 'Cancel' },
       'window.info': { ...snapshot, id: request.args.windowId ?? snapshot.id, windowLease: request.args.windowLease ?? snapshot.windowLease },
@@ -60,7 +66,7 @@ configureBridge(bridge)
 const own: Window = currentWindow()
 try {
   const client = await connect()
-  check(Object.keys(root).sort().join(',') === 'NativeClient,NativeError,connect,disconnect')
+  check(Object.keys(root).sort().join(',') === 'NativeClient,NativeError,connect,disconnect,invoke')
   check((await getAppInfo()).appName === 'Consumer')
   check((await getDeviceInfo()).platform === 'test')
   check(await getText() === '你好 👋'); check(await setText('é')); check(await hasText())
@@ -72,6 +78,14 @@ try {
   await preferences.set('date', new Date('2026-10-13T00:00:00Z'))
   check(await preferences.contains('date')); await preferences.remove('date'); await preferences.clear()
   check((await getBatteryInfo()).chargeLevel === -1); check((await getDisplayInfo()).density === 2)
+  check((await getConnectivity()).networkAccess === 'Internet')
+  const stopNetwork = await onConnectivityChanged(value => check(Array.isArray(value.connectionProfiles)))
+  await stopNetwork()
+  const locales: SpeechLocale[] = await getLocales()
+  const speechOptions: SpeechOptions = { locale: locales[0]!, pitch: 1, volume: 0.5, rate: 1 }
+  const speech = await speak('Hello from the packed SDK', speechOptions)
+  await speech.result
+  await openUrl('https://dot.net/maui')
   check(await pickFile({ pickerTitle: 'Pick from TypeScript' }) === null); check((await pickMultipleFiles()).length === 0)
   check(await alert('Native message')); check(await confirm('Confirm native'))
   check((await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: 'email', maxLength: 10000 })).cancelled)

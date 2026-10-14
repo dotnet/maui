@@ -95,7 +95,11 @@ registration decision; this example topic is not part of the reference host.
 | `clipboard.hasText` | `{}` | `{ hasText: boolean }` | Actual native clipboard state |
 | `preferences.get`, `preferences.set` | key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Host-namespaced primitive settings |
 | `preferences.contains`, `preferences.delete`, `preferences.clear` | key/container or container only | `{ accepted: boolean }` | Clear removes only tracked namespace-owned keys |
-| `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | Direct IBattery snapshot |
+| `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | IBattery; Catalyst reads actual IOKit capacity instead of the incorrect UIKit value |
+| `connectivity.info` | `{}` | networkAccess/connectionProfiles | Actual IConnectivity snapshot, not an endpoint reachability test |
+| `speech.locales` | `{}` | `{ locales }` | Actual installed native speech locales |
+| `speech.speak` | text + optional native locale/pitch/volume/rate | `{ accepted }` | User-triggered ITextToSpeech; interactive deadline and operation-specific cancellation |
+| `launcher.openUrl` | `{ url }` | `{ accepted }` | Actual OS external launch; bounded public HTTPS policy, not arbitrary schemes/paths |
 | `display.info` | `{}` | width/height/density/orientation/rotation/refreshRate | Direct IDeviceDisplay snapshot |
 | `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | `{ file }`/`{ files }` metadata/resources | Actual OS selection, interactive policy; cancellation null/empty |
 | `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
@@ -103,7 +107,7 @@ registration decision; this example topic is not part of the reference host.
 | `dialogs.alert`, `dialogs.confirm` | title/message + native labels/flowDirection | `{ accepted: boolean }` | Calling native page, interactive policy |
 | `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet options | Prompt cancellation/text or selected action | Calling native page, interactive policy |
 | `window.info`, `window.title`, `window.size`, `window.position` | Optional target ID/private lease + corresponding changes | Private native snapshot or acceptance | Scoped MAUI window; writes validate actual capability |
-| `window.find`, `window.center`, `window.activate` | ID or native target/private lease | Snapshot/acceptance | Caller-owned lookup; center Windows work-area adapter |
+| `window.find`, `window.center`, `window.activate` | ID or native target/private lease | Snapshot/acceptance | Caller-owned lookup; center Windows work area or Mac global display coordinates |
 | `window.open` | `{ url, options? }` | `{ id, windowLease }` | Generic safe bundle-relative URL, immutable optional developer ID; no remote bridge destinations |
 | `window.list`, `window.close`, `window.closeCurrent` | `{}`, `{ id, windowLease }`, `{}` | `{ windows }`, `{ accepted }` | Caller-owned current/child generations; no cross-window hub |
 | `remote.info`, `remote.open` | `{}`, `{ url }` | supported/open/id/url/status/canGoBack/canGoForward | Desktop ordinary browser guest, initially hidden |

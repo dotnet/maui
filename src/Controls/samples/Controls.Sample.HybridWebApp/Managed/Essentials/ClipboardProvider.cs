@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Maui.HybridApp.Essentials.Clipboard;
 
 /// <summary>Explicitly registers text clipboard commands using the existing Essentials interface.</summary>
-public sealed class ClipboardProvider : IHybridCommandProvider, IDisposable
+public sealed class ClipboardProvider : IHybridCommandProvider, IHybridActionSource, IDisposable
 {
 	readonly IClipboard _clipboard;
 	readonly NativeDispatcher _dispatcher;
@@ -34,27 +34,33 @@ public sealed class ClipboardProvider : IHybridCommandProvider, IDisposable
 	/// <inheritdoc />
 	public void Register(CommandRegistry registry)
 	{
-		var json = ClipboardJsonContext.Default;
+		RegisterTopics(registry);
+		HybridActionRegistration<ClipboardProvider>.Register(registry, this, _dispatcher);
+	}
+
+	/// <inheritdoc />
+	public void RegisterTopics(CommandRegistry registry)
+	{
 		if (_notifications is not null) registry.RegisterTopic("clipboard.changed", StartAsync, Stop);
-		registry.Register("clipboard.hasText", json.ClipboardReadArgs, json.ClipboardHasTextResult, (_, op) =>
-			_dispatcher.RunAsync(() => Task.FromResult(new ClipboardHasTextResult(_clipboard.HasText)), op.Cancellation));
-		registry.Register("clipboard.read", json.ClipboardReadArgs, json.ClipboardReadResult, (_, op) =>
-			_dispatcher.RunAsync(async () =>
-			{
-				var text = await _clipboard.GetTextAsync();
-				if (text is not null)
-					ValidateText(text);
-				return new ClipboardReadResult(text);
-			}, op.Cancellation));
-		registry.Register("clipboard.write", json.ClipboardWriteArgs, json.ClipboardWriteResult, (args, op) =>
-		{
-			ValidateText(args.Text);
-			return _dispatcher.RunAsync(async () =>
-			{
-				await _clipboard.SetTextAsync(args.Text);
-				return new ClipboardWriteResult(true);
-			}, op.Cancellation);
-		});
+	}
+
+	[HybridAction("clipboard.hasText", MainThread = true)]
+	internal ClipboardHasTextResult HasText() => new(_clipboard.HasText);
+
+	[HybridAction("clipboard.read", MainThread = true)]
+	internal async Task<ClipboardReadResult> Read()
+	{
+		var text = await _clipboard.GetTextAsync();
+		if (text is not null) ValidateText(text);
+		return new(text);
+	}
+
+	[HybridAction("clipboard.write", MainThread = true)]
+	internal async Task<ClipboardWriteResult> Write(string text)
+	{
+		ValidateText(text);
+		await _clipboard.SetTextAsync(text);
+		return new(true);
 	}
 
 	void ValidateText(string text)

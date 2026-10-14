@@ -3,7 +3,8 @@
 `@maui/api` is an app-independent, experimental JavaScript/TypeScript SDK in the
 .NET MAUI project. It provides typed native commands, document-scoped events
 and separate Essentials / MAUI UI feature modules for app/device information,
-clipboard, preferences, battery/display, selected-file/read-stream resources, page-owned
+clipboard, preferences, battery/display, native connectivity events, cancellable
+text-to-speech, external HTTPS launching, selected-file/read-stream resources, page-owned
 dialogs and scoped windows.
 
 **Preview availability:** `0.1.0-preview.1` is prepared for local tarball

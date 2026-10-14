@@ -12,7 +12,9 @@
   <ItemGroup>
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
     <ProjectReference Include="../Managed/Maui.HybridApp.csproj" />
+    <ProjectReference Include="../Generators/Maui.HybridApp.Generators.csproj" OutputItemType="Analyzer" />
     <ProjectReference Include="ExternalProvider/ExternalProvider.csproj" />
     <Compile Remove="ExternalProvider/**;PackageConsumer/**" />
     <!-- Only sample commands are shared with these UI-free tests; all product code comes from its assembly. -->

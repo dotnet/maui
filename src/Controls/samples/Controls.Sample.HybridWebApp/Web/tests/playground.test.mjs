@@ -32,6 +32,9 @@ const actions = {
   filePicker: ['pick-file'], remoteWebView: ['browser-info', 'remote', 'browser-back', 'browser-forward', 'browser-reload', 'browser-focus', 'browser-close'],
   battery: ['battery'], display: ['display'], menus: ['menus-install', 'menus-remove', 'menu-rename', 'menu-enable', 'menu-check'],
   theme: ['theme-system', 'theme-light', 'theme-dark'],
+  connectivity: ['connectivity-read', 'connectivity-subscribe', 'connectivity-unsubscribe'],
+  textToSpeech: ['speech-locales', 'speech-speak', 'cancel'],
+  launcher: ['launch-url'],
 }
 const deferred = () => {
   let resolve
@@ -165,7 +168,7 @@ function fixture(t, handler = defaultResult, { native = true, compact = false } 
 test('typed registry mounts implemented experiments and both guides with actions and metadata', t => {
   const app = fixture(t)
   assert.deepEqual(Object.keys(components).sort(), Object.keys(actions).sort())
-  assert.equal(app.find('#catalog-count').textContent, '19 experiments · 2 guides')
+  assert.equal(app.find('#catalog-count').textContent, '22 experiments · 2 guides')
   for (const feature of navigationPages) {
     app.select(feature.id)
     assert.equal(app.find('#feature-title').textContent, feature.title)
@@ -250,7 +253,7 @@ test('search temporarily reveals grouped matches and preserves collapse preferen
   assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'true')
   app.input('#search', '')
   assert.equal(app.find('[data-group="Development"]').getAttribute('aria-expanded'), 'false')
-  assert.equal(app.find('#catalog-count').textContent, '19 experiments · 2 guides')
+  assert.equal(app.find('#catalog-count').textContent, '22 experiments · 2 guides')
   app.find('[data-group="Essentials"]').click()
   app.session.writeLog('A native refresh', 'Success', { accepted: true })
   assert.equal(app.find('[data-group="Essentials"]').getAttribute('aria-expanded'), 'false',

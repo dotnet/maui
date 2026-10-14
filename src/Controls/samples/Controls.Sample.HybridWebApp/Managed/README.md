@@ -34,8 +34,8 @@ builder.Services
 `AddHybridApp(IServiceCollection, HybridAppOptions)` registers the scoped
 `HybridAppTargetObject`, immutable policy, scoped `NativeDispatcher`, default
 `TimeProvider.System` clock and **only implemented** product providers:
-AppInfo, DeviceInfo, Clipboard, Preferences, Battery, Display, FilePicker resources
-and MAUI page/window UI providers. It supplies their real
+AppInfo, DeviceInfo, Clipboard, Preferences, Battery, Display, FilePicker resources,
+Connectivity, TextToSpeech, HTTPS Launcher and MAUI page/window UI providers. It supplies their real
 existing Essentials interface defaults with
 `TryAdd`; host overrides registered before it are retained. Repeating equal
 namespace/text policy is idempotent, without duplicate providers; conflicting
@@ -126,6 +126,13 @@ non-UTF8 is explicit and binary bytes remain available. Picker dismissal
 is normal cancellation. No file body or full path is logged by native.
 Battery and Display are fresh read-only snapshots using `IBattery` and
 `IDeviceDisplay`, without subscriptions or keep-screen-awake writes.
+Mac Catalyst is an explicit battery-source exception: the current Essentials
+UIKit path reports an incorrect fixed value on the test Mac. The product reads
+actual internal battery capacities and charging/source state from IOKit, keeping
+the native snapshot alive until borrowed descriptions are consumed. Capacities
+are weighted across present batteries, zero charge is valid, no battery is -1,
+and invalid native data is an error rather than a fabricated full charge.
+This is a native adapter, not a JavaScript correction or shell command.
 Android hosts must declare the Essentials `android.permission.BATTERY_STATS`
 manifest permission for Battery; no runtime request or broad storage permission
 is needed for these implemented read/document-picker flows.
@@ -165,13 +172,121 @@ Position observation remains Windows-only; mobile centering is unsupported.
 
 ## External providers
 
+### Attributed actions
+
+```csharp
+using Maui.HybridApp;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+
+builder.Services
+    .AddHybridApp(new HybridAppOptions("my-app.hybrid."))
+    .AddHybridActions<MyActions>();
+
+public sealed record EchoMessage(string Text, int Count);
+
+// A normal nonpartial class. Instance providers are registered scoped automatically.
+public sealed class MyActions(IClipboard clipboard)
+{
+    [HybridAction("app.echo")]
+    public EchoMessage Echo(EchoMessage message, int increment = 1) =>
+        message with { Count = message.Count + increment };
+
+    [HybridAction("app.clipboardText", MainThread = true)]
+    public Task<string?> ReadClipboard() => clipboard.GetTextAsync();
+}
+```
+
+`app.echo` accepts either `{"message":{"text":"hello","count":0},"increment":2}`
+or `[{"text":"hello","count":0},2]`. Omitted optional parameters use their C#
+defaults. Explicit `null` is allowed only where the declared parameter/member
+allows it. Envelopes must be named objects or positional arrays: missing required,
+unknown, duplicate, excess and malformed arguments fail with `invalid_arguments`
+before invoking native code. DTO JSON names use camelCase, with explicit
+`JsonPropertyName` support. Ordinary method parameter names are the exact object keys.
+Enums use their numeric JSON representation, matching the default native serializer.
+
+Methods may be public or internal, static or instance, on accessible nonpartial
+classes. The opt-in requires no `IHybridCommandProvider` implementation. Instance
+actions call `GetRequiredService<T>()` on the owning scope at invocation, never a
+cached root provider. `AddHybridActions<T>()` is idempotent and preserves an
+existing explicit provider factory and its lifetime. Use scoped registrations
+for native/resource providers; deliberately choosing a singleton shares that
+action instance across windows, just like ordinary .NET DI.
+Static-only methods need no registered provider instance or constructor dependencies.
+For a fully static class (which C# forbids as a generic type argument), the analyzer
+emits `Add<ClassName>HybridActions()` in `Maui.HybridApp.Generated`; import that
+namespace and call the generated extension instead.
+
+Mark method parameters with **`Maui.HybridApp.FromServices`** or the existing
+`Microsoft.Extensions.DependencyInjection.FromKeyedServices` to inject services
+from the same current scope. There is no fake Microsoft DI attribute or ASP.NET
+dependency. `CancellationToken` always comes from the current `Operation`.
+An optional `HybridActionContext` supplies the current request ID, document
+session, cancellation and typed `Publish(topic, value, sourceGeneratedTypeInfo)`
+for operation progress. Service/context/token parameters consume neither object
+keys nor array positions. Missing required services remain native failures,
+not JSON arguments or silently substituted defaults.
+
+Supported return shapes are `void`, `T`, `Task`, `Task<T>`, `ValueTask` and
+`ValueTask<T>`; no-value results serialize as JSON null. Coded `CommandException`
+errors retain the existing protocol error code. `MainThread=true` dispatches
+exactly once through the owning `NativeDispatcher`; unmarked synchronous work
+runs on its caller, with no automatic `Task.Run`. `Interactive=true` applies the
+existing advertised 300000 ms native interaction budget, not an invented timeout.
+Cancellation is checked before and after invocation and does not undo native writes.
+
+The bundled analyzer generates **direct typed calls and its own
+`JsonSerializerContext`/`JsonMetadataServices` converters** for the discovered
+argument/result graph. It does not expect the System.Text.Json generator to
+process another generator's added `[JsonSerializable]` types in the same pass.
+Scalars, nullable values, concrete DTO constructors/records, enums, one-dimensional
+arrays, generic lists/sets and string-keyed dictionaries have automatic strict
+metadata. There is no user-maintained action DTO registry or reflection JSON
+fallback. Custom converters, polymorphism, `object`/`dynamic`, delegates,
+multidimensional arrays, unsupported framework contracts and inaccessible or
+unconstructible DTO shapes receive compile-time diagnostics. Read-only members
+must bind to constructor parameters; optional init-only members must also bind
+to a constructor. Required writable members and optional constructor defaults
+are enforced without removing constructor/property initializers.
+
+| Diagnostic | Contract failure |
+| --- | --- |
+| `HYBRID001` | Invalid bounded ASCII action name |
+| `HYBRID002` | Inaccessible, generic, by-reference, delegate or async-void method |
+| `HYBRID003` | Duplicate names in a provider or statically known host opt-ins |
+| `HYBRID004` | Unsupported automatic JSON contract |
+| `HYBRID005` | Conflicting service/context/cancellation binding |
+
+Per-provider module initialization installs only its compiled registration into
+its generic slot. Host opt-in is still explicit; initialization performs no
+assembly scan, runtime method discovery, `MethodInfo` or expression compilation.
+External assemblies ship their generated binding themselves. Registrations
+composed dynamically across assemblies are additionally checked for duplicate
+commands at registry construction. The existing Core HybridWebView invocation
+generator is not replaced or widened.
+
+Clipboard, Preferences and FilePicker command handlers now use annotations,
+preserving every existing JS command name, input/result shape, text/key limits,
+namespace, preference ownership reservation/rollback and interactive policy.
+Their existing public constructors and direct `Register(registry)` composition
+remain usable. Clipboard explicitly implements `IHybridActionSource` for its
+manual topic/start/stop lifecycle; resource and native event ownership are not
+invented by action generation. FilePicker keeps document-owned `FileResult`
+handles and owned read streams: reader locks serialize read/seek, reader lifetime
+cancellation stops active reads, rejected/late opens dispose their streams, and
+reader close/file release/document retirement/scope disposal release resources.
+Picker cancellation stops the response but cannot force-dismiss stock OS UI;
+the native interaction slot remains owned until actual dismissal.
+
+### Manual command and source providers
+
 A Toolkit assembly implements `IHybridCommandProvider.Register(registry)` or
 calls `registry.Register<TArgs,TResult>(name, inputInfo, outputInfo, handler)`.
 The host opts in with `AddHybridProvider<TProvider>()` after `AddHybridApp`, or
 explicit registry composition in a custom native host. The generic hub itself
 does not choose Essentials/sample providers. Providers own their DTOs, generated contexts and
-topics (`RegisterTopic`). No scanning, attributes, reflection router, catalog
-or edits to the protocol context are needed. Duplicate names/topics are rejected.
+topics (`RegisterTopic`). The manual path needs no attributes, scanning, reflection
+router, catalog or edits to the protocol context. Duplicate names/topics are rejected.
 Metadata must originate from a source-generated context with
 `UnmappedMemberHandling=Disallow`, `RespectNullableAnnotations=true` and
 `RespectRequiredConstructorParameters=true`; use camelCase on the wire.
@@ -231,7 +346,11 @@ available feed/version. Multi-platform packing needs those installed workloads.
 Native AOT certification additionally needs actual publish/device validation;
 generated metadata alone is not such certification.
 
-The NuGet contains the product DLL/XML per packed TFM, README and MIT license
+The NuGet contains the product DLL/XML per packed TFM, README and MIT license,
+plus the bundle-local build-time generator under
+`analyzers/dotnet/cs/Maui.HybridApp.Generators.dll`.
+Its netstandard2.0 analyzer references Roslyn only, not the product or an AI
+runtime; it does not add a second prospective managed product.
 (also a portable PDB when the in-tree build includes it).
 Essentials, Controls.Core and their genuine transitive dependencies are normal NuGet dependencies.
 The product uses DI abstractions from the .NET 11 framework reference/runtime,
@@ -240,9 +359,13 @@ standalone project. No warning/analyzer/pruning suppression is used.
 The full DI container is a test/consumer dependency pinned to the repository's
 `11.0.0-rtm.26480.113`, not an additional product dependency.
 No app/sample/test source, web assets or runtime fakes are shipped. The separate
-`Tests/PackageConsumer` executable references the **package**, uses plugin-owned
-generated JSON and disables reflection serialization. It exercises the actual
-one-call registration, scoped target/providers, events and independent scopes.
+`Tests/PackageConsumer` executable references the **package**, uses a separately
+compiled provider assembly, and disables reflection serialization. Its plugin
+and host actions have no user-declared action DTO context or serialization lists:
+the packed analyzer generates automatic DTO/scalar/enum/nullable/collection
+metadata and scoped/keyed direct calls. It also exercises the actual one-call
+registration, events, strict contracts and independent scopes. This is executable
+reflection-disabled evidence, not a claim of native AOT publication certification.
 Before release, inspect
 the nuspec/file list, run assembly and packed-consumer tests, validate the native
 platform matrix and review naming/support/signing requirements. Do not publish
@@ -252,12 +375,20 @@ To run that consumer, supply a dedicated `NuGet.Config` whose cleared sources
 contain the product package and **real** Essentials/Controls.Core/Core/Graphics/DI dependencies:
 
 ```sh
-dotnet restore Tests/PackageConsumer/PackageConsumer.csproj --configfile NuGet.Config
-dotnet run --project Tests/PackageConsumer/PackageConsumer.csproj --no-restore
+dotnet restore Tests/PackageConsumer/PackageConsumer.csproj --configfile NuGet.Config \
+  --packages "$PWD/artifacts/package-consumer-cache" -p:HybridAppPackageConsumer=true
+dotnet run --project Tests/PackageConsumer/PackageConsumer.csproj --no-restore \
+  -p:HybridAppPackageConsumer=true \
+  -p:RestorePackagesPath="$PWD/artifacts/package-consumer-cache"
 ```
 
-For an isolated proof, copy only `Tests/PackageConsumer`, the `Plugin*.cs` fixture
-files from `Tests/ExternalProvider`, and `Tests/Directory.Build.props/targets` to
+Use a new, empty cache directory for each local proof when repacking the same
+preview version. `--packages` explicitly overrides environment-level NuGet cache
+settings; changing only `globalPackagesFolder` in a config is not a fresh-cache
+guarantee when the pinned SDK runner supplies an environment override.
+
+For an isolated proof, copy only `Tests/PackageConsumer`, `Tests/ExternalProvider`,
+and `Tests/Directory.Build.props/targets` to
 a fresh directory with a copy-local SDK pin/config. No `Managed` directory or
 product project reference is needed. The normal unit tests instead reference the
 real product project and a separate external provider project.

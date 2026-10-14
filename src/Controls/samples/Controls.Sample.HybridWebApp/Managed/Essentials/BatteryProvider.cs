@@ -11,8 +11,36 @@ public sealed class BatteryProvider(IBattery battery, NativeDispatcher dispatche
 	{
 		var json = BatteryJsonContext.Default;
 		registry.Register("battery.info", json.BatteryArgs, json.BatteryResult, (_, op) => dispatcher.RunAsync(
-			() => Task.FromResult(new BatteryResult(battery.ChargeLevel, battery.State.ToString(),
-				battery.PowerSource.ToString(), battery.EnergySaverStatus.ToString())), op.Cancellation));
+			() => Task.FromResult(Read()), op.Cancellation));
+	}
+	BatteryResult Read()
+	{
+#if MACCATALYST
+		return MacBatterySnapshot.Read(battery.EnergySaverStatus.ToString());
+#else
+		return new(battery.ChargeLevel, battery.State.ToString(), battery.PowerSource.ToString(), battery.EnergySaverStatus.ToString());
+#endif
+	}
+}
+
+internal readonly record struct BatteryCapacity(double Current, double Maximum, bool Charging);
+internal static class BatteryCapacitySnapshot
+{
+	internal static BatteryResult Read(IEnumerable<BatteryCapacity> capacities, string power, string saver)
+	{
+		var batteries = capacities.ToArray();
+		if (batteries.Length == 0) return new(-1, "NotPresent", power, saver);
+		if (batteries.Any(value => !double.IsFinite(value.Current) || !double.IsFinite(value.Maximum) ||
+			value.Maximum <= 0 || value.Current < 0 || value.Current > value.Maximum))
+			throw new CommandException("native_error", "The native battery capacity information is invalid.");
+		var current = batteries.Sum(value => value.Current);
+		var maximum = batteries.Sum(value => value.Maximum);
+		if (!double.IsFinite(current) || !double.IsFinite(maximum))
+			throw new CommandException("native_error", "The native aggregate battery capacity is invalid.");
+		var charge = current / maximum;
+		var state = batteries.Any(value => value.Charging) ? "Charging" : charge >= 1 ? "Full" :
+			power == "Battery" ? "Discharging" : power == "AC" ? "NotCharging" : "Unknown";
+		return new(charge, state, power, saver);
 	}
 }
 

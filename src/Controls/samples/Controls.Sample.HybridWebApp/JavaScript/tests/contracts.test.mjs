@@ -19,8 +19,18 @@ test('built root contains only lifecycle infrastructure without eager browser ac
   assert.equal(api.NativeClient, NativeClient)
   assert.equal(api.connect, connect)
   assert.equal(api.disconnect, disconnect)
-  assert.deepEqual(Object.keys(api).sort(), ['NativeClient', 'NativeError', 'connect', 'disconnect'])
+  assert.deepEqual(Object.keys(api).sort(), ['NativeClient', 'NativeError', 'connect', 'disconnect', 'invoke'])
   assert.equal(await loadNativeBridge(), undefined)
+})
+
+test('direct invoke shares one connection and preserves named and positional action arguments', async () => {
+  const host = mock(request => request.command === 'core.connect' ? ready : request.args)
+  configureBridge(host.bridge)
+  assert.deepEqual(await api.invoke('custom.echo', { value: 'Hello' }), { value: 'Hello' })
+  assert.deepEqual(await api.invoke('custom.echo', ['theme', 'dark']), ['theme', 'dark'])
+  assert.deepEqual(await api.invoke('custom.echo', {}, object), {})
+  assert.equal(host.requests.filter(request => request.command === 'core.connect').length, 1)
+  assert.equal(new Set(host.requests.map(request => request.session)).size, 1)
 })
 
 test('Essentials are explicit subpaths and removed/private paths are not exported', async () => {

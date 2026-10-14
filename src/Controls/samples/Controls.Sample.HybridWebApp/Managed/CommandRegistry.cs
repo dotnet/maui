@@ -89,6 +89,32 @@ public sealed class CommandRegistry
 			_interactive.Add(name);
 	}
 
+	/// <summary>Registers a compiler-generated direct-call action with strictly source-originated metadata.</summary>
+	/// <param name="name">The unique native wire-command name.</param>
+	/// <param name="metadata">Generated metadata for every ordinary argument and result type.</param>
+	/// <param name="handler">The generated typed handler and binder, without runtime method discovery.</param>
+	/// <param name="interactive">Whether the existing bounded native interaction policy applies.</param>
+	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+	public void RegisterGenerated(string name, JsonTypeInfo[] metadata, Func<JsonElement, Operation, Task<JsonElement>> handler,
+		bool interactive = false)
+	{
+		ValidateName(name);
+		ArgumentNullException.ThrowIfNull(metadata);
+		ArgumentNullException.ThrowIfNull(handler);
+		if (metadata.Length == 0)
+			throw new ArgumentException("Generated actions must supply source-originated result metadata, including their null result for void actions.", nameof(metadata));
+		foreach (var info in metadata) ValidateMetadata(info);
+		if (!_commands.TryAdd(name, async (args, operation) =>
+		{
+			operation.Cancellation.ThrowIfCancellationRequested();
+			var result = await handler(args, operation).ConfigureAwait(false);
+			operation.Cancellation.ThrowIfCancellationRequested();
+			return result;
+		}))
+			throw new InvalidOperationException($"Duplicate command registration: {name}");
+		if (interactive) _interactive.Add(name);
+	}
+
 	/// <summary>Dispatches a registered command, rejecting unknown or disabled commands.</summary>
 	/// <param name="name">The registered name.</param>
 	/// <param name="args">JSON arguments validated using the provider's metadata.</param>

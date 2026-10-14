@@ -1,4 +1,4 @@
-export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'multiWindow' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme'
+export type Experiment = 'identity' | 'clipboard' | 'preferences' | 'echo' | 'errors' | 'policy' | 'lifetime' | 'events' | 'work' | 'development' | 'welcome' | 'showcase' | 'windows' | 'multiWindow' | 'dialogs' | 'filePicker' | 'remoteWebView' | 'battery' | 'display' | 'menus' | 'theme' | 'connectivity' | 'textToSpeech' | 'launcher'
 export interface Feature { id: string; title: string; category: string; priority: string; experiment?: Experiment; description: string; docs: string; guide?: boolean }
 const maui = 'https://learn.microsoft.com/dotnet/maui/'
 const hybrid = `${maui}user-interface/controls/hybridwebview?view=net-maui-11.0`
@@ -94,6 +94,12 @@ promote('Battery', 'battery', 'Essentials', 'battery',
   'Refresh native battery charge, power source and energy-saver state. No browser battery values or background monitoring.', `${maui}platform-integration/device/battery`)
 promote('Display and DPI', 'display', 'Essentials', 'display',
   'Refresh main-display pixel dimensions, density, orientation and rotation from the native OS. These are not CSS viewport dimensions.', `${maui}platform-integration/device/display`)
+promote('Connectivity', 'connectivity', 'Essentials', 'connectivity',
+  'Read fresh native network conditions and subscribe to actual OS network changes. Unsubscribe detaches this listener; Internet is not a reachability guarantee.', `${maui}platform-integration/communication/networking`)
+promote('Text-to-speech', 'text-to-speech', 'Essentials', 'textToSpeech',
+  'Speak on an explicit click with native locales, pitch, volume and rate. Cancel only this speech through its actual native operation token.', `${maui}platform-integration/device-media/text-to-speech`)
+promote('Open external links', 'launcher', 'Essentials', 'launcher',
+  'Launch a validated public HTTPS website with the native system launcher on an explicit click. Never an in-app browser or embedded guest.', `${maui}platform-integration/appmodel/launcher`)
 
 const canonicalRoutes: Partial<Record<Experiment, string>> = {
   identity: 'identity', echo: 'arguments', policy: 'policy', work: 'work', development: 'vite',

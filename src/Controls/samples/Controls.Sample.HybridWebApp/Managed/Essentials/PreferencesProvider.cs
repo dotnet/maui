@@ -35,74 +35,75 @@ public sealed class PreferencesProvider : IHybridCommandProvider
 
 	/// <inheritdoc />
 	public void Register(CommandRegistry registry)
+		=> HybridActionRegistration<PreferencesProvider>.Register(registry, this, _dispatcher);
+
+	[HybridAction("preferences.contains", MainThread = true)]
+	internal PreferenceAccepted Contains(string key, string? sharedName = null)
 	{
-		var json = PreferencesJsonContext.Default;
-		registry.Register("preferences.contains", json.PreferenceContainerArgs, json.PreferenceAccepted, (args, op) => _dispatcher.RunAsync(() =>
-		{
-			ValidateKey(args.Key);
-			return Task.FromResult(new PreferenceAccepted(_preferences.ContainsKey(_keyPrefix + args.Key, Container(args.SharedName))));
-		}, op.Cancellation));
-		registry.Register("preferences.get", json.TypedPreferenceArgs, json.PreferenceScalar, (args, op) => _dispatcher.RunAsync(() =>
-		{
-			ValidateKey(args.Key);
-			return Task.FromResult(ReadScalar(_keyPrefix + args.Key, args.DefaultValue, Container(args.SharedName)));
-		}, op.Cancellation));
-		registry.Register("preferences.set", json.SetTypedPreferenceArgs, json.PreferenceAccepted, (args, op) => _dispatcher.RunAsync(() =>
-		{
-			ValidateKey(args.Key);
-			var container = Container(args.SharedName);
-			var write = PrepareScalarWrite(_keyPrefix + args.Key, args.Value, container);
-			WriteOwned(args.Key, container, write);
-			return Task.FromResult(new PreferenceAccepted(true));
-		}, op.Cancellation));
-		registry.Register("preferences.delete", json.PreferenceContainerArgs, json.PreferenceAccepted, (args, op) => _dispatcher.RunAsync(() =>
-		{
-			ValidateKey(args.Key);
-			RemoveOwned(args.Key, Container(args.SharedName));
-			return Task.FromResult(new PreferenceAccepted(true));
-		}, op.Cancellation));
-		registry.Register("preferences.clear", json.PreferenceClearArgs, json.PreferenceAccepted, (args, op) => _dispatcher.RunAsync(() =>
-		{
-			var container = Container(args.SharedName);
-			foreach (var key in OwnedKeys(container))
-				_preferences.Remove(_keyPrefix + key, container);
-			_preferences.Remove(_keyPrefix + "@owned-keys", container);
-			return Task.FromResult(new PreferenceAccepted(true));
-		}, op.Cancellation));
-		registry.Register("preferences.read", json.PreferenceArgs, json.PreferenceResult, (args, op) =>
-		{
-			ValidateKey(args.Key);
-			return _dispatcher.RunAsync(() =>
-			{
-				var name = _keyPrefix + args.Key;
-				var value = _preferences.ContainsKey(name) ? _preferences.Get(name, "") : null;
-				if (value is not null)
-					ValidateText(value);
-				return Task.FromResult(new PreferenceResult(args.Key, value));
-			}, op.Cancellation);
-		});
-		registry.Register("preferences.write", json.SetPreferenceArgs, json.PreferenceResult, (args, op) =>
-		{
-			ValidateKey(args.Key);
-			ValidateText(args.Value);
-			return SetAsync(args.Key, args.Value, op.Cancellation);
-		});
-		registry.Register("preferences.remove", json.PreferenceArgs, json.PreferenceResult, (args, op) =>
-		{
-			ValidateKey(args.Key);
-			return SetAsync(args.Key, null, op.Cancellation);
-		});
+		ValidateKey(key);
+		return new(_preferences.ContainsKey(_keyPrefix + key, Container(sharedName)));
 	}
 
-	Task<PreferenceResult> SetAsync(string key, string? value, CancellationToken cancellation) =>
-		_dispatcher.RunAsync(() =>
-		{
-			if (value is null)
-				RemoveOwned(key, null);
-			else
-				WriteOwned(key, null, () => _preferences.Set(_keyPrefix + key, value));
-			return Task.FromResult(new PreferenceResult(key, value));
-		}, cancellation);
+	[HybridAction("preferences.get", MainThread = true)]
+	internal PreferenceScalar Get(string key, PreferenceScalar defaultValue, string? sharedName = null)
+	{
+		ValidateKey(key);
+		return ReadScalar(_keyPrefix + key, defaultValue, Container(sharedName));
+	}
+
+	[HybridAction("preferences.set", MainThread = true)]
+	internal PreferenceAccepted Set(string key, PreferenceScalar value, string? sharedName = null)
+	{
+		ValidateKey(key);
+		var container = Container(sharedName);
+		var write = PrepareScalarWrite(_keyPrefix + key, value, container);
+		WriteOwned(key, container, write);
+		return new(true);
+	}
+
+	[HybridAction("preferences.delete", MainThread = true)]
+	internal PreferenceAccepted Delete(string key, string? sharedName = null)
+	{
+		ValidateKey(key);
+		RemoveOwned(key, Container(sharedName));
+		return new(true);
+	}
+
+	[HybridAction("preferences.clear", MainThread = true)]
+	internal PreferenceAccepted Clear(string? sharedName = null)
+	{
+		var container = Container(sharedName);
+		foreach (var key in OwnedKeys(container)) _preferences.Remove(_keyPrefix + key, container);
+		_preferences.Remove(_keyPrefix + "@owned-keys", container);
+		return new(true);
+	}
+
+	[HybridAction("preferences.read", MainThread = true)]
+	internal PreferenceResult Read(string key)
+	{
+		ValidateKey(key);
+		var name = _keyPrefix + key;
+		var value = _preferences.ContainsKey(name) ? _preferences.Get(name, "") : null;
+		if (value is not null) ValidateText(value);
+		return new(key, value);
+	}
+
+	[HybridAction("preferences.write", MainThread = true)]
+	internal PreferenceResult Write(string key, string value)
+	{
+		ValidateKey(key);
+		ValidateText(value);
+		WriteOwned(key, null, () => _preferences.Set(_keyPrefix + key, value));
+		return new(key, value);
+	}
+
+	[HybridAction("preferences.remove", MainThread = true)]
+	internal PreferenceResult Remove(string key)
+	{
+		ValidateKey(key);
+		RemoveOwned(key, null);
+		return new(key, null);
+	}
 
 	static void ValidateKey(string key)
 	{

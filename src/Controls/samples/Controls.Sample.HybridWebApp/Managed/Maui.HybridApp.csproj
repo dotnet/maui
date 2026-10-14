@@ -39,10 +39,19 @@
     <PackageReference Include="Microsoft.Maui.Controls.Core" Version="$(MauiVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../Generators/Maui.HybridApp.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <InternalsVisibleTo Include="Playground.UnitTests" />
     <None Include="README.md" Pack="true" PackagePath="/" />
     <None Include="LICENSE.txt" Pack="true" PackagePath="/" />
   </ItemGroup>
+  <Target Name="PackHybridActionGenerator" BeforeTargets="_GetPackageFiles">
+    <MSBuild Projects="../Generators/Maui.HybridApp.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="HybridActionGeneratorAssembly" />
+    </MSBuild>
+    <ItemGroup>
+      <None Include="@(HybridActionGeneratorAssembly)" Pack="true" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>
   <Target Name="ValidateHybridAppMauiVersion" BeforeTargets="CollectPackageReferences" Condition="'$(HybridWebAppInTree)' != 'true'">
     <Error Condition="'$(MauiVersion)' == ''" Text="The standalone library requires explicit compatible Microsoft.Maui.Essentials and Microsoft.Maui.Controls.Core 11 packages (-p:MauiVersion=VERSION) and their actual dependency feed. No public .NET MAUI 11 package version is assumed." />
   </Target>

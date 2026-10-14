@@ -6,9 +6,9 @@
 
 | Group | Meaning | Complete |
 |---|---|---|
-| **P0 - Critical for v1** | 19 items: make a useful playground that proves the real native bridge. | 16 |
-| **P1 - Must have** | 29 items: cover the normal day-to-day native app toolkit. | 1 |
-| **P2 - Need to have** | 47 items: add broad UI, device and desktop integration coverage. | 0 |
+| **P0 - Critical for v1** | 19 items: make a useful playground that proves the real native bridge. | 17 |
+| **P1 - Must have** | 29 items: cover the normal day-to-day native app toolkit. | 4 |
+| **P2 - Need to have** | 47 items: add broad UI, device and desktop integration coverage. | 1 |
 | **P3 - Good to have** | 26 items: add specialised integrations, extension mechanisms and distribution scenarios. | 1 |
 
 **Completion rule:** A checked item means the complete experiment described in that row is implemented end-to-end and verified within the documented scope below. It does not mean every member of the corresponding .NET API is wrapped, or that every OS/release configuration is certified. Partially implemented acceptance targets stay unchecked. For example, historical clipboard/preferences acceptance covered text read/write and bounded text settings. New typed preference and clipboard-event contracts have automated coverage but still require native acceptance.
@@ -39,7 +39,7 @@ Most of this remains partial family acceptance. Native dialogs now have complete
 Android experiment evidence: actual alert acknowledgement, confirmation accept/
 cancel, prompt text/cancel, and action-sheet normal/cancel/destructive selection.
 Action sheets now share the sectioned Native dialogs page with alerts,
-confirmations and prompts. There are 19 unique experiments and two guides:
+confirmations and prompts. That cleanup produced 19 unique experiments and two guides:
 duplicate Bridge/Development family pages were consolidated, while this
 121-family inventory and aliases for old bookmarks remain.
 Navigation and session diagnostics collapse on desktop; diagnostics resizes
@@ -51,6 +51,37 @@ read/write sandbox extension that the demo's read-only grant rejected. Logs
 confirmed our cancellation token stayed false. The user requested the same
 unsandboxed configuration as Essentials and confirmed selection/preview works.
 No store deployment work or App Store readiness is intended.
+
+### Implemented subsets versus family completion
+
+The inventory below remains a family-level checklist. This finer-grained table
+makes completed implementations visible without declaring an unfinished family
+complete or requiring every platform to be certified.
+
+| Capability | Implemented and verified | Remaining |
+|---|---|---|
+| Native dialogs | Alert, confirmation, prompt and action sheet; native Android acceptance, editable labels and normal cancellation | Additional native platform acceptance |
+| Multiple windows | Native Mac attached child windows; Android selected route, independent counters/documents, parent-state preservation and OS-close cleanup | Windows/iPad runtime and caller-driven close acceptance |
+| Window basics | Native title and size setters, live size events, separate current-window page; tested Mac display-origin centering math and compiled adapter | Manual centering/multiple displays, activation/close and Windows move events |
+| File picker | Real single-file selection/cancellation and streams on Android; user-confirmed Mac preview, binary reads and bounded preview truncation | Multiple selection UI/native acceptance and native seek |
+| Theme | Native Android/Mac system/light/dark setting and effective CSS subscriptions | OS-originated theme changes and multi-window propagation acceptance |
+| Native menus | TypeScript-authored definitions/callbacks, item getters/setters, owning-window snapshot rebuild regressions | User confirmation of visible rename/check updates; toolbar/context menus |
+| Explorer shell | Unique feature pages; collapsible desktop panes, draggable/keyboard diagnostics divider, mobile flyouts and refresh in diagnostics | Broader native/mobile accessibility acceptance |
+| Battery | Native Android reads; Catalyst now uses IOKit capacities/state. Actual app read 100%/Full/AC matched pmset 100%, replacing the incorrect UIKit 1% reading | Battery change subscriptions remain unfinished |
+| Connectivity | Native Mac Internet/WiFi read, shared listener setup/unsubscribe; automated actual-provider event/lifetime tests | Live OS network-change delivery and other platforms unverified; no network settings changed during acceptance |
+| Text-to-speech | Native Mac reported 180 installed locales and completed SpeakAsync; typed options and operation cancellation tested | Physical audio listening/cancellation and other platform runtime acceptance |
+| Open external links | Real Mac OS accepted public HTTPS launch; URL validation and launch failures tested | Other platform runtime; acceptance does not prove website loading |
+
+Connectivity/events, text-to-speech and external URL launching are now distinct
+implemented experiments, bringing navigation to 22 unique experiments plus two
+guides without changing the 121-family inventory. Native Mac acceptance uses
+the real shared SDK connection; the network was not toggled or mocked.
+Attributed actions and automatic binding are implemented, not only proposed:
+clipboard, preferences and file-picker commands migrated with unchanged wire
+contracts and resource lifetimes. The packed analyzer executes in a fresh
+NuGet-only host and separate plugin with reflection serialization disabled.
+Independent review found nullable-enum defaults and normalized constructor
+nullability reader bugs; isolated compilation/runtime regressions cover both.
 
 The new-window follow-up reproduced a Mac build-cache failure: the compiled
 Info.plist still disabled multiple scenes after the source enabled them. The
@@ -64,17 +95,16 @@ are still not certified.
 
 | Unchecked item with partial implementation | What exists | What remains |
 |---|---|---|
-| Custom command registration | Explicit typed providers and generated .NET invocation/JSON metadata | Opt-in attributes or generated provider registration |
 | Explicit exposure and permissions | Unknown/disabled command rejection, bounded inputs, distinct native error codes | An actual OS permission check/request/denial experiment |
 | Platform-aware results | Unsupported/permission/configuration error classification | Observable native scenarios for each classification, not just policy failures/test doubles |
 | Plugin/provider extension | DI registration, scoped targets and a separate provider assembly verified through a real NuGet-only consumer | A complete optional provider playground experiment with its JS integration |
 | Installable artifacts; signing and installed execution | Debug native deployment and Mac Catalyst Release build/asset checks | Install and exercise the intended signed Release artifacts |
 | Diagnostics and performance | Startup identity, request metrics and bounded operation log | Reproducible command-latency, startup and memory scenarios |
 | Browser mocks and native automation | Committed contract tests and actual native acceptance evidence | A committed, repeatable native automation entrypoint |
-| Window basics / Multiple windows | Distinct live current-window and child-window pages; Mac attached windows, size events and compiled global-display centering adapter; Android isolation/OS-close cleanup | Manual/mixed-display Mac centering, activation/caller-close; Windows runtime |
+| Window basics | Live current-window page; Mac size events and compiled global-display centering adapter | Manual/mixed-display Mac centering, activation/close; Windows runtime |
 | File picker | Android stream/large preview/binary/cancel acceptance; user-confirmed Mac selected-file preview after removing demo sandbox | Multiple selection and native seek; 64 KiB is only per-message budget |
 | Theme and appearance | Native Android/Mac system/light/dark preference and effective Svelte CSS accepted | Actual OS theme change while following system and cross-window event acceptance; remote sites are not forced themed |
-| Battery / Display and DPI | Actual Android read-only charge/power/energy-saver and display dimensions/density/orientation/refresh accepted | Native change subscriptions intentionally deferred; other platforms unverified |
+| Battery / Display and DPI | Android readouts plus corrected Catalyst IOKit capacity/state matching actual Mac power output | Native change subscriptions deferred; broader platform runtime unverified |
 | Remote WebView controls | Measured BrowserPanel native guest; actual Mac HTTPS redirect/load/focus/feature teardown accepted | Visual clipping/DPI and runtime bridge-isolation evidence; mobile guests unsupported |
 | Native menus, toolbars and context menus | JS-defined native menus, stable installation/item handles, tiny property patches, JS callbacks and Cmd/Ctrl accelerators; Mac actual checks, Windows checks explicitly unsupported | Actual OS-menu/focus/shortcut/callback acceptance; toolbar/context-menu experiments remain unimplemented |
 
@@ -91,7 +121,7 @@ the implemented subset has native evidence and unit tests/builds pass.
 - [x] **Feature browser** - Search implemented experiments, navigate categories and open API docs. [MAUI controls][m-controls] / [Tauri example][t-example].
 - [x] **Bridge bootstrap and readiness** - Load the bridge and clearly show native-host versus browser-only mode. [HybridWebView][m-hybrid] / [Tauri core][t-core].
 - [x] **One native target hub** - Route feature modules and application commands through one explicit, instance-backed entry point. [MAUI invocation][m-invoke] / [Tauri commands][t-commands].
-- [ ] **Custom command registration** - Add an app service without editing a growing forwarding switch; prototype opt-in attributes or generated registration. [MAUI generated invocation][m-net11] / [Tauri registration][t-commands].
+- [x] **Custom command registration** - Annotate static/instance methods with HybridAction, explicitly opt in action classes, and generate strict JSON/DI/keyed-service/cancellation binding without runtime reflection. Separate NuGet-only host/plugin runs with reflection serialization disabled; actual Mac named/positional calls accepted. Native AOT publication is not certified. [MAUI generated invocation][m-net11] / [Tauri registration][t-commands].
 - [x] **Arguments and return values** - Round-trip primitives, nulls, arrays, DTOs and asynchronous results. [MAUI invocation][m-invoke] / [Tauri commands][t-commands].
 - [x] **Typed JavaScript modules** - Import named helpers with parameter/result types rather than hand-writing wire messages. [MAUI foundation][m-net11] / [Tauri API][t-api]. Generated app-specific TypeScript is additional tooling, not claimed by this checkbox.
 - [x] **Errors and operation log** - Display rejected calls, native errors and transport failures with useful details. [MAUI invocation][m-invoke] / [Tauri logging][t-log].
@@ -124,16 +154,16 @@ the implemented subset has native evidence and unit tests/builds pass.
 - [ ] **HTTP requests** - Send a native request and show status, headers, body and duration. [.NET HttpClient][net-http] / [Tauri HTTP][t-http].
 - [ ] **Uploads and downloads** - Transfer a bounded sample file with progress and cancellation. [.NET HttpClient][net-http] / [Tauri upload][t-upload].
 - [ ] **WebSocket** - Connect, send/receive messages and disconnect cleanly. [.NET ClientWebSocket][net-websocket] / [Tauri WebSocket][t-websocket].
-- [ ] **Connectivity** - Report network access and subscribe to connectivity changes. [MAUI][m-connectivity]. Do not infer internet reachability from connection type alone.
+- [x] **Connectivity** - Report network access and subscribe to connectivity changes. Native Mac read/listener setup plus automated event delivery/cleanup verified; live OS changes and other platforms remain unverified. [MAUI][m-connectivity]. Do not infer internet reachability from connection type alone.
 
 ### OS interactions
 
 - [x] **Native dialogs** - Display alerts, confirmations, prompts and action sheets. Verified Android calling-page acknowledgement, text/selection and normal cancellation; other platforms remain unverified. [MAUI][m-dialogs] / [Tauri][t-dialog].
-- [ ] **Open external links** - Open an allowed URL in the system browser or another app. [MAUI Launcher][m-launcher] / [Tauri opener][t-opener].
+- [x] **Open external links** - Open an allowed URL in the system browser or another app. Actual Mac native HTTPS launch accepted; this experiment intentionally excludes arbitrary/custom schemes. [MAUI Launcher][m-launcher] / [Tauri opener][t-opener].
 - [ ] **In-app browser** - Open documentation in the platform browser presentation, separate from the embedded app WebView. [MAUI Browser][m-browser].
 - [ ] **Share text and files** - Invoke the native share experience. [MAUI][m-share]. Tauri may need a mobile/platform adapter.
 - [ ] **Window basics** - Read/set title and supported size/position; activate or close the owning window. [MAUI][m-window] / [Tauri][t-window].
-- [ ] **Multiple windows** - Create a second experiment window and verify state and message isolation. [MAUI][m-window] / [Tauri][t-window].
+- [x] **Multiple windows** - Create a second experiment window and verify state and message isolation. Verified Android independent document/hub/counter and parent-state preservation; Mac creates actual attached child windows. Windows/iPad runtime and caller-driven close remain unverified. [MAUI][m-window] / [Tauri][t-window].
 - [ ] **Application lifecycle** - Observe creation, activation, deactivation, backgrounding and destruction. [MAUI][m-lifecycle] / [Tauri][t-app].
 
 ### Native and web UI together
@@ -164,7 +194,7 @@ the implemented subset has native evidence and unit tests/builds pass.
 - [ ] **Embedded native map** - Show pins and regions; keep provider/key requirements explicit. [MAUI Maps][m-maps].
 - [ ] **Photo/video picker and capture** - Select or capture media through native APIs. [MAUI][m-media].
 - [ ] **Screenshot** - Capture the app and export the result. [MAUI][m-screenshot].
-- [ ] **Text-to-speech** - Speak sample text and select a supported voice. [MAUI][m-speech].
+- [x] **Text-to-speech** - Speak sample text and select a supported voice. Native Mac locale enumeration and speech completion accepted; options/cancellation have automated coverage. Other platforms and listening acceptance remain unverified. [MAUI][m-speech].
 - [ ] **Haptic feedback** - Trigger supported native interaction feedback. [MAUI][m-haptics] / [Tauri][t-haptics].
 - [ ] **Vibration** - Start and stop a bounded vibration. [MAUI][m-vibration].
 - [ ] **Flashlight** - Enable/disable the camera light where available. [MAUI][m-flashlight].

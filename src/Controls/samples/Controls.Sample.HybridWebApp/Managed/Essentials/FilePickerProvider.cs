@@ -59,97 +59,108 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 	}
 	/// <inheritdoc />
 	public void Register(CommandRegistry registry)
+		=> HybridActionRegistration<FilePickerProvider>.Register(registry, this, _dispatcher);
+
+	[HybridAction("filePicker.pick", MainThread = true, Interactive = true)]
+	internal Task<PickResult> Pick(CancellationToken cancellation, string? pickerTitle = null, Dictionary<string, string[]>? fileTypes = null)
 	{
-		var json = FilePickerJsonContext.Default;
-		registry.Register("filePicker.pick", json.PickerOptions, json.PickResult, (args, op) =>
+		var options = Options(new(pickerTitle, fileTypes));
+		// The native API cannot be force-dismissed. InteractAsync retains the OS interaction slot until dismissal,
+		// while request/document cancellation prevents the late selection from becoming a document-owned resource.
+		return _context.InteractAsync(async () =>
 		{
-			var options = Options(args);
-			return _dispatcher.RunAsync(() => _context.InteractAsync(async () =>
-			{
 #if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
-				Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=before-await mainThread={Microsoft.Maui.ApplicationModel.MainThread.IsMainThread} cancellation={op.Cancellation.IsCancellationRequested} ownerAttached={_context.Window.Handler is not null} pageOwned={ReferenceEquals(_context.Page.Window, _context.Window)} picker={_picker.GetType().FullName}");
+			Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=before-await mainThread={Microsoft.Maui.ApplicationModel.MainThread.IsMainThread} cancellation={cancellation.IsCancellationRequested} ownerAttached={_context.Window.Handler is not null} pageOwned={ReferenceEquals(_context.Page.Window, _context.Window)} picker={_picker.GetType().FullName}");
 #endif
-				var file = await _picker.PickAsync(options);
+			var file = await _picker.PickAsync(options);
 #if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
-				Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=after-await selected={file is not null} cancellation={op.Cancellation.IsCancellationRequested} disposed={_disposed}");
+			Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=after-await selected={file is not null} cancellation={cancellation.IsCancellationRequested} disposed={_disposed}");
 #endif
-				op.Cancellation.ThrowIfCancellationRequested();
-				var result = new PickResult(file is null ? null : AddFiles([file]).Single());
+			cancellation.ThrowIfCancellationRequested();
+			var result = new PickResult(file is null ? null : AddFiles([file]).Single());
 #if DEBUG && (IOS || MACCATALYST || ANDROID || WINDOWS)
-				Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=return selected={result.File is not null} cancellation={op.Cancellation.IsCancellationRequested}");
+			Console.WriteLine($"HYBRIDWEBAPP_PICKER phase=return selected={result.File is not null} cancellation={cancellation.IsCancellationRequested}");
 #endif
-				return result;
-			}, op.Cancellation), op.Cancellation);
-		}, interactive: true);
-		registry.Register("filePicker.pickMultiple", json.PickerOptions, json.PickMultipleResult, (args, op) =>
+			return result;
+		}, cancellation);
+	}
+
+	[HybridAction("filePicker.pickMultiple", MainThread = true, Interactive = true)]
+	internal Task<PickMultipleResult> PickMultiple(CancellationToken cancellation, string? pickerTitle = null, Dictionary<string, string[]>? fileTypes = null)
+	{
+		var options = Options(new(pickerTitle, fileTypes));
+		return _context.InteractAsync(async () =>
 		{
-			var options = Options(args);
-			return _dispatcher.RunAsync(() => _context.InteractAsync(async () =>
-			{
-				var files = await _picker.PickMultipleAsync(options);
-				op.Cancellation.ThrowIfCancellationRequested();
-				return new PickMultipleResult(files is null ? [] : AddFiles(files.ToArray()));
-			}, op.Cancellation), op.Cancellation);
-		}, interactive: true);
-		registry.Register("file.openRead", json.FileIdArgs, json.ReaderMetadata, (args, op) => _dispatcher.RunAsync(async () =>
+			var files = await _picker.PickMultipleAsync(options);
+			cancellation.ThrowIfCancellationRequested();
+			return new PickMultipleResult(files is null ? [] : AddFiles(files.ToArray()));
+		}, cancellation);
+	}
+
+	[HybridAction("file.openRead", MainThread = true)]
+	internal async Task<ReaderMetadata> OpenRead(string id, CancellationToken cancellation)
+	{
+		FileResult file;
+		lock (_gate)
 		{
-			FileResult file;
+			if (_disposed || !_files.TryGetValue(id, out file!)) throw InvalidFile();
+			if (_readers.Count >= _limits.Readers) throw new CommandException("resource_limit", "The host's open file-reader budget was reached.");
+		}
+		var stream = await file.OpenReadAsync();
+		try
+		{
+			cancellation.ThrowIfCancellationRequested();
 			lock (_gate)
 			{
-				if (_disposed || !_files.TryGetValue(args.Id, out file!)) throw InvalidFile();
+				if (_disposed || !_files.ContainsKey(id)) throw InvalidFile();
 				if (_readers.Count >= _limits.Readers) throw new CommandException("resource_limit", "The host's open file-reader budget was reached.");
+				var readerId = Guid.NewGuid().ToString("D");
+				_readers.Add(readerId, new Reader(id, stream));
+				return new ReaderMetadata(readerId, stream.CanSeek, _limits.ChunkBytes);
 			}
-			var stream = await file.OpenReadAsync();
-			try
-			{
-				op.Cancellation.ThrowIfCancellationRequested();
-				lock (_gate)
-				{
-					if (_disposed || !_files.ContainsKey(args.Id)) throw InvalidFile();
-					if (_readers.Count >= _limits.Readers) throw new CommandException("resource_limit", "The host's open file-reader budget was reached.");
-					var id = Guid.NewGuid().ToString("D");
-					_readers.Add(id, new Reader(args.Id, stream));
-					return new ReaderMetadata(id, stream.CanSeek, _limits.ChunkBytes);
-				}
-			}
-			catch { stream.Dispose(); throw; }
-		}, op.Cancellation));
-		registry.Register("file.readBytes", json.ReadArgs, json.ReadResult, ReadAsync);
-		registry.Register("file.seek", json.SeekArgs, json.FileAccepted, async (args, op) =>
+		}
+		catch { stream.Dispose(); throw; }
+	}
+
+	[HybridAction("file.seek")]
+	internal async Task<FileAccepted> Seek(string id, long position, CancellationToken cancellation)
+	{
+		if (position < 0 || position > 9007199254740991)
+			throw new CommandException("invalid_arguments", "Use a nonnegative safe-integer byte position.");
+		var reader = GetReader(id);
+		using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellation, reader.Lifetime.Token);
+		await reader.Lock.WaitAsync(linked.Token);
+		try
 		{
-			if (args.Position < 0 || args.Position > 9007199254740991)
-				throw new CommandException("invalid_arguments", "Use a nonnegative safe-integer byte position.");
-			var reader = GetReader(args.Id);
-			using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(op.Cancellation, reader.Lifetime.Token);
-			await reader.Lock.WaitAsync(cancellation.Token);
-			try
-			{
-				if (!reader.Stream.CanSeek) throw new NotSupportedException("This selected native stream does not support seeking.");
-				reader.Stream.Seek(args.Position, SeekOrigin.Begin);
-				return new FileAccepted(true);
-			}
-			finally { reader.Lock.Release(); }
-		});
-		registry.Register("file.closeReader", json.FileIdArgs, json.FileAccepted, (args, _) =>
+			if (!reader.Stream.CanSeek) throw new NotSupportedException("This selected native stream does not support seeking.");
+			reader.Stream.Seek(position, SeekOrigin.Begin);
+			return new FileAccepted(true);
+		}
+		finally { reader.Lock.Release(); }
+	}
+
+	[HybridAction("file.closeReader")]
+	internal FileAccepted CloseReader(string id)
+	{
+		Reader? reader;
+		lock (_gate)
+			if (!_readers.Remove(id, out reader)) throw InvalidFile();
+		reader.Dispose();
+		return new(true);
+	}
+
+	[HybridAction("file.release")]
+	internal FileAccepted Release(string id)
+	{
+		lock (_gate)
 		{
-			Reader? reader;
-			lock (_gate)
-				if (!_readers.Remove(args.Id, out reader)) throw InvalidFile();
-			reader.Dispose();
-			return Task.FromResult(new FileAccepted(true));
-		});
-		registry.Register("file.release", json.FileIdArgs, json.FileAccepted, (args, _) =>
-		{
-			lock (_gate)
+			if (!_files.Remove(id)) throw InvalidFile();
+			foreach (var (readerId, reader) in _readers.Where(pair => pair.Value.FileId == id).ToArray())
 			{
-				if (!_files.Remove(args.Id)) throw InvalidFile();
-				foreach (var (id, reader) in _readers.Where(pair => pair.Value.FileId == args.Id).ToArray())
-				{
-					_readers.Remove(id); reader.Dispose();
-				}
+				_readers.Remove(readerId); reader.Dispose();
 			}
-			return Task.FromResult(new FileAccepted(true));
-		});
+		}
+		return new(true);
 	}
 	static CommandException InvalidFile() => new("invalid_file", "This selected file/reader does not belong to the calling live document.");
 	Reader GetReader(string id)
@@ -157,19 +168,20 @@ public sealed class FilePickerProvider : IHybridCommandProvider, IDisposable
 		lock (_gate)
 			return !_disposed && _readers.TryGetValue(id, out var reader) ? reader : throw InvalidFile();
 	}
-	async Task<ReadResult> ReadAsync(ReadArgs args, Operation op)
+	[HybridAction("file.readBytes")]
+	internal async Task<ReadResult> ReadAsync(string id, int count, CancellationToken cancellation)
 	{
-		if (args.Count <= 0 || args.Count > _limits.ChunkBytes)
+		if (count <= 0 || count > _limits.ChunkBytes)
 			throw new CommandException("invalid_arguments", $"Read count must be between 1 and the {_limits.ChunkBytes}-byte transport chunk budget.");
-		var reader = GetReader(args.Id);
-		using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(op.Cancellation, reader.Lifetime.Token);
-		await reader.Lock.WaitAsync(cancellation.Token);
+		var reader = GetReader(id);
+		using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellation, reader.Lifetime.Token);
+		await reader.Lock.WaitAsync(linked.Token);
 		try
 		{
-			var result = await ReadChunkAsync(reader.Stream, args.Count, cancellation.Token);
+			var result = await ReadChunkAsync(reader.Stream, count, linked.Token);
 			return new(Convert.ToBase64String(result.Bytes), result.Eof);
 		}
-		catch (ObjectDisposedException) when (reader.Lifetime.IsCancellationRequested) { throw new OperationCanceledException(cancellation.Token); }
+		catch (ObjectDisposedException) when (reader.Lifetime.IsCancellationRequested) { throw new OperationCanceledException(linked.Token); }
 		finally { reader.Lock.Release(); }
 	}
 	/// <summary>Reads one bounded raw chunk; no text conversion, whole-file allocation or silent truncation.</summary>

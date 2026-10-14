@@ -49,10 +49,15 @@ packable class library, still under this samples folder while WIP. Its working
 identity `Maui.HybridApp` / `0.1.0-preview.1` is unverified and unpublished.
 `Native` references its assembly, not its source. Product code owns the generic
 session/registry/protocol, AppInfo, DeviceInfo, Clipboard, Preferences,
-Battery, Display, FilePicker and MAUI page/window UI
+Battery, Display, FilePicker, Connectivity, TextToSpeech, external URL launching
+and MAUI page/window UI
 providers, each in one cohesive provider file with related DTOs and its own JSON context.
 They use the existing Essentials interfaces directly, with one small
 main-thread/cancellation boundary; there is no combined platform interface.
+Mac battery capacity is the one native-source correction: the prototype reads
+IOKit on Catalyst because UIKit returned about 1% while macOS reported about
+60%. Other battery platforms still use `IBattery`; JavaScript preserves the
+native result and formats percentages only for presentation.
 The current user-approved WIP boundary keeps UI providers in this same managed
 product. It now depends on Controls.Core and Core transitively, in addition to
 Essentials and minimal standard DI abstractions; it still has no sample/app
@@ -73,6 +78,38 @@ once). It does not enable unimplemented APIs or grant OS permissions. Toolkit
 providers can append `AddHybridProvider<T>()`. Identical product registration is
 idempotent; conflicting policy fails explicitly, and host-supplied interfaces,
 dispatcher and clock are retained.
+
+The action-authoring milestone adds an explicit compile-time opt-in alongside
+manual lifecycle providers: annotate accessible methods with
+`[HybridAction("name")]` and register the action class with
+`AddHybridActions<T>()`. Ordinary parameters come from named JSON arguments or
+a positional array; `[FromServices]` and the existing `[FromKeyedServices]`
+resolve only native DI services. Cancellation and operation context never come
+from web input. Instance actions use the owning window's scope rather than a
+root/global service instance. See [the managed product](Managed/README.md) for
+the supported signatures, diagnostics and package-analyzer details.
+
+For custom web calls, the shared-client core/root `invoke` function avoids a
+client factory at each call site:
+
+```ts
+import { invoke } from '@maui/api'
+
+const result = await invoke('my.action', { title: 'Hello', options: {} })
+// result is unknown until validated; pass a runtime decoder for a typed result.
+await invoke('clipboard.write', ['Hello from a generated action'])
+```
+
+Named feature modules remain the simplest way to use stock capabilities.
+No AI runtime, runtime assembly scanning or application TypeScript generator
+is required. Attributes do not grant OS permissions or bypass host policy.
+
+Connectivity reads actual OS access/profiles and can subscribe to scoped changes;
+it is not an HTTP reachability probe. Text-to-speech exposes actual installed
+locales, native options and operation-specific cancellation. External links use
+the OS launcher with the existing bounded public-HTTPS policy, not a guest,
+custom scheme or shell command. Their separate Svelte pages bring navigation to
+22 unique experiments plus the two guides.
 
 `MainPage` receives the scoped hub and view context and does only view/event glue. `App.CreateWindow`
 is the explicit owning composition root: it creates a service scope, resolves the
@@ -109,7 +146,7 @@ the same public SDK modules as the detailed experiments. These two guides are
 not additions to the 121-family backlog. Search spans collapsible navigation
 groups and temporarily reveals matches without replacing collapse preferences.
 Each group is a keyboard-operable heading disclosure with a chevron, without
-separate Collapse/Expand button copy. There are 19 unique experiments and two guides.
+separate Collapse/Expand button copy. There are 22 unique experiments and two guides.
 Alert, confirmation, prompt and action sheet share one sectioned Native dialogs page.
 Bridge/development family aliases no longer create duplicate navigation entries;
 old fragment bookmarks resolve to the corresponding canonical experiment.
@@ -248,8 +285,8 @@ test app, after explicitly staging/building and relaunching the matching host:
   SDK/invoke target/messages/inspector. Mobile guest creation stays unsupported.
 
 Keep partially accepted FEATURES families unchecked. The current automated
-checks pass 137 managed tests, 39 SDK tests, 59 Svelte/geometry tests and 11
-frontend contracts. The SDK's real 38-file tarball, 14 entrypoints and 292
+checks pass 224 managed tests, 49 SDK tests, 71 Svelte/geometry tests and 11
+frontend contracts. The SDK's real 44-file tarball, 17 entrypoints and 314
 declaration/TSDoc members passed fresh offline-consumer equality checks.
 A refreshed NuGet-only consumer also passed with a fresh package cache and
 reflection serialization disabled. Both selected Android/Mac Debug builds passed
@@ -300,7 +337,7 @@ Physical iOS-device networking is not configured by this loopback-only launcher.
 ## Copying to MAUI Labs
 
 Copy this **whole folder**, not just `Web/`. `JavaScript/` remains one standalone
-npm product (`@maui/api` with fourteen WIP entrypoints), consumed via `file:../JavaScript`;
+npm product (`@maui/api` with seventeen WIP entrypoints), consumed via `file:../JavaScript`;
 it is not compiled as app source. `Managed/` is the standalone WIP C# product;
 `Native/` owns the host, sample providers, platform heads/assets and Debug forwarding/inspection; `Tests/`, staging,
 launchers, documentation and the [121-family backlog](FEATURES.md) travel with it.
@@ -487,17 +524,17 @@ The narrow interface exposes only `Task<string> Invoke(string request)`.
 The framework source generator intercepts this call; there is no reflection
 fallback, assembly scanning or arbitrary-public-member invocation.
 
-Providers explicitly register names, typed handlers and source-generated
-`JsonTypeInfo<TArgs>` / `JsonTypeInfo<TResult>` in `CommandRegistry`.
-To add an application or external Toolkit command, give that provider its own DTO
-files and strict generated JSON context, register it explicitly, and author its
-typed TypeScript helper. Never add feature/plugin DTOs to the protocol context.
-The router needs no new forwarding switch. **No command attribute or client
-generator has been implemented.** TypeScript modules are authored and tested:
+Attributed providers generate names, typed handlers and strict automatic JSON
+metadata for `CommandRegistry`. Add an application/Toolkit action with
+`HybridAction` and explicit `AddHybridActions<T>()` opt-in, without a handwritten
+request DTO or registration function for every scalar method. Manual providers
+remain available for native event/resource lifecycle and specialized metadata.
+Never add feature/plugin DTOs to the protocol context. No application TypeScript
+generator is claimed; TypeScript modules are authored and tested:
 
 ```ts
-import { clipboard } from '@maui/api/essentials/clipboard'
-import { preferences } from '@maui/api/essentials/preferences'
+import { getText, setText } from '@maui/api/essentials/clipboard'
+import { get, set } from '@maui/api/essentials/preferences'
 import { getAppInfo } from '@maui/api/essentials/app-info'
 import { getDeviceInfo } from '@maui/api/essentials/device-info'
 import { sample } from './native/sample.ts'

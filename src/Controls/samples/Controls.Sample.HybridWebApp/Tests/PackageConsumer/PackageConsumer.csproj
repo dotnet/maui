@@ -12,6 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Maui.HybridApp" Version="$(HybridAppPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
-    <Compile Include="../ExternalProvider/Plugin*.cs" Link="Plugin/%(Filename)%(Extension)" />
+    <ProjectReference Include="../ExternalProvider/ExternalProvider.csproj" AdditionalProperties="HybridAppPackageConsumer=true;HybridAppPackageVersion=$(HybridAppPackageVersion)" />
   </ItemGroup>
 </Project>

@@ -134,7 +134,7 @@ try {
 			if ($vite -and $vite.HasExited) { throw "npm run dev exited with code $($vite.ExitCode)." }
 			try {
 				$response = Invoke-WebRequest $url -TimeoutSec 1 -NoProxy
-				$ready = $response.StatusCode -eq 200 -and $response.Content -match '/@vite/client' -and $response.Content -match 'id="html-message"'
+				$ready = $response.StatusCode -eq 200 -and $response.Content -match '/@vite/client' -and $response.Content -match 'id="app"'
 			} catch { $ready = $false }
 			if (!$ready) { Start-Sleep -Milliseconds 200 }
 		} until ($ready -or [DateTime]::UtcNow -ge $deadline)

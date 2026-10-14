@@ -22,6 +22,9 @@ import Battery from './features/Battery.svelte'
 import Display from './features/Display.svelte'
 import NativeMenus from './features/NativeMenus.svelte'
 import Theme from './features/Theme.svelte'
+import Connectivity from './features/Connectivity.svelte'
+import TextToSpeech from './features/TextToSpeech.svelte'
+import Launcher from './features/Launcher.svelte'
 
 export const components: Record<Experiment, Component<FeatureProps>> = {
   identity: Identity,
@@ -45,4 +48,7 @@ export const components: Record<Experiment, Component<FeatureProps>> = {
   display: Display,
   menus: NativeMenus,
   theme: Theme,
+  connectivity: Connectivity,
+  textToSpeech: TextToSpeech,
+  launcher: Launcher,
 }

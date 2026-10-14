@@ -15,8 +15,8 @@ function member(container, name) {
 }
 
 test('emitted declarations document the real root and feature boundaries', () => {
-  assert.deepEqual(entry('root').members.map(item => item.displayName).sort(),
-    ['Bridge', 'Decoder', 'Json', 'NativeClient', 'NativeError', 'Operation', 'Progress', 'Ready', 'connect', 'disconnect'])
+  assert.deepEqual([...new Set(entry('root').members.map(item => item.displayName))].sort(),
+    ['Bridge', 'Decoder', 'Json', 'NativeClient', 'NativeError', 'Operation', 'Progress', 'Ready', 'connect', 'disconnect', 'invoke'])
   const app = entry('essentials/app-info')
   assert.deepEqual(app.members.map(item => item.displayName), ['AppInfo', 'getAppInfo'])
   assert.deepEqual(member(app, 'AppInfo').members.map(item => item.displayName), ['appName', 'build', 'version'])

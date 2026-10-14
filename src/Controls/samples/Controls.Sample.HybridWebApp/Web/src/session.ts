@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store'
 import { NativeClient, NativeError } from '@maui/api/core'
-import type { Operation, Progress } from '@maui/api/core'
+import type { Operation } from '@maui/api/core'
 import { guidePages } from './catalog.ts'
 import type { Feature } from './catalog.ts'
 import type { WindowCapabilities } from '@maui/api/ui/windows'
@@ -31,7 +31,7 @@ export class PlaygroundSession {
   busy = false
   activeLabel = ''
   connecting = false
-  active: Operation<Progress> | undefined
+  active: Operation<unknown> | undefined
   unsubscribeCounter: (() => Promise<void>) | undefined
   unsubscribeProgress: (() => Promise<void>) | undefined
   selected: Feature = guidePages[0]!

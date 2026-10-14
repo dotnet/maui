@@ -82,7 +82,7 @@ test('catalog has all 121 families with 19 P0, and later families never claim im
 })
 
 test('explorer shows implemented experiments with descriptions, without a priority filter', async () => {
-  assert.equal(availableFeatures.length, 19)
+  assert.equal(availableFeatures.length, 22)
   assert.ok(availableFeatures.every(feature => feature.experiment && feature.description))
   assert.ok(availableFeatures.every(feature => features.includes(feature)))
   assert.equal(new Set(availableFeatures.map(feature => feature.experiment)).size, availableFeatures.length)
@@ -95,7 +95,7 @@ test('explorer shows implemented experiments with descriptions, without a priori
 })
 
 test('implemented routes are owned by frontend configuration rather than a C# feature catalog', async () => {
-  assert.equal(navigationPages.length, 21)
+  assert.equal(navigationPages.length, 24)
   assert.ok(!navigationPages.some(page => page.id.startsWith('planned-')))
   const connection = await readFile(new URL('../src/connection.ts', import.meta.url), 'utf8')
   assert.doesNotMatch(connection, /registerWindowRoutes|window\.routes/)

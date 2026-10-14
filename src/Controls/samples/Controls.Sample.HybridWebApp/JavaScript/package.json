@@ -38,6 +38,18 @@
       "types": "./dist/essentials/display.d.ts",
       "import": "./dist/essentials/display.js"
     },
+    "./essentials/connectivity": {
+      "types": "./dist/essentials/connectivity.d.ts",
+      "import": "./dist/essentials/connectivity.js"
+    },
+    "./essentials/text-to-speech": {
+      "types": "./dist/essentials/text-to-speech.d.ts",
+      "import": "./dist/essentials/text-to-speech.js"
+    },
+    "./essentials/launcher": {
+      "types": "./dist/essentials/launcher.d.ts",
+      "import": "./dist/essentials/launcher.js"
+    },
     "./essentials/file-picker": {
       "types": "./dist/essentials/file-picker.d.ts",
       "import": "./dist/essentials/file-picker.js"
@@ -86,6 +98,12 @@
     "dist/essentials/battery.d.ts",
     "dist/essentials/display.js",
     "dist/essentials/display.d.ts",
+    "dist/essentials/connectivity.js",
+    "dist/essentials/connectivity.d.ts",
+    "dist/essentials/text-to-speech.js",
+    "dist/essentials/text-to-speech.d.ts",
+    "dist/essentials/launcher.js",
+    "dist/essentials/launcher.d.ts",
     "dist/essentials/file-picker.js",
     "dist/essentials/file-picker.d.ts",
     "dist/ui/windows.js",

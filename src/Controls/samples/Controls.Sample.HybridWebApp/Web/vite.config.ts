@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [svelte({ configFile: false })],
   resolve: mode === 'test' ? { conditions: ['browser'] } : undefined,
   test: {
-    include: ['tests/playground.test.mjs', 'tests/browser-geometry.test.mjs'],
+    include: ['tests/playground.test.mjs', 'tests/browser-geometry.test.mjs', 'tests/native-services.test.mjs'],
     environment: 'jsdom',
   },
   server: {

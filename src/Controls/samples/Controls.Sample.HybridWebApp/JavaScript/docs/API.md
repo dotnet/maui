@@ -18,6 +18,9 @@ documentation](RELEASING.md#source-reference-and-docfxmicrosoft-learn)).
 | `@maui/api/essentials/preferences` | Services `get`, `set`, `contains`, `remove`, `clear`; `PreferenceValue`, `PreferenceOptions` |
 | `@maui/api/essentials/battery` | Service `getBatteryInfo()`; `BatteryInfo` |
 | `@maui/api/essentials/display` | Service `getDisplayInfo()`; `DisplayInfo` |
+| `@maui/api/essentials/connectivity` | Services `getConnectivity()`, `onConnectivityChanged(listener)`; `ConnectivityInfo` |
+| `@maui/api/essentials/text-to-speech` | Services `getLocales()`, `speak(text, options?)`; `SpeechLocale`, `SpeechOptions`; core `Operation<void>` cancellation |
+| `@maui/api/essentials/launcher` | Service `openUrl(url)`; public HTTPS external native system launch only |
 | `@maui/api/essentials/file-picker` | Services `pickFile(options?)`, `pickMultipleFiles(options?)`; resources `PickedFile`, `FileReader`; picker/chunk types |
 | `@maui/api/ui/windows` | Synchronous local acquisition `currentWindow(): Window`; single resource class `Window`; size/position/options/capability types |
 | `@maui/api/ui/dialogs` | Async services `alert(message?, options?)`, `confirm`, `prompt`, `actionSheet`; native option/result types |
@@ -67,6 +70,63 @@ representation options; JS long values must be safe integers. Optional shared
 containers remain host-namespaced. Clear deletes only tracked owned keys, never
 the whole native store. Preferences are not SecureStorage or a JSON-object store.
 No sample namespace is embedded in the product.
+
+Connectivity reads current native `IConnectivity.NetworkAccess` and
+`ConnectionProfiles`. `onConnectivityChanged` delivers actual native
+`ConnectivityChanged` notifications, never a synthetic initial event. Read
+separately for a fresh snapshot. Multiple JS listeners multiplex one native
+document topic; the last asynchronous unsubscribe detaches this scope's OS
+handler. Page cleanup does not detach another page/scope's subscription.
+Disconnect/reconnect ignores retired callbacks. Even native `Internet` does
+not guarantee internet or endpoint reachability: there is no HTTP probe,
+`navigator.onLine` or browser event fallback.
+
+Speech queries real native `ITextToSpeech.GetLocalesAsync` and preserves its
+locale fields (including empty strings). `speak` starts actual `SpeakAsync` with
+optional native locale, pitch (0–2), volume (0–1) and rate (0.1–2). Omitted
+options retain native defaults. The returned operation uses the existing core
+cancellation protocol and passes the exact native operation token to speech.
+It is not a global stop or a promise that already-played audio is undone.
+Speak only from explicit user actions, await `operation.result`, and cancel
+that operation when its owner disappears. Text fits the host-advertised UTF-16
+budget; speech has the bounded native interactive deadline, not unlimited
+background execution. Unsupported engines, missing voices or native failures
+are explicit, never browser `speechSynthesis`.
+
+`openUrl` calls actual native `ILauncher.OpenAsync(Uri)` after the shared
+`RemoteWebAddress` public HTTPS policy. Credentials, IP literals, local/internal
+names, non-HTTPS schemes, custom ports and oversized/non-ASCII addresses are
+rejected before launch. It exposes no file, shell or custom-scheme authority.
+A native false return is `launch_failed`, not successful site loading. Trigger
+launch only on an explicit user click. Neither an in-app browser nor embedded
+guest nor `window.open` is used. This is an address policy, not a DNS/redirect
+firewall. Platform/permission/unsupported errors remain explicit.
+
+```ts
+import { getConnectivity, onConnectivityChanged } from '@maui/api/essentials/connectivity'
+import { getLocales, speak } from '@maui/api/essentials/text-to-speech'
+import { openUrl } from '@maui/api/essentials/launcher'
+
+const network = await getConnectivity()
+const unsubscribe = await onConnectivityChanged(value => console.log(value.networkAccess))
+await unsubscribe()
+// Speech and launching belong in user-action handlers.
+const locales = await getLocales()
+const speech = await speak('Hello', { locale: locales[0], pitch: 1, volume: 0.5, rate: 1 })
+// Another user action/owner cleanup may call await speech.cancel().
+await speech.result
+await openUrl('https://learn.microsoft.com/dotnet/maui/')
+```
+
+Native host composition opts into `ConnectivityProvider`, `TextToSpeechProvider`
+and `LauncherProvider` independently. Inject `IConnectivity` using
+`Connectivity.Current`, `ITextToSpeech` using `TextToSpeech.Default` and
+`ILauncher` using `Launcher.Default`. Providers register explicit strict
+source-generated DTO metadata and the network topic; they are product
+capabilities, not C# sample recipes. Android hosts need `ACCESS_NETWORK_STATE`
+for Connectivity and the `android.intent.action.TTS_SERVICE` package query
+for Android 11+ speech-engine visibility. No runtime permission or OS side
+effect is requested merely by mounting these playground pages.
 
 Each helper validates its result fields at runtime, including nullability.
 Core numeric validators require finite numbers. Inputs are typed but

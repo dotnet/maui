@@ -26,5 +26,6 @@
 <p class="input-help">Charge is a fraction from zero to one; -1 means no battery is reported.
   State, power source and energy-saver status come directly from the native OS. Simulators
   or unsupported devices may report Unknown or reject the read. No background monitoring.
-  The native value stays unchanged in the result; Apple reports a single-precision float,
-  so JSON may show binary floating-point digits. Only the percentage above is formatted.</p>
+  Mac Catalyst reads the Mac's internal capacity through IOKit rather than UIKit's
+  misleading battery value. iOS can report a single-precision float, so JSON may show
+  binary floating-point digits. Only the percentage above is formatted.</p>

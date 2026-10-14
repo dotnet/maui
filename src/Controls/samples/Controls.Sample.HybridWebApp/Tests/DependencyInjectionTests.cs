@@ -10,6 +10,9 @@ using Maui.HybridApp.Essentials.Preferences;
 using Maui.HybridApp.Essentials.Battery;
 using Maui.HybridApp.Essentials.Display;
 using Maui.HybridApp.Essentials.FilePicker;
+using Maui.HybridApp.Essentials.Connectivity;
+using Maui.HybridApp.Essentials.TextToSpeech;
+using Maui.HybridApp.Essentials.Launcher;
 using Maui.HybridApp.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
@@ -23,6 +26,7 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 public sealed class DependencyInjectionTests
 {
 	static readonly string[] NewCommands = ["battery.info", "display.info", "clipboard.hasText",
+		"connectivity.info", "speech.locales", "speech.speak", "launcher.openUrl",
 		"preferences.get", "preferences.set", "preferences.contains", "preferences.delete", "preferences.clear",
 		"filePicker.pick", "filePicker.pickMultiple",
 		"file.openRead", "file.readBytes", "file.seek", "file.closeReader", "file.release",
@@ -65,6 +69,7 @@ public sealed class DependencyInjectionTests
 		Assert.Same(dispatcher, scope.ServiceProvider.GetRequiredService<NativeDispatcher>());
 		Assert.Same(clock, scope.ServiceProvider.GetRequiredService<TimeProvider>());
 		Assert.Equal(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
+			typeof(ConnectivityProvider), typeof(TextToSpeechProvider), typeof(LauncherProvider),
 			typeof(WindowProvider), typeof(DialogProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(WindowEventsProvider), typeof(ApplicationProvider),
 			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(ClipboardProvider), typeof(PreferencesProvider) },
 			scope.ServiceProvider.GetServices<IHybridCommandProvider>().Select(provider => provider.GetType()));
@@ -73,7 +78,7 @@ public sealed class DependencyInjectionTests
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
 		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
 			"core.subscribe", "core.unsubscribe", "device.info", "preferences.read", "preferences.remove", "preferences.write" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
-		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple" }, ready.InteractiveCommands);
+		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "launcher.openUrl", "speech.speak" }, ready.InteractiveCommands);
 		Assert.Equal("host-policy.", ready.PreferenceNamespace);
 		Assert.Equal(8, ready.MaximumTextLength);
 		Assert.Equal("unknown_command", (await Call(hub, session, "camera.capture")).Error!.Code);
@@ -103,7 +108,7 @@ public sealed class DependencyInjectionTests
 		Assert.Same(hub, scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>());
 		Assert.Same(clipboard, scope.ServiceProvider.GetRequiredService<IClipboard>());
 		Assert.Same(preferences, scope.ServiceProvider.GetRequiredService<IPreferences>());
-		Assert.Equal(14, scope.ServiceProvider.GetServices<IHybridCommandProvider>().Count());
+		Assert.Equal(17, scope.ServiceProvider.GetServices<IHybridCommandProvider>().Count());
 		Assert.NotEqual(typeof(PluginProvider).Assembly, typeof(HybridAppTargetObject).Assembly);
 		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginArgs)));
 		var session = Guid.NewGuid().ToString("D");
