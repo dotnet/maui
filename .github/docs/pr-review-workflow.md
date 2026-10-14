@@ -431,7 +431,11 @@ reducing that scope.
 The recommendation and its reason are visible; coverage, validation,
 finding counts, unplaced findings and the source-only limitation live in one
 closed **Review details** accordion. Evidence blockers appear once in the
-recommendation, not again in the details. One flat-square **Expert review** status
+recommendation. The details list each routed dimension's ID and canonical
+rulebook name, with a check for an independently completed pass or an explicit
+incomplete/missing-result warning. Names come from the trusted rulebook, not
+model-authored labels. Evidence blockers are not repeated in the details.
+One flat-square **Expert review** status
 badge uses the existing review-lane colors, with a verdict emoji and a microscope
 on the details expander. No Gate, test or confidence badge is inferred from source
 review. Scope/status/verdict paragraphs are not repeated.
