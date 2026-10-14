@@ -70,10 +70,7 @@ static class CodeBehindCodeWriter
 			return "";
 		}
 
-		// Fields whose x:Name was renamed/removed (or reused for an incompatible type) since the last
-		// generation: still declared (so the field list only ever grows - see
-		// ReconcileNamedFieldsForHotReload), but intentionally left unassigned and excluded from
-		// MemberNotNull, since no live element backs them anymore.
+		// Preserve prior fields for EnC, but do not assign fields without a compatible live element.
 		var ghostFieldNames = ReconcileNamedFieldsForHotReload(projItem!, compilation, ref namedFields);
 
 		var sb = new StringBuilder();
@@ -151,8 +148,6 @@ static class CodeBehindCodeWriter
 				sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
 				if (ghostFieldNames.Contains(fname))
-					// x:Name was renamed/removed (or reused for a different type); kept so the field list
-					// only ever grows across Hot Reload edits, see ReconcileNamedFieldsForHotReload.
 					sb.AppendLine($"\t\t{faccess} {ftype} {EscapeIdentifier(fname)} = default!;");
 				else
 					sb.AppendLine($"\t\t{faccess} {ftype} {EscapeIdentifier(fname)};");
@@ -434,24 +429,8 @@ static class CodeBehindCodeWriter
 		return string.Join(", ", warnings);
 	}
 
-	/// <summary>
-	/// When XAML Incremental Hot Reload is enabled, merges the just-parsed <paramref name="namedFields"/>
-	/// with every field <see cref="CodeBehindCodeWriter"/> has ever generated for this file during the
-	/// current generator-host session (<see cref="XamlHotReloadState"/>), and persists the grown set back.
-	/// The field list is additive-only: a field already declared in a previous generation is never removed
-	/// or retyped, even if its x:Name is renamed, removed, or reused for an incompatible element type.
-	/// Removing/retyping an already-declared field is exactly what makes Roslyn's EnC engine report
-	/// ENC0020 ("Renaming field requires restarting the application") for an edit that never touched a C#
-	/// field — see https://github.com/dotnet/maui/issues/38993.
-	/// </summary>
-	/// <returns>
-	/// The set of field names that are declared but must NOT be assigned in InitializeComponent (and must
-	/// be excluded from MemberNotNull): fields whose x:Name no longer exists in the current XAML, or whose
-	/// name now resolves to a type that can't be assigned to the field's preserved declared type without a
-	/// cast (see <see cref="IsAssignableToGhostField"/>) — e.g. an unrelated or narrower type. Reusing the
-	/// name on an assignable type (same type, or a type assignable to the preserved one, such as a derived
-	/// control) keeps the field live and assigned as usual.
-	/// </returns>
+	/// <summary>Keeps generated fields additive across Hot Reload edits to avoid EnC field rude edits.</summary>
+	/// <returns>Fields that no longer have a compatible live element and must remain unassigned.</returns>
 	static HashSet<string> ReconcileNamedFieldsForHotReload(ProjectItem projItem, Compilation compilation, ref IEnumerable<(string name, string type, string accessModifier)>? namedFields)
 	{
 		var ghostFieldNames = new HashSet<string>(System.StringComparer.Ordinal);
@@ -474,22 +453,18 @@ static class CodeBehindCodeWriter
 		var merged = new List<(string name, string type, string accessModifier)>();
 		var mergedNames = new HashSet<string>(System.StringComparer.Ordinal);
 
-		// Previously generated fields keep their original declaration (name, type, access), in their
-		// original order, whether or not the current XAML still has a matching x:Name.
+		// Preserve prior declarations and order.
 		foreach (var kvp in accumulated)
 		{
 			merged.Add((kvp.Key, kvp.Value.Type, kvp.Value.AccessModifier));
 			mergedNames.Add(kvp.Key);
 
-			// A field is only safe to keep assigning if the element currently using its x:Name can
-			// actually be stored in it without a cast - e.g. a Label field stays assignable when the
-			// x:Name is reused on a MyLabel : Label element. Anything else (including a type we can't
-			// prove assignable) is ghosted: declared, but left unassigned.
+			// Only assign a preserved field when the current element remains compatible.
 			if (!currentByName.TryGetValue(kvp.Key, out var current) || !IsAssignableToGhostField(current.Type, kvp.Value.Type, compilation))
 				ghostFieldNames.Add(kvp.Key);
 		}
 
-		// Brand-new names (never generated before) are appended — additive only.
+		// Append new fields without changing prior declarations.
 		foreach (var (fname, ftype, faccess) in currentFields)
 		{
 			if (mergedNames.Add(fname))

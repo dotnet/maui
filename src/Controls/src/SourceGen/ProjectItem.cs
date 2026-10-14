@@ -128,18 +128,8 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string HotReloadStateKey
 		=> string.IsNullOrEmpty(AdditionalText.Path) ? (RelativePath ?? string.Empty) : AdditionalText.Path;
 
-	/// <summary>
-	/// Identity of the <c>IIncrementalGenerator</c> driver instance that produced this <see cref="ProjectItem"/>.
-	/// Minted once per driver in <see cref="XamlGenerator.Initialize"/> (Roslyn invokes <c>Initialize</c> exactly
-	/// once per driver - once per independent build, but only once for the lifetime of a driver kept alive and
-	/// reused across a live Hot Reload edit sequence) and set here on every <see cref="ProjectItem"/> that driver
-	/// computes. Passed to <see cref="XamlHotReloadState.GetAccumulatedCodeBehindFields"/> /
-	/// <see cref="XamlHotReloadState.SetAccumulatedCodeBehindFields"/> so that a long-lived build-server process
-	/// (e.g. VBCSCompiler) hosting multiple concurrent/overlapping driver instances - one per project, or an
-	/// unrelated build kicked off while another project has a live Hot Reload session in progress - can never
-	/// have one driver's accumulated field history invalidated, or inherited, by another.
-	/// </summary>
-	public object? HotReloadSessionToken { get; init; }
+	/// <summary>Identifies the generator driver that owns this item's Hot Reload field history.</summary>
+	public HotReloadSessionToken? HotReloadSessionToken { get; init; }
 
 	public string? TargetFramework
 		=> Options.GetValueOrNull("build_property.targetFramework");

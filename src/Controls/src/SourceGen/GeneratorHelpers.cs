@@ -81,7 +81,7 @@ static class GeneratorHelpers
 		return conversion.Exists && conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference);
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, object hotReloadSessionToken)
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, HotReloadSessionToken hotReloadSessionToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
 			return null;

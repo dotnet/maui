@@ -8,6 +8,10 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+internal sealed class HotReloadSessionToken
+{
+}
+
 /// <summary>
 /// In-process static cache that tracks the last-generated XAML text (and its parsed tree / node IDs)
 /// per file, enabling the incremental hot reload pipeline to compute a diff between successive XAML
@@ -47,7 +51,7 @@ internal static class XamlHotReloadState
 
 	// Keeps additive code-behind field histories isolated per live generator driver. A weak key
 	// releases the complete history when Roslyn releases that driver's incremental pipeline.
-	static ConditionalWeakTable<object, Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), Dictionary<string, (string Type, string AccessModifier)>>> _accumulatedCodeBehindFieldsBySession = new();
+	static ConditionalWeakTable<HotReloadSessionToken, Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), Dictionary<string, (string Type, string AccessModifier)>>> _accumulatedCodeBehindFieldsBySession = new();
 
 	internal sealed class CacheEntry
 	{
@@ -80,13 +84,7 @@ internal static class XamlHotReloadState
 		/// remains stable across edits because metadata updates cannot add or remove instance fields.
 		/// </summary>
 		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
-		/// <summary>
-		/// True once <see cref="Update"/> has run for this entry at least once (i.e. a real IC/UC
-		/// generation has happened for this file). An entry can exist in <see cref="_cache"/> without
-		/// this being set. <see cref="TryGetPrevious"/> must not treat such an entry as a real previous
-		/// generation, or the UC diff logic will try to diff against an empty/absent baseline and
-		/// spuriously fail.
-		/// </summary>
+		/// <summary>Whether this entry contains output from a completed generation.</summary>
 		public bool HasGeneratedOutput { get; set; }
 	}
 
@@ -168,7 +166,7 @@ internal static class XamlHotReloadState
 	/// this file in the given generator-driver session, or <see langword="null"/> if none have been
 	/// recorded yet.
 	/// </summary>
-	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, object? sessionToken)
+	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		if (sessionToken is null)
 			return null;
@@ -190,7 +188,7 @@ internal static class XamlHotReloadState
 	/// Callers are expected to pass the union of the previously accumulated fields and the fields parsed
 	/// from the current XAML.
 	/// </summary>
-	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields, object? sessionToken)
+	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields, HotReloadSessionToken? sessionToken)
 	{
 		if (sessionToken is null)
 			return;

@@ -22,16 +22,8 @@ public class XamlGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
-		// Roslyn calls Initialize exactly once per generator-driver instance: once per independent
-		// build, but only once (not per edit) for a driver kept alive across a live Hot Reload
-		// sequence. Minting this token here - and stamping every ProjectItem this driver computes
-		// with it (see ComputeProjectItem) - lets XamlHotReloadState tell "this build is continuing
-		// a live edit on THIS driver" apart from "this is a different driver" (an unrelated, fresh
-		// build, or another project/TFM) that happens to share a long-lived build-server process
-		// (e.g. VBCSCompiler) and its static cache with this one. Unlike a single process-wide
-		// token, this is scoped to this driver instance alone, so it can never be invalidated by,
-		// or leak into, another concurrently-running driver.
-		var hotReloadSessionToken = new object();
+		// The pipeline closure keeps this token alive for exactly the lifetime of its generator driver.
+		var hotReloadSessionToken = new HotReloadSessionToken();
 #if DEBUG
 		// if (!System.Diagnostics.Debugger.IsAttached)
 		// {
