@@ -38,6 +38,18 @@ function New-ExpertReviewComment {
     if ($MergeReady -and $Status -ne 'complete') {
         throw 'Only a complete expert review can recommend merging.'
     }
+    $statusLabel = switch ($Status) {
+        'complete' { 'Complete' }
+        'incomplete' { 'Incomplete' }
+        'stale' { 'Stale snapshot' }
+        'failed' { 'Not published' }
+        'closed' { 'PR closed' }
+    }
+    $color = if ($MergeReady) { '1a7f37' } elseif ($Status -eq 'complete' -or $Status -eq 'failed') {
+        'd1242f'
+    } else { 'bf8700' }
+    $badge = [Uri]::EscapeDataString($statusLabel)
+    $icon = if ($MergeReady) { '&#x2705;' } elseif ($Status -eq 'complete') { '&#x1F6D1;' } else { '&#x26A0;&#xFE0F;' }
     $reason = if ($DecisionReason) { $DecisionReason } elseif ($MergeReady) {
         'No actionable findings.'
     } else {
@@ -49,7 +61,7 @@ function New-ExpertReviewComment {
             'closed' { 'PR is closed.' }
         }
     }
-    $decision = "**Merge recommendation: $(if ($MergeReady) { 'YES' } else { 'NO' }).** " +
+    $decision = "$icon **Merge recommendation: $(if ($MergeReady) { 'YES' } else { 'NO' }).** " +
         [Net.WebUtility]::HtmlEncode($reason)
 
     $body = @"
@@ -57,10 +69,14 @@ function New-ExpertReviewComment {
 
 @$Author | $scope | [``$shortSha``]($commitUrl)
 
+<p align="left">
+  <img alt="Expert review: $statusLabel" src="https://img.shields.io/badge/Expert%20review-$badge-$($color)?labelColor=30363d&amp;style=flat-square">
+</p>
+
 $decision
 
 <details>
-<summary>Review details</summary>
+<summary>&#x1F52C; Review details</summary>
 
 $Summary
 

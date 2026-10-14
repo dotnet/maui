@@ -429,8 +429,11 @@ reducing that scope.
 The recommendation and its reason are visible; coverage, validation,
 finding counts, unplaced findings and the source-only limitation live in one
 closed **Review details** accordion. Evidence blockers appear once in the
-recommendation, not again in the details. There are no badges or repeated
-scope/status/verdict paragraphs. Already published inline findings are counted separately,
+recommendation, not again in the details. One flat-square **Expert review** status
+badge uses the existing review-lane colors, with a verdict emoji and a microscope
+on the details expander. No Gate, test or confidence badge is inferred from source
+review. Scope/status/verdict paragraphs are not repeated.
+Already published inline findings are counted separately,
 not reported as a clean review. There are no visible workflow or producer-run
 links, including in stale/failure notices; hidden run/result markers and
 publication receipts retain provenance and deduplication.
