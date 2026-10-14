@@ -71,7 +71,7 @@ public class Issue39371 : ContentPage
 
 	void OnScrollToNextClicked(object sender, EventArgs e)
 	{
-		_carouselView.Position = _carouselView.Position == 0 ? 1 : 0;
+		_carouselView.ScrollTo(1, position: ScrollToPosition.Center, animate: false);
 	}
 
 	void OnPositionChanged(object sender, PositionChangedEventArgs e)

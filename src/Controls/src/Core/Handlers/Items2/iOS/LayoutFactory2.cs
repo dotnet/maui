@@ -438,9 +438,10 @@ internal static class LayoutFactory2
 				// Calculate page index accounting for ItemSpacing
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
 
-				var effectiveItemSize = (isHorizontal
+				var containerSize = isHorizontal
 					? env.Container.ContentSize.Width
-					: env.Container.ContentSize.Height) - sectionMargin * 2 + itemSpacing;
+					: env.Container.ContentSize.Height;
+				var effectiveItemSize = containerSize - sectionMargin * 2 + itemSpacing;
 
 				if (effectiveItemSize <= 0)
 				{
@@ -448,9 +449,6 @@ internal static class LayoutFactory2
 				}
 
 				var pageOffset = isHorizontal ? offset.X : offset.Y;
-				var pageSize = isHorizontal
-					? env.Container.ContentSize.Width
-					: env.Container.ContentSize.Height;
 				double page = (pageOffset + sectionMargin) / effectiveItemSize;
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
