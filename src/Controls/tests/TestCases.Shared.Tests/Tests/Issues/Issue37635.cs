@@ -15,7 +15,7 @@ public class Issue37635 : _IssuesUITest
     public override string Issue => "BackButtonBehavior.Command retains discarded behaviors";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void BackButtonBehaviorCommandDoesNotRetainDiscardedBehavior()
     {
         App.WaitForElement("RunTestButton");

@@ -14,7 +14,7 @@ public class Issue38619 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void OriginalPageRendersAfterWindowPageIsRestored()
 	{
 		App.WaitForElement("OriginalPageRenderedLabel");
