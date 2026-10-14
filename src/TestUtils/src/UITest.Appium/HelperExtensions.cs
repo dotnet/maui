@@ -3060,28 +3060,10 @@ namespace UITest.Appium
 		/// Clears text from the search handler element for the shell.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the application.</param>
+		/// <exception cref="InvalidOperationException">The search handler element cannot be found.</exception>
 		public static void ClearTextInShellSearchHandler(this IApp app)
 		{
-			if (app is AppiumWindowsApp)
-			{
-				app.WaitForElement("TextBox");
-				app.ClearText("TextBox");
-			}
-			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
-			{
-				IQuery query;
-				if (app is AppiumAndroidApp)
-				{
-					query = AppiumQuery.ByXPath("//android.widget.EditText");
-				}
-				else
-				{
-					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
-				}
-
-				app.WaitForElement(query);
-				app.ClearText(query);
-			}
+			app.GetShellSearchHandler().Clear();
 		}
 
 		/// <summary>
