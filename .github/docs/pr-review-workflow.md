@@ -424,8 +424,9 @@ The summary is distinct from AzDO's `AI Summary` and does not hide or replace
 it.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
-review. One metadata line identifies the author, **Full PR (all commits)** and
-linked head SHA. The SHA identifies the frozen snapshot and inline anchors,
+review. A blockquoted author ping announces new AI review results and links the
+head SHA, matching the other review lanes. A blue **Scope: Full PR (all commits)**
+badge identifies the review range. The SHA identifies the frozen snapshot and inline anchors,
 not a single-commit review scope. Prior feedback deduplicates comments without
 reducing that scope.
 The recommendation and its reason are visible; coverage, validation,

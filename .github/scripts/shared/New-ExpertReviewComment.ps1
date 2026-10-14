@@ -34,7 +34,12 @@ function New-ExpertReviewComment {
 
     $shortSha = $HeadSha.Substring(0, 7)
     $commitUrl = [Net.WebUtility]::HtmlEncode("$ServerUrl/$Repository/commit/$HeadSha")
-    $scope = if ($Status -in @('complete', 'incomplete')) { 'Full PR (all commits)' } else { 'Review status' }
+    $notice = if ($Status -in @('complete', 'incomplete')) {
+        'new AI review results are available based on commit'
+    } else { 'expert-review status is available for commit' }
+    $scopeBadge = if ($Status -in @('complete', 'incomplete')) {
+        '<img alt="Scope: Full PR (all commits)" src="https://img.shields.io/badge/Scope-Full%20PR%20%28all%20commits%29-1f6feb?labelColor=30363d&amp;style=flat-square">'
+    } else { '' }
     if ($MergeReady -and $Status -ne 'complete') {
         throw 'Only a complete expert review can recommend merging.'
     }
@@ -67,9 +72,10 @@ function New-ExpertReviewComment {
     $body = @"
 ## Expert Review
 
-@$Author | $scope | [``$shortSha``]($commitUrl)
+> @$Author &#x2014; $notice [``$shortSha``]($commitUrl).
 
 <p align="left">
+  $scopeBadge
   <img alt="Expert review: $statusLabel" src="https://img.shields.io/badge/Expert%20review-$badge-$($color)?labelColor=30363d&amp;style=flat-square">
 </p>
 
