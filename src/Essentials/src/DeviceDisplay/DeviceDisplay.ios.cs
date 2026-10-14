@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Foundation;
 using UIKit;
@@ -166,15 +165,11 @@ namespace Microsoft.Maui.Devices
 			observer = notificationCenter.AddObserver(
 				UIDevice.OrientationDidChangeNotification,
 				OnMainDisplayInfoChanged);
-			UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 #endif
 		}
 
 		protected override void StopScreenMetricsListeners()
 		{
-#if !MACCATALYST
-			UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
-#endif
 			observer?.Dispose();
 			observer = null;
 		}
@@ -196,44 +191,38 @@ namespace Microsoft.Maui.Devices
 				UIInterfaceOrientation.LandscapeRight => DisplayRotation.Rotation90,
 				_ => DisplayRotation.Unknown,
 			};
-
+#if !MACCATALYST
 		static UIInterfaceOrientation GetInterfaceOrientation()
 		{
-#if !MACCATALYST
+
 			var windowScene = GetWindowScene();
 
 			if (windowScene is not null)
 			{
-#pragma warning disable CA1422 // UIWindowScene.InterfaceOrientation is available across the supported iOS versions.
 				return windowScene.InterfaceOrientation;
-#pragma warning restore CA1422
 			}
 
 			return UIInterfaceOrientation.Unknown;
-#else
-#pragma warning disable CA1416 // UIApplication.StatusBarOrientation is required on Mac Catalyst.
-#pragma warning disable CA1422 // UIApplication.StatusBarOrientation is required on Mac Catalyst.
-			return UIApplication.SharedApplication.StatusBarOrientation;
-#pragma warning restore CA1422
-#pragma warning restore CA1416
-#endif
 		}
 
-#if !MACCATALYST
 		static UIWindowScene? GetWindowScene()
 		{
-			try
-			{
-				using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-				var windowScenes = scenes.ToArray().OfType<UIWindowScene>().ToArray();
+			using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+			UIWindowScene? inactiveWindowScene = null;
 
-				return windowScenes.FirstOrDefault(scene => scene.ActivationState == UISceneActivationState.ForegroundActive)
-					?? windowScenes.FirstOrDefault(scene => scene.ActivationState == UISceneActivationState.ForegroundInactive);
-			}
-			catch (InvalidCastException)
+			foreach (var scene in scenes)
 			{
-				return null;
+				if (scene is not UIWindowScene windowScene)
+					continue;
+
+				if (windowScene.ActivationState == UISceneActivationState.ForegroundActive)
+					return windowScene;
+
+				if (windowScene.ActivationState == UISceneActivationState.ForegroundInactive)
+					inactiveWindowScene ??= windowScene;
 			}
+
+			return inactiveWindowScene;
 		}
 #endif
 	}
