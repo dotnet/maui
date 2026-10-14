@@ -1,3 +1,4 @@
+#if !MACCATALYST
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
 #if __IOS__
@@ -136,3 +137,4 @@ namespace Microsoft.Maui.Devices
 		}
 	}
 }
+#endif
