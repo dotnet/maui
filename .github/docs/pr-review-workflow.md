@@ -420,13 +420,23 @@ Publication uses the repository-scoped Actions token and appears as
 
 The summary is distinct from AzDO's `AI Summary` and does not hide or replace
 it. It uses the same compact author/commit header, Scope/Commit badges, and
-closed **Expert Analysis** and **Follow-up** accordions as the other review
+closed **Expert Analysis** accordion as the other review
 reports. Status and new-finding counts stay visible; coverage, validation,
 unplaced findings, evidence gaps, and the source-only limitation are inside
 Expert Analysis. Already published inline findings are counted separately,
 not reported as a clean review. There are no visible workflow or producer-run
 links, including in stale/failure notices; hidden run/result markers and
 publication receipts retain provenance and deduplication.
+The visible **Merge recommendation** is YES only for a complete expert review
+with no outstanding findings, including findings suppressed as already posted.
+Otherwise it is NO, with the reason stated. YES is source-review advice, not a
+substitute for required CI checks or human approval. There is no Follow-up section.
+After verifying an actual bot publication, the trusted notification job minimizes
+older expert summaries and status notices using GitHub's native **OUTDATED**
+classifier. The newest result stays visible, including overlapping runs that
+finish out of order. Inline findings, human comments, and other review lanes
+are never minimized by expert cleanup. Failed publication leaves older results
+visible; cleanup failures are surfaced rather than silently ignored.
 **Complete** includes a concise summary even with zero new findings;
 **incomplete** discloses missing workers, collection gaps, later feedback or
 interrupted validation, and never claims a clean review. A **stale snapshot** posts only a
