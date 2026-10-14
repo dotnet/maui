@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls
 
 		PropertyChangedEventHandler _propertyChangedEventHandler;
 
+		~IndicatorStackLayout() => _propertyChangedProxy.Unsubscribe();
+
 		public IndicatorStackLayout(IndicatorView indicatorView)
 		{
 			_indicatorView = indicatorView;
