@@ -410,55 +410,30 @@ the exact schema and persisted worker completion, reauthorizes the requester,
 and rechecks the open PR and frozen head/base. It stages up to 15 ordinary
 findings plus the canonical committed-credential and archive/path-escape
 exceptions (up to 17 total), preserving the dimension-31 severity cap.
-Credential values must never appear in findings. Exact RIGHT-side anchors
-become inline comments; legitimate file-level/unplaceable findings remain in
-the review body rather than disappearing or moving to an unrelated line.
-All comments are buffered into **one COMMENT review**, pinned to the reviewed
-commit. Prior feedback prevents duplicate inline findings. Every authorized
-request publishes its own summary, even when it finds nothing new or repeats
-an earlier result; run markers prevent duplicate publication within that run.
+Credential values must never appear in findings. Only exact RIGHT-side anchors
+become inline comments. Findings without a valid anchor stay in the publication
+artifact with an explicit Actions warning; they are not moved to an unrelated
+line or published in a top-level comment.
+New comments are buffered into **one COMMENT review with an empty body**,
+pinned to the reviewed commit. Prior feedback prevents duplicate inline
+findings. Zero new findings, including already-posted findings, produce a
+silent `noop`: no public empty review, summary or status comment.
 Publication uses the repository-scoped Actions token and appears as
 `github-actions[bot]`; it does not require a MauiBot publishing credential.
 
-The summary is distinct from AzDO's `AI Summary` and does not hide or replace
-it.
+There is no expert summary, merge recommendation, author ping, badge,
+dimension table, follow-up or automation-status comment. Failures, incomplete
+coverage and context limitations stay in Actions logs and artifacts. This lane
+does not edit, collapse or replace existing summary comments from earlier runs
+or other review lanes.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
-review. A blockquoted author ping announces new AI review results and links the
-head SHA, matching the other review lanes. A blue **Scope: Full PR (all commits)**
-badge identifies the review range. The SHA identifies the frozen snapshot and inline anchors,
+review. The pinned SHA identifies the frozen snapshot and inline anchors,
 not a single-commit review scope. Prior feedback deduplicates comments without
 reducing that scope.
-The recommendation and its reason are visible; coverage, validation,
-finding counts, unplaced findings and the source-only limitation live in one
-closed **Review details** accordion. Evidence blockers appear in plain language
-in the details rather than a long list of internal errors in the recommendation.
-The details list each routed dimension's ID and canonical
-rulebook name, with a check for an independently completed pass or an explicit
-incomplete/missing-result warning. Names come from the trusted rulebook, not
-model-authored labels.
-One flat-square **Expert review** status
-badge uses the existing review-lane colors, with a verdict emoji and a microscope
-on the details expander. No Gate, test or confidence badge is inferred from source
-review. Scope/status/verdict paragraphs are not repeated.
-Already published inline findings are counted separately,
-not reported as a clean review. There are no visible workflow or producer-run
-links, including in stale/failure notices; hidden run/result markers and
-publication receipts retain provenance and deduplication.
-The visible **Merge recommendation** is YES only for a complete expert review
-with no outstanding findings, including findings suppressed as already posted.
-It is NO when actionable findings exist. The verdict concerns the frozen code,
-not gh-aw capability or publication health. Historical collection limits and
-discussion arriving after the frozen briefing are disclosed separately in
-**Context limitations (not code findings)** and do not change YES into NO.
-Unavailable runtime execution never constitutes a code finding.
-An unfinished source assessment, stale snapshot, publication failure or closed
-PR produces **Review status**, without a merge-recommendation field. No
-UNAVAILABLE recommendation or fabricated clean verdict is published.
-YES is source-review advice, not a
-substitute for required CI checks or human approval. There is no Follow-up section.
-The visible reason states the actionable finding count or a brief incomplete/
-unavailable explanation; a clean complete review simply says **No actionable findings**.
+Inline comments retain the canonical severity/dimension finding body and a
+hidden run marker for provenance. They describe concrete problems at that line,
+not workflow capability or merge readiness. No new top-level output is allowed.
 GitHub evidence reads retry only recognized network failures or HTTP 502/503/504,
 at most three attempts with bounded backoff. Writes and authorization/rate-limit
 failures are not retried. Errors retain the CLI exit code and HTTP status or a
@@ -474,35 +449,23 @@ Workers assess test adequacy from source and can still report concrete missing
 coverage. Built-in read/search tools avoid requiring interactive shell approval
 for source and JSON validation.
 Discussion comparison uses authors, full text, review states, timestamps and
-inline anchors. A meaningful change is a contextual caveat: the recommendation
-still assesses the frozen code and the discussion available at review start.
+inline anchors. A meaningful change is recorded in the publication artifact;
+findings still assess the frozen code and discussion available at review start.
 Head/base freshness remains a hard publication boundary; stale code never
-receives a new recommendation. Incidental metadata does not add a caveat.
+receives new inline findings. Incidental metadata does not add a caveat.
 For strict pinned history scans, an unavailable local historical merge object is
 checked against the exact base SHA using GitHub's comparison API. A divergent
 other-branch fix is excluded only after ancestry is established; failed or unknown
 comparisons remain explicit context limitations, never a CLEAN history result.
-After verifying an actual bot publication, the trusted notification job minimizes
-older expert summaries and status notices using GitHub's native **OUTDATED**
-classifier. The newest result stays visible, including overlapping runs that
-finish out of order. Inline findings, human comments, and other review lanes
-are never minimized by expert cleanup. Failed publication leaves older results
-visible; cleanup failures are surfaced rather than silently ignored.
-**Complete** includes a concise summary even with zero new findings;
-**incomplete** discloses missing workers or interrupted source validation and
-does not produce a code recommendation. Collection gaps and later discussion
-are separate context limitations on a completed source assessment.
-A **stale snapshot** posts only a
-scoped expandable notification, not stale inline findings. Detection or
-validation failures block unsafe review output, not status comments. A trusted
-notification job runs after every authorized attempt, including failures,
-cancellations and skipped downstream jobs. If no result from that run is found
-on the PR, it posts an automation status comment, not a code verdict or an
-unrelated issue. A PR closing during the run does not silently suppress that
-notice. Source review does not establish test success or merge approval.
+**Complete** and **incomplete** remain execution bookkeeping, not public reports.
+Validated inline findings can be published while missing workers remain
+explicit in the receipt/logs. Stale snapshots produce a silent no-op; closed
+PRs, detection or schema failures stop publication and surface in Actions.
+Source review does not establish test success or merge approval.
 
-The command stays visible until a completed review is independently found on
-the correct PR, bot identity and pinned commit. Incomplete/stale/failed runs
+The command stays visible until all expected inline comments are independently
+found on the correct PR, bot identity and pinned commit, or a completed no-op
+receipt confirms no new comments were required. Incomplete/stale/failed runs
 leave it visible. The completion job then rechecks the command and requester
 before minimizing only that command.
 

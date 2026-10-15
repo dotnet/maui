@@ -61,8 +61,8 @@ Unavailable historical cross-references, device/build/test execution and
 discussion arriving after the frozen briefing are context limitations, not
 code findings and not reasons to mark a completed source pass incomplete.
 Do not claim an unavailable history check was CLEAN. Finish source/candidate
-validation against the frozen evidence; the publisher discloses context limits
-separately from its binary source-review recommendation.
+validation against the frozen evidence; context limits remain in execution
+artifacts, not in public summary or recommendation comments.
 Use built-in read/search tools to validate the JSON files; do not depend on
 Python, jq or a shell command requiring interactive approval. If a read-only
 shell command is denied, use the permitted built-in source tools without
@@ -72,5 +72,7 @@ any actual credential value.
 
 Submit exactly one structured COMMENT safe output after the files have been
 written and read back. The trusted publisher chooses the PR, pinned commit,
-inline anchors, summary, and command completion. Never publish directly or
+inline anchors and command completion. The envelope is internal: publication
+is inline-only, with no review summary, recommendation, author ping or status
+comment. No new findings means no public output. Never publish directly or
 claim that a source review proves test success.

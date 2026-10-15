@@ -138,7 +138,7 @@ jobs:
     steps:
       - run: echo "Frozen expert-review publication target is ready."
   conclusion:
-    # This lane has its own authorized, receipt-aware notifier.
+    # Inline-only lane: failures belong in Actions, never in PR summary comments.
     if: 'false'
   complete_request:
     needs: [pre_activation, activation, safe_outputs]
@@ -164,7 +164,7 @@ jobs:
         with:
           name: expert-publication-${{ github.run_id }}
           path: ${{ runner.temp }}/expert-publication
-      - name: Verify native review receipt before hiding the command
+      - name: Verify inline receipts or a completed no-op before hiding the command
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
@@ -173,35 +173,10 @@ jobs:
             -Stage Complete -PRNumber "$PR_NUMBER" -Repository "$GITHUB_REPOSITORY" \
             -ContextDirectory "$RUNNER_TEMP/expert-context" \
             -ResultDirectory "$RUNNER_TEMP/expert-publication"
-  notify_failure:
-    needs: [pre_activation, activation, pat_pool, publication_context, agent, detection, safe_outputs, complete_request]
-    if: >-
-      always() &&
-      github.run_attempt == 1 &&
-      needs.pre_activation.outputs.review_authorized == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v7.0.1
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - name: Ensure an authorized result or automation failure is visible on the PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
-        run: |
-          pwsh -NoProfile -File .github/scripts/Review-Expert.ps1 \
-            -Stage Notify -PRNumber "$PR_NUMBER" -Repository "$GITHUB_REPOSITORY"
-
 safe-outputs:
   runs-on: ubuntu-latest
   needs: [publication_context]
   github-token: ${{ secrets.GITHUB_TOKEN }}
-  allowed-domains: [img.shields.io]
   staged: false
   data: true
   threat-detection:
@@ -232,12 +207,6 @@ safe-outputs:
     allowed-events: [COMMENT]
     target: ${{ needs.publication_context.outputs.pr_number }}
     commit-id: ${{ needs.publication_context.outputs.head_sha }}
-    footer: false
-  add-comment:
-    max: 1
-    target: ${{ needs.publication_context.outputs.pr_number }}
-    issues: false
-    discussions: false
     footer: false
   noop:
     report-as-issue: false
@@ -271,7 +240,7 @@ safe-outputs:
       with:
         name: expert-results-${{ github.run_id }}
         path: ${{ runner.temp }}/expert-results
-    - name: Validate results, reauthorize, check freshness, and render native review
+    - name: Validate results, reauthorize, check freshness, and prepare inline findings only
       shell: pwsh
       env:
         GH_TOKEN: ${{ github.token }}
@@ -475,16 +444,21 @@ discussion added after the frozen briefing must not set `validation_complete`
 false. The publisher reports these limits separately; a finished source
 assessment receives YES/NO based on actionable findings, never on gh-aw limits.
 
-## Stage one result, never publish directly
+## Stage inline findings, never publish directly
 
 Use `safeoutputs` CLI discovery for `submit_pull_request_review`, then emit
 exactly one call with `event: "COMMENT"`, a placeholder body, and structured
 `data: {"findings": <exact findings array>, "review_state": <exact state>}`.
 Do not choose a target, commit, repo, marker, or summary. Do not call inline
 comment, add-comment, noop, label, approve, request-changes, or direct GitHub
-publication tools. The fresh trusted publication job validates persisted
-files, rechecks authorization and freshness, and renders one consolidated
-review, including a completed zero-findings summary.
+publication tools. This structured call is an internal transport envelope,
+not a public summary. The fresh trusted publication job validates persisted
+files and rechecks authorization and freshness. It publishes only actionable
+inline comments and submits their COMMENT review with an empty body.
+Zero new inline findings produce a silent noop, never an empty public review.
+No summary, recommendation, badge, author ping or status comment is published.
+Findings without a valid inline anchor and execution failures remain in Actions
+logs/artifacts, never in a top-level comment.
 
 ## agent: `maui-expert-dimension`
 ---
