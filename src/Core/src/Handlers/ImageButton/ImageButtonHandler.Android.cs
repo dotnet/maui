@@ -87,7 +87,14 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
 			if (sender is ShapeableImageView platformView && VirtualView is not null)
+			{
 				platformView.UpdateBackground(VirtualView);
+
+				if (e.Right - e.Left != e.OldRight - e.OldLeft || e.Bottom - e.Top != e.OldBottom - e.OldTop)
+				{
+					UpdateValue(nameof(IImageButton.CornerRadius));
+				}
+			}
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)
