@@ -9,7 +9,7 @@ test('native geometry and app theme events multiplex listeners and detach only a
   const host = mock(request => request.command === 'window.info'
     ? { id: 'own', windowLease: 'private', initialLocation: 'index.html', title: 'Native', x: 0, y: 0, width: 800, height: 600, canResize: true,
       canPosition: true, canOpenWindows: true, canObservePosition: true, canCenter: true }
-    : request.command === 'core.connect' ? { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    : request.command === 'core.connect' ? { commands: [], maximumTextLength: 4096 }
     : request.command === 'application.theme' ? { effective: 'dark', preference: 'unspecified' }
     : { accepted: true })
   configureBridge(host.bridge)
@@ -53,7 +53,7 @@ test('native geometry and app theme events multiplex listeners and detach only a
 test('remount waits for the retiring native unsubscribe and ignores late callbacks', async () => {
   let finish
   const host = mock(request => {
-    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    if (request.command === 'core.connect') return { commands: [], maximumTextLength: 4096 }
     if (request.command === 'core.unsubscribe') return new Promise(resolve => { finish = resolve })
     return { accepted: true }
   })

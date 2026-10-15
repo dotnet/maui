@@ -64,11 +64,11 @@
 </select>
 {#if locales}<p id="speech-locale-count" class="input-help">{locales.length} native locales reported. An empty list can mean no installed voices.</p>{/if}
 <label for="speech-pitch">Pitch · 0–2</label>
-<input id="speech-pitch" type="number" min="0" max="2" step="0.1" bind:value={pitch} />
+<input id="speech-pitch" type="number" step="any" bind:value={pitch} />
 <label for="speech-volume">Volume · 0–1</label>
-<input id="speech-volume" type="number" min="0" max="1" step="0.1" bind:value={volume} />
+<input id="speech-volume" type="number" step="any" bind:value={volume} />
 <label for="speech-rate">Rate · 0.1–2 (1 is normal)</label>
-<input id="speech-rate" type="number" min="0.1" max="2" step="0.1" bind:value={rate} />
+<input id="speech-rate" type="number" step="any" bind:value={rate} />
 <div class="actions">
   <Action {session} action="speech-speak" title="Speak through native engine" primary onclick={say} />
   <Action {session} action="cancel" title="Cancel this speech" disabled={!current} onclick={cancel} />
@@ -78,6 +78,7 @@
   This page cancels only its own speech operation, never another feature. Leaving the page
   requests that same cancellation; disconnect cancels document-owned work. There is no global stop API,
   browser speech synthesis or invented voice list.</p>
-<p class="input-help">Text must fit the host-advertised UTF-16 budget (normally 4096 characters).
+<p class="input-help">Text, locale fields and options pass directly to native ITextToSpeech; Essentials
+  validates speech values. Only JSON/schema and transport limits apply in the SDK.
   Native speech has a bounded interactive deadline. Platform/engine failures are explicit;
   cancellation is cooperative and cannot undo audio already played.</p>

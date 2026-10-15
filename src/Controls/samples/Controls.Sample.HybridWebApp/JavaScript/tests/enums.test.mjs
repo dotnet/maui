@@ -12,7 +12,7 @@ import { Menu } from '@maui/api/ui/menus'
 import { mock } from './bridge.mjs'
 
 afterEach(() => resetBridge())
-const ready = { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+const ready = { commands: [], maximumTextLength: 4096 }
 const battery = { chargeLevel: 0.5, state: 'charging', powerSource: 'ac', energySaverStatus: 'off' }
 const display = { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 }
 const network = { networkAccess: 'internet', connectionProfiles: ['wiFi'] }
@@ -51,7 +51,7 @@ test('all native snapshot enum fields reject unknown, numeric and legacy-cased v
 })
 
 test('JavaScript bypass inputs fail before bridge invocation and native remains authoritative', async () => {
-  const host = mock(request => request.command === 'core.connect' ? ready : { cancelled: true, text: null })
+  const host = mock(request => request.command === 'core.connect' ? ready : null)
   configureBridge(host.bridge)
   for (const call of [
     () => app.setTheme('system'),
@@ -60,15 +60,17 @@ test('JavaScript bypass inputs fail before bridge invocation and native remains 
     () => dialogs.confirm('message', { flowDirection: 1 }),
     () => dialogs.actionSheet({ flowDirection: 'LeftToRight' }),
     () => dialogs.prompt('message', { keyboard: 'invalid' }),
-    () => dialogs.prompt('message', { keyboard: 'custom', keyboardFlags: [1] }),
-    () => dialogs.prompt('message', { keyboard: 'custom', keyboardFlags: ['all', 'spellcheck'] }),
-    () => dialogs.prompt('message', { keyboard: 'custom', keyboardFlags: ['none', 'capitalizeNone'] }),
-    () => dialogs.prompt('message', { keyboard: 'custom', keyboardFlags: ['spellcheck', 'spellcheck'] }),
+    ...[{}, [], 0, { name: 'invalid' }, { name: 'Text' }, { name: 'text', flags: [] },
+      { flags: null }, { flags: [1] }, { flags: ['all', 'spellcheck'] }, { flags: ['none', 'capitalizeNone'] },
+      { flags: ['spellcheck', 'spellcheck'] }, { flags: ['Spellcheck'] }, { flags: ['unknown'] },
+      { name: 'text', extra: true }].map(keyboard => () => dialogs.prompt('message', { keyboard })),
     () => preferences.set('value', 1, { numberType: 'invalid' }),
   ]) await assert.rejects(call, error => error.code === 'invalid_arguments')
   assert.equal(host.requests.length, 0)
-  for (const keyboardFlags of [[], ['none'], ['all'], ['spellcheck', 'suggestions']])
-    assert.deepEqual(await dialogs.prompt('message', { keyboard: 'custom', keyboardFlags }), { cancelled: true, text: null })
+  for (const flags of [[], ['none'], ['all'], ['spellcheck', 'suggestions']])
+    assert.equal(await dialogs.prompt('message', { keyboard: { flags } }), null)
+  for (const name of ['default', 'plain', 'chat', 'text', 'email', 'numeric', 'telephone', 'url', 'date', 'time', 'password'])
+    assert.equal(await dialogs.prompt('message', { keyboard: { name } }), null)
   for (const kind of [1, 'invalid']) assert.throws(() => Menu.create([
     { id: 'root', text: 'Root', kind: 'submenu', items: [{ id: 'item', text: 'Item', kind }] },
   ]), error => error.code === 'invalid_arguments')

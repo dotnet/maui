@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using HybridApp.ExternalProvider;
 using Maui.Controls.Sample.HybridWebApp.Playground;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Media;
 
 namespace Maui.Controls.Sample.HybridWebApp.Tests;
 
@@ -35,7 +36,7 @@ static class TestComposition
 		services.AddSingleton<PluginActionState>();
 		services.AddKeyedSingleton("action-key", new PluginActionState());
 		services.AddSingleton(new SampleStartupIdentity("test-startup", DateTimeOffset.UtcNow));
-		services.AddHybridApp(options ?? new HybridAppOptions("test."));
+		services.AddHybridApp(options ?? new HybridAppOptions());
 		services.AddPlayground("test-startup", DateTimeOffset.UtcNow);
 		services.AddExternalProviderActions();
 		return services;
@@ -50,13 +51,14 @@ static class TestComposition
 		internal Task<Ack> Interactive() => Completion.Task;
 	}
 
-	internal static CommandRegistry CreateRegistry(params object[] plugins) => CreateRegistryWithOptions(new("test."), plugins);
+	internal static CommandRegistry CreateRegistry(params object[] plugins) => CreateRegistryWithOptions(new(), plugins);
 
 	internal static CommandRegistry CreateRegistryWithOptions(HybridAppOptions options, params object[] plugins)
 	{
 		var services = Services(options);
 		foreach (var plugin in plugins)
 			if (plugin is IClipboard clipboard) services.AddSingleton<IClipboard>(clipboard);
+			else if (plugin is ITextToSpeech speech) services.AddSingleton<ITextToSpeech>(speech);
 			else if (HybridActionAssemblies.Configuration(services).PerViewOnly.Contains(plugin.GetType()))
 				services.AddScoped(plugin.GetType(), _ => plugin);
 			else services.AddSingleton(plugin.GetType(), plugin);

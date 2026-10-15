@@ -8,7 +8,7 @@ import { mock } from './bridge.mjs'
 
 const ready = { commands: ['connectivity.info', 'speech.locales', 'speech.speak', 'launcher.openUrl'],
   interactiveCommands: ['speech.speak', 'launcher.openUrl'], interactiveTimeoutMilliseconds: 300000,
-  preferenceNamespace: 'native.', maximumTextLength: 64 }
+  maximumTextLength: 64 }
 const locale = { id: 'native', language: 'en-US', country: '', name: 'Native voice' }
 afterEach(() => resetBridge())
 
@@ -82,7 +82,7 @@ test('speech uses real locales/options and operation-specific cancellation throu
   let finish
   const host = mock(request => {
     if (request.command === 'core.connect') return ready
-    if (request.command === 'speech.locales') return { locales: [locale] }
+    if (request.command === 'speech.locales') return [locale]
     if (request.command === 'speech.speak') return new Promise(resolve => { finish = resolve })
     if (request.command === 'connectivity.info') return { networkAccess: 'local', connectionProfiles: [] }
     return { accepted: true }
@@ -112,23 +112,58 @@ test('speech uses real locales/options and operation-specific cancellation throu
 
 test('speech completion and default options are not a fake global stop API', async () => {
   const host = mock(request => request.command === 'core.connect' ? ready :
-    request.command === 'speech.locales' ? { locales: [] } : { accepted: true })
+    request.command === 'speech.locales' ? [] : null)
   configureBridge(host.bridge)
   assert.deepEqual(await getLocales(), [])
   const operation = await speak('Hello')
   assert.equal(await operation.result, undefined)
-  assert.deepEqual(host.requests.find(request => request.command === 'speech.speak').args, { text: 'Hello', options: {} })
+  assert.deepEqual(host.requests.find(request => request.command === 'speech.speak').args, { text: 'Hello', options: null })
   assert.deepEqual(Object.keys(await import('@maui/api/essentials/text-to-speech')).sort(), ['getLocales', 'speak'])
 })
 
-test('invalid speech input and host text budget reject before native speech', async () => {
+test('only invalid speech JSON contracts reject before native speech', async () => {
   const host = mock(request => request.command === 'core.connect' ? ready : { accepted: true })
   configureBridge(host.bridge)
-  for (const [text, options] of [['', {}], ['  ', {}], ['a'.repeat(65), {}], ['Hello', { pitch: -1 }],
-    ['Hello', { volume: 2 }], ['Hello', { rate: 0 }], ['Hello', { pitch: NaN }], ['Hello', { rate: Infinity }],
-    ['Hello', { stop: true }], ['Hello', { locale: { ...locale, id: null } }]])
+  for (const [text, options] of [[null, {}], [42, {}], ['Hello', { pitch: NaN }], ['Hello', { rate: Infinity }],
+    ['Hello', { volume: 1e300 }], ['Hello', { pitch: '1' }], ['Hello', []], ['Hello', { stop: true }],
+    ['Hello', { locale: { ...locale, id: 42 } }], ['Hello', { locale: { ...locale, extra: true } }]])
     await assert.rejects(() => speak(text, options), error => error.code === 'invalid_arguments')
   assert.equal(host.requests.filter(request => request.command === 'speech.speak').length, 0)
+})
+
+test('speech passes empty whitespace long text and out-of-range representable options without policy validation', async () => {
+  const host = mock(request => request.command === 'core.connect' ? ready : null)
+  configureBridge(host.bridge)
+  const options = { pitch: -5, volume: 3, rate: 0, locale: { id: ' voice ', language: '', country: '', name: '語'.repeat(1024) } }
+  for (const text of ['', ' \t\n', '文'.repeat(8192)]) {
+    assert.equal(await (await speak(text, options)).result, undefined)
+    assert.deepEqual(host.requests.at(-1).args, { text, options })
+  }
+  const nullable = { pitch: null, volume: null, rate: null, locale: null }
+  await (await speak('', nullable)).result
+  assert.deepEqual(host.requests.at(-1).args, { text: '', options: nullable })
+  await (await speak('', null)).result
+  assert.deepEqual(host.requests.at(-1).args, { text: '', options: null })
+  const nullableLocale = { locale: { id: null, language: 'en', country: null, name: null } }
+  await (await speak('', nullableLocale)).result
+  assert.deepEqual(host.requests.at(-1).args, { text: '', options: nullableLocale })
+})
+
+test('native speech validation errors reach the caller instead of being intercepted by the SDK', async () => {
+  const host = mock(request => request.command === 'core.connect' ? ready : null)
+  const invoke = host.bridge.InvokeDotNet
+  host.bridge.InvokeDotNet = async (...args) => {
+    const envelope = JSON.parse(await invoke(...args))
+    if (host.requests.at(-1).command === 'speech.speak') {
+      envelope.status = 'error'
+      envelope.error = { code: 'native_error', message: 'Destination rejected speech.' }
+    }
+    return JSON.stringify(envelope)
+  }
+  configureBridge(host.bridge)
+  const speech = await speak('', { pitch: -100 })
+  await assert.rejects(speech.result, error => error.code === 'native_error')
+  assert.deepEqual(host.requests.at(-1).args, { text: '', options: { pitch: -100 } })
 })
 
 test('external URL calls the native launcher only and rejects unsafe addresses before invoking', async () => {
@@ -152,7 +187,7 @@ test('malformed native feature outputs are explicit errors and launch refusal is
   for (const [value, call] of [
     [{ networkAccess: null, connectionProfiles: [] }, getConnectivity],
     [{ networkAccess: 'internet', connectionProfiles: 'wiFi' }, getConnectivity],
-    [{ locales: null }, getLocales], [{ locales: [{ ...locale, name: null }] }, getLocales],
+    [null, getLocales], [[{ ...locale, name: null }], getLocales], [{ locales: [locale] }, getLocales],
     [{ accepted: 'yes' }, async () => (await speak('Hello')).result],
     [{ accepted: false }, async () => (await speak('Hello')).result],
     [{ accepted: 'yes' }, () => openUrl('https://dot.net/maui')],

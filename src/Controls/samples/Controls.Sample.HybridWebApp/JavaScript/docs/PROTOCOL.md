@@ -141,7 +141,7 @@ registration decision; this example topic is not part of the reference host.
 
 | Name | Args | Result | Requirement |
 | --- | --- | --- | --- |
-| `core.connect` | `{}` | Commands, namespace, text limit; optional interactiveCommands / interactiveTimeoutMilliseconds / initialLocation | Session establishment/retirement |
+| `core.connect` | `{}` | Commands, clipboard/share text limit; optional interactiveCommands / interactiveTimeoutMilliseconds / initialLocation | Session establishment/retirement |
 | `core.cancel` | `{ requestId: string }` | `{ accepted: boolean }` | Cooperative request cancellation |
 | `core.subscribe`, `core.unsubscribe` | `{ topic: string }` | `{ accepted: boolean }` | Explicit allowed topic list |
 | `app.info` | `{}` | `{ appName: string, version: string, build: string }` | Independently registered IAppInfo provider |
@@ -149,19 +149,19 @@ registration decision; this example topic is not part of the reference host.
 | `clipboard.read` | `{}` | `string \| null` | Curated native `IClipboard.GetTextAsync` |
 | `clipboard.write` | `{ text: string \| null }` | `null` (void completion) | Curated native `IClipboard.SetTextAsync`, host text budget |
 | `clipboard.hasText` | `{}` | `boolean` | Curated native `IClipboard.HasText` accessor |
-| `preferences.get`, `preferences.set` | key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Host-namespaced primitive settings |
-| `preferences.contains`, `preferences.remove`, `preferences.clear` | key/container or container only | `{ accepted: boolean }` | Clear removes only tracked namespace-owned keys |
+| `preferences.get`, `preferences.set` | actual key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Closed scalar adapter over native generic IPreferences; keys/containers unchanged |
+| `preferences.contains`, `preferences.remove`, `preferences.clear` | actual key/container or container only | `{ accepted: boolean }` | Clear calls native container-wide Clear, including native-existing settings |
 | `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | IBattery on every platform; the Catalyst IOKit correction now belongs to Essentials itself |
 | `connectivity.info` | `{}` | networkAccess/connectionProfiles | Actual IConnectivity snapshot, not an endpoint reachability test |
-| `speech.locales` | `{}` | `{ locales }` | Actual installed native speech locales |
-| `speech.speak` | text + optional native locale/pitch/volume/rate | `{ accepted }` | User-triggered ITextToSpeech; interactive deadline and operation-specific cancellation |
+| `speech.locales` | `{}` | `Locale[]` | Curated annotated native ITextToSpeech.GetLocalesAsync, no result envelope |
+| `speech.speak` | text + optional nullable native SpeechOptions | `null` (void completion) | Curated ITextToSpeech.SpeakAsync; destination validates values; interactive deadline and operation-specific cancellation |
 | `launcher.openUrl` | `{ url }` | `{ accepted }` | Actual OS external launch; bounded public HTTPS policy, not arbitrary schemes/paths |
 | `display.info` | `{}` | width/height/density/orientation/rotation/refreshRate | Direct IDeviceDisplay snapshot |
 | `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | nullable file metadata/`{ files }` resources | Actual OS selection, interactive policy; cancellation null/empty |
 | `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
 | `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | raw binary EOF byte + bytes, or JSON acceptance | ≤65536 file bytes per read; real partial/EOF/seek/close |
-| `dialogs.alert`, `dialogs.confirm` | title/message + required native labels/flowDirection | `null` / `boolean` | Curated calling Page methods, labels and interactive ownership policy |
-| `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet options | Prompt cancellation/text DTO / native `string \| null` selection | Keyboard adapter / curated Page method |
+| `dialogs.alert`, `dialogs.confirm` | title/message + required native labels/flowDirection | `null` / `boolean` | Curated calling Page methods and interactive ownership |
+| `dialogs.prompt`, `dialogs.actionSheet` | Native prompt/action-sheet parameters; prompt keyboard is null, `{ name }` or `{ flags }` | Native `string \| null` text / selection | Curated Page methods; declared strict Keyboard value converter |
 | `window.flowDirection` | `{}` | Native flow-direction enum name | Curated contextual Core `IWindow` getter |
 | `geolocation.location` | `{ request: GeolocationRequest }` | Actual native `Location \| null` | Curated native interface, permission/timeout/owning interaction policy |
 | `share.stage` | `{fileName, contentType}` plus raw binary bytes | Small UTF-8 JSON resource metadata as bytes | Bounded app-owned staging, no native paths |
@@ -193,8 +193,10 @@ do not register bridge services themselves. Ordinary parameters bind directly
 from named objects or positional arrays, not per-operation Args wrappers.
 Class `[HybridTopic]` declarations expose progress/notification topics, while
 paired `[HybridEvent(topic, Start/Stop)]` methods bind first/last subscription lifetimes.
-The host, not either SDK, selects its preferences
-namespace and the existing Essentials interfaces. The reference host also registers application-only
+The host selects the existing Essentials interfaces. Speech and preferences
+retain JSON/schema/finite representation checks and transport limits, not business
+text/range/key/locale quotas. Preference keys and shared containers intentionally
+share actual native storage. The reference host also registers application-only
 `sample.*` commands and `service.changed` / `operation.progress` topics; those
 helpers remain in the playground and are **not** npm SDK features.
 

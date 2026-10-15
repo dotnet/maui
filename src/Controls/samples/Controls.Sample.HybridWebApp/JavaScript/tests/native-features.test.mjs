@@ -3,14 +3,14 @@ import assert from 'node:assert/strict'
 import { configureBridge, resetBridge, connect } from '@maui/api/core'
 import { currentWindow } from '@maui/api/ui/windows'
 import * as app from '@maui/api/application'
-import { prompt } from '@maui/api/ui/dialogs'
+import { alert, confirm, prompt, actionSheet } from '@maui/api/ui/dialogs'
 import { createBrowserView, supportsBrowserView } from '@maui/api/ui/remote-webview'
 import { pickFile } from '@maui/api/essentials/file-picker'
 import { getBatteryInfo } from '@maui/api/essentials/battery'
 import { getDisplayInfo } from '@maui/api/essentials/display'
 import { mock } from './bridge.mjs'
 afterEach(() => resetBridge())
-const ready = { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+const ready = { commands: [], maximumTextLength: 4096 }
 const base = { id: 'main', windowLease: 'private', initialLocation: 'index.html', title: 'Native',
   x: 80, y: 90, width: 800, height: 600, canResize: true, canPosition: true, canOpenWindows: true }
 
@@ -123,13 +123,12 @@ test('browser navigation listeners share one native source and detach after the 
 test('direct picker/dialog calls and coherent device readouts use one hidden connection', async () => {
   const host = mock(request => request.command === 'core.connect' ? ready
     : request.command === 'filePicker.pick' ? null
-    : request.command === 'dialogs.prompt' ? { cancelled: true, text: null }
+    : request.command === 'dialogs.prompt' ? null
     : request.command === 'battery.info' ? { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' }
     : { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 })
   configureBridge(host.bridge)
   assert.equal(await pickFile(), null)
-  assert.deepEqual(await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: 'email', maxLength: 10000 }),
-    { cancelled: true, text: null })
+  assert.equal(await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: { name: 'email' }, maxLength: 10000 }), null)
   assert.equal((await getBatteryInfo()).chargeLevel, -1)
   assert.equal((await getDisplayInfo()).density, 3)
   assert.equal(host.requests.filter(request => request.command === 'core.connect').length, 1)
@@ -145,12 +144,38 @@ test('interactive waits outlive 23 seconds but remain bounded and document dispo
   const pending = prompt('Message')
   await Promise.resolve()
   context.mock.timers.tick(24000)
-  finish({ cancelled: false, text: 'After 23 seconds' })
-  assert.equal((await pending).text, 'After 23 seconds')
+  finish('After 23 seconds')
+  assert.equal(await pending, 'After 23 seconds')
   const second = prompt('Message')
   await Promise.resolve()
   const cancelled = assert.rejects(() => second, error => error.code === 'cancelled')
   client.dispose(); await cancelled
-  finish({ cancelled: true, text: null })
+  finish(null)
   context.mock.timers.reset()
+})
+
+test('dialog services defer labels, lengths and button counts to Page and preserve native scalar results', async () => {
+  let result = null
+  const host = mock(request => request.command === 'core.connect' ? ready :
+    request.command === 'dialogs.confirm' ? true : request.command === 'dialogs.alert' ? null : result)
+  configureBridge(host.bridge)
+  await alert('message', { cancel: '' })
+  assert.equal(await confirm('message', { accept: '', cancel: ' ' }), true)
+  for (const maxLength of [-2147483648, -2, 0, 2])
+    for (const output of [null, '', '你好 👋 — text longer than maxLength']) {
+      result = output
+      const options = { accept: '', cancel: ' ', maxLength, initialValue: 'longer initial text', keyboard: null }
+      assert.equal(await prompt('message', options), output)
+      assert.deepEqual(host.requests.at(-1).args, { title: '', message: 'message', ...options })
+    }
+  result = ''
+  const buttons = Array.from({ length: 65 }, () => '')
+  assert.equal(await actionSheet({ cancel: '', destruction: ' ', buttons }), '')
+  assert.deepEqual(host.requests.at(-1).args.buttons, buttons)
+  await prompt('defaults')
+  assert.deepEqual(host.requests.at(-1).args, { title: '', message: 'defaults' })
+  for (const output of [{ cancelled: true, text: null }, 1, false, []]) {
+    result = output
+    await assert.rejects(() => prompt('message'), error => error.code === 'invalid_response')
+  }
 })

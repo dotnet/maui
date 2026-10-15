@@ -9,7 +9,7 @@ import { getCurrentFlowDirection } from '@maui/api/ui/windows'
 import { mock } from './bridge.mjs'
 afterEach(() => resetBridge())
 const ready = { commands: ['dialogs.alert', 'dialogs.confirm', 'dialogs.actionSheet', 'share.request', 'geolocation.location'],
-  preferenceNamespace: 'test.', maximumTextLength: 4096,
+  maximumTextLength: 4096,
   interactiveCommands: ['dialogs.alert', 'dialogs.confirm', 'dialogs.actionSheet', 'share.request', 'geolocation.location'],
   interactiveTimeoutMilliseconds: 300000 }
 

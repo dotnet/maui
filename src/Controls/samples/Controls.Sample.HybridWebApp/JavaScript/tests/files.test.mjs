@@ -8,7 +8,7 @@ afterEach(() => resetBridge())
 test('single selection returns direct nullable metadata and rejects obsolete wrapper envelopes', async () => {
   let result = null
   const host = mock(request => request.command === 'core.connect'
-    ? { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 } : result)
+    ? { commands: [], maximumTextLength: 4096 } : result)
   configureBridge(host.bridge)
   assert.equal(await pickFile(), null)
   result = { id: 'selected', name: 'real.txt', contentType: 'text/plain' }
@@ -24,7 +24,7 @@ function hostFor(bytes, { partial = 3, seekable = true } = {}) {
   const positions = new Map()
   const host = mock(request => {
     switch (request.command) {
-      case 'core.connect': return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+      case 'core.connect': return { commands: [], maximumTextLength: 4096 }
       case 'filePicker.pick': return { id: 'file', name: 'selected.bin', contentType: 'application/octet-stream' }
       case 'filePicker.pickMultiple': return { files: [{ id: 'file', name: 'selected.bin', contentType: 'application/octet-stream' }] }
       case 'file.openRead': {

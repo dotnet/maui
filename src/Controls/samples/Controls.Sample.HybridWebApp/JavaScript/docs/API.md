@@ -101,9 +101,11 @@ No browser clipboard fallback exists. Preferences use
 `get(key, defaultValue, options?)`, `set(key, primitive, options?)`, `contains`,
 `remove` and `clear`. String/bool/number/Date are supported with native numeric
 representation options; JS long values must be safe integers. Optional shared
-containers remain host-namespaced. Clear deletes only tracked owned keys, never
-the whole native store. Preferences are not SecureStorage or a JSON-object store.
-No sample namespace is embedded in the product.
+containers, keys and strings pass unchanged to `IPreferences`. There are no
+SDK prefixes, arbitrary key restrictions, string quotas or ownership indexes.
+Clear calls native `Clear(sharedName)` and deletes the entire selected container,
+including settings created outside JavaScript. Preferences intentionally share
+native storage; they are not SecureStorage or a JSON-object store.
 
 ### Native sharing and location
 
@@ -146,13 +148,17 @@ not guarantee internet or endpoint reachability: there is no HTTP probe,
 
 Speech queries real native `ITextToSpeech.GetLocalesAsync` and preserves its
 locale fields (including empty strings). `speak` starts actual `SpeakAsync` with
-optional native locale, pitch (0–2), volume (0–1) and rate (0.1–2). Omitted
-options retain native defaults. The returned operation uses the existing core
+optional native locale, pitch, volume and rate. The annotated interface is
+explicitly rooted with `HybridExport`; there is no TextToSpeech provider wrapper,
+locale DTO or accepted-result envelope. The generated async binder serializes
+`Task<IEnumerable<Locale>>` as a JSON array and `Task` completion as null.
+Omitted/null options retain native defaults; nullable option members remain null.
+Text, locale fields and representable options pass unchanged; Essentials, not
+the SDK, validates their semantics. The returned operation uses the existing core
 cancellation protocol and passes the exact native operation token to speech.
 It is not a global stop or a promise that already-played audio is undone.
 Speak only from explicit user actions, await `operation.result`, and cancel
-that operation when its owner disappears. Text fits the host-advertised UTF-16
-budget; speech has the bounded native interactive deadline, not unlimited
+that operation when its owner disappears. Speech has the bounded native interactive deadline, not unlimited
 background execution. Unsupported engines, missing voices or native failures
 are explicit, never browser `speechSynthesis`.
 
@@ -181,11 +187,11 @@ await speech.result
 await openUrl('https://learn.microsoft.com/dotnet/maui/')
 ```
 
-Native host composition opts into `ConnectivityProvider`, `TextToSpeechProvider`
-and `LauncherProvider` independently. Inject `IConnectivity` using
+Native host composition uses `ConnectivityProvider`, the curated `ITextToSpeech`
+root and `LauncherProvider`. Inject `IConnectivity` using
 `Connectivity.Current`, `ITextToSpeech` using `TextToSpeech.Default` and
-`ILauncher` using `Launcher.Default`. Providers register explicit strict
-source-generated DTO metadata and the network topic; they are product
+`ILauncher` using `Launcher.Default`. Generated bindings use explicit strict
+typed JSON metadata and the network topic; they are product
 capabilities, not C# sample recipes. Android hosts need `ACCESS_NETWORK_STATE`
 for Connectivity and the `android.intent.action.TTS_SERVICE` package query
 for Android 11+ speech-engine visibility. No runtime permission or OS side
@@ -195,9 +201,9 @@ Each helper validates its result fields at runtime, including nullability.
 Core numeric validators require finite numbers. Inputs are typed but
 **native validation is authoritative**:
 TypeScript is not a security boundary and JavaScript callers can supply invalid
-values. The reference provider bounds text to 4096 UTF-16 code units and keys
-to 1–48 ASCII letters/digits/underscore/hyphen. Other hosts must define their
-limits consistently with their registration/contracts.
+values. The reference clipboard/share text budget remains 4096 UTF-16 code units.
+Speech and preference values have no SDK business limits; JSON/schema,
+finite native numeric representation and bounded transport remain enforced.
 
 `currentWindow()` is synchronous and performs no IPC. Its single `Window` handle
 offers async `id()`, `title()/setTitle`, `size()/setSize`, `position()/setPosition`,
@@ -231,13 +237,17 @@ global CoreGraphics display bounds and the owning scene's effective system frame
 Mobile centering and Mac native position observation explicitly reject.
 
 Dialogs use the calling native page for alerts, confirmations, prompts and action sheets;
-false confirmation or `{ cancelled: true, text: null }` prompt is normal user
+false confirmation or a `null` prompt is normal user
 dismissal. Both dialog and file-picker commands require interactive handshake
 metadata for their bounded five-minute native budget.
 
 Options expose native labels/title/placeholder/initial value/maxLength/keyboard
 and flow direction; unsupported custom dialog kinds/layouts are not fabricated.
 These services return promises, not synchronous browser globals.
+Prompt returns the native `string | null` directly, with no result envelope.
+Dialog labels, maxLength, initial text and action-button counts pass to Page
+unchanged; the SDK does not impose additional semantic limits. Native Page and
+platform implementations own validation.
 
 `pickFile`/`pickMultipleFiles` select with actual MAUI pickerTitle/platform
 fileTypes. Selection returns metadata and a PickedFile resource, not contents.
@@ -256,10 +266,18 @@ Closed native enums have constrained TypeScript unions and validated exact camel
 wire names: `charging`, `notCharging`, `ac`, `off`, `internet`, `wiFi`,
 `portrait`, `rotation0`. Unknown, numeric and legacy PascalCase values reject.
 DevicePlatform remains an extensible string, not a closed enum.
-Dialogs expose `FlowDirection`, `KeyboardKind` and `KeyboardFlag`; custom native
-flags are arrays. `[]` means none, while `['none']`/`['all']` must stand alone.
-The native action decoder independently rejects invalid/duplicate flags even if
-callers bypass JavaScript validation. PreferenceKind is a closed native storage
+Dialogs expose `FlowDirection`, `Keyboard`, `KeyboardName` and `KeyboardFlag`.
+MAUI Keyboard is a class, not a native enum. Its strict JSON value has exactly
+one property: `{ name: 'email' }` selects that actual singleton, while
+`{ flags: ['spellcheck', 'suggestions'] }` calls `Keyboard.Create` with the actual
+native KeyboardFlags. All known singletons are supported: default, plain, chat,
+text, email, numeric, telephone, url, date, time and password. Null/omission leaves
+the native default. Flag arrays use exact camelCase names: `[]` means none, while
+`['none']`/`['all']` must stand alone. Unknown/duplicate names, mixed name/flags,
+extra properties and other representations reject as serialization errors.
+The declared strict STJ context and typed Keyboard converter independently
+enforce this representation when callers bypass JavaScript.
+PreferenceKind is a closed native storage
 discriminator; public preference get/set values remain ordinary JS primitives.
 
 `createBrowserView()` creates a hidden ordinary desktop guest, then accepts measured
@@ -343,7 +361,7 @@ The shared root `connect()`/`loadNativeBridge()` remains MAUI-specific. See the
   `available` reports transport presence and non-disposed state, **not** provider
   availability, handshake success, OS authorization or an unexpired lease.
 - `connect(): Promise<Ready>`: invokes `core.connect`; returns commands,
-  preferenceNamespace and maximumTextLength. Metadata is descriptive; the
+  maximumTextLength (clipboard/share, not speech/preferences). Metadata is descriptive; the
   reference command list includes disabled registered names too.
 - `invoke(command, args, decode): Promise<T>`: validates response version and
   identities, then the supplied `Decoder<T>`. Use JSON-compatible args.
@@ -410,7 +428,7 @@ is not authentication or a sandbox. XSS in trusted web content can reach exposed
 commands. Do not forward bridge routes to remote servers, register arbitrary
 reflection-based invocations or use untrusted HTML as a command client.
 
-Providers must validate args, enforce bounded inputs/namespace ownership,
+Providers must enforce strict JSON contracts, transport limits and applicable resource ownership,
 explicitly request any necessary OS permissions and dispatch OS APIs on the
 appropriate thread. Preferences are not a place for credentials; expose a
 separate reviewed secure-storage provider if needed. The package contains no

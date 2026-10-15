@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Interop;
 using Debug = System.Diagnostics.Debug;
 
 namespace Microsoft.Maui.Media
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Media
 		/// Gets a list of languages supported by text-to-speech.
 		/// </summary>
 		/// <returns>A collection of <see cref="Locale"/> objects with languages supported by text-to-speech on this device.</returns>
+		[HybridAction("speech.locales", MainThread = true)]
 		Task<IEnumerable<Locale>> GetLocalesAsync();
 
 		/// <summary>
@@ -25,6 +27,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">The options to use for speaking.</param>
 		/// <param name="cancelToken">Optional cancellation token to stop speaking.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		[HybridAction("speech.speak", MainThread = true, Interactive = true)]
 		Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default);
 	}
 

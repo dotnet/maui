@@ -23,10 +23,18 @@ public sealed class EnumPluginTests
 	[InlineData("dialogs.alert", """{"title":"t","message":"m","flowDirection":1}""")]
 	[InlineData("dialogs.confirm", """{"title":"t","message":"m","flowDirection":"unknown"}""")]
 	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":0}""")]
-	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":"custom","keyboardFlags":3}""")]
-	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":"custom","keyboardFlags":["all","spellcheck"]}""")]
-	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":"custom","keyboardFlags":["none","spellcheck"]}""")]
-	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":"custom","keyboardFlags":["spellcheck","spellcheck"]}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":3}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":null}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":[1]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":["unknown"]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":["all","spellcheck"]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":["none","spellcheck"]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":["spellcheck","spellcheck"]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":["Spellcheck"]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"name":"unknown"}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"name":"text","flags":[]}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"name":"text","name":"email"}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":[],"flags":[]}}""")]
 	[InlineData("application.setTheme", """{"theme":"system"}""")]
 	[InlineData("application.setTheme", """{"theme":1}""")]
 	[InlineData("remote.control", """{"id":"guest","action":"unknown"}""")]
@@ -39,7 +47,7 @@ public sealed class EnumPluginTests
 		using var notifications = new NativeNotifications();
 		using var menus = new MenuProvider(context, new FakeDeviceInfo(), notifications);
 		using var theme = new ApplicationProvider(new HybridWindowHost(), Inline, notifications);
-		var registry = TestComposition.CreateRegistry(new DialogProvider(context), theme, menus,
+		var registry = TestComposition.CreateRegistry(theme, menus,
 			new RemoteWebViewProvider(context, new FakeDeviceInfo(), notifications));
 		using var json = JsonDocument.Parse(args);
 		var error = await Assert.ThrowsAsync<CommandException>(() => registry.DispatchAsync(command, json.RootElement,
@@ -55,7 +63,7 @@ public sealed class EnumPluginTests
 		host.Bind(application, _ => throw new InvalidOperationException("No windows should be opened."));
 		using var notifications = new NativeNotifications();
 		using var plugin = new ApplicationProvider(host, Inline, notifications);
-		using var hub = TestComposition.CreateHub([plugin], new HybridAppOptions("test."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([plugin], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		var events = new List<JsonElement>();
 		hub.NativeEventReceived += value => events.Add(value.Data);
@@ -82,7 +90,7 @@ public sealed class EnumPluginTests
 		page.Content = layout;
 		using var notifications = new NativeNotifications();
 		var plugin = new RemoteWebViewProvider(context, new Desktop(), notifications);
-		using var hub = TestComposition.CreateHub([plugin], new HybridAppOptions("test."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([plugin], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		var events = new List<JsonElement>();
 		hub.NativeEventReceived += value => events.Add(value.Data);

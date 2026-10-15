@@ -10,11 +10,11 @@ import { PlaygroundSession } from '../src/session.ts'
 
 const locale = { id: 'voice', language: 'en-US', country: '', name: 'Native voice' }
 const ready = { commands: ['speech.speak', 'launcher.openUrl'], interactiveCommands: ['speech.speak', 'launcher.openUrl'],
-  interactiveTimeoutMilliseconds: 300000, maximumTextLength: 4096, preferenceNamespace: 'test.' }
+  interactiveTimeoutMilliseconds: 300000, maximumTextLength: 4096 }
 const network = { networkAccess: 'internet', connectionProfiles: ['wiFi'] }
 const defaults = request => request.command === 'core.connect' ? ready :
   request.command === 'connectivity.info' ? network :
-    request.command === 'speech.locales' ? { locales: [locale] } : { accepted: true }
+    request.command === 'speech.locales' ? [locale] : request.command === 'speech.speak' ? null : { accepted: true }
 
 function fixture(t, experiment, handler = defaults) {
   document.body.replaceChildren()
@@ -140,6 +140,20 @@ test('speech locale/options and scoped cancellation use real SDK operations and 
   assert.equal(app.session.resultStatus, 'Cancelled')
   app.event(network); assert.equal(events.length, 1)
   await release()
+})
+
+test('speech page passes empty long and out-of-range values through and displays native rejection', async t => {
+  const app = fixture(t, 'textToSpeech', request => request.command === 'speech.speak'
+    ? { error: { code: 'native_error', message: 'Destination rejected options' } } : defaults(request))
+  for (const value of ['', ' '.repeat(8), '文'.repeat(8192)]) {
+    app.input('#speech-text', value)
+    app.input('#speech-pitch', '-3')
+    app.input('#speech-volume', '5')
+    app.input('#speech-rate', '0')
+    app.click('speech-speak'); await app.idle()
+    assert.deepEqual(app.requests.at(-1).args, { text: value, options: { pitch: -3, volume: 5, rate: 0 } })
+    assert.ok(app.session.entries.some(entry => entry.detail.includes('Destination rejected options')))
+  }
 })
 
 test('leaving the speech page cancels its own operation instead of a different session operation', async t => {

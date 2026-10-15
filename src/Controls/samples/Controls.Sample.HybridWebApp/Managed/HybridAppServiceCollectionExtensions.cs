@@ -17,7 +17,7 @@ public static class HybridAppServiceCollectionExtensions
 {
 	/// <summary>Configures local hub/provider factories and borrowed native defaults without globally registering view services.</summary>
 	/// <param name="services">The host's service registrations.</param>
-	/// <param name="options">Immutable host policy with its explicitly chosen preference prefix and text limit.</param>
+	/// <param name="options">Immutable host clipboard/share text and window resource limits.</param>
 	/// <returns>The same collection for further explicit registrations.</returns>
 	/// <remarks>
 	/// Registers only implemented providers, not every Essentials or Controls feature.
@@ -33,9 +33,9 @@ public static class HybridAppServiceCollectionExtensions
 		ArgumentNullException.ThrowIfNull(options);
 		var existing = services.LastOrDefault(service => service.ServiceType == typeof(HybridAppOptions));
 		if (existing is not null && (existing.ImplementationInstance is not HybridAppOptions previous ||
-			previous.PreferenceNamespace != options.PreferenceNamespace || previous.MaximumTextLength != options.MaximumTextLength ||
+			previous.MaximumTextLength != options.MaximumTextLength ||
 			previous.MaximumWindows != options.MaximumWindows))
-			throw new InvalidOperationException("HybridApp host policy is already registered. Configure its namespace and text limit once at startup.");
+			throw new InvalidOperationException("HybridApp host policy is already registered. Configure its resource limits once at startup.");
 		services.TryAddSingleton(options);
 		services.TryAddSingleton<TimeProvider>(TimeProvider.System);
 		services.TryAddSingleton<HybridWindowHost>();

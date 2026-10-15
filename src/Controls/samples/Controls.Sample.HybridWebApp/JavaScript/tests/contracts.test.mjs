@@ -10,7 +10,7 @@ import { getDeviceInfo } from '@maui/api/essentials/device-info'
 import * as api from '@maui/api'
 import { mock } from './bridge.mjs'
 
-const ready = { commands: ['app.info', 'device.info', 'clipboard.read'], preferenceNamespace: 'host-owned.', maximumTextLength: 4096 }
+const ready = { commands: ['app.info', 'device.info', 'clipboard.read'], maximumTextLength: 4096 }
 const appInfo = { appName: 'Host', version: '1', build: '1' }
 const deviceInfo = { platform: 'test', osVersion: '1', model: 'test' }
 afterEach(() => resetBridge())

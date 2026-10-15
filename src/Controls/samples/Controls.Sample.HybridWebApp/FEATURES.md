@@ -23,6 +23,13 @@ The initial native milestone verified app identity, text clipboard/preferences, 
 
 The reusable SDK ships built JavaScript and declarations, not app-local TypeScript. Its packed-consumer checks use a real tarball without the source tree. Source comments document public APIs. These are local preview artifacts, not evidence of npm publication or registry-scope ownership.
 
+Page dialogs now use all four directly annotated native methods, with no prompt
+action/result wrapper. Prompt returns native text or null. A declared strict
+Keyboard converter preserves singleton identities (`{ name: 'text' }`) and
+`Keyboard.Create` flags (`{ flags: ['spellcheck'] }`); keyboard names are not a
+native enum. Label/length/button-count semantics belong to Page. This change
+does not add native acceptance; the dialog runtime evidence below is historical.
+
 **Platform/release gaps:** Windows runtime, physical devices, installed Release execution, NativeAOT and signed installation are unverified. The updated iOS app connected, but the new simulator touch/bounce/keyboard checks were not completed. Local success does not establish CI or merge readiness.
 
 The expanded milestone additionally exercised real Android battery/display and
@@ -156,18 +163,47 @@ real request/result types and named native enum values. Typed converters and
 explicit strict STJ contexts support extensible DevicePlatform and actual .NET 11
 structural Share unions; unknown, duplicate, ambiguous and unauthorized file
 shapes reject. PDF/text bytes stage into bounded app-owned files with opaque
-document authority and finite post-share retention. Prompt/keyboard, preferences
-and complex native resources remain deliberate adapters.
+document authority and finite post-share retention. At that milestone prompt,
+preferences and complex native resources remained adapters; the direct-native
+correction below removes the prompt action adapter.
 
 The new Geolocation and Share pages bring navigation to 24 experiments plus two
 guides. The Lifetime page demonstrates local versus explicitly shared targets.
-Portable validation passes 353 managed tests, 71 SDK tests and 77 UI tests plus
-12 contracts; the packed SDK has 48 files/19 entrypoints/398 documented members.
+At that annotation milestone, portable validation passed 353 managed tests,
+71 SDK tests and 77 UI tests plus 12 contracts; the packed SDK had
+48 files/19 entrypoints/398 documented members.
 Fresh-cache reflection-disabled NuGet-only generation and neutral SDK API
 validation pass. Independent review regressions cover custom-converter nullability,
 inherited member shadows, geolocation timeout policy, concurrent disposal and
 factory reentrant retirement. These are implementation evidence, not complete
 platform or release certification.
+
+The speech/preferences/dialog correction removes routine speech and prompt wrappers:
+`ITextToSpeech` itself carries MainThread locales and MainThread/Interactive
+speech annotations. The curated root generates normal async calls with native
+`SpeechOptions`/`Locale`, an enumerable JSON array and void/null completion.
+Only JSON/schema/finite representation and transport checks remain; speech text,
+range and locale semantics belong to Essentials, not the SDK.
+All four Page dialogs, including `DisplayPromptAsync`, now use direct generated
+calls and native scalar/null results. A declared Keyboard JSON converter maps
+actual singleton names or `Keyboard.Create` flags; it is not a prompt action
+wrapper. Button labels, action counts, maxLength and initialValue are passed to
+Page without duplicate semantic validation.
+Preferences keep the generic-scalar adapter but no prefix, container rewriting,
+arbitrary key/string quota or ownership index. Native-existing settings are
+intentionally shared, and Clear calls the actual container-wide native Clear.
+The page explicitly warns about that destructive behavior and requires confirmation.
+Clipboard retains its unrelated text budget. These changed semantics have portable
+fake-destination and SDK/UI coverage; earlier native acceptance does not certify
+this correction's native execution or packed artifacts.
+Current portable validation passes 396 managed tests, 77 SDK tests, 80 UI/geometry
+tests and 12 frontend contracts. SDK reference generation validates 19 entrypoints
+and 393 documented declarations/members; frontend type-check/build/staging passes
+with zero TypeScript/Svelte errors or warnings. Fresh-cache reflection-disabled
+NuGet-only consumption also verifies native async locales, direct speech options,
+host interface override, cancellation and void completion. Final selected Mac
+Catalyst/Android Debug builds pass with API validation and zero warnings/errors.
+Actual native execution of this correction remains a separate acceptance gap.
 
 Actual Mac Catalyst and Android acceptance verifies the imported clipboard
 methods/getter/change event/unsubscribe and contextual window getter. Mac queried
@@ -238,7 +274,7 @@ the implemented subset has native evidence and unit tests/builds pass.
 
 - [x] **App and device identity** - Show app version, platform, OS, architecture and native startup identity. [AppInfo][m-appinfo], [DeviceInfo][m-deviceinfo] / [Tauri app][t-app], [OS][t-os]. Process/startup diagnostics are app-owned, not Essentials APIs.
 - [x] **Text clipboard** - Copy and explicitly paste sample text through the native clipboard. [MAUI][m-clipboard] / [Tauri][t-clipboard].
-- [x] **Preferences** - Save, read/remove and reload a small namespaced text setting across app restarts. [MAUI][m-preferences] / [Tauri store][t-store].
+- [x] **Preferences** - Save, read/remove actual native settings; native restart persistence was accepted at the earlier text-setting milestone. Direct keys/shared containers and destructive native-wide Clear now have portable coverage; their revised native acceptance remains unverified. [MAUI][m-preferences] / [Tauri store][t-store].
 - [x] **Vite live development** - Edit HTML/CSS/JS inside the running app on selected desktop/mobile targets. [Current sample][sample-readme] / [Tauri development][t-develop].
 - [x] **Packaged offline content** - Run the same feature UI and bridge without a development server. [MAUI assets][m-assets] / [Tauri frontend configuration][t-config].
 - [x] **Native inspection and repeatable checks** - Inspect actual in-app DOM/results; support frontend mocks without confusing them with native verification. [MAUI developer tools][m-devtools] / [Tauri mocks][t-mocks].

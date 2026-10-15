@@ -261,29 +261,28 @@ public sealed class NativeFeatureTests
 
 	[Theory]
 	[InlineData("dialogs.alert", "{}")]
-	[InlineData("dialogs.confirm", "{\"title\":null,\"message\":\"message\"}")]
+	[InlineData("dialogs.confirm", "{\"title\":\"t\",\"message\":\"message\",\"accept\":1}")]
 	[InlineData("dialogs.prompt", "{\"title\":\"title\",\"message\":\"message\",\"extra\":true}")]
 	public async Task DialogMetadataRejectsInvalidInputsWithoutInvokingAnyOsUi(string command, string args)
 	{
 		using var context = Bind();
-		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new DialogProvider(context));
+		var registry = TestComposition.CreateRegistry(context);
 		Assert.True(registry.IsInteractive(command));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
 	}
 
 	[Theory]
-	[InlineData("dialogs.alert", "{\"title\":\"t\",\"message\":\"m\",\"cancel\":\" \"}")]
-	[InlineData("dialogs.confirm", "{\"title\":\"t\",\"message\":\"m\",\"accept\":\"\",\"cancel\":\"Cancel\"}")]
-	[InlineData("dialogs.prompt", "{\"title\":\"t\",\"message\":\"m\",\"maxLength\":-2}")]
-	[InlineData("dialogs.prompt", "{\"title\":\"t\",\"message\":\"m\",\"maxLength\":2,\"initialValue\":\"long\"}")]
-	[InlineData("dialogs.prompt", "{\"title\":\"t\",\"message\":\"m\",\"keyboard\":\"unknown\"}")]
-	[InlineData("dialogs.prompt", "{\"title\":\"t\",\"message\":\"m\",\"keyboard\":\"text\",\"keyboardFlags\":[\"spellcheck\"]}")]
-	public async Task DialogOptionsAreValidatedBeforeNativeUi(string command, string args)
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","maxLength":1.5}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","maxLength":2147483648}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":"text"}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"name":"text","extra":true}}""")]
+	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboardFlags":["spellcheck"]}""")]
+	[InlineData("dialogs.actionSheet", """{"title":"t","cancel":null,"destruction":null,"flowDirection":"matchParent","buttons":[1]}""")]
+	public async Task DialogRepresentationsAreValidatedBeforeNativeUi(string command, string args)
 	{
 		using var context = Bind();
-		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new DialogProvider(context));
+		var registry = TestComposition.CreateRegistry(context);
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
 	}
 
@@ -357,7 +356,7 @@ public sealed class NativeFeatureTests
 	{
 		using var notifications = new NativeNotifications();
 		var provider = new NotificationProvider();
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("notifications."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		async Task Call(string command, string args)
 		{
@@ -394,7 +393,7 @@ public sealed class NativeFeatureTests
 		using var notifications = new NativeNotifications();
 		var clock = new InteractivePolicyTests.ManualTime();
 		using var provider = new WindowProvider(context, new HybridWindowHost(), new WindowDevice(platform, false), Inline, notifications, clock);
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("geometry."), time: clock, notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), time: clock, notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		async Task Call(string command, string args = "{}")
 		{
@@ -444,7 +443,7 @@ public sealed class NativeFeatureTests
 		using var notifications = new NativeNotifications();
 		var clock = new InteractivePolicyTests.ManualTime();
 		using var provider = new WindowProvider(context, new HybridWindowHost(), new WindowDevice("WinUI", false), Inline, notifications, clock);
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("geometry."), time: clock, notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), time: clock, notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		async Task Call(string command, string args = "{}")
 		{
@@ -526,7 +525,7 @@ public sealed class NativeFeatureTests
 		var registry = new CommandRegistry();
 		var provider = menus;
 		registry = TestComposition.CreateRegistry(provider);
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("menus."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), notifications: notifications);
 		var events = await SubscribeMenuClicks(hub);
 		var definitions = new[] { new { id = "bar", text = "Original bar", kind = "submenu", enabled = true, @checked = false,
 			items = new[] { new { id = "group", text = "Original group", kind = "submenu", enabled = true, @checked = false,
@@ -585,7 +584,7 @@ public sealed class NativeFeatureTests
 		var registry = new CommandRegistry();
 		var provider = menus;
 		registry = TestComposition.CreateRegistry(provider);
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("menus."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), notifications: notifications);
 		var events = await SubscribeMenuClicks(hub);
 		var definitions = new[] { new { id = "bar", text = "View", kind = "submenu", enabled = true, @checked = false,
 			items = new[] { new { id = "check", text = "Checked item", kind = "check", enabled = true, @checked = true,

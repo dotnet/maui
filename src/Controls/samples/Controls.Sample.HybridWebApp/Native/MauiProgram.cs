@@ -30,7 +30,7 @@ static class MauiProgram
 
 		var builder = MauiApp.CreateBuilder().UseMauiApp<App>();
 		builder.Services
-			.AddHybridApp(new HybridAppOptions(SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength, maximumWindows: 4))
+			.AddHybridApp(new HybridAppOptions(SamplePolicy.MaximumTextLength, maximumWindows: 4))
 			.AddPlayground(StartupId, StartedAt);
 		var app = builder.Build();
 		app.Services.PruneHybridShareCache();

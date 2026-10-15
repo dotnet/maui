@@ -1,4 +1,5 @@
-import { boolean, connect, enumValue, NativeError, nullableText, object } from '../core.js'
+import { boolean, connect, enumValue, NativeError, nullableText } from '../core.js'
+import type { Json } from '../core.js'
 
 /** Native MAUI popup text direction; matchParent is the native default. */
 export type FlowDirection = 'matchParent' | 'leftToRight' | 'rightToLeft'
@@ -17,10 +18,12 @@ export interface ConfirmOptions extends AlertOptions {
   /** Positive button label; defaults to OK. */
   accept?: string
 }
-/** Named native MAUI keyboards supported by DisplayPromptAsync. */
-export type KeyboardKind = 'default' | 'plain' | 'chat' | 'text' | 'email' | 'numeric' | 'telephone' | 'url' | 'date' | 'time' | 'password' | 'custom'
+/** Wire names for actual MAUI Keyboard singleton instances, not a native enum. */
+export type KeyboardName = 'default' | 'plain' | 'chat' | 'text' | 'email' | 'numeric' | 'telephone' | 'url' | 'date' | 'time' | 'password'
 /** MAUI custom keyboard behavior flags. */
 export type KeyboardFlag = 'none' | 'capitalizeSentence' | 'spellcheck' | 'suggestions' | 'capitalizeWord' | 'capitalizeCharacter' | 'capitalizeNone' | 'all'
+/** Exactly one singleton name or the actual flags passed to MAUI Keyboard.Create. */
+export type Keyboard = { name: KeyboardName; flags?: never } | { flags: KeyboardFlag[]; name?: never }
 /** Options actually supported by the native MAUI text prompt. */
 export interface PromptOptions {
   /** Native title; defaults to empty. */
@@ -33,19 +36,10 @@ export interface PromptOptions {
   placeholder?: string | null
   /** Native maximum text length; -1 (default) is unspecified. */
   maxLength?: number
-  /** Native named keyboard; defaults to default. */
-  keyboard?: KeyboardKind
-  /** Native flags used only with custom; [] means none, and none/all must stand alone. */
-  keyboardFlags?: KeyboardFlag[]
+  /** Serialized native Keyboard; null/omission leaves the native default. Flags are distinct names; none/all stand alone. */
+  keyboard?: Keyboard | null
   /** Native initial input; defaults to empty. */
   initialValue?: string
-}
-/** Normal native prompt acceptance or user dismissal. */
-export interface PromptResult {
-  /** True on native user dismissal. */
-  cancelled: boolean
-  /** Actual accepted text (possibly empty), or null on dismissal. */
-  text: string | null
 }
 /** Native action-sheet choices and destructive/cancel labels. */
 export interface ActionSheetOptions {
@@ -60,12 +54,24 @@ export interface ActionSheetOptions {
   /** MAUI action-sheet text direction. */
   flowDirection?: FlowDirection
 }
-function labels(...values: string[]): void {
-  if (values.some(value => typeof value !== 'string' || !value.trim()))
-    throw new NativeError('invalid_arguments', 'Native button labels must not be blank.')
-}
 function direction(value: FlowDirection = 'matchParent'): void {
   enumValue(value, ['matchParent', 'leftToRight', 'rightToLeft'], 'invalid_arguments')
+}
+function keyboard(value: Keyboard | null | undefined): Json | undefined {
+  if (value == null) return value
+  if (typeof value !== 'object' || Array.isArray(value) || Object.keys(value).length !== 1)
+    throw new NativeError('invalid_arguments', 'Expected exactly one keyboard name or flags property.')
+  if (Object.hasOwn(value, 'name'))
+    return { name: enumValue(value.name, ['default', 'plain', 'chat', 'text', 'email', 'numeric', 'telephone', 'url', 'date', 'time', 'password'], 'invalid_arguments') }
+  else if (Object.hasOwn(value, 'flags')) {
+    const flags = value.flags
+    if (!Array.isArray(flags) || new Set(flags).size !== flags.length ||
+      (flags.length !== 1 && flags.some(flag => flag === 'none' || flag === 'all')))
+      throw new NativeError('invalid_arguments', 'Expected distinct native flag names; none/all must stand alone.')
+    for (const flag of flags)
+      enumValue(flag, ['none', 'capitalizeSentence', 'spellcheck', 'suggestions', 'capitalizeWord', 'capitalizeCharacter', 'capitalizeNone', 'all'], 'invalid_arguments')
+    return { flags }
+  } else throw new NativeError('invalid_arguments', 'Unknown keyboard representation.')
 }
 /**
  * Displays an asynchronous native page-owned alert, not browser window.alert.
@@ -75,7 +81,6 @@ function direction(value: FlowDirection = 'matchParent'): void {
  * @throws `NativeError` on invalid options, native absence or OS failure.
  */
 export async function alert(message = '', options: AlertOptions = {}): Promise<void> {
-  labels(options.cancel ?? 'OK')
   direction(options.flowDirection)
   return (await connect()).invoke('dialogs.alert', { title: options.title ?? '', message, cancel: options.cancel ?? 'OK', flowDirection: options.flowDirection ?? 'matchParent' }, value => {
     if (value !== null) throw new NativeError('invalid_response', 'Expected native void completion.')
@@ -89,7 +94,6 @@ export async function alert(message = '', options: AlertOptions = {}): Promise<v
  * @throws `NativeError` on invalid options, native absence or OS failure.
  */
 export async function confirm(message = '', options: ConfirmOptions = {}): Promise<boolean> {
-  labels(options.accept ?? 'OK', options.cancel ?? 'Cancel')
   direction(options.flowDirection)
   return (await connect()).invoke('dialogs.confirm', { title: options.title ?? '', message, accept: options.accept ?? 'OK', cancel: options.cancel ?? 'Cancel', flowDirection: options.flowDirection ?? 'matchParent' }, boolean)
 }
@@ -97,31 +101,15 @@ export async function confirm(message = '', options: ConfirmOptions = {}): Promi
  * Displays asynchronous native text input using normal MAUI prompt options.
  * @param message - Native message; defaults to empty.
  * @param options - Title/buttons/placeholder/initialValue/maxLength/keyboard options.
- * @returns Accepted native text or ordinary cancellation.
+ * @returns Actual native text (including empty text), or null on ordinary dismissal.
  * @throws `NativeError` on invalid options, native absence or OS failure.
  * @remarks Native OS UI uses the explicit five-minute interactive budget. MAUI
  * cannot force-dismiss it; document disposal cancels the wait, not OS side effects.
  */
-export async function prompt(message = '', options: PromptOptions = {}): Promise<PromptResult> {
-  labels(options.accept ?? 'OK', options.cancel ?? 'Cancel')
-  const keyboard = enumValue(options.keyboard ?? 'default', ['default', 'plain', 'chat', 'text', 'email', 'numeric', 'telephone', 'url', 'date', 'time', 'password', 'custom'], 'invalid_arguments')
-  if (options.keyboardFlags !== undefined) {
-    const flags = options.keyboardFlags
-    if (keyboard !== 'custom' || !Array.isArray(flags) || new Set(flags).size !== flags.length ||
-      (flags.length !== 1 && flags.some(flag => flag === 'none' || flag === 'all')))
-      throw new NativeError('invalid_arguments', 'Use custom keyboard with distinct native flags; none/all must stand alone.')
-    for (const flag of flags)
-      enumValue(flag, ['none', 'capitalizeSentence', 'spellcheck', 'suggestions', 'capitalizeWord', 'capitalizeCharacter', 'capitalizeNone', 'all'], 'invalid_arguments')
-  }
-  const max = options.maxLength ?? -1
-  if (!Number.isInteger(max) || max < -1 || max > 2147483647 || (max >= 0 && (options.initialValue?.length ?? 0) > max))
-    throw new NativeError('invalid_arguments', 'Use maxLength -1 or a nonnegative native integer that fits initial text.')
-  return (await connect()).invoke('dialogs.prompt', { title: '', message, ...options }, value => {
-    const v = object(value), result = { cancelled: boolean(v.cancelled), text: nullableText(v.text) }
-    if (result.cancelled !== (result.text === null) || (result.text !== null && max >= 0 && result.text.length > max))
-      throw new NativeError('invalid_response', 'Invalid native prompt result.')
-    return result
-  })
+export async function prompt(message = '', options: PromptOptions = {}): Promise<string | null> {
+  const { keyboard: value, ...parameters } = options
+  const encoded = keyboard(value)
+  return (await connect()).invoke('dialogs.prompt', { title: '', message, ...parameters, ...(encoded === undefined ? {} : { keyboard: encoded }) }, nullableText)
 }
 /**
  * Displays native MAUI action-sheet choices; no custom-layout/Tauri-kind emulation.
@@ -131,8 +119,5 @@ export async function prompt(message = '', options: PromptOptions = {}): Promise
  */
 export async function actionSheet(options: ActionSheetOptions = {}): Promise<string | null> {
   direction(options.flowDirection)
-  if (options.cancel) labels(options.cancel)
-  if (options.destruction) labels(options.destruction)
-  labels(...(options.buttons ?? []))
   return (await connect()).invoke('dialogs.actionSheet', { title: options.title ?? '', cancel: options.cancel ?? null, destruction: options.destruction ?? null, buttons: options.buttons ?? [], flowDirection: options.flowDirection ?? 'matchParent' }, nullableText)
 }

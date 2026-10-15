@@ -4,9 +4,9 @@ import type { Json } from '../core.js'
 export type PreferenceValue = string | boolean | number | Date
 /** Closed native primitive discriminator; public values remain ordinary JS primitives. */
 export type PreferenceKind = 'string' | 'boolean' | 'double' | 'int' | 'long' | 'float' | 'dateTime'
-/** Native preference container/number-storage options; host namespaces remain authoritative. */
+/** Native preference container/number-storage options. */
 export interface PreferenceOptions {
-  /** Optional shared store name, isolated inside the host-owned namespace. */
+  /** Optional native shared store name, passed unchanged to MAUI. */
   sharedName?: string
   /** Native numeric primitive representation; defaults to double. */
   numberType?: Extract<PreferenceKind, 'int' | 'long' | 'float' | 'double'>
@@ -47,7 +47,7 @@ function decode(value: unknown): PreferenceValue {
 /**
  * Reads a native preference with a typed native default.
  * @typeParam T - Supported primitive matching the stored native type.
- * @param key - Host-namespaced logical preference key.
+ * @param key - Actual native preference key, passed unchanged.
  * @param defaultValue - Value returned by MAUI when absent.
  * @param options - Optional shared container/numeric native representation.
  * @returns Actual native primitive, including defaults when absent.
@@ -63,7 +63,7 @@ export async function get<T extends PreferenceValue>(key: string, defaultValue: 
 }
 /**
  * Writes a supported native primitive.
- * @param key - Logical host-owned key.
+ * @param key - Actual native preference key, passed unchanged.
  * @param value - String/boolean/numeric/Date value, not a JSON object or secret-storage claim.
  * @param options - Shared container/numeric representation.
  * @returns Native completion.
@@ -74,7 +74,7 @@ export async function set(key: string, value: PreferenceValue, options: Preferen
 }
 /**
  * Tests native key existence.
- * @param key - Logical host-namespaced key.
+ * @param key - Actual native preference key, passed unchanged.
  * @param options - Optional shared preference container.
  * @returns Native existence flag.
  */
@@ -82,7 +82,7 @@ export async function contains(key: string, options: PreferenceOptions = {}): Pr
   return (await connect()).invoke('preferences.contains', { key, sharedName: options.sharedName ?? null }, ack)
 }
 /**
- * Removes a native key in the host-owned namespace.
+ * Removes the actual native key.
  * @param key - Logical key.
  * @param options - Optional shared container.
  * @returns Native completion.
@@ -91,10 +91,10 @@ export async function remove(key: string, options: PreferenceOptions = {}): Prom
   await (await connect()).invoke('preferences.remove', { key, sharedName: options.sharedName ?? null }, ack)
 }
 /**
- * Clears only tracked keys owned by this host namespace/container, never arbitrary native preference stores.
+ * Clears the entire selected native preference container, including settings created outside JavaScript.
  * @param options - Optional shared preference container.
  * @returns Native completion.
- * @remarks The bounded persistent key index preserves namespace isolation across native restarts.
+ * @remarks Destructive native IPreferences.Clear semantics. Omit sharedName to clear the default app store.
  */
 export async function clear(options: PreferenceOptions = {}): Promise<void> {
   await (await connect()).invoke('preferences.clear', { sharedName: options.sharedName ?? null }, ack)

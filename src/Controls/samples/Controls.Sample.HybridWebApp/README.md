@@ -51,9 +51,16 @@ identity `Maui.HybridApp` / `0.1.0-preview.1` is unverified and unpublished.
 session/registry/protocol, AppInfo, DeviceInfo, Clipboard, Preferences,
 Battery, Display, FilePicker, Connectivity, TextToSpeech, external URL launching,
 Geolocation, Share and MAUI page/window integration. Curated native contracts
-replace routine clipboard, geolocation and page-dialog wrappers; deliberate
+replace routine clipboard, speech, geolocation and page-dialog wrappers; deliberate
 feature adapters retain resource, interaction and policy boundaries. Native
 SDK annotations alone do not expose any API.
+All four page dialogs, including `Page.DisplayPromptAsync`, are called directly
+through the curated Page root. Prompt returns native `string | null`, not a
+cancellation/text envelope. A declared strict JSON context converts Keyboard
+values (`{ name: 'text' }` for a singleton or `{ flags: ['spellcheck'] }` for
+`Keyboard.Create`); there is no prompt action wrapper or native Keyboard enum.
+Native Page owns label/length/button-count validation. This refactor has no new
+device acceptance; the runtime evidence below is historical.
 The Catalyst battery correction now belongs to **Essentials**, not this product:
 `Battery.Default` reads actual IOKit capacity, charging and power-source state
 and uses native power-source change notifications. UIKit had returned about 1%
@@ -68,7 +75,7 @@ Startup now has one product registration and one sample composition call:
 
 ```csharp
 builder.Services
-    .AddHybridApp(new HybridAppOptions(SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength))
+    .AddHybridApp(new HybridAppOptions(SamplePolicy.MaximumTextLength))
     .AddPlayground(StartupId, StartedAt);
 ```
 
@@ -118,13 +125,34 @@ enums; flags use explicit arrays of names. Unknown names, numeric input and
 duplicate flags reject before invocation. The SDK exposes matching closed
 TypeScript unions and runtime validation. `unspecified` is the native theme
 preference that follows the OS, not the old `system` wire alias.
-Text-to-speech accepts native `SpeechOptions` and returns native `Locale` data
-without duplicate managed DTOs. Geolocation uses native GeolocationRequest and
+Text-to-speech is annotated directly on `ITextToSpeech`, explicitly imported with
+`HybridExport`, and resolved through the host's interface override. Generated
+async calls serialize `Task<IEnumerable<Locale>>` as an array and `Task` completion
+as null, using native `SpeechOptions` and `Locale` without provider/result wrappers.
+Text, locale fields and representable options pass unchanged to Essentials for
+validation; there are no speech text/range/locale budgets. Nullable options and
+operation-specific cancellation retain the native contract.
+Preferences retain only the closed-scalar adapter needed for generic `IPreferences`.
+Keys, values and `sharedName` pass directly to native storage with no prefix,
+ownership index or setting quota. `clear()` calls native container-wide `Clear`,
+including native-existing settings; it is deliberately destructive, not namespace-safe.
+The advertised text limit still applies to clipboard/share, not speech or preferences.
+Geolocation uses native GeolocationRequest and
 Location; altitude reference names follow the same strict enum policy.
 Typed converter attributes and explicitly rooted strict source-generated JSON
 contexts support native contracts such as extensible DevicePlatform and .NET 11
 structural Share unions. There is no reflection JSON fallback or assumption that
 one generator's emitted sources will be processed by another generator.
+
+Portable validation of this speech/preferences/dialog correction passes **396 managed
+tests, 77 SDK tests, 80 UI/geometry tests and 12 frontend contracts**. SDK docs
+generation validates 19 entrypoints and 393 documented declarations/members.
+`Web run stage` also passes TypeScript/Svelte checking with zero errors/warnings
+and stages four assets. A fresh-cache reflection-disabled NuGet-only host verifies
+native async locales, direct speech options, host interface override, cancellation
+and void completion. Final selected Mac Catalyst/Android Debug builds pass with
+API validation and zero warnings/errors. Actual native execution of this correction
+remains unverified; earlier runtime acceptance below is historical.
 
 Share stages bounded browser-produced PDF/text bytes into app-owned files and
 returns opaque document-owned handles. A separate JSON interactive request invokes
@@ -389,8 +417,8 @@ test app, after explicitly staging/building and relaunching the matching host:
   native clipping/focus/hiding/teardown and the remote guest's absence of bridge,
   SDK/invoke target/messages/inspector. Mobile guest creation stays unsupported.
 
-Keep partially accepted FEATURES families unchecked. The current automated
-checks pass 220 managed tests, 50 SDK tests, 71 Svelte/geometry tests and 11
+Keep partially accepted FEATURES families unchecked. The automated
+checks at that assembly-migration milestone passed 220 managed tests, 50 SDK tests, 71 Svelte/geometry tests and 11
 frontend contracts. The SDK's real 44-file tarball, 17 entrypoints and 314
 declaration/TSDoc members passed fresh offline-consumer equality checks.
 A refreshed NuGet-only consumer also passed with a fresh package cache and
@@ -571,8 +599,9 @@ different native API:
   startup UTC time. These originate in native code, not a frontend counter.
 - **Clipboard:** explicitly copy/paste Unicode text through the native OS API.
 - **Preferences:** read/write/remove text under `maui.playground.v1.`; restart
-  the app to check persistence. Keys: 1–48 ASCII letters/digits/underscore/hyphen;
-  text: at most 4096 UTF-16 code units. No clear-all or arbitrary namespace access.
+  the app to check persistence. Keys and strings are passed unchanged to the default
+  native preference store. Clear requires explicit confirmation and removes the
+  entire native store, including settings created outside the playground. Never store secrets.
 - **DTO echo:** asynchronous nullable text, finite number, boolean, string array
   (at most 16 entries), native instance counter; Unicode/escape-safe transport.
 - **Errors/policy:** intentional error, unknown command, disabled command and
@@ -897,7 +926,7 @@ The managed extraction and DI refinement preserve the original session bounds (4
 documents, 256 request IDs, 16 active calls, native 20-second deadline/frontend
 23-second deadline) and source-generated narrow target. Unit tests now also cover
 actual separate-assembly providers, strict per-feature metadata, host preference
-prefix/text policy, OS/configuration errors and cancellation before/after native
+clipboard text policy, native preference pass-through, OS/configuration errors and cancellation before/after native
 side effects. Scoped DI tests additionally verify two-view isolation, same-scope
 reload counter preservation, external metadata, idempotent product registration,
 host overrides and scope-owned cancellation/listener/timer/provider cleanup.

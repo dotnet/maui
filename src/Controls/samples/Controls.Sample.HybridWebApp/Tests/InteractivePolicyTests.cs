@@ -22,7 +22,7 @@ public sealed class InteractivePolicyTests
 		var plugin = new TestComposition.InteractiveWait();
 		var completion = plugin.Completion;
 		var registry = TestComposition.CreateRegistry(plugin);
-		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "", 4096,
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, 4096,
 			registry.InteractiveCommands), null, clock);
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value;
@@ -58,7 +58,7 @@ public sealed class InteractivePolicyTests
 		var plugin = new TestComposition.InteractiveWait();
 		var completion = plugin.Completion;
 		var registry = TestComposition.CreateRegistry(plugin);
-		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "", 4096), null, clock);
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, 4096), null, clock);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect");
 		var pending = Call(hub, session, "test.interactiveWait");

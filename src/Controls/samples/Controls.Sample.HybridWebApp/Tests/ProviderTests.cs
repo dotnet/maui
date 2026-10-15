@@ -59,8 +59,8 @@ public sealed class ProviderTests
 		var registry = new CommandRegistry();
 		var clipboard = new FakeClipboard();
 		var preferences = new FakePreferences();
-		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, Inline,
-			new PreferencesProvider(preferences, new("host.")),
+		registry = TestComposition.CreateRegistryWithOptions(new(), clipboard, Inline,
+			new PreferencesProvider(preferences),
 			new AppInfoProvider(new FakeAppInfo { Error = new InvalidOperationException("Must not run") }), new DeviceInfoProvider(new FakeDeviceInfo()));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
 		Assert.Equal(0, clipboard.Calls);
@@ -68,34 +68,33 @@ public sealed class ProviderTests
 	}
 
 	[Fact]
-	public async Task HostNamespaceIsIsolatedAndTextLimitsApplyInBothDirections()
+	public async Task PreferencesUseExistingNativeKeysWithoutTextKeyOrOwnershipBudgets()
 	{
-		var registry = new CommandRegistry();
 		var preferences = new FakePreferences();
-		preferences.Values["other.key"] = "untouched";
-		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences, new("host.", 4)));
-		await Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"你好👋\"}}");
-		Assert.Equal("你好👋", preferences.Values["host.key"]);
-		Assert.Equal("untouched", preferences.Values["other.key"]);
-		Assert.Equal("你好👋", (await Dispatch(registry, "preferences.get", "{\"key\":\"key\",\"defaultValue\":{\"kind\":\"string\",\"text\":\"\"}}")).GetProperty("text").GetString());
-		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"12345\"}}"))).Code);
-		preferences.Values["host.key"] = "12345";
-		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(registry, "preferences.get", "{\"key\":\"key\",\"defaultValue\":{\"kind\":\"string\",\"text\":\"\"}}"))).Code);
-		await Dispatch(registry, "preferences.remove", "{\"key\":\"key\"}");
-		Assert.False(preferences.Values.ContainsKey("host.key"));
-		Assert.Equal("untouched", preferences.Values["other.key"]);
-		foreach (var key in new[] { "", "a.b", "a/b", "é", new string('a', 49) })
-			Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-				Dispatch(registry, "preferences.contains", JsonSerializer.Serialize(new { key })))).Code);
-		await Dispatch(registry, "preferences.set", JsonSerializer.Serialize(new { key = new string('a', 48), value = new { kind = "string", text = "" } }));
-		Assert.Throws<ArgumentException>(() => new PreferencesProvider(preferences, new("")));
-		Assert.Throws<ArgumentOutOfRangeException>(() => new PreferencesProvider(preferences, new("host.", 0)));
+		preferences.Values["native.existing"] = "from native";
+		for (var i = 0; i < 4096; i++) preferences.Values[$"native{i}"] = i;
+		var registry = TestComposition.CreateRegistryWithOptions(new(4), new PreferencesProvider(preferences));
+		Assert.True((await Dispatch(registry, "preferences.contains", """{"key":"native.existing"}""")).GetProperty("accepted").GetBoolean());
+		Assert.Equal("from native", (await Dispatch(registry, "preferences.get", """{"key":"native.existing","defaultValue":{"kind":"string","text":""}}""")).GetProperty("text").GetString());
+		var text = new string('語', 8192);
+		foreach (var key in new[] { "", "key with spaces", "a.b", "a/b", "é 👋", new string('a', 1024) })
+		{
+			await Dispatch(registry, "preferences.set", JsonSerializer.Serialize(new { key, value = new { kind = "string", text } }));
+			Assert.Equal(text, preferences.Values[key]);
+			Assert.Equal(text, (await Dispatch(registry, "preferences.get", JsonSerializer.Serialize(new { key, defaultValue = new { kind = "string", text = "" } }))).GetProperty("text").GetString());
+			await Dispatch(registry, "preferences.remove", JsonSerializer.Serialize(new { key }));
+			Assert.False(preferences.Values.ContainsKey(key));
+		}
+		Assert.DoesNotContain(preferences.Values.Keys, key => key.Contains("@owned-keys", StringComparison.Ordinal));
+		Assert.Throws<ArgumentNullException>(() => new PreferencesProvider(null!));
+	}
 
+	[Fact]
+	public async Task ClipboardRetainsItsIndependentTextBudgetInBothDirections()
+	{
 		var clipboardRegistry = new CommandRegistry();
 		var clipboard = new FakeClipboard();
-		clipboardRegistry = TestComposition.CreateRegistryWithOptions(new("host.", 4), clipboard, Inline);
+		clipboardRegistry = TestComposition.CreateRegistryWithOptions(new(4), clipboard, Inline);
 		await Dispatch(clipboardRegistry, "clipboard.write", "{\"text\":\"你好👋\"}");
 		Assert.Equal("你好👋", clipboard.Text);
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
@@ -106,90 +105,89 @@ public sealed class ProviderTests
 	}
 
 	[Theory]
-	[InlineData("preferences.set", "{\"key\":\"overflow\",\"value\":{\"kind\":\"string\",\"text\":\"rejected\"}}")]
-	public async Task PreferenceCapacityRejectsBeforeWritingAndRemovalReleasesOwnership(string command, string args)
+	[InlineData(null)]
+	[InlineData("")]
+	[InlineData("native shared.語\n")]
+	public async Task PreferencesPassContainersUnchangedAndClearTheActualNativeStore(string? sharedName)
 	{
 		var preferences = new FakePreferences();
-		var keys = Enumerable.Range(0, 4096).Select(index => $"key{index}").ToArray();
-		preferences.Values["host.@owned-keys"] = JsonSerializer.Serialize(keys);
-		foreach (var key in keys)
-			preferences.Values["host." + key] = "owned";
-		preferences.Values["other.key"] = "unrelated";
-		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences, new("host.")));
-
-		Assert.Equal("resource_limit", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(registry, command, args))).Code);
-		Assert.False(preferences.Values.ContainsKey("host.overflow"));
-		await Dispatch(registry, "preferences.remove", "{\"key\":\"key0\"}");
-		await Dispatch(registry, command, args);
-		Assert.Equal("rejected", preferences.Values["host.overflow"]);
-		await Dispatch(registry, "preferences.clear", "{}");
-		Assert.Equal(new[] { "other.key" }, preferences.Values.Keys);
-	}
-
-	[Fact]
-	public async Task PreferenceRemovalReleasesOwnershipCapacity()
-	{
-		var preferences = new FakePreferences();
-		var keys = Enumerable.Range(0, 4096).Select(index => $"key{index}").ToArray();
-		preferences.Values["host.@owned-keys"] = JsonSerializer.Serialize(keys);
-		preferences.Values["host.key0"] = "owned";
-		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences, new("host.")));
-		await Dispatch(registry, "preferences.remove", "{\"key\":\"key0\"}");
-		await Dispatch(registry, "preferences.set", "{\"key\":\"new_key\",\"value\":{\"kind\":\"string\",\"text\":\"new\"}}");
-		Assert.Equal("new", preferences.Values["host.new_key"]);
-		var tracked = JsonSerializer.Deserialize<string[]>((string)preferences.Values["host.@owned-keys"])!;
-		Assert.DoesNotContain("key0", tracked);
-		Assert.Contains("new_key", tracked);
-	}
-
-	[Theory]
-	[InlineData("host.@owned-keys", false)]
-	[InlineData("host.key", true)]
-	public async Task FailedPreferenceStorageCannotLeaveAnUntrackedValue(string failingKey, bool writeBeforeFailure)
-	{
-		var preferences = new FakePreferences { FailingSetKey = failingKey, WriteBeforeFailure = writeBeforeFailure };
-		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences, new("host.")));
-		await Assert.ThrowsAsync<IOException>(() =>
-			Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"private\"}}"));
-		Assert.False(preferences.Values.ContainsKey("host.key"));
-		preferences.FailingSetKey = null;
-		await Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"recovered\"}}");
-		await Dispatch(registry, "preferences.clear", "{}");
-		Assert.Empty(preferences.Values);
+		preferences.Store(sharedName)["existing"] = "native";
+		preferences.Store("other")["keep"] = "different container";
+		var registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences));
+		var keyArgs = JsonSerializer.Serialize(new { key = "existing", sharedName });
+		Assert.True((await Dispatch(registry, "preferences.contains", keyArgs)).GetProperty("accepted").GetBoolean());
+		Assert.Equal(sharedName, preferences.LastSharedName);
+		Assert.Equal("native", (await Dispatch(registry, "preferences.get", JsonSerializer.Serialize(new { key = "existing", sharedName, defaultValue = new { kind = "string", text = "" } }))).GetProperty("text").GetString());
+		Assert.Equal(sharedName, preferences.LastSharedName);
+		await Dispatch(registry, "preferences.set", JsonSerializer.Serialize(new { key = "new key", sharedName, value = new { kind = "string", text = "written" } }));
+		Assert.Equal(sharedName, preferences.LastSharedName);
+		Assert.Equal("written", preferences.Store(sharedName)["new key"]);
+		await Dispatch(registry, "preferences.remove", JsonSerializer.Serialize(new { key = "new key", sharedName }));
+		Assert.Equal(sharedName, preferences.LastSharedName);
+		Assert.False(preferences.Store(sharedName).ContainsKey("new key"));
+		await Dispatch(registry, "preferences.clear", JsonSerializer.Serialize(new { sharedName }));
+		Assert.Equal(sharedName, preferences.LastSharedName);
+		Assert.Equal(1, preferences.ClearCalls);
+		Assert.Empty(preferences.Store(sharedName));
+		Assert.Equal("different container", preferences.Store("other")["keep"]);
 	}
 
 	[Theory]
 	[InlineData("preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"replacement\"}}", false)]
 	[InlineData("preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"replacement\"}}", true)]
-	public async Task FailedUpdatesPreservePreviouslyPersistedValuesWithoutAnOwnershipIndex(string command, string args, bool partialWrite)
+	public async Task PreferenceWriteFailuresKeepDestinationSemanticsWithoutRollbackOrIndex(string command, string args, bool partialWrite)
 	{
-		var preferences = new FakePreferences { FailingSetKey = "host.key", WriteBeforeFailure = partialWrite };
-		preferences.Values["host.key"] = "original";
+		var preferences = new FakePreferences { FailingSetKey = "key", WriteBeforeFailure = partialWrite };
+		preferences.Values["key"] = "original";
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences, new("host.")));
+		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences));
 		await Assert.ThrowsAsync<IOException>(() => Dispatch(registry, command, args));
-		Assert.Equal(partialWrite ? "replacement" : "original", preferences.Values["host.key"]);
-		Assert.Contains("key", JsonSerializer.Deserialize<string[]>((string)preferences.Values["host.@owned-keys"])!);
+		Assert.Equal(partialWrite ? "replacement" : "original", preferences.Values["key"]);
+		Assert.Single(preferences.Values);
+		Assert.Equal(1, preferences.Calls);
 		preferences.FailingSetKey = null;
 		await Dispatch(registry, "preferences.clear", "{}");
 		Assert.Empty(preferences.Values);
 	}
 
 	[Theory]
-	[InlineData("{\"kind\":\"string\",\"text\":\"too long\"}")]
+	[InlineData("preferences.get", """{"key":"native","defaultValue":{"kind":"string","text":""}}""")]
+	[InlineData("preferences.set", """{"key":"native","value":{"kind":"string","text":"value"}}""")]
+	[InlineData("preferences.contains", """{"key":"native"}""")]
+	[InlineData("preferences.remove", """{"key":"native"}""")]
+	[InlineData("preferences.clear", "{}")]
+	public async Task PreferenceNativeErrorsAreSurfacedAndTheHubRecovers(string command, string args)
+	{
+		var failure = new IOException("Native store failure");
+		var native = new FakePreferences { Error = failure };
+		var registry = TestComposition.CreateRegistry(new PreferencesProvider(native));
+		Assert.Same(failure, await Assert.ThrowsAsync<IOException>(() => Dispatch(registry, command, args)));
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, 4096), null);
+		var session = Guid.NewGuid().ToString("D");
+		async Task<Response> Call(string name, string arguments)
+		{
+			using var json = JsonDocument.Parse(arguments);
+			return JsonSerializer.Deserialize(await hub.Invoke(JsonSerializer.Serialize(
+				new Request(1, session, Guid.NewGuid().ToString("D"), name, json.RootElement), ProtocolJsonContext.Default.Request)),
+				ProtocolJsonContext.Default.Response)!;
+		}
+		await Call("core.connect", "{}");
+		Assert.Equal("native_error", (await Call(command, args)).Error!.Code);
+		native.Error = null;
+		Assert.Equal("success", (await Call(command, args)).Status);
+	}
+
+	[Theory]
+	[InlineData("{\"kind\":\"string\"}")]
 	[InlineData("{\"kind\":\"boolean\"}")]
 	[InlineData("{\"kind\":\"dateTime\",\"text\":\"not a date\"}")]
 	[InlineData("{\"kind\":\"float\",\"number\":1e300}")]
 	[InlineData("{\"kind\":\"int\",\"integer\":2147483648}")]
-	public async Task InvalidPreferenceValuesAreValidatedBeforeOwnershipReservation(string scalar)
+	public async Task InvalidPreferenceRepresentationsAreRejectedBeforeTheDestination(string scalar)
 	{
 		var preferences = new FakePreferences();
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences, new("host.", 4)));
+		registry = TestComposition.CreateRegistry(new PreferencesProvider(preferences));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
 			Dispatch(registry, "preferences.set", "{\"key\":\"key\",\"value\":" + scalar + "}"))).Code);
 		Assert.Empty(preferences.Values);
@@ -206,14 +204,14 @@ public sealed class ProviderTests
 			cancel.Cancel();
 			return action();
 		});
-		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, boundary);
+		registry = TestComposition.CreateRegistryWithOptions(new(), clipboard, boundary);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Dispatch(registry, "clipboard.write", "{\"text\":\"before\"}", cancel.Token));
 		Assert.Equal(0, clipboard.Calls);
 
 		using var after = new CancellationTokenSource();
 		clipboard.OnWrite = after.Cancel;
 		registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, Inline);
+		registry = TestComposition.CreateRegistryWithOptions(new(), clipboard, Inline);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Dispatch(registry, "clipboard.write", "{\"text\":\"persisted\"}", after.Token));
 		Assert.Equal("persisted", clipboard.Text);
 		Assert.Equal(1, clipboard.Calls);
@@ -239,8 +237,8 @@ public sealed class ProviderTests
 				_ => new InvalidOperationException("Sensitive native detail must not be sent")
 			}
 		};
-		registry = TestComposition.CreateRegistryWithOptions(new("host."), clipboard, Inline);
-		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "", 4096), _ => { });
+		registry = TestComposition.CreateRegistryWithOptions(new(), clipboard, Inline);
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, 4096), _ => { });
 		var session = Guid.NewGuid().ToString("D");
 		async Task<Response> Call(string command) => JsonSerializer.Deserialize(await hub.Invoke(JsonSerializer.Serialize(
 			new { version = 1, session, id = Guid.NewGuid().ToString("D"), command, args = new { } })), ProtocolJsonContext.Default.Response)!;

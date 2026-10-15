@@ -745,6 +745,8 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			else if (scalar is "DateOnly" or "TimeOnly" or "TimeSpan")
 				Line("return " + name + ".Parse(json.GetString()!, global::System.Globalization.CultureInfo.InvariantCulture);");
 			else if (scalar == "Uri") Line("return new global::System.Uri(json.GetString()!, global::System.UriKind.RelativeOrAbsolute);");
+			else if (scalar is "Single" or "Double")
+				Line("var value = json.Get" + scalar + "(); return " + name + ".IsFinite(value) ? value : throw new JsonException(\"Expected a finite number.\");");
 			else if (scalar is not null) Line("return json.Get" + scalar + "()" + (scalar == "String" ? "!" : "") + ";");
 			else if (type.TypeKind == TypeKind.Enum)
 				EmitReadEnum(type, graph.Enums[type]);

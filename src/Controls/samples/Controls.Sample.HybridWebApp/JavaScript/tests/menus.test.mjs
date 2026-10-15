@@ -14,7 +14,7 @@ test('window-owned JS menu definitions/actions, native clicks, updates and repla
   let rejectInstall = false
   const host = mock(request => {
     if (request.command === 'window.info') return windowInfo
-    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    if (request.command === 'core.connect') return { commands: [], maximumTextLength: 4096 }
     if (request.command === 'core.subscribe' || request.command === 'core.unsubscribe') return { accepted: true }
     if (request.command === 'menus.install' && rejectInstall) throw new Error('OS rejected replacement')
     if (request.command === 'menus.install') source = `source-${++index}`
@@ -79,7 +79,7 @@ test('concurrent installations share one source listener and item handles retain
   let source = null, index = 0
   const item = { text: 'Native', enabled: true, checked: null, kind: 'item' }
   const host = mock(request => {
-    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    if (request.command === 'core.connect') return { commands: [], maximumTextLength: 4096 }
     if (request.command === 'window.info') return windowInfo
     if (request.command === 'core.subscribe' || request.command === 'core.unsubscribe') return { accepted: true }
     if (request.command === 'menus.install') source = `source-${++index}`
@@ -115,7 +115,7 @@ test('repeated label/check setters and native clicks retain the installation, sh
   // Transport double: native snapshot invalidation is covered by managed menu tests.
   let source = null, items = new Map()
   const host = mock(request => {
-    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    if (request.command === 'core.connect') return { commands: [], maximumTextLength: 4096 }
     if (request.command === 'window.info') return windowInfo
     if (request.command === 'core.subscribe' || request.command === 'core.unsubscribe') return { accepted: true }
     if (request.command === 'menus.install') {

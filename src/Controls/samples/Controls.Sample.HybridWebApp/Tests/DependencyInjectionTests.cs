@@ -11,7 +11,6 @@ using Maui.HybridApp.Essentials.Battery;
 using Maui.HybridApp.Essentials.Display;
 using Maui.HybridApp.Essentials.FilePicker;
 using Maui.HybridApp.Essentials.Connectivity;
-using Maui.HybridApp.Essentials.TextToSpeech;
 using Maui.HybridApp.Essentials.Launcher;
 using Maui.HybridApp.UI;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,12 +54,12 @@ public sealed class DependencyInjectionTests
 		services.AddSingleton<IPreferences>(preferences);
 		services.AddSingleton(dispatcher);
 		services.AddSingleton<TimeProvider>(clock);
-		services.AddHybridApp(new HybridAppOptions("host-policy.", 8));
+		services.AddHybridApp(new HybridAppOptions(8));
 		var registrations = services.Count;
-		services.AddHybridApp(new HybridAppOptions("host-policy.", 8));
+		services.AddHybridApp(new HybridAppOptions(8));
 		Assert.Equal(registrations, services.Count);
-		Assert.Throws<InvalidOperationException>(() => services.AddHybridApp(new HybridAppOptions("other-policy.", 8)));
-		Assert.Throws<InvalidOperationException>(() => services.AddHybridApp(new HybridAppOptions("host-policy.", 9)));
+		Assert.Throws<InvalidOperationException>(() => services.AddHybridApp(new HybridAppOptions(8, maximumWindows: 2)));
+		Assert.Throws<InvalidOperationException>(() => services.AddHybridApp(new HybridAppOptions(9)));
 		Assert.Equal(registrations, services.Count);
 		using var root = Build(services);
 		using var scope = root.CreateScope();
@@ -69,8 +68,8 @@ public sealed class DependencyInjectionTests
 		Assert.Same(dispatcher, scope.ServiceProvider.GetRequiredService<NativeDispatcher>());
 		Assert.Same(clock, scope.ServiceProvider.GetRequiredService<TimeProvider>());
 		Assert.All(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
-			typeof(ConnectivityProvider), typeof(TextToSpeechProvider), typeof(LauncherProvider),
-			typeof(WindowProvider), typeof(DialogProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(ApplicationProvider),
+			typeof(ConnectivityProvider), typeof(LauncherProvider),
+			typeof(WindowProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(ApplicationProvider),
 			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(PreferencesProvider) },
 			type => Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == type));
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
@@ -80,7 +79,6 @@ public sealed class DependencyInjectionTests
 			"core.subscribe", "core.unsubscribe", "core.channel.ack", "core.channel.close", "core.channel.fetch",
 			"device.info", "window.flowDirection" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
 		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "geolocation.location", "launcher.openUrl", "share.request", "speech.speak" }, ready.InteractiveCommands);
-		Assert.Equal("host-policy.", ready.PreferenceNamespace);
 		Assert.Equal(8, ready.MaximumTextLength);
 		Assert.Equal("unknown_command", (await Call(hub, session, "camera.capture")).Error!.Code);
 		Assert.Equal("unknown_command", (await Call(hub, session, "sample.echo")).Error!.Code);
@@ -100,7 +98,7 @@ public sealed class DependencyInjectionTests
 		services.AddSingleton<IClipboard>(clipboard);
 		services.AddSingleton<IPreferences>(preferences);
 		services.AddScoped(_ => new NativeDispatcher(action => action()));
-		services.AddHybridApp(new HybridAppOptions("di-host.", 4))
+		services.AddHybridApp(new HybridAppOptions(4))
 			.AddExternalProviderActions();
 		services.AddScoped<PluginActionState>();
 		using var root = Build(services);
@@ -114,7 +112,6 @@ public sealed class DependencyInjectionTests
 		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginResult)));
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
-		Assert.Equal("di-host.", ready.PreferenceNamespace);
 		Assert.Equal(4, ready.MaximumTextLength);
 		Assert.Contains("plugin.action.enumDefault", ready.Commands);
 		Assert.Contains("plugin.echo", ready.Commands);
@@ -122,8 +119,9 @@ public sealed class DependencyInjectionTests
 		Assert.Equal("Test app", (await Call(hub, session, "app.info")).Result!.Value.GetProperty("appName").GetString());
 		Assert.Equal("Android", (await Call(hub, session, "device.info")).Result!.Value.GetProperty("platform").GetString());
 		Assert.Equal("success", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"1234\"}}")).Status);
-		Assert.Equal("1234", preferences.Values["di-host.key"]);
-		Assert.Equal("invalid_arguments", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"12345\"}}")).Error!.Code);
+		Assert.Equal("1234", preferences.Values["key"]);
+		Assert.Equal("success", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"12345\"}}")).Status);
+		Assert.Equal("12345", preferences.Values["key"]);
 		Assert.Equal("invalid_arguments", (await Call(hub, session, "clipboard.write", "{\"text\":\"12345\"}")).Error!.Code);
 		var events = new List<NativeEvent>();
 		hub.NativeEventReceived += events.Add;
@@ -138,7 +136,7 @@ public sealed class DependencyInjectionTests
 	public async Task TwoOwningScopesIsolateProvidersSessionsCountersAndEventsWhileReloadPreservesState()
 	{
 		var services = new ServiceCollection();
-		services.AddHybridApp(new HybridAppOptions("scope-test.")).AddPlayground("test-startup", DateTimeOffset.UtcNow);
+		services.AddHybridApp(new HybridAppOptions()).AddPlayground("test-startup", DateTimeOffset.UtcNow);
 		using var root = Build(services);
 		using var first = root.CreateScope();
 		using var second = root.CreateScope();
@@ -183,7 +181,7 @@ public sealed class DependencyInjectionTests
 		var clock = new TrackedTimeProvider();
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddScoped<ScopeProbeState>();
-		services.AddHybridApp(new HybridAppOptions("scope-test.")).AddPlayground("test-startup", DateTimeOffset.UtcNow);
+		services.AddHybridApp(new HybridAppOptions()).AddPlayground("test-startup", DateTimeOffset.UtcNow);
 		using var root = Build(services);
 		using var first = root.CreateScope();
 		using var second = root.CreateScope();
@@ -258,7 +256,7 @@ public sealed class DependencyInjectionTests
 		var clock = new TrackedTimeProvider();
 		var services = new ServiceCollection();
 		services.AddSingleton<TimeProvider>(clock);
-		services.AddHybridApp(new("cleanup."));
+		services.AddHybridApp(new());
 		using var root = Build(services);
 		using var scope = root.CreateScope();
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
@@ -280,7 +278,7 @@ public sealed class DependencyInjectionTests
 		var clipboard = new FakeClipboard();
 		services.AddSingleton<IClipboard>(clipboard);
 		services.AddSingleton(new NativeDispatcher(action => action()));
-		services.AddHybridApp(new HybridAppOptions("events."));
+		services.AddHybridApp(new HybridAppOptions());
 		using var root = Build(services);
 		using var first = root.CreateScope();
 		using var second = root.CreateScope();
@@ -309,7 +307,7 @@ public sealed class DependencyInjectionTests
 		var clock = new TrackedTimeProvider();
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddScoped<ScopeProbeState>();
-		services.AddHybridApp(new HybridAppOptions("scope-test."));
+		services.AddHybridApp(new HybridAppOptions());
 		HybridActionAssemblies.Add(services, typeof(DependencyInjectionTests), (registry, _) =>
 			registry.RegisterGenerated("app.info", [ProtocolJsonContext.Default.Ack], (_, _) => Task.FromResult(default(JsonElement))));
 		using var root = Build(services);
@@ -326,21 +324,20 @@ public sealed class DependencyInjectionTests
 	public void InvalidHostPolicyCannotLeakALeaseOrExposeTheEntirePreferenceStore()
 	{
 		var clock = new TrackedTimeProvider();
-		Assert.Throws<ArgumentNullException>(() => new HybridAppOptions(null!));
-		Assert.Throws<ArgumentException>(() => new HybridAppOptions(""));
-		Assert.Throws<ArgumentOutOfRangeException>(() => new HybridAppOptions("host.", maximumTextLength: 0));
+		Assert.Throws<ArgumentOutOfRangeException>(() => new HybridAppOptions(maximumTextLength: 0));
+		Assert.Throws<ArgumentOutOfRangeException>(() => new HybridAppOptions(maximumWindows: 0));
 		Assert.Throws<ArgumentNullException>(() => new HybridAppTargetObject(new CommandRegistry(), (HybridAppOptions)null!, clock));
 		Assert.Equal(0, clock.ActiveTimers);
 		var services = new ServiceCollection();
 		services.AddSingleton<TimeProvider>(clock);
 		services.AddSingleton<IPreferences>(new FakePreferences());
-		services.AddSingleton(new HybridAppOptions("host."));
+		services.AddSingleton(new HybridAppOptions());
 		services.AddSingleton(new NativeDispatcher(action => action()));
-		services.AddHybridApp(new HybridAppOptions("host."));
+		services.AddHybridApp(new HybridAppOptions());
 		using var root = Build(services);
 		using var scope = root.CreateScope();
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
-		Assert.Throws<ArgumentNullException>(() => new PreferencesProvider(new FakePreferences(), null!));
+		Assert.Throws<ArgumentNullException>(() => new PreferencesProvider(null!));
 		Assert.NotNull(scope.ServiceProvider.GetRequiredService<PreferencesProvider>());
 		scope.Dispose();
 		Assert.Equal(0, clock.ActiveTimers);

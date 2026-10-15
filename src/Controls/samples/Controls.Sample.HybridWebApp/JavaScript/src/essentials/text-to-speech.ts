@@ -1,4 +1,4 @@
-import { ack, connect, NativeError, object, text } from '../core.js'
+import { connect, NativeError, object, text } from '../core.js'
 import type { Json, Operation } from '../core.js'
 
 /** An actual native engine locale, with platform-specific values preserved verbatim. */
@@ -15,14 +15,14 @@ export interface SpeechLocale {
 
 /** Existing MAUI SpeechOptions; omitted fields retain native engine defaults. */
 export interface SpeechOptions {
-  /** Locale returned by getLocales; omitted to use the native default voice. */
-  locale?: SpeechLocale
-  /** Native pitch from zero through two. */
-  pitch?: number
-  /** Native volume from zero through one. */
-  volume?: number
-  /** Native speech rate from 0.1 through two; one is normal speed. */
-  rate?: number
+  /** Native locale; constructor nulls normalize to empty strings. Omit to use the default voice. */
+  locale?: { [K in keyof SpeechLocale]: SpeechLocale[K] | null } | null
+  /** Native pitch; the destination validates its supported range. */
+  pitch?: number | null
+  /** Native volume; the destination validates its supported range. */
+  volume?: number | null
+  /** Native speech rate; the destination validates its supported range. */
+  rate?: number | null
 }
 
 /**
@@ -33,9 +33,8 @@ export interface SpeechOptions {
  */
 export async function getLocales(): Promise<SpeechLocale[]> {
   return (await connect()).invoke('speech.locales', {}, value => {
-    const locales = object(value).locales
-    if (!Array.isArray(locales)) throw new NativeError('invalid_response', 'Expected native speech locales.')
-    return locales.map(value => {
+    if (!Array.isArray(value)) throw new NativeError('invalid_response', 'Expected native speech locales.')
+    return value.map(value => {
       const v = object(value)
       return { id: text(v.id), language: text(v.language), country: text(v.country), name: text(v.name) }
     })
@@ -44,7 +43,7 @@ export async function getLocales(): Promise<SpeechLocale[]> {
 
 /**
  * Starts native speech with an operation-specific cooperative cancellation handle.
- * @param value - Nonblank text within the host-advertised UTF-16 text budget.
+ * @param value - Text passed unchanged to native SpeakAsync.
  * @param options - Native locale, pitch, volume and rate; omitted fields retain OS defaults.
  * @returns A core Operation whose result completes when native speech finishes.
  * @throws `NativeError` for invalid inputs, missing providers or native unsupported/errors.
@@ -54,29 +53,29 @@ export async function getLocales(): Promise<SpeechLocale[]> {
  * Cancellation never cancels unrelated feature operations and is not a global
  * stop API or proof of OS audio undo. Disconnect cancels document-owned speech.
  */
-export async function speak(value: string, options: SpeechOptions = {}): Promise<Operation<void>> {
-  if (typeof value !== 'string' || !value.trim()) throw new NativeError('invalid_arguments', 'Speech requires nonblank text.')
-  if (!options || typeof options !== 'object' || Array.isArray(options))
+export async function speak(value: string, options?: SpeechOptions | null): Promise<Operation<void>> {
+  if (typeof value !== 'string') throw new NativeError('invalid_arguments', 'Speech text must be a string.')
+  if (options !== undefined && options !== null && (typeof options !== 'object' || Array.isArray(options)))
     throw new NativeError('invalid_arguments', 'Use a native speech options object.')
-  if (Object.keys(options).some(key => !['locale', 'pitch', 'volume', 'rate'].includes(key)))
+  if (options && Object.keys(options).some(key => !['locale', 'pitch', 'volume', 'rate'].includes(key)))
     throw new NativeError('invalid_arguments', 'Use native locale, pitch, volume and rate options.')
-  const nativeOptions: Record<string, Json> = {}
-  for (const [key, min, max] of [['pitch', 0, 2], ['volume', 0, 1], ['rate', 0.1, 2]] as const) {
-    const number = options[key]
-    if (number !== undefined && (!Number.isFinite(number) || number < min || number > max))
-      throw new NativeError('invalid_arguments', `Speech ${key} must be between ${min} and ${max}.`)
-    if (number !== undefined) nativeOptions[key] = number
+  const nativeOptions: Record<string, Json> | null = options == null ? null : {}
+  for (const key of ['pitch', 'volume', 'rate'] as const) {
+    const number = options?.[key]
+    if (number !== undefined && number !== null && (typeof number !== 'number' || !Number.isFinite(number) || !Number.isFinite(Math.fround(number))))
+      throw new NativeError('invalid_arguments', `Speech ${key} must be a finite native float or null.`)
+    if (number !== undefined) nativeOptions![key] = number
   }
-  if (options.locale !== undefined) {
+  if (options?.locale !== undefined) {
     const locale = options.locale
-    if (!locale || [locale.id, locale.language, locale.country, locale.name].some(value => typeof value !== 'string' || value.length > 512))
-      throw new NativeError('invalid_arguments', 'Use a bounded native speech locale.')
-    nativeOptions.locale = { id: locale.id, language: locale.language, country: locale.country, name: locale.name }
+    if (locale !== null && (typeof locale !== 'object' || Array.isArray(locale) ||
+      Object.keys(locale).some(key => !['id', 'language', 'country', 'name'].includes(key)) ||
+      [locale.id, locale.language, locale.country, locale.name].some(value => value !== null && typeof value !== 'string')))
+      throw new NativeError('invalid_arguments', 'Use native speech locale strings.')
+    nativeOptions!.locale = locale === null ? null : { id: locale.id, language: locale.language, country: locale.country, name: locale.name }
   }
   const client = await connect()
-  if (value.length > client.readiness!.maximumTextLength)
-    throw new NativeError('invalid_arguments', 'Speech text exceeds the host text budget.')
   return client.start('speech.speak', { text: value, options: nativeOptions }, value => {
-    if (!ack(value)) throw new NativeError('invalid_response', 'Native speech did not complete.')
+    if (value !== null) throw new NativeError('invalid_response', 'Expected native void completion.')
   })
 }

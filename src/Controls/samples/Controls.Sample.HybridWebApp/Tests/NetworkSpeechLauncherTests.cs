@@ -2,7 +2,6 @@ using System.Text.Json;
 using Maui.HybridApp;
 using Maui.HybridApp.Essentials.Connectivity;
 using Maui.HybridApp.Essentials.Launcher;
-using Maui.HybridApp.Essentials.TextToSpeech;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Networking;
@@ -53,8 +52,8 @@ public sealed class NetworkSpeechLauncherTests
 		using var notices2 = new NativeNotifications();
 		using var provider1 = new ConnectivityProvider(native, Inline, notices1);
 		using var provider2 = new ConnectivityProvider(native, Inline, notices2);
-		using var hub1 = TestComposition.CreateHub([provider1], new HybridAppOptions("test."), notifications: notices1);
-		using var hub2 = TestComposition.CreateHub([provider2], new HybridAppOptions("test."), notifications: notices2);
+		using var hub1 = TestComposition.CreateHub([provider1], new HybridAppOptions(), notifications: notices1);
+		using var hub2 = TestComposition.CreateHub([provider2], new HybridAppOptions(), notifications: notices2);
 		var events1 = new List<NativeEvent>();
 		var events2 = new List<NativeEvent>();
 		hub1.NativeEventReceived += events1.Add;
@@ -101,7 +100,7 @@ public sealed class NetworkSpeechLauncherTests
 		var native = new Network { SubscribeError = new PermissionException("Denied") };
 		using var notifications = new NativeNotifications();
 		using var provider = new ConnectivityProvider(native, Inline, notifications);
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions("test."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		Assert.Equal("permission_denied", (await Call(hub, session, "core.subscribe", new { topic = "connectivity.changed" })).Error!.Code);
@@ -116,13 +115,13 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new Speech();
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new TextToSpeechProvider(native, new HybridAppOptions("test.", 32)));
-		var locale = Assert.Single((await Dispatch(registry, "speech.locales")).GetProperty("locales").EnumerateArray());
+		registry = TestComposition.CreateRegistryWithOptions(new(32), native);
+		var locale = Assert.Single((await Dispatch(registry, "speech.locales")).EnumerateArray());
 		Assert.Equal("Native voice", locale.GetProperty("name").GetString());
 		Assert.Equal("", locale.GetProperty("country").GetString());
 		Assert.Equal(0, native.Speaks);
 		Assert.True(registry.IsInteractive("speech.speak"));
-		Assert.True((await Dispatch(registry, "speech.speak", "{\"text\":\"你好 👋\"}")).GetProperty("accepted").GetBoolean());
+		Assert.Equal(JsonValueKind.Null, (await Dispatch(registry, "speech.speak", "{\"text\":\"你好 👋\"}")).ValueKind);
 		Assert.Null(native.Options);
 		await Dispatch(registry, "speech.speak",
 			"{\"text\":\"Hello\",\"options\":{\"pitch\":1.5,\"volume\":0.25,\"rate\":0.8,\"locale\":{\"id\":\"native\",\"language\":\"en-US\",\"country\":\"\",\"name\":\"Native voice\"}}}");
@@ -137,7 +136,7 @@ public sealed class NetworkSpeechLauncherTests
 	public async Task NativeSpeechOptionsDefaultsAndLocaleNullNormalizationArePreserved()
 	{
 		var native = new Speech();
-		var registry = TestComposition.CreateRegistry(new TextToSpeechProvider(native, new HybridAppOptions("test.")));
+		var registry = TestComposition.CreateRegistry(native);
 		await Dispatch(registry, "speech.speak", """{"text":"Hello","options":{"locale":{"id":null,"language":"en","country":null,"name":null}}}""");
 		Assert.IsType<SpeechOptions>(native.Options);
 		Assert.IsType<Locale>(native.Options!.Locale);
@@ -151,20 +150,108 @@ public sealed class NetworkSpeechLauncherTests
 	}
 
 	[Theory]
+	[InlineData("")]
+	[InlineData(" \t\n")]
+	[InlineData("unchanged")]
+	public async Task SpeechPassesTextOptionsAndLongLocaleValuesDirectlyToTheDestination(string text)
+	{
+		var native = new Speech();
+		var registry = TestComposition.CreateRegistryWithOptions(new(1), native);
+		var name = new string('語', 2048);
+		if (text == "unchanged") text = new string('文', 8192);
+		var result = await Dispatch(registry, "speech.speak", JsonSerializer.Serialize(new
+		{
+			text,
+			options = new { pitch = -3.5f, volume = 5.25f, rate = 0f, locale = new { id = " voice.id ", language = " ", country = "", name } }
+		}));
+		Assert.Equal(JsonValueKind.Null, result.ValueKind);
+		Assert.Equal(text, native.Text);
+		Assert.Equal(-3.5f, native.Options!.Pitch);
+		Assert.Equal(5.25f, native.Options.Volume);
+		Assert.Equal(0f, native.Options.Rate);
+		Assert.Equal(" voice.id ", native.Options.Locale!.Id);
+		Assert.Equal(" ", native.Options.Locale.Language);
+		Assert.Equal(name, native.Options.Locale.Name);
+	}
+
+	[Fact]
+	public async Task SpeechNullableOptionsAreNativeNullsAndExceptionsAreNotReplacedByValidation()
+	{
+		var native = new Speech();
+		var registry = TestComposition.CreateRegistry(native);
+		await Dispatch(registry, "speech.speak", """{"text":"","options":null}""");
+		Assert.Null(native.Options);
+		await Dispatch(registry, "speech.speak", """{"text":"","options":{"pitch":null,"volume":null,"rate":null,"locale":null}}""");
+		Assert.NotNull(native.Options);
+		Assert.Null(native.Options.Pitch);
+		Assert.Null(native.Options.Volume);
+		Assert.Null(native.Options.Rate);
+		Assert.Null(native.Options.Locale);
+		var failure = new ArgumentOutOfRangeException("native validation");
+		native.Error = failure;
+		Assert.Same(failure, await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+			Dispatch(registry, "speech.speak", """{"text":"","options":{"pitch":-8}}""")));
+		Assert.Equal(-8f, native.Options!.Pitch);
+	}
+
+	[Fact]
+	public async Task AnnotatedSpeechUsesTheMainThreadBoundaryAndAwaitsNativeCompletionAndFaults()
+	{
+		var calls = 0;
+		var dispatcher = new NativeDispatcher(action => { calls++; return action(); });
+		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var native = new Speech { Completion = completion.Task };
+		var registry = TestComposition.CreateRegistry(native, dispatcher);
+		await Dispatch(registry, "speech.locales");
+		Assert.Equal(1, calls);
+		var pending = Dispatch(registry, "speech.speak", """{"text":"native"}""");
+		await native.Started.Task;
+		Assert.Equal(2, calls);
+		Assert.False(pending.IsCompleted);
+		completion.SetResult();
+		Assert.Equal(JsonValueKind.Null, (await pending).ValueKind);
+		var failure = new IOException("Async native speech error");
+		completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		native.Completion = completion.Task;
+		var failed = Dispatch(registry, "speech.speak", """{"text":""}""");
+		Assert.False(failed.IsCompleted);
+		completion.SetException(failure);
+		Assert.Same(failure, await Assert.ThrowsAsync<IOException>(() => failed));
+		Assert.Equal(3, calls);
+	}
+
+	[Fact]
+	public async Task AsyncLocaleEnumerationWaitsForTheNativeTaskAndPreservesOrderWithoutAnEnvelope()
+	{
+		var completion = new TaskCompletionSource<IEnumerable<Locale>>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var native = new Speech { Locales = completion.Task };
+		var registry = TestComposition.CreateRegistry(native);
+		var pending = Dispatch(registry, "speech.locales");
+		Assert.False(pending.IsCompleted);
+		IEnumerable<Locale> Values()
+		{
+			yield return new("en", "", "First", "1");
+			yield return new("語", "", "Second", "2");
+		}
+		completion.SetResult(Values());
+		var result = await pending;
+		Assert.Equal(JsonValueKind.Array, result.ValueKind);
+		Assert.Equal(new[] { "First", "Second" }, result.EnumerateArray().Select(item => item.GetProperty("name").GetString()));
+	}
+
+	[Theory]
 	[InlineData("{}")]
 	[InlineData("{\"text\":null}")]
-	[InlineData("{\"text\":\"  \"}")]
-	[InlineData("{\"text\":\"longer than host budget\"}")]
 	[InlineData("{\"text\":\"Hello\",\"stop\":true}")]
-	[InlineData("{\"text\":\"Hello\",\"options\":{\"pitch\":2.1}}")]
-	[InlineData("{\"text\":\"Hello\",\"options\":{\"volume\":-0.1}}")]
-	[InlineData("{\"text\":\"Hello\",\"options\":{\"rate\":0}}")]
+	[InlineData("{\"text\":\"Hello\",\"options\":{\"pitch\":1e300}}")]
+	[InlineData("{\"text\":\"Hello\",\"options\":{\"volume\":\"1\"}}")]
+	[InlineData("{\"text\":\"Hello\",\"options\":{\"other\":0}}")]
 	[InlineData("{\"text\":\"Hello\",\"options\":{\"locale\":{\"id\":42,\"language\":\"en\",\"country\":\"\",\"name\":\"\"}}}")]
 	public async Task InvalidSpeechContractsAreRejectedBeforeAnyNativeSpeech(string args)
 	{
 		var native = new Speech();
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new TextToSpeechProvider(native, new HybridAppOptions("test.", 8)));
+		registry = TestComposition.CreateRegistryWithOptions(new(8), native);
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "speech.speak", args))).Code);
 		Assert.Equal(0, native.Speaks);
 	}
@@ -175,8 +262,8 @@ public sealed class NetworkSpeechLauncherTests
 		var native = new Speech { Wait = true };
 		using var notifications = new NativeNotifications();
 		using var network = new ConnectivityProvider(new Network(), Inline, notifications);
-		using var hub = TestComposition.CreateHub([new TextToSpeechProvider(native, new HybridAppOptions("test.")), network],
-			new HybridAppOptions("test."), notifications: notifications);
+		using var hub = TestComposition.CreateHub([native, network],
+			new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		var id = Guid.NewGuid().ToString("D");
@@ -194,7 +281,7 @@ public sealed class NetworkSpeechLauncherTests
 	public async Task DisconnectCancelsActualNativeSpeech()
 	{
 		var native = new Speech { Wait = true };
-		using var hub = TestComposition.CreateHub([new TextToSpeechProvider(native, new HybridAppOptions("test."))], new HybridAppOptions("test."));
+		using var hub = TestComposition.CreateHub([native], new HybridAppOptions());
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		var pending = Call(hub, session, "speech.speak", new { text = "Disconnect me" });
@@ -258,8 +345,8 @@ public sealed class NetworkSpeechLauncherTests
 		using var notifications = new NativeNotifications();
 		using var network = new ConnectivityProvider(new Network { ReadError = new NotSupportedException() }, Inline, notifications);
 		using var hub = TestComposition.CreateHub([
-			new TextToSpeechProvider(speech, new HybridAppOptions("test.")), new LauncherProvider(launcher), network
-		], new HybridAppOptions("test."), notifications: notifications);
+			speech, new LauncherProvider(launcher), network
+		], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		foreach (var command in new[] { "connectivity.info", "speech.locales", "speech.speak", "launcher.openUrl" })
@@ -303,15 +390,18 @@ public sealed class NetworkSpeechLauncherTests
 		public int Speaks;
 		public bool Wait;
 		public Exception? Error;
+		public Task<IEnumerable<Locale>>? Locales;
+		public Task? Completion;
 		public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-		public Task<IEnumerable<Locale>> GetLocalesAsync() => Error is null
+		public Task<IEnumerable<Locale>> GetLocalesAsync() => Locales ?? (Error is null
 			? Task.FromResult<IEnumerable<Locale>>([new Locale("en-US", "", "Native voice", "native")])
-			: Task.FromException<IEnumerable<Locale>>(Error);
+			: Task.FromException<IEnumerable<Locale>>(Error));
 		public async Task SpeakAsync(string text, SpeechOptions? options = null, CancellationToken cancelToken = default)
 		{
 			Speaks++; Text = text; Options = options; Cancellation = cancelToken;
 			Started.TrySetResult();
 			if (Error is not null) throw Error;
+			if (Completion is not null) await Completion.WaitAsync(cancelToken);
 			if (Wait) await Task.Delay(Timeout.Infinite, cancelToken);
 		}
 	}

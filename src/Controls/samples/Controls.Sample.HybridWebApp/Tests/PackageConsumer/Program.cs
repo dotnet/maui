@@ -3,21 +3,28 @@ using System.Text.Json.Serialization;
 using HybridApp.ExternalProvider;
 using Maui.HybridApp;
 using Maui.HybridApp.Generated;
+using Maui.HybridApp.UI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Media;
 
 [assembly: HybridJsonContext(typeof(DevicePlatform), typeof(ConsumerPlatformJsonContext))]
 
 var services = new ServiceCollection();
-services.AddHybridApp(new HybridAppOptions("consumer."));
+services.AddHybridApp(new HybridAppOptions());
 services.AddScoped<PluginActionState>();
 services.AddKeyedScoped<PluginActionState>("action-key", (_, _) => new() { Calls = 10 });
 services.AddExternalProviderActions();
 services.AddPackageConsumerActions();
 services.AddScoped<INativeCounterContract>(_ => new ConsumerCounter());
+services.AddScoped<ITextToSpeech, ConsumerSpeech>();
+services.AddScoped(_ => new NativeDispatcher(action => action()));
 using var root = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 using var hostScope = root.CreateScope();
 using var scope = hostScope.ServiceProvider.CreateHybridAppProvider();
+var page = new ContentPage();
+scope.GetRequiredService<HybridViewContext>().Bind(page, new Window(page), "index.html");
 var hub = scope.GetRequiredService<HybridAppTargetObject>();
 var events = new List<NativeEvent>();
 hub.NativeEventReceived += events.Add;
@@ -45,7 +52,7 @@ Check(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginResult)) is null, "Pl
 var connect = await Call("core.connect", "{}");
 Check(connect.Status == "success", "Connect failed.");
 var ready = connect.Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
-Check(ready.PreferenceNamespace == "consumer." && ready.Commands.Contains("app.info", StringComparer.Ordinal) &&
+Check(ready.Commands.Contains("app.info", StringComparer.Ordinal) &&
 	ready.Commands.Contains("device.info", StringComparer.Ordinal) && ready.Commands.Contains("preferences.set", StringComparer.Ordinal),
 	"Product convenience did not register its implemented APIs and actual policy.");
 Check(ready.Commands.Contains("window.info", StringComparer.Ordinal) && ready.Commands.Contains("battery.info", StringComparer.Ordinal) &&
@@ -54,6 +61,16 @@ Check(ready.Commands.Contains("window.info", StringComparer.Ordinal) && ready.Co
 Check(ready.InteractiveCommands is not null && ready.InteractiveCommands.Contains("dialogs.prompt", StringComparer.Ordinal) &&
 	ready.InteractiveCommands.Contains("filePicker.pick", StringComparer.Ordinal) && ready.InteractiveTimeoutMilliseconds == 300000,
 	"Typed interactive handshake policy did not survive packaging.");
+var locales = await Call("speech.locales", "{}");
+Check(locales.Status == "success" && locales.Result!.Value.ValueKind == JsonValueKind.Array &&
+	locales.Result.Value[0].GetProperty("id").GetString() == "consumer-voice",
+	"Packed native async enumerable did not preserve its direct result.");
+var speaking = await Call("speech.speak", """{"text":" ","options":{"pitch":-3,"volume":5,"rate":0}}""");
+var nativeSpeech = hostScope.ServiceProvider.GetRequiredService<ITextToSpeech>() as ConsumerSpeech;
+Check(speaking.Status == "success" && speaking.Result is null &&
+	nativeSpeech?.Text == " " && nativeSpeech.Options?.Pitch == -3 && nativeSpeech.Options.Volume == 5 &&
+	nativeSpeech.Options.Rate == 0 && nativeSpeech.Cancellation.CanBeCanceled,
+	"Packed native speech must call the host override without semantic validation or result envelopes.");
 Check(typeof(CommandRegistry).Assembly.GetReferencedAssemblies().Any(name => name.Name == "Microsoft.Maui.Controls"),
 	"The current WIP product must declare its actual Controls dependency.");
 Check((await Call("core.subscribe", "{\"topic\":\"plugin.changed\"}")).Status == "success", "Subscribe failed.");
@@ -159,6 +176,25 @@ public sealed class ConsumerCounter : INativeCounterContract
 {
 	public int Value { get; private set; }
 	public int Add(int increment) => Value += increment;
+}
+
+public sealed class ConsumerSpeech : ITextToSpeech
+{
+	public string? Text { get; private set; }
+	public SpeechOptions? Options { get; private set; }
+	public CancellationToken Cancellation { get; private set; }
+	public async Task<IEnumerable<Locale>> GetLocalesAsync()
+	{
+		await Task.Yield();
+		return [new Locale("en", "", "Consumer", "consumer-voice")];
+	}
+	public async Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default)
+	{
+		await Task.Yield();
+		Text = text;
+		Options = options;
+		Cancellation = cancelToken;
+	}
 }
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

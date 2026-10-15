@@ -114,7 +114,7 @@ public sealed class NativeContractTests
 		var root = TestDirectory();
 		try
 		{
-			using var provider = new ShareProvider(fake, context, new(root, TimeProvider.System), new("share."));
+			using var provider = new ShareProvider(fake, context, new(root, TimeProvider.System), new());
 			var error = await Assert.ThrowsAsync<CommandException>(() => provider.Request(Json(request), default));
 			Assert.Equal("invalid_arguments", error.Code);
 			Assert.Empty(fake.Requests);
@@ -131,8 +131,8 @@ public sealed class NativeContractTests
 		var fake = new FakeShare();
 		var time = new Clock();
 		var cache = new HybridShareCache(root, time);
-		var provider = new ShareProvider(fake, context, cache, new("share."));
-		using var other = new ShareProvider(fake, otherContext, cache, new("share."));
+		var provider = new ShareProvider(fake, context, cache, new());
+		using var other = new ShareProvider(fake, otherContext, cache, new());
 		try
 		{
 			var first = provider.Stage([0, 1, 255], "browser.pdf", "application/pdf", default);
@@ -174,7 +174,7 @@ public sealed class NativeContractTests
 		var time = new Clock();
 		var cache = new HybridShareCache(root, time);
 		var fake = new FakeShare { Wait = new(TaskCreationOptions.RunContinuationsAsynchronously) };
-		var provider = new ShareProvider(fake, context, cache, new("share."));
+		var provider = new ShareProvider(fake, context, cache, new());
 		try
 		{
 			provider.Stage([3], "unshared.txt", "text/plain", default);
@@ -205,7 +205,7 @@ public sealed class NativeContractTests
 		var root = TestDirectory();
 		try
 		{
-			using var provider = new ShareProvider(new FakeShare(), context, new(root, TimeProvider.System), new("share."));
+			using var provider = new ShareProvider(new FakeShare(), context, new(root, TimeProvider.System), new());
 			foreach (var name in new[] { "../escape.pdf", "/absolute.pdf", "sub/file.pdf", "a\\file.pdf", ".hidden", "" })
 				Assert.Equal("invalid_arguments", Assert.Throws<CommandException>(() => provider.Stage([1], name, "application/pdf", default)).Code);
 			Assert.Throws<CommandException>(() => provider.Stage([], "empty.pdf", "application/pdf", default));
@@ -230,7 +230,7 @@ public sealed class NativeContractTests
 		var root = TestDirectory();
 		try
 		{
-			using var provider = new ShareProvider(new FakeShare(), context, new(root, TimeProvider.System), new("share."));
+			using var provider = new ShareProvider(new FakeShare(), context, new(root, TimeProvider.System), new());
 			var json = provider.Stage([1], "old.txt", "text/plain", default);
 			var id = JsonSerializer.Deserialize(json, ShareJsonContext.Default.StagedShareFile)!.Id;
 			context.RetireDocument();

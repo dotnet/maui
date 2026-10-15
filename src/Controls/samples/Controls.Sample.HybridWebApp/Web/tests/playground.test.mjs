@@ -23,7 +23,7 @@ if (!HTMLDialogElement.prototype.close) {
 const identity = { appName: 'Native', version: '1', build: '2', platform: 'MacCatalyst', osVersion: '27', model: 'Mac',
   architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
 const actions = {
-  identity: ['run', 'reload'], clipboard: ['copy', 'paste'], preferences: ['save', 'read', 'remove'],
+  identity: ['run', 'reload'], clipboard: ['copy', 'paste'], preferences: ['save', 'read', 'remove', 'clear'],
   echo: ['echo', 'counter', 'binary-roundtrip', 'binary-document', 'binary-chunks', 'cancel'], errors: ['fail', 'counter'], policy: ['missing', 'disabled', 'invalid'],
   lifetime: ['increment', 'counter', 'reload', 'local-target', 'shared-target', 'read-targets', 'targets-window'], events: ['echo', 'subscribe', 'unsubscribe'],
   work: ['work', 'cancel', 'reload'], development: ['identity', 'reload'],
@@ -81,7 +81,7 @@ function transport(handler) {
 
 function defaultResult(request, bytes) {
   switch (request.command) {
-    case 'core.connect': return { commands: ['app.info', 'sample.echo'], preferenceNamespace: 'maui.playground.v1.', maximumTextLength: 4096 }
+    case 'core.connect': return { commands: ['app.info', 'sample.echo'], maximumTextLength: 4096 }
     case 'app.info': return { appName: identity.appName, version: identity.version, build: identity.build }
     case 'device.info': return { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
     case 'sample.diagnostics': return { architecture: identity.architecture, pid: identity.pid,
@@ -104,6 +104,7 @@ function defaultResult(request, bytes) {
       speed: null, course: null, isFromMockProvider: false, altitudeReferenceSystem: 'unspecified' }
     case 'preferences.get': return { kind: 'string', text: 'Native preference' }
     case 'preferences.set':
+    case 'preferences.clear':
     case 'preferences.remove': return { accepted: true }
     case 'sample.work': return { completed: request.args.steps, total: request.args.steps }
     case 'window.info':
@@ -115,7 +116,7 @@ function defaultResult(request, bytes) {
       canResize: true, canPosition: true, canOpenWindows: true, initialLocation: 'index.html#/showcase', windowLease: 'child-lease' } }
     case 'window.list': return { windows: [] }
     case 'window.open': return { id: 'child-window' }
-    case 'dialogs.prompt': return { cancelled: true, text: null }
+    case 'dialogs.prompt': return null
     case 'filePicker.pick': return null
     case 'battery.info': return { chargeLevel: 0.5, state: 'charging', powerSource: 'ac', energySaverStatus: 'off' }
     case 'display.info': return { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 }
@@ -360,6 +361,29 @@ test('action sheet passes editable native labels/options and preserves selection
   app.click('action-sheet')
   await app.idle()
   assert.equal(app.host.requests.at(-1).args.destruction, null)
+  assert.equal(JSON.parse(app.find('#result-json').textContent), null)
+})
+
+test('prompt forwards native options without label or length policy and displays direct text or null', async t => {
+  let result = '你好 👋 — actual native text'
+  const app = fixture(t, request => request.command === 'dialogs.prompt' ? result : defaultResult(request))
+  app.select('dialogs')
+  app.input('#prompt-accept', '')
+  app.input('#prompt-cancel', ' ')
+  app.input('#prompt-initial', 'long initial text')
+  app.input('#prompt-maxlength', '-2')
+  app.click('prompt')
+  await app.idle()
+  const args = app.host.requests.at(-1).args
+  assert.equal(args.accept, '')
+  assert.equal(args.cancel, ' ')
+  assert.equal(args.initialValue, 'long initial text')
+  assert.equal(args.maxLength, -2)
+  assert.deepEqual(args.keyboard, { name: 'text' })
+  assert.equal(app.find('#result-json').textContent, result)
+  result = null
+  app.click('prompt')
+  await app.idle()
   assert.equal(JSON.parse(app.find('#result-json').textContent), null)
 })
 
@@ -799,21 +823,40 @@ test('clipboard and preference pages own actual SDK calls, values, defaults and 
   assert.equal(clipboard.value, 'Native clipboard 👋')
   app.select('preferences')
   assert.equal(app.find('#preference-key').value, 'example')
-  assert.equal(app.find('#preference-key').maxLength, 48)
-  assert.equal(app.find('#preference-key').pattern, '[a-zA-Z0-9_-]{1,48}')
-  assert.equal(app.find('#preference-value').maxLength, 4096)
-  app.input('#preference-key', 'custom_key')
-  app.input('#preference-value', 'Saved text')
+  assert.equal(app.find('#preference-key').maxLength, -1)
+  assert.equal(app.find('#preference-key').pattern, '')
+  assert.equal(app.find('#preference-value').maxLength, -1)
+  const key = 'native.key with spaces 語.' + 'a'.repeat(100)
+  const value = 'Saved text'.repeat(1024)
+  app.input('#preference-key', key)
+  app.input('#preference-value', value)
   app.click('save')
   await app.idle()
-  assert.deepEqual(app.host.requests.at(-1).args, { key: 'custom_key', value: { kind: 'string', text: 'Saved text' }, sharedName: null })
+  assert.deepEqual(app.host.requests.at(-1).args, { key, value: { kind: 'string', text: value }, sharedName: null })
   app.click('read')
   await app.idle()
   assert.equal(app.find('#preference-value').value, 'Native preference')
   app.click('remove')
   await app.idle()
   assert.equal(app.host.requests.at(-1).command, 'preferences.remove')
-  assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { key: 'custom_key', value: null })
+  assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { key, value: null })
+})
+
+test('preference Clear explicitly warns about native-existing settings and requires a fresh user confirmation', async t => {
+  const app = fixture(t)
+  app.select('preferences')
+  assert.ok(app.find('#controls').textContent.includes('including settings created outside this page'))
+  assert.equal(app.find('[data-action="clear"]').disabled, true)
+  app.click('clear')
+  assert.equal(app.host.requests.length, 0)
+  app.find('#preference-confirm-clear').click()
+  flushSync()
+  app.click('clear')
+  await app.idle()
+  assert.equal(app.host.requests.at(-1).command, 'preferences.clear')
+  assert.deepEqual(app.host.requests.at(-1).args, { sharedName: null })
+  assert.equal(app.find('[data-action="clear"]').disabled, true)
+  assert.equal(app.find('#preference-confirm-clear').checked, false)
 })
 
 test('commands validate input and identity/lifetime/development pages call the app helpers', async t => {
@@ -1002,7 +1045,8 @@ test('native Windows, dialogs, device and embedded remote pages use the same SDK
   app.select('dialogs')
   app.click('prompt')
   await app.idle()
-  assert.deepEqual(JSON.parse(app.find('#result-json').textContent), { cancelled: true, text: null })
+  assert.equal(JSON.parse(app.find('#result-json').textContent), null)
+  assert.deepEqual(app.host.requests.at(-1).args.keyboard, { name: 'text' })
   for (const [page, action, command] of [['battery', 'battery', 'battery.info'], ['display', 'display', 'display.info'],
     ['showcase', 'prompt', 'dialogs.prompt']]) {
     app.select(page)

@@ -54,7 +54,7 @@ test('playground reload identity composes installed Essentials helpers with app-
   const identity = { appName: 'Native', version: '1', build: '2', platform: 'Android', osVersion: '16', model: 'Device',
     architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
   const host = mock(request => {
-    if (request.command === 'core.connect') return { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+    if (request.command === 'core.connect') return { commands: [], maximumTextLength: 4096 }
     if (request.command === 'app.info') return { appName: identity.appName, version: identity.version, build: identity.build }
     if (request.command === 'device.info') return { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
     assert.equal(request.command, 'sample.diagnostics')
@@ -78,7 +78,7 @@ test('app-owned diagnostics reject malformed native fields instead of inventing 
     architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
   let output = identity
   configureBridge(mock(request => request.command === 'core.connect'
-    ? { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 } : output).bridge)
+    ? { commands: [], maximumTextLength: 4096 } : output).bridge)
   const client = await connect()
   try {
     for (const [field, value] of [['architecture', null], ['pid', '123'], ['pid', null], ['startupId', 42], ['startedAt', {}]]) {

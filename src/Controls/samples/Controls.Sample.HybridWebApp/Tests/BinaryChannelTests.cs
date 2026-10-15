@@ -15,7 +15,7 @@ public sealed class BinaryChannelTests
 		internal Host(params object[] plugins)
 		{
 			var registry = TestComposition.CreateRegistry(plugins);
-			Hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "test.", 4096),
+			Hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, 4096),
 				message => Events.Writer.TryWrite(message));
 		}
 		internal string Wire(string command, string args = "{}", string? id = null, string? session = null)

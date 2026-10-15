@@ -19,9 +19,9 @@
 <p class="input-help">Title and message apply to the alert, confirmation and prompt below.
   The action sheet has its own title and selectable labels.</p>
 <label for="dialog-title">Dialog title</label>
-<input id="dialog-title" maxlength="160" bind:value={title} />
+<input id="dialog-title" bind:value={title} />
 <label for="dialog-message">Message</label>
-<textarea id="dialog-message" rows="3" maxlength="4096" bind:value={message}></textarea>
+<textarea id="dialog-message" rows="3" bind:value={message}></textarea>
 <section class="guide-section dialog-section" aria-labelledby="alert-heading">
   <h3 id="alert-heading">Alert</h3>
   <p class="input-help">One native acknowledgement button.</p>
@@ -46,18 +46,18 @@
 </section>
 <section class="guide-section dialog-section" aria-labelledby="prompt-heading">
   <h3 id="prompt-heading">Text prompt</h3>
-  <p class="input-help">Returns accepted text, or cancelled with null text on dismissal.</p>
+  <p class="input-help">Returns the native text directly, or null on dismissal.</p>
   <div class="work-inputs">
     <div><label for="prompt-accept">Accept label</label><input id="prompt-accept" bind:value={promptAccept} /></div>
     <div><label for="prompt-cancel">Cancel label</label><input id="prompt-cancel" bind:value={promptCancel} /></div>
     <div><label for="prompt-placeholder">Placeholder</label><input id="prompt-placeholder" bind:value={placeholder} /></div>
     <div><label for="prompt-initial">Initial value</label><input id="prompt-initial" bind:value={initialValue} /></div>
-    <div><label for="prompt-maxlength">Max length · -1 unspecified</label><input id="prompt-maxlength" type="number" min="-1" bind:value={maxLength} /></div>
+    <div><label for="prompt-maxlength">Max length · -1 unspecified</label><input id="prompt-maxlength" type="number" bind:value={maxLength} /></div>
   </div>
   <div class="actions">
     <Action {session} action="prompt" title="Ask for text"
       onclick={() => prompt(message, {
-        title, accept: promptAccept, cancel: promptCancel, placeholder, initialValue, maxLength, keyboard: 'text',
+        title, accept: promptAccept, cancel: promptCancel, placeholder, initialValue, maxLength, keyboard: { name: 'text' },
       })} />
   </div>
 </section>

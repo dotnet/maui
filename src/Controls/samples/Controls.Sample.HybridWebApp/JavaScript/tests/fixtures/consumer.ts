@@ -60,7 +60,7 @@ const bridge: Bridge = {
     if (request.command === 'menus.install') menuSource = 'menu'
     if (request.command === 'menus.clear') menuSource = null
     const results: Record<string, Json> = {
-      'core.connect': { commands: [], preferenceNamespace: 'consumer.', maximumTextLength: 4096 },
+      'core.connect': { commands: [], maximumTextLength: 4096 },
       'app.info': { appName: 'Consumer', version: '1', build: '2' },
       'device.info': { platform: 'test', osVersion: '1', model: 'test' },
       'clipboard.read': '你好 👋', 'clipboard.hasText': true, 'clipboard.write': null,
@@ -68,9 +68,10 @@ const bridge: Bridge = {
       'battery.info': { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' },
       'display.info': { width: 1000, height: 700, density: 2, orientation: 'landscape', rotation: 'rotation0', refreshRate: 60 },
       'connectivity.info': { networkAccess: 'internet', connectionProfiles: ['wiFi'] },
-      'speech.locales': { locales: [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }] },
+      'speech.locales': [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }],
+      'speech.speak': null,
       'filePicker.pick': null, 'filePicker.pickMultiple': { files: [] },
-      'dialogs.prompt': { cancelled: true, text: null }, 'dialogs.actionSheet': 'Cancel', 'dialogs.alert': null, 'dialogs.confirm': true,
+      'dialogs.prompt': null, 'dialogs.actionSheet': 'Cancel', 'dialogs.alert': null, 'dialogs.confirm': true,
       'geolocation.location': null, 'window.flowDirection': 'matchParent',
       'window.info': { ...snapshot, id: request.args.windowId ?? snapshot.id, windowLease: request.args.windowLease ?? snapshot.windowLease },
       'window.title': { ...snapshot, title: 'Updated' },
@@ -119,10 +120,15 @@ try {
   const speechOptions: SpeechOptions = { locale: locales[0]!, pitch: 1, volume: 0.5, rate: 1 }
   const speech = await speak('Hello from the packed SDK', speechOptions)
   await speech.result
+  await (await speak('', { locale: { id: null, name: null, country: null, language: 'en' }, pitch: null, volume: null, rate: null })).result
+  await (await speak(' ', null)).result
   await openUrl('https://dot.net/maui')
   check(await pickFile({ pickerTitle: 'Pick from TypeScript' }) === null); check((await pickMultipleFiles()).length === 0)
   await alert('Native message'); check(await confirm('Confirm native'))
-  check((await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: 'email', maxLength: 10000 })).cancelled)
+  const text: string | null = await prompt('Message', { title: 'Title', accept: 'Choose', cancel: 'Later', keyboard: { name: 'email' }, maxLength: 10000 })
+  check(text === null)
+  await prompt('Custom flags', { keyboard: { flags: ['spellcheck', 'suggestions'] } })
+  await prompt('Native default', { keyboard: null })
   check(await actionSheet({ buttons: ['Choice'], cancel: 'Cancel' }) === 'Cancel')
   check(await getCurrentFlowDirection() === 'matchParent')
   const location = await getLocation({ desiredAccuracy: 'medium', timeout: '00:00:20' })
@@ -152,6 +158,12 @@ try {
   check((await browser.navigation()).status === 'loaded'); check(await browser.url() === 'https://dot.net/maui')
   await browser.navigate('https://example.com'); await browser.reload(); await browser.hide(); await browser.close()
   if (false) {
+    // @ts-expect-error Keyboard is an object value, not a native kind enum.
+    await prompt('Message', { keyboard: 'text' })
+    // @ts-expect-error Keyboard has exactly one name or flags representation.
+    await prompt('Message', { keyboard: { name: 'text', flags: [] } })
+    // @ts-expect-error Wrapper-level keyboard flags no longer exist.
+    await prompt('Message', { keyboardFlags: ['spellcheck'] })
     // @ts-expect-error Feature resources do not pollute the infrastructure root.
     void root.currentWindow
     // @ts-expect-error Features never accept a NativeClient argument.

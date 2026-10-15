@@ -62,7 +62,7 @@ public sealed partial class HybridAppTargetObject : IHybridAppTarget, IDisposabl
 	static Func<ReadyResult> CreateReady(CommandRegistry registry, HybridAppOptions options, UI.HybridViewContext? viewContext)
 	{
 		ArgumentNullException.ThrowIfNull(options);
-		return () => new ReadyResult(registry.Names, options.PreferenceNamespace, options.MaximumTextLength,
+		return () => new ReadyResult(registry.Names, options.MaximumTextLength,
 			registry.InteractiveCommands, InitialLocation: viewContext?.InitialLocation);
 	}
 

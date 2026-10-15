@@ -17,7 +17,7 @@ Controls.Core (and Core transitively), plus the standard DI abstractions supplie
 by .NET 11. There is no second integration NuGet. The product never references
 the sample namespace, MauiProgram, its counter/diagnostics/catalog, development
 forwarding or test doubles. A future Essentials-only split is deferred.
-Routine clipboard methods/getters/events and alert/confirm/action-sheet calls now
+Routine clipboard methods/getters/events, async text-to-speech and alert/confirm/action-sheet calls now
 come directly from deliberately curated SDK contracts. Other API families remain
 cohesive policy/resource plugins, with directly typed
 method parameters and genuine structured options/results. Window actions and
@@ -126,7 +126,7 @@ roundtrip, a controlled native-produced PDF as bytes/Blob, and four ordered
 using Maui.HybridApp.Generated;
 
 builder.Services
-    .AddHybridApp(new HybridAppOptions("my-app.hybrid.", maximumTextLength: 4096))
+    .AddHybridApp(new HybridAppOptions(maximumTextLength: 4096))
     .AddMyToolkitActions(); // Generated in the MyToolkit assembly.
 ```
 
@@ -138,7 +138,7 @@ MAUI page/window UI providers. It supplies borrowed real
 Essentials interface defaults in the local overlay; host overrides are retained.
 Hubs, registries, notifications, contextual objects and plugin targets are
 **not registered as global host services**. Repeating equal
-namespace/text policy is idempotent, without duplicate providers; conflicting
+text/window resource policy is idempotent, without duplicate providers; conflicting
 policy is rejected instead of silently advertised with different native limits.
 There is no scanning, permission grant or switch enabling every Essentials API.
 
@@ -154,17 +154,23 @@ interfaces directly, not new service wrappers. `NativeDispatcher` is only a
 main-thread/cancellation boundary; product actions use the attached Page dispatcher,
 while teardown can still use that same owning Window dispatcher after logical
 detachment. Explicit host/test dispatchers are preserved.
-The app must supply its nonempty preference prefix; no sample prefix or default
-entire-store namespace is embedded in the product. Text defaults to 4096 UTF-16 units; keys remain 1–48 ASCII
-letters, digits, underscores or hyphens. Typed string/bool/numeric/Date values
-and optional host-isolated shared containers are supported; clear removes only
-tracked keys in that host namespace/container, never an entire native store.
-Typed values are validated before reserving the bounded ownership index; the
-index is reserved before native writes, and deletion releases its capacity.
-Failed writes of newly created keys clean up the value before untracking it.
-An existing value from an older preview without an index is never deleted by
-that rollback; ownership is retained after a failed update. An OS write that
-partially changed an existing value cannot generally be undone.
+Preferences use only the closed scalar adaptation required by generic `IPreferences`:
+typed string/bool/numeric/Date representations, including finite numbers and
+lossless JS integer safeguards. Actual keys, strings and optional `sharedName`
+pass unchanged to native storage. There is no prefix, key syntax/length restriction,
+string quota, ownership index or rollback. Native `Clear(sharedName)` clears the
+entire selected container, including settings created outside JavaScript.
+Native errors and partial writes preserve destination behavior.
+The remaining `MaximumTextLength` option defaults to 4096 UTF-16 units and applies
+to clipboard/share, not speech or preferences.
+
+`ITextToSpeech` declares `speech.locales` (MainThread) and `speech.speak`
+(MainThread/Interactive) directly. The curated `HybridExport` root emits direct
+async interface calls, preserving host overrides and the framework operation token.
+`Task<IEnumerable<Locale>>` serializes as an array; `SpeakAsync` completes with null.
+Native `SpeechOptions`/`Locale` are mapped without duplicate DTOs or accepted-result
+envelopes. JSON/schema/finite representation checks remain, but native Essentials
+alone validates text, pitch, volume, rate and locale semantics.
 
 The app's `AddPlayground(...)` calls `AddMauiControlsSampleHybridWebAppActions`
 once. `SamplePlugin` owns its scoped counter, echo, deliberate failures and work;
@@ -384,7 +390,7 @@ using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 // This application's assembly is named MyHost.
 builder.Services
-    .AddHybridApp(new HybridAppOptions("my-app.hybrid."))
+    .AddHybridApp(new HybridAppOptions())
     .AddMyHostActions();
 
 public sealed record EchoMessage(string Text, int Count);
@@ -468,8 +474,7 @@ Action arguments/results use actual native enum types wherever MAUI exposes one:
 network access/profiles and display orientation/rotation. Native speech also uses
 `SpeechOptions` and `Locale` directly; constructor defaults and null-to-empty locale
 normalization remain native behavior. The SDK retains small enums only where the
-native API uses different objects/classes: keyboard kinds select `Keyboard`
-instances, menu kinds select native menu classes, and portable menu `Primary`
+native API uses different objects/classes: menu kinds select native menu classes, and portable menu `Primary`
 still maps to Cmd on Mac Catalyst or Ctrl on Windows. Preference primitive kinds
 and browser actions/statuses are closed SDK enums, not arbitrary strings.
 
@@ -487,7 +492,7 @@ the ordinal-first C# member name for a numeric value determines its canonical
 output. Conflicting wire names for different values are a `HYBRID004` diagnostic.
 
 `[Flags]` enums use **arrays of exact names**, for example
-`keyboardFlags: ["spellcheck", "suggestions"]`. Empty arrays mean zero; named zero
+`keyboard: { flags: ["spellcheck", "suggestions"] }`. Empty arrays mean zero; named zero
 and all-bits sentinels must stand alone (`["none"]`, `["all"]`).
 Duplicate values, including alias duplicates, reject. Exact declared composites
 use one canonical name; other expressible combinations use deterministic
@@ -508,7 +513,26 @@ comma-separated flag string default. Browser `status` is closed
 an extensible string here. File names/keys, text, errors, MIME types and similar
 open values remain strings; this does not authorize serializing native resources
 or arbitrary object graphs. Custom `JsonConverter` binding and structural unions
-remain separate work, not an implicit relaxation of strict generated contracts.
+require explicit strict declared metadata, not an implicit relaxation of generated contracts.
+
+All four Page dialogs, including `DisplayPromptAsync`, are directly annotated and
+imported through the existing Page root. There is no prompt request/result
+adapter or manually registered action lambda: prompt returns native `string | null`.
+Labels, negative maxLength, initial text and action-sheet button counts pass to
+Page without additional host semantics. Owning context, main-thread dispatch,
+interactive serialization and cancellation bookkeeping remain in the generated
+invocation path.
+
+`Keyboard` is a native class, not an enum. `NativeKeyboardJsonContext` explicitly
+roots a reusable typed `JsonConverter<Keyboard>` with the normal `HybridJsonContext`
+mechanism; the generator has no keyboard special case. Exactly one JSON property
+selects a representation: `{ "name": "email" }` maps to the actual known singleton,
+or `{ "flags": ["spellcheck", "suggestions"] }` calls `Keyboard.Create` with actual
+KeyboardFlags. Null/omission leaves Page's default; all eleven singleton names
+round-trip by identity, including Plain versus a newly created flag-free keyboard.
+The typed flags converter retains the strict camelCase array convention above.
+Unknown/duplicate names, invalid shapes and extra/mixed properties reject only
+as representation errors. No Core Keyboard API changes are required.
 
 | Diagnostic | Contract failure |
 | --- | --- |

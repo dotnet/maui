@@ -34,6 +34,28 @@ public sealed class ActionGeneratorTests
 	}
 
 	[Fact]
+	public void AsyncImportedEnumerableAndNullableContractsGenerateGeneralTypedCode()
+	{
+		var generated = Generate("""
+			using System.Collections.Generic; using System.Threading; using System.Threading.Tasks;
+			[assembly: HybridExport(typeof(IValues))]
+			public record Value(string Name);
+			public interface IValues {
+				[HybridAction("values.all", MainThread = true)] Task<IEnumerable<Value>> GetAsync();
+				[HybridAction("values.optional")] Task<IEnumerable<Value?>?> OptionalAsync();
+				[HybridAction("values.write", MainThread = true, Interactive = true)] Task WriteAsync(Value? value = null, CancellationToken cancellation = default);
+			}
+			""");
+		Assert.Empty(generated.Result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(generated.Output.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+		var code = string.Join("\n", generated.Result.GeneratedTrees);
+		Assert.Contains("await services.GetRequiredService<global::IValues>().@GetAsync()", code, StringComparison.Ordinal);
+		Assert.Contains("operation.Cancellation", code, StringComparison.Ordinal);
+		Assert.Contains("foreach (var item in value)", code, StringComparison.Ordinal);
+		Assert.DoesNotContain("GetMethod", code, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void InheritedInterfaceMembersBindToTheSelectedRootAndConflictsAreDiagnostics()
 	{
 		var source = """
@@ -86,7 +108,7 @@ public sealed class ActionGeneratorTests
 		var implementationType = assembly.GetType("Implementation")!;
 		var implementation = Activator.CreateInstance(implementationType)!;
 		var services = new ServiceCollection();
-		services.AddHybridApp(new("shadow."));
+		services.AddHybridApp(new());
 		services.AddSingleton(new NativeDispatcher(action => action()));
 		services.AddSingleton(assembly.GetType("ISelected")!, implementation);
 		assembly.GetType("Maui.HybridApp.Generated.ActionCompilationActionAssembly")!

@@ -21,26 +21,8 @@ public static class HybridNativePolicy
 				!TimeSpan.TryParse(timeout.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var duration) ||
 				duration <= TimeSpan.Zero || duration > TimeSpan.FromMinutes(2)) throw Invalid();
 		}
-		if (name.StartsWith("dialogs.", StringComparison.Ordinal))
-		{
-			var confirm = name == "dialogs.confirm";
-			if (name is "dialogs.alert" or "dialogs.confirm")
-			{
-				Label(Value("cancel", confirm ? 3 : 2));
-				if (confirm) Label(Value("accept", 2));
-			}
-			if (name == "dialogs.actionSheet")
-			{
-				var cancel = Value("cancel", 1); if (cancel is not null) Label(cancel);
-				var destruction = Value("destruction", 2); if (destruction is not null) Label(destruction);
-				var buttons = arguments.ValueKind == JsonValueKind.Object ? arguments.GetProperty("buttons") : arguments[4];
-				if (buttons.GetArrayLength() > 64) throw Invalid();
-				foreach (var button in buttons.EnumerateArray()) Label(button.GetString());
-			}
-		}
 		string? Value(string key, int index) => arguments.ValueKind == JsonValueKind.Object ?
 			arguments.GetProperty(key).GetString() : arguments[index].GetString();
-		static void Label(string? text) { if (string.IsNullOrWhiteSpace(text)) throw Invalid(); }
 	}
 
 	/// <summary>Applies the same clipboard text budget to native reads and writes.</summary>
@@ -49,5 +31,5 @@ public static class HybridNativePolicy
 	{
 		if (text?.Length > services.GetRequiredService<HybridAppOptions>().MaximumTextLength) throw Invalid();
 	}
-	static CommandException Invalid() => new("invalid_arguments", "Imported native inputs exceed the host policy or contain blank labels.");
+	static CommandException Invalid() => new("invalid_arguments", "Imported native inputs exceed the host policy.");
 }

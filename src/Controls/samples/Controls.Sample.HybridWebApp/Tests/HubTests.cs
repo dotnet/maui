@@ -29,11 +29,11 @@ public sealed class HubTests
 		var registry = TestComposition.CreateRegistry(
 			new AppInfoProvider(new FakeAppInfo { Error = new NotSupportedException("Tests do not invent native app support.") }),
 			clipboard, dispatcher,
-			new PreferencesProvider(preferences ?? new FakePreferences(), new(SamplePolicy.PreferenceNamespace)),
+			new PreferencesProvider(preferences ?? new FakePreferences()),
 			new SamplePlugin(),
 			new SampleDiagnosticsProvider(new SampleStartupIdentity("test-startup", DateTimeOffset.UtcNow)));
 		return TestComposition.CreateHub(registry,
-			() => new ReadyResult(registry.Names, SamplePolicy.PreferenceNamespace, SamplePolicy.MaximumTextLength),
+			() => new ReadyResult(registry.Names, SamplePolicy.MaximumTextLength),
 			send, time);
 	}
 
@@ -99,17 +99,17 @@ public sealed class HubTests
 	}
 
 	[Fact]
-	public async Task NamespaceAndSizeBoundsAreEnforcedBeforePlatformCalls()
+	public async Task ClipboardBoundsRemainIndependentOfNativePreferenceKeys()
 	{
 		var clipboard = new FakeClipboard();
 		var preferences = new FakePreferences();
 		using var hub = CreateHub(clipboard, _ => { }, preferences: preferences);
 		await Connect(hub);
 		foreach (var key in new[] { "", "../other", "a.b", new string('a', 49), "你好" })
-			Assert.Equal("invalid_arguments", (await Call(hub, "preferences.contains", new { key })).Error!.Code);
+			Assert.Equal("success", (await Call(hub, "preferences.contains", new { key })).Status);
 		Assert.Equal("invalid_arguments", (await Call(hub, "clipboard.write", new { text = new string('x', 4097) })).Error!.Code);
 		Assert.Equal(0, clipboard.Calls);
-		Assert.Equal(0, preferences.Calls);
+		Assert.Equal(5, preferences.Calls);
 		Assert.Equal("success", (await Call(hub, "preferences.set", new { key = "example", value = new { kind = "string", text = "你好" } })).Status);
 		Assert.Equal("你好", (await Call(hub, "preferences.get", new { key = "example", defaultValue = new { kind = "string", text = "" } })).Result!.Value.GetProperty("text").GetString());
 		Assert.Equal("success", (await Call(hub, "preferences.remove", new { key = "example" })).Status);
@@ -286,11 +286,10 @@ public sealed class HubTests
 		var json = ProtocolJsonContext.Default;
 		var events = new List<NativeEvent>();
 		Assert.Throws<InvalidOperationException>(() => registry.RegisterTopic("plugin.changed"));
-		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, "native-host.", 128),
+		using var hub = TestComposition.CreateHub(registry, () => new ReadyResult(registry.Names, 128),
 			events.Add);
 		var response = await Call(hub, "core.connect", new { });
 		var ready = response.Result!.Value.Deserialize(json.ReadyResult)!;
-		Assert.Equal("native-host.", ready.PreferenceNamespace);
 		Assert.Equal(128, ready.MaximumTextLength);
 		Assert.Contains("plugin.echo", ready.Commands);
 		Assert.Contains("app.info", ready.Commands);

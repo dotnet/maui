@@ -14,7 +14,7 @@ public sealed class HybridLocalProviderTests
 	{
 		var services = new ServiceCollection();
 		services.AddTransient<Microsoft.Maui.ApplicationModel.DataTransfer.IClipboard>(_ => new FakeClipboard());
-		services.AddHybridApp(new("local."));
+		services.AddHybridApp(new());
 		using var root = services.BuildServiceProvider();
 		using var scope = root.CreateScope();
 		using var local = scope.ServiceProvider.CreateHybridAppProvider();
@@ -28,7 +28,7 @@ public sealed class HybridLocalProviderTests
 		foreach (var service in new object[] { new NativeNotifications(), new Maui.HybridApp.UI.HybridViewContext() })
 		{
 			var services = new ServiceCollection();
-			services.AddHybridApp(new("local."));
+			services.AddHybridApp(new());
 			services.AddSingleton(service.GetType(), service);
 			using var root = services.BuildServiceProvider();
 			using var scope = root.CreateScope();
@@ -159,7 +159,7 @@ public sealed class HybridLocalProviderTests
 	public void LocalFactoryCannotRetireItsProviderDuringConstruction(bool asynchronous)
 	{
 		var services = new ServiceCollection();
-		services.AddHybridApp(new("local."));
+		services.AddHybridApp(new());
 		var allocated = false;
 		HybridActionAssemblies.Target<OwnedAlias>(services, provider =>
 		{
@@ -180,7 +180,7 @@ public sealed class HybridLocalProviderTests
 	public async Task ConcurrentSyncAndAsyncDisposalShareTheActualCleanupCompletion()
 	{
 		var services = new ServiceCollection();
-		services.AddHybridApp(new("local."));
+		services.AddHybridApp(new());
 		var resource = new BlockingResource();
 		HybridActionAssemblies.Target(services, _ => resource);
 		using var host = services.BuildServiceProvider();
@@ -213,7 +213,7 @@ public sealed class HybridLocalProviderTests
 	public async Task AsyncOwnedCleanupIsAwaitedAndReentrantResolutionCannotLeakInstances()
 	{
 		var services = new ServiceCollection();
-		services.AddHybridApp(new("local."));
+		services.AddHybridApp(new());
 		var asyncResource = new AsyncResource();
 		HybridActionAssemblies.Target(services, _ => asyncResource);
 		HybridActionAssemblies.Target<OwnedAlias>(services, provider => { _ = provider.GetRequiredService<OwnedAlias>(); return new(); });
@@ -238,7 +238,7 @@ public sealed class HybridLocalProviderTests
 	public void ContextIsInitiallyUnboundAndFollowsOnlyTheLiveLogicalOwner()
 	{
 		var services = new ServiceCollection();
-		services.AddHybridApp(new("local."));
+		services.AddHybridApp(new());
 		using var host = services.BuildServiceProvider();
 		using var scope = host.CreateScope();
 		using var local = scope.ServiceProvider.CreateHybridAppProvider();

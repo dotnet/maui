@@ -211,9 +211,7 @@ export async function loadNativeBridge(): Promise<Bridge | undefined> {
 export interface Ready {
   /** Registered native command names; the reference host also lists disabled registrations. */
   commands: string[]
-  /** Settings namespace chosen by the host; helpers do not allow overriding it. */
-  preferenceNamespace: string
-  /** Host-advertised text limit in UTF-16 code units; native input validation remains authoritative. */
+  /** Host-advertised clipboard/share text limit in UTF-16 code units, not a speech or preference limit. */
   maximumTextLength: number
   /** Explicit OS-interactive commands allowed to outlive normal deadlines; omitted by older hosts. */
   interactiveCommands?: string[]
@@ -506,7 +504,7 @@ export class NativeClient {
   async connect(): Promise<Ready> {
     const ready = await this.invoke('core.connect', {}, value => {
       const v = object(value)
-      const ready: Ready = { commands: strings(v.commands), preferenceNamespace: text(v.preferenceNamespace), maximumTextLength: number(v.maximumTextLength) }
+      const ready: Ready = { commands: strings(v.commands), maximumTextLength: number(v.maximumTextLength) }
       this.interactive = new Set()
       this.interactiveTimeout = 300000
       if (v.initialLocation !== undefined && v.initialLocation !== null) ready.initialLocation = text(v.initialLocation)

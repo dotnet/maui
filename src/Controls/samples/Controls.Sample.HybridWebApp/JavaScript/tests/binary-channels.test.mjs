@@ -4,7 +4,7 @@ import { NativeClient, NativeError, Channel, binaryBlob, invokeBinary, configure
 import { mock } from './bridge.mjs'
 
 afterEach(() => resetBridge())
-const ready = { commands: [], preferenceNamespace: 'test.', maximumTextLength: 4096 }
+const ready = { commands: [], maximumTextLength: 4096 }
 const tick = () => new Promise(resolve => setImmediate(resolve))
 function deferred() {
   let resolve, reject

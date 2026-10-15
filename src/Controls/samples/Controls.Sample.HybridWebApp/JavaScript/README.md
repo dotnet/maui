@@ -42,7 +42,7 @@ const app = await getAppInfo()
 const device = await getDeviceInfo()
 await setText(`Hello from ${app.appName} on ${device.platform} — 你好 👋`)
 const text = await getText() // string | null, from the native OS
-await set('theme', 'dark') // host-owned namespace and restrictions
+await set('theme', 'dark') // actual native key; storage is shared with native code
 ```
 
 No view object is needed in ordinary application code. The root contains only
@@ -64,8 +64,22 @@ Essentials assembly (`Microsoft.Maui.Interop`), below the optional integration
 runtime. The managed generator imports only explicitly rooted annotated
 contracts; annotations alone expose nothing. The matching managed host creates
 one local provider overlay per view over its owning business-service scope.
-Clipboard and routine dialogs now decode actual native scalar/void results,
+Clipboard, text-to-speech and routine dialogs now decode actual native scalar/array/void results,
 not the previous preview's wrapper DTOs; no compatibility aliases are retained.
+All four dialogs invoke annotated Page methods directly. Prompt resolves to
+`string | null`; null is dismissal. Keyboard is a serialized native value:
+`{ name: 'text' }` selects a singleton and `{ flags: ['spellcheck'] }` uses
+`Keyboard.Create`; null/omission preserves native defaults. These names do not
+represent a native Keyboard enum. Labels, maxLength and initial text are not
+pre-validated or limited by the SDK; Page owns their semantics.
+
+Text-to-speech imports the annotated `ITextToSpeech` directly: native
+`SpeechOptions` and `Locale` map without wrappers, locales return an array, and
+`speak(...).result` completes with native void. Speech values pass unchanged for
+Essentials validation, without SDK text/range/locale policy.
+Preferences adapt only generic native scalar types; keys, strings and shared
+container names are not prefixed or quota-limited. `clear()` invokes destructive
+native container-wide Clear, including settings created outside JavaScript.
 
 ```ts
 import { stageFile, share, releaseFile } from '@maui/api/essentials/share'
