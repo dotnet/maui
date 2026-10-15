@@ -116,6 +116,11 @@ on:
           -IssueNumber $env:ISSUE_NUMBER `
           -BaseBranch 'net11.0' `
           -OutputPath $output | Out-Null
+        $json = Get-Content -Raw -LiteralPath $output
+        $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
+        "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
+        $json >> $env:GITHUB_OUTPUT
+        $delimiter >> $env:GITHUB_OUTPUT
     - name: Upload authoritative ci-fix context
       uses: actions/upload-artifact@v7.0.1
       with:
@@ -124,8 +129,44 @@ on:
         if-no-files-found: error
         retention-days: 1
 
+jobs:
+  detection:
+    pre-steps:
+      - name: Prepare bounded ripgrep dependency
+        shell: bash
+        run: |
+          timeout --signal=TERM --kill-after=15s 270s bash <<'RIPGREP_PREP'
+          set -euo pipefail
+          if command -v rg >/dev/null 2>&1; then
+            rg --version
+            exit 0
+          fi
+
+          echo "::notice::ripgrep is absent; starting bounded noninteractive apt preparation"
+          trap 'status=$?; echo "::error::bounded ripgrep preparation failed with exit ${status}"; exit "${status}"' ERR
+          timeout --signal=TERM --kill-after=15s 120s \
+            sudo -n env DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none apt-get \
+              -o DPkg::Lock::Timeout=60 \
+              -o Acquire::Retries=2 \
+              -o Acquire::http::Timeout=30 \
+              -o Acquire::https::Timeout=30 \
+              update -qq
+          timeout --signal=TERM --kill-after=15s 120s \
+            sudo -n env DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none apt-get \
+              -o DPkg::Lock::Timeout=60 \
+              -o Acquire::Retries=2 \
+              -o Acquire::http::Timeout=30 \
+              -o Acquire::https::Timeout=30 \
+              install -y -qq ripgrep
+          command -v rg >/dev/null 2>&1
+          rg --version
+          RIPGREP_PREP
+
+# Both fixer workflows are deployed and manually dispatched from main. The
+# net11.0 value below remains the fix/capture/apply base, not the workflow ref.
 if: |
-  github.repository == 'dotnet/maui'
+  github.repository == 'dotnet/maui' &&
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main')
 
 model: gpt-6.1-sol
 engine:
@@ -140,9 +181,10 @@ engine:
 
 pre-agent-steps:
   # gh-aw v0.82.14 initializes the agent job's DEFAULT_BRANCH from the repository
-  # default (main) before starting the MCP gateway. Pin net11.0 through GITHUB_ENV
-  # so the subsequently launched capture-time safe-output backend never compares
-  # an existing net11.0 PR branch against main.
+  # default branch (always main). An event with github.ref=refs/heads/net11.0 thus
+  # starts with DEFAULT_BRANCH=main in the environment unless overridden here.
+  # Hard-pin it so git checkout / git merge base logic inside the engine sandbox
+  # stays on the correct branch.
   - name: Pin safe-output capture base
     shell: bash
     run: echo "DEFAULT_BRANCH=net11.0" >> "$GITHUB_ENV"
@@ -160,7 +202,13 @@ pre-agent-steps:
       cp .github/scripts/Register-CiFixSafeOutputExpectation.cjs \
         .github/scripts/Test-CiFixTransport.cjs "$helpers/"
       chmod 0444 "$helpers/"*.cjs
-
+  - name: Prefetch bounded Azure DevOps failure evidence
+    shell: pwsh
+    run: |
+      .github/scripts/Get-CiFixAzdoEvidence.ps1 `
+        -CandidatesPath /tmp/gh-aw/agent/ci-fix-context/candidates.json `
+        -OutputDirectory /tmp/gh-aw/agent/azdo-evidence `
+        -Branch net11.0
 # AI-credit budget: DISABLED for this workflow via the -1 sentinel. Token cost is not
 # a constraint here, and the default daily cap (5000 AIC) was throttling the
 # self-watching loop: the 12h schedule (~2 runs/day at ~1700 AIC each) plus any manual
@@ -200,6 +248,7 @@ safe-outputs:
   # generated apply-time jobs.
   env:
     DEFAULT_BRANCH: net11.0
+    CI_FIX_TOOLS_DIR: ${{ runner.temp }}/gh-aw/ci-fix-tools
   # LIVE: safe-outputs execute for real — create-PR, push-to-branch, comment and
   # update-PR actually mutate the target [ci-fix-net11] PR so the loop can apply a
   # fix and let CI re-run against it. To return to preview mode for validation, add
@@ -683,11 +732,10 @@ where they are more specific.
     set, and free-form issue/PR comments remain non-actionable input.
 11. **Safe-output emission is fail-closed and bounded.** Immediately BEFORE every
     safe-output tool call, register exactly one expectation with
-    `node "$CI_FIX_TOOLS_DIR/Register-CiFixSafeOutputExpectation.cjs" -Type <type>`
-    (plus `-PullRequestNumber <P>`
+    `node "$CI_FIX_TOOLS_DIR/Register-CiFixSafeOutputExpectation.cjs"` (type plus PR number
     when the output targets a PR), then call that tool exactly once. The only
     exception is `create_pull_request` / `push_to_pull_request_branch`: Step 5.6
-    MUST run the staged `Test-CiFixTransport.cjs`, which validates and
+    MUST run `node "$CI_FIX_TOOLS_DIR/Test-CiFixTransport.cjs"`, which validates and
     registers the expectation atomically. The generated post-step compares these
     registrations with gh-aw's authoritative `agent_output.json`; a missing output
     fails the job instead of becoming a green no-write run. If ANY safe-output
@@ -699,9 +747,6 @@ where they are more specific.
     fails, stop immediately; the registered missing output makes the post-step
     fail. PR bodies are capped at 24,000 characters and comments at 2,000
     characters. Never describe one of these failures as successful/no-write.
-    Run registration and the safe-output call separately, not in one composite
-    shell command. Read the actual safe-output schema before supplying arguments;
-    `missing_tool` does not accept a `context` field.
 
 ## What this run must accomplish
 
@@ -755,6 +800,33 @@ inputs once at the start and let them shape the whole run:
   - Otherwise (`"false"` / empty): normal mode — emit PRs via `safe-outputs` as
     the steps describe.
 
+#### Step 0.1 — Authoritative empty-queue completion
+
+After reading `/tmp/gh-aw/agent/ci-fix-context/candidates.json`, if `issue_number` is empty and
+the snapshot reports product base `net11.0`, an authoritative, untruncated
+`ci-scan-net11` issue count of zero, zero matched issues, an empty `issues`
+array, and an empty `candidates` array:
+
+1. Do NOT assemble a shell validation pipeline and do NOT use `touch`, `jq`,
+     redirection, or an ad-hoc file writer for this outcome.
+2. Run this trusted helper as one standalone shell call:
+
+     ```bash
+     pwsh .github/scripts/Complete-CiFixEmptyQueue.ps1 \
+       -CandidatesPath /tmp/gh-aw/agent/ci-fix-context/candidates.json \
+       -ExpectedIssueLabel ci-scan-net11 \
+       -ExpectedBaseBranch net11.0
+     ```
+
+     It revalidates the authoritative empty snapshot, persists the empty coverage
+     file and summary table, and registers exactly one expected `noop`.
+3. If and only if the helper succeeds, call the `safeoutputs` `noop` tool exactly
+     once with the reason `Authoritative ci-scan-net11 queue is empty; no issues or
+     watched CI-fix PRs require action.`, then stop.
+4. If the helper rejects the snapshot or fails, do not call `noop`. Register and
+     emit one `report_incomplete` under Hard Rule 11 with the helper error, then
+     stop.
+
 Note for operators: a fully write-free preview that also blocks GitHub API calls
 at the framework level is available without this input via `gh aw trial` (it
 forces gh-aw staged mode). The `dry_run` input is the in-prompt equivalent for a
@@ -764,10 +836,8 @@ real scheduled/dispatch run, useful for a live-but-write-free canary.
 
 Read once at start:
 
-- `.github/docs/maui-ci-facts.md` — pipeline IDs, XHarness exit-0 quirk, and
-  anonymous AzDO/Helix endpoints. This hosted workflow uses the bounded REST
-  investigation below, not the interactive `ci-analysis` plugin and its
-  `gh`/PowerShell runner. Do not report that interactive plugin as a missing tool.
+- `.github/skills/azdo-build-investigator/SKILL.md` — pipeline IDs, XHarness
+  exit-0 quirk, anonymous AzDO/Helix endpoints.
 - `.github/skills/try-fix/SKILL.md` — "always propose something DIFFERENT from
   existing fixes". Apply that pattern ACROSS runs (not just within one), by
   reading prior closed `[ci-fix-net11]` PRs' diffs and close comments before
@@ -912,11 +982,6 @@ HTTP success, valid JSON, `incomplete_results == false`, and an integer
 `total_count`. If any of those fail, do NOT treat the gate as "0 hits" — record
 `skipped: dedup search inconclusive (API error/incomplete)` and stop processing
 this issue.
-
-Use the `curl` REST requests below for these searches. Do not substitute GitHub
-MCP searches or project their fields: projected MCP results may omit the
-completeness metadata or flatten the response into an items array. Such results
-cannot prove zero matches. Do not assume a `.content[0].text` MCP envelope.
 
 #### Step 3.0 — Prefetched authoritative context (read this first)
 
@@ -1293,13 +1358,14 @@ pipeline(s) that RUN the target test — `maui-pr` (def 302) for unit/integratio
 tests:
 
 ```bash
-ORG=dnceng-public; PROJ=public; BUILD=<buildId on C.headSha>
-# Anonymous + Hard-Rule-8-compliant. NEVER call _apis/test/... (it 302-redirects to sign-in).
+BUILD=<buildId on C.headSha>
+# Hard-Rule-8-compliant: read prefetched timeline from /tmp/gh-aw/agent/azdo-evidence/ via manifest.json.
+# Never call AzDO APIs or _apis/test/... from the agent shell.
 # Each type=="Job" record is one platform leg: result (succeeded/failed/canceled/null),
 # state (completed/inProgress/pending), name (encodes "<Platform> UITests <Category>"):
-curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$BUILD/timeline?api-version=7.1" \
-  | tee /tmp/gh-aw/agent/timeline_${BUILD}.json \
-  | jq -r '.records[] | select(.type=="Job") | "\(.result)\t\(.state)\t\(.name)"'
+TIMELINE_REL_PATH=$(jq -r --argjson build "$BUILD" '.builds[] | select(.buildId == $build) | .timeline.path // empty' /tmp/gh-aw/agent/azdo-evidence/manifest.json)
+TIMELINE_FILE="/tmp/gh-aw/agent/azdo-evidence/${TIMELINE_REL_PATH}"
+jq -r '.records[] | select(.type=="Job") | "\(.result)\t\(.state)\t\(.name)"' "$TIMELINE_FILE"
 ```
 
 (The prefetch already exposes per-leg status in `C.failedLegs` / the checks context, and
@@ -1628,38 +1694,73 @@ Stop this cycle after Step 3.5.R (one issue = one outcome, Rule 5).
 
 This is the "is the issue actually fixed?" check.
 
+The trusted pre-agent producer has already fetched the bounded Azure DevOps
+evidence into `/tmp/gh-aw/agent/azdo-evidence/manifest.json`, with each actual
+failed-task log stored at the relative `path` recorded in that manifest. Treat
+that manifest as the authoritative retrieval result. Do NOT improvise a second
+Azure downloader from the agent shell.
+
+- A build is usable only when its manifest `complete == true`.
+- `timeline.status` or any `failedTasks[].status` other than `available`, or
+  `logsTruncatedByCount == true`, `previousAttemptsComplete == false`, or
+  `previousAttemptsTruncatedByCount == true`, means retrieval is incomplete.
+  Missing or invalid log IDs and invalid prior-attempt references are retained
+  as `unavailable`; redirect responses are retained with their original HTTP
+  status. None of these states is proof that the signature is absent or that
+  the issue is fixed.
+- Keep cited-build retrieval separate from current-build evidence. A cited
+  historical build may be 404 while the latest build and its failed-task logs
+  are fully available.
+- If the manifest is missing/malformed, the pipeline query is incomplete, or
+  the newest relevant completed build is incomplete, register and emit
+  `report_incomplete` once with the exact manifest error/status and stop. Do not
+  turn a retrieval failure into a successful/noop or fixed-in-latest outcome.
+
 **Mode note.** In **FRESH** mode (Step 3.4) verify against the latest completed
 `net11.0` build (below). In **ADVANCE** mode (Step 3.5) the PR is already red — its
-own build IS the reproduction: run the SAME timeline/log analysis against the PR's
-`maui-pr` build for `C.headSha` (require BOTH `branchName == refs/pull/<P>/merge`
-AND `triggerInfo["pr.sourceSha"] == C.headSha`; do not use the merge-SHA
-`sourceVersion` as PR-head identity), extract the still-failing signature, and carry it into
-Step 5. Skip the net11.0-build fetch in ADVANCE mode.
+own build IS the reproduction: use the manifest's `pullRequests[]` entry for
+`C.prNumber` + `C.headSha`. The trusted producer included a build only after
+requiring BOTH `branchName == refs/pull/<P>/merge` AND
+`triggerInfo["pr.sourceSha"] == C.headSha`; do not use the merge-SHA
+`sourceVersion` as PR-head identity. Run the SAME manifest/log analysis against
+the newest matching PR build, extract the still-failing signature, and carry it
+into Step 5. Do not skip an incomplete newest matching PR build in favor of an
+older one. Skip the net11.0-build list in ADVANCE mode. If the matching PR
+query/build evidence is incomplete, report incomplete rather than querying
+Azure ad hoc.
 
 1. Map the issue's `Pipeline` to its definition ID (302 / 314 / 313).
-2. Fetch the most recent completed builds of that pipeline on `net11.0`:
+2. Read that pipeline's `net11.0` entry from the evidence manifest. It contains
+   up to five latest completed builds in newest-first order:
 
    ```bash
-   def=<pipeline-def-id>
-   branch=net11.0
-   url="https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=${def}&branchName=refs/heads/${branch}&statusFilter=completed&resultFilter=succeeded,failed,partiallySucceeded&%24top=5&api-version=7.1"
-   curl -s "$url" | tee /tmp/gh-aw/agent/latest_${N}.json | jq -r '.value[0] | "\(.id) \(.result) \(.finishTime)"'
+   jq -r --arg pipeline "<pipeline-name>" \
+     '.pipelines[] | select(.pipeline == $pipeline) |
+      .builds[] | [.buildId,.result,.finishTime,.evidenceComplete] | @tsv' \
+     /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
-3. Pick the latest completed build. Walk its timeline:
+3. Inspect the newest completed build first. If that newest build's
+   `evidenceComplete` is false, register and emit `report_incomplete`; do not
+   skip it and use an older build. Otherwise read its timeline and failed-task
+   log inventory from the manifest:
 
    ```bash
    build_id=<id-from-above>
-   url="https://dev.azure.com/dnceng-public/public/_apis/build/builds/${build_id}/timeline?api-version=7.1"
-   curl -s "$url" | tee /tmp/gh-aw/agent/timeline_${N}.json
+   jq --argjson build_id "$build_id" \
+     '.builds[] | select(.buildId == $build_id)' \
+     /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
-4. For each failed leaf record with non-null `log.id`, fetch its log:
+4. For each `failedTasks[]` entry, inspect the actual prefetched log at
+   `/tmp/gh-aw/agent/azdo-evidence/<path>`. Concatenate only `status ==
+   "available"` and `source == "current"` files for the selected complete build:
 
    ```bash
-   log_id=<leaf-log-id>
-   url="https://dev.azure.com/dnceng-public/public/_apis/build/builds/${build_id}/logs/${log_id}?api-version=7.1"
-   curl -s "$url" | tee -a /tmp/gh-aw/agent/latest_failure_${N}.log | tail -3
+   jq -r --argjson build_id "$build_id" \
+     '.builds[] | select(.buildId == $build_id) |
+      .failedTasks[] | select(.status == "available" and .source == "current") | .path' \
+     /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
 5. Match the issue's failure signature against the concatenated latest-build
@@ -1682,15 +1783,28 @@ Step 5. Skip the net11.0-build fetch in ADVANCE mode.
      on **retry** (Azure DevOps / Helix re-run failed tests), which reads as green
      but is exactly the flaky signal we now want to fix. Run the flakiness probe:
 
-     a. **Intra-build retry check.** Re-walk the latest build's timeline for leaf
-        records that carry `previousAttempts` (or `attempt > 1`, or a sibling
-        record for the same task at an earlier attempt whose `result == failed`).
-        Fetch those failed earlier-attempt log(s) and grep the signature with
-        `grep -F -f /tmp/gh-aw/agent/sig_${N}.txt`.
-     b. **Cross-build intermittency check.** Take the previous 3–4 completed
-        builds of the same pipeline+branch (the `$top=5` list from step 2) and
-        grep the signature across their failed-leaf logs; count how many recent
-        builds contain it.
+     a. **Intra-build retry check.** Use only the earlier-attempt logs already
+        retained in the selected build's manifest `failedTasks[]` inventory for
+        records carrying `previousAttempts` (or `attempt > 1`, or a sibling
+        failed record for the same task). Grep only entries whose status is
+        `available` and `source == "previous_attempt"`:
+
+        ```bash
+        jq -r --argjson build_id "$build_id" \
+          '.builds[] | select(.buildId == $build_id) |
+           .failedTasks[] | select(.status == "available" and .source == "previous_attempt") | .path' \
+          /tmp/gh-aw/agent/azdo-evidence/manifest.json
+        ```
+
+        If a required earlier-attempt entry is missing or not
+        available, report incomplete; do not improvise another downloader or
+        infer that the signature is absent.
+     b. **Cross-build intermittency check.** Use only the recent-build logs
+        already retained for the previous 3–4 completed builds of the same
+        pipeline+branch (the prepared `$top=5` list from step 2). Grep available
+        failed-task logs and count how many recent builds contain the signature.
+        If required evidence was not prepared or is incomplete, report
+        incomplete instead of fetching it from the agent shell.
 
      Then branch:
      - **Signature failed-then-passed-on-retry in the latest build, OR present in
@@ -2208,8 +2322,7 @@ branch or PR.
 
 ## Environment constraints
 
-Command-policy denials and sandbox/filesystem failures are different. A request
-for unavailable interactive approval is a command-policy denial, not an OS error:
+These look like permission errors but are physical:
 
 - **Pre-bind every URL to a shell variable**, then `curl -s "$url"`. Inline
   URLs with `?` or `&` are rejected.
