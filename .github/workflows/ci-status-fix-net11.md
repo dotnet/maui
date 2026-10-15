@@ -1359,13 +1359,14 @@ pipeline(s) that RUN the target test — `maui-pr` (def 302) for unit/integratio
 tests:
 
 ```bash
-ORG=dnceng-public; PROJ=public; BUILD=<buildId on C.headSha>
-# Anonymous + Hard-Rule-8-compliant. NEVER call _apis/test/... (it 302-redirects to sign-in).
+BUILD=<buildId on C.headSha>
+# Hard-Rule-8-compliant: read prefetched timeline from /tmp/gh-aw/agent/azdo-evidence/ via manifest.json.
+# Never call AzDO APIs or _apis/test/... from the agent shell.
 # Each type=="Job" record is one platform leg: result (succeeded/failed/canceled/null),
 # state (completed/inProgress/pending), name (encodes "<Platform> UITests <Category>"):
-curl -s "https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$BUILD/timeline?api-version=7.1" \
-  | tee /tmp/gh-aw/agent/timeline_${BUILD}.json \
-  | jq -r '.records[] | select(.type=="Job") | "\(.result)\t\(.state)\t\(.name)"'
+TIMELINE_REL_PATH=$(jq -r --argjson build "$BUILD" '.builds[] | select(.buildId == $build) | .timeline.path // empty' /tmp/gh-aw/agent/azdo-evidence/manifest.json)
+TIMELINE_FILE="/tmp/gh-aw/agent/azdo-evidence/${TIMELINE_REL_PATH}"
+jq -r '.records[] | select(.type=="Job") | "\(.result)\t\(.state)\t\(.name)"' "$TIMELINE_FILE"
 ```
 
 (The prefetch already exposes per-leg status in `C.failedLegs` / the checks context, and
@@ -1754,12 +1755,12 @@ Azure ad hoc.
 
 4. For each `failedTasks[]` entry, inspect the actual prefetched log at
    `/tmp/gh-aw/agent/azdo-evidence/<path>`. Concatenate only `status ==
-   "available"` files for the selected complete build:
+   "available"` and `source == "current"` files for the selected complete build:
 
    ```bash
    jq -r --argjson build_id "$build_id" \
      '.builds[] | select(.buildId == $build_id) |
-      .failedTasks[] | select(.status == "available") | .path' \
+      .failedTasks[] | select(.status == "available" and .source == "current") | .path' \
      /tmp/gh-aw/agent/azdo-evidence/manifest.json
    ```
 
@@ -1787,7 +1788,16 @@ Azure ad hoc.
         retained in the selected build's manifest `failedTasks[]` inventory for
         records carrying `previousAttempts` (or `attempt > 1`, or a sibling
         failed record for the same task). Grep only entries whose status is
-        `available`. If a required earlier-attempt entry is missing or not
+        `available` and `source == "previous_attempt"`:
+
+        ```bash
+        jq -r --argjson build_id "$build_id" \
+          '.builds[] | select(.buildId == $build_id) |
+           .failedTasks[] | select(.status == "available" and .source == "previous_attempt") | .path' \
+          /tmp/gh-aw/agent/azdo-evidence/manifest.json
+        ```
+
+        If a required earlier-attempt entry is missing or not
         available, report incomplete; do not improvise another downloader or
         infer that the signature is absent.
      b. **Cross-build intermittency check.** Use only the recent-build logs

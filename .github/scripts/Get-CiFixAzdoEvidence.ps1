@@ -438,11 +438,15 @@ function Get-CiFixPreviousAttemptReferences {
     $seen = @{}
     $references = @()
     foreach ($record in @($Timeline.records)) {
-        foreach ($previousAttempt in @($record.previousAttempts)) {
+        if ($null -eq $record.previousAttempts) {
+            continue
+        }
+        foreach ($previousAttempt in $record.previousAttempts) {
             $timelineId = [Guid]::Empty
             $recordId = [Guid]::Empty
             $attempt = 0
-            $valid = [Guid]::TryParse([string]$previousAttempt.timelineId, [ref]$timelineId) -and
+            $valid = $null -ne $previousAttempt -and
+                [Guid]::TryParse([string]$previousAttempt.timelineId, [ref]$timelineId) -and
                 [Guid]::TryParse([string]$previousAttempt.recordId, [ref]$recordId) -and
                 [int]::TryParse([string]$previousAttempt.attempt, [ref]$attempt) -and
                 $attempt -gt 0
@@ -714,8 +718,7 @@ function Get-CiFixBuildEvidence {
         }
         if (-not $previousTimelineValid -or
             $missingRecordIds.Count -gt 0 -or
-            ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) -or
-            $previousFailedTasks.Count -eq 0) {
+            ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete)) {
             $complete = $false
             $previousAttemptsComplete = $false
         }
@@ -731,8 +734,7 @@ function Get-CiFixBuildEvidence {
             references = @($references)
             status = if ($previousTimelineValid -and
                 $missingRecordIds.Count -eq 0 -and
-                $previousTaskResolution.complete -and
-                $previousFailedTasks.Count -gt 0) {
+                $previousTaskResolution.complete) {
                 'available'
             } elseif ($previousTimelineResponse.Truncated) {
                 'truncated'
@@ -756,8 +758,6 @@ function Get-CiFixBuildEvidence {
                 "referenced previous-attempt record(s) not found: $($missingRecordIds -join ', ')"
             } elseif ($null -ne $previousTaskResolution -and -not $previousTaskResolution.complete) {
                 $previousTaskResolution.errors -join '; '
-            } elseif ($previousFailedTasks.Count -eq 0) {
-                'referenced previous attempt contained no failed Task records'
             } else {
                 ''
             }
@@ -1026,7 +1026,7 @@ function New-CiFixAzdoEvidence {
     foreach ($issue in @($snapshot.issueEvidence.issues)) {
         $pipeline = Get-CiFixIssueField -Body ([string]$issue.body) -Name 'Pipeline'
         $citedBuildText = Get-CiFixIssueField -Body ([string]$issue.body) -Name 'Build ID'
-        $definitionId = if ($script:PipelineDefinitions.ContainsKey($pipeline)) {
+        $definitionId = if ($null -ne $pipeline -and $script:PipelineDefinitions.ContainsKey($pipeline)) {
             [int]$script:PipelineDefinitions[$pipeline]
         } else {
             $null
@@ -1062,7 +1062,7 @@ function New-CiFixAzdoEvidence {
         $pipeline = [string]$entry.Key
         $definitionId = [int]$entry.Value
         $encodedBranch = [Uri]::EscapeDataString("refs/heads/$TargetBranch")
-        $latestUri = "$($script:AzdoBaseUri)/builds?definitions=$definitionId&branchName=$encodedBranch&statusFilter=completed&resultFilter=succeeded%2Cfailed%2CpartiallySucceeded&%24top=$BuildLimit&queryOrder=finishTimeDescending&api-version=7.1"
+        $latestUri = "$($script:AzdoBaseUri)/builds?definitions=$definitionId&branchName=$encodedBranch&statusFilter=completed&resultFilter=succeeded%2Cfailed%2CpartiallySucceeded%2Ccanceled&%24top=$BuildLimit&queryOrder=finishTimeDescending&api-version=7.1"
         $latestResponse = & $RequestInvoker $latestUri $TimelineByteLimit
         $latestResult = ConvertFrom-CiFixJsonResponse `
             -Response $latestResponse `
@@ -1108,14 +1108,23 @@ function New-CiFixAzdoEvidence {
                     -TimelineByteLimit $TimelineByteLimit `
                     -LogByteLimit $LogByteLimit `
                     -RequestInvoker $RequestInvoker
+                $buildResult = [string]$build.result
+                $isCanceled = $buildResult -eq 'canceled'
+                $evidenceComplete = [bool]$evidence.complete -and -not $isCanceled
+                $evidenceError = if ($isCanceled) {
+                    if ($evidence.timeline.error) { $evidence.timeline.error } else { 'build was canceled' }
+                } else {
+                    [string]$evidence.timeline.error
+                }
                 $latestBuilds += [pscustomobject]@{
                     buildId = $buildId
-                    result = [string]$build.result
+                    result = $buildResult
                     finishTime = [string]$build.finishTime
                     sourceVersion = [string]$build.sourceVersion
                     branchName = [string]$build.sourceBranch
-                    evidenceComplete = [bool]$evidence.complete
-                    evidenceError = [string]$evidence.timeline.error
+                    timelinePath = [string]$evidence.timeline.path
+                    evidenceComplete = $evidenceComplete
+                    evidenceError = $evidenceError
                 }
             }
         }
@@ -1166,33 +1175,53 @@ function New-CiFixAzdoEvidence {
             continue
         }
 
-        $encodedBranch = [Uri]::EscapeDataString("refs/pull/$prNumber/merge")
-        $queryUri = "$($script:AzdoBaseUri)/builds?definitions=302%2C313%2C314&branchName=$encodedBranch&statusFilter=completed&resultFilter=succeeded%2Cfailed%2CpartiallySucceeded&%24top=15&queryOrder=finishTimeDescending&api-version=7.1"
-        $queryResponse = & $RequestInvoker $queryUri $TimelineByteLimit
-        $queryResult = ConvertFrom-CiFixJsonResponse `
-            -Response $queryResponse `
-            -Description "PR #$prNumber completed-build query"
-        $queryCollection = if ($queryResult.Succeeded) {
-            Get-CiFixJsonArrayProperty `
-                -Value $queryResult.Value `
-                -PropertyName 'value' `
-                -Description "PR #$prNumber completed-build query"
-        } else {
-            [pscustomobject]@{
-                Succeeded = $false
-                Items = @()
-                Error = $queryResult.Error
-            }
-        }
-        $queryErrors = [Collections.Generic.List[string]]::new()
-        if (-not $queryCollection.Succeeded) {
-            $queryErrors.Add($queryCollection.Error)
-        }
         $matchingBuilds = @()
-        if ($queryResult.Succeeded -and $queryCollection.Succeeded) {
+        $seenBuildIds = @{}
+        $queryErrors = [Collections.Generic.List[string]]::new()
+        $allDefinitionsSucceeded = $true
+        $lastHttpStatus = $null
+        $lastRedirectLocation = $null
+        $lastAttempts = 0
+
+        foreach ($defId in @($script:PipelineDefinitions.Values | Sort-Object)) {
+            $encodedBranch = [Uri]::EscapeDataString("refs/pull/$prNumber/merge")
+            $queryUri = "$($script:AzdoBaseUri)/builds?definitions=$defId&branchName=$encodedBranch&statusFilter=completed&resultFilter=succeeded%2Cfailed%2CpartiallySucceeded%2Ccanceled&%24top=$BuildLimit&queryOrder=finishTimeDescending&api-version=7.1"
+            $queryResponse = & $RequestInvoker $queryUri $TimelineByteLimit
+            $lastHttpStatus = $queryResponse.StatusCode
+            $lastRedirectLocation = $queryResponse.RedirectLocation
+            $lastAttempts = $queryResponse.Attempts
+            $queryResult = ConvertFrom-CiFixJsonResponse `
+                -Response $queryResponse `
+                -Description "PR #$prNumber definition $defId completed-build query"
+            $queryCollection = if ($queryResult.Succeeded) {
+                Get-CiFixJsonArrayProperty `
+                    -Value $queryResult.Value `
+                    -PropertyName 'value' `
+                    -Description "PR #$prNumber definition $defId completed-build query"
+            } else {
+                [pscustomobject]@{
+                    Succeeded = $false
+                    Items = @()
+                    Error = $queryResult.Error
+                }
+            }
+            if (-not $queryResult.Succeeded -or -not $queryCollection.Succeeded) {
+                $allDefinitionsSucceeded = $false
+                if (-not $queryResult.Succeeded) {
+                    $queryErrors.Add($queryResult.Error)
+                } elseif (-not $queryCollection.Succeeded) {
+                    $queryErrors.Add($queryCollection.Error)
+                }
+                continue
+            }
+
             $queryRowIndex = 0
             foreach ($build in $queryCollection.Items) {
                 $queryRowIndex++
+                if ($null -ne $build.definition -and $null -ne $build.definition.id -and [int]$build.definition.id -ne $defId) {
+                    continue
+                }
+
                 $sourceSha = [string]$build.triggerInfo.'pr.sourceSha'
                 if (-not $sourceSha.Equals($headSha, [StringComparison]::OrdinalIgnoreCase)) {
                     continue
@@ -1205,7 +1234,7 @@ function New-CiFixAzdoEvidence {
                         [Globalization.CultureInfo]::InvariantCulture,
                         [ref]$buildId) -or $buildId -le 0) {
                     $queryErrors.Add(
-                        "PR #$prNumber completed-build query matching row $queryRowIndex has a missing or invalid build ID")
+                        "PR #$prNumber definition $defId completed-build query matching row $queryRowIndex has a missing or invalid build ID")
                     continue
                 }
 
@@ -1218,17 +1247,31 @@ function New-CiFixAzdoEvidence {
                     -TimelineByteLimit $TimelineByteLimit `
                     -LogByteLimit $LogByteLimit `
                     -RequestInvoker $RequestInvoker
+                $buildResult = [string]$build.result
+                $isCanceled = $buildResult -eq 'canceled'
+                $evidenceComplete = [bool]$evidence.complete -and -not $isCanceled
+                $evidenceError = if ($isCanceled) {
+                    if ($evidence.timeline.error) { $evidence.timeline.error } else { 'build was canceled' }
+                } else {
+                    [string]$evidence.timeline.error
+                }
+                if ($seenBuildIds.ContainsKey($buildId)) {
+                    continue
+                }
+                $seenBuildIds[$buildId] = $true
+
                 $matchingBuilds += [pscustomobject]@{
                     buildId = $buildId
                     definitionId = $build.definition.id
                     definitionName = [string]$build.definition.name
-                    result = [string]$build.result
+                    result = $buildResult
                     finishTime = [string]$build.finishTime
                     sourceVersion = [string]$build.sourceVersion
                     branchName = [string]$build.sourceBranch
                     prSourceSha = $sourceSha
-                    evidenceComplete = [bool]$evidence.complete
-                    evidenceError = [string]$evidence.timeline.error
+                    timelinePath = [string]$evidence.timeline.path
+                    evidenceComplete = $evidenceComplete
+                    evidenceError = $evidenceError
                 }
             }
         }
@@ -1236,16 +1279,14 @@ function New-CiFixAzdoEvidence {
         $pullRequestEvidence += [pscustomobject]@{
             prNumber = $prNumber
             headSha = $headSha
-            queryComplete = $queryResult.Succeeded -and
-                $queryCollection.Succeeded -and
-                $queryErrors.Count -eq 0
-            httpStatus = $queryResponse.StatusCode
-            redirectLocation = $queryResponse.RedirectLocation
-            attempts = $queryResponse.Attempts
-            error = if (-not $queryResult.Succeeded) {
-                $queryResult.Error
-            } else {
+            queryComplete = $allDefinitionsSucceeded -and $queryErrors.Count -eq 0
+            httpStatus = $lastHttpStatus
+            redirectLocation = $lastRedirectLocation
+            attempts = $lastAttempts
+            error = if (-not $allDefinitionsSucceeded -or $queryErrors.Count -gt 0) {
                 $queryErrors -join '; '
+            } else {
+                ''
             }
             builds = @($matchingBuilds)
         }

@@ -867,6 +867,148 @@ Describe 'Get-CiFixAzdoEvidence' {
         $result.failedTaskCount | Should -Be 0
     }
 
+    It 'accepts nonempty timelines where previousAttempts is omitted, null, or empty array, while failing closed on malformed entries' -ForEach @(
+        @{ Variant = 'omitted'; ShouldPass = $true; ExpectedReferences = 0 }
+        @{ Variant = 'null'; ShouldPass = $true; ExpectedReferences = 0 }
+        @{ Variant = 'empty-array'; ShouldPass = $true; ExpectedReferences = 0 }
+        @{ Variant = 'malformed-scalar'; ShouldPass = $false; ExpectedReferences = 1 }
+        @{ Variant = 'malformed-entry'; ShouldPass = $false; ExpectedReferences = 1 }
+        @{ Variant = 'malformed-null-item'; ShouldPass = $false; ExpectedReferences = 1 }
+    ) {
+        $task = [ordered]@{
+            id = 'task-current'
+            type = 'Task'
+            name = 'current task'
+            result = 'failed'
+            log = @{ id = 10 }
+        }
+        if ($Variant -eq 'null') {
+            $task.previousAttempts = $null
+        } elseif ($Variant -eq 'empty-array') {
+            $task.previousAttempts = @()
+        } elseif ($Variant -eq 'malformed-scalar') {
+            $task.previousAttempts = 'not-an-array'
+        } elseif ($Variant -eq 'malformed-entry') {
+            $task.previousAttempts = @(@{ timelineId = 'not-a-guid' })
+        } elseif ($Variant -eq 'malformed-null-item') {
+            $task.previousAttempts = @($null)
+        }
+        $timelineJson = @{ records = @($task) } | ConvertTo-Json -Depth 10
+
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $content = if ($Uri -match '/timeline\?') {
+                $timelineJson
+            } elseif ($Uri -match '/logs/10\?') {
+                'task log content'
+            } else {
+                throw "Unexpected URI: $Uri"
+            }
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                Content = $content
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+                RedirectLocation = $null
+            }
+        }
+
+        $destination = Join-Path $TestDrive ([Guid]::NewGuid().ToString('N'))
+        $evidence = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $evidence.complete | Should -Be $ShouldPass
+        $evidence.previousAttemptsComplete | Should -Be $ShouldPass
+        @($evidence.previousAttempts).Count | Should -Be $ExpectedReferences
+        if ($ShouldPass) {
+            $evidence.failedTasks[0].status | Should -BeExactly 'available'
+        }
+    }
+
+    It 'accepts a fully retrieved previous attempt that contains zero failed tasks without marking evidence incomplete' {
+        $previousTimelineId = '11111111-1111-1111-1111-111111111111'
+        $previousJobId = '22222222-2222-2222-2222-222222222222'
+        $currentJobId = '33333333-3333-3333-3333-333333333333'
+        $currentTimeline = @{
+            records = @(
+                @{
+                    id = $currentJobId
+                    type = 'Job'
+                    name = 'current job'
+                    result = 'succeeded'
+                    previousAttempts = @(@{
+                        timelineId = $previousTimelineId
+                        recordId = $previousJobId
+                        attempt = 1
+                    })
+                },
+                @{
+                    id = 'task-current'
+                    parentId = $currentJobId
+                    type = 'Task'
+                    name = 'current task'
+                    result = 'succeeded'
+                    previousAttempts = @()
+                }
+            )
+        }
+        $previousTimeline = @{
+            records = @(
+                @{ id = $previousJobId; type = 'Job'; name = 'previous job'; result = 'succeeded' },
+                @{
+                    id = 'task-previous'
+                    parentId = $previousJobId
+                    type = 'Task'
+                    name = 'previous task'
+                    result = 'succeeded'
+                }
+            )
+        }
+
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $content = if ($Uri -match '/timeline/') {
+                $previousTimeline | ConvertTo-Json -Depth 10
+            } elseif ($Uri -match '/timeline\?') {
+                $currentTimeline | ConvertTo-Json -Depth 10
+            } else {
+                throw "Unexpected URI: $Uri"
+            }
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                Content = $content
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+                RedirectLocation = $null
+            }
+        }
+
+        $destination = Join-Path $TestDrive ([Guid]::NewGuid().ToString('N'))
+        $evidence = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $evidence.complete | Should -BeTrue
+        $evidence.previousAttemptsComplete | Should -BeTrue
+        $evidence.previousAttempts.Count | Should -Be 1
+        $evidence.previousAttempts[0].status | Should -BeExactly 'available'
+        $evidence.previousAttempts[0].failedTaskCount | Should -Be 0
+        $evidence.previousAttempts[0].error | Should -BeNullOrEmpty
+    }
+
     It 'deduplicates builds across multiple issues and pipelines' {
         $snapshotPath = Join-Path $TestDrive 'candidates.json'
         $destination = Join-Path $TestDrive 'evidence'
@@ -977,6 +1119,97 @@ Describe 'Get-CiFixAzdoEvidence' {
         $manifest.pipelines[0].queryComplete | Should -BeFalse
         $manifest.pipelines[0].error | Should -Not -BeNullOrEmpty
         @($manifest.pipelines[0].builds).Count | Should -Be 0
+    }
+
+    It 'includes canceled builds in queries and marks the newest completed canceled build incomplete' {
+        $invokerUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $invokerUris.Add($Uri)
+            if ($Uri -match '/builds\?') {
+                $builds = @{
+                    value = @(
+                        @{
+                            id = 200
+                            result = 'canceled'
+                            finishTime = '2026-10-15T12:00:00Z'
+                            sourceBranch = 'refs/heads/main'
+                            sourceVersion = 'ffffffffffffffffffffffffffffffffffffffff'
+                        },
+                        @{
+                            id = 199
+                            result = 'succeeded'
+                            finishTime = '2026-10-15T11:00:00Z'
+                            sourceBranch = 'refs/heads/main'
+                            sourceVersion = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+                        }
+                    )
+                }
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = ($builds | ConvertTo-Json -Depth 10)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                    RedirectLocation = $null
+                }
+            }
+            if ($Uri -match '/timeline\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = '{"records":[]}'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                    RedirectLocation = $null
+                }
+            }
+            throw "Unexpected URI: $Uri"
+        }
+
+        $snapshotPath = Join-Path $TestDrive 'candidates.json'
+        $destination = Join-Path $TestDrive 'evidence'
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            baseBranch = 'main'
+            issueEvidence = @{
+                authoritative = $true
+                exactLabel = 'ci-scan'
+                count = 1
+                totalMatched = 1
+                issues = @(
+                    @{
+                        issueNumber = 1
+                        body = "- **Pipeline**: maui-pr`n- **Build ID**: 100"
+                    }
+                )
+            }
+            candidates = @()
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $snapshotPath
+
+        $manifest = New-CiFixAzdoEvidence `
+            -InputPath $snapshotPath `
+            -Destination $destination `
+            -TargetBranch main `
+            -BuildLimit 5 `
+            -FailedLogLimit 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $pipelineQuery = $invokerUris | Where-Object { $_ -match '/builds\?definitions=302' }
+        $pipelineQuery | Should -Match 'resultFilter=succeeded%2Cfailed%2CpartiallySucceeded%2Ccanceled'
+
+        $pipelineEvidence = $manifest.pipelines | Where-Object pipeline -EQ 'maui-pr'
+        $pipelineEvidence.builds.Count | Should -BeGreaterThan 0
+        $newest = $pipelineEvidence.builds[0]
+        $newest.buildId | Should -Be 200
+        $newest.result | Should -BeExactly 'canceled'
+        $newest.evidenceComplete | Should -BeFalse
+        $newest.evidenceError | Should -Match 'canceled'
     }
 
     It 'prefetches head-SHA-matched PR builds for advance mode' {
@@ -1106,6 +1339,91 @@ Describe 'Get-CiFixAzdoEvidence' {
         @($manifest.pullRequests[0].builds).Count | Should -Be 0
     }
 
+    It 'queries each pipeline definition independently with its own bound so repeated runs do not starve others' {
+        $invokerUris = [Collections.Generic.List[string]]::new()
+        $headSha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $invokerUris.Add($Uri)
+            if ($Uri -match '/builds\?') {
+                $defMatch = [regex]::Match($Uri, 'definitions=([0-9]+)')
+                $defId = if ($defMatch.Success) { [int]$defMatch.Groups[1].Value } else { 0 }
+                $builds = @{
+                    value = @(
+                        @{
+                            id = 1000 + $defId
+                            definition = @{ id = $defId; name = "def-$defId" }
+                            result = 'succeeded'
+                            finishTime = '2026-10-15T12:00:00Z'
+                            sourceBranch = 'refs/pull/42/merge'
+                            sourceVersion = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                            triggerInfo = @{ 'pr.sourceSha' = $headSha }
+                        }
+                    )
+                }
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = ($builds | ConvertTo-Json -Depth 10)
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                    RedirectLocation = $null
+                }
+            }
+            if ($Uri -match '/timeline\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = '{"records":[]}'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                    RedirectLocation = $null
+                }
+            }
+            throw "Unexpected URI: $Uri"
+        }
+
+        $snapshotPath = Join-Path $TestDrive 'candidates.json'
+        $destination = Join-Path $TestDrive 'evidence'
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            baseBranch = 'main'
+            issueEvidence = @{
+                authoritative = $true
+                exactLabel = 'ci-scan'
+                count = 0
+                totalMatched = 0
+                issues = @()
+            }
+            candidates = @(
+                @{ prNumber = 42; headSha = $headSha }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $snapshotPath
+
+        $manifest = New-CiFixAzdoEvidence `
+            -InputPath $snapshotPath `
+            -Destination $destination `
+            -TargetBranch main `
+            -BuildLimit 5 `
+            -FailedLogLimit 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $prQueries = @($invokerUris | Where-Object { $_ -match 'refs%2Fpull%2F42%2Fmerge' })
+        $prQueries.Count | Should -Be 3
+        ($prQueries | Where-Object { $_ -match 'definitions=302&' }) | Should -Not -BeNullOrEmpty
+        ($prQueries | Where-Object { $_ -match 'definitions=313&' }) | Should -Not -BeNullOrEmpty
+        ($prQueries | Where-Object { $_ -match 'definitions=314&' }) | Should -Not -BeNullOrEmpty
+
+        $prEvidence = $manifest.pullRequests | Where-Object prNumber -EQ 42
+        $prEvidence.queryComplete | Should -BeTrue
+        $prEvidence.builds.Count | Should -Be 3
+    }
+
     It 'fails closed when the global build bound is reached' {
         $evidence = @{}
         $evidence[1L] = [pscustomobject]@{ buildId = 1; complete = $true }
@@ -1172,5 +1490,11 @@ Describe 'CI-fixer workflow evidence wiring' {
         $net11Workflow | Should -Not -Match "github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs/heads/net11\.0'"
         $mainWorkflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch main'
         $net11Workflow | Should -Match '(?s)Get-CiFixAzdoEvidence\.ps1.*?-Branch net11\.0'
+        foreach ($workflow in @($mainWorkflow, $net11Workflow)) {
+            $workflow | Should -Not -Match 'curl -s "https://dev\.azure\.com/\$ORG/\$PROJ/_apis/build/builds/\$BUILD/timeline'
+            $workflow | Should -Match 'TIMELINE_REL_PATH=\$\(jq -r --argjson build "\$BUILD"'
+            $workflow | Should -Match '\.failedTasks\[\] \| select\(\.status == "available" and \.source == "current"\)'
+            $workflow | Should -Match '\.failedTasks\[\] \| select\(\.status == "available" and \.source == "previous_attempt"\)'
+        }
     }
 }
