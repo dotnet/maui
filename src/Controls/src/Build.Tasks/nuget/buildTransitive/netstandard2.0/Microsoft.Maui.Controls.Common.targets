@@ -33,7 +33,6 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
     <CompilerVisibleProperty Include="Configuration" />
     <CompilerVisibleProperty Include="MauiXamlHotReload" />
-    <CompilerVisibleProperty Include="EnablePreviewFeatures" />
     <CompilerVisibleProperty Include="MauiXamlLazyRD" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LazyRD" />
     <CompilerVisibleProperty Include="EnableMauiIncrementalHotReload" />
