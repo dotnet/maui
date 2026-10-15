@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 
 
@@ -60,8 +61,10 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 			var accumulatedFields = XamlHotReloadState.GetAccumulatedCodeBehindFields(assemblyName, targetFramework, stateKey, Context.ProjectItem.HotReloadSessionToken);
 			if (accumulatedFields != null && accumulatedFields.TryGetValue(fieldName, out var accumulatedField))
 			{
-				var currentType = parentElement.XmlType.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, Context.TypeCache)?.ToFQDisplayString() ?? string.Empty;
-				if (!IsAssignableToGhostField(currentType, accumulatedField.Type, Context.Compilation))
+				var currentType = Context.Variables[parentElement].Type;
+				if (!accumulatedField.XmlType.TryResolveTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var preservedType)
+					|| preservedType is null
+					|| !IsAssignableToField(currentType, preservedType, Context.Compilation))
 					return;
 			}
 		}
@@ -90,4 +93,10 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 
 	static bool IsVisualStateGroup(ElementNode node) => node?.XmlType.Name == "VisualStateGroup" && node?.Parent is IListNode;
 	static bool IsVisualState(ElementNode node) => node?.XmlType.Name == "VisualState" && node?.Parent is IListNode;
+
+	static bool IsAssignableToField(ITypeSymbol currentType, ITypeSymbol preservedType, Compilation compilation)
+	{
+		var conversion = compilation.ClassifyConversion(currentType, preservedType);
+		return conversion.Exists && conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference);
+	}
 }

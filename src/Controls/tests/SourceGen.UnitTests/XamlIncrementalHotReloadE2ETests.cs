@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.SourceGen;
@@ -84,6 +85,47 @@ public class XamlIncrementalHotReloadE2ETests
 			Assert.NotNull(updatedLabel);
 			Assert.Same(label, updatedLabel);
 			Assert.Equal("World", updatedLabel!.Text);
+		});
+	}
+
+	[MetadataUpdateFact]
+	public void RenamingXName_AppliesMetadataDeltaAndAssignsNewField()
+	{
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+				<VerticalStackLayout>
+					<Label x:Name="count" Text="Hello" />
+				</VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+				<VerticalStackLayout>
+					<Label x:Name="total" Text="Hello" />
+				</VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV1, xamlV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var countField = page.GetType().GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(countField);
+			var label = Assert.IsType<Label>(countField!.GetValue(page));
+
+			live.ApplyUpdate<ContentPage>(1);
+
+			var totalField = page.GetType().GetField("total", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(totalField);
+			Assert.Same(label, totalField!.GetValue(page));
+			Assert.Same(label, countField.GetValue(page));
 		});
 	}
 

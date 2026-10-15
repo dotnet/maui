@@ -1022,15 +1022,19 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XName_Changed_ReturnsNull()
+	public void XName_Changed_ProducesPropertyDiff()
 	{
-		// x:Name generates a field in code-behind → any change is structural
 		var old = Parse(Page("<Label x:Name=\"oldLabel\" Text=\"Hello\" />"));
 		var @new = Parse(Page("<Label x:Name=\"newLabel\" Text=\"Hello\" />"));
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		var nodeDiff = Assert.Single(diff.NodeChanges);
+		var propertyDiff = Assert.Single(nodeDiff.PropertyChanges);
+		Assert.Equal(XmlName.xName, propertyDiff.PropertyName);
+		Assert.Equal("oldLabel", propertyDiff.OldValue);
+		Assert.Equal("newLabel", propertyDiff.NewValue);
 	}
 
 	[Fact]

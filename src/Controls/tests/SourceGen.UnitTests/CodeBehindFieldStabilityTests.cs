@@ -143,8 +143,8 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 
 	// Reusing an x:Name on a type that's assignable to the originally-generated field's type (e.g.
 	// a derived control) must keep the field assigned - not ghosted - since reassigning it is safe
-	// and compiles fine. This exercises the real IsAssignableToGhostField check (not just string
-	// equality) and validates the regenerated code against a live Compilation, so a regression in
+	// and compiles fine. This exercises symbol-based compatibility against the post-code-behind
+	// compilation and validates the regenerated code against a live Compilation, so a regression in
 	// either the CB reconciliation or the IC assignment-skip guard would surface as a real
 	// compilation error or a wrongly-skipped assignment, not just a text mismatch.
 	[Fact]
@@ -366,6 +366,252 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 		}
 	}
 
+	[Fact]
+	public void TransientUnresolvedType_DoesNotPoisonFieldHistory()
+	{
+		const string codeBehind = """
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.SourceGen)]
+			public partial class TransientUnresolvedType : ContentPage
+			{
+				public TransientUnresolvedType() => InitializeComponent();
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.TransientUnresolvedType">
+				<Label x:Name="count" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.TransientUnresolvedType">
+				<Labl x:Name="newField" />
+			</ContentPage>
+			""";
+		const string xamlV3 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.TransientUnresolvedType">
+				<Label x:Name="newField" />
+			</ContentPage>
+			""";
+
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var results = RunThreeGenerations(compilation, "TransientUnresolvedType.xaml", xamlV1, xamlV2, xamlV3);
+
+		var invalidOutput = GetCbOutput(results.result2);
+		Assert.DoesNotContain("private  newField", invalidOutput, StringComparison.Ordinal);
+
+		var correctedOutput = GetCbOutput(results.result3);
+		Assert.Contains("Microsoft.Maui.Controls.Label count", correctedOutput, StringComparison.Ordinal);
+		Assert.Contains("Microsoft.Maui.Controls.Label newField", correctedOutput, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TransientEmptyXName_DoesNotGenerateOrPersistMalformedField()
+	{
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.TransientEmptyXName">
+				<Label x:Name="count" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.TransientEmptyXName">
+				<Label x:Name="" />
+			</ContentPage>
+			""";
+		const string xamlV3 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.TransientEmptyXName">
+				<Label x:Name="total" />
+			</ContentPage>
+			""";
+
+		var results = RunThreeGenerations(CreateMauiCompilation(), "TransientEmptyXName.xaml", xamlV1, xamlV2, xamlV3);
+
+		Assert.DoesNotContain("Label  =", GetCbOutput(results.result2), StringComparison.Ordinal);
+		var correctedOutput = GetCbOutput(results.result3);
+		Assert.Contains("Microsoft.Maui.Controls.Label count", correctedOutput, StringComparison.Ordinal);
+		Assert.Contains("Microsoft.Maui.Controls.Label total", correctedOutput, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void FreshGeneratorSession_DoesNotReusePreviousXamlPatchState()
+	{
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.FreshPatchSession">
+				<Label Text="First" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.FreshPatchSession">
+				<Label Text="Second" />
+			</ContentPage>
+			""";
+
+		var compilation = CreateMauiCompilation();
+		RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("FreshPatchSession.xaml", xamlV1));
+
+		var freshResult = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("FreshPatchSession.xaml", xamlV2));
+		var updateComponent = GetUcOutputFromResult(freshResult);
+
+		Assert.DoesNotContain("\"Second\"", updateComponent, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RenamedXName_IsAssignedByUpdateComponent()
+	{
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.RenamedXNameUpdateComponent">
+				<VerticalStackLayout>
+					<Label x:Name="count" />
+				</VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.RenamedXNameUpdateComponent">
+				<VerticalStackLayout>
+					<Label x:Name="total" />
+				</VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var xamlFile = new AdditionalXamlFile("RenamedXNameUpdateComponent.xaml", xamlV1);
+		var result = RunGeneratorWithChanges<XamlGenerator>(CreateMauiCompilation(), ApplyChanges, xamlFile);
+
+		Assert.Contains("this.total =", GetUcOutputFromResult(result.result2), StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation compilation)
+		{
+			var newXamlFile = new AdditionalXamlFile(xamlFile.Path, xamlV2);
+			return (driver.ReplaceAdditionalText(xamlFile.Text, newXamlFile.Text), compilation);
+		}
+	}
+
+	[Fact]
+	public void ConstructedGenericDerivedType_RemainsAssigned()
+	{
+		const string codeBehind = """
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.SourceGen)]
+			public partial class ConstructedGenericDerivedType : ContentPage
+			{
+				public ConstructedGenericDerivedType() => InitializeComponent();
+			}
+
+			public class GenericView<T> : ContentView
+			{
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.ConstructedGenericDerivedType">
+				<ContentView x:Name="card" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:Test"
+			             x:Class="Test.ConstructedGenericDerivedType">
+				<local:GenericView x:TypeArguments="x:String" x:Name="card" />
+			</ContentPage>
+			""";
+
+		var xamlFile = new AdditionalXamlFile("ConstructedGenericDerivedType.xaml", xamlV1);
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var (_, _, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
+
+		AssertNoErrors(diagnostics, updatedCompilation);
+		Assert.Contains("this.card = ", GetIcOutput(updatedCompilation), StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation currentCompilation)
+		{
+			var newXamlFile = new AdditionalXamlFile(xamlFile.Path, xamlV2);
+			return (driver.ReplaceAdditionalText(xamlFile.Text, newXamlFile.Text), currentCompilation);
+		}
+	}
+
+	[Fact]
+	public void XamlGeneratedDerivedType_RemainsAssigned()
+	{
+		const string codeBehind = """
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.SourceGen)]
+			public partial class XamlGeneratedDerivedType : ContentPage
+			{
+				public XamlGeneratedDerivedType() => InitializeComponent();
+			}
+
+			public partial class MyCard
+			{
+			}
+			""";
+		const string pageV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.XamlGeneratedDerivedType">
+				<ContentView x:Name="card" />
+			</ContentPage>
+			""";
+		const string pageV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:Test"
+			             x:Class="Test.XamlGeneratedDerivedType">
+				<local:MyCard x:Name="card" />
+			</ContentPage>
+			""";
+		const string cardXaml = """
+			<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.MyCard" />
+			""";
+
+		var pageFile = new AdditionalXamlFile("XamlGeneratedDerivedType.xaml", pageV1);
+		var cardFile = new AdditionalXamlFile("MyCard.xaml", cardXaml);
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var (_, _, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, pageFile, cardFile);
+
+		AssertNoErrors(diagnostics, updatedCompilation);
+		Assert.Contains("this.card = ", GetIcOutput(updatedCompilation), StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation currentCompilation)
+		{
+			var newPageFile = new AdditionalXamlFile(pageFile.Path, pageV2);
+			return (driver.ReplaceAdditionalText(pageFile.Text, newPageFile.Text), currentCompilation);
+		}
+	}
+
 	static void AssertNoErrors(System.Collections.Immutable.ImmutableArray<Diagnostic> generatorDiagnostics, Compilation updatedCompilation)
 	{
 		var generatorErrors = generatorDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
@@ -373,7 +619,9 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 
 		var compileErrors = updatedCompilation.GetDiagnostics()
 			.Where(d => d.Severity == DiagnosticSeverity.Error)
-			.Where(d => d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+			.Where(d => d.Location.SourceTree?.FilePath is string path
+				&& (path.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)
+					|| path.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)))
 			.ToArray();
 		Assert.True(compileErrors.Length == 0, "Compilation errors:\n" + string.Join("\n", compileErrors.Select(d => d.ToString())));
 	}
@@ -391,6 +639,11 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 	static string GetCbOutput(GeneratorDriverRunResult result) =>
 		result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
+	static string GetUcOutputFromResult(GeneratorDriverRunResult result) =>
+		string.Join("\n", result.Results.Single().GeneratedSources
+			.Where(gs => gs.HintName.EndsWith(".uc.xsg.cs", StringComparison.OrdinalIgnoreCase))
+			.Select(gs => gs.SourceText.ToString()));
+
 	// Same filtering as GetIcOutput, but reads straight off a GeneratorDriverRunResult's generated
 	// sources instead of a post-compile Compilation - for callers (like RunGenerator<T>, used for
 	// single, independent generations) that don't go through RunGeneratorWithChangesAndUpdateCompilation.
@@ -399,4 +652,31 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			.Where(gs => gs.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)
 				&& !gs.HintName.EndsWith(".uc.xsg.cs", StringComparison.OrdinalIgnoreCase))
 			.Select(gs => gs.SourceText.ToString()));
+
+	static (GeneratorDriverRunResult result1, GeneratorDriverRunResult result2, GeneratorDriverRunResult result3) RunThreeGenerations(
+		Compilation compilation,
+		string path,
+		string xamlV1,
+		string xamlV2,
+		string xamlV3)
+	{
+		var file1 = new AdditionalXamlFile(path, xamlV1);
+		var file2 = new AdditionalXamlFile(path, xamlV2);
+		var file3 = new AdditionalXamlFile(path, xamlV3);
+		var options = new GeneratorDriverOptions(
+			disabledOutputs: IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+		GeneratorDriver driver = CSharpGeneratorDriver.Create([new XamlGenerator().AsSourceGenerator()], driverOptions: options)
+			.AddAdditionalTexts([file1.Text])
+			.WithUpdatedAnalyzerConfigOptions(CreateAnalyzerConfigOptionsProvider(file1));
+
+		driver = driver.RunGenerators(compilation);
+		var result1 = driver.GetRunResult();
+		driver = driver.ReplaceAdditionalText(file1.Text, file2.Text).RunGenerators(compilation);
+		var result2 = driver.GetRunResult();
+		driver = driver.ReplaceAdditionalText(file2.Text, file3.Text).RunGenerators(compilation);
+		var result3 = driver.GetRunResult();
+
+		return (result1, result2, result3);
+	}
 }

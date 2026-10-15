@@ -12,6 +12,8 @@ internal sealed class HotReloadSessionToken
 {
 }
 
+internal sealed record HotReloadFieldContract(string Type, string AccessModifier, XmlType XmlType);
+
 /// <summary>
 /// In-process static cache that tracks the last-generated XAML text (and its parsed tree / node IDs)
 /// per file, enabling the incremental hot reload pipeline to compute a diff between successive XAML
@@ -46,12 +48,13 @@ internal static class XamlHotReloadState
 {
 	static readonly object _lock = new();
 
-	// Maps (assemblyName, targetFramework, relativePath) → CacheEntry
-	static readonly Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> _cache = new();
+	static ConditionalWeakTable<HotReloadSessionToken, SessionState> _sessions = new();
 
-	// Keeps additive code-behind field histories isolated per live generator driver. A weak key
-	// releases the complete history when Roslyn releases that driver's incremental pipeline.
-	static ConditionalWeakTable<HotReloadSessionToken, Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), Dictionary<string, (string Type, string AccessModifier)>>> _accumulatedCodeBehindFieldsBySession = new();
+	internal sealed class SessionState
+	{
+		public Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> Cache { get; } = new();
+		public Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), Dictionary<string, HotReloadFieldContract>> Fields { get; } = new();
+	}
 
 	internal sealed class CacheEntry
 	{
@@ -79,24 +82,19 @@ internal static class XamlHotReloadState
 		/// can tell how many times a file has been regenerated in the current build session.
 		/// </summary>
 		public int Version { get; set; }
-		/// <summary>
-		/// Names and declared XAML types of fields generated on the originally loaded type. This seed
-		/// remains stable across edits because metadata updates cannot add or remove instance fields.
-		/// </summary>
-		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
-		/// <summary>Whether this entry contains output from a completed generation.</summary>
-		public bool HasGeneratedOutput { get; set; }
 	}
 
 	/// <summary>
 	/// Tries to retrieve the previously stored XAML text, parsed root, and version for the given file.
 	/// Returns <see langword="false"/> when no entry exists (first run).
 	/// </summary>
-	public static bool TryGetPrevious(string assemblyName, string targetFramework, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
+	public static bool TryGetPrevious(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.HasGeneratedOutput)
+			if (sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
 				previousXaml = entry.XamlText;
 				previousRoot = entry.ParsedRoot;
@@ -120,41 +118,39 @@ internal static class XamlHotReloadState
 	/// file. This fully replaces the previous entry — the cache only ever holds the latest generation,
 	/// never an accumulated history.
 	/// </summary>
-	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken)
 	{
+		if (sessionToken is null)
+			return;
+
 		lock (_lock)
 		{
-			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
+			var session = _sessions.GetOrCreateValue(sessionToken);
+			if (!session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
-				entry = new CacheEntry
-				{
-					GeneratedFields = parsedRoot is null
-						? null
-						: XamlGeneratedFieldCollector.Collect(parsedRoot),
-				};
-				_cache[(assemblyName, targetFramework, relativePath)] = entry;
-			}
-			else if (entry.GeneratedFields is null && parsedRoot is not null)
-			{
-				entry.GeneratedFields = XamlGeneratedFieldCollector.Collect(parsedRoot);
+				entry = new CacheEntry();
+				session.Cache[(assemblyName, targetFramework, relativePath)] = entry;
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
 			entry.NodeIds = nodeIds;
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
-			entry.HasGeneratedOutput = true;
 		}
 	}
 
-	public static Dictionary<string, XmlType>? GetGeneratedFields(string assemblyName, string targetFramework, string relativePath)
+	public static Dictionary<string, XmlType>? GetGeneratedFields(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
-				&& entry.GeneratedFields is not null)
+			if (sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Fields.TryGetValue((assemblyName, targetFramework, relativePath), out var fields))
 			{
-				return new Dictionary<string, XmlType>(entry.GeneratedFields, System.StringComparer.Ordinal);
+				var result = new Dictionary<string, XmlType>(System.StringComparer.Ordinal);
+				foreach (var field in fields)
+					result[field.Key] = field.Value.XmlType;
+				return result;
 			}
 
 			return null;
@@ -166,17 +162,17 @@ internal static class XamlHotReloadState
 	/// this file in the given generator-driver session, or <see langword="null"/> if none have been
 	/// recorded yet.
 	/// </summary>
-	public static Dictionary<string, (string Type, string AccessModifier)>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	public static Dictionary<string, HotReloadFieldContract>? GetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		if (sessionToken is null)
 			return null;
 
 		lock (_lock)
 		{
-			if (_accumulatedCodeBehindFieldsBySession.TryGetValue(sessionToken, out var sessionFields)
-				&& sessionFields.TryGetValue((assemblyName, targetFramework, relativePath), out var fields))
+			if (_sessions.TryGetValue(sessionToken, out var session)
+				&& session.Fields.TryGetValue((assemblyName, targetFramework, relativePath), out var fields))
 			{
-				return new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
+				return new Dictionary<string, HotReloadFieldContract>(fields, System.StringComparer.Ordinal);
 			}
 
 			return null;
@@ -188,27 +184,31 @@ internal static class XamlHotReloadState
 	/// Callers are expected to pass the union of the previously accumulated fields and the fields parsed
 	/// from the current XAML.
 	/// </summary>
-	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, (string Type, string AccessModifier)> fields, HotReloadSessionToken? sessionToken)
+	public static void SetAccumulatedCodeBehindFields(string assemblyName, string targetFramework, string relativePath, Dictionary<string, HotReloadFieldContract> fields, HotReloadSessionToken? sessionToken)
 	{
 		if (sessionToken is null)
 			return;
 
 		lock (_lock)
 		{
-			var sessionFields = _accumulatedCodeBehindFieldsBySession.GetOrCreateValue(sessionToken);
-			sessionFields[(assemblyName, targetFramework, relativePath)] =
-				new Dictionary<string, (string, string)>(fields, System.StringComparer.Ordinal);
+			var session = _sessions.GetOrCreateValue(sessionToken);
+			session.Fields[(assemblyName, targetFramework, relativePath)] =
+				new Dictionary<string, HotReloadFieldContract>(fields, System.StringComparer.Ordinal);
 		}
 	}
 
 	/// <summary>
 	/// Returns the cached parsed root for the given file, or null if not cached.
 	/// </summary>
-	public static SGRootNode? GetParsedRoot(string assemblyName, string targetFramework, string relativePath)
+	public static SGRootNode? GetParsedRoot(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			return _cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) ? entry.ParsedRoot : null;
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.ParsedRoot
+					: null;
 		}
 	}
 
@@ -217,11 +217,14 @@ internal static class XamlHotReloadState
 	/// <see langword="null"/> if not cached. Mirrors <see cref="TryGetPrevious"/>'s contract —
 	/// callers must never see the live <see cref="CacheEntry.NodeIds"/> reference.
 	/// </summary>
-	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string targetFramework, string relativePath)
+	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.NodeIds != null)
+			if (sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+				&& entry.NodeIds != null)
 				return new Dictionary<ElementNode, string>(entry.NodeIds);
 			return null;
 		}
@@ -234,8 +237,7 @@ internal static class XamlHotReloadState
 	{
 		lock (_lock)
 		{
-			_cache.Clear();
-			_accumulatedCodeBehindFieldsBySession = new();
+			_sessions = new();
 		}
 	}
 }

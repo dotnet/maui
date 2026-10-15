@@ -36,51 +36,6 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	/// <summary>
-	/// Best-effort reconstruction of an <see cref="ITypeSymbol"/> from a <c>global::</c>-qualified
-	/// fully-qualified display string (as produced by <see cref="ISymbolExtensions.ToFQDisplayString"/>).
-	/// Only handles simple, non-generic, non-array, non-nested type names - the common case for
-	/// XAML-named elements - and returns <see langword="null"/> for anything else (generics, arrays,
-	/// nested types, ...), in which case callers must fall back to a conservative comparison rather
-	/// than risk misclassifying an incompatible type as assignable.
-	/// </summary>
-	public static ITypeSymbol? TryResolveSimpleTypeSymbol(string fqDisplayString, Compilation compilation)
-	{
-		if (string.IsNullOrEmpty(fqDisplayString))
-			return null;
-
-		var name = fqDisplayString.StartsWith("global::", StringComparison.Ordinal)
-			? fqDisplayString.Substring("global::".Length)
-			: fqDisplayString;
-
-		if (name.IndexOfAny(['<', '[', '*', '?']) >= 0)
-			return null;
-
-		return compilation.GetTypeByMetadataName(name);
-	}
-
-	/// <summary>
-	/// Returns <see langword="true"/> when a value of type <paramref name="currentTypeDisplay"/> can be
-	/// assigned, without a cast, to a field declared as <paramref name="preservedTypeDisplay"/> - i.e.
-	/// when reusing a ghost field (see <c>CodeBehindCodeWriter.ReconcileNamedFieldsForHotReload</c>) for
-	/// a retyped <c>x:Name</c> is safe. Falls back to exact string equality when either type can't be
-	/// resolved via <see cref="TryResolveSimpleTypeSymbol"/> (e.g. generics/arrays/nested types), which
-	/// is always a safe (if occasionally over-conservative) answer.
-	/// </summary>
-	public static bool IsAssignableToGhostField(string currentTypeDisplay, string preservedTypeDisplay, Compilation compilation)
-	{
-		if (string.Equals(currentTypeDisplay, preservedTypeDisplay, StringComparison.Ordinal))
-			return true;
-
-		var currentSymbol = TryResolveSimpleTypeSymbol(currentTypeDisplay, compilation);
-		var preservedSymbol = TryResolveSimpleTypeSymbol(preservedTypeDisplay, compilation);
-		if (currentSymbol is null || preservedSymbol is null)
-			return false;
-
-		var conversion = compilation.ClassifyConversion(currentSymbol, preservedSymbol);
-		return conversion.Exists && conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference);
-	}
-
 	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, HotReloadSessionToken hotReloadSessionToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
