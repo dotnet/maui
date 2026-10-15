@@ -117,6 +117,13 @@ largest resulting file is 5,859 bytes. Regression tests require over 50% reducti
 bound generated files, and prove quadrupling action count leaves contract output
 unchanged. This is actual deduplication, not just splitting the old output.
 
+The runtime and native sample enable `EmitCompilerGeneratedFiles`, so builds
+write generated sources into `generated/` beneath each configuration/target's
+intermediate output directory. The SDK's default path keeps them out of source
+compilation and version control. Inside that directory, open the
+`Microsoft.Maui.Controls.HybridWebApps.SourceGen` generator folder to inspect
+assembly registration, action bindings, event bindings and shared contracts.
+
 ## Portable validation
 
 From the repository root, using its pinned SDK:

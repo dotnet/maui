@@ -7,6 +7,7 @@
     <TargetFrameworks Condition="'$(HybridWebAppTargetFrameworks)' != ''">$(HybridWebAppTargetFrameworks)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.Maui.Controls.HybridWebApps</PackageId>
     <Version Condition="'$(HybridWebAppInTree)' != 'true'">0.1.0-preview.1</Version>
