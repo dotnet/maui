@@ -128,6 +128,38 @@ Describe 'Get-CiFixAzdoEvidence' {
         @($result.Items).Count | Should -Be 0
     }
 
+    It 'preserves JSON array roots under ConvertFrom-CiFixJsonResponse without unwrapping' {
+        $response = [pscustomobject]@{
+            Succeeded = $true
+            Content = '[{"records":[]}]'
+            Error = ''
+        }
+
+        $result = ConvertFrom-CiFixJsonResponse -Response $response -Description 'array-root test'
+
+        $result.Succeeded | Should -BeTrue
+        $result.Value -is [System.Array] | Should -BeTrue
+        $result.Value.GetType().IsArray | Should -BeTrue
+        @($result.Value).Count | Should -Be 1
+    }
+
+    It 'rejects array-wrapped objects containing the target property' {
+        $response = [pscustomobject]@{
+            Succeeded = $true
+            Content = '[{"records":[]}]'
+            Error = ''
+        }
+        $parsed = ConvertFrom-CiFixJsonResponse -Response $response -Description 'array-root test'
+
+        $result = Get-CiFixJsonArrayProperty `
+            -Value $parsed.Value `
+            -PropertyName 'records' `
+            -Description 'array-root test'
+
+        $result.Succeeded | Should -BeFalse
+        $result.Error | Should -Match "must be a JSON object containing a 'records' array"
+    }
+
     It 'marks structurally malformed timelines incomplete' -ForEach @(
         @{ Name = 'empty body'; Content = '' }
         @{ Name = 'JSON null'; Content = 'null' }
@@ -138,6 +170,7 @@ Describe 'Get-CiFixAzdoEvidence' {
         @{ Name = 'number record'; Content = '{"records":[1]}' }
         @{ Name = 'string record'; Content = '{"records":["row"]}' }
         @{ Name = 'boolean record'; Content = '{"records":[true]}' }
+        @{ Name = 'array-wrapped records'; Content = '[{"records":[]}]' }
     ) {
         $destination = Join-Path $TestDrive "malformed-timeline-$Name"
         $requestInvoker = {
@@ -1009,6 +1042,84 @@ Describe 'Get-CiFixAzdoEvidence' {
         $evidence.previousAttempts[0].error | Should -BeNullOrEmpty
     }
 
+    It 'collects evidence for a build with exactly one current failed task and a valid previous attempt' -ForEach @(
+        @{ Name = 'previous attempt with failed task'; PreviousTaskResult = 'failed'; ExpectedFailedCount = 2; ExpectedPriorFailedCount = 1 }
+        @{ Name = 'previous attempt with zero failed tasks'; PreviousTaskResult = 'succeeded'; ExpectedFailedCount = 1; ExpectedPriorFailedCount = 0 }
+    ) {
+        $destination = Join-Path $TestDrive "single-current-failure-$([Guid]::NewGuid().ToString('N'))"
+        $previousTimelineId = '11111111-1111-1111-1111-111111111111'
+        $previousRecordId = '22222222-2222-2222-2222-222222222222'
+        $currentTimeline = @{
+            id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+            records = @(
+                @{
+                    id = '33333333-3333-3333-3333-333333333333'
+                    name = 'Current Task'
+                    type = 'Task'
+                    result = 'failed'
+                    log = @{ id = 101 }
+                    previousAttempts = @(
+                        @{
+                            timelineId = $previousTimelineId
+                            recordId = $previousRecordId
+                            attempt = 1
+                        }
+                    )
+                }
+            )
+        }
+        $previousTimeline = @{
+            id = $previousTimelineId
+            records = @(
+                @{
+                    id = $previousRecordId
+                    name = 'Previous Task'
+                    type = 'Task'
+                    result = $PreviousTaskResult
+                    log = if ($PreviousTaskResult -eq 'failed') { @{ id = 102 } } else { $null }
+                }
+            )
+        }
+
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $content = if ($Uri -match [regex]::Escape("/timeline/$previousTimelineId")) {
+                $previousTimeline | ConvertTo-Json -Depth 10 -Compress
+            } elseif ($Uri -match '/timeline\?') {
+                $currentTimeline | ConvertTo-Json -Depth 10 -Compress
+            } elseif ($Uri -match '/logs/') {
+                'log content'
+            } else {
+                throw "Unexpected request: $Uri"
+            }
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                Content = $content
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+                RedirectLocation = $null
+            }
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory $destination `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeTrue
+        $result.previousAttemptsComplete | Should -BeTrue
+        $result.failedTaskCount | Should -Be $ExpectedFailedCount
+        $result.failedTasks -is [System.Array] | Should -BeTrue
+        @($result.failedTasks).Count | Should -Be $ExpectedFailedCount
+        @($result.failedTasks | Where-Object source -EQ 'current').Count | Should -Be 1
+        @($result.failedTasks | Where-Object source -EQ 'previous_attempt').Count | Should -Be $ExpectedPriorFailedCount
+    }
+
     It 'deduplicates builds across multiple issues and pipelines' {
         $snapshotPath = Join-Path $TestDrive 'candidates.json'
         $destination = Join-Path $TestDrive 'evidence'
@@ -1293,6 +1404,10 @@ Describe 'Get-CiFixAzdoEvidence' {
             Name = 'matching invalid ID'
             Content = '{"value":[{"id":"invalid","triggerInfo":{"pr.sourceSha":"1111111111111111111111111111111111111111"}}]}'
         }
+        @{
+            Name = 'singleton array root'
+            Content = '[{"value":[{"id":700,"result":"failed","finishTime":"2026-10-07T00:00:00Z","sourceVersion":"merge","sourceBranch":"refs/pull/123/merge","triggerInfo":{"pr.sourceSha":"1111111111111111111111111111111111111111"}}]}]'
+        }
     ) {
         $snapshotPath = Join-Path $TestDrive "pr-query-$Name.json"
         $destination = Join-Path $TestDrive "pr-query-$Name"
@@ -1422,6 +1537,80 @@ Describe 'Get-CiFixAzdoEvidence' {
         $prEvidence = $manifest.pullRequests | Where-Object prNumber -EQ 42
         $prEvidence.queryComplete | Should -BeTrue
         $prEvidence.builds.Count | Should -Be 3
+    }
+
+    It 'rejects candidate snapshots with an array root' {
+        $destination = Join-Path $TestDrive 'candidate-array-root-dest'
+        $candidateFile = Join-Path $TestDrive 'candidate-array-root.json'
+        '[{"schemaVersion":2,"repository":"dotnet/maui","issueEvidence":{"authoritative":true,"issues":[]}}]' |
+            Set-Content -LiteralPath $candidateFile
+
+        {
+            New-CiFixAzdoEvidence `
+                -InputPath $candidateFile `
+                -Destination $destination `
+                -TargetBranch 'main' `
+                -BuildLimit 5 `
+                -FailedLogLimit 5 `
+                -TimelineByteLimit 10000 `
+                -LogByteLimit 10000
+        } | Should -Throw 'CI-fix candidate snapshot is malformed or non-authoritative.'
+    }
+
+    It 'marks latest-build queries with an array root incomplete' {
+        $destination = Join-Path $TestDrive 'builds-query-array-root-dest'
+        $candidateFile = Join-Path $TestDrive 'candidate-valid.json'
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            issueEvidence = @{
+                authoritative = $true
+                issues = @(
+                    @{
+                        issueNumber = 123
+                        body = "- **Pipeline**: maui-pr`n- **Build ID**: 1000"
+                    }
+                )
+            }
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidateFile
+
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            if ($Uri -match '/builds\?') {
+                [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = '[{"value":[]}]'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                    RedirectLocation = $null
+                }
+            } else {
+                [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    Content = '{"records":[]}'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                    RedirectLocation = $null
+                }
+            }
+        }
+
+        $manifest = New-CiFixAzdoEvidence `
+            -InputPath $candidateFile `
+            -Destination $destination `
+            -TargetBranch 'main' `
+            -BuildLimit 5 `
+            -FailedLogLimit 5 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $manifest.pipelines[0].queryComplete | Should -BeFalse
+        $manifest.pipelines[0].error | Should -Match "must be a JSON object containing a 'value' array"
     }
 
     It 'fails closed when the global build bound is reached' {

@@ -304,7 +304,7 @@ function ConvertFrom-CiFixJsonResponse {
     try {
         return [pscustomobject]@{
             Succeeded = $true
-            Value = $Response.Content | ConvertFrom-Json -Depth 100
+            Value = $Response.Content | ConvertFrom-Json -Depth 100 -NoEnumerate
             Error = ''
         }
     }
@@ -616,13 +616,15 @@ function Get-CiFixBuildEvidence {
 
     $failedTasks = @()
     $complete = [bool]$timelineValid
-    $allFailedTasks = if ($timelineValid) {
-        @(Get-CiFixFailedTaskRecords `
-                -Timeline $timelineResult.Value `
-                -SourceTimelineId ([string]$timelineResult.Value.id))
-    } else {
-        @()
-    }
+    $allFailedTasks = @(
+        if ($timelineValid) {
+            @(Get-CiFixFailedTaskRecords `
+                    -Timeline $timelineResult.Value `
+                    -SourceTimelineId ([string]$timelineResult.Value.id))
+        } else {
+            @()
+        }
+    )
     $previousAttemptReferences = if ($timelineValid) {
         @(Get-CiFixPreviousAttemptReferences -Timeline $timelineResult.Value)
     } else {
@@ -1010,9 +1012,13 @@ function New-CiFixAzdoEvidence {
         throw "CI-fix candidate snapshot was not found at '$InputPath'."
     }
 
-    $snapshot = Get-Content -Raw -LiteralPath $InputPath | ConvertFrom-Json -Depth 100
-    if ($snapshot.schemaVersion -ne 2 -or $snapshot.repository -ne 'dotnet/maui' -or
-        $null -eq $snapshot.issueEvidence -or -not $snapshot.issueEvidence.authoritative) {
+    $snapshot = Get-Content -Raw -LiteralPath $InputPath | ConvertFrom-Json -Depth 100 -NoEnumerate
+    if ($null -eq $snapshot -or
+        $snapshot.GetType() -ne [System.Management.Automation.PSCustomObject] -or
+        $snapshot.schemaVersion -ne 2 -or
+        $snapshot.repository -ne 'dotnet/maui' -or
+        $null -eq $snapshot.issueEvidence -or
+        -not $snapshot.issueEvidence.authoritative) {
         throw 'CI-fix candidate snapshot is malformed or non-authoritative.'
     }
 
