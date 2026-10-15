@@ -78,11 +78,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var mauiView = platformView as MauiView;
 
-			if (mauiView is null
-				&& platformView is WrapperView wrapperView
-				&& wrapperView.GetChildAt<UIView>(0) is MauiView wrappedMauiView)
+			if (mauiView is null && platformView is WrapperView wrapperView)
 			{
-				mauiView = wrappedMauiView;
+				var subviews = wrapperView.Subviews;
+
+				if (subviews.Length > 0 && subviews[0] is MauiView wrappedMauiView)
+				{
+					mauiView = wrappedMauiView;
+				}
 			}
 
 			if (virtualView is ISafeAreaView2 safeView && mauiView is not null)
