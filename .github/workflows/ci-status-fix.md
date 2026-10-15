@@ -793,10 +793,10 @@ an empty `candidates` array:
      redirection, or an ad-hoc file writer for this outcome.
 2. Run this trusted helper as one standalone shell call:
 
-     ```powershell
-     pwsh .github/scripts/Complete-CiFixEmptyQueue.ps1 `
-       -CandidatesPath /tmp/gh-aw/agent/ci-fix-context/candidates.json `
-       -ExpectedIssueLabel ci-scan `
+     ```bash
+     pwsh .github/scripts/Complete-CiFixEmptyQueue.ps1 \
+       -CandidatesPath /tmp/gh-aw/agent/ci-fix-context/candidates.json \
+       -ExpectedIssueLabel ci-scan \
        -ExpectedBaseBranch main
      ```
 

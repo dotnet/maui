@@ -371,11 +371,35 @@ Describe 'CI-fixer unattended bootstrap contracts' {
         $lock.Substring($prepareIndex, $installerIndex - $prepareIndex) |
             Should -Match "timeout --signal=TERM --kill-after=15s 270s bash <<'RIPGREP_PREP'"
 
-        $source | Should -Match ([regex]::Escape(
-                ".github/scripts/Complete-CiFixEmptyQueue.ps1 ``"))
-        $source | Should -Match "-ExpectedIssueLabel $Label"
+        $step01Match = [regex]::Match($source, '(?ms)#### Step 0\.1.*?(```(?:bash|powershell)\r?\n(.*?)\r?\n\s*```)')
+        $step01Match.Success | Should -BeTrue
+        $fenceLang = [regex]::Match($step01Match.Groups[1].Value, '```(\w+)').Groups[1].Value
+        $fenceLang | Should -Be 'bash'
+        $commandText = $step01Match.Groups[2].Value.Trim()
+
+        $PSNativeCommandUseErrorActionPreference = $false
+        $null = $commandText | & bash -n
+        $LASTEXITCODE | Should -Be 0
+
+        $runnerScript = @"
+pwsh() {
+  for arg in "`$@"; do
+    printf "%s\n" "`$arg"
+  done
+}
+$commandText
+"@
+        $capturedArgs = @($runnerScript | & bash -s)
+        $LASTEXITCODE | Should -Be 0
+        $capturedArgs.Count | Should -Be 7
+        $capturedArgs[0] | Should -Be '.github/scripts/Complete-CiFixEmptyQueue.ps1'
+        $capturedArgs[1] | Should -Be '-CandidatesPath'
+        $capturedArgs[2] | Should -Be '/tmp/gh-aw/agent/ci-fix-context/candidates.json'
+        $capturedArgs[3] | Should -Be '-ExpectedIssueLabel'
+        $capturedArgs[4] | Should -Be $Label
+        $capturedArgs[5] | Should -Be '-ExpectedBaseBranch'
         $expectedBaseBranch = if ($Workflow -eq 'ci-status-fix') { 'main' } else { 'net11.0' }
-        $source | Should -Match "-ExpectedBaseBranch $([regex]::Escape($expectedBaseBranch))"
+        $capturedArgs[6] | Should -Be $expectedBaseBranch
         $source | Should -Match 'call the `safeoutputs` `noop` tool exactly\s+once'
         $source | Should -Not -Match '(?ms)empty queue.*?touch /tmp/gh-aw/agent'
         $lock | Should -Match ([regex]::Escape(
