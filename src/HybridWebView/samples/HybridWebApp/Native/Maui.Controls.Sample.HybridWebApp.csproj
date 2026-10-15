@@ -42,12 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../src/SourceGen/Microsoft.Maui.Controls.HybridWebApps.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
-    <ProjectReference Include="../../../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj"
-                      Condition="'$(HybridWebAppInTree)' == 'true'"
-                      AdditionalProperties="ArtifactsObjDir=$(ArtifactsObjDir);ArtifactsBinDir=$(ArtifactsBinDir)" />
-    <ProjectReference Include="../../../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj"
-                      Condition="'$(HybridWebAppInTree)' != 'true'"
-                      AdditionalProperties="BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)Microsoft.Maui.Controls.HybridWebApps/;BaseOutputPath=$(BaseOutputPath)Microsoft.Maui.Controls.HybridWebApps/" />
+    <ProjectReference Include="../../../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseMaui)' == 'true'">

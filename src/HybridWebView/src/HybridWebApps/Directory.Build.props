@@ -1,18 +1,9 @@
 <Project>
   <PropertyGroup>
-    <_HybridAppRequestedArtifactsObjDir>$(ArtifactsObjDir)</_HybridAppRequestedArtifactsObjDir>
-    <_HybridAppRequestedArtifactsBinDir>$(ArtifactsBinDir)</_HybridAppRequestedArtifactsBinDir>
     <HybridWebAppRepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../../..'))/</HybridWebAppRepositoryRoot>
     <HybridWebAppInTree Condition="'$(HybridWebAppInTree)' == '' and Exists('$(HybridWebAppRepositoryRoot)src/Maui.InTree.props') and Exists('$(HybridWebAppRepositoryRoot)src/Core/src/Core.csproj') and Exists('$(HybridWebAppRepositoryRoot)Directory.Build.props')">true</HybridWebAppInTree>
     <HybridWebAppInTree Condition="'$(HybridWebAppInTree)' == ''">false</HybridWebAppInTree>
   </PropertyGroup>
   <!-- In-tree platform/version properties only; never import the sample or UI workload SDK. -->
   <Import Project="$(HybridWebAppRepositoryRoot)Directory.Build.props" Condition="'$(HybridWebAppInTree)' == 'true'" />
-  <PropertyGroup>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../artifacts/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <BaseOutputPath>$(MSBuildThisFileDirectory)../artifacts/bin/$(MSBuildProjectName)/</BaseOutputPath>
-    <BaseIntermediateOutputPath Condition="'$(HybridWebAppInTree)' == 'true' and '$(_HybridAppRequestedArtifactsObjDir)' != ''">$(_HybridAppRequestedArtifactsObjDir)$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <BaseOutputPath Condition="'$(HybridWebAppInTree)' == 'true' and '$(_HybridAppRequestedArtifactsBinDir)' != ''">$(_HybridAppRequestedArtifactsBinDir)$(MSBuildProjectName)/</BaseOutputPath>
-    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildThisFileDirectory)../artifacts/**</DefaultItemExcludes>
-  </PropertyGroup>
 </Project>

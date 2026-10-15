@@ -24,14 +24,26 @@ foreach ($platform in 'android', 'ios', 'maccatalyst') {
 	Assert (!$plan.BuildArguments.Contains('-p:UseWorkload=false')) 'Packaged mode must not disable the MAUI workload.'
 	Assert ($plan.BuildArguments.Contains("-p:TargetFrameworks=net11.0-$platform")) 'Restore must be limited to the selected platform.'
 	Assert ($plan.RunArguments.Contains('--no-build')) 'Deployment must follow the explicit build.'
-	Assert (($plan.BuildArguments -match 'BaseIntermediateOutputPath=')[0].StartsWith("-p:BaseIntermediateOutputPath=$bundle")) 'Intermediate output must belong to the sample.'
-	Assert (($plan.BuildArguments -match 'BaseOutputPath=')[0].StartsWith("-p:BaseOutputPath=$bundle")) 'Binary output must belong to the sample.'
+	Assert (!$plan.BuildArguments.Where({ $_ -match '(ArtifactsObjDir|ArtifactsBinDir|BaseIntermediateOutputPath|BaseOutputPath)=' }).Count) 'Output directories must use normal SDK defaults.'
 	if ($platform -eq 'android') {
 		Assert ($plan.RunArguments.Contains('-p:BuildProjectReferences=false')) 'Android deployment must reuse built resources.'
 		Assert ($plan.RunArguments.Contains('selected-validation-device')) 'Only the selected device may be deployed.'
 	}
 	if ($platform -eq 'ios') {
 		Assert ($plan.BuildArguments.Contains('--runtime')) 'iOS must select a simulator RID.'
+	}
+}
+
+if (Test-Path (Join-Path $bundle '../../../../src/Maui.InTree.props')) {
+	foreach ($platform in 'android', 'maccatalyst') {
+		$arguments = @('-NoProfile', '-File', $launcher, '-Platform', $platform,
+			'-DotNetPath', $DotNetPath, '-PrintPlan')
+		if ($platform -eq 'android') { $arguments += @('-Device', 'selected-validation-device') }
+		$result = & $shell @arguments
+		Assert ($LASTEXITCODE -eq 0) "In-tree launcher evaluation failed for $platform."
+		$plan = ($result -join "`n") | ConvertFrom-Json
+		Assert ($plan.Mode -eq 'in-tree' -and $plan.ProjectMode -eq 'true') 'The repository sample must use in-tree builds.'
+		Assert (!$plan.BuildArguments.Where({ $_ -match '(ArtifactsObjDir|ArtifactsBinDir|BaseIntermediateOutputPath|BaseOutputPath|Include.*TargetFrameworks)=' }).Count) 'In-tree builds must preserve repository output and restore defaults.'
 	}
 }
 

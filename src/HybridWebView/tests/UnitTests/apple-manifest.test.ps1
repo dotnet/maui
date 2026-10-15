@@ -16,7 +16,6 @@ foreach ($platform in 'ios', 'maccatalyst') {
 		'-p:IncludeMacOSTargetFrameworks=false',
 		"-p:IncludeIosTargetFrameworks=$($platform -eq 'ios')",
 		"-p:IncludeMacCatalystTargetFrameworks=$($platform -eq 'maccatalyst')",
-		"-p:ArtifactsObjDir=$(Join-Path $bundle 'artifacts/obj/manifest-tests/')",
 		'-t:_CompileAppManifestInputs', '-getItem:_CompileAppManifestInputFile')
 	$result = & $DotNetPath @arguments
 	if ($LASTEXITCODE) { throw "Apple manifest input evaluation failed for $platform." }

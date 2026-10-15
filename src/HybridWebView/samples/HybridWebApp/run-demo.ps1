@@ -75,20 +75,9 @@ try {
 	$tfm = @($metadata.TargetFrameworks.Split(';') | Where-Object { $_ -match "^net11\.0-$Platform[0-9.]*$" } | Select-Object -First 1)
 	if (!$tfm.Count) { throw "The project does not offer a .NET 11 $Platform target on this host: $($metadata.TargetFrameworks)" }
 	$tfm = $tfm[0]
-	$output = Join-Path $PSScriptRoot "artifacts"
 	$common = @('-f', $tfm, '-c', $Configuration, '--disable-build-servers') + $modeProperties
-	if ($inTree) {
-		$common += @('-p:IncludeMacOSTargetFrameworks=false',
-			"-p:ArtifactsObjDir=$(Join-Path $output "obj/hybrid-playground/$Platform/")",
-			"-p:ArtifactsBinDir=$(Join-Path $output "bin/hybrid-playground/$Platform/")")
-		foreach ($target in 'Android', 'Ios', 'MacCatalyst', 'Windows') {
-			$enabled = ($target.ToLowerInvariant() -eq $Platform).ToString().ToLowerInvariant()
-			$common += "-p:Include${target}TargetFrameworks=$enabled"
-		}
-	} else {
-		$common += @("-p:TargetFrameworks=$tfm",
-			"-p:BaseIntermediateOutputPath=$(Join-Path $output "obj/hybrid-playground/$Platform/")",
-			"-p:BaseOutputPath=$(Join-Path $output "bin/hybrid-playground/$Platform/")")
+	if (!$inTree) {
+		$common += "-p:TargetFrameworks=$tfm"
 	}
 	if ($Platform -eq 'ios') {
 		$common += @('--runtime', "iossimulator-$([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())")

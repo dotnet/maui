@@ -21,7 +21,6 @@
     <Serviceable>false</Serviceable>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/dotnet/maui</RepositoryUrl>
-    <PackageOutputPath Condition="'$(HybridWebAppInTree)' != 'true'">$(MSBuildThisFileDirectory)../../artifacts/packages</PackageOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

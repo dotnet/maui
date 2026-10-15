@@ -120,7 +120,9 @@ unchanged. This is actual deduplication, not just splitting the old output.
 The runtime and native sample enable `EmitCompilerGeneratedFiles`, so builds
 write generated sources into `generated/` beneath each configuration/target's
 intermediate output directory. The SDK's default path keeps them out of source
-compilation and version control. Inside that directory, open the
+compilation and version control. In-tree projects use the repository's normal
+root `artifacts/obj/PROJECT/CONFIGURATION/TFM/` layout (plus a RID where applicable);
+no hybrid-specific output-directory overrides are needed. Inside `generated/`, open the
 `Microsoft.Maui.Controls.HybridWebApps.SourceGen` generator folder to inspect
 assembly registration, action bindings, event bindings and shared contracts.
 

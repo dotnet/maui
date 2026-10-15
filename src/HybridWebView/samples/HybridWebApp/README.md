@@ -494,11 +494,11 @@ Native MSBuild never invokes npm. Release rejects live forwarding and excludes
 The standard Android/iOS/MacCatalyst/Windows heads and Apple scene delegates are
 retained. No Tizen target is included. iOS uses the host architecture's simulator
 RID; Android deployment uses `BuildProjectReferences=false` after the explicit
-build to preserve source-reference resource inputs. The launcher isolates each
-platform's intermediate and binary outputs under
-this folder's `artifacts/{obj,bin}/hybrid-playground/PLATFORM/`, so concurrent native launches
-cannot overwrite each other's restore graph. `-NoBuild` therefore reuses a build
-made by this launcher for that platform and configuration.
+build to preserve source-reference resource inputs. In-tree builds use the
+repository's root `artifacts/obj/` and `artifacts/bin/` layout, with the normal
+project/configuration/TFM/RID subdirectories. The launcher does not redirect
+output or reduce the repository's restore graph to a single platform.
+`-NoBuild` reuses the normal output for the selected platform and configuration.
 Android uses explicit
 `adb -s DEVICE reverse tcp:5173 tcp:5173`; iOS simulators share host loopback.
 Physical iOS-device networking is not configured by this loopback-only launcher.
@@ -517,7 +517,7 @@ or stamps; restore and regenerate them in the destination.
 Sample-local `Directory.Build.props/targets` detect this specific MAUI checkout
 using its Core project and in-tree props. Only that mode imports MAUI repository
 build configuration and uses project references. A copied folder defaults to
-packaged `UseMaui=true` with its own outputs and explicit .NET 11 targets.
+packaged `UseMaui=true` with normal SDK `obj/`/`bin/` outputs and explicit .NET 11 targets.
 `-p:HybridWebAppInTree=false` (launcher `-Packaged`) selects that mode explicitly,
 even in this checkout. It does not set `HYBRIDWEBAPP_IN_TREE`. The managed library
 has its own MSBuild island with explicit MAUI UI dependencies but no app/sample

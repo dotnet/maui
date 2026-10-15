@@ -6,9 +6,4 @@
     <HybridWebAppInTree Condition="'$(HybridWebAppInTree)' == ''">false</HybridWebAppInTree>
   </PropertyGroup>
   <Import Project="$(HybridWebAppRepositoryRoot)Directory.Build.props" Condition="'$(HybridWebAppInTree)' == 'true'" />
-  <PropertyGroup Condition="'$(HybridWebAppInTree)' != 'true'">
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../artifacts/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <BaseOutputPath>$(MSBuildThisFileDirectory)../artifacts/bin/$(MSBuildProjectName)/</BaseOutputPath>
-    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildThisFileDirectory)../artifacts/**</DefaultItemExcludes>
-  </PropertyGroup>
 </Project>
