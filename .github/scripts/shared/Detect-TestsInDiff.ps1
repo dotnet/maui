@@ -448,7 +448,7 @@ function Get-ClassNameFromFile {
             # Resolve containing scopes, not merely the last preceding declaration.
             $classMatches = @([regex]::Matches(
                 $content,
-                '(?m)^\s*public(?<modifiers>(?:\s+(?:partial|sealed|abstract|static))*)\s+class\s+(?<name>\w+)'
+                '(?m)^\s*(?:public|internal)(?<modifiers>(?:\s+(?:partial|sealed|abstract|static))*)\s+class\s+(?<name>\w+)'
             ))
             $concreteClasses = @($classMatches | Where-Object {
                 $_.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b'
@@ -917,6 +917,79 @@ function Get-ChangedDeviceTestMethodsFromPatch {
     return @($methods)
 }
 
+# Baselines and HostApp pages can exercise unchanged test definitions in this snapshot.
+$originalChangedFiles = @($ChangedFiles)
+$relatedUIFilters = @{}
+$uiSources = $null
+foreach ($changedFile in $originalChangedFiles) {
+    $snapshot = [regex]::Match($changedFile, '^src/Controls/tests/TestCases\.(Android|iOS|Mac|WinUI)\.Tests/snapshots/[^/]+/(?<name>[^/]+)\.png$', 'IgnoreCase')
+    $hostPage = $changedFile -match 'TestCases\.HostApp/.+\.(cs|xaml)$'
+    if (-not $snapshot.Success -and -not $hostPage) { continue }
+
+    if ($snapshot.Success -and $Platform) {
+        $snapshotPlatform = switch ($snapshot.Groups[1].Value.ToLowerInvariant()) {
+            android { 'android' }
+            ios { 'ios' }
+            mac { 'catalyst' }
+            winui { 'windows' }
+        }
+        $targetPlatform = if ($Platform -eq 'maccatalyst') { 'catalyst' } else { $Platform }
+        if ($snapshotPlatform -ne $targetPlatform) { continue }
+    }
+
+    if ($null -eq $uiSources) {
+        $uiSources = @{}
+        foreach ($source in @(git ls-files -- 'src/Controls/tests/TestCases.Shared.Tests/*.cs')) {
+            $sourcePath = Join-Path $RepoRootForRead $source
+            if (Test-Path -LiteralPath $sourcePath -PathType Leaf) {
+                $uiSources[$source] = Get-Content -LiteralPath $sourcePath -Raw
+            }
+        }
+    }
+
+    $pageName = [IO.Path]::GetFileNameWithoutExtension($changedFile) -replace '\.xaml$', ''
+    $matched = $false
+    foreach ($source in @($uiSources.Keys | Sort-Object)) {
+        $content = $uiSources[$source]
+        if ($snapshot.Success -and -not $content.Contains($snapshot.Groups['name'].Value)) { continue }
+        if (-not (Test-CsFileHasTestMethods -RelativePath $source)) { continue }
+        $className = $null
+        $filters = @()
+        if ($hostPage) {
+            $className = Get-ClassNameFromFile -RelativePath $source
+            if ($className -eq $pageName) { $filters = @($className) }
+        } else {
+            $snapshotName = $snapshot.Groups['name'].Value
+            $lines = @($content -split "`r?`n")
+            foreach ($attribute in [regex]::Matches($content, '(?m)^\s*\[\s*(?:Test|TestCase|TestCaseSource)\b')) {
+                $tail = $content.Substring($attribute.Index)
+                $method = [regex]::Match($tail, '(?s)^(?:\s*\[[^\r\n]*\]\s*)+public\s+(?:async\s+)?(?:void|Task)\s+(?<name>\w+)\s*\([^)]*\)')
+                if (-not $method.Success) { continue }
+                $methodName = $method.Groups['name'].Value
+                $startLine = ($content.Substring(0, $attribute.Index) -split "`r?`n").Count - 1
+                $endLine = Get-CSharpDeclarationEndLine -Lines $lines -DeclarationIndex $startLine
+                $body = $lines[$startLine..($endLine - 1)] -join "`n"
+                $literal = 'VerifyScreenshot\s*\(\s*"' + [regex]::Escape($snapshotName) + '"'
+                if ($methodName -eq $snapshotName -or $body -match $literal) {
+                    if (-not $className) { $className = Get-ClassNameFromFile -RelativePath $source }
+                    if (-not $className) {
+                        Write-Warning "Could not resolve the UI test class for '$source'; '$changedFile' remains uncovered."
+                        continue
+                    }
+                    $filters += "FullyQualifiedName~$className.$methodName"
+                }
+            }
+        }
+        if ($filters.Count -eq 0) { continue }
+        $matched = $true
+        $relatedUIFilters[$source] = @($relatedUIFilters[$source]) + $filters | Where-Object { $_ } | Sort-Object -Unique
+        if ($ChangedFiles -notcontains $source) { $ChangedFiles += $source }
+    }
+    if (-not $matched) {
+        Write-Warning "No existing UI test could be mapped to '$changedFile'; this change is not covered by the selected Gate tests."
+    }
+}
+
 foreach ($file in $ChangedFiles) {
     # Skip non-code files
     if ($file -notmatch "\.(cs|xaml)$") { continue }
@@ -1074,6 +1147,15 @@ foreach ($key in @($testGroups.Keys)) {
     $hasTestClass = $group.Files | Where-Object { $_ -match "TestCases\.Shared\.Tests" }
     if (-not $hasTestClass) {
         $testGroups.Remove($key)
+    } elseif (-not @($group.Files | Where-Object { $_ -in $originalChangedFiles -and $_ -match 'TestCases\.Shared\.Tests' }).Count) {
+        $filters = @($group.Files | ForEach-Object { $relatedUIFilters[$_] } | Where-Object { $_ } | Sort-Object -Unique)
+        if ($filters.Count -gt 0) {
+            $classFilter = $filters | Where-Object { $_ -notmatch '^FullyQualifiedName~' }
+            if ($classFilter) { $filters = @($classFilter) }
+            $group.Filter = ($filters | ForEach-Object {
+                if ($_ -match '^FullyQualifiedName~') { $_ } else { "FullyQualifiedName~$_" }
+            }) -join '|'
+        }
     }
 }
 
