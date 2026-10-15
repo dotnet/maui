@@ -142,6 +142,29 @@ jobs:
             -ResultDirectory "$env:RUNNER_TEMP/expert-evidence/imported" `
             -AgentOutputPath "$env:RUNNER_TEMP/expert-evidence/imported/agent-output.json" `
             -OutputDirectory "$env:RUNNER_TEMP/expert-publication"
+      - name: Freeze public receipt identities before publishing
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          PUBLICATION_BASELINE: ${{ runner.temp }}/expert-publication/baseline.json
+        with:
+          script: |
+            const fs = require('node:fs');
+            const pull_number = Number(process.env.PR_NUMBER);
+            const inline = await github.paginate(github.rest.pulls.listReviewComments, {
+              ...context.repo, pull_number, per_page: 100
+            });
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              ...context.repo, pull_number, per_page: 100
+            });
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo, issue_number: pull_number, per_page: 100
+            });
+            fs.writeFileSync(process.env.PUBLICATION_BASELINE, JSON.stringify({
+              inline: inline.map(c => c.id),
+              reviews: reviews.map(r => r.id),
+              comments: comments.map(c => c.id)
+            }));
       - name: Process live native review safe outputs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -162,17 +185,18 @@ jobs:
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/process_safe_outputs.cjs');
             await main();
-      - name: Verify inline-only publication or silent no-op
+      - name: Verify the compact review receipt and inline findings
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           REVIEW_HEAD: ${{ steps.authority.outputs.head_sha }}
           PUBLICATION_PLAN: ${{ runner.temp }}/expert-publication/publication.json
+          PUBLICATION_BASELINE: ${{ runner.temp }}/expert-publication/baseline.json
         with:
           script: |
             const fs = require('node:fs');
             const plan = JSON.parse(fs.readFileSync(process.env.PUBLICATION_PLAN, 'utf8'));
-            const marker = `<!-- review-expert-run:${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId} -->`;
+            const baseline = JSON.parse(fs.readFileSync(process.env.PUBLICATION_BASELINE, 'utf8'));
             if (!Array.isArray(plan.inline_comments) || plan.inline_comments.length > 17 ||
                 String(plan.run_id) !== String(context.runId)) {
               throw new Error('Invalid trusted inline publication plan.');
@@ -181,7 +205,7 @@ jobs:
               ...context.repo, pull_number: Number(process.env.PR_NUMBER), per_page: 100
             });
             const posted = inline.filter(c => c.user.login === 'github-actions[bot]' &&
-              c.body.includes(marker));
+              !baseline.inline.includes(c.id));
             if (posted.length !== plan.inline_comments.length) {
               throw new Error('Actual inline count does not match the trusted publication plan.');
             }
@@ -196,20 +220,28 @@ jobs:
             });
             for (const c of posted) {
               const review = reviews.find(r => r.id === c.pull_request_review_id);
-              if (!review || review.state !== 'COMMENTED' || review.body !== '') {
-                throw new Error('Inline findings must belong to a submitted review with no summary body.');
+              if (!review || review.state !== 'COMMENTED' || review.body !== plan.review_body) {
+                throw new Error('Inline findings must belong to the exact compact review receipt.');
               }
             }
             const comments = await github.paginate(github.rest.issues.listComments, {
               ...context.repo, issue_number: Number(process.env.PR_NUMBER), per_page: 100
             });
-            if (reviews.some(r => r.body.includes(marker)) || comments.some(c => c.body.includes(marker))) {
-              throw new Error('Inline-only publication unexpectedly posted a summary/status comment.');
+            const newReviews = reviews.filter(r => r.user.login === 'github-actions[bot]' &&
+              !baseline.reviews.includes(r.id));
+            if (newReviews.length !== (plan.review_body ? 1 : 0) ||
+                newReviews.some(r => r.body !== plan.review_body || r.state !== 'COMMENTED' ||
+                  r.commit_id !== process.env.REVIEW_HEAD ||
+                  posted.some(c => c.pull_request_review_id !== r.id)) ||
+                comments.some(c => c.user.login === 'github-actions[bot]' &&
+                  !baseline.comments.includes(c.id))) {
+              throw new Error('Publication did not match its compact receipt or posted an unexpected comment.');
             }
-            core.notice(`Verified ${posted.length} inline comments; no summary or status comment.`);
+            core.notice(`Verified the compact review receipt and ${posted.length} new inline comments.`);
       - uses: actions/upload-artifact@v7.0.1
+        if: always()
         with:
           name: expert-inline-publication-${{ github.run_id }}
-          path: ${{ runner.temp }}/expert-publication/publication.json
+          path: ${{ runner.temp }}/expert-publication/*.json
           if-no-files-found: error
           retention-days: 7
