@@ -528,8 +528,6 @@ jobs:
             if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
               Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
             } else {
-              "locked=true" >> $env:GITHUB_OUTPUT
-              "state=already-running" >> $env:GITHUB_OUTPUT
               "### $($env:REVIEW_COMMAND) skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
 
@@ -543,6 +541,8 @@ jobs:
               if ($LASTEXITCODE -ne 0) {
                 throw "Could not explain the locked review request on PR #$($env:PR_NUMBER)."
               }
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-running" >> $env:GITHUB_OUTPUT
               exit 0
             }
           }
