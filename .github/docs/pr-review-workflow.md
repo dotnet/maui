@@ -303,6 +303,15 @@ enabled.
 
 ## `/review gate`: verify existing PR tests
 
+Changed screenshot baselines select their existing UI test methods on the requested
+platform, including tests whose declaration did not change. HostApp-only issue-page
+changes select the corresponding existing UI fixture by class name. Selection reads
+the prepared review checkout, not the live PR head. Unmapped baselines/pages produce
+an explicit coverage warning rather than implying that they were exercised.
+
+A request blocked by `s/agent-review-in-progress` posts a visible explanation.
+It is not queued automatically; submit the command again after the current run finishes.
+
 ### Trigger
 
 Comment `/review gate` on an open pull request.
