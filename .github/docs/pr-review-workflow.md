@@ -414,16 +414,19 @@ Credential values must never appear in findings. Only exact RIGHT-side anchors
 become inline comments. Findings without a valid anchor stay in the publication
 artifact with an explicit Actions warning; they are not moved to an unrelated
 line or published in a top-level comment.
-New comments are buffered into **one COMMENT review with an empty body**,
-pinned to the reviewed commit. Prior feedback prevents duplicate inline
-findings. Zero new findings, including already-posted findings, produce a
-silent `noop`: no public empty review, summary or status comment.
+New comments are buffered into **one COMMENT review** pinned to the reviewed
+commit. Its compact receipt says **Expert Review - N findings** and links the
+reviewed commit, including when there are zero findings. The count includes
+already-reported findings; those are not duplicated inline. Findings without
+valid anchors remain in artifacts, with a short receipt note instead of their
+details. Incomplete source assessments are identified explicitly, never
+presented as completed zero-finding reviews.
 Publication uses the repository-scoped Actions token and appears as
 `github-actions[bot]`; it does not require a MauiBot publishing credential.
 
-There is no expert summary, merge recommendation, author ping, badge,
-dimension table, follow-up or automation-status comment. Failures, incomplete
-coverage and context limitations stay in Actions logs and artifacts. This lane
+There is no detailed expert summary, merge recommendation, author ping, badge,
+dimension table, follow-up or separate automation-status comment. Failures and
+context limitations stay in Actions logs and artifacts. This lane
 does not edit, collapse or replace existing summary comments from earlier runs
 or other review lanes.
 The review always covers the entire merge-base-to-head PR diff across all
@@ -431,9 +434,9 @@ commits and changed files, not only the latest commit or changes since a prior
 review. The pinned SHA identifies the frozen snapshot and inline anchors,
 not a single-commit review scope. Prior feedback deduplicates comments without
 reducing that scope.
-Inline comments retain the canonical severity/dimension finding body and a
-hidden run marker for provenance. They describe concrete problems at that line,
-not workflow capability or merge readiness. No new top-level output is allowed.
+Inline comments retain the canonical severity/dimension finding body; execution
+artifacts retain run provenance. They describe concrete problems at that line,
+not workflow capability or merge readiness. No separate issue comment is posted.
 GitHub evidence reads retry only recognized network failures or HTTP 502/503/504,
 at most three attempts with bounded backoff. Writes and authorization/rate-limit
 failures are not retried. Errors retain the CLI exit code and HTTP status or a
@@ -457,15 +460,14 @@ For strict pinned history scans, an unavailable local historical merge object is
 checked against the exact base SHA using GitHub's comparison API. A divergent
 other-branch fix is excluded only after ancestry is established; failed or unknown
 comparisons remain explicit context limitations, never a CLEAN history result.
-**Complete** and **incomplete** remain execution bookkeeping, not public reports.
 Validated inline findings can be published while missing workers remain
-explicit in the receipt/logs. Stale snapshots produce a silent no-op; closed
+explicit in the compact receipt and logs. Stale snapshots produce a silent no-op; closed
 PRs, detection or schema failures stop publication and surface in Actions.
 Source review does not establish test success or merge approval.
 
 The command stays visible until all expected inline comments are independently
-found on the correct PR, bot identity and pinned commit, or a completed no-op
-receipt confirms no new comments were required. Incomplete/stale/failed runs
+found on the correct PR, bot identity and pinned commit, and the exact compact
+review receipt has been posted, including for zero findings. Incomplete/stale/failed runs
 leave it visible. The completion job then rechecks the command and requester
 before minimizing only that command.
 

@@ -511,13 +511,12 @@ function Invoke-ExpertPrepare {
     }
 
     $runUrl = Get-ExpertRunUrl
-    $runMarker = "<!-- review-expert-run:$runUrl -->"
     $current = Invoke-ExpertGh -Arguments @("repos/$Repository/pulls/$PRNumber")
     $status = if ($gaps.Count) { 'incomplete' } else { 'complete' }
     $receipt = [ordered]@{
         schema_version = 1; repository = $Repository; pr_number = $PRNumber
         run_id = $env:GITHUB_RUN_ID; run_url = $runUrl; head_sha = $context.head_sha
-        status = $status; inline_comments = @(); withheld_findings = @()
+        status = $status; inline_comments = @(); withheld_findings = @(); review_body = ''
     }
     if ($current.state -cne 'open') { throw 'The target PR closed before expert-review publication.' }
     if ($current.head.sha -cne $context.head_sha -or $current.base.sha -cne $context.base_sha) {
@@ -545,6 +544,7 @@ function Invoke-ExpertPrepare {
             }
             $lineMap[$file.filename] = $lines
         }
+        $findingCount = $findings.Count + $unplaced.Count
         $inline = [Collections.Generic.List[object]]::new()
         foreach ($finding in $findings) {
             $alreadyPosted = @($feedback.inline | Where-Object {
@@ -558,7 +558,7 @@ function Invoke-ExpertPrepare {
             if ($lineMap.ContainsKey($finding.path) -and $lineMap[$finding.path].Contains($finding.line)) {
                 $inline.Add(@{
                     path = $finding.path; line = $finding.line
-                    body = "$($finding.body)`n`n$runMarker"
+                    body = $finding.body
                 })
             } else {
                 $unplaced.Add("``$($finding.path):$($finding.line)`` - $($finding.body)")
@@ -580,11 +580,22 @@ function Invoke-ExpertPrepare {
                 path = $finding.path; line = $finding.line; body = $finding.body; side = 'RIGHT'
             })
         }
-        if ($inline.Count) {
-            $items.Add(@{ type = 'submit_pull_request_review'; event = 'COMMENT'; body = '' })
-        } else {
-            $items.Add(@{ type = 'noop'; message = 'No new inline findings to publish.' })
+        $noun = if ($findingCount -eq 1) { 'finding' } else { 'findings' }
+        $body = "## Expert Review $([char]0x2014) $findingCount $noun"
+        $body += "`n`nReviewed commit [``$($context.head_sha.Substring(0, 7))``]($env:GITHUB_SERVER_URL/$Repository/commit/$($context.head_sha))."
+        if ($gaps.Count) {
+            $body += "`n`nSource assessment incomplete ($completed/$($dimensions.Count) dimensions); finding count is partial."
         }
+        if ($inline.Count) { $body += "`n`nSee inline comments for details." }
+        if ($findingCount -gt $inline.Count + $unplaced.Count) {
+            $body += "`n`nPreviously reported findings were not duplicated."
+        }
+        if ($unplaced.Count) {
+            $body += "`n`n$($unplaced.Count) findings could not be attached inline; retained in [run artifacts]($runUrl)."
+        }
+        $receipt.review_body = $body
+        $receipt.finding_count = $findingCount
+        $items.Add(@{ type = 'submit_pull_request_review'; event = 'COMMENT'; body = $body })
         $output.items = $items.ToArray()
     }
     Assert-ExpertPermission -Login $context.actor
@@ -613,6 +624,13 @@ function Invoke-ExpertComplete {
     if ($receipt.inline_comments -isnot [array] -or $receipt.inline_comments.Count -gt 17) {
         throw 'The inline publication receipt is invalid.'
     }
+    if ([string]::IsNullOrWhiteSpace($receipt.review_body)) { throw 'The review receipt body is missing.' }
+    $reviews = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews"
+    $postedReview = @($reviews | Where-Object {
+        $_.user.login -ceq 'github-actions[bot]' -and $_.commit_id -ceq $context.head_sha -and
+        $_.state -ceq 'COMMENTED' -and $_.body -ceq $receipt.review_body
+    })
+    if (-not $postedReview.Count) { throw 'GitHub has no matching completed expert-review receipt.' }
     if ($receipt.inline_comments.Count) {
         $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/comments"
         foreach ($expected in $receipt.inline_comments) {
@@ -644,7 +662,7 @@ function Invoke-ExpertComplete {
     if ($minimized.errors -or $minimized.data.minimizeComment.minimizedComment.isMinimized -ne $true) {
         throw 'GitHub did not confirm command minimization.'
     }
-    Write-Host 'Verified inline publication (or a completed no-op) and minimized its command.'
+    Write-Host 'Verified the expert-review receipt and inline publication, then minimized its command.'
 }
 
 switch ($Stage) {

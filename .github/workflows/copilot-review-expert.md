@@ -164,7 +164,7 @@ jobs:
         with:
           name: expert-publication-${{ github.run_id }}
           path: ${{ runner.temp }}/expert-publication
-      - name: Verify inline receipts or a completed no-op before hiding the command
+      - name: Verify the compact review receipt and inline findings before hiding the command
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.pre_activation.outputs.review_pr }}
@@ -407,8 +407,8 @@ representative committed-credential and archive/path-escape exceptions from
 dimension 31 in addition, up to 17 total. Never reproduce credential values.
 
 Prefer exact RIGHT-side diff lines. Use `path:1` for genuine file-level
-concerns when necessary; the publisher preserves such findings in the review
-body if there is no inline anchor. A text-only finding is an absolute last
+concerns when necessary; the publisher retains findings without valid inline
+anchors in execution artifacts, never in the review body. A text-only finding is an absolute last
 resort when no changed file can carry it, and counts toward the same limit.
 The raw findings file remains the canonical sole review output; do not create
 a Markdown report or dimension-summary table.
@@ -442,7 +442,7 @@ Only unfinished source passes or candidate/JSON validation make this assessment
 incomplete. Expected execution restrictions, unavailable historical context or
 discussion added after the frozen briefing must not set `validation_complete`
 false. The publisher reports these limits separately; a finished source
-assessment receives YES/NO based on actionable findings, never on gh-aw limits.
+assessment is not made incomplete by gh-aw execution limits.
 
 ## Stage inline findings, never publish directly
 
@@ -454,9 +454,10 @@ comment, add-comment, noop, label, approve, request-changes, or direct GitHub
 publication tools. This structured call is an internal transport envelope,
 not a public summary. The fresh trusted publication job validates persisted
 files and rechecks authorization and freshness. It publishes only actionable
-inline comments and submits their COMMENT review with an empty body.
-Zero new inline findings produce a silent noop, never an empty public review.
-No summary, recommendation, badge, author ping or status comment is published.
+inline comments and submits one COMMENT review with a compact trusted receipt:
+`Expert Review - N findings` and a link to the reviewed commit. Completed
+zero-finding reviews also post this receipt so the requester can see the run.
+No recommendation, badge, author ping or detailed summary is published.
 Findings without a valid inline anchor and execution failures remain in Actions
 logs/artifacts, never in a top-level comment.
 

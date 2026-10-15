@@ -73,6 +73,7 @@ any actual credential value.
 Submit exactly one structured COMMENT safe output after the files have been
 written and read back. The trusted publisher chooses the PR, pinned commit,
 inline anchors and command completion. The envelope is internal: publication
-is inline-only, with no review summary, recommendation, author ping or status
+contains inline findings and a compact finding-count/commit receipt, with no
+detailed summary, recommendation, author ping or failure-status
 comment. No new findings means no public output. Never publish directly or
 claim that a source review proves test success.
