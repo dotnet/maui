@@ -137,19 +137,19 @@ implement version 1 of [the protocol](docs/PROTOCOL.md), including
 The current reference host is `../samples/HybridWebApp/Native/`, referencing the independently
 packable `../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj` in the product tree. The links below pin
 the matching product, scoped host and identity wire mapping:
-[`HybridWebView product tree`](https://github.com/dotnet/maui/tree/653b2573265ad2c29140911e4bab4112975d5185/src/HybridWebView).
+[`HybridWebView product tree`](https://github.com/dotnet/maui/tree/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView).
 `AddHybridApp` registers the product infrastructure and implemented Essentials/UI
 providers; the host adds sample or external providers explicitly.
 The single WIP managed package now depends on Controls.Core/Core for reusable UI
 providers. Its earlier Essentials-only boundary has intentionally changed; it
 still has no sample dependency and no second integration NuGet.
 
-- [`MainPage.cs`](https://github.com/dotnet/maui/blob/653b2573265ad2c29140911e4bab4112975d5185/src/HybridWebView/samples/HybridWebApp/Native/MainPage.cs)
+- [`MainPage.cs`](https://github.com/dotnet/maui/blob/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView/samples/HybridWebApp/Native/MainPage.cs)
   attaches `SetInvokeJavaScriptTarget<IHybridAppTarget>(hub, ProtocolJsonContext.Default)`,
   handles raw document messages and sends session-checked events.
-- [`HybridWebApps runtime`](https://github.com/dotnet/maui/tree/653b2573265ad2c29140911e4bab4112975d5185/src/HybridWebView/src/HybridWebApps)
+- [`HybridWebApps runtime`](https://github.com/dotnet/maui/tree/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView/src/HybridWebApps)
   owns protocol/control metadata, the bounded hub, registry and DI registration.
-- [`Native feature integration`](https://github.com/dotnet/maui/tree/653b2573265ad2c29140911e4bab4112975d5185/src/HybridWebView/src/HybridWebApps/Essentials)
+- [`Native feature integration`](https://github.com/dotnet/maui/tree/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView/src/HybridWebApps/Essentials)
   integrates directly imported Essentials interfaces alongside the adapters needed
   for generic preferences and owned file/share resources.
 - `../samples/HybridWebApp/Native/Playground` owns every sample command/topic and process diagnostic.
@@ -317,7 +317,7 @@ and never expose arbitrary native methods to untrusted scripts.
 
 See [API/errors/security](docs/API.md), [wire/native compatibility](docs/PROTOCOL.md),
 and [package validation/release](docs/RELEASING.md). The
-[matching playground README](https://github.com/dotnet/maui/blob/653b2573265ad2c29140911e4bab4112975d5185/src/HybridWebView/samples/HybridWebApp/README.md)
+[matching playground README](https://github.com/dotnet/maui/blob/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView/samples/HybridWebApp/README.md)
 documents the consumer and staging. In the current source bundle the independently
 packable SDK is at `JavaScript/` beside `Native/`, `Web/` and `Tests/`; source
 commands here use that relocated layout. Refresh source links to the matching
