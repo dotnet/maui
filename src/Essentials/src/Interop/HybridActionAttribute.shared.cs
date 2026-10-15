@@ -40,16 +40,27 @@ public enum HybridEventLifecycle
 	Stop
 }
 
-/// <summary>Binds an accessible parameterless Task start or void stop method to an event topic.</summary>
-/// <param name="name">The unique event topic, paired within the same plugin.</param>
-/// <param name="lifecycle">The first/last subscription hook.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-public sealed class HybridEventAttribute(string name, HybridEventLifecycle lifecycle) : Attribute
+/// <summary>Exposes an accessible event, or binds a manual first/last subscription hook to a topic.</summary>
+[AttributeUsage(AttributeTargets.Event | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+public sealed class HybridEventAttribute : Attribute
 {
+	/// <summary>Exposes an event whose subscription lifetime is owned by the current document.</summary>
+	/// <param name="name">The unique event topic.</param>
+	public HybridEventAttribute(string name) => Name = name;
+
+	/// <summary>Binds a parameterless Task start or void stop method to a manual event source.</summary>
+	/// <param name="name">The unique event topic, paired within the same provider.</param>
+	/// <param name="lifecycle">The first/last subscription hook.</param>
+	public HybridEventAttribute(string name, HybridEventLifecycle lifecycle)
+	{
+		Name = name;
+		Lifecycle = lifecycle;
+	}
+
 	/// <summary>Gets the event topic.</summary>
-	public string Name { get; } = name;
+	public string Name { get; }
 	/// <summary>Gets the subscription lifecycle.</summary>
-	public HybridEventLifecycle Lifecycle { get; } = lifecycle;
+	public HybridEventLifecycle Lifecycle { get; }
 }
 
 /// <summary>Opts one annotated referenced contract into this assembly's generated action registration.</summary>
@@ -60,14 +71,4 @@ public sealed class HybridExportAttribute(Type contract) : Attribute
 {
 	/// <summary>Gets the selected referenced contract.</summary>
 	public Type Contract { get; } = contract;
-}
-
-/// <summary>Declares a sender-free change notification for an explicitly imported native event.</summary>
-/// <param name="name">The unique event topic.</param>
-/// <remarks>The optional integration owns attach/detach and document delivery. Only EventHandler&lt;EventArgs&gt; is supported.</remarks>
-[AttributeUsage(AttributeTargets.Event, AllowMultiple = false, Inherited = false)]
-public sealed class HybridNativeEventAttribute(string name) : Attribute
-{
-	/// <summary>Gets the event topic.</summary>
-	public string Name { get; } = name;
 }

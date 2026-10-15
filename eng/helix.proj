@@ -54,6 +54,7 @@
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/ExternalBackendTests/Essentials.ExternalBackend.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/BlazorWebView/tests/MauiBlazorWebView.UnitTests/MauiBlazorWebView.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/HybridWebView/tests/UnitTests/Microsoft.Maui.Controls.HybridWebApps.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/BlazorWebView/tests/MauiBlazorWebView.ExternalHandler.UnitTests/MauiBlazorWebView.ExternalHandler.UnitTests.csproj" />
   </ItemGroup>
 

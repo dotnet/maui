@@ -33,7 +33,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// <summary>
 		/// Occurs when the clipboard content changes.
 		/// </summary>
-		[Microsoft.Maui.Interop.HybridNativeEvent("clipboard.changed")]
+		[Microsoft.Maui.Interop.HybridEvent("clipboard.changed")]
 		event EventHandler<EventArgs> ClipboardContentChanged;
 	}
 

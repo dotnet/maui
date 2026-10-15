@@ -69,6 +69,8 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+# Preserve ignored frontend outputs from the pre-product sample location.
+src/Controls/samples/Controls.Sample.HybridWebApp/**/dist/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

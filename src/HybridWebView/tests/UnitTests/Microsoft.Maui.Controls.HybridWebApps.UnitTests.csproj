@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <XunitPackageVersion Condition="'$(XunitPackageVersion)' == ''">2.9.3</XunitPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion Condition="'$(MicrosoftExtensionsDependencyInjectionVersion)' == ''">11.0.0-rtm.26480.113</MicrosoftExtensionsDependencyInjectionVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+    <ProjectReference Include="../../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj" />
+    <ProjectReference Include="../../src/SourceGen/Microsoft.Maui.Controls.HybridWebApps.SourceGen.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="ExternalProvider/ExternalProvider.csproj" />
+    <Compile Remove="ExternalProvider/**;PackageConsumer/**" />
+    <!-- Only sample commands are shared with these UI-free tests; all product code comes from its assembly. -->
+    <Compile Include="../../samples/HybridWebApp/Native/Playground/*.cs" Link="Playground/%(Filename)%(Extension)" />
+    <Compile Remove="../../samples/HybridWebApp/Native/Playground/SampleServiceCollectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HybridWebAppInTree)' != 'true'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

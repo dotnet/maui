@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(HybridAppPackageConsumer)' != 'true'">
+    <ProjectReference Include="../../../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj" />
+    <ProjectReference Include="../../../src/SourceGen/Microsoft.Maui.Controls.HybridWebApps.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HybridAppPackageConsumer)' == 'true'">
+    <PackageReference Include="Microsoft.Maui.Controls.HybridWebApps" Version="$(HybridAppPackageVersion)" />
+  </ItemGroup>
+</Project>

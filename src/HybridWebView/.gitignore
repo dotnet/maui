@@ -1,0 +1,7 @@
+**/artifacts/
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+*.binlog
+*.log

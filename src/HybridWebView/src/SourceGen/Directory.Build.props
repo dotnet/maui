@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <HybridWebAppRepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../../..'))/</HybridWebAppRepositoryRoot>
+  </PropertyGroup>
+  <Import Project="$(HybridWebAppRepositoryRoot)Directory.Build.props" Condition="Exists('$(HybridWebAppRepositoryRoot)Directory.Build.props')" />
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../artifacts/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)../artifacts/bin/$(MSBuildProjectName)/</BaseOutputPath>
+  </PropertyGroup>
+</Project>

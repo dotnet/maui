@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="$(HybridWebAppRepositoryRoot)Directory.Build.targets" Condition="Exists('$(HybridWebAppRepositoryRoot)Directory.Build.targets')" />
+</Project>

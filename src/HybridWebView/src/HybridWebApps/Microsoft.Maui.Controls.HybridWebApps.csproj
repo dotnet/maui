@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' == 'true'">net11.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' != 'true'">net11.0;net11.0-android;net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppInTree)' != 'true' and $([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>$([MSBuild]::Unescape($([System.Text.RegularExpressions.Regex]::Replace('$(TargetFrameworks)', 'net11\.0-tizen[^;]*;?', ''))))</TargetFrameworks>
+    <TargetFrameworks Condition="'$(HybridWebAppTargetFrameworks)' != ''">$(HybridWebAppTargetFrameworks)</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Controls.HybridWebApps</PackageId>
+    <Version Condition="'$(HybridWebAppInTree)' != 'true'">0.1.0-preview.1</Version>
+    <Description>Experimental typed hybrid command host with independent Essentials and MAUI UI providers. Working package identity, not an official MAUI release.</Description>
+    <Authors>.NET MAUI contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon></PackageIcon>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IsShipping>false</IsShipping>
+    <Serviceable>false</Serviceable>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://github.com/dotnet/maui</RepositoryUrl>
+    <PackageOutputPath Condition="'$(HybridWebAppInTree)' != 'true'">$(MSBuildThisFileDirectory)../../artifacts/packages</PackageOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-maccatalyst'))">17.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(HybridWebAppInTree)' == 'true'">
+    <ProjectReference Include="$(HybridWebAppRepositoryRoot)src/Essentials/src/Essentials.csproj" />
+    <ProjectReference Include="$(HybridWebAppRepositoryRoot)src/Controls/src/Core/Controls.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HybridWebAppInTree)' != 'true'">
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Core" Version="$(MauiVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../SourceGen/Microsoft.Maui.Controls.HybridWebApps.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <InternalsVisibleTo Include="Microsoft.Maui.Controls.HybridWebApps.UnitTests" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="LICENSE.txt" Pack="true" PackagePath="/" Condition="'$(HybridWebAppInTree)' != 'true'" />
+  </ItemGroup>
+  <Target Name="PackHybridActionGenerator" BeforeTargets="_GetPackageFiles">
+    <MSBuild Projects="../SourceGen/Microsoft.Maui.Controls.HybridWebApps.SourceGen.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="HybridActionGeneratorAssembly" />
+    </MSBuild>
+    <ItemGroup>
+      <None Include="@(HybridActionGeneratorAssembly)" Pack="true" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>
+  <Target Name="ValidateHybridAppMauiVersion" BeforeTargets="CollectPackageReferences" Condition="'$(HybridWebAppInTree)' != 'true'">
+    <Error Condition="'$(MauiVersion)' == ''" Text="The standalone library requires explicit compatible Microsoft.Maui.Essentials and Microsoft.Maui.Controls.Core 11 packages (-p:MauiVersion=VERSION) and their actual dependency feed. No public .NET MAUI 11 package version is assumed." />
+  </Target>
+  <Import Project="$(HybridWebAppRepositoryRoot)src/PublicAPI.targets" Condition="'$(HybridWebAppInTree)' == 'true'" />
+</Project>

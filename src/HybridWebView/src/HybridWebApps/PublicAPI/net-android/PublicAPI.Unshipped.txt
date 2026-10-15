@@ -1,0 +1,403 @@
+﻿#nullable enable
+Microsoft.Maui.Controls.HybridWebApps.Ack
+Microsoft.Maui.Controls.HybridWebApps.Ack.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.Ack!
+Microsoft.Maui.Controls.HybridWebApps.Ack.Accepted.get -> bool
+Microsoft.Maui.Controls.HybridWebApps.Ack.Accepted.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Ack.Ack(bool Accepted) -> void
+Microsoft.Maui.Controls.HybridWebApps.Ack.Deconstruct(out bool Accepted) -> void
+Microsoft.Maui.Controls.HybridWebApps.Ack.Equals(Microsoft.Maui.Controls.HybridWebApps.Ack? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.ChannelMessage!
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.ChannelId.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.ChannelId.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.ChannelMessage(string! ChannelId, int Sequence, string! Kind, System.Text.Json.JsonElement? Value = null, string? DataId = null, string? Code = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Code.get -> string?
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Code.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.DataId.get -> string?
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.DataId.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Deconstruct(out string! ChannelId, out int Sequence, out string! Kind, out System.Text.Json.JsonElement? Value, out string? DataId, out string? Code) -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Equals(Microsoft.Maui.Controls.HybridWebApps.ChannelMessage? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Kind.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Kind.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Sequence.get -> int
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Sequence.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Value.get -> System.Text.Json.JsonElement?
+Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Value.init -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandError
+Microsoft.Maui.Controls.HybridWebApps.CommandError.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.CommandError!
+Microsoft.Maui.Controls.HybridWebApps.CommandError.Code.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.CommandError.Code.init -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandError.CommandError(string! Code, string! Message) -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandError.Deconstruct(out string! Code, out string! Message) -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandError.Equals(Microsoft.Maui.Controls.HybridWebApps.CommandError? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.CommandError.Message.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.CommandError.Message.init -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandException
+Microsoft.Maui.Controls.HybridWebApps.CommandException.Code.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.CommandException.CommandException(string! code, string! message) -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.CommandRegistry() -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.DispatchAsync(string! name, System.Text.Json.JsonElement args, Microsoft.Maui.Controls.HybridWebApps.Operation! operation) -> System.Threading.Tasks.Task<System.Text.Json.JsonElement>!
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.HasTopic(string! name) -> bool
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.InteractiveCommands.get -> string![]!
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.IsInteractive(string! name) -> bool
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.Names.get -> string![]!
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.RegisterGenerated(string! name, System.Text.Json.Serialization.Metadata.JsonTypeInfo![]! metadata, System.Func<System.Text.Json.JsonElement, Microsoft.Maui.Controls.HybridWebApps.Operation!, System.Threading.Tasks.Task<System.Text.Json.JsonElement>!>! handler, bool interactive = false, bool enabled = true) -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.RegisterGeneratedBinary(string! name, System.Text.Json.Serialization.Metadata.JsonTypeInfo![]! metadata, System.Func<System.Text.Json.JsonElement, Microsoft.Maui.Controls.HybridWebApps.Operation!, System.Threading.Tasks.Task<byte[]!>!>! handler, bool interactive = false, bool enabled = true) -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.RegisterTopic(string! name) -> void
+Microsoft.Maui.Controls.HybridWebApps.CommandRegistry.RegisterTopic(string! name, System.Func<System.Threading.Tasks.Task!>! start, System.Action! stop) -> void
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.DocumentMessage!
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Deconstruct(out string! Session, out string! Kind) -> void
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.DocumentMessage(string! Session, string! Kind) -> void
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Equals(Microsoft.Maui.Controls.HybridWebApps.DocumentMessage? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Kind.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Kind.init -> void
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Session.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Session.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo.AppInfoProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo.AppInfoProvider.AppInfoProvider(Microsoft.Maui.ApplicationModel.IAppInfo! appInfo) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Battery.BatteryProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Battery.BatteryProvider.BatteryProvider(Microsoft.Maui.Devices.IBattery! battery) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity.ConnectivityProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity.ConnectivityProvider.ConnectivityProvider(Microsoft.Maui.Networking.IConnectivity! connectivity, Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher! dispatcher, Microsoft.Maui.Controls.HybridWebApps.NativeNotifications! notifications) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity.ConnectivityProvider.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo.DeviceInfoProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo.DeviceInfoProvider.DeviceInfoProvider(Microsoft.Maui.Devices.IDeviceInfo! deviceInfo) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Display.DisplayProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Display.DisplayProvider.DisplayProvider(Microsoft.Maui.Devices.IDeviceDisplay! display) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider.FilePickerProvider(Microsoft.Maui.Storage.IFilePicker! picker, Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext! context, Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits? limits = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.ChunkBytes.get -> int
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.HybridFileLimits(int selectedFiles = 128, int readers = 16, int chunkBytes = 65536) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.Readers.get -> int
+Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.SelectedFiles.get -> int
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Launcher.LauncherProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Launcher.LauncherProvider.LauncherProvider(Microsoft.Maui.ApplicationModel.ILauncher! launcher) -> void
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences.PreferencesProvider
+Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences.PreferencesProvider.PreferencesProvider(Microsoft.Maui.Storage.IPreferences! preferences) -> void
+Microsoft.Maui.Controls.HybridWebApps.Generated.MicrosoftMauiControlsHybridWebAppsActionAssembly
+Microsoft.Maui.Controls.HybridWebApps.HybridActionArguments
+Microsoft.Maui.Controls.HybridWebApps.HybridActionArguments.Has(int index) -> bool
+Microsoft.Maui.Controls.HybridWebApps.HybridActionArguments.HybridActionArguments(System.Text.Json.JsonElement json, string![]! names) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridActionArguments.Read<T>(int index, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! metadata, bool nullable) -> T
+Microsoft.Maui.Controls.HybridWebApps.HybridActionAssemblies
+Microsoft.Maui.Controls.HybridWebApps.HybridActionAssemblyAttribute
+Microsoft.Maui.Controls.HybridWebApps.HybridActionAssemblyAttribute.HybridActionAssemblyAttribute(string! name) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridActionAssemblyAttribute.Name.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.HybridActionContext
+Microsoft.Maui.Controls.HybridWebApps.HybridActionContext.Cancellation.get -> System.Threading.CancellationToken
+Microsoft.Maui.Controls.HybridWebApps.HybridActionContext.HybridActionContext(Microsoft.Maui.Controls.HybridWebApps.Operation! operation) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridActionContext.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.HybridActionContext.Publish<T>(string! topic, T value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! metadata) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridActionContext.Session.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.HybridAppBinaryInvoker
+Microsoft.Maui.Controls.HybridWebApps.HybridAppBinaryInvoker.HybridAppBinaryInvoker(Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject! hub) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions
+Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions.HybridAppOptions(int maximumTextLength = 4096, int maximumWindows = 16) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions.MaximumTextLength.get -> int
+Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions.MaximumWindows.get -> int
+Microsoft.Maui.Controls.HybridWebApps.HybridAppServiceCollectionExtensions
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.Disconnect() -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.DocumentDisconnected -> System.Action?
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.ExpireDocument() -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.HybridAppTargetObject(Microsoft.Maui.Controls.HybridWebApps.CommandRegistry! registry, Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions! options, System.TimeProvider? time = null, Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext? viewContext = null, Microsoft.Maui.Controls.HybridWebApps.NativeNotifications? notifications = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.HybridAppTargetObject(Microsoft.Maui.Controls.HybridWebApps.CommandRegistry! registry, System.Func<Microsoft.Maui.Controls.HybridWebApps.ReadyResult!>! ready, System.Action<Microsoft.Maui.Controls.HybridWebApps.NativeEvent!>? send) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.HybridAppTargetObject(Microsoft.Maui.Controls.HybridWebApps.CommandRegistry! registry, System.Func<Microsoft.Maui.Controls.HybridWebApps.ReadyResult!>! ready, System.Action<Microsoft.Maui.Controls.HybridWebApps.NativeEvent!>? send, System.TimeProvider? time) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.Invoke(string! request) -> System.Threading.Tasks.Task<string!>!
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.InvokeBinary(string! metadata, byte[]! payload, System.Threading.CancellationToken transport = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]!>!
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.IsCurrent(string! session) -> bool
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.NativeEventReceived -> System.Action<Microsoft.Maui.Controls.HybridWebApps.NativeEvent!>?
+Microsoft.Maui.Controls.HybridWebApps.HybridAppTargetObject.ReceiveDocumentMessage(string? value) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridChannel<T>
+Microsoft.Maui.Controls.HybridWebApps.HybridChannel<T>.SendAsync(T value) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.HybridWebApps.HybridEvents
+Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Publisher
+Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Publisher.Publish(System.Action<System.Text.Json.Utf8JsonWriter!>! write) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Publisher.Publish<T>(T value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! metadata) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>.CreateInfo(System.Text.Json.Serialization.JsonSerializerContext! context) -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>!
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>.HybridJsonCodec(System.Func<System.Text.Json.JsonElement, T>! read, System.Action<System.Text.Json.Utf8JsonWriter!, T>! write, bool supportsNull = false) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>.HybridJsonCodec(System.Func<System.Text.Json.JsonElement, bool, T>! read, System.Action<System.Text.Json.Utf8JsonWriter!, T, bool>! write) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>.Read(System.Text.Json.JsonElement json, bool nullable) -> T
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>.Write(System.Text.Json.Utf8JsonWriter! writer, T value, bool nullable) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonCollections
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonContextAttribute
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonContextAttribute.Context.get -> System.Type!
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonContextAttribute.Contract.get -> System.Type!
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonContextAttribute.HybridJsonContextAttribute(System.Type! contract, System.Type! context) -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonContracts
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonDefaults
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonEnums
+Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives
+Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy
+Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider
+Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.GetKeyedService(System.Type! serviceType, object? serviceKey) -> object?
+Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.GetRequiredKeyedService(System.Type! serviceType, object? serviceKey) -> object!
+Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.GetService(System.Type! serviceType) -> object?
+Microsoft.Maui.Controls.HybridWebApps.IHybridAppTarget
+Microsoft.Maui.Controls.HybridWebApps.IHybridAppTarget.Invoke(string! request) -> System.Threading.Tasks.Task<string!>!
+Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher
+Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher.NativeDispatcher() -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher.NativeDispatcher(System.Func<System.Func<System.Threading.Tasks.Task!>!, System.Threading.Tasks.Task!>! dispatch) -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher.PostAsync(System.Action! action) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher.RunAsync<T>(System.Func<System.Threading.Tasks.Task<T>!>! action, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.Task<T>!
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.NativeEvent!
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Data.get -> System.Text.Json.JsonElement
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Data.init -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Deconstruct(out int Version, out string! Session, out string! Id, out string! Topic, out System.Text.Json.JsonElement Data) -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Equals(Microsoft.Maui.Controls.HybridWebApps.NativeEvent? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Id.init -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.NativeEvent(int Version, string! Session, string! Id, string! Topic, System.Text.Json.JsonElement Data) -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Session.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Session.init -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Topic.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Topic.init -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Version.get -> int
+Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Version.init -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeNotifications
+Microsoft.Maui.Controls.HybridWebApps.NativeNotifications.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeNotifications.NativeNotifications() -> void
+Microsoft.Maui.Controls.HybridWebApps.NativeNotifications.Publish<T>(string! topic, T value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! metadata) -> void
+Microsoft.Maui.Controls.HybridWebApps.Operation
+Microsoft.Maui.Controls.HybridWebApps.Operation.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.Operation!
+Microsoft.Maui.Controls.HybridWebApps.Operation.BinaryPayload.get -> byte[]!
+Microsoft.Maui.Controls.HybridWebApps.Operation.BindChannel<T>(string! id, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>? metadata) -> Microsoft.Maui.Controls.HybridWebApps.HybridChannel<T>!
+Microsoft.Maui.Controls.HybridWebApps.Operation.Cancellation.get -> System.Threading.CancellationToken
+Microsoft.Maui.Controls.HybridWebApps.Operation.Cancellation.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Operation.Deconstruct(out string! Session, out string! Id, out System.Threading.CancellationToken Cancellation, out System.Action<string!, System.Text.Json.JsonElement>! Publish) -> void
+Microsoft.Maui.Controls.HybridWebApps.Operation.Equals(Microsoft.Maui.Controls.HybridWebApps.Operation? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.Operation.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Operation.Id.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Operation.Operation(string! Session, string! Id, System.Threading.CancellationToken Cancellation, System.Action<string!, System.Text.Json.JsonElement>! Publish) -> void
+Microsoft.Maui.Controls.HybridWebApps.Operation.Publish.get -> System.Action<string!, System.Text.Json.JsonElement>!
+Microsoft.Maui.Controls.HybridWebApps.Operation.Publish.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Operation.Session.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Operation.Session.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.Ack.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.Ack!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.ChannelMessage.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.ChannelMessage!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.CommandError.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.CommandError!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.DocumentMessage.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.DocumentMessage!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.JsonElement.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<System.Text.Json.JsonElement>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.NativeEvent.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.NativeEvent!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.ProtocolJsonContext() -> void
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.ProtocolJsonContext(System.Text.Json.JsonSerializerOptions! options) -> void
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.ReadyResult.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.ReadyResult!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.Request.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.Request!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.Response.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<Microsoft.Maui.Controls.HybridWebApps.Response!>!
+Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.String.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<string!>!
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.ReadyResult!
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.Commands.get -> string![]!
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.Commands.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.Deconstruct(out string![]! Commands, out int MaximumTextLength, out string![]? InteractiveCommands, out int InteractiveTimeoutMilliseconds, out string? InitialLocation) -> void
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.Equals(Microsoft.Maui.Controls.HybridWebApps.ReadyResult? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.InitialLocation.get -> string?
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.InitialLocation.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.InteractiveCommands.get -> string![]?
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.InteractiveCommands.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.InteractiveTimeoutMilliseconds.get -> int
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.InteractiveTimeoutMilliseconds.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.MaximumTextLength.get -> int
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.MaximumTextLength.init -> void
+Microsoft.Maui.Controls.HybridWebApps.ReadyResult.ReadyResult(string![]! Commands, int MaximumTextLength, string![]? InteractiveCommands = null, int InteractiveTimeoutMilliseconds = 300000, string? InitialLocation = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.Request
+Microsoft.Maui.Controls.HybridWebApps.Request.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.Request!
+Microsoft.Maui.Controls.HybridWebApps.Request.Args.get -> System.Text.Json.JsonElement
+Microsoft.Maui.Controls.HybridWebApps.Request.Args.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Request.Command.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Request.Command.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Request.Deconstruct(out int Version, out string! Session, out string! Id, out string! Command, out System.Text.Json.JsonElement Args) -> void
+Microsoft.Maui.Controls.HybridWebApps.Request.Equals(Microsoft.Maui.Controls.HybridWebApps.Request? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.Request.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Request.Id.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Request.Request(int Version, string! Session, string! Id, string! Command, System.Text.Json.JsonElement Args) -> void
+Microsoft.Maui.Controls.HybridWebApps.Request.Session.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Request.Session.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Request.Version.get -> int
+Microsoft.Maui.Controls.HybridWebApps.Request.Version.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Response
+Microsoft.Maui.Controls.HybridWebApps.Response.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.Response!
+Microsoft.Maui.Controls.HybridWebApps.Response.Deconstruct(out int Version, out string! Session, out string! Id, out string! Status, out System.Text.Json.JsonElement? Result, out Microsoft.Maui.Controls.HybridWebApps.CommandError? Error) -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Equals(Microsoft.Maui.Controls.HybridWebApps.Response? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.Response.Error.get -> Microsoft.Maui.Controls.HybridWebApps.CommandError?
+Microsoft.Maui.Controls.HybridWebApps.Response.Error.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Response.Id.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Response(int Version, string! Session, string! Id, string! Status, System.Text.Json.JsonElement? Result, Microsoft.Maui.Controls.HybridWebApps.CommandError? Error) -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Result.get -> System.Text.Json.JsonElement?
+Microsoft.Maui.Controls.HybridWebApps.Response.Result.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Session.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Response.Session.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Status.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.Response.Status.init -> void
+Microsoft.Maui.Controls.HybridWebApps.Response.Version.get -> int
+Microsoft.Maui.Controls.HybridWebApps.Response.Version.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.ApplicationProvider
+Microsoft.Maui.Controls.HybridWebApps.UI.ApplicationProvider.ApplicationProvider(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost! host) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.BundledLocation
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Bind(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Window! window, string! location, string? id = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Bound -> System.Action?
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.CreateLayout(Microsoft.Maui.Controls.View! primary) -> Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewLayout!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.DisconnectRemote() -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.DocumentEnded -> System.Action?
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.HybridViewContext() -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.InitialLocation.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Page.get -> Microsoft.Maui.Controls.Page!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.WebView.get -> Microsoft.Maui.Controls.HybridWebView!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Window.get -> Microsoft.Maui.Controls.Window!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewLayout
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewLayout.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewLayout.HybridViewLayout(Microsoft.Maui.Controls.View! primary) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost.Bind(Microsoft.Maui.Controls.Application! application, System.Func<Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest!, Microsoft.Maui.Controls.Window!>! factory) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost.HybridWindowHost(Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions? options = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost.Track(Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext! context) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost.ValidateLocation(string! location) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Deconstruct(out string? Title, out double? Width, out double? Height, out string? Id) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Equals(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Height.get -> double?
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Height.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.HybridWindowOptions(string? Title = null, double? Width = null, double? Height = null, string? Id = null) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Id.get -> string?
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Id.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Title.get -> string?
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Title.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Width.get -> double?
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Width.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.<Clone>$() -> Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Deconstruct(out string! Location, out string! Id) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Equals(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest? other) -> bool
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.HybridWindowRequest(string! Location, string! Id) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Id.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Id.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Location.get -> string!
+Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Location.init -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.MenuProvider
+Microsoft.Maui.Controls.HybridWebApps.UI.MenuProvider.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.MenuProvider.MenuProvider(Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext! context, Microsoft.Maui.Devices.IDeviceInfo! device, Microsoft.Maui.Controls.HybridWebApps.NativeNotifications! notifications) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.RemoteWebAddress
+Microsoft.Maui.Controls.HybridWebApps.UI.RemoteWebViewProvider
+Microsoft.Maui.Controls.HybridWebApps.UI.RemoteWebViewProvider.RemoteWebViewProvider(Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext! context, Microsoft.Maui.Devices.IDeviceInfo! device, Microsoft.Maui.Controls.HybridWebApps.NativeNotifications! notifications) -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.WindowProvider
+Microsoft.Maui.Controls.HybridWebApps.UI.WindowProvider.CanOpenWindows.get -> bool
+Microsoft.Maui.Controls.HybridWebApps.UI.WindowProvider.Dispose() -> void
+Microsoft.Maui.Controls.HybridWebApps.UI.WindowProvider.WindowProvider(Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext! context, Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost! host, Microsoft.Maui.Devices.IDeviceInfo! device, Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher! dispatcher, Microsoft.Maui.Controls.HybridWebApps.NativeNotifications! notifications, System.TimeProvider! time) -> void
+const Microsoft.Maui.Controls.HybridWebApps.HybridAppBinaryInvoker.MaximumBytes = 4194304 -> int
+const Microsoft.Maui.Controls.HybridWebApps.HybridAppBinaryInvoker.MaximumMetadataCharacters = 2400 -> int
+override Microsoft.Maui.Controls.HybridWebApps.Ack.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.Ack.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.Ack.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.CommandError.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.CommandError.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.CommandError.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.HybridAppBinaryInvoker.InvokeAsync(Microsoft.Maui.HybridWebViewBinaryRequest! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<byte[]!>!
+override Microsoft.Maui.Controls.HybridWebApps.NativeEvent.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.NativeEvent.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.NativeEvent.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.Operation.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.Operation.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.Operation.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.GetTypeInfo(System.Type! type) -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
+override Microsoft.Maui.Controls.HybridWebApps.ReadyResult.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.ReadyResult.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.ReadyResult.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.Request.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.Request.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.Request.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.Response.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.Response.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.Response.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.ToString() -> string!
+override Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.GetHashCode() -> int
+override Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.ToString() -> string!
+static Microsoft.Maui.Controls.HybridWebApps.Ack.operator !=(Microsoft.Maui.Controls.HybridWebApps.Ack? left, Microsoft.Maui.Controls.HybridWebApps.Ack? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Ack.operator ==(Microsoft.Maui.Controls.HybridWebApps.Ack? left, Microsoft.Maui.Controls.HybridWebApps.Ack? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.operator !=(Microsoft.Maui.Controls.HybridWebApps.ChannelMessage? left, Microsoft.Maui.Controls.HybridWebApps.ChannelMessage? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.ChannelMessage.operator ==(Microsoft.Maui.Controls.HybridWebApps.ChannelMessage? left, Microsoft.Maui.Controls.HybridWebApps.ChannelMessage? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.CommandError.operator !=(Microsoft.Maui.Controls.HybridWebApps.CommandError? left, Microsoft.Maui.Controls.HybridWebApps.CommandError? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.CommandError.operator ==(Microsoft.Maui.Controls.HybridWebApps.CommandError? left, Microsoft.Maui.Controls.HybridWebApps.CommandError? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.operator !=(Microsoft.Maui.Controls.HybridWebApps.DocumentMessage? left, Microsoft.Maui.Controls.HybridWebApps.DocumentMessage? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.operator ==(Microsoft.Maui.Controls.HybridWebApps.DocumentMessage? left, Microsoft.Maui.Controls.HybridWebApps.DocumentMessage? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider.ReadChunkAsync(System.IO.Stream! stream, int count, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.Task<(byte[]! Bytes, bool Eof)>!
+static Microsoft.Maui.Controls.HybridWebApps.Generated.MicrosoftMauiControlsHybridWebAppsActionAssembly.AddMicrosoftMauiControlsHybridWebAppsActions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Maui.Controls.HybridWebApps.HybridActionAssemblies.Add(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Type! identity, System.Action<Microsoft.Maui.Controls.HybridWebApps.CommandRegistry!, System.IServiceProvider!>! register) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Maui.Controls.HybridWebApps.HybridActionAssemblies.Target<T>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<System.IServiceProvider!, T!>! factory, bool perViewOnly = false) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridAppServiceCollectionExtensions.AddHybridApp(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Maui.Controls.HybridWebApps.HybridAppOptions! options) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Maui.Controls.HybridWebApps.HybridAppServiceCollectionExtensions.CreateHybridAppProvider(this System.IServiceProvider! services) -> Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider!
+static Microsoft.Maui.Controls.HybridWebApps.HybridAppServiceCollectionExtensions.PruneHybridShareCache(this System.IServiceProvider! services) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Register<THandler>(Microsoft.Maui.Controls.HybridWebApps.CommandRegistry! registry, System.IServiceProvider! services, string! topic, System.Func<Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Publisher!, THandler!>! create, System.Action<THandler!>! attach, System.Action<THandler!>! detach) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Register<TSource, THandler>(Microsoft.Maui.Controls.HybridWebApps.CommandRegistry! registry, System.IServiceProvider! services, string! topic, System.Func<TSource>! resolve, System.Func<Microsoft.Maui.Controls.HybridWebApps.HybridEvents.Publisher!, THandler!>! create, System.Action<TSource, THandler!>! attach, System.Action<TSource, THandler!>! detach) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonCollections.Read<T, TCollection>(System.Text.Json.JsonElement json, System.Func<TCollection>! create, System.Func<System.Text.Json.JsonElement, T>! read) -> TCollection
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonCollections.ReadDictionary<T>(System.Text.Json.JsonElement json, System.Func<System.Text.Json.JsonElement, T>! read) -> System.Collections.Generic.Dictionary<string!, T>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonCollections.Write<T>(System.Text.Json.Utf8JsonWriter! writer, System.Collections.Generic.IEnumerable<T>! values, System.Action<System.Text.Json.Utf8JsonWriter!, T>! write) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonCollections.WriteDictionary<T>(System.Text.Json.Utf8JsonWriter! writer, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, T>>! values, System.Action<System.Text.Json.Utf8JsonWriter!, T>! write) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonContracts.Get<T>(System.Text.Json.Serialization.JsonSerializerContext! context) -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonDefaults.CreateOptions() -> System.Text.Json.JsonSerializerOptions!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonDefaults.Null.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<object?>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonEnums.Create<T>(string![]! names, ulong[]! bits, System.Func<T, ulong>! toBits, System.Func<ulong, T>! fromBits, bool flags, ulong widthMask, ulong knownBits) -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<T>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Boolean.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<bool>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Byte.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<byte>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Char.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<char>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.DateOnly.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.DateOnly>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.DateTime.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.DateTime>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.DateTimeOffset.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.DateTimeOffset>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Decimal.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<decimal>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Double.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<double>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Guid.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.Guid>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Int16.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<short>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Int32.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<int>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Int64.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<long>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.JsonElement.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.Text.Json.JsonElement>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.SByte.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<sbyte>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Single.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<float>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.String.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<string!>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.TimeOnly.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.TimeOnly>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.TimeSpan.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.TimeSpan>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.UInt16.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<ushort>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.UInt32.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<uint>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.UInt64.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<ulong>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Uri.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.Uri!>!
+static Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy.Validate(System.IServiceProvider! services, string! name, System.Text.Json.JsonElement arguments) -> void
+static Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy.ValidateText(System.IServiceProvider! services, string? text) -> void
+static Microsoft.Maui.Controls.HybridWebApps.NativeEvent.operator !=(Microsoft.Maui.Controls.HybridWebApps.NativeEvent? left, Microsoft.Maui.Controls.HybridWebApps.NativeEvent? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.NativeEvent.operator ==(Microsoft.Maui.Controls.HybridWebApps.NativeEvent? left, Microsoft.Maui.Controls.HybridWebApps.NativeEvent? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Operation.operator !=(Microsoft.Maui.Controls.HybridWebApps.Operation? left, Microsoft.Maui.Controls.HybridWebApps.Operation? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Operation.operator ==(Microsoft.Maui.Controls.HybridWebApps.Operation? left, Microsoft.Maui.Controls.HybridWebApps.Operation? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext.Default.get -> Microsoft.Maui.Controls.HybridWebApps.ProtocolJsonContext!
+static Microsoft.Maui.Controls.HybridWebApps.ReadyResult.operator !=(Microsoft.Maui.Controls.HybridWebApps.ReadyResult? left, Microsoft.Maui.Controls.HybridWebApps.ReadyResult? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.ReadyResult.operator ==(Microsoft.Maui.Controls.HybridWebApps.ReadyResult? left, Microsoft.Maui.Controls.HybridWebApps.ReadyResult? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Request.operator !=(Microsoft.Maui.Controls.HybridWebApps.Request? left, Microsoft.Maui.Controls.HybridWebApps.Request? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Request.operator ==(Microsoft.Maui.Controls.HybridWebApps.Request? left, Microsoft.Maui.Controls.HybridWebApps.Request? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Response.operator !=(Microsoft.Maui.Controls.HybridWebApps.Response? left, Microsoft.Maui.Controls.HybridWebApps.Response? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.Response.operator ==(Microsoft.Maui.Controls.HybridWebApps.Response? left, Microsoft.Maui.Controls.HybridWebApps.Response? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.UI.BundledLocation.Validate(string! location) -> string!
+static Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.operator !=(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions? left, Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions.operator ==(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions? left, Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowOptions? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.operator !=(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest? left, Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest.operator ==(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest? left, Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowRequest? right) -> bool
+static Microsoft.Maui.Controls.HybridWebApps.UI.RemoteWebAddress.Validate(string! value) -> System.Uri!
