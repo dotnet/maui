@@ -1,4 +1,4 @@
-# Trigger the maui-copilot DevDiv pipeline when a maintainer comments '/review' on a PR.
+# Trigger full '/review' or gate-only '/review gate' on a PR.
 # Uses OIDC (no PAT) — see .github/docs/trigger-azdo-pipeline-setup.md for identity setup.
 
 name: Review Trigger
@@ -11,12 +11,18 @@ on:
       pr_number:
         description: 'PR number to review'
         required: true
+      gate_only:
+        description: 'Run only existing-test verification instead of the full review'
+        required: false
+        type: boolean
+        default: false
       platform:
-        description: 'Target platform (android, ios, catalyst, windows, or empty for pipeline default)'
+        description: 'Target platform (auto uses PR labels, then the pipeline default)'
         required: false
         type: choice
+        default: auto
         options:
-          - ''
+          - auto
           - android
           - ios
           - catalyst
@@ -52,6 +58,7 @@ jobs:
     outputs:
       matched: ${{ steps.check.outputs.matched }}
       proceed: ${{ steps.gate.outputs.proceed }}
+      gate_only: ${{ steps.gate.outputs.gate_only }}
     steps:
       - name: Match /review command
         id: check
@@ -63,20 +70,21 @@ jobs:
             echo "matched=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          shopt -s nocasematch
           TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          # `/review rerun` is not a supported command. Reject it explicitly so
-          # it cannot fall through to the generic `/review` matcher below. `sed`
-          # strips leading whitespace per line, so a leading BLANK line survives in
-          # TRIMMED_BODY; tolerate leading whitespace/newlines here (consistent with
-          # the generic matcher) so a pasted `\n/review rerun` can't evade the guard.
           if [[ "${TRIMMED_BODY}" =~ ^[[:space:]]*/review[[:space:]]+rerun([[:space:]]|$) ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # Match `/review` as the first non-whitespace token, optionally followed by args.
-          # Allows arbitrary leading whitespace (spaces, tabs, newlines).
-          # Subcommands are reserved for their focused gh-aw review workflows.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance|expert-review)([[:space:]]|$) ]]; then
+          # The combined command shares the expert workflow's event but starts only Gate here.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review-with-gate([[:space:]]|$) ]]; then
+            if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review-with-gate[[:space:]]*$ ]]; then
+              echo "matched=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "matched=false" >> "$GITHUB_OUTPUT"
+            fi
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]] ||
+               [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
@@ -95,16 +103,29 @@ jobs:
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
           REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          INPUT_GATE_ONLY: ${{ inputs.gate_only }}
         run: |
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+            if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate([[:space:]]|$) ]]; then
+              [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate[[:space:]]*$ ]]
+              return
+            fi
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance|expert-review)([[:space:]]|$) ]]
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
           }
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             if [ -z "${COMMENT_ID}" ] && [ -z "${COMMENT_NODE_ID}" ]; then
+              case "${INPUT_GATE_ONLY}" in
+                true) GATE_ONLY=true ;;
+                false|"") GATE_ONLY=false ;;
+                *) echo "::error::gate_only must be true or false."; exit 1 ;;
+              esac
               echo "Manual workflow_dispatch — skipping source-comment dedupe and collaborator check"
+              echo "gate_only=${GATE_ONLY}" >> "$GITHUB_OUTPUT"
               echo "proceed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -131,6 +152,14 @@ jobs:
               exit 0
             fi
             ACTOR="${SOURCE_ACTOR}"
+            COMMENT_BODY="${SOURCE_BODY}"
+          fi
+
+          GATE_ONLY=false
+          NORMALIZED_BODY=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+          if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]] ||
+             [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate$ ]]; then
+            GATE_ONLY=true
           fi
 
           # The scheduled recovery workflow adds a rocket reaction and minimizes
@@ -159,6 +188,8 @@ jobs:
 
           MINIMIZED_READ=false
           for attempt in 1 2 3; do
+            # GraphQL variables must remain literal.
+            # shellcheck disable=SC2016
             if IS_MINIMIZED=$(gh api graphql \
               -f query='query($id:ID!){node(id:$id){... on IssueComment{isMinimized}}}' \
               -f id="${COMMENT_NODE_ID}" \
@@ -218,6 +249,7 @@ jobs:
             echo "proceed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          echo "gate_only=${GATE_ONLY}" >> "$GITHUB_OUTPUT"
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
   trigger-review:
@@ -235,6 +267,8 @@ jobs:
       pull-requests: write
     env:
       REPO: ${{ github.repository }}
+      REVIEW_COMMAND: ${{ needs.match.outputs.gate_only == 'true' && '/review gate' || '/review' }}
+      GATE_ONLY: ${{ needs.match.outputs.gate_only }}
     steps:
       - name: Parse parameters
         id: params
@@ -244,7 +278,12 @@ jobs:
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           INPUT_PLATFORM: ${{ inputs.platform }}
           INPUT_PIPELINE_REF: ${{ inputs.pipeline_ref }}
+          GATE_ONLY: ${{ needs.match.outputs.gate_only }}
         run: |
+          if [[ "${GATE_ONLY}" != "true" && "${GATE_ONLY}" != "false" ]]; then
+            echo "::error::The authorized review mode was not resolved."
+            exit 1
+          fi
           # Valid platforms (from AzDO pipeline definition)
           VALID_PLATFORMS="android ios catalyst windows"
 
@@ -269,20 +308,23 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${INPUT_PR_NUMBER}"
             PLATFORM="${INPUT_PLATFORM}"
+            if [ "$PLATFORM" = "auto" ]; then PLATFORM=""; fi
             PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
-            # Trim any leading whitespace (spaces/tabs/newlines) the user may have
-            # accidentally typed before the slash command, then strip the '/review'
-            # prefix and parse remaining args.
-            TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
-            ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+            ARGS=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs '
+              sub("^\\s*/[rR][eE][vV][iI][eE][wW](\\s+|$)"; "")')
+            if [ "${GATE_ONLY}" = "true" ]; then
+              ARGS=$(printf '%s' "${ARGS}" | jq -Rrs 'sub("^[gG][aA][tT][eE](\\s+|$)"; "")')
+            fi
 
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
             # Disable globbing so user input like '*.cs' doesn't expand
             set -f
+            # Deliberate token splitting with globbing disabled.
+            # shellcheck disable=SC2086
             set -- ${ARGS}
             while [ $# -gt 0 ]; do
               case "$1" in
@@ -343,10 +385,13 @@ jobs:
             exit 1
           fi
 
-          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-          echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
-          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
-          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
+          {
+            echo "pr_number=${PR_NUMBER}"
+            echo "platform=${PLATFORM}"
+            echo "pipeline_ref=${PIPELINE_REF}"
+            echo "gate_only=${GATE_ONLY}"
+          } >> "$GITHUB_OUTPUT"
+          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}, Gate only: ${GATE_ONLY}"
 
       - name: Validate PR
         id: pr
@@ -496,50 +541,21 @@ jobs:
             if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
               Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
             } else {
-              "locked=true" >> $env:GITHUB_OUTPUT
-              "state=already-running" >> $env:GITHUB_OUTPUT
-              "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
+              "### $($env:REVIEW_COMMAND) skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
 
-              # Make the skip VISIBLE to the maintainer. Previously this path only
-              # wrote to the (invisible) job step-summary, so re-commenting /review
-              # while a review is in flight — which can now run for hours once the
-              # deep UI-test stage queues — looked like it silently did nothing.
-              # Post ONE concise, AI-attributed notice per in-progress cycle, deduped
-              # against the current lock's applied time so repeat /review comments
-              # during the same run don't spam the PR.
-              try {
-                $skipMarker = '<!-- copilot-review-inprogress-skip -->'
-                $appliedAt = Get-AgentReviewInProgressAppliedAt -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
-                $alreadyNoticed = $false
-                if ($appliedAt) {
-                  # Fetch only comments created/updated since the lock was applied
-                  # (GitHub's default comment order is OLDEST-first, so a plain
-                  # per_page window would miss the newest notice on a busy PR);
-                  # `since` + --paginate reliably surfaces our marker comment.
-                  $sinceIso = $appliedAt.UtcDateTime.ToString('o')
-                  $noticeTimes = @(gh api --paginate "repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/$($env:PR_NUMBER)/comments?per_page=100&since=$sinceIso" --jq ".[] | select(.body | contains(`"$skipMarker`")) | .created_at" 2>$null)
-                  foreach ($t in $noticeTimes) {
-                    if ([datetimeoffset]::Parse([string]$t, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal) -gt $appliedAt) { $alreadyNoticed = $true; break }
-                  }
-                }
-                if (-not $alreadyNoticed) {
-                  $skipBody = @(
-                    $skipMarker,
-                    '> [!NOTE]',
-                    '> ### 🔍 `/review` skipped — a review is already running',
-                    '>',
-                    '> This PR already holds the `s/agent-review-in-progress` lock, so a new review was **not** started (only one review runs at a time to avoid duplicate, racing reviews). The in-flight run must finish first — this can take a while when the deep UI-test stage is queued.',
-                    '>',
-                    '> Re-comment `/review` once it completes to start a fresh run.',
-                    '>',
-                    '> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline.</sub>'
-                  ) -join "`n"
-                  $skipBody | gh pr comment $env:PR_NUMBER --repo '${{ github.repository_owner }}/${{ github.event.repository.name }}' --body-file - | Out-Null
-                }
-              } catch {
-                Write-Host "  ⚠️  Could not post in-progress skip notice: $($_.Exception.Message)"
+              $notice = @(
+                '<!-- copilot-review-inprogress-skip -->'
+                "> **``$($env:REVIEW_COMMAND)`` was not started:** another review or Gate is already running for this PR."
+                '>'
+                '> This command is not queued. Submit it again after the current run finishes.'
+              ) -join "`n"
+              $notice | gh pr comment $env:PR_NUMBER --repo $env:REPO --body-file -
+              if ($LASTEXITCODE -ne 0) {
+                throw "Could not explain the locked review request on PR #$($env:PR_NUMBER)."
               }
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-running" >> $env:GITHUB_OUTPUT
               exit 0
             }
           }
@@ -621,6 +637,7 @@ jobs:
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
           PLATFORM: ${{ steps.infer.outputs.platform }}
+          GATE_ONLY: ${{ steps.params.outputs.gate_only }}
           AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
           GH_TOKEN: ${{ github.token }}
@@ -697,11 +714,12 @@ jobs:
           PAYLOAD=$(jq -n \
             --arg pr "${PR_NUMBER}" \
             --arg plat "${PLATFORM}" \
+            --argjson gateOnly "${GATE_ONLY}" \
             --arg ref "refs/heads/${PIPELINE_REF}" \
             '{
               templateParameters: { PRNumber: $pr, Platform: $plat },
               resources: { repositories: { self: { refName: $ref } } }
-            }')
+            } | if $gateOnly then .templateParameters.GateOnly = true else . end')
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
@@ -732,40 +750,6 @@ jobs:
             exit 1
           fi
 
-      # A successful command used to leave only two subtle signals: a label and a rocket
-      # reaction on a comment that was immediately minimized. On busy PRs that looked like
-      # the command vanished, prompting duplicate /review comments while the first run was
-      # already active. Post one durable start notice with the exact AzDO build instead.
-      - name: Report /review start to the PR
-        if: steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome == 'success'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
-          PLATFORM: ${{ steps.infer.outputs.platform }}
-          RUN_ID: ${{ steps.trigger_azdo.outputs.run_id }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          if ! [[ "${RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
-            echo "::warning::Could not post /review start notice because the AzDO run id is invalid."
-            exit 0
-          fi
-
-          BODY_FILE=$(mktemp)
-          trap 'rm -f "${BODY_FILE}"' EXIT
-          cat > "${BODY_FILE}" <<EOF
-          <!-- copilot-review-started:${RUN_ID} -->
-          > [!NOTE]
-          > ### 🔍 \`/review\` started
-          >
-          > [AzDO build **${RUN_ID}**](https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}) is running for **${PLATFORM}**.
-          >
-          > The \`s/agent-review-in-progress\` label stays on this PR while the run is active. The final recommendation and outcome labels are posted only after Gate, expert review, and Deep UI tests finish.
-          EOF
-
-          if ! gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body-file "${BODY_FILE}"; then
-            echo "::warning::Could not post the /review start notice for AzDO build ${RUN_ID}."
-          fi
-
       # Never let a /review fail silently: when the trigger step failed (bad branch or a
       # transient AzDO error), tell the commenter on the PR exactly what happened and how to
       # fix it. issue_comment-only (a user typed /review); skipped on the automatic paths.
@@ -780,10 +764,10 @@ jobs:
         run: |
           if [ "${FAIL_REASON}" = "branch-missing" ]; then
             BODY="> [!WARNING]
-          > Your \`/review\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Use \`--branch improved-reviewer\` (the current reviewer branch), or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`/review android --branch improved-reviewer\`)."
+          > Your \`${REVIEW_COMMAND}\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Choose an existing branch or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`${REVIEW_COMMAND} --platform android --branch main\`)."
           else
             BODY="> [!WARNING]
-          > Your \`/review\` couldn't start due to a transient error triggering the pipeline. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again in a minute."
+          > Your \`${REVIEW_COMMAND}\` couldn't start due to a transient error triggering the pipeline. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`${REVIEW_COMMAND}\` again in a minute."
           fi
           for attempt in 1 2 3 4; do
             if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
@@ -817,7 +801,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           BODY="> [!WARNING]
-          > Your \`/review\` couldn't start because the trusted trigger setup hit a transient infrastructure failure. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again."
+          > Your \`${REVIEW_COMMAND}\` couldn't start because the trusted trigger setup hit a transient infrastructure failure. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`${REVIEW_COMMAND}\` again."
           for attempt in 1 2 3 4; do
             if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
               exit 0
@@ -860,8 +844,13 @@ jobs:
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             is_recoverable_review_command() {
               NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+              if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate([[:space:]]|$) ]]; then
+                [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate[[:space:]]*$ ]]
+                return
+              fi
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
             }
 
             if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
@@ -892,6 +881,8 @@ jobs:
             echo "::warning::Could not acknowledge /review command comment ${COMMENT_ID}"
           fi
 
+          # GraphQL variables must remain literal.
+          # shellcheck disable=SC2016
           if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
             echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
           else

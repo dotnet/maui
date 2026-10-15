@@ -30,7 +30,7 @@ on:
         required: false
         type: number
   steps:
-    - name: Authorize exact /review expert-review command
+    - name: Authorize exact expert-review command
       id: command
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
@@ -49,7 +49,7 @@ on:
             const comment = context.payload.comment;
             if (context.payload.action !== 'created' || !context.payload.issue?.pull_request ||
                 comment?.user?.type !== 'User' || comment.user.login !== context.actor ||
-                !/^\/review\s+expert-review\s*$/.test(comment.body ?? '')) return;
+                !/^\s*\/review\s+expert-review(?:-with-gate)?\s*$/i.test(comment.body ?? '')) return;
             number = context.payload.issue.number;
             actor = comment.user.login;
           } else if (context.eventName === 'workflow_dispatch') {

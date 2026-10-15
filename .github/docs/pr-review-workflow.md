@@ -6,6 +6,7 @@ This guide explains the automated investigation commands used in dotnet/maui:
 - `/review tests`
 - `/review performance`
 - `/review expert-review`
+- `/review expert-review-with-gate`
 - `/evaluate-tests`
 - `/issue triage` (on open issues)
 - `/issue trace-regression` (on issues)
@@ -21,6 +22,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Posts one `Tests Failure Analysis` comment and hides older reports. |
 | `/review performance` | Repository users with write, maintain, or admin access | Runs selected managed benchmarks against pinned merge-base/head commits and reviews performance coverage. | Posts one validated performance report and hides older performance reports. |
 | `/review expert-review` | Repository users with write, maintain, or admin access | Runs only the read-only MAUI expert reviewer on GitHub, with independent GPT dimension passes. | Posts one consolidated COMMENT review with inline findings and an `Expert Review` summary. |
+| `/review expert-review-with-gate` | Repository users with write, maintain, or admin access | Starts the GitHub expert reviewer and the existing Azure DevOps Gate-only path independently from one comment. | The expert review's compact receipt and inline findings, plus the Gate's existing verification report. No full review or try-fix. |
 | `/evaluate-tests` | Repository users with write, maintain, or admin access | Evaluates test quality and coverage on an open PR with test source changes. | Posts one test evaluation report. |
 | `/issue triage` | Repository users with write, maintain, or admin access | Applies evidence-backed manual labels to an open issue. | Labels only; explanation retained in Actions artifacts, not a public report. |
 | `/issue trace-regression` | Repository users with write, maintain, or admin access | Traces an issue's reported regression through release boundaries and source history to candidate introducing commits or PRs. | Posts one expandable `Regression Trace` comment on the issue and hides older reports. |
@@ -44,6 +46,7 @@ current effective repository permission, not the team name alone.
 | [`/review tests`](../workflows/copilot-review-tests.md) | Native roles, exact-command authorization/minimization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR; reporting uses the triggering target. |
 | [`/review performance`](../workflows/copilot-review-performance.md) | Native roles, pre-activation, publication reauthorization and failure-notification reauthorization accept write/maintain/admin. Association filters retain OWNER/MEMBER/COLLABORATOR. Requires the exact subcommand on a PR and trusted default-branch tooling; pinned evidence/report validation still applies. |
 | [`/review expert-review`](../workflows/copilot-review-expert.md) | Native roles, exact human-command intake, collector, publisher and completion recheck current write/maintain/admin. Requires an open PR, default-branch infrastructure and a fresh run. PAT-pool access follows successful frozen-context collection; completion verifies the actual review receipt. |
+| `/review expert-review-with-gate` | The expert workflow and [Gate trigger](../workflows/review-trigger.yml) independently authorize the same exact human PR comment. Both require an open PR and current write/maintain/admin. The Gate trigger owns command acknowledgement; expert completion does not hide a command before Gate can start or recover. |
 | [`/review [platform] [options]`](../workflows/review-trigger.yml) | The normal trigger, recovery source-comment recheck and shared review-option helper accept current write/maintain/admin. Recovery also rechecks the original author before dispatch. `/review tests`, `/review performance` and `/review expert-review` are separate workflows; `/review rerun` is unsupported. |
 | [`/evaluate-skills`](../workflows/skill-validation.yml) | The slash gate accepts write/maintain/admin on PR comments. Static-only mode can disable live evaluation independently of caller access; trusted-source and evaluation-content validation still apply. |
 | [`/rebase`](../workflows/rebase.yml) | The commenter must have write/maintain/admin and post exactly `/rebase` on an open PR. Conflicts or unavailable maintainer edits can prevent branch updates after authorization. |
@@ -74,6 +77,15 @@ Use `/review` when you want the complete automated PR review. This is the normal
 Use `/review expert-review` for the experimental GitHub-hosted expert reviewer
 alone: code/history review and inline findings, without the AzDO test gate,
 fix candidates, UI tests, CI attribution, review labels or merge verdict.
+
+Use exactly `/review expert-review-with-gate` for that expert review **and**
+the existing `/review gate` behavior from one new PR comment. Both start
+independently; neither waits for or gates the other. The expert still runs on
+GitHub using GPT-6.1 Sol, while Azure DevOps receives `GateOnly: true` and
+verifies existing PR tests without starting the full review, try-fix, or a
+second expert reviewer. Each lane retains its own report and failure handling.
+This combined spelling accepts no extra arguments. Existing standalone commands
+and `/review gate` options remain unchanged.
 
 Use `/review tests` when the question is specifically about CI/test failures, for example:
 
@@ -351,7 +363,8 @@ The generated PR comment is a single session-based `AI Summary` comment. New run
 
 ## `/review expert-review`: standalone expert review
 
-Post exactly `/review expert-review` as a new standalone human comment on an
+Post exactly `/review expert-review` (or `/review expert-review-with-gate` to
+also start Gate independently) as a new standalone human comment on an
 open PR. Edited comments, issues, quoted/fenced commands, extra arguments,
 other subcommands and unauthorized users do not activate this lane. It never
 queues AzDO, including through full-review missed-command recovery. Per-PR
@@ -470,6 +483,10 @@ found on the correct PR, bot identity and pinned commit, and the exact compact
 review receipt has been posted, including for zero findings. Incomplete/stale/failed runs
 leave it visible. The completion job then rechecks the command and requester
 before minimizing only that command.
+For the combined command, only the existing Gate trigger acknowledges/minimizes
+the request. Scheduled missed-command recovery can recover its Gate half, but
+does not dispatch a second expert review. The standalone expert workflow still
+has no scheduled recovery.
 
 Manual dispatch requires the default branch and a positive integer
 `pr_number`; the shared slash-command trigger prevents marking that input

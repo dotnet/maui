@@ -173,7 +173,7 @@ function Get-ExpertRequest {
     if ($env:GITHUB_EVENT_NAME -eq 'issue_comment') {
         if ($event.action -cne 'created' -or -not $event.issue.pull_request -or
             $event.issue.number -ne $PRNumber -or $event.comment.user.type -cne 'User' -or
-            $event.comment.body -cnotmatch '^/review\s+expert-review\s*$') {
+            $event.comment.body -notmatch '^\s*/review\s+expert-review(?:-with-gate)?\s*$') {
             throw 'Not an exact newly created human expert-review PR command.'
         }
         $login = [string]$event.comment.user.login
@@ -612,6 +612,10 @@ function Invoke-ExpertPrepare {
 function Invoke-ExpertComplete {
     $request = Get-ExpertRequest
     if ($env:GITHUB_EVENT_NAME -ne 'issue_comment') { return }
+    if ($request.event.comment.body -match '^\s*/review\s+expert-review-with-gate\s*$') {
+        Write-Host 'The Gate trigger owns acknowledgement of the combined command.'
+        return
+    }
     $context = Get-ExpertContext
     $receipt = Read-ExpertJson (Join-Path $ResultDirectory 'publication.json') 256KB
     $runUrl = Get-ExpertRunUrl
@@ -651,7 +655,7 @@ function Invoke-ExpertComplete {
     $apiUrl = if ($env:GITHUB_API_URL) { $env:GITHUB_API_URL } else { 'https://api.github.com' }
     if ($comment.issue_url -cne "$apiUrl/repos/$Repository/issues/$PRNumber" -or
         $comment.node_id -cne $request.event.comment.node_id -or
-        $comment.user.login -cne $request.actor -or $comment.body -cnotmatch '^/review\s+expert-review\s*$') {
+        $comment.user.login -cne $request.actor -or $comment.body -notmatch '^\s*/review\s+expert-review\s*$') {
         throw 'The command identity changed before completion.'
     }
     Assert-ExpertPermission -Login $request.actor

@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Parsing and authorization helpers for missed manual /review command recovery.
+    Parsing and authorization helpers for manual /review and /review gate commands.
 #>
 
 function ConvertTo-DateTimeOffset {
@@ -67,7 +67,15 @@ function ConvertFrom-ReviewCommand {
         return $null
     }
 
-    $argsText = [regex]::Replace($trimmed, '(?i)^/review\s*', '')
+    $combined = $trimmed -match '(?i)^/review\s+expert-review-with-gate$'
+    if (-not $combined -and $trimmed -match '(?i)^/review\s+expert-review') {
+        return $null
+    }
+    $gateOnly = $combined -or $trimmed -match '(?i)^/review\s+gate(\s|$)'
+    $argsText = [regex]::Replace($trimmed, '(?i)^/review(?:\s+|$)', '')
+    if ($gateOnly) {
+        $argsText = [regex]::Replace($argsText, '(?i)^(gate|expert-review-with-gate)(?:\s+|$)', '')
+    }
     $tokens = @()
     if (-not [string]::IsNullOrWhiteSpace($argsText)) {
         $tokens = @($argsText -split '\s+' | Where-Object { $_ })
@@ -114,6 +122,7 @@ function ConvertFrom-ReviewCommand {
 
     return [pscustomobject]@{
         IsReviewCommand = $true
+        GateOnly        = [bool]$gateOnly
         Platform        = $platform
         PipelineRef     = $pipelineRef
         Body            = $trimmed
