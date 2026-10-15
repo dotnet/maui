@@ -112,13 +112,13 @@ The public TypeScript symbols and members carry TSDoc comments that survive in
 the shipped `.d.ts` files, so editor tooltips include parameters, return values,
 errors, host requirements and session/limit notes without opening this README.
 Generate a local Markdown reference and DocFX navigation from those declarations
-from the source bundle root (`Controls.Sample.HybridWebApp/`):
+from the product tree root (`src/HybridWebView/`):
 
 ```sh
-npm --prefix JavaScript run docs
+npm --prefix src/JavaScript run docs
 ```
 
-Open `JavaScript/artifacts/api-reference/index.md`. API Extractor
+Open `src/JavaScript/artifacts/api-reference/index.md`. API Extractor
 and API Documenter process each actual package entrypoint separately and label
 its exact import path; feature APIs are not flattened into the root to generate
 docs. Generated reference output is ignored and not shipped in the npm tarball.
@@ -134,8 +134,8 @@ providers, permissions or native registrations to an app. A compatible host must
 implement version 1 of [the protocol](docs/PROTOCOL.md), including
 `Task<string> Invoke(string request)`, session commands and explicit providers.
 
-The current reference host is `../samples/HybridWebApp/Native/`, referencing the independently
-packable `../src/HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj` in the product tree. The links below pin
+The current reference host is `../../samples/HybridWebApp/Native/`, referencing the independently
+packable `../HybridWebApps/Microsoft.Maui.Controls.HybridWebApps.csproj` in the product tree. The links below pin
 the matching product, scoped host and identity wire mapping:
 [`HybridWebView product tree`](https://github.com/dotnet/maui/tree/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView).
 `AddHybridApp` registers the product infrastructure and implemented Essentials/UI
@@ -152,7 +152,7 @@ still has no sample dependency and no second integration NuGet.
 - [`Native feature integration`](https://github.com/dotnet/maui/tree/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView/src/HybridWebApps/Essentials)
   integrates directly imported Essentials interfaces alongside the adapters needed
   for generic preferences and owned file/share resources.
-- `../samples/HybridWebApp/Native/Playground` owns every sample command/topic and process diagnostic.
+- `../../samples/HybridWebApp/Native/Playground` owns every sample command/topic and process diagnostic.
 
 Refresh published source links to the selected release commit/tag before publication.
 The WIP `Microsoft.Maui.Controls.HybridWebApps` NuGet identity is independently packable locally, but
@@ -318,7 +318,7 @@ and never expose arbitrary native methods to untrusted scripts.
 See [API/errors/security](docs/API.md), [wire/native compatibility](docs/PROTOCOL.md),
 and [package validation/release](docs/RELEASING.md). The
 [matching playground README](https://github.com/dotnet/maui/blob/f0c36030b40a35daaae7256df2b79e1058774e82/src/HybridWebView/samples/HybridWebApp/README.md)
-documents the consumer and staging. In the current source bundle the independently
-packable SDK is at `JavaScript/` beside `Native/`, `Web/` and `Tests/`; source
+documents the consumer and staging. In the current product tree the independently
+packable SDK is at `src/JavaScript/` beside `src/HybridWebApps/`, separate from `samples/HybridWebApp/`; source
 commands here use that relocated layout. Refresh source links to the matching
 release commit/tag before publication.

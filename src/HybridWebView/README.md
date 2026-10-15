@@ -17,7 +17,7 @@ binary transport stay in their existing framework projects.
 | --- | --- |
 | [`src/HybridWebApps`](src/HybridWebApps/README.md) | Runtime, scoped registry/session, strict JSON helpers, resource providers and one NuGet |
 | `src/SourceGen` | Incremental generator, included under the runtime package's `analyzers/dotnet/cs` |
-| [`JavaScript`](JavaScript/README.md) | Independent TypeScript/ESM SDK, API documentation and tarball tests |
+| [`src/JavaScript`](src/JavaScript/README.md) | Independent TypeScript/ESM SDK, API documentation and tarball tests |
 | [`samples/HybridWebApp`](samples/HybridWebApp/README.md) | Native MAUI host, Vite/Svelte frontend and launcher |
 | `tests/UnitTests` | Portable managed tests, separate plugin DLL and NuGet-only consumer |
 
@@ -137,7 +137,7 @@ bash eng/common/dotnet.sh test \
   -p:IncludeAndroidTargetFrameworks=false -p:IncludeIosTargetFrameworks=false \
   -p:IncludeMacCatalystTargetFrameworks=false -p:IncludeWindowsTargetFrameworks=false \
   -p:IncludeMacOSTargetFrameworks=false -p:IncludeTizenTargetFrameworks=false
-npm --prefix src/HybridWebView/JavaScript run pack-check
+npm --prefix src/HybridWebView/src/JavaScript run pack-check
 npm --prefix src/HybridWebView/samples/HybridWebApp/Web test
 npm --prefix src/HybridWebView/samples/HybridWebApp/Web run stage
 ```

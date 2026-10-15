@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { snapshot } from '../../../JavaScript/scripts/inputs.mjs'
+import { snapshot } from '../../../src/JavaScript/scripts/inputs.mjs'
 
 const root = dirname(fileURLToPath(import.meta.url))
-const sdk = fileURLToPath(new URL('../../../JavaScript/', import.meta.url))
+const sdk = fileURLToPath(new URL('../../../src/JavaScript/', import.meta.url))
 async function files(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
   return (await Promise.all(entries.map(entry => entry.isDirectory() ? files(join(directory, entry.name)) : [join(directory, entry.name)]))).flat().sort()

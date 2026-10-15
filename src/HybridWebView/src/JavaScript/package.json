@@ -137,7 +137,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dotnet/maui.git",
-    "directory": "src/HybridWebView/samples/HybridWebApp/JavaScript"
+    "directory": "src/HybridWebView/src/JavaScript"
   },
   "bugs": {
     "url": "https://github.com/dotnet/maui/issues"

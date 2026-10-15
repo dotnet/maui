@@ -467,7 +467,7 @@ Inventoried on **2026-10-12**. API documentation is live; source snapshots pin t
 - [Official MAUI samples](https://github.com/dotnet/maui-samples), references rather than automatic net11 compatibility guarantees.
 
 [sample-readme]: README.md
-[sdk-readme]: ../../JavaScript/README.md
+[sdk-readme]: ../../src/JavaScript/README.md
 [m-platform]: https://learn.microsoft.com/dotnet/maui/platform-integration/?view=net-maui-11.0
 [m-controls]: https://learn.microsoft.com/dotnet/maui/user-interface/controls/?view=net-maui-11.0
 [m-hybrid]: https://learn.microsoft.com/dotnet/maui/user-interface/controls/hybridwebview?view=net-maui-11.0

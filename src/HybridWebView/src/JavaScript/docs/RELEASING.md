@@ -25,10 +25,10 @@ From the product tree root (`src/HybridWebView/`), with Node 22.18+
 whole bundle to another repository:
 
 ```sh
-npm --prefix JavaScript ci
-npm --prefix JavaScript run build
-npm --prefix JavaScript test
-npm --prefix JavaScript run pack-check
+npm --prefix src/JavaScript ci
+npm --prefix src/JavaScript run build
+npm --prefix src/JavaScript test
+npm --prefix src/JavaScript run pack-check
 ```
 
 `ci` restores the locked TypeScript 7.0.2 development compiler and documentation
@@ -58,23 +58,23 @@ that every exported symbol/public member retains its source TSDoc. Packed-refere
 output goes to ignored `artifacts/api-reference-packed/`.
 Each entrypoint's exact exported symbols, nested public members, signatures and
 TSDoc are compared with its local model; counts alone are not acceptance evidence.
-The checked tarball remains under `JavaScript/artifacts/`
+The checked tarball remains under `src/JavaScript/artifacts/`
 for local inspection.
 No registry upload or publish command is run by these scripts.
 
 For file-list-only inspection:
 
 ```sh
-npm --prefix JavaScript pack --dry-run
+npm --prefix src/JavaScript pack --dry-run
 ```
 
 ## Source reference and DocFX/Microsoft Learn
 
 ```sh
-npm --prefix JavaScript run docs
+npm --prefix src/JavaScript run docs
 ```
 
-The comments in `JavaScript/src/**/*.ts` are the public-symbol documentation source.
+The comments in `src/JavaScript/src/**/*.ts` are the public-symbol documentation source.
 The command builds with **TypeScript 7.0.2**, then runs **API Extractor 7.59.4**
 on each actual exported `.d.ts` entrypoint and **API Documenter 7.30.18**
 on each isolated `.api.json` model. It writes ignored
@@ -143,11 +143,11 @@ or a publication authorization. No live Learn reference is claimed here.
 ## Playground dependency and staging
 
 The playground consumes a normal
-`file:../../../JavaScript` npm dependency, not a TS alias or
+`file:../../../src/JavaScript` npm dependency, not a TS alias or
 source import. From the product tree root restore both development environments:
 
 ```sh
-npm --prefix JavaScript ci
+npm --prefix src/JavaScript ci
 npm --prefix samples/HybridWebApp/Web ci
 npm --prefix samples/HybridWebApp/Web test
 npm --prefix samples/HybridWebApp/Web run stage

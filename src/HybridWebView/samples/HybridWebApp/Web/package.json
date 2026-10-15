@@ -5,7 +5,7 @@
   "type": "module",
   "workspaces": ["tools/svelte-check"],
   "scripts": {
-    "sdk:build": "npm --prefix ../../../JavaScript run build",
+    "sdk:build": "npm --prefix ../../../src/JavaScript run build",
     "predev": "npm run sdk:build",
     "dev": "vite",
     "pretype-check": "npm run sdk:build",
@@ -21,7 +21,7 @@
     "node": ">=22.18.0"
   },
   "dependencies": {
-    "@maui/api": "file:../../../JavaScript",
+    "@maui/api": "file:../../../src/JavaScript",
     "svelte": "5.57.1"
   },
   "devDependencies": {

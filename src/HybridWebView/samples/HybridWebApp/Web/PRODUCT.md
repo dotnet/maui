@@ -112,6 +112,6 @@ site. Do not copy community application branding, catalogs or assets.
 
 `../README.md` records implementation and validation scope. `../FEATURES.md` is
 the implementation backlog. Product API documentation and generated-reference
-instructions live in `../../../JavaScript/` and `../Managed/`.
+instructions live in `../../../src/JavaScript/` and `../../../src/HybridWebApps/`.
 No customer testimonials, adoption claims or stable-product certification are
 supplied or required.

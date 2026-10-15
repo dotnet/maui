@@ -32,7 +32,7 @@ deprecation warnings. Earlier native observations below remain historical.
 ## Standalone JavaScript SDK
 
 The frontend consumes the app-independent
-[`@maui/api` SDK](../../JavaScript/README.md) through a normal
+[`@maui/api` SDK](../../src/JavaScript/README.md) through a normal
 local npm dependency. Its prepared preview is `0.1.0-preview.1`: emitted ESM,
 TypeScript declarations, MIT license and product/API/protocol/release docs are
 the standalone shipping artifact. `@maui/api` is a working name; scope/name
@@ -40,7 +40,7 @@ ownership is unverified and nothing has been published to npm.
 
 Generic app/device information, clipboard, preferences, power/display, file-picking,
 page/window UI and transport modules live in
-the independently packable sibling `../../JavaScript/`, not in the frontend. Custom `sample.*` helpers remain
+the independently packable product `../../src/JavaScript/`, not in the frontend. Custom `sample.*` helpers remain
 in `Web/src/native/sample.ts`; the SDK includes no UI, sample commands, Vite
 dependency or sample preferences namespace. Ordinary SDK consumers can use
 direct `getText()`/`setText()`, preference `get()`/`set()`, `getAppInfo()` and `getDeviceInfo()` without supplying a view or client;
@@ -55,9 +55,9 @@ The app owns process architecture, PID and startup diagnostics and composes
 them with the real SDK AppInfo/DeviceInfo helpers for its reload experiment.
 
 Public symbols and members are documented in TypeScript; emitted declarations
-retain the comments for editor tooltips. `npm --prefix ../../JavaScript run docs` from this folder
+retain the comments for editor tooltips. `npm --prefix ../../src/JavaScript run docs` from this folder
 generates an ignored per-entrypoint Markdown reference and DocFX navigation.
-The package's [release documentation](../../JavaScript/docs/RELEASING.md)
+The package's [release documentation](../../src/JavaScript/docs/RELEASING.md)
 explains standard tooling, packed-reference equality checks and the separate
 Microsoft Learn onboarding step. No Learn publication is performed.
 
@@ -417,7 +417,7 @@ The OS-owned application menu is untouched; mobile exposes no fake HTML menubar.
 Feature handlers are plain async public SDK snippets. Shared `Action.svelte`
 presentation owns busy/availability/error/result/cancel/log isolation rather than
 requiring `session.run` wrappers or client injection in each example. SDK contents
-are never automatically logged. See the [public export/parity audit](../../JavaScript/docs/API.md).
+are never automatically logged. See the [public export/parity audit](../../src/JavaScript/docs/API.md).
 
 ### Native acceptance checklist for this milestone
 
@@ -506,8 +506,8 @@ Physical iOS-device networking is not configured by this loopback-only launcher.
 ## Copying to MAUI Labs
 
 Copy the **whole `src/HybridWebView` tree**, not just this sample or `Web/`.
-`../../JavaScript/` remains one standalone npm product (`@maui/api` with 19 WIP
-entrypoints), consumed from `Web/` via `file:../../../JavaScript`;
+`../../src/JavaScript/` remains one standalone npm product (`@maui/api` with 19 WIP
+entrypoints), consumed from `Web/` via `file:../../../src/JavaScript`;
 it is not compiled as app source. `../../src/HybridWebApps/` is the standalone WIP C# product;
 `Native/` owns the host, sample providers, platform heads/assets and Debug forwarding/inspection; `../../tests/UnitTests/`, staging,
 launchers, documentation and the [121-family backlog](FEATURES.md) travel with it.
@@ -537,10 +537,10 @@ or that an external native MAUI package has been run.
 From the copied bundle root, with Node 22.18+ and an explicitly installed .NET 11 SDK:
 
 ```sh
-npm --prefix JavaScript ci
+npm --prefix src/JavaScript ci
 npm --prefix samples/HybridWebApp/Web ci
-npm --prefix JavaScript test
-npm --prefix JavaScript run pack-check
+npm --prefix src/JavaScript test
+npm --prefix src/JavaScript run pack-check
 npm --prefix samples/HybridWebApp/Web test
 npm --prefix samples/HybridWebApp/Web run type-check
 npm --prefix samples/HybridWebApp/Web run stage
@@ -552,7 +552,7 @@ pwsh -File tests/UnitTests/launcher.test.ps1 -DotNetPath /absolute/path/to/an/in
 ```
 
 The SDK's real-framework double-bootstrap regression uses an attributed,
-test-only [snapshot](../../JavaScript/tests/fixtures/README.md). It is neither shipped
+test-only [snapshot](../../src/JavaScript/tests/fixtures/README.md). It is neither shipped
 nor loaded in production; the runtime framework script stays in Core.
 
 External **native execution is a migration gate**, not proven by these portable
@@ -846,7 +846,7 @@ and the matching SDK. Restore the standalone package and the frontend once
 before launch (the launcher does not restore either):
 
 ```sh
-npm --prefix src/HybridWebView/samples/HybridWebApp/JavaScript ci
+npm --prefix src/HybridWebView/src/JavaScript ci
 npm --prefix src/HybridWebView/samples/HybridWebApp/Web ci
 ```
 
@@ -855,9 +855,9 @@ verified with Node 24). The platform minimums remain Android 24, iOS 15,
 Mac Catalyst 17, Windows 10.0.17763.
 
 ```sh
-npm --prefix src/HybridWebView/samples/HybridWebApp/JavaScript test
-npm --prefix src/HybridWebView/samples/HybridWebApp/JavaScript run pack-check
-npm --prefix src/HybridWebView/samples/HybridWebApp/JavaScript run docs
+npm --prefix src/HybridWebView/src/JavaScript test
+npm --prefix src/HybridWebView/src/JavaScript run pack-check
+npm --prefix src/HybridWebView/src/JavaScript run docs
 npm --prefix src/HybridWebView/samples/HybridWebApp/Web test
 npm --prefix src/HybridWebView/samples/HybridWebApp/Web run type-check
 npm --prefix src/HybridWebView/samples/HybridWebApp/Web run stage
