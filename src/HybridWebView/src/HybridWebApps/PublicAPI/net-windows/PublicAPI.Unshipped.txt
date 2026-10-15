@@ -55,17 +55,6 @@ Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Kind.get -> string!
 Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Kind.init -> void
 Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Session.get -> string!
 Microsoft.Maui.Controls.HybridWebApps.DocumentMessage.Session.init -> void
-Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo.AppInfoProvider
-Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo.AppInfoProvider.AppInfoProvider(Microsoft.Maui.ApplicationModel.IAppInfo! appInfo) -> void
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Battery.BatteryProvider
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Battery.BatteryProvider.BatteryProvider(Microsoft.Maui.Devices.IBattery! battery) -> void
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity.ConnectivityProvider
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity.ConnectivityProvider.ConnectivityProvider(Microsoft.Maui.Networking.IConnectivity! connectivity, Microsoft.Maui.Controls.HybridWebApps.NativeDispatcher! dispatcher, Microsoft.Maui.Controls.HybridWebApps.NativeNotifications! notifications) -> void
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity.ConnectivityProvider.Dispose() -> void
-Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo.DeviceInfoProvider
-Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo.DeviceInfoProvider.DeviceInfoProvider(Microsoft.Maui.Devices.IDeviceInfo! deviceInfo) -> void
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Display.DisplayProvider
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Display.DisplayProvider.DisplayProvider(Microsoft.Maui.Devices.IDeviceDisplay! display) -> void
 Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider
 Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider.Dispose() -> void
 Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.FilePickerProvider.FilePickerProvider(Microsoft.Maui.Storage.IFilePicker! picker, Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext! context, Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits? limits = null) -> void
@@ -74,8 +63,6 @@ Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.Chu
 Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.HybridFileLimits(int selectedFiles = 128, int readers = 16, int chunkBytes = 65536) -> void
 Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.Readers.get -> int
 Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker.HybridFileLimits.SelectedFiles.get -> int
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Launcher.LauncherProvider
-Microsoft.Maui.Controls.HybridWebApps.Essentials.Launcher.LauncherProvider.LauncherProvider(Microsoft.Maui.ApplicationModel.ILauncher! launcher) -> void
 Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences.PreferencesProvider
 Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences.PreferencesProvider.PreferencesProvider(Microsoft.Maui.Storage.IPreferences! preferences) -> void
 Microsoft.Maui.Controls.HybridWebApps.Generated.MicrosoftMauiControlsHybridWebAppsActionAssembly
@@ -134,7 +121,6 @@ Microsoft.Maui.Controls.HybridWebApps.HybridJsonContracts
 Microsoft.Maui.Controls.HybridWebApps.HybridJsonDefaults
 Microsoft.Maui.Controls.HybridWebApps.HybridJsonEnums
 Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives
-Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy
 Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider
 Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.Dispose() -> void
 Microsoft.Maui.Controls.HybridWebApps.HybridServiceProvider.DisposeAsync() -> System.Threading.Tasks.ValueTask
@@ -242,8 +228,6 @@ Microsoft.Maui.Controls.HybridWebApps.Response.Status.get -> string!
 Microsoft.Maui.Controls.HybridWebApps.Response.Status.init -> void
 Microsoft.Maui.Controls.HybridWebApps.Response.Version.get -> int
 Microsoft.Maui.Controls.HybridWebApps.Response.Version.init -> void
-Microsoft.Maui.Controls.HybridWebApps.UI.ApplicationProvider
-Microsoft.Maui.Controls.HybridWebApps.UI.ApplicationProvider.ApplicationProvider(Microsoft.Maui.Controls.HybridWebApps.UI.HybridWindowHost! host) -> void
 Microsoft.Maui.Controls.HybridWebApps.UI.BundledLocation
 Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext
 Microsoft.Maui.Controls.HybridWebApps.UI.HybridViewContext.Bind(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Window! window, string! location, string? id = null) -> void
@@ -382,8 +366,6 @@ static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.UInt16.get -> 
 static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.UInt32.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<uint>!
 static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.UInt64.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<ulong>!
 static Microsoft.Maui.Controls.HybridWebApps.HybridJsonPrimitives.Uri.get -> Microsoft.Maui.Controls.HybridWebApps.HybridJsonCodec<System.Uri!>!
-static Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy.Validate(System.IServiceProvider! services, string! name, System.Text.Json.JsonElement arguments) -> void
-static Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy.ValidateText(System.IServiceProvider! services, string? text) -> void
 static Microsoft.Maui.Controls.HybridWebApps.NativeEvent.operator !=(Microsoft.Maui.Controls.HybridWebApps.NativeEvent? left, Microsoft.Maui.Controls.HybridWebApps.NativeEvent? right) -> bool
 static Microsoft.Maui.Controls.HybridWebApps.NativeEvent.operator ==(Microsoft.Maui.Controls.HybridWebApps.NativeEvent? left, Microsoft.Maui.Controls.HybridWebApps.NativeEvent? right) -> bool
 static Microsoft.Maui.Controls.HybridWebApps.Operation.operator !=(Microsoft.Maui.Controls.HybridWebApps.Operation? left, Microsoft.Maui.Controls.HybridWebApps.Operation? right) -> bool

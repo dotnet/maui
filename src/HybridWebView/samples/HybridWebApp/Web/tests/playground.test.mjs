@@ -31,11 +31,13 @@ const actions = {
   windows: ['window-info', 'title', 'bounds', 'position', 'center'], multiWindow: ['window-list', 'open-window'],
   dialogs: ['alert', 'confirm', 'prompt', 'action-sheet'],
   filePicker: ['pick-file'], remoteWebView: ['browser-info', 'remote', 'browser-back', 'browser-forward', 'browser-reload', 'browser-focus', 'browser-close'],
-  battery: ['battery'], display: ['display'], menus: ['menus-install', 'menus-remove', 'menu-rename', 'menu-enable', 'menu-check'],
+  battery: ['battery', 'battery-listen', 'energy-saver-listen', 'battery-stop'],
+  display: ['display', 'display-awake-read', 'display-awake-set', 'display-listen', 'display-stop'],
+  menus: ['menus-install', 'menus-remove', 'menu-rename', 'menu-enable', 'menu-check'],
   theme: ['theme-system', 'theme-light', 'theme-dark'],
   connectivity: ['connectivity-read', 'connectivity-subscribe', 'connectivity-unsubscribe'],
   textToSpeech: ['speech-locales', 'speech-speak', 'cancel'],
-  launcher: ['launch-url'],
+  launcher: ['launch-url', 'can-launch-url', 'try-launch-url'],
   share: ['share-text', 'share-stage-pdf', 'share-pdf', 'share-multiple'],
   geolocation: ['geolocation-read', 'cancel'],
 }
@@ -81,9 +83,13 @@ function transport(handler) {
 
 function defaultResult(request, bytes) {
   switch (request.command) {
-    case 'core.connect': return { commands: ['app.info', 'sample.echo'], maximumTextLength: 4096 }
-    case 'app.info': return { appName: identity.appName, version: identity.version, build: identity.build }
-    case 'device.info': return { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
+    case 'core.connect': return { commands: ['appInfo.name', 'sample.echo'], maximumTextLength: 4096 }
+    case 'appInfo.name': return identity.appName
+    case 'appInfo.versionString': return identity.version
+    case 'appInfo.buildString': return identity.build
+    case 'deviceInfo.platform': return identity.platform
+    case 'deviceInfo.versionString': return identity.osVersion
+    case 'deviceInfo.model': return identity.model
     case 'sample.diagnostics': return { architecture: identity.architecture, pid: identity.pid,
       startupId: identity.startupId, startedAt: identity.startedAt }
     case 'sample.echo': return { ...request.args, counter: 7 }
@@ -118,8 +124,11 @@ function defaultResult(request, bytes) {
     case 'window.open': return { id: 'child-window' }
     case 'dialogs.prompt': return null
     case 'filePicker.pick': return null
-    case 'battery.info': return { chargeLevel: 0.5, state: 'charging', powerSource: 'ac', energySaverStatus: 'off' }
-    case 'display.info': return { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 }
+    case 'battery.chargeLevel': return 0.5
+    case 'battery.state': return 'charging'
+    case 'battery.powerSource': return 'ac'
+    case 'battery.energySaverStatus': return 'off'
+    case 'display.mainDisplayInfo': return { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 }
     case 'remote.info': return { supported: true, open: false, id: null, url: null, status: 'closed', error: null, navigationResult: null, canGoBack: false, canGoForward: false }
     case 'remote.open': return { supported: true, open: true, id: 'guest', url: request.args.url, status: 'loading', error: null, navigationResult: null, canGoBack: false, canGoForward: false }
     case 'remote.bounds':
@@ -128,8 +137,9 @@ function defaultResult(request, bytes) {
     case 'menus.install': return { supported: true, supportsChecked: true, sourceId: 'menu-source' }
     case 'menus.update':
     case 'menus.clear': return { supported: true, supportsChecked: true, sourceId: request.command === 'menus.clear' ? null : 'menu-source' }
-    case 'application.theme': return { effective: 'light', preference: 'unspecified' }
-    case 'application.setTheme': return { effective: request.args.theme === 'dark' ? 'dark' : 'light', preference: request.args.theme }
+    case 'application.requestedTheme': return 'light'
+    case 'application.userAppTheme': return 'unspecified'
+    case 'application.setUserAppTheme': return null
     default: return { accepted: true }
   }
 }
@@ -389,8 +399,8 @@ test('prompt forwards native options without label or length policy and displays
 
 test('battery presentation formats a native float as a percentage without changing its raw result', async t => {
   const level = 0.009999999776482582
-  const app = fixture(t, request => request.command === 'battery.info'
-    ? { chargeLevel: level, state: 'charging', powerSource: 'ac', energySaverStatus: 'off' }
+  const app = fixture(t, request => request.command === 'battery.chargeLevel'
+    ? level
     : defaultResult(request))
   app.select('battery')
   app.click('battery')
@@ -811,7 +821,7 @@ test('clipboard and preference pages own actual SDK calls, values, defaults and 
   const app = fixture(t)
   app.select('clipboard')
   const clipboard = app.find('#clipboard-text')
-  assert.equal(clipboard.maxLength, 4096)
+  assert.equal(clipboard.maxLength, -1)
   assert.match(clipboard.value, /你好 👋/)
   assert.match(clipboard.value, /backslash \\/)
   app.input('#clipboard-text', 'Copy 👋\n"quote" \\ slash')
@@ -865,7 +875,8 @@ test('commands validate input and identity/lifetime/development pages call the a
   app.click('run')
   await app.idle()
   assert.deepEqual(JSON.parse(app.find('#native-identity').textContent), identity)
-  assert.deepEqual(app.host.requests.map(request => request.command), ['sample.diagnostics', 'core.connect', 'app.info', 'device.info'])
+  assert.deepEqual(app.host.requests.map(request => request.command), ['sample.diagnostics', 'core.connect',
+    'appInfo.name', 'appInfo.versionString', 'appInfo.buildString', 'deviceInfo.platform', 'deviceInfo.versionString', 'deviceInfo.model'])
   app.select('arguments')
   const dto = { text: null, number: 2.5, flag: false, items: ['Unicode 👋'] }
   app.input('#echo-input', JSON.stringify(dto))
@@ -877,7 +888,7 @@ test('commands validate input and identity/lifetime/development pages call the a
   await app.idle()
   assert.equal(app.find('#result-state').dataset.state, 'error')
   assert.equal(JSON.parse(app.find('#result-json').textContent).code, 'input_error')
-  assert.equal(app.host.requests.length, 5)
+  assert.equal(app.host.requests.length, 9)
   app.select('lifetime')
   app.click('increment')
   await app.idle()
@@ -1047,7 +1058,7 @@ test('native Windows, dialogs, device and embedded remote pages use the same SDK
   await app.idle()
   assert.equal(JSON.parse(app.find('#result-json').textContent), null)
   assert.deepEqual(app.host.requests.at(-1).args.keyboard, { name: 'text' })
-  for (const [page, action, command] of [['battery', 'battery', 'battery.info'], ['display', 'display', 'display.info'],
+  for (const [page, action, command] of [['battery', 'battery', 'battery.energySaverStatus'], ['display', 'display', 'display.mainDisplayInfo'],
     ['showcase', 'prompt', 'dialogs.prompt']]) {
     app.select(page)
     app.click(action)
@@ -1072,7 +1083,7 @@ test('follow-system theme button sends actual native unspecified without a strin
   app.select('theme')
   app.click('theme-system')
   await app.idle()
-  assert.deepEqual(app.host.requests.findLast(request => request.command === 'application.setTheme').args, { theme: 'unspecified' })
+  assert.deepEqual(app.host.requests.findLast(request => request.command === 'application.setUserAppTheme').args, { value: 'unspecified' })
 })
 
 test('selected text is rendered as text and excluded from result logs, with ordinary picker dismissal', async t => {
@@ -1359,8 +1370,8 @@ test('connection starts once, attaches native listeners once, and pagehide/dispo
   await first
   assert.equal(loads, 1)
   assert.equal(app.host.requests.filter(request => request.command === 'core.connect').length, 1)
-  assert.equal(app.host.requests.filter(request => request.command === 'app.info').length, 1)
-  assert.equal(app.host.requests.filter(request => request.command === 'device.info').length, 1)
+  assert.equal(app.host.requests.filter(request => request.command === 'appInfo.name').length, 1)
+  assert.equal(app.host.requests.filter(request => request.command === 'deviceInfo.platform').length, 1)
   assert.equal(app.host.requests.filter(request => request.command === 'sample.diagnostics').length, 1)
   assert.equal(app.find('#host-status').dataset.state, 'ready')
   assert.equal(app.find('#host-status').dataset.startupId, identity.startupId)
@@ -1513,15 +1524,15 @@ for (const feature of ['events', 'work']) {
 
 test('late identity bootstrap cannot paint after document disposal', async t => {
   const metadata = deferred()
-  const app = fixture(t, request => request.command === 'app.info' ? metadata.promise : defaultResult(request),
+  const app = fixture(t, request => request.command === 'appInfo.name' ? metadata.promise : defaultResult(request),
     { native: false })
   const connection = createConnection(app.session, async () => app.host.bridge)
   const started = connection.start()
   await setImmediate()
   assert.deepEqual(app.host.requests.map(request => request.command),
-    ['core.connect', 'sample.diagnostics', 'app.info', 'device.info'])
+    ['core.connect', 'sample.diagnostics', 'appInfo.name', 'appInfo.versionString', 'appInfo.buildString', 'deviceInfo.platform', 'deviceInfo.versionString', 'deviceInfo.model'])
   app.session.dispose()
-  metadata.resolve({ appName: 'Late', version: '9', build: '9' })
+  metadata.resolve('Late')
   await started
   assert.equal(app.find('#host-status').dataset.state, 'loading')
   assert.equal(app.find('#native-identity').textContent, 'No native identity received.')
@@ -1550,7 +1561,7 @@ test('pending preference reads capture the original key before await and preserv
 
 test('bootstrap disables native actions until metadata is ready without replacing the selected form', async t => {
   const metadata = deferred()
-  const app = fixture(t, request => request.command === 'app.info' ? metadata.promise : defaultResult(request),
+  const app = fixture(t, request => request.command === 'appInfo.name' ? metadata.promise : defaultResult(request),
     { native: false })
   const connection = createConnection(app.session, async () => app.host.bridge)
   const started = connection.start()
@@ -1561,7 +1572,7 @@ test('bootstrap disables native actions until metadata is ready without replacin
   assert.equal(app.find('[data-action="copy"]').disabled, true)
   app.click('copy')
   assert.equal(app.host.requests.some(request => request.command === 'clipboard.write'), false)
-  metadata.resolve({ appName: identity.appName, version: identity.version, build: identity.build })
+  metadata.resolve(identity.appName)
   await started
   assert.equal(app.find('#host-status').dataset.state, 'ready')
   assert.equal(app.find('#clipboard-text'), form)

@@ -7,11 +7,7 @@ import { acquiredWindows, windowIdentity } from './internal/window-ownership.js'
 export type AppTheme = 'unspecified' | 'light' | 'dark'
 /** Native Application.UserAppTheme preference; unspecified restores OS following. */
 export type AppThemePreference = AppTheme
-function decodeTheme(value: unknown): AppTheme {
-  const v = object(value)
-  enumValue(v.preference, ['unspecified', 'light', 'dark'])
-  return enumValue(v.effective, ['unspecified', 'light', 'dark'])
-}
+function decodeTheme(value: unknown): AppTheme { return enumValue(value, ['unspecified', 'light', 'dark']) }
 /**
  * Enumerates caller-authorized app-owned window resources.
  * @returns Real typed handles, not information snapshots or global cross-window hub authority.
@@ -56,15 +52,18 @@ export async function openWindow(options: WindowOptions = {}): Promise<Window> {
   return handle
 }
 /** Reads actual Application.RequestedTheme. @returns Native unspecified/light/dark state without inventing a fallback. */
-export async function getTheme(): Promise<AppTheme> { return (await connect()).invoke('application.theme', {}, decodeTheme) }
+export async function getTheme(): Promise<AppTheme> { return (await connect()).invoke('application.requestedTheme', {}, decodeTheme) }
+/** Reads Application.UserAppTheme directly. @returns Actual native theme preference. */
+export async function getUserAppTheme(): Promise<AppThemePreference> { return (await connect()).invoke('application.userAppTheme', {}, decodeTheme) }
 /**
  * Sets application-level native theme preference.
  * @param preference - Unspecified/light/dark; unspecified restores OS following.
  * @returns Native setting acceptance; web CSS updates through actual theme events.
  */
 export async function setTheme(preference: AppThemePreference): Promise<void> {
-  enumValue(preference, ['unspecified', 'light', 'dark'], 'invalid_arguments')
-  await (await connect()).invoke('application.setTheme', { theme: preference }, decodeTheme)
+  await (await connect()).invoke('application.setUserAppTheme', { value: preference }, result => {
+    if (result !== null) throw new NativeError('invalid_response', 'Expected native void completion.')
+  })
 }
 /**
  * Observes actual native effective theme changes, including OS-originated changes.

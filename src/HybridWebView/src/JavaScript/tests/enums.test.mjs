@@ -9,7 +9,7 @@ import * as app from '@maui/api/application'
 import * as dialogs from '@maui/api/ui/dialogs'
 import { createBrowserView, supportsBrowserView } from '@maui/api/ui/remote-webview'
 import { Menu } from '@maui/api/ui/menus'
-import { mock } from './bridge.mjs'
+import { mock, nativeProperty } from './bridge.mjs'
 
 afterEach(() => resetBridge())
 const ready = { commands: [], maximumTextLength: 4096 }
@@ -27,14 +27,14 @@ test('shared enum validation accepts only declared exact names', () => {
 
 test('all native snapshot enum fields reject unknown, numeric and legacy-cased values', async () => {
   let output
-  const host = mock(request => request.command === 'core.connect' ? ready : output)
+  const host = mock(request => request.command === 'core.connect' ? ready : nativeProperty(request.command, output))
   configureBridge(host.bridge)
   for (const [base, fields, read] of [
     [battery, ['state', 'powerSource', 'energySaverStatus'], getBatteryInfo],
     [display, ['orientation', 'rotation'], getDisplayInfo],
     [network, ['networkAccess'], getConnectivity],
     [browser, ['status', 'navigationResult'], supportsBrowserView],
-    [{ effective: 'light', preference: 'unspecified' }, ['effective', 'preference'], app.getTheme],
+    [{ effective: 'light', preference: 'unspecified' }, ['effective'], app.getTheme],
     [{ kind: 'string', text: '' }, ['kind'], () => preferences.get('key', '')],
   ]) {
     output = base
@@ -54,8 +54,6 @@ test('JavaScript bypass inputs fail before bridge invocation and native remains 
   const host = mock(request => request.command === 'core.connect' ? ready : null)
   configureBridge(host.bridge)
   for (const call of [
-    () => app.setTheme('system'),
-    () => app.setTheme(1),
     () => dialogs.alert('message', { flowDirection: 'invalid' }),
     () => dialogs.confirm('message', { flowDirection: 1 }),
     () => dialogs.actionSheet({ flowDirection: 'LeftToRight' }),
@@ -94,9 +92,10 @@ test('native browser navigation keeps closed status and typed completion separat
 })
 
 test('unspecified theme is an actual native value, not a synthetic system preference', async () => {
-  const host = mock(request => request.command === 'core.connect' ? ready : { effective: 'unspecified', preference: 'unspecified' })
+  const host = mock(request => request.command === 'core.connect' ? ready :
+    request.command === 'application.setUserAppTheme' ? null : 'unspecified')
   configureBridge(host.bridge)
   assert.equal(await app.getTheme(), 'unspecified')
   await app.setTheme('unspecified')
-  assert.deepEqual(host.requests.find(request => request.command === 'application.setTheme').args, { theme: 'unspecified' })
+  assert.deepEqual(host.requests.find(request => request.command === 'application.setUserAppTheme').args, { value: 'unspecified' })
 })

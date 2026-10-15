@@ -15,16 +15,17 @@ namespace Microsoft.Maui.Networking
 		/// <summary>
 		/// Gets the active connectivity types for the device.
 		/// </summary>
-		IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
+		IEnumerable<ConnectionProfile> ConnectionProfiles { [Microsoft.Maui.Interop.HybridAction("connectivity.connectionProfiles", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the current state of network access.
 		/// </summary>
-		NetworkAccess NetworkAccess { get; }
+		NetworkAccess NetworkAccess { [Microsoft.Maui.Interop.HybridAction("connectivity.networkAccess", MainThread = true)] get; }
 
 		/// <summary>
 		/// Occurs when network access or profile has changed.
 		/// </summary>
+		[Microsoft.Maui.Interop.HybridEvent("connectivity.changed")]
 		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged;
 	}
 

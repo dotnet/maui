@@ -61,13 +61,14 @@ const bridge: Bridge = {
     if (request.command === 'menus.clear') menuSource = null
     const results: Record<string, Json> = {
       'core.connect': { commands: [], maximumTextLength: 4096 },
-      'app.info': { appName: 'Consumer', version: '1', build: '2' },
-      'device.info': { platform: 'test', osVersion: '1', model: 'test' },
+      'appInfo.name': 'Consumer', 'appInfo.versionString': '1', 'appInfo.buildString': '2',
+      'deviceInfo.platform': 'test', 'deviceInfo.versionString': '1', 'deviceInfo.model': 'test',
       'clipboard.read': '你好 👋', 'clipboard.hasText': true, 'clipboard.write': null,
       'preferences.get': request.args.defaultValue ?? { kind: 'string', text: '' },
-      'battery.info': { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' },
-      'display.info': { width: 1000, height: 700, density: 2, orientation: 'landscape', rotation: 'rotation0', refreshRate: 60 },
-      'connectivity.info': { networkAccess: 'internet', connectionProfiles: ['wiFi'] },
+      'battery.chargeLevel': -1, 'battery.state': 'unknown', 'battery.powerSource': 'ac', 'battery.energySaverStatus': 'off',
+      'display.mainDisplayInfo': { width: 1000, height: 700, density: 2, orientation: 'landscape', rotation: 'rotation0', refreshRate: 60 },
+      'connectivity.networkAccess': 'internet', 'connectivity.connectionProfiles': ['wiFi'],
+      'launcher.open': true,
       'speech.locales': [{ id: 'voice', language: 'en-US', country: '', name: 'Native' }],
       'speech.speak': null,
       'filePicker.pick': null, 'filePicker.pickMultiple': { files: [] },
@@ -83,8 +84,8 @@ const bridge: Bridge = {
       'menus.update': { supported: true, supportsChecked: true, sourceId: menuSource },
       'menus.clear': { supported: true, supportsChecked: true, sourceId: menuSource },
       'menus.item': { text: 'Native label', enabled: true, checked: null, kind: 'item' },
-      'application.theme': { effective: 'dark', preference: 'unspecified' },
-      'application.setTheme': { effective: 'light', preference: request.args.theme ?? 'unspecified' },
+      'application.requestedTheme': 'dark', 'application.userAppTheme': 'unspecified',
+      'application.setUserAppTheme': null,
     }
     const result = request.command.startsWith('remote.')
       ? { supported: true, open: true, id: 'guest', url: 'https://dot.net/maui', status: 'loaded', error: null, navigationResult: 'success', canGoBack: false, canGoForward: false }

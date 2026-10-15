@@ -195,7 +195,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public AppTheme UserAppTheme
 		{
+			[Microsoft.Maui.Interop.HybridAction("application.userAppTheme", MainThread = true)]
 			get => _userAppTheme;
+			[Microsoft.Maui.Interop.HybridAction("application.setUserAppTheme", MainThread = true)]
 			set
 			{
 				if (_userAppTheme == value)
@@ -224,10 +226,13 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the current theme, returning <see cref="UserAppTheme"/> if set, otherwise <see cref="PlatformAppTheme"/>.
 		/// </summary>
-		public AppTheme RequestedTheme =>
-			UserAppTheme != AppTheme.Unspecified
+		public AppTheme RequestedTheme
+		{
+			[Microsoft.Maui.Interop.HybridAction("application.requestedTheme", MainThread = true)]
+			get => UserAppTheme != AppTheme.Unspecified
 				? UserAppTheme
 				: PlatformAppTheme;
+		}
 
 		static Color? _accentColor;
 		public static Color? AccentColor

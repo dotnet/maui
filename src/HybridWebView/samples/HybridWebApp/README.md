@@ -165,7 +165,8 @@ Preferences retain only the closed-scalar adapter needed for generic `IPreferenc
 Keys, values and `sharedName` pass directly to native storage with no prefix,
 ownership index or setting quota. `clear()` calls native container-wide `Clear`,
 including native-existing settings; it is deliberately destructive, not namespace-safe.
-The advertised text limit still applies to clipboard/share, not speech or preferences.
+The advertised text limit applies only to the share resource adapter, not native
+clipboard, speech or preferences.
 Geolocation uses native GeolocationRequest and
 Location; altitude reference names follow the same strict enum policy.
 Typed converter attributes and explicitly rooted strict source-generated JSON
@@ -267,8 +268,10 @@ is required. Attributes do not grant OS permissions or bypass host policy.
 Connectivity reads actual OS access/profiles and can subscribe to scoped changes;
 it is not an HTTP reachability probe. Text-to-speech exposes actual installed
 locales, native options and operation-specific cancellation. External links use
-the OS launcher with the existing bounded public-HTTPS policy, not a guest,
-custom scheme or shell command. Their separate Svelte pages bring navigation to
+the annotated OS URI launcher, including native-supported custom schemes, not a
+guest or shell command. Actual booleans, including false, are shown directly.
+Capability queries, OpenAsync and TryOpenAsync remain distinct calls.
+Their separate Svelte pages bring navigation to
 24 unique experiments plus the two guides.
 
 `MainPage` receives the local hub and view context and does only view/event glue. `App.CreateWindow`
@@ -287,12 +290,39 @@ cancelled dialog that was never displayed.
 
 The sample owns UI, platform heads, Development, workload/launching,
 `maui.playground.v1.` preference policy, all `sample.*` commands/demo topics,
-counter state and architecture/PID/startup diagnostics. `app.info` returns only
-appName/version/build, `device.info` only platform/osVersion/model, and
-`sample.diagnostics` only architecture/pid/startupId/startedAt. The app composes
-these reads into its unchanged visible identity shape. This is an internal wire
+counter state and architecture/PID/startup diagnostics. The SDK composes
+`appInfo.name/versionString/buildString` and `deviceInfo.platform/versionString/model`
+native property calls; `sample.diagnostics` returns only architecture/pid/startupId/startedAt.
+The app composes these reads into its unchanged visible identity shape. This is an internal wire
 change in the unpublished preview, not a public JavaScript API rename.
 Relaunch the native host after updating it; the old live host lacks the new commands.
+
+The scoped native annotation migration removes the app/device/battery/display/
+connectivity/launcher/theme provider wrappers and aggregate C# DTOs. All eight
+readable IAppInfo/IDeviceInfo properties are curated; battery's four getters and
+two actual events, main display/keep-screen-on get/set/change, connectivity's
+two getters/change, URI-only launcher methods and Application theme get/set/change
+use direct generated calls. The General setter binder uses `{ value }`, preserves
+native nullability and returns void as null. Native readonly DisplayInfo is
+serialized from getters; extensible DevicePlatform/DeviceIdiom and Version use
+strict typed source metadata, without reflection or native enum string switches.
+Battery and Display pages have explicit native callback controls and listener
+teardown; Display applies KeepScreenOn only on an explicit click.
+
+There is no clipboard text quota or two-minute geolocation rule in the product.
+Native arguments/defaults/results/errors pass through; native destination policy
+and transport/ownership limits remain. Window title/geometry wrappers deliberately
+retain current/child resource ownership and private generations. Menus, remote
+guests, selected file/readers, bounded share union/cache and generic Preferences
+scalar adaptation remain deliberate resource/representation adapters.
+Fresh-cache NuGet-only consumption also verifies native display getters/setters
+and readonly-struct events with reflection disabled. Mac Catalyst and Android
+builds pass API validation with zero warnings/errors. Actual Mac acceptance reads
+native app/device identifiers and Version, battery/display/connectivity, attaches
+and removes the new event subscriptions, round-trips KeepScreenOn, receives the
+theme event and queries native URI capability. The original theme and
+KeepScreenOn are restored. This does not certify live OS battery/network/display
+change delivery, custom-scheme launching or the wider platform matrix.
 
 Assembly-based unit tests reference the managed project; only sample command
 source is shared for managed-only reload/cancel tests. `../../tests/UnitTests/ExternalProvider` is a
@@ -673,7 +703,7 @@ result/log, busy guard, active work and subscriptions. Navigation unmounts only
 the form, not native work or subscriptions; returning to Work can still cancel.
 Delayed form reads cannot update replacement forms, and selection versions isolate
 results. Pagehide/HMR disposes the document client. App-specific command mapping
-remains in `native/sample.ts`: identity composes SDK `app.info` and `device.info`
+remains in `native/sample.ts`: identity composes SDK `appInfo.*` and `deviceInfo.*`
 with app-owned `sample.diagnostics`; the SDK stays framework-independent.
 
 `npm --prefix Web test` runs Node SDK contracts and Vitest/jsdom tests compiled
@@ -989,7 +1019,7 @@ comparison still passed without including Svelte or sample UI.
 Native MSBuild accepted the Svelte source/config/checker freshness mirror and
 collected exactly four manifest-listed assets. Those assets matched the Android
 APK byte-for-byte. Actual packaged Android UI acceptance then passed the new
-`app.info`, `device.info` and sample diagnostics composition, Unicode clipboard,
+native app/device property getters and sample diagnostics composition, Unicode clipboard,
 namespaced preferences, DTO arrays/NUL, errors/recovery, subscriptions/unsubscribe,
 progress/cancellation and reload during work. The native PID/startup identity and
 the actual numeric service counter survived reload; retired reconnects were

@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.HybridWebApps;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Launcher;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Networking;
 using Xunit;
@@ -29,19 +27,18 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new Network();
 		using var notifications = new NativeNotifications();
-		using var provider = new ConnectivityProvider(native, Inline, notifications);
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(provider);
+		registry = TestComposition.CreateRegistry(native);
 		Assert.True(registry.HasTopic("connectivity.changed"));
-		Assert.Equal("internet", (await Dispatch(registry, "connectivity.info")).GetProperty("networkAccess").GetString());
+		Assert.Equal("internet", (await Dispatch(registry, "connectivity.networkAccess")).GetString());
 		native.Access = NetworkAccess.Local;
 		native.Profiles = [ConnectionProfile.Ethernet, ConnectionProfile.Ethernet];
-		var value = await Dispatch(registry, "connectivity.info");
-		Assert.Equal("local", value.GetProperty("networkAccess").GetString());
-		Assert.Equal(new[] { "ethernet" }, value.GetProperty("connectionProfiles").EnumerateArray().Select(item => item.GetString()));
+		Assert.Equal("local", (await Dispatch(registry, "connectivity.networkAccess")).GetString());
+		var value = await Dispatch(registry, "connectivity.connectionProfiles");
+		Assert.Equal(new[] { "ethernet", "ethernet" }, value.EnumerateArray().Select(item => item.GetString()));
 		Assert.Equal(0, native.Adds);
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(registry, "connectivity.info", "{\"probeUrl\":\"https://example.com\"}"))).Code);
+			Dispatch(registry, "connectivity.networkAccess", "{\"probeUrl\":\"https://example.com\"}"))).Code);
 	}
 
 	[Fact]
@@ -50,10 +47,8 @@ public sealed class NetworkSpeechLauncherTests
 		var native = new Network();
 		using var notices1 = new NativeNotifications();
 		using var notices2 = new NativeNotifications();
-		using var provider1 = new ConnectivityProvider(native, Inline, notices1);
-		using var provider2 = new ConnectivityProvider(native, Inline, notices2);
-		using var hub1 = TestComposition.CreateHub([provider1], new HybridAppOptions(), notifications: notices1);
-		using var hub2 = TestComposition.CreateHub([provider2], new HybridAppOptions(), notifications: notices2);
+		using var hub1 = TestComposition.CreateHub([native], new HybridAppOptions(), notifications: notices1);
+		using var hub2 = TestComposition.CreateHub([native], new HybridAppOptions(), notifications: notices2);
 		var events1 = new List<NativeEvent>();
 		var events2 = new List<NativeEvent>();
 		hub1.NativeEventReceived += events1.Add;
@@ -90,7 +85,7 @@ public sealed class NetworkSpeechLauncherTests
 		native.Change(NetworkAccess.None, []);
 		Assert.Equal(2, events1.Count);
 		Assert.Equal(5, events2.Count);
-		provider2.Dispose();
+		hub2.Dispose();
 		Assert.Equal(0, native.Listeners);
 	}
 
@@ -99,8 +94,7 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new Network { SubscribeError = new PermissionException("Denied") };
 		using var notifications = new NativeNotifications();
-		using var provider = new ConnectivityProvider(native, Inline, notifications);
-		using var hub = TestComposition.CreateHub([provider], new HybridAppOptions(), notifications: notifications);
+		using var hub = TestComposition.CreateHub([native], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
 		Assert.Equal("permission_denied", (await Call(hub, session, "core.subscribe", new { topic = "connectivity.changed" })).Error!.Code);
@@ -262,7 +256,7 @@ public sealed class NetworkSpeechLauncherTests
 	{
 		var native = new Speech { Wait = true };
 		using var notifications = new NativeNotifications();
-		using var network = new ConnectivityProvider(new Network(), Inline, notifications);
+		var network = new Network();
 		using var hub = TestComposition.CreateHub([native, network],
 			new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
@@ -274,7 +268,7 @@ public sealed class NetworkSpeechLauncherTests
 		Assert.True((await Call(hub, session, "core.cancel", new { requestId = id })).Result!.Value.GetProperty("accepted").GetBoolean());
 		Assert.Equal("cancelled", (await pending).Status);
 		Assert.True(native.Cancellation.IsCancellationRequested);
-		Assert.Equal("success", (await Call(hub, session, "connectivity.info", new { })).Status);
+		Assert.Equal("success", (await Call(hub, session, "connectivity.networkAccess", new { })).Status);
 		Assert.Equal("success", (await Call(hub, session, "speech.locales", new { })).Status);
 	}
 
@@ -305,37 +299,49 @@ public sealed class NetworkSpeechLauncherTests
 	[InlineData("https://app.local")]
 	[InlineData("https://host.internal")]
 	[InlineData("https://example.com:444")]
-	public async Task UnsafeLaunchUrlsAreRejectedBeforeNativeSideEffects(string url)
+	public async Task LauncherForwardsNativeUrisWithoutTheRemoteGuestHttpsPolicy(string url)
 	{
 		var native = new SystemLauncher();
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new LauncherProvider(native));
-		var args = JsonSerializer.Serialize(new { url });
-		Assert.Equal("invalid_url", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "launcher.openUrl", args))).Code);
-		Assert.Equal(0, native.Opens);
+		registry = TestComposition.CreateRegistry(native);
+		var args = JsonSerializer.Serialize(new { uri = url });
+		if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+		{
+			Assert.True((await Dispatch(registry, "launcher.open", args)).GetBoolean());
+			Assert.Equal(uri, native.Uri);
+			Assert.Equal(1, native.Opens);
+		}
+		else
+			Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "launcher.open", args))).Code);
 	}
 
 	[Fact]
-	public async Task LauncherActuallyOpensTheUriAndRejectsRefusalUnsupportedAndExtraAuthority()
+	public async Task LauncherPreservesNativeBooleanRefusalErrorsAndCuratedUriOverloads()
 	{
 		var native = new SystemLauncher();
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new LauncherProvider(native));
-		Assert.True((await Dispatch(registry, "launcher.openUrl", "{\"url\":\"https://dot.net/maui\"}")).GetProperty("accepted").GetBoolean());
+		registry = TestComposition.CreateRegistry(native);
+		Assert.True(registry.IsInteractive("launcher.open"));
+		Assert.True(registry.IsInteractive("launcher.tryOpen"));
+		Assert.False(registry.IsInteractive("launcher.canOpen"));
+		Assert.True((await Dispatch(registry, "launcher.open", "{\"uri\":\"https://dot.net/maui\"}")).GetBoolean());
 		Assert.Equal("https://dot.net/maui", native.Uri!.AbsoluteUri);
 		Assert.Equal(1, native.Opens);
 		native.Accepted = false;
-		Assert.Equal("launch_failed", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(registry, "launcher.openUrl", "{\"url\":\"https://dot.net/maui\"}"))).Code);
+		Assert.False((await Dispatch(registry, "launcher.open", "{\"uri\":\"https://dot.net/maui\"}")).GetBoolean());
+		Assert.False((await Dispatch(registry, "launcher.canOpen", "{\"uri\":\"mailto:user@example.com\"}")).GetBoolean());
+		Assert.False((await Dispatch(registry, "launcher.tryOpen", "{\"uri\":\"custom:test\"}")).GetBoolean());
 		native.Error = new NotSupportedException();
-		await Assert.ThrowsAsync<NotSupportedException>(() => Dispatch(registry, "launcher.openUrl", "{\"url\":\"https://dot.net/maui\"}"));
+		await Assert.ThrowsAsync<NotSupportedException>(() => Dispatch(registry, "launcher.open", "{\"uri\":\"https://dot.net/maui\"}"));
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(registry, "launcher.openUrl", "{\"url\":\"https://dot.net/maui\",\"path\":\"private\"}"))).Code);
+			Dispatch(registry, "launcher.open", "{\"uri\":\"https://dot.net/maui\",\"path\":\"private\"}"))).Code);
+		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
+			Dispatch(registry, "launcher.open", """{"request":{"fullPath":"/private/unauthorized"}}"""))).Code);
 		using var cancelled = new CancellationTokenSource();
 		cancelled.Cancel();
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-			Dispatch(registry, "launcher.openUrl", "{\"url\":\"https://dot.net/maui\"}", cancelled.Token));
-		Assert.Equal(3, native.Opens);
+			Dispatch(registry, "launcher.open", "{\"uri\":\"https://dot.net/maui\"}", cancelled.Token));
+		Assert.Equal(4, native.Opens);
 	}
 
 	[Fact]
@@ -344,16 +350,16 @@ public sealed class NetworkSpeechLauncherTests
 		var speech = new Speech { Error = new NotSupportedException() };
 		var launcher = new SystemLauncher { Error = new NotSupportedException() };
 		using var notifications = new NativeNotifications();
-		using var network = new ConnectivityProvider(new Network { ReadError = new NotSupportedException() }, Inline, notifications);
+		var network = new Network { ReadError = new NotSupportedException() };
 		using var hub = TestComposition.CreateHub([
-			speech, new LauncherProvider(launcher), network
+			speech, launcher, network
 		], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		await Call(hub, session, "core.connect", new { });
-		foreach (var command in new[] { "connectivity.info", "speech.locales", "speech.speak", "launcher.openUrl" })
+		foreach (var command in new[] { "connectivity.networkAccess", "speech.locales", "speech.speak", "launcher.open" })
 		{
-			var result = await Call(hub, session, command, command is "speech.locales" or "connectivity.info" ? new { } :
-				command == "speech.speak" ? (object)new { text = "Hello" } : new { url = "https://dot.net/maui" });
+			var result = await Call(hub, session, command, command is "speech.locales" or "connectivity.networkAccess" ? new { } :
+				command == "speech.speak" ? (object)new { text = "Hello" } : new { uri = "https://dot.net/maui" });
 			Assert.Equal("error", result.Status);
 			Assert.Equal("unsupported", result.Error!.Code);
 			Assert.Null(result.Result);
@@ -426,8 +432,8 @@ public sealed class NetworkSpeechLauncherTests
 			Opens++;
 			return Error is null ? Task.FromResult(Accepted) : Task.FromException<bool>(Error);
 		}
-		public Task<bool> CanOpenAsync(Uri uri) => throw new InvalidOperationException("No capability-query substitute for actual launch.");
-		public Task<bool> TryOpenAsync(Uri uri) => throw new InvalidOperationException("Use the actual native OpenAsync operation.");
+		public Task<bool> CanOpenAsync(Uri uri) { Uri = uri; return Task.FromResult(Accepted); }
+		public Task<bool> TryOpenAsync(Uri uri) => OpenAsync(uri);
 		public Task<bool> OpenAsync(OpenFileRequest request) => throw new InvalidOperationException("No file authority.");
 	}
 }

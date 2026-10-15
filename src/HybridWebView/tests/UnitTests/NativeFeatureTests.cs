@@ -3,8 +3,6 @@ using System.Text.Json;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.HybridWebApps;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Battery;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Display;
 using Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker;
 using Microsoft.Maui.Controls.HybridWebApps.UI;
 using Microsoft.Maui.Devices;
@@ -153,20 +151,19 @@ public sealed class NativeFeatureTests
 		var battery = new ReadOnlyBattery();
 		var display = new ReadOnlyDisplay();
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new BatteryProvider(battery), new DisplayProvider(display));
-		var power = await Dispatch(registry, "battery.info");
-		Assert.Equal(0.42, power.GetProperty("chargeLevel").GetDouble());
-		Assert.Equal("charging", power.GetProperty("state").GetString());
-		Assert.Equal("ac", power.GetProperty("powerSource").GetString());
-		Assert.Equal("off", power.GetProperty("energySaverStatus").GetString());
-		var result = await Dispatch(registry, "display.info");
+		registry = TestComposition.CreateRegistry(battery, display);
+		Assert.Equal(0.42, (await Dispatch(registry, "battery.chargeLevel")).GetDouble());
+		Assert.Equal("charging", (await Dispatch(registry, "battery.state")).GetString());
+		Assert.Equal("ac", (await Dispatch(registry, "battery.powerSource")).GetString());
+		Assert.Equal("off", (await Dispatch(registry, "battery.energySaverStatus")).GetString());
+		var result = await Dispatch(registry, "display.mainDisplayInfo");
 		Assert.Equal(3, result.GetProperty("density").GetDouble());
 		Assert.Equal("portrait", result.GetProperty("orientation").GetString());
 		Assert.Equal("rotation0", result.GetProperty("rotation").GetString());
 		Assert.False(display.KeepScreenOn);
-		Assert.False(registry.IsInteractive("battery.info"));
-		Assert.False(registry.IsInteractive("display.info"));
-		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "battery.info", "{\"extra\":true}"))).Code);
+		Assert.False(registry.IsInteractive("battery.chargeLevel"));
+		Assert.False(registry.IsInteractive("display.mainDisplayInfo"));
+		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, "battery.chargeLevel", "{\"extra\":true}"))).Code);
 	}
 
 	[Fact]
@@ -174,10 +171,10 @@ public sealed class NativeFeatureTests
 	{
 		var level = (double)0.01f;
 		var registry = new CommandRegistry();
-		registry = TestComposition.CreateRegistry(new BatteryProvider(new ReadOnlyBattery(level)));
-		var result = await Dispatch(registry, "battery.info");
-		Assert.Equal(0.009999999776482582, result.GetProperty("chargeLevel").GetDouble());
-		Assert.Equal(level, result.GetProperty("chargeLevel").GetDouble());
+		registry = TestComposition.CreateRegistry(new ReadOnlyBattery(level));
+		var result = await Dispatch(registry, "battery.chargeLevel");
+		Assert.Equal(0.009999999776482582, result.GetDouble());
+		Assert.Equal(level, result.GetDouble());
 	}
 
 	[Fact]

@@ -1,5 +1,18 @@
 import assert from 'node:assert/strict'
 
+// Snapshot-shaped test fixtures are projected into the actual native property results.
+export function nativeProperty(command, fixture) {
+  const fields = {
+    'appInfo.name': 'appName', 'appInfo.versionString': 'version', 'appInfo.buildString': 'build',
+    'deviceInfo.platform': 'platform', 'deviceInfo.versionString': 'osVersion', 'deviceInfo.model': 'model',
+    'battery.chargeLevel': 'chargeLevel', 'battery.state': 'state', 'battery.powerSource': 'powerSource',
+    'battery.energySaverStatus': 'energySaverStatus', 'connectivity.networkAccess': 'networkAccess',
+    'connectivity.connectionProfiles': 'connectionProfiles', 'application.requestedTheme': 'effective',
+    'application.userAppTheme': 'preference',
+  }
+  return Object.hasOwn(fields, command) ? fixture?.[fields[command]] : fixture
+}
+
 export function mock(handler, binaryHandler) {
   const requests = [], messages = [], binaries = []
   return {

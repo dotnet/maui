@@ -1,4 +1,4 @@
-import { connect, enumValue, NativeError, number, object } from '../core.js'
+import { boolean, connect, enumValue, NativeError, number, object, subscribeShared } from '../core.js'
 
 /** Native MAUI main-display orientation names. */
 export type DisplayOrientation = 'unknown' | 'portrait' | 'landscape'
@@ -25,13 +25,33 @@ export interface DisplayInfo {
  * Refreshes the native main-display snapshot.
  * @returns Validated native display dimensions, density and orientation.
  * @throws `NativeError` for unsupported platforms, missing providers or invalid results.
- * @remarks Requires `display.info`. It neither subscribes to sensors nor changes keep-screen-awake preferences.
+ * @remarks Reads annotated IDeviceDisplay.MainDisplayInfo, without a wrapper DTO.
  */
 export async function getDisplayInfo(): Promise<DisplayInfo> {
-  return (await connect()).invoke('display.info', {}, value => {
-    const v = object(value), width = number(v.width), height = number(v.height), density = number(v.density), refreshRate = number(v.refreshRate)
-    if (width <= 0 || height <= 0 || density <= 0 || refreshRate < 0) throw new NativeError('invalid_response', 'Invalid native display metrics.')
-    return { width, height, density, orientation: enumValue(v.orientation, ['unknown', 'portrait', 'landscape']),
-      rotation: enumValue(v.rotation, ['unknown', 'rotation0', 'rotation90', 'rotation180', 'rotation270']), refreshRate }
+  return (await connect()).invoke('display.mainDisplayInfo', {}, decode)
+}
+function decode(value: unknown): DisplayInfo {
+  const v = object(value), width = number(v.width), height = number(v.height), density = number(v.density), refreshRate = number(v.refreshRate)
+  return { width, height, density, orientation: enumValue(v.orientation, ['unknown', 'portrait', 'landscape']),
+    rotation: enumValue(v.rotation, ['unknown', 'rotation0', 'rotation90', 'rotation180', 'rotation270']), refreshRate }
+}
+/** Reads IDeviceDisplay.KeepScreenOn. @returns Actual native keep-awake preference. */
+export async function getKeepScreenOn(): Promise<boolean> { return (await connect()).invoke('display.keepScreenOn', {}, boolean) }
+/**
+ * Sets IDeviceDisplay.KeepScreenOn directly.
+ * @param value - Actual native preference.
+ * @returns Native void completion.
+ */
+export async function setKeepScreenOn(value: boolean): Promise<void> {
+  await (await connect()).invoke('display.setKeepScreenOn', { value }, result => {
+    if (result !== null) throw new NativeError('invalid_response', 'Expected native void completion.')
   })
+}
+/**
+ * Observes actual native display changes.
+ * @param listener - Receives the native event's DisplayInfo.
+ * @returns Idempotent unsubscribe; no synthetic initial read.
+ */
+export async function onMainDisplayInfoChanged(listener: (value: DisplayInfo) => void): Promise<() => Promise<void>> {
+  return subscribeShared(await connect(), 'display.mainDisplayInfoChanged', value => decode(object(value).displayInfo), listener)
 }

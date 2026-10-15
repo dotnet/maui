@@ -6,13 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Controls.HybridWebApps;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Battery;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Connectivity;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Display;
 using Microsoft.Maui.Controls.HybridWebApps.Essentials.FilePicker;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.Launcher;
 using Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences;
 using Microsoft.Maui.Controls.HybridWebApps.Generated;
 using Microsoft.Maui.Controls.HybridWebApps.UI;
@@ -24,13 +18,19 @@ namespace Maui.Controls.Sample.HybridWebApp.Tests;
 
 public sealed class DependencyInjectionTests
 {
-	static readonly string[] NewCommands = ["battery.info", "display.info", "clipboard.hasText",
+	static readonly string[] NewCommands = [
+		"appInfo.packageName", "appInfo.name", "appInfo.versionString", "appInfo.version", "appInfo.buildString",
+		"appInfo.requestedTheme", "appInfo.packagingModel", "appInfo.requestedLayoutDirection",
+		"deviceInfo.model", "deviceInfo.manufacturer", "deviceInfo.name", "deviceInfo.versionString", "deviceInfo.version",
+		"deviceInfo.platform", "deviceInfo.idiom", "deviceInfo.deviceType",
+		"battery.chargeLevel", "battery.state", "battery.powerSource", "battery.energySaverStatus",
+		"display.mainDisplayInfo", "display.keepScreenOn", "display.setKeepScreenOn", "clipboard.hasText",
 		"geolocation.location", "share.request", "share.stage", "share.release",
-		"connectivity.info", "speech.locales", "speech.speak", "launcher.openUrl",
+		"connectivity.networkAccess", "connectivity.connectionProfiles", "speech.locales", "speech.speak", "launcher.canOpen", "launcher.open", "launcher.tryOpen",
 		"preferences.get", "preferences.set", "preferences.contains", "preferences.remove", "preferences.clear",
 		"filePicker.pick", "filePicker.pickMultiple",
 		"file.openRead", "file.readBytes", "file.seek", "file.closeReader", "file.release",
-		"dialogs.alert", "dialogs.confirm", "dialogs.prompt", "dialogs.actionSheet", "remote.open", "remote.info", "remote.bounds", "remote.control", "remote.navigate", "menus.info", "menus.install", "menus.update", "menus.item", "menus.clear", "window.find", "window.closeCurrent", "window.activate", "window.center", "window.size", "window.position", "window.info", "window.title", "application.theme", "application.setTheme",
+		"dialogs.alert", "dialogs.confirm", "dialogs.prompt", "dialogs.actionSheet", "remote.open", "remote.info", "remote.bounds", "remote.control", "remote.navigate", "menus.info", "menus.install", "menus.update", "menus.item", "menus.clear", "window.find", "window.closeCurrent", "window.activate", "window.center", "window.size", "window.position", "window.info", "window.title", "application.requestedTheme", "application.userAppTheme", "application.setUserAppTheme",
 		"window.bounds", "window.open", "window.list", "window.close"];
 	static TestComposition.TestHost Build(ServiceCollection services) => new(services);
 
@@ -67,18 +67,16 @@ public sealed class DependencyInjectionTests
 		Assert.Same(preferences, scope.ServiceProvider.GetRequiredService<IPreferences>());
 		Assert.Same(dispatcher, scope.ServiceProvider.GetRequiredService<NativeDispatcher>());
 		Assert.Same(clock, scope.ServiceProvider.GetRequiredService<TimeProvider>());
-		Assert.All(new[] { typeof(BatteryProvider), typeof(DisplayProvider), typeof(FilePickerProvider),
-			typeof(ConnectivityProvider), typeof(LauncherProvider),
-			typeof(WindowProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(ApplicationProvider),
-			typeof(AppInfoProvider), typeof(DeviceInfoProvider), typeof(PreferencesProvider) },
+		Assert.All(new[] { typeof(FilePickerProvider),
+			typeof(WindowProvider), typeof(RemoteWebViewProvider), typeof(MenuProvider), typeof(PreferencesProvider) },
 			type => Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == type));
 		var hub = scope.ServiceProvider.GetRequiredService<HybridAppTargetObject>();
 		var session = Guid.NewGuid().ToString("D");
 		var ready = (await Call(hub, session, "core.connect")).Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
-		Assert.Equal(new[] { "app.info", "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
+		Assert.Equal(new[] { "clipboard.read", "clipboard.write", "core.cancel", "core.connect",
 			"core.subscribe", "core.unsubscribe", "core.channel.ack", "core.channel.close", "core.channel.fetch",
-			"device.info", "window.flowDirection" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
-		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "geolocation.location", "launcher.openUrl", "share.request", "speech.speak" }, ready.InteractiveCommands);
+			"window.flowDirection" }.Concat(NewCommands).Order(StringComparer.Ordinal), ready.Commands);
+		Assert.Equal(new[] { "dialogs.actionSheet", "dialogs.alert", "dialogs.confirm", "dialogs.prompt", "filePicker.pick", "filePicker.pickMultiple", "geolocation.location", "launcher.open", "launcher.tryOpen", "share.request", "speech.speak" }, ready.InteractiveCommands);
 		Assert.Equal(8, ready.MaximumTextLength);
 		Assert.Equal("unknown_command", (await Call(hub, session, "camera.capture")).Error!.Code);
 		Assert.Equal("unknown_command", (await Call(hub, session, "sample.echo")).Error!.Code);
@@ -116,13 +114,13 @@ public sealed class DependencyInjectionTests
 		Assert.Contains("plugin.action.enumDefault", ready.Commands);
 		Assert.Contains("plugin.echo", ready.Commands);
 		Assert.DoesNotContain("preferences.write", ready.Commands);
-		Assert.Equal("Test app", (await Call(hub, session, "app.info")).Result!.Value.GetProperty("appName").GetString());
-		Assert.Equal("Android", (await Call(hub, session, "device.info")).Result!.Value.GetProperty("platform").GetString());
+		Assert.Equal("Test app", (await Call(hub, session, "appInfo.name")).Result!.Value.GetString());
+		Assert.Equal("Android", (await Call(hub, session, "deviceInfo.platform")).Result!.Value.GetString());
 		Assert.Equal("success", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"1234\"}}")).Status);
 		Assert.Equal("1234", preferences.Values["key"]);
 		Assert.Equal("success", (await Call(hub, session, "preferences.set", "{\"key\":\"key\",\"value\":{\"kind\":\"string\",\"text\":\"12345\"}}")).Status);
 		Assert.Equal("12345", preferences.Values["key"]);
-		Assert.Equal("invalid_arguments", (await Call(hub, session, "clipboard.write", "{\"text\":\"12345\"}")).Error!.Code);
+		Assert.Equal("success", (await Call(hub, session, "clipboard.write", "{\"text\":\"12345\"}")).Status);
 		var events = new List<NativeEvent>();
 		hub.NativeEventReceived += events.Add;
 		Assert.Equal("success", (await Call(hub, session, "core.subscribe", "{\"topic\":\"plugin.changed\"}")).Status);
@@ -315,7 +313,7 @@ public sealed class DependencyInjectionTests
 		services.AddScoped<ScopeProbeState>();
 		services.AddHybridApp(new HybridAppOptions());
 		HybridActionAssemblies.Add(services, typeof(DependencyInjectionTests), (registry, _) =>
-			registry.RegisterGenerated("app.info", [ProtocolJsonContext.Default.Ack], (_, _) => Task.FromResult(default(JsonElement))));
+			registry.RegisterGenerated("appInfo.name", [ProtocolJsonContext.Default.Ack], (_, _) => Task.FromResult(default(JsonElement))));
 		using var root = Build(services);
 		using var scope = root.CreateScope();
 		var state = scope.ServiceProvider.GetRequiredService<ScopeProbeState>();

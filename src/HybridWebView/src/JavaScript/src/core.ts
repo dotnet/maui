@@ -211,7 +211,7 @@ export async function loadNativeBridge(): Promise<Bridge | undefined> {
 export interface Ready {
   /** Registered native command names; the reference host also lists disabled registrations. */
   commands: string[]
-  /** Host-advertised clipboard/share text limit in UTF-16 code units, not a speech or preference limit. */
+  /** Share resource-adapter text limit in UTF-16 code units, not a native clipboard/speech/preference limit. */
   maximumTextLength: number
   /** Explicit OS-interactive commands allowed to outlive normal deadlines; omitted by older hosts. */
   interactiveCommands?: string[]

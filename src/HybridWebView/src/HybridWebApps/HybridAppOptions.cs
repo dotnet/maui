@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.HybridWebApps;
 public sealed class HybridAppOptions
 {
 	/// <summary>Creates the host policy without selecting or enabling any provider.</summary>
-	/// <param name="maximumTextLength">The clipboard/share text limit in UTF-16 code units; defaults to 4096.</param>
+	/// <param name="maximumTextLength">The share resource-adapter text limit in UTF-16 code units; defaults to 4096.</param>
 	/// <param name="maximumWindows">Host-configured native window resource budget, including the initial window; defaults to 16.</param>
 	public HybridAppOptions(int maximumTextLength = 4096, int maximumWindows = 16)
 	{
@@ -14,7 +14,7 @@ public sealed class HybridAppOptions
 		MaximumWindows = maximumWindows;
 	}
 
-	/// <summary>Gets the clipboard/share text limit advertised by the connection metadata, not a speech or preference limit.</summary>
+	/// <summary>Gets the share resource-adapter text limit, not a native clipboard, speech or preference limit.</summary>
 	public int MaximumTextLength { get; }
 	/// <summary>Gets the host-configured native window resource budget, not a universal app UX limit.</summary>
 	public int MaximumWindows { get; }

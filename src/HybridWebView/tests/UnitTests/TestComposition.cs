@@ -59,6 +59,18 @@ static class TestComposition
 		foreach (var plugin in plugins)
 			if (plugin is IClipboard clipboard)
 				services.AddSingleton<IClipboard>(clipboard);
+			else if (plugin is Microsoft.Maui.ApplicationModel.IAppInfo appInfo)
+				services.AddSingleton(appInfo);
+			else if (plugin is Microsoft.Maui.Devices.IDeviceInfo deviceInfo)
+				services.AddSingleton(deviceInfo);
+			else if (plugin is Microsoft.Maui.Devices.IBattery battery)
+				services.AddSingleton(battery);
+			else if (plugin is Microsoft.Maui.Devices.IDeviceDisplay display)
+				services.AddSingleton(display);
+			else if (plugin is Microsoft.Maui.Networking.IConnectivity connectivity)
+				services.AddSingleton(connectivity);
+			else if (plugin is Microsoft.Maui.ApplicationModel.ILauncher launcher)
+				services.AddSingleton(launcher);
 			else if (plugin is ITextToSpeech speech)
 				services.AddSingleton<ITextToSpeech>(speech);
 			else if (plugin is IPluginEventContract events)
@@ -102,7 +114,7 @@ static class TestComposition
 	internal static HybridAppTargetObject CreateHub(object[] plugins, HybridAppOptions options,
 		TimeProvider? time = null, NativeNotifications? notifications = null)
 	{
-		var registry = CreateRegistry(plugins);
+		var registry = CreateRegistry(notifications is null ? plugins : [.. plugins, notifications]);
 		var hub = new HybridAppTargetObject(registry, options, time, notifications: notifications);
 		Owners.GetValue(registry, _ => new Owner()).Hub = hub;
 		return hub;

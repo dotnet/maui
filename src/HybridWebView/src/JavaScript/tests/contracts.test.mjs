@@ -8,9 +8,9 @@ import * as preferences from '@maui/api/essentials/preferences'
 import { getAppInfo } from '@maui/api/essentials/app-info'
 import { getDeviceInfo } from '@maui/api/essentials/device-info'
 import * as api from '@maui/api'
-import { mock } from './bridge.mjs'
+import { mock, nativeProperty } from './bridge.mjs'
 
-const ready = { commands: ['app.info', 'device.info', 'clipboard.read'], maximumTextLength: 4096 }
+const ready = { commands: ['appInfo.name', 'deviceInfo.platform', 'clipboard.read'], maximumTextLength: 4096 }
 const appInfo = { appName: 'Host', version: '1', build: '1' }
 const deviceInfo = { platform: 'test', osVersion: '1', model: 'test' }
 afterEach(() => resetBridge())
@@ -37,8 +37,10 @@ test('Essentials are explicit subpaths and removed/private paths are not exporte
   for (const path of ['@maui/api/app/info', '@maui/api/essentials', '@maui/api/src/core.ts', '@maui/api/dist/core.js']) {
     await assert.rejects(() => import(path), error => error.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED')
   }
-  assert.deepEqual(Object.keys(await import('@maui/api/essentials/app-info')), ['getAppInfo'])
-  assert.deepEqual(Object.keys(await import('@maui/api/essentials/device-info')), ['getDeviceInfo'])
+  assert.deepEqual(Object.keys(await import('@maui/api/essentials/app-info')),
+    ['getAppInfo', 'getBuildString', 'getName', 'getPackageName', 'getPackagingModel', 'getRequestedLayoutDirection', 'getRequestedTheme', 'getVersion', 'getVersionString'])
+  assert.deepEqual(Object.keys(await import('@maui/api/essentials/device-info')),
+    ['getDeviceInfo', 'getDeviceType', 'getIdiom', 'getManufacturer', 'getModel', 'getName', 'getPlatform', 'getVersion', 'getVersionString'])
 })
 
 test('Unicode, escapes, null, arrays and DTOs survive ByteString headers and both framework serializations', async () => {
@@ -75,8 +77,8 @@ test('injected protocol transport supports Essentials without MAUI-origin bootst
   globalThis.document = { createElement() { scriptLoads++; throw new Error('No framework bootstrap is allowed') } }
   const host = mock(request => {
     if (request.command === 'core.connect') return ready
-    if (request.command === 'app.info') return appInfo
-    if (request.command === 'device.info') return deviceInfo
+    if (request.command.startsWith('appInfo.')) return nativeProperty(request.command, appInfo)
+    if (request.command.startsWith('deviceInfo.')) return nativeProperty(request.command, deviceInfo)
     if (request.command === 'clipboard.read') return 'injected native transport'
     if (request.command === 'clipboard.write') return null
     if (request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
@@ -118,8 +120,8 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
     if (request.command === 'core.connect') return ready
     if (request.command === 'clipboard.read') return null
     if (request.command === 'clipboard.write') return null
-    if (request.command === 'app.info') return appInfo
-    if (request.command === 'device.info') return deviceInfo
+    if (request.command.startsWith('appInfo.')) return nativeProperty(request.command, appInfo)
+    if (request.command.startsWith('deviceInfo.')) return nativeProperty(request.command, deviceInfo)
     if (request.command === 'preferences.set' || request.command === 'preferences.remove') return { accepted: true }
     return { kind: 'string', text: 'é' }
   })
@@ -133,7 +135,8 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
     await preferences.remove('key')
     assert.deepEqual(await getAppInfo(), appInfo)
     assert.deepEqual(await getDeviceInfo(), deviceInfo)
-    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'clipboard.read', 'clipboard.write', 'preferences.get', 'preferences.set', 'preferences.remove', 'app.info', 'device.info'])
+    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'clipboard.read', 'clipboard.write', 'preferences.get', 'preferences.set', 'preferences.remove',
+      'appInfo.name', 'appInfo.versionString', 'appInfo.buildString', 'deviceInfo.platform', 'deviceInfo.versionString', 'deviceInfo.model'])
     assert.ok(host.requests.every(request => request.session === client.session))
     host.bridge.InvokeDotNet = mock(() => ({ text: 42, key: 42, value: false })).bridge.InvokeDotNet
     for (const action of [() => getText(), () => setText('text'), () => preferences.get('key', ''), () => getAppInfo(), () => getDeviceInfo()]) {
@@ -144,7 +147,7 @@ test('typed Essentials helpers validate outputs and dispatch only provider comma
 
 test('AppInfo and DeviceInfo project only their own validated fields, never process diagnostics', async () => {
   let result = { ...appInfo, ...deviceInfo, architecture: false, pid: 'not a PID', startupId: null, startedAt: {} }
-  const host = mock(request => request.command === 'core.connect' ? ready : result)
+  const host = mock(request => request.command === 'core.connect' ? ready : nativeProperty(request.command, result))
   configureBridge(host.bridge)
   const client = await connect()
   try {
@@ -266,8 +269,8 @@ test('default feature calls share lazy startup, and teardown creates a new sessi
   const originalDocument = globalThis.document
   const target = new EventTarget()
   let additions = 0, removals = 0
-  const host = mock(request => request.command === 'core.connect' ? ready : request.command === 'app.info' ? appInfo
-    : request.command === 'device.info' ? deviceInfo
+  const host = mock(request => request.command === 'core.connect' ? ready : request.command.startsWith('appInfo.') ? nativeProperty(request.command, appInfo)
+    : request.command.startsWith('deviceInfo.') ? nativeProperty(request.command, deviceInfo)
     : request.command === 'clipboard.read' ? 'native' : { accepted: true })
   globalThis.window = {
     location: { href: 'app://0.0.0.1/index.html' }, HybridWebView: host.bridge,

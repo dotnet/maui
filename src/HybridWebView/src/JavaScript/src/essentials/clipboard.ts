@@ -1,7 +1,7 @@
 import { boolean, connect, nullableText, NativeError, subscribeShared } from '../core.js'
 /**
  * Replaces native clipboard text using the shared document connection.
- * @param text - Native Unicode text; host text policy/OS permission remains authoritative.
+ * @param text - Native Unicode text; native OS permissions remain authoritative.
  * @returns Completion of the native call, not a browser clipboard emulation.
  * @throws `NativeError` on invalid input, unavailable native or OS failure.
  */

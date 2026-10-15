@@ -78,7 +78,7 @@ test('staging rejects malformed metadata and size mismatches rather than produci
   await assert.rejects(() => stageFile('file.pdf', 'application/pdf', Uint8Array.of(1)), error => error.code === 'invalid_response')
 })
 
-test('location uses real request fields, strict native result decoding, explicit null and bounded timeout', async () => {
+test('location uses native request defaults and passes timeout values to the destination', async () => {
   let result = { latitude: 51.5, longitude: -0.12, timestamp: '2026-10-14T00:00:00Z',
     altitude: null, accuracy: 8, verticalAccuracy: null, reducedAccuracy: false,
     speed: null, course: null, isFromMockProvider: false, altitudeReferenceSystem: 'unspecified' }
@@ -87,7 +87,7 @@ test('location uses real request fields, strict native result decoding, explicit
   const pending = await getLocation({ timeout: '00:00:20', desiredAccuracy: 'high' })
   assert.deepEqual(await pending.result, result)
   assert.deepEqual(host.requests.find(request => request.command === 'geolocation.location').args,
-    { request: { timeout: '00:00:20', desiredAccuracy: 'high', requestFullAccuracy: false } })
+    { request: { timeout: '00:00:20', desiredAccuracy: 'high' } })
   const nativeLocation = result
   for (const altitudeReferenceSystem of ['unspecified', 'terrain', 'ellipsoid', 'geoid', 'surface']) {
     result = { ...nativeLocation, altitudeReferenceSystem }
@@ -101,6 +101,11 @@ test('location uses real request fields, strict native result decoding, explicit
   assert.equal(await (await getLocation({ timeout: '00:00:20' })).result, null)
   result = { latitude: 400 }
   await assert.rejects((await getLocation({ timeout: '00:00:20' })).result, error => error.code === 'invalid_response')
-  for (const timeout of ['00:00:00', '00:02:01', 'not-time', '-00:00:20'])
-    await assert.rejects(() => getLocation({ timeout }), error => error.code === 'invalid_arguments')
+  result = null
+  for (const timeout of ['00:00:00', '00:02:01', '01:00:00', '-00:00:20']) {
+    assert.equal(await (await getLocation({ timeout })).result, null)
+    assert.deepEqual(host.requests.at(-1).args, { request: { timeout } })
+  }
+  assert.equal(await (await getLocation()).result, null)
+  assert.deepEqual(host.requests.at(-1).args, { request: {} })
 })

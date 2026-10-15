@@ -20,6 +20,7 @@ services.AddPackageConsumerActions();
 services.AddScoped<INativeCounterContract>(_ => new ConsumerCounter());
 services.AddScoped<IPluginEventContract, PluginEventSource>();
 services.AddScoped<ITextToSpeech, ConsumerSpeech>();
+services.AddScoped<IDeviceDisplay, ConsumerDisplay>();
 services.AddScoped(_ => new NativeDispatcher(action => action()));
 using var root = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 using var hostScope = root.CreateScope();
@@ -53,15 +54,29 @@ Check(ProtocolJsonContext.Default.GetTypeInfo(typeof(PluginResult)) is null, "Pl
 var connect = await Call("core.connect", "{}");
 Check(connect.Status == "success", "Connect failed.");
 var ready = connect.Result!.Value.Deserialize(ProtocolJsonContext.Default.ReadyResult)!;
-Check(ready.Commands.Contains("app.info", StringComparer.Ordinal) &&
-	ready.Commands.Contains("device.info", StringComparer.Ordinal) && ready.Commands.Contains("preferences.set", StringComparer.Ordinal),
+Check(ready.Commands.Contains("appInfo.name", StringComparer.Ordinal) &&
+	ready.Commands.Contains("deviceInfo.platform", StringComparer.Ordinal) && ready.Commands.Contains("preferences.set", StringComparer.Ordinal),
 	"Product convenience did not register its implemented APIs and actual policy.");
-Check(ready.Commands.Contains("window.info", StringComparer.Ordinal) && ready.Commands.Contains("battery.info", StringComparer.Ordinal) &&
-	ready.Commands.Contains("display.info", StringComparer.Ordinal) && ready.Commands.Contains("filePicker.pick", StringComparer.Ordinal),
+Check(ready.Commands.Contains("window.info", StringComparer.Ordinal) && ready.Commands.Contains("battery.chargeLevel", StringComparer.Ordinal) &&
+	ready.Commands.Contains("display.mainDisplayInfo", StringComparer.Ordinal) && ready.Commands.Contains("filePicker.pick", StringComparer.Ordinal),
 	"UI/device modules did not survive real package consumption.");
 Check(ready.InteractiveCommands is not null && ready.InteractiveCommands.Contains("dialogs.prompt", StringComparer.Ordinal) &&
 	ready.InteractiveCommands.Contains("filePicker.pick", StringComparer.Ordinal) && ready.InteractiveTimeoutMilliseconds == 300000,
 	"Typed interactive handshake policy did not survive packaging.");
+var display = (ConsumerDisplay)hostScope.ServiceProvider.GetRequiredService<IDeviceDisplay>();
+Check((await Call("display.mainDisplayInfo", "{}")).Result!.Value.GetProperty("refreshRate").GetDouble() == 59.5,
+	"The packed native readonly struct getter was not generated.");
+Check((await Call("display.setKeepScreenOn", """{"value":true}""")).Status == "success" && display.KeepScreenOn &&
+	(await Call("display.keepScreenOn", "{}")).Result!.Value.GetBoolean(),
+	"The packed native setter must target the host's actual override.");
+Check((await Call("core.subscribe", """{"topic":"display.mainDisplayInfoChanged"}""")).Status == "success",
+	"The packed native display event was not exported.");
+display.Raise();
+Check(events.Count == 1 && events[0].Data.GetProperty("displayInfo").GetProperty("refreshRate").GetDouble() == 59.5,
+	"The packed native display event did not preserve readonly struct payloads.");
+Check((await Call("core.unsubscribe", """{"topic":"display.mainDisplayInfoChanged"}""")).Status == "success" && display.Listeners == 0,
+	"The packed native display event did not detach its exact handler.");
+events.Clear();
 var locales = await Call("speech.locales", "{}");
 Check(locales.Status == "success" && locales.Result!.Value.ValueKind == JsonValueKind.Array &&
 	locales.Result.Value[0].GetProperty("id").GetString() == "consumer-voice",
@@ -217,6 +232,16 @@ public sealed class ConsumerSpeech : ITextToSpeech
 		Options = options;
 		Cancellation = cancelToken;
 	}
+}
+
+public sealed class ConsumerDisplay : IDeviceDisplay
+{
+	EventHandler<DisplayInfoChangedEventArgs>? _changed;
+	public bool KeepScreenOn { get; set; }
+	public DisplayInfo MainDisplayInfo => new(1000, 700, 2, DisplayOrientation.Landscape, DisplayRotation.Rotation0, 59.5f);
+	public int Listeners => _changed?.GetInvocationList().Length ?? 0;
+	public event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged { add => _changed += value; remove => _changed -= value; }
+	public void Raise() => _changed?.Invoke(this, new(MainDisplayInfo));
 }
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

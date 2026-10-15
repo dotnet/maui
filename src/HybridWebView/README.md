@@ -54,6 +54,28 @@ serializes the real `AppThemeChangedEventArgs` as `{ requestedTheme: 'dark' }`,
 not an invented snapshot DTO. `getTheme()` and `setTheme()` retain their
 separate native read/write contracts.
 
+The scoped product surface also imports all eight readable `IAppInfo` and
+`IDeviceInfo` properties, four `IBattery` properties and its two events,
+`IDeviceDisplay.MainDisplayInfo`/`KeepScreenOn` get/set/change,
+`IConnectivity` getters/change, URI-only `ILauncher` capability/open/try-open
+methods and contextual `Application` theme get/set/change. These are direct
+annotated SDK calls, not C# snapshot wrappers. Convenience JavaScript reads
+compose native properties independently; native URI refusal remains false.
+
+Property accessors are annotated separately; setters bind `{ value }` or `[value]`,
+preserve native nullability and return null for void. Readonly native output
+structs/events need only accessible getters; input contracts still require a
+supported constructor or explicit typed metadata. Strict source contexts map
+extensible DevicePlatform/DeviceIdiom values and System.Version without
+reflection, closed switches or duplicate DTOs. No clipboard string quota or
+product geolocation timeout range overrides native semantics.
+
+Window adapters remain because they target document-owned current/child
+generations with private leases/capabilities. Menus, remote guests, selected
+files/readers and share staging/union/cache retain resource ownership; generic
+Preferences retains its scalar representation adapter. None of this imports
+every MAUI device API or bypasses OS permissions.
+
 Supported event payloads are statically typed:
 
 * `EventHandler` / `EventHandler<EventArgs>` and zero-argument delegates publish null.

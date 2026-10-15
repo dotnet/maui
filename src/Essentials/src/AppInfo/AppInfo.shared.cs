@@ -12,27 +12,27 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Gets the application package name or identifier.
 		/// </summary>
 		/// <remarks>On Android and iOS, this is the application package name. On Windows, this is the application GUID.</remarks>
-		string PackageName { get; }
+		string PackageName { [Microsoft.Maui.Interop.HybridAction("appInfo.packageName", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the application name.
 		/// </summary>
-		string Name { get; }
+		string Name { [Microsoft.Maui.Interop.HybridAction("appInfo.name", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the application version as a string representation.
 		/// </summary>
-		string VersionString { get; }
+		string VersionString { [Microsoft.Maui.Interop.HybridAction("appInfo.versionString", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the application version as a <see cref="Version"/> object.
 		/// </summary>
-		Version Version { get; }
+		Version Version { [Microsoft.Maui.Interop.HybridAction("appInfo.version", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the application build number.
 		/// </summary>
-		string BuildString { get; }
+		string BuildString { [Microsoft.Maui.Interop.HybridAction("appInfo.buildString", MainThread = true)] get; }
 
 		/// <summary>
 		/// Open the settings menu or page for this application.
@@ -43,18 +43,18 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Gets the detected theme of the system or application.
 		/// </summary>
 		/// <remarks>For platforms or platform versions which do not support themes, <see cref="AppTheme.Unspecified"/> is returned.</remarks>
-		AppTheme RequestedTheme { get; }
+		AppTheme RequestedTheme { [Microsoft.Maui.Interop.HybridAction("appInfo.requestedTheme", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the packaging model of this application.
 		/// </summary>
 		/// <remarks>On other platforms than Windows, this will always return <see cref="AppPackagingModel.Packaged"/>.</remarks>
-		AppPackagingModel PackagingModel { get; }
+		AppPackagingModel PackagingModel { [Microsoft.Maui.Interop.HybridAction("appInfo.packagingModel", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the requested layout direction of the system or application.
 		/// </summary>
-		LayoutDirection RequestedLayoutDirection { get; }
+		LayoutDirection RequestedLayoutDirection { [Microsoft.Maui.Interop.HybridAction("appInfo.requestedLayoutDirection", MainThread = true)] get; }
 	}
 
 	/// <summary>

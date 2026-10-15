@@ -18,10 +18,12 @@ test('emitted declarations document the real root and feature boundaries', () =>
   assert.deepEqual([...new Set(entry('root').members.map(item => item.displayName))].sort(),
     ['ActionArgs', 'BinaryInput', 'BinaryOptions', 'Bridge', 'Channel', 'Decoder', 'Json', 'NativeClient', 'NativeError', 'Operation', 'Progress', 'Ready', 'binaryBlob', 'connect', 'disconnect', 'invoke', 'invokeBinary'])
   const app = entry('essentials/app-info')
-  assert.deepEqual(app.members.map(item => item.displayName), ['AppInfo', 'getAppInfo'])
+  for (const name of ['AppInfo', 'AppPackagingModel', 'LayoutDirection', 'getAppInfo', 'getName', 'getVersion', 'getPackageName'])
+    member(app, name)
   assert.deepEqual(member(app, 'AppInfo').members.map(item => item.displayName), ['appName', 'build', 'version'])
   const device = entry('essentials/device-info')
-  assert.deepEqual(device.members.map(item => item.displayName), ['DeviceInfo', 'getDeviceInfo'])
+  for (const name of ['DeviceInfo', 'DeviceType', 'getDeviceInfo', 'getPlatform', 'getIdiom', 'getVersion'])
+    member(device, name)
   assert.deepEqual(member(device, 'DeviceInfo').members.map(item => item.displayName), ['model', 'osVersion', 'platform'])
   assert.deepEqual(entry('essentials/clipboard').members.map(item => item.displayName), ['getText', 'hasText', 'onContentChanged', 'setText'])
   assert.deepEqual(entry('essentials/preferences').members.map(item => item.displayName), ['clear', 'contains', 'get', 'PreferenceKind', 'PreferenceOptions', 'PreferenceValue', 'remove', 'set'])
@@ -34,7 +36,7 @@ test('TSDoc host requirements, session ownership, parameters, results and errors
     assert.ok(comment.returnsBlock)
     assert.ok(comment.remarksBlock)
     const source = comment.emitAsTsdoc()
-    assert.ok(source.includes(slug.endsWith('app-info') ? 'app.info' : 'device.info'))
+    assert.ok(source.includes(slug.endsWith('app-info') ? 'appInfo.name' : 'deviceInfo.platform'))
     assert.ok(source.includes('@throws'))
     assert.ok(source.includes('native'))
   }

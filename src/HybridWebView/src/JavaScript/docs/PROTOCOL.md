@@ -141,22 +141,25 @@ registration decision; this example topic is not part of the reference host.
 
 | Name | Args | Result | Requirement |
 | --- | --- | --- | --- |
-| `core.connect` | `{}` | Commands, clipboard/share text limit; optional interactiveCommands / interactiveTimeoutMilliseconds / initialLocation | Session establishment/retirement |
+| `core.connect` | `{}` | Commands, share-adapter text limit; optional interactiveCommands / interactiveTimeoutMilliseconds / initialLocation | Session establishment/retirement |
 | `core.cancel` | `{ requestId: string }` | `{ accepted: boolean }` | Cooperative request cancellation |
 | `core.subscribe`, `core.unsubscribe` | `{ topic: string }` | `{ accepted: boolean }` | Explicit allowed topic list |
-| `app.info` | `{}` | `{ appName: string, version: string, build: string }` | Independently registered IAppInfo provider |
-| `device.info` | `{}` | `{ platform: string, osVersion: string, model: string }` | Independently registered IDeviceInfo provider |
+| `appInfo.packageName`, `appInfo.name`, `appInfo.versionString`, `appInfo.buildString` | `{}` | Native string | Annotated IAppInfo getters |
+| `appInfo.version`, `appInfo.requestedTheme`, `appInfo.packagingModel`, `appInfo.requestedLayoutDirection` | `{}` | Native Version string / native camelCase enum | Annotated IAppInfo getters |
+| `deviceInfo.model`, `deviceInfo.manufacturer`, `deviceInfo.name`, `deviceInfo.versionString`, `deviceInfo.version` | `{}` | Native string / Version string | Annotated IDeviceInfo getters |
+| `deviceInfo.platform`, `deviceInfo.idiom`, `deviceInfo.deviceType` | `{}` | Exact extensible native identifier / native camelCase enum | Typed native value converters, not closed platform switches |
 | `clipboard.read` | `{}` | `string \| null` | Curated native `IClipboard.GetTextAsync` |
-| `clipboard.write` | `{ text: string \| null }` | `null` (void completion) | Curated native `IClipboard.SetTextAsync`, host text budget |
+| `clipboard.write` | `{ text: string \| null }` | `null` (void completion) | Curated native `IClipboard.SetTextAsync`, no adapter text quota |
 | `clipboard.hasText` | `{}` | `boolean` | Curated native `IClipboard.HasText` accessor |
 | `preferences.get`, `preferences.set` | actual key + typed primitive/defaultValue + optional sharedName | Typed native primitive, `{ accepted }` | Closed scalar adapter over native generic IPreferences; keys/containers unchanged |
 | `preferences.contains`, `preferences.remove`, `preferences.clear` | actual key/container or container only | `{ accepted: boolean }` | Clear calls native container-wide Clear, including native-existing settings |
-| `battery.info` | `{}` | chargeLevel/state/powerSource/energySaverStatus | IBattery on every platform; the Catalyst IOKit correction now belongs to Essentials itself |
-| `connectivity.info` | `{}` | networkAccess/connectionProfiles | Actual IConnectivity snapshot, not an endpoint reachability test |
+| `battery.chargeLevel`, `battery.state`, `battery.powerSource`, `battery.energySaverStatus` | `{}` | Native number / camelCase enum | Annotated IBattery getters |
+| `connectivity.networkAccess`, `connectivity.connectionProfiles` | `{}` | Native camelCase enum / enum array | Annotated IConnectivity getters; duplicates/order preserved |
 | `speech.locales` | `{}` | `Locale[]` | Curated annotated native ITextToSpeech.GetLocalesAsync, no result envelope |
 | `speech.speak` | text + optional nullable native SpeechOptions | `null` (void completion) | Curated ITextToSpeech.SpeakAsync; destination validates values; interactive deadline and operation-specific cancellation |
-| `launcher.openUrl` | `{ url }` | `{ accepted }` | Actual OS external launch; bounded public HTTPS policy, not arbitrary schemes/paths |
-| `display.info` | `{}` | width/height/density/orientation/rotation/refreshRate | Direct IDeviceDisplay snapshot |
+| `launcher.canOpen`, `launcher.open`, `launcher.tryOpen` | `{ uri }` | Native boolean, including false | Actual ILauncher URI overloads, no remote-guest HTTPS policy or file-request overload |
+| `display.mainDisplayInfo` | `{}` | Actual DisplayInfo readonly struct | Annotated IDeviceDisplay getter, no duplicate DTO |
+| `display.keepScreenOn`, `display.setKeepScreenOn` | `{}`, `{ value: boolean }` | Native boolean / `null` | Annotated native getter/setter |
 | `filePicker.pick`, `filePicker.pickMultiple` | pickerTitle/platform fileTypes | nullable file metadata/`{ files }` resources | Actual OS selection, interactive policy; cancellation null/empty |
 | `file.openRead`, `file.release` | Selected resource ID | Reader resource / `{ accepted }` | FileResult.OpenReadAsync, scope/document authority |
 | `file.readBytes`, `file.seek`, `file.closeReader` | Reader ID + count/position | raw binary EOF byte + bytes, or JSON acceptance | ≤65536 file bytes per read; real partial/EOF/seek/close |
@@ -177,11 +180,11 @@ registration decision; this example topic is not part of the reference host.
 | `remote.navigate` | `{ id, url }` | Guest navigation state | Same validated top-level HTTPS policy |
 | `menus.info`, `menus.install`, `menus.clear` | windowId + descriptions/sourceId | Native capabilities/installation identity | TypeScript-defined real desktop menus; callbacks never serialized |
 | `menus.item`, `menus.update` | windowId/sourceId/item ID + tiny patch | Native item state/capabilities | Installation/document ownership, not global item-ID authority |
-| `application.theme`, `application.setTheme` | `{}`, `{ theme }` | Effective theme/preference | Application-level native preference, not Window/remote theme |
+| `application.requestedTheme`, `application.userAppTheme`, `application.setUserAppTheme` | `{}`, `{}`, `{ value }` | Native camelCase enum / enum / `null` | Annotated contextual Application getters/setter, not Window/remote theme |
 
-Current source is the sibling `Managed` class library (`Protocol/`,
-`CommandRegistry.cs`, `HybridAppTargetObject.cs`, `Essentials/*`) plus the `Native`
-host app. The one WIP managed library now references Controls.Core/Core for UI
+Current source is `src/HybridWebView/src/HybridWebApps` (`Protocol/`,
+`CommandRegistry.cs`, `HybridAppTargetObject.cs`, `Essentials/*`) plus the sample's `Native`
+host app. The one WIP managed library references Controls.Core/Core for UI
 providers, but has no sample dependency. Feature providers
 own automatically generated action codecs; the protocol context contains only envelopes and
 control DTOs. External Toolkit assemblies opt into their one compiler-generated
@@ -200,35 +203,59 @@ share actual native storage. The reference host also registers application-only
 `sample.*` commands and `service.changed` / `operation.progress` topics; those
 helpers remain in the playground and are **not** npm SDK features.
 
-Product notification topics include `clipboard.changed`, `window.geometryChanged`,
-`application.themeChanged`, `menus.clicked` and `remote.changed`. They originate
+Product notification topics include `clipboard.changed`, `battery.infoChanged`,
+`battery.energySaverStatusChanged`, `display.mainDisplayInfoChanged`,
+`connectivity.changed`, `window.geometryChanged`, `application.themeChanged`,
+`menus.clicked` and `remote.changed`. They originate
 from typed provider-owned sources and use current-document/subscription checks.
 First/last subscriptions attach/detach native sources; JS listeners share a topic
 multiplexer. Progress retains its separate active originating-operation validation.
 Direct native empty events, including `IClipboard.ClipboardContentChanged`,
 carry JSON null, not an acknowledgement object. `Application.RequestedThemeChanged`
 carries the actual `AppThemeChangedEventArgs` shape, for example
-`{ "requestedTheme": "dark" }`; this is distinct from the effective/preference
-snapshot returned by theme read/write commands. Generated bindings omit the
+`{ "requestedTheme": "dark" }`; theme property reads return scalar enums and
+the setter returns native void. Display change carries `{ displayInfo: ... }`;
+battery change carries its native chargeLevel/state/powerSource properties,
+energy saver change carries `{ energySaverStatus: ... }`, and connectivity
+change carries native networkAccess/connectionProfiles, without deduplication.
+Generated bindings omit the
 conventional sender. Multiple payload parameters use their declared names.
 Private window leases bind acquisition to a native generation; never substitute a
 lookup by reused ID when replaying a stale handle. Neither leases nor UUIDs are authentication.
 
 ### Preview AppInfo/DeviceInfo mapping
 
-`getAppInfo` invokes `app.info`; `getDeviceInfo` invokes `device.info`. Their
-public module names and result types are unchanged. These separate providers and
-DTOs cannot expose or depend on the sample's process identity. The sample-only
+`getAppInfo` composes independent `appInfo.name/versionString/buildString` getters;
+`getDeviceInfo` composes `deviceInfo.platform/versionString/model`. Their public
+module names and convenience result types are unchanged, but no aggregate
+native providers/DTOs remain. The sample-only
 `sample.diagnostics` command returns architecture/pid/startupId/startedAt.
-The playground composes the three reads on the same exact client into its
+The playground composes these reads on the same exact client into its
 unchanged visible reload-identity shape. The counter still belongs to the native
 sample instance and survives document reload.
 
-This **unpublished preview's internal wire mapping changed** from the former
-combined `app.info` response. Update/relaunch the matching native host and stage
-the frontend together; an old host will correctly reject `device.info` rather
+This **unpublished preview's internal wire mapping changed**, with no old command
+aliases. Update/relaunch the matching native host and stage
+the frontend together; an old host will correctly reject the new property commands rather
 than emulate data. The protocol version remains 1 because envelopes/lifetimes
 did not change; there is no existing published compatibility promise.
+
+### Direct native calls versus resource adapters
+
+App/device/battery/display/connectivity/launcher/Application theme use curated
+SDK annotations, actual host interface overrides and native values/errors.
+Setter parameters use their ordinary C# name `value`, with native nullability,
+main-thread policy and null void completion. Location accepts a native request
+object, including `{}` defaults; timeout semantics belong to Essentials.
+Clipboard has no share-adapter string quota. JSON/schema/finite representation
+checks, raw 4 MiB limits, session epochs and control slots are unchanged.
+
+Window mutation still targets document-owned current/child resources using
+private leases and native capabilities, so unrestricted Window setters are not
+exported. Menus and remote guests retain installation/view ownership; picked files,
+readers and staged share files retain opaque document handles. Sharing uses the
+deliberate structural request union; Preferences closes generic native scalar
+representations. Those adapters are not routine wrappers removable by annotations.
 
 ## Session ownership and bounded lifetime
 

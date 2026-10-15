@@ -1,35 +1,41 @@
-import { connect, object, text } from '../core.js'
+import { connect, enumValue, text } from '../core.js'
 
-/** Supported native device metadata; this preview does not expose every MAUI Essentials DeviceInfo property. */
+/** Native device classification. */
+export type DeviceType = 'unknown' | 'physical' | 'virtual'
+/** Convenience composition of native device properties; not an atomic native snapshot. */
 export interface DeviceInfo {
-  /** Native platform name as reported by the host; not a fixed JavaScript enum or user-agent value. */
+  /** Exact native platform identifier, including custom platforms. */
   platform: string
-  /** Native operating-system version string. */
+  /** Native OS version string. */
   osVersion: string
-  /** Device model reported by the OS; availability and representation are platform-specific. */
+  /** Native device model. */
   model: string
 }
-
+/** Reads the native model. @returns Native model string. */
+export async function getModel(): Promise<string> { return (await connect()).invoke('deviceInfo.model', {}, text) }
+/** Reads the native manufacturer. @returns Native manufacturer string. */
+export async function getManufacturer(): Promise<string> { return (await connect()).invoke('deviceInfo.manufacturer', {}, text) }
+/** Reads the native device name. @returns Native device name. */
+export async function getName(): Promise<string> { return (await connect()).invoke('deviceInfo.name', {}, text) }
+/** Reads the native OS version string. @returns Native version string. */
+export async function getVersionString(): Promise<string> { return (await connect()).invoke('deviceInfo.versionString', {}, text) }
+/** Reads the native Version. @returns System.Version in its standard string representation. */
+export async function getVersion(): Promise<string> { return (await connect()).invoke('deviceInfo.version', {}, text) }
+/** Reads the native platform. @returns Exact DevicePlatform identifier, not a closed enum or user-agent value. */
+export async function getPlatform(): Promise<string> { return (await connect()).invoke('deviceInfo.platform', {}, text) }
+/** Reads the native idiom. @returns Exact DeviceIdiom identifier, including custom idioms. */
+export async function getIdiom(): Promise<string> { return (await connect()).invoke('deviceInfo.idiom', {}, text) }
+/** Reads the native device classification. @returns Native physical/virtual/unknown state. */
+export async function getDeviceType(): Promise<DeviceType> {
+  return (await connect()).invoke('deviceInfo.deviceType', {}, value => enumValue(value, ['unknown', 'physical', 'virtual']))
+}
 /**
- * Reads the native device platform, operating-system version and model.
- * @returns Validated device metadata from the native host.
- * @throws `NativeError` when native is unavailable, the host rejects the call, or the result is invalid.
- * @remarks
- * Requires a compatible protocol-1 host with the `device.info` provider registered.
- * The independently registered command returns only DeviceInfo fields;
- * process architecture, PID and startup diagnostics are deliberately excluded.
- * No user-agent or browser emulation exists. The shared connection owns startup
- * and disposal; calls follow this document's native session lifetime.
- * @example
- * ```ts
- * import { getDeviceInfo } from '@maui/api/essentials/device-info'
- * const device = await getDeviceInfo()
- * console.log(device.platform, device.osVersion, device.model)
- * ```
+ * Composes direct annotated IDeviceInfo property reads in JavaScript.
+ * @returns Native platform, OS version and model without browser emulation.
+ * @throws `NativeError` for native errors or malformed transport results.
+ * @remarks Uses deviceInfo.platform, deviceInfo.versionString and deviceInfo.model independently.
  */
 export async function getDeviceInfo(): Promise<DeviceInfo> {
-  return (await connect()).invoke('device.info', {}, value => {
-    const v = object(value)
-    return { platform: text(v.platform), osVersion: text(v.osVersion), model: text(v.model) }
-  })
+  const [platform, osVersion, model] = await Promise.all([getPlatform(), getVersionString(), getModel()])
+  return { platform, osVersion, model }
 }

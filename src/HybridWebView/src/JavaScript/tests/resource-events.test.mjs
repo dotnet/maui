@@ -39,7 +39,7 @@ test('native geometry and app theme events multiplex listeners and detach only a
     ? { id: 'own', windowLease: 'private', initialLocation: 'index.html', title: 'Native', x: 0, y: 0, width: 800, height: 600, canResize: true,
       canPosition: true, canOpenWindows: true, canObservePosition: true, canCenter: true }
     : request.command === 'core.connect' ? { commands: [], maximumTextLength: 4096 }
-    : request.command === 'application.theme' ? { effective: 'dark', preference: 'unspecified' }
+    : request.command === 'application.requestedTheme' ? 'dark'
     : { accepted: true })
   configureBridge(host.bridge)
   const client = await connect()

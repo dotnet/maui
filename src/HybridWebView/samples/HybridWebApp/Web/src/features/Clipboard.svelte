@@ -16,8 +16,8 @@
   }
 </script>
 
-<label for="clipboard-text">Text to copy · maximum 4096 characters</label>
-<textarea id="clipboard-text" rows="4" maxlength="4096" bind:value={text}></textarea>
+<label for="clipboard-text">Text to copy · native clipboard text</label>
+<textarea id="clipboard-text" rows="4" bind:value={text}></textarea>
 <div class="actions">
   <Action {session} action="copy" title="Copy to native clipboard" primary
     onclick={() => setText(text)} />

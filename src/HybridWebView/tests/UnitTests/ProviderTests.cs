@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.HybridWebApps;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo;
 using Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences;
 using Xunit;
 
@@ -20,21 +18,14 @@ public sealed class ProviderTests
 	}
 
 	[Fact]
-	public async Task AppAndDeviceProvidersAreIndependentAndReturnOnlyTheirOwnFields()
+	public async Task AnnotatedAppAndDevicePropertiesReturnNativeValuesWithoutSnapshotEnvelopes()
 	{
-		var app = TestComposition.CreateRegistry(new AppInfoProvider(new FakeAppInfo()), new DeviceInfoProvider(new FakeDeviceInfo()));
-		Assert.Contains("app.info", app.Names);
-		var result = await Dispatch(app, "app.info", "{}");
-		Assert.Equal(new[] { "appName", "version", "build" }, result.EnumerateObject().Select(p => p.Name));
-		Assert.Equal("Test app", result.GetProperty("appName").GetString());
-		Assert.Contains("device.info", app.Names);
-
-		var device = app;
-		result = await Dispatch(device, "device.info", "{}");
-		Assert.Equal(new[] { "platform", "osVersion", "model" }, result.EnumerateObject().Select(p => p.Name));
-		Assert.Equal("Android", result.GetProperty("platform").GetString());
-		Assert.Contains("app.info", device.Names);
-		Assert.Null(ProtocolJsonContext.Default.GetTypeInfo(typeof(CommandRegistry).Assembly.GetType("Microsoft.Maui.Controls.HybridWebApps.Essentials.DeviceInfo.DeviceInfoResult")!));
+		var registry = TestComposition.CreateRegistry(new FakeAppInfo(), new FakeDeviceInfo());
+		Assert.Equal("Test app", (await Dispatch(registry, "appInfo.name", "{}")).GetString());
+		Assert.Equal("Android", (await Dispatch(registry, "deviceInfo.platform", "{}")).GetString());
+		Assert.Equal("1.2", (await Dispatch(registry, "appInfo.version", "{}")).GetString());
+		Assert.DoesNotContain("app.info", registry.Names);
+		Assert.DoesNotContain("device.info", registry.Names);
 	}
 
 	[Theory]
@@ -51,9 +42,9 @@ public sealed class ProviderTests
 	[InlineData("preferences.set", """{"key":"ok","value":{"kind":"unknown","text":"not written"}}""")]
 	[InlineData("preferences.set", """{"key":"ok","value":{"kind":"String","text":"not written"}}""")]
 	[InlineData("preferences.remove", "null")]
-	[InlineData("app.info", "null")]
-	[InlineData("app.info", "{\"extra\":true}")]
-	[InlineData("device.info", "{\"extra\":true}")]
+	[InlineData("appInfo.name", "null")]
+	[InlineData("appInfo.name", "{\"extra\":true}")]
+	[InlineData("deviceInfo.model", "{\"extra\":true}")]
 	public async Task FeatureGeneratedMetadataRejectsInvalidArgumentsBeforeEssentials(string command, string args)
 	{
 		var registry = new CommandRegistry();
@@ -61,7 +52,7 @@ public sealed class ProviderTests
 		var preferences = new FakePreferences();
 		registry = TestComposition.CreateRegistryWithOptions(new(), clipboard, Inline,
 			new PreferencesProvider(preferences),
-			new AppInfoProvider(new FakeAppInfo { Error = new InvalidOperationException("Must not run") }), new DeviceInfoProvider(new FakeDeviceInfo()));
+			new FakeAppInfo { Error = new InvalidOperationException("Must not run") }, new FakeDeviceInfo());
 		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() => Dispatch(registry, command, args))).Code);
 		Assert.Equal(0, clipboard.Calls);
 		Assert.Equal(0, preferences.Calls);
@@ -91,18 +82,17 @@ public sealed class ProviderTests
 	}
 
 	[Fact]
-	public async Task ClipboardRetainsItsIndependentTextBudgetInBothDirections()
+	public async Task ClipboardPassesNativeStringsWithoutTheShareAdapterTextBudget()
 	{
 		var clipboardRegistry = new CommandRegistry();
 		var clipboard = new FakeClipboard();
 		clipboardRegistry = TestComposition.CreateRegistryWithOptions(new(4), clipboard, Inline);
 		await Dispatch(clipboardRegistry, "clipboard.write", "{\"text\":\"你好👋\"}");
 		Assert.Equal("你好👋", clipboard.Text);
-		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(clipboardRegistry, "clipboard.write", "{\"text\":\"12345\"}"))).Code);
-		clipboard.Text = "12345";
-		Assert.Equal("invalid_arguments", (await Assert.ThrowsAsync<CommandException>(() =>
-			Dispatch(clipboardRegistry, "clipboard.read", "{}"))).Code);
+		var text = new string('語', 8192);
+		await Dispatch(clipboardRegistry, "clipboard.write", JsonSerializer.Serialize(new { text }));
+		Assert.Equal(text, clipboard.Text);
+		Assert.Equal(text, (await Dispatch(clipboardRegistry, "clipboard.read", "{}")).GetString());
 	}
 
 	[Theory]

@@ -28,7 +28,7 @@ export function createConnection(session: PlaygroundSession, loadBridge = loadNa
       if (ready.commands.includes('window.info')) session.windowCapabilities = await currentWindow().capabilities()
       if (ready.commands.includes('remote.info')) session.browserSupported = await supportsBrowserView()
       if (ready.commands.includes('menus.info')) await installPlaygroundMenu(session)
-      if (ready.commands.includes('application.theme')) {
+      if (ready.commands.includes('application.requestedTheme')) {
         session.themeRelease = await app.onThemeChanged(theme => {
           if (session.disposed) return
           session.theme = theme

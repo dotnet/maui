@@ -167,9 +167,10 @@ invalidate staging. Only manifest-listed Vite assets become native `wwwroot`.
 Direct `build` removes the staging manifest; native MSBuild never runs npm.
 After SDK edits/builds, rerun `stage` before a packaged native build.
 
-The current identity wire mapping uses separate `app.info`, `device.info` and
-sample-owned `sample.diagnostics` commands, with unchanged public JS return types.
-Relaunch the matching native host before acceptance; the old combined response
+The current identity wire mapping composes direct annotated `appInfo.*`,
+`deviceInfo.*` getters and sample-owned `sample.diagnostics`, with unchanged
+convenience JS return types and no aggregate C# providers/DTOs.
+Relaunch the matching native host before acceptance; the old aggregate response
 is not the current unpublished preview contract.
 
 The current source bundle's README documents its copyable layout and native

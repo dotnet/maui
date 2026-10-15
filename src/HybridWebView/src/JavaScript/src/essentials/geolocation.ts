@@ -1,5 +1,5 @@
-import { boolean, connect, enumValue, NativeError, number, object, text } from '../core.js'
-import type { Operation } from '../core.js'
+import { boolean, connect, enumValue, number, object, text } from '../core.js'
+import type { Json, Operation } from '../core.js'
 
 /** Native accuracy policy, not a guarantee of the resulting coordinates. */
 export type GeolocationAccuracy = 'default' | 'lowest' | 'low' | 'medium' | 'high' | 'best'
@@ -9,8 +9,8 @@ export type AltitudeReferenceSystem = 'unspecified' | 'terrain' | 'ellipsoid' | 
 export interface GeolocationRequest {
   /** Native accuracy requested from the OS. */
   desiredAccuracy?: GeolocationAccuracy
-  /** Native TimeSpan in constant format, greater than zero and at most two minutes. */
-  timeout: string
+  /** Native TimeSpan in constant format; omitted uses the native request default. */
+  timeout?: string
   /** Explicit temporary precise-location permission request; defaults to false. */
   requestFullAccuracy?: boolean
 }
@@ -50,24 +50,14 @@ function location(value: unknown): Location | null {
     isFromMockProvider: boolean(v.isFromMockProvider),
     altitudeReferenceSystem: enumValue(v.altitudeReferenceSystem, ['unspecified', 'terrain', 'ellipsoid', 'geoid', 'surface']),
   }
-  if (Math.abs(result.latitude) > 90 || Math.abs(result.longitude) > 180 ||
-    !Number.isFinite(Date.parse(result.timestamp)))
-    throw new NativeError('invalid_response', 'Invalid native location.')
   return result
 }
 /**
  * Starts a cancellable native location request; OS settings and permissions remain authoritative.
- * @param request - Actual MAUI request fields, including a bounded native timeout.
+ * @param request - Actual MAUI request fields; omitted uses a default native request.
  * @returns A native operation; null means the OS could not determine a location.
  * @throws `NativeError` for permission denial, missing configuration or unsupported native APIs.
  */
-export async function getLocation(request: GeolocationRequest): Promise<Operation<Location | null>> {
-  const desiredAccuracy = enumValue(request.desiredAccuracy ?? 'default', ['default', 'lowest', 'low', 'medium', 'high', 'best'], 'invalid_arguments')
-  const timeout = typeof request.timeout === 'string' ? /^00:(0[0-2]):([0-5]\d(?:\.\d{1,7})?)$/.exec(request.timeout) : null
-  const seconds = timeout ? Number(timeout[1]) * 60 + Number(timeout[2]) : 0
-  if (!timeout || seconds <= 0 || seconds > 120)
-    throw new NativeError('invalid_arguments', 'Use a native TimeSpan greater than zero and at most two minutes.')
-  if (request.requestFullAccuracy !== undefined && typeof request.requestFullAccuracy !== 'boolean')
-    throw new NativeError('invalid_arguments', 'Full-accuracy permission must be an explicit boolean.')
-  return (await connect()).start('geolocation.location', { request: { desiredAccuracy, timeout: request.timeout, requestFullAccuracy: request.requestFullAccuracy ?? false } }, location)
+export async function getLocation(request: GeolocationRequest = {}): Promise<Operation<Location | null>> {
+  return (await connect()).start('geolocation.location', { request: request as unknown as Json }, location)
 }

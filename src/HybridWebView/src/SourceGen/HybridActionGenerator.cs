@@ -80,8 +80,14 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			}
 			foreach (var member in Members(type).Distinct(SymbolEqualityComparer.Default))
 			{
-				var method = member is IMethodSymbol { MethodKind: MethodKind.Ordinary } ordinary ? ordinary : (member as IPropertySymbol)?.GetMethod;
-				if (method is not null && method.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == AttributeName))
+				var accessors = member switch
+				{
+					IMethodSymbol { MethodKind: MethodKind.Ordinary } ordinary => new[] { ordinary },
+					IPropertySymbol property => new[] { property.GetMethod, property.SetMethod },
+					_ => Array.Empty<IMethodSymbol?>(),
+				};
+				foreach (var method in accessors.OfType<IMethodSymbol>().Where(method =>
+					method.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == AttributeName)))
 				{
 					if (targets.ContainsKey(method))
 						output.ReportDiagnostic(Diagnostic.Create(InvalidRoot, Location.None, type.Name, "member is imported more than once"));
@@ -229,7 +235,7 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 					}
 					var result = Result(method);
 					if (result is not null && !Bytes(result))
-						graph.Add(result);
+						graph.Add(result, outputOnly: true);
 				}
 				catch (JsonContractException error)
 				{
@@ -371,6 +377,8 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			return "generic, abstract or by-reference method";
 		if (method.IsAsync && method.ReturnsVoid)
 			return "async void is not awaitable";
+		if (method.AssociatedSymbol is IPropertySymbol { IsIndexer: true } || method.IsInitOnly)
+			return "indexers and init-only accessors cannot be invoked as actions";
 		if (method.Parameters.Any(p => p.RefKind != RefKind.None || p.Type.TypeKind == TypeKind.Delegate))
 			return "by-reference or delegate parameter";
 		if (method.ReturnType.TypeKind == TypeKind.Delegate)
@@ -581,6 +589,8 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 				throw new JsonContractException(type, "inaccessible or polymorphic/custom-converter DTO");
 			if (properties.Select(WireName).Distinct(StringComparer.Ordinal).Count() != properties.Count)
 				throw new JsonContractException(type, "duplicate JSON property names");
+			if (type.TypeKind == TypeKind.Struct && properties.Count == 0)
+				throw new JsonContractException(type, "opaque value types require a typed converter or an explicitly rooted source context");
 			var constructors = type.InstanceConstructors.Where(c => Accessible(c) &&
 				c.Parameters.All(p => p.RefKind == RefKind.None && properties.Any(property => string.Equals(property.Name, p.Name, StringComparison.OrdinalIgnoreCase) &&
 					SymbolEqualityComparer.Default.Equals(property.Type, p.Type)))).ToArray();
@@ -831,8 +841,6 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 					read = "operation.BindChannel<" + TypeName(channel) + ">(" + read + ", " + (Bytes(channel) ? "null" : Info(channel)) + ")";
 				Line("var arg" + i + " = " + (parameter.HasExplicitDefaultValue ? "args.Has(" + i + ") ? " + read + " : " + Default(parameter) : read) + ";");
 			}
-			if (imported)
-				Line("global::Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy.Validate(services, " + Literal(Name(method)) + ", json);");
 			Line("Task<" + (binary ? "byte[]" : "JsonElement") + "> Invoke()");
 			Line("{");
 			var arguments = method.Parameters.Select(parameter =>
@@ -853,16 +861,18 @@ public sealed class HybridActionGenerator : IIncrementalGenerator
 			var receiver = method.IsStatic ? TypeName(method.ContainingType) : "services.GetRequiredService<" + target + ">()";
 			if (imported && !method.IsStatic && !SymbolEqualityComparer.Default.Equals(method.ContainingType, provider))
 				receiver = "((" + TypeName(method.ContainingType) + ")" + receiver + ")";
-			var call = method.MethodKind == MethodKind.PropertyGet ? receiver + ".@" + method.AssociatedSymbol!.Name :
-				receiver + ".@" + method.Name + "(" + string.Join(", ", arguments) + ")";
+			var call = method.MethodKind switch
+			{
+				MethodKind.PropertyGet => receiver + ".@" + method.AssociatedSymbol!.Name,
+				MethodKind.PropertySet => receiver + ".@" + method.AssociatedSymbol!.Name + " = " + arguments.Single(),
+				_ => receiver + ".@" + method.Name + "(" + string.Join(", ", arguments) + ")",
+			};
 			if (Awaitable(method))
 			{
 				Line("return Await();");
 				Line("async Task<" + (binary ? "byte[]" : "JsonElement") + "> Await()");
 				Line("{");
 				Line((result is null ? "" : "var result = ") + "await " + call + ";");
-				if (Name(method) == "clipboard.read")
-					Line("global::Microsoft.Maui.Controls.HybridWebApps.HybridNativePolicy.ValidateText(services, result);");
 				EmitResult(result, false);
 				Line("}");
 			}

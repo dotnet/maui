@@ -134,7 +134,7 @@ builder.Services
 `AddHybridApp(IServiceCollection, HybridAppOptions)` records typed local factories,
 immutable policy, a default `TimeProvider.System` clock and **only implemented** product providers:
 AppInfo, DeviceInfo, Clipboard, Preferences, Battery, Display, FilePicker resources,
-Connectivity, TextToSpeech, HTTPS Launcher, native Geolocation, bounded Share and
+Connectivity, TextToSpeech, URI Launcher, native Geolocation, bounded Share and
 MAUI page/window UI providers. It supplies borrowed real
 Essentials interface defaults in the local overlay; host overrides are retained.
 Hubs, registries, notifications, contextual objects and plugin targets are
@@ -163,7 +163,7 @@ string quota, ownership index or rollback. Native `Clear(sharedName)` clears the
 entire selected container, including settings created outside JavaScript.
 Native errors and partial writes preserve destination behavior.
 The remaining `MaximumTextLength` option defaults to 4096 UTF-16 units and applies
-to clipboard/share, not speech or preferences.
+only to the share resource adapter, not native clipboard, speech or preferences.
 
 `ITextToSpeech` declares `speech.locales` (MainThread) and `speech.speak`
 (MainThread/Interactive) directly. The curated `HybridExport` root emits direct
@@ -259,8 +259,10 @@ await using var local = hostScope.ServiceProvider.CreateHybridAppProvider();
 var hub = local.GetRequiredService<HybridAppTargetObject>();
 ```
 
-The product imports `IClipboard`, `IGeolocation`, `IWindow` and selected annotated
-`Page` overloads in one generated assembly registration. Imported interfaces and
+The product imports `IAppInfo`, `IDeviceInfo`, `IBattery`, `IDeviceDisplay`,
+`IConnectivity`, the URI-only `ILauncher` overloads, `IClipboard`, `ITextToSpeech`,
+`IGeolocation`, contextual `IWindow` and selected annotated `Page`/`Application`
+members in one generated assembly registration. Imported interfaces and
 abstract/contextual classes are never constructed. Calls resolve the exact
 interface override (`GetRequiredService<IClipboard>()`), or the live nearest
 logical Page/owning Window/primary HybridWebView at invocation. Detached views
@@ -288,11 +290,39 @@ The consumer proof roundtrips extensible `DevicePlatform.Create("CustomDesktop")
 through a consumer converter rather than a closed platform switch.
 
 `geolocation.location` takes the actual `GeolocationRequest` and returns actual
-`Location?`, using an explicit STJ context for Location. Native timeout must be
-positive and at most two minutes. The native host declares Android coarse/fine
+`Location?`, using an explicit STJ context for Location. An empty request preserves
+the native default, including its zero timeout; timeout semantics belong to
+Essentials, with no product two-minute rule. The native host declares Android coarse/fine
 location, Apple when-in-use/temporary precise descriptions, and Windows location
 capability. OS permission/settings/unsupported failures remain explicit. No
 coordinates are logged by the demonstration.
+
+Property getters and setters are annotated independently. Setters bind their
+ordinary implicit `value` parameter from `{ "value": ... }` or `[value]`, invoke
+the actual receiver on the declared main-thread boundary and return native void
+completion (`null`). Indexers and init-only setters diagnose at compile time.
+Readonly native results/events need only public getters, not invented JSON
+constructors. If the same type is used as input it must have a supported
+constructor or explicit typed metadata. Opaque value structs diagnose instead
+of becoming empty objects. Strict source contexts provide reusable typed
+DevicePlatform/DeviceIdiom string converters (including custom identifiers),
+and the built-in AOT-safe System.Version string converter; native enums keep
+their declared strict camelCase names.
+
+There are no C# app/device/battery/display/connectivity/theme snapshot DTOs or
+providers. JavaScript convenience reads compose independent native properties,
+not atomic snapshots. Battery, energy saver, display and connectivity events use
+the same typed first/last subscription lifecycle as clipboard/application.
+Launcher returns the actual native bool, including false, and accepts native
+URI schemes without the remote guest's HTTPS policy. No file-request overload
+is exported. Direct clipboard strings have no share-adapter text limit.
+
+Window adapters deliberately remain: their title/size/position operations also
+target document-authorized child generations, enforce ownership/capability and
+carry private leases. Annotating unrestricted Window setters would not replace
+that resource contract. Menu and remote browser resources, selected files/readers,
+bounded share staging/structural union and generic preference scalar adaptation
+are likewise deliberate adapters, not routine native pass-through wrappers.
 
 `ShareProvider` remains a deliberate policy/resource adapter. It uses a real
 .NET 11 `NativeShareRequest(ShareTextRequest, ShareFileRequest,

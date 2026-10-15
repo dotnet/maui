@@ -46,13 +46,23 @@ public sealed class NativeContractTests
 	[InlineData("""{"request":{"timeout":"00:00:00"}}""")]
 	[InlineData("""{"request":{"timeout":"-00:00:01"}}""")]
 	[InlineData("""{"request":{"timeout":"01:00:00"}}""")]
-	[InlineData("""{"request":{"timeout":null}}""")]
 	[InlineData("""[{"timeout":"00:02:01"}]""")]
-	public void NativeGeolocationPolicyRejectsInvalidTimeoutsBeforeInvocation(string arguments)
+	public async Task NativeGeolocationDefaultsAndTimeoutsReachTheDestination(string arguments)
 	{
-		using var services = new ServiceCollection().BuildServiceProvider();
-		Assert.Equal("invalid_arguments", Assert.Throws<CommandException>(() =>
-			HybridNativePolicy.Validate(services, "geolocation.location", Json(arguments))).Code);
+		var services = TestComposition.Services();
+		using var context = Context();
+		var geo = new FakeGeolocation();
+		services.AddSingleton<IGeolocation>(geo);
+		using var root = services.BuildServiceProvider();
+		using var hostScope = root.CreateScope();
+		using var local = hostScope.ServiceProvider.CreateHybridAppProvider();
+		local.GetRequiredService<HybridViewContext>().Bind(context.Page, context.Window, "index.html");
+		var registry = local.GetRequiredService<CommandRegistry>();
+		await registry.DispatchAsync("geolocation.location", Json(arguments), new Operation("session", "request", default, (_, _) => { }));
+		Assert.NotNull(geo.Request);
+		using var json = JsonDocument.Parse(arguments);
+		var request = json.RootElement.ValueKind == JsonValueKind.Array ? json.RootElement[0] : json.RootElement.GetProperty("request");
+		Assert.Equal(request.TryGetProperty("timeout", out var timeout) ? TimeSpan.Parse(timeout.GetString()!) : TimeSpan.Zero, geo.Request.Timeout);
 	}
 
 	[Theory]

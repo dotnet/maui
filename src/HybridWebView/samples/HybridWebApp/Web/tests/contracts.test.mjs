@@ -55,8 +55,9 @@ test('playground reload identity composes installed Essentials helpers with app-
     architecture: 'arm64', pid: 123, startupId: 'native-startup', startedAt: '2026-10-12T00:00:00Z' }
   const host = mock(request => {
     if (request.command === 'core.connect') return { commands: [], maximumTextLength: 4096 }
-    if (request.command === 'app.info') return { appName: identity.appName, version: identity.version, build: identity.build }
-    if (request.command === 'device.info') return { platform: identity.platform, osVersion: identity.osVersion, model: identity.model }
+    const properties = { 'appInfo.name': identity.appName, 'appInfo.versionString': identity.version, 'appInfo.buildString': identity.build,
+      'deviceInfo.platform': identity.platform, 'deviceInfo.versionString': identity.osVersion, 'deviceInfo.model': identity.model }
+    if (Object.hasOwn(properties, request.command)) return properties[request.command]
     assert.equal(request.command, 'sample.diagnostics')
     return { architecture: identity.architecture, pid: identity.pid, startupId: identity.startupId, startedAt: identity.startedAt }
   })
@@ -65,7 +66,8 @@ test('playground reload identity composes installed Essentials helpers with app-
   try {
     assert.deepEqual(await getIdentity(client), identity)
     assert.deepEqual(await getIdentity(client), identity, 'the host owns process identity across repeated reads')
-    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'sample.diagnostics', 'app.info', 'device.info', 'sample.diagnostics', 'app.info', 'device.info'])
+    const reads = ['sample.diagnostics', 'appInfo.name', 'appInfo.versionString', 'appInfo.buildString', 'deviceInfo.platform', 'deviceInfo.versionString', 'deviceInfo.model']
+    assert.deepEqual(host.requests.map(request => request.command), ['core.connect', ...reads, ...reads])
     assert.ok(host.requests.every(request => request.session === client.session))
     const source = await readFile(new URL('../src/native/sample.ts', import.meta.url), 'utf8')
     assert.ok(source.includes("from '@maui/api/essentials/app-info'"))

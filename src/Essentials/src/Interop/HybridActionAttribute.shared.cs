@@ -3,7 +3,8 @@ using System;
 
 namespace Microsoft.Maui.Interop;
 
-/// <summary>Exposes an accessible method through an explicitly opted-in hybrid action provider.</summary>
+/// <summary>Exposes an accessible method or property accessor through an explicitly opted-in hybrid action provider.</summary>
+/// <remarks>Annotate getters and setters independently. A setter binds its ordinary implicit <c>value</c> parameter and returns native void completion.</remarks>
 /// <param name="name">The unique, bounded native wire-command name.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class HybridActionAttribute(string name) : Attribute

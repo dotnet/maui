@@ -91,15 +91,15 @@ promote('Native menus, toolbars and context menus', 'menus', 'App & windows', 'm
 promote('Theme and appearance', 'theme', 'App & windows', 'theme',
   'Choose native application light/dark/unspecified preference from TypeScript; unspecified follows the OS. Apply actual native theme-change events to Svelte CSS. This is not a per-window or remote-site theme.', `${maui}user-interface/system-theme-changes`)
 promote('Battery', 'battery', 'Essentials', 'battery',
-  'Refresh native battery charge, power source and energy-saver state. No browser battery values or background monitoring.', `${maui}platform-integration/device/battery`)
+  'Read native power properties and explicitly observe battery or energy-saver changes. Leaving removes only this page’s callbacks; no browser emulation.', `${maui}platform-integration/device/battery`)
 promote('Display and DPI', 'display', 'Essentials', 'display',
-  'Refresh main-display pixel dimensions, density, orientation and rotation from the native OS. These are not CSS viewport dimensions.', `${maui}platform-integration/device/display`)
+  'Read actual main-display metrics, explicitly observe native changes and edit KeepScreenOn. These are native properties, not CSS viewport measurements.', `${maui}platform-integration/device/display`)
 promote('Connectivity', 'connectivity', 'Essentials', 'connectivity',
   'Read fresh native network conditions and subscribe to actual OS network changes. Unsubscribe detaches this listener; Internet is not a reachability guarantee.', `${maui}platform-integration/communication/networking`)
 promote('Text-to-speech', 'text-to-speech', 'Essentials', 'textToSpeech',
   'Speak on an explicit click with native locales, pitch, volume and rate. Cancel only this speech through its actual native operation token.', `${maui}platform-integration/device-media/text-to-speech`)
 promote('Open external links', 'launcher', 'Essentials', 'launcher',
-  'Launch a validated public HTTPS website with the native system launcher on an explicit click. Never an in-app browser or embedded guest.', `${maui}platform-integration/appmodel/launcher`)
+  'Query or launch a native URI on an explicit click. Native schemes and boolean refusal pass through; never an in-app browser or embedded guest.', `${maui}platform-integration/appmodel/launcher`)
 promote('Location', 'geolocation', 'Essentials', 'geolocation',
   'Request actual native location with MAUI request fields, explicit permission and cancellable timeout. Coordinates stay in this panel, not the operation log.', `${maui}platform-integration/device/geolocation`)
 promote('Share text and files', 'share', 'Essentials', 'share',

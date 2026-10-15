@@ -8,7 +8,7 @@ import { createBrowserView, supportsBrowserView } from '@maui/api/ui/remote-webv
 import { pickFile } from '@maui/api/essentials/file-picker'
 import { getBatteryInfo } from '@maui/api/essentials/battery'
 import { getDisplayInfo } from '@maui/api/essentials/display'
-import { mock } from './bridge.mjs'
+import { mock, nativeProperty } from './bridge.mjs'
 afterEach(() => resetBridge())
 const ready = { commands: [], maximumTextLength: 4096 }
 const base = { id: 'main', windowLease: 'private', initialLocation: 'index.html', title: 'Native',
@@ -20,7 +20,7 @@ test('public modules expose direct services and synchronous Window acquisition w
   assert.deepEqual(Object.keys(await import('@maui/api/ui/dialogs')), ['actionSheet', 'alert', 'confirm', 'prompt'])
   assert.deepEqual(Object.keys(await import('@maui/api/essentials/file-picker')), ['pickFile', 'pickMultipleFiles'])
   assert.deepEqual(Object.keys(await import('@maui/api/ui/menus')), ['Menu'])
-  assert.deepEqual(Object.keys(await import('@maui/api/application')), ['getTheme', 'onThemeChanged', 'openWindow', 'setTheme', 'window', 'windows'])
+  assert.deepEqual(Object.keys(await import('@maui/api/application')), ['getTheme', 'getUserAppTheme', 'onThemeChanged', 'openWindow', 'setTheme', 'window', 'windows'])
 })
 test('Window is local/lazy, getters reread native and app creates caller-ID/generation-bound resources', async () => {
   let title = 'Native'
@@ -124,7 +124,7 @@ test('direct picker/dialog calls and coherent device readouts use one hidden con
   const host = mock(request => request.command === 'core.connect' ? ready
     : request.command === 'filePicker.pick' ? null
     : request.command === 'dialogs.prompt' ? null
-    : request.command === 'battery.info' ? { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' }
+    : request.command.startsWith('battery.') ? nativeProperty(request.command, { chargeLevel: -1, state: 'unknown', powerSource: 'ac', energySaverStatus: 'off' })
     : { width: 1080, height: 1920, density: 3, orientation: 'portrait', rotation: 'rotation0', refreshRate: 60 })
   configureBridge(host.bridge)
   assert.equal(await pickFile(), null)

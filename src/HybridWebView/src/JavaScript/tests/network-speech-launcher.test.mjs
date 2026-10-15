@@ -3,11 +3,11 @@ import assert from 'node:assert/strict'
 import { configureBridge, connect, resetBridge } from '@maui/api/core'
 import { getConnectivity, onConnectivityChanged } from '@maui/api/essentials/connectivity'
 import { getLocales, speak } from '@maui/api/essentials/text-to-speech'
-import { openUrl } from '@maui/api/essentials/launcher'
-import { mock } from './bridge.mjs'
+import { canOpen, openUrl, tryOpen } from '@maui/api/essentials/launcher'
+import { mock, nativeProperty } from './bridge.mjs'
 
-const ready = { commands: ['connectivity.info', 'speech.locales', 'speech.speak', 'launcher.openUrl'],
-  interactiveCommands: ['speech.speak', 'launcher.openUrl'], interactiveTimeoutMilliseconds: 300000,
+const ready = { commands: ['connectivity.networkAccess', 'connectivity.connectionProfiles', 'speech.locales', 'speech.speak', 'launcher.open', 'launcher.canOpen', 'launcher.tryOpen'],
+  interactiveCommands: ['speech.speak', 'launcher.open', 'launcher.tryOpen'], interactiveTimeoutMilliseconds: 300000,
   maximumTextLength: 64 }
 const locale = { id: 'native', language: 'en-US', country: '', name: 'Native voice' }
 afterEach(() => resetBridge())
@@ -26,7 +26,7 @@ test('new service modules import without native calls and never fall back in a b
 test('fresh reads and native change listeners share one client and detach only after the last unsubscribe', async () => {
   let snapshot = { networkAccess: 'internet', connectionProfiles: ['wiFi'] }
   const host = mock(request => request.command === 'core.connect' ? ready :
-    request.command === 'connectivity.info' ? snapshot : { accepted: true })
+    request.command.startsWith('connectivity.') ? nativeProperty(request.command, snapshot) : { accepted: true })
   configureBridge(host.bridge)
   const client = await connect()
   assert.deepEqual(await getConnectivity(), snapshot)
@@ -84,7 +84,7 @@ test('speech uses real locales/options and operation-specific cancellation throu
     if (request.command === 'core.connect') return ready
     if (request.command === 'speech.locales') return [locale]
     if (request.command === 'speech.speak') return new Promise(resolve => { finish = resolve })
-    if (request.command === 'connectivity.info') return { networkAccess: 'local', connectionProfiles: [] }
+    if (request.command.startsWith('connectivity.')) return nativeProperty(request.command, { networkAccess: 'local', connectionProfiles: [] })
     return { accepted: true }
   })
   const invoke = host.bridge.InvokeDotNet
@@ -166,23 +166,24 @@ test('native speech validation errors reach the caller instead of being intercep
   assert.deepEqual(host.requests.at(-1).args, { text: '', options: { pitch: -100 } })
 })
 
-test('external URL calls the native launcher only and rejects unsafe addresses before invoking', async () => {
-  const host = mock(request => request.command === 'core.connect' ? ready : { accepted: true })
+test('URI launcher forwards platform schemes and native boolean results without product URL policy', async () => {
+  const host = mock(request => request.command === 'core.connect' ? ready : false)
   configureBridge(host.bridge)
   for (const url of ['http://example.com', 'file:///private/file', 'javascript:alert(1)', 'mailto:a@example.com',
     'https://user:password@example.com', 'https://127.0.0.1', 'https://0x7f000001', 'https://[::1]',
     'https://10.1.2.3', 'https://localhost', 'https://foo.local', 'https://host.internal', 'https://example.com:9443',
     'https://example.com./', 'https://example.com\\@localhost', ' https://example.com', 'https://example.com/' + 'a'.repeat(2048)])
-    await assert.rejects(() => openUrl(url), error => error.code === 'invalid_url')
-  assert.equal(host.requests.length, 0)
-  await openUrl('https://learn.microsoft.com/dotnet/maui/')
-  assert.deepEqual(host.requests.map(request => request.command), ['core.connect', 'launcher.openUrl'])
-  assert.deepEqual(host.requests[1].args, { url: 'https://learn.microsoft.com/dotnet/maui/' })
+    assert.equal(await openUrl(url), false)
+  assert.equal(await canOpen('mailto:user@example.com'), false)
+  assert.equal(await tryOpen('custom:action'), false)
+  assert.deepEqual(host.requests.at(-1).args, { uri: 'custom:action' })
+  assert.equal(host.requests.at(-1).command, 'launcher.tryOpen')
+  assert.equal(host.requests.filter(request => request.command === 'core.connect').length, 1)
 })
 
 test('malformed native feature outputs are explicit errors and launch refusal is not success', async () => {
   let output
-  const host = mock(request => request.command === 'core.connect' ? ready : output)
+  const host = mock(request => request.command === 'core.connect' ? ready : nativeProperty(request.command, output))
   configureBridge(host.bridge)
   for (const [value, call] of [
     [{ networkAccess: null, connectionProfiles: [] }, getConnectivity],
@@ -195,6 +196,6 @@ test('malformed native feature outputs are explicit errors and launch refusal is
     output = value
     await assert.rejects(call, error => error.code === 'invalid_response')
   }
-  output = { accepted: false }
-  await assert.rejects(() => openUrl('https://dot.net/maui'), error => error.code === 'launch_failed')
+  output = false
+  assert.equal(await openUrl('https://dot.net/maui'), false)
 })

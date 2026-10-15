@@ -26,43 +26,43 @@ namespace Microsoft.Maui.Devices
 		/// <summary>
 		/// Gets the model of the device.
 		/// </summary>
-		string Model { get; }
+		string Model { [Microsoft.Maui.Interop.HybridAction("deviceInfo.model", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the manufacturer of the device.
 		/// </summary>
-		string Manufacturer { get; }
+		string Manufacturer { [Microsoft.Maui.Interop.HybridAction("deviceInfo.manufacturer", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the name of the device.
 		/// </summary>
 		/// <remarks>This value is often specified by the user of the device.</remarks>
-		string Name { get; }
+		string Name { [Microsoft.Maui.Interop.HybridAction("deviceInfo.name", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the string representation of the version of the operating system.
 		/// </summary>
-		string VersionString { get; }
+		string VersionString { [Microsoft.Maui.Interop.HybridAction("deviceInfo.versionString", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the version of the operating system.
 		/// </summary>
-		Version Version { get; }
+		Version Version { [Microsoft.Maui.Interop.HybridAction("deviceInfo.version", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the platform or operating system of the device.
 		/// </summary>
-		DevicePlatform Platform { get; }
+		DevicePlatform Platform { [Microsoft.Maui.Interop.HybridAction("deviceInfo.platform", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the idiom (form factor) of the device.
 		/// </summary>
-		DeviceIdiom Idiom { get; }
+		DeviceIdiom Idiom { [Microsoft.Maui.Interop.HybridAction("deviceInfo.idiom", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the type of device the application is running on.
 		/// </summary>
-		DeviceType DeviceType { get; }
+		DeviceType DeviceType { [Microsoft.Maui.Interop.HybridAction("deviceInfo.deviceType", MainThread = true)] get; }
 	}
 
 	/// <summary>

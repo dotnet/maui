@@ -17,7 +17,7 @@ public static class HybridAppServiceCollectionExtensions
 {
 	/// <summary>Configures local hub/provider factories and borrowed native defaults without globally registering view services.</summary>
 	/// <param name="services">The host's service registrations.</param>
-	/// <param name="options">Immutable host clipboard/share text and window resource limits.</param>
+	/// <param name="options">Immutable host share-adapter text and window resource limits.</param>
 	/// <returns>The same collection for further explicit registrations.</returns>
 	/// <remarks>
 	/// Registers only implemented providers, not every Essentials or Controls feature.

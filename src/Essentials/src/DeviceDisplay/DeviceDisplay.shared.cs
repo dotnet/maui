@@ -11,16 +11,21 @@ namespace Microsoft.Maui.Devices
 		/// <summary>
 		/// Gets or sets if the screen should be kept on.
 		/// </summary>
-		bool KeepScreenOn { get; set; }
+		bool KeepScreenOn
+		{
+			[Microsoft.Maui.Interop.HybridAction("display.keepScreenOn", MainThread = true)] get;
+			[Microsoft.Maui.Interop.HybridAction("display.setKeepScreenOn", MainThread = true)] set;
+		}
 
 		/// <summary>
 		/// Gets the main screen's display info.
 		/// </summary>
-		DisplayInfo MainDisplayInfo { get; }
+		DisplayInfo MainDisplayInfo { [Microsoft.Maui.Interop.HybridAction("display.mainDisplayInfo", MainThread = true)] get; }
 
 		/// <summary>
 		/// Occurs when the main display's info changes.
 		/// </summary>
+		[Microsoft.Maui.Interop.HybridEvent("display.mainDisplayInfoChanged")]
 		event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
 	}
 

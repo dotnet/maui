@@ -3,7 +3,6 @@ using System.Text.Json.Serialization.Metadata;
 using HybridApp.ExternalProvider;
 using Maui.Controls.Sample.HybridWebApp.Playground;
 using Microsoft.Maui.Controls.HybridWebApps;
-using Microsoft.Maui.Controls.HybridWebApps.Essentials.AppInfo;
 using Microsoft.Maui.Controls.HybridWebApps.Essentials.Preferences;
 using Xunit;
 
@@ -28,7 +27,7 @@ public sealed class HubTests
 		var dispatcher = new NativeDispatcher(action => action());
 		var notifications = new NativeNotifications();
 		var hub = TestComposition.CreateHub([
-			new AppInfoProvider(new FakeAppInfo { Error = new NotSupportedException("Tests do not invent native app support.") }),
+			new FakeAppInfo { Error = new NotSupportedException("Tests do not invent native app support.") },
 			clipboard, dispatcher,
 			new PreferencesProvider(preferences ?? new FakePreferences()),
 			new SamplePlugin(),
@@ -100,7 +99,7 @@ public sealed class HubTests
 	}
 
 	[Fact]
-	public async Task ClipboardBoundsRemainIndependentOfNativePreferenceKeys()
+	public async Task NativeClipboardAndPreferenceKeysAreNotLimitedByTheShareAdapterBudget()
 	{
 		var clipboard = new FakeClipboard();
 		var preferences = new FakePreferences();
@@ -108,8 +107,8 @@ public sealed class HubTests
 		await Connect(hub);
 		foreach (var key in new[] { "", "../other", "a.b", new string('a', 49), "你好" })
 			Assert.Equal("success", (await Call(hub, "preferences.contains", new { key })).Status);
-		Assert.Equal("invalid_arguments", (await Call(hub, "clipboard.write", new { text = new string('x', 4097) })).Error!.Code);
-		Assert.Equal(0, clipboard.Calls);
+		Assert.Equal("success", (await Call(hub, "clipboard.write", new { text = new string('x', 4097) })).Status);
+		Assert.Equal(1, clipboard.Calls);
 		Assert.Equal(5, preferences.Calls);
 		Assert.Equal("success", (await Call(hub, "preferences.set", new { key = "example", value = new { kind = "string", text = "你好" } })).Status);
 		Assert.Equal("你好", (await Call(hub, "preferences.get", new { key = "example", defaultValue = new { kind = "string", text = "" } })).Result!.Value.GetProperty("text").GetString());
@@ -244,7 +243,7 @@ public sealed class HubTests
 	{
 		using var hub = CreateHub(new FakeClipboard(), _ => { });
 		await Connect(hub);
-		var response = await Call(hub, "app.info", new { });
+		var response = await Call(hub, "appInfo.name", new { });
 		Assert.Equal("error", response.Status);
 		Assert.Equal("unsupported", response.Error!.Code);
 		Assert.Null(response.Result);
@@ -293,7 +292,7 @@ public sealed class HubTests
 		var ready = response.Result!.Value.Deserialize(json.ReadyResult)!;
 		Assert.Equal(128, ready.MaximumTextLength);
 		Assert.Contains("plugin.echo", ready.Commands);
-		Assert.Contains("app.info", ready.Commands);
+		Assert.Contains("appInfo.name", ready.Commands);
 		Assert.Contains("sample.echo", ready.Commands);
 		Assert.Equal("unknown_command", (await Call(hub, "missing.command", new { })).Error!.Code);
 		Assert.Equal("unknown_topic", (await Call(hub, "core.subscribe", new { topic = "missing.topic" })).Error!.Code);

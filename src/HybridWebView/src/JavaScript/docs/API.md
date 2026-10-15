@@ -11,17 +11,17 @@ documentation](RELEASING.md#source-reference-and-docfxmicrosoft-learn)).
 | --- | --- |
 | `@maui/api` | `connect`, `disconnect`, `invoke`, `invokeBinary`, `Channel`, `binaryBlob`, `NativeClient`, `NativeError`; core/binary/channel argument types |
 | `@maui/api/core` | Infrastructure above, `configureBridge`, `resetBridge`, connection generation/readiness, `subscribeShared`, bootstrap and JSON validators |
-| `@maui/api/application` | Services `windows`, `window(id)`, `openWindow(options)`, `getTheme`, `setTheme`, `onThemeChanged`; theme types |
-| `@maui/api/essentials/app-info` | Service `getAppInfo()`; `AppInfo` |
-| `@maui/api/essentials/device-info` | Service `getDeviceInfo()`; `DeviceInfo` |
+| `@maui/api/application` | Services `windows`, `window(id)`, `openWindow(options)`, `getTheme`, `getUserAppTheme`, `setTheme`, `onThemeChanged`; theme types |
+| `@maui/api/essentials/app-info` | Native property getters plus convenience `getAppInfo()`; `AppInfo`, native theme/packaging/layout types |
+| `@maui/api/essentials/device-info` | Native property getters plus convenience `getDeviceInfo()`; `DeviceInfo`, `DeviceType`; extensible platform/idiom strings |
 | `@maui/api/essentials/clipboard` | Services `getText`, `setText`, `hasText`, `onContentChanged` |
 | `@maui/api/essentials/preferences` | Services `get`, `set`, `contains`, `remove`, `clear`; `PreferenceValue`, `PreferenceOptions` |
-| `@maui/api/essentials/battery` | Service `getBatteryInfo()`; `BatteryInfo` |
-| `@maui/api/essentials/display` | Service `getDisplayInfo()`; `DisplayInfo` |
-| `@maui/api/essentials/connectivity` | Services `getConnectivity()`, `onConnectivityChanged(listener)`; `ConnectivityInfo` |
+| `@maui/api/essentials/battery` | Native getters, convenience `getBatteryInfo()`, `onBatteryInfoChanged`, `onEnergySaverStatusChanged`; native enum types |
+| `@maui/api/essentials/display` | `getDisplayInfo()`, `getKeepScreenOn`, `setKeepScreenOn`, `onMainDisplayInfoChanged`; native `DisplayInfo` |
+| `@maui/api/essentials/connectivity` | `getNetworkAccess`, `getConnectionProfiles`, convenience `getConnectivity()`, `onConnectivityChanged(listener)` |
 | `@maui/api/essentials/text-to-speech` | Services `getLocales()`, `speak(text, options?)`; `SpeechLocale`, `SpeechOptions`; core `Operation<void>` cancellation |
-| `@maui/api/essentials/launcher` | Service `openUrl(url)`; public HTTPS external native system launch only |
-| `@maui/api/essentials/geolocation` | Service `getLocation(request)`; actual `GeolocationRequest`, `Location`, cancellable core `Operation<Location|null>` |
+| `@maui/api/essentials/launcher` | `canOpen(uri)`, `openUrl(uri)`, `tryOpen(uri)`; actual native booleans including false, native URI schemes |
+| `@maui/api/essentials/geolocation` | `getLocation(request?)`; actual `GeolocationRequest`, `Location`, cancellable core `Operation<Location|null>` |
 | `@maui/api/essentials/share` | `stageFile`, `share`, `releaseFile`; opaque `StagedFile` and explicit native text/file/multi-file request shapes |
 | `@maui/api/essentials/file-picker` | Services `pickFile(options?)`, `pickMultipleFiles(options?)`; resources `PickedFile`, `FileReader`; picker/chunk types |
 | `@maui/api/ui/windows` | Synchronous local acquisition `currentWindow(): Window`; single resource class `Window`; contextual Core getter `getCurrentFlowDirection`; size/position/options/capability types |
@@ -85,11 +85,13 @@ These are supported subsets of MAUI Essentials, not a claim that every .NET
 AppInfo/DeviceInfo member or every platform is implemented. There is no
 browser/user-agent/package-version fallback.
 
-`getAppInfo` uses `app.info`; `getDeviceInfo` uses the independently registered
-`device.info`. Each native provider owns only its corresponding Essentials API,
-DTOs and generated JSON context. Extra fields are not leaked into helper results.
-This unpublished preview's internal wire mapping changed from the former combined
-identity response; public module names and return types remain unchanged.
+`getAppInfo` composes `appInfo.name`, `appInfo.versionString`, `appInfo.buildString`;
+`getDeviceInfo` composes `deviceInfo.platform`, `deviceInfo.versionString`,
+`deviceInfo.model`. These are independent native reads, not atomic snapshots.
+There are no native identity DTOs/providers. Direct module getters additionally
+expose all eight curated readable properties of each interface. DevicePlatform
+and DeviceIdiom preserve exact extensible native identifiers through typed
+converters; Version uses the standard System.Version string representation.
 Process architecture, numeric pid, startupId and startedAt are returned only by
 the sample-owned `sample.diagnostics` command and decoded by `Web/src/native/sample.ts`.
 That app-owned helper composes the installed AppInfo/DeviceInfo helpers with its
@@ -114,7 +116,8 @@ requestFullAccuracy: false })` returns a cancellable native operation whose
 result is actual MAUI `Location|null`. Accuracy is a request, not a guarantee.
 `altitudeReferenceSystem` uses only the native camelCase names `unspecified`,
 `terrain`, `ellipsoid`, `geoid`, and `surface`. Numeric enum values are rejected.
-Native TimeSpan is positive and at most two minutes. The managed host must
+`getLocation()` sends an empty request, retaining actual native defaults.
+Native TimeSpan values are forwarded without a product timeout range. The managed host must
 declare its platform permissions; OS denial, disabled settings and unsupported
 APIs remain explicit errors. There is no browser geolocation or mock fallback.
 
@@ -162,14 +165,13 @@ that operation when its owner disappears. Speech has the bounded native interact
 background execution. Unsupported engines, missing voices or native failures
 are explicit, never browser `speechSynthesis`.
 
-`openUrl` calls actual native `ILauncher.OpenAsync(Uri)` after the shared
-`RemoteWebAddress` public HTTPS policy. Credentials, IP literals, local/internal
-names, non-HTTPS schemes, custom ports and oversized/non-ASCII addresses are
-rejected before launch. It exposes no file, shell or custom-scheme authority.
-A native false return is `launch_failed`, not successful site loading. Trigger
-launch only on an explicit user click. Neither an in-app browser nor embedded
-guest nor `window.open` is used. This is an address policy, not a DNS/redirect
-firewall. Platform/permission/unsupported errors remain explicit.
+`canOpen`, `openUrl` and `tryOpen` call the corresponding annotated native
+`ILauncher` URI overloads without the separate remote guest's HTTPS policy.
+Native schemes and validation belong to the destination. They return actual
+booleans, including false refusal, not acknowledgement envelopes or invented
+errors. There is no `OpenFileRequest` export, arbitrary native path adapter,
+shell execution, retry, `window.open` fallback or promise of site loading.
+Trigger native launch only on an explicit user click. Native errors remain explicit.
 
 ```ts
 import { getConnectivity, onConnectivityChanged } from '@maui/api/essentials/connectivity'
@@ -187,8 +189,8 @@ await speech.result
 await openUrl('https://learn.microsoft.com/dotnet/maui/')
 ```
 
-Native host composition uses `ConnectivityProvider`, the curated `ITextToSpeech`
-root and `LauncherProvider`. Inject `IConnectivity` using
+Native host composition explicitly roots annotated `IConnectivity`, `ITextToSpeech`
+and URI-only `ILauncher` contracts, without routine provider wrappers. Defaults use
 `Connectivity.Current`, `ITextToSpeech` using `TextToSpeech.Default` and
 `ILauncher` using `Launcher.Default`. Generated bindings use explicit strict
 typed JSON metadata and the network topic; they are product
@@ -201,7 +203,8 @@ Each helper validates its result fields at runtime, including nullability.
 Core numeric validators require finite numbers. Inputs are typed but
 **native validation is authoritative**:
 TypeScript is not a security boundary and JavaScript callers can supply invalid
-values. The reference clipboard/share text budget remains 4096 UTF-16 code units.
+values. The share resource-adapter text budget remains 4096 UTF-16 code units;
+direct native clipboard calls have no adapter quota.
 Speech and preference values have no SDK business limits; JSON/schema,
 finite native numeric representation and bounded transport remain enforced.
 
@@ -361,7 +364,7 @@ The shared root `connect()`/`loadNativeBridge()` remains MAUI-specific. See the
   `available` reports transport presence and non-disposed state, **not** provider
   availability, handshake success, OS authorization or an unexpired lease.
 - `connect(): Promise<Ready>`: invokes `core.connect`; returns commands,
-  maximumTextLength (clipboard/share, not speech/preferences). Metadata is descriptive; the
+  maximumTextLength (share resource adapter, not native clipboard/speech/preferences). Metadata is descriptive; the
   reference command list includes disabled registered names too.
 - `invoke(command, args, decode): Promise<T>`: validates response version and
   identities, then the supplied `Decoder<T>`. Use JSON-compatible args.

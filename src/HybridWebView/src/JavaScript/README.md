@@ -4,7 +4,7 @@
 .NET MAUI project. It provides typed native commands, document-scoped events
 and separate Essentials / MAUI UI feature modules for app/device information,
 clipboard, preferences, battery/display, native connectivity events, cancellable
-text-to-speech, external HTTPS launching, actual native geolocation, bounded native
+text-to-speech, native URI launching, actual native geolocation, bounded native
 text/file/multi-file sharing, selected-file/read-stream resources, page-owned
 dialogs and scoped windows.
 
@@ -100,11 +100,24 @@ Chooser completion (especially Android) is not recipient consumption. See
 This **unpublished preview was intentionally reshaped**: the old `app/info`,
 `getInfo` and SDK `Identity` exports were removed, not aliased. AppInfo exposes
 only native appName/version/build; DeviceInfo exposes platform/osVersion/model.
-They use independently registered `app.info` and `device.info` commands.
+They compose independent annotated `appInfo.*` and `deviceInfo.*` native getters.
+Direct native getters are also exported by the corresponding modules, including
+package/manufacturer, native Version strings, custom platform/idiom identifiers
+and exact native enums. These convenience objects are not atomic native snapshots.
 Process architecture, PID, startup UUID and timestamp are playground-owned
 diagnostics from `sample.diagnostics`, not Essentials. This unpublished preview's
 internal wire split requires the matching managed host; the public JavaScript
 module names and result types are unchanged.
+
+Battery and connectivity convenience reads likewise compose native properties.
+Battery/energy-saver/display/connectivity callbacks bind actual native events.
+Display keep-screen-on and application theme setters use the general accessor
+binder (`{ value }`), with native void completion. Launcher `canOpen`, `openUrl`
+and `tryOpen` preserve native booleans and native URI schemes; false is a result,
+not an exception. The SDK has no clipboard string quota or location timeout
+policy. Destination validation, OS permissions and finite transport/lifetime
+budgets still apply. See [the protocol](docs/PROTOCOL.md#registered-commands)
+for the exact curated surface and remaining resource adapters.
 
 ## Source documentation and generated reference
 

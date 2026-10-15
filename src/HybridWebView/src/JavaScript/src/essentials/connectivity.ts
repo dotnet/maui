@@ -23,11 +23,21 @@ function decode(value: unknown): ConnectivityInfo {
  * Reads fresh network conditions from the native Connectivity interface.
  * @returns OS-reported access and active connection profiles.
  * @throws `NativeError` for missing providers, unsupported native APIs or permission failures.
- * @remarks Requires `connectivity.info`. Even internet does not guarantee that a
+ * @remarks Composes connectivity.networkAccess and connectivity.connectionProfiles. Even internet does not guarantee that a
  * particular endpoint is reachable. No HTTP probe, navigator.onLine or browser fallback is used.
  */
 export async function getConnectivity(): Promise<ConnectivityInfo> {
-  return (await connect()).invoke('connectivity.info', {}, decode)
+  const [networkAccess, connectionProfiles] = await Promise.all([getNetworkAccess(), getConnectionProfiles()])
+  return { networkAccess, connectionProfiles }
+}
+/** Reads native access. @returns OS-reported access, not reachability. */
+export async function getNetworkAccess(): Promise<NetworkAccess> {
+  return (await connect()).invoke('connectivity.networkAccess', {}, value => enumValue(value, ['unknown', 'none', 'local', 'constrainedInternet', 'internet']))
+}
+/** Reads native connection profiles without deduplication or reordering. @returns Native profile enumeration. */
+export async function getConnectionProfiles(): Promise<ConnectionProfile[]> {
+  return (await connect()).invoke('connectivity.connectionProfiles', {}, value =>
+    strings(value).map(profile => enumValue(profile, ['unknown', 'bluetooth', 'cellular', 'ethernet', 'wiFi'])))
 }
 
 /**

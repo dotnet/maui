@@ -22,6 +22,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <param name="uri">URI scheme to query.</param>
 		/// <returns><see langword="true"/> if opening is supported, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
+		[Microsoft.Maui.Interop.HybridAction("launcher.canOpen", MainThread = true)]
 		Task<bool> CanOpenAsync(Uri uri);
 
 		/// <summary>
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <param name="uri">URI to open.</param>
 		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
+		[Microsoft.Maui.Interop.HybridAction("launcher.open", MainThread = true, Interactive = true)]
 		Task<bool> OpenAsync(Uri uri);
 
 		/// <summary>
@@ -45,6 +47,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <param name="uri">URI to try and open.</param>
 		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
+		[Microsoft.Maui.Interop.HybridAction("launcher.tryOpen", MainThread = true, Interactive = true)]
 		Task<bool> TryOpenAsync(Uri uri);
 	}
 

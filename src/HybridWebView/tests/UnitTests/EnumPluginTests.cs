@@ -35,8 +35,8 @@ public sealed class EnumPluginTests
 	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"name":"text","flags":[]}}""")]
 	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"name":"text","name":"email"}}""")]
 	[InlineData("dialogs.prompt", """{"title":"t","message":"m","keyboard":{"flags":[],"flags":[]}}""")]
-	[InlineData("application.setTheme", """{"theme":"system"}""")]
-	[InlineData("application.setTheme", """{"theme":1}""")]
+	[InlineData("application.setUserAppTheme", """{"value":"system"}""")]
+	[InlineData("application.setUserAppTheme", """{"value":1}""")]
 	[InlineData("remote.control", """{"id":"guest","action":"unknown"}""")]
 	[InlineData("remote.control", """{"id":"guest","action":1}""")]
 	[InlineData("menus.install", """{"windowId":"unused","items":[{"id":"menu","text":"Menu","kind":"invalid","enabled":true,"checked":false,"items":null}]}""")]
@@ -46,8 +46,7 @@ public sealed class EnumPluginTests
 		using var context = new HybridViewContext();
 		using var notifications = new NativeNotifications();
 		using var menus = new MenuProvider(context, new FakeDeviceInfo(), notifications);
-		var theme = new ApplicationProvider(new HybridWindowHost());
-		var registry = TestComposition.CreateRegistry(theme, menus,
+		var registry = TestComposition.CreateRegistry(menus,
 			new RemoteWebViewProvider(context, new FakeDeviceInfo(), notifications));
 		using var json = JsonDocument.Parse(args);
 		var error = await Assert.ThrowsAsync<CommandException>(() => registry.DispatchAsync(command, json.RootElement,
@@ -62,8 +61,7 @@ public sealed class EnumPluginTests
 		var host = new HybridWindowHost();
 		host.Bind(application, _ => throw new InvalidOperationException("No windows should be opened."));
 		using var notifications = new NativeNotifications();
-		var plugin = new ApplicationProvider(host);
-		using var hub = TestComposition.CreateHub([plugin, host, notifications], new HybridAppOptions(), notifications: notifications);
+		using var hub = TestComposition.CreateHub([host, notifications], new HybridAppOptions(), notifications: notifications);
 		var session = Guid.NewGuid().ToString("D");
 		var events = new List<JsonElement>();
 		hub.NativeEventReceived += value => events.Add(value.Data);
@@ -71,12 +69,14 @@ public sealed class EnumPluginTests
 		Assert.Equal("success", (await Call(hub, session, "core.subscribe", """{"topic":"application.themeChanged"}""")).Status);
 		foreach (var theme in new[] { "dark", "light", "unspecified" })
 		{
-			var response = await Call(hub, session, "application.setTheme", $$"""{"theme":"{{theme}}"}""");
+			var response = await Call(hub, session, "application.setUserAppTheme", $$"""{"value":"{{theme}}"}""");
 			Assert.Equal("success", response.Status);
-			Assert.Equal(theme, response.Result!.Value.GetProperty("preference").GetString());
+			Assert.Null(response.Result);
+			Assert.Equal(theme, (await Call(hub, session, "application.userAppTheme")).Result!.Value.GetString());
+			var effective = (await Call(hub, session, "application.requestedTheme")).Result!.Value.GetString();
 			if (theme != "unspecified")
-				Assert.Equal(theme, response.Result.Value.GetProperty("effective").GetString());
-			Assert.Equal(response.Result.Value.GetProperty("effective").GetString(), events.Last().GetProperty("requestedTheme").GetString());
+				Assert.Equal(theme, effective);
+			Assert.Equal(effective, events.Last().GetProperty("requestedTheme").GetString());
 		}
 		Assert.Equal(AppTheme.Unspecified, application.UserAppTheme);
 	}

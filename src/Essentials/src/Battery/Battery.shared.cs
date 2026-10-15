@@ -18,31 +18,33 @@ namespace Microsoft.Maui.Devices
 		/// Gets the current charge level of the device from 0.0 to 1.0.
 		/// </summary>
 		/// <remarks>Returns -1 if no battery exists.</remarks>
-		double ChargeLevel { get; }
+		double ChargeLevel { [Microsoft.Maui.Interop.HybridAction("battery.chargeLevel", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the charging state of the device.
 		/// </summary>
-		BatteryState State { get; }
+		BatteryState State { [Microsoft.Maui.Interop.HybridAction("battery.state", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the current power source for the device.
 		/// </summary>
-		BatteryPowerSource PowerSource { get; }
+		BatteryPowerSource PowerSource { [Microsoft.Maui.Interop.HybridAction("battery.powerSource", MainThread = true)] get; }
 
 		/// <summary>
 		/// Gets the current energy saver status of the device.
 		/// </summary>
-		EnergySaverStatus EnergySaverStatus { get; }
+		EnergySaverStatus EnergySaverStatus { [Microsoft.Maui.Interop.HybridAction("battery.energySaverStatus", MainThread = true)] get; }
 
 		/// <summary>
 		/// Occurs when battery properties change.
 		/// </summary>
+		[Microsoft.Maui.Interop.HybridEvent("battery.infoChanged")]
 		event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged;
 
 		/// <summary>
 		/// Occurs when the energy saver status changes.
 		/// </summary>
+		[Microsoft.Maui.Interop.HybridEvent("battery.energySaverStatusChanged")]
 		event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged;
 	}
 
