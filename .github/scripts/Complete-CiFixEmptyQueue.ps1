@@ -51,7 +51,18 @@ function Test-JsonArray {
     return $null -ne $Value -and $Value.GetType() -eq [object[]]
 }
 
-$snapshot = Get-Content -Raw -LiteralPath $CandidatesPath | ConvertFrom-Json -Depth 100
+function Test-JsonObject {
+    param(
+        [AllowNull()]
+        [object]$Value
+    )
+
+    return $null -ne $Value -and
+        $Value.GetType() -eq [System.Management.Automation.PSCustomObject]
+}
+
+$snapshot = Get-Content -Raw -LiteralPath $CandidatesPath |
+    ConvertFrom-Json -Depth 100 -NoEnumerate
 $issueEvidence = $snapshot.issueEvidence
 $rootProperties = @($snapshot.PSObject.Properties.Name)
 $issueProperties = if ($null -ne $issueEvidence) {
@@ -60,6 +71,7 @@ $issueProperties = if ($null -ne $issueEvidence) {
     @()
 }
 $isAuthoritativeEmptyQueue =
+    (Test-JsonObject -Value $snapshot) -and
     'schemaVersion' -in $rootProperties -and
     'repository' -in $rootProperties -and
     'baseBranch' -in $rootProperties -and
@@ -70,7 +82,7 @@ $isAuthoritativeEmptyQueue =
     $snapshot.repository -ceq 'dotnet/maui' -and
     $snapshot.baseBranch -is [string] -and
     $snapshot.baseBranch -ceq $ExpectedBaseBranch -and
-    $issueEvidence -is [pscustomobject] -and
+    (Test-JsonObject -Value $issueEvidence) -and
     'authoritative' -in $issueProperties -and
     'exactLabel' -in $issueProperties -and
     'scopedIssueNumber' -in $issueProperties -and
@@ -110,6 +122,9 @@ if (-not (Test-Path -LiteralPath $registrationScript) -and $env:CI_FIX_TOOLS_DIR
     $registrationScript = Join-Path $env:CI_FIX_TOOLS_DIR 'Register-CiFixSafeOutputExpectation.cjs'
 }
 $expectationPath = & node $registrationScript -type noop -outputdirectory $ExpectationDirectory
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to register CI-fixer safe-output expectation (exit code $LASTEXITCODE)."
+}
 
 [pscustomobject]@{
     emptyQueue = $true

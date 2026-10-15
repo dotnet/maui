@@ -76,6 +76,111 @@ Describe 'Complete-CiFixEmptyQueue' {
         $expectation.pullRequestNumber | Should -BeNullOrEmpty
     }
 
+    It 'rejects an array root even when containing a valid empty queue snapshot' -ForEach @(
+        @{ IssueLabel = 'ci-scan'; BaseBranch = 'main' }
+        @{ IssueLabel = 'ci-scan-net11'; BaseBranch = 'net11.0' }
+    ) {
+        $validSnapshot = @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            baseBranch = $BaseBranch
+            issueEvidence = @{
+                authoritative = $true
+                exactLabel = $IssueLabel
+                scopedIssueNumber = $null
+                truncated = $false
+                count = 0
+                totalMatched = 0
+                issues = @()
+            }
+            candidates = @()
+        }
+        $arrayJson = '[ ' + ($validSnapshot | ConvertTo-Json -Depth 10) + ' ]'
+        Set-Content -LiteralPath $script:candidatesPath -Value $arrayJson
+
+        {
+            & $script:invokeEmptyQueueHelper `
+                -ScriptPath $script:scriptPath `
+                -CandidatesPath $script:candidatesPath `
+                -ExpectedIssueLabel $IssueLabel `
+                -ExpectedBaseBranch $BaseBranch `
+                -OutputDirectory $script:outputDirectory `
+                -ExpectationDirectory $script:expectationDirectory
+        } | Should -Throw
+
+        Test-Path -LiteralPath $script:expectationDirectory | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $script:outputDirectory 'coverage.txt') | Should -BeFalse
+    }
+
+    It 'fails and registers no success outcome when the Node registrar exits non-zero' {
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            baseBranch = 'main'
+            issueEvidence = @{
+                authoritative = $true
+                exactLabel = 'ci-scan'
+                scopedIssueNumber = $null
+                truncated = $false
+                count = 0
+                totalMatched = 0
+                issues = @()
+            }
+            candidates = @()
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $script:candidatesPath
+
+        $blockingFile = Join-Path $TestDrive "blocking-file-$([Guid]::NewGuid().ToString('N'))"
+        Set-Content -LiteralPath $blockingFile -Value 'blocking file content'
+
+        $PSNativeCommandUseErrorActionPreference = $false
+        {
+            & $script:invokeEmptyQueueHelper `
+                -ScriptPath $script:scriptPath `
+                -CandidatesPath $script:candidatesPath `
+                -ExpectedIssueLabel ci-scan `
+                -ExpectedBaseBranch main `
+                -OutputDirectory $script:outputDirectory `
+                -ExpectationDirectory $blockingFile
+        } | Should -Throw 'Failed to register CI-fixer safe-output expectation (exit code 1).'
+
+        Test-Path -LiteralPath $script:expectationDirectory | Should -BeFalse
+        @(Get-ChildItem -Path $TestDrive -Filter '*.json').Count | Should -Be 0
+        (Get-Content -Raw -LiteralPath $blockingFile).Trim() | Should -BeExactly 'blocking file content'
+    }
+
+    It 'fails during metadata write before attempting noop registration when coverage.txt cannot be written' {
+        @{
+            schemaVersion = 2
+            repository = 'dotnet/maui'
+            baseBranch = 'main'
+            issueEvidence = @{
+                authoritative = $true
+                exactLabel = 'ci-scan'
+                scopedIssueNumber = $null
+                truncated = $false
+                count = 0
+                totalMatched = 0
+                issues = @()
+            }
+            candidates = @()
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $script:candidatesPath
+
+        $blockingCoverageDir = Join-Path $script:outputDirectory 'coverage.txt'
+        New-Item -ItemType Directory -Force -Path $blockingCoverageDir | Out-Null
+
+        {
+            & $script:invokeEmptyQueueHelper `
+                -ScriptPath $script:scriptPath `
+                -CandidatesPath $script:candidatesPath `
+                -ExpectedIssueLabel ci-scan `
+                -ExpectedBaseBranch main `
+                -OutputDirectory $script:outputDirectory `
+                -ExpectationDirectory $script:expectationDirectory
+        } | Should -Throw
+
+        Test-Path -LiteralPath $script:expectationDirectory | Should -BeFalse
+    }
+
     It 'rejects non-empty or incomplete queue evidence without registering noop' -ForEach @(
         @{
             Name = 'non-empty issues'
