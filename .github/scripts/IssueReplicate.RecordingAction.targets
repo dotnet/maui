@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Controls.TestCases.iOS.Tests' Or '$(MSBuildProjectName)' == 'Controls.TestCases.Android.Tests'">
+    <Compile Include="$(MSBuildThisFileDirectory)IssueReplicate.RecordingAction.cs" Link="IssueReplicate.RecordingAction.cs" />
+  </ItemGroup>
+</Project>

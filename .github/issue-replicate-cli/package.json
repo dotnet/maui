@@ -1,0 +1,8 @@
+{
+  "name": "maui-issue-replicate-cli",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@github/copilot": "1.0.91"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 38821,
+  "commentId": 5807905180,
+  "platform": "android",
+  "targetRef": "main",
+  "targetSha": "2067dd42c6032fbc40d2e46245806679a85df5e6",
+  "author": "mypp74",
+  "issueText": "Historical canary snapshot for issue 38821: removing CurrentItem 1 from a non-looping CarouselView and selecting item 2 unexpectedly selects item 0 on Android.",
+  "sourceType": "attachment",
+  "sourceUrl": "https://github.com/user-attachments/files/32574459/RemoveAndCurrentItem.zip",
+  "sourceCommit": "",
+  "sampleSha256": "419ed5b1efeacbac812ff873ecc00425bb2eb200e4040c86626da519ac85126d"
+}

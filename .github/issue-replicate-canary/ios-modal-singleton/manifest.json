@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 38361,
+  "commentId": 6014862457,
+  "platform": "ios",
+  "targetRef": "main",
+  "targetSha": "f7530d0af403055a37cc945904905aacb94a63ef",
+  "author": "fstephan-mbx",
+  "issueText": "Reviewed manual canary for issue 38361: opening the same singleton page inside a modal NavigationPage from Shell must retain visible page content after interactive swipe-down dismissal and reopening. Preserve the author's reused page/navigation wrapper and manual disconnect policy, without manually invoking disconnect. Establish a fresh-instance modal control and the singleton's initially rendered content before the actual dismiss/reopen sequence. Observe displayed native accessibility elements and positive bounds, not rendered pixels, an injected blank page or a status-only success assertion. The candidate uses an isolated DI-backed route factory rather than the author's app-wide bootstrap; secondary navigation is present but not exercised. This new candidate has not yet been executed; the separate author-project build is not a driven original-app reproduction.",
+  "sourceType": "repository",
+  "sourceUrl": "https://github.com/fstephan-mbx/MauiApp.Net10IssueSingletonPages",
+  "sourceCommit": "5fdd814ac228a5a812f4031458b3061ab8cdfb5c",
+  "sampleSha256": "16cbdccd4da6a177c16e528a3eae7d15edab71af80e6aede3635ed7197e579e9"
+}

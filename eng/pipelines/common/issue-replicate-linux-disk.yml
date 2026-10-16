@@ -1,0 +1,24 @@
+steps:
+  - bash: |
+      set -euo pipefail
+      test "$AGENT_OS" = Linux
+      echo 'Disk capacity before removing unused hosted tools:'
+      df -h /
+      for directory in \
+        /usr/share/dotnet \
+        /usr/share/swift \
+        /usr/local/share/boost \
+        /usr/local/.ghcup \
+        /opt/ghc \
+        /opt/hostedtoolcache/CodeQL \
+        /opt/hostedtoolcache/go; do
+        if [ -L "$directory" ]; then
+          echo "Leaving linked tool directory unchanged: $directory"
+        elif [ -d "$directory" ]; then
+          sudo du -sh -- "$directory"
+          sudo rm -rf -- "$directory"
+        fi
+      done
+      echo 'Disk capacity available for isolated native SDKs:'
+      df -h /
+    displayName: 'Reserve disk capacity for isolated native SDKs'

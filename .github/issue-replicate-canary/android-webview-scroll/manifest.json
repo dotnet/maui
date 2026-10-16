@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 38452,
+  "commentId": 6014862469,
+  "platform": "android",
+  "targetRef": "main",
+  "targetSha": "f7530d0af403055a37cc945904905aacb94a63ef",
+  "author": "kklose23",
+  "issueText": "Reviewed manual canary for issue 38452: an Android WebView containing short, non-overflowing local HTML should let an upward drag scroll its parent ScrollView. Keep the author's 200-height short and overflowing WebViews in the long stacked layout. Establish that a real drag on the ordinary label scrolls the parent, reset to the top, check native HTML loading and absence of vertical overflow, then drag within the short WebView and observe the actual parent ScrollY. The overflowing WebView remains present but its own scrolling is not asserted. This new candidate has not yet been executed; the separate author-project build is not a driven original-app reproduction.",
+  "sourceType": "repository",
+  "sourceUrl": "https://github.com/kklose23/android-webview-scroll",
+  "sourceCommit": "28af4be272d1537091efa3f63301665fe4b895c9",
+  "sampleSha256": "f68af0d0af17bce08d368afc97dccb2213baf6932362d7554c698ed3620efc13"
+}
