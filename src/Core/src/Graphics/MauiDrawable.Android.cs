@@ -407,11 +407,11 @@ namespace Microsoft.Maui.Graphics
 			float y = strokeWidth / 2;
 
 			var bounds = new Rect(x, y, w, h);
-			var clipPath = _shape.ToPlatform(bounds, strokeWidth, density);
+			var clipPath = _shape.ToPlatform(bounds, strokeWidth, density, innerPath: false, includeShapeStroke: true);
 
 			ClipPath = clipPath;
 
-			var fullClipPath = _shape.ToPlatform(new Rect(0, 0, fw, fh), 0, density);
+			var fullClipPath = _shape.ToPlatform(new Rect(0, 0, fw, fh), 0, density, innerPath: false, includeShapeStroke: true);
 			FullClipPath = fullClipPath;
 		}
 
