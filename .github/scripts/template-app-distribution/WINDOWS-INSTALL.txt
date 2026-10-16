@@ -1,0 +1,40 @@
+MAUI Template Sample - Windows x64 TEST installer
+
+1. Download the GitHub artifact ZIP and choose Extract All once.
+   Keep the MSIX, public CER, scripts, install.json and Dependencies together.
+2. On your Windows x64 PC, open Windows PowerShell as administrator USING YOUR
+   OWN ACCOUNT, change directory to the extracted folder, and run:
+       .\Install-WindowsTestApp.ps1
+3. Review the publisher and certificate thumbprint. Only if you trust this
+   download and your IT policy permits it, type TRUST when prompted.
+4. Open "MAUI Template Sample" from Start.
+
+The script installs the MSIX with Windows' Add-AppxPackage. The app includes its
+.NET and Windows App SDK runtime files. Any required framework packages are
+included in Dependencies and signature-checked; no separate SDK is needed.
+The package's minimum Windows version is recorded in install.json. Windows 11
+x64 is recommended. This package is not for ARM64-only or 32-bit Windows.
+
+This is a self-signed TEST certificate, not a production Microsoft signature.
+The one-time approval adds only that certificate to Local Computer >
+Trusted People. NEVER install it into Trusted Root Certification Authorities.
+The certificate is public-only; no private signing key or password is shipped.
+A later build may use a different test certificate and require approval again.
+
+An organization may block sideloading, unsigned PowerShell scripts or test
+certificates. Ask IT if blocked; do not enable Developer Mode, change execution
+policy, disable security tools or bypass your organization's restrictions.
+If you cannot elevate your own account, ask IT to install the certificate into
+LocalMachine\TrustedPeople and deploy the MSIX/dependencies to your user.
+Double-clicking the MSIX alone does not establish certificate trust or ensure
+framework dependencies are installed.
+
+Uninstall normally from Windows Settings > Apps. To remove test publisher
+trust afterward, remove only the thumbprint shown in install.json from
+Local Computer > Trusted People (administrator/IT permission required).
+No trust is silently added; cancellation before approval leaves trust unchanged.
+
+provenance.json identifies the exact source-built MAUI framework and template
+snapshot. validation.json records what CI actually verified, including whether
+installation and launch succeeded; a successful package build alone is not
+evidence that it ran on your PC or passed accessibility/screen-reader testing.
