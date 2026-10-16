@@ -4,6 +4,7 @@
 <head>
     <title>HybridWebView2</title>
     <meta charset="UTF-8" />
+    <script src="_framework/hybridwebview.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -95,24 +96,9 @@
     <script>
         let messageCounter = 0;
 
-        // HybridWebView bridge for sending messages to C#
-        window.HybridWebView = {
-            SendRawMessage: function (msg) {
-                try {
-                    if (window.chrome && window.chrome.webview) {
-                        window.chrome.webview.postMessage("__RawMessage|" + msg);
-                        return true;
-                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
-                        window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
-                        return true;
-                    }
-                    return false;
-                } catch (e) {
-                    console.error('SendRawMessage error:', e);
-                    return false;
-                }
-            }
-        };
+        window.addEventListener("HybridWebViewMessageReceived", function (e) {
+            window.HybridWebView.SendRawMessage("You said: " + e.detail.message);
+        });
 
         // Function to receive messages from C# (called via EvaluateJavaScriptAsync)
         window.receiveMessageFromCSharp = function (message) {
@@ -158,23 +144,20 @@
         // Function to send message to C#
         function sendMessageToCSharp() {
             const message = `Hello from JavaScript! Sent at ${new Date().toLocaleTimeString()}`;
-            if (window.HybridWebView.SendRawMessage(message)) {
-                console.log('Message sent to C#:', message);
+            window.HybridWebView.SendRawMessage(message);
+            console.log('Message sent to C#:', message);
 
-                // Visual feedback
-                const messageList = document.getElementById('messageList');
-                if (messageList.children.length === 0 || messageList.children[0].tagName === 'P') {
-                    messageList.innerHTML = '';
-                }
-                const feedbackDiv = document.createElement('div');
-                feedbackDiv.className = 'message-item';
-                feedbackDiv.style.backgroundColor = '#fff3cd';
-                feedbackDiv.style.borderLeftColor = '#ffc107';
-                feedbackDiv.innerHTML = `<strong>📤 Sent to C#:</strong><br>${message}`;
-                messageList.appendChild(feedbackDiv);
-            } else {
-                console.log('Failed to send message to C#');
+            // Visual feedback
+            const messageList = document.getElementById('messageList');
+            if (messageList.children.length === 0 || messageList.children[0].tagName === 'P') {
+                messageList.innerHTML = '';
             }
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'message-item';
+            feedbackDiv.style.backgroundColor = '#fff3cd';
+            feedbackDiv.style.borderLeftColor = '#ffc107';
+            feedbackDiv.innerHTML = `<strong>📤 Sent to C#:</strong><br>${message}`;
+            messageList.appendChild(feedbackDiv);
         }
 
         // Test function

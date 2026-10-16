@@ -195,20 +195,14 @@
         </div>
     </div>
 
+    <script src="_framework/hybridwebview.js"></script>
     <script>
         let imageInfoVisible = true;
         let messageCounter = 0;
 
-        // Simple custom implementation of window.HybridWebView.SendRawMessage
-        window.HybridWebView = {
-            SendRawMessage: function (msg) {
-                if (window.chrome && window.chrome.webview) {
-                    window.chrome.webview.postMessage("__RawMessage|" + msg);
-                } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
-                    window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
-                }
-            }
-        };
+        window.addEventListener("HybridWebViewMessageReceived", function (e) {
+            window.HybridWebView.SendRawMessage("You said: " + e.detail.message);
+        });
 
         // Function to load random images
         function loadRandomImages() {
