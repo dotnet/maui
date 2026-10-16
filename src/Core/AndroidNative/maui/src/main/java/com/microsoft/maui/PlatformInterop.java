@@ -61,6 +61,7 @@ import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -363,6 +364,14 @@ public class PlatformInterop {
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
+    public static void loadImageFromBytes(ImageView imageView, byte[] bytes, ImageLoaderCallback callback) {
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(bytes)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+        loadInto(builder, imageView, false, callback, bytes);
+    }
+
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
         RequestBuilder<Drawable> builder = Glide
@@ -409,6 +418,18 @@ public class PlatformInterop {
             .load(inputStream)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         load(builder, context, false, callback, inputStream);
+    }
+
+    public static void loadImageFromBytes(Context context, byte[] bytes, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(bytes)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+        load(builder, context, false, callback, bytes);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -695,4 +716,5 @@ public class PlatformInterop {
         }
         return null;
     }
+
 }
