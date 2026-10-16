@@ -1,0 +1,29 @@
+# Keeps the Knowledge Base in sync with the codebase.
+#
+# Runs daily, when an issue closes, or when started manually. The reusable workflow reads
+# .github/knowledge-base.json, updates the knowledge docs, and opens a pull
+# request if anything changed.
+#
+# To change the schedule, edit the cron expression below.
+
+name: Update Knowledge Base
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  issues:
+    types: [closed]
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+  copilot-requests: write
+
+jobs:
+  update-knowledge-base:
+    uses: github/agentic-knowledge-base/.github/workflows/knowledge-base-engine.lock.yml@main
+    # Guided setup adds GH_TOKEN or GH_AW_GITHUB_TOKEN here when this repository needs them.
+    secrets: {}

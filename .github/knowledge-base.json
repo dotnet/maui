@@ -1,0 +1,10 @@
+{
+  "schema": "2.0",
+  "docs_system": "maui",
+  "working_repos": [
+    {
+      "repo": "self"
+    }
+  ]
+}
+
