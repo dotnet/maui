@@ -20,6 +20,8 @@
                                  Grid.Column="0">
                 <Label Text="Text" FontSize="9"/>
                 <Entry x:Name="TextEditor" FontSize="9"
+                       IsTextPredictionEnabled="False"
+                       IsSpellCheckEnabled="False"
                        Text="{Binding Text, Mode=TwoWay}"
                        Placeholder="Enter text here"
                        AutomationId="TextEntry"/>

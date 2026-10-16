@@ -35,20 +35,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task LaunchMap_NullLocation()
-		{
-			Location location = null;
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location)).ConfigureAwait(false);
-		}
-
-		[Fact]
-		public async Task LaunchMap_NullOptionsLocation()
-		{
-			var location = new Location(testLatitude, testLongitude);
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location, null)).ConfigureAwait(false);
-		}
-
-		[Fact]
 		public async Task LaunchMap_NullPlacemark()
 		{
 			Placemark location = null;

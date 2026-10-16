@@ -8,9 +8,9 @@ using Xunit;
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 [assembly: XmlnsDefinition("http://companyone.com/schemas/toolkit", "CompanyOne.Controls")]
-[assembly: XmlnsPrefix("http://companyone.com/schemas/toolkit", "c1")]
+[assembly: Microsoft.Maui.Controls.XmlnsPrefix("http://companyone.com/schemas/toolkit", "c1")]
 [assembly: XmlnsDefinition("http://companytwo.com/schemas/toolkit", "CompanyTwo.Controls")]
-[assembly: XmlnsPrefix("http://companytwo.com/schemas/toolkit", "c2")]
+[assembly: Microsoft.Maui.Controls.XmlnsPrefix("http://companytwo.com/schemas/toolkit", "c2")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://companyone.com/schemas/toolkit")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://companytwo.com/schemas/toolkit")]
 

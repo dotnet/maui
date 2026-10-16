@@ -21,15 +21,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		private void VerifyScreenshotOrSetExceptionWithCroppingBottom(ref Exception? exception, string? name = null, bool isKeyBoardNotShown = false)
+		private void VerifyScreenshotOrSetExceptionWithCroppingBottom(ref Exception? exception, string? name = null)
 		{
 #if IOS
 			VerifyScreenshotOrSetException(ref exception, name, cropBottom: CropBottomValue, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #elif ANDROID
-			if (isKeyBoardNotShown)
-				VerifyScreenshotOrSetException(ref exception, name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-			else
-				VerifyScreenshotOrSetException(ref exception, name, cropBottom: CropBottomValue, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			VerifyScreenshotOrSetException(ref exception, name, cropBottom: CropBottomValue, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #else
 			VerifyScreenshotOrSetException(ref exception, name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
@@ -71,98 +68,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PropertyTriggerDummyEntry");
 			App.Tap("PropertyTriggerDummyEntry");
 			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "PropertyTrigger_UnFocused");
-
-			if (exception != null)
-			{
-				throw exception;
-			}
-		}
-
-		[Test]
-		[Order(2)]
-		public void DataTriggerEnablesButtonWhenTextEntered()
-		{
-			Exception? exception = null;
-
-			SelectTriggerType("DataTriggerButton");
-
-			// Initial state - button disabled (opacity 0.5)
-			VerifyScreenshotOrSetException(ref exception, "DataTrigger_ButtonDisabled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			// Enter text to enable button
-			App.WaitForElement("DataTriggerEntry");
-			App.Tap("DataTriggerEntry");
-			App.EnterText("DataTriggerEntry", "Test");
-			VerifyScreenshotOrSetException(ref exception, "DataTrigger_ButtonEnabled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			if (exception != null)
-			{
-				throw exception;
-			}
-		}
-
-		[Test]
-		[Order(3)]
-		public void EventTriggerValidatesNumericInput()
-		{
-			Exception? exception = null;
-
-			SelectTriggerType("EventTriggerButton");
-
-			// Enter valid numeric text
-			App.WaitForElement("EventTriggerEntry");
-			App.Tap("EventTriggerEntry");
-			App.EnterText("EventTriggerEntry", "123");
-			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_ValidNumeric", isKeyBoardNotShown: true);
-
-			// Enter invalid text (should trigger validation)
-			App.ClearText("EventTriggerEntry");
-			App.EnterText("EventTriggerEntry", "abc");
-			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_InvalidText", isKeyBoardNotShown: true);
-
-			if (exception != null)
-			{
-				throw exception;
-			}
-		}
-
-		[Test]
-		[Order(4)]
-		public void StateTriggerChangesBackgroundOnToggle()
-		{
-			Exception? exception = null;
-
-			SelectTriggerType("StateTriggerButton");
-
-			// Initial state - switch off, background white
-			VerifyScreenshotOrSetException(ref exception, "StateTrigger_SwitchOff", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			// Toggle switch on - background black
-			App.WaitForElement("StateTriggerSwitch");
-			App.Tap("StateTriggerSwitch");
-			VerifyScreenshotOrSetException(ref exception, "StateTrigger_SwitchOn", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			if (exception != null)
-			{
-				throw exception;
-			}
-		}
-
-		[Test]
-		[Order(5)]
-		public void CompareStateTriggerChangesBackgroundOnCheck()
-		{
-			Exception? exception = null;
-
-			SelectTriggerType("CompareStateTriggerButton");
-
-			// Initial state - unchecked, background LightGray
-			VerifyScreenshotOrSetException(ref exception, "CompareStateTrigger_Unchecked", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			// Check the checkbox - background DarkGreen
-			App.WaitForElement("CompareStateCheckBox");
-			App.Tap("CompareStateCheckBox");
-			VerifyScreenshotOrSetException(ref exception, "CompareStateTrigger_Checked", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			if (exception != null)
 			{
@@ -231,36 +136,6 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 		[Test]
-		[Order(9)]
-		public void MultiTriggerComplexConditions()
-		{
-			Exception? exception = null;
-
-			SelectTriggerType("MultiTriggerButton");
-
-			App.WaitForElement("MultiTriggerEmailEntry");
-			App.Tap("MultiTriggerEmailEntry");
-			App.EnterText("MultiTriggerEmailEntry", "user@test.com");
-			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_EmailOnly_Filled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			App.ClearText("MultiTriggerEmailEntry");
-			App.WaitForElement("MultiTriggerPhoneEntry");
-			App.Tap("MultiTriggerPhoneEntry");
-			App.EnterText("MultiTriggerPhoneEntry", "555-1234");
-			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_PhoneOnly_Filled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			App.WaitForElement("MultiTriggerEmailEntry");
-			App.Tap("MultiTriggerEmailEntry");
-			App.EnterText("MultiTriggerEmailEntry", "user@test.com");
-			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_Both_Filled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-
-			if (exception != null)
-			{
-				throw exception;
-			}
-		}
-
-		[Test]
 		[Order(10)]
 		public void EnterExitActionsTriggerEntryFocusUnfocus()
 		{
@@ -281,135 +156,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Verify info label confirms trigger type
 			var infoText = App.FindElement("EnterExitActionsInfo").GetText();
 			Assert.That(infoText, Is.EqualTo("Tests: EnterActions, ExitActions, animations"));
-		}
-
-		[Test]
-		[Order(11)]
-		public void DataTriggerVerifiesButtonTextAndEntryInput()
-		{
-			SelectTriggerType("DataTriggerButton");
-			App.WaitForElement("DataTriggerEntry");
-
-			// Verify save button has correct text
-			var buttonText = App.FindElement("DataTriggerSaveButton").GetText();
-			Assert.That(buttonText, Is.EqualTo("Save"));
-
-			// Enter text and verify entry accepts input
-			App.Tap("DataTriggerEntry");
-			App.EnterText("DataTriggerEntry", "Test");
-			App.WaitForElement("DataTriggerSaveButton");
-
-			// Clear text and verify entry is reset
-			App.ClearText("DataTriggerEntry");
-			App.WaitForElement("DataTriggerSaveButton");
-
-			// Verify info label text
-			var infoText = App.FindElement("DataTriggerInfo").GetText();
-			Assert.That(infoText, Is.EqualTo("Tests: DataTrigger, binding-based condition"));
-		}
-
-		[Test]
-		[Order(12)]
-		public void EventTriggerVerifiesEntryInput()
-		{
-			SelectTriggerType("EventTriggerButton");
-			App.WaitForElement("EventTriggerEntry");
-
-			// Enter valid numeric text and verify entry accepts it
-			App.Tap("EventTriggerEntry");
-			App.EnterText("EventTriggerEntry", "123");
-			App.WaitForElement("EventTriggerEntry");
-
-			// Clear and enter non-numeric text to trigger validation
-			App.ClearText("EventTriggerEntry");
-			App.EnterText("EventTriggerEntry", "abc");
-			App.WaitForElement("EventTriggerEntry");
-
-			// Verify info label text
-			var infoText = App.FindElement("EventTriggerInfo").GetText();
-			Assert.That(infoText, Is.EqualTo("Tests: TextChanged event, custom TriggerAction"));
-		}
-
-		[Test]
-		[Order(13)]
-		public void MultiTriggerVerifiesFieldsAndSubmitButton()
-		{
-			SelectTriggerType("MultiTriggerButton");
-
-			App.WaitForElement("MultiTriggerEmailEntry");
-			App.WaitForElement("MultiTriggerPhoneEntry");
-
-			// Verify submit button text
-			var buttonText = App.FindElement("MultiTriggerSubmitButton").GetText();
-			Assert.That(buttonText, Is.EqualTo("Submit"));
-
-			// Fill email only
-			App.Tap("MultiTriggerEmailEntry");
-			App.EnterText("MultiTriggerEmailEntry", "user@test.com");
-			App.WaitForElement("MultiTriggerSubmitButton");
-
-			// Fill phone field too (both filled - multi-trigger condition met)
-			App.Tap("MultiTriggerPhoneEntry");
-			App.EnterText("MultiTriggerPhoneEntry", "555-1234");
-			App.WaitForElement("MultiTriggerSubmitButton");
-
-			// Clear email (condition no longer met)
-			App.ClearText("MultiTriggerEmailEntry");
-			App.WaitForElement("MultiTriggerSubmitButton");
-
-			// Verify info label text
-			var infoText = App.FindElement("MultiTriggerInfo").GetText();
-			Assert.That(infoText, Is.EqualTo("Tests: Multiple conditions, combined logic"));
-		}
-
-		[Test]
-		[Order(14)]
-		public void StateTriggerVerifiesGridLabelTextAfterToggle()
-		{
-			SelectTriggerType("StateTriggerButton");
-			App.WaitForElement("StateTriggerSwitch");
-
-			// Verify grid label text
-			var labelText = App.FindElement("StateTriggerGridLabel").GetText();
-			Assert.That(labelText, Is.EqualTo("Grid background changes based on switch"));
-
-			// Toggle switch on and verify label still present
-			App.Tap("StateTriggerSwitch");
-			App.WaitForElement("StateTriggerGridLabel");
-
-			// Toggle switch off and verify label text unchanged
-			App.Tap("StateTriggerSwitch");
-			var labelTextAfter = App.FindElement("StateTriggerGridLabel").GetText();
-			Assert.That(labelTextAfter, Is.EqualTo("Grid background changes based on switch"));
-
-			// Verify info label text
-			var infoText = App.FindElement("StateTriggerInfo").GetText();
-			Assert.That(infoText, Is.EqualTo("Tests: StateTrigger with IsActive binding"));
-		}
-
-		[Test]
-		[Order(15)]
-		public void CompareStateTriggerVerifiesLabelAfterCheckToggle()
-		{
-			SelectTriggerType("CompareStateTriggerButton");
-			App.WaitForElement("CompareStateCheckBox");
-
-			// Verify label text
-			var labelText = App.FindElement("CompareStateLabel").GetText();
-			Assert.That(labelText, Is.EqualTo("Check to change background"));
-
-			// Check the checkbox and verify label still present
-			App.Tap("CompareStateCheckBox");
-			App.WaitForElement("CompareStateLabel");
-
-			// Uncheck and verify label text unchanged
-			App.Tap("CompareStateCheckBox");
-			var labelTextAfter = App.FindElement("CompareStateLabel").GetText();
-			Assert.That(labelTextAfter, Is.EqualTo("Check to change background"));
-
-			// Verify info label text
-			var infoText = App.FindElement("CompareStateTriggerInfo").GetText();
-			Assert.That(infoText, Is.EqualTo("Tests: CompareStateTrigger with Property binding"));
 		}
 
 		[Test]

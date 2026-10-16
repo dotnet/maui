@@ -70,20 +70,11 @@ public class Issue4715 : _IssuesUITest
 		App.WaitForElement("TestNestedOuterGrid");
 	}
 
+#if WINDOWS // Other platforms retain AutomationId discoverability when opted out of accessibility.
 	[Test]
 	[Category(UITestCategories.Accessibility)]
 	public void LayoutWithAccessibleTreeOptOutIsNotFoundByAppium()
 	{
-		// Removing an AutomationId-bearing element from the accessibility tree via
-		// IsInAccessibleTree="False" hides it from the Windows UIA Control view, so Appium can no
-		// longer find it. This is Windows-specific behavior: on other platforms an element keeps its
-		// AutomationId/AccessibilityIdentifier and stays discoverable by Appium regardless of the
-		// accessible-tree opt-out, so this assertion only holds on Windows.
-		if (Device != TestDevice.Windows)
-		{
-			Assert.Ignore("Accessible-tree opt-out from the UIA Control view is Windows-specific behavior.");
-		}
-
 		App.WaitForElement("WaitForStubControl");
 
 		// A layout with an AutomationId but an explicit IsInAccessibleTree="False" opts out of the
@@ -92,4 +83,5 @@ public class Issue4715 : _IssuesUITest
 		// exclusion is covered authoritatively by the LayoutPanel device tests.
 		App.WaitForNoElement("OptedOutGrid");
 	}
+#endif
 }

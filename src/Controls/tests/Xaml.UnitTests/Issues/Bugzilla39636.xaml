@@ -10,5 +10,16 @@
             <On Platform="UWP" Value="60"/>
         </OnPlatform>
     </ContentPage.Resources>
-    <Label x:Name="testLabel" Text="Test" WidthRequest="{StaticResource SizeMedium}" />
+    <VerticalStackLayout>
+        <Label x:Name="testLabel" Text="Test" WidthRequest="{StaticResource SizeMedium}" />
+        <BoxView x:Name="testBox" WidthRequest="{StaticResource SizeMedium}">
+            <BoxView.HeightRequest>
+                <OnPlatform x:TypeArguments="x:Double">
+                    <On Platform="iOS" Value="40"/>
+                    <On Platform="Android" Value="30"/>
+                    <On Platform="UWP" Value="60"/>
+                </OnPlatform>
+            </BoxView.HeightRequest>
+        </BoxView>
+    </VerticalStackLayout>
 </ContentPage>

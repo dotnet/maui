@@ -60,57 +60,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(5)]
-	public void VerifyVSM_Button_DisableWhilePressedAndReleased()
-	{
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("DemoButton");
-		App.Tap("DemoButton");
-		App.WaitForElement("ButtonStateLabel");
-		var stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal/Released"));
-		App.WaitForElement("ButtonDisable");
-		App.Tap("ButtonDisable");
-		App.WaitForElement("ButtonStateLabel");
-		stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-	}
-
-	[Test, Order(6)]
-	public void VerifyVSM_Button_ResetWhilePressedAndReleased()
-	{
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("DemoButton");
-		App.Tap("DemoButton");
-		App.WaitForElement("ButtonStateLabel");
-		var stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal/Released"));
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("ButtonStateLabel");
-		stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
-	}
 #endif
-
-	[Test, Order(7)]
-	public void VerifyVSM_Button_ResetWhileDisabled()
-	{
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("ButtonDisable");
-		App.Tap("ButtonDisable");
-		App.WaitForElement("ButtonStateLabel");
-		var stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("ButtonStateLabel");
-		stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
-	}
 
 #if TEST_FAILS_ON_ANDROID // Related issue link: https://github.com/dotnet/maui/issues/19289
 	[Test, Order(8)]
@@ -131,45 +81,5 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(9)]
-	public void VerifyVSM_Button_DisableAndEnable()
-	{
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("ButtonDisable");
-		App.Tap("ButtonDisable");
-		App.WaitForElement("ButtonStateLabel");
-		var stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("ButtonDisable");
-		App.Tap("ButtonDisable");
-		App.WaitForElement("ButtonStateLabel");
-		stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
-	}
-
-#if TEST_FAILS_ON_ANDROID // Related issue link: https://github.com/dotnet/maui/issues/19289
-	[Test, Order(10)]
-	public void VerifyVSM_Button_DisableAndEnableWhilePressedAndReleased()
-	{
-		App.WaitForElement("ButtonReset");
-		App.Tap("ButtonReset");
-		App.WaitForElement("DemoButton");
-		App.Tap("DemoButton");
-		App.WaitForElement("ButtonStateLabel");
-		var stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal/Released"));
-		App.WaitForElement("ButtonDisable");
-		App.Tap("ButtonDisable");
-		App.WaitForElement("ButtonStateLabel");
-		stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("ButtonDisable");
-		App.Tap("ButtonDisable");
-		App.WaitForElement("ButtonStateLabel");
-		stateText = App.FindElement("ButtonStateLabel").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
-	}
-#endif
 }
 

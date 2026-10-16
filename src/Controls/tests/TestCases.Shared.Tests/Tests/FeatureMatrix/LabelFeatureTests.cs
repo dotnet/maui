@@ -392,15 +392,17 @@ public class LabelFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeCharacterWrap()
 	{
+		const string text = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea";
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
+		App.EnterText(TextEntry, text);
 		App.WaitForElement(LineBreakModeCharacterWrap);
 		App.Tap(LineBreakModeCharacterWrap);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForTextToBePresentInElement(MainLabel, text);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -848,11 +850,12 @@ public class LabelFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenLineHeight()
 	{
+		const string text = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea";
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
+		App.EnterText(TextEntry, text);
 		App.WaitForElement(LineHeightEntry);
 		App.ClearText(LineHeightEntry);
 		App.EnterText(LineHeightEntry, "2");
@@ -860,6 +863,7 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		App.Tap(MainLabel);
+		App.WaitForTextToBePresentInElement(MainLabel, text);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 

@@ -12,6 +12,76 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 	[Category(TestCategory.Core, TestCategory.ImageSource)]
 	public class ImageSourceServiceTests
 	{
+		[Fact]
+		public void CanResolveCorrectService()
+		{
+			var provider = CreateImageSourceServiceProvider(services =>
+			{
+				services.AddService<IFileImageSource, FileImageSourceService>();
+			}, useDefaults: false);
+
+			var service = provider.GetRequiredImageSourceService(new FileImageSourceStub());
+
+			Assert.IsType<FileImageSourceService>(service);
+		}
+
+		[Fact]
+		public void CanResolveCorrectServiceWhenMultiple()
+		{
+			var provider = CreateImageSourceServiceProvider(services =>
+			{
+				services.AddService<IFileImageSource, FileImageSourceService>();
+				services.AddService<IUriImageSource, UriImageSourceService>();
+			}, useDefaults: false);
+
+			var service = provider.GetRequiredImageSourceService(new FileImageSourceStub());
+			Assert.IsType<FileImageSourceService>(service);
+
+			service = provider.GetRequiredImageSourceService(new Controls.UriImageSource());
+			Assert.IsType<UriImageSourceService>(service);
+		}
+
+		[Fact]
+		public void ThrowsWhenMissingService()
+		{
+			var provider = CreateImageSourceServiceProvider(services => { }, useDefaults: false);
+
+			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new FileImageSourceStub()));
+
+			Assert.Contains(nameof(FileImageSourceStub), ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ThrowsWhenNotASpecificImageSource()
+		{
+			var provider = CreateImageSourceServiceProvider(services => { }, useDefaults: false);
+
+			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ImageSourceStub()));
+
+			Assert.Contains(nameof(ImageSourceStub), ex.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IImageSource), ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ResultsDisposeCorrectlyAndOnce()
+		{
+			var dispose = 0;
+			var result = new ImageSourceServiceResult(new object(), () => dispose++);
+
+			Assert.False(result.IsDisposed);
+			Assert.Equal(0, dispose);
+
+			result.Dispose();
+
+			Assert.True(result.IsDisposed);
+			Assert.Equal(1, dispose);
+
+			result.Dispose();
+
+			Assert.True(result.IsDisposed);
+			Assert.Equal(1, dispose);
+		}
+
 		[Theory]
 		[InlineData(true, false)]
 		[InlineData(false, true)]
@@ -203,9 +273,9 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		private interface IParentAImageSource : IImageSource { }
 		private interface IParentBImageSource : IImageSource { }
 
-		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
+		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure, bool useDefaults = true)
 		{
-			var mauiApp = MauiApp.CreateBuilder()
+			var mauiApp = MauiApp.CreateBuilder(useDefaults)
 				.ConfigureImageSources(configure)
 				.Build();
 
