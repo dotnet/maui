@@ -284,8 +284,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					return;
 				}
 
+				if (_webViewHandler._webviewManager is not { } webviewManager)
+				{
+					logger.LogDebug("Ignoring request for {Url} because the BlazorWebView has been disconnected.", url);
+					return;
+				}
+
 				// 2. If this is an app request, then assume the request is for a Blazor resource.
-				var responseBytes = GetResponseBytes(url, out var contentType, statusCode: out var statusCode);
+				var responseBytes = GetResponseBytes(webviewManager, url, out var contentType, statusCode: out var statusCode);
 				if (statusCode == 200)
 				{
 					using (var dic = new NSMutableDictionary<NSString, NSString>())
@@ -312,14 +318,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				logger.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
+			private byte[] GetResponseBytes(IOSWebViewManager webviewManager, string? url, out string contentType, out int statusCode)
 			{
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 
 				_webViewHandler.Logger.HandlingWebRequest(url);
 
-				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
+				if (webviewManager.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;
 					using var ms = new MemoryStream();
