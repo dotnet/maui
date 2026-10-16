@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return _isUpdating;
 		}
 
-		internal bool IsRotating()
+		internal bool IsRotatingOrResizing()
 		{
 			return _isRotating || _isResizing;
 		}
