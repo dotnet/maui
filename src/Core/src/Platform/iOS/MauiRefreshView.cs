@@ -135,7 +135,13 @@ namespace Microsoft.Maui.Platform
 
 				if (_hasStoredAlwaysBounceVertical)
 				{
-					scrollView.AlwaysBounceVertical = _originalAlwaysBounceVertical;
+					// Restore only while the value still matches the override applied by RefreshView.
+					// The wrapped control may have updated its own scrolling policy in the meantime.
+					if (scrollView.AlwaysBounceVertical)
+					{
+						scrollView.AlwaysBounceVertical = _originalAlwaysBounceVertical;
+					}
+
 					_hasStoredAlwaysBounceVertical = false;
 				}
 
