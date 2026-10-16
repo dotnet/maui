@@ -23,6 +23,11 @@ namespace Microsoft.Maui
 				return Clip.PathForBounds(bounds);
 			}
 
+			if (Border?.Shape is IShapeWithStroke borderShape)
+			{
+				return borderShape.PathForBounds(bounds, includeStroke: true);
+			}
+
 			if (Shape != null)
 			{
 				return Shape.PathForBounds(bounds);
@@ -70,7 +75,10 @@ namespace Microsoft.Maui
 			if (Border != null)
 			{
 				canvas.SaveState();
-				var borderPath = Border.Shape?.PathForBounds(drawBounds);
+				var borderShape = Border.Shape;
+				var borderPath = borderShape is IShapeWithStroke shapeWithStroke
+					? shapeWithStroke.PathForBounds(drawBounds, includeStroke: true)
+					: borderShape?.PathForBounds(drawBounds);
 				if (borderPath != null && Border.StrokeThickness > 0)
 				{
 					canvas.MiterLimit = Border.StrokeMiterLimit;
