@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
 		bool _isRotating = false;
+		// Set when the collection view bounds change after the initial position is set (rotation, or
+		// size requests applied after rotation). Offsets reported by UIKit while bounds change are stale.
+		bool _isResizing = false;
+		CGSize _lastBoundsSize = CGSize.Empty;
 		bool _isUpdating = false;
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
@@ -90,6 +94,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
+
+			var boundsSize = CollectionView.Bounds.Size;
+			if (InitialPositionSet && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
+			{
+				_isResizing = true;
+			}
+			_lastBoundsSize = boundsSize;
+
 			UpdateVisualStates();
 		}
 
@@ -99,10 +111,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.ViewDidLayoutSubviews();
 			await UpdateInitialPosition();
 
-			if (_isRotating)
+			if (_isRotating || _isResizing)
 			{
 				BoundsSizeChanged();
 				_isRotating = false;
+				_isResizing = false;
 			}
 		}
 
@@ -238,6 +251,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
+			_isResizing = false;
+			_lastBoundsSize = CGSize.Empty;
 			_isInternalCollectionUpdate = false;
 			// Don't let a pending scroll target survive re-attach.
 			_gotoPosition = -1;
@@ -474,7 +489,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal bool IsRotating()
 		{
-			return _isRotating;
+			return _isRotating || _isResizing;
 		}
 
 		internal void UpdateLoop()
