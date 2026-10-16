@@ -181,7 +181,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<int, BottomSheetDialog> selectCallback,
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
-			int maxItemCount)
+			int maxItemCount,
+			Action<global::Android.Views.View, int> setAutomationId = null)
 		{
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.Controls.Platform
 							innerLayout.Click -= clickCallback;
 					}
 					innerLayout.Click += clickCallback;
-
+					setAutomationId?.Invoke(innerLayout, i_local);
 					var image = new ImageView(context);
 					var lp = new LinearLayout.LayoutParams((int)context.ToPixels(32), (int)context.ToPixels(32))
 					{

@@ -343,6 +343,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_appearanceTracker = _context.CreateTabBarAppearanceTracker();
 			shellItem.PropertyChanged += OnElementPropertyChanged;
+			TabBar.AccessibilityIdentifier = shellItem.AutomationId;
 			((IShellController)_context.Shell).AddAppearanceObserver(this, shellItem);
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
