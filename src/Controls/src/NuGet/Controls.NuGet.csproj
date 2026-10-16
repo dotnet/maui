@@ -32,6 +32,8 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
+		<!-- A file path prevents NuGet from appending RecursiveDir a second time. -->
+		<None Include="skills\**\*.md" Pack="true" PackagePath="skills\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
