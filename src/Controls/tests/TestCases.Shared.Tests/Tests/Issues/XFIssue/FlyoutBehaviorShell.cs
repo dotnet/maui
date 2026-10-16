@@ -22,7 +22,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 
 
 	//	[Test]
-	// 	[Category(UITestCategories.Shell)]
+	// 	[]
 	public void FlyoutTests()
 	{
 		// Flyout is visible
@@ -81,7 +81,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void WhenFlyoutIsLockedButtonsAreStillVisible()
 	{
 		// FlyoutLocked ensure that the flyout and buttons are still visible

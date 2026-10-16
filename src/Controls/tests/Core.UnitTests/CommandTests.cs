@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						break;
 					case BackButtonBehavior bbb:
 						bbb.Command = command;
-            break;
+						break;
 					case SwipeItemView sv:
 						sv.Command = command;
 						break;

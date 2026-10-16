@@ -31,7 +31,7 @@ public class ShellFlyoutSizing : _IssuesUITest
 #endif
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeightAndWidthResetsBackToOriginalSize()
 	{
 		App.WaitForElement("PageLoaded");
@@ -47,7 +47,7 @@ public class ShellFlyoutSizing : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeightAndWidthIncreaseAndDecreaseCorrectly()
 	{
 		App.WaitForElement(ChangeFlyoutSizes);

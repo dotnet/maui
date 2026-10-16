@@ -13,7 +13,7 @@ public class Issue33191 : _IssuesUITest
     public override string Issue => "NavBar visibility does not update when switching tabs";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void NavBarUpdatesWhenSwitchingShellContent()
     {
 #if WINDOWS

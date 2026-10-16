@@ -14,7 +14,7 @@ public class Issue33037 : _IssuesUITest
 	public override string Issue => "iOS Large Title display disappears when scrolling in Shell";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void LargeTitleTransitionsOnScroll()
 	{
 		// Verify page loaded with large title visible

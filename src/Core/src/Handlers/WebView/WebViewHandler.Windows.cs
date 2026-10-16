@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -104,18 +105,38 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.PlatformView.CanGoBack && handler is WebViewHandler w)
-				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+			var platformView = handler.PlatformView;
+			if (platformView is null)
+			{
+				return;
+			}
 
-			handler.PlatformView?.UpdateGoBack(webView);
+			// Use CoreWebView2.CanGoBack rather than the WebView2 control's CanGoBack,
+			// which can be stale (see UpdateCanGoBackForward).
+			if ((platformView.CoreWebView2?.CanGoBack ?? platformView.CanGoBack) && handler is WebViewHandler w)
+			{
+				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+			}
+
+			platformView.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.PlatformView.CanGoForward && handler is WebViewHandler w)
-				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+			var platformView = handler.PlatformView;
+			if (platformView is null)
+			{
+				return;
+			}
 
-			handler.PlatformView?.UpdateGoForward(webView);
+			// Use CoreWebView2.CanGoForward rather than the WebView2 control's CanGoForward,
+			// which can be stale (see UpdateCanGoBackForward).
+			if ((platformView.CoreWebView2?.CanGoForward ?? platformView.CanGoForward) && handler is WebViewHandler w)
+			{
+				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+			}
+
+			platformView.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
@@ -332,6 +353,9 @@ namespace Microsoft.Maui.Handlers
 			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
 		}
 
+		internal void ProcessCoreWebView2Initialized(WebView2 sender, Exception? exception) =>
+			_proxy.ProcessCoreWebView2Initialized(sender, exception);
+
 		class WebView2Proxy
 		{
 			WeakReference<Window>? _window;
@@ -384,10 +408,21 @@ namespace Microsoft.Maui.Handlers
 
 			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 			{
-				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
-				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
-				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
+				ProcessCoreWebView2Initialized(sender, args.Exception);
+			}
+
+			public void ProcessCoreWebView2Initialized(WebView2 sender, Exception? exception)
+			{
+				if (exception is not null || sender.CoreWebView2 is not CoreWebView2 webView2)
+				{
+					Handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogError(exception, "Failed to initialize WebView2.");
+					return;
+				}
+
+				webView2.HistoryChanged += OnHistoryChanged;
+				webView2.NavigationStarting += OnNavigationStarting;
+				webView2.NavigationCompleted += OnNavigationCompleted;
+				webView2.ProcessFailed += OnProcessFailed;
 
 				if (Handler is WebViewHandler handler)
 				{
