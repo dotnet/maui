@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -8,6 +9,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Shapes;
 
 public class PathGeometryTests : BaseTestFixture
 {
+	[Fact]
+	public async Task SharedFiguresDoesNotRetainPathGeometry()
+	{
+		var sharedFigures = new PathFigureCollection();
+		var geometryReference = CreateGeometryWithSharedFigures(sharedFigures);
+
+		Assert.False(await geometryReference.WaitForCollect(),
+			"PathGeometry should not be retained by a shared PathFigureCollection.");
+		GC.KeepAlive(sharedFigures);
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static WeakReference CreateGeometryWithSharedFigures(PathFigureCollection figures)
+	{
+		var geometry = new PathGeometry { Figures = figures };
+		return new WeakReference(geometry);
+	}
+
 	/// <summary>
 	/// Figures.Clear() must unsubscribe the cleared PathFigure from the PathGeometry,
 	/// otherwise the figure retains the geometry alive via its PropertyChanged delegate.

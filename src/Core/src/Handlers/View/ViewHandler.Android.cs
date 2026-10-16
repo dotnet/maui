@@ -10,10 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (platformView != null)
-			{
-				platformView.FocusChange += OnPlatformViewFocusChange;
-			}
+			platformView?.FocusChange += OnPlatformViewFocusChange;
 		}
 
 		partial void DisconnectingHandler(PlatformView platformView)
@@ -232,7 +229,7 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeToolBar = te.Toolbar?.ToPlatform(handler.MauiContext);
 
-			if (appbarLayout == null)
+			if (appbarLayout == null || nativeToolBar == null)
 			{
 				return;
 			}
@@ -243,6 +240,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			nativeToolBar.RemoveFromParent();
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 

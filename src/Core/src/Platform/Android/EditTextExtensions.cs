@@ -370,11 +370,6 @@ namespace Microsoft.Maui.Platform
 				editText.UpdateIsSpellCheckEnabled(textInput);
 			}
 
-			if (keyboard == Keyboard.Numeric)
-			{
-				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
-			}
-
 			if (textInput is IEntry entry)
 			{
 				if (entry.IsPassword)
@@ -399,6 +394,14 @@ namespace Microsoft.Maui.Platform
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
+
+			if (keyboard == Keyboard.Numeric)
+			{
+				// InputType changes replace the listener; install it last and retain the final flags.
+				var inputType = editText.InputType;
+				editText.KeyListener = LocalizedDigitsKeyListener.Create(inputType);
+				editText.SetRawInputType(inputType);
+			}
 
 			if (textInput is IElement element)
 			{

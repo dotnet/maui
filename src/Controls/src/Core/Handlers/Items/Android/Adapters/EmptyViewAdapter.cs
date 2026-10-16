@@ -24,13 +24,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		object _emptyView;
 		DataTemplate _emptyViewTemplate;
 
+		// The view types are negative and never reused, so they can't match the view types of the items adapter,
+		// whose view holders RecyclerView reuses from the same pool when it swaps between the two adapters
+		int _lastViewType = -1;
+
 		public object Header
 		{
 			get => _headerView;
 			set
 			{
 				_headerView = value;
-				_headerViewType += 1;
+				_headerViewType = NextViewType();
 				UpdateHeaderFooterHeight(_headerView, true);
 			}
 		}
@@ -41,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			set
 			{
 				_headerViewTemplate = value;
-				_headerViewType += 1;
+				_headerViewType = NextViewType();
 				UpdateHeaderFooterHeight(_headerViewTemplate, true);
 			}
 		}
@@ -52,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			set
 			{
 				_footerView = value;
-				_footerViewType += 1;
+				_footerViewType = NextViewType();
 				UpdateHeaderFooterHeight(_footerView, false);
 			}
 		}
@@ -63,7 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			set
 			{
 				_footerViewTemplate = value;
-				_footerViewType += 1;
+				_footerViewType = NextViewType();
 				UpdateHeaderFooterHeight(_footerViewTemplate, false);
 			}
 		}
@@ -77,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_emptyView = value;
 
 				// Change _itemViewType to force OnCreateViewHolder to run again and use this new EmptyView
-				_emptyItemViewType += 1;
+				_emptyItemViewType = NextViewType();
 			}
 		}
 
@@ -89,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_emptyViewTemplate = value;
 
 				// Change _itemViewType to force OnCreateViewHolder to run again and use this new template
-				_emptyItemViewType += 1;
+				_emptyItemViewType = NextViewType();
 			}
 		}
 
@@ -104,10 +108,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemsView = itemsView;
 
-			_headerViewType = 1;
-			_emptyItemViewType = 2;
-			_footerViewType = 3;
+			_headerViewType = NextViewType();
+			_emptyItemViewType = NextViewType();
+			_footerViewType = NextViewType();
 		}
+
+		// -1 is RecyclerView.InvalidType, so the first view type is -2
+		int NextViewType() => --_lastViewType;
 
 		public override void OnViewRecycled(Object holder)
 		{
