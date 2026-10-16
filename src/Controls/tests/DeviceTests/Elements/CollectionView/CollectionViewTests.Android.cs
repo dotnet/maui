@@ -115,6 +115,33 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, count);
 		}
 
+		[Theory]
+		[InlineData(100, 0, 1, 2, 0, 50)]
+		[InlineData(100, 1, 1, 2, 50, 0)]
+		[InlineData(100, 0, 2, 2, 0, 0)]
+		[InlineData(5, 0, 1, 3, 0, 4)]
+		[InlineData(5, 1, 1, 3, 1, 2)]
+		[InlineData(5, 2, 1, 3, 3, 0)]
+		public void GridSpacingIsDistributedAcrossSpans(
+			int spacing,
+			int spanIndex,
+			int spanSize,
+			int spanCount,
+			int expectedStart,
+			int expectedEnd)
+		{
+			SpacingItemDecoration.GetCrossAxisOffsets(
+				spacing,
+				spanIndex,
+				spanSize,
+				spanCount,
+				out int start,
+				out int end);
+
+			Assert.Equal(expectedStart, start);
+			Assert.Equal(expectedEnd, end);
+		}
+
 		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
 		[Fact(DisplayName = "CollectionView with SnapPointsType set should not crash")]
 		public async Task SnapPointsDoNotCrashOnOlderAPIs()
