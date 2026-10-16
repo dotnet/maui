@@ -184,8 +184,11 @@ With successful outside positive controls, the stricter profile rejected
 loopback networking, credential-service port lookup, signalling an unrelated
 owned process and reading that process's arguments. SDK 11 startup and cached
 restore succeeded, but offline restore warned that vulnerability data was
-unavailable, and the Android build failed JDK validation even though direct
-`java -version` succeeded. The external `boundary-preflight/` preserves these
+unavailable. Initial JDK validation failed even though direct `java -version`
+succeeded: allowing the exact public hostname query required by `uname`
+advanced the build past JDK validation without enabling process-argument reads.
+A subsequent MSBuild Copy task still failed with an overflow; the stricter
+executor is not ready. The external `boundary-preflight/` preserves these
 probes and failures. They are not a working actor executor or model failures;
 the filesystem-only launcher above was not weakened to hide them.
 
@@ -331,3 +334,22 @@ previous four-versus-four Shell pilot remains separate historical evidence:
 both arms passed, and only two skill-available runs actually loaded the skill.
 It does not establish broader efficacy, guaranteed activation, or a release
 ship gate.
+
+## Prototype conclusion
+
+The package payload, install/discovery workflow, sample readiness checks and
+Vally reference grading are demonstrated; a skills correctness advantage is
+**not**. The approved historical comparison is closed with both arms passing,
+not extended until a favorable result appears. The public sample suite broadens
+the executable measurement instrument, not the model-efficacy denominator.
+Independent code/claim review found no blocking defects, but reviewer model
+identities were not verified and are not presented as a paired multi-model study.
+
+Further paired-model trials and a production-quality isolated actor executor
+are follow-up research, requiring their own verified execution boundary and
+approved budget. They are not prerequisites for reviewing this text-only draft
+package prototype, and their absence must not be hidden by a completion marker,
+reference replay, disabled audit or claimed model saving. Generated agent
+startup remains blocked. Promotion to MAUI 11/final release coordinates and
+cross-platform validation remain release-owner decisions, not results of this
+Android pilot.
