@@ -160,7 +160,7 @@ static class UpdateComponentCodeWriter
 
 					foreach (var propDiff in nodeDiff.PropertyChanges)
 					{
-						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 					}
 				}
 				else
@@ -1386,6 +1386,7 @@ static class UpdateComponentCodeWriter
 		PropertyDiff propDiff,
 		INamedTypeSymbol? nodeType,
 		string varName,
+		IReadOnlyDictionary<string, XmlType>? existingNamedFields,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
@@ -1394,6 +1395,34 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		var propName = propDiff.PropertyName.LocalName;
+
+		if (propDiff.PropertyName == XmlName.xName)
+		{
+			var nameScopeVar = $"__nameScope_{varName}";
+			using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
+			{
+				codeWriter.WriteLine($"var {nameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
+				if (!string.IsNullOrEmpty(propDiff.OldValue))
+					codeWriter.WriteLine($"{nameScopeVar}?.UnregisterName(\"{EscapeString(propDiff.OldValue!)}\");");
+
+				if (propDiff.Kind == PropertyDiffKind.Set && !string.IsNullOrEmpty(propDiff.NewValue))
+					codeWriter.WriteLine($"{nameScopeVar}?.RegisterName(\"{EscapeString(propDiff.NewValue!)}\", {varName}!);");
+			}
+
+			if (propDiff.Kind == PropertyDiffKind.Set && !string.IsNullOrEmpty(propDiff.NewValue))
+			{
+				var newName = propDiff.NewValue!;
+				if (nodeType is not null
+					&& existingNamedFields?.TryGetValue(newName, out var fieldXmlType) == true
+					&& fieldXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var fieldType)
+					&& fieldType is not null
+					&& IsAssignableTo(nodeType, fieldType))
+				{
+					codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(newName)} = ({fieldType.ToFQDisplayString()}){varName}!;");
+				}
+			}
+			return;
+		}
 
 		// "__MAUI_Content__" is a synthetic property name produced by the diff when the parent's
 		// direct text content (e.g. <Label>Hello</Label>) changes. Resolve it to the type's

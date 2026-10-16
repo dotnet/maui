@@ -685,7 +685,7 @@ public class StructuralHotReloadTests
 	}
 
 	[Fact]
-	public void XNameRenamed_SamePositionSameType_EmitsSameIdRegistrationAndOldNameUnregister()
+	public void XNameRenamed_SamePositionSameType_EmitsInPlaceRegistrationAndOldNameUnregister()
 	{
 		const string pageStub = """
 			namespace TestAiAssisted;
@@ -719,18 +719,16 @@ public class StructuralHotReloadTests
 			""";
 
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(XNameRenamed_SamePositionSameType_EmitsSameIdRegistrationAndOldNameUnregister),
+			nameof(XNameRenamed_SamePositionSameType_EmitsInPlaceRegistrationAndOldNameUnregister),
 			PageClass,
 			pageStub);
 		var generation = harness.Generate(xamlV1, xamlV2);
 		var updateComponentSource = generation[1].UpdateComponentSource;
 
 		Assert.NotNull(updateComponentSource);
-		// The old name's unregister guard (RemovedNames mechanism), proving it fires for a
-		// same-id local rebuild — not just for an ordinary removed child.
+		// The existing same-id element is renamed in place.
 		Assert.Contains("XamlComponentRegistry.TryGet(this", updateComponentSource!, StringComparison.Ordinal);
-		Assert.Contains("ReferenceEquals(__removedNameScope_", updateComponentSource!, StringComparison.Ordinal);
-		// The rebuilt instance registers the NEW name in the live namescope.
+		Assert.Contains("UnregisterName(\"oldLabel\")", updateComponentSource!, StringComparison.Ordinal);
 		Assert.Contains("RegisterName(\"RenamedLabel\"", updateComponentSource!, StringComparison.Ordinal);
 
 		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);

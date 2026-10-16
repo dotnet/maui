@@ -128,6 +128,9 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string HotReloadStateKey
 		=> string.IsNullOrEmpty(AdditionalText.Path) ? (RelativePath ?? string.Empty) : AdditionalText.Path;
 
+	/// <summary>Identifies the generator driver that owns this item's Hot Reload field history.</summary>
+	public HotReloadSessionToken? HotReloadSessionToken { get; init; }
+
 	public string? TargetFramework
 		=> Options.GetValueOrNull("build_property.targetFramework");
 

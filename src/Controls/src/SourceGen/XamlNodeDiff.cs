@@ -1124,7 +1124,6 @@ static class XamlNodeDiff
 
 		switch (name.LocalName)
 		{
-			case "Name":
 			case "Class":
 			case "ClassModifier":
 			case "FieldModifier":
