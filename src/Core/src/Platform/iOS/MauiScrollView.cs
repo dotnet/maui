@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Platform
 			// Compare at device-pixel resolution to filter sub-pixel noise from animations
 			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea, this.GetEffectiveDisplayScale()) || !_appliesSafeAreaAdjustments);
 		}
 
 		/// <summary>
@@ -772,8 +772,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-	    /// </summary>
+		    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+		    /// </summary>
 
 		internal void OnOrientationChanged()
 		{
