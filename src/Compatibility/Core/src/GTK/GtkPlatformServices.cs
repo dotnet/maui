@@ -27,14 +27,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
-			using (var client = new HttpClient())
-			{
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-				return result;
-			}
+			return await StreamWrapper.GetStreamAsync(
+				uri,
+				cancellationToken,
+				new HttpClient(),
+				cancellationToken).ConfigureAwait(false);
 		}
 
 		public IIsolatedStorageFile GetUserStoreForApplication()

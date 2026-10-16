@@ -20,8 +20,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					if (stream == null)
 						return null;
+					var seekableStream = await stream.EnsureSeekableAsync(cancellationToken);
 					bitmapimage = new BitmapImage();
-					await bitmapimage.SetSourceAsync(stream.AsRandomAccessStream());
+					try
+					{
+						using var randomAccessStream = seekableStream.AsRandomAccessStream();
+						await bitmapimage.SetSourceAsync(randomAccessStream);
+					}
+					finally
+					{
+						if (!ReferenceEquals(stream, seekableStream))
+							seekableStream.Dispose();
+					}
 				}
 			}
 
