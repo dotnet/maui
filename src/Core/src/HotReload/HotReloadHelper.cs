@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -14,6 +15,9 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
+		static long handlerCacheGeneration;
+		internal static long HandlerCacheGeneration => Interlocked.Read(ref handlerCacheGeneration);
+
 		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
 		public static void RegisterHandlers(IMauiHandlersCollection handlerService)
@@ -23,6 +27,7 @@ namespace Microsoft.Maui.HotReload
 		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
 		public static void Reset()
 		{
+			Interlocked.Increment(ref handlerCacheGeneration);
 			replacedViews.Clear();
 			activatedHandlerTypes = new();
 
@@ -174,6 +179,8 @@ namespace Microsoft.Maui.HotReload
 			if (!IsEnabled)
 				return;
 
+			Interlocked.Increment(ref handlerCacheGeneration);
+
 			Action<MethodInfo> executeStaticMethod = (method) =>
 			{
 				try
@@ -287,11 +294,16 @@ namespace Microsoft.Maui.HotReload
 #endif
 		public static void UpdateApplication(Type[] types)
 		{
+			Interlocked.Increment(ref handlerCacheGeneration);
 			IsEnabled = true;
 			foreach (var t in types)
 				RegisterReplacedView(t.FullName ?? "", t);
 		}
-		public static void ClearCache(Type[] types) => TriggerReload();
+		public static void ClearCache(Type[] types)
+		{
+			Interlocked.Increment(ref handlerCacheGeneration);
+			TriggerReload();
+		}
 		#endregion
 	}
 }

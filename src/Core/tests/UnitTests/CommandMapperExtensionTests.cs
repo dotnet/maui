@@ -223,5 +223,79 @@ namespace Microsoft.Maui.UnitTests
 				Assert.DoesNotContain(msg2, log, StringComparison.Ordinal);
 			}
 		}
+
+		[Fact]
+		public void FrameworkPrependRunsBeforeEarlierUserAppend()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+
+			mapper.AppendToMapping(nameof(IView.Focus), (_, _, _) => log += "user;");
+			mapper.PrependToMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("controls;core;user;", log);
+		}
+
+		[Fact]
+		public void FrameworkModificationPreservesEarlierUserModification()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+
+			mapper.ModifyMapping(nameof(IView.Focus), (handler, view, args, previous) =>
+			{
+				log += "user-before;";
+				previous!(handler, view, args);
+				log += "user-after;";
+			});
+			mapper.ModifyMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user-before;controls;user-after;", log);
+		}
+
+		[Fact]
+		public void FrameworkModificationPreservesEarlierDirectReplacement()
+		{
+			var log = string.Empty;
+			var mapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+
+			mapper[nameof(IView.Focus)] = (_, _, _) => log += "user;";
+			mapper.ModifyMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user;", log);
+		}
+
+		[Fact]
+		public void FrameworkModificationPreservesEarlierDirectReplacementOfChainedCommand()
+		{
+			var log = string.Empty;
+			var parentMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Focus)] = (_, _, _) => log += "core;"
+			};
+			var mapper = new CommandMapper<IView, IViewHandler>(parentMapper).WithFrameworkMappingsSealed();
+
+			mapper[nameof(IView.Focus)] = (_, _, _) => log += "user;";
+			mapper.ModifyMappingForControls<IView, IViewHandler>(nameof(IView.Focus), (_, _, _, _) => log += "controls;");
+
+			mapper.Invoke(null, new Button(), nameof(IView.Focus), null);
+
+			Assert.Equal("user;", log);
+		}
 	}
 }

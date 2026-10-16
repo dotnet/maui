@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 #elif __IOS__ || MACCATALYST
 			[nameof(IStepper.FlowDirection)] = MapFlowDirection,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IStepper, IStepperHandler> CommandMapper = new(ViewCommandMapper)
 		{

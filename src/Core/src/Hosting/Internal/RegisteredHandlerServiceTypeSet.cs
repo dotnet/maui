@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -7,11 +6,6 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	internal sealed class RegisteredHandlerServiceTypeSet
 	{
-		private static readonly ConcurrentDictionary<IMauiHandlersCollection, RegisteredHandlerServiceTypeSet> s_instances = new();
-
-		internal static RegisteredHandlerServiceTypeSet GetInstance(IMauiHandlersCollection collection) =>
-			s_instances.GetOrAdd(collection, static _ => new RegisteredHandlerServiceTypeSet());
-
 		private readonly HashSet<Type> _concreteHandlerServiceTypeSet = new();
 		private readonly HashSet<Type> _interfaceHandlerServiceTypeSet = new();
 
