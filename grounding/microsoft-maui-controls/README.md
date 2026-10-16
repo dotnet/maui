@@ -179,6 +179,25 @@ isolation, environment/credential brokers and coding-model/provider integration
 are not established. Nothing here enables generated Vally agent startup,
 authorizes model spending, or makes untrusted MSBuild safe on the host.
 
+Further default-deny OS experiments remain **diagnostic-only and blocked**.
+With successful outside positive controls, the stricter profile rejected
+loopback networking, credential-service port lookup, signalling an unrelated
+owned process and reading that process's arguments. SDK 11 startup and cached
+restore succeeded, but offline restore warned that vulnerability data was
+unavailable, and the Android build failed JDK validation even though direct
+`java -version` succeeded. The external `boundary-preflight/` preserves these
+probes and failures. They are not a working actor executor or model failures;
+the filesystem-only launcher above was not weakened to hide them.
+
+CLI control-plane isolation also needs separate verification. Restrict model
+tool visibility and validate the actual instruction/skill/plugin/hook inventory;
+disabling instruction files or embeddings-based skill retrieval alone does not
+prove zero personal-artifact loading. Tool denials take precedence over allows:
+do not design a deny-all rule with supposedly overriding allow exceptions.
+See the [CLI tool-permission documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/allowing-tools)
+and [configuration-directory reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference).
+No generated spec enables model execution on the strength of these probes.
+
 ## Vally and the broader evaluation pattern
 
 Read [Vally Get Started](https://microsoft.github.io/vally/get-started/),
