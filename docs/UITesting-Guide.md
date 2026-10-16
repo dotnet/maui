@@ -49,6 +49,39 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Xcode with command-line tools installed
 - iOS Simulator configured
 
+## Android Shell Handler and Renderer Lanes
+
+The main Android UI-test lane runs the `Shell` category using Shell Handler.
+The separate `android_ui_tests_shell_renderer` stage runs the same category using
+Shell Renderer. Both stages depend on `build_ui_tests_coreclr` and download the
+same `ui-tests-samples-coreclr` artifact; there is no separate app build or MSBuild
+property for Shell selection.
+
+Android Mono is not supported when targeting .NET 11 or later. Enabling
+`UseMonoRuntime=true` for `net11.0-android` fails with `NETSDK1242`, so there is no
+Android Mono build or test lane on this branch. Mono coverage requires a separate
+.NET 10-targeted app build; the shared templates' `Mono` option does not make a
+.NET 11 Android app compatible with Mono.
+
+The renderer lane sets `testConfigurationArgs: "ShellRenderer"`. The Android Cake
+runner forwards this through `TEST_CONFIGURATION_ARGS` to Appium, which passes it
+as an activity intent extra on startup and relaunch. `MainActivity` reads the
+setting before creating the window, and the Shell handler factory in
+`MauiProgram.cs` selects the renderer when each Shell is created. Without the
+setting, it selects Shell Handler. The selected implementation is logged to logcat
+under the `MauiUITests` tag.
+
+To run the renderer configuration locally with an already-built HostApp:
+
+```bash
+./build.sh -Script eng/devices/android.cake --target=uitest \
+  --test-filter="TestCategory=Shell" --TEST_CONFIGURATION_ARGS="ShellRenderer"
+```
+
+Omit `--TEST_CONFIGURATION_ARGS` (and unset that environment variable) to run the
+default Shell Handler configuration. Both configurations use the existing Android
+snapshot baselines.
+
 ## Creating a UI Test
 
 ### Step 1: Create the HostApp Page
