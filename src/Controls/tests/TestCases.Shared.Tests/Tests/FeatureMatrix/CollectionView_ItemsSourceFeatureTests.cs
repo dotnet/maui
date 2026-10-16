@@ -30,6 +30,9 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	public const string MultipleModePreselection = "MultipleModePreselection";
 	public const string SingleModePreselection = "SingleModePreselection";
 
+	private const string InitialStringItemsOrder = "Apple|Banana|Carrot|Broccoli";
+	private const string InitialGroupedStringItemsOrder = "Apple|Banana|Orange|Carrot|Broccoli|Spinach";
+
 	public override string GalleryPageName => ItemsSourceFeatureMatrix;
 	protected override string GallerySubPageButton => "ItemsSourceButton";
 
@@ -77,6 +80,14 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		}
 
 		App.WaitForElement(item);
+	}
+
+	private void VerifyItemsSourceState(int expectedCount, string expectedOrder)
+	{
+		App.WaitForTextToBePresentInElement("ItemsSourceItemCount", expectedCount.ToString());
+		App.WaitForTextToBePresentInElement("ItemsSourceItemOrder", expectedOrder);
+		Assert.That(App.FindElement("ItemsSourceItemCount").GetText(), Is.EqualTo(expectedCount.ToString()));
+		Assert.That(App.FindElement("ItemsSourceItemOrder").GetText(), Is.EqualTo(expectedOrder));
 	}
 
 	// ItemsSource replacement scenarios
@@ -280,15 +291,24 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceObservableCollection);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
 
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "-1");
 		App.Tap(AddItems);
-		App.WaitForElement("Apple");
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "99");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
 
 		App.EnterText(IndexEntry, "99");
 		App.Tap(RemoveItems);
-		App.WaitForElement("Broccoli");
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
 	}
 
 	[Test]
@@ -865,11 +885,13 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceGroupedList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "6");
 		App.Tap(AddItems);
 		App.WaitForElement("Strawberry");
 		Assert.That(App.FindElementsByText("Strawberry").Count, Is.EqualTo(1));
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Carrot|Broccoli|Spinach|Strawberry");
 	}
 
 	[Test]
@@ -884,11 +906,16 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceGroupedList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "3");
 		App.Tap(AddItems);
 		App.WaitForElement("Raseberry");
 		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(1));
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Raseberry|Carrot|Broccoli|Spinach");
+		var insertedItemY = App.WaitForElement("Raseberry").GetRect().Y;
+		Assert.That(insertedItemY, Is.GreaterThan(App.WaitForElement("Vegetables").GetRect().Y));
+		Assert.That(insertedItemY, Is.LessThan(App.WaitForElement("Carrot").GetRect().Y));
 	}
 
 	[Test]
@@ -924,16 +951,24 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceGroupedList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 
 		App.WaitForElement(IndexEntry);
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
 		App.EnterText(IndexEntry, "99");
 		App.Tap(AddItems);
-		App.WaitForElement("Apple");
-		App.WaitForNoElement("Raseberry");
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 
-		// The index is invalid, so removal must also leave the source unchanged.
+		App.EnterText(IndexEntry, "-1");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
 		App.EnterText(IndexEntry, "99");
 		App.Tap(RemoveItems);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 		App.WaitForElement("Apple");
 		App.WaitForElement("Spinach");
 		App.WaitForElement("Vegetables");
@@ -951,15 +986,20 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceGroupedList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "3");
 		App.Tap(AddItems);
 		App.WaitForElement("Raseberry");
 		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(1));
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Raseberry|Carrot|Broccoli|Spinach");
+		Assert.That(App.WaitForElement("Raseberry").GetRect().Y,
+			Is.GreaterThan(App.WaitForElement("Vegetables").GetRect().Y));
 		App.EnterText(IndexEntry, "3");
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("Raseberry");
 		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(0));
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 	}
 
 	[Test]
@@ -1099,9 +1139,12 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	{
 		ConfigureItemsSource(ItemsSourceGroupedList, itemsLayout, modelItems: true, grouped: true);
 		App.WaitForElement("dotnet_bot.png");
+		VerifyItemsSourceState(2, "dotnet_bot.png|avatar.png");
 		App.Tap(AddItems);
 		WaitForItemInItemsLayout("green.png", itemsLayout);
+		VerifyItemsSourceState(3, "dotnet_bot.png|green.png|avatar.png");
 		App.Tap(RemoveItems);
+		VerifyItemsSourceState(2, "dotnet_bot.png|green.png");
 		App.WaitForNoElement("avatar.png");
 		WaitForItemInItemsLayout("green.png", itemsLayout);
 	}
@@ -1115,9 +1158,13 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	{
 		ConfigureItemsSource(ItemsSourceGroupedList, itemsLayout, grouped: true);
 		App.WaitForElement("Apple");
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 		App.Tap(AddItems);
 		WaitForItemInItemsLayout("Kiwi", itemsLayout);
+		VerifyItemsSourceState(7, "Apple|Banana|Orange|Kiwi|Carrot|Broccoli|Spinach");
 		App.Tap(RemoveItems);
+		VerifyItemsSourceState(6, "Apple|Banana|Orange|Kiwi|Carrot|Broccoli");
+		App.WaitForNoElement("Spinach");
 		WaitForItemInItemsLayout("Kiwi", itemsLayout);
 	}
 
