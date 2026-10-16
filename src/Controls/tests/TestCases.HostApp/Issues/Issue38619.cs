@@ -50,13 +50,13 @@ public class Issue38619Page : ContentPage
 
 	void OnLoaded(object sender, EventArgs e)
 	{
-		if (Window is null)
-			throw new InvalidOperationException(
-				"The issue page must be attached to a window.");
+		var window = GetWindow();
+		if (window is null)
+			return;
 
-		_originalPage ??= Window.Page;
+		_originalPage ??= window.Page;
 
-		Window.TitleBar = new TitleBar
+		window.TitleBar = new TitleBar
 		{
 			BackgroundColor = Colors.Gold,
 			Subtitle = "Window.Page restoration",
@@ -66,11 +66,14 @@ public class Issue38619Page : ContentPage
 
 	void OnReplacePageClicked(object sender, EventArgs e)
 	{
-		if (Window is null || _originalPage is null)
+		var window = GetWindow();
+		var originalPage = _originalPage ?? window?.Page;
+
+		if (window is null || originalPage is null)
 			throw new InvalidOperationException(
 				"The original window page must be captured before replacing it.");
 
-		var window = Window;
+		_originalPage = originalPage;
 
 		var restorePageButton = new Button
 		{
@@ -80,7 +83,7 @@ public class Issue38619Page : ContentPage
 
 		restorePageButton.Clicked += (sender, e) =>
 		{
-			window.Page = _originalPage;
+			window.Page = originalPage;
 		};
 
 		window.Page = new ContentPage
@@ -103,4 +106,7 @@ public class Issue38619Page : ContentPage
 			}
 		};
 	}
+
+	Window GetWindow() =>
+		Window ?? Application.Current?.Windows.FirstOrDefault();
 }
