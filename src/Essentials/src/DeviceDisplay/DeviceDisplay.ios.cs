@@ -163,8 +163,8 @@ namespace Microsoft.Maui.Devices
 			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
 			observer = notificationCenter.AddObserver(ScreenParametersChangedNotification, OnMainDisplayInfoChanged);
 #else
-			// On iOS, use status bar orientation changes (deprecated but still works)
-			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
+			// On iOS, stop using deprecated status bar orientation changes as they noi longer work and switch to UIDevice.OrientationDidChangeNotification)
+			var notification = UIDevice.OrientationDidChangeNotification;
 			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
 #endif
 		}
@@ -181,17 +181,17 @@ namespace Microsoft.Maui.Devices
 #pragma warning disable CA1416 // UIApplication.StatusBarOrientation has [UnsupportedOSPlatform("ios9.0")]. (Deprecated but still works)
 #pragma warning disable CA1422 // Validate platform compatibility
 		static DisplayOrientation CalculateOrientation() =>
-			UIApplication.SharedApplication.StatusBarOrientation.IsLandscape()
+			UIDevice.CurrentDevice.Orientation.IsLandscape()
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
 
 		static DisplayRotation CalculateRotation() =>
-			UIApplication.SharedApplication.StatusBarOrientation switch
+			UIDevice.CurrentDevice.Orientation switch
 			{
-				UIInterfaceOrientation.Portrait => DisplayRotation.Rotation0,
-				UIInterfaceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
-				UIInterfaceOrientation.LandscapeLeft => DisplayRotation.Rotation270,
-				UIInterfaceOrientation.LandscapeRight => DisplayRotation.Rotation90,
+				UIDeviceOrientation.Portrait => DisplayRotation.Rotation0,
+				UIDeviceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
+				UIDeviceOrientation.LandscapeLeft => DisplayRotation.Rotation270,
+				UIDeviceOrientation.LandscapeRight => DisplayRotation.Rotation90,
 				_ => DisplayRotation.Unknown,
 			};
 
