@@ -455,6 +455,13 @@ internal static class LayoutFactory2
 					return;
 				}
 
+				// Offsets reported while the bounds are changing are stale; the controller restores
+				// the current position after layout, so neither correct the loop nor update Position.
+				if (cv2Controller.IsRotating())
+				{
+					return;
+				}
+
 				var pageIndex = (int)page;
 				var carouselPosition = pageIndex;
 
@@ -500,11 +507,6 @@ internal static class LayoutFactory2
 							isHorizontal ? UICollectionViewScrollPosition.Left : UICollectionViewScrollPosition.Top,
 							false);
 					}
-				}
-
-				if (cv2Controller.IsRotating())
-				{
-					return;
 				}
 
 				//Update the CarouselView position
