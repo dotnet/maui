@@ -141,11 +141,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						return false;
 					}
 
+					// Re-tapping the selected tab while a navigation transition is still in
+					// flight makes UIKit re-select the tab and pop the section's navigation
+					// controller to its root mid-transition, which corrupts the in-flight
+					// push/pop and leaves the tab permanently blank (issue 39229).
+					// Reject the tap; once the transition completes, re-tapping behaves normally.
+					if (ReferenceEquals(viewController, SelectedViewController) && IsNavigationTransitionInFlight(viewController))
+					{
+						return false;
+					}
+
 					accept = ((IShellItemController)ShellItem).ProposeSection(renderer.ShellSection, false);
 				}
 
 				return accept;
 			};
+		}
+
+		bool IsNavigationTransitionInFlight(UIViewController viewController)
+		{
+			// A GoToAsync is still processing; its push may still be animating.
+			if (_context?.Shell?.NavigationManager?.AccumulateNavigatedEvents == true)
+				return true;
+
+			// UIKit is running a transition on the section's navigation controller:
+			// an in-flight push/pop animation, an interactive swipe-back, or a
+			// re-tap triggered pop-to-root that hasn't finished yet.
+			return viewController?.GetTransitionCoordinator() is not null
+				|| (CurrentRenderer?.ViewController as UINavigationController)?.GetTransitionCoordinator() is not null;
 		}
 
 		public override void ViewDidAppear(bool animated)
