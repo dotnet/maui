@@ -2,6 +2,7 @@
 using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
+using ALayoutDirection = Android.Views.LayoutDirection;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 
@@ -96,9 +97,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// (group headers, footers, etc.) are accounted for when determining rows.
 				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
 				int spanCount = gridLayoutManager.SpanCount;
+				int spanIndex = spanSizeLookup.GetSpanIndex(position, spanCount);
+				int spanSize = spanSizeLookup.GetSpanSize(position);
 				rowCol = spanSizeLookup.GetSpanGroupIndex(position, spanCount);
 				lastRowCol = spanSizeLookup.GetSpanGroupIndex(itemCount - 1, spanCount);
-			}
+
+				if (_orientation == ItemsLayoutOrientation.Vertical)
+				{
+					GetCrossAxisOffsets(HorizontalOffset * 2, spanIndex, spanSize, spanCount, out int start, out int end);
+
+					if (parent.LayoutDirection == ALayoutDirection.Rtl)
+					{
+						outRect.Left = end;
+						outRect.Right = start;
+					}
+					else
+					{
+						outRect.Left = start;
+						outRect.Right = end;
+					}
+				}
+				else
+				{
+					GetCrossAxisOffsets(VerticalOffset * 2, spanIndex, spanSize, spanCount, out int top, out int bottom);
+					outRect.Top = top;
+					outRect.Bottom = bottom;
+				}
+			 }
 			else
 			{
 				// Linear layout: each item occupies exactly one row/column.
@@ -120,6 +145,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (rowCol == lastRowCol)
 					outRect.Right = 0;
 			}
+		}
+
+		internal static void GetCrossAxisOffsets(int spacing, int spanIndex, int spanSize, int spanCount, out int start, out int end)
+		{
+			start = (int)((long)spacing * spanIndex / spanCount);
+			end = spacing - (int)((long)spacing * (spanIndex + spanSize) / spanCount);
 		}
 	}
 }
