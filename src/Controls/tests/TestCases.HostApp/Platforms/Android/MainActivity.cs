@@ -16,5 +16,12 @@ namespace Maui.Controls.Sample.Platform
 	[Register("com.microsoft.maui.uitests.MainActivity")]
 	public class MainActivity : MauiAppCompatActivity
 	{
+		internal static bool UseShellRenderer { get; private set; }
+
+		protected override void OnCreate(Android.OS.Bundle savedInstanceState)
+		{
+			UseShellRenderer = string.Equals(Intent?.GetStringExtra("TEST_CONFIGURATION_ARGS"), "ShellRenderer", StringComparison.OrdinalIgnoreCase);
+			base.OnCreate(savedInstanceState);
+		}
 	}
 }

@@ -267,6 +267,10 @@ void ExecutePrepareUITests(string project, string app, string appPackageName, st
 void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
 	string platform = "android";
+	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
+	Information("TEST_CONFIGURATION_ARGS {0}", TEST_CONFIGURATION_ARGS);
+	SetEnvironmentVariable("TEST_CONFIGURATION_ARGS", TEST_CONFIGURATION_ARGS);
+
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
