@@ -466,16 +466,18 @@ namespace Microsoft.Maui.Graphics.Skia
 				using var platformPath = platformPathBuilder.Detach();
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
 			}
-			else
+			else if (Math.Abs(sweep) >= 360)
 			{
-				// todo: delete this after the api is bound
+				// Preserve legacy full-sweep strokes: AddArc closes cardinal starts as ovals, while DrawArc leaves an open contour with caps at the seam.
+				// The same fallback also retains AddArc's empty contours for some non-cardinal starts.
 				using var platformPathBuilder = new SKPathBuilder();
 				platformPathBuilder.AddArc(rect, startAngle, sweep);
 				using var platformPath = platformPathBuilder.Detach();
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-
-				// todo: restore this when the api is bound.
-				//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);
+			}
+			else
+			{
+				_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);
 			}
 		}
 
@@ -511,14 +513,19 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (!clockwise)
 				sweep *= -1;
 
-			// todo: delete this after the api is bound
-			using var platformPathBuilder = new SKPathBuilder();
-			platformPathBuilder.AddArc(rect, startAngle, sweep);
-			using var platformPath = platformPathBuilder.Detach();
-			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
-
-			// todo: restore this when the api is bound.
-			//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
+			if (Math.Abs(sweep) >= 360)
+			{
+				// Preserve legacy Skia full-sweep compatibility, including empty contours for some non-cardinal starts.
+				// Other ICanvas implementations fill those contours, but correcting that deviation is outside this binding cleanup.
+				using var platformPathBuilder = new SKPathBuilder();
+				platformPathBuilder.AddArc(rect, startAngle, sweep);
+				using var platformPath = platformPathBuilder.Detach();
+				_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
+			}
+			else
+			{
+				_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
+			}
 		}
 
 		protected override void PlatformDrawRectangle(
