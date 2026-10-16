@@ -435,6 +435,12 @@ internal static class LayoutFactory2
 					return;
 				}
 
+				cv2Controller.UpdateResizeState();
+				if (cv2Controller.IsRotating())
+				{
+					return;
+				}
+
 				// Calculate page index accounting for ItemSpacing
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
 
@@ -452,13 +458,6 @@ internal static class LayoutFactory2
 				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
-				{
-					return;
-				}
-
-				// Offsets reported while the bounds are changing are stale; the controller restores
-				// the current position after layout, so neither correct the loop nor update Position.
-				if (cv2Controller.IsRotating())
 				{
 					return;
 				}
@@ -511,7 +510,7 @@ internal static class LayoutFactory2
 				}
 
 				//Update the CarouselView position
-				cv2Controller?.SetPosition(carouselPosition);
+				cv2Controller.SetPosition(carouselPosition);
 			};
 
 			return section;

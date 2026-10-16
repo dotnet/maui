@@ -15,10 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
 		bool _isRotating = false;
-		// Set when the collection view bounds change after the initial position is set (rotation, or
-		// size requests applied after rotation). Offsets reported by UIKit while bounds change are stale.
 		bool _isResizing = false;
 		CGSize _lastBoundsSize = CGSize.Empty;
+		int _positionBeforeBoundsChange = -1;
 		bool _isUpdating = false;
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
@@ -87,24 +86,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (InitialPositionSet)
 			{
+				if (!_isRotating && !_isResizing)
+				{
+					_positionBeforeBoundsChange = (ItemsView as CarouselView)?.Position ?? -1;
+				}
+
 				_isRotating = true;
 			}
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
+			UpdateResizeState();
 			base.ViewWillLayoutSubviews();
-
-			var boundsSize = CollectionView.Bounds.Size;
-			if (InitialPositionSet && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
-			{
-				_isResizing = true;
-			}
-			_lastBoundsSize = boundsSize;
 
 			UpdateVisualStates();
 		}
 
+		internal void UpdateResizeState()
+		{
+			var boundsSize = CollectionView.Bounds.Size;
+			if (InitialPositionSet && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
+			{
+				if (!_isRotating && !_isResizing)
+				{
+					_positionBeforeBoundsChange = (ItemsView as CarouselView)?.Position ?? -1;
+				}
+
+				_isResizing = true;
+			}
+
+			_lastBoundsSize = boundsSize;
+		}
 
 		public override async void ViewDidLayoutSubviews()
 		{
@@ -116,16 +129,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				BoundsSizeChanged();
 				_isRotating = false;
 				_isResizing = false;
+				_positionBeforeBoundsChange = -1;
 			}
 		}
 
 		void BoundsSizeChanged()
 		{
-			// Re-center the current item after bounds change to ensure proper positioning
-			// This is especially important during device rotation to maintain the correct scroll position
-			if (ItemsView is CarouselView carousel && carousel.Position >= 0)
+			if (ItemsView is CarouselView carousel && ItemsSource is not null && ItemsSource.ItemCount > 0)
 			{
-				carousel.ScrollTo(carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
+				var position = _positionBeforeBoundsChange >= 0
+					? _positionBeforeBoundsChange
+					: carousel.Position;
+				var indexPath = GetScrollToIndexPath(position);
+
+				if (LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
+				{
+					var scrollPosition = IsHorizontal
+						? UICollectionViewScrollPosition.CenteredHorizontally
+						: UICollectionViewScrollPosition.CenteredVertically;
+					CollectionView.ScrollToItem(indexPath, scrollPosition, false);
+				}
 			}
 		}
 
@@ -253,6 +276,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isRotating = false;
 			_isResizing = false;
 			_lastBoundsSize = CGSize.Empty;
+			_positionBeforeBoundsChange = -1;
 			_isInternalCollectionUpdate = false;
 			// Don't let a pending scroll target survive re-attach.
 			_gotoPosition = -1;
@@ -491,7 +515,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			return _isRotating || _isResizing;
 		}
-
 		internal void UpdateLoop()
 		{
 			if (!InitialPositionSet)
