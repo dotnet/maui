@@ -73,6 +73,15 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(Issue34310NativeHostView), typeof(Issue34310NativeHostViewHandler));
 #endif
 #if ANDROID
+				// The application is built before MainActivity receives the lane's launch intent.
+				handlers.AddHandler<Shell>(static _ =>
+				{
+					IElementHandler handler = Platform.MainActivity.UseShellRenderer
+						? new Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer()
+						: new Microsoft.Maui.Controls.Handlers.ShellHandler();
+					Android.Util.Log.Info("MauiUITests", $"Using {handler.GetType().Name}");
+					return handler;
+				});
 				handlers.AddHandler(typeof(Issue7814TouchClaimView), typeof(Issue7814TouchClaimViewHandler));
 #endif
 			});
