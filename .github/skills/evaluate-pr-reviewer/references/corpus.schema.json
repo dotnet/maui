@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runs"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "runs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["buildId", "variant", "reviewedHeadSha"],
+        "properties": {
+          "buildId": { "type": "integer", "minimum": 1 },
+          "variant": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,47}$" },
+          "reviewedHeadSha": { "oneOf": [{ "$ref": "#/$defs/sha" }, { "type": "null" }] },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reviewedHeadEvidence", "reviewerRevisionSha", "models", "partition"],
+            "properties": {
+              "reviewedHeadEvidence": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "reviewerRevisionSha": { "$ref": "#/$defs/sha" },
+              "reviewBaseSha": { "$ref": "#/$defs/sha" },
+              "assessor": { "$ref": "#/$defs/id" },
+              "models": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+              "partition": { "enum": ["calibration", "held-out", "retrospective"] }
+            }
+          },
+          "requiredPhases": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "enum": ["pre-flight", "expert-review", "try-fix", "report"] }
+          },
+          "artifacts": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["directory", "coverage"],
+            "properties": {
+              "directory": { "type": "string", "minLength": 1 },
+              "coverage": { "enum": ["complete", "partial"] }
+            }
+          },
+          "assessment": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reviewedHeadSha", "complete", "sequencing", "findings", "knownDefects", "candidates"],
+            "properties": {
+              "reviewedHeadSha": { "$ref": "#/$defs/sha" },
+              "complete": { "type": "boolean" },
+              "sequencing": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["mode", "goldExposure", "uptakeJudgedAfterFindings"],
+                "properties": {
+                  "mode": { "enum": ["blinded", "retrospective"] },
+                  "goldExposure": { "enum": ["before-review-output", "after-review-output", "unknown"] },
+                  "uptakeJudgedAfterFindings": { "type": "boolean" },
+                  "goldRecord": { "type": "string", "minLength": 1, "maxLength": 1000 }
+                }
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "defectId", "stage", "severity", "correctness", "novelty", "actionability", "uptake", "evidence"],
+                  "properties": {
+                    "id": { "$ref": "#/$defs/id" },
+                    "defectId": { "$ref": "#/$defs/id" },
+                    "stage": { "enum": ["gate", "regression", "expert-review", "try-fix", "report", "metadata"] },
+                    "severity": { "$ref": "#/$defs/severity" },
+                    "correctness": { "enum": ["confirmed", "refuted", "unknown"] },
+                    "novelty": { "enum": ["new", "duplicate", "unknown"] },
+                    "actionability": { "enum": ["actionable", "non-actionable", "unknown"] },
+                    "uptake": { "enum": ["code-verified", "acknowledged", "rejected", "unknown"] },
+                    "evidence": { "$ref": "#/$defs/evidence" }
+                  }
+                }
+              },
+              "knownDefects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "severity", "evidence"],
+                  "properties": {
+                    "id": { "$ref": "#/$defs/id" },
+                    "severity": { "$ref": "#/$defs/severity" },
+                    "evidence": { "$ref": "#/$defs/evidence" }
+                  }
+                }
+              },
+              "candidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "stage", "implementation", "validity", "reportedValidation", "uptake", "evidence"],
+                  "properties": {
+                    "id": { "$ref": "#/$defs/id" },
+                    "stage": { "enum": ["try-fix", "expert-review"] },
+                    "implementation": { "enum": ["present", "empty", "unknown"] },
+                    "validity": { "enum": ["supported", "regressive", "invalid", "unknown"] },
+                    "reportedValidation": { "enum": ["pass", "fail", "blocked", "unknown"] },
+                    "uptake": { "enum": ["code-verified", "acknowledged", "rejected", "unknown"] },
+                    "evidence": { "$ref": "#/$defs/evidence" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[a-fA-F0-9]{40}$" },
+    "id": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,95}$" },
+    "severity": { "enum": ["critical", "major", "moderate", "minor", "info"] },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "reference", "purpose", "sourceSha", "origin"],
+        "properties": {
+          "kind": { "enum": ["code", "test", "human", "prior-review"] },
+          "reference": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "purpose": { "enum": ["correctness", "novelty", "gold", "uptake", "reported-validation"] },
+          "sourceSha": { "$ref": "#/$defs/sha" },
+          "origin": { "enum": ["independent", "reviewer-derived"] }
+        }
+      }
+    }
+  }
+}

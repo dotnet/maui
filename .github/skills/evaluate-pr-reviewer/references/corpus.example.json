@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "runs": [
+    {
+      "buildId": 100,
+      "variant": "current",
+      "reviewedHeadSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "provenance": {
+        "reviewedHeadEvidence": "trusted-setup.log: reviewed PR head",
+        "reviewerRevisionSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "models": ["fixture-model"],
+        "partition": "retrospective"
+      },
+      "artifacts": {
+        "directory": "build-100\\CopilotLogs\\CustomAgentLogsTmp\\PRState\\42\\PRAgent",
+        "coverage": "complete"
+      },
+      "assessment": {
+        "reviewedHeadSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "complete": true,
+        "sequencing": {
+          "mode": "retrospective",
+          "goldExposure": "after-review-output",
+          "uptakeJudgedAfterFindings": true
+        },
+        "findings": [
+          {
+            "id": "finding-1",
+            "defectId": "invalid-test-item",
+            "stage": "expert-review",
+            "severity": "major",
+            "correctness": "confirmed",
+            "novelty": "new",
+            "actionability": "actionable",
+            "uptake": "code-verified",
+            "evidence": [
+              { "kind": "code", "reference": "reviewed-head:Issue.cs:40", "purpose": "correctness", "sourceSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "origin": "independent" },
+              { "kind": "prior-review", "reference": "pre-stage-comments.json", "purpose": "novelty", "sourceSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "origin": "independent" },
+              { "kind": "code", "reference": "later-head:Issue.cs:40", "purpose": "uptake", "sourceSha": "cccccccccccccccccccccccccccccccccccccccc", "origin": "independent" }
+            ]
+          }
+        ],
+        "knownDefects": [
+          {
+            "id": "invalid-test-item",
+            "severity": "major",
+            "evidence": [
+              { "kind": "code", "reference": "reviewed-head:Issue.cs:40", "purpose": "gold", "sourceSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "origin": "independent" }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "id": "try-fix-1",
+            "stage": "try-fix",
+            "implementation": "present",
+            "validity": "unknown",
+            "reportedValidation": "pass",
+            "uptake": "unknown",
+            "evidence": [
+              { "kind": "test", "reference": "try-fix-1/content.md: reported passing test", "purpose": "reported-validation", "sourceSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "origin": "reviewer-derived" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
