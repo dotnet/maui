@@ -84,7 +84,8 @@ NuGet targets; an archive inspection must catch that regression.
 
 `PackageSkillsTests.ControlsPackageContainsVersionedSkillsAndReferences` in the
 existing integration-test project checks the actual Controls artifact against
-the Markdown source: exact archive paths, bytes, frontmatter names/descriptions,
+the Markdown source: exact archive paths, text (ignoring CRLF/LF checkout
+differences), frontmatter names/descriptions,
 and linked references. CI uses
 `artifacts/Microsoft.Maui.Controls.<MAUI_PACKAGE_VERSION>.nupkg`. For a deliberately
 selected local artifact, set `MAUI_CONTROLS_TEST_PACKAGE` to its full path. Run the
@@ -97,3 +98,16 @@ comparing agent attempts. Separate infrastructure failures and invalid evaluator
 from agent/API errors, keep guidance identical within a comparison batch, and
 record whether the skill was actually selected. A small pilot does not establish
 general upgrade reliability, Apple-platform coverage, or certified cost savings.
+
+The separate [consumer evaluation instrument](../grounding/microsoft-maui-controls/README.md)
+stages pinned public samples on an external volume, runs evaluator-owned
+source/target build and native UI controls, and generates actual Vally specs
+with a sealed-delivery candidate grader. Shell grading checks live framework
+ancestry rather than a preferred custom class name. Mandatory runtime checks
+cannot be averaged away, and identified infrastructure failures remain separate.
+It is a three-case Android readiness pilot, not a Vally model-comparison result
+or CT-24 certification. Generated reference replays run no agent; model startup
+remains blocked pending a trial budget and verified OS/tool isolation. Its
+documentation distinguishes Vally from Markout's custom harness and describes
+the remaining paired multi-model measurement requirements. Do not add a larger
+shipping skill shelf solely to match another package's number of domain skills.

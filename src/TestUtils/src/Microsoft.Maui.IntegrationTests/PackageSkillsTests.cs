@@ -44,10 +44,8 @@ public class PackageSkillsTests : BaseBuildTest
 		Assert.Equal(expectedFiles, skillEntries.Select(entry => entry.FullName).OrderBy(path => path, StringComparer.Ordinal));
 		foreach (var entry in skillEntries)
 		{
-			using var stream = entry.Open();
-			using var contents = new MemoryStream();
-			stream.CopyTo(contents);
-			Assert.Equal(File.ReadAllBytes(Path.Combine(sourceRoot, entry.FullName)), contents.ToArray());
+			using var reader = new StreamReader(entry.Open());
+			AssertSkillContent(File.ReadAllText(Path.Combine(sourceRoot, entry.FullName)), reader.ReadToEnd());
 		}
 
 		var skillHeaders = skillEntries.Where(entry => entry.FullName.EndsWith("/SKILL.md", StringComparison.Ordinal)).ToArray();
@@ -71,5 +69,29 @@ public class PackageSkillsTests : BaseBuildTest
 				Assert.Contains(skillEntries, entry => entry.FullName == reference);
 			}
 		}
+	}
+
+	[Theory]
+	[InlineData("first\nsecond\n", "first\r\nsecond\r\n")]
+	[InlineData("first\r\nsecond\r\n", "first\nsecond\n")]
+	public void SkillContentAllowsDifferentCheckoutLineEndings(string source, string packaged)
+	{
+		AssertSkillContent(source, packaged);
+	}
+
+	[Theory]
+	[InlineData("name: expected\n", "name: changed\r\n")]
+	[InlineData("first\nsecond\n", "first\r\n")]
+	[InlineData("text\n", "text \r\n")]
+	public void SkillContentRejectsContentChanges(string source, string packaged)
+	{
+		Assert.Throws<Xunit.Sdk.EqualException>(() => AssertSkillContent(source, packaged));
+	}
+
+	static void AssertSkillContent(string source, string packaged)
+	{
+		Assert.Equal(
+			source.Replace("\r\n", "\n", StringComparison.Ordinal),
+			packaged.Replace("\r\n", "\n", StringComparison.Ordinal));
 	}
 }
