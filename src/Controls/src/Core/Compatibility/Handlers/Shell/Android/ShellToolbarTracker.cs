@@ -740,6 +740,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				ApplyToolbarChanges((Toolbar)sender, (Toolbar)_toolbar);
 				UpdateToolbarIconAccessibilityText(_platformToolbar, _shell);
+
+				// IconColor follows the effective Shell.ForegroundColor, including values set on a parent
+				// ShellItem/ShellSection/ShellContent that do not raise a property change on the page or the Shell.
+				if (e.PropertyName == nameof(Toolbar.IconColor))
+					UpdateToolbarItemsTintColors();
 			}
 		}
 
@@ -755,7 +760,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		Color GetSearchHandlerTintColor(Page page)
 		{
-			var foregroundColor = page is not null ? Shell.GetForegroundColor(page) : null;
+			// Shell.ForegroundColor can be set on any element between the page and the Shell
+			// (ShellContent, Tab, TabBar, FlyoutItem), so resolve it the same way Shell resolves its appearance.
+			var foregroundColor = page is not null ? _shell.GetAppearanceForPivot(page)?.ForegroundColor : null;
 			return TintColor ?? foregroundColor ?? Shell.GetForegroundColor(_shell);
 		}
 
