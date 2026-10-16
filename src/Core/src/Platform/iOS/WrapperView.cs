@@ -4,6 +4,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
 
@@ -35,6 +36,11 @@ namespace Microsoft.Maui.Platform
 		UIView? _borderView;
 
 		public WrapperView()
+		{
+		}
+
+		private protected WrapperView(NativeHandle handle)
+			: base(handle)
 		{
 		}
 
