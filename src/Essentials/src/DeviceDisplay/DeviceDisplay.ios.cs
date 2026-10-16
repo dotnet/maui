@@ -153,7 +153,6 @@ namespace Microsoft.Maui.Devices
 				rate: rate);
 		}
 
-		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
 		protected override void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
@@ -163,9 +162,9 @@ namespace Microsoft.Maui.Devices
 			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
 			observer = notificationCenter.AddObserver(ScreenParametersChangedNotification, OnMainDisplayInfoChanged);
 #else
-			// On iOS, use status bar orientation changes (deprecated but still works)
-			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
-			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
+			observer = notificationCenter.AddObserver(
+				UIDevice.OrientationDidChangeNotification,
+				OnMainDisplayInfoChanged);
 #endif
 		}
 
@@ -178,15 +177,13 @@ namespace Microsoft.Maui.Devices
 		void OnMainDisplayInfoChanged(NSNotification obj) =>
 			OnMainDisplayInfoChanged();
 
-#pragma warning disable CA1416 // UIApplication.StatusBarOrientation has [UnsupportedOSPlatform("ios9.0")]. (Deprecated but still works)
-#pragma warning disable CA1422 // Validate platform compatibility
 		static DisplayOrientation CalculateOrientation() =>
-			UIApplication.SharedApplication.StatusBarOrientation.IsLandscape()
+			GetInterfaceOrientation().IsLandscape()
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
 
 		static DisplayRotation CalculateRotation() =>
-			UIApplication.SharedApplication.StatusBarOrientation switch
+			GetInterfaceOrientation() switch
 			{
 				UIInterfaceOrientation.Portrait => DisplayRotation.Rotation0,
 				UIInterfaceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
@@ -195,7 +192,32 @@ namespace Microsoft.Maui.Devices
 				_ => DisplayRotation.Unknown,
 			};
 
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416
+		static UIInterfaceOrientation GetInterfaceOrientation()
+		{
+			var windowScene = GetWindowScene();
+
+			if (windowScene is null)
+				return UIInterfaceOrientation.Unknown;
+
+			return windowScene.InterfaceOrientation;
+		}
+
+		static UIWindowScene? GetWindowScene()
+		{
+			using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+			UIWindowScene? inactiveWindowScene = null;
+			foreach (var scene in scenes)
+			{
+				if (scene is not UIWindowScene windowScene)
+					continue;
+
+				if (windowScene.ActivationState == UISceneActivationState.ForegroundActive)
+					return windowScene;
+
+				if (windowScene.ActivationState == UISceneActivationState.ForegroundInactive)
+					inactiveWindowScene ??= windowScene;
+			}
+			return inactiveWindowScene;
+		}
 	}
 }
