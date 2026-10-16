@@ -1306,8 +1306,8 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeButton?.Visibility == ViewStates.Visible)
 				{
-					var swipeItemX = swipeButton.Left / _density;
-					var swipeItemY = swipeButton.Top / _density;
+					var swipeItemX = (_actionView.GetX() + swipeButton.GetX()) / _density;
+					var swipeItemY = (_actionView.GetY() + swipeButton.GetY()) / _density;
 					var swipeItemHeight = swipeButton.Height / _density;
 					var swipeItemWidth = swipeButton.Width / _density;
 
