@@ -220,6 +220,15 @@ MAUI build artifacts are **Container** type, not `PipelineArtifact`:
 If available, the `mcp-binlog-tool` / binlog MCP server can analyze downloaded
 `.binlog` files. Optional — core investigation works via `gh` CLI and REST.
 
+### APIScan analysis inputs
+
+The official pipeline stages unsigned build outputs in `APIScanFiles` for
+analysis, separately from the signed shipping packages. Keep both the
+`APIScanFiles` artifact and its APIScan consumer job marked `isProduction: false`;
+otherwise production-release validation reports missing signing certificates
+on these analysis-only copies. This classification does not disable `APIScan@2`
+or change signing and validation of the actual release artifacts.
+
 ## Test count deduplication
 
 **Never sum raw failed counts across test runs.** MAUI UI/device tests repeat the

@@ -175,6 +175,8 @@ stages:
               targetPath: $(Agent.TempDirectory)/APIScanFiles
               artifactName: APIScanFiles
               displayName: Publish APIScanFiles
+              # Analysis inputs are not the signed packages used for release.
+              isProduction: false
 
         # Publish Metadata using arcade step template
         - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml

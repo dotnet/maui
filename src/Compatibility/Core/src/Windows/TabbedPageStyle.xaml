@@ -1,11 +1,12 @@
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:controls="using:Microsoft.Maui.Controls"
 	xmlns:uwp="using:Microsoft.Maui.Controls.Compatibility.Platform.UWP">
 	<Style x:Key="TabbedPageStyle" TargetType="uwp:FormsPivot">
 		<Setter Property="HeaderTemplate">
 			<Setter.Value>
-				<DataTemplate>
+				<DataTemplate x:DataType="controls:Page">
 					<StackPanel Orientation="Vertical" Name="TabbedPageHeaderStackPanel">
 						<Image Name="TabbedPageHeaderImage" DataContext="{Binding IconImageSource, Converter={StaticResource ImageConverter}}" Source="{Binding Value}" Width="16" Height="16" Visibility="Collapsed" Margin="0,12,0,0"/>
 						<TextBlock Name="TabbedPageHeaderTextBlock" Text="{Binding Title}" Style="{ThemeResource BodyTextBlockStyle}"/>

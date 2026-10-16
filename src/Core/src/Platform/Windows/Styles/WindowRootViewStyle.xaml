@@ -13,7 +13,7 @@
         DefaultTemplateName="MauiAppTitleBarContainerTemplateDefault"
         x:Key="MauiAppTitleBarContainerTemplateSelector"/>
 
-    <DataTemplate x:Key="MauiAppTitleBarTemplateDefault">
+    <DataTemplate x:Key="MauiAppTitleBarTemplateDefault" x:DataType="maui:WindowRootView">
         <Grid
             Canvas.ZIndex="1" 
             VerticalAlignment="Stretch"
@@ -45,7 +45,7 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate x:Key="MauiAppTitleBarContainerTemplateDefault">
+    <DataTemplate x:Key="MauiAppTitleBarContainerTemplateDefault" x:DataType="maui:WindowRootView">
         <ContentControl 
             IsTabStop="False"
             HorizontalContentAlignment="Stretch"
@@ -101,7 +101,7 @@
                                             VerticalContentAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch"
                                             Canvas.ZIndex="1"
-                                            Margin="{Binding WindowTitleBarContainerMargin}"
+                                            Margin="{TemplateBinding WindowTitleBarContainerMargin}"
                                             DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                                             ContentTemplateSelector="{StaticResource MauiAppTitleBarContainerTemplateSelector}"
                                             >

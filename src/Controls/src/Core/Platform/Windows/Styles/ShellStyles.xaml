@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="using:Microsoft.Maui.Platform"
     xmlns:platform="using:Microsoft.Maui.Controls.Platform"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
@@ -10,12 +11,12 @@
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:maui="using:Microsoft.Maui.Controls.Platform">
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">0</x:Double>
-    <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
+    <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate" x:DataType="core:NavigationViewItemViewModel">
         <maui:ShellNavigationViewItem  x:Name="navItem" MenuItemsSource="{Binding MenuItemsSource}">
             <maui:ShellFlyoutItemView IsTabStop="false" IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></maui:ShellFlyoutItemView>
         </maui:ShellNavigationViewItem>
     </DataTemplate>
-    <DataTemplate x:Key="ShellFlyoutMenuItemTemplate">
+    <DataTemplate x:Key="ShellFlyoutMenuItemTemplate" x:DataType="core:NavigationViewItemViewModel">
         <maui:ShellNavigationViewItem x:Name="navItem" MenuItemsSource="{Binding MenuItemsSource}">
             <maui:ShellFlyoutItemView IsTabStop="false" IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></maui:ShellFlyoutItemView>
         </maui:ShellNavigationViewItem>
@@ -23,7 +24,7 @@
     <DataTemplate x:Key="ShellFlyoutSeperatorTemplate">
         <winui:NavigationViewItemSeparator />
     </DataTemplate>
-    <DataTemplate x:Key="SearchHandlerItemTemplate">
+    <DataTemplate x:Key="SearchHandlerItemTemplate" x:DataType="platform:ItemTemplateContext">
         <platform:ItemContentControl
             x:Name="ItemContentControl" 
             MauiContext="{Binding MauiContext}" 

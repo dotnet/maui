@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
+	[Microsoft.UI.Xaml.Data.Bindable]
 	internal class NavigationViewItemViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler? PropertyChanged;

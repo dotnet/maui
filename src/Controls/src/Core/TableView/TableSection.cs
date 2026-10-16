@@ -168,6 +168,9 @@ namespace Microsoft.Maui.Controls
 	/// A logical grouping of cells in a <see cref="TableView"/>.
 	/// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
+#if WINDOWS
+	[Microsoft.UI.Xaml.Data.Bindable]
+#endif
 	public sealed class TableSection : TableSectionBase<Cell>
 #pragma warning restore CS0618 // Type or member is obsolete
 	{

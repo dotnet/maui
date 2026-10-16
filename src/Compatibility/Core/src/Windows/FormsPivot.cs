@@ -7,6 +7,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class FormsPivot : Pivot, IToolbarProvider
 	{
 		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(UI.Xaml.Visibility), typeof(FormsPivot), new PropertyMetadata(UI.Xaml.Visibility.Collapsed));

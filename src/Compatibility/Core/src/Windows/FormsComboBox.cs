@@ -6,6 +6,7 @@ using WVisualState = Microsoft.UI.Xaml.VisualState;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class FormsComboBox : ComboBox
 	{
 		public FormsComboBox()
