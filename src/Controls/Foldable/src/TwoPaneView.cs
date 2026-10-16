@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Controls.Foldable
 	/// <summary>
 	/// Layout container with two panes that will position the child content
 	/// side-by-side or vertically. The relative size of the two panes can be 
-	/// configured, but on a foldable Android device the split will be aligned 
+	/// configured, but on a supported foldable device the split will be aligned
 	/// with the hinge or screen fold.
 	/// </summary>
 	/// <remarks>
 	/// Requires <see cref="Microsoft.Maui.Foldable.HostBuilderExtensions.UseFoldable(Maui.Hosting.MauiAppBuilder)"/>
-	/// be configured in the .NET MAUI app to configure the Android lifecycle
-	/// to detect and adapt to foldable device hinges and screen folds.
+	/// be configured in the .NET MAUI app to detect and adapt to foldable device
+	/// hinges and screen folds.
 	/// </remarks>
 	[ContentProperty("")]
 	public partial class TwoPaneView : Grid
@@ -245,29 +245,6 @@ namespace Microsoft.Maui.Controls.Foldable
 			RowDefinitions = new RowDefinitionCollection() { new RowDefinition(), new RowDefinition(), new RowDefinition() };
 			ColumnDefinitions = new ColumnDefinitionCollection() { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() };
 
-		}
-
-		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
-		{
-			base.OnHandlerChangingCore(args);
-
-			if (_twoPaneViewLayoutGuide.DualScreenService != null)
-			{
-				_twoPaneViewLayoutGuide.DualScreenService.OnLayoutChanged += DualScreenService_OnFeatureChanged;
-			}
-		}
-
-		private void DualScreenService_OnFeatureChanged(object sender, FoldEventArgs e)
-		{
-			System.Diagnostics.Debug.Write("TwoPaneView.DualScreenService_OnFeatureChanged - " + e, "JWM");
-			try
-			{
-				InvalidateMeasure();
-			}
-			catch (Exception)
-			{
-
-			}
 		}
 
 		internal override void OnIsPlatformEnabledChanged()

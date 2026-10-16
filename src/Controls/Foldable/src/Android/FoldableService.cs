@@ -268,6 +268,20 @@ namespace Microsoft.Maui.Foldable
 
 		public Rect GetHinge() => _hingePx;
 
+		public Rect GetHinge(VisualElement visualElement) => GetHinge();
+
+		public bool IsLandscapeFor(VisualElement visualElement) => IsLandscape;
+
+		public Size GetScaledScreenSize(VisualElement visualElement) => ScaledScreenSize;
+
+		public void StartMonitoring(VisualElement visualElement)
+		{
+		}
+
+		public void StopMonitoring(VisualElement visualElement)
+		{
+		}
+
 		/// <summary>
 		/// I question whether we should be basing anything on landscape-ness, and 
 		/// instead should be using the orientation of the hinge
@@ -305,7 +319,7 @@ namespace Microsoft.Maui.Foldable
 		static int subscriberCount;
 		static object hingeAngleLock = new object();
 
-		public static event EventHandler<HingeSensor.HingeSensorChangedEventArgs> HingeAngleChanged
+		static event EventHandler<HingeSensor.HingeSensorChangedEventArgs> HingeSensorAngleChanged
 		{
 			add
 			{
@@ -323,6 +337,32 @@ namespace Microsoft.Maui.Foldable
 				ProcessHingeAngleSubscriberCount(Interlocked.Decrement(ref subscriberCount));
 				_hingeAngleChanged -= value;
 			}
+		}
+
+		EventHandler<FoldableHingeAngleChangedEventArgs> _hingeAngleChangedHandlers;
+		int _hingeAngleSubscriberCount;
+
+		public event EventHandler<FoldableHingeAngleChangedEventArgs> HingeAngleChanged
+		{
+			add
+			{
+				if (Interlocked.Increment(ref _hingeAngleSubscriberCount) == 1)
+					HingeSensorAngleChanged += OnHingeSensorAngleChanged;
+
+				_hingeAngleChangedHandlers += value;
+			}
+			remove
+			{
+				_hingeAngleChangedHandlers -= value;
+
+				if (Interlocked.Decrement(ref _hingeAngleSubscriberCount) == 0)
+					HingeSensorAngleChanged -= OnHingeSensorAngleChanged;
+			}
+		}
+
+		void OnHingeSensorAngleChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
+		{
+			_hingeAngleChangedHandlers?.Invoke(this, new FoldableHingeAngleChangedEventArgs(e.HingeAngle));
 		}
 
 		static void ProcessHingeAngleSubscriberCount(int subscriberCount)

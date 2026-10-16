@@ -169,7 +169,7 @@ $TestTypeRules = @(
     }
     @{
         Type = "UnitTest"
-        PathPattern = "(?<!\w)UnitTests/|Graphics\.Tests/"
+        PathPattern = "(?<!\w)UnitTests/|Graphics\.Tests/|Controls/Foldable/test/"
         Runner = "dotnet-test"
         NeedsPlatform = $false
     }
@@ -195,6 +195,7 @@ $UnitTestProjects = @{
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/"
     "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/"
+    "Controls.Foldable.UnitTests"      = "src/Controls/Foldable/test/"
 }
 
 $UnitTestProjectPaths = @{
@@ -207,6 +208,7 @@ $UnitTestProjectPaths = @{
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
     "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
+    "Controls.Foldable.UnitTests"      = "src/Controls/Foldable/test/Controls.Foldable.UnitTests.csproj"
 }
 
 # ============================================================
