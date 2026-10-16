@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 	/// </summary>
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
-		public MauiView()
+		protected MauiView()
 		{
 		}
 
