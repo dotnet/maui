@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -6,6 +7,44 @@ namespace Microsoft.Maui.IntegrationTests;
 public class BlazorTemplateTest : BaseTemplateTests
 {
 	public BlazorTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
+
+	[Theory]
+	[InlineData("maui-blazor", "", true)]
+	[InlineData("maui-blazor", "--empty", false)]
+	[InlineData("maui-blazor", "--Empty", false)]
+	[InlineData("maui-blazor", "--empty false --Empty false", true)]
+	[InlineData("maui-blazor-web", "", true)]
+	[InlineData("maui-blazor-web", "--empty", false)]
+	[InlineData("maui-blazor-web", "--Empty", false)]
+	[InlineData("maui-blazor-web", "--empty false --Empty false", true)]
+	public void NewBlazorTemplateUsesCurrentFramework(string templateShortName, string arguments, bool includesSampleContent)
+	{
+		SetTestIdentifier(templateShortName, arguments);
+
+		// Do not specify a framework: the legacy option must not select an older template.
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: TestDirectory, additionalDotNetNewParams: arguments, output: _output),
+			$"Unable to create template {templateShortName}. Check test output for errors.");
+
+		var projectFiles = Directory.GetFiles(TestDirectory, "*.csproj", SearchOption.AllDirectories);
+		Assert.NotEmpty(projectFiles);
+		foreach (var projectFile in projectFiles)
+		{
+			var frameworks = XDocument.Load(projectFile).Descendants()
+				.Where(element => element.Name.LocalName is "TargetFramework" or "TargetFrameworks")
+				.SelectMany(element => element.Value.Split(';', StringSplitOptions.RemoveEmptyEntries))
+				.Where(framework => !framework.StartsWith("$(", StringComparison.Ordinal))
+				.ToArray();
+			Assert.NotEmpty(frameworks);
+			Assert.All(frameworks, framework => Assert.True(
+				framework == DotNetCurrent || framework.StartsWith($"{DotNetCurrent}-", StringComparison.Ordinal),
+				$"Expected {projectFile} to target {DotNetCurrent}, but found {framework}."));
+		}
+
+		foreach (var sampleFile in new[] { "Counter.razor", "Weather.razor", "NavMenu.razor" })
+		{
+			Assert.Equal(includesSampleContent, Directory.GetFiles(TestDirectory, sampleFile, SearchOption.AllDirectories).Length > 0);
+		}
+	}
 
 	[Fact]
 	public void NewMauiBlazorWebSolutionIncludesGitIgnore()
