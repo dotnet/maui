@@ -183,6 +183,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			cell.SetAccessibilityProperties(context);
+			cell.AccessibilityTraits |= UIAccessibilityTrait.Button;
 
 			// Resolve MatchParent to the Shell's concrete FlowDirection. Shell menu item cells have a
 			// disconnected MAUI visual tree, so MatchParent cannot traverse up automatically. This is a
