@@ -16,6 +16,18 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 *Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
+#### Navigating warnings from source-generated XAML
+
+To map compiler warnings in generated XAML code back to the physical XAML input file, including linked files, enable XAML line information:
+
+```xml
+<PropertyGroup>
+  <MauiXamlLineInfo>enable</MauiXamlLineInfo>
+</PropertyGroup>
+```
+
+Line information is disabled by default because of Roslyn issues with large PDBs. If you prefer to inspect the generated C# instead, set `EmitCompilerGeneratedFiles` to `true` and rebuild. The compiler then retains the generated files under the intermediate output directory, normally `obj/<configuration>/<target-framework>/generated/`. Without this setting, a generated diagnostic path does not necessarily correspond to a file on disk.
+
 
 ### Cake Commands
 
