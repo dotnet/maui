@@ -6,6 +6,24 @@ using System.Text.RegularExpressions;
 
 public static class UITestRetry
 {
+    public static void RunSetup(Action setup, bool retry, Action<Exception> onRetry)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                setup();
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (!retry || attempt > 0)
+                    throw;
+                onRetry(ex);
+            }
+        }
+    }
+
     public static string GetFilter(string originalFilter, IEnumerable<XDocument> reports)
     {
         // Only narrow the pipeline's ORed category groups, not arbitrary user filters.
@@ -50,6 +68,37 @@ public static class UITestRetry
             throw new InvalidOperationException("No NUnit result files were found.");
 
         return string.Join("|", categories.Where(failedCategories.Contains).Select(category => $"TestCategory={category}"));
+    }
+
+    public static bool ApplyNUnitFailures(XDocument trx, IEnumerable<XDocument> reports)
+    {
+        var failedRuns = reports.Where(report => (string)report.Root?.Attribute("result") == "Failed").ToList();
+        if (failedRuns.Count == 0)
+            return false;
+
+        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+        var summary = trx.Root.Element(ns + "ResultSummary");
+        if (summary == null)
+            throw new InvalidOperationException("TRX is missing ResultSummary.");
+
+        summary.SetAttributeValue("outcome", "Failed");
+        var runInfos = summary.Element(ns + "RunInfos");
+        if (runInfos == null)
+        {
+            runInfos = new XElement(ns + "RunInfos");
+            summary.Add(runInfos);
+        }
+
+        foreach (var run in failedRuns)
+        {
+            var messages = run.Descendants("failure").Elements("message").Select(message => message.Value);
+            runInfos.Add(new XElement(ns + "RunInfo",
+                new XAttribute("computerName", Environment.MachineName),
+                new XAttribute("outcome", "Error"),
+                new XAttribute("timestamp", DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture)),
+                new XElement(ns + "Text", "NUnit reported a failed run despite a successful VSTest exit. " + string.Join(Environment.NewLine, messages))));
+        }
+        return true;
     }
 
     public static void MergeResults(XDocument original, XDocument retry)

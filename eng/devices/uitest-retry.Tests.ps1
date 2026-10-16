@@ -121,6 +121,70 @@ Describe 'UI test retry category selection' {
 }
 
 Describe 'UI test retry result publication' {
+    It 'marks fixture-only failures as run errors even when every VSTest case passed' {
+        $trx = New-Trx @{ editor = 'Passed'; effects = 'Passed' } 'Completed'
+        $report = [System.Xml.Linq.XDocument]::Parse(@'
+<test-run result="Failed" total="2">
+  <test-suite result="Failed" site="TearDown">
+    <failure><message>Editor OneTimeTearDown failed</message></failure>
+    <test-case result="Passed"/>
+    <test-case result="Passed"/>
+  </test-suite>
+</test-run>
+'@)
+        [UITestRetry]::ApplyNUnitFailures($trx, [System.Xml.Linq.XDocument[]]@($report)) | Should -BeTrue
+        $summary = $trx.Root.Element($ns + 'ResultSummary')
+        $summary.Attribute('outcome').Value | Should -Be 'Failed'
+        $info = $summary.Element($ns + 'RunInfos').Element($ns + 'RunInfo')
+        $info.Attribute('outcome').Value | Should -Be 'Error'
+        $info.Element($ns + 'Text').Value | Should -Match 'Editor OneTimeTearDown failed'
+        @($trx.Root.Element($ns + 'Results').Elements()).Count | Should -Be 2
+    }
+
+    It 'does not mark normally completed NUnit runs as failures' {
+        $trx = New-Trx @{ editor = 'Passed' } 'Completed'
+        $report = [System.Xml.Linq.XDocument]::Parse('<test-run result="Passed" total="1"><test-case result="Passed"/></test-run>')
+        [UITestRetry]::ApplyNUnitFailures($trx, [System.Xml.Linq.XDocument[]]@($report)) | Should -BeFalse
+        $trx.Root.Element($ns + 'ResultSummary').Attribute('outcome').Value | Should -Be 'Completed'
+    }
+
+    It 'preserves existing adapter diagnostics when adding fixture run errors' {
+        $trx = New-Trx @{ editor = 'Passed' } 'Completed'
+        $summary = $trx.Root.Element($ns + 'ResultSummary')
+        $summary.Add([System.Xml.Linq.XElement]::Parse(@'
+<RunInfos xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <RunInfo outcome="Warning"><Text>Adapter warning</Text></RunInfo>
+</RunInfos>
+'@))
+        $report = [System.Xml.Linq.XDocument]::Parse('<test-run result="Failed"><failure><message>Fixture error</message></failure></test-run>')
+        [UITestRetry]::ApplyNUnitFailures($trx, [System.Xml.Linq.XDocument[]]@($report)) | Should -BeTrue
+        $infos = @($summary.Element($ns + 'RunInfos').Elements($ns + 'RunInfo'))
+        $infos.Count | Should -Be 2
+        $infos[0].Element($ns + 'Text').Value | Should -Be 'Adapter warning'
+        $infos[1].Attribute('outcome').Value | Should -Be 'Error'
+    }
+
+    It 'clears a recovered fixture error when merging a successful retry' {
+        $original = New-Trx @{ editor = 'Passed'; effects = 'Passed' } 'Completed'
+        $report = [System.Xml.Linq.XDocument]::Parse('<test-run result="Failed"><failure><message>Teardown failed</message></failure></test-run>')
+        [UITestRetry]::ApplyNUnitFailures($original, [System.Xml.Linq.XDocument[]]@($report)) | Should -BeTrue
+        $retry = New-Trx @{ editor = 'Passed' } 'Completed'
+        [UITestRetry]::MergeResults($original, $retry)
+        $original.Root.Element($ns + 'ResultSummary').Attribute('outcome').Value | Should -Be 'Completed'
+        $original.Root.Element($ns + 'ResultSummary').Element($ns + 'RunInfos') | Should -BeNullOrEmpty
+    }
+
+    It 'retains a persistent fixture error when merging the final retry' {
+        $original = New-Trx @{ editor = 'Passed'; effects = 'Passed' } 'Failed'
+        $retry = New-Trx @{ editor = 'Passed' } 'Completed'
+        $report = [System.Xml.Linq.XDocument]::Parse('<test-run result="Failed"><failure><message>Teardown still failed</message></failure></test-run>')
+        [UITestRetry]::ApplyNUnitFailures($retry, [System.Xml.Linq.XDocument[]]@($report)) | Should -BeTrue
+        [UITestRetry]::MergeResults($original, $retry)
+        $summary = $original.Root.Element($ns + 'ResultSummary')
+        $summary.Attribute('outcome').Value | Should -Be 'Failed'
+        $summary.Element($ns + 'RunInfos').Value | Should -Match 'Teardown still failed'
+    }
+
     It 'preserves untouched results while replacing retried tests and updating counters' {
         $original = New-Trx @{ editor = 'Failed'; effects = 'Passed'; essentials = 'NotExecuted' }
         $retry = New-Trx @{ editor = 'Passed'; newTest = 'Passed' } 'Completed'
@@ -171,6 +235,57 @@ Describe 'Cross-platform UI test retry wiring' {
         $source | Should -Match '#load "\./uitests-shared\.cake"'
         $source | Should -Match '\bRunUITestsWithRetry\('
         $source | Should -Not -Match '\bRunTestWithLocalDotNet\('
+    }
+
+    Describe 'UI test setup/build recovery' {
+        It 'does not repeat successful setup' {
+            $state = @{ Attempts = 0; Warnings = 0 }
+            [UITestRetry]::RunSetup([Action]{ $state.Attempts++ }, $true,
+                [Action[Exception]]{ $state.Warnings++ })
+            $state.Attempts | Should -Be 1
+            $state.Warnings | Should -Be 0
+        }
+
+        It 'retries transient setup failures once without executing tests again' {
+            $state = @{ Attempts = 0; Warnings = 0; Tests = 0 }
+            [UITestRetry]::RunSetup([Action]{
+                $state.Attempts++
+                if ($state.Attempts -eq 1) { throw 'Transient setup failure' }
+            }, $true, [Action[Exception]]{ $state.Warnings++ })
+            $state.Tests++
+            $state.Attempts | Should -Be 2
+            $state.Warnings | Should -Be 1
+            $state.Tests | Should -Be 1
+        }
+
+        It 'propagates persistent setup failures after two attempts' {
+            $state = @{ Attempts = 0 }
+            { [UITestRetry]::RunSetup([Action]{
+                $state.Attempts++
+                throw 'Persistent setup failure'
+            }, $true, [Action[Exception]]{}) } | Should -Throw '*Persistent setup failure*'
+            $state.Attempts | Should -Be 2
+        }
+
+        It 'does not retry when setup retries are disabled' {
+            $state = @{ Attempts = 0 }
+            { [UITestRetry]::RunSetup([Action]{
+                $state.Attempts++
+                throw 'Local setup failure'
+            }, $false, [Action[Exception]]{}) } | Should -Throw '*Local setup failure*'
+            $state.Attempts | Should -Be 1
+        }
+
+        It 'wraps <Platform> preparation and build before the test retry runner' -TestCases @(
+            @{ Platform = 'ios' }
+            @{ Platform = 'catalyst' }
+            @{ Platform = 'windows' }
+        ) {
+            param($Platform)
+            $source = Get-Content (Join-Path $PSScriptRoot "$Platform.cake") -Raw
+            $source | Should -Match 'RunUITestSetupWithRetry\('
+            $source.IndexOf('RunUITestSetupWithRetry(') | Should -BeLessThan $source.IndexOf('RunUITestsWithRetry(')
+        }
     }
 
     It 'does not retry the entire pipeline task after the shared retry has finished' {

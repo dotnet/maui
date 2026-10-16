@@ -15,6 +15,12 @@ bool targetBoot = TARGET.ToLower() == "boot";
 bool targetCleanup = TARGET.ToLower() == "cleanup";
 bool deviceBootWait = Argument("wait", true);
 
+void RunUITestSetupWithRetry(Action setup)
+{
+	UITestRetry.RunSetup(setup, IsCIBuild() && TARGET.StartsWith("uitest", StringComparison.OrdinalIgnoreCase),
+		ex => Warning("UI test setup/build failed; retrying this phase once before running tests: {0}", ex.Message));
+}
+
 void RunUITestsWithRetry(string project, string config, string toolPath, string resultsFileName, Action onFinalFailure = null)
 {
 	int numOfRetries = IsCIBuild() ? 1 : 0;
@@ -30,10 +36,28 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 		try
 		{
 			Information("UI test attempt: {0}", retryCount + 1);
+			var attemptDirectory = originalResults == null ? resultDirectory : retryDirectory;
+			var attemptNUnitDirectory = originalResults == null ? nunitDirectory : retryDirectory;
 			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
 				resultsFileNameWithoutExtension: resultsFileName, filter: retryFilter,
 				resultsDirectory: originalResults == null ? null : retryDirectory,
-				nunitResultsDirectory: numOfRetries > 0 ? (originalResults == null ? nunitDirectory : retryDirectory) : null);
+				nunitResultsDirectory: attemptNUnitDirectory);
+
+			var reports = GetFiles($"{attemptNUnitDirectory}/*.xml").Select(file => XDocument.Load(file.FullPath)).ToArray();
+			if (reports.Length == 0)
+			{
+				Warning("No NUnit XML was produced; using the VSTest exit status for this attempt.");
+			}
+			else
+			{
+				var attemptResultsFile = System.IO.Path.Combine(attemptDirectory, resultsFileName + ".trx");
+				var attemptResults = XDocument.Load(attemptResultsFile);
+				if (UITestRetry.ApplyNUnitFailures(attemptResults, reports))
+				{
+					attemptResults.Save(attemptResultsFile);
+					throw new InvalidOperationException("NUnit reported failed tests or fixtures despite a successful VSTest exit.");
+				}
+			}
 			break;
 		}
 		catch (Exception ex)
