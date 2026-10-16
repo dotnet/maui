@@ -328,6 +328,96 @@ $"""
 		Assert.DoesNotContain("ReRoot", result, System.StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void XNameRename_AmongUntouchedSiblings_DoesNotMutateLayout()
+	{
+		// A same-position x:Name rename targets the existing element and must not mutate the
+		// containing Layout, so untouched siblings keep their live handler/platform view state.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="oldName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="newName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain(".Insert(", result, System.StringComparison.Ordinal);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRename_WithEventHandler_DoesNotRewireExistingInstance()
+	{
+		// The element is retained, so its existing event subscription must not be duplicated.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="oldName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="newName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked += OnClicked", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked = OnClicked", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRename_UnderGetterOnlyCollectionContentProperty_DoesNotMutateCollection()
+	{
+		// The Span is renamed in place, so the getter-only Spans collection is not assigned or
+		// structurally modified.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="oldName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="newName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain(".Spans =", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+	}
+
 	// helpers
 	static int CountOccurrences(string source, string pattern)
 	{

@@ -262,6 +262,14 @@ substitutes for current original issue/comment evidence.
   Every citation, including content labels and narrow removals, must survive
   prose filtering. Samples/code may inform analysis but are not authority quotes.
   Only a link's visible prose can support a decision.
+  Prepared sources expose unmodified `source.body` and citation-safe `source.prose`.
+  Choose contiguous verbatim quotes present in both strings with exact ordinal
+  matching; prefer short complete prose sentences that support the label.
+  Never strip markup or rewrite a quote, or cite across blanked code, quoted text
+  or link-metadata spans. `source.prose` is a citation aid only, not proof of
+  authority or semantic support; all provenance, policy and contradiction checks
+  still apply. Withhold a label if eligible evidence is unavailable rather than
+  emitting malformed evidence.
   Review/no-repro/version recommendations need the corresponding technical
   assessment, not merely a comment from an authorized author.
   Completed review and no-repro assessments must be unconditional and

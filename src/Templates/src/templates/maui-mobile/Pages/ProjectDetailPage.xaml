@@ -45,7 +45,7 @@
                 <Label 
                     Text="Icon" 
                     Style="{StaticResource Title2}"/>
-                <CollectionView 
+                <CollectionView x:Name="IconsCollectionView"
                     HeightRequest="44" Margin="0,0,0,15"
                     SelectionMode="Single" 
                     SelectedItem="{Binding Icon}"
@@ -96,11 +96,12 @@
                     Text="Tags" 
                     Style="{StaticResource Title2}"/>
 
-                <CollectionView
+                <CollectionView x:Name="TagsCollectionView"
                     ItemsSource="{Binding AllTags}"
                     SelectionMode="Multiple"
                     HeightRequest="44"
                     Margin="0,0,0,15"
+                    SemanticProperties.Description="Tags Collection"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
                     SelectionChangedCommandParameter="{Binding SelectedTags}">

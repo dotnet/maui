@@ -838,6 +838,7 @@ $json = [ordered]@{
     schemaVersion = 2
     generatedAt = (Get-Date).ToUniversalTime().ToString('o')
     repository = "$Owner/$Repo"
+    baseBranch = $BaseBranch
     issueEvidence = [ordered]@{
         authoritative = $true
         exactLabel = $IssueLabel

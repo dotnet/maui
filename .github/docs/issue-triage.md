@@ -155,6 +155,18 @@ retains link targets so canonical same-repository issue links are still fetched.
 Every evidence quote must survive the same prose filter, including content labels
 and narrow removals. Code/samples can inform analysis but cannot serve as
 authority quotations.
+Each prepared source includes its unmodified `body` and a citation-safe `prose`
+projection computed by the trusted `Get-Prose` routine. Filtering blanks forbidden
+spans without changing string length or line breaks. Choose contiguous verbatim
+quotes present in both `source.body` and `source.prose` with exact ordinal matching;
+prefer short complete prose sentences that support the label. Never strip markup
+or rewrite a quote, or cite across blanked code, quoted text or link-metadata spans.
+If eligible evidence is unavailable, withhold the label instead of emitting
+malformed evidence. The projection is a citation aid only, not proof of authority
+or semantic support; provenance, policy and whole-paragraph contradiction checks
+remain mandatory. Final validation recomputes prose from the freshly fetched
+original body and checks exact containment in both strings, never trusting an
+agent-supplied projection.
 Automatic area correction requires a fresh unconditional maintainer explanation
 of this reported issue's cause naming the exact replacement area. The removal
 and that specific addition must cite the same source and exact quotation.
@@ -609,6 +621,12 @@ bounded regular JSON outside the checkout, binds it to the preparation job's
 independent context hash, and re-fetches/rechecks context and authority. It rejects
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
 intents and unsafe transitions, then renders its own artifact-only report.
+The source prose projections are computed before hashing each prepared/current
+snapshot, so the context hash and freshness checks cover this derived data too.
+Including both body and prose increases context size, potentially approaching
+twice the source-text portion; the existing 1 MiB JSON limit and all collection
+bounds remain unchanged. Oversized or incomplete evidence still aborts rather
+than truncating sources or salvaging partial proposals.
 Withheld labels must be unique and cannot overlap the proposed label delta.
 After evidence validation and report rendering, the final gate re-fetches the
 complete bounded snapshot and requires its hash to match the validated context

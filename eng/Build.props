@@ -8,19 +8,17 @@
 
   <!-- Pack only: Microsoft.Maui.Packages -->
   <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(Pack)' == 'true'">
-    <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" BuildInParallel="false">
-        <AdditionalProperties>ValidateXcodeVersion=false</AdditionalProperties>
-    </ProjectToBuild>
+    <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" BuildInParallel="false" />
     <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages.slnf" Condition="'$(OS)' == 'Windows_NT'" BuildInParallel="false" />
   </ItemGroup>
 
   <!-- Full build: Microsoft.Maui.sln -->
   <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(Pack)' != 'true'">
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.sln" Condition="'$(OS)' == 'Windows_NT'" BuildInParallel="false">
-        <AdditionalProperties>ValidateXcodeVersion=false;CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>
+        <AdditionalProperties>CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>
     </ProjectToBuild>
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" BuildInParallel="false">
-        <AdditionalProperties>ValidateXcodeVersion=false;CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>
+        <AdditionalProperties>CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>
     </ProjectToBuild>
   </ItemGroup>
 

@@ -298,6 +298,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 _pendingAdapterUpdate = false;
             }
 
+            if (newSection.Handler is ShellSectionHandler sectionHandler)
+            {
+                sectionHandler.InitializeCurrentContent();
+            }
+
             // Switch ViewPager2 to the new section
             if (_viewPager.CurrentItem != index)
             {

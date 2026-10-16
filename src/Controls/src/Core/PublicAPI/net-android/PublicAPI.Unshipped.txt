@@ -149,6 +149,7 @@ override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.Dispose
 override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
 override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnDestroyView() -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnResume() -> void
 override Microsoft.Maui.Controls.Handlers.ShellHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
 override Microsoft.Maui.Controls.Handlers.ShellHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDrawerLayout!
 override Microsoft.Maui.Controls.Handlers.ShellHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void

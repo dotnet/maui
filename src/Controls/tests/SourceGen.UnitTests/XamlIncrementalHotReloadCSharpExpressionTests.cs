@@ -648,7 +648,6 @@ public partial class TestPage : ContentPage
 		string? path = null,
 		string lineinfo = "enable",
 		bool assertNoCompilationErrors = true,
-		bool enablePreviewFeatures = true,
 		bool enableIncrementalHotReload = false)
 	{
 		_compilation ??= CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
@@ -661,7 +660,6 @@ public partial class TestPage : ContentPage
 			NoWarn: noWarn,
 			ManifestResourceName: $"{_compilation.AssemblyName}.Test.xaml",
 			Lineinfo: lineinfo,
-			EnablePreviewFeatures: enablePreviewFeatures,
 			EnableIncrementalHotReload: enableIncrementalHotReload);
 
 		if (_driver is null)
@@ -675,7 +673,21 @@ public partial class TestPage : ContentPage
 			_driver = _driver.ReplaceAdditionalText(_xamlFile!.Text, nextFile.Text);
 		}
 
-		_driver = _driver.RunGenerators(_compilation);
+		_driver = _driver.RunGeneratorsAndUpdateCompilation(_compilation, out var updatedCompilation, out _);
+		if (assertNoCompilationErrors)
+		{
+			var compilationErrors = updatedCompilation.GetDiagnostics()
+				.Where(d => d.Severity == DiagnosticSeverity.Error)
+				.Where(d => d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+				.ToArray();
+
+			if (compilationErrors.Length > 0)
+			{
+				var errorMessages = string.Join(Environment.NewLine, compilationErrors.Select(e => $"{e.Id}: {e.GetMessage()} at {e.Location}"));
+				throw new InvalidOperationException($"Generated code has compilation errors:{Environment.NewLine}{errorMessages}");
+			}
+		}
+
 		_xamlFile = nextFile;
 		var result = _driver.GetRunResult();
 		var generated = result.Results.SingleOrDefault().GeneratedSources
