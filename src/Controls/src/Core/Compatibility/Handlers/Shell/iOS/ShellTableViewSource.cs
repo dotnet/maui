@@ -34,6 +34,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ScrolledEvent = null;
 		}
 
+		internal void ForEachCachedView(Action<View> action)
+		{
+			if (_cells is null)
+			{
+				return;
+			}
+
+			foreach (var cell in _cells.Values)
+			{
+				action(cell.View);
+			}
+		}
+
 		public List<List<Element>> Groups
 		{
 			get
