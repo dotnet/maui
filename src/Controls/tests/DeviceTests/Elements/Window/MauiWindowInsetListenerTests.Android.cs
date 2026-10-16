@@ -71,12 +71,13 @@ namespace Microsoft.Maui.DeviceTests
 				var gated = new InsetRecordingView(MauiContext.Context!);
 				var exempt = new InsetRecordingView(MauiContext.Context!);
 				var insets = CreateInsets();
+				var animation = CreateImeAnimation();
 
 				// Sanity: with no animation in flight, dispatches process normally
 				listener.OnApplyWindowInsets(gated, insets);
 				Assert.Equal(1, gated.HandledCount);
 
-				listener.OnPrepare(CreateImeAnimation());
+				listener.OnPrepare(animation);
 
 				// Negative case: a view that was already tracked before the animation
 				// started must remain gated for the whole animation
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 				listener.OnApplyWindowInsets(exempt, insets);
 				Assert.Equal(1, exempt.HandledCount);
 
-				listener.OnEnd(CreateImeAnimation());
+				listener.OnEnd(animation);
 			});
 		}
 
@@ -106,18 +107,20 @@ namespace Microsoft.Maui.DeviceTests
 				var listener = new MauiWindowInsetListener();
 				var view = new InsetRecordingView(MauiContext.Context!);
 				var insets = CreateInsets();
+				var firstAnimation = CreateImeAnimation();
 
-				listener.OnPrepare(CreateImeAnimation());
+				listener.OnPrepare(firstAnimation);
 				listener.NotifyViewAttached(view);
-				listener.OnEnd(CreateImeAnimation());
+				listener.OnEnd(firstAnimation);
 
 				// Assert between OnEnd and the next OnPrepare, so this discriminates the
 				// clear in OnEnd specifically rather than passing on either clear site
-				listener.OnPrepare(CreateImeAnimation());
+				var secondAnimation = CreateImeAnimation();
+				listener.OnPrepare(secondAnimation);
 				listener.OnApplyWindowInsets(view, insets);
 				Assert.Equal(0, view.HandledCount);
 
-				listener.OnEnd(CreateImeAnimation());
+				listener.OnEnd(secondAnimation);
 			});
 		}
 
@@ -130,18 +133,19 @@ namespace Microsoft.Maui.DeviceTests
 				var detached = new InsetRecordingView(MauiContext.Context!);
 				var other = new InsetRecordingView(MauiContext.Context!);
 				var insets = CreateInsets();
+				var animation = CreateImeAnimation();
 
 				// The listener knows about a view that carries padding, but it is detached
 				listener.TrackView(detached);
 
-				listener.OnPrepare(CreateImeAnimation());
+				listener.OnPrepare(animation);
 				listener.OnApplyWindowInsets(detached, insets);
 				Assert.Equal(0, detached.HandledCount);
 
 				// Posting the release through a detached view would park the runnable until
 				// that view re-attaches (possibly never), leaving every view sharing this
 				// listener without safe-area updates. It must release synchronously instead.
-				listener.OnEnd(CreateImeAnimation());
+				listener.OnEnd(animation);
 
 				listener.OnApplyWindowInsets(other, insets);
 				Assert.Equal(1, other.HandledCount);
@@ -162,6 +166,8 @@ namespace Microsoft.Maui.DeviceTests
 					var detached = new InsetRecordingView(MauiContext.Context!);
 					var attached = new InsetRecordingView(MauiContext.Context!);
 					var insets = CreateInsets();
+					var firstAnimation = CreateImeAnimation();
+					var secondAnimation = CreateImeAnimation();
 
 					container.AddView(attached);
 
@@ -170,9 +176,9 @@ namespace Microsoft.Maui.DeviceTests
 						// Only a detached view is known, so the animation has to end without
 						// being able to issue the re-apply it owes
 						listener.TrackView(detached);
-						listener.OnPrepare(CreateImeAnimation());
+						listener.OnPrepare(firstAnimation);
 						listener.OnApplyWindowInsets(detached, insets);
-						listener.OnEnd(CreateImeAnimation());
+						listener.OnEnd(firstAnimation);
 						await NextLooperTurnAsync(container);
 
 						Assert.Equal(0, detached.RequestApplyInsetsCount);
@@ -181,8 +187,8 @@ namespace Microsoft.Maui.DeviceTests
 						// reach an attached view must deliver them rather than the request
 						// having been silently dropped
 						listener.TrackView(attached);
-						listener.OnPrepare(CreateImeAnimation());
-						listener.OnEnd(CreateImeAnimation());
+						listener.OnPrepare(secondAnimation);
+						listener.OnEnd(secondAnimation);
 						await NextLooperTurnAsync(container);
 
 						Assert.Equal(1, attached.RequestApplyInsetsCount);
@@ -208,6 +214,7 @@ namespace Microsoft.Maui.DeviceTests
 					var first = new InsetRecordingView(MauiContext.Context!);
 					var second = new InsetRecordingView(MauiContext.Context!);
 					var insets = CreateInsets();
+					var animation = CreateImeAnimation();
 
 					container.AddView(first);
 					container.AddView(second);
@@ -215,7 +222,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					try
 					{
-						listener.OnPrepare(CreateImeAnimation());
+						listener.OnPrepare(animation);
 
 						listener.OnApplyWindowInsets(first, insets);
 						listener.OnApplyWindowInsets(second, insets);
@@ -224,7 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						// The release is posted through an attached view; sequence on the same
 						// looper instead of racing a fixed delay
-						listener.OnEnd(CreateImeAnimation());
+						listener.OnEnd(animation);
 						await NextLooperTurnAsync(container);
 
 						// A single RequestApplyInsets reaches the ViewRootImpl and re-dispatches
@@ -260,6 +267,8 @@ namespace Microsoft.Maui.DeviceTests
 					var listener = new MauiWindowInsetListener();
 					var view = new InsetRecordingView(MauiContext.Context!);
 					var insets = CreateInsets();
+					var firstAnimation = CreateImeAnimation();
+					var secondAnimation = CreateImeAnimation();
 
 					container.AddView(view);
 					listener.TrackView(view);
@@ -268,13 +277,13 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						// Animation 1 ends with a gated dispatch, so its gate release is
 						// posted for the next looper turn...
-						listener.OnPrepare(CreateImeAnimation());
+						listener.OnPrepare(firstAnimation);
 						listener.OnApplyWindowInsets(view, insets);
-						listener.OnEnd(CreateImeAnimation());
+						listener.OnEnd(firstAnimation);
 
 						// ...but animation 2 starts before that runnable runs
 						// (a hide immediately followed by a show)
-						listener.OnPrepare(CreateImeAnimation());
+						listener.OnPrepare(secondAnimation);
 						await NextLooperTurnAsync(container);
 
 						// The stale release from animation 1 must not have opened the
@@ -282,7 +291,7 @@ namespace Microsoft.Maui.DeviceTests
 						listener.OnApplyWindowInsets(view, insets);
 						Assert.Equal(0, view.HandledCount);
 
-						listener.OnEnd(CreateImeAnimation());
+						listener.OnEnd(secondAnimation);
 						await NextLooperTurnAsync(container);
 
 						listener.OnApplyWindowInsets(view, insets);

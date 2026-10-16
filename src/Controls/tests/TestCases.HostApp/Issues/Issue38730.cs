@@ -59,7 +59,7 @@ public class Issue38730VerticalPage : ContentPage
 			}
 		};
 
-		var collectionView = new CollectionView
+		var collectionView = new CollectionView2
 		{
 			AutomationId = "GroupedCollectionView",
 			ItemsSource = new Items[]
