@@ -1171,7 +1171,8 @@ namespace Microsoft.Maui.DeviceTests
 				int count = appearanceObservers.Count;
 				shell.Items.Clear();
 				shell.CurrentItem = new ShellContent { Content = page };
-				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
+				// Removed observers may be released before the new section registers.
+				Assert.True(appearanceObservers.Count <= count, "Clearing ShellContent must not increase appearance observers.");
 			});
 		}
 
