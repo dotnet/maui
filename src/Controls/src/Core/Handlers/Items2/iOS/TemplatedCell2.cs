@@ -41,12 +41,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _measureInvalidated;
 		bool _needsArrange;
 		bool _hasArrangedSize;
+		bool _hasNativeBoundsSize;
 		bool _isArranging;
 		bool _invalidatedDuringArrange;
 		bool _requiresSafeAreaReconciliation;
 		Size _measuredSize;
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
+		Size _lastNativeBoundsSize;
 		WeakReference<object> _itemsSource;
 
 		// Indicates the cell is being used as a supplementary view (group header/footer)
@@ -123,14 +125,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || constraintsChanged)
 				{
-					// Dynamic content invalidations need an inline arrange so the
-					// updated content is rendered immediately. Constraint changes,
-					// such as rotation, are deferred to LayoutSubviews when the
-					// cell has already been arranged so the final native bounds
-					// are used for the arrange.
-					shouldArrangeInline =
-						!constraintsChanged && !_invalidatedDuringArrange;
-
+					// External invalidations need a synchronous arrange even if the outer
+					// size is unchanged. Arrange-induced invalidations only need another
+					// inline arrange when measurement produces a different size.
+					shouldArrangeInline = !_invalidatedDuringArrange || constraintsChanged;
 					_invalidatedDuringArrange = false;
 
 					// Preserve invalidations raised by Measure or Arrange for the next pass.
@@ -188,8 +186,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.ZIndex = 2;
 
 				if (_needsArrange &&
-					((shouldArrangeInline && _hasArrangedSize) ||
-						!_hasArrangedSize))
+					(shouldArrangeInline ||
+						!_hasArrangedSize ||
+						!size.ToCGSize().IsCloseTo(_lastArrangedSize)))
 				{
 					ArrangeVirtualView(virtualView, size);
 				}
@@ -231,7 +230,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				var boundsSize = Bounds.Size.ToSize();
 				var needsFinalArrange = _needsArrange;
-				var boundsChanged = _hasArrangedSize && !Bounds.Size.IsCloseTo(_lastArrangedSize);
+				// Preferred sizing can advance _lastArrangedSize before UIKit applies new bounds.
+				var boundsChanged = _hasNativeBoundsSize && !Bounds.Size.IsCloseTo(_lastNativeBoundsSize);
+				_hasNativeBoundsSize = true;
+				_lastNativeBoundsSize = boundsSize;
 				if (_requiresSafeAreaReconciliation ||
 					virtualView is ISafeAreaView2 { HasExplicitSafeAreaEdges: true })
 				{
@@ -268,8 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					double.IsPositiveInfinity(_cachedConstraints.Height) ? boundsSize.Height : _cachedConstraints.Height));
 
 				if (safeAreaChanged ||
-					needsFinalArrange ||
-					(boundsChanged && measuredConstraintsMatchBounds))
+					(boundsChanged && (needsFinalArrange || measuredConstraintsMatchBounds)))
 				{
 					ArrangeVirtualView(virtualView, boundsSize);
 				}
