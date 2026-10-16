@@ -435,8 +435,7 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				cv2Controller.UpdateResizeState();
-				if (cv2Controller.IsRotating())
+				if (cv2Controller.IsRotatingOrResizing())
 				{
 					return;
 				}
