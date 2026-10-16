@@ -123,6 +123,62 @@ TMPDIR="$ROOT/tmp" PYTHONDONTWRITEBYTECODE=1 \
   python3 -m unittest discover -s grounding/microsoft-maui-controls -p 'test_*.py' -v
 ```
 
+## Filesystem-only macOS preflight
+
+`filesystem_sandbox.py` runs a command through macOS `sandbox-exec` with file
+reads and writes denied by default. Only the staged `app/` and separate private
+state are writable. The three exact sibling configuration files, explicitly
+supplied public toolchains and narrow OS runtime paths are readable. Directory
+metadata grants are not recursive content grants. Rosetta gets its exact public
+runtime file, not all of `/Library`; .NET IPC uses the launcher's owned session
+directories and socket-only numeric MSBuild endpoints, not writable shared temp.
+
+Prepare private .NET, NuGet, XDG, signing and temporary directories on the
+external volume first. Set `DOTNET_CLI_HOME`, `NUGET_PACKAGES`,
+`NUGET_HTTP_CACHE_PATH`, `NUGET_PLUGINS_CACHE_PATH`, `XDG_DATA_HOME`, `TMPDIR`
+and `AppSettingsDirectory` inside that private root. Use an explicitly prepared
+**public-package-only cache**, not a user credential/configuration directory.
+Disable shared compilation and MSBuild node reuse. Set `JavaSdkDirectory` and
+`AndroidSdkDirectory` to the same public roots passed below: implicit JDK
+discovery otherwise enumerates host directories outside the boundary.
+
+For an existing staged consumer and prepared environment:
+
+```sh
+python3 grounding/microsoft-maui-controls/filesystem_sandbox.py \
+  --app "$APP" --private "$PRIVATE" \
+  --read-root /usr/local/share/dotnet \
+  --read-root "$ANDROID_HOME" --read-root "$JAVA_HOME" \
+  -- dotnet restore DataBindingDemos.csproj --configfile ../NuGet.config \
+    -p:RuntimeIdentifier=android-arm64 -p:Configuration=Debug
+```
+
+Run the matching Debug build with `--no-restore`, then configuration-specific
+Release restore/build through the same launcher. Neither model inputs nor
+project code need evaluator imports. Use fresh result names and retain the
+exact commands, filesystem-policy source hash and stdout/stderr of failures.
+The regression suite exercises real processes: teacher/evaluator and APFS-alias
+reads, symlink escape, protected writes and descendants starting a new session
+are rejected; a permitted Unix socket does not permit an ordinary file with
+the same name pattern.
+
+The local binding source and target preflights passed SDK selection, NuGet cache
+inspection and configuration-specific restore plus nonincremental Debug/Release
+builds through frozen copies of this launcher: 12 successful commands and four
+signed APKs. Original staged input hashes remained unchanged. The administrative
+`stage.json` and additional target-SDK DeveloperTools state inside the permitted
+app directory are recorded separately, not mistaken for original source or
+silently omitted from the inventory. The external run root preserves
+`fs-preflight/final-summary.json`, command records, launcher snapshots and raw
+logs. These runs did **not** execute UI/runtime checks or a coding model.
+
+This is **only a filesystem preflight**, not the Vally actor executor or a
+complete agent sandbox. The checked commands use trusted public reference
+projects and a warm package cache. Cold network restore, network/process
+isolation, environment/credential brokers and coding-model/provider integration
+are not established. Nothing here enables generated Vally agent startup,
+authorizes model spending, or makes untrusted MSBuild safe on the host.
+
 ## Vally and the broader evaluation pattern
 
 Read [Vally Get Started](https://microsoft.github.io/vally/get-started/),
@@ -237,7 +293,8 @@ The positive and negative summaries are separately preserved as
 `results/vally-final-negative-summary.json` under the external run root.
 The generated baseline and skill-available specs both pass strict Vally lint;
 the later copied-skill snapshot has a byte-identical grading instrument.
-All 20 standard-library Python regressions pass.
+All 24 standard-library Python regressions pass on macOS, including the
+filesystem preflight's real-process boundary checks.
 
 Preflights remain diagnostics, not model outcomes. An initial private-key
 signature conflict required replacing the previous owned sample installation.
