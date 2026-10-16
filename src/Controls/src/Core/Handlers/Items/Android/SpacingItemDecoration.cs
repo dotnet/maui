@@ -2,6 +2,7 @@
 using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
+using ALayoutDirection = Android.Views.LayoutDirection;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 
