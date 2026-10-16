@@ -383,6 +383,28 @@ For rapid development and debugging, you can run specific tests directly:
 
 For comprehensive CI-like test runs:
 
+Android, iOS, MacCatalyst, and Windows CI runs retry once after a failure using
+the shared UI test runner. For an exact category group such as
+`TestCategory=Editor|TestCategory=Effects|TestCategory=Essentials`, the retry runs
+only categories containing failed tests or fixtures. NUnit XML provides inherited
+fixture and method categories; only categories in the original group are selected.
+Missing, incomplete, or unmappable results fall back to the original filter with
+a warning. Custom filters retain their original selection, and local runs do not retry.
+
+On iOS, MacCatalyst, and Windows CI, preparation and test-project build phases
+also have one bounded retry per failed phase, before test execution starts.
+These retries do not restart completed tests. Local runs and device-test targets
+do not retry setup.
+
+NUnit XML is checked even when VSTest exits successfully. Fixture-only failures
+such as `OneTimeTearDown` errors trigger the same category-based retry and are
+recorded as TRX run errors if they persist.
+
+The published TRX combines untouched first-attempt results with retry results.
+Failures not reported by the retry remain failures. Original and retry reports
+are retained beneath the result directory for diagnostics, but only the combined
+top-level TRX is published.
+
 **Android:**
 
 ```powershell
