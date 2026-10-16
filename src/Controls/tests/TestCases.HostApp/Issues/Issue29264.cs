@@ -16,7 +16,7 @@ public class Issue29264 : ContentPage
 			WidthRequest = 350,
 			HeightRequest = 550,
 			HorizontalOptions = LayoutOptions.Fill,
-			Loop = true,
+			Loop = false,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label
@@ -86,8 +86,6 @@ public class Issue29264 : ContentPage
 		};
 		layout.Add(_orientationLabel, row: 0);
 		layout.Add(_positionLabel, row: 1);
-		layout.Add(loopLabel, row: 2);
-		layout.Add(loopSwitch, row: 3);
 		layout.Add(currentItemLabel, row: 4);
 		layout.Add(positionChangedLabel, row: 5);
 		layout.Add(_carousel, row: 6);
