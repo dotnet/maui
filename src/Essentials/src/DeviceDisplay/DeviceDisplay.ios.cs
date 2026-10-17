@@ -190,8 +190,8 @@ namespace Microsoft.Maui.Devices
 			{
 				UIDeviceOrientation.Portrait => DisplayRotation.Rotation0,
 				UIDeviceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
-				UIDeviceOrientation.LandscapeLeft => DisplayRotation.Rotation270,
-				UIDeviceOrientation.LandscapeRight => DisplayRotation.Rotation90,
+				UIDeviceOrientation.LandscapeRight => DisplayRotation.Rotation270,
+				UIDeviceOrientation.LandscapeLeft => DisplayRotation.Rotation90,
 				_ => DisplayRotation.Unknown,
 			};
 
