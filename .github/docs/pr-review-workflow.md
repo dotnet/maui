@@ -294,6 +294,13 @@ and token-usage aggregation. Local full-review tooling remains available too.
 `/review rerun` remains unsupported. Both full review and gate-only requests use
 the same permission checks, per-PR concurrency, and in-progress lock.
 
+Review commands do not post routine status or "already running" skip comments.
+When a full review or gate is already running, the trigger records the skip in
+the Actions step summary and acknowledges and collapses the command comment
+without posting a reply. `/review tests` and `/review performance` also disable
+routine status comments. Result reports and actionable failure notices remain
+enabled.
+
 ## `/review gate`: verify existing PR tests
 
 ### Trigger
