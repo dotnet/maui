@@ -728,6 +728,7 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: bo => new ShellItemCollection { Inner = new ElementCollection<ShellItem>(((Shell)bo).InternalChildren) });
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
+		Dictionary<IAppearanceObserver, (GradientBrush Brush, EventHandler Handler)> _appearanceObserverGradientBrushes = new Dictionary<IAppearanceObserver, (GradientBrush Brush, EventHandler Handler)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
 
@@ -844,9 +845,44 @@ namespace Microsoft.Maui.Controls
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			_appearanceObservers.Add((observer, pivot));
+			UpdateAppearanceObserver(observer, pivot);
+		}
+
+		void UpdateAppearanceObserver(IAppearanceObserver observer, Element pivot)
+		{
 			var appearance = GetAppearanceForPivot(pivot);
+			UpdateAppearanceObserverGradientBrush(observer, pivot, appearance);
 			UpdateToolbarAppearanceFeatures(pivot, appearance);
 			observer.OnAppearanceChanged(appearance);
+		}
+
+		void UpdateAppearanceObserverGradientBrush(IAppearanceObserver observer, Element pivot, ShellAppearance appearance)
+		{
+			var gradientBrush = appearance?.EffectiveTabBarBackground as GradientBrush;
+			if (_appearanceObserverGradientBrushes.TryGetValue(observer, out var currentSubscription))
+			{
+				if (ReferenceEquals(currentSubscription.Brush, gradientBrush))
+					return;
+
+				currentSubscription.Brush.InvalidateGradientBrushRequested -= currentSubscription.Handler;
+				_appearanceObserverGradientBrushes.Remove(observer);
+			}
+
+			if (gradientBrush is not null)
+			{
+				EventHandler handler = (_, _) => UpdateAppearanceObserver(observer, pivot);
+				gradientBrush.InvalidateGradientBrushRequested += handler;
+				_appearanceObserverGradientBrushes.Add(observer, (gradientBrush, handler));
+			}
+		}
+
+		void RemoveAppearanceObserverGradientBrush(IAppearanceObserver observer)
+		{
+			if (_appearanceObserverGradientBrushes.TryGetValue(observer, out var subscription))
+			{
+				subscription.Brush.InvalidateGradientBrushRequested -= subscription.Handler;
+				_appearanceObserverGradientBrushes.Remove(observer);
+			}
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -949,9 +985,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						var appearance = GetAppearanceForPivot(pivot);
-						UpdateToolbarAppearanceFeatures(pivot, appearance);
-						observer.OnAppearanceChanged(appearance);
+						UpdateAppearanceObserver(observer, pivot);
 						break;
 					}
 
@@ -1085,6 +1119,7 @@ namespace Microsoft.Maui.Controls
 				if (_appearanceObservers[i].Observer == observer)
 				{
 					_appearanceObservers.RemoveAt(i);
+					RemoveAppearanceObserverGradientBrush(observer);
 					return true;
 				}
 			}
