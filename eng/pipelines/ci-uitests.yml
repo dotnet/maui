@@ -1,4 +1,4 @@
-# Validation-only branch: reuse the successfully built app from run 1639278.
+# Validation-only branch: build and capture on one isolated Windows worker.
 trigger: none
 pr: none
 
@@ -7,10 +7,10 @@ variables:
 
 stages:
   - stage: winui_ui_tests
-    displayName: Capture the Windows ImageButton source/aspect matrix
+    displayName: Build and capture the Windows ImageButton matrix
     jobs:
       - job: winui_ui_tests_imagebutton_verification
-        timeoutInMinutes: 90
+        timeoutInMinutes: 120
         pool:
           name: NetCore-Public
           demands:
@@ -21,13 +21,17 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: false
+          - template: common/ui-tests-build-sample.yml
+            parameters:
+              platform: windows
+              skipProvisioning: true
           - template: common/ui-tests-steps.yml
             parameters:
               platform: windows
               version: "10.0.19041.0"
               device: windows10
               path: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
-              app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
-              appArtifactBuildId: '1639278'
+              app: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.HostApp/
+              skipAppDownload: true
               testFilter: 'ImageButton&FullyQualifiedName~ImageButtonAspectVerificationTests'
               skipProvisioning: true

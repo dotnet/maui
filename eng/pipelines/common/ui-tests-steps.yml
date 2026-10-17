@@ -16,6 +16,7 @@ parameters:
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   appArtifactBuildId: ''
+  skipAppDownload: false
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -39,7 +40,7 @@ steps:
     artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
-  condition: eq('${{ parameters.platform }}' , 'windows')
+  condition: and(eq('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.skipAppDownload }}', 'true'))
   inputs:
     artifact: ui-tests-samples-windows
     ${{ if ne(parameters.appArtifactBuildId, '') }}:

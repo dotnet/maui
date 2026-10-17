@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample;
 
 public partial class ImageButtonControlMainPage
 {
-	readonly Label _aspectResult = new() { AutomationId = "AspectCaptureIdle" };
+	readonly Label _aspectResult = new() { AutomationId = "AspectCaptureStatus" };
 	readonly string _aspectDirectory = Path.Combine(FileSystem.CacheDirectory, "Issue29959");
 
 	void ConfigureAspectVerification()
@@ -41,7 +41,6 @@ public partial class ImageButtonControlMainPage
 
 	async void CaptureAspectPixels(object sender, EventArgs e)
 	{
-		_aspectResult.AutomationId = "AspectCaptureRunning";
 		_aspectResult.Text = "RUNNING";
 		Directory.CreateDirectory(_aspectDirectory);
 		File.Delete(Path.Combine(_aspectDirectory, "capture-error.txt"));
@@ -79,6 +78,7 @@ public partial class ImageButtonControlMainPage
 			var decoded = image.Source as BitmapSource;
 			var evidence = new
 			{
+				CapturedAtUtc = DateTime.UtcNow,
 				Source = source,
 				Aspect = _viewModel.Aspect.ToString(),
 				MauiVersion = typeof(ImageButton).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
@@ -117,11 +117,7 @@ public partial class ImageButtonControlMainPage
 		{
 			System.Diagnostics.Debug.WriteLine(exception);
 			await File.WriteAllTextAsync(Path.Combine(_aspectDirectory, "capture-error.txt"), exception.ToString());
-			_aspectResult.Text = "ERROR " + exception;
-		}
-		finally
-		{
-			_aspectResult.AutomationId = "AspectCaptureReady";
+			_aspectResult.Text = "ERROR " + exception.GetType().Name + ": " + exception.Message;
 		}
 	}
 

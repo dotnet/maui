@@ -48,7 +48,17 @@ public class ImageButtonAspectVerificationTests : _GalleryUITest
 		App.Tap(ImageButtonFeatureTests.Apply);
 		App.WaitForElement("ImageButtonControl");
 		App.Tap("CaptureAspectPixels");
-		App.WaitForElement("AspectCaptureReady", timeout: TimeSpan.FromSeconds(45));
+		var deadline = DateTime.UtcNow.AddSeconds(45);
+		string? status;
+		do
+		{
+			status = App.FindElement("AspectCaptureStatus").GetText();
+			if (status?.StartsWith("CAPTURED ", StringComparison.Ordinal) == true ||
+				status?.StartsWith("ERROR ", StringComparison.Ordinal) == true)
+				break;
+			Thread.Sleep(250);
+		}
+		while (DateTime.UtcNow < deadline);
 
 		var directory = App.FindElement("AspectEvidenceDirectory").GetText()
 			?? throw new InvalidOperationException("The application did not expose its evidence directory.");
@@ -70,7 +80,7 @@ public class ImageButtonAspectVerificationTests : _GalleryUITest
 			File.Copy(file, destination, true);
 			TestContext.AddTestAttachment(destination);
 		}
-		Assert.That(App.FindElement("AspectCaptureReady").GetText(), Is.EqualTo($"CAPTURED {source}_{aspect}"));
+		Assert.That(status, Is.EqualTo($"CAPTURED {source}_{aspect}"));
 		Assert.That(File.Exists(Path.Combine(output, source + "_" + aspect + ".json")), Is.True);
 	}
 }
