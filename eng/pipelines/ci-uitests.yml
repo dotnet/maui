@@ -1,4 +1,4 @@
-# Validation-only branch: build and capture on one isolated Windows worker.
+# Validation-only branch: use the stable-ID app successfully built in run 1639299.
 trigger: none
 pr: none
 
@@ -7,7 +7,7 @@ variables:
 
 stages:
   - stage: winui_ui_tests
-    displayName: Build and capture the Windows ImageButton matrix
+    displayName: Capture the Windows ImageButton matrix
     jobs:
       - job: winui_ui_tests_imagebutton_verification
         timeoutInMinutes: 120
@@ -21,17 +21,13 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: false
-          - template: common/ui-tests-build-sample.yml
-            parameters:
-              platform: windows
-              skipProvisioning: true
           - template: common/ui-tests-steps.yml
             parameters:
               platform: windows
               version: "10.0.19041.0"
               device: windows10
               path: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
-              app: $(System.DefaultWorkingDirectory)/artifacts/bin/Controls.TestCases.HostApp/
-              skipAppDownload: true
+              app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+              appArtifactBuildId: '1639299'
               testFilter: 'ImageButton&FullyQualifiedName~ImageButtonAspectVerificationTests'
               skipProvisioning: true
