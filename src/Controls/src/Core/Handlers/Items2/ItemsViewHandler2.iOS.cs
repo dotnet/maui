@@ -12,7 +12,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView>, ISafeAreaScrollViewContainer where TItemsView : ItemsView
 	{
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
@@ -39,9 +39,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		};
 
 		UICollectionViewLayout _layout;
+		Rect? _delegatedSafeAreaFrame;
+		double _delegatedFrameTop;
+
+		public override void PlatformArrange(Rect frame)
+		{
+			if (_delegatedSafeAreaFrame is not null)
+			{
+				_delegatedSafeAreaFrame = frame;
+				frame = new Rect(frame.X, _delegatedFrameTop, frame.Width, frame.Bottom - _delegatedFrameTop);
+
+				if (PlatformView.Center.X == frame.Center.X &&
+					PlatformView.Center.Y == frame.Center.Y &&
+					PlatformView.Bounds.Width == frame.Width &&
+					PlatformView.Bounds.Height == frame.Height)
+				{
+					this.Invoke(nameof(IView.Frame), frame);
+					return;
+				}
+			}
+
+			base.PlatformArrange(frame);
+		}
+
+		void ISafeAreaScrollViewContainer.ApplyDelegatedFrame(Rect safeFrame, Rect delegatedFrame)
+		{
+			_delegatedSafeAreaFrame = safeFrame;
+			_delegatedFrameTop = delegatedFrame.Top;
+			base.PlatformArrange(delegatedFrame);
+		}
+
+		void ISafeAreaScrollViewContainer.ResetDelegatedFrame()
+		{
+			if (_delegatedSafeAreaFrame is not { } safeFrame)
+				return;
+
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
+			base.PlatformArrange(safeFrame);
+		}
 
 		protected override void DisconnectHandler(UIView platformView)
 		{
+			if (Controller?.CollectionView is IUIViewLifeCycleEvents lifeCycleEvents)
+				lifeCycleEvents.MovedToWindow -= CollectionViewMovedToWindow;
+			DetachController();
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
 			Controller?.DisposeItemsSource();
@@ -53,7 +97,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.ConnectHandler(platformView);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
+			((IUIViewLifeCycleEvents)Controller.CollectionView).MovedToWindow += CollectionViewMovedToWindow;
 			ItemsView.ScrollToRequested += ScrollToRequested;
+		}
+
+		void CollectionViewMovedToWindow(object sender, EventArgs e)
+		{
+			if (Controller.CollectionView.Window is null)
+			{
+				DetachController();
+				return;
+			}
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
+				Controller.ParentViewController is not null ||
+				Controller.GetScrollDirection() != UICollectionViewScrollDirection.Vertical)
+			{
+				return;
+			}
+
+			var parent = PlatformView.Superview?.FindResponder<UIViewController>();
+			if (parent is null ||
+				parent.NavigationController?.NavigationBar.PrefersLargeTitles != true ||
+				parent.NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+			{
+				return;
+			}
+
+			Controller.ClearsSelectionOnViewWillAppear = false;
+			if (Controller.CollectionView is MauiCollectionView collectionView)
+				collectionView.UsesUIKitSystemInset = true;
+			parent.AddChildViewController(Controller);
+			Controller.DidMoveToParentViewController(parent);
+		}
+
+		void DetachController()
+		{
+			if (Controller?.CollectionView is MauiCollectionView collectionView)
+				collectionView.UsesUIKitSystemInset = false;
+
+			if (Controller?.ParentViewController is null)
+				return;
+
+			Controller.WillMoveToParentViewController(null);
+			Controller.RemoveFromParentViewController();
 		}
 
 		private protected override UIView OnCreatePlatformView()
