@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Devices
 		static DisplayOrientation CalculateOrientation() =>
 			UIDevice.CurrentDevice.Orientation.IsLandscape()
 				? DisplayOrientation.Landscape
-				: DisplayOrientation.Portrait;
+				: UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.PortraitUpsideDown || UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.Portrait ? DisplayOrientation.Portrait : DisplayOrientation.Unknown;
 
 		static DisplayRotation CalculateRotation() =>
 			UIDevice.CurrentDevice.Orientation switch
