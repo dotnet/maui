@@ -40,7 +40,14 @@ function Write-ExpertJson {
 function Get-ExpertPublicationBody {
     param([string]$Body)
 
-    $script = 'const fs = require("node:fs"); const { sanitizeContent } = require(process.argv[1]); process.stdout.write(JSON.stringify(sanitizeContent(JSON.parse(fs.readFileSync(0, "utf8")).trim())));'
+    # The native sanitizer requires an Actions logger; stdout is reserved for its JSON result.
+    $script = @'
+const fs = require("node:fs");
+const log = message => process.stderr.write("[native-sanitizer] " + JSON.stringify(String(message)) + "\n");
+global.core = { info: log, warning: log };
+const { sanitizeContent } = require(process.argv[1]);
+process.stdout.write(JSON.stringify(sanitizeContent(JSON.parse(fs.readFileSync(0, "utf8")).trim())));
+'@
     $result = (ConvertTo-Json -InputObject $Body -Compress) |
         & node -e $script "$env:RUNNER_TEMP/gh-aw/actions/sanitize_content.cjs"
     if ($LASTEXITCODE -ne 0) { throw 'The pinned native publication sanitizer failed.' }
