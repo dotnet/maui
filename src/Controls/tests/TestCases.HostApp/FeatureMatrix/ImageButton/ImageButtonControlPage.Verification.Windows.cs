@@ -39,7 +39,7 @@ public partial class ImageButtonControlMainPage
 		ToolbarItems.Add(capture);
 	}
 
-	async void CaptureAspectPixels(object? sender, EventArgs e)
+	async void CaptureAspectPixels(object sender, EventArgs e)
 	{
 		_aspectResult.AutomationId = "AspectCaptureRunning";
 		_aspectResult.Text = "RUNNING";
@@ -61,7 +61,7 @@ public partial class ImageButtonControlMainPage
 				throw new InvalidOperationException("The bitmap has not decoded.");
 
 			await Task.Delay(500);
-			if (TestImageButton.Handler?.PlatformView != button)
+			if (!ReferenceEquals(TestImageButton.Handler?.PlatformView, button))
 				throw new OperationCanceledException("The ImageButton handler changed during capture.");
 
 			var source = _viewModel.Source switch
