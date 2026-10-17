@@ -71,8 +71,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			// https://github.com/dotnet/maui/issues/37985
 			// Clicking such a tab in the overflow menu of the tab bar crashed the app with E_BOUNDS
-			SetupBuilder();
-
 			var subTabB = new ShellContent() { Title = "Sub B", Content = new ContentPage() };
 			var nestedTab = new Tab()
 			{
@@ -83,6 +81,81 @@ namespace Microsoft.Maui.DeviceTests
 					subTabB
 				}
 			};
+
+			await RunTabBarOverflowMenuTest(nestedTab, async (shell, navView, overflowButton) =>
+			{
+				// A tab with one ShellContent still gets selected right away
+				var singleTab = shell.CurrentItem.Items[6];
+				var singleTabItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, singleTab);
+				Assert.True(singleTabItem.SelectsOnInvoked);
+				ClickNavigationViewItem(singleTabItem);
+				await AssertEventually(() => shell.CurrentItem.CurrentItem == singleTab, message: "Did not navigate to \"Tab 7\"");
+
+				var nestedItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, nestedTab);
+
+				// When the click selects this tab, WinUI fails fast and takes the whole test app down.
+				// Check it first, so the test just fails instead.
+				Assert.False(nestedItem.SelectsOnInvoked, "Clicking \"Nested\" in the overflow menu selects it");
+
+				ClickNavigationViewItem(nestedItem);
+
+				// The tab only expands to show its sub tabs, the current page stays the same
+				Assert.True(nestedItem.IsExpanded);
+				Assert.Equal(singleTab, shell.CurrentItem.CurrentItem);
+
+				WNavigationViewItem subTabBItem = null;
+				await AssertEventually(() => (subTabBItem = nestedItem.GetChildren<WNavigationViewItem>().FirstOrDefault(item => IsNavigationViewItemFor(item, subTabB))) is not null, message: "\"Sub B\" is not shown");
+
+				ClickNavigationViewItem(subTabBItem);
+				await AssertEventually(() => shell.CurrentItem.CurrentItem == nestedTab && nestedTab.CurrentItem == subTabB, message: "Did not navigate to \"Sub B\"");
+
+				// Opening and closing the overflow menu again keeps working
+				overflowButton.Flyout.ShowAt(overflowButton);
+				await AssertEventually(() => overflowButton.Flyout.IsOpen, message: "The overflow menu did not open again");
+				overflowButton.Flyout.Hide();
+				await AssertEventually(() => !overflowButton.Flyout.IsOpen, message: "The overflow menu did not close");
+				Assert.Equal(subTabB, nestedTab.CurrentItem);
+			});
+		}
+
+		[Fact(DisplayName = "TabBar Overflow Menu Tab Follows Its ShellContent Changes")]
+		public async Task TabBarOverflowMenuTabFollowsItsShellContentChanges()
+		{
+			// https://github.com/dotnet/maui/issues/37985
+			// A tab can get or lose its sub tabs while it already sits in the overflow menu
+			var subTabB = new ShellContent() { Title = "Sub B", Content = new ContentPage() };
+			var changingTab = new Tab()
+			{
+				Title = "Changing",
+				Items = { new ShellContent() { Title = "Sub A", Content = new ContentPage() } }
+			};
+
+			await RunTabBarOverflowMenuTest(changingTab, async (shell, navView, overflowButton) =>
+			{
+				var changingItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, changingTab);
+				Assert.True(changingItem.SelectsOnInvoked);
+
+				// The tab bar picks up the sub tabs of other tabs when it refreshes, a title change is enough for that
+				changingTab.Items.Add(subTabB);
+				shell.CurrentItem.Title = "Refreshed";
+				Assert.NotNull(changingItem.MenuItemsSource);
+				Assert.False(changingItem.SelectsOnInvoked, "Clicking \"Changing\" in the overflow menu selects it");
+
+				changingTab.Items.Remove(subTabB);
+				shell.CurrentItem.Title = "Refreshed again";
+				Assert.Null(changingItem.MenuItemsSource);
+				Assert.True(changingItem.SelectsOnInvoked);
+
+				ClickNavigationViewItem(changingItem);
+				await AssertEventually(() => shell.CurrentItem.CurrentItem == changingTab, message: "Did not navigate to \"Changing\"");
+			});
+		}
+
+		// Seven tabs with one ShellContent each and then lastTab, in a tab bar narrow enough
+		// to push the last tabs into the overflow menu
+		async Task RunTabBarOverflowMenuTest(Tab lastTab, Func<Shell, MauiNavigationView, WButton, Task> runTest)
+		{
+			SetupBuilder();
 
 			var shell = await CreateShellAsync((shell) =>
 			{
@@ -96,7 +169,7 @@ namespace Microsoft.Maui.DeviceTests
 					});
 				}
 
-				tabBar.Items.Add(nestedTab);
+				tabBar.Items.Add(lastTab);
 				shell.Items.Add(tabBar);
 			});
 
@@ -105,45 +178,29 @@ namespace Microsoft.Maui.DeviceTests
 				var navView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
 				var overflowButton = navView.GetDescendantByName<WButton>("TopNavOverflowButton");
 
-				// Make the tab bar narrow enough to push "Nested" into the overflow menu
 				navView.Width = 400;
 				await AssertEventually(() => overflowButton.Visibility == UI.Xaml.Visibility.Visible, message: "The tab bar has no overflow menu");
 
 				try
 				{
-					overflowButton.Flyout.ShowAt(overflowButton);
-
-					WNavigationViewItem nestedItem = null;
-					await AssertEventually(() => (nestedItem = GetOverflowMenuItem(navView, nestedTab)) is not null, message: "\"Nested\" is not in the overflow menu");
-
-					// When the click selects this tab, WinUI fails fast and takes the whole test app down.
-					// Check it first, so the test just fails instead.
-					Assert.False(nestedItem.SelectsOnInvoked, "Clicking \"Nested\" in the overflow menu selects it");
-
-					ClickNavigationViewItem(nestedItem);
-
-					// The tab only expands to show its sub tabs, the current page stays the same
-					Assert.True(nestedItem.IsExpanded);
-					Assert.NotEqual(nestedTab, shell.CurrentItem.CurrentItem);
-
-					WNavigationViewItem subTabBItem = null;
-					await AssertEventually(() => (subTabBItem = nestedItem.GetChildren<WNavigationViewItem>().FirstOrDefault(item => IsNavigationViewItemFor(item, subTabB))) is not null, message: "\"Sub B\" is not shown");
-
-					ClickNavigationViewItem(subTabBItem);
-					await AssertEventually(() => shell.CurrentItem.CurrentItem == nestedTab && nestedTab.CurrentItem == subTabB, message: "Did not navigate to \"Sub B\"");
-
-					// Opening and closing the overflow menu again keeps working
-					overflowButton.Flyout.ShowAt(overflowButton);
-					await AssertEventually(() => overflowButton.Flyout.IsOpen, message: "The overflow menu did not open again");
-					overflowButton.Flyout.Hide();
-					await AssertEventually(() => !overflowButton.Flyout.IsOpen, message: "The overflow menu did not close");
-					Assert.Equal(subTabB, nestedTab.CurrentItem);
+					await runTest(shell, navView, overflowButton);
 				}
 				finally
 				{
 					overflowButton.Flyout.Hide();
 				}
 			});
+		}
+
+		static async Task<WNavigationViewItem> OpenOverflowMenuAndGetItem(NavigationView navView, WButton overflowButton, BaseShellItem shellItem)
+		{
+			// Clicking a tab without sub tabs closes the menu, wait for that before opening it again
+			await AssertEventually(() => !overflowButton.Flyout.IsOpen, message: "The overflow menu did not close");
+			overflowButton.Flyout.ShowAt(overflowButton);
+
+			WNavigationViewItem item = null;
+			await AssertEventually(() => (item = GetOverflowMenuItem(navView, shellItem)) is not null, message: $"\"{shellItem.Title}\" is not in the overflow menu");
+			return item;
 		}
 
 		static WNavigationViewItem GetOverflowMenuItem(NavigationView navView, BaseShellItem shellItem) =>
