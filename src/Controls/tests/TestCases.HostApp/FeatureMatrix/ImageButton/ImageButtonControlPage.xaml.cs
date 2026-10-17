@@ -23,9 +23,6 @@ public partial class ImageButtonControlMainPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
-#if WINDOWS
-		ConfigureAspectVerification();
-#endif
 	}
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)

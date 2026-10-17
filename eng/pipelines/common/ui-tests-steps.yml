@@ -15,8 +15,6 @@ parameters:
   testConfigurationArgs: ''
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
-  appArtifactBuildId: ''
-  skipAppDownload: false
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -40,17 +38,9 @@ steps:
     artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
-  condition: and(eq('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.skipAppDownload }}', 'true'))
+  condition: eq('${{ parameters.platform }}' , 'windows')
   inputs:
     artifact: ui-tests-samples-windows
-    ${{ if ne(parameters.appArtifactBuildId, '') }}:
-      buildType: specific
-      project: $(System.TeamProject)
-      definition: $(System.DefinitionId)
-      buildVersionToDownload: specific
-      pipelineId: ${{ parameters.appArtifactBuildId }}
-      allowPartiallySucceededBuilds: true
-      allowFailedBuilds: true
 
 - ${{ if eq(parameters.platform, 'ios')}}:
   - bash: |
