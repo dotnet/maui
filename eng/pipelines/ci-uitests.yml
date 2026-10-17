@@ -1,4 +1,4 @@
-# Validation-only branch: collect Windows rendering evidence for issue #29959.
+# Validation-only branch: reuse the successfully built app from run 1639278.
 trigger: none
 pr: none
 
@@ -6,48 +6,8 @@ variables:
   - template: /eng/pipelines/common/variables.yml@self
 
 stages:
-  - stage: build_ui_tests_windows
-    displayName: Build Windows ImageButton verification app
-    jobs:
-      - job: build_ui_tests
-        timeoutInMinutes: 120
-        pool:
-          name: NetCore-Public
-          demands:
-            - ImageOverride -equals 1es-windows-2022-open
-        variables:
-          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-        steps:
-          - checkout: self
-            clean: true
-            persistCredentials: false
-          - template: common/ui-tests-build-sample.yml
-            parameters:
-              platform: windows
-              skipProvisioning: true
-          - pwsh: |
-              dotnet --info
-              git rev-parse HEAD
-              $manifests = Get-ChildItem artifacts/obj -Recurse -Filter project.assets.json |
-                Where-Object FullName -Match 'Controls.TestCases.HostApp'
-              $result = foreach ($file in $manifests) {
-                $assets = Get-Content $file.FullName -Raw | ConvertFrom-Json -AsHashtable
-                [ordered]@{
-                  path = $file.FullName
-                  packages = @($assets.libraries.Keys | Where-Object {
-                    $_ -match 'Microsoft.WindowsAppSDK|Microsoft.Windows.SDK|Microsoft.Maui'
-                  })
-                }
-              }
-              $result | ConvertTo-Json -Depth 10 |
-                Set-Content "$(Build.ArtifactStagingDirectory)/verification-environment.json"
-            displayName: Record actual SDK, revision and resolved platform packages
-          - publish: $(Build.ArtifactStagingDirectory)/verification-environment.json
-            artifact: issue29959-environment
-
   - stage: winui_ui_tests
     displayName: Capture the Windows ImageButton source/aspect matrix
-    dependsOn: build_ui_tests_windows
     jobs:
       - job: winui_ui_tests_imagebutton_verification
         timeoutInMinutes: 90
@@ -68,5 +28,6 @@ stages:
               device: windows10
               path: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
               app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+              appArtifactBuildId: '1639278'
               testFilter: 'ImageButton&FullyQualifiedName~ImageButtonAspectVerificationTests'
               skipProvisioning: true

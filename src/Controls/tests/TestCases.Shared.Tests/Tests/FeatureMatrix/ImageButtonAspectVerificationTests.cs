@@ -50,9 +50,16 @@ public class ImageButtonAspectVerificationTests : _GalleryUITest
 		App.Tap("CaptureAspectPixels");
 		App.WaitForElement("AspectCaptureReady", timeout: TimeSpan.FromSeconds(45));
 
-		var directory = App.FindElement("AspectEvidenceDirectory").GetText();
-		var output = Path.Combine(TestContext.CurrentContext.WorkDirectory, "Issue29959", source + "_" + aspect);
+		var directory = App.FindElement("AspectEvidenceDirectory").GetText()
+			?? throw new InvalidOperationException("The application did not expose its evidence directory.");
+		var artifactRoot = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY")
+			?? TestContext.CurrentContext.WorkDirectory;
+		var output = Path.Combine(artifactRoot, "Issue29959", source + "_" + aspect);
 		Directory.CreateDirectory(output);
+		var screen = App.Screenshot(source + "_" + aspect);
+		var screenPath = Path.Combine(output, "screen.png");
+		File.Copy(screen.FullName, screenPath, true);
+		TestContext.AddTestAttachment(screenPath);
 		Assert.That(Directory.Exists(directory), Is.True, "The application evidence directory must exist.");
 		foreach (var file in Directory.GetFiles(directory))
 		{
@@ -63,8 +70,6 @@ public class ImageButtonAspectVerificationTests : _GalleryUITest
 			File.Copy(file, destination, true);
 			TestContext.AddTestAttachment(destination);
 		}
-		var screen = App.Screenshot(source + "_" + aspect);
-		TestContext.AddTestAttachment(screen.FullName);
 		Assert.That(App.FindElement("AspectCaptureReady").GetText(), Is.EqualTo($"CAPTURED {source}_{aspect}"));
 		Assert.That(File.Exists(Path.Combine(output, source + "_" + aspect + ".json")), Is.True);
 	}
