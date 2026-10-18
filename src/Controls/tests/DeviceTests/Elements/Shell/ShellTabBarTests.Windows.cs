@@ -151,16 +151,48 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		// Seven tabs with one ShellContent each and then lastTab, in a tab bar narrow enough
+		[Fact(DisplayName = "Tab With Several ShellContents Is Selected Again After Leaving TabBar Overflow Menu")]
+		public async Task TabWithSeveralShellContentsIsSelectedAgainAfterLeavingTabBarOverflowMenu()
+		{
+			// https://github.com/dotnet/maui/issues/37985
+			// Such a tab only expands while it sits in the overflow menu, back in the bar it gets selected like before
+			var nestedTab = new Tab()
+			{
+				Title = "Nested",
+				Items =
+				{
+					new ShellContent() { Title = "Sub A", Content = new ContentPage() },
+					new ShellContent() { Title = "Sub B", Content = new ContentPage() }
+				}
+			};
+
+			await RunTabBarOverflowMenuTest(nestedTab, async (shell, navView, overflowButton) =>
+			{
+				var nestedItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, nestedTab);
+				Assert.False(nestedItem.SelectsOnInvoked, "Clicking \"Nested\" in the overflow menu selects it");
+				overflowButton.Flyout.Hide();
+
+				// Wide enough for all three tabs, so "Nested" moves into the bar
+				navView.Width = 400;
+				WNavigationViewItem barItem = null;
+				await AssertEventually(() => (barItem = GetNavigationViewItems(navView).FirstOrDefault(item => IsNavigationViewItemFor(item, nestedTab))) is not null, message: "\"Nested\" did not move into the tab bar");
+				Assert.True(barItem.SelectsOnInvoked);
+
+				ClickNavigationViewItem(barItem);
+				await AssertEventually(() => shell.CurrentItem.CurrentItem == nestedTab, message: "Did not navigate to \"Nested\"");
+			}, singleTabCount: 2, tabBarWidth: 150);
+		}
+
+		// Tabs with one ShellContent each and then lastTab, in a tab bar narrow enough
 		// to push the last tabs into the overflow menu
-		async Task RunTabBarOverflowMenuTest(Tab lastTab, Func<Shell, MauiNavigationView, WButton, Task> runTest)
+		async Task RunTabBarOverflowMenuTest(Tab lastTab, Func<Shell, MauiNavigationView, WButton, Task> runTest, int singleTabCount = 7, double tabBarWidth = 400)
 		{
 			SetupBuilder();
 
 			var shell = await CreateShellAsync((shell) =>
 			{
 				var tabBar = new TabBar();
-				for (int i = 1; i <= 7; i++)
+				for (int i = 1; i <= singleTabCount; i++)
 				{
 					tabBar.Items.Add(new Tab()
 					{
@@ -178,7 +210,7 @@ namespace Microsoft.Maui.DeviceTests
 				var navView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
 				var overflowButton = navView.GetDescendantByName<WButton>("TopNavOverflowButton");
 
-				navView.Width = 400;
+				navView.Width = tabBarWidth;
 				await AssertEventually(() => overflowButton.Visibility == UI.Xaml.Visibility.Visible, message: "The tab bar has no overflow menu");
 
 				try
