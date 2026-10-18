@@ -49,6 +49,45 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task BitmapRenderingUsesDisplayScaleInsteadOfEffectiveViewScale()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+#pragma warning disable CA1422 // A scene-less window is intentional to isolate the scale fallback behavior.
+				using var window = new UIWindow();
+#pragma warning restore CA1422
+				using var view = new UIView();
+				window.AddSubview(view);
+
+				var displayScale = view.GetDisplayScale();
+				var effectiveScale = displayScale == 1 ? 2 : 1;
+				view.ContentScaleFactor = (nfloat)effectiveScale;
+
+				Assert.Equal(displayScale, view.GetDisplayScale());
+				Assert.Equal(effectiveScale, view.GetEffectiveDisplayScale());
+				Assert.NotEqual(displayScale, effectiveScale);
+
+				var sourceRenderer = new UIGraphicsImageRenderer(
+					new CGSize(4, 4),
+					new UIGraphicsImageRendererFormat { Opaque = false, Scale = 1 });
+				using var sourceImage = sourceRenderer.CreateImage(context =>
+				{
+					UIColor.White.SetFill();
+					context.FillRect(new CGRect(0, 0, 4, 4));
+				});
+				using var renderedImage = TextFieldExtensions.GetClearButtonTintImage(
+					sourceImage,
+					UIColor.Red,
+					(nfloat)view.GetDisplayScale());
+
+				Assert.NotNull(renderedImage);
+				Assert.Equal(displayScale, renderedImage.CurrentScale);
+				Assert.Equal((nint)(sourceImage.Size.Width * displayScale), renderedImage.CGImage.Width);
+				Assert.Equal((nint)(sourceImage.Size.Height * displayScale), renderedImage.CGImage.Height);
+			});
+		}
+
+		[Fact]
 		public async Task KeyboardTransitionsInvalidateDescendantSafeAreaCache()
 		{
 			await InvokeOnMainThreadAsync(() =>
