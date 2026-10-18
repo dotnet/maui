@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Foldable
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
 		IFoldableService _dualScreenService;
+		IFoldableService _hingeAngleSubscriptionService;
 		bool _hasExplicitService;
 		IFoldableService FoldableService =>
 			_dualScreenService ?? Element?.Handler?.MauiContext?.Services?.GetService<IFoldableService>();
@@ -96,14 +97,10 @@ namespace Microsoft.Maui.Foldable
 			if (ReferenceEquals(_dualScreenService, foldableService))
 				return;
 
-			var oldService = _dualScreenService;
-			if (subscriberCount > 0 && oldService != null)
-				oldService.HingeAngleChanged -= OnHingeAngleChanged;
-
 			_dualScreenService = foldableService;
 
-			if (subscriberCount > 0 && foldableService != null)
-				foldableService.HingeAngleChanged += OnHingeAngleChanged;
+			if (subscriberCount > 0)
+				SetHingeAngleSubscription(foldableService);
 		}
 
 		internal void SetFoldableService(IFoldableService foldableService)
@@ -285,16 +282,27 @@ namespace Microsoft.Maui.Foldable
 
 							var service = FoldableService;
 							service?.StartMonitoring(Element);
-							service?.HingeAngleChanged -= OnHingeAngleChanged;
-							service?.HingeAngleChanged += OnHingeAngleChanged;
+							SetHingeAngleSubscription(service);
 						}
 					});
 				}
 				else if (newCount == 0)
 				{
-					FoldableService?.HingeAngleChanged -= OnHingeAngleChanged;
+					SetHingeAngleSubscription(null);
 				}
 			}
+		}
+
+		void SetHingeAngleSubscription(IFoldableService service)
+		{
+			if (ReferenceEquals(_hingeAngleSubscriptionService, service))
+				return;
+
+			_hingeAngleSubscriptionService?.HingeAngleChanged -= OnHingeAngleChanged;
+
+			_hingeAngleSubscriptionService = service;
+
+			_hingeAngleSubscriptionService?.HingeAngleChanged += OnHingeAngleChanged;
 		}
 
 		void OnHingeAngleChanged(object sender, FoldableHingeAngleChangedEventArgs e)

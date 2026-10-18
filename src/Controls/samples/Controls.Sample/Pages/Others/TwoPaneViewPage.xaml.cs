@@ -4,6 +4,7 @@
 	using Microsoft.Maui;
 	using Microsoft.Maui.Controls.Foldable;
 	using Microsoft.Maui.Foldable;
+	using Microsoft.Maui.Graphics;
 
 	/// <summary>
 	/// Sample demonstrating TwoPaneView layout and hinge angle sensing on foldable devices.
@@ -39,6 +40,8 @@
 		async void OnTwoPaneViewLoaded(object? sender, EventArgs e)
 		{
 			_dualScreenInfo ??= new DualScreenInfo(twoPaneView);
+			_dualScreenInfo.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+			_dualScreenInfo.PropertyChanged += OnDualScreenInfoPropertyChanged;
 			_dualScreenInfo.HingeAngleChanged += OnHingeAngleChanged;
 			twoPaneView.ModeChanged += OnTwoPaneViewModeChanged;
 
@@ -51,8 +54,15 @@
 			UpdateFoldableInfo();
 		}
 
+		void OnDualScreenInfoPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			UpdateFoldableInfo();
+		}
+
 		void OnTwoPaneViewUnloaded(object? sender, EventArgs e)
 		{
+			_dualScreenInfo?.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+
 			_dualScreenInfo?.HingeAngleChanged -= OnHingeAngleChanged;
 			twoPaneView.ModeChanged -= OnTwoPaneViewModeChanged;
 		}
@@ -64,10 +74,11 @@
 
 		void UpdateFoldableInfo()
 		{
-			bool isDivided = twoPaneView.Mode != TwoPaneViewMode.SinglePane;
+			bool hasDivisionRegion = _dualScreenInfo?.HingeBounds != Rect.Zero;
+			bool isTwoPaneLayout = twoPaneView.Mode != TwoPaneViewMode.SinglePane;
 			modeLabel.Text = $"Mode: {twoPaneView.Mode}";
-			hingeBoundsLabel.Text = $"Division region: {(isDivided ? "active" : "inactive")}";
-			spanningBoundsLabel.Text = $"Visible panes: {(isDivided ? 2 : 1)}";
+			hingeBoundsLabel.Text = $"Division region: {(hasDivisionRegion ? "active" : "inactive")}";
+			spanningBoundsLabel.Text = $"Visible panes: {(isTwoPaneLayout ? 2 : 1)}";
 		}
 
 		void OnReset(object? sender, System.EventArgs e)

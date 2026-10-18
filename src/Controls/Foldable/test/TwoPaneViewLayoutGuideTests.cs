@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Graphics;
@@ -227,6 +228,46 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		}
 
 		[Fact]
+		public void FirstHingeAngleSubscriberDoesNotRemoveUnregisteredHandler()
+		{
+			var service = new TestFoldableService();
+			var info = new DualScreenInfo(new Grid(), service);
+			EventHandler<HingeAngleChangedEventArgs> handler = (_, _) => { };
+			var setMainThreadImplementation = typeof(MainThread).GetMethod(
+				"SetCustomImplementation",
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			var clearMainThreadImplementation = typeof(MainThread).GetMethod(
+				"ClearCustomImplementation",
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			Assert.NotNull(setMainThreadImplementation);
+			Assert.NotNull(clearMainThreadImplementation);
+
+			setMainThreadImplementation.Invoke(null, new object[]
+			{
+				(Func<bool>)(() => true),
+				(Action<Action>)(action => action()),
+			});
+
+			try
+			{
+				info.HingeAngleChanged += handler;
+
+				Assert.Equal(1, service.HingeAngleSubscriberCount);
+				Assert.Equal(1, service.HingeAngleAddCount);
+				Assert.Equal(0, service.HingeAngleRemoveCount);
+
+				info.HingeAngleChanged -= handler;
+
+				Assert.Equal(0, service.HingeAngleSubscriberCount);
+				Assert.Equal(1, service.HingeAngleRemoveCount);
+			}
+			finally
+			{
+				clearMainThreadImplementation.Invoke(null, null);
+			}
+		}
+
+		[Fact]
 		public void CurrentUsesAssignedWindowScopedService()
 		{
 			var service = new TestFoldableService
@@ -260,6 +301,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 		sealed class TestFoldableService : IFoldableService
 		{
+			EventHandler<FoldableHingeAngleChangedEventArgs> _hingeAngleChanged;
 			EventHandler<FoldEventArgs> _onLayoutChanged;
 
 			public event EventHandler OnScreenChanged
@@ -270,8 +312,18 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			public event EventHandler<FoldableHingeAngleChangedEventArgs> HingeAngleChanged
 			{
-				add { }
-				remove { }
+				add
+				{
+					_hingeAngleChanged += value;
+					HingeAngleAddCount++;
+					HingeAngleSubscriberCount = _hingeAngleChanged?.GetInvocationList().Length ?? 0;
+				}
+				remove
+				{
+					_hingeAngleChanged -= value;
+					HingeAngleRemoveCount++;
+					HingeAngleSubscriberCount = _hingeAngleChanged?.GetInvocationList().Length ?? 0;
+				}
 			}
 
 			public event EventHandler<FoldEventArgs> OnLayoutChanged
@@ -295,6 +347,9 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			public Point Location { get; set; }
 			public VisualElement LastHingeView { get; private set; }
 			public int LayoutSubscriberCount { get; private set; }
+			public int HingeAngleAddCount { get; private set; }
+			public int HingeAngleRemoveCount { get; private set; }
+			public int HingeAngleSubscriberCount { get; private set; }
 			public int StartMonitoringCount { get; private set; }
 			public int StopMonitoringCount { get; private set; }
 			public Size ScaledScreenSize => new Size(1000, 1000);
