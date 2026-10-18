@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Foldable
 				UpdateLayouts(layout.Width, layout.Height);
 				_layout.HandlerChanged += OnLayoutHandlerChanged;
 				_layout.Loaded += OnLayoutLoaded;
+				_layout.SizeChanged += OnLayoutSizeChanged;
 				_layout.Unloaded += OnLayoutUnloaded;
 
 				if (_layout.Handler != null)
@@ -77,11 +78,19 @@ namespace Microsoft.Maui.Controls.Foldable
 
 			if (_layout.Handler != null)
 				ConnectToService();
+
+			UpdateLayouts(_layout.Width, _layout.Height);
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DualScreenService)));
 		}
 
 		void OnLayoutLoaded(object sender, EventArgs e)
 		{
 			ConnectToService();
+			UpdateLayouts(_layout.Width, _layout.Height);
+		}
+
+		void OnLayoutSizeChanged(object sender, EventArgs e)
+		{
 			UpdateLayouts(_layout.Width, _layout.Height);
 		}
 

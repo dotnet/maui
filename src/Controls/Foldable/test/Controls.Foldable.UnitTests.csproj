@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="DualScreenInfoCurrentCollection.cs" />
     <Compile Include="FoldableRegionHelperTests.cs" />
     <Compile Include="FoldableMonitorRegistryTests.cs" />
     <Compile Include="TwoPaneViewLayoutGuideTests.cs" />

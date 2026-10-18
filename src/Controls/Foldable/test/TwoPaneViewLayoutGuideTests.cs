@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
+	[Collection(DualScreenInfoCurrentCollection.Name)]
 	public class TwoPaneViewLayoutGuideTests
 	{
 		[Fact]
@@ -213,18 +214,40 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		[Fact]
 		public void ElementScopedInfoRebindsServiceWhenHandlerContextChanges()
 		{
-			var layout = new Grid();
-			var firstService = new TestFoldableService();
-			var secondService = new TestFoldableService();
-			layout.Handler = new TestElementHandler(firstService);
-			var info = new DualScreenInfo(layout);
+			RunWithSynchronousMainThread(() =>
+			{
+				var layout = new Grid { IsPlatformEnabled = true };
+				var firstService = new TestFoldableService
+				{
+					Hinge = new Rect(490, 0, 20, 1000),
+				};
+				var secondService = new TestFoldableService
+				{
+					Hinge = firstService.Hinge,
+				};
+				layout.Handler = new TestElementHandler(firstService);
+				var info = new DualScreenInfo(layout);
+				var receivedAngles = new System.Collections.Generic.List<double>();
+				EventHandler<HingeAngleChangedEventArgs> handler = (_, e) => receivedAngles.Add(e.HingeAngleInDegrees);
+				info.HingeAngleChanged += handler;
+				layout.Arrange(new Rect(0, 0, 1000, 1000));
 
-			Assert.Equal(1, firstService.StartMonitoringCount);
+				Assert.Equal(1, firstService.LayoutSubscriberCount);
+				Assert.Equal(1, firstService.HingeAngleSubscriberCount);
 
-			layout.Handler = new TestElementHandler(secondService);
+				layout.Handler = new TestElementHandler(secondService);
+				receivedAngles.Clear();
+				firstService.RaiseHingeAngle(10);
+				secondService.RaiseHingeAngle(20);
 
-			Assert.Equal(1, firstService.StopMonitoringCount);
-			Assert.Equal(1, secondService.StartMonitoringCount);
+				Assert.Equal(1, firstService.StopMonitoringCount);
+				Assert.Equal(1, secondService.LayoutSubscriberCount);
+				Assert.Equal(0, firstService.HingeAngleSubscriberCount);
+				Assert.Equal(1, secondService.HingeAngleSubscriberCount);
+				Assert.Equal(new[] { 20d }, receivedAngles);
+
+				info.HingeAngleChanged -= handler;
+			});
 		}
 
 		[Fact]
@@ -233,6 +256,75 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			var service = new TestFoldableService();
 			var info = new DualScreenInfo(new Grid(), service);
 			EventHandler<HingeAngleChangedEventArgs> handler = (_, _) => { };
+
+			RunWithSynchronousMainThread(() =>
+			{
+				info.HingeAngleChanged += handler;
+
+				Assert.Equal(1, service.HingeAngleSubscriberCount);
+				Assert.Equal(1, service.HingeAngleAddCount);
+				Assert.Equal(0, service.HingeAngleRemoveCount);
+
+				info.HingeAngleChanged -= handler;
+
+				Assert.Equal(0, service.HingeAngleSubscriberCount);
+				Assert.Equal(1, service.HingeAngleRemoveCount);
+			});
+		}
+
+		[Theory]
+		[InlineData(true, 490, 0, 20, 1000, 510, 0, 490, 1000)]
+		[InlineData(false, 0, 490, 1000, 20, 0, 510, 1000, 490)]
+		public void SpanningBoundsUseDivisionOrientation(
+			bool isLandscape,
+			double hingeX,
+			double hingeY,
+			double hingeWidth,
+			double hingeHeight,
+			double pane2X,
+			double pane2Y,
+			double pane2Width,
+			double pane2Height)
+		{
+			var layout = new Grid { IsPlatformEnabled = true };
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(hingeX, hingeY, hingeWidth, hingeHeight),
+				Landscape = isLandscape,
+			};
+			var info = new DualScreenInfo(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 1000, 1000));
+
+			Assert.Equal(2, info.SpanningBounds.Length);
+			Assert.Equal(new Rect(pane2X, pane2Y, pane2Width, pane2Height), info.SpanningBounds[1]);
+		}
+
+		[Fact]
+		public void CurrentUsesAssignedWindowScopedService()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+			};
+
+			try
+			{
+				DualScreenInfo.Current.SetFoldableService(service);
+
+				Assert.Equal(TwoPaneViewMode.Wide, DualScreenInfo.Current.SpanMode);
+				Assert.Equal(service.Hinge, DualScreenInfo.Current.HingeBounds);
+				Assert.Equal(2, DualScreenInfo.Current.SpanningBounds.Length);
+				Assert.Equal(1, service.StartMonitoringCount);
+			}
+			finally
+			{
+				DualScreenInfo.Current.SetFoldableService(null);
+			}
+		}
+
+		static void RunWithSynchronousMainThread(Action action)
+		{
 			var setMainThreadImplementation = typeof(MainThread).GetMethod(
 				"SetCustomImplementation",
 				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
@@ -245,42 +337,17 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			setMainThreadImplementation.Invoke(null, new object[]
 			{
 				(Func<bool>)(() => true),
-				(Action<Action>)(action => action()),
+				(Action<Action>)(callback => callback()),
 			});
 
 			try
 			{
-				info.HingeAngleChanged += handler;
-
-				Assert.Equal(1, service.HingeAngleSubscriberCount);
-				Assert.Equal(1, service.HingeAngleAddCount);
-				Assert.Equal(0, service.HingeAngleRemoveCount);
-
-				info.HingeAngleChanged -= handler;
-
-				Assert.Equal(0, service.HingeAngleSubscriberCount);
-				Assert.Equal(1, service.HingeAngleRemoveCount);
+				action();
 			}
 			finally
 			{
 				clearMainThreadImplementation.Invoke(null, null);
 			}
-		}
-
-		[Fact]
-		public void CurrentUsesAssignedWindowScopedService()
-		{
-			var service = new TestFoldableService
-			{
-				Hinge = new Rect(490, 0, 20, 1000),
-			};
-
-			DualScreenInfo.Current.SetFoldableService(service);
-
-			Assert.Equal(TwoPaneViewMode.Wide, DualScreenInfo.Current.SpanMode);
-			Assert.Equal(service.Hinge, DualScreenInfo.Current.HingeBounds);
-			Assert.Equal(2, DualScreenInfo.Current.SpanningBounds.Length);
-			Assert.Equal(1, service.StartMonitoringCount);
 		}
 
 		static TwoPaneView CreateTwoPaneView(TestFoldableService service)
@@ -378,6 +445,11 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			public void StopMonitoring(VisualElement visualElement)
 			{
 				StopMonitoringCount++;
+			}
+
+			public void RaiseHingeAngle(double angle)
+			{
+				_hingeAngleChanged?.Invoke(this, new FoldableHingeAngleChangedEventArgs(angle));
 			}
 		}
 

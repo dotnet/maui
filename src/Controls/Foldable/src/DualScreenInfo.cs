@@ -204,11 +204,7 @@ namespace Microsoft.Maui.Foldable
 			if (guide.Pane2 == Rect.Zero)
 				return Array.Empty<Rect>();
 
-			//TODO: I think this should this be checking SpanMode==Wide
-			if (IsLandscape)
-				return new[] { guide.Pane1, new Rect(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
-			else
-				return new[] { guide.Pane1, new Rect(hinge.Width + guide.Pane1.Width, 0, guide.Pane2.Width, guide.Pane2.Height) };
+			return new[] { guide.Pane1, guide.Pane2 };
 		}
 
 		Rect GetHingeBounds()

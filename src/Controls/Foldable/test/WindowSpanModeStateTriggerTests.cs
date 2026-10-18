@@ -11,6 +11,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
+	[Collection(DualScreenInfoCurrentCollection.Name)]
 	public class WindowSpanModeStateTriggerTests
 	{
 		[Fact]
@@ -26,67 +27,72 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 				Hinge = new Rect(0, 490, 1000, 20),
 				Landscape = true,
 			};
-			element.Handler = new TestElementHandler(localService);
-			DualScreenInfo.Current.SetFoldableService(globalService);
-
-			var trigger = new WindowSpanModeStateTrigger
+			try
 			{
-				SpanMode = TwoPaneViewMode.Wide,
-			};
-			var state = new VisualState { Name = "Wide" };
-			state.StateTriggers.Add(trigger);
-			var group = new VisualStateGroup();
-			group.States.Add(state);
-			group.VisualElement = element;
-			state.VisualStateGroup = group;
-			trigger.VisualState = state;
-			trigger.SendAttached();
+				element.Handler = new TestElementHandler(localService);
+				DualScreenInfo.Current.SetFoldableService(globalService);
 
-			var infoField = typeof(WindowSpanModeStateTrigger).GetField("_info", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(infoField);
-			var info = Assert.IsType<DualScreenInfo>(infoField.GetValue(trigger));
-			Assert.Same(element, info.Element);
+				var trigger = new WindowSpanModeStateTrigger
+				{
+					SpanMode = TwoPaneViewMode.Wide,
+				};
+				var state = new VisualState { Name = "Wide" };
+				state.StateTriggers.Add(trigger);
+				var group = new VisualStateGroup();
+				group.States.Add(state);
+				group.VisualElement = element;
+				state.VisualStateGroup = group;
+				trigger.VisualState = state;
+				trigger.SendAttached();
 
-			var guideField = typeof(DualScreenInfo).GetField("_twoPaneViewLayoutGuide", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(guideField);
-			var guide = Assert.IsType<TwoPaneViewLayoutGuide>(guideField.GetValue(info));
-			guide.UpdateLayouts(1000, 1000);
+				var infoField = typeof(WindowSpanModeStateTrigger).GetField("_info", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(infoField);
+				var info = Assert.IsType<DualScreenInfo>(infoField.GetValue(trigger));
+				Assert.Same(element, info.Element);
+				Assert.False(trigger.IsActive);
 
-			Assert.Equal(TwoPaneViewMode.Tall, DualScreenInfo.Current.SpanMode);
-			Assert.Equal(TwoPaneViewMode.Wide, info.SpanMode);
-			Assert.True(trigger.IsActive);
+				element.Arrange(new Rect(0, 0, 1000, 1000));
 
-			localService.Hinge = new Rect(0, 490, 1000, 20);
-			localService.Landscape = true;
-			localService.RaiseLayoutChanged();
+				Assert.Equal(TwoPaneViewMode.Tall, DualScreenInfo.Current.SpanMode);
+				Assert.Equal(TwoPaneViewMode.Wide, info.SpanMode);
+				Assert.True(trigger.IsActive);
 
-			Assert.Equal(TwoPaneViewMode.Tall, info.SpanMode);
-			Assert.False(trigger.IsActive);
+				localService.Hinge = new Rect(0, 490, 1000, 20);
+				localService.Landscape = true;
+				localService.RaiseLayoutChanged();
 
-			globalService.Hinge = new Rect(490, 0, 20, 1000);
-			globalService.Landscape = false;
-			globalService.RaiseLayoutChanged();
+				Assert.Equal(TwoPaneViewMode.Tall, info.SpanMode);
+				Assert.False(trigger.IsActive);
 
-			Assert.Equal(TwoPaneViewMode.Wide, DualScreenInfo.Current.SpanMode);
-			Assert.False(trigger.IsActive);
+				globalService.Hinge = new Rect(490, 0, 20, 1000);
+				globalService.Landscape = false;
+				globalService.RaiseLayoutChanged();
 
-			var propertyChangedField = typeof(DualScreenInfo).GetField("PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(propertyChangedField);
-			Assert.Contains(
-				((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
-				handler => ReferenceEquals(handler.Target, trigger));
+				Assert.Equal(TwoPaneViewMode.Wide, DualScreenInfo.Current.SpanMode);
+				Assert.False(trigger.IsActive);
 
-			trigger.SendDetached();
+				var propertyChangedField = typeof(DualScreenInfo).GetField("PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(propertyChangedField);
+				Assert.Contains(
+					((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
+					handler => ReferenceEquals(handler.Target, trigger));
 
-			var detachedHandlers = propertyChangedField.GetValue(info) as PropertyChangedEventHandler;
-			Assert.True(detachedHandlers == null ||
-				!detachedHandlers.GetInvocationList().Any(handler => ReferenceEquals(handler.Target, trigger)));
+				trigger.SendDetached();
 
-			trigger.SendAttached();
+				var detachedHandlers = propertyChangedField.GetValue(info) as PropertyChangedEventHandler;
+				Assert.True(detachedHandlers == null ||
+					!detachedHandlers.GetInvocationList().Any(handler => ReferenceEquals(handler.Target, trigger)));
 
-			Assert.Single(
-				((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
-				handler => ReferenceEquals(handler.Target, trigger));
+				trigger.SendAttached();
+
+				Assert.Single(
+					((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
+					handler => ReferenceEquals(handler.Target, trigger));
+			}
+			finally
+			{
+				DualScreenInfo.Current.SetFoldableService(null);
+			}
 		}
 
 		sealed class TestFoldableService : IFoldableService
