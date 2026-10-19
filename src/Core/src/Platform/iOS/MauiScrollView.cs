@@ -639,19 +639,25 @@ namespace Microsoft.Maui.Platform
 			// This avoids inset flip-flopping and keeps layout behavior stable and predictable.
 			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic)
 			{
+				var inflateWidth = width <= Bounds.Width &&
+					(_safeArea.HorizontalThickness + width) > Bounds.Width;
+				var inflateHeight = height <= Bounds.Height &&
+					(_safeArea.VerticalThickness + height) > Bounds.Height;
+
 				// We do this to keep the content scrollable
 				// if we don't do this the ContentAdjustedInset + contentSize will cause the content to go off the screen and not be scrollable
 				// So the bottom content will just go off the screen until the contentsize triggers the scrollable area
-				if (width <= Bounds.Width &&
-					(_safeArea.HorizontalThickness + width) > Bounds.Width)
+				if ((inflateWidth || inflateHeight) && !IsInsidePageSheet())
 				{
-					width += Bounds.Width + 1;
-				}
+					if (inflateWidth)
+					{
+						width += Bounds.Width + 1;
+					}
 
-				if (height <= Bounds.Height &&
-					(_safeArea.VerticalThickness + height) > Bounds.Height)
-				{
-					height = Bounds.Height + 1;
+					if (inflateHeight)
+					{
+						height = Bounds.Height + 1;
+					}
 				}
 			}
 			else if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
@@ -711,6 +717,23 @@ namespace Microsoft.Maui.Platform
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 			return contentSize;
+		}
+
+		bool IsInsidePageSheet()
+		{
+			UIResponder? responder = this;
+			while (responder is not null)
+			{
+				// A style on an unpresented or child controller does not describe a modal sheet.
+				if (responder is UIViewController { ParentViewController: null, PresentingViewController: not null } controller)
+				{
+					return controller.ModalPresentationStyle == UIModalPresentationStyle.PageSheet;
+				}
+
+				responder = responder.NextResponder;
+			}
+
+			return false;
 		}
 
 		/// <summary>
