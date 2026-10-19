@@ -21,6 +21,7 @@
   <ItemGroup>
     <Compile Include="..\Core\Internals\INameScope.cs" Link="INameScope.cs" />
     <Compile Include="..\Core\IXmlLineInfoProvider.cs" Link="IXmlLineInfoProvider.cs" />
+    <Compile Include="..\Core\XamlLineInfo.cs" Link="XamlLineInfo.cs" />
     <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />

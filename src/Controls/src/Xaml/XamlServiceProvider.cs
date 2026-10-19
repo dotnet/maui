@@ -32,7 +32,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 
 			if (node is IXmlLineInfo xmlLineInfo)
+			{
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
+				XamlLineInfo = new XamlLineInfo(xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
+			}
 
 			IValueConverterProvider = defaultValueConverterProvider;
 
@@ -73,6 +76,12 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			set => services[typeof(IXmlLineInfoProvider)] = value;
 		}
 
+		internal XamlLineInfo XamlLineInfo
+		{
+			get => (XamlLineInfo)GetService(typeof(XamlLineInfo));
+			set => services[typeof(XamlLineInfo)] = value;
+		}
+
 		internal IValueConverterProvider IValueConverterProvider
 		{
 			get => (IValueConverterProvider)GetService(typeof(IValueConverterProvider));
@@ -81,7 +90,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public object GetService(Type serviceType) => services.TryGetValue(serviceType, out var service) ? service : null;
 
-		public void Add(Type type, object service) => services.Add(type, service);
+		public void Add(Type type, object service)
+		{
+			services.Add(type, service);
+		}
 	}
 
 	class XamlValueTargetProvider : IProvideParentValues, IProvideValueTarget
@@ -255,8 +267,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			IXmlLineInfo xmlLineInfo = null;
 			if (serviceProvider != null)
 			{
-				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider)
-					xmlLineInfo = lineInfoProvider.XmlLineInfo;
+				if (serviceProvider.GetService(typeof(XamlLineInfo)) is XamlLineInfo lineInfo)
+					xmlLineInfo = lineInfo.ToXmlLineInfo();
 			}
 
 			var xmlType = TypeArgumentsParser.ParseSingle(qualifiedTypeName, namespaceResolver, xmlLineInfo);
@@ -278,6 +290,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public XmlLineInfoProvider(IXmlLineInfo xmlLineInfo) => XmlLineInfo = xmlLineInfo;
 
 		public IXmlLineInfo XmlLineInfo { get; }
+
 	}
 
 	class ReferenceProvider : IReferenceProvider
