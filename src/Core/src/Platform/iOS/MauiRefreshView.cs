@@ -85,9 +85,13 @@ namespace Microsoft.Maui.Platform
 					return true;
 
 				if (refreshing)
-					scrollView.SetContentOffset(new CGPoint(0, _originalY - _refreshControlHeight), true);
+				{
+					scrollView.SetContentOffset(new CGPoint(scrollView.ContentOffset.X, _originalY - _refreshControlHeight), true);
+				}
 				else
-					scrollView.ContentOffset = new CGPoint(0, _originalY);
+				{
+					scrollView.ContentOffset = new CGPoint(scrollView.ContentOffset.X, _originalY);
+				}
 
 				return true;
 			}
