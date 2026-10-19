@@ -43,21 +43,38 @@ Microsoft.Maui.Maps.IFilledMapElement.Fill.get -> Microsoft.Maui.Graphics.Paint?
 Microsoft.Maui.Maps.IGeoPathMapElement
 Microsoft.Maui.Maps.IMap
 Microsoft.Maui.Maps.IMap.Clicked(Microsoft.Maui.Devices.Sensors.Location! position) -> void
+Microsoft.Maui.Maps.IMap.ClusterClicked(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> bool
 Microsoft.Maui.Maps.IMap.Elements.get -> System.Collections.Generic.IList<Microsoft.Maui.Maps.IMapElement!>!
+Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
+Microsoft.Maui.Maps.IMap.IsClusteringEnabled.get -> bool
 Microsoft.Maui.Maps.IMap.IsScrollEnabled.get -> bool
 Microsoft.Maui.Maps.IMap.IsShowingUser.get -> bool
 Microsoft.Maui.Maps.IMap.IsTrafficEnabled.get -> bool
 Microsoft.Maui.Maps.IMap.IsZoomEnabled.get -> bool
+Microsoft.Maui.Maps.IMap.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
+Microsoft.Maui.Maps.IMap.LongClicked(Microsoft.Maui.Devices.Sensors.Location! position) -> void
+Microsoft.Maui.Maps.IMap.MapStyle.get -> string?
 Microsoft.Maui.Maps.IMap.MapType.get -> Microsoft.Maui.Maps.MapType
+Microsoft.Maui.Maps.IMap.MoveToRegion(Microsoft.Maui.Maps.MapSpan! region, bool animated) -> void
 Microsoft.Maui.Maps.IMap.MoveToRegion(Microsoft.Maui.Maps.MapSpan! region) -> void
 Microsoft.Maui.Maps.IMap.Pins.get -> System.Collections.Generic.IList<Microsoft.Maui.Maps.IMapPin!>!
+Microsoft.Maui.Maps.IMap.ShowInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
+Microsoft.Maui.Maps.IMap.UserLocationUpdated(Microsoft.Maui.Devices.Sensors.Location! location) -> void
 Microsoft.Maui.Maps.IMap.VisibleRegion.get -> Microsoft.Maui.Maps.MapSpan?
 Microsoft.Maui.Maps.IMap.VisibleRegion.set -> void
+Microsoft.Maui.Maps.IMapClusterImageProvider
+Microsoft.Maui.Maps.IMapClusterImageProvider.ClusterImageVersion.get -> int
+Microsoft.Maui.Maps.IMapClusterImageProvider.GetClusterImage(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, int count, Microsoft.Maui.Devices.Sensors.Location! location) -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Maps.IMapElement
+Microsoft.Maui.Maps.IMapElement.Clicked() -> void
+Microsoft.Maui.Maps.IMapElement.IsVisible.get -> bool
 Microsoft.Maui.Maps.IMapElement.MapElementId.get -> object?
 Microsoft.Maui.Maps.IMapElement.MapElementId.set -> void
+Microsoft.Maui.Maps.IMapElement.ZIndex.get -> int
 Microsoft.Maui.Maps.IMapPin
 Microsoft.Maui.Maps.IMapPin.Address.get -> string!
+Microsoft.Maui.Maps.IMapPin.ClusteringIdentifier.get -> string!
+Microsoft.Maui.Maps.IMapPin.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Maps.IMapPin.Label.get -> string!
 Microsoft.Maui.Maps.IMapPin.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Maps.IMapPin.MarkerId.get -> object?
@@ -72,10 +89,16 @@ Microsoft.Maui.Maps.MapSpan.LongitudeDegrees.get -> double
 Microsoft.Maui.Maps.MapSpan.MapSpan(Microsoft.Maui.Devices.Sensors.Location! center, double latitudeDegrees, double longitudeDegrees) -> void
 Microsoft.Maui.Maps.MapSpan.Radius.get -> Microsoft.Maui.Maps.Distance
 Microsoft.Maui.Maps.MapSpan.WithZoom(double zoomFactor) -> Microsoft.Maui.Maps.MapSpan!
+Microsoft.Maui.Maps.MapSpanTypeConverter
+Microsoft.Maui.Maps.MapSpanTypeConverter.MapSpanTypeConverter() -> void
 Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.MapType.Hybrid = 2 -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.MapType.Satellite = 1 -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.MapType.Street = 0 -> Microsoft.Maui.Maps.MapType
+Microsoft.Maui.Maps.MoveToRegionRequest
+Microsoft.Maui.Maps.MoveToRegionRequest.Animated.get -> bool
+Microsoft.Maui.Maps.MoveToRegionRequest.MoveToRegionRequest(Microsoft.Maui.Maps.MapSpan? region, bool animated) -> void
+Microsoft.Maui.Maps.MoveToRegionRequest.Region.get -> Microsoft.Maui.Maps.MapSpan?
 override Microsoft.Maui.Maps.Distance.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.Distance.GetHashCode() -> int
 override Microsoft.Maui.Maps.Handlers.MapElementHandler.CreatePlatformElement() -> object!
@@ -87,6 +110,10 @@ override Microsoft.Maui.Maps.Handlers.MapPinHandler.CreatePlatformElement() -> o
 override Microsoft.Maui.Maps.MapSpan.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.MapSpan.GetHashCode() -> int
 override Microsoft.Maui.Maps.MapSpan.ToString() -> string!
+override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 static Microsoft.Maui.Maps.Distance.BetweenPositions(Microsoft.Maui.Devices.Sensors.Location! position1, Microsoft.Maui.Devices.Sensors.Location! position2) -> Microsoft.Maui.Maps.Distance
 static Microsoft.Maui.Maps.Distance.FromKilometers(double kilometers) -> Microsoft.Maui.Maps.Distance
 static Microsoft.Maui.Maps.Distance.FromMeters(double meters) -> Microsoft.Maui.Maps.Distance
@@ -97,27 +124,35 @@ static Microsoft.Maui.Maps.GeographyUtils.ToCircumferencePositions(this Microsof
 static Microsoft.Maui.Maps.GeographyUtils.ToDegrees(this double radians) -> double
 static Microsoft.Maui.Maps.GeographyUtils.ToRadians(this double degrees) -> double
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapFill(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapIsVisible(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Maps.IMapElement!, Microsoft.Maui.Maps.Handlers.IMapElementHandler!>!
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapStroke(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
 static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapStrokeThickness(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapZIndex(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
 static Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.operator !=(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? left, Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? right) -> bool
 static Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.operator ==(Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? left, Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate? right) -> bool
 static Microsoft.Maui.Maps.Handlers.MapHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Maps.IMap!, Microsoft.Maui.Maps.Handlers.IMapHandler!>!
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapElements(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapHideInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsClusteringEnabled(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsScrollEnabled(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsShowingUser(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsTrafficEnabled(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsZoomEnabled(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapMapStyle(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapMapType(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapMoveToRegion(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Maps.IMap!, Microsoft.Maui.Maps.Handlers.IMapHandler!>!
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapPins(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapShowInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
 static Microsoft.Maui.Maps.Handlers.MapHandler.MapUpdateMapElement(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
 static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapAddress(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
+static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapImageSource(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
 static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapLabel(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
 static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapLocation(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
 static Microsoft.Maui.Maps.Handlers.MapPinHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Maps.IMapPin!, Microsoft.Maui.Maps.Handlers.IMapPinHandler!>!
 static Microsoft.Maui.Maps.MapSpan.FromCenterAndRadius(Microsoft.Maui.Devices.Sensors.Location! center, Microsoft.Maui.Maps.Distance radius) -> Microsoft.Maui.Maps.MapSpan!
+static Microsoft.Maui.Maps.MapSpan.FromLocations(System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>! locations) -> Microsoft.Maui.Maps.MapSpan!
 static Microsoft.Maui.Maps.MapSpan.operator !=(Microsoft.Maui.Maps.MapSpan? left, Microsoft.Maui.Maps.MapSpan? right) -> bool
 static Microsoft.Maui.Maps.MapSpan.operator ==(Microsoft.Maui.Maps.MapSpan? left, Microsoft.Maui.Maps.MapSpan? right) -> bool
 virtual Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate.<Clone>$() -> Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate!
