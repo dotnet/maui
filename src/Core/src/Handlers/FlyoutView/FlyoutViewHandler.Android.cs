@@ -269,13 +269,29 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIsPresented()
 		{
-			if (_flyoutView?.Parent == DrawerLayout)
+			if (_flyoutView is not null)
 			{
 				if (VirtualView.IsPresented)
+				{
 					DrawerLayout.OpenDrawer(_flyoutView);
+				}
 				else
+				{
 					DrawerLayout.CloseDrawer(_flyoutView);
+				}
 			}
+
+			InvalidateFlyoutSafeArea();
+		}
+
+		void InvalidateFlyoutSafeArea()
+		{
+			if (_flyoutView is null)
+			{
+				return;
+			}
+
+			MauiWindowInsetsScope.FindForView(_flyoutView)?.Invalidate(SafeAreaInvalidationReason.NavigationChromeChanged);
 		}
 
 		void UpdateFlyoutBehavior()
@@ -302,13 +318,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
-			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
-
-			if (_navigationRoot is CoordinatorLayout cl)
-			{
-				MauiWindowInsetListener.SetupViewWithLocalListener(cl);
-			}
-
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged += OnDrawerStateChanged;
@@ -320,10 +329,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			CancelPendingFragment();
 
-			MauiWindowInsetListener.UnregisterView(platformView);
-			if (_navigationRoot is CoordinatorLayout cl)
+			if (_navigationRoot is CoordinatorLayout)
 			{
-				MauiWindowInsetListener.UnregisterView(cl);
 				_navigationRoot = null;
 			}
 
