@@ -264,6 +264,8 @@ Microsoft.Maui.ApplicationModel.DataTransfer.ShareRequestBase.ShareRequestBase()
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareRequestBase.Title.get -> string?
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareRequestBase.Title.set -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest
+Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.PreviewImage.get -> Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile?
+Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.PreviewImage.set -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest() -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest(string! text, string! title) -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest(string! text) -> void
@@ -304,6 +306,10 @@ Microsoft.Maui.ApplicationModel.IMap.OpenAsync(double latitude, double longitude
 Microsoft.Maui.ApplicationModel.IMap.OpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task!
 Microsoft.Maui.ApplicationModel.IMap.TryOpenAsync(double latitude, double longitude, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
 Microsoft.Maui.ApplicationModel.IMap.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
+Microsoft.Maui.ApplicationModel.IPermissions
+Microsoft.Maui.ApplicationModel.IPermissions.CheckStatusAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>!
+Microsoft.Maui.ApplicationModel.IPermissions.RequestAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>!
+Microsoft.Maui.ApplicationModel.IPermissions.ShouldShowRationale<TPermission>() -> bool
 Microsoft.Maui.ApplicationModel.IPlatformAppActions
 Microsoft.Maui.ApplicationModel.IPlatformAppActions.OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs! e) -> System.Threading.Tasks.Task!
 Microsoft.Maui.ApplicationModel.IVersionTracking
@@ -435,12 +441,31 @@ Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options.IncludeFullNameSc
 Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options.Options() -> void
 Microsoft.Maui.Authentication.IAppleSignInAuthenticator
 Microsoft.Maui.Authentication.IAppleSignInAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+Microsoft.Maui.Authentication.IPasskeys
+Microsoft.Maui.Authentication.IPasskeys.AssertAsync(Microsoft.Maui.Authentication.PasskeyRequestOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyAssertionResponse!>!
+Microsoft.Maui.Authentication.IPasskeys.CreateAsync(Microsoft.Maui.Authentication.PasskeyCreationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
+Microsoft.Maui.Authentication.IPasskeys.IsSupported.get -> bool
 Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback
+Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback.OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 Microsoft.Maui.Authentication.IWebAuthenticator
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>?
+Microsoft.Maui.Authentication.PasskeyAssertionResponse
+Microsoft.Maui.Authentication.PasskeyAssertionResponse.Id.get -> string!
+Microsoft.Maui.Authentication.PasskeyAssertionResponse.UserHandle.get -> string?
+Microsoft.Maui.Authentication.PasskeyCreationOptions
+Microsoft.Maui.Authentication.PasskeyCreationOptions.PasskeyCreationOptions(string! creationOptionsJson) -> void
+Microsoft.Maui.Authentication.PasskeyCreationOptions.PreferImmediatelyAvailable.get -> bool
+Microsoft.Maui.Authentication.PasskeyCreationOptions.PreferImmediatelyAvailable.set -> void
+Microsoft.Maui.Authentication.PasskeyCreationResponse
+Microsoft.Maui.Authentication.PasskeyCreationResponse.Id.get -> string!
+Microsoft.Maui.Authentication.PasskeyRequestOptions
+Microsoft.Maui.Authentication.PasskeyRequestOptions.PasskeyRequestOptions(string! requestOptionsJson) -> void
+Microsoft.Maui.Authentication.PasskeyRequestOptions.PreferImmediatelyAvailable.get -> bool
+Microsoft.Maui.Authentication.PasskeyRequestOptions.PreferImmediatelyAvailable.set -> void
+Microsoft.Maui.Authentication.Passkeys
 Microsoft.Maui.Authentication.WebAuthenticator
 Microsoft.Maui.Authentication.WebAuthenticatorExtensions
 Microsoft.Maui.Authentication.WebAuthenticatorOptions
@@ -620,6 +645,8 @@ Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.set -
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest() -> void
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy, System.TimeSpan minimumTime) -> void
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumDistance.get -> double
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumDistance.set -> void
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumTime.get -> System.TimeSpan
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumTime.set -> void
 Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs
@@ -727,6 +754,8 @@ Microsoft.Maui.Devices.Sensors.Location.Timestamp.set -> void
 Microsoft.Maui.Devices.Sensors.Location.VerticalAccuracy.get -> double?
 Microsoft.Maui.Devices.Sensors.Location.VerticalAccuracy.set -> void
 Microsoft.Maui.Devices.Sensors.LocationExtensions
+Microsoft.Maui.Devices.Sensors.LocationTypeConverter
+Microsoft.Maui.Devices.Sensors.LocationTypeConverter.LocationTypeConverter() -> void
 Microsoft.Maui.Devices.Sensors.Magnetometer
 Microsoft.Maui.Devices.Sensors.MagnetometerChangedEventArgs
 Microsoft.Maui.Devices.Sensors.MagnetometerChangedEventArgs.MagnetometerChangedEventArgs(Microsoft.Maui.Devices.Sensors.MagnetometerData reading) -> void
@@ -786,10 +815,13 @@ Microsoft.Maui.Media.IScreenshotResult.Width.get -> int
 Microsoft.Maui.Media.ITextToSpeech
 Microsoft.Maui.Media.ITextToSpeech.GetLocalesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Media.Locale!>!>!
 Microsoft.Maui.Media.ITextToSpeech.SpeakAsync(string! text, Microsoft.Maui.Media.SpeechOptions? options = null, System.Threading.CancellationToken cancelToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Media.IViewScreenshot
+Microsoft.Maui.Media.IViewScreenshot.CaptureViewAsync(object! platformView) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
 Microsoft.Maui.Media.Locale
 Microsoft.Maui.Media.Locale.Country.get -> string!
 Microsoft.Maui.Media.Locale.Id.get -> string!
 Microsoft.Maui.Media.Locale.Language.get -> string!
+Microsoft.Maui.Media.Locale.Locale(string? language, string? country, string? name, string? id) -> void
 Microsoft.Maui.Media.Locale.Name.get -> string!
 Microsoft.Maui.Media.MediaPicker
 Microsoft.Maui.Media.MediaPickerOptions
@@ -804,6 +836,8 @@ Microsoft.Maui.Media.MediaPickerOptions.PreserveMetaData.get -> bool
 Microsoft.Maui.Media.MediaPickerOptions.PreserveMetaData.set -> void
 Microsoft.Maui.Media.MediaPickerOptions.RotateImage.get -> bool
 Microsoft.Maui.Media.MediaPickerOptions.RotateImage.set -> void
+Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.get -> bool
+Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.set -> void
 Microsoft.Maui.Media.MediaPickerOptions.SelectionLimit.get -> int
 Microsoft.Maui.Media.MediaPickerOptions.SelectionLimit.set -> void
 Microsoft.Maui.Media.MediaPickerOptions.Title.get -> string?
@@ -869,7 +903,7 @@ Microsoft.Maui.Storage.FileSystemImplementation.FileSystemImplementation() -> vo
 Microsoft.Maui.Storage.FileSystemImplementation.OpenAppPackageFileAsync(string! filename) -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.Storage.IFilePicker
 Microsoft.Maui.Storage.IFilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
 Microsoft.Maui.Storage.IFileSystem
 Microsoft.Maui.Storage.IFileSystem.AppDataDirectory.get -> string!
 Microsoft.Maui.Storage.IFileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
@@ -902,6 +936,10 @@ Microsoft.Maui.Storage.SecureStorage
 Microsoft.Maui.Storage.SecureStorageExtensions
 override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.EnsureDeclared() -> void
 override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.ShouldShowRationale() -> bool
+override Microsoft.Maui.Authentication.PasskeyAssertionResponse.ToString() -> string!
+override Microsoft.Maui.Authentication.PasskeyCreationOptions.ToString() -> string!
+override Microsoft.Maui.Authentication.PasskeyCreationResponse.ToString() -> string!
+override Microsoft.Maui.Authentication.PasskeyRequestOptions.ToString() -> string!
 override Microsoft.Maui.Devices.BatteryInfoChangedEventArgs.ToString() -> string!
 override Microsoft.Maui.Devices.DeviceIdiom.GetHashCode() -> int
 override Microsoft.Maui.Devices.DevicePlatform.GetHashCode() -> int
@@ -921,6 +959,10 @@ override Microsoft.Maui.Devices.Sensors.GyroscopeData.Equals(object? obj) -> boo
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.ToString() -> string!
 override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
+override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 override Microsoft.Maui.Devices.Sensors.MagnetometerData.Equals(object? obj) -> bool
 override Microsoft.Maui.Devices.Sensors.MagnetometerData.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.MagnetometerData.ToString() -> string!
@@ -1020,9 +1062,11 @@ static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft
 static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Permissions.Current.get -> Microsoft.Maui.ApplicationModel.IPermissions!
 static Microsoft.Maui.ApplicationModel.Platform.MapServiceToken.get -> string?
 static Microsoft.Maui.ApplicationModel.Platform.MapServiceToken.set -> void
 static Microsoft.Maui.ApplicationModel.Platform.OnActivated(Microsoft.UI.Xaml.Window! window, Microsoft.UI.Xaml.WindowActivatedEventArgs! args) -> void
+static Microsoft.Maui.ApplicationModel.Platform.OnAppInstanceActivated(Microsoft.UI.Xaml.Application! application, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 static Microsoft.Maui.ApplicationModel.Platform.OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs! e) -> void
 static Microsoft.Maui.ApplicationModel.Platform.OnPlatformWindowInitialized(Microsoft.UI.Xaml.Window! window) -> void
 static Microsoft.Maui.ApplicationModel.VersionTracking.BuildHistory.get -> System.Collections.Generic.IEnumerable<string!>!
@@ -1043,6 +1087,12 @@ static Microsoft.Maui.ApplicationModel.VersionTracking.VersionHistory.get -> Sys
 static Microsoft.Maui.ApplicationModel.WindowStateManager.Default.get -> Microsoft.Maui.ApplicationModel.IWindowStateManager!
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.Default.get -> Microsoft.Maui.Authentication.IAppleSignInAuthenticator!
+static Microsoft.Maui.Authentication.Passkeys.AssertAsync(Microsoft.Maui.Authentication.PasskeyRequestOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyAssertionResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.AssertAsync(string! requestOptionsJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyAssertionResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.CreateAsync(Microsoft.Maui.Authentication.PasskeyCreationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.CreateAsync(string! creationOptionsJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
+static Microsoft.Maui.Authentication.Passkeys.Default.get -> Microsoft.Maui.Authentication.IPasskeys!
+static Microsoft.Maui.Authentication.Passkeys.IsSupported.get -> bool
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
@@ -1050,6 +1100,7 @@ static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.U
 static Microsoft.Maui.Authentication.WebAuthenticator.Default.get -> Microsoft.Maui.Authentication.IWebAuthenticator!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.OnAppInstanceActivated(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 static Microsoft.Maui.Devices.Battery.BatteryInfoChanged -> System.EventHandler<Microsoft.Maui.Devices.BatteryInfoChangedEventArgs!>!
 static Microsoft.Maui.Devices.Battery.ChargeLevel.get -> double
 static Microsoft.Maui.Devices.Battery.Default.get -> Microsoft.Maui.Devices.IBattery!
@@ -1232,7 +1283,7 @@ static Microsoft.Maui.Networking.Connectivity.Current.get -> Microsoft.Maui.Netw
 static Microsoft.Maui.Networking.Connectivity.NetworkAccess.get -> Microsoft.Maui.Networking.NetworkAccess
 static Microsoft.Maui.Storage.FilePicker.Default.get -> Microsoft.Maui.Storage.IFilePicker!
 static Microsoft.Maui.Storage.FilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
 static Microsoft.Maui.Storage.FileSystem.AppDataDirectory.get -> string!
 static Microsoft.Maui.Storage.FileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Storage.FileSystem.CacheDirectory.get -> string!
