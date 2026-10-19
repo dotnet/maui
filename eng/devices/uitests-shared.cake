@@ -36,17 +36,20 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 	{
 		XDocument[] reports = Array.Empty<XDocument>();
 		System.Runtime.ExceptionServices.ExceptionDispatchInfo reportFailure = null;
+		bool archiveFailed = false;
 		try
 		{
 			Information("UI test attempt: {0}", retryCount + 1);
-			var attemptDirectory = originalResults == null ? resultDirectory : retryDirectory;
-			var attemptNUnitDirectory = originalResults == null ? nunitDirectory : retryDirectory;
+			var attemptDirectory = retryCount == 0 ? resultDirectory : retryDirectory;
+			var attemptNUnitDirectory = retryCount == 0 ? nunitDirectory : retryDirectory;
+			if (retryCount > 0)
+				EnsureDirectoryExists(retryDirectory);
 			System.Runtime.ExceptionServices.ExceptionDispatchInfo testFailure = null;
 			try
 			{
 				RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
 					resultsFileNameWithoutExtension: resultsFileName, filter: retryFilter,
-					resultsDirectory: originalResults == null ? null : retryDirectory,
+					resultsDirectory: retryCount == 0 ? null : retryDirectory,
 					nunitResultsDirectory: attemptNUnitDirectory);
 			}
 			catch (Exception ex)
@@ -56,19 +59,39 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 
 			bool nunitFailed = false;
 			var attemptResultsFile = System.IO.Path.Combine(attemptDirectory, resultsFileName + ".trx");
+			string[] reportFiles = Array.Empty<string>();
+			try
+			{
+				// Preserve raw evidence before reconciliation or category selection can fail.
+				reportFiles = GetFiles($"{attemptNUnitDirectory}/*.xml").Select(file => file.FullPath).ToArray();
+				var rawDirectory = System.IO.Path.Combine(attemptNUnitDirectory, "raw");
+				System.IO.Directory.CreateDirectory(rawDirectory);
+				if (System.IO.File.Exists(attemptResultsFile))
+					System.IO.File.Copy(attemptResultsFile, System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx"));
+				foreach (var file in reportFiles)
+					System.IO.File.Copy(file, System.IO.Path.Combine(rawDirectory, System.IO.Path.GetFileName(file)));
+			}
+			catch (Exception archiveException) when (archiveException is System.IO.IOException || archiveException is UnauthorizedAccessException)
+			{
+				archiveFailed = true;
+				Warning("Unable to archive raw UI test reports; stopping before they can be overwritten: {0}", archiveException.Message);
+				testFailure?.Throw();
+				throw;
+			}
+
 			var availableReports = new List<XDocument>();
-			foreach (var file in GetFiles($"{attemptNUnitDirectory}/*.xml"))
+			foreach (var file in reportFiles)
 			{
 				try
 				{
-					var report = XDocument.Load(file.FullPath);
+					var report = XDocument.Load(file);
 					if (report.Root?.Name != "test-run")
 						throw new InvalidOperationException("NUnit XML is missing a test-run.");
 					availableReports.Add(report);
 				}
 				catch (Exception metadataException) when (metadataException is System.IO.IOException || metadataException is System.Xml.XmlException || metadataException is InvalidOperationException)
 				{
-					Warning("Unable to read NUnit report {0}: {1}", file.FullPath, metadataException.Message);
+					Warning("Unable to read NUnit report {0}: {1}", file, metadataException.Message);
 					reportFailure = reportFailure ?? System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(metadataException);
 				}
 			}
@@ -93,28 +116,35 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 				reportFailure = reportFailure ?? System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(metadataException);
 			}
 
+			bool retryResultsMissing = retryCount > 0 && !System.IO.File.Exists(attemptResultsFile);
 			try
 			{
-				if (retryCount > 0 && originalResults != null)
+				if (retryCount > 0)
 				{
-					if (System.IO.File.Exists(attemptResultsFile))
+					if (!retryResultsMissing)
 					{
+						if (originalResults == null)
+							CopyFile(attemptResultsFile, resultsFile);
 						var retryResults = XDocument.Load(attemptResultsFile);
 						XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-						var originalDeployment = (string)originalResults.Root.Element(ns + "TestSettings")?.Element(ns + "Deployment")?.Attribute("runDeploymentRoot");
 						var retryDeployment = (string)retryResults.Root.Element(ns + "TestSettings")?.Element(ns + "Deployment")?.Attribute("runDeploymentRoot");
-						if (!string.IsNullOrEmpty(originalDeployment) && !string.IsNullOrEmpty(retryDeployment))
+						var publishedDeployment = originalResults == null ? retryDeployment :
+							(string)originalResults.Root.Element(ns + "TestSettings")?.Element(ns + "Deployment")?.Attribute("runDeploymentRoot");
+						if (!string.IsNullOrEmpty(publishedDeployment) && !string.IsNullOrEmpty(retryDeployment))
 						{
 							var retryAttachments = System.IO.Path.Combine(retryDirectory, retryDeployment);
 							if (DirectoryExists(retryAttachments))
-								CopyDirectory(retryAttachments, System.IO.Path.Combine(resultDirectory, originalDeployment));
+								CopyDirectory(retryAttachments, System.IO.Path.Combine(resultDirectory, publishedDeployment));
 						}
-						UITestRetry.MergeResults(originalResults, retryResults, originalReports, reports);
-						originalResults.Save(resultsFile);
+						if (originalResults != null)
+						{
+							UITestRetry.MergeResults(originalResults, retryResults, originalReports, reports);
+							originalResults.Save(resultsFile);
+						}
 					}
 					else
 					{
-						Warning("No retry TRX was produced; retaining the first attempt's failures.");
+						Warning("No retry TRX was produced; retaining the first attempt's reports.");
 					}
 				}
 			}
@@ -127,13 +157,13 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			testFailure?.Throw();
 			reportFailure?.Throw();
 			XNamespace trxNamespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-			if (nunitFailed || (string)originalResults?.Root.Element(trxNamespace + "ResultSummary")?.Attribute("outcome") == "Failed")
+			if (nunitFailed || retryResultsMissing || (string)originalResults?.Root.Element(trxNamespace + "ResultSummary")?.Attribute("outcome") == "Failed")
 				throw new InvalidOperationException("UI test results contain unresolved test or fixture failures.");
 			break;
 		}
 		catch (Exception ex)
 		{
-			if (retryCount == numOfRetries)
+			if (retryCount == numOfRetries || archiveFailed)
 			{
 				onFinalFailure?.Invoke();
 				throw;
@@ -157,12 +187,10 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			{
 				originalResults = XDocument.Load(resultsFile);
 				originalReports = reports;
-				EnsureDirectoryExists(retryDirectory);
-				CopyFile(resultsFile, System.IO.Path.Combine(nunitDirectory, "first-attempt.trx"));
 			}
 			catch (Exception metadataException) when (metadataException is System.IO.IOException || metadataException is System.Xml.XmlException || metadataException is InvalidOperationException)
 			{
-				Warning("Unable to preserve the first attempt's results; rerunning the original filter: {0}", metadataException.Message);
+				Warning("Unable to read the first attempt's TRX for merging; rerunning the original filter: {0}", metadataException.Message);
 				retryFilter = testFilter;
 				originalResults = null;
 				originalReports = Array.Empty<XDocument>();

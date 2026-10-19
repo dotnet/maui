@@ -405,9 +405,16 @@ The published TRX combines untouched first-attempt results with retry results.
 Failures not reported by the retry remain failures. Fixture errors are cleared
 only when retry NUnit XML confirms that the same fixture in the same assembly
 completed successfully; omitted, skipped, or incomplete fixtures remain run
-errors, even if all retained test cases passed. Original and retry reports
-are retained beneath the result directory for diagnostics, but only the combined
-top-level TRX is published.
+errors, even if all retained test cases passed.
+
+Available raw TRX and NUnit XML files are copied before XML parsing,
+reconciliation, or category selection, including for full-filter retries. The
+first attempt's snapshots are under `nunit-<id>/raw/` and the retry's snapshots
+under `nunit-<id>/retry/raw/`, beneath the result directory. Retry output always
+uses a separate directory, even when the first TRX is missing or malformed.
+Only the combined top-level TRX is published; if the first TRX cannot be read,
+the retry TRX is published instead. If raw reports cannot be archived, the runner
+stops without retrying or overwriting the available evidence.
 
 **Android:**
 
