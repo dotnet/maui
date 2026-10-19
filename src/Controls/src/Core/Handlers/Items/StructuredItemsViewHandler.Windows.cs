@@ -256,6 +256,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				style.BasedOn = _gridViewItemStyle;
 			}
 
+			if (layout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
+				style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0d));
+			}
+			else
+			{
+				style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0d));
+			}
+
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
