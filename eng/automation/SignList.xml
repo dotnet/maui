@@ -51,10 +51,8 @@
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
     <Skip Include="System.Buffers.dll" />
-    <Skip Include="System.IO.UnmanagedMemoryStream.dll" />
     <Skip Include="System.Memory.dll" />
     <Skip Include="System.Numerics.Vectors.dll" />
-    <Skip Include="System.ObjectModel.dll" />
     <Skip Include="System.Runtime.CompilerServices.Unsafe.dll" />
   </ItemGroup>
 
