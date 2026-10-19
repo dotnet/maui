@@ -396,12 +396,16 @@ also have one bounded retry per failed phase, before test execution starts.
 These retries do not restart completed tests. Local runs and device-test targets
 do not retry setup.
 
-NUnit XML is checked even when VSTest exits successfully. Fixture-only failures
+NUnit XML is checked whether VSTest succeeds or throws. Fixture-only failures
 such as `OneTimeTearDown` errors trigger the same category-based retry and are
-recorded as TRX run errors if they persist.
+recorded as TRX run errors if they persist. Missing or malformed reports are
+logged without replacing an existing VSTest exception.
 
 The published TRX combines untouched first-attempt results with retry results.
-Failures not reported by the retry remain failures. Original and retry reports
+Failures not reported by the retry remain failures. Fixture errors are cleared
+only when retry NUnit XML confirms that the same fixture in the same assembly
+completed successfully; omitted, skipped, or incomplete fixtures remain run
+errors, even if all retained test cases passed. Original and retry reports
 are retained beneath the result directory for diagnostics, but only the combined
 top-level TRX is published.
 
