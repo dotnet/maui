@@ -788,7 +788,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// task returns true if the user lets go of the page and is not popped
 				// however at this point the renderer is already off the visual stack so we just need to update the NavigationPage
 				// Also worth noting this task returns on the main thread
-				if (t.Result)
+				if (t.Result || _disposed)
 					return;
 
 				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))

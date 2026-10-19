@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -92,6 +94,101 @@ namespace Microsoft.Maui.DeviceTests
 				(handler as NavigationRenderer).Dispose();
 				(handler as NavigationRenderer).Dispose();
 			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task NativePopContinuationAfterRendererDisposalDoesNotThrow(bool popToRoot)
+		{
+			SetupBuilder();
+			var root = new ContentPage();
+			var navigationPage = new NavigationPage(root);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navigationPage), async _ =>
+			{
+				var (renderer, context) = await PopAndDismissModalAsync(root, popToRoot);
+				try
+				{
+					// ModalWrapper retains the native renderer until it is collected.
+					// Yield so UIKit can release it on the main thread.
+					for (var pass = 0; pass < 40 && renderer.Handle != IntPtr.Zero; pass++)
+					{
+						GC.Collect();
+						GC.WaitForPendingFinalizers();
+						GC.Collect();
+						await Task.Delay(100);
+					}
+					Assert.Equal(IntPtr.Zero, (IntPtr)renderer.Handle);
+					Assert.NotEmpty(context.Tasks);
+				}
+				finally
+				{
+					context.Release();
+				}
+
+				// Observe the actual continuation tasks instead of relying on the
+				// process-wide UnobservedTaskException event and finalizer timing.
+				await Task.WhenAll(context.Tasks).WaitAsync(TimeSpan.FromSeconds(5));
+			});
+		}
+
+		async Task<(NavigationRenderer, NavigationContinuationContext)> PopAndDismissModalAsync(ContentPage root, bool popToRoot)
+		{
+			var modal = new NavigationPage(new ContentPage());
+			await root.Navigation.PushModalAsync(modal, false);
+			await modal.PushAsync(new ContentPage(), false);
+			await modal.PushAsync(new ContentPage(), false);
+			await OnNavigatedToAsync(modal.CurrentPage);
+
+			var renderer = (NavigationRenderer)modal.Handler;
+			var original = SynchronizationContext.Current;
+			Assert.NotNull(original);
+			var context = new NavigationContinuationContext(original);
+			try
+			{
+				// Capture only the continuation scheduled by native pop; do not
+				// block the main context needed to dismiss the modal.
+				SynchronizationContext.SetSynchronizationContext(context);
+				try
+				{
+					if (popToRoot)
+						renderer.PopToRootViewController(false);
+					else
+						renderer.PopViewController(false);
+				}
+				finally
+				{
+					SynchronizationContext.SetSynchronizationContext(original);
+				}
+				await root.Navigation.PopModalAsync(false);
+				return (renderer, context);
+			}
+			catch
+			{
+				context.Release();
+				throw;
+			}
+		}
+
+		sealed class NavigationContinuationContext(SynchronizationContext original) : SynchronizationContext
+		{
+			readonly ConcurrentQueue<(SendOrPostCallback Callback, object State)> _pending = new();
+			readonly ConcurrentQueue<Task> _tasks = new();
+			public Task[] Tasks => _tasks.ToArray();
+
+			public override void Post(SendOrPostCallback callback, object state)
+			{
+				if (state is Task task)
+					_tasks.Enqueue(task);
+				_pending.Enqueue((callback, state));
+			}
+
+			public void Release()
+			{
+				while (_pending.TryDequeue(out var item))
+					original.Post(item.Callback, item.State);
+			}
 		}
 	}
 }
