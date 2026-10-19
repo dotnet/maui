@@ -30,10 +30,18 @@ namespace Microsoft.Maui
 				if (stream == null)
 					throw new InvalidOperationException("Unable to load image stream.");
 
+				var seekableStream = await stream.EnsureSeekableAsync(cancellationToken);
 				var image = new BitmapImage();
-
-				using var ras = stream.AsRandomAccessStream();
-				await image.SetSourceAsync(ras);
+				try
+				{
+					using var ras = seekableStream.AsRandomAccessStream();
+					await image.SetSourceAsync(ras);
+				}
+				finally
+				{
+					if (!ReferenceEquals(stream, seekableStream))
+						seekableStream.Dispose();
+				}
 
 				var result = new ImageSourceServiceResult(image);
 
