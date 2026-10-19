@@ -97,6 +97,6 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 	static bool IsAssignableToField(ITypeSymbol currentType, ITypeSymbol preservedType, Compilation compilation)
 	{
 		var conversion = compilation.ClassifyConversion(currentType, preservedType);
-		return conversion.Exists && conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference);
+		return conversion.Exists && conversion.IsImplicit;
 	}
 }

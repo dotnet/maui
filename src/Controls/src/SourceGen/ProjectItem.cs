@@ -118,12 +118,8 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 
 	/// <summary>
-	/// Stable, project-unique key for incremental hot reload state. Uses the XAML file's absolute
-	/// path (unique per project on disk, constant across incremental builds) so the process-global
-	/// <c>XamlHotReloadState</c> — hosted in a long-lived VBCSCompiler shared across many builds —
-	/// can never leak a patch chain between two projects that merely share an assembly name and a
-	/// file name (e.g. two apps both named "MauiApp.1" with a "MainPage.xaml"). Falls back to the
-	/// relative path when no absolute path is available (e.g. some unit-test harnesses).
+	/// Uses the absolute XAML path to isolate Hot Reload state across projects in the shared
+	/// compiler process. Test harnesses without an absolute path fall back to the relative path.
 	/// </summary>
 	public string HotReloadStateKey
 		=> string.IsNullOrEmpty(AdditionalText.Path) ? (RelativePath ?? string.Empty) : AdditionalText.Path;

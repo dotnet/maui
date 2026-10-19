@@ -28,10 +28,6 @@ public class XamlIncrementalHotReloadE2ETests
 
 		public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
 		{
-			private partial void InitializeComponent();
-
-			public void InitializeComponentRuntime() { }
-
 			public MainPage()
 			{
 				InitializeComponent();

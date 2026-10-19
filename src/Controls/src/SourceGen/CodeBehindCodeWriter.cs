@@ -517,7 +517,7 @@ static class CodeBehindCodeWriter
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			var name = GetAttributeValue(node, "Name", XamlParser.X2006Uri, XamlParser.X2009Uri) ?? throw new Exception();
+			var name = GetAttributeValue(node, "Name", XamlParser.X2006Uri, XamlParser.X2009Uri)?.Trim() ?? throw new Exception();
 			var typeArguments = GetAttributeValue(node, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 			var fieldModifier = GetAttributeValue(node, "FieldModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
 

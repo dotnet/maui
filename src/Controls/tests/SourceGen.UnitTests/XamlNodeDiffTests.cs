@@ -2873,7 +2873,7 @@ public class XamlNodeDiffTests
 		var childChange = Assert.Single(diff.ChildListChanges);
 		Assert.Single(childChange.RemovedNodeIds); // old Label retired
 		Assert.Single(childChange.NewChildren, e => e.Kind == ChildChangeKind.Added); // new Button
-		// The unrelated Entry's property edit survives as a normal, independent patch.
+																					  // The unrelated Entry's property edit survives as a normal, independent patch.
 		var entryChange = Assert.Single(diff.NodeChanges);
 		Assert.Equal("Unrelated edit", entryChange.PropertyChanges[0].NewValue);
 	}
@@ -3141,7 +3141,7 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XNameChanged_InsideDataTemplate_ProducesPropertyDiff()
+	public void XNameChanged_InsideDataTemplate_UsesStructuralFallback()
 	{
 		var old = Parse(Page("""
 			<DataTemplate x:Name="RowTemplate">
@@ -3156,10 +3156,7 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.NotNull(diff);
-		Assert.Empty(diff.ChildListChanges);
-		var property = Assert.Single(Assert.Single(diff.NodeChanges).PropertyChanges);
-		Assert.Equal(XmlName.xName, property.PropertyName);
+		Assert.Null(diff);
 	}
 
 	[Fact]

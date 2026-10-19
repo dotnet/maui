@@ -998,7 +998,8 @@ static class XamlNodeDiff
 				// Codegen-sensitive x: property changed → structural regardless of value.
 				// Keep scanning (don't return yet) so a later, ineligible directive change on
 				// this same node isn't masked by an earlier eligible one.
-				if (IsCodegenSensitive(name) && !NodeValueEquals(oldPropNode, newPropNode))
+				if ((IsCodegenSensitive(name) || (insideTemplate && name == XmlName.xName))
+					&& !NodeValueEquals(oldPropNode, newPropNode))
 				{
 					(allCodegenSensitiveChanges ??= []).Add(name);
 					continue;
@@ -1041,7 +1042,7 @@ static class XamlNodeDiff
 					xDataTypeChanged = true;
 					continue;
 				}
-				if (IsCodegenSensitive(name))
+				if (IsCodegenSensitive(name) || (insideTemplate && name == XmlName.xName))
 				{
 					// removing x:Name/x:Class/etc. — keep scanning, see comment above
 					(allCodegenSensitiveChanges ??= []).Add(name);
@@ -1064,7 +1065,7 @@ static class XamlNodeDiff
 					xDataTypeChanged = true;
 					continue;
 				}
-				if (IsCodegenSensitive(kvp.Key))
+				if (IsCodegenSensitive(kvp.Key) || (insideTemplate && kvp.Key == XmlName.xName))
 				{
 					// adding x:Name/x:Class/etc. — keep scanning, see comment above
 					(allCodegenSensitiveChanges ??= []).Add(kvp.Key);

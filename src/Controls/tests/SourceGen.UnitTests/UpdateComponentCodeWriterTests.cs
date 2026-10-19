@@ -143,6 +143,30 @@ $"""
 	}
 
 	[Fact]
+	public void RenamedName_NonBindableObjectRoot_DoesNotEmitNameScopeLookup()
+	{
+		var v1 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="OldName" />
+</ResourceDictionary>
+""";
+		var v2 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="NewName" />
+</ResourceDictionary>
+""";
+		var compilation = CreateMauiCompilation();
+		var rootType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+
+		var result = Generate(v1, v2, rootType: rootType);
+
+		Assert.NotNull(result);
+		Assert.DoesNotContain("NameScope.GetNameScope(this)", result!, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void SinglePropertyChange_GeneratesMethodHeader()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
@@ -416,6 +440,128 @@ $"""
 		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
 		Assert.DoesNotContain(".Spans =", result, System.StringComparison.Ordinal);
 		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RootXNameRename_UpdatesNameScope()
+	{
+		var v1 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage" x:Name="oldName" />""";
+		var v2 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage" x:Name="newName" />""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("UnregisterName(\"oldName\")", result, StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\", this)", result, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SwappedSiblingNames_UnregistersAllNamesBeforeRegisteringAny()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label x:Name="a" />
+		<Button x:Name="b" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label x:Name="b" />
+		<Button x:Name="a" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		var lastUnregister = Math.Max(
+			result!.LastIndexOf("UnregisterName(\"a\")", StringComparison.Ordinal),
+			result.LastIndexOf("UnregisterName(\"b\")", StringComparison.Ordinal));
+		var firstRegister = Math.Min(
+			result.IndexOf("RegisterName(\"a\"", StringComparison.Ordinal),
+			result.IndexOf("RegisterName(\"b\"", StringComparison.Ordinal));
+		Assert.True(lastUnregister >= 0);
+		Assert.True(firstRegister > lastUnregister);
+	}
+
+	[Fact]
+	public void RenamedName_IsRegisteredBeforeDependentForwardReferenceUpdate()
+	{
+		var v1 =
+$$"""
+<ContentPage {{MauiXmlns}} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="{Binding Source={x:Reference oldName}, Path=Text}" />
+		<Entry x:Name="oldName" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$$"""
+<ContentPage {{MauiXmlns}} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="{Binding Source={x:Reference newName}, Path=Text}" />
+		<Entry x:Name="newName" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		var register = result!.IndexOf("RegisterName(\"newName\"", StringComparison.Ordinal);
+		var reference = result.IndexOf(".FindByName(\"newName\")", StringComparison.Ordinal);
+		Assert.True(register >= 0);
+		Assert.True(reference > register);
+	}
+
+	[Fact]
+	public void AddingXName_InitializesStyleId()
+	{
+		var v1 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage"><Label /></ContentPage>""";
+		var v2 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage"><Label x:Name="newName" /></ContentPage>""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("StyleId ??= \"newName\"", result, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TemplateLocalXNameRename_UsesStructuralFallback()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<CollectionView>
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Label x:Name="oldName" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<CollectionView>
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Label x:Name="newName" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+
+		Assert.Null(Generate(v1, v2));
 	}
 
 	// helpers

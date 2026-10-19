@@ -102,6 +102,52 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 		}
 	}
 
+	[Fact]
+	public void WhitespaceInXName_IsTrimmedBeforeFieldReconciliation()
+	{
+		const string codeBehind = """
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.SourceGen)]
+			public partial class WhitespaceInXName_IsTrimmedBeforeFieldReconciliation : ContentPage
+			{
+				public WhitespaceInXName_IsTrimmedBeforeFieldReconciliation() => InitializeComponent();
+				public Label NamedLabel => label0;
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.WhitespaceInXName_IsTrimmedBeforeFieldReconciliation">
+				<Label x:Name=" label0" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.WhitespaceInXName_IsTrimmedBeforeFieldReconciliation">
+				<Label x:Name="
+					label0" />
+			</ContentPage>
+			""";
+
+		var xamlFile = new AdditionalXamlFile("WhitespaceInXName_IsTrimmedBeforeFieldReconciliation.xaml", xamlV1);
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var (_, result, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
+
+		AssertNoErrors(diagnostics, updatedCompilation);
+		Assert.Contains("Microsoft.Maui.Controls.Label label0", GetCbOutput(result), StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation currentCompilation)
+		{
+			var newXamlFile = new AdditionalXamlFile(xamlFile.Path, xamlV2);
+			return (driver.ReplaceAdditionalText(xamlFile.Text, newXamlFile.Text), currentCompilation);
+		}
+	}
+
 	// Reusing a previously-generated field name for an incompatible element type must not change
 	// the declared type of the existing field (a type change is itself an EnC rude edit); the
 	// original field must be kept as-is and simply left unassigned.
@@ -609,6 +655,54 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 		{
 			var newPageFile = new AdditionalXamlFile(pageFile.Path, pageV2);
 			return (driver.ReplaceAdditionalText(pageFile.Text, newPageFile.Text), currentCompilation);
+		}
+	}
+
+	[Fact]
+	public void ReusingObjectFieldWithValueType_UsesImplicitBoxingAssignment()
+	{
+		const string codeBehind = """
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.SourceGen)]
+			public partial class ReusingObjectFieldWithValueType : ContentPage
+			{
+				public ReusingObjectFieldWithValueType() => InitializeComponent();
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.ReusingObjectFieldWithValueType">
+				<ContentPage.Resources>
+					<x:Object x:Key="value" x:Name="value" />
+				</ContentPage.Resources>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.ReusingObjectFieldWithValueType">
+				<ContentPage.Resources>
+					<x:Int32 x:Key="value" x:Name="value">42</x:Int32>
+				</ContentPage.Resources>
+			</ContentPage>
+			""";
+
+		var xamlFile = new AdditionalXamlFile("ReusingObjectFieldWithValueType.xaml", xamlV1);
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var (_, _, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
+
+		AssertNoErrors(diagnostics, updatedCompilation);
+		Assert.Contains("this.value = ", GetIcOutput(updatedCompilation), StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation currentCompilation)
+		{
+			var newXamlFile = new AdditionalXamlFile(xamlFile.Path, xamlV2);
+			return (driver.ReplaceAdditionalText(xamlFile.Text, newXamlFile.Text), currentCompilation);
 		}
 	}
 
