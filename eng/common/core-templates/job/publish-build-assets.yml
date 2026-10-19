@@ -89,8 +89,8 @@ jobs:
       fetchDepth: 3
       clean: true
 
-    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}: 
-      - ${{ if eq(parameters.publishingVersion, 3) }}: 
+    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}:
+      - ${{ if eq(parameters.publishingVersion, 3) }}:
         - task: DownloadPipelineArtifact@2
           displayName: Download Asset Manifests
           inputs:
@@ -115,12 +115,12 @@ jobs:
             flattenFolders: true
           condition: ${{ parameters.condition }}
           continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: NuGetAuthenticate@1
 
     # Populate internal runtime variables.
     - template: /eng/common/templates/steps/enable-internal-sources.yml
-    
+
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
     - task: AzureCLI@2
@@ -140,7 +140,7 @@ jobs:
 
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: powershell@2
       displayName: Create ReleaseConfigs Artifact
       inputs:
@@ -186,7 +186,7 @@ jobs:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
           is1ESPipeline: ${{ parameters.is1ESPipeline }}
-
+          
       # Darc is targeting 8.0, so make sure it's installed
       - task: UseDotNet@2
         inputs:
