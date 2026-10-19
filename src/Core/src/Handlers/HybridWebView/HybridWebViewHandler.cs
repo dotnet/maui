@@ -384,55 +384,59 @@ namespace Microsoft.Maui.Handlers
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-			if (arg is not EvaluateJavaScriptAsyncRequest request ||
-				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
+			if (arg is not EvaluateJavaScriptAsyncRequest request)
 			{
 				return;
 			}
 
-			if (handler.PlatformView is null)
+			try
 			{
-				request.SetCanceled();
-				return;
-			}
-
-			var script = request.Script;
-			// Make all the platforms mimic Android's implementation, which is by far the most complete.
-			if (!OperatingSystem.IsAndroid())
-			{
-				script = WebViewHelper.EscapeJsString(script);
-
-				if (!OperatingSystem.IsWindows())
+				if (handler.PlatformView is not MauiHybridWebView)
 				{
-					// Use JSON.stringify() method to converts a JavaScript value to a JSON string
-					script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
+					request.TrySetCanceled();
+					return;
 				}
-				else
+
+				var script = request.Script;
+				// Make all the platforms mimic Android's implementation, which is by far the most complete.
+				if (!OperatingSystem.IsAndroid())
 				{
-					script = "try{eval('" + script + "')}catch(e){'null'};";
+					script = WebViewHelper.EscapeJsString(script);
+
+					if (!OperatingSystem.IsWindows())
+					{
+						script = $"try{{JSON.stringify(eval('{script}'))}}catch(e){{'null'}};";
+					}
+					else
+					{
+						script = $"try{{eval('{script}')}}catch(e){{'null'}};";
+					}
 				}
+
+				var innerRequest = new EvaluateJavaScriptAsyncRequest(script);
+				EvaluateJavaScript(handler, hybridWebView, innerRequest);
+
+				var result = await innerRequest.Task;
+
+				if (result == "null")
+				{
+					result = null;
+				}
+				else if (result != null)
+				{
+					result = result.Trim('"');
+				}
+
+				request.TrySetResult(result!);
 			}
-
-			// Use the handler command to evaluate the JS
-			var innerRequest = new EvaluateJavaScriptAsyncRequest(script);
-			EvaluateJavaScript(handler, hybridWebView, innerRequest);
-
-			var result = await innerRequest.Task;
-
-			//if the js function errored or returned null/undefined treat it as null
-			if (result == "null")
+			catch (OperationCanceledException)
 			{
-				result = null;
+				request.TrySetCanceled();
 			}
-			//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
-			//note that if the js function returns the string "null" we will get here and not above
-			else if (result != null)
+			catch (Exception ex)
 			{
-				result = result.Trim('"');
+				request.TrySetException(ex);
 			}
-
-			request.SetResult(result!);
-
 		}
 #endif
 
