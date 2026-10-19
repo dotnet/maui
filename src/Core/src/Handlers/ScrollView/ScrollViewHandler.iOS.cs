@@ -58,19 +58,19 @@ namespace Microsoft.Maui.Handlers
 			return new MauiScrollView();
 		}
 
-		public override void PlatformArrange(Rect frame)
+		public override void PlatformArrange(Rect rect)
 		{
 			if (_delegatedSafeAreaFrame is not null)
 			{
-				_delegatedSafeAreaFrame = frame;
-				frame = new Rect(
-					frame.X,
+				_delegatedSafeAreaFrame = rect;
+				rect = new Rect(
+					rect.X,
 					_delegatedFrameTop,
-					frame.Width,
-					frame.Bottom - _delegatedFrameTop);
+					rect.Width,
+					rect.Bottom - _delegatedFrameTop);
 			}
 
-			ArrangePreservingContentOffset(frame);
+			ArrangePreservingContentOffset(rect);
 		}
 
 		void ISafeAreaScrollViewContainer.ApplyDelegatedFrame(Rect safeFrame, Rect delegatedFrame)

@@ -3,8 +3,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
+	public partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler, ISafeAreaScrollViewContainer
 	{
+		Rect? _delegatedSafeAreaFrame;
+		double _delegatedFrameTop;
+
 		public new WrapperView? ContainerView
 		{
 			get => (WrapperView?)base.ContainerView;
@@ -13,8 +16,33 @@ namespace Microsoft.Maui.Handlers
 
 		public UIViewController? ViewController { get; set; }
 
-		public override void PlatformArrange(Rect rect) =>
+		public override void PlatformArrange(Rect rect)
+		{
+			if (_delegatedSafeAreaFrame is not null)
+			{
+				_delegatedSafeAreaFrame = rect;
+				rect = new Rect(rect.X, _delegatedFrameTop, rect.Width, rect.Bottom - _delegatedFrameTop);
+			}
+
 			this.PlatformArrangeHandler(rect);
+		}
+
+		void ISafeAreaScrollViewContainer.ApplyDelegatedFrame(Rect safeFrame, Rect delegatedFrame)
+		{
+			_delegatedSafeAreaFrame = safeFrame;
+			_delegatedFrameTop = delegatedFrame.Top;
+			this.PlatformArrangeHandler(delegatedFrame);
+		}
+
+		void ISafeAreaScrollViewContainer.ResetDelegatedFrame()
+		{
+			if (_delegatedSafeAreaFrame is not { } safeFrame)
+				return;
+
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
+			this.PlatformArrangeHandler(safeFrame);
+		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
