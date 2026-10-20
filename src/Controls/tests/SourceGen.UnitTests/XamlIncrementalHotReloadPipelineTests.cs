@@ -2432,8 +2432,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void CompiledBinding_UCResolvesNestedPropertyType()
 	{
-		// Verify UC resolves dotted binding paths (User.DisplayName) to the correct type
-		// using shared SetPropertyHelpers.ResolveExpressionType (not a UC-specific clone).
+		// Dotted paths retain their nested type while safely handling null intermediate objects.
 		XamlHotReloadState.Reset();
 
 		const string stubs = """
@@ -2476,24 +2475,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			""";
 
 		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
-		var uc = FindUCSource(run2, "uc.xsg");
+		// A structural reload may emit the binding only in InitializeComponent.
+		var bindingSource = FindUCSource(run2, "uc.xsg")
+			?? FindSourceByHintSuffix(run2, "MainPage.xaml.xsg.cs");
 
-		if (uc != null)
-		{
-			// UC should emit a compiled TypedBinding with resolved nested type (string, not object)
-			Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
-			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", uc, StringComparison.Ordinal);
-		}
-		else
-		{
-			// Binding Mode change is a markup-extension property change — may be treated as structural.
-			// Verify the IC at least contains a compiled TypedBinding with the correct type.
-			var icSource = run2.Results.SelectMany(r => r.GeneratedSources)
-				.Where(s => s.HintName.Contains("MainPage", StringComparison.Ordinal))
-				.Select(s => s.SourceText.ToString())
-				.FirstOrDefault() ?? "";
-			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", icSource, StringComparison.Ordinal);
-		}
+		Assert.NotNull(bindingSource);
+		Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string?>", bindingSource, StringComparison.Ordinal);
+		Assert.Contains("getter: source => (source.User?.DisplayName, true)", bindingSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
