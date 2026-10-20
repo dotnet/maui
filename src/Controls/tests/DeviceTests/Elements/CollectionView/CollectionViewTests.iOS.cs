@@ -594,18 +594,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
 		}
 
-		[Theory]
-		[InlineData(1)]
-		[InlineData(2)]
-		[InlineData(3)]
-		public Task DefaultItemsLayoutLifetimeBaselineControl() =>
+		[Fact]
+		public Task DefaultItemsLayoutLifetimeBaselineControl1() =>
 			CollectionViewDoesNotLeakWithDefaultItemsLayout();
 
-		[Theory]
-		[InlineData(1)]
-		[InlineData(2)]
-		[InlineData(3)]
-		public async Task DefaultItemsLayoutLifetimeIsolatedControl()
+		[Fact]
+		public Task DefaultItemsLayoutLifetimeBaselineControl2() =>
+			CollectionViewDoesNotLeakWithDefaultItemsLayout();
+
+		[Fact]
+		public Task DefaultItemsLayoutLifetimeBaselineControl3() =>
+			CollectionViewDoesNotLeakWithDefaultItemsLayout();
+
+		[Fact]
+		public Task DefaultItemsLayoutLifetimeIsolatedControl1() =>
+			RunDefaultItemsLayoutLifetimeIsolatedControl();
+
+		[Fact]
+		public Task DefaultItemsLayoutLifetimeIsolatedControl2() =>
+			RunDefaultItemsLayoutLifetimeIsolatedControl();
+
+		[Fact]
+		public Task DefaultItemsLayoutLifetimeIsolatedControl3() =>
+			RunDefaultItemsLayoutLifetimeIsolatedControl();
+
+		async Task RunDefaultItemsLayoutLifetimeIsolatedControl()
 		{
 			SetupBuilder();
 
