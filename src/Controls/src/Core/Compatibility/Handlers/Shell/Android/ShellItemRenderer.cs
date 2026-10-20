@@ -247,6 +247,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				innerLayout.Click += clickCallback;
+				SetAutomationIdAccessibilityDelegate(innerLayout, GetAutomationId(shellContent));
 
 				var image = new ImageView(Context);
 				var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(32), (int)Context.ToPixels(32))
@@ -362,19 +363,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				DisposeMoreItemViews();
 				_bottomSheetDialog = CreateMoreBottomSheet(
 					(Action<int, BottomSheetDialog>)OnMoreItemSelected);
-				var items = CreateTabList(ShellItem);
-				var shellSections = ((IShellItemController)ShellItem).GetItems();
-				_bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
-					OnMoreItemSelected,
-					MauiContext,
-					items,
-					_bottomView.MaxItemCount,
-					(innerLayout, shellSectionIndex) =>
-					{
-						SetAutomationIdAccessibilityDelegate(
-							innerLayout,
-							GetAutomationId(shellSections[shellSectionIndex]));
-					});
 				_bottomSheetDialog.Show();
 				_bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 				if (_bottomSheetDialog.Window?.DecorView is AView dialogView)

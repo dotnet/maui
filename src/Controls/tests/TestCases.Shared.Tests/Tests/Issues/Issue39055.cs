@@ -13,7 +13,7 @@ public class Issue39055 : _IssuesUITest
 
 
     [Test, Order(1)]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void Issue39055TabBarAutomationIdShouldBeSet()
     {
         App.WaitForElement("main_tab_bar");
@@ -25,7 +25,7 @@ public class Issue39055 : _IssuesUITest
     }
 
     [Test, Order(2)]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void Issue39055OverflowTabAutomationIdShouldBeSet()
     {
 #if WINDOWS //Reduce window width for overflow tab testing
