@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -591,6 +592,49 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Verify the handler was collected
 			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
+		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		public Task DefaultItemsLayoutLifetimeBaselineControl() =>
+			CollectionViewDoesNotLeakWithDefaultItemsLayout();
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		public async Task DefaultItemsLayoutLifetimeIsolatedControl()
+		{
+			SetupBuilder();
+
+			var (weakCollectionView, weakHandler) =
+				await InvokeOnMainThreadAsync(CreateAndDisconnectCollectionViewWithDefaultItemsLayout);
+
+			await AssertionExtensions.WaitForGC(weakCollectionView, weakHandler);
+
+			Assert.False(weakCollectionView.IsAlive, "CollectionView should have been garbage collected");
+			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		(WeakReference CollectionView, WeakReference Handler) CreateAndDisconnectCollectionViewWithDefaultItemsLayout()
+		{
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			var weakCollectionView = new WeakReference(collectionView);
+			var handler = CreateHandler<CollectionViewHandler2>(collectionView);
+			Assert.NotNull(handler);
+			var weakHandler = new WeakReference(handler);
+
+			((IElementHandler)handler).DisconnectHandler();
+
+			return (weakCollectionView, weakHandler);
 		}
 
 		/// <summary>
