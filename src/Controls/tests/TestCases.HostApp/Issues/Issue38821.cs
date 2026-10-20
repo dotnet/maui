@@ -66,11 +66,24 @@ public class Issue38821 : ContentPage
 			_viewModel.CurrentItem = "2";
 		};
 
+		var replaceButton = new Button
+		{
+			AutomationId = "ReplaceItemAndSelectTwo",
+			Text = "Replace item 1 and select 2"
+		};
+
+		replaceButton.Clicked += (_, _) =>
+		{
+			_viewModel.Items[1] = "1b";
+			_viewModel.CurrentItem = "2";
+		};
+
 		var grid = new Grid
 		{
 			RowDefinitions =
    {
 	new RowDefinition(GridLength.Star),
+	new RowDefinition(GridLength.Auto),
 	new RowDefinition(GridLength.Auto),
 	new RowDefinition(GridLength.Auto)
    }
@@ -78,7 +91,8 @@ public class Issue38821 : ContentPage
 
 		grid.Add(carousel);
 		grid.Add(currentItem, 0, 1);
-		grid.Add(removeButton, 0, 2);
+		grid.Add(replaceButton, 0, 2);
+		grid.Add(removeButton, 0, 3);
 
 		BindingContext = _viewModel;
 		Content = grid;

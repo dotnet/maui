@@ -12,6 +12,8 @@ public class Issue38821 : _IssuesUITest
 	{
 	}
 
+	protected override bool ResetAfterEachTest => true;
+
 	public override string Issue => "CarouselView resets CurrentItem after removing the current item";
 
 	[Test]
@@ -25,6 +27,25 @@ public class Issue38821 : _IssuesUITest
 		AssertItemIsCentered("CarouselItem1");
 
 		App.Tap("RemoveCurrentItem");
+
+		App.WaitForTextToBePresentInElement("CurrentValue", "Current: 2");
+
+		Assert.That(
+		 App.WaitForElement("CurrentValue").GetText(),
+		 Is.EqualTo("Current: 2"));
+
+		AssertItemIsCentered("CarouselItem2");
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void ReplacingItemThenSelectingAnotherItemPreservesCurrentItem()
+	{
+		Assert.That(
+		 App.WaitForElement("CurrentValue").GetText(),
+		 Is.EqualTo("Current: 1"));
+
+		App.Tap("ReplaceItemAndSelectTwo");
 
 		App.WaitForTextToBePresentInElement("CurrentValue", "Current: 2");
 
