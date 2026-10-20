@@ -11,6 +11,12 @@ namespace Microsoft.Maui.Platform;
 internal class MauiMaterialPicker : MauiMaterialPickerBase
 {
 	public MauiMaterialPicker(Context context) : base(context)
+		=> Initialize();
+
+	internal MauiMaterialPicker(Context context, bool useMaterialContextThemeWrapper) : base(context, useMaterialContextThemeWrapper)
+		=> Initialize();
+
+	void Initialize()
 	{
 		PickerManager.Init(this);
 		Focusable = true;
@@ -30,12 +36,33 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 	}
 }
 
+internal class MauiMaterialPickerTextInputLayout : MauiMaterialTextInputLayout
+{
+	public MauiMaterialPicker Picker { get; }
+
+	public MauiMaterialPickerTextInputLayout(Context context) : base(context)
+	{
+		BoxBackgroundMode = BoxBackgroundOutline;
+		HintEnabled = false;
+		Picker = new MauiMaterialPicker(Context!, useMaterialContextThemeWrapper: false)
+		{
+			Background = null
+		};
+		AddView(Picker);
+	}
+}
+
 // TODO: Material3 - make it public in .net 11
 internal class MauiMaterialPickerBase : TextInputEditText
 {
 	readonly PickerDragGestureFilter _dragGestureFilter = new();
 
-	public MauiMaterialPickerBase(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+	public MauiMaterialPickerBase(Context context) : this(context, useMaterialContextThemeWrapper: true)
+	{
+	}
+
+	protected MauiMaterialPickerBase(Context context, bool useMaterialContextThemeWrapper)
+		: base(useMaterialContextThemeWrapper ? MauiMaterialContextThemeWrapper.Create(context) : context)
 	{
 		if (Background is not null)
 		{

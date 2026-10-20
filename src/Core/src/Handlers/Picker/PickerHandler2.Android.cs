@@ -8,7 +8,7 @@ using AResource = Android.Resource;
 namespace Microsoft.Maui.Handlers;
 
 // TODO: Material3 - make it public in .net 11
-internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
+internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTextInputLayout>
 {
 	AppCompatAlertDialog? _dialog;
 
@@ -38,21 +38,21 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 	{
 	}
 
-	protected override MauiMaterialPicker CreatePlatformView()
+	protected override MauiMaterialPickerTextInputLayout CreatePlatformView()
 	{
-		return new MauiMaterialPicker(Context);
+		return new MauiMaterialPickerTextInputLayout(Context);
 	}
 
-	protected override void ConnectHandler(MauiMaterialPicker platformView)
+	protected override void ConnectHandler(MauiMaterialPickerTextInputLayout platformView)
 	{
-		platformView.Click += OnClick;
+		platformView.Picker.Click += OnClick;
 
 		base.ConnectHandler(platformView);
 	}
 
-	protected override void DisconnectHandler(MauiMaterialPicker platformView)
+	protected override void DisconnectHandler(MauiMaterialPickerTextInputLayout platformView)
 	{
-		platformView.Click -= OnClick;
+		platformView.Picker.Click -= OnClick;
 
 		if (_dialog is not null)
 		{
@@ -89,29 +89,29 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 
 	public static void MapCharacterSpacing(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateCharacterSpacing(picker);
+		handler.PlatformView?.Picker.UpdateCharacterSpacing(picker);
 	}
 
 	public static void MapFont(PickerHandler2 handler, IPicker picker)
 	{
 		var fontManager = handler.GetRequiredService<IFontManager>();
 
-		handler.PlatformView?.UpdateFont(picker, fontManager);
+		handler.PlatformView?.Picker.UpdateFont(picker, fontManager);
 	}
 
 	public static void MapHorizontalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
+		handler.PlatformView?.Picker.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 	}
 
 	public static void MapTextColor(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateTextColor(picker.TextColor);
+		handler.PlatformView?.Picker.UpdateTextColor(picker.TextColor);
 	}
 
 	public static void MapVerticalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+		handler.PlatformView?.Picker.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 	}
 
 	public static void MapIsOpen(PickerHandler2 handler, IPicker picker)
@@ -149,13 +149,13 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 
 	void ShowDialog()
 	{
-		if (PlatformView.Clickable)
+		if (PlatformView.Picker.Clickable)
 		{
-			PlatformView.CallOnClick();
+			PlatformView.Picker.CallOnClick();
 		}
 		else
 		{
-			OnClick(PlatformView, EventArgs.Empty);
+			OnClick(PlatformView.Picker, EventArgs.Empty);
 		}
 	}
 
@@ -163,6 +163,9 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 	{
 		if (_dialog is null && VirtualView is not null)
 		{
+			PlatformView.Picker.FocusableInTouchMode = true;
+			PlatformView.Picker.RequestFocus();
+
 			CreatePickerDialog();
 			ShowPickerDialog();
 		}
@@ -227,7 +230,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			return;
 		}
 
-		_dialog.UpdateFlowDirection(PlatformView);
+		_dialog.UpdateFlowDirection(PlatformView.Picker);
 		_dialog.SetCanceledOnTouchOutside(true);
 
 		_dialog.ShowEvent += OnDialogShown;
@@ -252,8 +255,15 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		// Clean up ALL event handlers before nulling the reference
 		_dialog.ShowEvent -= OnDialogShown;  // Remove ShowEvent handler to prevent leak
 		_dialog.DismissEvent -= OnDialogDismiss;
-		VirtualView.IsFocused = false;
-		VirtualView.IsOpen = false;
+		PlatformView?.Picker.ClearFocus();
+		PlatformView?.Picker.FocusableInTouchMode = false;
+
+		if (VirtualView is { } picker)
+		{
+			picker.IsFocused = false;
+			picker.IsOpen = false;
+		}
+
 		_dialog = null;
 	}
 
