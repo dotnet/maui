@@ -22,7 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task BindingContextMoveDuringNativeLayoutDefersSnapshotAndNotification()
 		{
-			var items = new ObservableCollection<string> { "a", "b", "c" };
+			// CreateHandler measures/arranges the native view and may bind templates
+			// before returning. Start empty so no callback can access the captured
+			// handler/source/observer until they have all been initialized below.
+			var items = new ObservableCollection<string>();
 			var view = CreateCollectionView(items);
 			RecyclerView recyclerView = null;
 			IItemsViewSource source = null;
@@ -53,6 +56,11 @@ namespace Microsoft.Maui.DeviceTests
 				source = adapter.ItemsSource;
 				using (observer = new RecordingObserver(recyclerView, source, 1))
 				{
+					items.Add("a");
+					items.Add("b");
+					items.Add("c");
+					AssertItems(source, "a", "b", "c");
+					Assert.False(reentered, "The regression callback must run in the explicit native layout below.");
 					adapter.RegisterAdapterDataObserver(observer);
 					try
 					{
