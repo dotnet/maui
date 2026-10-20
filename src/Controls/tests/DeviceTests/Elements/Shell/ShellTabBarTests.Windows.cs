@@ -183,6 +183,47 @@ namespace Microsoft.Maui.DeviceTests
 			}, singleTabCount: 2, tabBarWidth: 150);
 		}
 
+		[Fact(DisplayName = "Tab With Several ShellContents Only Expands In New TabBar Overflow Menu After Template Is Applied Again")]
+		public async Task TabWithSeveralShellContentsOnlyExpandsInNewTabBarOverflowMenuAfterTemplateIsAppliedAgain()
+		{
+			// https://github.com/dotnet/maui/issues/37985
+			// Applying the template again creates a new overflow menu, the handler has to follow it
+			var nestedTab = new Tab()
+			{
+				Title = "Nested",
+				Items =
+				{
+					new ShellContent() { Title = "Sub A", Content = new ContentPage() },
+					new ShellContent() { Title = "Sub B", Content = new ContentPage() }
+				}
+			};
+
+			await RunTabBarOverflowMenuTest(nestedTab, async (shell, navView, overflowButton) =>
+			{
+				var nestedItem = await OpenOverflowMenuAndGetItem(navView, overflowButton, nestedTab);
+				Assert.False(nestedItem.SelectsOnInvoked, "Clicking \"Nested\" in the overflow menu selects it");
+				overflowButton.Flyout.Hide();
+				await AssertEventually(() => !overflowButton.Flyout.IsOpen, message: "The overflow menu did not close");
+
+				var template = navView.Template;
+				navView.Template = null;
+				navView.Template = template;
+				navView.ApplyTemplate();
+
+				WButton newOverflowButton = null;
+				await AssertEventually(() => (newOverflowButton = navView.GetDescendantByName<WButton>("TopNavOverflowButton")) is not null && newOverflowButton != overflowButton && newOverflowButton.Visibility == UI.Xaml.Visibility.Visible, message: "The tab bar has no new overflow menu");
+
+				nestedItem = await OpenOverflowMenuAndGetItem(navView, newOverflowButton, nestedTab);
+				Assert.False(nestedItem.SelectsOnInvoked, "Clicking \"Nested\" in the new overflow menu selects it");
+
+				ClickNavigationViewItem(nestedItem);
+
+				// The tab only expands to show its sub tabs, the current page stays the same
+				Assert.True(nestedItem.IsExpanded);
+				Assert.Equal(shell.CurrentItem.Items[0], shell.CurrentItem.CurrentItem);
+			});
+		}
+
 		// Tabs with one ShellContent each and then lastTab, in a tab bar narrow enough
 		// to push the last tabs into the overflow menu
 		async Task RunTabBarOverflowMenuTest(Tab lastTab, Func<Shell, MauiNavigationView, WButton, Task> runTest, int singleTabCount = 7, double tabBarWidth = 400)
@@ -219,7 +260,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					overflowButton.Flyout.Hide();
+					// The test can apply the template again, so look the button up again
+					navView.GetDescendantByName<WButton>("TopNavOverflowButton")?.Flyout.Hide();
 				}
 			});
 		}
