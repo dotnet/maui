@@ -15,8 +15,8 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
-  <!-- Set this when the iOS 27.1 UIKit bindings flow into MAUI's macios dependency. -->
   <PropertyGroup>
+    <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == '' and '$(_MauiTargetPlatformIsiOS)' == 'True' and $([MSBuild]::VersionGreaterThanOrEquals('$(IosTargetFrameworkVersion)', '27.1'))">true</IosDuoBindingsAvailable>
     <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == ''">false</IosDuoBindingsAvailable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True' and '$(IosDuoBindingsAvailable)' == 'true'">
