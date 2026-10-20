@@ -16,17 +16,28 @@ public class Issue17389 : _IssuesUITest
 
 	public override string Issue => "InputTransparent should not affect background color on Windows layouts";
 
+	public override IConfig GetTestConfig()
+	{
+		var config = base.GetTestConfig();
+		if (_testDevice == TestDevice.Mac)
+			ConfigureTapLog(config);
+		return config;
+	}
+
 	public override void LaunchAppWithTest()
 	{
 		if (App is AppiumCatalystApp catalystApp)
-		{
-			tapLogPath = Path.Combine(
-				Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY") ?? TestContext.CurrentContext.WorkDirectory,
-				$"Issue17389-{Guid.NewGuid():N}.log");
-			catalystApp.Config.SetTestConfigurationArg("ISSUE17389_TAP_LOG", tapLogPath);
-		}
+			ConfigureTapLog(catalystApp.Config);
 
 		base.LaunchAppWithTest();
+	}
+
+	void ConfigureTapLog(IConfig config)
+	{
+		tapLogPath ??= Path.Combine(
+			Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY") ?? TestContext.CurrentContext.WorkDirectory,
+			$"Issue17389-{Guid.NewGuid():N}.log");
+		config.SetTestConfigurationArg("ISSUE17389_TAP_LOG", tapLogPath);
 	}
 
 	[TearDown]
@@ -40,11 +51,8 @@ public class Issue17389 : _IssuesUITest
 		}
 	}
 
-	[TestCase("baseline")]
-	[TestCase("green-first")]
-	[TestCase("activate")]
-	[TestCase("physical-center")]
-	[TestCase("physical-lower")]
+	[TestCase("native")]
+	[TestCase("physical")]
 	[Order(1)]
 	[Category(UITestCategories.Layout)]
 	public void ValidateBackgroundColorDoesNotAffectInputTransparent(string control)
@@ -59,32 +67,9 @@ public class Issue17389 : _IssuesUITest
 			 "PurpleContent"
 		};
 
-		if (control == "green-first")
-			(layouts[0], layouts[1]) = (layouts[1], layouts[0]);
-
-		if (control == "activate")
-		{
-			Assert.That(App, Is.InstanceOf<AppiumCatalystApp>());
-			((AppiumCatalystApp)App).Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
-			{
-				{ "bundleId", "com.microsoft.maui.uitests" }
-			});
-		}
-
 		foreach (var layout in layouts)
 		{
-			if (layout == "RedGrid" && (control == "physical-center" || control == "physical-lower"))
-			{
-				var rect = App.FindElement(layout).GetRect();
-				var x = rect.X + rect.Width / 2;
-				var y = rect.Y + rect.Height * (control == "physical-center" ? 0.5 : 0.75);
-				TestContext.WriteLine($"Physical tap {layout}: ({x}, {y}); rect={rect}");
-				App.TapCoordinates((float)x, (float)y);
-			}
-			else
-			{
-				App.Tap(layout);
-			}
+			TapLayout(layout, control == "physical");
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Enabled tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
@@ -93,11 +78,25 @@ public class Issue17389 : _IssuesUITest
 
 		foreach (var layout in layouts)
 		{
-			App.Tap(layout);
+			TapLayout(layout, control == "physical");
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Transparent tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
 		App.WaitForElement("Tap count: 0");
+	}
+
+	void TapLayout(string layout, bool usePhysicalCenter)
+	{
+		if (usePhysicalCenter && App is AppiumCatalystApp)
+		{
+			// Native static-text clicks can succeed without delivering the gesture on Catalyst.
+			var rect = App.WaitForElementAndGetRect(layout);
+			App.TapCoordinates(rect.CenterX(), rect.CenterY());
+		}
+		else
+		{
+			App.Tap(layout);
+		}
 	}
 
 	[Test, Order(2)]

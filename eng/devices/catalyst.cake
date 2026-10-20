@@ -194,12 +194,68 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 			throw new Exception($"Issue17389 discovery failed (exit {discoveryExitCode}): {string.Join(Environment.NewLine, discoveryOutput)}");
 
 		var discovered = System.IO.File.ReadAllLines(discoveryPath).Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
-		var controls = new[] { "baseline", "green-first", "activate", "physical-center", "physical-lower" };
+		var controls = new[] { "native", "physical" };
 		foreach (var test in discovered)
 			Information("Discovered diagnostic case: {0}", test);
 		if (discovered.Count != controls.Length ||
 			controls.Any(control => !discovered.Any(test => test.EndsWith($"ValidateBackgroundColorDoesNotAffectInputTransparent(\"{control}\")"))))
-			throw new Exception("Issue17389 discovery did not match exactly the five intended causal controls.");
+			throw new Exception("Issue17389 discovery did not match exactly the two intended causal paths.");
+
+		var arms = new[] { "native-baseline", "pointer-fix", "native-restored" };
+		bool hadFailure = false;
+		bool evidenceMismatch = false;
+		foreach (var arm in arms)
+		{
+			string control = arm == "pointer-fix" ? "physical" : "native";
+			for (int attempt = 1; attempt <= 3; attempt++)
+			{
+				var caseResultName = $"{resultsFileName}-{arm}-{attempt}";
+				var caseResultsPath = System.IO.Path.Combine(resultsDir, $"{caseResultName}.trx");
+				SetEnvironmentVariable("APPIUM_LOG_FILE", $"{binDir}/appium-{arm}-{attempt}.log");
+				try
+				{
+					RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
+						resultsFileNameWithoutExtension: caseResultName,
+						filter: $"({testFilter})&(FullyQualifiedName~{control})");
+				}
+				catch (CakeException exception)
+				{
+					hadFailure = true;
+					Warning("Causal arm {0}, attempt {1}: {2}", arm, attempt, exception.Message);
+					if (!System.IO.File.Exists(caseResultsPath))
+						throw;
+				}
+
+				var document = System.Xml.Linq.XDocument.Load(caseResultsPath);
+				System.Xml.Linq.XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+				var results = document.Descendants(ns + "UnitTestResult").ToList();
+				if (results.Count != 1 ||
+					(string)results[0].Attribute("testName") != $"ValidateBackgroundColorDoesNotAffectInputTransparent(\"{control}\")")
+					throw new Exception("Causal process did not execute exactly its intended single case.");
+
+				var outcome = (string)results[0].Attribute("outcome");
+				Information("Causal result {0}/{1}: {2}", arm, attempt, outcome);
+				if (control == "physical")
+				{
+					evidenceMismatch |= outcome != "Passed";
+				}
+				else
+				{
+					var message = results[0].Descendants(ns + "Message").FirstOrDefault()?.Value ?? "";
+					var output = results[0].Descendants(ns + "StdOut").FirstOrDefault()?.Value ?? "";
+					evidenceMismatch |= outcome != "Failed" ||
+						!message.Contains("Timed out waiting for element") ||
+						!output.Contains("Enabled tap RedGrid: Tap count: 0") ||
+						!output.Contains("Enabled tap PurpleContent: Tap count: 3");
+				}
+			}
+		}
+
+		if (evidenceMismatch)
+			throw new Exception("Causal evidence did not establish repeated native-red / pointer-green / native-restored-red.");
+		if (hadFailure)
+			throw new Exception("Causal evidence collected; the expected failing native controls remain failing tests.");
+		return;
 	}
 
 	Information("Run UITests project {0}", project);

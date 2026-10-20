@@ -113,7 +113,6 @@ public class Issue17389 : TestContentPage
 
 	void AddTapGesture(View view, string receiver)
 	{
-		view.Loaded += (_, _) => view.Dispatcher.Dispatch(() => WriteNativeTapDiagnostic(view, receiver));
 		view.GestureRecognizers.Add(new TapGestureRecognizer
 		{
 			Command = new Command(() =>
@@ -124,21 +123,6 @@ public class Issue17389 : TestContentPage
 				WriteTapDiagnostic($"{receiver}: {previousCount} -> {tapCount}; InputTransparent={view.InputTransparent}; IsEnabled={view.IsEnabled}");
 			})
 		});
-	}
-
-	void WriteNativeTapDiagnostic(View view, string receiver)
-	{
-#if MACCATALYST
-		if (view.Handler?.PlatformView is not UIKit.UIView native || native.Window is not { } window)
-		{
-			WriteTapDiagnostic($"Native {receiver}: view/window unavailable");
-			return;
-		}
-
-		var center = native.ConvertPointToView(new CoreGraphics.CGPoint(native.Bounds.Width / 2, native.Bounds.Height / 2), window);
-		var hit = window.HitTest(center, null);
-		WriteTapDiagnostic($"Native {receiver}: bounds={native.Bounds}; centerInWindow={center}; hit={hit?.GetType().Name}/{hit?.AccessibilityIdentifier}; UserInteractionEnabled={native.UserInteractionEnabled}; IsKeyWindow={window.IsKeyWindow}; Scene={window.WindowScene?.ActivationState}; App={UIKit.UIApplication.SharedApplication.ApplicationState}");
-#endif
 	}
 
 	void WriteTapDiagnostic(string message)
