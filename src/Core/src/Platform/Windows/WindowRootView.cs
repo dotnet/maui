@@ -468,6 +468,18 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			if (_titleBar is IView titleBarView && titleBarView.Handler?.MauiContext is { } currentContext && currentContext != mauiContext)
+			{
+				if (currentContext.GetNavigationRootManager()?.RootView is WindowRootView currentRootView &&
+					!ReferenceEquals(currentRootView, this) &&
+					ReferenceEquals(currentRootView.TitleBar, titlebar))
+				{
+					currentRootView.SetTitleBar(null, null);
+				}
+
+				titleBarView.DisconnectHandlers();
+			}
+
 			var handler = _titleBar?.ToHandler(mauiContext);
 			if (handler is not null &&
 				handler.PlatformView is not null)

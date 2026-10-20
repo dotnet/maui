@@ -15,17 +15,17 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = this;
 		}
 
-		void OnNewWindowClicked(object sender, EventArgs e)
+		void OnNewWindowClicked(object? sender, EventArgs e)
 		{
 			Application.Current!.OpenWindow(new Window(new MultiWindowPage()));
 		}
 
-		void OnCloseWindowClicked(object sender, EventArgs e)
+		void OnCloseWindowClicked(object? sender, EventArgs e)
 		{
 			Application.Current!.CloseWindow(Window);
 		}
 
-		void ActivateWindowClicked(object sender, EventArgs e)
+		void ActivateWindowClicked(object? sender, EventArgs e)
 		{
 			IReadOnlyList<Window> windows = Application.Current!.Windows;
 
@@ -44,24 +44,24 @@ namespace Maui.Controls.Sample.Pages
 			Application.Current!.ActivateWindow(windowToActivate);
 		}
 
-		async void OnOpenDialogClicked(object sender, EventArgs e)
+		async void OnOpenDialogClicked(object? sender, EventArgs e)
 		{
 			await DisplayAlertAsync("Information", "The dialog should open by Window.", "Ok");
 		}
 
-		void OnSetMaxSize(object sender, EventArgs e)
+		void OnSetMaxSize(object? sender, EventArgs e)
 		{
 			Window.MaximumWidth = 800;
 			Window.MaximumHeight = 600;
 		}
 
-		void OnSetMinSize(object sender, EventArgs e)
+		void OnSetMinSize(object? sender, EventArgs e)
 		{
 			Window.MinimumWidth = 640;
 			Window.MinimumHeight = 480;
 		}
 
-		void OnSetFreeSize(object sender, EventArgs e)
+		void OnSetFreeSize(object? sender, EventArgs e)
 		{
 			Window.MaximumWidth = double.PositiveInfinity;
 			Window.MaximumHeight = double.PositiveInfinity;
@@ -70,13 +70,13 @@ namespace Maui.Controls.Sample.Pages
 			Window.MinimumHeight = -1d;
 		}
 
-		void OnSetCustomSize(object sender, EventArgs e)
+		void OnSetCustomSize(object? sender, EventArgs e)
 		{
 			Window.Width = 700;
 			Window.Height = 500;
 		}
 
-		void OnCenterWindow(object sender, EventArgs e)
+		void OnCenterWindow(object? sender, EventArgs e)
 		{
 			var disp = DeviceDisplay.MainDisplayInfo;
 
@@ -84,12 +84,12 @@ namespace Maui.Controls.Sample.Pages
 			Window.Y = (disp.Height / disp.Density - Window.Height) / 2;
 		}
 
-		void isMinimizableSwitch_Toggled(object sender, ToggledEventArgs e)
+		void isMinimizableSwitch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			Window.IsMinimizable = e.Value;
 		}
 
-		void isMaximizableSwitch_Toggled(object sender, ToggledEventArgs e)
+		void isMaximizableSwitch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			Window.IsMaximizable = e.Value;
 		}

@@ -119,5 +119,46 @@ namespace Tests
 			var result = Microsoft.Maui.WebUtils.RemovePossibleQueryString(input);
 			Assert.Equal(expected, result);
 		}
+
+		// ============================================================
+		// CanHandleCallback
+		// ============================================================
+
+		[Theory]
+		[InlineData("maui-auth://", "maui-auth://callback?code=123", true)]
+		[InlineData("MAUI-AUTH://", "maui-auth://callback?code=123", true)]
+		[InlineData("maui-auth://callback", "MAUI-AUTH://CALLBACK?code=123", true)]
+		[InlineData("maui-auth://callback", "maui-auth://other?code=123", false)]
+		[InlineData("maui-auth://callback", "other-auth://callback?code=123", false)]
+		[InlineData("https://Example.COM/callback", "HTTPS://example.com/callback?code=123#state=abc", true)]
+		[InlineData("https://example.com/callback", "https://example.com/Callback", false)]
+		[InlineData("https://example.com/callback", "https://example.com/callback/child", false)]
+		[InlineData("https://example.com/callback", "https://example.com:443/callback", true)]
+		[InlineData("https://example.com:8443/callback", "https://example.com:8443/callback", true)]
+		[InlineData("https://example.com:8443/callback", "https://example.com:9443/callback", false)]
+		[InlineData("maui-auth://host", "maui-auth://host:0", false)]
+		[InlineData("https://example.com/callback", "https://example.com/callback/", false)]
+		[InlineData("https://example.com/", "https://example.com/another/path", true)]
+		[InlineData("maui-auth:/callback", "maui-auth:/callback?code=123", true)]
+		[InlineData("maui-auth:/callback", "maui-auth:/Callback?code=123", false)]
+		[InlineData("maui-auth:/callback%20complete", "maui-auth:/callback%20complete?code=123", true)]
+		[InlineData("maui-auth:/callback%20complete", "maui-auth:/callback complete?code=123", true)]
+		public void CanHandleCallback_ReturnsExpected(string expectedUrl, string callbackUrl, bool expected)
+		{
+			var result = Microsoft.Maui.WebUtils.CanHandleCallback(new Uri(expectedUrl), new Uri(callbackUrl));
+
+			Assert.Equal(expected, result);
+		}
+
+		[Fact]
+		public void CanHandleCallback_RejectsRelativeUris()
+		{
+			Assert.False(Microsoft.Maui.WebUtils.CanHandleCallback(
+				new Uri("callback", UriKind.Relative),
+				new Uri("maui-auth:/callback")));
+			Assert.False(Microsoft.Maui.WebUtils.CanHandleCallback(
+				new Uri("maui-auth:/callback"),
+				new Uri("callback", UriKind.Relative)));
+		}
 	}
 }

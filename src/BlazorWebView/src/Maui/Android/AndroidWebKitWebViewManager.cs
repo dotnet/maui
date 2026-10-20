@@ -74,7 +74,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
 		{
 			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
-			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+
+			// Deliberately goes through the same public seam an external backend uses, so the in-box
+			// handlers dogfood it. The caller owns the response, so applying the content is done here.
+			var hotReloadedResult = BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+				_contentRootRelativeToAppRoot, uri, out var hotReloadedContent, out var hotReloadedContentType);
+			if (hotReloadedResult)
+			{
+				statusCode = 200;
+				content?.Dispose();
+				content = hotReloadedContent!;
+				if (hotReloadedContentType is not null)
+				{
+					headers["Content-Type"] = hotReloadedContentType;
+				}
+			}
+
 			return defaultResult || hotReloadedResult;
 		}
 

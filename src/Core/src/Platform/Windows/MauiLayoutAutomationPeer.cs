@@ -5,14 +5,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
-	// NOTE: This type is intentionally `internal` on net10/main, because the `main` branch does not
-	// accept new public API. The net11 counterpart of this change —
-	// https://github.com/dotnet/maui/pull/35597 — makes MauiLayoutAutomationPeer public (class +
-	// constructor + the protected overrides) and adds the matching net-windows PublicAPI entries.
-	// When this flows forward to net11, promote this type and its constructor to public to match #35597.
-	internal partial class MauiLayoutAutomationPeer : FrameworkElementAutomationPeer
+	public partial class MauiLayoutAutomationPeer : FrameworkElementAutomationPeer
 	{
-		internal MauiLayoutAutomationPeer(LayoutPanel owner) : base(owner) { }
+		public MauiLayoutAutomationPeer(LayoutPanel owner) : base(owner) { }
 
 		// Returns the cross-platform layout type name (e.g. "Grid", "VerticalStackLayout") so
 		// accessibility tools can distinguish between different layout types. Falls back to "Panel"

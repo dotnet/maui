@@ -4,11 +4,20 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Toolbar : Maui.IToolbar, INotifyPropertyChanged
+	internal enum ToolbarNavigationIconKind
+	{
+		None,
+		TitleIcon,
+		DrawerToggle,
+		BackButton,
+	}
+
+	public partial class Toolbar : Maui.IToolbar, Maui.IToolbarDrawerToggleVisible, INotifyPropertyChanged
 	{
 		VisualElement _titleView;
 		string _title;
@@ -17,6 +26,7 @@ namespace Microsoft.Maui.Controls
 		Brush _barBackground;
 		ImageSource _titleIcon;
 		string _backButtonTitle;
+		string _backButtonAccessibilityLabel;
 		double? _barHeight;
 		IEnumerable<ToolbarItem> _toolbarItems;
 		bool _dynamicOverflowEnabled;
@@ -24,6 +34,7 @@ namespace Microsoft.Maui.Controls
 		bool _backButtonVisible;
 		bool _backButtonEnabled = true;
 		bool _drawerToggleVisible;
+		int _navigationIconUpdateGeneration;
 		Maui.IElement _parent;
 		IElementHandler _handler;
 
@@ -35,6 +46,7 @@ namespace Microsoft.Maui.Controls
 		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }
 		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
+		public string BackButtonAccessibilityLabel { get => _backButtonAccessibilityLabel; set => SetProperty(ref _backButtonAccessibilityLabel, value); }
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
 		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
 		public virtual Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
@@ -46,6 +58,39 @@ namespace Microsoft.Maui.Controls
 		public bool BackButtonEnabled { get => _backButtonEnabled; set => SetProperty(ref _backButtonEnabled, value); }
 		public virtual bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
+		internal ToolbarNavigationIconKind NavigationIconKind =>
+			BackButtonVisible ? ToolbarNavigationIconKind.BackButton :
+			DrawerToggleVisible ? ToolbarNavigationIconKind.DrawerToggle :
+			TitleIcon is not null ? ToolbarNavigationIconKind.TitleIcon :
+			ToolbarNavigationIconKind.None;
+
+		internal int BeginNavigationIconUpdate() =>
+			Interlocked.Increment(ref _navigationIconUpdateGeneration);
+
+		internal bool IsCurrentTitleIconUpdate(int generation, ImageSource source) =>
+			generation == Volatile.Read(ref _navigationIconUpdateGeneration) &&
+			ReferenceEquals(source, TitleIcon) &&
+			NavigationIconKind == ToolbarNavigationIconKind.TitleIcon;
+
+		internal void ForwardNavigationIconStateTo(Toolbar destination)
+		{
+			if (BackButtonVisible)
+			{
+				destination.BackButtonVisible = true;
+				destination.DrawerToggleVisible = DrawerToggleVisible;
+			}
+			else if (DrawerToggleVisible)
+			{
+				destination.DrawerToggleVisible = true;
+				destination.BackButtonVisible = false;
+			}
+			else
+			{
+				destination.BackButtonVisible = false;
+				destination.DrawerToggleVisible = false;
+			}
+		}
+
 		public IElementHandler Handler
 		{
 			get => _handler;
@@ -75,6 +120,13 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			backingStore = value;
+			NotifyPropertyChanged(propertyName);
+		}
+
+		// Used by derived toolbars that assign a backing field directly (to keep a specific update ordering)
+		// but still need the handler and PropertyChanged subscribers to observe the change afterwards.
+		private protected void NotifyPropertyChanged(string propertyName)
+		{
 			Handler?.UpdateValue(propertyName);
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

@@ -19,5 +19,7 @@ namespace Microsoft.Maui.Controls.Maps
 		float IStroke.StrokeDashOffset => throw new NotImplementedException();
 
 		float IStroke.StrokeMiterLimit => throw new NotImplementedException();
+
+		void IMapElement.Clicked() => throw new NotImplementedException();
 	}
 }

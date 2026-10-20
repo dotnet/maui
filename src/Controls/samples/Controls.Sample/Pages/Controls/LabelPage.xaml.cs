@@ -17,12 +17,12 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = new LabelViewModel();
 		}
 
-		void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+		void TapGestureRecognizer_Tapped(object? sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(GestureSpan);
 		}
 
-		void ChangeFormattedString_Clicked(object sender, EventArgs e)
+		void ChangeFormattedString_Clicked(object? sender, EventArgs e)
 		{
 			labelFormattedString.FormattedText = new FormattedString
 			{
@@ -41,26 +41,26 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnLink1Tapped(object sender, EventArgs e)
+		void OnLink1Tapped(object? sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(Link1);
 		}
 
-		void OnLink2Tapped(object sender, EventArgs e)
+		void OnLink2Tapped(object? sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(Link2);
 		}
 
-		void OnLink3Tapped(object sender, EventArgs e)
+		void OnLink3Tapped(object? sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(Link3);
 		}
-		void OnLink4Tapped(object sender, EventArgs e)
+		void OnLink4Tapped(object? sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(Link4);
 		}
 
-		void OnLink5Tapped(object sender, EventArgs e)
+		void OnLink5Tapped(object? sender, EventArgs e)
 		{
 			SetRandomBackgroundColor(Link5);
 		}

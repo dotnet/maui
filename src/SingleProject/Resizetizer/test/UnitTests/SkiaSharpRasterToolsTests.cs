@@ -2,27 +2,22 @@ using System;
 using System.IO;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class SkiaSharpRasterToolsTests
 	{
-		public class Resize : IDisposable
+		public class Resize : BaseTest
 		{
 			readonly string DestinationFilename;
 			readonly TestLogger Logger;
 
-			public Resize()
+			public Resize(ITestOutputHelper output) : base(output)
 			{
-				DestinationFilename = Path.GetTempFileName();
+				Directory.CreateDirectory(DestinationDirectory);
+				DestinationFilename = Path.Combine(DestinationDirectory, "output.png");
 				Logger = new TestLogger();
-			}
-
-			public void Dispose()
-			{
-				//Logger.Persist();
-				//File.Copy(DestinationFilename, "output.png", true);
-				File.Delete(DestinationFilename);
 			}
 
 			[Fact]
@@ -31,7 +26,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.Resize = false;
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -50,7 +45,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -69,7 +64,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 0.5m);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -88,7 +83,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -110,7 +105,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.BaseSize = new SKSize(512, 512);
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -132,7 +127,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.BaseSize = new SKSize(512, 512);
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 0.5m);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -154,7 +149,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.TintColor = SKColors.Red;
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -174,7 +169,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.TintColor = SKColors.Red.WithAlpha(127);
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -194,7 +189,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.TintColor = SKColors.Red;
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -214,7 +209,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.TintColor = SKColors.Red;
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -236,7 +231,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.TintColor = SKColors.Red.WithAlpha(127);
-				var tools = new SkiaSharpRasterTools(info, Logger);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -250,6 +245,223 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(37, 137));
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(81, 137));
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(125, 137));
+			}
+		}
+
+		public class ResizeQualityTests : BaseTest
+		{
+			readonly string DestinationFilename;
+			readonly string DestinationFilename2;
+			readonly TestLogger Logger;
+
+			public ResizeQualityTests(ITestOutputHelper output) : base(output)
+			{
+				Directory.CreateDirectory(DestinationDirectory);
+				DestinationFilename = Path.Combine(DestinationDirectory, "output.png");
+				DestinationFilename2 = Path.Combine(DestinationDirectory, "output2.png");
+				Logger = new TestLogger();
+			}
+
+			[Fact]
+			public void DefaultQualityMapsToLinearMipmapSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void AutoQualityMapsToLinearMipmapSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Auto;
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void BestQualityMapsToMitchellCubicSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Best;
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKCubicResampler.Mitchell),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void FastestQualityMapsToNearestNeighborSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Fastest;
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void ResizeWithFastestQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Fastest;
+				info.BaseSize = new SKSize(100, 100);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+
+			[Fact]
+			public void ResizeWithBestQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Best;
+				info.BaseSize = new SKSize(100, 100);
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+
+			[Fact]
+			public void DefaultQualityProducesIdenticalOutputToExplicitAuto()
+			{
+				// Resize with default (no Quality set)
+				var infoDefault = new ResizeImageInfo();
+				infoDefault.Filename = "images/camera.png";
+				infoDefault.BaseSize = new SKSize(200, 200);
+				using var toolsDefault = new SkiaSharpRasterTools(infoDefault, Logger);
+				var dpiPath = new DpiPath("", 1);
+				toolsDefault.Resize(dpiPath, DestinationFilename);
+
+				// Resize with explicit Auto
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.png";
+				infoAuto.BaseSize = new SKSize(200, 200);
+				infoAuto.Quality = ResizeQuality.Auto;
+				using var toolsAuto = new SkiaSharpRasterTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				// Pixel-by-pixel comparison: must be identical
+				using var bmpDefault = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpDefault.Width, bmpAuto.Width);
+				Assert.Equal(bmpDefault.Height, bmpAuto.Height);
+
+				for (int y = 0; y < bmpDefault.Height; y++)
+				{
+					for (int x = 0; x < bmpDefault.Width; x++)
+					{
+						Assert.Equal(bmpDefault.GetPixel(x, y), bmpAuto.GetPixel(x, y));
+					}
+				}
+			}
+
+			[Fact]
+			public void DifferentQualitiesProduceDifferentPixelOutput()
+			{
+				// When downscaling, Fastest (nearest neighbor) vs Auto (bilinear+mipmaps)
+				// should produce measurably different pixel data
+				var dpiPath = new DpiPath("", 1);
+
+				var infoFastest = new ResizeImageInfo();
+				infoFastest.Filename = "images/camera.png";
+				infoFastest.BaseSize = new SKSize(100, 100);
+				infoFastest.Quality = ResizeQuality.Fastest;
+				using var toolsFastest = new SkiaSharpRasterTools(infoFastest, Logger);
+				toolsFastest.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.png";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				using var toolsAuto = new SkiaSharpRasterTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
+
+				BaseTest.AssertPixelsDiffer(bmpFastest.Pixels, bmpAuto.Pixels,
+					"Fastest and Auto should produce different pixel output when downscaling");
+			}
+
+			[Fact]
+			public void BestQualityProducesDifferentPixelOutputThanAuto()
+			{
+				// Best uses Mitchell cubic vs Auto uses bilinear+mipmaps
+				var dpiPath = new DpiPath("", 1);
+
+				var infoBest = new ResizeImageInfo();
+				infoBest.Filename = "images/camera.png";
+				infoBest.BaseSize = new SKSize(100, 100);
+				infoBest.Quality = ResizeQuality.Best;
+				using var toolsBest = new SkiaSharpRasterTools(infoBest, Logger);
+				toolsBest.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.png";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				using var toolsAuto = new SkiaSharpRasterTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpBest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpBest.Width, bmpAuto.Width);
+				Assert.Equal(bmpBest.Height, bmpAuto.Height);
+
+				BaseTest.AssertPixelsDiffer(bmpBest.Pixels, bmpAuto.Pixels,
+					"Best (Mitchell cubic) and Auto (bilinear) should produce different pixel output");
+			}
+
+			[Theory]
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void AllQualitiesProduceCorrectlySizedOutput(string qualityName)
+			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.BaseSize = new SKSize(256, 256);
+				info.Quality = quality;
+				using var tools = new SkiaSharpRasterTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(256, resultImage.Width);
+				Assert.Equal(256, resultImage.Height);
 			}
 		}
 	}

@@ -116,10 +116,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IAppInfo Current =>
-			currentImplementation ??= new AppInfoImplementation();
+			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new AppInfoImplementation());
 
 		internal static void SetCurrent(IAppInfo? implementation) =>
-			currentImplementation = implementation;
+			EssentialsImplementation.Set(ref currentImplementation, implementation);
 	}
 
 	/// <summary>

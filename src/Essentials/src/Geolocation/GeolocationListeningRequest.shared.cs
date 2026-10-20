@@ -43,6 +43,12 @@ namespace Microsoft.Maui.Devices.Sensors
 		public TimeSpan MinimumTime { get; set; } = TimeSpan.FromSeconds(1);
 
 		/// <summary>
+		/// Minimum distance in meters between location updates being sent. A value of 0 indicates
+		/// no minimum distance filter. This value must be greater than or equal to 0.
+		/// </summary>
+		public double MinimumDistance { get; set; }
+
+		/// <summary>
 		/// The desired minimum accuracy for the location updates being sent. Locations that don't
 		/// satisfy this accuracy are not sent using the event handler.
 		/// </summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Handlers;
 
@@ -9,7 +10,7 @@ internal abstract class ElementHandlerAttribute : Attribute
 	public abstract Type HandlerType { get; }
 }
 
-internal sealed class ElementHandlerAttribute<THandler> : ElementHandlerAttribute
+internal sealed class ElementHandlerAttribute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] THandler> : ElementHandlerAttribute
 	where THandler : IElementHandler, new()
 {
 	public override IElementHandler CreateHandler() => new THandler();

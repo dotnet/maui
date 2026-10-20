@@ -49,7 +49,7 @@ jobs:
       Write-Host "##vso[task.setvariable variable=ReleaseDropPrefix]$dropPrefix"
     displayName: Set variable ReleaseDropPrefix
 
-  # Download nugets drop created by nuget-msi-convert/job/v4.yml and publish to maestro
+  # Download nugets drop created by WiX 6 MSI generation and publish to maestro
   - task: ms-vscs-artifact.build-tasks.artifactDropDownloadTask-1.artifactDropDownloadTask@1
     displayName: Download $(ReleaseDropPrefix)/nugets
     inputs:

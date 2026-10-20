@@ -295,5 +295,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotEqual(modalPageToolBar, rootPageToolbar);
 
 		}
+		[Fact]
+		public void NavigationPageSetBackButtonAccessibilityLabel()
+		{
+			var page = new ContentPage();
+			NavigationPage.SetBackButtonAccessibilityLabel(page, "Go Back");
+			Assert.Equal("Go Back", NavigationPage.GetBackButtonAccessibilityLabel(page));
+		}
+
+		[Fact]
+		public void NavigationPageBackButtonAccessibilityLabelDefaultIsNull()
+		{
+			var page = new ContentPage();
+			Assert.Null(NavigationPage.GetBackButtonAccessibilityLabel(page));
+		}
+
+		[Fact]
+		public async Task NavigationPageBackButtonAccessibilityLabelPropagatesToToolbar()
+		{
+			var window = new TestWindow();
+			IToolbarElement toolbarElement = window;
+			var navPage = new NavigationPage(new ContentPage());
+			window.Page = navPage;
+
+			var page = new ContentPage();
+			NavigationPage.SetBackButtonAccessibilityLabel(page, "Return");
+			await navPage.PushAsync(page);
+
+			var toolbar = (Toolbar)toolbarElement.Toolbar;
+			Assert.Equal("Return", toolbar.BackButtonAccessibilityLabel);
+		}
 	}
 }

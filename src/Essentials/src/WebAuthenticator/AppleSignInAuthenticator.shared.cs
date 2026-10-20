@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Authentication
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IAppleSignInAuthenticator Default =>
-			defaultImplementation ??= new AppleSignInAuthenticatorImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new AppleSignInAuthenticatorImplementation());
 
 		internal static void SetDefault(IAppleSignInAuthenticator? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 
 		/// <summary>
 		/// Represents additional options for Apple Sign In.
