@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -592,62 +591,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Verify the handler was collected
 			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
-		}
-
-		[Fact]
-		public Task DefaultItemsLayoutLifetimeBaselineControl1() =>
-			CollectionViewDoesNotLeakWithDefaultItemsLayout();
-
-		[Fact]
-		public Task DefaultItemsLayoutLifetimeBaselineControl2() =>
-			CollectionViewDoesNotLeakWithDefaultItemsLayout();
-
-		[Fact]
-		public Task DefaultItemsLayoutLifetimeBaselineControl3() =>
-			CollectionViewDoesNotLeakWithDefaultItemsLayout();
-
-		[Fact]
-		public Task DefaultItemsLayoutLifetimeIsolatedControl1() =>
-			RunDefaultItemsLayoutLifetimeIsolatedControl();
-
-		[Fact]
-		public Task DefaultItemsLayoutLifetimeIsolatedControl2() =>
-			RunDefaultItemsLayoutLifetimeIsolatedControl();
-
-		[Fact]
-		public Task DefaultItemsLayoutLifetimeIsolatedControl3() =>
-			RunDefaultItemsLayoutLifetimeIsolatedControl();
-
-		async Task RunDefaultItemsLayoutLifetimeIsolatedControl()
-		{
-			SetupBuilder();
-
-			var (weakCollectionView, weakHandler) =
-				await InvokeOnMainThreadAsync(CreateAndDisconnectCollectionViewWithDefaultItemsLayout);
-
-			await AssertionExtensions.WaitForGC(weakCollectionView, weakHandler);
-
-			Assert.False(weakCollectionView.IsAlive, "CollectionView should have been garbage collected");
-			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
-		}
-
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		(WeakReference CollectionView, WeakReference Handler) CreateAndDisconnectCollectionViewWithDefaultItemsLayout()
-		{
-			var collectionView = new CollectionView
-			{
-				ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
-
-			var weakCollectionView = new WeakReference(collectionView);
-			var handler = CreateHandler<CollectionViewHandler2>(collectionView);
-			Assert.NotNull(handler);
-			var weakHandler = new WeakReference(handler);
-
-			((IElementHandler)handler).DisconnectHandler();
-
-			return (weakCollectionView, weakHandler);
 		}
 
 		/// <summary>
