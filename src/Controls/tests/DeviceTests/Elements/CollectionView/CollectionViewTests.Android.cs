@@ -106,6 +106,41 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
+		[Fact(DisplayName = "CollectionView accessibility item count excludes Header and Footer")]
+		public async Task AccessibilityItemCountExcludesHeaderAndFooter()
+		{
+			SetupBuilder();
+
+			const int itemsSourceCount = 5;
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = Enumerable.Range(0, itemsSourceCount).Select(i => $"Item {i}").ToList(),
+				Header = new Label { Text = "Header" },
+				Footer = new Label { Text = "Footer" }
+			};
+
+			ContentPage contentPage = new ContentPage() { Content = collectionView };
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(contentPage,
+				async (_) =>
+				{
+					await WaitForUIUpdate(frame, collectionView);
+
+					var handler = collectionView.Handler as CollectionViewHandler;
+					var recyclerView = handler?.PlatformView as AndroidX.RecyclerView.Widget.RecyclerView;
+
+					Assert.NotNull(recyclerView);
+
+					var nodeInfo = recyclerView.CreateAccessibilityNodeInfo();
+					var rowCount = nodeInfo?.GetCollectionInfo()?.RowCount ?? -1;
+
+					Assert.Equal(itemsSourceCount, rowCount);
+				});
+		}
+
 		[Fact]
 		public async Task DisconnectingWhileEmptyViewLayoutIsQueuedDoesNotCrash()
 		{
