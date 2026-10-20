@@ -13,6 +13,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
+		[Theory]
+		[InlineData(50)]
+		[InlineData(40)]
+		public async Task OversizedCornerRadiusStillRendersBackground(int size)
+		{
+			var imageButton = new ImageButtonStub
+			{
+				Background = new SolidPaintStub(Colors.Red),
+				CornerRadius = 100,
+				Width = size,
+				Height = size,
+				DesiredSize = new Microsoft.Maui.Graphics.Size(size, size)
+			};
+
+			var actualRadius = await GetValueAsync(imageButton, handler =>
+			{
+				handler.PlatformArrange(new Microsoft.Maui.Graphics.Rect(0, 0, size, size));
+				return (double)handler.PlatformView.Layer.CornerRadius;
+			});
+
+			Assert.Equal(size / 2d, actualRadius, Precision);
+			await ValidateHasColor(imageButton, Colors.Red);
+		}
+
 		[Fact(DisplayName = "Stroke Color Initializes Correctly")]
 		public async Task StrokeColorInitializesCorrectly()
 		{
