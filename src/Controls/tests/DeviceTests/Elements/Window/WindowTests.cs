@@ -1004,7 +1004,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public sealed class ReentrantFlyoutViewHandler : FlyoutViewHandler
 		{
-			protected override global::Android.Views.View CreatePlatformView()
+			protected override MauiDrawerLayout CreatePlatformView()
 			{
 				var platformView = base.CreatePlatformView();
 				((ReentrantFlyoutPage)VirtualView).OnCreatingPlatformView?.Invoke();
