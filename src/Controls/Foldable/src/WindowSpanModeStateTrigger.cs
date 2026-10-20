@@ -59,6 +59,9 @@ namespace Microsoft.Maui.Controls.Foldable
 			base.OnDetached();
 
 			_info?.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+			_info?.Dispose();
+			_info = null;
+			_visualElement = null;
 		}
 
 		void OnDualScreenInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -68,7 +71,9 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		void UpdateState()
 		{
-			AttachToVisualElement();
+			if (IsAttached)
+				AttachToVisualElement();
+
 			var spanMode = _info?.SpanMode ?? DualScreenInfo.Current.SpanMode;
 
 			switch (SpanMode)

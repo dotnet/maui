@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Foldable
 		where TKey : class
 		where TMonitor : class
 	{
-		readonly Dictionary<TKey, TMonitor> _monitors = new Dictionary<TKey, TMonitor>();
+		readonly Dictionary<TKey, MonitorEntry> _monitors = new Dictionary<TKey, MonitorEntry>();
 		readonly Action<TMonitor> _disposeMonitor;
 
 		public FoldableMonitorRegistry(Action<TMonitor> disposeMonitor)
@@ -110,37 +110,66 @@ namespace Microsoft.Maui.Foldable
 
 		public int Count => _monitors.Count;
 
-		public TMonitor GetOrAdd(TKey key, Func<TMonitor> createMonitor)
+		public TMonitor GetOrAdd(
+			TKey key,
+			Func<TMonitor> createMonitor,
+			Func<TMonitor, bool> replaceMonitor = null)
 		{
-			if (_monitors.TryGetValue(key, out var monitor))
-				return monitor;
+			if (_monitors.TryGetValue(key, out var entry))
+			{
+				if (replaceMonitor?.Invoke(entry.Monitor) == true)
+				{
+					_disposeMonitor(entry.Monitor);
+					entry.Monitor = createMonitor();
+				}
 
-			monitor = createMonitor();
-			_monitors.Add(key, monitor);
+				entry.ReferenceCount++;
+				return entry.Monitor;
+			}
+
+			var monitor = createMonitor();
+			_monitors.Add(key, new MonitorEntry(monitor));
 			return monitor;
 		}
 
 		public bool Remove(TKey key)
 		{
-			if (!_monitors.Remove(key, out var monitor))
+			if (!_monitors.TryGetValue(key, out var entry))
 				return false;
 
-			_disposeMonitor(monitor);
+			entry.ReferenceCount--;
+			if (entry.ReferenceCount > 0)
+				return true;
+
+			_monitors.Remove(key);
+			_disposeMonitor(entry.Monitor);
 			return true;
 		}
 
 		public void ForEach(Action<TMonitor> action)
 		{
-			foreach (var monitor in _monitors.Values)
-				action(monitor);
+			foreach (var entry in _monitors.Values)
+				action(entry.Monitor);
 		}
 
 		public void Dispose()
 		{
-			foreach (var monitor in _monitors.Values)
-				_disposeMonitor(monitor);
+			foreach (var entry in _monitors.Values)
+				_disposeMonitor(entry.Monitor);
 
 			_monitors.Clear();
+		}
+
+		sealed class MonitorEntry
+		{
+			public MonitorEntry(TMonitor monitor)
+			{
+				Monitor = monitor;
+				ReferenceCount = 1;
+			}
+
+			public TMonitor Monitor { get; set; }
+			public int ReferenceCount { get; set; }
 		}
 	}
 }

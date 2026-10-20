@@ -129,39 +129,43 @@ namespace Microsoft.Maui.Foldable
 			return new Point(frame.X, frame.Y);
 		}
 
-		public void StartMonitoring(VisualElement visualElement)
+		public bool StartMonitoring(VisualElement visualElement)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
 			{
 				_hingeAngleState.SetAngle(0);
-				return;
+				return true;
 			}
 
 			if (GetPlatformView(visualElement) is not UIView platformView ||
 				platformView.Window == null)
 			{
-				return;
+				return false;
 			}
 
 			if (visualElement == null)
 			{
 				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
 				if (ReferenceEquals(_windowMonitor?.View, interactionView))
-					return;
+					return true;
 
 				if (_windowMonitor != null)
 					DisposeMonitor(_windowMonitor);
 
 				_windowMonitor = CreateMonitor(interactionView);
-				return;
+				return true;
 			}
 
-			_monitors.Remove(visualElement);
 			_monitors.GetOrAdd(visualElement, () =>
 			{
 				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
 				return CreateMonitor(interactionView);
+			}, monitor =>
+			{
+				var interactionView = platformView.Window.RootViewController?.View ?? platformView.Window;
+				return !ReferenceEquals(monitor.View, interactionView);
 			});
+			return true;
 		}
 
 		public void StopMonitoring(VisualElement visualElement)
@@ -187,6 +191,7 @@ namespace Microsoft.Maui.Foldable
 				DisposeMonitor(_windowMonitor);
 
 			_windowMonitor = null;
+			_window = null;
 		}
 
 		internal void SetWindow(UIWindow window)

@@ -82,11 +82,22 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 				var detachedHandlers = propertyChangedField.GetValue(info) as PropertyChangedEventHandler;
 				Assert.True(detachedHandlers == null ||
 					!detachedHandlers.GetInvocationList().Any(handler => ReferenceEquals(handler.Target, trigger)));
+				Assert.Null(infoField.GetValue(trigger));
+				Assert.Equal(0, localService.LayoutSubscriberCount);
+				Assert.Equal(1, localService.StopMonitoringCount);
+
+				trigger.SpanMode = TwoPaneViewMode.Tall;
+
+				Assert.Null(infoField.GetValue(trigger));
+				Assert.Equal(0, localService.LayoutSubscriberCount);
 
 				trigger.SendAttached();
 
+				var reattachedInfo = Assert.IsType<DualScreenInfo>(infoField.GetValue(trigger));
+				Assert.NotSame(info, reattachedInfo);
+				Assert.Equal(1, localService.LayoutSubscriberCount);
 				Assert.Single(
-					((PropertyChangedEventHandler)propertyChangedField.GetValue(info)).GetInvocationList(),
+					((PropertyChangedEventHandler)propertyChangedField.GetValue(reattachedInfo)).GetInvocationList(),
 					handler => ReferenceEquals(handler.Target, trigger));
 			}
 			finally
@@ -97,6 +108,8 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 		sealed class TestFoldableService : IFoldableService
 		{
+			System.EventHandler<FoldEventArgs> _onLayoutChanged;
+
 			public event System.EventHandler OnScreenChanged
 			{
 				add { }
@@ -109,13 +122,27 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 				remove { }
 			}
 
-			public event System.EventHandler<FoldEventArgs> OnLayoutChanged;
+			public event System.EventHandler<FoldEventArgs> OnLayoutChanged
+			{
+				add
+				{
+					_onLayoutChanged += value;
+					LayoutSubscriberCount = _onLayoutChanged?.GetInvocationList().Length ?? 0;
+				}
+				remove
+				{
+					_onLayoutChanged -= value;
+					LayoutSubscriberCount = _onLayoutChanged?.GetInvocationList().Length ?? 0;
+				}
+			}
 
 			public bool IsSpanned => Hinge != Rect.Zero;
 			public bool IsLandscape => Landscape;
 			public bool Landscape { get; set; }
 			public Rect Hinge { get; set; }
 			public Size ScaledScreenSize => new Size(1000, 1000);
+			public int LayoutSubscriberCount { get; private set; }
+			public int StopMonitoringCount { get; private set; }
 
 			public Rect GetHinge() => Hinge;
 			public Rect GetHinge(VisualElement visualElement) => Hinge;
@@ -123,12 +150,15 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			public Size GetScaledScreenSize(VisualElement visualElement) => ScaledScreenSize;
 			public Point? GetLocationOnScreen(VisualElement visualElement) => Point.Zero;
 			public Task<int> GetHingeAngleAsync() => Task.FromResult(0);
-			public void StartMonitoring(VisualElement visualElement) { }
-			public void StopMonitoring(VisualElement visualElement) { }
+			public bool StartMonitoring(VisualElement visualElement) => true;
+			public void StopMonitoring(VisualElement visualElement)
+			{
+				StopMonitoringCount++;
+			}
 
 			public void RaiseLayoutChanged()
 			{
-				OnLayoutChanged?.Invoke(this, new FoldEventArgs());
+				_onLayoutChanged?.Invoke(this, new FoldEventArgs());
 			}
 		}
 

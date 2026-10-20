@@ -15,13 +15,15 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
-  <PropertyGroup>
-    <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == '' and '$(_MauiTargetPlatformIsiOS)' == 'True' and $([MSBuild]::VersionGreaterThanOrEquals('$(IosTargetFrameworkVersion)', '27.1'))">true</IosDuoBindingsAvailable>
-    <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == ''">false</IosDuoBindingsAvailable>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True' and '$(IosDuoBindingsAvailable)' == 'true'">
-    <DefineConstants>$(DefineConstants);IOS_DUO_BINDINGS</DefineConstants>
-  </PropertyGroup>
+  <Target Name="_SetIosDuoBindingsAvailability"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
+    <PropertyGroup>
+      <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == '' and '$(TargetPlatformVersion)' != ''">$([MSBuild]::VersionGreaterThanOrEquals('$(TargetPlatformVersion)', '27.1'))</IosDuoBindingsAvailable>
+      <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == ''">false</IosDuoBindingsAvailable>
+      <DefineConstants Condition="'$(IosDuoBindingsAvailable)' == 'true'">$(DefineConstants);IOS_DUO_BINDINGS</DefineConstants>
+    </PropertyGroup>
+  </Target>
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>True</IsPackable>

@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Foldable
 {
-	internal class TwoPaneViewLayoutGuide : INotifyPropertyChanged
+	internal class TwoPaneViewLayoutGuide : INotifyPropertyChanged, IDisposable
 	{
 		public static TwoPaneViewLayoutGuide Instance => _twoPaneViewLayoutGuide.Value;
 		static Lazy<TwoPaneViewLayoutGuide> _twoPaneViewLayoutGuide = new Lazy<TwoPaneViewLayoutGuide>(() => new TwoPaneViewLayoutGuide());
@@ -39,8 +39,11 @@ namespace Microsoft.Maui.Controls.Foldable
 		VisualElement _layout;
 		IFoldableService _dualScreenService;
 		IFoldableService _connectedService;
+		bool _monitoringAcquired;
 		readonly bool _hasExplicitService;
+		readonly List<Element> _observedAncestors = new List<Element>();
 		bool _isLandscape;
+		bool _disposed;
 #if IOS
 		int _layoutRefreshVersion;
 #endif
@@ -66,8 +69,11 @@ namespace Microsoft.Maui.Controls.Foldable
 				UpdateLayouts(layout.Width, layout.Height);
 				_layout.HandlerChanged += OnLayoutHandlerChanged;
 				_layout.Loaded += OnLayoutLoaded;
+				_layout.ParentChanged += OnLayoutParentChanged;
+				_layout.PropertyChanged += OnObservedElementPropertyChanged;
 				_layout.SizeChanged += OnLayoutSizeChanged;
 				_layout.Unloaded += OnLayoutUnloaded;
+				ObserveAncestors();
 
 				if (_layout.Handler != null)
 					ConnectToService();
@@ -97,11 +103,86 @@ namespace Microsoft.Maui.Controls.Foldable
 		void OnLayoutSizeChanged(object sender, EventArgs e)
 		{
 			UpdateLayouts(_layout.Width, _layout.Height);
+#if IOS
+			QueueDelayedLayoutRefresh();
+#endif
 		}
 
 		void OnLayoutUnloaded(object sender, EventArgs e)
 		{
 			DisconnectFromService();
+		}
+
+		void OnLayoutParentChanged(object sender, EventArgs e)
+		{
+			ObserveAncestors();
+			UpdateLayouts(_layout.Width, _layout.Height);
+#if IOS
+			QueueDelayedLayoutRefresh();
+#endif
+		}
+
+		void OnObservedAncestorParentChanged(object sender, EventArgs e)
+		{
+			ObserveAncestors();
+			UpdateLayouts(_layout.Width, _layout.Height);
+#if IOS
+			QueueDelayedLayoutRefresh();
+#endif
+		}
+
+		void OnObservedElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != nameof(VisualElement.X) &&
+				e.PropertyName != nameof(VisualElement.Y) &&
+				e.PropertyName != nameof(VisualElement.Width) &&
+				e.PropertyName != nameof(VisualElement.Height) &&
+				e.PropertyName != nameof(VisualElement.TranslationX) &&
+				e.PropertyName != nameof(VisualElement.TranslationY) &&
+				e.PropertyName != nameof(VisualElement.Scale) &&
+				e.PropertyName != nameof(VisualElement.ScaleX) &&
+				e.PropertyName != nameof(VisualElement.ScaleY) &&
+				e.PropertyName != nameof(VisualElement.Rotation) &&
+				e.PropertyName != nameof(VisualElement.RotationX) &&
+				e.PropertyName != nameof(VisualElement.RotationY) &&
+				e.PropertyName != nameof(VisualElement.AnchorX) &&
+				e.PropertyName != nameof(VisualElement.AnchorY))
+			{
+				return;
+			}
+
+			UpdateLayouts(_layout.Width, _layout.Height);
+#if IOS
+			QueueDelayedLayoutRefresh();
+#endif
+		}
+
+		void ObserveAncestors()
+		{
+			ClearObservedAncestors();
+
+			var ancestor = _layout?.Parent;
+			while (ancestor != null)
+			{
+				ancestor.ParentChanged += OnObservedAncestorParentChanged;
+				if (ancestor is VisualElement visualAncestor)
+					visualAncestor.PropertyChanged += OnObservedElementPropertyChanged;
+
+				_observedAncestors.Add(ancestor);
+				ancestor = ancestor.Parent;
+			}
+		}
+
+		void ClearObservedAncestors()
+		{
+			foreach (var ancestor in _observedAncestors)
+			{
+				ancestor.ParentChanged -= OnObservedAncestorParentChanged;
+				if (ancestor is VisualElement visualAncestor)
+					visualAncestor.PropertyChanged -= OnObservedElementPropertyChanged;
+			}
+
+			_observedAncestors.Clear();
 		}
 
 		void OnDualScreenServiceChanged(object sender, FoldEventArgs e)
@@ -115,7 +196,7 @@ namespace Microsoft.Maui.Controls.Foldable
 #if IOS
 		void QueueDelayedLayoutRefresh()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+			if (_disposed || !OperatingSystem.IsIOSVersionAtLeast(27, 1))
 				return;
 
 			var layout = _layout;
@@ -127,7 +208,7 @@ namespace Microsoft.Maui.Controls.Foldable
 			// UIKit can update reserved regions after the hinge callback completes.
 			dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
 			{
-				if (refreshVersion != Volatile.Read(ref _layoutRefreshVersion))
+				if (_disposed || refreshVersion != Volatile.Read(ref _layoutRefreshVersion))
 					return;
 
 				if (layout != null && (layout.Handler == null || !layout.IsLoaded))
@@ -160,8 +241,17 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		internal void ConnectToService()
 		{
+			if (_disposed)
+				return;
+
 			var service = DualScreenService;
-			service.StartMonitoring(_layout);
+			if (ReferenceEquals(_connectedService, service) && _monitoringAcquired)
+				return;
+
+			if (!ReferenceEquals(_connectedService, service))
+				DisconnectFromService();
+
+			_monitoringAcquired = service.StartMonitoring(_layout);
 			service.OnLayoutChanged -= OnDualScreenServiceChanged;
 			service.OnLayoutChanged += OnDualScreenServiceChanged;
 			_connectedService = service;
@@ -173,8 +263,34 @@ namespace Microsoft.Maui.Controls.Foldable
 				return;
 
 			_connectedService.OnLayoutChanged -= OnDualScreenServiceChanged;
-			_connectedService.StopMonitoring(_layout);
+			if (_monitoringAcquired)
+				_connectedService.StopMonitoring(_layout);
+
+			_monitoringAcquired = false;
 			_connectedService = null;
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+#if IOS
+			Interlocked.Increment(ref _layoutRefreshVersion);
+#endif
+			DisconnectFromService();
+			ClearObservedAncestors();
+
+			if (_layout != null)
+			{
+				_layout.HandlerChanged -= OnLayoutHandlerChanged;
+				_layout.Loaded -= OnLayoutLoaded;
+				_layout.ParentChanged -= OnLayoutParentChanged;
+				_layout.PropertyChanged -= OnObservedElementPropertyChanged;
+				_layout.SizeChanged -= OnLayoutSizeChanged;
+				_layout.Unloaded -= OnLayoutUnloaded;
+			}
 		}
 
 		public bool IsLandscape

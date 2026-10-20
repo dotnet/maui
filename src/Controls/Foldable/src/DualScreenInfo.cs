@@ -110,6 +110,13 @@ namespace Microsoft.Maui.Foldable
 			_twoPaneViewLayoutGuide.SetFoldableService(foldableService);
 		}
 
+		internal void Dispose()
+		{
+			SetHingeAngleSubscription(null);
+			_twoPaneViewLayoutGuide.PropertyChanged -= OnTwoPaneViewLayoutGuideChanged;
+			_twoPaneViewLayoutGuide.Dispose();
+		}
+
 		EventHandler<HingeAngleChangedEventArgs> _hingeAngleChanged;
 		int subscriberCount = 0;
 		/// <summary>
@@ -259,7 +266,7 @@ namespace Microsoft.Maui.Foldable
 			if (service == null)
 				return 0;
 
-			await MainThread.InvokeOnMainThreadAsync(() => service.StartMonitoring(Element));
+			await MainThread.InvokeOnMainThreadAsync(_twoPaneViewLayoutGuide.ConnectToService);
 			return await service.GetHingeAngleAsync().ConfigureAwait(false);
 		}
 
@@ -276,8 +283,8 @@ namespace Microsoft.Maui.Foldable
 							if (Volatile.Read(ref subscriberCount) <= 0)
 								return;
 
+							_twoPaneViewLayoutGuide.ConnectToService();
 							var service = FoldableService;
-							service?.StartMonitoring(Element);
 							SetHingeAngleSubscription(service);
 						}
 					});

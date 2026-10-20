@@ -87,6 +87,90 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		}
 
 		[Fact]
+		public void PositionChangeRefreshesViewScopedDivisionRegion()
+		{
+			var layout = new Grid { IsPlatformEnabled = true };
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			service.Location = new Point(300, 0);
+			layout.Arrange(new Rect(300, 0, 400, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void AncestorPositionChangeRefreshesViewScopedDivisionRegion()
+		{
+			var parent = new Grid { IsPlatformEnabled = true };
+			var layout = new Grid { IsPlatformEnabled = true };
+			parent.Children.Add(layout);
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			parent.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			service.Location = new Point(300, 0);
+			parent.Arrange(new Rect(300, 0, 400, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void AncestorTranslationRefreshesViewScopedDivisionRegion()
+		{
+			var parent = new Grid { IsPlatformEnabled = true };
+			var layout = new Grid { IsPlatformEnabled = true };
+			parent.Children.Add(layout);
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			service.Location = new Point(300, 0);
+			parent.TranslationX = 300;
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void SizeChangeRefreshesViewScopedDivisionRegion()
+		{
+			var layout = new Grid { IsPlatformEnabled = true };
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			layout.Arrange(new Rect(0, 0, 600, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
 		public void ResponsiveThresholdsSwitchBetweenWideAndSinglePane()
 		{
 			var view = CreateTwoPaneView(new TestFoldableService());
@@ -193,12 +277,17 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		}
 
 		[Fact]
-		public void MonitoringRetryDoesNotDuplicateLayoutSubscription()
+		public void MonitoringRetryDoesNotDuplicateServiceConnection()
 		{
 			var layout = new Grid();
-			var service = new TestFoldableService();
+			var service = new TestFoldableService
+			{
+				CanStartMonitoring = false,
+			};
 			var guide = new TwoPaneViewLayoutGuide(layout, service);
 
+			guide.ConnectToService();
+			service.CanStartMonitoring = true;
 			guide.ConnectToService();
 			guide.ConnectToService();
 
@@ -264,12 +353,28 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 				Assert.Equal(1, service.HingeAngleSubscriberCount);
 				Assert.Equal(1, service.HingeAngleAddCount);
 				Assert.Equal(0, service.HingeAngleRemoveCount);
+				Assert.Equal(1, service.StartMonitoringCount);
 
 				info.HingeAngleChanged -= handler;
 
 				Assert.Equal(0, service.HingeAngleSubscriberCount);
 				Assert.Equal(1, service.HingeAngleRemoveCount);
 			});
+		}
+
+		[Fact]
+		public void RepeatedHingeAngleQueriesDoNotDuplicateMonitoring()
+		{
+			var service = new TestFoldableService();
+			var info = new DualScreenInfo(new Grid(), service);
+
+			RunWithSynchronousMainThread(() =>
+			{
+				info.GetHingeAngleAsync().GetAwaiter().GetResult();
+				info.GetHingeAngleAsync().GetAwaiter().GetResult();
+			});
+
+			Assert.Equal(1, service.StartMonitoringCount);
 		}
 
 		[Theory]
@@ -419,6 +524,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			public int HingeAngleSubscriberCount { get; private set; }
 			public int StartMonitoringCount { get; private set; }
 			public int StopMonitoringCount { get; private set; }
+			public bool CanStartMonitoring { get; set; } = true;
 			public Size ScaledScreenSize => new Size(1000, 1000);
 
 			public Rect GetHinge() => Hinge;
@@ -437,9 +543,10 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 			public Task<int> GetHingeAngleAsync() => Task.FromResult(0);
 
-			public void StartMonitoring(VisualElement visualElement)
+			public bool StartMonitoring(VisualElement visualElement)
 			{
 				StartMonitoringCount++;
+				return CanStartMonitoring;
 			}
 
 			public void StopMonitoring(VisualElement visualElement)

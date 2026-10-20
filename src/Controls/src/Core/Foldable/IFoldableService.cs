@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Foldable
 		Size ScaledScreenSize { get; }
 		Point? GetLocationOnScreen(VisualElement visualElement);
 		Task<int> GetHingeAngleAsync();
-		void StartMonitoring(VisualElement visualElement);
+		bool StartMonitoring(VisualElement visualElement);
 		void StopMonitoring(VisualElement visualElement);
 
 		event EventHandler<FoldEventArgs> OnLayoutChanged;

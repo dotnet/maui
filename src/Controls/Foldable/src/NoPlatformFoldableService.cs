@@ -70,8 +70,9 @@ namespace Microsoft.Maui.Foldable
 			return null;
 		}
 
-		public void StartMonitoring(VisualElement visualElement)
+		public bool StartMonitoring(VisualElement visualElement)
 		{
+			return true;
 		}
 
 		public void StopMonitoring(VisualElement visualElement)

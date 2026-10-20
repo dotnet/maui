@@ -37,6 +37,45 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		}
 
 		[Fact]
+		public void RemovingOneReferenceKeepsSharedInteraction()
+		{
+			var disposed = 0;
+			using var registry = new FoldableMonitorRegistry<object, object>(_ => disposed++);
+			var view = new object();
+			var monitor = new object();
+			registry.GetOrAdd(view, () => monitor);
+			registry.GetOrAdd(view, () => new object());
+
+			Assert.True(registry.Remove(view));
+			Assert.Equal(0, disposed);
+			Assert.Equal(1, registry.Count);
+
+			Assert.True(registry.Remove(view));
+			Assert.Equal(1, disposed);
+			Assert.Equal(0, registry.Count);
+		}
+
+		[Fact]
+		public void ReplacesSharedInteractionWithoutLosingReferences()
+		{
+			var disposed = 0;
+			using var registry = new FoldableMonitorRegistry<object, object>(_ => disposed++);
+			var view = new object();
+			var firstMonitor = new object();
+			var secondMonitor = new object();
+			registry.GetOrAdd(view, () => firstMonitor);
+
+			var result = registry.GetOrAdd(view, () => secondMonitor, monitor => ReferenceEquals(monitor, firstMonitor));
+
+			Assert.Same(secondMonitor, result);
+			Assert.Equal(1, disposed);
+			Assert.True(registry.Remove(view));
+			Assert.Equal(1, disposed);
+			Assert.True(registry.Remove(view));
+			Assert.Equal(2, disposed);
+		}
+
+		[Fact]
 		public void DisposingRegistryCleansUpAllInteractions()
 		{
 			var disposed = 0;

@@ -274,8 +274,9 @@ namespace Microsoft.Maui.Foldable
 
 		public Size GetScaledScreenSize(VisualElement visualElement) => ScaledScreenSize;
 
-		public void StartMonitoring(VisualElement visualElement)
+		public bool StartMonitoring(VisualElement visualElement)
 		{
+			return true;
 		}
 
 		public void StopMonitoring(VisualElement visualElement)
