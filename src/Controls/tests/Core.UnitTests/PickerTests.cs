@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using Xunit;
@@ -472,6 +473,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.Add(new { Name = "George" });
 			Assert.Equal(4, picker.Items.Count);
 			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task PickerDoesNotLeakWhenItemsSourceIsLongLivedCollection()
+		{
+			var sharedRoot = new ObservableCollection<string> { "a", "b", "c" };
+
+			WeakReference CreatePickerReference()
+			{
+				var picker = new Picker
+				{
+					ItemsSource = sharedRoot
+				};
+
+				return new WeakReference(picker);
+			}
+
+			var reference = CreatePickerReference();
+
+			Assert.False(await reference.WaitForCollect(), "Picker should be collected, but it was retained by the shared ObservableCollection's CollectionChanged subscription.");
+
+			GC.KeepAlive(sharedRoot);
 		}
 
 		[Fact]

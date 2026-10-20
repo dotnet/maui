@@ -13,7 +13,7 @@ public class Issue32329 : _IssuesUITest
     public override string Issue => "TabBar not visible on Mac Catalyst";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void TabBarShouldBeVisibleOnMacCatalyst()
     {
         App.WaitForElement("HomePageLabel");

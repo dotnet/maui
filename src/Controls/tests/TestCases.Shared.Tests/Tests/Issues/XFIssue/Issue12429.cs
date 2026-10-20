@@ -32,7 +32,7 @@ public class Issue12429 : _IssuesUITest
 	public override string Issue => "[Bug] Shell flyout items have a minimum height";
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void FlyoutItemSizesToExplicitHeight()
 	{
 		App.WaitForElement("PageLoaded");
@@ -42,7 +42,7 @@ public class Issue12429 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void FlyoutItemHeightAndWidthIncreaseAndDecreaseCorrectly()
 	{
 		App.WaitForElement(ResizeMe);

@@ -11,7 +11,7 @@ public class Issue36629 : _IssuesUITest
     public override string Issue => "[Windows] SearchHandler FontSize, FontFamily, VerticalTextAlignment, and FontAttributes are not applied";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void SearchHandlerFontPropertiesShouldBeApplied()
     {
         // Wait for the page to load

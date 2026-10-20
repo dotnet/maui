@@ -13,7 +13,7 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	public override string Issue => "Shell Flyout Content Offsets Correctly";
 #if !ANDROID && !WINDOWS // The test fails on Android and Windows due to differing Rect values between flyout item and label content, despite correct offset in Appium inspector.
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void FlyoutContentOffsetsCorrectly()
 	{
 		App.WaitForElement("PageLoaded");
@@ -26,7 +26,7 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	}
 #endif
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutContentOffsetsCorrectlyWithHeader()
 	{
 		App.WaitForElement("ToggleHeader");

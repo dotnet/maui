@@ -29,7 +29,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_Header()
 	{
 		App.WaitForElement(ShellFlyoutButton);
@@ -47,7 +47,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_HeaderTemplate()
 	{
 		App.WaitForElement(Options);
@@ -63,7 +63,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_Footer()
 	{
 		App.WaitForElement(Options);
@@ -79,7 +79,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(4)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FooterTemplate()
 	{
 		App.WaitForElement(Options);
@@ -95,7 +95,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(5)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderTemplateAndFooterTemplate()
 	{
 		App.WaitForElement(Options);
@@ -115,7 +115,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(6)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderAndFooterTemplate()
 	{
 		App.WaitForElement(Options);
@@ -135,7 +135,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(7)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderTemplateAndFooter()
 	{
 		App.WaitForElement(Options);
@@ -155,7 +155,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyoutHeaderFooter_Width()
 	{
 		App.WaitForElement(Options);
@@ -178,7 +178,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyoutHeaderFooter_Height()
 	{
 		App.WaitForElement(Options);
@@ -201,7 +201,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(10)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyoutHeaderFooterTemplate_Width()
 	{
 		App.WaitForElement(Options);
@@ -224,7 +224,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(11)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyoutHeaderFooterTemplate_Height()
 	{
 		App.WaitForElement(Options);
@@ -247,7 +247,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(12)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutVerticalScrollModeEnabled()
 	{
 		App.WaitForElement(Options);
@@ -274,7 +274,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorFixed()
 	{
 		App.WaitForElement(Options);
@@ -302,7 +302,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
  
 	[Test, Order(14)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorScroll()
 	{
 		App.WaitForElement(Options);
@@ -330,7 +330,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
  
 	[Test, Order(15)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorCollapseOnScroll()
 	{
 		App.WaitForElement(Options);
@@ -357,7 +357,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(16)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutContent()
 	{
 		App.WaitForElement(Options);
@@ -372,7 +372,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutContentTemplate()
 	{
 		App.WaitForElement(Options);
@@ -387,7 +387,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderAndFooter()
 	{
 		App.WaitForElement(Options);
@@ -407,7 +407,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(19)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutItemVisibility()
 	{
 		App.WaitForElement(Options);
@@ -424,7 +424,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(20)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_DisplayOptionsAsMultipleItems()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -442,7 +442,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(21)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_Width()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -461,7 +461,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(22)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_Height()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -480,7 +480,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(23)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundColor()
 	{
 		App.WaitForElement(OpenFlyout);
@@ -498,7 +498,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(24)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutBackDrop()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -516,7 +516,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(25)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_DisplayOptionsAsMultipleItemsAndBackgroundColor()
 	{
 		App.WaitForElement(OpenFlyout); //// To close the flyout for previous test
@@ -536,7 +536,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(26)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundImageAspect_AspectFit()
 	{
 		App.WaitForElement(OpenFlyout); //// To close the flyout for previous test
@@ -556,7 +556,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(27)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundImageAspect_Fill()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -576,7 +576,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(28)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundImage()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -600,7 +600,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(29)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundImageAndBackDrop()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -621,7 +621,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32416
 	[Test, Order(30)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutVerticalScrollModeDisabled()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -643,7 +643,7 @@ public class ShellFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(31)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundImageSetToNull()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -662,7 +662,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST // Issue Link: https://github.com/dotnet/maui/issues/32417
 	[Test, Order(32)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_SetItemTemplateAndMenuItemTemplate()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -683,7 +683,7 @@ public class ShellFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(33)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutBehaviorDisabled()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -699,7 +699,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
 	[Test, Order(34)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutBehaviorDisabledAndRTL()
 	{
 		App.WaitForElement(Options);
@@ -714,7 +714,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 	
 	[Test, Order(35)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutIconAndRTL()
 	{
 		App.WaitForElement(Options);
@@ -730,7 +730,7 @@ public class ShellFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(36)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_CurrentItemWithDisplayOptions()
 	{
 		App.WaitForElement(Options);
@@ -747,7 +747,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(37)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutIcon()
 	{
 		App.WaitForElement(Options);
@@ -761,7 +761,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
 	[Test, Order(38)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlowDirection()
 	{
 		App.WaitForElement(Options);
@@ -775,7 +775,7 @@ public class ShellFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(39)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_ShellContentAndBackgroundColor()
 	{
 		App.WaitForElement(Options);
@@ -791,7 +791,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(40)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_ShellContentAndBackgroundImage()
 	{
 		App.WaitForElement("CloseFlyoutContentButton"); // To close the flyout for previous test
@@ -809,7 +809,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(41)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundImage()
 	{
 		App.WaitForElement("CloseFlyoutContentButton"); // To close the flyout for previous test
@@ -827,7 +827,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(42)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundImageWithHeaderAndFooter()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -849,7 +849,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(43)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_BackgroundColorWithHeaderAndFooter()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -871,7 +871,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(44)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_DisplayOptionsWithHeaderAndFooter()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -893,7 +893,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(45)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_DisplayOptionsWithHeaderTemplateAndFooterTemplate()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -915,7 +915,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(46)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundColor()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -939,7 +939,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(47)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutIsPresented()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
@@ -955,7 +955,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(48)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutBehaviorLocked()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -979,7 +979,7 @@ public class ShellFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS  //Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476
 	[Test, Order(49)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutIsPresentedAndRTL()
 	{
 		App.WaitForElement(Options);
@@ -993,7 +993,7 @@ public class ShellFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(50)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutBehaviorLockedAndRTL()
 	{
 		App.WaitForElement(OpenFlyout); // To close the flyout for previous test

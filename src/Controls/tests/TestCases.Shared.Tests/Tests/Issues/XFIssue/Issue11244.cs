@@ -14,7 +14,7 @@ public class Issue11244 : _IssuesUITest
 	public override string Issue => "[Bug] BackButtonBehavior no longer displays on the first routed page in 4.7";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void LeftToolbarItemTextDisplaysWhenFlyoutIsDisabled()
 	{
 		App.WaitForElement("Logout");
