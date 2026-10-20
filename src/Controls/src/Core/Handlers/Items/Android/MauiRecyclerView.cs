@@ -464,9 +464,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ScrollHelper.RemoveScrollListener();
 			}
 
-			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			if (ItemsView is CarouselView && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				// Keeping the current items in view is the default, so we don't need to watch for data changes
+				// CarouselView manages its position in response to collection changes.
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
 			}
 			else
@@ -1115,6 +1115,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				ScrollHelper.UndoNextScrollAdjustment();
+			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& ItemsView is not CarouselView)
+			{
+				if (GetLayoutManager().ItemCount > 0)
+				{
+					ScrollTo(new ScrollToRequestEventArgs(0, -1,
+						Microsoft.Maui.Controls.ScrollToPosition.Start, false));
+				}
 			}
 		}
 

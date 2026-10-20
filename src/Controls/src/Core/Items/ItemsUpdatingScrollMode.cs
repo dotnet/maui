@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Controls
 	public enum ItemsUpdatingScrollMode
 	{
 		/// <summary>
-		/// The view scrolls to keep currently visible items in view as items are updated.
-		/// This is the default behavior, maintaining the current scroll position relative to visible items.
+		/// The view keeps the first item in the list displayed when new items are added.
+		/// This is the default behavior.
 		/// </summary>
 		KeepItemsInView = 0,
 		

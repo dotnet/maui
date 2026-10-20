@@ -161,6 +161,36 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(-1)]
+		[InlineData(2)]
+		[InlineData(int.MaxValue)]
+		public void ObservableSourceInvalidIndexReturnsNull(int index)
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<string> { "First", "Second" };
+			using var source = new ObservableItemsSource(items, Application.Current, new MockCollectionChangedNotifier());
+
+			Assert.Null(source.ElementAt(index));
+			Assert.Equal("First", source.ElementAt(0));
+			Assert.Equal("Second", source.ElementAt(1));
+		}
+
+		[Fact]
+		public async Task ObservableSourceClearedCollectionReturnsNull()
+		{
+			SetupBuilder();
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var items = new ObservableCollection<string> { "First" };
+				using var source = new ObservableItemsSource(items, Application.Current, new MockCollectionChangedNotifier());
+				items.Clear();
+
+				Assert.Null(source.ElementAt(0));
+				Assert.Equal(0, source.Count);
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView with SelectionMode None should not have click listeners")]
 		public async Task SelectionModeNoneDoesNotSetClickListeners()
 		{
