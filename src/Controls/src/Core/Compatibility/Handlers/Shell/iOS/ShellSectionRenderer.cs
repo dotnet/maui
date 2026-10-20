@@ -489,6 +489,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateTabBarItem();
 			else if (e.PropertyName == BaseShellItem.IconProperty.PropertyName)
 				UpdateTabBarItem();
+			else if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
+				UpdateTabBarItemAutomationId();
 		}
 
 		protected virtual IShellSectionRootRenderer CreateShellSectionRootRenderer(ShellSection shellSection, IShellContext shellContext)
@@ -715,7 +717,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					NativeElementRoles.ShellTab,
 					NativeElementDiscriminators.TabBarItem);
 				ShellItemRenderer.UpdateTabBarItemBadge(TabBarItem, ShellSection);
+				UpdateTabBarItemAutomationId();
 			});
+		}
+
+		void UpdateTabBarItemAutomationId()
+		{
+			TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId
+				?? ShellSection.CurrentItem?.AutomationId
+				?? ShellSection.Title;
 		}
 
 		void DisposePage(Page page, bool calledFromDispose = false)
