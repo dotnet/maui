@@ -21,19 +21,25 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
-		readonly IList _internalCollection;
+		readonly IEnumerable _internalCollection;
 		readonly IDispatcher _dispatcher;
 		readonly WeakNotifyCollectionChangedProxy _proxy;
 		readonly NotifyCollectionChangedEventHandler _internalCollectionChanged;
+		bool _disposed;
 
 		/// <param name="list">The list parameter.</param>
 		public MarshalingObservableCollection(IList list)
+			: this(list, Dispatcher.GetForCurrentThread())
+		{
+		}
+
+		internal MarshalingObservableCollection(IEnumerable list, IDispatcher dispatcher)
 		{
 			if (!(list is INotifyCollectionChanged incc))
 				throw new ArgumentException($"{nameof(list)} must implement {nameof(INotifyCollectionChanged)}");
 
 			_internalCollection = list;
-			_dispatcher = Dispatcher.GetForCurrentThread();
+			_dispatcher = dispatcher;
 			_internalCollectionChanged = InternalCollectionChanged;
 			_proxy = new WeakNotifyCollectionChangedProxy(incc, _internalCollectionChanged);
 
@@ -59,12 +65,20 @@ namespace Microsoft.Maui.Controls
 
 		void InternalCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (args.Action == NotifyCollectionChangedAction.Reset)
+			if (args.Action == NotifyCollectionChangedAction.Reset ||
+				(args.NewStartingIndex < 0 && args.Action is NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Replace or NotifyCollectionChangedAction.Move) ||
+				(args.OldStartingIndex < 0 && args.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace or NotifyCollectionChangedAction.Move))
 			{
 				var items = new List<object>();
-				for (int n = 0; n < _internalCollection.Count; n++)
+				if (_internalCollection is IList list)
 				{
-					items.Add(_internalCollection[n]);
+					for (int n = 0; n < list.Count; n++)
+						items.Add(list[n]);
+				}
+				else
+				{
+					foreach (var item in _internalCollection)
+						items.Add(item);
 				}
 
 				args = new ResetNotifyCollectionChangedEventArgs(items);
@@ -75,6 +89,9 @@ namespace Microsoft.Maui.Controls
 
 		void HandleCollectionChange(NotifyCollectionChangedEventArgs args)
 		{
+			if (_disposed)
+				return;
+
 			switch (args.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
@@ -99,11 +116,17 @@ namespace Microsoft.Maui.Controls
 		{
 			var count = args.OldItems.Count;
 
-			for (int n = 0; n < count; n++)
+			if (count == 1)
 			{
 				var toMove = this[args.OldStartingIndex];
 				RemoveAt(args.OldStartingIndex);
 				Insert(args.NewStartingIndex, toMove);
+			}
+			else
+			{
+				var toMove = GetRange(args.OldStartingIndex, count);
+				RemoveRange(args.OldStartingIndex, count);
+				InsertRange(args.NewStartingIndex, toMove);
 			}
 
 			OnCollectionChanged(args);
@@ -162,6 +185,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void Dispose()
 		{
+			_disposed = true;
 			_proxy.Unsubscribe();
 		}
 	}

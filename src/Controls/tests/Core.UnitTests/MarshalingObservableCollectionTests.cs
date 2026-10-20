@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
@@ -232,6 +233,109 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		});
 
 
+
+		[Theory]
+		[InlineData(0, 3, 2)]
+		[InlineData(3, 0, 2)]
+		[InlineData(1, 1, 2)]
+		public Task RangeMovePreservesOrder(int oldIndex, int newIndex, int count) => DispatcherTest.Run(async () =>
+		{
+			var dispatcher = Dispatcher.GetForCurrentThread();
+			var source = new RangeCollection { 0, 1, 2, 3, 4, 5 };
+			var collection = new MarshalingObservableCollection(source);
+			int notifications = 0;
+			collection.CollectionChanged += (_, args) =>
+			{
+				Assert.Equal(NotifyCollectionChangedAction.Move, args.Action);
+				Assert.Equal(oldIndex, args.OldStartingIndex);
+				Assert.Equal(newIndex, args.NewStartingIndex);
+				Assert.Equal(count, args.OldItems.Count);
+				notifications++;
+			};
+
+			await Task.Run(() => source.MoveRange(oldIndex, newIndex, count));
+			await dispatcher.DispatchAsync(() =>
+			{
+				Assert.Equal(source.Count, collection.Count);
+				for (int i = 0; i < source.Count; i++)
+					Assert.Equal(source[i], collection[i]);
+				Assert.Equal(1, notifications);
+			});
+		});
+
+		[Theory]
+		[InlineData(NotifyCollectionChangedAction.Add)]
+		[InlineData(NotifyCollectionChangedAction.Remove)]
+		[InlineData(NotifyCollectionChangedAction.Replace)]
+		[InlineData(NotifyCollectionChangedAction.Move)]
+		public Task IndexlessChangesCaptureResetBeforeFollowingAdd(NotifyCollectionChangedAction action) => DispatcherTest.Run(async () =>
+		{
+			var dispatcher = Dispatcher.GetForCurrentThread();
+			var source = new RangeCollection { 0, 1, 2 };
+			var collection = new MarshalingObservableCollection(source);
+			var notifications = new List<NotifyCollectionChangedAction>();
+			collection.CollectionChanged += (_, args) => notifications.Add(args.Action);
+
+			await Task.Run(() =>
+			{
+				source.ChangeWithoutIndex(action);
+				source.Add(99);
+			});
+
+			await dispatcher.DispatchAsync(() =>
+			{
+				Assert.Equal(source.Count, collection.Count);
+				for (int i = 0; i < source.Count; i++)
+					Assert.Equal(source[i], collection[i]);
+				Assert.Equal(new[] { NotifyCollectionChangedAction.Reset, NotifyCollectionChangedAction.Add }, notifications);
+			});
+		});
+
+		class RangeCollection : ObservableCollection<int>
+		{
+			public void ChangeWithoutIndex(NotifyCollectionChangedAction action)
+			{
+				object oldItem = Items[0];
+				switch (action)
+				{
+					case NotifyCollectionChangedAction.Add:
+						Items.Add(7);
+						OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, 7));
+						break;
+					case NotifyCollectionChangedAction.Remove:
+						Items.RemoveAt(0);
+						OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, oldItem));
+						break;
+					case NotifyCollectionChangedAction.Replace:
+						Items[0] = 7;
+						OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, 7, oldItem));
+						break;
+					case NotifyCollectionChangedAction.Move:
+						Items.RemoveAt(0);
+						Items.Insert(2, (int)oldItem);
+						OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, oldItem, 2, -1));
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(action));
+				}
+			}
+
+			public void MoveRange(int oldIndex, int newIndex, int count)
+			{
+				var moved = new List<int>();
+				for (int i = 0; i < count; i++)
+				{
+					moved.Add(Items[oldIndex]);
+					Items.RemoveAt(oldIndex);
+				}
+
+				for (int i = 0; i < moved.Count; i++)
+					Items.Insert(newIndex + i, moved[i]);
+
+				OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+					NotifyCollectionChangedAction.Move, moved, newIndex, oldIndex));
+			}
+		}
 
 		// This class simulates running a single UI thread with a queue and non-UI threads;
 		// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device
