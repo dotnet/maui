@@ -38,6 +38,13 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-coreclr
+    ${{ if and(eq(parameters.platform, 'catalyst'), ne(parameters.testNameFilter, '')) }}:
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: 313
+      buildVersionToDownload: specific
+      pipelineId: 1642278
+      itemPattern: 'Controls.TestCases.HostApp/Release/net11.0-maccatalyst/**'
 
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'))

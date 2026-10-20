@@ -51,13 +51,34 @@ public class Issue17389 : _IssuesUITest
 		}
 	}
 
-	[TestCase("native")]
-	[TestCase("physical")]
+	[TestCase("baseline")]
+	[TestCase("macos-center")]
+	[TestCase("activated")]
+	[TestCase("primer")]
 	[Order(1)]
 	[Category(UITestCategories.Layout)]
 	public void ValidateBackgroundColorDoesNotAffectInputTransparent(string control)
 	{
 		App.WaitForElement("ToggleInputTransparentButton");
+
+		if (App is AppiumCatalystApp catalystApp)
+		{
+			var processes = System.Diagnostics.Process.GetProcessesByName("Controls.TestCases.HostApp");
+			var processIds = processes.Select(process => process.Id).ToArray();
+			foreach (var process in processes)
+				process.Dispose();
+			TestContext.WriteLine($"TargetAppPids: {string.Join(",", processIds)}");
+			Assert.That(processIds, Has.Length.EqualTo(1), "Cannot establish the target app process identity.");
+			TestContext.WriteLine($"TargetAppPid: {processIds[0]}");
+
+			if (control == "activated")
+			{
+				catalystApp.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", "com.microsoft.maui.uitests" }
+				});
+			}
+		}
 
 		string[] layouts = new[]
 		{
@@ -69,7 +90,7 @@ public class Issue17389 : _IssuesUITest
 
 		foreach (var layout in layouts)
 		{
-			TapLayout(layout, control == "physical");
+			TapLayout(layout, control);
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Enabled tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
@@ -78,20 +99,30 @@ public class Issue17389 : _IssuesUITest
 
 		foreach (var layout in layouts)
 		{
-			TapLayout(layout, control == "physical");
+			TapLayout(layout, control);
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Transparent tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
 		App.WaitForElement("Tap count: 0");
 	}
 
-	void TapLayout(string layout, bool usePhysicalCenter)
+	void TapLayout(string layout, string control)
 	{
-		if (usePhysicalCenter && App is AppiumCatalystApp)
+		if ((control == "macos-center" || control == "primer") && App is AppiumCatalystApp)
 		{
-			// Native static-text clicks can succeed without delivering the gesture on Catalyst.
 			var rect = App.WaitForElementAndGetRect(layout);
-			App.TapCoordinates(rect.CenterX(), rect.CenterY());
+			if (control == "primer")
+			{
+				App.TapCoordinates(rect.CenterX(), rect.CenterY());
+				return;
+			}
+
+			var response = App.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			{
+				{ "x", rect.CenterX() },
+				{ "y", rect.CenterY() }
+			});
+			Assert.That(response.Result, Is.EqualTo(CommandResponseResult.Success));
 		}
 		else
 		{

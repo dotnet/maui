@@ -194,65 +194,93 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 			throw new Exception($"Issue17389 discovery failed (exit {discoveryExitCode}): {string.Join(Environment.NewLine, discoveryOutput)}");
 
 		var discovered = System.IO.File.ReadAllLines(discoveryPath).Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
-		var controls = new[] { "native", "physical" };
+		var controls = new[] { "baseline", "macos-center", "activated", "primer" };
 		foreach (var test in discovered)
 			Information("Discovered diagnostic case: {0}", test);
 		if (discovered.Count != controls.Length ||
 			controls.Any(control => !discovered.Any(test => test.EndsWith($"ValidateBackgroundColorDoesNotAffectInputTransparent(\"{control}\")"))))
-			throw new Exception("Issue17389 discovery did not match exactly the two intended causal paths.");
+			throw new Exception("Issue17389 discovery did not match exactly the three intended causal paths and matched primer.");
 
-		var arms = new[] { "native-baseline", "pointer-fix", "native-restored" };
+		var arms = new[] { "native-baseline", "macos-center", "activation", "native-restored" };
 		bool hadFailure = false;
-		bool evidenceMismatch = false;
+		bool negativeControlsValid = true;
+		int macosCenterPasses = 0;
+		int activationPasses = 0;
+		var targetProcessIds = new HashSet<int>();
 		foreach (var arm in arms)
 		{
-			string control = arm == "pointer-fix" ? "physical" : "native";
+			string control = arm == "macos-center" ? "macos-center" : arm == "activation" ? "activated" : "baseline";
 			for (int attempt = 1; attempt <= 3; attempt++)
 			{
-				var caseResultName = $"{resultsFileName}-{arm}-{attempt}";
-				var caseResultsPath = System.IO.Path.Combine(resultsDir, $"{caseResultName}.trx");
-				SetEnvironmentVariable("APPIUM_LOG_FILE", $"{binDir}/appium-{arm}-{attempt}.log");
-				try
+				for (int phase = 0; phase < 2; phase++)
 				{
-					RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
-						resultsFileNameWithoutExtension: caseResultName,
-						filter: $"({testFilter})&(FullyQualifiedName~{control})");
-				}
-				catch (CakeException exception)
-				{
-					hadFailure = true;
-					Warning("Causal arm {0}, attempt {1}: {2}", arm, attempt, exception.Message);
-					if (!System.IO.File.Exists(caseResultsPath))
-						throw;
-				}
+					bool isPrimer = phase == 0;
+					string selectedControl = isPrimer ? "primer" : control;
+					string processArm = isPrimer ? $"primer-{arm}" : arm;
+					var caseResultName = $"{resultsFileName}-{processArm}-{attempt}";
+					var caseResultsPath = System.IO.Path.Combine(resultsDir, $"{caseResultName}.trx");
+					SetEnvironmentVariable("APPIUM_LOG_FILE", $"{binDir}/appium-{processArm}-{attempt}.log");
+					try
+					{
+						RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
+							resultsFileNameWithoutExtension: caseResultName,
+							filter: $"({testFilter})&(FullyQualifiedName~{selectedControl})");
+					}
+					catch (CakeException exception)
+					{
+						hadFailure = true;
+						Warning("Causal process {0}, attempt {1}: {2}", processArm, attempt, exception.Message);
+						if (!System.IO.File.Exists(caseResultsPath))
+							throw;
+					}
 
-				var document = System.Xml.Linq.XDocument.Load(caseResultsPath);
-				System.Xml.Linq.XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-				var results = document.Descendants(ns + "UnitTestResult").ToList();
-				if (results.Count != 1 ||
-					(string)results[0].Attribute("testName") != $"ValidateBackgroundColorDoesNotAffectInputTransparent(\"{control}\")")
-					throw new Exception("Causal process did not execute exactly its intended single case.");
+					var document = System.Xml.Linq.XDocument.Load(caseResultsPath);
+					System.Xml.Linq.XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+					var results = document.Descendants(ns + "UnitTestResult").ToList();
+					if (results.Count != 1 ||
+						(string)results[0].Attribute("testName") != $"ValidateBackgroundColorDoesNotAffectInputTransparent(\"{selectedControl}\")")
+						throw new Exception("Causal process did not execute exactly its intended single case.");
 
-				var outcome = (string)results[0].Attribute("outcome");
-				Information("Causal result {0}/{1}: {2}", arm, attempt, outcome);
-				if (control == "physical")
-				{
-					evidenceMismatch |= outcome != "Passed";
-				}
-				else
-				{
-					var message = results[0].Descendants(ns + "Message").FirstOrDefault()?.Value ?? "";
+					var outcome = (string)results[0].Attribute("outcome");
 					var output = results[0].Descendants(ns + "StdOut").FirstOrDefault()?.Value ?? "";
-					evidenceMismatch |= outcome != "Failed" ||
-						!message.Contains("Timed out waiting for element") ||
-						!output.Contains("Enabled tap RedGrid: Tap count: 0") ||
-						!output.Contains("Enabled tap PurpleContent: Tap count: 3");
+					var pid = System.Text.RegularExpressions.Regex.Match(output, @"TargetAppPid: (\d+)");
+					if (!pid.Success || !targetProcessIds.Add(int.Parse(pid.Groups[1].Value)))
+						throw new Exception("Target app PID is missing or was reused across causal processes.");
+					Information("Causal result {0}/{1}: {2}", processArm, attempt, outcome);
+					Information("Target app PID {0}/{1}: {2}", processArm, attempt, pid.Groups[1].Value);
+					if (isPrimer)
+					{
+						var message = results[0].Descendants(ns + "Message").FirstOrDefault()?.Value ?? "";
+						if ((outcome != "Passed" && (outcome != "Failed" || !message.Contains("Timed out waiting for element"))) ||
+							!output.Contains("Enabled tap RedGrid:") || !output.Contains("Enabled tap GreenGrid:") ||
+							!output.Contains("Enabled tap BlueBorder:") || !output.Contains("Enabled tap PurpleContent:"))
+							throw new Exception("Matched W3C primer did not complete its four distinct input attempts.");
+						continue;
+					}
+					if (control == "macos-center")
+					{
+						if (outcome == "Passed")
+							macosCenterPasses++;
+					}
+					else if (control == "activated")
+					{
+						if (outcome == "Passed")
+							activationPasses++;
+					}
+					else
+					{
+						var message = results[0].Descendants(ns + "Message").FirstOrDefault()?.Value ?? "";
+						negativeControlsValid &= outcome == "Failed" &&
+							message.Contains("Timed out waiting for element") &&
+							output.Contains("Enabled tap RedGrid: Tap count: 0") &&
+							output.Contains("Enabled tap PurpleContent: Tap count: 3");
+					}
 				}
 			}
 		}
 
-		if (evidenceMismatch)
-			throw new Exception("Causal evidence did not establish repeated native-red / pointer-green / native-restored-red.");
+		if (!negativeControlsValid || (macosCenterPasses != 3 && activationPasses != 3))
+			throw new Exception("Neither alternative established repeatable causal benefit against both native controls.");
 		if (hadFailure)
 			throw new Exception("Causal evidence collected; the expected failing native controls remain failing tests.");
 		return;

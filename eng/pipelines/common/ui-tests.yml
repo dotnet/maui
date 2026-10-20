@@ -452,7 +452,10 @@ stages:
                       artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
-    dependsOn: build_ui_tests_coreclr
+    ${{ if ne(parameters.testNameFilter, '') }}:
+      dependsOn: []
+    ${{ else }}:
+      dependsOn: build_ui_tests_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
