@@ -1519,22 +1519,41 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (childView is not null)
 				{
 					var childBounds = View.Bounds;
+					var navigation = NavigationController;
 
 					if (OperatingSystem.IsIOSVersionAtLeast(26) &&
-						_navigation.TryGetTarget(out var navigation) &&
+						navigation is not null &&
 						!navigation.NavigationBarHidden &&
+						!navigation.NavigationBar.Hidden &&
 						!navigation.NavigationBar.Translucent &&
-						Child is Page child &&
-						NavigationPage.GetHasNavigationBar(child))
+						View.Window is UIWindow window &&
+						navigation.NavigationBar.Window == window)
 					{
 						var navigationBarFrame = navigation.NavigationBar.ConvertRectToView(navigation.NavigationBar.Bounds, View);
-						var top = Math.Min(childBounds.Bottom, Math.Max(childBounds.Top, navigationBarFrame.Bottom));
-						childBounds = new CGRect(childBounds.X, top, childBounds.Width, childBounds.Bottom - top);
+
+						if (IsFiniteRect(childBounds) &&
+							IsFiniteRect(navigationBarFrame) &&
+							navigationBarFrame.Right > childBounds.Left &&
+							navigationBarFrame.Left < childBounds.Right &&
+							navigationBarFrame.Bottom > childBounds.Top &&
+							navigationBarFrame.Top < childBounds.Bottom)
+						{
+							var top = Math.Min(childBounds.Bottom, Math.Max(childBounds.Top, navigationBarFrame.Bottom));
+							childBounds = new CGRect(childBounds.X, top, childBounds.Width, childBounds.Bottom - top);
+						}
 					}
 
 					childView.Frame = childBounds;
 				}
 			}
+
+			private bool IsFiniteRect(CGRect rect) =>
+				double.IsFinite((double)rect.Left) &&
+				double.IsFinite((double)rect.Top) &&
+				double.IsFinite((double)rect.Right) &&
+				double.IsFinite((double)rect.Bottom) &&
+				rect.Width >= 0 &&
+				rect.Height >= 0;
 
 			public override void ViewDidLayoutSubviews()
 			{
