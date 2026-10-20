@@ -57,6 +57,70 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DisplayScaleUsesOwningWindowScreen()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				UIWindowScene scene = null;
+				foreach (var connectedScene in UIApplication.SharedApplication.ConnectedScenes)
+				{
+					if (connectedScene is UIWindowScene windowScene)
+					{
+						scene = windowScene;
+						break;
+					}
+				}
+
+#pragma warning disable CA1422 // Older test hosts have no scene and exercise the window fallback.
+				using var window = scene is not null ? new UIWindow(scene) : new UIWindow();
+#pragma warning restore CA1422
+				using var view = new UIView();
+				window.AddSubview(view);
+
+				var expected = (double)(scene?.Screen.Scale ?? window.Screen.Scale);
+				Assert.Same(window, view.Window);
+				Assert.Equal(expected, view.GetDisplayScale());
+			});
+		}
+
+		[Theory]
+		[InlineData(3.0, 2.0, 1.0, 3.0)]
+		[InlineData(1.0, 3.0, 2.0, 1.0)]
+		[InlineData(null, 3.0, 1.0, 3.0)]
+		[InlineData(null, null, 2.0, 2.0)]
+		[InlineData(0.0, 2.0, 3.0, 1.0)]
+		[InlineData(null, 0.0, 3.0, 1.0)]
+		[InlineData(null, null, 0.0, 1.0)]
+		public void DisplayScaleResolutionPrefersOwningDisplay(double? sceneScale, double? windowScale, double mainScale, double expected)
+		{
+			Assert.Equal(expected, Microsoft.Maui.Platform.ViewExtensions.ResolveDisplayScale(sceneScale, windowScale, mainScale));
+		}
+
+		[Theory]
+		[InlineData(3.0, 2.0, 1.0, 3.0)]
+		[InlineData(null, 3.0, 1.0, 3.0)]
+		public async Task BitmapRenderingUsesIndependentlySpecifiedOwningDisplayScale(double? sceneScale, double? windowScale, double mainScale, double expected)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var scale = Microsoft.Maui.Platform.ViewExtensions.ResolveDisplayScale(sceneScale, windowScale, mainScale);
+				using var format = new UIGraphicsImageRendererFormat { Opaque = false, Scale = 1 };
+				using var renderer = new UIGraphicsImageRenderer(new CGSize(4, 4), format);
+				using var sourceImage = renderer.CreateImage(context =>
+				{
+					UIColor.White.SetFill();
+					context.FillRect(new CGRect(0, 0, 4, 4));
+				});
+				using var image = TextFieldExtensions.GetClearButtonTintImage(sourceImage, UIColor.Red, (nfloat)scale);
+
+				Assert.NotNull(image);
+				Assert.Equal(expected, image.CurrentScale);
+				Assert.Equal((nint)(4 * expected), image.CGImage.Width);
+				Assert.Equal((nint)(4 * expected), image.CGImage.Height);
+			});
+		}
+
+		[Fact]
 		public async Task BitmapRenderingUsesDisplayScaleInsteadOfEffectiveViewScale()
 		{
 			await InvokeOnMainThreadAsync(() =>
@@ -67,7 +131,7 @@ namespace Microsoft.Maui.DeviceTests
 				using var view = new UIView();
 				window.AddSubview(view);
 
-				var displayScale = view.GetDisplayScale();
+				var displayScale = (double)window.Screen.Scale;
 				var effectiveScale = displayScale == 1 ? 2 : 1;
 				view.ContentScaleFactor = (nfloat)effectiveScale;
 
