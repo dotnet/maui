@@ -15,7 +15,7 @@ public class Issue29492 : _IssuesUITest
 	public override string Issue => "CharacterSpacing should be applied";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void CharacterSpacingShouldApply()
 	{
 		App.WaitForElement("Entertext");

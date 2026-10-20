@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] Tabs briefly display wrong background color when navigating between flyout items";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ShellTabBarBackgroundColor()
 		{
 			App.WaitForElement("Label");

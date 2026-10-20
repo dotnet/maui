@@ -14,7 +14,7 @@ public class Issue34584 : _IssuesUITest
 	public override string Issue => "Content renders under status bar when navigating with keyboard open to a page with NavBarIsVisible=False";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ContentShouldNotRenderUnderStatusBarAfterNavigatingWithKeyboardOpen()
 	{
 		App.WaitForElement("Entry");

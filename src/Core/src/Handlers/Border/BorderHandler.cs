@@ -42,6 +42,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IBorderView, BorderHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if WINDOWS
+			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
+#endif
 		};
 
 #if !WINDOWS
