@@ -22,6 +22,14 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(0.24, 2, true)]
+		[InlineData(0.24, 3, false)]
+		public void SafeAreaEmptyComparisonUsesProvidedDisplayScale(double value, double scale, bool expected)
+		{
+			Assert.Equal(expected, new SafeAreaPadding(value, 0, 0, 0).IsEmptyAtPixelLevel(scale));
+		}
+
+		[Theory]
 		[InlineData(0.24, 2, false)]
 		[InlineData(0.24, 3, true)]
 		public void SafeAreaNonZeroComparisonUsesProvidedDisplayScale(double value, double scale, bool expected)
