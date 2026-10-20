@@ -1,3 +1,32 @@
 ﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <Grid Background="Yellow">
+        <Label x:Name="label"
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               Text="Right-click to choose color">
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Black"
+                                    CommandParameter="Black"/>
+                    <MenuFlyoutSubItem Text="Light">
+                        <MenuFlyoutItem Text="Blue"
+                                        CommandParameter="LightBlue"/>
+                        <MenuFlyoutItem Text="Coral"
+                                        CommandParameter="LightCoral"/>
+                        <MenuFlyoutItem Text="Cyan"
+                                        CommandParameter="LightCyan"/>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem Text="Dark">
+                        <MenuFlyoutItem Text="Blue"
+                                        CommandParameter="DarkBlue"/>
+                        <MenuFlyoutItem Text="Cyan"
+                                        CommandParameter="DarkCyan"/>
+                        <MenuFlyoutItem Text="Magenta"
+                                        CommandParameter="DarkMagenta"/>
+                    </MenuFlyoutSubItem>
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </Label>
+    </Grid>
 </ContentPage>
