@@ -655,8 +655,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell,
 					NativeElementRoles.ShellTabOverflow,
 					NativeElementDiscriminators.OverflowRow);
-				var renderer = RendererForViewController(ViewControllers[i]);
-				var cell = moreNavigationCells[i - 4];
 				cell.AccessibilityIdentifier = renderer.ShellSection.AutomationId
 					?? renderer.ShellSection.CurrentItem?.AutomationId;
 
