@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCornerRadius(this UIButton platformButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.CornerRadius >= 0)
-				platformButton.Layer.CornerRadius = buttonStroke.CornerRadius;
+			{
+				var cornerRadius = platformButton.Layer.GetEffectiveCornerRadius(buttonStroke.CornerRadius);
+				platformButton.Layer.CornerRadius = cornerRadius;
+			}
 		}
 
 		public static void UpdateText(this UIButton platformButton, IText button) =>
