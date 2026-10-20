@@ -581,6 +581,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell,
 					NativeElementRoles.ShellTabOverflow,
 					NativeElementDiscriminators.OverflowRow);
+				var renderer = RendererForViewController(ViewControllers[i]);
+				var cell = moreNavigationCells[i - 4];
+				cell.AccessibilityIdentifier = renderer.ShellSection.AutomationId
+					?? renderer.ShellSection.CurrentItem?.AutomationId;
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)

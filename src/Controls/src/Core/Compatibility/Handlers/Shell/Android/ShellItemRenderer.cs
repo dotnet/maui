@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using IMenu = Android.Views.IMenu;
@@ -370,13 +371,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_bottomView.MaxItemCount,
 					(innerLayout, shellSectionIndex) =>
 					{
-						var automationId = shellSections[shellSectionIndex].CurrentItem?.AutomationId;
-						if (!string.IsNullOrEmpty(automationId))
-						{
-							ViewCompat.SetAccessibilityDelegate(
-								innerLayout,
-								new AutomationIdAccessibilityDelegate(automationId));
-						}
+						SetAutomationIdAccessibilityDelegate(
+							innerLayout,
+							GetAutomationId(shellSections[shellSectionIndex]));
 					});
 				_bottomSheetDialog.Show();
 				_bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
@@ -730,36 +727,40 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateTabBarAutomationIds()
 		{
-			var shellItemAutomationId = ShellItem.AutomationId;
-
-			if (!string.IsNullOrEmpty(shellItemAutomationId))
-			{
-				ViewCompat.SetAccessibilityDelegate(
-					_bottomView,
-					new AutomationIdAccessibilityDelegate(shellItemAutomationId));
-			}
+			SetAutomationIdAccessibilityDelegate(_bottomView, ShellItem.AutomationId);
 
 			var shellItems = ((IShellItemController)ShellItem).GetItems();
 
 			for (int i = 0; i < shellItems.Count && i < _bottomView.Menu.Size(); i++)
 			{
-				var automationId = shellItems[i].CurrentItem?.AutomationId;
-
-				if (string.IsNullOrEmpty(automationId))
-					continue;
-
 				using var menuItem = _bottomView.Menu.GetItem(i);
+
+				if (menuItem.ItemId == MoreTabId)
+					continue;
 
 				// Get the native view corresponding to this menu item
 				var itemView = _bottomView.FindViewById(menuItem.ItemId);
 
 				if (itemView is not null)
 				{
-					ViewCompat.SetAccessibilityDelegate(
-						itemView,
-						new AutomationIdAccessibilityDelegate(automationId));
+					SetAutomationIdAccessibilityDelegate(itemView, GetAutomationId(shellItems[i]));
 				}
 			}
+		}
+
+		static string GetAutomationId(ShellSection shellSection) =>
+			shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId;
+
+		static void SetAutomationIdAccessibilityDelegate(AView view, string automationId)
+		{
+			var currentDelegate = ViewCompat.GetAccessibilityDelegate(view);
+			var originalDelegate = (currentDelegate as AutomationIdAccessibilityDelegate)?.WrappedDelegate ?? currentDelegate;
+
+			ViewCompat.SetAccessibilityDelegate(
+				view,
+				string.IsNullOrEmpty(automationId)
+					? originalDelegate
+					: new AutomationIdAccessibilityDelegate(automationId, originalDelegate));
 		}
 
 		protected virtual void UpdateTabBarVisibility()
@@ -791,12 +792,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 	}
-
-	sealed class AutomationIdAccessibilityDelegate : AccessibilityDelegateCompat
+	
+	sealed class AutomationIdAccessibilityDelegate : AccessibilityDelegateCompatWrapper
 	{
 		readonly string _automationId;
 
-		public AutomationIdAccessibilityDelegate(string automationId)
+		public AutomationIdAccessibilityDelegate(string automationId, AccessibilityDelegateCompat originalDelegate)
+			: base(originalDelegate)
 		{
 			_automationId = automationId;
 		}
