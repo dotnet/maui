@@ -1526,6 +1526,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						!navigation.NavigationBarHidden &&
 						!navigation.NavigationBar.Hidden &&
 						!navigation.NavigationBar.Translucent &&
+						(EdgesForExtendedLayout & UIRectEdge.Top) == 0 &&
 						View.Window is UIWindow window &&
 						navigation.NavigationBar.Window == window)
 					{
