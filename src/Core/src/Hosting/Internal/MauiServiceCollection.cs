@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting.Internal
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Hosting.Internal
 	{
 		readonly List<ServiceDescriptor> _descriptors = new List<ServiceDescriptor>();
 		readonly Dictionary<Type, ServiceDescriptor> _descriptorDictionary = new Dictionary<Type, ServiceDescriptor>();
+		internal long Version => Interlocked.Read(ref _version);
+		long _version;
 
 		public int Count => _descriptors.Count;
 
@@ -18,7 +21,14 @@ namespace Microsoft.Maui.Hosting.Internal
 		public ServiceDescriptor this[int index]
 		{
 			get => _descriptors[index];
-			set => _descriptors[index] = value;
+			set
+			{
+				var oldServiceType = _descriptors[index].ServiceType;
+				_descriptors[index] = value;
+				RefreshDescriptor(oldServiceType);
+				RefreshDescriptor(value.ServiceType);
+				Interlocked.Increment(ref _version);
+			}
 		}
 
 		public void Add(ServiceDescriptor item)
@@ -28,12 +38,14 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			_descriptors.Add(item);
 			_descriptorDictionary[item.ServiceType] = item;
+			Interlocked.Increment(ref _version);
 		}
 
 		public void Clear()
 		{
 			_descriptors.Clear();
 			_descriptorDictionary.Clear();
+			Interlocked.Increment(ref _version);
 		}
 
 		public bool Contains(ServiceDescriptor item) =>
@@ -49,7 +61,10 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			var success = _descriptors.Remove(item);
 			if (success)
-				_descriptorDictionary.Remove(item.ServiceType);
+			{
+				RefreshDescriptor(item.ServiceType);
+				Interlocked.Increment(ref _version);
+			}
 			return success;
 		}
 
@@ -61,14 +76,30 @@ namespace Microsoft.Maui.Hosting.Internal
 		public void Insert(int index, ServiceDescriptor item)
 		{
 			_descriptors.Insert(index, item);
-			_descriptorDictionary[item.ServiceType] = item;
+			RefreshDescriptor(item.ServiceType);
+			Interlocked.Increment(ref _version);
 		}
 
 		public void RemoveAt(int index)
 		{
 			var descriptor = _descriptors[index];
 			_descriptors.RemoveAt(index);
-			_descriptorDictionary.Remove(descriptor.ServiceType);
+			RefreshDescriptor(descriptor.ServiceType);
+			Interlocked.Increment(ref _version);
+		}
+
+		void RefreshDescriptor(Type serviceType)
+		{
+			for (var i = _descriptors.Count - 1; i >= 0; i--)
+			{
+				if (_descriptors[i].ServiceType == serviceType)
+				{
+					_descriptorDictionary[serviceType] = _descriptors[i];
+					return;
+				}
+			}
+
+			_descriptorDictionary.Remove(serviceType);
 		}
 
 		public bool TryGetService(Type serviceType, out ServiceDescriptor? descriptor) =>

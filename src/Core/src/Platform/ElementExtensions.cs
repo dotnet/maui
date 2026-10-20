@@ -33,27 +33,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ElementExtensions
 	{
-		static HashSet<Type> handlersWithConstructors = new HashSet<Type>();
-
-		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
-		{
-			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
-
-			if (handlerType == null)
-				return null;
-
-#if ANDROID
-			if(mauiContext.Context != null)
-			{
-				return (IElementHandler)Extensions.DependencyInjection.
-					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
-			}
-#endif
-
-			return (IElementHandler)Extensions.DependencyInjection.
-				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
-		}
-
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
@@ -69,24 +48,9 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 
-			// TODO Clean up this handler create. Handlers should probably create through the 
-			// DI.Ext Service provider. We just register them all as transient? possibly?
 			if (handler == null)
 			{
-				var viewType = view.GetType();
-				try
-				{
-					if (handlersWithConstructors.Contains(viewType))
-						handler = viewType.CreateTypeWithInjection(context);
-					else
-						handler = context.Handlers.GetHandler(viewType, context);
-				}
-				catch (MissingMethodException)
-				{
-					handler = viewType.CreateTypeWithInjection(context);
-					if (handler != null)
-						handlersWithConstructors.Add(view.GetType());
-				}
+				handler = context.Handlers.GetHandlerWithInjection(view.GetType(), context);
 			}
 
 			if (handler == null)

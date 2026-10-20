@@ -1189,6 +1189,8 @@ namespace Microsoft.Maui.Controls
 				OnHandlerChangingCore(new HandlerChangingEventArgs(_previousHandler, newHandler));
 
 				_handler = newHandler;
+				if (_handler is not null)
+					RemapForControls();
 
 				// Only call disconnect if the previous handler is still connected to this virtual view.
 				// If a handler is being reused for a different VirtualView then the virtual
@@ -1197,7 +1199,9 @@ namespace Microsoft.Maui.Controls
 					_previousHandler?.DisconnectHandler();
 
 				if (_handler?.VirtualView != this)
+				{
 					_handler?.SetVirtualView(this);
+				}
 
 				OnHandlerChangedCore();
 			}
@@ -1245,46 +1249,7 @@ namespace Microsoft.Maui.Controls
 			set => HandlerProperties.SetDisconnectPolicy(this, value);
 		}
 
-		internal virtual bool TrySetValue(string text)
-		{
-			if (this is Label label)
-			{
-				label.Text = text;
-				return true;
-			}
-			else if (this is Entry entry)
-			{
-				entry.Text = text;
-				return true;
-			}
-			else if (this is Editor editor)
-			{
-				editor.Text = text;
-				return true;
-			}
-			else if (this is Switch sw && bool.TryParse(text, out bool swResult))
-			{
-				sw.IsToggled = swResult;
-				return true;
-			}
-			else if (this is RadioButton rb && bool.TryParse(text, out bool rbResult))
-			{
-				rb.IsChecked = rbResult;
-				return true;
-			}
-			else if (this is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
-			{
-				tp.Time = tpResult;
-				return true;
-			}
-			else if (this is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
-			{
-				dp.Date = dpResult;
-				return true;
-			}
-
-			return false;
-		}
+		internal virtual bool TrySetValue(string text) => false;
 
 		class TemporaryWrapper : IList<Element>
 		{

@@ -7,18 +7,20 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls
 {
 	public partial class Element
+		: IControlsMapperRemappable
 	{
-		static Element() => RemapIfNeeded();
+		void IControlsMapperRemappable.RemapForControls() => RemapForControls();
 
-		internal static void RemapIfNeeded()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal virtual void RemapForControls()
 		{
-			RemappingHelper.RemapIfNeeded(typeof(Element), RemapForControls);
+			s_remappedForControls.InvokeOnce();
 		}
 
-		internal static void RemapForControls()
+		static void RemapForControlsOnce()
 		{
-			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
-			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);
 		}
 	}
 }

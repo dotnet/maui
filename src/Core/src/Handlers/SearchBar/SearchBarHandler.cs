@@ -42,14 +42,14 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			[nameof(ISearchBar.FlowDirection)] = MapFlowDirection,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
-		public static CommandMapper<ISearchBar, ISearchBarHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<ISearchBar, ISearchBarHandler> CommandMapper = new CommandMapper<ISearchBar, ISearchBarHandler>(ViewCommandMapper)
 		{
 #if ANDROID
 			[nameof(ISearchBar.Focus)] = MapFocus
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public SearchBarHandler() : this(Mapper)
 		{

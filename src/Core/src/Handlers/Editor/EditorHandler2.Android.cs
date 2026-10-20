@@ -12,7 +12,7 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 	bool _set;
 
 	public static PropertyMapper<IEditor, EditorHandler2> Mapper =
-		new(ViewMapper)
+		new PropertyMapper<IEditor, EditorHandler2>(ViewMapper)
 		{
 			[nameof(IEditor.Background)] = MapBackground,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
@@ -30,13 +30,13 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 			[nameof(IEditor.Keyboard)] = MapKeyboard,
 			[nameof(IEditor.CursorPosition)] = MapCursorPosition,
 			[nameof(IEditor.SelectionLength)] = MapSelectionLength,
-		};
+		}.WithFrameworkMappingsSealed();
 
 	public static CommandMapper<IEditor, EditorHandler2> CommandMapper =
-		new(ViewCommandMapper)
+		new CommandMapper<IEditor, EditorHandler2>(ViewCommandMapper)
 		{
 			[nameof(IEditor.Focus)] = MapFocus
-		};
+		}.WithFrameworkMappingsSealed();
 
 	public EditorHandler2() : base(Mapper, CommandMapper)
 	{

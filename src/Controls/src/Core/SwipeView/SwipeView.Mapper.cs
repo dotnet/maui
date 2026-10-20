@@ -5,10 +5,17 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class SwipeView
 	{
-		internal static new void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			// Adjusted the mapping to preserve SwipeView.Entry legacy behavior
-			SwipeViewHandler.Mapper.AppendToMapping<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);
+			SwipeViewHandler.Mapper.AppendToMappingForControls<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);
 		}
 
 		static void MapBackground(ISwipeViewHandler handler, SwipeView swipeView)

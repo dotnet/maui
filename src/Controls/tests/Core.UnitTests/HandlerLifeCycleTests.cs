@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout>(static _ => new HandlerStub()))
 				.Build();
 
 
@@ -78,9 +78,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button>(static _ => new HandlerStub()))
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout>(static _ => new HandlerStub()))
 				.Build();
 
 
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton>(static _ => new HandlerStub()))
 				.Build();
 
 			LifeCycleButton button = new LifeCycleButton();
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton>(static _ => new HandlerStub()))
 				.Build();
 
 			LifeCycleButton button = new LifeCycleButton();
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mauiApp2 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton>(static _ => new HandlerStub()))
 				.Build();
 
 			MauiContext mauiContext2 = new MauiContext(mauiApp2.Services);
