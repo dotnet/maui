@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
@@ -109,6 +110,9 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine();
 		}
 
+		EmitNameChanges(codeWriter, diff, unregister: true, rootType, compilation, xmlnsCache, typeCache, generatedFields, templateNodeIds);
+		EmitNameChanges(codeWriter, diff, unregister: false, rootType, compilation, xmlnsCache, typeCache, generatedFields, templateNodeIds);
+
 		int compIdx = 0;
 		foreach (var nodeDiff in diff.NodeChanges)
 		{
@@ -122,6 +126,8 @@ static class UpdateComponentCodeWriter
 
 				foreach (var propDiff in nodeDiff.PropertyChanges)
 				{
+					if (propDiff.PropertyName == XmlName.xName)
+						continue;
 					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType, compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem);
 				}
 				codeWriter.WriteLine();
@@ -160,7 +166,9 @@ static class UpdateComponentCodeWriter
 
 					foreach (var propDiff in nodeDiff.PropertyChanges)
 					{
-						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+						if (propDiff.PropertyName == XmlName.xName)
+							continue;
+						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 					}
 				}
 				else
@@ -178,6 +186,93 @@ static class UpdateComponentCodeWriter
 
 		codeWriter.Flush();
 		return codeWriter.InnerWriter.ToString();
+	}
+
+	static void EmitNameChanges(
+		IndentedTextWriter codeWriter,
+		XamlTreeDiff diff,
+		bool unregister,
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		IReadOnlyDictionary<string, XmlType>? existingNamedFields,
+		ISet<string>? templateNodeIds)
+	{
+		var rootSupportsNameScope = InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject");
+		var phase = unregister ? "unregister" : "register";
+		var changeIndex = 0;
+
+		foreach (var nodeDiff in diff.NodeChanges)
+		{
+			var nameDiff = nodeDiff.PropertyChanges.FirstOrDefault(static diff => diff.PropertyName == XmlName.xName);
+			if (nameDiff.PropertyName != XmlName.xName || templateNodeIds?.Contains(nodeDiff.NodeId) == true)
+				continue;
+
+			var isRoot = string.IsNullOrEmpty(nodeDiff.NodeId);
+			INamedTypeSymbol? nodeType = rootType;
+			if (!isRoot
+				&& (nodeDiff.NodeXmlType is not { } xmlType
+					|| !xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out nodeType)
+					|| nodeType is null))
+			{
+				continue;
+			}
+
+			var targetVar = isRoot ? "this" : $"__nameTarget_{phase}_{changeIndex}";
+			if (!isRoot)
+			{
+				codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{EscapeString(nodeDiff.NodeId)}\", out var {targetVar}))");
+				codeWriter.WriteLine("{");
+				codeWriter.Indent++;
+			}
+
+			if (rootSupportsNameScope)
+			{
+				var nameScopeVar = $"__nameScope_{phase}_{changeIndex}";
+				using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
+				{
+					codeWriter.WriteLine($"var {nameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
+					if (unregister)
+					{
+						if (!string.IsNullOrEmpty(nameDiff.OldValue))
+						{
+							var oldName = EscapeString(nameDiff.OldValue!);
+							codeWriter.WriteLine($"if ({nameScopeVar} != null && global::System.Object.ReferenceEquals({nameScopeVar}.FindByName(\"{oldName}\"), {targetVar}))");
+							using (PrePost.NewBlock(codeWriter))
+								codeWriter.WriteLine($"{nameScopeVar}.UnregisterName(\"{oldName}\");");
+						}
+					}
+					else if (nameDiff.Kind == PropertyDiffKind.Set && !string.IsNullOrEmpty(nameDiff.NewValue))
+					{
+						codeWriter.WriteLine($"{nameScopeVar}?.RegisterName(\"{EscapeString(nameDiff.NewValue!)}\", {targetVar});");
+					}
+				}
+			}
+
+			if (!unregister && nameDiff.Kind == PropertyDiffKind.Set && !string.IsNullOrEmpty(nameDiff.NewValue))
+			{
+				var newName = nameDiff.NewValue!;
+				if (existingNamedFields?.TryGetValue(newName, out var fieldXmlType) == true
+					&& fieldXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var fieldType)
+					&& fieldType is not null
+					&& IsAssignableTo(nodeType, fieldType, compilation))
+				{
+					codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(newName)} = ({fieldType.ToFQDisplayString()}){targetVar};");
+				}
+
+				if (InheritsFrom(nodeType, "global::Microsoft.Maui.Controls.Element"))
+					codeWriter.WriteLine($"(({nodeType.ToFQDisplayString()}){targetVar}).StyleId ??= \"{EscapeString(newName)}\";");
+			}
+
+			if (!isRoot)
+			{
+				codeWriter.Indent--;
+				codeWriter.WriteLine("}");
+			}
+			codeWriter.WriteLine();
+			changeIndex++;
+		}
 	}
 
 	/// <summary>
@@ -694,7 +789,7 @@ static class UpdateComponentCodeWriter
 			if (existingNamedFields?.TryGetValue(fieldName, out var existingFieldXmlType) == true
 				&& existingFieldXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var existingFieldType)
 				&& existingFieldType is not null
-				&& IsAssignableTo(typeSymbol, existingFieldType))
+				&& IsAssignableTo(typeSymbol, existingFieldType, compilation))
 			{
 				codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(fieldName)} = {varName};");
 			}
@@ -702,16 +797,10 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
-	static bool IsAssignableTo(INamedTypeSymbol sourceType, INamedTypeSymbol targetType)
+	static bool IsAssignableTo(ITypeSymbol sourceType, ITypeSymbol targetType, Compilation compilation)
 	{
-		for (var current = sourceType; current is not null; current = current.BaseType)
-		{
-			if (SymbolEqualityComparer.Default.Equals(current, targetType))
-				return true;
-		}
-
-		return sourceType.AllInterfaces.Any(interfaceType =>
-			SymbolEqualityComparer.Default.Equals(interfaceType, targetType));
+		var conversion = compilation.ClassifyConversion(sourceType, targetType);
+		return conversion.Exists && conversion.IsImplicit;
 	}
 
 	/// <summary>
@@ -1386,6 +1475,7 @@ static class UpdateComponentCodeWriter
 		PropertyDiff propDiff,
 		INamedTypeSymbol? nodeType,
 		string varName,
+		IReadOnlyDictionary<string, XmlType>? existingNamedFields,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,

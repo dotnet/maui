@@ -100,8 +100,8 @@ static class InitializeComponentCodeWriter
 					var asmName = compilation.AssemblyName ?? string.Empty;
 					var tfm = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
 					var relPath = xamlItem.ProjectItem.HotReloadStateKey;
-					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, tfm, relPath);
-					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, tfm, relPath);
+					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, tfm, relPath, xamlItem.ProjectItem.HotReloadSessionToken);
+					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, tfm, relPath, xamlItem.ProjectItem.HotReloadSessionToken);
 					if (cachedRoot != null && cachedIds != null)
 						nodeIds = NodeIdHelper.TransferIds(root, cachedIds, cachedRoot);
 					else

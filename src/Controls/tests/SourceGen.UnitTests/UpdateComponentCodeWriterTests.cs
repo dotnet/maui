@@ -143,6 +143,30 @@ $"""
 	}
 
 	[Fact]
+	public void RenamedName_NonBindableObjectRoot_DoesNotEmitNameScopeLookup()
+	{
+		var v1 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="OldName" />
+</ResourceDictionary>
+""";
+		var v2 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="NewName" />
+</ResourceDictionary>
+""";
+		var compilation = CreateMauiCompilation();
+		var rootType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+
+		var result = Generate(v1, v2, rootType: rootType);
+
+		Assert.NotNull(result);
+		Assert.DoesNotContain("NameScope.GetNameScope(this)", result!, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void SinglePropertyChange_GeneratesMethodHeader()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
@@ -329,13 +353,10 @@ $"""
 	}
 
 	[Fact]
-	public void XNameRebuild_AmongUntouchedSiblings_DoesNotClearLayout()
+	public void XNameRename_AmongUntouchedSiblings_DoesNotMutateLayout()
 	{
-		// Regression test for the "sibling disruption" review finding: a same-position x:Name
-		// rename is a local rebuild (ChildChangeKind.Rebuilt), not a structural add/remove. The
-		// generated code must target only the renamed child's slot — not Clear() the whole
-		// Layout and re-Add every child — so untouched siblings keep their live handler/platform
-		// view state (focus, animations, scroll position, etc.) across the hot-reload patch.
+		// A same-position x:Name rename targets the existing element and must not mutate the
+		// containing Layout, so untouched siblings keep their live handler/platform view state.
 		var v1 =
 $"""
 <ContentPage {MauiXmlns} x:Class="Test.TestPage">
@@ -359,22 +380,17 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 
-		// Untouched siblings must never be detached/reattached: no destructive Clear()+readd.
 		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
-		// The rebuilt Entry is removed from its stale slot and reinserted at the same target
-		// index — a targeted, non-destructive single-slot replace.
-		Assert.Contains("RemoveAt", result, System.StringComparison.Ordinal);
-		Assert.Contains(".Insert(", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain(".Insert(", result, System.StringComparison.Ordinal);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void XNameRebuild_WithEventHandler_ReWiresEventOnRebuiltInstance()
+	public void XNameRename_WithEventHandler_DoesNotRewireExistingInstance()
 	{
-		// Regression test for the "Rebuilt elements lose XAML event wiring" review finding: the
-		// local-rebuild creation path (EmitNewElement -> EmitNewElementProperties) must subscribe
-		// XAML event attributes (e.g. Clicked="OnClicked") with += — an event can never be
-		// assigned with a plain '=' — or the freshly-rebuilt instance would silently lose its
-		// handler.
+		// The element is retained, so its existing event subscription must not be duplicated.
 		var v1 =
 $"""
 <ContentPage {MauiXmlns} x:Class="Test.TestPage">
@@ -390,23 +406,17 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 
-		Assert.Contains("Clicked += OnClicked", result, System.StringComparison.Ordinal);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked += OnClicked", result, System.StringComparison.Ordinal);
 		Assert.DoesNotContain("Clicked = OnClicked", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void XNameRebuild_UnderGetterOnlyCollectionContentProperty_AbortsPatchForStructuralFallback()
+	public void XNameRename_UnderGetterOnlyCollectionContentProperty_DoesNotMutateCollection()
 	{
-		// Regression test for the "Local rebuild generates invalid updates for collection
-		// content" / "Unsupported collection skips desynchronizes live tree and cached IDs"
-		// review findings: FormattedString.Spans is a getter-only IList<Span> content property
-		// (not a Layout, not a publicly-settable single-value content property).
-		// EmitContentPropertyChange can only emit a plain assignment, which would not compile
-		// against a read-only collection property. Silently skipping just this one change while
-		// still reporting the overall patch as applied would desync the live tree (never patched)
-		// from the ids the generator caches (as if it had been) — so this unsupported shape must
-		// abort the WHOLE patch instead, forcing the caller's existing structural-fallback path
-		// (fresh ids reassigned from 0), exactly like XamlNodeDiff.ComputeDiff returning null.
+		// The Span is renamed in place, so the getter-only Spans collection is not assigned or
+		// structurally modified.
 		var v1 =
 $"""
 <ContentPage {MauiXmlns} x:Class="Test.TestPage">
@@ -425,8 +435,133 @@ $"""
 """;
 		var result = Generate(v1, v2);
 
-		// No patch at all is emitted — never a broken assignment to the read-only Spans property.
-		Assert.Null(result);
+		Assert.NotNull(result);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain(".Spans =", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RootXNameRename_UpdatesNameScope()
+	{
+		var v1 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage" x:Name="oldName" />""";
+		var v2 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage" x:Name="newName" />""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("UnregisterName(\"oldName\")", result, StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\", this)", result, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SwappedSiblingNames_UnregistersAllNamesBeforeRegisteringAny()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label x:Name="a" />
+		<Button x:Name="b" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label x:Name="b" />
+		<Button x:Name="a" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		var lastUnregister = Math.Max(
+			result!.LastIndexOf("UnregisterName(\"a\")", StringComparison.Ordinal),
+			result.LastIndexOf("UnregisterName(\"b\")", StringComparison.Ordinal));
+		var firstRegister = Math.Min(
+			result.IndexOf("RegisterName(\"a\"", StringComparison.Ordinal),
+			result.IndexOf("RegisterName(\"b\"", StringComparison.Ordinal));
+		Assert.True(lastUnregister >= 0);
+		Assert.True(firstRegister > lastUnregister);
+	}
+
+	[Fact]
+	public void RenamedName_IsRegisteredBeforeDependentForwardReferenceUpdate()
+	{
+		var v1 =
+$$"""
+<ContentPage {{MauiXmlns}} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="{Binding Source={x:Reference oldName}, Path=Text}" />
+		<Entry x:Name="oldName" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$$"""
+<ContentPage {{MauiXmlns}} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="{Binding Source={x:Reference newName}, Path=Text}" />
+		<Entry x:Name="newName" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		var register = result!.IndexOf("RegisterName(\"newName\"", StringComparison.Ordinal);
+		var reference = result.IndexOf(".FindByName(\"newName\")", StringComparison.Ordinal);
+		Assert.True(register >= 0);
+		Assert.True(reference > register);
+	}
+
+	[Fact]
+	public void AddingXName_InitializesStyleId()
+	{
+		var v1 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage"><Label /></ContentPage>""";
+		var v2 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage"><Label x:Name="newName" /></ContentPage>""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("StyleId ??= \"newName\"", result, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TemplateLocalXNameRename_UsesStructuralFallback()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<CollectionView>
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Label x:Name="oldName" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<CollectionView>
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Label x:Name="newName" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+
+		Assert.Null(Generate(v1, v2));
 	}
 
 	// helpers
