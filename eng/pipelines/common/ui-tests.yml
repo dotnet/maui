@@ -15,7 +15,6 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
-  testNameFilter: ''
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -77,8 +76,6 @@ stages:
             parameters:
                 runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
-                ${{ if ne(parameters.testNameFilter, '') }}:
-                  platform: maccatalyst
 
   # Material3 Build Stage - Separate CoreCLR build with UseMaterial3=true (Android-only)
   - stage: build_ui_tests_material3
@@ -452,10 +449,7 @@ stages:
                       artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
-    ${{ if ne(parameters.testNameFilter, '') }}:
-      dependsOn: []
-    ${{ else }}:
-      dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
@@ -477,7 +471,6 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
-                      testNameFilter: ${{ parameters.testNameFilter }}
                       version: "15.3"
                       device: mac
                       path: ${{ project.mac }}
