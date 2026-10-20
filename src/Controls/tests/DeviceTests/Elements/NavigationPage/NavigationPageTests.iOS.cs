@@ -11,11 +11,13 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -107,7 +109,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navigationPage), async _ =>
 			{
-				var (renderer, context) = await PopAndDismissModalAsync(root, popToRoot);
+				var (renderer, context, poppedPage, poppedController) = await PopAndDismissModalAsync(root, popToRoot);
 				try
 				{
 					// ModalWrapper retains the native renderer until it is collected.
@@ -130,18 +132,29 @@ namespace Microsoft.Maui.DeviceTests
 				// Observe the actual continuation tasks instead of relying on the
 				// process-wide UnobservedTaskException event and finalizer timing.
 				await Task.WhenAll(context.Tasks).WaitAsync(TimeSpan.FromSeconds(5));
+
+				// A cached page must not keep its old controller's subscriptions alive.
+				NavigationPage.SetIconColor(poppedPage, Colors.Red);
+				poppedPage.Title = "Changed after dismissal";
+				poppedPage.ToolbarItems[0].Text = "Changed toolbar item";
+				poppedPage.ToolbarItems.Add(new ToolbarItem { Text = "Added after dismissal" });
+				await AssertEventually(() => poppedController.Handle == IntPtr.Zero,
+					message: "The removed controller should be disposed even when its page is retained.");
 			});
 		}
 
-		async Task<(NavigationRenderer, NavigationContinuationContext)> PopAndDismissModalAsync(ContentPage root, bool popToRoot)
+		async Task<(NavigationRenderer, NavigationContinuationContext, ContentPage, UIViewController)> PopAndDismissModalAsync(ContentPage root, bool popToRoot)
 		{
 			var modal = new NavigationPage(new ContentPage());
 			await root.Navigation.PushModalAsync(modal, false);
 			await modal.PushAsync(new ContentPage(), false);
-			await modal.PushAsync(new ContentPage(), false);
+			var poppedPage = new ContentPage { Title = "Retained popped page" };
+			poppedPage.ToolbarItems.Add(new ToolbarItem { Text = "Retained toolbar item" });
+			await modal.PushAsync(poppedPage, false);
 			await OnNavigatedToAsync(modal.CurrentPage);
 
 			var renderer = (NavigationRenderer)modal.Handler;
+			var poppedController = renderer.TopViewController;
 			var original = SynchronizationContext.Current;
 			Assert.NotNull(original);
 			var context = new NavigationContinuationContext(original);
@@ -161,8 +174,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SynchronizationContext.SetSynchronizationContext(original);
 				}
+				Assert.DoesNotContain(renderer.ViewControllers, controller => controller.Handle == poppedController.Handle);
 				await root.Navigation.PopModalAsync(false);
-				return (renderer, context);
+				return (renderer, context, poppedPage, poppedController);
 			}
 			catch
 			{
