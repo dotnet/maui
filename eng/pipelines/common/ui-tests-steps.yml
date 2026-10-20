@@ -12,6 +12,7 @@ parameters:
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler test configuration
   testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
+  testNameFilter: ''
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
@@ -156,6 +157,13 @@ steps:
 
     $testFilter = $testFilter.TrimEnd("|")
 
+    if (-not [string]::IsNullOrWhiteSpace($env:UITEST_NAME_FILTER)) {
+      if ($env:UITEST_NAME_FILTER -ne 'FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue17389.ValidateBackgroundColorDoesNotAffectInputTransparent') {
+        throw "Unexpected Issue17389 diagnostic method filter."
+      }
+      $testFilter = "($testFilter)&($env:UITEST_NAME_FILTER)"
+    }
+
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
       $command += " --TEST_CONFIGURATION_ARGS=""$testConfigrationArgs"""
@@ -173,10 +181,13 @@ steps:
 
     Invoke-Expression $command  
   displayName: $(Agent.JobName)
-  ${{ if ne(parameters.platform, 'android')}}:
+  ${{ if ne(parameters.testNameFilter, '') }}:
+    retryCountOnTaskFailure: 0
+  ${{ elseif ne(parameters.platform, 'android')}}:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    UITEST_NAME_FILTER: ${{ parameters.testNameFilter }}
 
 - bash: |
     cat ${BASH_SOURCE[0]}

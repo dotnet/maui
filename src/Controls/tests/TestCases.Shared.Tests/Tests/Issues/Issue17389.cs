@@ -40,9 +40,14 @@ public class Issue17389 : _IssuesUITest
 		}
 	}
 
-	[Test, Order(1)]
+	[TestCase("baseline")]
+	[TestCase("green-first")]
+	[TestCase("activate")]
+	[TestCase("physical-center")]
+	[TestCase("physical-lower")]
+	[Order(1)]
 	[Category(UITestCategories.Layout)]
-	public void ValidateBackgroundColorDoesNotAffectInputTransparent()
+	public void ValidateBackgroundColorDoesNotAffectInputTransparent(string control)
 	{
 		App.WaitForElement("ToggleInputTransparentButton");
 
@@ -54,9 +59,32 @@ public class Issue17389 : _IssuesUITest
 			 "PurpleContent"
 		};
 
+		if (control == "green-first")
+			(layouts[0], layouts[1]) = (layouts[1], layouts[0]);
+
+		if (control == "activate")
+		{
+			Assert.That(App, Is.InstanceOf<AppiumCatalystApp>());
+			((AppiumCatalystApp)App).Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+			{
+				{ "bundleId", "com.microsoft.maui.uitests" }
+			});
+		}
+
 		foreach (var layout in layouts)
 		{
-			App.Tap(layout);
+			if (layout == "RedGrid" && (control == "physical-center" || control == "physical-lower"))
+			{
+				var rect = App.FindElement(layout).GetRect();
+				var x = rect.X + rect.Width / 2;
+				var y = rect.Y + rect.Height * (control == "physical-center" ? 0.5 : 0.75);
+				TestContext.WriteLine($"Physical tap {layout}: ({x}, {y}); rect={rect}");
+				App.TapCoordinates((float)x, (float)y);
+			}
+			else
+			{
+				App.Tap(layout);
+			}
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Enabled tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 

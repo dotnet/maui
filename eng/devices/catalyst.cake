@@ -162,6 +162,46 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
+	if (!string.IsNullOrEmpty(EnvironmentVariable("UITEST_NAME_FILTER")))
+	{
+		IEnumerable<string> propertyOutput;
+		var propertyExitCode = StartProcess(toolPath, new ProcessSettings
+		{
+			Arguments = new ProcessArgumentBuilder()
+				.Append("msbuild").AppendQuoted(project)
+				.Append($"/p:Configuration={config}")
+				.Append("-getProperty:TargetPath")
+				.Append("-nologo"),
+			RedirectStandardOutput = true
+		}, out propertyOutput);
+		var testAssembly = propertyOutput.LastOrDefault(line => line.Trim().EndsWith(".dll"))?.Trim();
+		if (propertyExitCode != 0 || string.IsNullOrEmpty(testAssembly) || !System.IO.File.Exists(testAssembly))
+			throw new Exception($"Cannot resolve the built diagnostic test assembly: {string.Join(Environment.NewLine, propertyOutput)}");
+
+		var discoveryPath = System.IO.Path.Combine(binDir, "Issue17389-discovered-tests.txt");
+		var arguments = new ProcessArgumentBuilder()
+			.Append("vstest").AppendQuoted(testAssembly)
+			.Append("/ListFullyQualifiedTests")
+			.AppendQuoted($"/ListTestsTargetPath:{discoveryPath}")
+			.AppendQuoted($"/TestCaseFilter:{testFilter}");
+		IEnumerable<string> discoveryOutput;
+		var discoveryExitCode = StartProcess(toolPath, new ProcessSettings
+		{
+			Arguments = arguments,
+			RedirectStandardOutput = true
+		}, out discoveryOutput);
+		if (discoveryExitCode != 0 || !System.IO.File.Exists(discoveryPath))
+			throw new Exception($"Issue17389 discovery failed (exit {discoveryExitCode}): {string.Join(Environment.NewLine, discoveryOutput)}");
+
+		var discovered = System.IO.File.ReadAllLines(discoveryPath).Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
+		var controls = new[] { "baseline", "green-first", "activate", "physical-center", "physical-lower" };
+		foreach (var test in discovered)
+			Information("Discovered diagnostic case: {0}", test);
+		if (discovered.Count != controls.Length ||
+			controls.Any(control => !discovered.Any(test => test.EndsWith($"ValidateBackgroundColorDoesNotAffectInputTransparent(\"{control}\")"))))
+			throw new Exception("Issue17389 discovery did not match exactly the five intended causal controls.");
+	}
+
 	Information("Run UITests project {0}", project);
 	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
 	Information("UI Tests completed.");

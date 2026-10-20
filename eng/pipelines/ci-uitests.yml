@@ -57,6 +57,10 @@ parameters:
     type: object
     default: []
 
+  - name: testNameFilter
+    type: string
+    default: ''
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -167,6 +171,7 @@ stages:
     parameters:
       ${{ if gt(length(parameters.categoryGroupsToTest), 0) }}:
         categoryGroupsToTest: ${{ parameters.categoryGroupsToTest }}
+      testNameFilter: ${{ parameters.testNameFilter }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
