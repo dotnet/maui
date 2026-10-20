@@ -263,6 +263,98 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task EmptyGroupLayoutChangesGateSnapshotsAndSwitchEmptyViewOnlyAtRootBoundaries()
+		{
+			var groups = new ObservableCollection<ObservableCollection<string>>();
+			var group = new ObservableCollection<string>();
+			var view = CreateCollectionView(groups);
+			view.IsGrouped = true;
+			// No group templates: an existing empty group contributes zero adapter items,
+			// but must still hide EmptyView until the last root group is removed.
+			await WithRecyclerView(view, async (handler, adapter) =>
+			{
+				var recyclerView = handler.PlatformView;
+				var source = Assert.IsType<ObservableGroupedSource>(adapter.ItemsSource);
+				view.EmptyView = new Label { Text = "Empty" };
+				Assert.IsType<EmptyViewAdapter>(recyclerView.GetAdapter());
+				using var observer = new RecordingObserver(recyclerView, source, 4);
+				adapter.RegisterAdapterDataObserver(observer);
+				try
+				{
+					async Task ChangeDuringLayout(Action change, int oldGroupCount,
+						string[] oldItems, int newGroupCount, string[] newItems,
+						bool showEmptyView, int expectedEvents)
+					{
+						var previousManager = recyclerView.GetLayoutManager();
+						var visibleAdapter = recyclerView.GetAdapter();
+						using var manager = new ReentrantLayoutManager(recyclerView.Context, () =>
+						{
+							Assert.True(recyclerView.IsComputingLayout);
+							change();
+							Assert.Equal(oldGroupCount, source.GroupCount);
+							AssertItems(source, oldItems);
+							Assert.Equal(expectedEvents - 1, observer.Events.Count);
+							Assert.Same(visibleAdapter, recyclerView.GetAdapter());
+						});
+						try
+						{
+							recyclerView.SetLayoutManager(manager);
+							Layout(recyclerView);
+							Assert.True(manager.Invoked);
+							Assert.Equal(oldGroupCount, source.GroupCount);
+							AssertItems(source, oldItems);
+							Assert.Same(visibleAdapter, recyclerView.GetAdapter());
+							await DispatchBarrier(view);
+							Assert.Equal(expectedEvents, observer.Events.Count);
+							Assert.Equal(newGroupCount, source.GroupCount);
+							AssertItems(source, newItems);
+							Assert.Equal(newItems.Length, adapter.ItemCount);
+							if (showEmptyView)
+								Assert.IsType<EmptyViewAdapter>(recyclerView.GetAdapter());
+							else
+								Assert.Same(adapter, recyclerView.GetAdapter());
+							Assert.False(observer.NotifiedDuringLayout);
+							Layout(recyclerView);
+							if (showEmptyView || newItems.Length > 0)
+								Assert.NotNull(recyclerView.FindViewHolderForAdapterPosition(0));
+						}
+						finally
+						{
+							// EmptyView transitions can replace the manager themselves.
+							// Only restore ours when it is still installed.
+							if (recyclerView.GetLayoutManager() == manager)
+								recyclerView.SetLayoutManager(previousManager);
+						}
+					}
+
+					await ChangeDuringLayout(() => groups.Add(group),
+						0, Array.Empty<string>(), 1, Array.Empty<string>(), false, 1);
+					Assert.Equal(new[] { "reset|" }, observer.Events);
+
+					await ChangeDuringLayout(() => group.Add("first"),
+						1, Array.Empty<string>(), 1, new[] { "first" }, false, 2);
+
+					await ChangeDuringLayout(() => group.RemoveAt(0),
+						1, new[] { "first" }, 1, Array.Empty<string>(), false, 3);
+
+					await ChangeDuringLayout(() => groups.RemoveAt(0),
+						1, Array.Empty<string>(), 0, Array.Empty<string>(), true, 4);
+					Assert.Equal(new[]
+					{
+						"reset|",
+						"insert:0:1|first",
+						"remove:0:1|",
+						"reset|"
+					}, observer.Events);
+				}
+				finally
+				{
+					adapter.UnregisterAdapterDataObserver(observer);
+				}
+			});
+		}
+
 		[Theory]
 		[InlineData("add")]
 		[InlineData("remove")]

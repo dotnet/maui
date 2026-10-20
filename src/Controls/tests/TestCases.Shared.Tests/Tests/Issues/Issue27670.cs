@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
 
         [Test]
-        [Category(UITestCategories.Shell)]
+        [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
         public void ShouldPushNavigationPageUsingPageSheet()
         {
             App.WaitForElement("Button");
