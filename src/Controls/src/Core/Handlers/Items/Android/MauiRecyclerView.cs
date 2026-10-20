@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		PropertyChangedEventHandler _layoutPropertyChanged;
 		Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 
+		CollectionViewAccessibilityMetadata _accessibilityMetadata;
+
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
@@ -64,6 +66,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
+
+			// Exclude Header/Footer/GroupHeader/GroupFooter/EmptyView from TalkBack list count
+			// and item-info via a cached metadata provider. See dotnet/maui#35681.
+			_accessibilityMetadata = new CollectionViewAccessibilityMetadata(this);
+			SetAccessibilityDelegateCompat(new CollectionViewAccessibilityDelegate(this, _accessibilityMetadata));
+		}
+
+		public override void SetAdapter(Adapter adapter)
+		{
+			base.SetAdapter(adapter);
+			_accessibilityMetadata?.OnAdapterAttached(adapter);
+		}
+
+		public override void SwapAdapter(Adapter adapter, bool removeAndRecycleExistingViews)
+		{
+			base.SwapAdapter(adapter, removeAndRecycleExistingViews);
+			_accessibilityMetadata?.OnAdapterAttached(adapter);
 		}
 
 		protected override void OnAttachedToWindow()
