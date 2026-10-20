@@ -53,6 +53,15 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
+			if (_indicatorView?.TryGetTarget(out var templatedIndicator) == true
+				&& (templatedIndicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride is ILayout layout)
+			{
+				// The template host needs valid bounds before RTL child positioning runs.
+				layout.Measure((double)Bounds.Width, (double)Bounds.Height);
+				layout.Arrange(Bounds.ToRectangle());
+				return;
+			}
+
 			if (Subviews.Length == 0)
 				return;
 
@@ -61,6 +70,18 @@ namespace Microsoft.Maui.Platform
 			{
 				UpdateIndicatorShape();
 			}
+		}
+
+		/// <inheritdoc/>
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			if (_indicatorView?.TryGetTarget(out var indicatorView) == true
+				&& (indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride is ILayout layout)
+			{
+				return layout.Measure((double)size.Width, (double)size.Height).ToCGSize();
+			}
+
+			return base.SizeThatFits(size);
 		}
 
 		public void UpdateIndicatorSize()
