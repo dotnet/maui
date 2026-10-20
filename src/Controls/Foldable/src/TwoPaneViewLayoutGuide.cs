@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Graphics;
 
@@ -39,6 +41,9 @@ namespace Microsoft.Maui.Controls.Foldable
 		IFoldableService _connectedService;
 		readonly bool _hasExplicitService;
 		bool _isLandscape;
+#if IOS
+		int _layoutRefreshVersion;
+#endif
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
 
@@ -102,7 +107,36 @@ namespace Microsoft.Maui.Controls.Foldable
 		void OnDualScreenServiceChanged(object sender, FoldEventArgs e)
 		{
 			UpdateLayouts();
+#if IOS
+			QueueDelayedLayoutRefresh();
+#endif
 		}
+
+#if IOS
+		void QueueDelayedLayoutRefresh()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
+				return;
+
+			var layout = _layout;
+			var dispatcher = layout?.Dispatcher ?? Dispatcher.GetForCurrentThread();
+			if (dispatcher == null)
+				return;
+
+			var refreshVersion = Interlocked.Increment(ref _layoutRefreshVersion);
+			// UIKit can update reserved regions after the hinge callback completes.
+			dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+			{
+				if (refreshVersion != Volatile.Read(ref _layoutRefreshVersion))
+					return;
+
+				if (layout != null && (layout.Handler == null || !layout.IsLoaded))
+					return;
+
+				UpdateLayouts();
+			});
+		}
+#endif
 
 		internal void SetFoldableService(IFoldableService foldableService)
 		{
