@@ -158,7 +158,7 @@ steps:
     $testFilter = $testFilter.TrimEnd("|")
 
     if (-not [string]::IsNullOrWhiteSpace($env:UITEST_NAME_FILTER)) {
-      if ($env:UITEST_NAME_FILTER -ne 'FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue17389.ValidateBackgroundColorDoesNotAffectInputTransparent') {
+      if ($env:UITEST_NAME_FILTER -ne 'FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.Issue17389&FullyQualifiedName~ValidateBackgroundColorDoesNotAffectInputTransparent') {
         throw "Unexpected Issue17389 diagnostic method filter."
       }
       $testFilter = "($testFilter)&($env:UITEST_NAME_FILTER)"
