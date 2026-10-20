@@ -372,6 +372,9 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.Controls.UriImageSource.MaxResponseContentBufferSize"
+                                      Condition="'$(MauiUriImageSourceMaxResponseContentBufferSize)' != ''"
+                                      Value="$(MauiUriImageSourceMaxResponseContentBufferSize)" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsWindowsCollectionView2HandlerEnabled"
                                       Condition="'$(UseWindowsCollectionView2Handler)' != ''"
                                       Value="$(UseWindowsCollectionView2Handler)"

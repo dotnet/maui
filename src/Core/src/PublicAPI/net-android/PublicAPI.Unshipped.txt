@@ -386,3 +386,9 @@ Microsoft.Maui.IImageSourcePaint
 Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Android.Views.View? containerView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Android.Views.View! containerView) -> void
+override Microsoft.Maui.Handlers.WebViewHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Handlers.WebViewHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.WebViewHandler.RemoveContainer() -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Handlers.HybridWebViewHandler.SetupContainer() -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.RemoveContainer() -> void

@@ -43,19 +43,22 @@ namespace Microsoft.Maui.Controls
 		ScrollToRequestedEventArgs _pendingScrollToRequested;
 		bool _replayPendingScrollToRequestedEvent;
 
-		// A parked element request lives exactly as long as the task the caller is awaiting.
-		// It leaves the park in one of two ways, and no other: the arrange arrives and the
-		// request is replayed against real geometry (the task completes with the scroll),
-		// or there is nothing left that could ever satisfy it and the request is dropped
-		// (the task completes without a scroll). The latter happens when the view's
-		// lifecycle ends — its handler goes away or it is removed from the tree — and when
-		// the target is orphaned from this ScrollView's content (see IsElementTargetOrphaned).
-		// Nothing releases the task while the request is still parked, so a completed await
-		// never scrolls later; and nothing but one of those terminal conditions drops the
-		// request, so a view that is merely hidden (a collapsed branch, an unselected tab)
-		// still scrolls to the element when it is eventually arranged. A view that stays
-		// attached and is never arranged keeps the task pending — that is the contract, not
-		// a leak: the task completes when the scroll happens or nothing can make it happen.
+		// A parked request lives exactly as long as the task the caller is awaiting, and the
+		// task completes exactly when the request ends. A parked request ends in one of
+		// three ways, and no other: the arrange arrives and it is replayed against real
+		// geometry (the task completes with the scroll); a newer ScrollToAsync supersedes it
+		// (latest wins — the task completes without a scroll); or there is nothing left that
+		// could ever satisfy it and it is dropped (the task completes without a scroll) —
+		// when the view's lifecycle ends (its handler goes away or it is removed from the
+		// tree) or the target is orphaned from this ScrollView's content (see
+		// IsElementTargetOrphaned). Nothing releases the task while the request is still
+		// parked, so a completed await never scrolls later; and nothing but one of those
+		// conditions ends the request, so a view that is merely hidden (a collapsed branch,
+		// an unselected tab) still scrolls to the element when it is eventually arranged. A
+		// view that stays attached and is never arranged keeps the task pending — that is the
+		// contract, not a leak: the task completes when the scroll happens, is superseded, or
+		// nothing can make it happen. Completions for a request ending without its scroll go
+		// through CompleteWithoutScroll.
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
@@ -102,14 +105,28 @@ namespace Microsoft.Maui.Controls
 			// A stale replay flag from a pre-handler park must not carry over to a later request
 			_replayPendingScrollToRequestedEvent = false;
 
-			// Complete inline, at the moment the request is dropped. Deferring the completion
-			// would open a window in which a newer ScrollToAsync could swap the completion
-			// source, so a deferred completion would release the wrong task and orphan this
-			// one. Completing here binds the release to the request being dropped by
-			// construction. This is also the convention already in place: the handler-detach
-			// drop and Core's own DisconnectHandler both complete the task inline from their
-			// lifecycle hooks.
-			SendScrollFinished();
+			CompleteWithoutScroll(_scrollCompletionSource);
+		}
+
+		// Completes a task whose request has ended without a scroll (dropped, or superseded
+		// by a newer request). Two things must hold at once, and both are satisfied by
+		// capturing the completion source as a value and posting the completion:
+		//  - the caller's continuation must not run on the stack of the lifecycle mutation
+		//    that ended the request (OnParentChangedCore fires from inside Element.SetParent,
+		//    before the Parent change has finished propagating), so it is posted; and
+		//  - the completion must release exactly this task — a newer ScrollToAsync in the
+		//    window before the post runs replaces the field, so the post must not read the
+		//    field when it fires. Nothing else reads it here.
+		// The ordinary platform-callback completion is untouched (SendScrollFinished), so
+		// `await ScrollToAsync(...)` keeps its existing timing when the scroll happens.
+		void CompleteWithoutScroll(TaskCompletionSource<bool> completion)
+		{
+			if (completion is null)
+			{
+				return;
+			}
+
+			Dispatcher.Dispatch(() => completion.TrySetResult(true));
 		}
 
 		void DispatchPendingScrollToRequest()
@@ -199,11 +216,15 @@ namespace Microsoft.Maui.Controls
 				// compatibility renderer scrolling, say). That newer request wins: it has
 				// already been sent, and sending the stale replay after it would land the
 				// scroll on the old target. Every request creates a fresh completion source,
-				// so a changed source is the exact signal that one was made.
+				// so a changed source is the exact signal that one was made — and the
+				// superseded caller's task must then be completed, not abandoned: nothing
+				// else will ever complete it (a superseding request does not touch it), and
+				// the contract is that a request ends with its task completed.
 				var replayed = _scrollCompletionSource;
 				ScrollToRequested?.Invoke(this, pending);
 				if (!ReferenceEquals(_scrollCompletionSource, replayed))
 				{
+					CompleteWithoutScroll(replayed);
 					return;
 				}
 			}
@@ -608,6 +629,11 @@ namespace Microsoft.Maui.Controls
 
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
 		{
+			// A request still parked when this one arrives is about to be superseded. Its
+			// caller's task must be completed, not abandoned (see CompleteWithoutScroll);
+			// capture it before CheckTaskCompletionSource replaces the source for this request.
+			var supersededParked = _pendingScrollToRequested is not null ? _scrollCompletionSource : null;
+
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
 
@@ -636,6 +662,11 @@ namespace Microsoft.Maui.Controls
 
 				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 			}
+
+			// Whichever branch ran, a request that was parked when this one arrived has been
+			// displaced — overwritten by this one parking in its place, or cleared by the
+			// direct send — and has ended without its scroll: release its caller.
+			CompleteWithoutScroll(supersededParked);
 		}
 
 		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
