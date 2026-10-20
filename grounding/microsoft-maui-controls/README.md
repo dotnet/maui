@@ -123,7 +123,7 @@ TMPDIR="$ROOT/tmp" PYTHONDONTWRITEBYTECODE=1 \
   python3 -m unittest discover -s grounding/microsoft-maui-controls -p 'test_*.py' -v
 ```
 
-## Filesystem-only macOS preflight
+## Local macOS build preflight
 
 `filesystem_sandbox.py` runs a command through macOS `sandbox-exec` with file
 reads and writes denied by default. Only the staged `app/` and separate private
@@ -172,25 +172,79 @@ silently omitted from the inventory. The external run root preserves
 `fs-preflight/final-summary.json`, command records, launcher snapshots and raw
 logs. These runs did **not** execute UI/runtime checks or a coding model.
 
-This is **only a filesystem preflight**, not the Vally actor executor or a
-complete agent sandbox. The checked commands use trusted public reference
-projects and a warm package cache. Cold network restore, network/process
-isolation, environment/credential brokers and coding-model/provider integration
-are not established. Nothing here enables generated Vally agent startup,
-authorizes model spending, or makes untrusted MSBuild safe on the host.
+### Offline, allowlisted-environment mode
 
-Further default-deny OS experiments remain **diagnostic-only and blocked**.
-With successful outside positive controls, the stricter profile rejected
-loopback networking, credential-service port lookup, signalling an unrelated
-owned process and reading that process's arguments. SDK 11 startup and cached
-restore succeeded, but offline restore warned that vulnerability data was
-unavailable. Initial JDK validation failed even though direct `java -version`
-succeeded: allowing the exact public hostname query required by `uname`
-advanced the build past JDK validation without enabling process-argument reads.
-A subsequent MSBuild Copy task still failed with an overflow; the stricter
-executor is not ready. The external `boundary-preflight/` preserves these
-probes and failures. They are not a working actor executor or model failures;
-the filesystem-only launcher above was not weakened to hide them.
+Use `--offline` to deny networking, credential-service lookup and unrelated
+process access in addition to the filesystem restrictions. This mode constructs
+the child's environment from an allowlist rather than inheriting provider tokens,
+credential-plugin settings, agent sockets or arbitrary host variables. It
+redirects HOME and build/cache/signing state inside `PRIVATE`, disables shared
+compilation and diagnostic listeners, and omits the shared MSBuild socket grant.
+The package cache must already contain the pinned dependencies for both build
+configurations; populate it through a trusted reference setup, not by granting
+an offline build access to personal caches or credentials.
+
+For example, after the trusted controls runner has populated `ROOT/cache/packages`,
+make an independent APFS copy-on-write clone into a **new** private directory
+on the same volume (not shared writable hard links):
+
+```sh
+mkdir "$PRIVATE"
+cp -cR "$ROOT/cache/packages" "$PRIVATE/packages"
+```
+
+```sh
+python3 grounding/microsoft-maui-controls/filesystem_sandbox.py \
+  --offline --app "$APP" --private "$PRIVATE" \
+  --dotnet-root /usr/local/share/dotnet \
+  --android-sdk "$ANDROID_HOME" --java-home "$JAVA_HOME" \
+  -- dotnet restore DataBindingDemos.csproj --configfile ../NuGet.config \
+    -p:RuntimeIdentifier=android-arm64 -p:Configuration=Debug
+
+python3 grounding/microsoft-maui-controls/filesystem_sandbox.py \
+  --offline --app "$APP" --private "$PRIVATE" \
+  --dotnet-root /usr/local/share/dotnet \
+  --android-sdk "$ANDROID_HOME" --java-home "$JAVA_HOME" \
+  -- dotnet build DataBindingDemos.csproj -c Debug --no-restore \
+    -p:RuntimeIdentifier=android-arm64
+```
+
+Use an existing staged `APP` and private directory. The launcher creates private state
+subdirectories but does not install SDKs, download packages or start an emulator.
+Offline vulnerability lookup can report `NU1900`; that is an unavailable audit,
+not evidence of a clean dependency audit. It is not disabled or suppressed.
+
+Two narrowly allowed OS services support public tool execution: Rosetta and Unix
+user/group lookup. Denying the hostname query used by native `uname` made Android
+tools misidentify macOS; denying group lookup made .NET's `FileInfo` group probe
+overflow inside MSBuild Copy/CreateAppHost. The offline mode allows those exact
+queries/services, not SecurityServer or all Mach services. Actual positive-control
+tests verify the credential-service, loopback, outside-process signal and
+process-argument denials; filesystem tests run against both modes. CLI tests
+also check environment stripping and nonzero child exit propagation.
+
+The pinned binding source completed a nonincremental Debug build through a frozen
+offline launcher, and the target completed the documented restore/Debug commands.
+The earlier Copy-task overflow was independently reproduced and removed by changing
+only the group-lookup service permission. These are build controls, not runtime
+or model-efficacy results.
+
+**Offline Release is still blocked:** the .NET 10 trimmer requires an out-of-process
+MSBuild task host that uses a hardcoded `/tmp/MSBuild<PID>` Unix socket. With shared
+socket access denied, the actual Release control failed `MSB4216`/`MSB4027`. Do not
+disable trimming or weaken the task's runtime checks to hide this. Full trusted
+source/target Debug/Release and runtime controls remain available through
+`controls.py` and the original filesystem-only preflight. The stricter offline mode
+is not a replacement for those controls or a ready executor for scored migrations.
+The external `boundary-preflight/verified-offline-01/` preserves the completed
+source commands and Release failure; target CLI logs are separately preserved.
+
+This is a **local build preflight**, not the Vally actor executor or a complete
+agent sandbox. Trusted reference builds and targeted OS probes do not establish
+general safety for untrusted MSBuild, exhaustive broker coverage, or
+coding-model/provider integration. Historical failures remain under the external
+`boundary-preflight/`; they are infrastructure diagnostics, not model failures.
+Nothing here enables generated Vally agent startup or authorizes model spending.
 
 CLI control-plane isolation also needs separate verification. Restrict model
 tool visibility and validate the actual instruction/skill/plugin/hook inventory;
@@ -315,8 +369,8 @@ The positive and negative summaries are separately preserved as
 `results/vally-final-negative-summary.json` under the external run root.
 The generated baseline and skill-available specs both pass strict Vally lint;
 the later copied-skill snapshot has a byte-identical grading instrument.
-All 24 standard-library Python regressions pass on macOS, including the
-filesystem preflight's real-process boundary checks.
+All 27 standard-library Python regressions pass on macOS, including both
+preflight profiles' real-process boundary checks and offline environment handling.
 
 Preflights remain diagnostics, not model outcomes. An initial private-key
 signature conflict required replacing the previous owned sample installation.

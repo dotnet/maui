@@ -1,4 +1,4 @@
-"""macOS filesystem preflight; not an agent, network or credential broker sandbox."""
+"""macOS local build preflight; not a coding-agent or provider executor."""
 
 import argparse
 import json
@@ -19,7 +19,7 @@ def within(path, root):
     return any(child.is_relative_to(parent) for child in aliases(path) for parent in aliases(root))
 
 
-def policy(app, private, toolchains):
+def policy(app, private, toolchains, offline=False):
     if app.is_symlink() or private.is_symlink():
         raise ValueError("App and private roots cannot be symlinks.")
     app = app.resolve(strict=True)
@@ -61,9 +61,9 @@ def policy(app, private, toolchains):
     writable = [app, private]
     ancestors = sorted({parent for path in [*writable, *readonly, *configurations, *system_files]
                         for parent in path.parents})
-    return "\n".join([
+    rules = [
         "(version 1)",
-        "(allow default)",
+        "(deny default)" if offline else "(allow default)",
         "(deny file-read*)",
         "(deny file-write*)",
         f"(allow file-read* {filters('subpath', [*writable, *readonly])})",
@@ -72,9 +72,62 @@ def policy(app, private, toolchains):
         f"(allow file-read-metadata {filters('literal', [Path('/tmp'), Path('/var'), Path('/etc'), Path('/System/Volumes/Data'), Path.home()])})",
         f"(allow file-write* {filters('subpath', writable)})",
         '(allow file-write* (literal "/dev/null"))',
-        '(allow file-read* file-write* (require-all (regex #"^/private/tmp/MSBuild[0-9]+$") '
-        '(vnode-type SOCKET)))',
-    ]) + "\n"
+    ]
+    if offline:
+        rules.extend([
+            "(deny network*)",
+            "(deny mach-lookup)",
+            "(deny mach-register)",
+            "(deny signal)",
+            "(deny process-info*)",
+            "(deny sysctl-read)",
+            "(allow process-fork process-exec)",
+            "(allow file-map-executable)",
+            "(allow signal (target self))",
+            "(allow process-info* (target self))",
+            '(allow sysctl-read (sysctl-name-regex #"^hw\\.") '
+            '(sysctl-name "kern.osrelease") (sysctl-name "kern.ostype") '
+            '(sysctl-name "kern.osversion") (sysctl-name "kern.version") '
+            '(sysctl-name "kern.osproductversion") (sysctl-name "kern.iossupportversion") '
+            '(sysctl-name "kern.osvariant_status") (sysctl-name "kern.hostname"))',
+            '(allow mach-lookup (global-name "com.apple.oahd") '
+            '(global-name "com.apple.system.opendirectoryd.libinfo"))',
+        ])
+    else:
+        rules.append(
+            '(allow file-read* file-write* (require-all (regex #"^/private/tmp/MSBuild[0-9]+$") '
+            '(vnode-type SOCKET)))'
+        )
+    return "\n".join(rules) + "\n"
+
+
+def offline_environment(app, private, dotnet, android, java):
+    private = private.resolve(strict=True)
+    paths = {}
+    for key, name in (
+        ("HOME", "home"), ("DOTNET_CLI_HOME", "dotnet"),
+        ("XDG_DATA_HOME", "user-data"), ("XDG_CACHE_HOME", "cache"),
+        ("TMPDIR", "tmp"), ("NUGET_HTTP_CACHE_PATH", "http"),
+        ("NUGET_PLUGINS_CACHE_PATH", "plugins"),
+        ("AppSettingsDirectory", "android-signing"), ("NUGET_PACKAGES", "packages"),
+    ):
+        path = private / name
+        if path.is_symlink():
+            raise ValueError(f"Private build state cannot be a symlink: {path}")
+        path.mkdir(exist_ok=True)
+        paths[key] = str(path)
+    return {
+        **paths, "PATH": f"{dotnet}:{java}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+        "LANG": "en_US.UTF-8", "PWD": str(app.resolve()),
+        "DOTNET_ROOT": str(dotnet), "JAVA_HOME": str(java),
+        "JavaSdkDirectory": str(java), "ANDROID_HOME": str(android),
+        "ANDROID_SDK_ROOT": str(android), "AndroidSdkDirectory": str(android),
+        "DOTNET_CLI_USE_MSBUILD_SERVER": "0", "MSBUILDDISABLENODEREUSE": "1",
+        "UseSharedCompilation": "false", "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+        "DOTNET_GENERATE_ASPNET_CERTIFICATE": "false", "DOTNET_EnableDiagnostics": "0",
+        "RestoreConfigFile": str(app.resolve().parent / "NuGet.config"),
+        "JAVA_TOOL_OPTIONS": f"-Djava.io.tmpdir={paths['TMPDIR']}",
+    }
 
 
 def launch(text, command):
@@ -109,6 +162,11 @@ def main():
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--private", type=Path, required=True)
     parser.add_argument("--read-root", type=Path, action="append", default=[])
+    parser.add_argument("--offline", action="store_true",
+                        help="Default-deny local build with no network and an allowlisted environment.")
+    parser.add_argument("--dotnet-root", type=Path)
+    parser.add_argument("--android-sdk", type=Path)
+    parser.add_argument("--java-home", type=Path)
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command
@@ -128,7 +186,21 @@ def main():
                 process.wait()
                 code = 130
         sys.exit(code)
-    text = policy(args.app, args.private, args.read_root)
+    roots = list(args.read_root)
+    if args.offline:
+        if not all((args.dotnet_root, args.android_sdk, args.java_home)):
+            parser.error("--offline requires --dotnet-root, --android-sdk and --java-home.")
+        tools = [path.resolve(strict=True) for path in (
+            args.dotnet_root, args.android_sdk, args.java_home,
+        )]
+        if not all(path.is_dir() for path in tools):
+            parser.error("Toolchain roots must be existing directories.")
+        roots.extend(tools)
+    text = policy(args.app, args.private, roots, offline=args.offline)
+    if args.offline:
+        environment = offline_environment(args.app, args.private, *tools)
+        os.environ.clear()
+        os.environ.update(environment)
     os.chdir(args.app.resolve(strict=True))
     sys.exit(launch(text, command))
 
