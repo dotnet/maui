@@ -391,7 +391,7 @@ namespace Microsoft.Maui.Handlers
 
 			try
 			{
-				if (handler.PlatformView is not MauiHybridWebView)
+				if (((IElementHandler)handler).PlatformView is not MauiHybridWebView)
 				{
 					request.TrySetCanceled();
 					return;
