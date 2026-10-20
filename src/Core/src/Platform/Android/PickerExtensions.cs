@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateTitle(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
 		{
-			platformPicker.Picker.Hint = picker.Title;
+			platformPicker.Hint = picker.Title;
 		}
 
 		internal static void UpdateTitleColor(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
@@ -91,8 +91,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdatePicker(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
 		{
-			platformPicker.Picker.Hint = picker.Title;
-			UpdatePickerCore(platformPicker.Picker, picker);
+			platformPicker.Hint = picker.Title;
+			UpdatePickerTextCore(platformPicker.Picker, picker);
 		}
 
 		// TODO: Material3 - make it public in .net 11

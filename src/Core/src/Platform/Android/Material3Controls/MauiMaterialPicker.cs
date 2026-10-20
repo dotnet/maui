@@ -42,13 +42,9 @@ internal class MauiMaterialPickerTextInputLayout : MauiMaterialTextInputLayout
 
 	public MauiMaterialPickerTextInputLayout(Context context) : base(context)
 	{
-		BoxBackgroundMode = BoxBackgroundOutline;
-		HintEnabled = false;
-		Picker = new MauiMaterialPicker(Context!, useMaterialContextThemeWrapper: false)
-		{
-			Background = null
-		};
+		Picker = new MauiMaterialPicker(Context!, useMaterialContextThemeWrapper: false);
 		AddView(Picker);
+		BoxBackgroundMode = BoxBackgroundOutline;
 	}
 }
 
@@ -57,7 +53,7 @@ internal class MauiMaterialPickerBase : TextInputEditText
 {
 	readonly PickerDragGestureFilter _dragGestureFilter = new();
 
-	public MauiMaterialPickerBase(Context context) : this(context, useMaterialContextThemeWrapper: true)
+	protected MauiMaterialPickerBase(Context context) : this(context, useMaterialContextThemeWrapper: true)
 	{
 	}
 
