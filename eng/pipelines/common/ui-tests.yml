@@ -77,6 +77,8 @@ stages:
             parameters:
                 runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
+                ${{ if ne(parameters.testNameFilter, '') }}:
+                  platform: maccatalyst
 
   # Material3 Build Stage - Separate CoreCLR build with UseMaterial3=true (Android-only)
   - stage: build_ui_tests_material3
