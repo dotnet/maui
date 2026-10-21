@@ -2476,11 +2476,11 @@ function Write-MarkdownReport {
     $hasFilterMismatch = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.FilterMismatch }).Count -gt 0
     $reportWithFixGenuineFailCount = 0
     foreach ($gt in $Tests) {
-        $woG = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
-        $wG  = $WithFixResultsList    | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
-        if (-not $woG -or -not $wG) { continue }
-        $wGInc = $wG.EnvError -or $wG.BuildError -or $wG.FilterMismatch
-        if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFailCount++ }
+        $withoutFixGateResult = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        $withFixGateResult = $WithFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        if (-not $withoutFixGateResult -or -not $withFixGateResult) { continue }
+        $wGInc = $withFixGateResult.EnvError -or $withFixGateResult.BuildError -or $withFixGateResult.FilterMismatch
+        if ((-not $wGInc) -and (-not $withFixGateResult.Passed)) { $reportWithFixGenuineFailCount++ }
     }
     $reportWithFixGenuineFail = $reportWithFixGenuineFailCount -gt 0
     $reportWithFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
@@ -2920,10 +2920,10 @@ function Write-MarkdownReport {
     # retry can clear, so those still fall through to the retry path.
     $abBothSidesEnv = $false; $abOneSidedEnv = $false
     foreach ($gt in $Tests) {
-        $woG = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
-        $wG  = $WithFixResultsList    | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
-        if (-not $woG -or -not $wG) { continue }
-        $woE = [bool]$woG.EnvError; $wE = [bool]$wG.EnvError
+        $withoutFixGateResult = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        $withFixGateResult = $WithFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
+        if (-not $withoutFixGateResult -or -not $withFixGateResult) { continue }
+        $woE = [bool]$withoutFixGateResult.EnvError; $wE = [bool]$withFixGateResult.EnvError
         if ($woE -and $wE) { $abBothSidesEnv = $true }
         elseif ($woE -or $wE) { $abOneSidedEnv = $true }
     }
