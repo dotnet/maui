@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
+		SizeF? _coveredSize;
 		bool _ignorePopCall;
 		FlyoutPage _parentFlyoutPage;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The controllers-to-remove array is transient navigation state cleared after UIKit removal completes.")]
@@ -173,6 +174,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			base.ViewDidAppear(animated);
 
+			// UIKit can keep the landscape bar metrics when rotation happens under a full-screen cover.
+			if (_coveredSize is { } coveredSize && coveredSize != View.Bounds.Size &&
+				OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalyst() &&
+				NavigationBar is { Hidden: false, PrefersLargeTitles: true } navigationBar)
+				navigationBar.SizeToFit();
+			_coveredSize = null;
+
 			View.SetNeedsLayout();
 		}
 
@@ -187,6 +195,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
+			_coveredSize = View.Bounds.Size;
 
 			base.ViewDidDisappear(animated);
 

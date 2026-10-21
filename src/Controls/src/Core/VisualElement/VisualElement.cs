@@ -2057,6 +2057,10 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Subclasses will still want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
+#if IOS
+			if (Parent is Layout layout)
+				layout.AdjustLargeTitleScrollBounds(this, ref bounds);
+#endif
 			Frame = this.ComputeFrame(bounds);
 			Handler?.PlatformArrange(Frame);
 			return Frame.Size;

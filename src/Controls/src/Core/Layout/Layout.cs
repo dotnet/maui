@@ -382,7 +382,14 @@ namespace Microsoft.Maui.Controls
 
 		public Graphics.Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
-			return LayoutManager.ArrangeChildren(bounds);
+#if IOS
+			PrepareLargeTitleScroll(bounds);
+#endif
+			var size = LayoutManager.ArrangeChildren(bounds);
+#if IOS
+			_largeTitleScrollCoordinator?.CompleteArrange();
+#endif
+			return size;
 		}
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
