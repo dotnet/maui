@@ -1,6 +1,7 @@
 using Android.Content;
 using Android.Text;
 using Android.Text.Method;
+using Android.Util;
 using Android.Views;
 using AndroidX.Core.Graphics.Drawable;
 using Google.Android.Material.TextField;
@@ -11,9 +12,6 @@ namespace Microsoft.Maui.Platform;
 internal class MauiMaterialPicker : MauiMaterialPickerBase
 {
 	public MauiMaterialPicker(Context context) : base(context)
-		=> Initialize();
-
-	internal MauiMaterialPicker(Context context, bool useMaterialContextThemeWrapper) : base(context, useMaterialContextThemeWrapper)
 		=> Initialize();
 
 	void Initialize()
@@ -42,7 +40,7 @@ internal class MauiMaterialPickerTextInputLayout : MauiMaterialTextInputLayout
 
 	public MauiMaterialPickerTextInputLayout(Context context) : base(context)
 	{
-		Picker = new MauiMaterialPicker(Context!, useMaterialContextThemeWrapper: false);
+		Picker = new MauiMaterialPicker(Context!);
 		AddView(Picker);
 		BoxBackgroundMode = BoxBackgroundOutline;
 	}
@@ -53,17 +51,25 @@ internal class MauiMaterialPickerBase : TextInputEditText
 {
 	readonly PickerDragGestureFilter _dragGestureFilter = new();
 
-	protected MauiMaterialPickerBase(Context context) : this(context, useMaterialContextThemeWrapper: true)
-	{
-	}
-
-	protected MauiMaterialPickerBase(Context context, bool useMaterialContextThemeWrapper)
-		: base(useMaterialContextThemeWrapper ? MauiMaterialContextThemeWrapper.Create(context) : context)
+	public MauiMaterialPickerBase(Context context) : base(context)
 	{
 		if (Background is not null)
 		{
 			DrawableCompat.Wrap(Background);
 		}
+	}
+
+	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+	{
+		var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+		var heightSize = MeasureSpec.GetSize(heightMeasureSpec);
+
+		if (heightMode == MeasureSpecMode.AtMost && heightSize > 0)
+		{
+			heightMeasureSpec = MeasureSpec.MakeMeasureSpec(heightSize, MeasureSpecMode.Exactly);
+		}
+
+		base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 
 	protected override IMovementMethod? DefaultMovementMethod => null;

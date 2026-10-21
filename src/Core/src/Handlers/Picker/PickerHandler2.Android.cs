@@ -1,4 +1,5 @@
 using System;
+using Android.Content.Res;
 using Android.Text;
 using Android.Text.Style;
 using Google.Android.Material.Dialog;
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Handlers;
 internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTextInputLayout>
 {
 	AppCompatAlertDialog? _dialog;
+	ColorStateList? _defaultHintTextColors;
 
 	public static PropertyMapper<IPicker, PickerHandler2> Mapper =
 		new(ViewMapper)
@@ -24,6 +26,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 			[nameof(IPicker.TextColor)] = MapTextColor,
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.IsOpen)] = MapIsOpen,
 		};
@@ -40,7 +43,9 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 
 	protected override MauiMaterialPickerTextInputLayout CreatePlatformView()
 	{
-		return new MauiMaterialPickerTextInputLayout(Context);
+		var platformView = new MauiMaterialPickerTextInputLayout(Context);
+		_defaultHintTextColors = platformView.DefaultHintTextColor;
+		return platformView;
 	}
 
 	protected override void ConnectHandler(MauiMaterialPickerTextInputLayout platformView)
@@ -62,12 +67,22 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 			_dialog = null;
 		}
 
+		_defaultHintTextColors = null;
+
 		base.DisconnectHandler(platformView);
 	}
 
 	public static void MapBackground(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateBackground(picker);
+		if (picker.Background is not null)
+		{
+			handler.PlatformView?.UpdateBackground(picker);
+		}
+		else
+		{
+			handler.PlatformView.Background = null;
+		}
+
 	}
 
 	public static void MapItems(PickerHandler2 handler, IPicker picker) => Reload(handler);
@@ -79,7 +94,14 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 
 	public static void MapTitleColor(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateTitleColor(picker);
+		if (picker.TitleColor is not null)
+		{
+			handler.PlatformView.DefaultHintTextColor = ColorStateList.ValueOf(picker.TitleColor.ToPlatform());
+		}
+		else
+		{
+			handler.PlatformView.DefaultHintTextColor = handler._defaultHintTextColors;
+		}
 	}
 
 	public static void MapSelectedIndex(PickerHandler2 handler, IPicker picker)
@@ -96,7 +118,11 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 	{
 		var fontManager = handler.GetRequiredService<IFontManager>();
 
-		handler.PlatformView?.Picker.UpdateFont(picker, fontManager);
+		if (handler.PlatformView is { } platformView)
+		{
+			platformView.Picker.UpdateFont(picker, fontManager);
+			platformView.Typeface = fontManager.GetTypeface(picker.Font);
+		}
 	}
 
 	public static void MapHorizontalTextAlignment(PickerHandler2 handler, IPicker picker)
@@ -112,6 +138,12 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 	public static void MapVerticalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.Picker.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+	}
+
+	public static void MapFlowDirection(PickerHandler2 handler, IPicker picker)
+	{
+		handler.PlatformView?.UpdateFlowDirection(picker);
+		handler.PlatformView?.Picker.UpdateFlowDirection(picker);
 	}
 
 	public static void MapIsOpen(PickerHandler2 handler, IPicker picker)
