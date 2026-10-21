@@ -449,12 +449,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			_itemFactory = new ItemFactory(Element);
 			PlatformView.ItemTemplate = _itemFactory;
 		}
-		else if (PlatformView.ItemTemplate is not null)
+		else if (PlatformView.ItemTemplate is ItemFactory)
 		{
+			// Preserve WinUI's default ItemContainer template when no MAUI template is set.
 			PlatformView.ItemTemplate = null;
 		}
 
-		PlatformView.ItemsSource = _collectionViewSource?.View;
+		// A CollectionViewSource with no Source does not provide a usable WinUI view.
+		PlatformView.ItemsSource = _collectionViewSource?.Source is null ? null : _collectionViewSource.View;
 		(PlatformView as MauiItemsView)?.InvalidateAutomationSetProperties();
 
 		if (PlatformView is MauiItemsView mauiItemsViewFlat)
@@ -534,11 +536,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 					VirtualView.RemoveLogicalChild(element);
 				}
 			}
-		}
-
-		if (VirtualView?.ItemsSource is null && PlatformView is not null)
-		{
-			PlatformView.ItemsSource = null;
 		}
 	}
 
