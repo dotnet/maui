@@ -36,59 +36,37 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
 		{
-			var offset = scrollViewer.VerticalOffset;
-			var viewportStart = offset + headerHeight;
-			var viewportEnd = offset + scrollViewer.ViewportHeight;
-			var itemEnd = point.Y + itemSize.Height;
-			var isOversized = itemSize.Height > scrollViewer.ViewportHeight - headerHeight;
-
-			if (point.Y < viewportStart)
+			if (point.Y > (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
 			{
-				if (!isOversized)
-				{
-					offset = point.Y - headerHeight;
-				}
-				else if (itemEnd < viewportEnd)
-				{
-					offset = itemEnd - scrollViewer.ViewportHeight;
-				}
-			}
-			else if (itemEnd > viewportEnd)
-			{
-				offset = isOversized
-					? point.Y - headerHeight
-					: itemEnd - scrollViewer.ViewportHeight;
+				return AdjustToEndVertical(point, itemSize, scrollViewer);
 			}
 
-			return new UWPPoint(scrollViewer.HorizontalOffset, offset);
+			if (point.Y >= scrollViewer.VerticalOffset + headerHeight
+				&& point.Y < (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
+			{
+				// The target is already in the viewport and not hidden behind the sticky header
+				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
+			}
+
+			// Scroll to position, accounting for any sticky group header
+			return new UWPPoint(point.X, point.Y - headerHeight);
 		}
 
 		static UWPPoint AdjustToMakeVisibleHorizontal(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
-			var offset = scrollViewer.HorizontalOffset;
-			var viewportEnd = offset + scrollViewer.ViewportWidth;
-			var itemEnd = point.X + itemSize.Width;
-			var isOversized = itemSize.Width > scrollViewer.ViewportWidth;
-
-			if (point.X < offset)
+			if (point.X > (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth))
 			{
-				if (!isOversized)
-				{
-					offset = point.X;
-				}
-				else if (itemEnd < viewportEnd)
-				{
-					offset = itemEnd - scrollViewer.ViewportWidth;
-				}
-			}
-			else if (itemEnd > viewportEnd)
-			{
-				offset = isOversized
-					? point.X
-					: itemEnd - scrollViewer.ViewportWidth;
+				return AdjustToEndHorizontal(point, itemSize, scrollViewer);
 			}
 
-			return new UWPPoint(offset, scrollViewer.VerticalOffset);
+			if (point.X >= scrollViewer.HorizontalOffset
+				&& point.X < (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
+			{
+				// The target is already in the viewport, no reason to scroll at all
+				return new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
+			}
+
+			return point;
 		}
 
 		static UWPPoint AdjustToEnd(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
@@ -258,10 +236,36 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			// ScrollIntoView may not raise ViewChanged when the item is already at the leading edge.
-			if (await ScrollToItemAsync(list, targetItem, scrollViewer, scrollToPosition, isAnimated: false))
+			if ((scrollToPosition == ScrollToPosition.Center || scrollToPosition == ScrollToPosition.End)
+				&& list.ContainerFromItem(targetItem) is UIElement targetContainer
+				&& targetContainer.RenderSize.Width > 0
+				&& targetContainer.RenderSize.Height > 0
+				&& scrollViewer.GetFirstDescendant<ScrollContentPresenter>() is ScrollContentPresenter presenter)
 			{
-				return;
+				var targetIndex = list.IndexFromContainer(targetContainer);
+				var isVisible = targetIndex >= 0 && (list.ItemsPanelRoot switch
+				{
+					ItemsStackPanel panel => targetIndex >= panel.FirstVisibleIndex && targetIndex <= panel.LastVisibleIndex,
+					ItemsWrapGrid panel => targetIndex >= panel.FirstVisibleIndex && targetIndex <= panel.LastVisibleIndex,
+					_ => false
+				});
+				var position = targetContainer.TransformToVisual(presenter).TransformPoint(Zero);
+				var leadingEdge = IsVertical(scrollViewer) ? position.Y : position.X;
+
+				// ScrollIntoView(Leading) will not raise ViewChanged for an item already at the leading edge.
+				if (isVisible && Math.Abs(leadingEdge) < 0.5)
+				{
+					if (scrollToPosition == ScrollToPosition.Center)
+					{
+						await AdjustToCenterAsync(list, scrollViewer, targetItem);
+					}
+					else
+					{
+						await AdjustToEndAsync(list, scrollViewer, targetItem);
+					}
+
+					return;
+				}
 			}
 
 			var tcs = new TaskCompletionSource<object>();
@@ -317,7 +321,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task<bool> ScrollToItemAsync(ListViewBase list, object targetItem, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, bool isAnimated = true)
+		static async Task<bool> ScrollToItemAsync(ListViewBase list, object targetItem, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition)
 		{
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
 
@@ -330,7 +334,7 @@ namespace Microsoft.Maui.Controls.Platform
 					height = GetHeaderHeight(list, targetContainer);
 				}
 
-				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height, isAnimated);
+				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height);
 				return true;
 			}
 
@@ -436,7 +440,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height, bool isAnimated = true)
+		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height)
 		{
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 			var position = transform?.TransformPoint(Zero);
@@ -470,14 +474,7 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 			}
 
-			if (isAnimated)
-			{
-				await AnimateToOffsetAsync(scrollViewer, offset.X, offset.Y);
-			}
-			else
-			{
-				await JumpToOffsetAsync(scrollViewer, offset.X, offset.Y);
-			}
+			await AnimateToOffsetAsync(scrollViewer, offset.X, offset.Y);
 		}
 	}
 }
