@@ -49,12 +49,11 @@ public partial class Maui39341OnPlatformOuter : ContentPage
 
 			Assert.Empty(result.Diagnostics);
 			var generated = result.GeneratedInitializeComponent();
-			Assert.DoesNotMatch(
-				@"SimpleValueTargetProvider\(\s*new object\?\[\] \{[^\r\n]*\},\s*null,",
-				generated);
-			Assert.Matches(
-				@"SimpleValueTargetProvider\(\s*new object\?\[\] \{[^\r\n]*\},\s*global::Microsoft\.Maui\.Controls\.Label\.TextProperty,",
-				generated);
+			Assert.Contains("new global::Microsoft.Maui.Controls.OnIdiom<string>()", generated, StringComparison.Ordinal);
+			Assert.Contains("onIdiom.Phone = \"PhoneAndroid\";", generated, StringComparison.Ordinal);
+			Assert.Contains("onIdiom.Default = \"OtherIdiom\";", generated, StringComparison.Ordinal);
+			Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.Label.TextProperty, onIdiom);", generated, StringComparison.Ordinal);
+			Assert.DoesNotContain("SimpleValueTargetProvider(", generated, StringComparison.Ordinal);
 		}
 	}
 }

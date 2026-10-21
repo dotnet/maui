@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Fix ShellContent Title Does Not Update at Runtime";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyFirstShellContentTitle()
 		{
 			App.WaitForElement("ChangeShellContentTitle");
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyNewlyAddedShellContentTitle()
 		{
 			TabNavigationViewItemIfWindows();
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyExistingTabTitle()
 		{
 			TabNavigationViewItemIfWindows();

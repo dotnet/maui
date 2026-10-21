@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Search Handler visual and functional bug in subtabs";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void UpdateSearchHandlerMenuItemForTabNavigation()
 		{
 #if WINDOWS

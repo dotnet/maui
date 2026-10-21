@@ -173,7 +173,7 @@ public class NUnitTestCategoryAnalyzerTests
 				public class TestClass
 				{
 					[NUnit.Framework.TestCase(1, Category = "Navigation")]
-					[NUnit.Framework.TestCase(2, Category = "Shell")]
+					[NUnit.Framework.TestCase(2, Category = "Layout")]
 					public void TestMethod(int value) { }
 				}
 			}
@@ -216,7 +216,7 @@ public class NUnitTestCategoryAnalyzerTests
 				public class TestClass
 				{
 					[NUnit.Framework.TestCase(1, Category = "Navigation")]
-					[NUnit.Framework.Category("Shell")]
+					[NUnit.Framework.Category("Layout")]
 					public void TestMethod(int value) { }
 				}
 			}
@@ -303,7 +303,7 @@ public class NUnitTestCategoryAnalyzerTests
 			{
 				public class TestClass
 				{
-					[NUnit.Framework.TestCase(1, Category = "Navigation, Shell")]
+					[NUnit.Framework.TestCase(1, Category = "Navigation, Layout")]
 					public void TestMethod(int value) { }
 				}
 			}
@@ -544,10 +544,40 @@ public class NUnitTestCategoryAnalyzerTests
 	}
 
 	[Theory]
-	[InlineData("")]
-	[InlineData(", 3")]
-	[InlineData(", shard: 3")]
-	public async Task TestMethod_WithShardedTestCategory_ReportsNoDiagnostic(string shardArgument)
+	[InlineData("Shell")]
+	[InlineData("Shell1")]
+	[InlineData("Shell2")]
+	public async Task TestMethod_WithDirectShellCategory_ReportsShardedCategoryDiagnostic(string category)
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + $$"""
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[NUnit.Framework.Category("{{category}}")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.ShardedCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Contains("UITestCategories.Shell, shard:", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+	}
+
+	[Theory]
+	[InlineData("CollectionView", "")]
+	[InlineData("CollectionView", ", 3")]
+	[InlineData("CollectionView", ", shard: 3")]
+	[InlineData("Shell", "")]
+	[InlineData("Shell", ", shard: 1")]
+	[InlineData("Shell", ", 2")]
+	[InlineData("Shell", ", shard: 2")]
+	public async Task TestMethod_WithShardedTestCategory_ReportsNoDiagnostic(string category, string shardArgument)
 	{
 		var source = AnalyzerTestHelpers.NUnitAttributeStubs + $$"""
 
@@ -561,7 +591,7 @@ public class NUnitTestCategoryAnalyzerTests
 				public class TestClass
 				{
 					[NUnit.Framework.Test]
-					[ShardedTestCategory("CollectionView"{{shardArgument}})]
+					[ShardedTestCategory("{{category}}"{{shardArgument}})]
 					public void TestMethod() { }
 				}
 			}

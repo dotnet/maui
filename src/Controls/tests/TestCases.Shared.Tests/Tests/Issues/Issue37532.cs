@@ -13,7 +13,7 @@ public class Issue37532 : _IssuesUITest
 	public override string Issue => "Shell Sometimes Shows Hamburger Icon Instead of Arrow";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBackButtonShowsArrowNotHamburger()
 	{
 		// Wait for the main page to be ready

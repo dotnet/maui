@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Page and control Unloaded events firing on iOS when navigating to another page"; 
 		
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void Shell_Issue21916()
 		{
 			App.WaitForElement("Button");

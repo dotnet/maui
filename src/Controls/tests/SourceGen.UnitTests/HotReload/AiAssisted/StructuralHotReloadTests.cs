@@ -615,30 +615,13 @@ public class StructuralHotReloadTests
 	[MetadataUpdateFact]
 	public void XNameRenamed_SamePositionSameType_UnregistersOldNameAndResolvesNewOne()
 	{
-		// Companion to the id-desync bug this PR fixes: an x:Name rename on an otherwise
-		// unchanged node is now a same-id local rebuild (see XamlNodeDiffTests), not a page-wide
-		// structural reset. This exercises that rebuild end-to-end through the real generated
-		// UpdateComponent code: the OLD name must stop resolving (namescope cleanup), and the
-		// NEW name must resolve to the freshly-rebuilt instance.
-		//
-		// NOTE: the harness recompiles InitializeComponent for EVERY version it applies (see
-		// XamlHotReloadLiveSession.PrepareUpdate), so both the V1 name ("oldLabel") and the V2
-		// name ("RenamedLabel") need a pre-declared backing field here to make that simulated
-		// recompilation succeed — this differs from the real incremental hot-reload pipeline,
-		// where only "oldLabel" would actually exist and "RenamedLabel" would have NO backing
-		// field at all (a known, accepted limitation: UpdateComponent patches an already-running
-		// object via reflection against ALREADY-COMPILED fields and cannot add/rename a class
-		// field at runtime — that needs a true edit-and-continue/full-rebuild cycle).
+		// The existing element is renamed in place: namescope registrations and generated fields
+		// change, but the retained element identity must not.
 		const string pageStub = """
 			namespace TestAiAssisted;
 
 			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
 			{
-				private partial void InitializeComponent();
-				private global::Microsoft.Maui.Controls.Label oldLabel = default!;
-				private global::Microsoft.Maui.Controls.Label RenamedLabel = default!;
-
-				public void InitializeComponentRuntime() { }
 				public MainPage() => InitializeComponent();
 			}
 			""";
@@ -675,17 +658,16 @@ public class StructuralHotReloadTests
 
 			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
 
-			// Old name must no longer resolve to the (now-detached) original instance.
 			Assert.Null(page.FindByName<Label>("oldLabel"));
 
-			var rebuiltLabel = Assert.IsType<Label>(Assert.Single(Assert.IsType<VerticalStackLayout>(page.Content)));
-			Assert.Same(rebuiltLabel, page.FindByName<Label>("RenamedLabel"));
-			Assert.NotSame(originalLabel, rebuiltLabel);
+			var renamedLabel = Assert.IsType<Label>(Assert.Single(Assert.IsType<VerticalStackLayout>(page.Content)));
+			Assert.Same(originalLabel, renamedLabel);
+			Assert.Same(renamedLabel, page.FindByName<Label>("RenamedLabel"));
 		});
 	}
 
 	[Fact]
-	public void XNameRenamed_SamePositionSameType_EmitsSameIdRegistrationAndOldNameUnregister()
+	public void XNameRenamed_SamePositionSameType_EmitsInPlaceRegistrationAndOldNameUnregister()
 	{
 		const string pageStub = """
 			namespace TestAiAssisted;
@@ -719,18 +701,16 @@ public class StructuralHotReloadTests
 			""";
 
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(XNameRenamed_SamePositionSameType_EmitsSameIdRegistrationAndOldNameUnregister),
+			nameof(XNameRenamed_SamePositionSameType_EmitsInPlaceRegistrationAndOldNameUnregister),
 			PageClass,
 			pageStub);
 		var generation = harness.Generate(xamlV1, xamlV2);
 		var updateComponentSource = generation[1].UpdateComponentSource;
 
 		Assert.NotNull(updateComponentSource);
-		// The old name's unregister guard (RemovedNames mechanism), proving it fires for a
-		// same-id local rebuild — not just for an ordinary removed child.
+		// The existing same-id element is renamed in place.
 		Assert.Contains("XamlComponentRegistry.TryGet(this", updateComponentSource!, StringComparison.Ordinal);
-		Assert.Contains("ReferenceEquals(__removedNameScope_", updateComponentSource!, StringComparison.Ordinal);
-		// The rebuilt instance registers the NEW name in the live namescope.
+		Assert.Contains("UnregisterName(\"oldLabel\")", updateComponentSource!, StringComparison.Ordinal);
 		Assert.Contains("RegisterName(\"RenamedLabel\"", updateComponentSource!, StringComparison.Ordinal);
 
 		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);

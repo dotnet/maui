@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureCustomFlyoutIconColor()
 		{
 			App.WaitForElement("IconColorChangeButton");
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureFlyoutIconWithForegroundColor()
 		{
 			string changeColor = "IconColorChangeButton";

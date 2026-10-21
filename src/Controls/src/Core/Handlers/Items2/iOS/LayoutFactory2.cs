@@ -587,6 +587,36 @@ internal static class LayoutFactory2
 			_headerFooterInfo = headerFooterInfo;
 		}
 
+		public override void PrepareLayout()
+		{
+			base.PrepareLayout();
+
+			// Track the CollectionView's own bounds size so ShouldInvalidateLayoutForBoundsChange
+			// can tell a genuine resize of this CollectionView apart from an unrelated ancestor
+			// layout pass (e.g. a sibling's MaximumHeightRequest changing) that merely re-runs
+			// layout without actually changing this view's size. Mirrors ItemsViewLayout (CV1),
+			// which already guards against this — see dotnet/maui#36546.
+			if (CollectionView is { } collectionView)
+			{
+				_currentSize = collectionView.Bounds.Size;
+			}
+		}
+
+		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
+		{
+			if (newBounds.Size.IsCloseTo(_currentSize))
+			{
+				var currentBounds = CollectionView.Bounds;
+				// Preserve the scroll position for unrelated layout passes, but let the native
+				// compositional layout handle bounds-origin changes produced by scrolling.
+				return newBounds.X == currentBounds.X && newBounds.Y == currentBounds.Y
+					? false
+					: base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+			}
+
+			return true;
+		}
+
 		public override void FinalizeCollectionViewUpdates()
 		{
 			base.FinalizeCollectionViewUpdates();
@@ -629,20 +659,6 @@ internal static class LayoutFactory2
 				}
 			}
 		}
-
-		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
-        {
-            // If the size hasn't changed, use the base implementation
-			if (newBounds.Size.IsCloseTo(_currentSize))
-            {
-                return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
-            }
- 
-            // Size has changed (e.g., rotation), so we need to invalidate the layout
-            // to ensure cells are properly measured and displayed
-            _currentSize = newBounds.Size;
-            return true;
-        }
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{

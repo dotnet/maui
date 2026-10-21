@@ -16,7 +16,7 @@ public class Issue7240 : _IssuesUITest
 	public override string Issue => "[Android] Shell content layout hides navigated to page";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellSecondPageHasSameLayoutAsPrimary()
 	{
 		App.WaitForElement(ClickMe);

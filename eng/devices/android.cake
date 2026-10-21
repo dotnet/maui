@@ -289,29 +289,8 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
-	int numOfRetries = 0;
-
-	if (IsCIBuild())
-		numOfRetries = 1;
-
 	Information("Run UITests  project {0}", project);
-	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
-	{
-		try
-		{
-			Information("Retry UITests run Count: {0}", retryCount);
-			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
-			break;
-		}
-		catch(Exception)
-		{
-			if (retryCount == numOfRetries)
-			{
-				WriteLogCat();
-				throw;
-			}
-		}
-	}
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat());
 	Information("UI Tests completed.");
 }
 

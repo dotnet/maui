@@ -82,8 +82,6 @@ Describe 'Review tests workflow contract' {
         $workflow | Should -Match 'add-comment:\r?\n    max: 1'
         $workflow | Should -Match 'roles: \[admin, maintain, write\]'
         $workflow | Should -Match 'persist-credentials: false'
-        $workflow | Should -Match '(?m)^model: gpt-5.6-sol\r?$'
-        $workflowLock | Should -Match 'COPILOT_MODEL: gpt-5.6-sol'
         $evalSpec = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../skills/review-test-failures/tests/eval.vally.yaml') -Raw
         $evalSpec | Should -Match '(?m)^  model: gpt-6-astra\r?$'
         $evalSpec | Should -Match '(?m)^  judge_model: gpt-6-astra\r?$'

@@ -10,6 +10,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -753,24 +754,6 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void FirstRun_SeedsHotReloadState()
-	{
-		// Arrange
-		XamlHotReloadState.Reset();
-		var compilation = CreateCompilation();
-		var file = MakeFile(PageXamlV1);
-
-		// Act
-		SourceGeneratorDriver.RunGenerator<XamlGenerator>(
-			compilation, file, assertNoCompilationErrors: false);
-
-		// Assert: state was seeded at version 0 (spec: __version starts at 0)
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", "net11.0", PageRelativePath, out _, out _, out _, out _, out var version);
-		Assert.True(hasPrev, "XamlHotReloadState should be seeded after first run");
-		Assert.Equal(0, version);
-	}
-
-	[Fact]
 	public void SecondRun_PropertyChange_EmitsUCSource()
 	{
 		// Arrange
@@ -953,12 +936,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var file = MakeFile(PageXamlV1, ihr: false); // IHR disabled
 
 		// Act
-		SourceGeneratorDriver.RunGenerator<XamlGenerator>(
+		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
 			compilation, file, assertNoCompilationErrors: false);
 
-		// Assert: state NOT seeded when IHR is disabled
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", "net11.0", PageRelativePath, out _, out _, out _, out _, out _);
-		Assert.False(hasPrev, "XamlHotReloadState should NOT be seeded when IHR is disabled");
+		Assert.Null(FindUCSource(result, "uc.xsg"));
 	}
 
 	[Fact]
@@ -1097,23 +1078,24 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			</ContentPage>
 			""";
 		const string relPath = "MainPage.xaml";
+		var sessionToken = new HotReloadSessionToken();
 
 		// Seed with assembly "App1"
-		XamlHotReloadState.Update("App1", "net11.0", relPath, xaml, null, null, 0, 1);
+		XamlHotReloadState.Update("App1", "net11.0", relPath, xaml, null, null, 0, 1, sessionToken);
 
 		// "App2" with same relative path should NOT see "App1" state
-		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", "net11.0", relPath, out _, out _, out _, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", "net11.0", relPath, sessionToken, out _, out _, out _, out _, out _);
 		Assert.False(hasPrev, "Different assembly should not see another assembly's state");
 
 		// "App1" SHOULD see its own state
-		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", "net11.0", relPath, out var storedXaml, out _, out _, out _, out var storedVer);
+		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", "net11.0", relPath, sessionToken, out var storedXaml, out _, out _, out _, out var storedVer);
 		Assert.True(hasSelf);
 		Assert.Equal(xaml, storedXaml);
 		Assert.Equal(1, storedVer);
 	}
 
 	[Fact]
-	public void HotReloadState_LazilySeedsGeneratedFieldsAfterNullRoot()
+	public void HotReloadState_UsesAccumulatedFieldContractsForUpdateComponent()
 	{
 		const string xaml = """
 			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -1124,13 +1106,20 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			""";
 		var parsedRoot = GeneratorHelpers.ParseXaml(xaml, AssemblyAttributes.Empty);
 		Assert.NotNull(parsedRoot);
+		var collectedFields = XamlGeneratedFieldCollector.Collect(parsedRoot);
+		var sessionToken = new HotReloadSessionToken();
 
-		XamlHotReloadState.Update("TestApp", "net11.0", PageRelativePath, xaml, null, null, 0, 0);
-		Assert.Null(XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath));
+		XamlHotReloadState.SetAccumulatedCodeBehindFields(
+			"TestApp",
+			"net11.0",
+			PageRelativePath,
+			new Dictionary<string, HotReloadFieldContract>
+			{
+				["NamedLabel"] = new("global::Microsoft.Maui.Controls.Label", "private", collectedFields["NamedLabel"]),
+			},
+			sessionToken);
 
-		XamlHotReloadState.Update("TestApp", "net11.0", PageRelativePath, xaml, parsedRoot, null, 0, 1);
-
-		var generatedFields = XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath);
+		var generatedFields = XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath, sessionToken);
 		Assert.NotNull(generatedFields);
 		Assert.Equal("Label", generatedFields["NamedLabel"].Name);
 	}
@@ -1875,14 +1864,8 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void AddedNamedElement_IsTrackedViaRegistry()
+	public void AddedNamedElement_IsTrackedAndAssigned()
 	{
-		// jonathanpeppers review: adding a `<Button x:Name="Foo"/>` during hot reload does not (and
-		// cannot) assign the strongly-typed backing field `this.Foo` — EnC/MetadataUpdate cannot add
-		// an instance field to an already-loaded type. Instead the new element must be tracked in
-		// XamlComponentRegistry by node id (Register(this, "<id>", ...)), which is how subsequent
-		// patches locate it. This test asserts the UC registers the added named element and does NOT
-		// emit an assignment to a non-existent `this.Foo` field.
 		XamlHotReloadState.Reset();
 
 		const string xamlV1 = """
@@ -1911,15 +1894,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(uc);
 
-		// The newly added element is created and registered by node id...
 		Assert.Contains("new global::Microsoft.Maui.Controls.Button()", uc!, StringComparison.Ordinal);
 		Assert.Contains("XamlComponentRegistry.Register(this,", uc!, StringComparison.Ordinal);
-		// ...but the UC must NOT assign a backing field that can't exist on the loaded type.
-		Assert.DoesNotContain("this.Foo =", uc!, StringComparison.Ordinal);
+		Assert.Contains("this.Foo =", uc!, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void AddedNamedElement_RemainsFieldlessAfterLaterStructuralReplacement()
+	public void AddedNamedElement_RemainsAssignedAfterLaterStructuralReplacement()
 	{
 		XamlHotReloadState.Reset();
 
@@ -1953,7 +1934,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run3, "uc.xsg");
 		Assert.NotNull(uc);
 		Assert.Contains("new global::Microsoft.Maui.Controls.Button()", uc!, StringComparison.Ordinal);
-		Assert.DoesNotContain("this.Foo =", uc!, StringComparison.Ordinal);
+		Assert.Contains("this.Foo =", uc!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2432,8 +2413,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void CompiledBinding_UCResolvesNestedPropertyType()
 	{
-		// Verify UC resolves dotted binding paths (User.DisplayName) to the correct type
-		// using shared SetPropertyHelpers.ResolveExpressionType (not a UC-specific clone).
+		// Dotted paths retain their nested type while safely handling null intermediate objects.
 		XamlHotReloadState.Reset();
 
 		const string stubs = """
@@ -2476,24 +2456,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			""";
 
 		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
-		var uc = FindUCSource(run2, "uc.xsg");
+		// A structural reload may emit the binding only in InitializeComponent.
+		var bindingSource = FindUCSource(run2, "uc.xsg")
+			?? FindSourceByHintSuffix(run2, "MainPage.xaml.xsg.cs");
 
-		if (uc != null)
-		{
-			// UC should emit a compiled TypedBinding with resolved nested type (string, not object)
-			Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
-			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", uc, StringComparison.Ordinal);
-		}
-		else
-		{
-			// Binding Mode change is a markup-extension property change — may be treated as structural.
-			// Verify the IC at least contains a compiled TypedBinding with the correct type.
-			var icSource = run2.Results.SelectMany(r => r.GeneratedSources)
-				.Where(s => s.HintName.Contains("MainPage", StringComparison.Ordinal))
-				.Select(s => s.SourceText.ToString())
-				.FirstOrDefault() ?? "";
-			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", icSource, StringComparison.Ordinal);
-		}
+		Assert.NotNull(bindingSource);
+		Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string?>", bindingSource, StringComparison.Ordinal);
+		Assert.Contains("getter: source => (source.User?.DisplayName, true)", bindingSource, StringComparison.Ordinal);
 	}
 
 	[Fact]

@@ -14,7 +14,7 @@ public class Issue33158 : _IssuesUITest
 	public override string Issue => "IsEnabledProperty should work on Tabs";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void Issue33158CheckIsEnabled()
 	{
 		App.WaitForElement("ThirdTab");

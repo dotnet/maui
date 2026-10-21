@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
 
@@ -12,6 +11,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class ShadowTypeConverter : TypeConverter
 	{
+		const int MaxShadowParts = 5;
+
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
 		/// <summary>
@@ -52,35 +53,14 @@ namespace Microsoft.Maui.Controls
 
 			try
 			{
-				var regex = new Regex(@"
-                    # Match colors
-                    (
-                        \#([0-9a-fA-F]{3,8}) # Hex colors (#RGB, #RRGGBB, #RRGGBBAA)
-                        |rgb\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*\) # rgb(percent, percent, percent)
-                        |rgba\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(percent, percent, percent, alpha)
-                        |rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\) # rgb(int, int, int)
-                        |rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(int, int, int, alpha)
-                        |hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, lightness)
-                        |hsla\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, lightness, alpha)
-                        |hsv\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, value)
-                        |hsva\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, value, alpha)
-                        |[a-zA-Z]+ # X11 named colors (e.g., AliceBlue, limegreen)
-    
-                    )
-                    | # Match numbers
-                    (
-                        -?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?  # Floats or scientific notation
-                    )
-                ", RegexOptions.IgnorePatternWhitespace);
+				Span<Part> parts = stackalloc Part[MaxShadowParts];
+				var partCount = Tokenize(strValue, parts);
 
-				var matches = regex.Matches(strValue);
-				//var parts = matches.Select(m => m.Value).ToArray();
-
-				if (matches.Count == 3) // <color> | <float> | <float> e.g. #000000 4 4
+				if (partCount == 3) // <color> | <float> | <float> e.g. #000000 4 4
 				{
-					var brush = ParseBrush(matches[0].Value);
-					var offsetX = float.Parse(matches[1].Value, CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(matches[2].Value, CultureInfo.InvariantCulture);
+					var brush = ParseBrush(parts[0].GetString(strValue));
+					var offsetX = float.Parse(parts[1].GetString(strValue), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(parts[2].GetString(strValue), CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -88,12 +68,12 @@ namespace Microsoft.Maui.Controls
 						Offset = new Point(offsetX, offsetY)
 					};
 				}
-				else if (matches.Count == 4) // <float> | <float> | <float> | <color> e.g. 4 4 16 #000000
+				else if (partCount == 4) // <float> | <float> | <float> | <color> e.g. 4 4 16 #000000
 				{
-					var offsetX = float.Parse(matches[0].Value, CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(matches[1].Value, CultureInfo.InvariantCulture);
-					var radius = float.Parse(matches[2].Value, CultureInfo.InvariantCulture);
-					var brush = ParseBrush(matches[3].Value);
+					var offsetX = float.Parse(parts[0].GetString(strValue), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(parts[1].GetString(strValue), CultureInfo.InvariantCulture);
+					var radius = float.Parse(parts[2].GetString(strValue), CultureInfo.InvariantCulture);
+					var brush = ParseBrush(parts[3].GetString(strValue));
 
 					return new Shadow
 					{
@@ -102,13 +82,13 @@ namespace Microsoft.Maui.Controls
 						Brush = brush
 					};
 				}
-				else if (matches.Count == 5) // <float> | <float> | <float> | <color> | <float> e.g. 4 4 16 #000000 0.5
+				else if (partCount == 5) // <float> | <float> | <float> | <color> | <float> e.g. 4 4 16 #000000 0.5
 				{
-					var offsetX = float.Parse(matches[0].Value, CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(matches[1].Value, CultureInfo.InvariantCulture);
-					var radius = float.Parse(matches[2].Value, CultureInfo.InvariantCulture);
-					var brush = ParseBrush(matches[3].Value);
-					var opacity = float.Parse(matches[4].Value, CultureInfo.InvariantCulture);
+					var offsetX = float.Parse(parts[0].GetString(strValue), CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(parts[1].GetString(strValue), CultureInfo.InvariantCulture);
+					var radius = float.Parse(parts[2].GetString(strValue), CultureInfo.InvariantCulture);
+					var brush = ParseBrush(parts[3].GetString(strValue));
+					var opacity = float.Parse(parts[4].GetString(strValue), CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -119,13 +99,331 @@ namespace Microsoft.Maui.Controls
 					};
 				}
 			}
-			catch (Exception ex)
+			catch (FormatException ex)
+			{
+				throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Shadow)}.", ex);
+			}
+			catch (OverflowException ex)
+			{
+				throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Shadow)}.", ex);
+			}
+			catch (InvalidOperationException ex)
 			{
 				throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Shadow)}.", ex);
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(IShadow)}.");
 		}
+
+		static int Tokenize(string value, Span<Part> parts)
+		{
+			var input = value.AsSpan();
+			var partCount = 0;
+			var position = 0;
+
+			while (position < input.Length)
+			{
+				var remaining = input.Slice(position);
+				if (!TryReadColor(remaining, out var length) &&
+					!TryReadNumber(remaining, out length))
+				{
+					position++;
+					continue;
+				}
+
+				if (partCount < MaxShadowParts)
+				{
+					parts[partCount] = new Part(position, length);
+				}
+
+				partCount++;
+				if (partCount > MaxShadowParts)
+				{
+					break;
+				}
+
+				position += length;
+			}
+
+			return partCount;
+		}
+
+		readonly struct Part
+		{
+			public Part(int start, int length)
+			{
+				Start = start;
+				Length = length;
+			}
+
+			public int Start { get; }
+
+			public int Length { get; }
+
+			public string GetString(string value)
+				=> value.Substring(Start, Length);
+		}
+
+		static bool TryReadColor(ReadOnlySpan<char> value, out int length)
+		{
+			if (TryReadHexColor(value, out length) ||
+				TryReadRgbColor(value, "rgb(", hasAlpha: false, percentages: true, out length) ||
+				TryReadRgbColor(value, "rgba(", hasAlpha: true, percentages: true, out length) ||
+				TryReadRgbColor(value, "rgb(", hasAlpha: false, percentages: false, out length) ||
+				TryReadRgbColor(value, "rgba(", hasAlpha: true, percentages: false, out length) ||
+				TryReadHsxColor(value, "hsl(", hasAlpha: false, out length) ||
+				TryReadHsxColor(value, "hsla(", hasAlpha: true, out length) ||
+				TryReadHsxColor(value, "hsv(", hasAlpha: false, out length) ||
+				TryReadHsxColor(value, "hsva(", hasAlpha: true, out length))
+			{
+				return true;
+			}
+
+			var position = 0;
+			while (position < value.Length && IsAsciiLetter(value[position]))
+			{
+				position++;
+			}
+
+			length = position;
+			return position > 0;
+		}
+
+		static bool TryReadHexColor(ReadOnlySpan<char> value, out int length)
+		{
+			if (value.IsEmpty || value[0] != '#')
+			{
+				length = 0;
+				return false;
+			}
+
+			var position = 1;
+			while (position < value.Length && position <= 8 && IsHexDigit(value[position]))
+			{
+				position++;
+			}
+
+			length = position;
+			return position >= 4;
+		}
+
+		static bool TryReadRgbColor(ReadOnlySpan<char> value, ReadOnlySpan<char> prefix, bool hasAlpha, bool percentages, out int length)
+		{
+			if (!value.StartsWith(prefix, StringComparison.Ordinal))
+			{
+				length = 0;
+				return false;
+			}
+
+			var position = prefix.Length;
+			SkipWhitespace(value, ref position);
+
+			for (var component = 0; component < 3; component++)
+			{
+				if (!TryReadDigits(value, ref position) ||
+					(percentages && !TryReadCharacter(value, ref position, '%')))
+				{
+					length = 0;
+					return false;
+				}
+
+				SkipWhitespace(value, ref position);
+				if (component < 2 && !TryReadSeparator(value, ref position))
+				{
+					length = 0;
+					return false;
+				}
+			}
+
+			if (hasAlpha)
+			{
+				if (!TryReadSeparator(value, ref position) ||
+					!TryReadDecimal(value, ref position))
+				{
+					length = 0;
+					return false;
+				}
+
+				SkipWhitespace(value, ref position);
+			}
+
+			if (!TryReadCharacter(value, ref position, ')'))
+			{
+				length = 0;
+				return false;
+			}
+
+			length = position;
+			return true;
+		}
+
+		static bool TryReadHsxColor(ReadOnlySpan<char> value, ReadOnlySpan<char> prefix, bool hasAlpha, out int length)
+		{
+			if (!value.StartsWith(prefix, StringComparison.Ordinal))
+			{
+				length = 0;
+				return false;
+			}
+
+			var position = prefix.Length;
+			SkipWhitespace(value, ref position);
+
+			if (!TryReadDigits(value, ref position))
+			{
+				length = 0;
+				return false;
+			}
+
+			SkipWhitespace(value, ref position);
+			for (var component = 0; component < 2; component++)
+			{
+				if (!TryReadSeparator(value, ref position) ||
+					!TryReadDigits(value, ref position) ||
+					!TryReadCharacter(value, ref position, '%'))
+				{
+					length = 0;
+					return false;
+				}
+
+				SkipWhitespace(value, ref position);
+			}
+
+			if (hasAlpha)
+			{
+				if (!TryReadSeparator(value, ref position) ||
+					!TryReadDecimal(value, ref position))
+				{
+					length = 0;
+					return false;
+				}
+
+				SkipWhitespace(value, ref position);
+			}
+
+			if (!TryReadCharacter(value, ref position, ')'))
+			{
+				length = 0;
+				return false;
+			}
+
+			length = position;
+			return true;
+		}
+
+		static bool TryReadSeparator(ReadOnlySpan<char> value, ref int position)
+		{
+			if (!TryReadCharacter(value, ref position, ','))
+			{
+				return false;
+			}
+
+			SkipWhitespace(value, ref position);
+			return true;
+		}
+
+		static bool TryReadDecimal(ReadOnlySpan<char> value, ref int position)
+		{
+			if (!TryReadDigits(value, ref position))
+			{
+				return false;
+			}
+
+			if (position < value.Length && value[position] == '.')
+			{
+				var decimalPoint = position++;
+				if (!TryReadDigits(value, ref position))
+				{
+					position = decimalPoint;
+				}
+			}
+
+			return true;
+		}
+
+		static bool TryReadNumber(ReadOnlySpan<char> value, out int length)
+		{
+			var position = 0;
+			if (position < value.Length && value[position] == '-')
+			{
+				position++;
+			}
+
+			if (!TryReadDigits(value, ref position))
+			{
+				length = 0;
+				return false;
+			}
+
+			if (position < value.Length && value[position] == '.')
+			{
+				var decimalPoint = position++;
+				if (!TryReadDigits(value, ref position))
+				{
+					position = decimalPoint;
+				}
+			}
+
+			if (position < value.Length && (value[position] == 'e' || value[position] == 'E'))
+			{
+				var exponent = position++;
+				if (position < value.Length && (value[position] == '+' || value[position] == '-'))
+				{
+					position++;
+				}
+
+				if (!TryReadDigits(value, ref position))
+				{
+					position = exponent;
+				}
+			}
+
+			length = position;
+			return true;
+		}
+
+		static bool TryReadDigits(ReadOnlySpan<char> value, ref int position)
+		{
+			var start = position;
+			while (position < value.Length && char.IsDigit(value[position]))
+			{
+				position++;
+			}
+
+			return position > start;
+		}
+
+		static bool TryReadCharacter(ReadOnlySpan<char> value, ref int position, char expected)
+		{
+			if (position >= value.Length || value[position] != expected)
+			{
+				return false;
+			}
+
+			position++;
+			return true;
+		}
+
+		static void SkipWhitespace(ReadOnlySpan<char> value, ref int position)
+		{
+			while (position < value.Length && char.IsWhiteSpace(value[position]))
+			{
+				position++;
+			}
+		}
+
+		static bool IsAsciiLetter(char value)
+#if NET
+			=> char.IsAsciiLetter(value);
+#else
+			=> value is >= 'a' and <= 'z' or >= 'A' and <= 'Z';
+#endif
+
+		static bool IsHexDigit(char value)
+#if NET
+			=> char.IsAsciiHexDigit(value);
+#else
+			=> value is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
+#endif
 
 		/// <summary>
 		/// Converts a Shadow to a string.

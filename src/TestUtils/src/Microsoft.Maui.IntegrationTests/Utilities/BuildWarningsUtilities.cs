@@ -195,12 +195,14 @@ namespace Microsoft.Maui.IntegrationTests
 			foreach (var expectedWarningsPerFile in expectedWarnings)
 			{
 				var actualWarningsPerFile = actualWarnings.FirstOrDefault(actualWarning => actualWarning.File.CompareWarningsFilePaths(expectedWarningsPerFile.File));
-				if (actualWarningsPerFile is null) Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
+				if (actualWarningsPerFile is null)
+					Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
 
 				foreach (var expectedWarningsPerCode in expectedWarningsPerFile.WarningsPerCode)
 				{
 					var actualWarningsPerCode = actualWarningsPerFile!.WarningsPerCode.FirstOrDefault(x => x.Code == expectedWarningsPerCode.Code);
-					if (actualWarningsPerCode is null) Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
+					if (actualWarningsPerCode is null)
+						Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
 
 					foreach (var expectedWarningsMessage in expectedWarningsPerCode.Messages)
 					{
@@ -239,25 +241,8 @@ namespace Microsoft.Maui.IntegrationTests
 		// These might be different from iOS/Mac warnings due to platform-specific implementations
 		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsWindows = new();
 
-		// Android baseline warnings to ensure no new warnings are introduced
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsAndroid = new()
-		{
-			new WarningsPerFile
-			{
-				File = "Xamarin.Android.Common.targets",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "XA1040",
-						Messages = new List<string>
-						{
-							"The NativeAOT runtime on Android is an experimental feature and not yet suitable for production use. File issues at: https://github.com/dotnet/android/issues",
-						}
-					},
-				}
-			},
-		};
+		// Android reports its experimental NativeAOT notice as a message, not a warning.
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsAndroid = new();
 
 		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
 		{
