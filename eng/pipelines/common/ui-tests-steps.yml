@@ -17,10 +17,15 @@ parameters:
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   macValidation: false
+  macValidationSource: ''
 
 steps:
 - checkout: self
   persistCredentials: false
+
+- template: mac-validation-checkout.yml
+  parameters:
+    sourceSha: ${{ parameters.macValidationSource }}
 
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
@@ -188,15 +193,75 @@ steps:
     foreach ($name in @("GH_TOKEN", "GITHUB_TOKEN", "COPILOT_GITHUB_TOKEN")) {
       [Environment]::SetEnvironmentVariable($name, $null)
     }
-    Invoke-Expression $command
+    if ($env:GA_MAC_CLEAN_SOURCE) {
+      $ErrorActionPreference = "Stop"
+      $source = (git rev-parse HEAD).Trim()
+      if ($LASTEXITCODE -ne 0 -or $source -ne $env:GA_MAC_CLEAN_SOURCE) {
+        throw "Final Mac test checkout does not match the requested clean source."
+      }
+      Write-Host "Final Mac test source: $source"
+      $project = "${{ parameters.path }}"
+      $dotnet = Join-Path "$(DotNet.Dir)" "dotnet"
+      & $dotnet build $project -c "${{ parameters.configuration }}" /p:ExtraDefineConstants=MACUITEST "-bl:$(LogDirectory)/clean-test-build.binlog"
+      if ($LASTEXITCODE -ne 0) { throw "Clean Mac test assembly did not build." }
+      $assembly = (& $dotnet msbuild $project "/p:Configuration=${{ parameters.configuration }}" -getProperty:TargetPath -nologo).Trim()
+      if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $assembly -PathType Leaf)) {
+        throw "Cannot resolve the clean Mac test assembly."
+      }
+      $discoveryPath = Join-Path "$(LogDirectory)" "clean-discovered-tests.txt"
+      & $dotnet vstest $assembly /ListFullyQualifiedTests "/ListTestsTargetPath:$discoveryPath" "/TestCaseFilter:$testFilter"
+      if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $discoveryPath -PathType Leaf)) {
+        throw "Clean Mac method discovery failed."
+      }
+      $expected = "Microsoft.Maui.TestCases.Tests.Issues.${fixture}(Mac).$testMethod"
+      $discovered = @(Get-Content -LiteralPath $discoveryPath | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+      if ($discovered.Count -ne 1 -or $discovered[0] -ne $expected) {
+        throw "Clean Mac discovery did not match exactly the requested method."
+      }
+      $originalResults = "$(TestResultsDirectory)"
+      $originalLogs = "$(LogDirectory)"
+      $previousResults = $env:TestResultsDirectory
+      $previousLogs = $env:LogDirectory
+      $hadFailure = $false
+      try {
+        foreach ($attempt in 1..3) {
+          $env:TestResultsDirectory = Join-Path $originalResults "clean-$attempt"
+          $env:LogDirectory = Join-Path $originalLogs "clean-$attempt"
+          New-Item -ItemType Directory -Force $env:TestResultsDirectory, $env:LogDirectory | Out-Null
+          & pwsh -NoProfile -File ./build.ps1 -Script eng/devices/catalyst.cake --target=uitest `
+            "--project=$project" "--appproject=${{ parameters.app }}" "--device=${{ parameters.device }}" `
+            "--apiversion=${{ parameters.version }}" "--configuration=${{ parameters.configuration }}" `
+            "--runtimevariant=${{ parameters.runtimeVariant }}" "--results=$env:TestResultsDirectory" `
+            "--binlog=$env:LogDirectory" "--test-filter=$testFilter" --verbosity=diagnostic
+          $exitCode = $LASTEXITCODE
+          $files = @(Get-ChildItem -LiteralPath $env:TestResultsDirectory -Filter "*.trx" -File)
+          if ($files.Count -ne 1) { throw "Clean Mac process did not produce exactly one TRX." }
+          [xml]$trx = Get-Content -LiteralPath $files[0].FullName -Raw
+          $results = @($trx.TestRun.Results.UnitTestResult)
+          if ($results.Count -ne 1 -or $results[0].testName -ne $testMethod) {
+            throw "Clean Mac process did not execute exactly the requested method."
+          }
+          Copy-Item -LiteralPath $files[0].FullName -Destination (Join-Path $originalResults "clean-$attempt.trx")
+          Write-Host "Clean Mac exact result ${attempt}: $($results[0].outcome); exit $exitCode; source $source"
+          if ($exitCode -ne 0 -or $results[0].outcome -ne "Passed") { $hadFailure = $true }
+        }
+      } finally {
+        $env:TestResultsDirectory = $previousResults
+        $env:LogDirectory = $previousLogs
+      }
+      if ($hadFailure) { throw "Clean-source Mac execution contains failing tests." }
+    } else {
+      Invoke-Expression $command
+    }
   displayName: $(Agent.JobName)
-  ${{ if parameters.macValidation }}:
+  ${{ if eq(parameters.macValidation, true) }}:
     retryCountOnTaskFailure: 0
   ${{ elseif ne(parameters.platform, 'android')}}:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
     GA_MAC_VALIDATION: ${{ parameters.macValidation }}
+    GA_MAC_CLEAN_SOURCE: ${{ parameters.macValidationSource }}
 
 - bash: |
     cat ${BASH_SOURCE[0]}

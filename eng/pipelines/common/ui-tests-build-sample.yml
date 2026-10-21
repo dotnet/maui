@@ -13,10 +13,15 @@ parameters:
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
+  macValidationSource: ''
 
 steps:
 - checkout: self
   persistCredentials: false
+
+- template: mac-validation-checkout.yml
+  parameters:
+    sourceSha: ${{ parameters.macValidationSource }}
 
 - ${{ if eq(parameters.platform, 'ios')}}:
   - bash: |

@@ -1,0 +1,27 @@
+parameters:
+  sourceSha: ''
+
+steps:
+- ${{ if ne(parameters.sourceSha, '') }}:
+  - pwsh: |
+      $ErrorActionPreference = "Stop"
+      $source = $env:GA_MAC_CLEAN_SOURCE
+      if ($source -cnotmatch '^[0-9a-f]{40}$') {
+        throw "Clean-source Mac validation requires an exact lowercase commit SHA."
+      }
+      if (git status --porcelain) {
+        throw "Refusing to replace a dirty validation checkout."
+      }
+      git fetch --quiet --no-tags --depth=1 origin $source
+      if ($LASTEXITCODE -ne 0) { throw "Cannot fetch the clean validation source." }
+      git -c advice.detachedHead=false checkout --detach --quiet $source
+      if ($LASTEXITCODE -ne 0) { throw "Cannot select the clean validation source." }
+      $actual = (git rev-parse HEAD).Trim()
+      if ($LASTEXITCODE -ne 0 -or $actual -ne $source) {
+        throw "Validation source identity does not match."
+      }
+      Write-Host "Fresh Mac compile source: $actual"
+      git status --porcelain
+    displayName: Select exact cleaned Mac validation source
+    env:
+      GA_MAC_CLEAN_SOURCE: ${{ parameters.sourceSha }}

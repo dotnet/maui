@@ -60,6 +60,10 @@ parameters:
     type: object
     default: [ Layout, Shell ]
 
+  - name: macValidationSource
+    type: string
+    default: ''
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -169,6 +173,7 @@ stages:
   - template: common/ui-tests.yml
     parameters:
       macValidation: ${{ parameters.macValidation }}
+      macValidationSource: ${{ parameters.macValidationSource }}
       ${{ if parameters.macValidation }}:
         categoryGroupsToTest: ${{ parameters.macValidationCategories }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
