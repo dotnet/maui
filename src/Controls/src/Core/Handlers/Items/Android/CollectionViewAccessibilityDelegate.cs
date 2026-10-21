@@ -132,16 +132,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
                     ? Math.Max(0, oldItemInfo.ColumnIndex - offset)
                     : oldItemInfo.ColumnIndex;
 
-#pragma warning disable CS0618 // Preserve the base heading metadata; IsHeading is the current API surface.
-                var isHeading = oldItemInfo.IsHeading;
-#pragma warning restore CS0618
-
                 info.SetCollectionItemInfo(CollectionItemInfo.Obtain(
                     rowIndex,
                     oldItemInfo.RowSpan,
                     columnIndex,
                     oldItemInfo.ColumnSpan,
-                    isHeading,
+                    false,
                     oldItemInfo.IsSelected));
             }
         }

@@ -36,14 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
             if (_observedAdapter is not null)
             {
-                try
-                {
-                    _observedAdapter.UnregisterAdapterDataObserver(_observer);
-                }
-                catch
-                {
-                    // The old adapter may already be disposed or not registered.
-                }
+                _observedAdapter.UnregisterAdapterDataObserver(_observer);
             }
 
             _observedAdapter = newAdapter;
