@@ -161,15 +161,6 @@
       ],
      "createdDate": "2024-02-27 23:34:18Z"
     },
-    "3c94253b1fbc567789e088b04c69a6da60473450035654a37f36001d9a81ae9e": {
-      "signature": "3c94253b1fbc567789e088b04c69a6da60473450035654a37f36001d9a81ae9e",
-      "alternativeSignatures": [],
-      "memberOf": [
-        "default"
-      ],
-      "justification": "PoliCheck 211960: the accessibility check in maui-expert-reviewer.md contains a literal quotation advocating usable font scaling for people with low vision. Preserve the quotation verbatim rather than silently changing quoted words; the surrounding instruction requires accessible font scaling.",
-      "createdDate": "2026-10-21 18:19:44Z"
-    },
     "a32da5932044b7b2266f9c6a8b0043fe0442054e2844c11e596fa6692ab9b22a": {
       "signature": "a32da5932044b7b2266f9c6a8b0043fe0442054e2844c11e596fa6692ab9b22a",
       "alternativeSignatures": [],
