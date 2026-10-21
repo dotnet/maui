@@ -51,11 +51,13 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 
 ## Android Shell Handler and Renderer Lanes
 
-The main Android UI-test lane runs the `Shell` category using Shell Handler.
-The separate `android_ui_tests_shell_renderer` stage runs the same category using
-Shell Renderer. Both stages depend on `build_ui_tests_coreclr` and download the
-same `ui-tests-samples-coreclr` artifact; there is no separate app build or MSBuild
-property for Shell selection.
+The main Android UI-test stage runs `Shell1` and `Shell2` as separate matrix jobs
+using Shell Handler. The separate `android_ui_tests_shell_renderer` stage runs the
+same two shards as separate matrix jobs using Shell Renderer. Each renderer job
+uses its shard category as the test filter, so the entire Shell suite is not
+repeated in each job. Both stages depend on `build_ui_tests_coreclr` and download
+the same `ui-tests-samples-coreclr` artifact; there is no separate app build or
+MSBuild property for Shell selection.
 
 Android Mono is not supported when targeting .NET 11 or later. Enabling
 `UseMonoRuntime=true` for `net11.0-android` fails with `NETSDK1242`, so there is no
@@ -77,6 +79,10 @@ To run the renderer configuration locally with an already-built HostApp:
 ./build.sh -Script eng/devices/android.cake --target=uitest \
   --test-filter="TestCategory=Shell" --TEST_CONFIGURATION_ARGS="ShellRenderer"
 ```
+
+The `Shell` umbrella category still selects the complete suite locally. Use
+`TestCategory=Shell1` or `TestCategory=Shell2` to run an individual shard, matching
+the CI jobs.
 
 Omit `--TEST_CONFIGURATION_ARGS` (and unset that environment variable) to run the
 default Shell Handler configuration. Both configurations use the existing Android

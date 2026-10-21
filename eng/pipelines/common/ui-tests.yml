@@ -208,6 +208,12 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: shell_renderer_android_ui_tests_${{ project.name }}_${{ api }}
+                strategy:
+                  matrix:
+                    Shell1:
+                      CATEGORYGROUP: Shell1
+                    Shell2:
+                      CATEGORYGROUP: Shell2
                 timeoutInMinutes: 240
                 workspace:
                   clean: all
@@ -228,7 +234,7 @@ stages:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: "Shell"
+                      testFilter: $(CATEGORYGROUP)
                       testConfigurationArgs: "ShellRenderer"
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
