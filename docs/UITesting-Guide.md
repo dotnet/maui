@@ -385,11 +385,15 @@ For comprehensive CI-like test runs:
 
 Android, iOS, MacCatalyst, and Windows CI runs retry once after a failure using
 the shared UI test runner. For an exact category group such as
-`TestCategory=Editor|TestCategory=Effects|TestCategory=Essentials`, the retry runs
-only categories containing failed tests or fixtures. NUnit XML provides inherited
-fixture and method categories; only categories in the original group are selected.
-Missing, incomplete, or unmappable results fall back to the original filter with
-a warning. Custom filters retain their original selection, and local runs do not retry.
+`TestCategory=Editor|TestCategory=Effects|TestCategory=Essentials`, the second
+attempt runs only the individual tests that failed. Exact NUnit `fullname`
+selectors distinguish parameterized cases and retain the original category/shard
+constraint. A generated `retry.runsettings` file uses `NUnit.Where` instead of a
+VSTest command-line filter, avoiding argument quoting and length limits.
+NUnit XML provides inherited fixture and method categories; only categories in
+the original group are selected. Missing, incomplete, unmappable, or ambiguous
+test names fall back to the original filter with a warning. Custom filters retain
+their original selection, and local runs do not retry. No extra retry is added.
 
 On iOS, MacCatalyst, and Windows CI, preparation and test-project build phases
 also have one bounded retry per failed phase, before test execution starts.
@@ -397,18 +401,22 @@ These retries do not restart completed tests. Local runs and device-test targets
 do not retry setup.
 
 NUnit XML is checked whether VSTest succeeds or throws. Fixture-only failures
-such as `OneTimeTearDown` errors trigger the same category-based retry and are
-recorded as TRX run errors if they persist. Missing or malformed reports are
+such as `OneTimeTearDown` errors still retry their affected categories because
+they cannot safely be attributed to individual tests. They are recorded as TRX
+run errors if they persist. Missing or malformed reports are
 logged without replacing an existing VSTest exception.
 
 The published TRX combines untouched first-attempt results with retry results.
-Failures not reported by the retry remain failures. Fixture errors are cleared
+Failures not reported by the retry, or only skipped/inconclusive on retry, remain
+failures. Failed NUnit cases must be confirmed passed by complete retry NUnit XML
+for the same fully qualified name and assembly, even if VSTest reports success.
+Fixture errors are cleared
 only when retry NUnit XML confirms that the same fixture in the same assembly
 completed successfully; omitted, skipped, or incomplete fixtures remain run
 errors, even if all retained test cases passed.
 
 Available raw TRX and NUnit XML files are copied before XML parsing,
-reconciliation, or category selection, including for full-filter retries. The
+reconciliation, or retry selection, including for full-filter retries. The
 first attempt's snapshots are under `nunit-<id>/raw/` and the retry's snapshots
 under `nunit-<id>/retry/raw/`, beneath the result directory. Retry output always
 uses a separate directory, even when the first TRX is missing or malformed.
