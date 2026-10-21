@@ -19,6 +19,66 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task EmptyViewDisplayedWhenItemsSourceIsNull(bool useTemplate, bool initiallyNull)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string> { "Item 1" };
+			var collectionView = new CollectionView
+			{
+				ItemsSource = initiallyNull ? null : items,
+				HeightRequest = 200,
+				WidthRequest = 200
+			};
+
+			if (useTemplate)
+			{
+				collectionView.EmptyViewTemplate = new Controls.DataTemplate(() => new Label { Text = "No items" });
+			}
+			else
+			{
+				collectionView.EmptyView = new Label { Text = "No items" };
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var emptyView = Assert.IsAssignableFrom<IEmptyView>(handler.PlatformView);
+
+				if (!initiallyNull)
+				{
+					Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
+					collectionView.ItemsSource = null;
+				}
+
+				Assert.Null(handler.PlatformView.ItemsSource);
+				Assert.Equal(UI.Xaml.Visibility.Visible, emptyView.EmptyViewVisibility);
+
+				await AssertEventually(() => handler.PlatformView
+					.GetChildren<UI.Xaml.Controls.TextBlock>()
+					.Any(textBlock => textBlock.Text == "No items" && textBlock.ActualHeight > 0));
+
+				collectionView.ItemsSource = items;
+				Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
+				Assert.Single(handler.PlatformView.Items);
+
+				collectionView.ItemsSource = null;
+				Assert.Null(handler.PlatformView.ItemsSource);
+				Assert.Equal(UI.Xaml.Visibility.Visible, emptyView.EmptyViewVisibility);
+
+				collectionView.ItemsSource = items;
+				items.Clear();
+				Assert.Equal(UI.Xaml.Visibility.Visible, emptyView.EmptyViewVisibility);
+
+				items.Add("Item 2");
+				Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView Disconnects Correctly")]
 		public async Task CollectionViewHandlerDisconnects()
 		{
