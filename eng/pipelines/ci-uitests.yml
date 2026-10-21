@@ -52,6 +52,20 @@ variables:
 
 parameters:
 
+  - name: macValidationSource
+    type: string
+    default: ''
+
+  - name: macValidationMode
+    type: string
+    default: diagnostic
+    values: [ diagnostic, clean ]
+
+  - name: macValidationCategory
+    type: string
+    default: Both
+    values: [ Both, Layout, Shell ]
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -157,41 +171,60 @@ parameters:
       vmImage: macOS-14
 
 stages:
+  - stage: build_ui_tests_coreclr
+    displayName: Build exact-source Mac UI test HostApp
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App
+        pool: ${{ parameters.androidPoolPublic }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: common/ui-tests-build-sample.yml
+            parameters:
+              runtimeVariant: CoreCLR
+              platform: maccatalyst
+              skipProvisioning: true
+              ${{ if eq(parameters.macValidationMode, 'clean') }}:
+                macValidationSource: ${{ parameters.macValidationSource }}
+              ${{ else }}:
+                macDiagnosticSource: ${{ parameters.macValidationSource }}
 
-  - template: common/ui-tests.yml
-    parameters:
-      iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
-      # Select pools based on pipeline - internal vs public
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        androidPool: ${{ parameters.androidPoolInternal }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
-        iosPool: ${{ parameters.iosPoolInternal }}
-        windowsPool: ${{ parameters.windowsPoolInternal }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
-        macosPool: ${{ parameters.macosPoolInternal }}
-      ${{ else }}:
-        androidPool: ${{ parameters.androidPoolPublic }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
-        iosPool: ${{ parameters.iosPoolPublic }}
-        windowsPool: ${{ parameters.windowsPoolPublic }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
-        macosPool: ${{ parameters.macosPoolPublic }}
-      # BuildNativeAOT is false by default, but true in devdiv environment
-      BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
-      RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ '18.5', 'latest' ]
-      ${{ else }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ 'latest' ]
-      projects:
-        - name: controls
-          desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
-          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
-          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
-          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
+  - stage: maccatalyst_ui_tests_coreclr
+    displayName: Exact-source Mac UI tests
+    dependsOn: build_ui_tests_coreclr
+    jobs:
+      - job: maccatalyst_ui_tests_coreclr_controls
+        displayName: Controls
+        strategy:
+          matrix:
+            ${{ if or(eq(parameters.macValidationCategory, 'Both'), eq(parameters.macValidationCategory, 'Layout')) }}:
+              Layout:
+                CATEGORYGROUP: Layout
+            ${{ if or(eq(parameters.macValidationCategory, 'Both'), eq(parameters.macValidationCategory, 'Shell')) }}:
+              Shell:
+                CATEGORYGROUP: Shell
+        timeoutInMinutes: 180
+        workspace:
+          clean: all
+        pool: ${{ parameters.macosPoolPublic }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: common/ui-tests-steps.yml
+            parameters:
+              platform: catalyst
+              version: '15.3'
+              device: mac
+              path: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
+              app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+              runtimeVariant: CoreCLR
+              testFilter: $(CATEGORYGROUP)
+              skipProvisioning: true
+              macValidation: true
+              ${{ if eq(parameters.macValidationMode, 'clean') }}:
+                macValidationSource: ${{ parameters.macValidationSource }}
+              ${{ else }}:
+                macDiagnosticSource: ${{ parameters.macValidationSource }}

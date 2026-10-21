@@ -13,8 +13,17 @@ parameters:
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
+  macValidationSource: ''
+  macDiagnosticSource: ''
 
 steps:
+- checkout: self
+  persistCredentials: false
+
+- template: mac-validation-checkout.yml
+  parameters:
+    sourceSha: ${{ coalesce(parameters.macValidationSource, parameters.macDiagnosticSource) }}
+
 - ${{ if eq(parameters.platform, 'ios')}}:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
@@ -82,6 +91,9 @@ steps:
         Write-Host "Building with UseWindowsCollectionView2Handler=false (CV1)"
     }
     
+    foreach ($name in @("GH_TOKEN", "GITHUB_TOKEN", "COPILOT_GITHUB_TOKEN")) {
+      [Environment]::SetEnvironmentVariable($name, $null)
+    }
     Invoke-Expression $buildCommand
   displayName: 'Build the samples'
 

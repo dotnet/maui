@@ -1,0 +1,26 @@
+parameters:
+  sourceSha: ''
+
+steps:
+- pwsh: |
+    $ErrorActionPreference = "Stop"
+    $source = $env:GA_MAC_COMPILE_SOURCE
+    if ($source -cnotmatch '^[0-9a-f]{40}$') {
+      throw "Mac validation requires an exact lowercase commit SHA."
+    }
+    if (git status --porcelain) {
+      throw "Refusing to replace a dirty validation checkout."
+    }
+    git fetch --quiet --no-tags --depth=1 origin $source
+    if ($LASTEXITCODE -ne 0) { throw "Cannot fetch the validation source." }
+    git -c advice.detachedHead=false checkout --detach --quiet $source
+    if ($LASTEXITCODE -ne 0) { throw "Cannot select the validation source." }
+    $actual = (git rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or $actual -ne $source) {
+      throw "Validation source identity does not match."
+    }
+    Write-Host "Fresh Mac compile source: $actual"
+    git status --porcelain
+  displayName: Select exact Mac validation compile source
+  env:
+    GA_MAC_COMPILE_SOURCE: ${{ parameters.sourceSha }}
