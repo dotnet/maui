@@ -39,7 +39,6 @@ Full documentation: [docs/design/WorkloadMsi.md](/docs/design/WorkloadMsi.md)
 | `src/Workload/workloads.csproj` | Main MSI generation project — WiX 6 config + task invocation |
 | `eng/Versions.props` | `MicrosoftWixVersion` property + arcade task versions |
 | `eng/NuGetVersions.targets` | Central package version pins for WiX packages |
-| `eng/pipelines/common/sdk-insertion.yml` | Pipeline referencing workload build |
 
 ## WiX 6 Package Dependencies
 
