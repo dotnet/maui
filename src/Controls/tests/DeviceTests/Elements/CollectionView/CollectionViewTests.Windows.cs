@@ -51,31 +51,31 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (!initiallyNull)
 				{
-					Assert.Equal(Visibility.Collapsed, emptyView.EmptyViewVisibility);
+					Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
 					collectionView.ItemsSource = null;
 				}
 
 				Assert.Null(handler.PlatformView.ItemsSource);
-				Assert.Equal(Visibility.Visible, emptyView.EmptyViewVisibility);
+				Assert.Equal(UI.Xaml.Visibility.Visible, emptyView.EmptyViewVisibility);
 
 				await AssertEventually(() => handler.PlatformView
 					.GetChildren<UI.Xaml.Controls.TextBlock>()
 					.Any(textBlock => textBlock.Text == "No items" && textBlock.ActualHeight > 0));
 
 				collectionView.ItemsSource = items;
-				Assert.Equal(Visibility.Collapsed, emptyView.EmptyViewVisibility);
+				Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
 				Assert.Single(handler.PlatformView.Items);
 
 				collectionView.ItemsSource = null;
 				Assert.Null(handler.PlatformView.ItemsSource);
-				Assert.Equal(Visibility.Visible, emptyView.EmptyViewVisibility);
+				Assert.Equal(UI.Xaml.Visibility.Visible, emptyView.EmptyViewVisibility);
 
 				collectionView.ItemsSource = items;
 				items.Clear();
-				Assert.Equal(Visibility.Visible, emptyView.EmptyViewVisibility);
+				Assert.Equal(UI.Xaml.Visibility.Visible, emptyView.EmptyViewVisibility);
 
 				items.Add("Item 2");
-				Assert.Equal(Visibility.Collapsed, emptyView.EmptyViewVisibility);
+				Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
 			});
 		}
 
