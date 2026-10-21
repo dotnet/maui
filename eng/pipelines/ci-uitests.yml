@@ -56,6 +56,10 @@ parameters:
     type: boolean
     default: false
 
+  - name: macValidationCategories
+    type: object
+    default: [ Layout, Shell ]
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -166,7 +170,7 @@ stages:
     parameters:
       macValidation: ${{ parameters.macValidation }}
       ${{ if parameters.macValidation }}:
-        categoryGroupsToTest: [ Layout, Shell ]
+        categoryGroupsToTest: ${{ parameters.macValidationCategories }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
