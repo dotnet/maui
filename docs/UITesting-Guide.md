@@ -82,6 +82,23 @@ Omit `--TEST_CONFIGURATION_ARGS` (and unset that environment variable) to run th
 default Shell Handler configuration. Both configurations use the existing Android
 snapshot baselines.
 
+For a known renderer-only failure, call the shared test extension at the start of
+the affected test, including the tracking issue in the reason:
+
+```csharp
+this.IgnoreOnAndroidShellRenderer(
+    "Fails with Android ShellRenderer: https://github.com/dotnet/maui/issues/39461");
+```
+
+This reports the test as ignored only in the Android Shell Renderer configuration.
+The default Handler lane and other platforms continue running the test.
+
+For a known Handler-only failure, use
+`this.IgnoreOnAndroidShellHandler("Reason and tracking issue URL")` instead. This
+skips only the Android Handler configuration, leaving Renderer coverage enabled.
+Both helpers leave other platforms unaffected. Use only the relevant helper for
+each affected test and remove the call when its issue is fixed.
+
 ## Creating a UI Test
 
 ### Step 1: Create the HostApp Page
