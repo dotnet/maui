@@ -61,6 +61,68 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CancelledPushRemovesOnlyPushedPageImplicitRoute()
+		{
+			var shell = new TestShell
+			{
+				Items = { CreateShellItem<FlyoutItem>() }
+			};
+			var existingPage = new ContentPage();
+			var cancelledPage = new ContentPage();
+			var existingRoute = Routing.GetRoute(existingPage);
+			var cancelledRoute = Routing.GetRoute(cancelledPage);
+
+			Routing.RegisterImplicitPageRoute(existingPage);
+			shell.Navigating += (_, args) => args.Cancel();
+
+			await shell.Navigation.PushAsync(cancelledPage);
+
+			Assert.Same(existingPage, Routing.GetOrCreateContent(existingRoute));
+			Assert.Null(Routing.GetOrCreateContent(cancelledRoute));
+		}
+
+		[Fact]
+		public async Task CancelledPushRestoresDisplacedImplicitRoute()
+		{
+			const string route = "IMPL_cancelledPush";
+			var shell = new TestShell
+			{
+				Items = { CreateShellItem<FlyoutItem>() }
+			};
+			var existingPage = new ContentPage();
+			var cancelledPage = new ContentPage();
+			Routing.SetRoute(existingPage, route);
+			Routing.SetRoute(cancelledPage, route);
+
+			Routing.RegisterImplicitPageRoute(existingPage);
+			shell.Navigating += (_, args) => args.Cancel();
+
+			await shell.Navigation.PushAsync(cancelledPage);
+
+			Assert.Same(existingPage, Routing.GetOrCreateContent(route));
+		}
+
+		[Fact]
+		public async Task CancelledPushRemovesImplicitRouteWhenPageRouteChangesDuringNavigation()
+		{
+			var shell = new TestShell
+			{
+				Items = { CreateShellItem<FlyoutItem>() }
+			};
+			var cancelledPage = new ContentPage();
+			var registeredRoute = Routing.GetRoute(cancelledPage);
+			shell.Navigating += (_, args) =>
+			{
+				Routing.SetRoute(cancelledPage, "ChangedDuringNavigating");
+				args.Cancel();
+			};
+
+			await shell.Navigation.PushAsync(cancelledPage);
+
+			Assert.Null(Routing.GetOrCreateContent(registeredRoute));
+		}
+
+		[Fact]
 		public void CancelNavigationOccurringOutsideGotoAsyncWithoutDelay()
 		{
 			var flyoutItem = CreateShellItem<FlyoutItem>();
@@ -681,6 +743,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
 
 			await Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"//catdetails"));
+		}
+
+		[Theory]
+		[InlineData("catdetails")]
+		[InlineData("catdetails/dogdetails")]
+		public async Task RoutingToContentThatIsNotAPageThrows(string route)
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "dogs");
+			shell.Items.Add(item1);
+
+			Routing.RegisterRoute("catdetails", typeof(ContentView));
+			Routing.RegisterRoute("dogdetails", typeof(ContentPage));
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => shell.GoToAsync(route));
+			Assert.Contains("catdetails", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(typeof(ContentView).FullName, exception.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]

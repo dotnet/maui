@@ -26,8 +26,14 @@ internal class KnownMarkups
 		returnType = context.Compilation.ObjectType;
 		if (!markupNode.Properties.TryGetValue(new XmlName("", "Member"), out INode ntype)
 			&& !markupNode.Properties.TryGetValue(new XmlName(null, "Member"), out ntype))
+		{
+			if (markupNode.CollectionItems.Count == 0)
+				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", markupNode as IXmlLineInfo);
+
 			ntype = markupNode.CollectionItems[0];
-		var member = ((ValueNode)ntype).Value as string;
+		}
+
+		var member = (ntype as ValueNode)?.Value as string;
 
 		if (IsNullOrEmpty(member) || !member!.Contains("."))
 		{

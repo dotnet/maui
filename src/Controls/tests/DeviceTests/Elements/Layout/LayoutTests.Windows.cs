@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<HorizontalStackLayout, LayoutHandler>();
@@ -41,6 +43,94 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<FlexLayout, LayoutHandler>();
 					handlers.AddHandler<StackLayout, LayoutHandler>();
 				});
+			});
+		}
+
+		[Theory]
+		[InlineData(true, false, 1098)]
+		[InlineData(false, true, 1110)]
+		[InlineData(true, true, 1110)]
+		public async Task ChangingGridColumnsAndChildGridSpanUpdatesNativeBounds(bool changeWidth, bool changeSpan, double expandedWidth)
+		{
+			SetupLayoutBuilder();
+
+			var root = new Grid
+			{
+				ColumnDefinitions = new ColumnDefinitionCollection(
+					new ColumnDefinition(330),
+					new ColumnDefinition(GridLength.Star),
+					new ColumnDefinition(390)),
+				ColumnSpacing = 12,
+				Padding = 12,
+				WidthRequest = 1476,
+				HeightRequest = 300
+			};
+			var main = new Grid();
+			root.Add(main, 1);
+
+			await AttachAndRun(root, async (LayoutHandler handler) =>
+			{
+				var nativeMain = main.ToPlatform(MauiContext);
+				Assert.Equal(708, nativeMain.ActualWidth, 0.5);
+
+				for (int i = 0; i < 3; i++)
+				{
+					if (changeWidth)
+						root.ColumnDefinitions[2].Width = 0;
+					if (changeSpan)
+						Grid.SetColumnSpan(main, 2);
+
+					await AssertionExtensions.AssertEventually(() => Math.Abs(nativeMain.ActualWidth - expandedWidth) < 0.5);
+					Assert.Equal(expandedWidth, main.Width, 0.5);
+					var position = nativeMain.TransformToVisual(handler.PlatformView)
+						.TransformPoint(new global::Windows.Foundation.Point());
+					Assert.Equal(354, position.X, 0.5);
+					Assert.Equal(12, position.Y, 0.5);
+
+					if (changeWidth)
+						root.ColumnDefinitions[2].Width = 390;
+					if (changeSpan)
+						Grid.SetColumnSpan(main, 1);
+
+					await AssertionExtensions.AssertEventually(() => Math.Abs(nativeMain.ActualWidth - 708) < 0.5);
+					Assert.Equal(708, main.Width, 0.5);
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task InputTransparentLayoutContainerRemainsHitTestVisible(bool cascadeInputTransparent)
+		{
+			SetupLayoutBuilder();
+
+			var button = new Button();
+			var grid = new Grid
+			{
+				CascadeInputTransparent = cascadeInputTransparent,
+				Clip = new EllipseGeometry(new Point(50, 50), 50, 50),
+				HeightRequest = 100,
+				InputTransparent = true,
+				WidthRequest = 100
+			};
+			grid.Add(button);
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var buttonHandler = Assert.IsType<ButtonHandler>(button.Handler);
+
+				Assert.True(container.IsHitTestVisible);
+				Assert.Equal(!cascadeInputTransparent, buttonHandler.PlatformView.IsHitTestVisible);
+
+				grid.InputTransparent = false;
+				Assert.True(container.IsHitTestVisible);
+				Assert.True(buttonHandler.PlatformView.IsHitTestVisible);
+
+				grid.InputTransparent = true;
+				Assert.True(container.IsHitTestVisible);
+				Assert.Equal(!cascadeInputTransparent, buttonHandler.PlatformView.IsHitTestVisible);
 			});
 		}
 

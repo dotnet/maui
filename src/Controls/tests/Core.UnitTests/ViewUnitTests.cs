@@ -225,6 +225,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(12, (int)(new OnIdiom<int> { Tablet = 12, Default = 42 }));
 			mockDeviceInfo.Idiom = DeviceIdiom.Watch;
 			Assert.Equal(42, (int)(new OnIdiom<int> { Tablet = 12, Default = 42 }));
+			mockDeviceInfo.Idiom = DeviceIdiom.Unknown;
+			Assert.Equal(42, (int)(new OnIdiom<int> { Phone = 12, Default = 42 }));
+			mockDeviceInfo.Idiom = DeviceIdiom.Create("Car");
+			Assert.Equal(42, (int)(new OnIdiom<int> { Phone = 12, Default = 42 }));
 		}
 
 		[Fact]

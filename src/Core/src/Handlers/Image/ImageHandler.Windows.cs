@@ -323,6 +323,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				image.Source = platformImage;
+
+				// ImageOpened is raised only when WinUI decodes the source itself. A WriteableBitmap, or a
+				// BitmapImage that was already decoded with SetSourceAsync (file path, stream and URI sources),
+				// has its size right away and never raises it, so apply the AspectFit constraints now.
+				if (platformImage is BitmapSource { PixelWidth: > 0, PixelHeight: > 0 } && Handler is ImageHandler handler)
+					handler.UpdatePlatformMaxConstraints();
 			}
 		}
 	}
