@@ -7,6 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue17389 : _IssuesUITest
 {
 	string? tapLogPath;
+	int? targetPid;
 
 	protected override bool ResetAfterEachTest => true;
 
@@ -47,6 +48,13 @@ public class Issue17389 : _IssuesUITest
 			Assert.That(File.Exists(tapLogPath), Is.True, "App-side receiver log is missing.");
 			TestContext.WriteLine(File.ReadAllText(tapLogPath));
 			TestContext.AddTestAttachment(tapLogPath, "Issue17389 native ended touches and gesture callbacks");
+			var completedPid = targetPid ?? throw new InvalidOperationException("Target process identity was not established.");
+			var logDirectory = Path.GetDirectoryName(tapLogPath) ?? throw new InvalidOperationException("Tap log has no directory.");
+			var pidPath = Path.Combine(logDirectory, "Issue17389-completed-target-pids.txt");
+			var pidText = completedPid.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			var priorPids = File.Exists(pidPath) ? File.ReadAllLines(pidPath) : Array.Empty<string>();
+			Assert.That(priorPids, Does.Not.Contain(pidText), "Target process was reused across cold cases.");
+			File.AppendAllText(pidPath, pidText + Environment.NewLine);
 		}
 	}
 
@@ -63,6 +71,7 @@ public class Issue17389 : _IssuesUITest
 			foreach (var process in processes)
 				process.Dispose();
 			Assert.That(processIds, Has.Length.EqualTo(1), "Cannot establish target process identity.");
+			targetPid = processIds[0];
 			TestContext.WriteLine($"TargetAppPid: {processIds[0]}");
 		}
 

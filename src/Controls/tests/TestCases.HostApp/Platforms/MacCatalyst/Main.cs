@@ -34,12 +34,16 @@ namespace Maui.Controls.Sample.Platform
 				var message = new StringBuilder();
 				message.Append(DateTime.UtcNow.ToString("O"));
 				message.Append(" NativeTouchEnded pid=").Append(Environment.ProcessId);
+				message.Append(" eventType=").Append(uiEvent.Type);
+				message.Append(" phase=").Append(touch.Phase);
+				message.Append(" eventTimestamp=").Append(uiEvent.Timestamp);
 				message.Append(" location=").Append(touch.LocationInView(null));
 				message.Append(" keyWindow=").Append(touch.Window?.IsKeyWindow);
 				var view = touch.View;
 				for (int depth = 0; view is not null && depth < 12; depth++, view = view.Superview)
 				{
 					message.Append(" | ").Append(view.GetType().Name);
+					message.Append(" identity=").Append(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(view));
 					message.Append(" id=").Append(view.AccessibilityIdentifier);
 					message.Append(" frame=").Append(view.Frame);
 					message.Append(" bounds=").Append(view.Bounds);
