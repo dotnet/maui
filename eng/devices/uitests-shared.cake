@@ -178,7 +178,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 				EnsureDirectoryExists(retryDirectory);
 				retrySettingsFile = System.IO.Path.Combine(retryDirectory, "retry.runsettings");
 				UITestRetry.CreateRunSettings(filter).Save(retrySettingsFile);
-				Information("Retrying failed UI tests (category recovery for fixture errors): {0}", filter);
+				Information("Retrying failed UI tests (whole feature-matrix fixtures; category recovery for other fixture errors): {0}", filter);
 			}
 			catch (Exception metadataException) when (metadataException is InvalidOperationException || metadataException is FormatException ||
 				metadataException is System.IO.IOException || metadataException is UnauthorizedAccessException)

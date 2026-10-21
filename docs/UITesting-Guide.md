@@ -386,14 +386,24 @@ For comprehensive CI-like test runs:
 Android, iOS, MacCatalyst, and Windows CI runs retry once after a failure using
 the shared UI test runner. For an exact category group such as
 `TestCategory=Editor|TestCategory=Effects|TestCategory=Essentials`, the second
-attempt runs only the individual tests that failed. Exact NUnit `fullname`
-selectors distinguish parameterized cases and retain the original category/shard
-constraint. A generated `retry.runsettings` file uses `NUnit.Where` instead of a
+attempt runs only the individual tests that failed, except for feature matrices.
+Exact NUnit `fullname` selectors distinguish parameterized cases and retain the
+original category/shard constraint. A generated `retry.runsettings` file uses
+`NUnit.Where` instead of a
 VSTest command-line filter, avoiding argument quoting and length limits.
 NUnit XML provides inherited fixture and method categories; only categories in
 the original group are selected. Missing, incomplete, unmappable, or ambiguous
 test names fall back to the original filter with a warning. Custom filters retain
 their original selection, and local runs do not retry. No extra retry is added.
+
+Feature-matrix fixtures follow the `*FeatureTests` class naming convention.
+When one fails, the retry selects that entire NUnit fixture, including passing
+prerequisite tests, so its ordered navigation and shared application state are
+preserved. Other feature matrices and passing ordinary tests are not selected.
+The original category/shard constraint still applies: tests outside that lane
+are not added. This costs a full fixture rerun only after a failure, without
+adding per-test app resets or changing the initial execution flow. New feature
+matrices must retain this naming convention to receive fixture-level retries.
 
 On iOS, MacCatalyst, and Windows CI, preparation and test-project build phases
 also have one bounded retry per failed phase, before test execution starts.
@@ -401,9 +411,9 @@ These retries do not restart completed tests. Local runs and device-test targets
 do not retry setup.
 
 NUnit XML is checked whether VSTest succeeds or throws. Fixture-only failures
-such as `OneTimeTearDown` errors still retry their affected categories because
-they cannot safely be attributed to individual tests. They are recorded as TRX
-run errors if they persist. Missing or malformed reports are
+such as `OneTimeTearDown` errors in other fixtures still retry their affected
+categories because they cannot safely be attributed to individual tests. They
+are recorded as TRX run errors if they persist. Missing or malformed reports are
 logged without replacing an existing VSTest exception.
 
 The published TRX combines untouched first-attempt results with retry results.
