@@ -169,6 +169,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						// For headers/footers, always measure directly without using or updating the first-item cache
 						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+
+						// A collapsed header/footer does not reserve space, but Measure() still
+						// reports the content size because visibility is not part of a layout
+						// measure pass. Collapse the growing dimension explicitly (#30924).
+						if (virtualView.Visibility == Microsoft.Maui.Visibility.Collapsed)
+						{
+							_measuredSize = ScrollDirection == UICollectionViewScrollDirection.Vertical
+								? new Size(_measuredSize.Width, 0)
+								: new Size(0, _measuredSize.Height);
+						}
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
