@@ -24,12 +24,7 @@ public class Issue32419 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellMenuItemsAlignedInRTL()
 	{
-		if (_testDevice == TestDevice.Android && string.Equals(
-			Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
-			"ShellRenderer", StringComparison.OrdinalIgnoreCase))
-		{
-			Assert.Ignore("Fails with Android ShellRenderer: https://github.com/dotnet/maui/issues/39461");
-		}
+		this.IgnoreOnAndroidShellRenderer("Fails with Android ShellRenderer: https://github.com/dotnet/maui/issues/39461");
 
 		App.WaitForElement("homePageLabel");
 		App.Tap("FlyoutLockedButton");
