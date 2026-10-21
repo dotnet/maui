@@ -20,6 +20,69 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CollectionView2ItemsSourceCanBeClearedAndRestored(bool useItemTemplate)
+		{
+			SetupBuilderCollectionView2();
+
+			var items = new List<string> { "Item 1", "Item 2", "Item 3" };
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				EmptyView = new Label { Text = "No items" },
+				HeightRequest = 300,
+				WidthRequest = 300
+			};
+
+			if (useItemTemplate)
+			{
+				collectionView.ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				});
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					handler.PlatformView.UpdateLayout();
+					Assert.Equal(items.Count,
+						Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+							.Cast<object>().Count());
+					var platformItemTemplate = handler.PlatformView.ItemTemplate;
+					Assert.NotNull(platformItemTemplate);
+
+					collectionView.ItemsSource = null;
+					handler.PlatformView.UpdateLayout();
+					Assert.Null(handler.PlatformView.ItemsSource);
+					Assert.Contains((View)collectionView.EmptyView, collectionView.LogicalChildrenInternal);
+					if (!useItemTemplate)
+					{
+						Assert.Same(platformItemTemplate, handler.PlatformView.ItemTemplate);
+					}
+					await Task.Yield();
+
+					items = new List<string>(items);
+					collectionView.ItemsSource = items;
+					handler.PlatformView.UpdateLayout();
+					Assert.DoesNotContain((View)collectionView.EmptyView, collectionView.LogicalChildrenInternal);
+					if (!useItemTemplate)
+					{
+						Assert.Same(platformItemTemplate, handler.PlatformView.ItemTemplate);
+					}
+				}
+
+				Assert.Equal(items.Count,
+					Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+						.Cast<object>().Count());
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView Disconnects Correctly")]
 		public async Task CollectionViewHandlerDisconnects()
 		{
