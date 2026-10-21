@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI ContentView (XAML)",
   "description": "Vue permettant d’afficher du contenu à l’aide de XAML. Cela est parfait pour créer vos propres contrôles personnalisés et réutilisables.",

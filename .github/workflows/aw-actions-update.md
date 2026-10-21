@@ -14,6 +14,7 @@ description: |
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 imports:
+  - shared/gpt-6.1-sol.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
@@ -49,10 +50,11 @@ checkout:
 # Lets maintainers find every asset this workflow creates (PRs, comments).
 tracker-id: aw-actions-update
 
-model: gpt-5.6-sol
+model: gpt-6.1-sol
 engine:
   id: copilot
   env:
+    COPILOT_PROVIDER_WIRE_API: responses
     # Authenticate the agent's `gh` CLI commands with this workflow's read-only
     # GitHub Actions token, not the Copilot inference PAT.
     GH_TOKEN: ${{ github.token }}
@@ -61,6 +63,66 @@ engine:
 concurrency:
   group: "aw-actions-update"
   cancel-in-progress: false
+
+# Keep installation and updates out of the approval-gated inference process.
+# No extension needs to be mounted into the AWF chroot: the agent only inspects
+# the resulting workspace diff and requests the bounded safe-output PR.
+pre-agent-steps:
+  - name: Refresh action pins with the lock-pinned compiler
+    shell: bash
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      # v0.86.2 omits custom step timeouts from the compiled lock.
+      timeout --signal=TERM --kill-after=30s 15m bash <<'GH_AW_ACTION_PIN_REFRESH'
+      set -euo pipefail
+      report=/tmp/gh-aw/action-pin-refresh.txt
+      prs="$(gh pr list --state open --search '"[actions]" in:title' --author "app/github-actions" --json number,title,url --limit 20)"
+      existing="$(printf '%s\n' "$prs" | jq -r '.[] | select(.title | startswith("[actions]")) | .url')"
+      if [ -n "$existing" ]; then
+        printf 'Skipped refresh: existing bot action-pin PR:\n%s\n' "$existing" > "$report"
+        cat "$report"
+        exit 0
+      fi
+
+      lock=.github/workflows/aw-actions-update.lock.yml
+      metadata="$(head -n 1 "$lock")"
+      version="$(printf '%s\n' "$metadata" | sed 's/^# gh-aw-metadata: //' | jq -er '.compiler_version | select(type == "string" and test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))')" || {
+        echo "::error::Invalid compiler_version in $lock"
+        exit 1
+      }
+      # Isolate extension state; never remove or upgrade a runner-wide install.
+      cli_home="$(mktemp -d "${RUNNER_TEMP}/action-pin-cli.XXXXXX")"
+      export GH_CONFIG_DIR="$cli_home/config"
+      export XDG_DATA_HOME="$cli_home/data"
+      export XDG_STATE_HOME="$cli_home/state"
+      if ! gh extension install github/gh-aw --pin "$version"; then
+        echo "::error::Failed to install gh-aw $version"
+        exit 1
+      fi
+      if ! installed="$(gh aw --version 2>&1)"; then
+        echo "::error::Failed to read the installed gh-aw version"
+        exit 1
+      fi
+      if [ "$installed" != "gh aw version $version" ]; then
+        echo "::error::Installed gh-aw does not match $version"
+        exit 1
+      fi
+      update_log="$cli_home/update.log"
+      if ! gh aw update --verbose > "$update_log" 2>&1; then
+        cat "$update_log"
+        echo "::error::Action-pin refresh failed; no PR may be created"
+        exit 1
+      fi
+      cat "$update_log"
+      # v0.86.2 logs action-lock failures without failing the update command.
+      if grep -Fq 'Could not update actions-lock.json:' "$update_log"; then
+        echo "::error::Action-pin lock refresh failed; no PR may be created"
+        exit 1
+      fi
+      printf 'Completed gh aw update --verbose with %s.\n' "$version" > "$report"
+      GH_AW_ACTION_PIN_REFRESH
 
 timeout-minutes: 15
 
@@ -105,9 +167,21 @@ Your only intended code change is `.github/aw/actions-lock.json`. Do not include
 `.github/workflows/*.lock.yml` files in the PR. Do not include gh-aw version upgrades or compiled
 workflow refreshes; those belong to the separate gh-aw version-updater workflow.
 
-## Step 0 — De-duplicate existing action-pin PRs
+## Step 0 — Read the trusted refresh result and de-duplicate existing action-pin PRs
 
-Before changing anything, check for an open action-pin PR:
+Trusted pre-agent setup already checked for a bot-created action-pin PR, installed
+the exact `compiler_version` from this workflow's committed lock in isolated CLI
+state, verified the installed version, and ran `gh aw update --verbose`. Setup
+fails the job on invalid metadata, install/version mismatch, or update failure.
+It uses only the read-only GitHub Actions token, never the Copilot inference PAT.
+The extension is used on the host, not inside the AWF chroot.
+
+Read `/tmp/gh-aw/action-pin-refresh.txt` first. If it reports a skipped refresh,
+emit a noop mentioning the existing PR and stop. If the report is missing or does
+not report successful completion, report the missing setup result and stop without
+creating a PR. **Do not install, remove, upgrade, or invoke gh-aw yourself.**
+
+Before creating a PR, recheck for an open action-pin PR:
 
 ```bash
 gh pr list --state open --search '"[actions]" in:title' --author "app/github-actions" --json number,title,url,headRefName --limit 20
@@ -118,58 +192,11 @@ creating another PR. Mention the existing PR in the run output only. (The `--aut
 the check to this workflow's own bot-created PRs — safe-outputs opens them as `app/github-actions` —
 so an unrelated user-opened PR with a colliding title cannot suppress the refresh.)
 
-## Step 1 — Ensure the gh-aw CLI is available at the committed lock version
+## Steps 1–2 — Inspect the completed trusted update
 
-The `gh aw` command comes from the `github/gh-aw` gh extension, which may not be preinstalled on
-the runner. Read this workflow's required version from the `compiler_version` metadata in its
-committed lock file. `gh aw update` caps native action-pin resolution at the CLI's own version, so
-a newer CLI would refresh `actions-lock.json` in a way that no longer matches the compiled lock
-(version skew). Bumping gh-aw is a deliberate, coordinated change handled by the separate
-`aw-version-update` runbook — not something this weekly pin-refresher should do implicitly.
-
-Remove any pre-installed copy, then install the pinned tag. **Fail closed** (log and exit without
-creating a PR) if the lock metadata is invalid or the pinned install does not succeed — never
-silently continue on a stale or wrong-version CLI. The workflow sets `GH_TOKEN` from its
-read-only GitHub Actions token so the GitHub CLI can remove a preinstalled extension and install
-the lock-pinned release without using the Copilot inference PAT.
-
-```bash
-GH_AW_LOCK_FILE=".github/workflows/aw-actions-update.lock.yml"
-GH_AW_PINNED_VERSION="$(sed -nE '1s/^# gh-aw-metadata: .*"compiler_version":"([^"]+)".*$/\1/p' "$GH_AW_LOCK_FILE")"
-if ! printf '%s\n' "$GH_AW_PINNED_VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-  echo "Could not read a valid gh-aw compiler_version from $GH_AW_LOCK_FILE; not creating a PR."
-  exit 0
-fi
-
-gh extension remove gh-aw 2>/dev/null || true
-if ! gh extension install github/gh-aw --pin "$GH_AW_PINNED_VERSION"; then
-  echo "Failed to install gh-aw $GH_AW_PINNED_VERSION; not creating a PR."
-  exit 0
-fi
-INSTALLED_VERSION="$(gh aw --version 2>/dev/null || true)"
-echo "gh-aw: $INSTALLED_VERSION"
-case "$INSTALLED_VERSION" in
-  *"$GH_AW_PINNED_VERSION"*) : ;;   # good — pinned version is active
-  *) echo "gh-aw is not the pinned $GH_AW_PINNED_VERSION; not creating a PR."; exit 0 ;;
-esac
-```
-
-## Step 2 — Run the update command
-
-Run:
-
-```bash
-set +e
-gh aw update --verbose
-update_status=$?
-set -e
-if [ "$update_status" -ne 0 ]; then
-  echo "gh aw update failed with exit code $update_status; not creating a PR."
-  exit 0
-fi
-```
-
-The update may:
+The lock-pinned CLI caps native action-pin resolution at its own version. Bumping
+gh-aw remains a deliberate, coordinated change handled by `aw-version-update`,
+not this weekly pin-refresher. The trusted update may:
 
 - refresh pinned action SHAs in `.github/aw/actions-lock.json`;
 - recompile `.github/workflows/*.lock.yml` files;
@@ -272,7 +299,7 @@ gh aw update --verbose
 
 ### Validation
 
-- Ran `gh aw update --verbose`
+- Trusted pre-agent setup ran `gh aw update --verbose` with the committed compiler version
 - Confirmed final diff contains only `.github/aw/actions-lock.json`
 ~~~~
 

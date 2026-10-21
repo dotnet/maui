@@ -118,6 +118,7 @@ public class EditorFeatureTests : _GalleryUITest
 	[Test, Order(7)]
 	public void VerifyEditorTextWhenAlignedVertically()
 	{
+		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("VEnd");
 		App.Tap("VEnd");

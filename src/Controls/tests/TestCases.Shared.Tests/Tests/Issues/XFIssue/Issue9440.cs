@@ -14,7 +14,7 @@ public class Issue9440 : _IssuesUITest
 	public override string Issue => "Flyout closes with two or more taps";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void GitHubIssue9440()
 	{
 		App.TapShellFlyoutIcon();

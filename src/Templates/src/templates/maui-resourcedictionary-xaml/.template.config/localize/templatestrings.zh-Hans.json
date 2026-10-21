@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI ResourceDictionary (XAML)",
   "description": ".NET MAUI 应用使用的资源的存储库。存储在 ResourceDictionary 中的典型资源包括样式、控件模板、数据模板、转换器和颜色。",

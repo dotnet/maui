@@ -5,6 +5,7 @@ jobs:
   pat_pool:
     environment: ${{ github.aw.import-inputs.environment }}
     needs: [pre_activation]
+    if: ${{ github.aw.import-inputs.condition }}
     runs-on: ubuntu-slim
     outputs:
       pat_number: ${{ steps.select-pat-number.outputs.copilot_pat_number }}
@@ -70,6 +71,11 @@ import-schema:
   environment:
     type: string
     required: true
+  condition:
+    type: string
+    required: false
+    default: success()
+    description: Job condition checked before accessing pool credentials.
   COPILOT_PAT_0:
     type: string
     required: false

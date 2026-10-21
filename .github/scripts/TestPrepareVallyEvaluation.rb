@@ -1665,6 +1665,9 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, '"$trusted_copilot_home/settings.json"'
     assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
     assert_includes content, 'sudo -n -u "$eval_user" /bin/mv -f'
+    assert_includes content, 'policy_reader=('
+    assert_includes content, 'sudo -n -u "$eval_user" env'
+    assert_includes content, '"${policy_reader[@]}" - "$trusted_copilot_home/settings.json"'
     refute_includes content, "\n\t--experimental \\\n"
   end
 
@@ -1715,14 +1718,26 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'git config --file "$sanitized_git_config" core.hooksPath "$trusted_git_hooks"'
     assert_includes content, 'sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"'
     assert_includes content, 'sudo -n chmod 3770 "$git_dir"'
+    assert_includes content, 'sudo -n setfacl -m "d:u:$workspace_owner:r-x" "$git_dir"'
     assert_includes content, "for mutable_git_path in objects worktrees refs logs; do"
     assert_includes content, '"$git_dir/$mutable_git_path"'
     assert_includes content, 'sudo -n chown "$eval_user:$eval_user" "$git_dir/packed-refs"'
+    assert_includes content, 'sudo -n setfacl -m "u:$workspace_owner:r--" "$git_dir/packed-refs"'
     assert_includes content, 'sudo -n install -o root -g root -m 444'
     assert_includes content, 'git -C "$workspace_root" config --local alias.runtime-probe status'
     assert_includes content, 'git -C "$workspace_root" update-ref "$probe_ref" HEAD'
     assert_includes content, 'git -C "$workspace_root" pack-refs --all --prune'
     assert_includes content, 'git -C "$workspace_root" update-ref -d "$probe_ref"'
+    assert_includes content, 'Workspace owner cannot read evaluator-refreshed packed refs'
+    assert_includes content, 'Workspace owner cannot read evaluator-replaced packed refs'
+    assert_includes content, 'git -C "$workspace_root" show-ref --verify --quiet "$probe_ref"'
+    assert_includes content, 'git -C "$workspace_root" cat-file -e "${probe_ref}^{commit}"'
+    assert_includes content, 'git -C "$workspace_root" ls-tree -r --name-only'
+    assert_includes content, 'git -C "$workspace_root" for-each-ref --format='
+    assert_includes content, 'owner_worktree_probe="$RUNNER_TEMP/${eval_user}-owner-git-probe"'
+    assert_includes content, 'git -C "$workspace_root" worktree add --detach "$owner_worktree_probe" HEAD'
+    assert_operator content.scan('git -C "$owner_worktree_probe" --no-replace-objects restore').length, :>=, 2
+    assert_includes content, 'git -C "$workspace_root" worktree remove --force "$owner_worktree_probe"'
     assert_includes content, "for probe_number in 1 2; do"
     assert_includes content, 'git -C "$workspace_root" worktree add --detach'
     assert_includes content, 'git -C "$workspace_root" worktree remove --force'

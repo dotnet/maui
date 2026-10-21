@@ -13,7 +13,7 @@ public class Issue30254 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShouldHideHeaderWhenTitleEmpty()
 	{
 		Exception? exception = null;

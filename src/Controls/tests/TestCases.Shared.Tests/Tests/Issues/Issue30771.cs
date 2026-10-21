@@ -11,7 +11,7 @@ public class Issue30771 : _IssuesUITest
 	public override string Issue => "SearchHandler overlaps title and title view";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SearchHandlerShouldNotOverlap()
 	{
 		App.EnterText("Search here", "Test Search");

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "families": [
+    {
+      "id": "binding-and-notification",
+      "title": "Binding and property notification",
+      "project": "Core",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/.*(Binding|Bindable|PropertyChanged|PropertyChanging).*\\.cs$",
+        "(^|/)src/Controls/src/(BindingSourceGen|SourceGen)/.*\\.cs$"
+      ],
+      "filters": [
+        "*BindableObjectBenchmarker*",
+        "*BindingBenchmarker*",
+        "*BindingComparisonBenchmarker*",
+        "*SourceGeneratedBindingBenchmarker*",
+        "*TypedBindingBenchmarker*"
+      ]
+    },
+    {
+      "id": "layout-and-measure",
+      "title": "Layout, measure, and arrange",
+      "project": "Core",
+      "pathPatterns": [
+        "(^|/)src/(Core/src/Layouts|Controls/src/Core/(Layout|LegacyLayouts))/"
+      ],
+      "filters": [
+        "*LayoutBenchmarker*",
+        "*LayoutExtensionsBenchmarker*",
+        "*FlexLayoutBenchmarker*",
+        "*GridLayoutManagerBenchMarker*"
+      ]
+    },
+    {
+      "id": "handler-dispatch",
+      "title": "Handler mapping and property dispatch",
+      "project": "Core",
+      "pathPatterns": [
+        "(^|/)src/Core/src/Handlers/.*\\.cs$",
+        "(^|/)src/Controls/src/Core/VisualElement/.*\\.cs$"
+      ],
+      "filters": [
+        "*PropertyMapperBenchmarker*",
+        "*PropertyMapperExtensionsBenchmarker*"
+      ]
+    },
+    {
+      "id": "gestures-and-input",
+      "title": "Gesture and input dispatch",
+      "project": "Core",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/(DragAndDrop/)?(Tap|Pointer|Drag|Drop|Swipe|Pan|Pinch)GestureRecognizer\\.cs$",
+        "(^|/)src/Controls/src/Core/Gesture.*\\.cs$"
+      ],
+      "filters": [
+        "*GestureRecognizerBenchmarker*"
+      ]
+    },
+    {
+      "id": "resources-and-styles",
+      "title": "Resource and style lookup",
+      "project": "Core",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/.*(Resource|Style|Theme).*\\.cs$"
+      ],
+      "filters": [
+        "*ResourceDictionaryBenchmarker*",
+        "*ParentResourceRefreshBenchmarker*",
+        "*SetterBenchmarker*"
+      ]
+    },
+    {
+      "id": "visual-tree-and-diagnostics",
+      "title": "Visual tree and diagnostics",
+      "project": "Core",
+      "pathPatterns": [
+        "(^|/)src/Core/src/(Core/Extensions/VisualTree|VisualDiagnostics/).*\\.cs$",
+        "(^|/)src/Controls/src/Core/Diagnostics/.*\\.cs$"
+      ],
+      "filters": [
+        "*VisualTreeBenchmarker*",
+        "*VisualDiagnosticsBenchmarker*"
+      ],
+      "trustedBenchmarkFiles": [
+        "src/Core/tests/Benchmarks/Benchmarks/VisualDiagnosticsBenchmarker.cs"
+      ]
+    },
+    {
+      "id": "xaml-and-source-generation",
+      "title": "XAML loading and source generation",
+      "project": "Xaml",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/(Xaml|SourceGen)/",
+        "\\.xaml$"
+      ],
+      "filters": [
+        "*"
+      ]
+    },
+    {
+      "id": "graphics",
+      "title": "Graphics primitives",
+      "project": "Graphics",
+      "pathPatterns": [
+        "(^|/)src/Graphics/src/Graphics/.*\\.cs$"
+      ],
+      "filters": [
+        "*ColorBenchmarker.Parse",
+        "*ColorBenchmarker.ParseBlack",
+        "*PathBenchmarker*"
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@
     Label categories:
     - Outcome labels (mutually exclusive): agent-approved, agent-changes-requested, agent-review-incomplete
     - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-pr-picked
-    - Manual / queue labels: agent-fix-implemented, agent-ready-for-rerun, agent-review-in-progress
+    - Manual / lock labels: agent-fix-implemented, agent-review-in-progress
     - Tracking label: agent-reviewed (always applied on completed run)
 
 .NOTES
@@ -35,7 +35,7 @@ $script:OutcomeLabels = @{
 }
 
 $script:SignalLabels = @{
-    's/agent-gate-passed' = @{ Description = 'AI verified tests catch the bug (fail without fix, pass with fix)'; Color = '4CAF50' }
+    's/agent-gate-passed' = @{ Description = 'Selected PR-test verification passed; see the pinned report for mode and coverage'; Color = '4CAF50' }
     's/agent-gate-failed' = @{ Description = 'AI could not verify tests catch the bug'; Color = 'FF9800' }
     's/agent-fix-win'     = @{ Description = 'AI found a better alternative fix than the PR'; Color = '66BB6A' }
     's/agent-fix-pr-picked'    = @{ Description = 'AI could not beat the PR fix - PR is the best among all candidates'; Color = 'FF7043' }
@@ -43,7 +43,6 @@ $script:SignalLabels = @{
 
 $script:ManualLabels = @{
     's/agent-fix-implemented'   = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
-    's/agent-ready-for-rerun'   = @{ Description = 'AI review has new PR activity and is ready for rerun'; Color = '5319E7' }
     's/agent-review-in-progress' = @{ Description = 'AI review is currently running for this PR'; Color = 'FBCA04' }
 }
 
@@ -307,35 +306,6 @@ function Test-AgentReviewInProgressIsStale {
 
     Write-Host "  ✅ $label on PR #$PRNumber is fresh (applied $($latestAppliedAt.ToString('u')))" -ForegroundColor Green
     return $false
-}
-
-function Get-AgentReviewInProgressAppliedAt {
-    <#
-    .SYNOPSIS
-        Returns the DateTimeOffset the in-progress lock label was most recently
-        applied, or $null when it isn't applied / history is unavailable.
-
-    .DESCRIPTION
-        Used to dedupe the "a review is already running" skip notice so at most
-        one notice is posted per in-progress cycle (see review-trigger.yml): a
-        skip comment newer than this timestamp means the current lock already
-        has a notice and a repeat /review must stay silent.
-    #>
-    param(
-        [Parameter(Mandatory)] [string]$PRNumber,
-        [string]$Owner = 'dotnet',
-        [string]$Repo = 'maui'
-    )
-
-    $label = 's/agent-review-in-progress'
-    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$label`") | .created_at" 2>$null)
-    if ($LASTEXITCODE -ne 0 -or $createdAtValues.Count -eq 0) {
-        return $null
-    }
-
-    return ($createdAtValues | ForEach-Object {
-        [datetimeoffset]::Parse([string]$_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
-    } | Sort-Object -Descending | Select-Object -First 1)
 }
 
 # ============================================================
