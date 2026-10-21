@@ -19,10 +19,19 @@ namespace Microsoft.Maui.Hosting.Internal
 		}
 
 		public IElementHandler? GetHandler(Type type)
+			=> GetHandler(type, this);
+
+		internal IElementHandler? GetHandler(Type type, IMauiContext mauiContext)
+			=> GetHandler(type, new HandlerActivationServiceProvider(this, mauiContext));
+
+		IElementHandler? GetHandler(Type type, IServiceProvider implementationFactoryServiceProvider)
 		{
 			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler handler)
+				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
+				&& serviceDescriptor is not null
+				&& GetService(serviceType, implementationFactoryServiceProvider) is IElementHandler handler)
 			{
+				HotReload.MauiHotReloadHelper.RegisterHandlerType(serviceDescriptor, handler.GetType());
 				return handler;
 			}
 
@@ -42,9 +51,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
 				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
-				&& serviceDescriptor?.ImplementationType is Type type)
+				&& serviceDescriptor is not null)
 			{
-				return type;
+				return serviceDescriptor.ImplementationType;
 			}
 
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
@@ -72,5 +81,46 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
+
+		object? GetService(Type serviceType, HandlerActivationServiceProvider implementationFactoryServiceProvider)
+			=> base.GetService(serviceType, implementationFactoryServiceProvider);
+
+		sealed class HandlerActivationServiceProvider : IServiceProvider
+		{
+			readonly MauiHandlersFactory _handlerServices;
+			readonly IMauiContext _mauiContext;
+
+			public HandlerActivationServiceProvider(MauiHandlersFactory handlerServices, IMauiContext mauiContext)
+			{
+				_handlerServices = handlerServices;
+				_mauiContext = mauiContext;
+			}
+
+			public object? GetService(Type serviceType)
+			{
+				if (serviceType == typeof(IServiceProvider))
+					return this;
+
+				if (serviceType == typeof(IMauiContext))
+					return _mauiContext;
+
+#if ANDROID
+				if (serviceType == typeof(global::Android.Content.Context))
+					return _mauiContext.Context;
+#endif
+
+				return _handlerServices.GetService(serviceType, this)
+					?? _mauiContext.Services.GetService(serviceType);
+			}
+		}
+
+	}
+
+	static class MauiHandlersFactoryExtensions
+	{
+		internal static IElementHandler? GetHandler(this IMauiHandlersFactory handlers, Type type, IMauiContext mauiContext) =>
+			handlers is MauiHandlersFactory handlersFactory
+				? handlersFactory.GetHandler(type, mauiContext)
+				: handlers.GetHandler(type);
 	}
 }

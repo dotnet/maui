@@ -6,6 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue34971 : _IssuesUITest
 {
+	const string DoneButtonId = "Done";
+
 	public Issue34971(TestDevice device) : base(device)
     {
     }
@@ -44,8 +46,8 @@ public class Issue34971 : _IssuesUITest
 		App.WaitForElement("Cancel");
 		App.Tap("Cancel");
 #elif IOS || MACCATALYST
-		App.WaitForElement("Done");
-		App.Tap("Done");
+		App.WaitForElement(DoneButtonId);
+		App.Tap(DoneButtonId);
 #elif WINDOWS
 		App.TapCoordinates(10, 10);
 #endif

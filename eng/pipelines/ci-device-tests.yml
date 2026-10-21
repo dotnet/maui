@@ -68,14 +68,18 @@ parameters:
 - name: macOSTestPoolInternal
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
+    name: AcesShared
+    demands:
+      - ImageOverride -equals $(AcesMacImageOverride)
+    os: macOS
 
 - name: macOSPoolInternal
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
+    name: AcesShared
+    demands:
+      - ImageOverride -equals $(AcesMacImageOverride)
+    os: macOS
 
 # Public pools (dnceng-public)
 - name: windowsPoolPublic
@@ -92,19 +96,19 @@ parameters:
   default:
     name: AcesShared
     demands:
-      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      - ImageOverride -equals $(AcesMacImageOverride)
 
 - name: macOSPoolPublic
   type: object
   default:
     name: AcesShared
     demands:
-      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      - ImageOverride -equals $(AcesMacImageOverride)
 
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net10.0
+  - tfm: net11.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -142,4 +146,3 @@ stages:
           skipProvisioning: true
           skipXcode: false
           skipSimulatorSetup: false
-

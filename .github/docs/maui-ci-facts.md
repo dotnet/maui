@@ -88,7 +88,24 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## MAUI-specific quirks
 
+### Android activity isolation
+
+External-intent fixtures must remain scoped to the test package and an unhandled
+action after component sanitization, rather than opening the resolver or system
+settings. Assert that the original activity is `RESUMED` before and after
+navigation. `HasWindowFocus` is not a lifecycle check: the notification shade can
+take focus while that same activity remains resumed.
+
 ### XHarness exit-0 blind spot
+
+Windows device categories also require complete, parseable xUnit output. The
+Windows runner fails empty/malformed results and abnormal process exits, while
+preserving valid category results for upload. WinUI `Application.Exit()` may
+return `-1` normally; that code alone is not a crash. A successful build or a
+partial merged XML does not prove every category executed.
+The packaged launcher retains a native process handle before waiting: Windows
+PowerShell's .NET Framework cannot read `ExitCode` afterward without that handle.
+An unavailable exit code must not be treated as a successful exit.
 
 XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no
@@ -319,11 +336,21 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 |---------|-------|-------|
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
+| `java_home -X` / `Root element is missing` / invalid JDK `jar` path | `maui-pr` Android builds and integration tests | Android SDK discovery can inspect broken system registrations or archive parent directories even with `JAVA_HOME` set. `ProvisionJdk` must also publish the validated JDK home as `JavaSdkDirectory` for downstream MSBuild processes. Do not suppress these diagnostics or allow-list the tooling warnings. |
 | `error : ... Failed to load assembly` | `maui-pr` `Build <platform>` leg | **crossgen2 / ReadyToRun (R2R)** break — a failed **build job**, not a test, with no test name. Common after an SDK/runtime (`dotnet/dotnet`) bump on a flow PR. Job-level baseline diff: red on PR vs green on base ⇒ PR-caused. |
 | `error IL####` / `ILC####` / NativeAOT publish fail | `maui-pr` AOT legs, `Run Integration Tests – AOT` | **NativeAOT / ILC** trim-analysis break. May be pre-existing (e.g. HybridWebView `IL2026`) — confirm with a job- AND test-level baseline diff before attributing to the PR. |
 | `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
+| Apple workload install cannot find a `net10.0` SDK pack | `maui-pr` SDK provisioning | The .NET 11 Apple manifests also install .NET 10 compatibility packs. Resolve the exact missing version's feed with `darc get-asset`; the current .NET 11 feed alone may not contain it. Do not copy another branch's compatibility feed without checking its manifest versions. |
+| `NETSDK1140` rejects the Apple target platform version | `maui-pr` build/pack | Align current Apple target-framework versions and SDK defaults in `Directory.Build.props` with the selected Apple SDK. net11.0 uses 26.5; the RC2 release branch uses 27.0. Preserve previous-.NET compatibility targets. |
+| Xcode 27 rejects native iOS 12.x / mapped macOS 10.15 deployment targets | `maui-pr` native interop archive | On branches using Apple 27, align the native framework and managed iOS minimum to 15.0, already used by app templates. This maps to macOS 12.0 for Mac Catalyst. Do not raise minimums on Apple 26.5 branches solely to match RC2. |
+| Apple `bgen.dll` exits 150 requesting a newer .NET runtime | `maui-pr` Apple binding generation | Keep bootstrap (`global.json`), workload provisioning (`MicrosoftNETSdkPackageVersion`), and SDK provenance pins aligned with a compatible host runtime. SDK `11.0.100-rc.2.26470.103` satisfies the Apple 27 generator's `26465.108` requirement and is already selected on net11.0. |
+| Resizetizer raster test assertions pass but `Dispose` fails with a Windows sharing violation | Helix Windows unit tests | Keep temporary images under `BaseTest.DestinationDirectory` and reuse its bounded, logged cleanup retries from #38124. Dispose raster tools deterministically; preserve all image assertions and let exhausted cleanup retries fail the test. |
+| `Svg.Animation` / `Svg.SceneGraph` `NU1603`, or `SKPathBuilder` `CS0246` | `maui-pr` restore/build | Release merges can preserve old `eng/Versions.props` pins while importing Skia 4 source and packaging changes. Restore the coordinated SkiaSharp/HarfBuzz/SVG dependency versions, not just the first missing package. |
+| Required Xcode is missing / requested iOS runtime is unavailable | `maui-pr` macOS provisioning | Select an image or agents providing the branch's required Xcode. net11.0 retains Aces with Xcode 26.5; RC2 needs the MAUI pool's Xcode 27 RC agents. Do not fall back to an unrelated Xcode or purge runtimes to repair a version mismatch. The legacy Provisionator task is unavailable in `dnceng-public`; enabling it prevents pipeline startup. |
+| `iOS 27.0 (universal) is not available for download` | `maui-pr` simulator provisioning | Request the `arm64` runtime on Apple Silicon agents; retain `universal` on Intel. Keep all downloads version-pinned. An unavailable download can also return exit code 70, so do not treat every exit 70 as a wedged CoreSimulator or delete installed runtimes. |
+| Helix monitor cannot use `NetCore-Svc-Public` | `maui-pr` release branches | The monitor must use the pipeline's selected Helix submission pool, with its Linux image demand, rather than independently selecting an unauthorized pool from the branch name. |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |

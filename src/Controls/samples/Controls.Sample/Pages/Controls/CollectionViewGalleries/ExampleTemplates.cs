@@ -539,7 +539,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			});
 		}
 
-		static void More_Clicked(object sender, EventArgs e)
+		static void More_Clicked(object? sender, EventArgs e)
 		{
 			throw new NotImplementedException();
 		}

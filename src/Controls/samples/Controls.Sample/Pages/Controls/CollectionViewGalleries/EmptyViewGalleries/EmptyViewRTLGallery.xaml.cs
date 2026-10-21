@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			SearchBar.SearchCommand = new Command(() => _demoFilteredItemSource.FilterItems(SearchBar.Text));
 		}
 
-		void OnPickerSelectedIndexChanged(object sender, EventArgs e)
+		void OnPickerSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			switch (Picker.SelectedIndex)
 			{

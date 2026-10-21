@@ -117,9 +117,9 @@ namespace Microsoft.Maui.Devices
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IDeviceInfo Current =>
-			currentImplementation ??= new DeviceInfoImplementation();
+			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new DeviceInfoImplementation());
 
 		internal static void SetCurrent(IDeviceInfo? implementation) =>
-			currentImplementation = implementation;
+			EssentialsImplementation.Set(ref currentImplementation, implementation);
 	}
 }

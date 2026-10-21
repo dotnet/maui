@@ -14,7 +14,7 @@
                         <DataTemplate>
                                 <Label Text="{Binding Name}" Background="LightGray" HeightRequest="30" HorizontalOptions="Fill" Margin="3">
                                     <Label.GestureRecognizers>
-                                        <DragGestureRecognizer />
+                                        <DragGestureRecognizer DragStarting="DragGestureRecognizer_DragStarting" />
                                     </Label.GestureRecognizers>
                                 </Label>
                         </DataTemplate>
@@ -26,6 +26,13 @@
         <TableView Intent="Settings" Grid.Row="1" >
             <TableRoot>
                 <TableSection Title="Drag Customization">
+
+                    <ViewCell>
+                        <Grid ColumnDefinitions="3*,*" VerticalOptions="Center" Margin="10,0,5,0">
+                            <Label Text="Use Move operation" VerticalTextAlignment="Center" Grid.Column="0"/>
+                            <Switch HorizontalOptions="End" x:Name="MoveSwitch" Grid.Column="1"/>
+                        </Grid>
+                    </ViewCell>
 
                     <ViewCell>
                         <Grid ColumnDefinitions="3*,*" VerticalOptions="Center" Margin="10,0,5,0">

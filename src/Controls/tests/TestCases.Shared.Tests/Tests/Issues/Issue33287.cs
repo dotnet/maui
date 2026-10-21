@@ -20,8 +20,8 @@ public class Issue33287 : _IssuesUITest
 		App.Tap("NavigateButton");
 
 		// Wait for second page to appear, then go back immediately
-		App.WaitForElement("GoBackButton");
-		App.Tap("GoBackButton");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("GoBackButton"));
+		App.Tap(AppiumQuery.ByAccessibilityId("GoBackButton"));
 
 		// Back on the main page, wait until the detached page creates the alert request.
 		// Without the fix the synchronous NRE crashes the app before this status is updated.

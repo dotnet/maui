@@ -23,6 +23,31 @@ The below parameters can be used with the `dotnet cake` command in the root of y
 
 > **Note:** For provisioning .NET SDK and workloads, prefer using `./build.sh -restore` (or `./build.cmd -restore` on Windows) instead of Cake. The Cake targets below are utility commands.
 
+#### Apple builds on .NET 11
+
+The `net11.0` branch uses the Apple 27.0 workload and requires Xcode 27.
+The managed and native iOS deployment minimum is 15.0; the Mac Catalyst
+minimum remains 17.0. The Apple workload manifests also require the .NET 10
+26.5.10322 compatibility SDK packs, which are pinned separately from the
+.NET 11 packs.
+
+CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
+until standard hosted images provide Xcode 27. Prebuilt iOS UI-test apps
+continue to execute on Tahoe with Xcode 26.5, and Mac Catalyst UI tests use
+macOS 14, because the GoldenGate Appium execution environment has not been
+validated. These execution images do not determine the app's build SDK.
+Simulator runtime provisioning and its bounded recovery remain enabled.
+The macOS 14 execution image is scheduled to retire on November 2, 2026;
+its replacement needs separate Mac2 validation.
+
+Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
+To use a particular installed Xcode without changing the global selection,
+set `DEVELOPER_DIR` for the build command:
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer ./build.sh -restore -build
+```
+
 #### PublicAPI Management
 `--target=publicapi`
 - Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)

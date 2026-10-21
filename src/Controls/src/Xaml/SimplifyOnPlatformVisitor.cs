@@ -58,14 +58,14 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 				if (!node.TryGetPropertyName(parentNode, out XmlName name))
 					return;
 				if (parentNode is ElementNode parentEnode)
-					parentEnode.Properties[name] = targetNode;
+					SetProperty(parentEnode, name, targetNode);
 			}
 			else if (node.CollectionItems.Count > 0) // syntax like {OnPlatform foo, iOS=bar}
 			{
 				if (!node.TryGetPropertyName(parentNode, out XmlName name))
 					return;
 				if (parentNode is ElementNode parentEnode)
-					parentEnode.Properties[name] = node.CollectionItems[0];
+					SetProperty(parentEnode, name, node.CollectionItems[0]);
 			}
 			else //no prop for target and no Default set
 			{
@@ -115,6 +115,7 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 
 					// Set the value as the collection item (for types like Color, this is how they're represented)
 					elementNode.CollectionItems.Add(valueNode);
+					valueNode.Parent = elementNode;
 
 					// Replace the ValueNode with the new ElementNode
 					onNode = elementNode;
@@ -135,8 +136,8 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 				{
 					// Transfer x:Key to the replacement node if it exists
 					if (hasKey && onNode is ElementNode onElementNode && !onElementNode.Properties.ContainsKey(XmlName.xKey))
-						onElementNode.Properties[XmlName.xKey] = keyNode;
-					parentEnode.Properties[name] = onNode;
+						SetProperty(onElementNode, XmlName.xKey, keyNode);
+					SetProperty(parentEnode, name, onNode);
 				}
 				else
 				{
@@ -157,8 +158,8 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 					{
 						// Transfer x:Key to the replacement node if it exists
 						if (hasKey && onNode is ElementNode onElementNode && !onElementNode.Properties.ContainsKey(XmlName.xKey))
-							onElementNode.Properties[XmlName.xKey] = keyNode;
-						parentEnode2.CollectionItems[index] = onNode;
+							SetProperty(onElementNode, XmlName.xKey, keyNode);
+						SetCollectionItem(parentEnode2, index, onNode);
 					}
 					else
 					{
@@ -212,5 +213,17 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 
 	public void Visit(ListNode node, INode parentNode)
 	{
+	}
+
+	static void SetProperty(ElementNode parentNode, XmlName name, INode value)
+	{
+		parentNode.Properties[name] = value;
+		value.Parent = parentNode;
+	}
+
+	static void SetCollectionItem(ElementNode parentNode, int index, INode value)
+	{
+		parentNode.CollectionItems[index] = value;
+		value.Parent = parentNode;
 	}
 }

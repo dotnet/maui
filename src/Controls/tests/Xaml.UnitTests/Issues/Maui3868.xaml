@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui3868">
+	<TabBar>
+		<Tab x:Name="ReminderTab">
+			<ShellContent x:Name="Yesterday" Title="Yesterday"
+				ContentTemplate="{DataTemplate local:Maui3868ReminderPage}">
+				<ShellContent.QueryParameters>
+					<ShellContentQueryParameter Name="date" Value="2021-12-13" />
+				</ShellContent.QueryParameters>
+			</ShellContent>
+			<ShellContent x:Name="Today" Title="Today"
+				ContentTemplate="{DataTemplate local:Maui3868ReminderPage}"
+				QueryString="date=2021-12-14&amp;source=xaml" />
+			<ShellContent x:Name="Tomorrow" Title="Tomorrow"
+				ContentTemplate="{DataTemplate local:Maui3868ReminderPage}"
+				QueryString="?date=2021-12-15" />
+		</Tab>
+	</TabBar>
+</Shell>

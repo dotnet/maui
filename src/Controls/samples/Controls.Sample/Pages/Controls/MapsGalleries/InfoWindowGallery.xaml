@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="Maui.Controls.Sample.Pages.MapsGalleries.InfoWindowGallery"
+             Title="Info Window">
+    <Grid RowDefinitions="Auto,*">
+        <HorizontalStackLayout Spacing="10" Padding="10">
+            <Button Text="Show Seattle" AutomationId="ShowSeattle" Clicked="OnShowSeattle" />
+            <Button Text="Show NYC" AutomationId="ShowNYC" Clicked="OnShowNYC" />
+            <Button Text="Hide All" AutomationId="HideAll" Clicked="OnHideAll" />
+        </HorizontalStackLayout>
+        <maps:Map x:Name="map" Grid.Row="1" />
+    </Grid>
+</ContentPage>

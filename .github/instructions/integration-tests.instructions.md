@@ -111,7 +111,7 @@ public void RunOniOS(string id, string config, string framework, RuntimeVariant 
         runtimeIdentifier: TestEnvironment.IOSSimulatorRuntimeIdentifier));
 
     // Run with XHarness (omit UDID to let XHarness control simulator lifecycle)
-    Assert.IsTrue(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID));
+    Assert.IsTrue(XHarness.RunApple(appPath, resultDir, TestSimulator.XHarnessID, completionMarker));
 }
 ```
 
@@ -206,6 +206,7 @@ The skill sets these automatically, but for manual runs:
 |----------|----------|---------|
 | `MAUI_PACKAGE_VERSION` | Yes | Version of MAUI packages being tested |
 | `IOS_TEST_DEVICE` | No | iOS simulator target (e.g., `ios-simulator-64_18.5`) |
+| `IOS_TEST_DEVICE_UDID` | No | UUID of a dedicated simulator for both fixture and XHarness; fixture boots/shuts it down, so never select a shared device |
 | `SKIP_XCODE_VERSION_CHECK` | No | Set to `true` to bypass Xcode version validation |
 
 ### Manual Run Commands (Fallback Only)
@@ -233,10 +234,29 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 | Template not found | Verify workloads installed, `MAUI_PACKAGE_VERSION` set |
 | Xcode version mismatch | Set `SKIP_XCODE_VERSION_CHECK=true` |
 | Device/simulator not found | Verify `IOS_TEST_DEVICE` or emulator is running |
-| XHarness timeout on iOS | Expected behavior - app runs until timeout |
+| XHarness timeout on iOS | Failure: discovery/install/launch share the command timeout; timeout alone never proves startup |
 | Architecture mismatch | Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` |
 
 ## Best Practices
+
+The iOS template smoke tests inject `AppleTemplateLaunchProbe.cs` into the generated
+app (not the shipped templates). Both application `OnActivated` and
+`SceneOnActivated` start the same guarded main-run-loop timer, which waits
+15 seconds, writes a unique per-test completion marker, and exits with code zero.
+`XHarness.RunApple` requires both that marker in the application logs and exit code
+zero. Its existing 300-second command budget covers discovery, installation,
+launch, and execution; it is not the app's 15-second observation interval.
+Do not accept timeout codes or SIGKILL as evidence that the app started.
+
+For local template validation, set `DOTNET_CLI_HOME` to a session-owned directory
+before restoring tools and invoking the integration-test skill. This isolates
+user-installed templates that can otherwise override the workload's templates.
+Verify the selected template pack path/version in that home's
+`.templateengine/dotnetcli/<sdk-version>/templatecache.json`, along with the
+generated `Platforms/iOS/SceneDelegate.cs` and `UIApplicationSceneManifest`.
+Correct NuGet library versions alone do not establish template provenance.
+Exercise both scene-based templates and a test-only legacy lifecycle fixture;
+application activation alone is not raised for scene-based apps.
 
 ### DO
 - Use `BuildProps` from base class for isolation

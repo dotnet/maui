@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages
 			Application.Current!.Windows[0].Page = page;
 		}
 
-		void OnTabbedPageAsRoot(object sender, EventArgs e)
+		void OnTabbedPageAsRoot(object? sender, EventArgs e)
 		{
 			var topTabs =
 				new TabbedPage()
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 			SetNewMainPage(topTabs);
 		}
 
-		void OnSetToBottomTabs(object sender, EventArgs e)
+		void OnSetToBottomTabs(object? sender, EventArgs e)
 		{
 			var bottomTabs = new TabbedPage()
 			{
@@ -53,12 +53,12 @@ namespace Maui.Controls.Sample.Pages
 			this.Window!.Page = bottomTabs;
 		}
 
-		void OnChangeTabIndex(object sender, EventArgs e)
+		void OnChangeTabIndex(object? sender, EventArgs e)
 		{
 			GetTabbedPage().CurrentPage = GetTabbedPage().Children[1];
 		}
 
-		void OnToggleTabBar(object sender, EventArgs e)
+		void OnToggleTabBar(object? sender, EventArgs e)
 		{
 			if ((GetTabbedPage().BarBackground as SolidColorBrush)?.Color == SolidColorBrush.Purple.Color)
 				GetTabbedPage().BarBackground = null;
@@ -66,7 +66,7 @@ namespace Maui.Controls.Sample.Pages
 				GetTabbedPage().BarBackground = SolidColorBrush.Purple;
 		}
 
-		void OnToggleTabBarTextColor(object sender, EventArgs e)
+		void OnToggleTabBarTextColor(object? sender, EventArgs e)
 		{
 			if (GetTabbedPage().BarTextColor == Colors.Green)
 				GetTabbedPage().BarTextColor = null;
@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample.Pages
 				GetTabbedPage().BarTextColor = Colors.Green;
 		}
 
-		void OnToggleTabItemUnSelectedColor(object sender, EventArgs e)
+		void OnToggleTabItemUnSelectedColor(object? sender, EventArgs e)
 		{
 			if (GetTabbedPage().UnselectedTabColor == Colors.Blue)
 				GetTabbedPage().UnselectedTabColor = null;
@@ -82,7 +82,7 @@ namespace Maui.Controls.Sample.Pages
 				GetTabbedPage().UnselectedTabColor = Colors.Blue;
 		}
 
-		void OnToggleTabItemSelectedColor(object sender, EventArgs e)
+		void OnToggleTabItemSelectedColor(object? sender, EventArgs e)
 		{
 			if (GetTabbedPage().SelectedTabColor == Colors.Pink)
 				GetTabbedPage().SelectedTabColor = null;
@@ -90,7 +90,7 @@ namespace Maui.Controls.Sample.Pages
 				GetTabbedPage().SelectedTabColor = Colors.Pink;
 		}
 
-		void OnRemoveTab(object sender, EventArgs e)
+		void OnRemoveTab(object? sender, EventArgs e)
 		{
 			if (GetTabbedPage().Children.LastOrDefault() is TabbedPageGalleryMainPage mainPage)
 			{
@@ -98,7 +98,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnRemoveAllTabs(object sender, EventArgs e)
+		void OnRemoveAllTabs(object? sender, EventArgs e)
 		{
 			while (GetTabbedPage().Children.LastOrDefault() is TabbedPageGalleryMainPage mainPage)
 			{
@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnAddTab(object sender, EventArgs e)
+		void OnAddTab(object? sender, EventArgs e)
 		{
 			GetTabbedPage()
 				.Children

@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Storage
 			editor?.Clear()?.Apply();
 		}
 
-		static void DeleteSharedPreferences()
+		void DeleteSharedPreferences()
 		{
 			// Open an editor to the preferences we can clear, using the alias for storing encrypted values
 			var editPreferences = Application.Context.GetSharedPreferences(Alias, FileCreationMode.Private).Edit();

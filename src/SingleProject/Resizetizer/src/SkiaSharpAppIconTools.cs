@@ -21,9 +21,9 @@ namespace Microsoft.Maui.Resizetizer
 				throw new InvalidOperationException("An app icon needs at least one image.");
 
 			if (hasBackground)
-				backgroundTools = SkiaSharpTools.Create(info.IsVector, info.Filename, null, null, null, logger);
+				backgroundTools = SkiaSharpTools.Create(info.IsVector, info.Filename, null, null, null, info.Quality, logger);
 			if (hasForeground)
-				foregroundTools = SkiaSharpTools.Create(info.ForegroundIsVector, info.ForegroundFilename, null, null, info.TintColor, logger);
+				foregroundTools = SkiaSharpTools.Create(info.ForegroundIsVector, info.ForegroundFilename, null, null, info.TintColor, info.Quality, logger);
 		}
 
 		SkiaSharpTools? backgroundTools;

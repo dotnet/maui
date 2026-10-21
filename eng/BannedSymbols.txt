@@ -1,4 +1,5 @@
 M:Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton`2(Microsoft.Extensions.DependencyInjection.IServiceCollection);Use a Factory method to create the service instead
+M:Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler`2(Microsoft.Maui.Hosting.IMauiHandlersCollection);Use the factory overload to defer handler activation instead
 M:Android.Content.Res.ColorStateList.#ctor(System.Int32[][],System.Int32[]);Use Microsoft.Maui.PlatformInterop.Get*ColorStateList() Java methods instead
 M:Android.Widget.ImageView.GetScaleType();Use PlatformInterop.IsImageViewCenterCrop instead (or add a new method)
 T:Java.Interop.ExportAttribute;[Export] pulls in Java.Interop.Export dynamic features that are not trimming or AOT friendly. Declare an abstract class in src/Core/AndroidNative and override it instead, see src/Core/AndroidNative/maui/src/main/java/com/microsoft/maui/HybridJavaScriptInterface.java

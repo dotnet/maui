@@ -15,7 +15,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
-	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot, IViewScreenshot
 	{
 		static readonly Lazy<Handler> PixelCopyCallbackHandler =
 			new(CreatePixelCopyCallbackHandler, LazyThreadSafetyMode.ExecutionAndPublication);
@@ -59,6 +59,9 @@ namespace Microsoft.Maui.Media
 			var bitmap = await RenderAsync(view, window).ConfigureAwait(false);
 			return bitmap is null ? null : new ScreenshotResult(bitmap);
 		}
+
+		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
+			platformView is View view ? CaptureAsync(view)! : Task.FromResult<IScreenshotResult?>(null);
 
 		static async Task<Bitmap?> RenderAsync(View view, Window? window)
 		{

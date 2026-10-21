@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Storage;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
@@ -79,6 +80,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(bounds.Width > 20, $"Width ({bounds.Width}x{bounds.Height}) was too narrow, the font probably did not load correctly.");
 				Assert.True(bounds.Height < 30, $"Height ({bounds.Width}x{bounds.Height}) was too tall, the font probably did not load correctly.");
 			}
+		}
+
+		[Fact(DisplayName = "LineHeight Resets To Default")]
+		public async Task LineHeightResetsToDefault()
+		{
+			var label = new LabelStub
+			{
+				Text = "Test",
+				LineHeight = 3,
+			};
+
+			var handler = await CreateHandlerAsync(label);
+
+			var values = await InvokeOnMainThreadAsync(() =>
+			{
+				var initial = handler.PlatformView.ReadLocalValue(TextBlock.LineHeightProperty);
+
+				label.LineHeight = -1;
+				handler.UpdateValue(nameof(ILabel.LineHeight));
+
+				var reset = handler.PlatformView.ReadLocalValue(TextBlock.LineHeightProperty);
+				return (Initial: initial, Reset: reset);
+			});
+
+			Assert.NotEqual(DependencyProperty.UnsetValue, values.Initial);
+			Assert.Equal(DependencyProperty.UnsetValue, values.Reset);
 		}
 
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>

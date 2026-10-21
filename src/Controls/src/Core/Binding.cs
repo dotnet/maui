@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls
 		public const string SelfPath = ".";
 		IValueConverter _converter;
 		object _converterParameter;
+		CultureInfo _converterCulture;
 
 		BindingExpression _expression;
 		string _path;
@@ -78,6 +79,21 @@ namespace Microsoft.Maui.Controls
 				ThrowIfApplied();
 
 				_converterParameter = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the culture information used by the converter.
+		/// </summary>
+		[TypeConverter(typeof(CultureInfoConverter))]
+		public CultureInfo ConverterCulture
+		{
+			get { return _converterCulture ?? CultureInfo.CurrentUICulture; }
+			set
+			{
+				ThrowIfApplied();
+
+				_converterCulture = value;
 			}
 		}
 
@@ -195,6 +211,7 @@ namespace Microsoft.Maui.Controls
 			{
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
+				ConverterCulture = _converterCulture,
 				StringFormat = StringFormat,
 				Source = Source,
 				UpdateSourceEventName = UpdateSourceEventName,
@@ -211,7 +228,7 @@ namespace Microsoft.Maui.Controls
 		internal override object GetSourceValue(object value, Type targetPropertyType)
 		{
 			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				value = Converter.Convert(value, targetPropertyType, ConverterParameter, ConverterCulture);
 
 			return base.GetSourceValue(value, targetPropertyType);
 		}
@@ -219,7 +236,7 @@ namespace Microsoft.Maui.Controls
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
 		{
 			if (Converter != null)
-				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, ConverterCulture);
 
 			return base.GetTargetValue(value, sourcePropertyType);
 		}

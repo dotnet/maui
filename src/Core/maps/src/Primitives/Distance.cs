@@ -119,7 +119,11 @@ namespace Microsoft.Maui.Maps
 			return Meters.Equals(other.Meters);
 		}
 
-		/// <inheritdoc/>
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
+		/// <summary>Determines whether the specified object is equal to the current <see cref="Distance"/>.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
@@ -127,7 +131,9 @@ namespace Microsoft.Maui.Maps
 			return obj is Distance && Equals((Distance)obj);
 		}
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="object.GetHashCode"/>
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()
 		{
 			return Meters.GetHashCode();

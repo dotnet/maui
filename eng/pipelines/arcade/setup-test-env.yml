@@ -85,7 +85,7 @@ steps:
       displayName: Build MSBuild Tasks
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
-      arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/Microsoft.Maui.BuildTasks.binlog'
+      arguments: '-c ${{ parameters.buildConfig }} -p:BuildTaskOnlyBuild=true -bl:${{ parameters.repoLogPath }}/Microsoft.Maui.BuildTasks.binlog'
 
 - template: /eng/pipelines/common/run-dotnet-preview.yml
   parameters:
@@ -95,7 +95,5 @@ steps:
     arguments: restore
 
 # Set LogDirectory so integration test binlogs are written to the artifact publish location
-- pwsh: |
-    Write-Host "Setting LogDirectory to ${{ parameters.repoLogPath }}"
-    Write-Host "##vso[task.setvariable variable=LogDirectory]${{ parameters.repoLogPath }}"
+- bash: echo "##vso[task.setvariable variable=LogDirectory]${{ parameters.repoLogPath }}"
   displayName: Set LogDirectory for binlog artifacts
