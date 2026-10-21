@@ -124,6 +124,25 @@ namespace Microsoft.Maui.Controls
 			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
 		}
 
+		protected void RemoveAndAdd(BaseShellItem item)
+		{
+			if (!Inner.Contains(item))
+			{
+				return;
+			}
+
+			PauseCollectionChanged();
+
+			try
+			{
+				Inner.Remove(item);
+				Inner.Add(item);
+			}
+			finally
+			{
+				ResumeCollectionChanged();
+			}
+		}
 		public virtual void Add(BaseShellItem item) => Inner.Add(item);
 
 		public virtual bool Contains(BaseShellItem item) => Inner.Contains(item);

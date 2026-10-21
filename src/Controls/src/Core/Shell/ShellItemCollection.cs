@@ -32,16 +32,7 @@ namespace Microsoft.Maui.Controls
 			// Restore declaration order when CurrentItem is set during XAML loading.
 			if (Routing.IsImplicit(item) && Inner.Contains(item))
 			{
-				var shell = item.Parent as Shell;
-				var wasCurrentItem = shell?.CurrentItem == item;
-
-				Inner.Remove(item);
-				Inner.Add(item);
-
-				if (wasCurrentItem)
-				{
-					shell.CurrentItem = item;
-				}
+				RemoveAndAdd(item);
 			}
 			else
 			{

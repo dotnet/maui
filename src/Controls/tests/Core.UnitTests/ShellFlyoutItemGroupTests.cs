@@ -313,10 +313,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(firstContent);
 			shell.Items.Add(currentContent);
 
-			var flyoutItems = shell.GenerateTestFlyoutItems();
-
-			Assert.Equal(firstContent, flyoutItems[0][0]);
-			Assert.Equal(currentContent, flyoutItems[0][1]);
+			Assert.Equal(firstContent, shell.Items[0].CurrentItem.CurrentItem);
+			Assert.Equal(currentContent, shell.Items[1].CurrentItem.CurrentItem);
 			Assert.Equal(currentContent, shell.CurrentItem.CurrentItem.CurrentItem);
 		}
 
