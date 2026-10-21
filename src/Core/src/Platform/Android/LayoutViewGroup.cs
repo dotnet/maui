@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Platform
 		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
 
 		readonly ARect _clipRect = new();
+		UnhandledTouchEventHandler? _unhandledTouchEventHandler;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
@@ -236,7 +237,8 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			return base.OnTouchEvent(e);
+			return base.OnTouchEvent(e) ||
+				(_unhandledTouchEventHandler ??= new()).OnTouchEvent(this, e);
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()

@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Platform
 		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
 
 		IBorderStroke? _clip;
+		UnhandledTouchEventHandler? _unhandledTouchEventHandler;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
@@ -168,6 +169,15 @@ namespace Microsoft.Maui.Platform
 
 			MauiWindowInsetListener.FindListenerForView(this)?.ResetView(this);
 			_didSafeAreaEdgeConfigurationChange = true;
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (CrossPlatformLayout is IView { InputTransparent: true })
+				return false;
+
+			return base.OnTouchEvent(e) ||
+				(_unhandledTouchEventHandler ??= new()).OnTouchEvent(this, e);
 		}
 
 		/// <summary>
