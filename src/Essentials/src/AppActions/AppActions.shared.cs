@@ -1,6 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 #if ANDROID
 using Android.Content;
@@ -110,12 +112,58 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// Occurs when an app action is activated.
 		/// </summary>
+		/// <remarks>Instance subscribers are held weakly and must be kept alive by the application.</remarks>
 		public static event EventHandler<AppActionEventArgs>? OnAppAction
 		{
-			add => Current.AppActionActivated += value;
-			remove => Current.AppActionActivated -= value;
+			add
+			{
+				if (value is null)
+					return;
+
+				var publisher = Current;
+				var subscriptions = appActionSubscriptions.GetOrCreateValue(publisher);
+				lock (subscriptions)
+				{
+					foreach (EventHandler<AppActionEventArgs> handler in value.GetInvocationList())
+					{
+						var subscription = new AppActionSubscription(publisher, subscriptions, handler);
+						subscriptions.Add(subscription);
+						publisher.AppActionActivated += subscription.OnAppAction;
+					}
+				}
+			}
+			remove
+			{
+				if (value is null)
+					return;
+
+				var publisher = Current;
+				if (!appActionSubscriptions.TryGetValue(publisher, out var subscriptions))
+					return;
+
+				var handlers = value.GetInvocationList();
+				lock (subscriptions)
+				{
+					for (int i = subscriptions.Count - handlers.Length; i >= 0; i--)
+					{
+						int j = 0;
+						while (j < handlers.Length && subscriptions[i + j].Matches(handlers[j]))
+							j++;
+
+						if (j != handlers.Length)
+							continue;
+
+						for (j = 0; j < handlers.Length; j++)
+							publisher.AppActionActivated -= subscriptions[i + j].OnAppAction;
+
+						subscriptions.RemoveRange(i, handlers.Length);
+						break;
+					}
+				}
+			}
 		}
 
+		static readonly ConditionalWeakTable<IAppActions, List<AppActionSubscription>> appActionSubscriptions = new();
 		static IAppActions? currentImplementation;
 
 		/// <summary>
@@ -126,6 +174,52 @@ namespace Microsoft.Maui.ApplicationModel
 
 		internal static void SetCurrent(IAppActions? implementation) =>
 			currentImplementation = implementation;
+
+		sealed class AppActionSubscription
+		{
+			readonly WeakReference<IAppActions> publisher;
+			readonly List<AppActionSubscription> subscriptions;
+			readonly WeakReference<object>? target;
+			readonly MethodInfo method;
+			readonly EventHandler<AppActionEventArgs>? staticHandler;
+
+			public AppActionSubscription(IAppActions publisher, List<AppActionSubscription> subscriptions, EventHandler<AppActionEventArgs> handler)
+			{
+				this.publisher = new(publisher);
+				this.subscriptions = subscriptions;
+				method = handler.Method;
+				if (handler.Target is object handlerTarget)
+					target = new(handlerTarget);
+				else
+					staticHandler = handler;
+			}
+
+			public bool Matches(Delegate handler) =>
+				staticHandler is not null ? staticHandler.Equals(handler) :
+				target!.TryGetTarget(out var handlerTarget) && ReferenceEquals(handlerTarget, handler.Target) && method.Equals(handler.Method);
+
+			public void OnAppAction(object? sender, AppActionEventArgs args)
+			{
+				if (staticHandler is not null)
+				{
+					staticHandler(sender, args);
+				}
+				else if (target!.TryGetTarget(out var handlerTarget))
+				{
+					// Recreate a typed delegate so subscriber exceptions propagate without reflection wrapping.
+					var handler = (EventHandler<AppActionEventArgs>)method.CreateDelegate(typeof(EventHandler<AppActionEventArgs>), handlerTarget);
+					handler(sender, args);
+				}
+				else if (publisher.TryGetTarget(out var source))
+				{
+					lock (subscriptions)
+					{
+						source.AppActionActivated -= OnAppAction;
+						subscriptions.Remove(this);
+					}
+				}
+			}
+		}
 	}
 
 	/// <summary>

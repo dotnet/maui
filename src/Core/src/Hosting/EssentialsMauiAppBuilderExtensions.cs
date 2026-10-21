@@ -55,11 +55,9 @@ namespace Microsoft.Maui.Hosting
 
 			// Register the EssentialsInitializer unconditionally so DI-registered Essentials
 			// implementations are bridged to the static facades during app startup, even when
-			// ConfigureEssentials() is not called. The initializer's AppActions event handler
-			// is only attached when at least one AppAction handler is configured, to avoid
-			// retaining the initializer instance via the static AppActions.OnAppAction event
-			// for apps that never opt into AppActions.
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+			// ConfigureEssentials() is not called. App-scoped singleton ownership keeps configured
+			// AppActions callbacks alive without relying on the weak static event subscription.
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IMauiInitializeService, EssentialsInitializer>());
 
 			builder.ConfigureLifecycleEvents(life =>
 			{
@@ -151,7 +149,7 @@ namespace Microsoft.Maui.Hosting
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
 			}
 
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IMauiInitializeService, EssentialsInitializer>());
 
 			return builder;
 		}
@@ -230,10 +228,7 @@ namespace Microsoft.Maui.Hosting
 
 #if !TIZEN
 				// Only subscribe to the static AppActions.OnAppAction event when at least one
-				// handler was actually registered via IEssentialsBuilder.OnAppAction. The static
-				// event subscription would otherwise pin this initializer instance for the app's
-				// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
-				// even when the handler is a no-op.
+				// handler was actually registered via IEssentialsBuilder.OnAppAction.
 				if (_essentialsBuilder.AppActionHandlers is not null)
 					AppActions.OnAppAction += HandleOnAppAction;
 
