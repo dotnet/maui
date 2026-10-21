@@ -859,25 +859,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (completionSource != null && showsPresentation)
 				_completionTasks[pageViewController] = completionSource;
 
-			ClearHiddenBottomBarRequestsForVisiblePush(pageViewController);
 			PushViewController(pageViewController, animated);
 
 			if (completionSource != null && !showsPresentation)
 				completionSource.TrySetResult(true);
-		}
-
-		void ClearHiddenBottomBarRequestsForVisiblePush(UIViewController pageViewController)
-		{
-			if (OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18) || pageViewController.HidesBottomBarWhenPushed)
-				return;
-
-			// Before iOS 18, UIKit honors hidden-bottom-bar requests from earlier pages during a push.
-			var viewControllers = NavigationViewControllers();
-			if (viewControllers is null)
-				return;
-
-			foreach (var viewController in viewControllers)
-				viewController.HidesBottomBarWhenPushed = false;
 		}
 
 		async void SendPoppedOnCompletion(Task popTask)
