@@ -19,6 +19,105 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task GroupStyleDoesNotRequireManagedSelector(bool isGrouped)
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = isGrouped,
+				ItemsSource = isGrouped ? new[] { new[] { "Item" } } : new object[] { "Item" },
+				ItemTemplate = new Controls.DataTemplate(() => new Label { Text = "Item" })
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, handler =>
+			{
+				var control = handler.PlatformView;
+
+				void AssertGroupStyle()
+				{
+					Assert.Null(control.GroupStyleSelector);
+					var style = Assert.Single(control.GroupStyle);
+					Assert.Same(UI.Xaml.Application.Current.Resources["GroupHeaderTemplate"], style.HeaderTemplate);
+				}
+
+				AssertGroupStyle();
+				for (int i = 0; i < 3; i++)
+				{
+					collectionView.ItemTemplate = new Controls.DataTemplate(() => new Label { Text = "Updated item" });
+					collectionView.ItemsLayout = i % 2 == 0
+						? new GridItemsLayout(2, ItemsLayoutOrientation.Vertical)
+						: new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+					AssertGroupStyle();
+				}
+
+				collectionView.ItemsSource = null;
+				collectionView.IsGrouped = !isGrouped;
+				collectionView.ItemsSource = isGrouped ? new object[] { "Item" } : new[] { new[] { "Item" } };
+				AssertGroupStyle();
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task GroupHeadersAndFootersRenderWithoutSelector(bool useGridLayout)
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = new[] { new[] { "First item" }, new[] { "Second item" } },
+				ItemsLayout = useGridLayout
+					? new GridItemsLayout(2, ItemsLayoutOrientation.Vertical)
+					: new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				}),
+				GroupHeaderTemplate = new Controls.DataTemplate(() => new Label { Text = "Group header" }),
+				GroupFooterTemplate = new Controls.DataTemplate(() => new Label { Text = "Group footer" })
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var control = handler.PlatformView;
+
+				bool HasText(string text) => control.GetChildren<UI.Xaml.Controls.TextBlock>().Any(label => label.Text == text);
+
+				await AssertEventually(() => HasText("Group header") && HasText("Group footer") &&
+					HasText("First item") && HasText("Second item"));
+
+				collectionView.ItemTemplate = new Controls.DataTemplate(() => new Label { Text = "Updated item" });
+				collectionView.GroupHeaderTemplate = new Controls.DataTemplate(() => new Label { Text = "Updated header" });
+				collectionView.GroupFooterTemplate = new Controls.DataTemplate(() => new Label { Text = "Updated footer" });
+
+				await AssertEventually(() => HasText("Updated header") && HasText("Updated footer") && HasText("Updated item"));
+				Assert.Null(control.GroupStyleSelector);
+				Assert.Single(control.GroupStyle);
+
+				collectionView.ItemsSource = null;
+				collectionView.IsGrouped = false;
+				collectionView.ItemTemplate = new Controls.DataTemplate(() => new Label { Text = "Ungrouped item" });
+				collectionView.ItemsSource = new[] { "Ungrouped item" };
+				await AssertEventually(() => HasText("Ungrouped item") && !HasText("Updated header"));
+
+				collectionView.ItemsSource = null;
+				collectionView.IsGrouped = true;
+				collectionView.ItemTemplate = new Controls.DataTemplate(() => new Label { Text = "Regrouped item" });
+				collectionView.ItemsSource = new[] { new[] { "Regrouped item" } };
+				await AssertEventually(() => HasText("Updated header") && HasText("Updated footer") && HasText("Regrouped item"));
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView Disconnects Correctly")]
 		public async Task CollectionViewHandlerDisconnects()
 		{
