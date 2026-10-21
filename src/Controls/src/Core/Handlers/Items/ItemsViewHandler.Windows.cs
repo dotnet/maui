@@ -304,6 +304,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (Element.ItemsSource == null)
 			{
+				UpdateEmptyViewVisibility();
 				return;
 			}
 
