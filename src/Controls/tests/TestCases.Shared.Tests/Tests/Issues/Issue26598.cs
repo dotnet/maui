@@ -25,6 +25,15 @@ public class Issue26598 : _IssuesUITest
 		// Is a iOS issue; see https://github.com/dotnet/maui/issues/26598
 		// Initially TabBar for Issue26598Home is hidden 
 		App.WaitForElement("NavigateToInnerTab");
+		if (App is AppiumCatalystApp)
+		{
+			var processes = System.Diagnostics.Process.GetProcessesByName("Controls.TestCases.HostApp");
+			var processIds = processes.Select(process => process.Id).ToArray();
+			foreach (var process in processes)
+				process.Dispose();
+			Assert.That(processIds, Has.Length.EqualTo(1), "Cannot establish target process identity.");
+			TestContext.WriteLine($"TargetAppPid: {processIds[0]}");
+		}
 		App.Click("NavigateToInnerTab");
 
 		// Case 1 - After navigating to Inner Page ,  the TabBar should be visible
@@ -51,4 +60,3 @@ public class Issue26598 : _IssuesUITest
 		App.WaitForElement("RecentTab");
 	}
 }
-

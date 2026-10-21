@@ -16,8 +16,12 @@ parameters:
   testConfigurationArgs: ''
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  macValidation: false
 
 steps:
+- checkout: self
+  persistCredentials: false
+
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
@@ -156,6 +160,16 @@ steps:
 
     $testFilter = $testFilter.TrimEnd("|")
 
+    if ("${{ parameters.macValidation }}" -eq "True") {
+      $method = switch ("${{ parameters.testFilter }}") {
+        "Layout" { "Issue17389.ValidateBackgroundColorDoesNotAffectInputTransparent" }
+        "Shell" { "Issue26598.TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage" }
+        default { throw "Unexpected Mac validation category" }
+      }
+      $fixture, $testMethod = $method.Split(".")
+      $testFilter = "($testFilter)&FullyQualifiedName~Microsoft.Maui.TestCases.Tests.Issues.$fixture&FullyQualifiedName~.$testMethod"
+    }
+
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
       $command += " --TEST_CONFIGURATION_ARGS=""$testConfigrationArgs"""
@@ -171,12 +185,18 @@ steps:
 
     Write-Host "Running command: $command"
 
-    Invoke-Expression $command  
+    foreach ($name in @("GH_TOKEN", "GITHUB_TOKEN", "COPILOT_GITHUB_TOKEN")) {
+      [Environment]::SetEnvironmentVariable($name, $null)
+    }
+    Invoke-Expression $command
   displayName: $(Agent.JobName)
-  ${{ if ne(parameters.platform, 'android')}}:
+  ${{ if parameters.macValidation }}:
+    retryCountOnTaskFailure: 0
+  ${{ elseif ne(parameters.platform, 'android')}}:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    GA_MAC_VALIDATION: ${{ parameters.macValidation }}
 
 - bash: |
     cat ${BASH_SOURCE[0]}

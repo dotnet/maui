@@ -162,6 +162,97 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
+	if (string.Equals(EnvironmentVariable("GA_MAC_VALIDATION"), "true", StringComparison.OrdinalIgnoreCase))
+	{
+		var inputCase = "Microsoft.Maui.TestCases.Tests.Issues.Issue17389(Mac).ValidateBackgroundColorDoesNotAffectInputTransparent";
+		var shellCase = "Microsoft.Maui.TestCases.Tests.Issues.Issue26598(Mac).TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage";
+		var expectedCase = testFilter.Contains(".Issue17389") ? inputCase : shellCase;
+		if (!testFilter.Contains(expectedCase.Split('.').Last()))
+			throw new Exception("Mac validation requires an exact supported method filter.");
+
+		IEnumerable<string> propertyOutput;
+		var propertyExitCode = StartProcess(toolPath, new ProcessSettings
+		{
+			Arguments = new ProcessArgumentBuilder()
+				.Append("msbuild").AppendQuoted(project)
+				.Append($"/p:Configuration={config}")
+				.Append("-getProperty:TargetPath").Append("-nologo"),
+			RedirectStandardOutput = true
+		}, out propertyOutput);
+		var testAssembly = propertyOutput.LastOrDefault(line => line.Trim().EndsWith(".dll"))?.Trim();
+		if (propertyExitCode != 0 || string.IsNullOrEmpty(testAssembly) || !System.IO.File.Exists(testAssembly))
+			throw new Exception("Cannot resolve the freshly built Mac test assembly.");
+
+		var discoveryPath = System.IO.Path.Combine(binDir, "GA-Mac-discovered-tests.txt");
+		IEnumerable<string> discoveryOutput;
+		var discoveryExitCode = StartProcess(toolPath, new ProcessSettings
+		{
+			Arguments = new ProcessArgumentBuilder()
+				.Append("vstest").AppendQuoted(testAssembly)
+				.Append("/ListFullyQualifiedTests")
+				.AppendQuoted($"/ListTestsTargetPath:{discoveryPath}")
+				.AppendQuoted($"/TestCaseFilter:{testFilter}"),
+			RedirectStandardOutput = true
+		}, out discoveryOutput);
+		if (discoveryExitCode != 0 || !System.IO.File.Exists(discoveryPath))
+			throw new Exception("Mac validation discovery did not produce a complete inventory.");
+		var discovered = System.IO.File.ReadAllLines(discoveryPath).Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
+		foreach (var test in discovered)
+			Information("Discovered exact Mac case: {0}", test);
+		if (discovered.Length != 1 || discovered[0] != expectedCase)
+			throw new Exception("Mac validation must discover exactly its intended single method.");
+
+		var arms = expectedCase == inputCase
+			? new[] { "red-first", "green-first", "red-restored" }
+			: new[] { "original-shell" };
+		bool hadFailure = false;
+		var targetProcessIds = new HashSet<int>();
+		try
+		{
+			foreach (var arm in arms)
+			{
+				SetEnvironmentVariable("GA_MAC_INPUT_ORDER", arm == "green-first" ? "green-first" : "red-first");
+				for (int attempt = 1; attempt <= 3; attempt++)
+				{
+					var caseResultName = $"{resultsFileName}-{arm}-{attempt}";
+					var caseResultsPath = System.IO.Path.Combine(resultsDir, $"{caseResultName}.trx");
+					SetEnvironmentVariable("APPIUM_LOG_FILE", $"{binDir}/appium-{arm}-{attempt}.log");
+					try
+					{
+						RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
+							resultsFileNameWithoutExtension: caseResultName, filter: testFilter);
+					}
+					catch (CakeException exception)
+					{
+						hadFailure = true;
+						Warning("Mac validation {0}/{1}: {2}", arm, attempt, exception.Message);
+						if (!System.IO.File.Exists(caseResultsPath))
+							throw;
+					}
+
+					var document = System.Xml.Linq.XDocument.Load(caseResultsPath);
+					System.Xml.Linq.XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+					var results = document.Descendants(ns + "UnitTestResult").ToArray();
+					if (results.Length != 1 || (string)results[0].Attribute("testName") != expectedCase.Split('.').Last())
+						throw new Exception("Mac validation did not execute exactly the requested method.");
+					var output = results[0].Descendants(ns + "StdOut").FirstOrDefault()?.Value ?? "";
+					var pid = System.Text.RegularExpressions.Regex.Match(output, @"TargetAppPid: (\d+)");
+					if (!pid.Success || !targetProcessIds.Add(int.Parse(pid.Groups[1].Value)))
+						throw new Exception("Mac validation target PID is missing or reused.");
+					Information("Exact Mac result {0}/{1}: {2}; target PID {3}",
+						arm, attempt, (string)results[0].Attribute("outcome"), pid.Groups[1].Value);
+				}
+			}
+		}
+		finally
+		{
+			SetEnvironmentVariable("GA_MAC_INPUT_ORDER", null);
+		}
+		if (hadFailure)
+			throw new Exception("Exact Mac validation contains failing tests; retained controls are not a green run.");
+		return;
+	}
+
 	Information("Run UITests project {0}", project);
 	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
 	Information("UI Tests completed.");
