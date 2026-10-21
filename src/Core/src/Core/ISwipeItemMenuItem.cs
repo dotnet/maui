@@ -38,8 +38,7 @@ namespace Microsoft.Maui
 		/// icons on Android, iOS, and MacCatalyst (including stream-based sources, since the resolved
 		/// platform image is tinted), and font and packaged file icons on Windows. On Windows,
 		/// packaged file icons use the color as a monochrome mask; URI, rooted, and stream-based image
-		/// icons render with their original colors. All icons on Tizen currently render with their
-		/// original colors regardless of this property.
+		/// icons render with their original colors.
 		/// </remarks>
 		Color? IconColor { get; }
 	}

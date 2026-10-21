@@ -48,11 +48,25 @@ set `DEVELOPER_DIR` for the build command:
 DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer ./build.sh -restore -build
 ```
 
+#### Tizen backends on .NET 11
+
+Starting with .NET 11, this repository no longer includes a Tizen platform implementation or
+builds and packages Tizen target frameworks. Tizen backends must supply their own native
+dependencies, handlers, lifecycle integration, and resource and manifest processing outside
+this repository.
+
+Platform-neutral compatibility APIs remain available for external backends, including
+`DevicePlatform.Tizen`, the legacy `Device.Tizen` constant, `OnPlatformExtension.Tizen`,
+`PlatformConfiguration.Tizen`, and the managed `TizenSpecific` attached properties.
+External backends can use the [platform-neutral handler contracts](design/ExternalPlatformBackends.md)
+and register their platform folders with `MauiPlatformSpecificFolder`; the built-in
+`Platforms/Tizen` registration and `IncludeTizenTargetFrameworks` build switch have been removed.
+
 #### PublicAPI Management
 `--target=publicapi`
 - Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)
 - Use this when you've added new public APIs and are getting build errors about missing API declarations
-- Automatically skips Windows-specific files when not running on Windows, and always skips Tizen files
+- Automatically skips Windows-specific files when not running on Windows
 
 ```bash
 dotnet cake --target=publicapi

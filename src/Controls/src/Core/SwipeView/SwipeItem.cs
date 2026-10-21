@@ -54,7 +54,6 @@ namespace Microsoft.Maui.Controls
 		/// tinted), and font and packaged file icons on Windows, and can be bound with
 		/// <see cref="AppThemeBinding"/> to follow the current theme. On Windows, packaged file icons use
 		/// the color as a monochrome mask; URI, rooted, and stream-based image icons render with their original colors.
-		/// All icons on Tizen currently render with their original colors regardless of this property.
 		/// </remarks>
 		public Color IconColor
 		{

@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TizenNavigationSlotRestoresTitleIconWhenDrawerToggleIsHidden()
+		public void ExternalNavigationSlotRestoresTitleIconWhenDrawerToggleIsHidden()
 		{
 			var shell = CreateFlyoutShell();
 			var toolbar = shell.Toolbar;

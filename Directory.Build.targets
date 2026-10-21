@@ -59,11 +59,6 @@
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>24.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
-    <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
-  </PropertyGroup>
-
   <!--
     NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...
