@@ -710,7 +710,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			using (var menu = _bottomView.Menu)
 				SetupMenu(menu, _bottomView.MaxItemCount, ShellItem);
-			UpdateTabBarAutomationIds();
+
+			if (ShellItem is TabBar && ShellItemController.ShowTabs)
+			{
+				UpdateTabBarAutomationIds();
+			}
 		}
 
 		void UpdateTabBarAutomationIds()
@@ -718,16 +722,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SetAutomationIdAccessibilityDelegate(_bottomView, ShellItem.AutomationId);
 
 			var shellItems = ((IShellItemController)ShellItem).GetItems();
+			var visibleItemCount = shellItems.Count > _bottomView.MaxItemCount
+				? _bottomView.MaxItemCount - 1
+				: shellItems.Count;
 
-			for (int i = 0; i < shellItems.Count && i < _bottomView.Menu.Size(); i++)
+			for (int i = 0; i < visibleItemCount; i++)
 			{
-				using var menuItem = _bottomView.Menu.GetItem(i);
-
-				if (menuItem.ItemId == MoreTabId)
-					continue;
 
 				// Get the native view corresponding to this menu item
-				var itemView = _bottomView.FindViewById(menuItem.ItemId);
+				var itemView = _bottomView.FindViewById(i);
 
 				if (itemView is not null)
 				{
