@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			CleanUpCollectionViewSource();
 
-			if (Element.ItemsSource == null)
+			if (Element.ItemsSource is null)
 			{
 				UpdateEmptyViewVisibility();
 				return;
