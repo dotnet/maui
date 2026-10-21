@@ -3,155 +3,145 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 17389, "InputTransparent should not affect background color on Windows layouts", PlatformAffected.UWP)]
 public class Issue17389 : TestContentPage
 {
-	Grid redGrid;
-	Grid greenGrid;
-	Border blueBorder;
-	ContentView purpleContent;
-	Label tapCountLabel;
-	Label redGridLabel;
-	Label greenGridLabel;
-	Label blueBorderLabel;
-	Label purpleContentLabel;
-	int tapCount;
+    Grid redGrid;
+    Grid greenGrid;
+    Border blueBorder;
+    ContentView purpleContent;
+    Label tapCountLabel;
+    Label redGridLabel;
+    Label greenGridLabel;
+    Label blueBorderLabel;
+    Label purpleContentLabel;
+    int tapCount;
 
-	protected override void Init()
-	{
-		WriteTapDiagnostic("Init");
-		tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center, AutomationId = "TapCountLabel" };
+    protected override void Init()
+    {
+        tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center, AutomationId = "TapCountLabel" };
 
-		redGrid = CreateBackgroundTestGrid(Colors.Red, false, "RedGrid", out redGridLabel);
-		greenGrid = CreateBackgroundTestGrid(Colors.Green, false, "GreenGrid", out greenGridLabel);
+        redGrid = CreateBackgroundTestGrid(Colors.Red, false, "RedGrid", out redGridLabel);
+        greenGrid = CreateBackgroundTestGrid(Colors.Green, false, "GreenGrid", out greenGridLabel);
 
-		blueBorderLabel = new Label { Text = "Blue Border (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = "BlueBorder" };
-		blueBorder = new Border
-		{
-			BackgroundColor = Colors.Blue,
-			InputTransparent = false,
-			WidthRequest = 200,
-			HeightRequest = 100,
-			Content = blueBorderLabel
-		};
-		AddTapGesture(blueBorder, "BlueBorder");
+        blueBorderLabel = new Label { Text = "Blue Border (InputTransparent=False)", HorizontalOptions = LayoutOptions.Center, AutomationId = "BlueBorder" };
+        blueBorder = new Border
+        {
+            BackgroundColor = Colors.Blue,
+            InputTransparent = false,
+            WidthRequest = 200,
+            HeightRequest = 100,
+            Content = blueBorderLabel
+        };
+        AddTapGesture(blueBorder);
 
-		purpleContentLabel = new Label { Text = "Purple Content (InputTransparent=False)", AutomationId = "PurpleContent" };
-		purpleContent = new ContentView
-		{
-			BackgroundColor = Colors.Purple,
-			InputTransparent = false,
-			WidthRequest = 200,
-			HeightRequest = 100,
-			Content = purpleContentLabel
-		};
-		AddTapGesture(purpleContent, "PurpleContent");
+        purpleContentLabel = new Label { Text = "Purple Content (InputTransparent=False)", AutomationId = "PurpleContent" };
+        purpleContent = new ContentView
+        {
+            BackgroundColor = Colors.Purple,
+            InputTransparent = false,
+            WidthRequest = 200,
+            HeightRequest = 100,
+            Content = purpleContentLabel
+        };
+        AddTapGesture(purpleContent);
 
-		Content = CreateMainContent();
-	}
+        Content = CreateMainContent();
+    }
 
-	ScrollView CreateMainContent()
-	{
-		return new ScrollView
-		{
-			Content = new StackLayout
-			{
-				Spacing = 20,
-				Children =
-				{
-					new Label
-					{
-						Text = "InputTransparent Background Test",
-						FontSize = 18,
-						FontAttributes = FontAttributes.Bold,
-						HorizontalOptions = LayoutOptions.Center
-					},
-					tapCountLabel,
-					new Button
-					{
-						Text = "Toggle InputTransparent",
-						Command = new Command(ToggleInputTransparent),
-						AutomationId = "ToggleInputTransparentButton"
-					},
-					new Button
-					{
-						Text = "Toggle Background Colors",
-						Command = new Command(ToggleBackgroundColors),
-						AutomationId = "ToggleBackgroundColorsButton"
-					},
-					redGrid,
-					greenGrid,
-					blueBorder,
-					purpleContent
-				}
-			}
-		};
-	}
+    ScrollView CreateMainContent()
+    {
+        return new ScrollView
+        {
+            Content = new StackLayout
+            {
+                Spacing = 20,
+                Children =
+                {
+                    new Label
+                    {
+                        Text = "InputTransparent Background Test",
+                        FontSize = 18,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center
+                    },
+                    tapCountLabel,
+                    new Button
+                    {
+                        Text = "Toggle InputTransparent",
+                        Command = new Command(ToggleInputTransparent),
+                        AutomationId = "ToggleInputTransparentButton"
+                    },
+                    new Button
+                    {
+                        Text = "Toggle Background Colors",
+                        Command = new Command(ToggleBackgroundColors),
+                        AutomationId = "ToggleBackgroundColorsButton"
+                    },
+                    redGrid,
+                    greenGrid,
+                    blueBorder,
+                    purpleContent
+                }
+            }
+        };
+    }
 
-	Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText, out Label label)
-	{
-		label = new Label { Text = $"{labelText} (InputTransparent={inputTransparent})", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
+    Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText, out Label label)
+    {
+        label = new Label { Text = $"{labelText} (InputTransparent={inputTransparent})", HorizontalOptions = LayoutOptions.Center, AutomationId = $"{labelText}" };
 
-		Grid childGrid = new Grid
-		{
-			BackgroundColor = bgColor,
-			InputTransparent = inputTransparent,
-			Children = { label }
-		};
+        Grid childGrid = new Grid
+        {
+            BackgroundColor = bgColor,
+            InputTransparent = inputTransparent,
+            Children = { label }
+        };
 
-		AddTapGesture(childGrid, $"{labelText}.Child");
+        AddTapGesture(childGrid);
 
-		Grid parentGrid = new Grid
-		{
-			WidthRequest = 200,
-			HeightRequest = 100,
-			InputTransparent = inputTransparent,
-			BackgroundColor = Colors.LightGray,
-			Children = { childGrid }
-		};
+        Grid parentGrid = new Grid
+        {
+            WidthRequest = 200,
+            HeightRequest = 100,
+            InputTransparent = inputTransparent,
+            BackgroundColor = Colors.LightGray,
+            Children = { childGrid }
+        };
 
-		AddTapGesture(parentGrid, $"{labelText}.Parent");
-		return parentGrid;
-	}
+        AddTapGesture(parentGrid);
+        return parentGrid;
+    }
 
-	void AddTapGesture(View view, string receiver)
-	{
-		view.GestureRecognizers.Add(new TapGestureRecognizer
-		{
-			Command = new Command(() =>
-			{
-				tapCount++;
-				tapCountLabel.Text = $"Tap count: {tapCount}";
-				WriteTapDiagnostic($"{receiver}: count={tapCount}; InputTransparent={view.InputTransparent}; IsEnabled={view.IsEnabled}");
-			})
-		});
-	}
+    void AddTapGesture(View view)
+    {
+        view.GestureRecognizers.Add(new TapGestureRecognizer
+        {
+            Command = new Command(() =>
+            {
+                tapCount++;
+                tapCountLabel.Text = $"Tap count: {tapCount}";
+            })
+        });
+    }
 
-	void WriteTapDiagnostic(string message)
-	{
-		var path = Environment.GetEnvironmentVariable("ISSUE17389_TAP_LOG");
-		if (!string.IsNullOrEmpty(path))
-			System.IO.File.AppendAllText(path, $"{DateTime.UtcNow:O} {message}{Environment.NewLine}");
-	}
+    void ToggleInputTransparent()
+    {
+        tapCount = 0;
+        tapCountLabel.Text = $"Tap count: {0}";
+        redGrid.InputTransparent = !redGrid.InputTransparent;
+        greenGrid.InputTransparent = !greenGrid.InputTransparent;
+        blueBorder.InputTransparent = !blueBorder.InputTransparent;
+        purpleContent.InputTransparent = !purpleContent.InputTransparent;
 
-	void ToggleInputTransparent()
-	{
-		WriteTapDiagnostic($"ToggleInputTransparent: {tapCount} -> 0");
-		tapCount = 0;
-		tapCountLabel.Text = $"Tap count: {0}";
-		redGrid.InputTransparent = !redGrid.InputTransparent;
-		greenGrid.InputTransparent = !greenGrid.InputTransparent;
-		blueBorder.InputTransparent = !blueBorder.InputTransparent;
-		purpleContent.InputTransparent = !purpleContent.InputTransparent;
+        redGridLabel.Text = $"Red Grid (InputTransparent={redGrid.InputTransparent})";
+        greenGridLabel.Text = $"Green Grid (InputTransparent={greenGrid.InputTransparent})";
+        blueBorderLabel.Text = $"Blue Border (InputTransparent={blueBorder.InputTransparent})";
+        purpleContentLabel.Text = $"Purple Content (InputTransparent={purpleContent.InputTransparent})";
+    }
 
-		redGridLabel.Text = $"Red Grid (InputTransparent={redGrid.InputTransparent})";
-		greenGridLabel.Text = $"Green Grid (InputTransparent={greenGrid.InputTransparent})";
-		blueBorderLabel.Text = $"Blue Border (InputTransparent={blueBorder.InputTransparent})";
-		purpleContentLabel.Text = $"Purple Content (InputTransparent={purpleContent.InputTransparent})";
-	}
-
-	void ToggleBackgroundColors()
-	{
-		redGrid.BackgroundColor = Colors.Yellow;
-		greenGrid.BackgroundColor = Colors.Blue;
-		blueBorder.BackgroundColor = Colors.LightBlue;
-		purpleContent.BackgroundColor = Colors.Pink;
-	}
+    void ToggleBackgroundColors()
+    {
+        redGrid.BackgroundColor = Colors.Yellow;
+        greenGrid.BackgroundColor = Colors.Blue;
+        blueBorder.BackgroundColor = Colors.LightBlue;
+        purpleContent.BackgroundColor = Colors.Pink;
+    }
 }
