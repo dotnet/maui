@@ -140,7 +140,6 @@ extends:
         publishingInfraVersion: 3
         enableSymbolValidation: true
         enableSigningValidation: true
-        # SourceLink validation was removed from Arcade, this parameter has no effect.
         enableSourceLinkValidation: false
         validateDependsOn:
         - Pack
