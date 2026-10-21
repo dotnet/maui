@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells are arranged according to the new layout
 				ReloadData();
 			}
 		}

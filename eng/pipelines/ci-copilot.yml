@@ -1370,7 +1370,7 @@ stages:
 
               if [ -z "$UDID" ]; then
                 # GRACEFUL DEGRADE (see the no-runtime branch above): a runtime exists but no
-                # iPhone device could be found or created. Don't nuke the whole review — warn
+                # iPhone device could be found or created. Don't fail the whole review — warn
                 # and continue without a simulator; the Gate self-degrades to INCONCLUSIVE and
                 # the expert review (Task 3) still runs.
                 echo "##vso[task.logissue type=warning]No iOS simulator could be found or created — continuing review WITHOUT a booted simulator (Gate iOS verification INCONCLUSIVE; expert review + deep stage still run)."
