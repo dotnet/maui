@@ -1,16 +1,27 @@
 using System;
+using Android.Content.Res;
 using Android.Text;
 using Android.Text.Style;
+using Android.Views;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Google.Android.Material.Dialog;
+using Google.Android.Material.TextField;
+using Microsoft.Maui.Graphics;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers;
 
 // TODO: Material3 - make it public in .net 11
-internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
+internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialTextInputLayout>
 {
 	AppCompatAlertDialog? _dialog;
+	ColorStateList? _defaultHintTextColors;
+	EndIconClickListener? _endIconClickListener;
+	PickerAccessibilityDelegate? _accessibilityDelegate;
+
+	MauiMaterialPicker? Picker => PlatformView?.EditText as MauiMaterialPicker;
 
 	public static PropertyMapper<IPicker, PickerHandler2> Mapper =
 		new(ViewMapper)
@@ -26,6 +37,10 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.IsOpen)] = MapIsOpen,
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
+			[nameof(IView.Semantics)] = MapSemantics,
+			[nameof(IView.AutomationId)] = MapAutomationId,
 		};
 
 	public static CommandMapper<IPicker, PickerHandler2> CommandMapper = new(ViewCommandMapper)
@@ -38,21 +53,52 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 	{
 	}
 
-	protected override MauiMaterialPicker CreatePlatformView()
+	protected override MauiMaterialTextInputLayout CreatePlatformView()
 	{
-		return new MauiMaterialPicker(Context);
+		var layout = new MauiMaterialTextInputLayout(MauiMaterialContextThemeWrapper.Create(Context))
+		{
+			BoxBackgroundMode = TextInputLayout.BoxBackgroundOutline,
+			EndIconMode = TextInputLayout.EndIconCustom,
+			EndIconCheckable = false,
+		};
+		// Keep TextInputLayout's context overlay and let it supply the child's box background.
+		var picker = new MauiMaterialPicker(layout.Context!, wrapContext: false) { Background = null };
+		layout.AddView(picker);
+		layout.SetEndIconDrawable(Resource.Drawable.mtrl_ic_arrow_drop_down);
+		layout.SetEndIconContentDescription(Resource.String.exposed_dropdown_menu_content_description);
+		_defaultHintTextColors = layout.DefaultHintTextColor;
+		return layout;
 	}
 
-	protected override void ConnectHandler(MauiMaterialPicker platformView)
+	protected override void ConnectHandler(MauiMaterialTextInputLayout platformView)
 	{
 		platformView.Click += OnClick;
+		platformView.EditText!.Click += OnClick;
+		_endIconClickListener = new EndIconClickListener(this);
+		platformView.SetEndIconOnClickListener(_endIconClickListener);
+		// Keep the native text-field delegate and apply MAUI semantics to its child.
+		_accessibilityDelegate = new PickerAccessibilityDelegate(ViewCompat.GetAccessibilityDelegate(platformView.EditText!)) { Handler = this };
+		ViewCompat.SetAccessibilityDelegate(platformView.EditText!, _accessibilityDelegate);
+		platformView.ImportantForAccessibility = ImportantForAccessibility.No;
 
 		base.ConnectHandler(platformView);
 	}
 
-	protected override void DisconnectHandler(MauiMaterialPicker platformView)
+	protected override void DisconnectHandler(MauiMaterialTextInputLayout platformView)
 	{
 		platformView.Click -= OnClick;
+		platformView.EditText!.Click -= OnClick;
+		platformView.SetEndIconOnClickListener(null);
+		_endIconClickListener?.Dispose();
+		_endIconClickListener = null;
+		if (_accessibilityDelegate is { } accessibilityDelegate)
+		{
+			accessibilityDelegate.Handler = null;
+			if (ViewCompat.GetAccessibilityDelegate(platformView.EditText!) == accessibilityDelegate)
+				ViewCompat.SetAccessibilityDelegate(platformView.EditText!, accessibilityDelegate.WrappedDelegate);
+			accessibilityDelegate.Dispose();
+			_accessibilityDelegate = null;
+		}
 
 		if (_dialog is not null)
 		{
@@ -61,57 +107,98 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			_dialog.Dismiss();
 			_dialog = null;
 		}
+		VirtualView.IsFocused = false;
+		VirtualView.IsOpen = false;
 
 		base.DisconnectHandler(platformView);
 	}
 
 	public static void MapBackground(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateBackground(picker);
+		// Paint the container, never the EditText (whose mapper adds an AppCompat underline).
+		if (picker.Background.IsNullOrEmpty())
+			handler.PlatformView.Background = null;
+		else
+			handler.PlatformView.UpdateBackground(picker);
 	}
 
 	public static void MapItems(PickerHandler2 handler, IPicker picker) => Reload(handler);
 
+	public static void MapSemantics(PickerHandler2 handler, IPicker picker)
+	{
+		if (handler.Picker is { } platformPicker)
+			ViewCompat.SetAccessibilityHeading(platformPicker, picker.Semantics?.IsHeading ?? false);
+	}
+
+	public static void MapAutomationId(PickerHandler2 handler, IPicker picker)
+	{
+		if (handler.Picker is { } platformPicker)
+		{
+			if (string.IsNullOrWhiteSpace(picker.AutomationId))
+				platformPicker.ContentDescription = null;
+			else
+				platformPicker.UpdateAutomationId(picker);
+		}
+	}
+
 	public static void MapTitle(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateTitle(picker);
+		handler.PlatformView.Hint = picker.Title;
 	}
 
 	public static void MapTitleColor(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateTitleColor(picker);
+		handler.PlatformView.DefaultHintTextColor = picker.TitleColor is null
+			? handler._defaultHintTextColors
+			: ColorStateList.ValueOf(picker.TitleColor.ToPlatform());
 	}
 
 	public static void MapSelectedIndex(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateSelectedIndex(picker);
+		Reload(handler);
 	}
 
 	public static void MapCharacterSpacing(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateCharacterSpacing(picker);
+		handler.Picker?.UpdateCharacterSpacing(picker);
 	}
 
 	public static void MapFont(PickerHandler2 handler, IPicker picker)
 	{
 		var fontManager = handler.GetRequiredService<IFontManager>();
 
-		handler.PlatformView?.UpdateFont(picker, fontManager);
+		handler.Picker?.UpdateFont(picker, fontManager);
+		handler.PlatformView.Typeface = fontManager.GetTypeface(picker.Font);
 	}
 
 	public static void MapHorizontalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
+		handler.Picker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 	}
 
 	public static void MapTextColor(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateTextColor(picker.TextColor);
+		handler.Picker?.UpdateTextColor(picker.TextColor);
 	}
 
 	public static void MapVerticalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+		handler.Picker?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+	}
+
+	public static void MapIsEnabled(PickerHandler2 handler, IPicker picker)
+	{
+		handler.PlatformView.Enabled = picker.IsEnabled;
+		if (!picker.IsEnabled)
+			handler.DismissPickerDialog();
+	}
+
+	public static void MapFlowDirection(PickerHandler2 handler, IPicker picker)
+	{
+		handler.PlatformView.UpdateFlowDirection(picker);
+		handler.Picker?.UpdateFlowDirection(picker);
+		if (handler._dialog is not null && handler.Picker is { } platformPicker)
+			handler._dialog.UpdateFlowDirection(platformPicker);
 	}
 
 	public static void MapIsOpen(PickerHandler2 handler, IPicker picker)
@@ -120,7 +207,10 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		{
 			if (picker.IsOpen)
 			{
-				handler.ShowDialog();
+				if (picker.IsEnabled)
+					handler.ShowDialog();
+				else
+					picker.IsOpen = false;
 			}
 			else
 			{
@@ -133,7 +223,8 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 	{
 		if (handler.IsConnected())
 		{
-			ViewHandler.MapFocus(handler, picker, args);
+			if (args is FocusRequest request)
+				handler.Picker?.Focus(request);
 			handler.ShowDialog();
 		}
 	}
@@ -143,25 +234,19 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		if (handler.IsConnected())
 		{
 			handler.DismissPickerDialog();
+			handler.Picker?.ClearFocus();
 			ViewHandler.MapUnfocus(handler, picker, args);
 		}
 	}
 
 	void ShowDialog()
 	{
-		if (PlatformView.Clickable)
-		{
-			PlatformView.CallOnClick();
-		}
-		else
-		{
-			OnClick(PlatformView, EventArgs.Empty);
-		}
+		OnClick(PlatformView, EventArgs.Empty);
 	}
 
 	void OnClick(object? sender, EventArgs e)
 	{
-		if (_dialog is null && VirtualView is not null)
+		if (_dialog is null && VirtualView is { IsEnabled: true } && this.IsConnected())
 		{
 			CreatePickerDialog();
 			ShowPickerDialog();
@@ -214,7 +299,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		{
 			var selectedIndex = e.Which;
 			VirtualView.SelectedIndex = selectedIndex;
-			PlatformView?.UpdatePicker(VirtualView);
+			Reload(this);
 
 			DismissPickerDialog();
 		});
@@ -227,7 +312,8 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			return;
 		}
 
-		_dialog.UpdateFlowDirection(PlatformView);
+		if (Picker is { } platformPicker)
+			_dialog.UpdateFlowDirection(platformPicker);
 		_dialog.SetCanceledOnTouchOutside(true);
 
 		_dialog.ShowEvent += OnDialogShown;
@@ -270,6 +356,41 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 
 	static void Reload(PickerHandler2 handler)
 	{
-		handler.PlatformView?.UpdatePicker(handler.VirtualView);
+		if (handler.Picker is { } platformPicker)
+		{
+			var picker = handler.VirtualView;
+			platformPicker.Text = picker.SelectedIndex < 0 || picker.SelectedIndex >= picker.GetCount()
+				? null
+				: picker.GetItem(picker.SelectedIndex);
+		}
+	}
+
+	internal sealed class PickerAccessibilityDelegate : AccessibilityDelegateCompatWrapper
+	{
+		public PickerHandler2? Handler { get; set; }
+
+		public PickerAccessibilityDelegate(AccessibilityDelegateCompat? originalDelegate) : base(originalDelegate)
+		{
+		}
+
+		public override void OnInitializeAccessibilityNodeInfo(View? host, AccessibilityNodeInfoCompat? info)
+		{
+			base.OnInitializeAccessibilityNodeInfo(host, info);
+			if (Handler?.VirtualView is { } picker)
+				host?.UpdateSemanticNodeInfo(picker, info);
+		}
+	}
+
+	sealed class EndIconClickListener : Java.Lang.Object, View.IOnClickListener
+	{
+		readonly WeakReference<PickerHandler2> _handler;
+
+		public EndIconClickListener(PickerHandler2 handler) => _handler = new(handler);
+
+		public void OnClick(View? view)
+		{
+			if (_handler.TryGetTarget(out var handler))
+				handler.ShowDialog();
+		}
 	}
 }

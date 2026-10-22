@@ -10,7 +10,11 @@ namespace Microsoft.Maui.Platform;
 // TODO: Material3 - make it public in .net 11
 internal class MauiMaterialPicker : MauiMaterialPickerBase
 {
-	public MauiMaterialPicker(Context context) : base(context)
+	public MauiMaterialPicker(Context context) : this(context, wrapContext: true)
+	{
+	}
+
+	internal MauiMaterialPicker(Context context, bool wrapContext) : base(context, wrapContext)
 	{
 		PickerManager.Init(this);
 		Focusable = true;
@@ -35,7 +39,12 @@ internal class MauiMaterialPickerBase : TextInputEditText
 {
 	readonly PickerDragGestureFilter _dragGestureFilter = new();
 
-	public MauiMaterialPickerBase(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+	public MauiMaterialPickerBase(Context context) : this(context, wrapContext: true)
+	{
+	}
+
+	internal MauiMaterialPickerBase(Context context, bool wrapContext)
+		: base(wrapContext ? MauiMaterialContextThemeWrapper.Create(context) : context)
 	{
 		if (Background is not null)
 		{
