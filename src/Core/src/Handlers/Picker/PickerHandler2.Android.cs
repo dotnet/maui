@@ -74,15 +74,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 
 	public static void MapBackground(PickerHandler2 handler, IPicker picker)
 	{
-		if (picker.Background is not null)
-		{
-			handler.PlatformView?.UpdateBackground(picker);
-		}
-		else
-		{
-			handler.PlatformView.Background = null;
-		}
-
+		handler.PlatformView?.UpdateBackground(picker);
 	}
 
 	public static void MapItems(PickerHandler2 handler, IPicker picker) => Reload(handler);
@@ -142,7 +134,6 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerT
 
 	public static void MapFlowDirection(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView?.UpdateFlowDirection(picker);
 		handler.PlatformView?.Picker.UpdateFlowDirection(picker);
 	}
 

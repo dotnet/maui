@@ -77,7 +77,6 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdatePicker(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
 		{
-			platformPicker.Hint = picker.Title;
 			UpdatePickerTextCore(platformPicker.Picker, picker);
 		}
 

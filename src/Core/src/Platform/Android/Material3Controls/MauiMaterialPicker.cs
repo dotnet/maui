@@ -12,9 +12,6 @@ namespace Microsoft.Maui.Platform;
 internal class MauiMaterialPicker : MauiMaterialPickerBase
 {
 	public MauiMaterialPicker(Context context) : base(context)
-		=> Initialize();
-
-	void Initialize()
 	{
 		PickerManager.Init(this);
 		Focusable = true;

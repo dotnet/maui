@@ -115,17 +115,8 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		PlatformView.EditText?.UpdateReturnType(VirtualView);
 	}
 
-	public static void MapBackground(EntryHandler2 handler, IEntry entry)
-	{
-		if (entry.Background is not null)
-		{
-			handler.PlatformView?.UpdateBackground(entry);
-		}
-		else
-		{
-			handler.PlatformView.Background = null;
-		}
-	}
+	public static void MapBackground(EntryHandler2 handler, IEntry entry) =>
+		handler.PlatformView?.UpdateBackground(entry);
 
 	public static void MapText(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateText(entry);
