@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	{
 		const string ActiveOperationPreferenceKey = "active_operation";
 		const string RecoveredResultsPreferenceKey = "recovered_results";
+		readonly List<string> pickerFilePaths = [];
 		static string RecoveryPreferencesSharedName => MediaPickerRecoveryStore.PreferencesSharedName;
 
 		// These tests drive the recovery manager and AndroidX callback wrappers directly.
@@ -35,7 +36,19 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			=> ResetRecoveryState();
 
 		public void Dispose()
-			=> ResetRecoveryState();
+		{
+			try
+			{
+				ResetRecoveryState();
+			}
+			finally
+			{
+				foreach (var path in pickerFilePaths)
+				{
+					File.Delete(path);
+				}
+			}
+		}
 
 		[Fact]
 		public void Activity_State_Manager_Registers_All_MediaPicker_Launchers()
@@ -678,7 +691,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task AndroidX_Orphaned_Single_Photo_Pick_Publishes_Recovered_Result_And_Completes_Waiter()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickPath = CreateNonEmptyPickerFile(FileExtensions.Jpg);
 			var pickForResult = new TestPickVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -736,7 +749,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			RecoveredMediaPickerResultKind kind,
 			string extension)
 		{
-			var pickPath = CreateNonEmptyMediaFile(extension);
+			var pickPath = CreateNonEmptyPickerFile(extension);
 			var pickForResult = new TestPickVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -759,8 +772,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task AndroidX_Orphaned_Multiple_Photo_Pick_Publishes_Recovered_Result_With_Multiple_Files()
 		{
-			var firstPickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
-			var secondPickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var firstPickPath = CreateNonEmptyPickerFile(FileExtensions.Jpg);
+			var secondPickPath = CreateNonEmptyPickerFile(FileExtensions.Jpg);
 			var pickForResult = new TestPickMultipleVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -808,7 +821,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task Accepted_Pick_Materialization_Writes_Accepted_File_Paths()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickPath = CreateNonEmptyPickerFile(FileExtensions.Jpg);
 			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
@@ -824,6 +837,32 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Equal(PendingMediaPickerState.ResultAccepted, activePick.State);
 			Assert.Equal(pickPath, GetSingleActiveOperationFilePath(activePick));
 			Assert.Empty(activePick.PickerUriStrings);
+		}
+
+		[Fact]
+		public async Task Accepted_Pick_Private_File_Uri_Is_Rejected_Without_Deleting_Source()
+		{
+			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			try
+			{
+				var pendingPick = MediaPickerRecoveryManager.BeginOperation(
+					RecoveredMediaPickerResultKind.PickPhoto,
+					[],
+					PersistedPhotoProcessingOptions.Default);
+
+				Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(CreateFileUri(pickPath)));
+
+				await Assert.ThrowsAsync<FileNotFoundException>(async () =>
+					await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingPick.Id, throwOnMaterializationFailure: true));
+
+				Assert.Null(GetActiveOperation());
+				Assert.Empty(await MediaPicker.GetRecoveredMediaPickerResultsAsync());
+				Assert.True(File.Exists(pickPath));
+			}
+			finally
+			{
+				File.Delete(pickPath);
+			}
 		}
 
 		[Fact]
@@ -1910,6 +1949,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static string CreateNonEmptyMediaFile(string extension)
 		{
 			var path = CreateCacheFilePath(extension);
+			WriteNonEmptyMediaFile(path);
+			return path;
+		}
+
+		string CreateNonEmptyPickerFile(string extension)
+		{
+			// Incoming file:// picker results must be outside the app's protected private storage.
+			using var externalCacheDirectory = Application.Context.ExternalCacheDir ??
+				throw new InvalidOperationException("External cache directory is not available.");
+			var path = Path.Combine(externalCacheDirectory.CanonicalPath, $"{Guid.NewGuid():N}{extension}");
+			pickerFilePaths.Add(path);
 			WriteNonEmptyMediaFile(path);
 			return path;
 		}
