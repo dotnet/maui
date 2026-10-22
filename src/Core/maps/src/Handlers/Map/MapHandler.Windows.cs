@@ -353,16 +353,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			// No-op: user location requires Geolocation API + custom MapIcon.
 		}
 
-		/// <summary>
-		/// Handles the <see cref="IMap.MoveToRegion"/> command by navigating via the Azure Maps JS camera API.
-		/// </summary>
-		/// <remarks>
 		/// The WinUI 3 MapControl wraps Azure Maps in a WebView2. Setting the <c>Center</c> dependency property
 		/// does not reliably navigate the map view. Instead, we call <c>map.setCamera()</c> via JavaScript.
 		/// The zoom level is calculated from the <see cref="MapSpan"/> using the Spherical Mercator formula:
 		/// <c>zoom = log2(360 / degrees)</c>, clamped to the Azure Maps range of 0–24.
 		/// Navigation uses an <c>ease</c> animation (300ms) for smooth transitions.
-		/// </remarks>
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			if (arg is MapSpan mapSpan && handler is MapHandler mapHandler && mapHandler._mapControl != null)
@@ -458,5 +453,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			// No-op: shape rendering is not supported by the WinUI 3 MapControl.
 		}
+
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) { }
+
+		public static void MapMapStyle(IMapHandler handler, IMap map) { }
+
+		void ShowInfoWindow(IMapPin pin) { }
+		void HideInfoWindow(IMapPin pin) { }
 	}
 }

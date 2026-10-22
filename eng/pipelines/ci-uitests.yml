@@ -47,6 +47,8 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  - name: IosUITestImageOverride
+    value: ACES_VM_SharedPool_Tahoe
 
 parameters:
 
@@ -64,12 +66,19 @@ parameters:
     type: boolean
     default: false
 
+  - name: iosXcodeVersion
+    type: string
+    default: '26.5'
+
+  # Compile Apple apps on GoldenGate with Xcode 27; execute prebuilt apps on
+  # established Appium images until GoldenGate supports Simulator UI and Mac2.
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-15-arm64
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: androidPoolLinuxInternal
     type: object
@@ -81,8 +90,9 @@ parameters:
   - name: iosPoolInternal
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-15-arm64
+      name: AcesShared
+      demands:
+        - ImageOverride -equals $(IosUITestImageOverride)
   
   - name: windowsBuildPoolInternal
     type: object
@@ -110,7 +120,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals $(AcesMacImageOverride)
   
   - name: androidPoolLinuxPublic
     type: object
@@ -124,7 +134,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals $(IosUITestImageOverride)
   
   - name: windowsBuildPoolPublic
     type: object
@@ -150,6 +160,7 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
+      iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         androidPool: ${{ parameters.androidPoolInternal }}
@@ -184,5 +195,3 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
-

@@ -14,17 +14,17 @@ namespace Maui.Controls.Sample.Pages
 			UpdateLabel();
 		}
 
-		async void OnListViewItemTapped(object sender, ItemTappedEventArgs e)
+		async void OnListViewItemTapped(object? sender, ItemTappedEventArgs e)
 		{
 			await DisplayAlertAsync("Item Tapped", "ItemTapped event fired.", "OK");
 		}
 
-		async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+		async void TapGestureRecognizer_Tapped(object? sender, EventArgs e)
 		{
 			await DisplayAlertAsync("Tap Gesture Recognizer", "Tapped event fired.", "OK");
 		}
 
-		void OnToggleButtonClicked(object sender, EventArgs e)
+		void OnToggleButtonClicked(object? sender, EventArgs e)
 		{
 			switch (_listView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetSelectionMode())
 			{

@@ -15,19 +15,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-        public void PickerNewKeyboardIsAboveKeyboard()
-        {
-            App.WaitForElement("Picker6");
+		public void PickerNewKeyboardIsAboveKeyboard()
+		{
+			App.WaitForElement("Picker6");
 			App.Tap("Picker6");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Picker6");
+			App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypePickerWheel"));
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Picker6");
 			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			{
 				var rect = App.WaitForElement("ScrollViewId").GetRect();
 				App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX(), rect.CenterY() - 60);
 			}
-            App.Tap("Entry7");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Entry7", cropBottom: 1000);
-        }
-    }
+			App.RetryAssert(() =>
+			{
+				App.Tap("Entry7");
+				Assert.That(App.IsFocused("Entry7"), Is.True, "Entry7 did not receive focus after the picker scroll.");
+			});
+			App.WaitForNoElement(AppiumQuery.ByXPath("//XCUIElementTypePickerWheel"));
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Entry7", cropBottom: 1000, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+	}
 }
 #endif

@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+		public const ResizeQuality DefaultResizeQuality = ResizeQuality.Auto;
+
 		public string? ItemSpec { get; set; }
 
 		public string? Alias { get; set; }
@@ -40,7 +42,20 @@ namespace Microsoft.Maui.Resizetizer
 
 		public SKColor? Color { get; set; }
 
+		public SKColor? DarkTintColor { get; set; }
+
+		public SKColor? DarkColor { get; set; }
+
 		public bool IsVector => IsVectorFilename(Filename);
+
+		public string? DarkFilename { get; set; }
+
+		public bool DarkIsVector => IsVectorFilename(DarkFilename);
+
+		public bool HasDarkMode =>
+			DarkColor is not null ||
+			DarkTintColor is not null ||
+			!string.IsNullOrWhiteSpace(DarkFilename);
 
 		public bool IsAppIcon { get; set; }
 
@@ -49,6 +64,12 @@ namespace Microsoft.Maui.Resizetizer
 		public bool ForegroundIsVector => IsVectorFilename(ForegroundFilename);
 
 		public double ForegroundScale { get; set; } = 1.0;
+
+		public string? MonochromeFilename { get; set; }
+
+		public bool MonochromeIsVector => IsVectorFilename(MonochromeFilename);
+
+		public ResizeQuality Quality { get; set; } = DefaultResizeQuality;
 
 		private static bool IsVectorFilename(string? filename)
 			=> IsVectorExtension(Path.GetExtension(filename));
@@ -108,11 +129,25 @@ namespace Microsoft.Maui.Resizetizer
 			if (info.Color is null && !string.IsNullOrEmpty(color))
 				throw new InvalidDataException($"Unable to parse color value '{color}' for '{info.Filename}'.");
 
+			var darkTintColor = image.GetMetadata("DarkTintColor");
+			info.DarkTintColor = Utils.ParseColorString(darkTintColor);
+			if (info.DarkTintColor is null && !string.IsNullOrEmpty(darkTintColor))
+				throw new InvalidDataException($"Unable to parse color value '{darkTintColor}' for '{info.Filename}'.");
+
+			var darkColor = image.GetMetadata("DarkColor");
+			info.DarkColor = Utils.ParseColorString(darkColor);
+			if (info.DarkColor is null && !string.IsNullOrEmpty(darkColor))
+				throw new InvalidDataException($"Unable to parse color value '{darkColor}' for '{info.Filename}'.");
+
 			if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
 				info.IsAppIcon = iai;
 
 			if (float.TryParse(image.GetMetadata("ForegroundScale"), NumberStyles.Number, CultureInfo.InvariantCulture, out var fsc))
 				info.ForegroundScale = fsc;
+
+			if (Enum.TryParse<ResizeQuality>(image.GetMetadata("ResizeQuality"), ignoreCase: true, out var quality) &&
+				Enum.IsDefined(typeof(ResizeQuality), quality))
+				info.Quality = quality;
 
 			var fgFile = image.GetMetadata("ForegroundFile");
 			if (!string.IsNullOrEmpty(fgFile))
@@ -122,6 +157,26 @@ namespace Microsoft.Maui.Resizetizer
 					throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
 
 				info.ForegroundFilename = fgFileInfo.FullName;
+			}
+
+			var darkFile = image.GetMetadata("DarkFile");
+			if (!string.IsNullOrEmpty(darkFile))
+			{
+				var darkFileInfo = new FileInfo(darkFile);
+				if (!darkFileInfo.Exists)
+					throw new FileNotFoundException("Unable to find dark file: " + darkFileInfo.FullName, darkFileInfo.FullName);
+
+				info.DarkFilename = darkFileInfo.FullName;
+			}
+
+			var monoFile = image.GetMetadata("MonochromeFile");
+			if (!string.IsNullOrEmpty(monoFile))
+			{
+				var monoFileInfo = new FileInfo(monoFile);
+				if (!monoFileInfo.Exists)
+					throw new FileNotFoundException("Unable to find monochrome file: " + monoFileInfo.FullName, monoFileInfo.FullName);
+
+				info.MonochromeFilename = monoFileInfo.FullName;
 			}
 
 			// make sure the image is a foreground if this is an icon
@@ -135,6 +190,27 @@ namespace Microsoft.Maui.Resizetizer
 			// - Parse out custom DPI's
 
 			return info;
+		}
+
+		public ResizeImageInfo CreateDarkVariant(string? alias = null)
+		{
+			var hasDarkFile = !string.IsNullOrWhiteSpace(DarkFilename);
+
+			return new ResizeImageInfo
+			{
+				ItemSpec = ItemSpec,
+				Alias = alias ?? Alias,
+				Filename = hasDarkFile ? DarkFilename : Filename,
+				BaseSize = BaseSize,
+				Resize = Resize,
+				TintColor = DarkTintColor ?? (hasDarkFile ? null : TintColor),
+				Color = DarkColor ?? Color,
+				IsAppIcon = IsAppIcon,
+				ForegroundFilename = ForegroundFilename,
+				ForegroundScale = ForegroundScale,
+				MonochromeFilename = MonochromeFilename,
+				Quality = Quality,
+			};
 		}
 	}
 }

@@ -46,15 +46,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			nfloat openLimit = flyoutWidth;
 			nfloat openPixels = openLimit * openPercent;
+			bool isRightToLeft = shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
 
 			if (behavior == FlyoutBehavior.Locked)
-				shell.Frame = new CGRect(bounds.X + flyoutWidth, bounds.Y, bounds.Width - flyoutWidth, flyoutHeight);
+			{
+				nfloat shellPositionX = isRightToLeft
+					? bounds.X
+					: bounds.X + flyoutWidth;
+				shell.Frame = new CGRect(shellPositionX, bounds.Y, bounds.Width - flyoutWidth, flyoutHeight);
+			}
 			else
 				shell.Frame = bounds;
 
 			var shellWidth = shell.Frame.Width;
 
-			if (shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			if (isRightToLeft)
 			{
 				var positionX = shellWidth - openPixels;
 

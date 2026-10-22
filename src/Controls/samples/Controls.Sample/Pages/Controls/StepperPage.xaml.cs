@@ -10,12 +10,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnValueChanged(object sender, ValueChangedEventArgs args)
+		void OnValueChanged(object? sender, ValueChangedEventArgs args)
 		{
 			Debug.WriteLine($"Stepper Value: {args.NewValue}");
 		}
 
-		void OnEnableButtonClicked(object sender, System.EventArgs e)
+		void OnEnableButtonClicked(object? sender, System.EventArgs e)
 		{
 			if (EnableStepper.IsEnabled)
 			{

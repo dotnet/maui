@@ -1598,8 +1598,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.UseMauiApp<ApplicationStub>()
 				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<ContentPage, HandlerStub>();
-					handlers.AddHandler<Button, HandlerStub>();
+					handlers.AddHandler<ContentPage>(static _ => new HandlerStub());
+					handlers.AddHandler<Button>(static _ => new HandlerStub());
 				})
 				.Build();
 
@@ -1636,8 +1636,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.UseMauiApp<ApplicationStub>()
 				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<ContentPage, HandlerStub>();
-					handlers.AddHandler<Button, HandlerStub>();
+					handlers.AddHandler<ContentPage>(static _ => new HandlerStub());
+					handlers.AddHandler<Button>(static _ => new HandlerStub());
 				})
 				.Build();
 

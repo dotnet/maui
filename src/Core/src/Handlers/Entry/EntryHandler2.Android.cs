@@ -9,8 +9,7 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers;
 
-// TODO: Material3: Make it public in .NET 11
-internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
+public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 {
 	ClearButtonClickListener? _clearButtonClickListener;
 	ColorStateList? _defaultHintTextColors;

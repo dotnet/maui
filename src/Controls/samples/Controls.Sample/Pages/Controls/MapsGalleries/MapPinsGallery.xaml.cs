@@ -78,17 +78,17 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			pinsMap.Pins.Add(microsoftPin);
 		}
 
-		void OnAddPinClicked(object sender, EventArgs e)
+		void OnAddPinClicked(object? sender, EventArgs e)
 		{
 			AddPin();
 		}
 
-		void OnMovePinClicked(object sender, EventArgs e)
+		void OnMovePinClicked(object? sender, EventArgs e)
 		{
 			MovePin();
 		}
 
-		void OnRemovePinClicked(object sender, EventArgs e)
+		void OnRemovePinClicked(object? sender, EventArgs e)
 		{
 			if (pinsMap.Pins.Count > 0)
 			{
@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		void OnAdd10PinsClicked(object sender, EventArgs e)
+		void OnAdd10PinsClicked(object? sender, EventArgs e)
 		{
 			for (int i = 0; i <= 10; i++)
 			{
@@ -135,7 +135,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		void MoveMapTo(Position location) =>
 			pinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(DefaultMapRadiusKm)));
 
-		void OnMapClicked(object sender, MapClickedEventArgs e)
+		void OnMapClicked(object? sender, MapClickedEventArgs e)
 		{
 			DisplayAlertAsync("Map", $"Map {e.Location.Latitude}, {e.Location.Longitude} clicked.", "Ok");
 		}

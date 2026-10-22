@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
@@ -14,6 +15,7 @@ using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using AWindow = Android.Views.Window;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -91,7 +93,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
-		Task<Page> PopModalPlatformAsync(bool animated)
+		Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
@@ -160,7 +162,7 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
-		async Task PushModalPlatformAsync(Page modal, bool animated)
+		async Task PushModalPlatformCoreAsync(Page modal, bool animated)
 		{
 			var viewToHide = GetCurrentRootView();
 
@@ -261,24 +263,57 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
 
-				// Configure translucent system bars for modal pages on Android API 30+
-				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
+				// Enable edge-to-edge on the modal's own Window so its system bars match the
+				// main window. The modal Dialog has a separate Window that does not inherit the
+				// activity's WindowCompat.EnableEdgeToEdge configuration, so it must be applied here.
+				WindowCompat.EnableEdgeToEdge(dialog.Window);
+
+				// EnableEdgeToEdge handles transparency/scrim but not bar icon colors; apply those
+				// from the app theme so the modal's status/navigation bar icons match the main window.
+				var modalActivity = Context?.GetActivity();
+				if (modalActivity is not null)
 				{
-					dialog.Window.ConfigureTranslucentSystemBars(activity);
-				}
-				else if (mainActivityWindow is not null)
-				{
-					// Fallback for API < 30: Apply legacy translucent behavior
-					var navigationBarColor = mainActivityWindow.NavigationBarColor;
-					var statusBarColor = mainActivityWindow.StatusBarColor;
-#pragma warning disable CA1422
-					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
-					dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
-#pragma warning restore CA1422
+					dialog.Window.ConfigureTranslucentSystemBars(modalActivity);
 				}
 
+				if (RuntimeFeature.UseMauiAndroidSystemBarBackgrounds && mainActivityWindow is not null)
+				{
+					CopySystemBarForegroundAppearance(mainActivityWindow, dialog.Window);
+				}
+
+				UpdateModalWindowChrome(dialog.Window, Context);
 
 				return dialog;
+			}
+
+			public override void OnConfigurationChanged(Configuration newConfig)
+			{
+				base.OnConfigurationChanged(newConfig);
+
+				// Re-apply system bar icon colors to the modal's own Dialog window on a theme
+				// (light/dark) change. The Dialog is a separate Window that OnCreateDialog configures
+				// once; like the activity, it must be re-applied here so the modal's status/navigation
+				// bar icons track the theme. EnableEdgeToEdge handles transparency/scrim, not icon colors.
+				var modalActivity = Context?.GetActivity();
+				if (Dialog?.Window is { } dialogWindow && modalActivity is not null)
+				{
+					dialogWindow.ConfigureTranslucentSystemBars(modalActivity);
+					UpdateModalWindowChrome(dialogWindow, Context);
+				}
+			}
+
+			static void CopySystemBarForegroundAppearance(AWindow sourceWindow, AWindow targetWindow)
+			{
+				var sourceWindowInsetsController = WindowCompat.GetInsetsController(sourceWindow, sourceWindow.DecorView);
+				var targetWindowInsetsController = WindowCompat.GetInsetsController(targetWindow, targetWindow.DecorView);
+
+				if (sourceWindowInsetsController is null || targetWindowInsetsController is null)
+				{
+					return;
+				}
+
+				targetWindowInsetsController.AppearanceLightStatusBars = sourceWindowInsetsController.AppearanceLightStatusBars;
+				targetWindowInsetsController.AppearanceLightNavigationBars = sourceWindowInsetsController.AppearanceLightNavigationBars;
 			}
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
@@ -305,7 +340,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 
-				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty))
+				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty) ||
+					IsNavigationPageBarProperty(e.PropertyName))
 				{
 					UpdateBackgroundColor();
 				}
@@ -323,9 +359,52 @@ namespace Microsoft.Maui.Controls.Platform
 				if (pageView is null)
 					return;
 
-				var modalBkgndColor = view.Background;
-				if (modalBkgndColor is null)
+				var modalBackground = view.Background;
+				if (modalBackground is null)
 					pageView.SetWindowBackground();
+
+				UpdateModalWindowChrome(Dialog?.Window, pageView.Context);
+			}
+
+			void UpdateModalWindowChrome(AWindow? window, Context? context)
+			{
+				var modalBackground = (_modal as IView)?.Background;
+
+				if (_modal is NavigationPage navigationPage)
+				{
+					AndroidSystemChrome.UpdateWindowChrome(
+						context ?? Context,
+						window,
+						updateStatusBar: true,
+						updateNavigationBar: true,
+						statusBarBackground: GetNavigationPageBarBackground(navigationPage),
+						navigationBarBackground: modalBackground);
+					return;
+				}
+
+				AndroidSystemChrome.UpdateWindowChrome(
+					context ?? Context,
+					window,
+					updateStatusBar: true,
+					updateNavigationBar: true,
+					background: modalBackground);
+			}
+
+			static bool IsNavigationPageBarProperty(string? propertyName)
+			{
+				return propertyName == NavigationPage.BarBackgroundColorProperty.PropertyName ||
+					propertyName == NavigationPage.BarBackgroundProperty.PropertyName ||
+					propertyName == NavigationPage.BarTextColorProperty.PropertyName;
+			}
+
+			static Brush? GetNavigationPageBarBackground(NavigationPage navigationPage)
+			{
+				if (navigationPage.BarBackground is not null)
+				{
+					return navigationPage.BarBackground;
+				}
+
+				return navigationPage.BarBackgroundColor is null ? null : new SolidColorBrush(navigationPage.BarBackgroundColor);
 			}
 
 			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)

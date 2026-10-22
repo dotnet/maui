@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Storage
 			}
 		});
 
-		private readonly Lazy<string> _platformAppDataDirectory = new(valueFactory: () =>
+		private readonly Lazy<string> _platformAppDataDirectory = new(valueFactory: GetDefaultAppDataDirectory);
+
+		internal static string GetDefaultAppDataDirectory()
 		{
 			if (AppInfoUtils.IsPackagedApp)
 			{
@@ -49,13 +51,15 @@ namespace Microsoft.Maui.Storage
 
 				return path;
 			}
-		});
+		}
 
 		static string CleanPath(string path) =>
 			string.Join("_", path.Split(Path.GetInvalidFileNameChars()));
 
 		static string AppSpecificPath =>
-			Path.Combine(CleanPath(AppInfoImplementation.PublisherName), CleanPath(AppInfo.PackageName));
+			Path.Combine(
+				CleanPath(AppInfoImplementation.PublisherName),
+				CleanPath(AppInfoImplementation.GetDefaultPackageName()));
 
 		string PlatformCacheDirectory => _platformCacheDirectory.Value;
 

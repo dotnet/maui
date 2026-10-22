@@ -26,7 +26,8 @@ jobs:
       run: |
         set -exo pipefail
 
-        sudo apt-get install libxml2-utils
+        sudo apt-get update
+        sudo apt-get install --yes libxml2-utils
         DOTNET_VERSION=$(xmllint --xpath '/Project/PropertyGroup/MicrosoftNETSdkPackageVersion/text()' eng/Versions.props)
 
         jq --arg v "$DOTNET_VERSION" '.tools.dotnet = $v' global.json > global.json.tmp

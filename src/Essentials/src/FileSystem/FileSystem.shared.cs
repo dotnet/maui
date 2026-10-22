@@ -78,10 +78,10 @@ namespace Microsoft.Maui.Storage
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IFileSystem Current =>
-			currentImplementation ??= new FileSystemImplementation();
+			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new FileSystemImplementation());
 
 		internal static void SetCurrent(IFileSystem? implementation) =>
-			currentImplementation = implementation;
+			EssentialsImplementation.Set(ref currentImplementation, implementation);
 	}
 
 	/// <summary>

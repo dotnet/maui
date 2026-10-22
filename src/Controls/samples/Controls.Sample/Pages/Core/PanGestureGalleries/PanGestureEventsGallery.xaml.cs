@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnPanGestureRecognizerUpdated(object sender, PanUpdatedEventArgs e)
+		void OnPanGestureRecognizerUpdated(object? sender, PanUpdatedEventArgs e)
 		{
 			InfoLabel.Text = $"StatusType: {e.StatusType}, TotalX: {e.TotalX}, TotalY: {e.TotalY}";
 		}

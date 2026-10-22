@@ -75,12 +75,26 @@ namespace Microsoft.Maui
 
 		public static void InitializeAppServices(this MauiApp mauiApp)
 		{
-			var initServices = mauiApp.Services.GetServices<IMauiInitializeService>();
-			if (initServices is null)
-				return;
+			var initializationSucceeded = false;
+			mauiApp.EnterInitializeAppServices();
+			try
+			{
+				var initServices = mauiApp.Services.GetServices<IMauiInitializeService>();
+				if (initServices is null)
+				{
+					initializationSucceeded = true;
+					return;
+				}
 
-			foreach (var instance in initServices)
-				instance.Initialize(mauiApp.Services);
+				foreach (var instance in initServices)
+					instance.Initialize(mauiApp.Services);
+
+				initializationSucceeded = true;
+			}
+			finally
+			{
+				mauiApp.ExitInitializeAppServices(initializationSucceeded);
+			}
 		}
 
 		public static void InitializeScopedServices(this IMauiContext scopedContext)

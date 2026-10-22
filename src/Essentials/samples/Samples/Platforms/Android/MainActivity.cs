@@ -54,6 +54,8 @@ namespace Samples.Droid
 		}
 	}
 
+	// Custom-scheme fallback registration. HTTPS Auth Tab callbacks instead require a matching
+	// Digital Asset Links file for this app ID and signing certificate.
 	[Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true)]
 	[IntentFilter(
 		new[] { Intent.ActionView },

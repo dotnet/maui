@@ -11,12 +11,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnTapGestureRecognizerTapped(object sender, EventArgs args)
+		void OnTapGestureRecognizerTapped(object? sender, EventArgs args)
 		{
 			Navigation.PopModalAsync();
 		}
 
-		void OnRTLToggled(object sender, ToggledEventArgs e)
+		void OnRTLToggled(object? sender, ToggledEventArgs e)
 		{
 			var mainPage = this.Window!.Page;
 

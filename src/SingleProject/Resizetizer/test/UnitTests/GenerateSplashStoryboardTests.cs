@@ -82,6 +82,26 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertFile(_storyboard);
 		}
 
+		[Fact]
+		public void RemovesThemedAssetCatalogWhenGeneratingStoryboard()
+		{
+			var assetCatalog = Path.Combine(DestinationDirectory, "Assets.xcassets");
+			Directory.CreateDirectory(Path.Combine(assetCatalog, "MauiSplashImage.imageset"));
+			File.WriteAllText(Path.Combine(assetCatalog, "MauiSplashImage.imageset", "Contents.json"), "{}");
+
+			var splash = new TaskItem("images/appiconfg.svg", new Dictionary<string, string>
+			{
+				["Color"] = "#ffffff",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			Assert.False(Directory.Exists(assetCatalog), "Themed asset catalog should be removed when falling back to storyboard generation.");
+			Assert.True(File.Exists(_storyboard), "Storyboard should be generated.");
+		}
+
 		[Theory]
 		[InlineData(null, "appiconfg.png")]
 		[InlineData("images/CustomAlias.svg", "CustomAlias.png")]

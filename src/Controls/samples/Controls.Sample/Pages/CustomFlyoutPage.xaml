@@ -11,30 +11,30 @@
                 BackgroundColor="Transparent"
                 ItemsSource="{Binding FilteredItems}"
                 SelectionMode="Single"
-                SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Mode=TwoWay}"
-                SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type ContentPage}}}"
+                SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type views:BasePage}}, Mode=TwoWay}"
+                SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type views:BasePage}}}"
                 Margin="6, 12, 6, 0">
                 <CollectionView.ItemsLayout>
-                    <LinearItemsLayout  
-                    Orientation="Vertical"
-                    ItemSpacing="6"/>
+                    <LinearItemsLayout
+                        Orientation="Vertical"
+                        ItemSpacing="6"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border     
-                        Style="{StaticResource GalleryItemContainerStyle}">
+                        <Border
+                            Style="{StaticResource GalleryItemContainerStyle}">
                             <Border.StrokeShape>
-                                <RoundRectangle         
-                                CornerRadius="0" />
+                                <RoundRectangle
+                                    CornerRadius="0"/>
                             </Border.StrokeShape>
                             <Grid>
                                 <StackLayout>
                                     <Label
-                                    Text="{Binding Title}"
-                                    Style="{StaticResource GalleryItemTitleStyle}"/>
+                                        Text="{Binding Title}"
+                                        Style="{StaticResource GalleryItemTitleStyle}"/>
                                     <Label
-                                    Text="{Binding Description}"
-                                    Style="{StaticResource GalleryItemDescriptionStyle}"/>
+                                        Text="{Binding Description}"
+                                        Style="{StaticResource GalleryItemDescriptionStyle}"/>
                                 </StackLayout>
                             </Grid>
                         </Border>

@@ -76,12 +76,62 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData("Debug", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("Release", Skip = AvaloniaBuildSkipReason)]
+	public void BuildMultiProjectWithAvalonia(string config)
+	{
+		SetTestIdentifier(config);
+		var projectDir = TestDirectory;
+		var name = Path.GetFileName(projectDir);
+		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+		// --avalonia on its own produces the Avalonia desktop head and no native heads.
+		Assert.True(DotnetInternal.New("maui-multiproject --avalonia", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui-multiproject. Check test output for errors.");
+
+		var buildProps = BuildProps;
+		buildProps.RemoveAll(p => p.StartsWith("RestoreConfigFile=", StringComparison.Ordinal));
+		buildProps.Add($"RestoreConfigFile={CreateAvaloniaNuGetConfig(projectDir)}");
+
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Solution {name} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
+	[InlineData("Debug", "--android", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("Debug", "--macos", Skip = AvaloniaBuildSkipReason)]
+	public void BuildMultiProjectWithAvaloniaEmbedding(string config, string platformArg)
+	{
+		SetTestIdentifier(config, platformArg);
+		var projectDir = TestDirectory;
+		var name = Path.GetFileName(projectDir);
+		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+		// Combining --avalonia with a native head adds the desktop head and switches the
+		// native head to UseAvaloniaEmbedding.
+		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg} --avalonia", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui-multiproject. Check test output for errors.");
+
+		var buildProps = BuildProps;
+		buildProps.RemoveAll(p => p.StartsWith("RestoreConfigFile=", StringComparison.Ordinal));
+		buildProps.Add($"RestoreConfigFile={CreateAvaloniaNuGetConfig(projectDir)}");
+
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Solution {name} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
 	[InlineData("--android")]
 	[InlineData("--ios")]
 	[InlineData("--windows")]
 	[InlineData("--macos")]
+	[InlineData("--avalonia")]
+	[InlineData("--android --avalonia")]
+	[InlineData("--ios --avalonia")]
+	[InlineData("--windows --avalonia")]
+	[InlineData("--macos --avalonia")]
 	[InlineData("")] // no platform arg means all platforms
-				   // https://github.com/dotnet/maui/issues/28695
+					 // https://github.com/dotnet/maui/issues/28695
 	public void VerifyIncludedPlatformsInSln(string platformArg)
 	{
 		SetTestIdentifier(platformArg);
@@ -102,37 +152,78 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		Assert.True(slnListOutput.Contains($"{name}.csproj", StringComparison.OrdinalIgnoreCase),
 			$"Expected shared project (with name {name}.csproj) to be included in the solution.");
 
-		var expectedCsprojFiles = new List<string> { "Droid.csproj", "iOS.csproj", "Mac.csproj", "WinUI.csproj" };
+		var args = platformArg.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		var avalonia = args.Contains("--avalonia");
 
-		switch (platformArg)
+		// The Avalonia desktop head is opt-in only, so it is absent from the no-platform-arg default.
+		// Any platform arg (including --avalonia) switches from "all native heads" to "only the requested heads".
+		var expectedHeads = new List<string>();
+		if (args.Length == 0 || args.Contains("--android"))
+			expectedHeads.Add("Droid");
+		if (args.Length == 0 || args.Contains("--ios"))
+			expectedHeads.Add("iOS");
+		if (args.Length == 0 || args.Contains("--macos"))
+			expectedHeads.Add("Mac");
+		if (args.Length == 0 || args.Contains("--windows"))
+			expectedHeads.Add("WinUI");
+		if (avalonia)
+			expectedHeads.Add("Desktop");
+
+		// Match the full head project filename so a shared project name ending in a head suffix cannot produce a false positive.
+		var allHeads = new[] { "Droid", "iOS", "Mac", "WinUI", "Desktop" };
+		foreach (var head in allHeads.Except(expectedHeads))
 		{
-			case "--android":
-				expectedCsprojFiles.Remove("iOS.csproj");
-				expectedCsprojFiles.Remove("WinUI.csproj");
-				expectedCsprojFiles.Remove("Mac.csproj");
-				break;
-			case "--ios":
-				expectedCsprojFiles.Remove("Droid.csproj");
-				expectedCsprojFiles.Remove("WinUI.csproj");
-				expectedCsprojFiles.Remove("Mac.csproj");
-				break;
-			case "--windows":
-				expectedCsprojFiles.Remove("Droid.csproj");
-				expectedCsprojFiles.Remove("iOS.csproj");
-				expectedCsprojFiles.Remove("Mac.csproj");
-				break;
-			case "--macos":
-				expectedCsprojFiles.Remove("Droid.csproj");
-				expectedCsprojFiles.Remove("iOS.csproj");
-				expectedCsprojFiles.Remove("WinUI.csproj");
-				break;
+			Assert.False(slnListOutput.Contains($"{name}.{head}.csproj", StringComparison.Ordinal),
+				$"Expected {name}.{head}.csproj to NOT be included in the solution.");
 		}
 
 		// Depending on the platform argument, we assert if the expected projects are included in the solution
-		foreach (var platformCsproj in expectedCsprojFiles)
+		foreach (var head in expectedHeads)
 		{
-			Assert.True(slnListOutput.Contains(platformCsproj, StringComparison.Ordinal),
-				$"Expected {platformCsproj} to be included in the solution.");
+			Assert.True(slnListOutput.Contains($"{name}.{head}.csproj", StringComparison.Ordinal),
+				$"Expected {name}.{head}.csproj to be included in the solution.");
+		}
+
+		// The template engine silently drops conditional blocks whose symbol is unknown, so check the
+		// generated content of the shared project and every native head rather than just solution membership.
+		var sharedCsproj = File.ReadAllText(Path.Combine(projectDir, name, $"{name}.csproj"));
+		AssertAvaloniaEmbedding(avalonia, sharedCsproj, mauiProgram: null);
+
+		foreach (var head in expectedHeads.Where(h => h != "Desktop"))
+		{
+			var headDir = Path.Combine(projectDir, $"{name}.{head}");
+			var headCsproj = File.ReadAllText(Path.Combine(headDir, $"{name}.{head}.csproj"));
+			var mauiProgram = File.ReadAllText(Path.Combine(headDir, "MauiProgram.cs"));
+			AssertAvaloniaEmbedding(avalonia, headCsproj, mauiProgram);
+		}
+
+		if (avalonia)
+		{
+			var desktopDir = Path.Combine(projectDir, $"{name}.Desktop");
+			AssertContains("Include=\"Avalonia.Controls.Maui.Desktop\"", File.ReadAllText(Path.Combine(desktopDir, $"{name}.Desktop.csproj")));
+			AssertContains(".UseAvaloniaApp(", File.ReadAllText(Path.Combine(desktopDir, "MauiProgram.cs")));
+		}
+		else
+		{
+			Assert.False(Directory.Exists(Path.Combine(projectDir, $"{name}.Desktop")),
+				$"Expected {name}.Desktop to NOT be generated without --avalonia.");
+		}
+	}
+
+	void AssertAvaloniaEmbedding(bool expected, string csproj, string? mauiProgram)
+	{
+		if (expected)
+		{
+			AssertContains("Include=\"Avalonia.Controls.Maui\"", csproj);
+			AssertContains("<AvaloniaControlsMauiGenerateBootstrap>", csproj);
+			if (mauiProgram is not null)
+				AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
+		}
+		else
+		{
+			AssertDoesNotContain("Avalonia", csproj);
+			if (mauiProgram is not null)
+				AssertDoesNotContain("Avalonia", mauiProgram);
 		}
 	}
 }

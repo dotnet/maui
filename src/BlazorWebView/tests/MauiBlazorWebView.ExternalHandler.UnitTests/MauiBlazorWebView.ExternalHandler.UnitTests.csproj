@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    This project deliberately does NOT get InternalsVisibleTo from
+    Microsoft.AspNetCore.Components.WebView.Maui. It stands in for a third-party BlazorWebView
+    backend package (for example, an out-of-repo Tizen backend) and must compile using only the
+    public API surface. See ExternalHandlerContractTests for the assertion that enforces this.
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Microsoft.Maui.MauiBlazorWebView.ExternalHandler.UnitTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.MauiBlazorWebView.ExternalHandler.UnitTests</AssemblyName>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      A real third-party backend package would reference the Microsoft.Maui.Controls NuGet package.
+      In-repo, the equivalent is referencing Core and Controls.Core directly, because the
+      BlazorWebView project marks them PrivateAssets="all".
+    -->
+    <ProjectReference Include="..\..\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+  </ItemGroup>
+
+</Project>
