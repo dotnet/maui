@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
@@ -80,7 +82,7 @@ public class Issue17389 : _IssuesUITest
 
 		foreach (var layout in layouts)
 		{
-			App.Tap(layout);
+			TapLayout(layout);
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Enabled tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
@@ -89,11 +91,30 @@ public class Issue17389 : _IssuesUITest
 
 		foreach (var layout in layouts)
 		{
-			App.Tap(layout);
+			TapLayout(layout);
 			TestContext.WriteLine($"{DateTime.UtcNow:O} Transparent tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
 		App.WaitForElement("Tap count: 0");
+	}
+
+	void TapLayout(string layout)
+	{
+		if (App is not AppiumCatalystApp catalystApp)
+		{
+			App.Tap(layout);
+			return;
+		}
+
+		var rect = App.FindElement(layout).GetRect();
+		var mouse = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+		var sequence = new ActionSequence(mouse, 0);
+		sequence.AddAction(mouse.CreatePointerMove(CoordinateOrigin.Viewport,
+			(int)rect.CenterX(), (int)rect.CenterY(), TimeSpan.FromMilliseconds(5)));
+		sequence.AddAction(mouse.CreatePointerDown(PointerButton.TouchContact));
+		sequence.AddAction(mouse.CreatePause(TimeSpan.FromMilliseconds(100)));
+		sequence.AddAction(mouse.CreatePointerUp(PointerButton.TouchContact));
+		catalystApp.Driver.PerformActions([sequence]);
 	}
 
 	[Test, Order(2)]
