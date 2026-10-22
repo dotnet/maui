@@ -19,6 +19,35 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact(DisplayName = "CollectionView Header Keeps Its BindingContext")]
+		public async Task CollectionViewHeaderKeepsItsBindingContext()
+		{
+			SetupBuilder();
+
+			var context = new object();
+			var header = new Label();
+			var footer = new Label();
+			var lostContext = 0;
+			header.BindingContextChanged += (_, _) => { if (header.BindingContext is null) lostContext++; };
+			footer.BindingContextChanged += (_, _) => { if (footer.BindingContext is null) lostContext++; };
+
+			var collectionView = new CollectionView
+			{
+				BindingContext = context,
+				Header = header,
+				Footer = footer,
+				ItemsSource = new ObservableCollection<string> { "Item 1" },
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, handler =>
+			{
+				Assert.Same(context, header.BindingContext);
+				Assert.Same(context, footer.BindingContext);
+				Assert.Equal(0, lostContext);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView Disconnects Correctly")]
 		public async Task CollectionViewHandlerDisconnects()
 		{
