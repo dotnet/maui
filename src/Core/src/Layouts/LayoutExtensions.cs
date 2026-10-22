@@ -173,7 +173,9 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			// Collapsed content takes no space, as in the layout managers. Android measures a GONE view
+			// at its full size, so without this check a hidden child kept its height there.
+			if (content != null && content.Visibility != Visibility.Collapsed)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);
@@ -204,7 +206,7 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			if (content != null && content.Visibility != Visibility.Collapsed)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);
