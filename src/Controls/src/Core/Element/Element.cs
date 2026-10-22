@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 
-		Dictionary<BindableProperty, (string, SetterSpecificity)> _dynamicResources;
+		Dictionary<BindableProperty, SetterSpecificityList<string>> _dynamicResources;
 
 		IEffectControlProvider _effectControlProvider;
 
@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
+		Dictionary<BindableProperty, SetterSpecificityList<string>> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, SetterSpecificityList<string>>());
 
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
@@ -461,9 +461,13 @@ namespace Microsoft.Maui.Controls
 			HashSet<string> dynamicResourceKeys = null;
 			foreach (var dynamicResource in _dynamicResources)
 			{
-				var dynamicResourceKey = dynamicResource.Value.Item1;
-				if (!string.IsNullOrEmpty(dynamicResourceKey))
-					(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
+				var specificities = dynamicResource.Value;
+				for (var i = 0; i < specificities.Count; i++)
+				{
+					var dynamicResourceKey = specificities.GetValueAt(i);
+					if (!string.IsNullOrEmpty(dynamicResourceKey))
+						(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
+				}
 			}
 
 			return RealParent.GetMergedResourcesForKeys(dynamicResourceKeys);
@@ -795,13 +799,30 @@ namespace Microsoft.Maui.Controls
 			OnResourcesChanged(values);
 		}
 
-		internal override void OnRemoveDynamicResource(BindableProperty property)
+		internal override bool OnRemoveDynamicResource(BindableProperty property, SetterSpecificity specificity)
 		{
-			DynamicResources.Remove(property);
+			if (_dynamicResources == null || !_dynamicResources.TryGetValue(property, out var specificities))
+				return base.OnRemoveDynamicResource(property, specificity);
 
-			if (DynamicResources.Count == 0)
+			specificities.Remove(specificity);
+
+			if (specificities.Count > 0)
+			{
+				// A lower-specificity registration is still live -- a style's, under the visual
+				// state's that is going away. Republish it so the property keeps tracking.
+				var restored = specificities.GetSpecificityAndValue();
+				if (this.TryGetResource(restored.Value, out var value))
+					OnResourceChanged(property, value, restored.Key);
+
+				base.OnRemoveDynamicResource(property, specificity);
+				return false;
+			}
+
+			_dynamicResources.Remove(property);
+			if (_dynamicResources.Count == 0)
 				_dynamicResources = null;
-			base.OnRemoveDynamicResource(property);
+
+			return base.OnRemoveDynamicResource(property, specificity);
 		}
 
 		internal virtual void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
@@ -826,16 +847,21 @@ namespace Microsoft.Maui.Controls
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				List<(BindableProperty, SetterSpecificity)> changedResources = null;
-				foreach (KeyValuePair<BindableProperty, (string, SetterSpecificity)> dynR in DynamicResources)
+				foreach (KeyValuePair<BindableProperty, SetterSpecificityList<string>> dynR in DynamicResources)
 				{
 					// when the DynamicResource bound to a BindableProperty is
 					// changing then the BindableProperty needs to be refreshed;
-					// The .Value.Item1 is the name of DynamicResouce to which the BindableProperty is bound.
+					// A property can carry one registration per specificity (a style's and a
+					// visual state's, say); each is refreshed at its own specificity.
 					// The .Key is the name of the DynamicResource whose value is changing.
-					if (dynR.Value.Item1 != value.Key)
-						continue;
-					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
-					changedResources.Add((dynR.Key, dynR.Value.Item2));
+					var specificities = dynR.Value;
+					for (var i = 0; i < specificities.Count; i++)
+					{
+						if (specificities.GetValueAt(i) != value.Key)
+							continue;
+						changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
+						changedResources.Add((dynR.Key, specificities.GetSpecificityAt(i)));
+					}
 				}
 				if (changedResources == null)
 					continue;
@@ -855,8 +881,9 @@ namespace Microsoft.Maui.Controls
 		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			base.OnSetDynamicResource(property, key, specificity);
-			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 <= specificity)
-				DynamicResources[property] = (key, specificity);
+			if (!DynamicResources.TryGetValue(property, out var specificities))
+				DynamicResources[property] = specificities = new SetterSpecificityList<string>(2);
+			specificities[specificity] = key;
 			if (this.TryGetResource(key, out var value))
 				OnResourceChanged(property, value, specificity);
 		}

@@ -14,7 +14,7 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 
 #if IOS || MACCATALYST
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SearchHandlerSizesCorrectly()
 	{
 		App.WaitForElement("Instructions", timeout: TimeSpan.FromSeconds(45));
@@ -28,7 +28,7 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 	// Therefore, verify it using VerifyScreenshot.
 #if ANDROID || WINDOWS
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifySearchHandlerItemsAreVisible()
 	{
 		App.WaitForElement("Instructions");

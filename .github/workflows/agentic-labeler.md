@@ -15,6 +15,7 @@ description: |
 # ###############################################################
 imports:
   - shared/gpt-6.1-sol.md
+  - shared/threat-detection.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
