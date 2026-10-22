@@ -21,6 +21,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Func<View> GetView { get; }
 		Func<AView> GetControl { get; }
+		internal bool HasClickablePlatformViewInHierarchy
+		{
+			get
+			{
+				var platformView = GetControl();
+				while (platformView is not null)
+				{
+					if (platformView.Clickable)
+						return true;
+
+					platformView = platformView.Parent as AView;
+				}
+
+				return false;
+			}
+		}
 
 		public bool OnHover(AView control, MotionEvent e)
 		{

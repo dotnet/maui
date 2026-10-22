@@ -1,0 +1,155 @@
+diff --git a/pkg/actionpins/data/action_pins.json b/pkg/actionpins/data/action_pins.json
+index c24fc6e..50d86c4 100644
+--- a/pkg/actionpins/data/action_pins.json
++++ b/pkg/actionpins/data/action_pins.json
+@@ -417,0 +418,5 @@
++    "ghcr.io/github/gh-aw-mcpg:v0.4.30": {
++      "image": "ghcr.io/github/gh-aw-mcpg:v0.4.30",
++      "digest": "sha256:ab5a436a1490438db473e4e3d4c973cb1d75e3cb233fb08b73d31b42d7d18fba",
++      "pinned_image": "ghcr.io/github/gh-aw-mcpg:v0.4.30@sha256:ab5a436a1490438db473e4e3d4c973cb1d75e3cb233fb08b73d31b42d7d18fba"
++    },
+diff --git a/pkg/constants/version_constants.go b/pkg/constants/version_constants.go
+index f7b21b6..e3ebf91 100644
+--- a/pkg/constants/version_constants.go
++++ b/pkg/constants/version_constants.go
+@@ -188 +188 @@ const CopilotNoAskUserMinVersion Version = "1.0.19"
+-const DefaultMCPGatewayVersion Version = "v0.4.14"
++const DefaultMCPGatewayVersion Version = "v0.4.30"
+diff --git a/pkg/workflow/codex_mcp.go b/pkg/workflow/codex_mcp.go
+index 9dea218..418704a 100644
+--- a/pkg/workflow/codex_mcp.go
++++ b/pkg/workflow/codex_mcp.go
+@@ -254 +254 @@ func (e *CodexEngine) renderCodexMCPConfigWithContext(yaml *strings.Builder, too
+-		GuardPolicies:            deriveWriteSinkGuardPolicyFromWorkflow(workflowData),
++		GuardPolicies:            deriveWriteSinkGuardPolicyForServer(workflowData, toolName),
+@@ -279 +279 @@ func (e *CodexEngine) renderCodexJSONMCPConfigWithContext(yaml *strings.Builder,
+-		GuardPolicies:            deriveWriteSinkGuardPolicyFromWorkflow(workflowData),
++		GuardPolicies:            deriveWriteSinkGuardPolicyForServer(workflowData, toolName),
+diff --git a/pkg/workflow/copilot_engine_tools.go b/pkg/workflow/copilot_engine_tools.go
+index 8c302e7..f78292a 100644
+--- a/pkg/workflow/copilot_engine_tools.go
++++ b/pkg/workflow/copilot_engine_tools.go
+@@ -202,19 +202,7 @@ func (e *CopilotEngine) computeCopilotToolArguments(tools map[string]any, safeOu
+-				if allowed, hasAllowed := toolConfigMap["allowed"]; hasAllowed {
+-					if allowedList, ok := allowed.([]any); ok {
+-						// Process allowed list in a single pass
+-						hasWildcard := false
+-						for _, allowedTool := range allowedList {
+-							if toolStr, ok := allowedTool.(string); ok {
+-								if toolStr == "*" {
+-									// Wildcard means allow entire GitHub MCP server
+-									hasWildcard = true
+-								} else {
+-									// Add individual tool permission
+-									args = append(args, "--allow-tool", fmt.Sprintf("github(%s)", toolStr))
+-								}
+-							}
+-						}
+-
+-						// Add server-level permission only if wildcard was present
+-						if hasWildcard {
+-							args = append(args, "--allow-tool", "github")
++				if _, hasAllowed := toolConfigMap["allowed"]; hasAllowed {
++					hasWildcard := false
++					for _, toolName := range getGitHubAllowedTools(toolConfigMap) {
++						if toolName == "*" {
++							hasWildcard = true
++						} else {
++							args = append(args, "--allow-tool", fmt.Sprintf("github(%s)", toolName))
+@@ -222,0 +211,3 @@ func (e *CopilotEngine) computeCopilotToolArguments(tools map[string]any, safeOu
++					if hasWildcard {
++						args = append(args, "--allow-tool", "github")
++					}
+diff --git a/pkg/workflow/copilot_mcp.go b/pkg/workflow/copilot_mcp.go
+index 50dfbfc..9b42f92 100644
+--- a/pkg/workflow/copilot_mcp.go
++++ b/pkg/workflow/copilot_mcp.go
+@@ -78 +78 @@ func (e *CopilotEngine) renderCopilotMCPConfigWithContext(yaml *strings.Builder,
+-		GuardPolicies:            deriveWriteSinkGuardPolicyFromWorkflow(workflowData),
++		GuardPolicies:            deriveWriteSinkGuardPolicyForServer(workflowData, toolName),
+diff --git a/pkg/workflow/data/action_pins.json b/pkg/workflow/data/action_pins.json
+index c24fc6e..50d86c4 100644
+--- a/pkg/workflow/data/action_pins.json
++++ b/pkg/workflow/data/action_pins.json
+@@ -417,0 +418,5 @@
++    "ghcr.io/github/gh-aw-mcpg:v0.4.30": {
++      "image": "ghcr.io/github/gh-aw-mcpg:v0.4.30",
++      "digest": "sha256:ab5a436a1490438db473e4e3d4c973cb1d75e3cb233fb08b73d31b42d7d18fba",
++      "pinned_image": "ghcr.io/github/gh-aw-mcpg:v0.4.30@sha256:ab5a436a1490438db473e4e3d4c973cb1d75e3cb233fb08b73d31b42d7d18fba"
++    },
+diff --git a/pkg/workflow/mcp_config_custom.go b/pkg/workflow/mcp_config_custom.go
+index 36d25c2..13a569c 100644
+--- a/pkg/workflow/mcp_config_custom.go
++++ b/pkg/workflow/mcp_config_custom.go
+@@ -34 +34 @@ func renderCustomMCPConfigWrapperWithContext(yaml *strings.Builder, toolName str
+-		GuardPolicies:            deriveWriteSinkGuardPolicyFromWorkflow(workflowData),
++		GuardPolicies:            deriveWriteSinkGuardPolicyForServer(workflowData, toolName),
+diff --git a/pkg/workflow/mcp_github_config.go b/pkg/workflow/mcp_github_config.go
+index fc791ed..4840bc6 100644
+--- a/pkg/workflow/mcp_github_config.go
++++ b/pkg/workflow/mcp_github_config.go
+@@ -65,0 +66 @@ import (
++	"slices"
+@@ -598,0 +600,14 @@ func deriveWriteSinkGuardPolicyFromWorkflow(workflowData *WorkflowData) map[stri
++func deriveWriteSinkGuardPolicyForServer(workflowData *WorkflowData, serverID string) map[string]any {
++	policy := deriveWriteSinkGuardPolicyFromWorkflow(workflowData)
++	if policy == nil || workflowData.ParsedTools == nil || workflowData.ParsedTools.GitHub == nil {
++		return policy
++	}
++	exemptServers, ok := workflowData.ParsedTools.GitHub.PrivateToPublicFlows.([]string)
++	if ok && slices.Contains(exemptServers, serverID) {
++		if writeSink, ok := policy["write-sink"].(map[string]any); ok {
++			delete(writeSink, "sink-visibility")
++		}
++	}
++	return policy
++}
++
+diff --git a/pkg/workflow/mcp_renderer_builtin.go b/pkg/workflow/mcp_renderer_builtin.go
+index c4c3e65..7a8bdab 100644
+--- a/pkg/workflow/mcp_renderer_builtin.go
++++ b/pkg/workflow/mcp_renderer_builtin.go
+@@ -127 +127 @@ func (r *MCPConfigRendererUnified) renderSafeOutputsTOML(yaml *strings.Builder,
+-	guardPolicies := deriveWriteSinkGuardPolicyFromWorkflow(workflowData)
++	guardPolicies := deriveWriteSinkGuardPolicyForServer(workflowData, constants.SafeOutputsMCPServerID.String())
+@@ -340 +340 @@ func renderSafeOutputsMCPConfigWithOptions(yaml *strings.Builder, isLast bool, i
+-	guardPolicies := deriveWriteSinkGuardPolicyFromWorkflow(workflowData)
++	guardPolicies := deriveWriteSinkGuardPolicyForServer(workflowData, constants.SafeOutputsMCPServerID.String())
+diff --git a/pkg/workflow/strict_mode_network_validation.go b/pkg/workflow/strict_mode_network_validation.go
+index 6fc05b5..a2d5d85 100644
+--- a/pkg/workflow/strict_mode_network_validation.go
++++ b/pkg/workflow/strict_mode_network_validation.go
+@@ -11,0 +12,2 @@ import (
++
++	"github.com/github/gh-aw/pkg/constants"
+@@ -264,0 +267,3 @@ func validatePrivateToPublicFlowsServerIDs(workflowData *WorkflowData) error {
++	if HasSafeOutputsEnabled(workflowData.SafeOutputs) {
++		validIDs[constants.SafeOutputsMCPServerID.String()] = struct{}{}
++	}
+diff --git a/pkg/workflow/tools.go b/pkg/workflow/tools.go
+index 97936f4..7174109 100644
+--- a/pkg/workflow/tools.go
++++ b/pkg/workflow/tools.go
+@@ -577,21 +577 @@ func (c *Compiler) applyDefaultTools(tools map[string]any, safeOutputs *SafeOutp
+-		// Parse the existing GitHub tool configuration for type safety
+-		parsedConfig := parseGitHubTool(githubTool)
+-
+-		// Create a set of existing tools for efficient lookup
+-		existingToolsSet := make(map[string]struct{})
+-		if parsedConfig != nil {
+-			for _, tool := range parsedConfig.Allowed {
+-				existingToolsSet[string(tool)] = struct{}{}
+-			}
+-		}
+-
+-		// Only set allowed tools if explicitly configured
+-		// Don't add default tools - let the MCP server use all available tools
+-		if len(existingToolsSet) > 0 {
+-			// Convert back to []any for the map
+-			existingAllowed := make([]any, 0, len(parsedConfig.Allowed))
+-			for _, tool := range parsedConfig.Allowed {
+-				existingAllowed = append(existingAllowed, string(tool))
+-			}
+-			githubConfig["allowed"] = existingAllowed
+-		}
++		// Keep raw allowed entries: the typed parser retains names but discards call limits.

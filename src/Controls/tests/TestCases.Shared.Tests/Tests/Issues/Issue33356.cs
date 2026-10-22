@@ -15,7 +15,7 @@ public class Issue33356 : _IssuesUITest
 	public override string Issue => "Navigate should occur when an item got selected";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void Issue33356NavigateShouldOccur()
 	{
 		App.WaitForElement("Issue33356CatsCollectionView");

@@ -126,10 +126,10 @@ Task("uitest-build")
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
-	.Does(() =>
+	.Does(() => RunUITestSetupWithRetry(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation, headless);
-	});
+	}));
 
 Task("uitest")
 	.IsDependentOn("uitest-prepare")
@@ -275,40 +275,19 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
 	var appiumLog = $"{binDir}/appium_{platform}_{resultsFileName}.log";
 
-	DotNetBuild(project, new DotNetBuildSettings
+	RunUITestSetupWithRetry(() => DotNetBuild(project, new DotNetBuildSettings
 	{
 		Configuration = config,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=ANDROID")
 			.Append("/bl:" + binlog)
-	});
+	}));
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
-	int numOfRetries = 0;
-
-	if (IsCIBuild())
-		numOfRetries = 1;
-
 	Information("Run UITests  project {0}", project);
-	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
-	{
-		try
-		{
-			Information("Retry UITests run Count: {0}", retryCount);
-			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
-			break;
-		}
-		catch(Exception)
-		{
-			if (retryCount == numOfRetries)
-			{
-				WriteLogCat();
-				throw;
-			}
-		}
-	}
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat());
 	Information("UI Tests completed.");
 }
 

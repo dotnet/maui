@@ -199,7 +199,7 @@ function New-MissingAgentPhaseContent {
 
 The Copilot expert-review task ended before this phase was persisted, usually because the review-stage time budget expired or the CI agent encountered a transient authentication/runtime problem. Earlier completed sections remain valid, but this review is **incomplete** without this phase.
 
-**Next step:** re-comment ``/review`` to retry on a fresh agent. If this repeats across runs, a maintainer should inspect the reviewer token and Task 3 logs.
+**Next step:** retry the local full-review command and inspect its logs if this repeats. The hosted ``/review gate`` command refreshes existing-test verification only, not expert analysis.
 "@
 }
 
@@ -234,7 +234,7 @@ The automated **test-verification gate** did not complete on this run. It was st
 - Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
 - The rest of the review below (expert analysis and findings) ran as usual.
 
-**Next step:** re-comment `/review` to retry the gate on a fresh agent.
+**Next step:** re-comment `/review gate` to retry existing-test verification on a fresh agent.
 '@
     }
 
@@ -1064,7 +1064,7 @@ The automated **test-verification gate** produced a **$verdictUpper** verdict, b
 - The trusted gate verdict above is authoritative for the review decision.
 - Any deep UI test results for this run are shown below.
 
-**Next step:** re-comment ``/review`` to get a full report on a fresh agent.
+**Next step:** retry the local full review to obtain its complete report. Use ``/review gate`` only to refresh existing-test verification.
 "@
         $gateSection = @"
 <details open>
@@ -1116,7 +1116,7 @@ if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
         $reviewEvent = 'COMMENT'
         $snapshotNotice = @"
 > [!WARNING]
-> This run reviewed commit [``$commitSha7``]($commitUrl), but the PR advanced to [``$currentHeadSha7``]($currentHeadUrl) while it was running. These results are informational; re-run ``/review`` for the current head.
+> This run reviewed commit [``$commitSha7``]($commitUrl), but the PR advanced to [``$currentHeadSha7``]($currentHeadUrl) while it was running. These results are informational; re-run the local full review for the current head, or comment ``/review gate`` for existing-test verification only.
 "@
     }
 }

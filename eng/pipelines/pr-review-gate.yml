@@ -1,0 +1,405 @@
+# Gate-only stages selected by ci-copilot.yml. No Copilot inference runs here.
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: number
+  - name: Platform
+    displayName: 'Target Platform'
+    type: string
+    default: android
+    values:
+      - android
+      - ios
+      - catalyst
+      - windows
+  - name: GateTaskTimeoutMinutes
+    type: number
+  - name: androidPool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: ubuntu-22.04
+  - name: iosPool
+    type: object
+    default:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+  - name: macPool
+    type: object
+    default:
+      name: AcesShared
+  - name: windowsPool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: windows-2022
+
+stages:
+  - stage: ReviewPR
+    displayName: 'Verify PR tests'
+    jobs:
+      - job: Gate
+        displayName: 'Run existing PR tests without and with the fix'
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool: ${{ parameters.androidPool }}
+        ${{ elseif eq(parameters.Platform, 'ios') }}:
+          pool: ${{ parameters.iosPool }}
+        ${{ elseif eq(parameters.Platform, 'catalyst') }}:
+          pool: ${{ parameters.macPool }}
+        ${{ else }}:
+          pool: ${{ parameters.windowsPool }}
+        timeoutInMinutes: 360
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: false
+
+          - bash: |
+              if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer."
+                exit 1
+              fi
+            displayName: 'Validate Parameters'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          - template: pr-gate-setup.yml
+            parameters:
+              PRNumber: ${{ parameters.PRNumber }}
+              Platform: ${{ parameters.Platform }}
+
+          # Only this trusted metadata/setup task has the GitHub token.
+          - bash: |
+              set -euo pipefail
+              git config user.email "copilot-ci@microsoft.com"
+              git config user.name "Copilot CI"
+              cp Directory.Build.Override.props.in Directory.Build.Override.props
+              pwsh -NoProfile -Command '
+                $path = "./Directory.Build.Override.props"
+                $content = Get-Content -LiteralPath $path -Raw
+                $content.Replace("</Project>", "<PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup></Project>") |
+                  Set-Content -LiteralPath $path -Encoding utf8
+              '
+              mkdir -p "$(Build.ArtifactStagingDirectory)/copilot-logs"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" -Platform "${PARAM_PLATFORM}" \
+                -Phase Setup -GateOnly -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md" 2>&1 \
+                | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'
+              SETUP_EXIT=${PIPESTATUS[0]}
+              set -e
+
+              SETUP_RESULT="FAILED"
+              OUTCOME="$(Build.ArtifactStagingDirectory)/setup-outcome.txt"
+              if [ -f "$OUTCOME" ]; then
+                RAW=$(tr -d '\r\n' < "$OUTCOME")
+                case "$RAW" in
+                  COMPLETED|MERGE_CONFLICT) SETUP_RESULT="$RAW" ;;
+                esac
+              fi
+              if [ "$SETUP_EXIT" -ne 0 ] && [ "$SETUP_RESULT" = "COMPLETED" ]; then
+                SETUP_RESULT="FAILED"
+              fi
+              HEAD_SHA=""
+              BASE_SHA=""
+              SNAPSHOT="$(Build.ArtifactStagingDirectory)/review-snapshot.json"
+              if [ "$SETUP_RESULT" = "COMPLETED" ]; then
+                HEAD_SHA=$(SNAPSHOT="$SNAPSHOT" pwsh -NoProfile -Command \
+                  '(Get-Content -Raw -LiteralPath $env:SNAPSHOT | ConvertFrom-Json).prHeadSha' | tr -d '\r\n')
+                BASE_SHA=$(SNAPSHOT="$SNAPSHOT" pwsh -NoProfile -Command \
+                  '(Get-Content -Raw -LiteralPath $env:SNAPSHOT | ConvertFrom-Json).baseSha' | tr -d '\r\n')
+                if ! [[ "$HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                   ! [[ "$BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                  echo "##vso[task.logissue type=error]Setup did not provide immutable commit identities."
+                  SETUP_RESULT="FAILED"
+                  HEAD_SHA=""
+                  BASE_SHA=""
+                fi
+              fi
+              echo "##vso[task.setvariable variable=setupResult;isOutput=true;isReadOnly=true]$SETUP_RESULT"
+              echo "##vso[task.setvariable variable=reviewedPrHeadSha;isOutput=true;isReadOnly=true]$HEAD_SHA"
+              echo "##vso[task.setvariable variable=reviewedBaseSha;isOutput=true;isReadOnly=true]$BASE_SHA"
+              if [ "$SETUP_EXIT" -ne 0 ] || [ "$SETUP_RESULT" != "COMPLETED" ]; then
+                echo "##vso[task.logissue type=warning]Gate setup did not complete; no test outcome is claimed."
+                echo "##vso[task.setvariable variable=SetupFailed]true"
+              fi
+            name: RunSetup
+            displayName: 'Setup immutable gate snapshot'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+
+          # Gate uses the captured base SHA and local diff. No GitHub/Copilot
+          # credential is passed to this task or its PR-controlled subprocesses.
+          - bash: |
+              set -euo pipefail
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" -Platform "${PARAM_PLATFORM}" \
+                -Phase Gate -GateOnly -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md" 2>&1 \
+                | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'
+              GATE_EXIT=${PIPESTATUS[0]}
+              set -e
+
+              VERDICT="INCONCLUSIVE"
+              VERDICT_FILE="$(Build.ArtifactStagingDirectory)/gate-result.txt"
+              if [ -f "$VERDICT_FILE" ]; then
+                RAW=$(tr -d '\r\n' < "$VERDICT_FILE")
+                case "$RAW" in
+                  PASSED|FAILED|SKIPPED|INCONCLUSIVE) VERDICT="$RAW" ;;
+                  *) echo "##vso[task.logissue type=warning]Invalid gate verdict; reporting INCONCLUSIVE." ;;
+                esac
+              fi
+              if [ "$GATE_EXIT" -ne 0 ] && [ "$VERDICT" != "FAILED" ]; then
+                echo "##vso[task.logissue type=warning]Gate execution stopped with exit $GATE_EXIT; reporting INCONCLUSIVE."
+                VERDICT="INCONCLUSIVE"
+              fi
+              if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then
+                echo "##vso[task.logissue type=warning]The protected target branch failed to build MSBuild tasks; no PR verification is claimed."
+                VERDICT="INCONCLUSIVE"
+              fi
+              echo "##vso[task.setvariable variable=gateResult;isOutput=true;isReadOnly=true]$VERDICT"
+              if [ "$VERDICT" = "FAILED" ]; then
+                echo "##vso[task.setvariable variable=GateFailed]true"
+              fi
+            name: RunGate
+            displayName: 'Gate: verify existing PR tests'
+            condition: and(succeededOrFailed(), eq(variables['RunSetup.setupResult'], 'COMPLETED'))
+            timeoutInMinutes: ${{ parameters.GateTaskTimeoutMinutes }}
+            continueOnError: true
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+              BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
+              GATE_TASK_TIMEOUT_MINUTES: ${{ parameters.GateTaskTimeoutMinutes }}
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = Join-Path "$(Build.ArtifactStagingDirectory)" "trusted-github"
+              . (Join-Path $trusted "scripts/shared/Copy-BoundedDiagnosticFile.ps1")
+              . (Join-Path $trusted "scripts/shared/Export-ExpectedPRAgentArtifact.ps1")
+              $result = Export-ExpectedPRAgentArtifact `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                -DestinationRoot "$(Build.ArtifactStagingDirectory)/gate-logs-publish" `
+                -DiagnosticsRoot "$(Build.ArtifactStagingDirectory)/copilot-logs" `
+                -MaxFileCount 128 -MaxFileBytes 16MB -MaxTotalBytes 128MB
+              Write-Host "Exported $($result.CopiedFiles) bounded gate diagnostic files."
+              Write-Host "##vso[task.setvariable variable=GateLogsReady]true"
+            displayName: 'Export bounded gate artifacts'
+            condition: succeededOrFailed()
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish GateLogs'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/gate-logs-publish'
+              artifact: GateLogs
+              publishLocation: pipeline
+            condition: and(succeededOrFailed(), eq(variables['GateLogsReady'], 'true'))
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Build Logs'
+            inputs:
+              targetPath: '$(LogDirectory)'
+              artifact: BuildLogs
+              publishLocation: pipeline
+            condition: succeededOrFailed()
+            continueOnError: true
+
+          - bash: |
+              if [ "$SETUP_FAILED" = "true" ]; then
+                echo "##vso[task.logissue type=error]Gate setup could not complete."
+                exit 1
+              fi
+              if [ "$GATE_FAILED" = "true" ]; then
+                echo "##vso[task.logissue type=error]The PR test-verification gate failed."
+                exit 1
+              fi
+            displayName: 'Check gate result'
+            condition: succeededOrFailed()
+            env:
+              SETUP_FAILED: $(SetupFailed)
+              GATE_FAILED: $(GateFailed)
+
+      - job: PostGate
+        displayName: 'Post gate-only report'
+        dependsOn: Gate
+        condition: always()
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 20
+        variables:
+          trustedGateResult: $[ dependencies.Gate.outputs['RunGate.gateResult'] ]
+          trustedSetupResult: $[ dependencies.Gate.outputs['RunSetup.setupResult'] ]
+          reviewedPrHeadSha: $[ dependencies.Gate.outputs['RunSetup.reviewedPrHeadSha'] ]
+          reviewedBaseSha: $[ dependencies.Gate.outputs['RunSetup.reviewedBaseSha'] ]
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 1
+            persistCredentials: false
+
+          - pwsh: |
+              if ((git rev-parse HEAD).Trim() -ne "$(Build.SourceVersion)") {
+                throw 'The posting checkout is not the immutable pipeline revision.'
+              }
+              git diff --exit-code -- .github/scripts .github/skills eng/scripts
+              if ($LASTEXITCODE -ne 0) { throw 'Trusted posting scripts were modified.' }
+              Write-Host "##vso[task.setvariable variable=TrustedPostingScripts;isReadOnly=true]true"
+            displayName: 'Check trusted posting revision'
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download GateLogs outside checkout'
+            inputs:
+              buildType: current
+              artifactName: GateLogs
+              targetPath: '$(Pipeline.Workspace)/gate-results'
+            continueOnError: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $verdict = $env:TRUSTED_GATE_RESULT
+              if ([string]::IsNullOrWhiteSpace($verdict)) {
+                Write-Host "##vso[task.logissue type=warning]No gate verdict was produced; publishing INCONCLUSIVE."
+                $verdict = 'INCONCLUSIVE'
+              } elseif ($verdict -notin @('PASSED', 'FAILED', 'SKIPPED', 'INCONCLUSIVE')) {
+                throw 'Unexpected pipeline gate verdict.'
+              }
+              $setup = $env:TRUSTED_SETUP_RESULT
+              if ([string]::IsNullOrWhiteSpace($setup)) { $setup = 'NOT_STARTED' }
+              if ($setup -notin @('COMPLETED', 'MERGE_CONFLICT', 'FAILED', 'NOT_STARTED')) {
+                throw 'Unexpected pipeline setup outcome.'
+              }
+              $target = "$(Agent.TempDirectory)/pr-gate-post"
+              $report = ''
+              try {
+                . ./.github/scripts/shared/Copy-BoundedDiagnosticFile.ps1
+                $root = "$(Pipeline.Workspace)/gate-results"
+                $relative = "CustomAgentLogsTmp/PRState/$([int]$env:PARAM_PR_NUMBER)/PRAgent/gate/content.md"
+                if (-not (Test-Path -LiteralPath (Join-Path $root $relative))) {
+                  $relative = 'copilot_review_output_Setup.md'
+                }
+                $path = $root
+                foreach ($part in @('') + @($relative.Split('/'))) {
+                  if ($part) { $path = Join-Path $path $part }
+                  $item = Get-Item -LiteralPath $path -Force
+                  if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                    throw 'Gate diagnostics contain a reparse point.'
+                  }
+                  if ($path -ne (Join-Path $root $relative) -and -not $item.PSIsContainer) {
+                    throw 'Gate diagnostic ancestors must be regular directories.'
+                  }
+                }
+                if ($item -isnot [IO.FileInfo] -or $item.Length -gt 16MB) {
+                  throw 'Gate diagnostic report must be a regular file no larger than 16 MiB.'
+                }
+                $report = Join-Path $target 'report.md'
+                $null = Copy-BoundedDiagnosticFile -Source $path -Destination $report -MaxBytes 16MB
+              } catch {
+                $report = ''
+                $reason = $_.Exception.Message -replace '\r', '' -replace '##vso\[[^]]*\]', ''
+                Write-Host "##vso[task.logissue type=warning]Gate diagnostics could not be imported: $reason"
+              }
+              if ($verdict -in @('PASSED', 'FAILED') -and (-not $report -or $relative -ne "CustomAgentLogsTmp/PRState/$([int]$env:PARAM_PR_NUMBER)/PRAgent/gate/content.md")) {
+                Write-Host "##vso[task.logissue type=warning]Verification verdict has no gate diagnostic evidence; publishing INCONCLUSIVE."
+                $verdict = 'INCONCLUSIVE'
+              }
+              & ./.github/scripts/Post-PRGate.ps1 `
+                -PRNumber ([int]$env:PARAM_PR_NUMBER) -RunId ([long]$env:BUILD_BUILDID) `
+                -Platform $env:PARAM_PLATFORM -TrustedGateResult $verdict `
+                -ReviewedCommit $env:REVIEWED_PR_HEAD_SHA -BaseCommit $env:REVIEWED_BASE_SHA `
+                -SetupResult $setup `
+                -ReportFile $report
+            name: RunPost
+            displayName: 'Publish gate report and gate signals only'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+              BUILD_BUILDID: $(Build.BuildId)
+              TRUSTED_GATE_RESULT: $(trustedGateResult)
+              TRUSTED_SETUP_RESULT: $(trustedSetupResult)
+              REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
+              REVIEWED_BASE_SHA: $(reviewedBaseSha)
+
+          - pwsh: |
+              & ./.github/scripts/Post-PRGate.ps1 `
+                -PRNumber ([int]$env:PARAM_PR_NUMBER) -RunId ([long]$env:BUILD_BUILDID) `
+                -Platform $env:PARAM_PLATFORM -TrustedGateResult INCONCLUSIVE
+            displayName: 'Report incomplete gate publication'
+            condition: and(always(), eq(variables['TrustedPostingScripts'], 'true'), eq(variables['RunPost.gateCommentId'], ''))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+              BUILD_BUILDID: $(Build.BuildId)
+
+  - stage: CleanupReviewLock
+    displayName: 'Cleanup gate lock'
+    dependsOn: ReviewPR
+    condition: always()
+    jobs:
+      - job: CleanupReviewLock
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 5
+        steps:
+          - checkout: none
+          - bash: |
+              set -euo pipefail
+              for VALUE in "$PARAM_PR_NUMBER" "$BUILD_BUILDID" "$SYSTEM_DEFINITIONID"; do
+                if ! [[ "$VALUE" =~ ^[1-9][0-9]*$ ]]; then
+                  echo "##vso[task.logissue type=warning]Invalid cleanup identity; preserving the gate lock."
+                  exit 0
+                fi
+              done
+              BUILDS_URL="${SYSTEM_COLLECTIONURI%/}/${SYSTEM_TEAMPROJECT}/_apis/build/builds?definitions=${SYSTEM_DEFINITIONID}&statusFilter=notStarted,inProgress,postponed,cancelling&%24top=100&queryOrder=queueTimeDescending&api-version=7.1"
+              if ! BUILDS=$(curl --fail --silent --show-error --location \
+                --oauth2-bearer "$SYSTEM_ACCESSTOKEN" "$BUILDS_URL"); then
+                echo "##vso[task.logissue type=warning]Could not verify active-build ownership; preserving the gate lock."
+                exit 0
+              fi
+              if [ "$(printf '%s' "$BUILDS" | jq '.value | length')" -ge 100 ]; then
+                echo "##vso[task.logissue type=warning]Active-build query reached its limit; preserving the gate lock."
+                exit 0
+              fi
+              if ! OTHER=$(printf '%s' "$BUILDS" | jq -r --arg pr "$PARAM_PR_NUMBER" --argjson current "$BUILD_BUILDID" \
+                '.value[] | select(.id != $current and .status != "completed") |
+                 (.templateParameters.PRNumber // ((.parameters // "{}" | fromjson).PRNumber)) as $target |
+                 select($target == null or ($target | tostring) == $pr) | .id'); then
+                echo "##vso[task.logissue type=warning]Could not parse active-build ownership; preserving the gate lock."
+                exit 0
+              fi
+              if [ -n "$OTHER" ]; then
+                echo "Another gate is active for this PR; preserving its lock."
+                exit 0
+              fi
+              LOCK_PRESENT=$(gh api "repos/dotnet/maui/issues/${PARAM_PR_NUMBER}/labels" \
+                --jq 'any(.[]; .name == "s/agent-review-in-progress")')
+              if [ "$LOCK_PRESENT" = "true" ]; then
+                gh api --method DELETE \
+                  "repos/dotnet/maui/issues/${PARAM_PR_NUMBER}/labels/s%2Fagent-review-in-progress" >/dev/null
+              else
+                echo "Gate lock is already absent."
+              fi
+            displayName: 'Release gate lock after all jobs'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              SYSTEM_COLLECTIONURI: $(System.CollectionUri)
+              SYSTEM_TEAMPROJECT: $(System.TeamProject)
+              SYSTEM_DEFINITIONID: $(System.DefinitionId)
+              BUILD_BUILDID: $(Build.BuildId)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}

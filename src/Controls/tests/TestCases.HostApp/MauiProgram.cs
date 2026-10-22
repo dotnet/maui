@@ -43,7 +43,8 @@ namespace Maui.Controls.Sample
 				.Issue18720TimePickerAddMappers()
 				.Issue28945AddMappers()
 				.Issue25436RegisterNavigationService()
-				.Issue36853RegisterServices();
+				.Issue36853RegisterServices()
+				.Issue38361RegisterServices();
 
 #if IOS || MACCATALYST
 			appBuilder.ConfigureCollectionViewHandlers();
@@ -59,6 +60,7 @@ namespace Maui.Controls.Sample
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
 				handlers.AddHandler(typeof(Issue36749Button), typeof(Issue36749ButtonHandler));
+				handlers.AddHandler(typeof(Issue39061), typeof(Issue39061NavigationRenderer));
 #endif
 #if IOS || MACCATALYST || ANDROID
 				handlers.AddHandler(typeof(UITestEditor), typeof(UITestEditorHandler));

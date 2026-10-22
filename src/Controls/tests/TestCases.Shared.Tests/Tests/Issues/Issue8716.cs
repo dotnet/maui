@@ -12,7 +12,7 @@ public class Issue8716 : _IssuesUITest
 	public override string Issue => "[Shell][Android] The truth is out there...but not on top tab search handlers";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShouldUpdateSearchViewOnPageNavigation()
 	{
 		App.WaitForElement("MainPageButton");

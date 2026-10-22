@@ -1,6 +1,5 @@
-# Pipeline for running GitHub Copilot PR Reviewer Agent
-# This pipeline installs the Copilot CLI and invokes the PR reviewer agent
-# to conduct automated code reviews on pull requests.
+# Pipeline for full /review and existing-test-only /review gate.
+# Full review remains the default; gate-only runs do not invoke Copilot.
 #
 # For more information, see:
 # https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
@@ -24,6 +23,10 @@ parameters:
       - catalyst
       - windows
 
+  - name: GateOnly
+    displayName: 'Verify existing PR tests only'
+    type: boolean
+    default: false
 
   - name: androidPool
     type: object
@@ -78,6 +81,17 @@ variables:
     value: 150
 
 stages:
+- ${{ if eq(parameters.GateOnly, true) }}:
+  - template: pr-review-gate.yml
+    parameters:
+      PRNumber: ${{ parameters.PRNumber }}
+      Platform: ${{ parameters.Platform }}
+      GateTaskTimeoutMinutes: ${{ variables.GateTaskTimeoutMinutes }}
+      androidPool: ${{ parameters.androidPool }}
+      iosPool: ${{ parameters.iosPool }}
+      macPool: ${{ parameters.macPool }}
+      windowsPool: ${{ parameters.windowsPool }}
+- ${{ else }}:
   - stage: ReviewPR
     displayName: 'Review Pull Request'
     jobs:
@@ -858,7 +872,7 @@ stages:
                   cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
                   echo "ADB key pre-authorized for emulator"
                 fi
-                
+
                 echo "=== Starting Emulator ==="
                 # Kill ALL stale emulator processes from previous step retries
                 for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
@@ -873,7 +887,7 @@ stages:
                 adb kill-server 2>/dev/null || true
                 sleep 1
                 adb start-server
-                
+
                 # Retry loop: emulator sometimes fails to connect ADB on first launch
                 MAX_LAUNCH_ATTEMPTS=2
                 EMULATOR_PID=""
@@ -897,7 +911,7 @@ stages:
                   nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
                   EMULATOR_PID=$!
                   echo "Emulator PID: $EMULATOR_PID"
-                  
+
                   echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
                   # Intentionally UNGUARDED (no `|| true`): this step has no `set -e`, so a non-zero
                   # exit (124 on timeout) does NOT abort — the `if [ $? -eq 0 ]` below drives the
@@ -1109,7 +1123,7 @@ stages:
           # UITest.cs picks ios-26 baseline when platformVersion starts with "26."
           - bash: |
               echo "=== Booting iOS Simulator ==="
-              
+
               # Pin the RUN to iOS 26.4 — the OS the ios-26 visual baselines were captured
               # on (PR #35061). The build SDK is newer (26.5, required by the net11 workload)
               # and its matching runtime is installed only so actool can compile; the app
@@ -1219,14 +1233,14 @@ stages:
                 echo "##vso[task.setvariable variable=DEVICE_UDID]"
                 exit 0
               fi
-              
+
               # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
               UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
                 .devices[$rt] // [] |
                 map(select(.name == "iPhone Xs")) |
                 .[0].udid // empty
               ')
-              
+
               # If iPhone Xs doesn't exist, try iPhone 11 Pro (same 1125×2436 resolution)
               if [ -z "$UDID" ]; then
                 UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
@@ -1240,7 +1254,7 @@ stages:
               else
                 echo "Found existing iPhone Xs: $UDID"
               fi
-              
+
               # If neither exists, try to create the right-size device. The selected
               # $RUNTIME can be a Ready-on-disk-but-unenrolled runtime that 'simctl create'
               # rejects with "Invalid runtime" (build 14686795, #36507 ios: create iPhone 11
@@ -1353,7 +1367,7 @@ stages:
                   ')
                 fi
               fi
-              
+
               if [ -z "$UDID" ]; then
                 # GRACEFUL DEGRADE (see the no-runtime branch above): a runtime exists but no
                 # iPhone device could be found or created. Don't nuke the whole review — warn
@@ -1363,7 +1377,7 @@ stages:
                 echo "##vso[task.setvariable variable=DEVICE_UDID]"
                 exit 0
               fi
-              
+
               # Shutdown any other booted simulators to avoid Appium connecting to wrong device
               xcrun simctl list devices booted --json | jq -r '
                 .devices | to_entries | map(.value) | flatten |
@@ -1373,14 +1387,14 @@ stages:
                 echo "Shutting down other simulator: $OTHER_UDID"
                 xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
               done
-              
+
               echo "Booting simulator: $UDID"
               xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
               sleep 10
-              
+
               echo "Booted simulators:"
               xcrun simctl list devices booted
-              
+
               echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
               echo "iOS Simulator UDID: $UDID"
             displayName: 'Boot iOS Simulator'

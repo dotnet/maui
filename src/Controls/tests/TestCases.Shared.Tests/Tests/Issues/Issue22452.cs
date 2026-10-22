@@ -12,7 +12,7 @@ public class Issue22452 : _IssuesUITest
 	public override string Issue => "Fix error when running new template maui app on iOS";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavigationBetweenFlyoutItems()
 	{
 		App.WaitForElement("TabContent");
