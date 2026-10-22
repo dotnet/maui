@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -151,6 +153,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(container, reconnectedContainer);
 				Assert.Same(parent, reconnectedContainer.Parent);
 				Assert.Same(handler.PlatformView, reconnectedContainer.Child);
+				Assert.Null(oldPlatformView.Parent);
+				Assert.DoesNotContain(oldPlatformView, reconnectedContainer.CachedChildren);
 				Assert.False(reconnectedContainer.IsHitTestVisible);
 				Assert.False(handler.PlatformView.IsHitTestVisible);
 				Assert.True(double.IsNaN(handler.PlatformView.Height));
@@ -171,6 +175,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(label, (LabelHandler handler) =>
 			{
+				var oldPlatformView = handler.PlatformView;
 				var container = Assert.IsType<WrapperView>(handler.ContainerView);
 				var originalParent = Assert.IsAssignableFrom<Panel>(container.Parent);
 				var newParent = new Microsoft.UI.Xaml.Controls.Grid();
@@ -196,6 +201,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(newParent, container.Parent);
 				Assert.Same(handler.PlatformView, container.Child);
 				Assert.Same(container, handler.PlatformView.Parent);
+				Assert.Null(oldPlatformView.Parent);
+				Assert.DoesNotContain(oldPlatformView, container.CachedChildren);
 			});
 		}
 
@@ -210,6 +217,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(label, (LabelHandler handler) =>
 			{
+				var oldPlatformView = handler.PlatformView;
 				var container = Assert.IsType<WrapperView>(handler.ContainerView);
 				var parent = Assert.IsAssignableFrom<Panel>(container.Parent);
 
@@ -229,6 +237,72 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(container.Parent);
 				Assert.Same(handler.PlatformView, container.Child);
 				Assert.Contains(handler.PlatformView, container.CachedChildren);
+				Assert.Null(oldPlatformView.Parent);
+				Assert.DoesNotContain(oldPlatformView, container.CachedChildren);
+			});
+		}
+
+		[Fact]
+		public async Task DisconnectingContainerReleasesNativeViewWhileWrapperRemainsAttached()
+		{
+			var label = new Label { BackgroundColor = Colors.Transparent };
+
+			await AttachAndRun(label, async (LabelHandler handler) =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = container.Parent;
+				var reference = DisconnectNativeView(handler);
+
+				Assert.True(handler.HasContainer);
+				Assert.Same(container, handler.ContainerView);
+				Assert.Same(parent, container.Parent);
+				Assert.Null(container.Child);
+				Assert.Empty(container.CachedChildren);
+				Assert.Null(((IElementHandler)handler).PlatformView);
+
+				await AssertionExtensions.WaitForGC(reference);
+
+				Assert.False(reference.IsAlive);
+				GC.KeepAlive(handler);
+				GC.KeepAlive(container);
+			});
+
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			static WeakReference DisconnectNativeView(LabelHandler handler)
+			{
+				var platformView = handler.PlatformView;
+				var reference = new WeakReference(platformView);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Null(platformView.Parent);
+				return reference;
+			}
+		}
+
+		[Fact]
+		public async Task ReconnectingWithoutContainerRestoresNewNativeViewToWrapperSlot()
+		{
+			var label = new Label { BackgroundColor = Colors.Transparent };
+
+			await AttachAndRun(label, (LabelHandler handler) =>
+			{
+				var oldPlatformView = handler.PlatformView;
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = container.Parent;
+
+				((IElementHandler)handler).DisconnectHandler();
+				label.BackgroundColor = null;
+				handler.SetVirtualView(label);
+
+				Assert.False(handler.HasContainer);
+				Assert.Null(handler.ContainerView);
+				Assert.Null(container.Parent);
+				Assert.Null(container.Child);
+				Assert.Empty(container.CachedChildren);
+				Assert.NotSame(oldPlatformView, handler.PlatformView);
+				Assert.Null(oldPlatformView.Parent);
+				Assert.Same(parent, handler.PlatformView.Parent);
 			});
 		}
 
