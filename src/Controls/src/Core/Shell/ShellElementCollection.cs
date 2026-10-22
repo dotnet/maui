@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls
 			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
 		}
 
-		protected void RemoveAndAdd(BaseShellItem item)
+		protected void RestoreDeclarationOrder(BaseShellItem item)
 		{
 			if (!Inner.Contains(item))
 			{
