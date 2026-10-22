@@ -32,7 +32,6 @@ public static class UITestRetry
             throw new InvalidOperationException("The original filter is not an exact category group.");
 
         var categories = originalFilter.Split('|').Select(term => term.Substring("TestCategory=".Length)).ToArray();
-        var originalCategoryFilter = "(" + string.Join(" or ", categories.Select(category => $"cat == {QuoteFilterValue(category)}")) + ")";
         var filters = new HashSet<string>(StringComparer.Ordinal);
         var reportList = reports.ToList();
         var reportCount = 0;
@@ -56,34 +55,13 @@ public static class UITestRetry
 
             foreach (var failure in failures)
             {
-                // Feature-matrix fixtures use ordered tests for navigation and shared state.
-                var fixture = failure.AncestorsAndSelf("test-suite")
-                    .FirstOrDefault(suite => (string)suite.Attribute("type") == "TestFixture");
-                var fixtureClass = (string)fixture?.Attribute("classname");
-                if (fixture != null && string.IsNullOrWhiteSpace(fixtureClass))
-                    throw new InvalidOperationException("A failed fixture is missing its NUnit classname.");
-                var featureMatrix = fixtureClass?.EndsWith("FeatureTests", StringComparison.Ordinal) == true;
-                var categoryNodes = featureMatrix ? fixture.DescendantsAndSelf().Concat(fixture.Ancestors()) : failure.AncestorsAndSelf();
-                var matches = categoryNodes
+                var matches = failure.AncestorsAndSelf()
                     .Elements("properties").Elements("property")
                     .Where(property => (string)property.Attribute("name") == "Category")
                     .Select(property => (string)property.Attribute("value"))
                     .Intersect(categories, StringComparer.OrdinalIgnoreCase).ToList();
                 if (matches.Count == 0)
                     throw new InvalidOperationException("A failure could not be mapped to the original category group.");
-
-                if (featureMatrix)
-                {
-                    var fixtureName = (string)fixture.Attribute("fullname");
-                    if (string.IsNullOrWhiteSpace(fixtureName) ||
-                        reportList.SelectMany(item => item.Descendants("test-suite"))
-                            .Count(suite => (string)suite.Attribute("type") == "TestFixture" &&
-                                (string)suite.Attribute("fullname") == fixtureName) != 1)
-                        throw new InvalidOperationException("A feature-matrix fixture does not have a unique NUnit fullname.");
-                    filters.Add($"({originalCategoryFilter} and test == {QuoteFilterValue(fixtureName)})");
-                    continue;
-                }
-
                 var categoryFilter = "(" + string.Join(" or ", matches.Select(category => $"cat == {QuoteFilterValue(category)}")) + ")";
                 if (failure.Name == "test-case")
                 {

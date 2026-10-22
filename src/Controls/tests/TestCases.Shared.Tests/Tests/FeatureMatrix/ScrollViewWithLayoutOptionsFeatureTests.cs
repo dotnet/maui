@@ -9,6 +9,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : _GalleryUITest
 {
 	public const string ScrollViewWithLayoutOptionsFeatureMatrix = "ScrollView With LayoutOptions Feature Matrix";
 	public override string GalleryPageName => ScrollViewWithLayoutOptionsFeatureMatrix;
+	protected override string GallerySubPageButton => "ScrollViewWithLayoutOptionsButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string HorizontalStart = "HorizontalStart";
@@ -36,8 +37,6 @@ public class ScrollViewWithLayoutOptionsFeatureTests : _GalleryUITest
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyLayoutWithOrientationVertical_HorizontalOptionsStart()
 	{
-		App.WaitForElement("ScrollViewWithLayoutOptionsButton");
-		App.Tap("ScrollViewWithLayoutOptionsButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(HorizontalStart);

@@ -9,6 +9,7 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerCheckBoxFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerCheckBoxFeatureTests;
+	protected override string GallerySubPageButton => "VSMCheckBoxButton";
 
 	public VisualStateManager_CheckBoxFeatureTests(TestDevice device)
 		: base(device)
@@ -18,8 +19,6 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_CheckBox_InitialState()
 	{
-		App.WaitForElement("VSMCheckBoxButton");
-		App.Tap("VSMCheckBoxButton");
 		App.WaitForElement("CheckBoxState");
 		var stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
