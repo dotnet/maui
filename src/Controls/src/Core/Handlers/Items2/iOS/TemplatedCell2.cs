@@ -120,7 +120,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				var constraints = GetMeasureConstraints(preferredAttributes);
 				var constraintsChanged = _cachedConstraints != constraints;
-				var needsContentMeasure = constraintsChanged || (_measureInvalidated && !_invalidatedDuringArrange);
 				var shouldArrangeInline = false;
 
 				if (_measureInvalidated || constraintsChanged)
@@ -141,13 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (cachedSize != CGSize.Empty)
 						{
 							_measuredSize = cachedSize.ToSize();
-							// The cached size determines the cell size, not the validity of its
-							// descendants' measurements. Refresh content after binding or external
-							// invalidation even when the available constraints are unchanged.
-							if (needsContentMeasure)
-							{
-								virtualView.Measure(constraints.Width, constraints.Height);
-							}
+							virtualView.Measure(constraints.Width, constraints.Height);
 						}
 						else
 						{
