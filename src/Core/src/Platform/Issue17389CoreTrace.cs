@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 		const int MaxBindings = 8;
 		const int MaxQueries = 8;
 		const int MaxQueriesPerView = 4;
-		const int MaxNonNullHitReads = 32;
+		const int MaxNonNullHitReads = 256;
 		const int MaxTouches = 4;
 		const int MaxRecognizerArray = 8;
 		static readonly object Sync = new();
