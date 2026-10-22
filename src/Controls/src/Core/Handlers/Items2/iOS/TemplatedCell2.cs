@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
 		Size _lastNativeBoundsSize;
-		WeakReference<object> _itemsSource;
 
 		// Indicates the cell is being used as a supplementary view (group header/footer)
 		internal bool isSupplementaryView = false;
@@ -121,6 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				var constraints = GetMeasureConstraints(preferredAttributes);
 				var constraintsChanged = _cachedConstraints != constraints;
+				var needsContentMeasure = constraintsChanged || (_measureInvalidated && !_invalidatedDuringArrange);
 				var shouldArrangeInline = false;
 
 				if (_measureInvalidated || constraintsChanged)
@@ -141,19 +141,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (cachedSize != CGSize.Empty)
 						{
 							_measuredSize = cachedSize.ToSize();
-							// For MeasureFirstItem, non-first cells reuse the cached first-item size.
-							// Mirroring CV1 (Items/TemplatedCell.cs): when ConstrainedSize is set, CV1
-							// calls NO virtualView.Measure() from PreferredLayoutAttributesFittingAttributes.
-							// We do the same — only call Measure when the layout constraints actually change
-							// (fresh cell: _cachedConstraints==default, or rotation/resize: new width/height).
-							// Checking the full Size (both width and height) handles both orientations:
-							//   - Vertical list:   constraints=(w, ∞) — width change drives the check.
-							//   - Horizontal list: constraints=(∞, h) — height change drives the check.
-							// Recycled cells at the same constraints skip Measure entirely, eliminating
-							// the per-scroll MeasureOverride invocation that PR #29496 introduced.
-							// The Measure return value is intentionally discarded; _measuredSize comes
-							// from the cache, not from this call.
-							if (_cachedConstraints != constraints)
+							// The cached size determines the cell size, not the validity of its
+							// descendants' measurements. Refresh content after binding or external
+							// invalidation even when the available constraints are unchanged.
+							if (needsContentMeasure)
 							{
 								virtualView.Measure(constraints.Width, constraints.Height);
 							}
@@ -311,7 +302,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
 			ResetArrangeState();
-			ResetCachedConstraintsIfItemsSourceChanged(itemsView.ItemsSource);
 
 			var oldElement = PlatformHandler?.VirtualView as View;
 
@@ -446,28 +436,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return false;
 		}
-		void ResetCachedConstraintsIfItemsSourceChanged(object itemsSource)
-		{
-			if (itemsSource is null)
-			{
-				if (_itemsSource is not null)
-				{
-					_itemsSource = null;
-					_cachedConstraints = default;
-				}
-
-				return;
-			}
-
-			if (_itemsSource is null ||
-				!_itemsSource.TryGetTarget(out var previousItemsSource) ||
-				!ReferenceEquals(previousItemsSource, itemsSource))
-			{
-				_itemsSource = new(itemsSource);
-				_cachedConstraints = default;
-			}
-		}
-
 		public override bool Selected
 		{
 			get => base.Selected;
