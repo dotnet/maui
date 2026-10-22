@@ -239,31 +239,26 @@ namespace Microsoft.Maui.Controls.Platform
 			if ((scrollToPosition == ScrollToPosition.Center || scrollToPosition == ScrollToPosition.End)
 				&& list.ContainerFromItem(targetItem) is UIElement targetContainer
 				&& targetContainer.RenderSize.Width > 0
-				&& targetContainer.RenderSize.Height > 0
-				&& scrollViewer.GetFirstDescendant<ScrollContentPresenter>() is ScrollContentPresenter presenter)
+				&& targetContainer.RenderSize.Height > 0)
 			{
-				var targetIndex = list.IndexFromContainer(targetContainer);
-				var isVisible = targetIndex >= 0 && (list.ItemsPanelRoot switch
-				{
-					ItemsStackPanel panel => targetIndex >= panel.FirstVisibleIndex && targetIndex <= panel.LastVisibleIndex,
-					ItemsWrapGrid panel => targetIndex >= panel.FirstVisibleIndex && targetIndex <= panel.LastVisibleIndex,
-					_ => false
-				});
-				var position = targetContainer.TransformToVisual(presenter).TransformPoint(Zero);
+				var position = targetContainer.TransformToVisual(scrollViewer).TransformPoint(Zero);
 				var leadingEdge = IsVertical(scrollViewer) ? position.Y : position.X;
+				var itemLength = IsVertical(scrollViewer) ? targetContainer.RenderSize.Height : targetContainer.RenderSize.Width;
+				var viewportLength = IsVertical(scrollViewer) ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
 
-				// ScrollIntoView(Leading) will not raise ViewChanged for an item already at the leading edge.
-				if (isVisible && Math.Abs(leadingEdge) < 0.5)
+				// Visible items can be adjusted without relying on ScrollIntoView to raise ViewChanged.
+				if (leadingEdge < viewportLength && leadingEdge + itemLength > 0)
 				{
-					if (scrollToPosition == ScrollToPosition.Center)
-					{
-						await AdjustToCenterAsync(list, scrollViewer, targetItem);
-					}
+					var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
+					if (IsVertical(scrollViewer))
+						point.Y += position.Y;
 					else
-					{
-						await AdjustToEndAsync(list, scrollViewer, targetItem);
-					}
+						point.X += position.X;
 
+					var offset = scrollToPosition == ScrollToPosition.Center
+						? AdjustToCenter(point, targetContainer.RenderSize, scrollViewer)
+						: AdjustToEnd(point, targetContainer.RenderSize, scrollViewer);
+					await JumpToOffsetAsync(scrollViewer, offset.X, offset.Y);
 					return;
 				}
 			}
