@@ -17,11 +17,14 @@ namespace Microsoft.Maui.Platform
 				return;
 			var owner = recognizer.View;
 			var state = recognizer.State;
+			var enabled = recognizer.Enabled;
 			var entry = binding.ToEntry(Stage.NativeOwnerAtAdd);
 			entry.AddReceiverHandle = (long)(nint)originalReceiver.Handle;
 			entry.OwnerHandle = owner is null ? 0 : (long)(nint)owner.Handle;
 			entry.OwnerSampled = entry.StateSampled = true;
 			entry.NativeState = (int)state;
+			entry.RecognizerEnabledSampled = true;
+			entry.RecognizerEnabled = enabled;
 			Publish(generation, entry);
 		}
 
@@ -38,9 +41,22 @@ namespace Microsoft.Maui.Platform
 			}
 			if (!ReserveNativeHitRead(ticket))
 				return;
-			if (suppliedEvent.Type != UIEventType.Touches)
+			var eventType = suppliedEvent.Type;
+			if (eventType != UIEventType.Touches)
 			{
 				Count(ticket, Counter.NonTouchesEvent);
+				var unassociatedKey = new QueryKey
+				{
+					EventHandle = (long)(nint)suppliedEvent.Handle,
+					EventTime = suppliedEvent.Timestamp,
+					LayoutHandle = (long)(nint)layout.Handle,
+					ViewId = ticket.ViewId,
+					ReturnKind = returnKind,
+					BaseHitHandle = baseResult is null ? 0 : (long)(nint)baseResult.Handle,
+					X = (double)point.X,
+					Y = (double)point.Y
+				};
+				CaptureQuery(layout, ticket, unassociatedKey, default, 0, false, (int)eventType);
 				return;
 			}
 			var touches = suppliedEvent.AllTouches;
@@ -94,9 +110,21 @@ namespace Microsoft.Maui.Platform
 				X = (double)point.X,
 				Y = (double)point.Y
 			};
+			CaptureQuery(layout, ticket, key, matchedPoint, (int)touchCount, true, (int)eventType);
+		}
+
+		static void CaptureQuery(LayoutView layout, Ticket ticket, QueryKey key,
+			CGPoint matchedPoint, int touchCount, bool touchSampled, int eventType)
+		{
 			if (!ReserveQuery(ticket, key, out var query))
 				return;
 
+			var bounds = layout.Bounds;
+			var window = layout.Window;
+			var nativeInteraction = layout.UserInteractionEnabled;
+			var hidden = layout.Hidden;
+			var alpha = layout.Alpha;
+			bool windowIsKey = window?.IsKeyWindow ?? false;
 			var recognizers = layout.GestureRecognizers;
 			int count = recognizers?.Length ?? 0;
 			bool truncated = count > MaxRecognizerArray;
@@ -104,27 +132,41 @@ namespace Microsoft.Maui.Platform
 				Count(ticket, Counter.RecognizerArrayTooLarge);
 			var hit = new Entry
 			{
-				Stage = Stage.HitWithSuppliedTouch,
+				Stage = touchSampled ? Stage.HitWithSuppliedTouch : Stage.HitWithoutTouchAssociation,
 				Receiver = ticket.Role,
 				ViewId = ticket.ViewId,
 				Query = query,
 				EventHandle = key.EventHandle,
 				EventTime = key.EventTime,
-				TouchHandle = touchHandle,
-				TouchTime = touchTime,
-				TouchPhase = (int)UITouchPhase.Began,
+				TouchHandle = key.TouchHandle,
+				TouchTime = key.TouchTime,
+				TouchPhase = touchSampled ? (int)UITouchPhase.Began : 0,
+				TouchSampled = touchSampled,
+				EventType = eventType,
 				EventTouchCount = (int)touchCount,
 				PlatformViewHandle = key.LayoutHandle,
-				X = (double)point.X,
-				Y = (double)point.Y,
+				X = key.X,
+				Y = key.Y,
 				TouchX = (double)matchedPoint.X,
 				TouchY = (double)matchedPoint.Y,
 				BaseHitHandle = key.BaseHitHandle,
-				ReturnedHitHandle = returnKind == HitReturn.Returned && baseResult != null
-					? key.BaseHitHandle : 0,
-				HitReturn = returnKind,
+				ReturnedHitHandle = key.ReturnKind == HitReturn.Returned ? key.BaseHitHandle : 0,
+				HitReturn = key.ReturnKind,
 				NativeArrayCount = count,
-				ArrayTruncated = truncated
+				ArrayTruncated = truncated,
+				ViewStateSampled = true,
+				InteractionOverride = layout.UserInteractionEnabledOverride,
+				NativeInteractionEnabled = nativeInteraction,
+				NativeHidden = hidden,
+				NativeAlpha = (double)alpha,
+				BoundsX = (double)bounds.X,
+				BoundsY = (double)bounds.Y,
+				BoundsWidth = (double)bounds.Width,
+				BoundsHeight = (double)bounds.Height,
+				WindowSampled = true,
+				WindowHandle = window is null ? 0 : (long)(nint)window.Handle,
+				WindowKeySampled = window is not null,
+				WindowIsKey = windowIsKey
 			};
 			Publish(ticket.Generation, hit);
 			if (recognizers is null || truncated)
@@ -136,18 +178,23 @@ namespace Microsoft.Maui.Platform
 					continue;
 				var owner = recognizer.View;
 				var state = recognizer.State;
+				var enabled = recognizer.Enabled;
 				var entry = binding.ToEntry(Stage.HitRecognizerOwner);
 				entry.Query = query;
 				entry.EventHandle = key.EventHandle;
 				entry.EventTime = key.EventTime;
-				entry.TouchHandle = touchHandle;
-				entry.TouchTime = touchTime;
-				entry.TouchPhase = (int)UITouchPhase.Began;
+				entry.TouchHandle = key.TouchHandle;
+				entry.TouchTime = key.TouchTime;
+				entry.TouchPhase = touchSampled ? (int)UITouchPhase.Began : 0;
+				entry.TouchSampled = touchSampled;
+				entry.EventType = eventType;
 				entry.EventTouchCount = (int)touchCount;
 				entry.PlatformViewHandle = key.LayoutHandle;
 				entry.OwnerHandle = owner is null ? 0 : (long)(nint)owner.Handle;
 				entry.OwnerSampled = entry.StateSampled = true;
 				entry.NativeState = (int)state;
+				entry.RecognizerEnabledSampled = true;
+				entry.RecognizerEnabled = enabled;
 				Publish(ticket.Generation, entry);
 			}
 		}

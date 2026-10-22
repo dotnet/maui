@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 			RejectTarget, NativeTapAction, ManagedTapDispatch, CommandEntry,
 			NativeAttached, DisposeRemoveSiteCompleted, DisposeNativeDisposing,
 			CollectionRemoveSiteCompleted, CollectionNativeDisposing,
-			NativeOwnerAtAdd, HitWithSuppliedTouch, HitRecognizerOwner
+			NativeOwnerAtAdd, HitWithSuppliedTouch, HitRecognizerOwner, HitWithoutTouchAssociation
 		}
 
 		internal enum Receiver
@@ -74,6 +74,7 @@ namespace Microsoft.Maui.Platform
 					return;
 				var entry = new Entry
 				{
+					ObservedUtcTicks = DateTime.UtcNow.Ticks,
 					Stage = stage,
 					Receiver = receiver,
 					ManagerId = GetId(manager),
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.Platform
 				text.Append("TapAdmissionSnapshot scope=InitialEnabled emission=PurpleReceiverAfterExistingLog complete=false generation=")
 					.Append(_generation).Append(" retained=").Append(_count).Append(" capacity=").Append(Capacity)
 					.Append(" droppedAtCapacity=").Append(_dropped)
-					.Append(" association=SuppliedTouchesArgumentAndUniqueBeganPointMatch associationAppliesTo=HitRecordsOnly physicalInputProven=false")
+					.Append(" association=PerRecordSampleFlags touchAssociation=SuppliedTouchesArgumentAndUniqueBeganPointMatch unassociatedHitAssociation=SuppliedEventDecisionOnly physicalInputProven=false")
 					.Append(" nonNullHitReadLimit=").Append(MaxNonNullHitReads)
 					.Append(" touchSetLimit=").Append(MaxTouches)
 					.Append(" nativeArrayLimit=").Append(MaxRecognizerArray)
@@ -124,6 +125,7 @@ namespace Microsoft.Maui.Platform
 				{
 					var entry = Entries[i];
 					text.Append("sequence=").Append(i + 1).Append(" stage=").Append(entry.Stage)
+						.Append(" observedUtcTicks=").Append(entry.ObservedUtcTicks)
 						.Append(" receiver=").Append(entry.Receiver)
 						.Append(" managerManagedId=").Append(entry.ManagerId)
 						.Append(" recognizerManagedId=").Append(entry.RecognizerId)
@@ -134,12 +136,15 @@ namespace Microsoft.Maui.Platform
 						.Append(" platformViewNativeHandle=").Append(entry.PlatformViewHandle);
 					if (entry.Stage >= Stage.NativeOwnerAtAdd)
 					{
-						text.Append(" hitSampled=").Append(entry.Stage == Stage.HitWithSuppliedTouch)
-							.Append(" eventTouchSampled=").Append(entry.Stage != Stage.NativeOwnerAtAdd)
-							.Append(" queryPointSampled=").Append(entry.Stage == Stage.HitWithSuppliedTouch)
+						bool hitSampled = entry.Stage is Stage.HitWithSuppliedTouch or Stage.HitWithoutTouchAssociation;
+						text.Append(" hitSampled=").Append(hitSampled)
+							.Append(" suppliedEventSampled=").Append(entry.Query > 0)
+							.Append(" eventTouchSampled=").Append(entry.TouchSampled)
+							.Append(" queryPointSampled=").Append(hitSampled)
 							.Append(" addReceiverSampled=").Append(entry.Stage == Stage.NativeOwnerAtAdd)
-							.Append(" nativeArraySampled=").Append(entry.Stage == Stage.HitWithSuppliedTouch)
+							.Append(" nativeArraySampled=").Append(hitSampled)
 							.Append(" query=").Append(entry.Query)
+							.Append(" suppliedEventType=").Append(entry.EventType)
 							.Append(" eventArgumentHandle=").Append(entry.EventHandle)
 							.Append(" eventTimestamp=").Append(entry.EventTime.ToString("R", CultureInfo.InvariantCulture))
 							.Append(" touchTimestamp=").Append(entry.TouchTime.ToString("R", CultureInfo.InvariantCulture))
@@ -157,8 +162,23 @@ namespace Microsoft.Maui.Platform
 							.Append(" sampledOwnerHandle=").Append(entry.OwnerHandle)
 							.Append(" stateSampled=").Append(entry.StateSampled)
 							.Append(" sampledNativeState=").Append(entry.NativeState)
+							.Append(" recognizerEnabledSampled=").Append(entry.RecognizerEnabledSampled)
+							.Append(" sampledRecognizerEnabled=").Append(entry.RecognizerEnabled)
 							.Append(" nativeArrayCount=").Append(entry.NativeArrayCount)
-							.Append(" nativeArrayTruncated=").Append(entry.ArrayTruncated);
+							.Append(" nativeArrayTruncated=").Append(entry.ArrayTruncated)
+							.Append(" viewStateSampled=").Append(entry.ViewStateSampled)
+							.Append(" interactionOverride=").Append(entry.InteractionOverride)
+							.Append(" nativeInteractionEnabled=").Append(entry.NativeInteractionEnabled)
+							.Append(" nativeHidden=").Append(entry.NativeHidden)
+							.Append(" nativeAlpha=").Append(entry.NativeAlpha.ToString("R", CultureInfo.InvariantCulture))
+							.Append(" bounds=").Append(entry.BoundsX.ToString("R", CultureInfo.InvariantCulture))
+							.Append(',').Append(entry.BoundsY.ToString("R", CultureInfo.InvariantCulture))
+							.Append(',').Append(entry.BoundsWidth.ToString("R", CultureInfo.InvariantCulture))
+							.Append(',').Append(entry.BoundsHeight.ToString("R", CultureInfo.InvariantCulture))
+							.Append(" windowSampled=").Append(entry.WindowSampled)
+							.Append(" windowHandle=").Append(entry.WindowHandle)
+							.Append(" windowKeySampled=").Append(entry.WindowKeySampled)
+							.Append(" windowIsKey=").Append(entry.WindowIsKey);
 					}
 					text.AppendLine();
 				}
@@ -361,7 +381,10 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 				if (!Full())
+				{
+					entry.ObservedUtcTicks = DateTime.UtcNow.Ticks;
 					Entries[_count++] = entry;
+				}
 			}
 		}
 
@@ -413,6 +436,7 @@ namespace Microsoft.Maui.Platform
 
 		struct Entry
 		{
+			internal long ObservedUtcTicks;
 			internal Stage Stage;
 			internal Receiver Receiver;
 			internal int ManagerId, RecognizerId, ViewId, HandlerId;
@@ -422,9 +446,16 @@ namespace Microsoft.Maui.Platform
 			internal double EventTime, TouchTime, X, Y, TouchX, TouchY;
 			internal HitReturn HitReturn;
 			internal bool OwnerSampled, StateSampled, ArrayTruncated;
+			internal int EventType;
+			internal bool TouchSampled, RecognizerEnabledSampled, RecognizerEnabled;
+			internal bool ViewStateSampled, InteractionOverride, NativeInteractionEnabled, NativeHidden;
+			internal double NativeAlpha, BoundsX, BoundsY, BoundsWidth, BoundsHeight;
+			internal bool WindowSampled, WindowKeySampled, WindowIsKey;
+			internal long WindowHandle;
 
 			public Entry()
 			{
+				ObservedUtcTicks = 0;
 				Stage = default;
 				Receiver = default;
 				ManagerId = RecognizerId = ViewId = HandlerId = 0;
@@ -434,6 +465,12 @@ namespace Microsoft.Maui.Platform
 				EventTime = TouchTime = X = Y = TouchX = TouchY = 0;
 				HitReturn = default;
 				OwnerSampled = StateSampled = ArrayTruncated = false;
+				EventType = 0;
+				TouchSampled = RecognizerEnabledSampled = RecognizerEnabled = false;
+				ViewStateSampled = InteractionOverride = NativeInteractionEnabled = NativeHidden = false;
+				NativeAlpha = BoundsX = BoundsY = BoundsWidth = BoundsHeight = 0;
+				WindowSampled = WindowKeySampled = WindowIsKey = false;
+				WindowHandle = 0;
 			}
 		}
 	}
