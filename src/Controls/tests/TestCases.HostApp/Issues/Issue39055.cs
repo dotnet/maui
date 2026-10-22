@@ -74,7 +74,7 @@ public class TestPageIssue39055 : ContentPage
 			VerticalOptions = LayoutOptions.Center
 		};
 
-#if WINDOWS
+#if WINDOWS || MACCATALYST
 		var reduceWindowWidthButton = new Button
 		{
 			AutomationId = "ReduceWindowWidthButton",

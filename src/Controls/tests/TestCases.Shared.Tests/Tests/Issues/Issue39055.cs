@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue39055 : _IssuesUITest
 {
     public Issue39055(TestDevice device) : base(device)
@@ -28,7 +29,7 @@ public class Issue39055 : _IssuesUITest
     [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void Issue39055OverflowTabAutomationIdShouldBeSet()
     {
-#if WINDOWS //Reduce window width for overflow tab testing
+#if WINDOWS || MACCATALYST  //Reduce window width for overflow tab testing
         App.Tap("ReduceWindowWidthButton");
 #endif
         App.WaitForElement("More");
