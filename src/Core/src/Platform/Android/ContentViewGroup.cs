@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
 
 		IBorderStroke? _clip;
-		UnhandledTouchEventHandler? _unhandledTouchEventHandler;
+		TouchEventFallbackHandler? _touchEventFallbackHandler;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 
 			return base.OnTouchEvent(e) ||
-				(_unhandledTouchEventHandler ??= new()).OnTouchEvent(this, e);
+				(_touchEventFallbackHandler ??= new()).OnTouchEvent(this, e);
 		}
 
 		/// <summary>

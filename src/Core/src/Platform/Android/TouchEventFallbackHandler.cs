@@ -5,7 +5,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
-	internal sealed class UnhandledTouchEventHandler
+	internal sealed class TouchEventFallbackHandler
 	{
 		static readonly ConditionalWeakTable<AView, GestureHandler> GestureHandlers = new();
 		WeakReference<GestureHandler>? _gestureHandler;
@@ -31,27 +31,22 @@ namespace Microsoft.Maui.Platform
 				_downTime = e.DownTime;
 				ForwardTouchEvent(source, e);
 			}
-			else if (e.DownTime != _downTime)
+			else if (e.DownTime == _downTime &&
+				_gestureHandler?.TryGetTarget(out var handler) == true &&
+				handler.View.IsAlive() &&
+				GestureHandlers.TryGetValue(handler.View, out var current) &&
+				ReferenceEquals(handler, current))
+			{
+				// Keep the selected ancestor for the sequence, even when its
+				// detector declines an individual MOVE or UP.
+				if (e.ActionMasked is MotionEventActions.Up or MotionEventActions.Cancel)
+					_gestureHandler = null;
+
+				ForwardTouchEvent(source, e, handler);
+			}
+			else
 			{
 				_gestureHandler = null;
-			}
-			else if (_gestureHandler?.TryGetTarget(out var handler) == true)
-			{
-				if (handler.View.IsAlive() &&
-					GestureHandlers.TryGetValue(handler.View, out var current) &&
-					ReferenceEquals(handler, current))
-				{
-					// Keep the selected ancestor for the sequence, even when its
-					// detector declines an individual MOVE or UP.
-					if (e.ActionMasked is MotionEventActions.Up or MotionEventActions.Cancel)
-						_gestureHandler = null;
-
-					ForwardTouchEvent(source, e, handler);
-				}
-				else
-				{
-					_gestureHandler = null;
-				}
 			}
 
 			// An unhandled foreground view still blocks lower siblings. Ancestor
@@ -71,28 +66,27 @@ namespace Microsoft.Maui.Platform
 					return;
 			}
 
-			using var forwardedEvent = MotionEvent.Obtain(e) ??
-				throw new InvalidOperationException("Unable to copy the touch event for ancestor gesture handling.");
-			var child = source;
-			while (child.Parent is AView parent)
+			using var forwardedEvent = MotionEvent.Obtain(e);
+			if (forwardedEvent is null)
+			{
+				_gestureHandler = null;
+				return;
+			}
+			for (var child = source; child.Parent is AView parent; child = parent)
 			{
 				TransformToParent(child, parent, forwardedEvent);
-				if (target is not null)
+				if (target is not null && parent == target.View)
 				{
-					if (parent == target.View)
-					{
-						target.Handle(forwardedEvent);
-						return;
-					}
+					target.Handle(forwardedEvent);
+					return;
 				}
-				else if (GestureHandlers.TryGetValue(parent, out var handler) &&
+				if (target is null &&
+					GestureHandlers.TryGetValue(parent, out var handler) &&
 					handler.Handle(forwardedEvent))
 				{
 					_gestureHandler = new WeakReference<GestureHandler>(handler);
 					return;
 				}
-
-				child = parent;
 			}
 
 			if (target is not null)

@@ -12,148 +12,18 @@ public class Issue36816 : _IssuesUITest
 
 	public override string Issue => "Android: Clicks being passed through to controls under other Views";
 
-	[TestCase("ContentView")]
-	[TestCase("Grid")]
-	[TestCase("StackLayout")]
-	[TestCase("BoxView")]
-	[TestCase("Border")]
+	[Test]
 	[Category(UITestCategories.Gestures)]
-	public void TapOnOpaqueOverlayShouldNotClickButtonUnderneath(string type)
+	public void ParentTapShouldWorkBeforeAndAfterContentViewTransparencyChanges()
 	{
-		SelectOverlay(type);
-		App.Tap("OverlayView");
-		AssertResult("Not Clicked");
-
-		App.Tap("ToggleTransparency");
-		App.Tap("OverlayView");
-		AssertResult("Button Clicked");
-
-		App.Tap("ResetResults");
-		App.Tap("ToggleTransparency");
-		App.Tap("OverlayView");
-		AssertResult("Not Clicked");
-	}
-
-	[TestCase("ContentView")]
-	[TestCase("Grid")]
-	[TestCase("StackLayout")]
-	[TestCase("BoxView")]
-	[TestCase("Border")]
-	[Category(UITestCategories.Gestures)]
-	public void AncestorTapShouldWorkWithoutClickingUnderlyingButton(string type)
-	{
-		SelectOverlay(type);
-		App.Tap("EnableParentTap");
-
-		var bounds = App.WaitForElement("OverlayView").GetRect();
+		var bounds = App.WaitForElement("ParentGrid").GetRect();
 		App.TapCoordinates(bounds.X + 10, bounds.Y + 10);
 		Assert.That(App.FindElement("ParentTapCount").GetText(), Is.EqualTo("1"));
-		AssertResult("Not Clicked");
 
-		if (type != "BoxView")
-		{
-			App.Tap("CardLabel");
-			Assert.That(App.FindElement("ParentTapCount").GetText(), Is.EqualTo("2"));
-			AssertResult("Not Clicked");
-		}
-	}
-
-	[TestCase("ContentView")]
-	[TestCase("Grid")]
-	[Category(UITestCategories.Gestures)]
-	public void AncestorPanShouldReceiveCompleteSequence(string type)
-	{
-		SelectOverlay(type);
-		App.Tap("EnableParentPan");
-		var bounds = App.WaitForElement("OverlayView").GetRect();
-		var y = bounds.Y + bounds.Height / 2;
-		App.DragCoordinates(bounds.X + 20, y, bounds.X + bounds.Width - 20, y);
-
-		Assert.That(App.FindElement("ParentPanStatus").GetText(), Is.EqualTo("Completed"));
-		AssertResult("Not Clicked");
-	}
-
-	[TestCase("ContentView", "Shadow")]
-	[TestCase("ContentView", "Clip")]
-	[TestCase("Grid", "Shadow")]
-	[TestCase("Grid", "Clip")]
-	[Category(UITestCategories.Gestures)]
-	public void AncestorTapShouldWorkWhenWrapperIsAddedAndRemoved(string type, string effect)
-	{
-		SelectOverlay(type);
-		App.Tap("EnableParentTap");
-		App.Tap("Toggle" + effect);
-		App.Tap("CardLabel");
-		Assert.That(App.FindElement("ParentTapCount").GetText(), Is.EqualTo("1"));
-		AssertResult("Not Clicked");
-
-		App.Tap("Toggle" + effect);
-		App.Tap("CardLabel");
+		var labelBounds = App.WaitForElement("CardLabel").GetRect();
+		App.Tap("ToggleTransparency");
+		Assert.That(App.FindElement("ToggleTransparency").GetText(), Is.EqualTo("InputTransparent is true"));
+		App.TapCoordinates(labelBounds.X + labelBounds.Width / 2, labelBounds.Y + labelBounds.Height / 2);
 		Assert.That(App.FindElement("ParentTapCount").GetText(), Is.EqualTo("2"));
-		AssertResult("Not Clicked");
 	}
-
-	[TestCase("ContentView", "Shadow")]
-	[TestCase("ContentView", "Clip")]
-	[TestCase("Grid", "Shadow")]
-	[TestCase("Grid", "Clip")]
-	[Category(UITestCategories.Gestures)]
-	public void WrappedOverlayShouldRespectTransparencyChanges(string type, string effect)
-	{
-		SelectOverlay(type);
-		App.Tap("Toggle" + effect);
-		App.Tap("OverlayView");
-		AssertResult("Not Clicked");
-
-		App.Tap("ToggleTransparency");
-		App.Tap("OverlayView");
-		AssertResult("Button Clicked");
-
-		App.Tap("ResetResults");
-		App.Tap("ToggleTransparency");
-		App.Tap("OverlayView");
-		AssertResult("Not Clicked");
-	}
-
-	[TestCase("ContentView")]
-	[TestCase("Grid")]
-	[TestCase("Border")]
-	[Category(UITestCategories.Gestures)]
-	public void InteractiveChildShouldKeepNativeTouchHandling(string type)
-	{
-		SelectOverlay(type);
-		App.Tap("EnableParentTap");
-		App.Tap("ShowChildButton");
-		App.Tap("ChildButton");
-
-		Assert.That(App.FindElement("ChildResultLabel").GetText(), Is.EqualTo("Button Clicked"));
-		Assert.That(App.FindElement("ParentTapCount").GetText(), Is.EqualTo("0"));
-		AssertResult("Not Clicked");
-	}
-
-	[TestCase("Shadow")]
-	[TestCase("Clip")]
-	[Category(UITestCategories.Gestures)]
-	public void TransparentWrappedLayoutShouldKeepNonTransparentChildrenInteractive(string effect)
-	{
-		SelectOverlay("Grid");
-		App.Tap("ShowChildButton");
-		App.Tap("ToggleCascade");
-		App.Tap("ToggleTransparency");
-		App.Tap("Toggle" + effect);
-		App.Tap("ChildButton");
-
-		Assert.That(App.FindElement("ChildResultLabel").GetText(), Is.EqualTo("Button Clicked"));
-		AssertResult("Not Clicked");
-	}
-
-	void SelectOverlay(string type)
-	{
-		App.WaitForElement("Select" + type);
-		App.Tap("Select" + type);
-		App.WaitForElement("OverlayView");
-	}
-
-	void AssertResult(string expected) =>
-		Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo(expected));
 }

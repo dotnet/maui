@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiShapeView : PlatformGraphicsView
 	{
-		UnhandledTouchEventHandler? _unhandledTouchEventHandler;
+		TouchEventFallbackHandler? _touchEventFallbackHandler;
 
 		public MauiShapeView(Context? context) : base(context)
 		{
@@ -15,6 +15,6 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnTouchEvent(MotionEvent? e) =>
 			base.OnTouchEvent(e) ||
-			(_unhandledTouchEventHandler ??= new()).OnTouchEvent(this, e);
+			(_touchEventFallbackHandler ??= new()).OnTouchEvent(this, e);
 	}
 }
