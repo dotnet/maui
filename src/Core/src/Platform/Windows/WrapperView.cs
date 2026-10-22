@@ -56,19 +56,17 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_child is not null)
 				{
-					DisposeClip();
 					_child.SizeChanged -= OnChildSizeChanged;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					CachedChildren.Remove(_child);
 				}
 
-				_child = value;
-
-				if (_child is null)
+				if (value is null)
 				{
 					return;
 				}
 
+				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
@@ -132,11 +130,8 @@ namespace Microsoft.Maui.Platform
 
 		void DisposeClip()
 		{
-			if (Child is not null)
-			{
-				var visual = ElementCompositionPreview.GetElementVisual(Child);
-				visual.Clip = null;
-			}
+			var visual = ElementCompositionPreview.GetElementVisual(Child);
+			visual.Clip = null;
 		}
 
 		void DisposeBorder()
