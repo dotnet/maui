@@ -126,10 +126,10 @@ Task("uitest-build")
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
-	.Does(() =>
+	.Does(() => RunUITestSetupWithRetry(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation, headless);
-	});
+	}));
 
 Task("uitest")
 	.IsDependentOn("uitest-prepare")
@@ -275,14 +275,14 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
 	var appiumLog = $"{binDir}/appium_{platform}_{resultsFileName}.log";
 
-	DotNetBuild(project, new DotNetBuildSettings
+	RunUITestSetupWithRetry(() => DotNetBuild(project, new DotNetBuildSettings
 	{
 		Configuration = config,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=ANDROID")
 			.Append("/bl:" + binlog)
-	});
+	}));
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
