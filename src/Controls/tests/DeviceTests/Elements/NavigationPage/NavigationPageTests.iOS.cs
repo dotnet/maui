@@ -112,6 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				if (expectedShouldBegin)
 				{
 					Assert.True(ShouldPopItem(navController));
@@ -138,12 +139,76 @@ namespace Microsoft.Maui.DeviceTests
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				if (expectedShouldBegin)
 				{
 					Assert.True(ShouldPopItem(navController));
 				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InteractivePopReturningToCurrentPageReevaluatesBackButtonPolicy(bool navigationBarHidden)
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var backHandlingPage = new BackHandlingPage(false);
+			NavigationPage.SetHasNavigationBar(backHandlingPage, !navigationBarHidden);
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnNavigatedToAsync(backHandlingPage);
+				var navController = Assert.IsAssignableFrom<UINavigationController>((navPage.Handler as IPlatformViewHandler)?.ViewController);
+				var recognizer = navController.InteractivePopGestureRecognizer;
+
+				Assert.True(recognizer.Delegate.ShouldBegin(recognizer));
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				Assert.True(ShouldPopItem(navController));
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+
+				// A cancelled pop reports the original top controller again.
+				navController.Delegate.DidShowViewController(navController, navController.TopViewController, true);
+				backHandlingPage.BackHandled = true;
+
+				Assert.False(ShouldPopItem(navController));
+				Assert.Equal(2, backHandlingPage.BackButtonPressedCount);
+				Assert.Same(backHandlingPage, navPage.CurrentPage);
+				Assert.Equal(2, navController.ViewControllers.Length);
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task NativeBackButtonRespectsBackButtonPressed(bool backHandled)
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage() { Title = "Root Page" };
+			var backHandlingPage = new BackHandlingPage(backHandled) { Title = "Second Page" };
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnNavigatedToAsync(backHandlingPage);
+				var navController = Assert.IsAssignableFrom<UINavigationController>((navPage.Handler as IPlatformViewHandler)?.ViewController);
+
+				navController.NavigationBar.TapBackButton();
+				await AssertHelpers.AssertEventually(() => backHandlingPage.BackButtonPressedCount != 0);
+				if (!backHandled)
+				{
+					await OnNavigatedToAsync(rootPage, TimeSpan.FromSeconds(5));
+				}
+
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				Assert.Same(backHandled ? backHandlingPage : rootPage, navPage.CurrentPage);
+				Assert.Equal(backHandled ? 2 : 1, navController.ViewControllers.Length);
 			});
 		}
 
@@ -260,19 +325,19 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class BackHandlingPage : ContentPage
 		{
-			readonly bool _backHandled;
-
 			public BackHandlingPage(bool backHandled)
 			{
-				_backHandled = backHandled;
+				BackHandled = backHandled;
 			}
+
+			public bool BackHandled { get; set; }
 
 			public int BackButtonPressedCount { get; private set; }
 
 			protected override bool OnBackButtonPressed()
 			{
 				BackButtonPressedCount++;
-				return _backHandled;
+				return BackHandled;
 			}
 		}
 	}
