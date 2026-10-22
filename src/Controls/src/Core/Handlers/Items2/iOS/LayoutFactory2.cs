@@ -463,8 +463,11 @@ internal static class LayoutFactory2
 
 				var pageIndex = (int)page;
 				var carouselPosition = pageIndex;
+				var loopSource = itemsView.Loop
+					? cv2Controller.ItemsSource as ILoopItemsViewSource
+					: null;
 
-				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
+				if (loopSource is not null)
 				{
 					var maxIndex = loopSource.LoopCount - 1;
 
@@ -482,7 +485,17 @@ internal static class LayoutFactory2
 
 					//since we added one item at the beginning of our ItemSource, we need to subtract one
 					carouselPosition = pageIndex - 1;
+				}
 
+				// A resize can deliver another invalidation callback after the controller's layout
+				// flags are cleared. Ignore stale offsets until the preserved page is visible again.
+				if (cv2Controller.ShouldIgnorePositionUpdateAfterBoundsChange(carouselPosition))
+				{
+					return;
+				}
+
+				if (loopSource is not null)
+				{
 					if (itemsView.Position != carouselPosition)
 					{
 						//If we are updating the ItemsSource, we don't want to scroll the CollectionView

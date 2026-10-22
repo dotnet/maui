@@ -16,7 +16,7 @@ public class Issue29264 : ContentPage
 			WidthRequest = 350,
 			HeightRequest = 550,
 			HorizontalOptions = LayoutOptions.Fill,
-			Loop = false,
+			Loop = true,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label
@@ -86,6 +86,8 @@ public class Issue29264 : ContentPage
 		};
 		layout.Add(_orientationLabel, row: 0);
 		layout.Add(_positionLabel, row: 1);
+		layout.Add(loopLabel, row: 2);
+		layout.Add(loopSwitch, row: 3);
 		layout.Add(currentItemLabel, row: 4);
 		layout.Add(positionChangedLabel, row: 5);
 		layout.Add(_carousel, row: 6);
@@ -96,7 +98,6 @@ public class Issue29264 : ContentPage
 	{
 		base.OnSizeAllocated(width, height);
 
-		System.Diagnostics.Debug.WriteLine($"initial Carousel postion {_carousel.Position}, Carousel current item {_carousel.CurrentItem}");
 		if (width <= 0 || height <= 0)
 			return;
 
@@ -105,16 +106,12 @@ public class Issue29264 : ContentPage
 			_carousel.HeightRequest = 200;
 			_carousel.WidthRequest = width - 100;
 			_orientationLabel.Text = "Landscape";
-			System.Diagnostics.Debug.WriteLine($"landscape Carousel postion {_carousel.Position}, Carousel current item {_carousel.CurrentItem}");
-
 		}
 		else
 		{
 			_carousel.HeightRequest = height - 300;
 			_carousel.WidthRequest = 350;
 			_orientationLabel.Text = "Portrait";
-			System.Diagnostics.Debug.WriteLine($"portrait Carousel postion {_carousel.Position}, Carousel current item {_carousel.CurrentItem}");
-
 		}
 	}
 }
