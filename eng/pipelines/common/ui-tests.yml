@@ -452,6 +452,7 @@ stages:
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
+    condition: and(succeeded(), eq(variables['RunExtendedTests'], 'true'))
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
