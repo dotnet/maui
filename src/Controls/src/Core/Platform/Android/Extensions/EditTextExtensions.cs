@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 			editText.ImeOptions = imeOptions;
 		}
 
-		static (string oldText, string newText) GetTexts(EditText editText, InputView inputView)
+		static (string oldText, string newText) GetTexts(EditText editText, ITextInput textInput)
 		{
 			var oldText = editText.Text ?? string.Empty;
 
@@ -29,15 +29,20 @@ namespace Microsoft.Maui.Controls.Platform
 				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			var newText = TextTransformUtilities.GetTransformedText(inputView?.Text,
-					isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
+			var newText = textInput is ITextElement textElement
+				? textElement.UpdateFormsText(textInput.Text,
+					isPasswordEnabled ? TextTransform.None : textElement.TextTransform)
+				: textInput.Text ?? string.Empty;
 
 			return (oldText, newText);
 		}
 
-		public static void UpdateText(this EditText editText, InputView inputView)
+		public static void UpdateText(this EditText editText, InputView inputView) =>
+			UpdateText(editText, (ITextInput)inputView);
+
+		internal static void UpdateText(this EditText editText, ITextInput textInput)
 		{
-			(var oldText, var newText) = GetTexts(editText, inputView);
+			(var oldText, var newText) = GetTexts(editText, textInput);
 
 			if (oldText != newText)
 			{
@@ -51,9 +56,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateTextFromPlatform(this EditText editText, InputView inputView)
+		internal static void UpdateTextFromPlatform(this EditText editText, ITextInput textInput)
 		{
-			(var oldText, var newText) = GetTexts(editText, inputView);
+			(var oldText, var newText) = GetTexts(editText, textInput);
 
 			if (oldText != newText)
 			{

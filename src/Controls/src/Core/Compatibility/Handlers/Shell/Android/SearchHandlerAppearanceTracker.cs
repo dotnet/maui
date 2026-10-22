@@ -7,6 +7,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 using AImageButton = Android.Widget.ImageButton;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -91,6 +92,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateAutomationId();
 			}
+			else if (e.Is(SearchHandler.QueryProperty))
+			{
+				UpdateText();
+			}
+		}
+
+		void UpdateText()
+		{
+			if (_searchHandler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				Platform.EditTextExtensions.UpdateTextFromPlatform(_editText, _searchHandler);
+				return;
+			}
+
+			Platform.EditTextExtensions.UpdateText(_editText, _searchHandler);
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)
@@ -146,7 +162,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateTextTransform()
 		{
-			_editText.Text = _searchHandler.UpdateFormsText(_editText.Text, _searchHandler.TextTransform);
+			UpdateText();
 		}
 
 		void UpdateBackgroundColor()

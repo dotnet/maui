@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Controls.VisualElement;
 
 namespace Microsoft.Maui.Controls
@@ -14,8 +15,32 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Provides search functionality in a <see cref="Shell"/> application.
 	/// </summary>
-	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement
+	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement, ITextInput
 	{
+		internal DataFlowDirection DataFlowDirection { get; set; }
+
+		string IText.Text => Query;
+
+		string ITextInput.Text
+		{
+			get => Query;
+			set => SetValue(QueryProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		Font ITextStyle.Font => this.ToFont();
+
+		bool ITextInput.IsTextPredictionEnabled => true;
+
+		bool ITextInput.IsSpellCheckEnabled => true;
+
+		bool ITextInput.IsReadOnly => false;
+
+		int ITextInput.MaxLength => int.MaxValue;
+
+		int ITextInput.CursorPosition { get; set; }
+
+		int ITextInput.SelectionLength { get; set; }
+
 		/// <summary>Bindable property key for <see cref="IsFocused"/>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsFocused),
