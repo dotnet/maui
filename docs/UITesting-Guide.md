@@ -17,7 +17,7 @@ Comprehensive guidance for creating automated UI tests for .NET MAUI using Appiu
 
 Regular CI retains CoreCLR Android/iOS and Windows coverage. Mono Android/iOS
 device-test build and run stages, MacCatalyst device/UI test stages, and the
-iOS 18.5 UI-test matrix are restricted to `release/*` and `inflight/candidate`.
+iOS 18.5 UI-test jobs are restricted to `release/*` and `inflight/candidate`.
 Pull requests use their target branch for this decision; other builds use their
 source branch.
 

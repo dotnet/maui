@@ -331,6 +331,8 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_coreclr_${{ project.name }}_${{ replace(version, '.', '_') }}
+                ${{ if eq(version, '18.5') }}:
+                  condition: and(succeeded(), eq(variables['RunExtendedTests'], 'true'))
                 strategy:
                   matrix:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
@@ -384,6 +386,8 @@ stages:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
+                  ${{ if eq(version, '18.5') }}:
+                    condition: and(succeeded(), eq(variables['RunExtendedTests'], 'true'))
                   strategy:
                     matrix:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
