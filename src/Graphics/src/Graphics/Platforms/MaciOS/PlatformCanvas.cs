@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			_font = null;
 		}
 
-		internal bool MirrorShadowOffsetX { get; set; }
+		internal bool ShouldMirrorShadowOffsetX { get; set; }
 
 		public CGContext Context
 		{
@@ -1282,7 +1282,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var sizeF = actualOffset.AsCGSize();
 
 			// Core Graphics shadow offsets do not follow the RTL canvas transform.
-			if (MirrorShadowOffsetX)
+			if (ShouldMirrorShadowOffsetX)
 			{
 				sizeF.Width *= -1;
 			}
