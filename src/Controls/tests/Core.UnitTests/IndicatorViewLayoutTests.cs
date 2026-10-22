@@ -86,5 +86,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(await weakIndicatorView.WaitForCollect(), "IndicatorView should not be alive!");
 			GC.KeepAlive(sharedItemsSource);
 		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task ReplacingIndicatorTemplateDoesNotLeakPreviousLayout()
+		{
+			var indicatorView = new IndicatorView();
+			var weakLayout = ReplaceIndicatorTemplate(indicatorView);
+
+			Assert.False(await weakLayout.WaitForCollect(), "The previous IndicatorStackLayout should not be alive!");
+			GC.KeepAlive(indicatorView);
+		}
+
+		static WeakReference ReplaceIndicatorTemplate(IndicatorView indicatorView)
+		{
+			indicatorView.IndicatorTemplate = new DataTemplate();
+			var oldLayout = Assert.IsType<IndicatorStackLayout>(indicatorView.IndicatorLayout);
+			var weakLayout = new WeakReference(oldLayout);
+
+			indicatorView.IndicatorTemplate = new DataTemplate();
+
+			return weakLayout;
+		}
 	}
 }

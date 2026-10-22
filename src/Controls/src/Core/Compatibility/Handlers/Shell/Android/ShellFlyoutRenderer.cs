@@ -326,13 +326,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.FalseBox);
 					_currentLockMode = LockModeLockedClosed;
 					SetDrawerLockMode(_currentLockMode);
-					_content.SetPadding(0, _content.PaddingTop, _content.PaddingRight, _content.PaddingBottom);
+					_content.SetPaddingRelative(0, _content.PaddingTop, _content.PaddingEnd, _content.PaddingBottom);
 					break;
 
 				case FlyoutBehavior.Flyout:
 					_currentLockMode = LockModeUnlocked;
 					SetDrawerLockMode(_currentLockMode);
-					_content.SetPadding(0, _content.PaddingTop, _content.PaddingRight, _content.PaddingBottom);
+					_content.SetPaddingRelative(0, _content.PaddingTop, _content.PaddingEnd, _content.PaddingBottom);
 					break;
 
 				case FlyoutBehavior.Locked:
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_currentLockMode = LockModeLockedOpen;
 					SetDrawerLockMode(_currentLockMode);
 
-					_content.SetPadding((int)FlyoutWidth, _content.PaddingTop, _content.PaddingRight, _content.PaddingBottom);
+					_content.SetPaddingRelative((int)FlyoutWidth, _content.PaddingTop, _content.PaddingEnd, _content.PaddingBottom);
 					break;
 			}
 

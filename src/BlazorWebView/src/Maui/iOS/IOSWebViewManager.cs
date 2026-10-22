@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -265,6 +266,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
+				if (((IViewHandler)_webView).VirtualView is null)
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
 				var requestUrl = navigationAction.Request.Url;
 				var uri = new Uri(requestUrl.ToString());
 

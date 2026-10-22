@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
@@ -8,6 +9,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Shapes
 {
 	public class TransformGroupTests : BaseTestFixture
 	{
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference AssignSharedChildrenAndDrop(TransformCollection sharedChildren)
+		{
+			var group = new TransformGroup { Children = sharedChildren };
+			return new WeakReference(group);
+		}
+
+		[Fact]
+		public async Task SharedChildrenWithTransformDoesNotRetainGroup()
+		{
+			var sharedTransform = new ScaleTransform();
+			var sharedChildren = new TransformCollection { sharedTransform };
+			var weakGroup = AssignSharedChildrenAndDrop(sharedChildren);
+
+			Assert.False(await weakGroup.WaitForCollect(),
+				"TransformGroup should not be retained by a shared TransformCollection or its transforms.");
+			GC.KeepAlive(sharedTransform);
+			GC.KeepAlive(sharedChildren);
+		}
+
 		[Fact]
 		public async Task ReplacingChildrenUnsubscribesFromOldChildPropertyChanged()
 		{

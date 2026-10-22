@@ -85,7 +85,8 @@ tools:
     # Permit scanner evidence without trusting arbitrary issue authors.
     trusted-users: ["github-actions[bot]"]
   edit:
-  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl"]
+  # Preserve test exit codes when logging output in a non-interactive shell.
+  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl", "set", "exit"]
 
 checkout:
   fetch-depth: 200
@@ -474,6 +475,12 @@ if the object is still alive after forced GC (i.e. the test FAILS while the leak
 
 ## Step 6 — Build + run ONLY your test on the net TFM — confirm it FAILS (red)
 
+Start each validation shell with `set -o pipefail` so `tee`/`tail` cannot hide a failed
+`dotnet test`. The restricted tool allowlist includes `set` and `exit`, including when
+you capture the test status, print the log tail, and return that status with `exit`.
+A permission denial is an execution blocker, not evidence that the regression test ran;
+report it and stop without publishing. Never retry through a wrapper or broader permissions.
+
 Build and run **only your new test** on the .NET library TFM. Restrict to the `net` TFM with
 the five platform-exclusion flags (no Android/iOS/etc. workload needed) and disable
 `TreatWarningsAsErrors` (some test projects have pre-existing warning-as-error noise). The
@@ -482,6 +489,7 @@ project-reference graph **bootstraps the MAUI build tasks and builds `Core` → 
 first:
 
 ```bash
+set -o pipefail
 FLAGS="-p:IncludeIosTargetFrameworks=false -p:IncludeAndroidTargetFrameworks=false -p:IncludeMacCatalystTargetFrameworks=false -p:IncludeWindowsTargetFrameworks=false -p:IncludeTizenTargetFrameworks=false -p:TreatWarningsAsErrors=false"
 
 # First restore+build can take ~10-20 min (cold NuGet cache pulls Arcade SDK from the
@@ -522,6 +530,7 @@ A weak-proxy refactor usually changes no public surface.
 ## Step 8 — Rebuild + run the test — confirm it PASSES (green), no regressions
 
 ```bash
+set -o pipefail
 FLAGS="-p:IncludeIosTargetFrameworks=false -p:IncludeAndroidTargetFrameworks=false -p:IncludeMacCatalystTargetFrameworks=false -p:IncludeWindowsTargetFrameworks=false -p:IncludeTizenTargetFrameworks=false -p:TreatWarningsAsErrors=false"
 # Your test must now pass.
 dotnet test src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj -c Debug $FLAGS \
