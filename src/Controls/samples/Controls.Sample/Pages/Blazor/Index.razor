@@ -31,23 +31,37 @@
 
     async Task<bool> ConfirmDecrement()
     {
-        return await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to decrement?");
+        try
+        {
+            return await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to decrement?");
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException("Unable to confirm the decrement through JavaScript.", ex);
+        }
     }
 
     async Task SetValue()
     {
-        var userResponse = await JSRuntime.InvokeAsync<string?>("prompt", "Enter a new value for count:", count.ToString());
-        if (userResponse is null)
+        try
         {
-            await JSRuntime.InvokeVoidAsync("alert", "No value entered, count remains unchanged.");
+            var userResponse = await JSRuntime.InvokeAsync<string?>("prompt", "Enter a new value for count:", count.ToString());
+            if (userResponse is null)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "No value entered, count remains unchanged.");
+            }
+            else if (!int.TryParse(userResponse, out var newCount))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Invalid input, please enter a valid number.");
+            }
+            else
+            {
+                count = newCount;
+            }
         }
-        else if (!int.TryParse(userResponse, out var newCount))
+        catch (JSException ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Invalid input, please enter a valid number.");
-        }
-        else
-        {
-            count = newCount;
+            throw new InvalidOperationException("Unable to update the count through JavaScript.", ex);
         }
     }
 }

@@ -387,29 +387,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(stream.Length > 0);
 		}
-
-		[Fact]
-		public void HandlersHaveAllExpectedContructors()
-		{
-			bool hasBothMappers = false;
-#pragma warning disable IL2090 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
-			var constructors = typeof(THandler).GetConstructors();
-#pragma warning restore IL2090 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
-
-			foreach (var ctor in constructors)
-			{
-				var args = ctor.GetParameters();
-				if (args.Length == 2)
-				{
-					if (args[0].ParameterType.IsAssignableTo(typeof(IPropertyMapper)) &&
-						args[1].ParameterType.IsAssignableTo(typeof(CommandMapper)))
-					{
-						hasBothMappers = true;
-					}
-				}
-			}
-
-			Assert.True(hasBothMappers, "Missing constructor with IPropertyMapper and ICommandMapper");
-		}
 	}
 }

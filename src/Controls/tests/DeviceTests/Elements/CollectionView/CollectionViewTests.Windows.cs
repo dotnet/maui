@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -395,6 +396,109 @@ namespace Microsoft.Maui.DeviceTests
 			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
 		}
 
+		[Fact(DisplayName = "CollectionView2 restores focus to CollectionView")]
+		public async Task CollectionView2RestoresFocusToCollectionView()
+		{
+			SetupBuilderCollectionView2();
+
+			var data = new ObservableCollection<string>
+			{
+			"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"
+			};
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => new Label()),
+				SelectionMode = SelectionMode.None,
+				ItemsSource = data
+			};
+
+			var button = new Button { Text = "After" };
+			var layout = new VerticalStackLayout { collectionView, button };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var mauiItemsView = (MauiItemsView)collectionView.Handler.PlatformView;
+
+				await AssertEventually(
+					() => mauiItemsView.IsTabStop,
+					timeout: 5000);
+
+				mauiItemsView.Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				button.ToPlatform().Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				mauiItemsView.Focus(FocusState.Keyboard);
+
+				await AssertEventually(() =>
+				{
+					var focused =
+						UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+					return object.ReferenceEquals(focused, mauiItemsView);
+				},
+				timeout: 3000,
+				message: "Focus was not restored to CollectionView");
+
+				var finalFocused =
+					UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+				Assert.Same(mauiItemsView, finalFocused);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView2 receives focus on first keyboard entry")]
+		public async Task CollectionView2ReceivesFocusOnFirstKeyboardEntry()
+		{
+			SetupBuilderCollectionView2();
+
+			var data = new ObservableCollection<string>
+			{
+			"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"
+			};
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => new Label()),
+				SelectionMode = SelectionMode.Single,
+				ItemsSource = data,
+				SelectedItem = data[3]
+			};
+
+			var button = new Button { Text = "Before" };
+			var layout = new VerticalStackLayout { button, collectionView };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var mauiItemsView = (MauiItemsView)collectionView.Handler.PlatformView;
+
+				await AssertEventually(
+					() => mauiItemsView.IsTabStop,
+					timeout: 5000);
+
+				button.ToPlatform().Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				mauiItemsView.Focus(FocusState.Keyboard);
+
+				await AssertEventually(() =>
+				{
+					var focused =
+						UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+					return object.ReferenceEquals(focused, mauiItemsView);
+				},
+				timeout: 3000,
+				message: "CollectionView did not receive keyboard focus");
+
+				var finalFocused =
+					UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+				Assert.Same(mauiItemsView, finalFocused);
+			});
+		}
 		class Subscriber
 		{
 			public void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }

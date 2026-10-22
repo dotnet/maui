@@ -117,8 +117,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
-		// Make it public in .NET 11.
-		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler.PlatformView is not null)
 			{

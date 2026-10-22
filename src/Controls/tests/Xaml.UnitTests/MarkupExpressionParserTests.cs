@@ -288,6 +288,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[InlineData("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
 		[InlineData("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
 		[InlineData("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
+		// GTK, macOS and WPF are now public, so custom/community backends can express
+		// platform-conditional values for them through the {OnPlatform} markup extension.
+		[InlineData("{OnPlatform Android=20, GTK=25}", "GTK", 25)]
+		[InlineData("{OnPlatform iOS=20, macOS=25}", "macOS", 25)]
+		[InlineData("{OnPlatform Android=20, WPF=25}", "WPF", 25)]
 		[InlineData("{OnPlatform 20}", "Android", 20)]
 		[InlineData("{OnPlatform 20}", "iOS", 20)]
 		[InlineData("{OnPlatform 20}", "Tizen", 20)]
