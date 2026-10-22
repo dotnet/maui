@@ -170,6 +170,7 @@ stages:
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
+          retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
             artifactName: ${{ parameters.appArtifactName }}
@@ -224,6 +225,7 @@ stages:
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
+          retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
             artifactName: ${{ parameters.appArtifactName }}
@@ -276,6 +278,7 @@ stages:
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
+          retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
             artifactName: ${{ parameters.appArtifactName }}
@@ -383,6 +386,7 @@ stages:
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download Build'
+          retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
             artifactName: ${{ parameters.appArtifactName }}_coreclr
@@ -438,12 +442,12 @@ stages:
           # Restore dotnet tools (required for dotnet cake)
           - script: dotnet tool restore
             displayName: 'Restore .NET tools'
-            retryCountOnTaskFailure: 3
+            retryCountOnTaskFailure: 4
 
           # Install .NET SDK and workloads using Arcade build script
           - script: ./build.cmd -restore -configuration Release
             displayName: 'Install .NET'
-            retryCountOnTaskFailure: 3
+            retryCountOnTaskFailure: 4
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
@@ -612,6 +616,7 @@ stages:
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download Build'
+            retryCountOnTaskFailure: 4
             condition: succeeded()
             inputs:
               artifactName: ${{ parameters.appArtifactName }}_windows

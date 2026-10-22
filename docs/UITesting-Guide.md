@@ -391,10 +391,13 @@ fixture and method categories; only categories in the original group are selecte
 Missing, incomplete, or unmappable results fall back to the original filter with
 a warning. Custom filters retain their original selection, and local runs do not retry.
 
-On iOS, MacCatalyst, and Windows CI, preparation and test-project build phases
-also have one bounded retry per failed phase, before test execution starts.
-These retries do not restart completed tests. Local runs and device-test targets
-do not retry setup.
+Explicitly separated preparation and test-project build phases on Android, iOS,
+MacCatalyst, and Windows CI allow at most five total attempts per failed phase,
+before test execution starts. These retries do not restart completed tests.
+Local runs and device-test Cake targets do not retry these phases. Shared agent
+provisioning also uses bounded setup-only recovery; see
+[Setup-only retries](../.github/docs/maui-ci-facts.md#setup-only-retries) for its
+coverage and limits.
 
 NUnit XML is checked whether VSTest succeeds or throws. Fixture-only failures
 such as `OneTimeTearDown` errors trigger the same category-based retry and are

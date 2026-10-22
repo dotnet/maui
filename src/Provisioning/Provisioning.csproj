@@ -52,7 +52,11 @@
 		</ItemGroup>
 
 		<!-- Install SDK Common Packages -->
-		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
+		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkCommonPackages.Identity)&quot;"
+			  Condition="'$(TF_BUILD)' != 'True'" />
+		<Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/Install-AndroidSdkPackage.ps1&quot; -Package &quot;%(AndroidSdkCommonPackages.Identity)&quot;"
+			  Condition="'$(TF_BUILD)' == 'True'"
+			  IgnoreStandardErrorWarningFormat="True" />
 
 		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -67,7 +71,11 @@
 		</ItemGroup>
 
 		<!-- Install SDK Platform API Packages -->
-		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
+		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;"
+			  Condition="'$(TF_BUILD)' != 'True'" />
+		<Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/Install-AndroidSdkPackage.ps1&quot; -Package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;"
+			  Condition="'$(TF_BUILD)' == 'True'"
+			  IgnoreStandardErrorWarningFormat="True" />
 
 		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -85,7 +93,10 @@
 
 		<!-- Install SDK Packages -->
 		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;"
-		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+			  Condition="'$(TF_BUILD)' != 'True' AND ('$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)')" />
+		<Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)../../eng/scripts/Install-AndroidSdkPackage.ps1&quot; -Package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;"
+			  IgnoreStandardErrorWarningFormat="True"
+			  Condition="'$(TF_BUILD)' == 'True' AND ('$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)')" />
 
 		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
