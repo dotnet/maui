@@ -166,11 +166,12 @@ if %IS_PACKAGED%==1 (
     echo Found MSIX: !MSIX_FILE!
     
     REM Select dependency architecture by directory, not the x64 parent package name.
+    REM Disposable Helix workers may have apps holding shared runtime dependencies open.
     echo Installing app package and x64 dependencies...
     powershell -NoProfile -Command ^
         "$ErrorActionPreference = 'Stop';" ^
         "$dependencies = @(Get-ChildItem -Path '%SCENARIO_DIR%' -Filter '*.msix' -Recurse | Where-Object { $_.Directory.Name -eq 'x64' -and $_.Directory.Parent.Name -eq 'Dependencies' } | ForEach-Object FullName);" ^
-        "$installParameters = @{ Path = '!MSIX_FILE!' };" ^
+        "$installParameters = @{ Path = '!MSIX_FILE!'; ForceApplicationShutdown = $true };" ^
         "if ($dependencies.Count -gt 0) { $installParameters.DependencyPath = $dependencies; $dependencies | ForEach-Object { Write-Host \"Dependency: $_\" } };" ^
         "Add-AppxPackage @installParameters"
     if !ERRORLEVEL! NEQ 0 (

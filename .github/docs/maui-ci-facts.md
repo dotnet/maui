@@ -88,6 +88,18 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## MAUI-specific quirks
 
+### Windows packaged device-test deployment
+
+The Helix Windows runner installs the test MSIX and its x64 dependencies in one
+`Add-AppxPackage` operation with `ForceApplicationShutdown`. On disposable workers,
+Windows apps such as Web Experience can hold shared runtime dependencies open and
+block deployment with `0x80073D02` before any tests start.
+[Microsoft documents](https://learn.microsoft.com/powershell/module/appx/add-appxpackage#-forceapplicationshutdown)
+that this switch shuts down processes associated with the package **or its
+dependencies**; `ForceTargetApplicationShutdown` only covers the target package.
+Keep this behavior scoped to the Helix runner, not local developer deployment.
+Deployment errors still fail the work item and print the Appx deployment log.
+
 ### Android activity isolation
 
 External-intent fixtures must remain scoped to the test package and an unhandled
