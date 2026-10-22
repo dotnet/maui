@@ -75,19 +75,11 @@
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-        Update="SkiaSharp.Views.Gtk3"
-        Version="$(_SkiaSharpVersion)"
-    />
-    <PackageReference
         Update="SkiaSharp.Views.WinUI"
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
         Update="SkiaSharp.Views.WPF"
-        Version="$(_SkiaSharpVersion)"
-    />
-    <PackageReference
-        Update="SkiaSharp.NativeAssets.Linux"
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
