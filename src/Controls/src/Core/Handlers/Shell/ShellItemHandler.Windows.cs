@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			return new MauiNavigationView();
 		}
 
-		public static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
+		internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
 		{
 			if (handler.PlatformView is NavigationView navigationView)
 				navigationView.SetAutomationPropertiesAutomationId(shellItem.AutomationId);
