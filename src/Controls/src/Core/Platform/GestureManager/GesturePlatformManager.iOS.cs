@@ -113,7 +113,13 @@ namespace Microsoft.Maui.Controls.Platform
 						continue;
 
 					PlatformView?.RemoveGestureRecognizer(uiGestureRecognizer);
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.DisposeRemoveSiteCompleted,
+						manager: this, recognizer: kvp.Key, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiGestureRecognizer.Handle);
 					uiGestureRecognizer.ShouldReceiveTouch = null;
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.DisposeNativeDisposing,
+						manager: this, recognizer: kvp.Key, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiGestureRecognizer.Handle);
 					uiGestureRecognizer.Dispose();
 				}
 			}
@@ -166,6 +172,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var recognizer = weakRecognizer.Target as IGestureRecognizer;
 			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 			var view = eventTracker?._handler?.VirtualView as View;
+			Issue17389TapTrace.Record(Issue17389TapTrace.Stage.ManagedTapDispatch,
+				manager: eventTracker, recognizer: recognizer, view: view, handler: eventTracker?._handler,
+				nativeRecognizerHandle: uITapGestureRecognizer is null ? 0 : (nint)uITapGestureRecognizer.Handle);
 
 			WeakReference? weakPlatformRecognizer = null;
 			if (uITapGestureRecognizer != null)
@@ -192,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
-				if (item == childTapGestureRecognizer && view != null)
+					if (item == childTapGestureRecognizer && view != null)
 						childTapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
 		}
@@ -458,13 +467,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var result = new UISwipeGestureRecognizer();
 			result.NumberOfTouchesRequired = (uint)numFingers;
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
-			result.ShouldRecognizeSimultaneously = (g, o) => 
+			result.ShouldRecognizeSimultaneously = (g, o) =>
 			{
 				if (o.View is UIScrollView)
 				{
 					return false;
 				}
-				
+
 				return true;
 			};
 			result.AddTarget(() => action(direction));
@@ -474,7 +483,7 @@ namespace Microsoft.Maui.Controls.Platform
 		UILongPressGestureRecognizer CreateLongPressRecognizer(Action<UILongPressGestureRecognizer> action)
 		{
 			var result = new UILongPressGestureRecognizer(action);
-			
+
 			// Get the recognizer from the handler's VirtualView
 			if (_handler?.VirtualView is View view)
 			{
@@ -491,11 +500,11 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
-			
+
 			// Enable simultaneous recognition with other gestures (like Swipe, Tap)
 			// This allows LongPress to coexist with other gestures
 			result.ShouldRecognizeSimultaneously = _alwaysRecognizeSimultaneously;
-			
+
 			return result;
 		}
 
@@ -544,7 +553,7 @@ namespace Microsoft.Maui.Controls.Platform
 					eventTracker._handler?.VirtualView is View view)
 				{
 					ButtonsMask button = ButtonsMask.Primary;
-					
+
 					// Try to get actual button information from the CustomPressGestureRecognizer
 					if (pointerGesture is CustomPressGestureRecognizer customPress)
 					{
@@ -623,7 +632,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// For Mac Catalyst, add context menu interaction to detect right-clicks for PointerGestureRecognizer
 			// since right-click events don't come through the normal Presses* events
-			if (OperatingSystem.IsMacCatalyst() && 
+			if (OperatingSystem.IsMacCatalyst() &&
 				weakRecognizer.Target is PointerGestureRecognizer pgr &&
 				(pgr.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 			{
@@ -648,6 +657,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<UITapGestureRecognizer> action = new Action<UITapGestureRecognizer>((sender) =>
 			{
 				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
+				Issue17389TapTrace.Record(Issue17389TapTrace.Stage.NativeTapAction,
+					manager: eventTracker, nativeRecognizerHandle: (nint)sender.Handle);
 				var originPoint = sender.LocationInView(eventTracker?.PlatformView);
 				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired, sender);
 			});
@@ -935,7 +946,12 @@ namespace Microsoft.Maui.Controls.Platform
 						_proxy ??= new ShouldReceiveTouchProxy(this);
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
 
-						PlatformView.AddGestureRecognizer(nativeRecognizer);
+						var observedAddReceiver = PlatformView;
+						observedAddReceiver.AddGestureRecognizer(nativeRecognizer);
+						Issue17389TapTrace.Record(Issue17389TapTrace.Stage.NativeAttached,
+							manager: this, recognizer: recognizer, view: _handler.VirtualView, handler: _handler,
+							nativeRecognizerHandle: (nint)nativeRecognizer.Handle);
+						Microsoft.Maui.Platform.Issue17389CoreTrace.ObserveAddedOwner(observedAddReceiver, nativeRecognizer);
 
 					}
 				}
@@ -974,6 +990,9 @@ namespace Microsoft.Maui.Controls.Platform
 						continue;
 
 					PlatformView?.RemoveGestureRecognizer(uiRecognizer);
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.CollectionRemoveSiteCompleted,
+						manager: this, recognizer: gestureRecognizer, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiRecognizer.Handle);
 
 					if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
 						tapGestureRecognizer != null)
@@ -993,6 +1012,9 @@ namespace Microsoft.Maui.Controls.Platform
 						longPressGestureRecognizer.PropertyChanged -= OnLongPressGestureRecognizerPropertyChanged;
 					}
 
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.CollectionNativeDisposing,
+						manager: this, recognizer: gestureRecognizer, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiRecognizer.Handle);
 					uiRecognizer.Dispose();
 				}
 			}
@@ -1020,7 +1042,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.Is(SwipeGestureRecognizer.DirectionProperty) && 
+			if (e.Is(SwipeGestureRecognizer.DirectionProperty) &&
 				sender is SwipeGestureRecognizer swipeGesture &&
 				_gestureRecognizers.TryGetValue(swipeGesture, out var uiRecognizers))
 			{
@@ -1065,28 +1087,48 @@ namespace Microsoft.Maui.Controls.Platform
 			public bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 			{
 				if (!_manager.TryGetTarget(out var manager))
+				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectMissingManager,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle);
 					return false;
+				}
 
 				var platformView = manager.PlatformView;
 				var virtualView = manager._handler?.VirtualView;
 
 				if (virtualView == null || platformView == null)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectMissingView,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: platformView is null ? 0 : (nint)platformView.Handle);
 					return false;
 				}
 
 				if (virtualView.InputTransparent)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectTransparent,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return false;
 				}
 
 				if (!virtualView.IsEnabled)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectDisabled,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return false;
 				}
 
 				if (touch.View == platformView)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.AcceptDirect,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return true;
 				}
 
@@ -1097,9 +1139,17 @@ namespace Microsoft.Maui.Controls.Platform
 				if (touch.View.IsDescendantOfView(platformView) &&
 					(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.AcceptDescendant,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return true;
 				}
 
+				Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectTarget,
+					manager: manager, view: virtualView, handler: manager._handler,
+					nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+					platformViewHandle: (nint)platformView.Handle);
 				return false;
 			}
 		}
@@ -1301,24 +1351,24 @@ namespace Microsoft.Maui.Controls.Platform
 						// Check if this recognizer should respond to secondary button
 						if ((pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 						{
-								pointerGestureRecognizer.SendPointerPressed(view,
-									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
-									null,
-									ButtonsMask.Secondary);
+							pointerGestureRecognizer.SendPointerPressed(view,
+								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
+								null,
+								ButtonsMask.Secondary);
 
-								// Immediately send pointer released event
-								if (_gestureManager.Target is GesturePlatformManager gt
-									&& _recognizer.Target is PointerGestureRecognizer pgr2
-									&& gt._handler?.VirtualView is View view2)
-								{
-									view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
-										(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
-										null,
-										ButtonsMask.Secondary));
-								}
+							// Immediately send pointer released event
+							if (_gestureManager.Target is GesturePlatformManager gt
+								&& _recognizer.Target is PointerGestureRecognizer pgr2
+								&& gt._handler?.VirtualView is View view2)
+							{
+								view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
+									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
+									null,
+									ButtonsMask.Secondary));
+							}
 						}
 					}
-					
+
 					// Return null to prevent actual context menu from appearing
 					// We only want to detect the right-click, not show a menu
 					return null;

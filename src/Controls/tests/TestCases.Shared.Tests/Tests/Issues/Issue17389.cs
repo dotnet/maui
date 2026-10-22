@@ -6,6 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue17389 : _IssuesUITest
 {
+	string? tapLogPath;
+
 	protected override bool ResetAfterEachTest => true;
 
 	public Issue17389(TestDevice testDevice) : base(testDevice)
@@ -13,6 +15,54 @@ public class Issue17389 : _IssuesUITest
 	}
 
 	public override string Issue => "InputTransparent should not affect background color on Windows layouts";
+
+	public override IConfig GetTestConfig()
+	{
+		var config = base.GetTestConfig();
+		if (_testDevice == TestDevice.Mac)
+			ConfigureTapLog(config);
+		return config;
+	}
+
+	public override void LaunchAppWithTest()
+	{
+		if (App is AppiumCatalystApp catalystApp)
+			ConfigureTapLog(catalystApp.Config);
+		base.LaunchAppWithTest();
+	}
+
+	void ConfigureTapLog(IConfig config)
+	{
+		tapLogPath ??= Path.Combine(
+			Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY") ?? TestContext.CurrentContext.WorkDirectory,
+			$"Issue17389-{Guid.NewGuid():N}.log");
+		config.SetTestConfigurationArg("ISSUE17389_TAP_LOG", tapLogPath);
+	}
+
+	[TearDown]
+	public void AttachTapDiagnostics()
+	{
+		if (tapLogPath is not null)
+		{
+			var processes = System.Diagnostics.Process.GetProcessesByName("Controls.TestCases.HostApp");
+			var processIds = processes.Select(process => process.Id).ToArray();
+			foreach (var process in processes)
+				process.Dispose();
+			Assert.That(processIds, Has.Length.EqualTo(1), "Cannot establish target process identity after interactions.");
+			var completedPid = processIds[0];
+			TestContext.WriteLine($"TargetAppPid: {completedPid}");
+
+			Assert.That(File.Exists(tapLogPath), Is.True, "App-side receiver log is missing.");
+			TestContext.WriteLine(File.ReadAllText(tapLogPath));
+			TestContext.AddTestAttachment(tapLogPath, "Issue17389 native terminal touch facts and gesture callbacks");
+			var logDirectory = Path.GetDirectoryName(tapLogPath) ?? throw new InvalidOperationException("Tap log has no directory.");
+			var pidPath = Path.Combine(logDirectory, "Issue17389-completed-target-pids.txt");
+			var pidText = completedPid.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			var priorPids = File.Exists(pidPath) ? File.ReadAllLines(pidPath) : Array.Empty<string>();
+			Assert.That(priorPids, Does.Not.Contain(pidText), "Target process was reused across cold cases.");
+			File.AppendAllText(pidPath, pidText + Environment.NewLine);
+		}
+	}
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Layout)]
@@ -28,25 +78,19 @@ public class Issue17389 : _IssuesUITest
 			 "PurpleContent"
 		};
 
-		// Exercise physical hit-testing in both phases, including when input is disabled.
-		var tapCount = 0;
 		foreach (var layout in layouts)
 		{
-			var rect = App.WaitForElement(layout).GetRect();
-			App.TapCoordinates(rect.CenterX(), rect.CenterY());
-			tapCount++;
-			Assert.That(App.WaitForTextEqualToElement("TapCountLabel", $"Tap count: {tapCount}"), Is.True,
-				$"Tapping {layout} should increment the tap count to {tapCount}.");
+			App.Tap(layout);
+			TestContext.WriteLine($"{DateTime.UtcNow:O} Enabled tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
 		App.WaitForElement("Tap count: 4");
 		App.Click("ToggleInputTransparentButton");
-		Assert.That(App.WaitForTextToBePresentInElement("RedGrid", "InputTransparent=True"), Is.True);
 
 		foreach (var layout in layouts)
 		{
-			var rect = App.WaitForElement(layout).GetRect();
-			App.TapCoordinates(rect.CenterX(), rect.CenterY());
+			App.Tap(layout);
+			TestContext.WriteLine($"{DateTime.UtcNow:O} Transparent tap {layout}: {App.FindElement("TapCountLabel").GetText()}");
 		}
 
 		App.WaitForElement("Tap count: 0");

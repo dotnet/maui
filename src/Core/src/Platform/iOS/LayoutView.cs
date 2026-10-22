@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 
 			if (result is null)
 			{
+				Issue17389CoreTrace.ObserveHit(this, point, uievent, result, Issue17389CoreTrace.HitReturn.BaseNull);
 				return null;
 			}
 
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Platform
 				// then we exclude the LayoutView itself from hit testing. But it's children are valid
 				// hit testing targets.
 
+				Issue17389CoreTrace.ObserveHit(this, point, uievent, result, Issue17389CoreTrace.HitReturn.ExcludedSelf);
 				return null;
 			}
 
@@ -42,9 +44,11 @@ namespace Microsoft.Maui.Platform
 				// If the child is a layout then we need to check the UserInteractionEnabledOverride
 				// since layouts always have user interaction enabled.
 
+				Issue17389CoreTrace.ObserveHit(this, point, uievent, result, Issue17389CoreTrace.HitReturn.ExcludedLayout);
 				return null;
 			}
 
+			Issue17389CoreTrace.ObserveHit(this, point, uievent, result, Issue17389CoreTrace.HitReturn.Returned);
 			return result;
 		}
 
