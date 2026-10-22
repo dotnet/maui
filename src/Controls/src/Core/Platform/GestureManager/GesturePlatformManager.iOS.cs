@@ -113,7 +113,13 @@ namespace Microsoft.Maui.Controls.Platform
 						continue;
 
 					PlatformView?.RemoveGestureRecognizer(uiGestureRecognizer);
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.DisposeRemoveSiteCompleted,
+						manager: this, recognizer: kvp.Key, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiGestureRecognizer.Handle);
 					uiGestureRecognizer.ShouldReceiveTouch = null;
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.DisposeNativeDisposing,
+						manager: this, recognizer: kvp.Key, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiGestureRecognizer.Handle);
 					uiGestureRecognizer.Dispose();
 				}
 			}
@@ -166,6 +172,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var recognizer = weakRecognizer.Target as IGestureRecognizer;
 			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 			var view = eventTracker?._handler?.VirtualView as View;
+			Issue17389TapTrace.Record(Issue17389TapTrace.Stage.ManagedTapDispatch,
+				manager: eventTracker, recognizer: recognizer, view: view, handler: eventTracker?._handler,
+				nativeRecognizerHandle: uITapGestureRecognizer is null ? 0 : (nint)uITapGestureRecognizer.Handle);
 
 			WeakReference? weakPlatformRecognizer = null;
 			if (uITapGestureRecognizer != null)
@@ -648,6 +657,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<UITapGestureRecognizer> action = new Action<UITapGestureRecognizer>((sender) =>
 			{
 				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
+				Issue17389TapTrace.Record(Issue17389TapTrace.Stage.NativeTapAction,
+					manager: eventTracker, nativeRecognizerHandle: (nint)sender.Handle);
 				var originPoint = sender.LocationInView(eventTracker?.PlatformView);
 				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired, sender);
 			});
@@ -936,6 +947,9 @@ namespace Microsoft.Maui.Controls.Platform
 						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
 
 						PlatformView.AddGestureRecognizer(nativeRecognizer);
+						Issue17389TapTrace.Record(Issue17389TapTrace.Stage.NativeAttached,
+							manager: this, recognizer: recognizer, view: _handler.VirtualView, handler: _handler,
+							nativeRecognizerHandle: (nint)nativeRecognizer.Handle);
 
 					}
 				}
@@ -974,6 +988,9 @@ namespace Microsoft.Maui.Controls.Platform
 						continue;
 
 					PlatformView?.RemoveGestureRecognizer(uiRecognizer);
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.CollectionRemoveSiteCompleted,
+						manager: this, recognizer: gestureRecognizer, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiRecognizer.Handle);
 
 					if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
 						tapGestureRecognizer != null)
@@ -993,6 +1010,9 @@ namespace Microsoft.Maui.Controls.Platform
 						longPressGestureRecognizer.PropertyChanged -= OnLongPressGestureRecognizerPropertyChanged;
 					}
 
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.CollectionNativeDisposing,
+						manager: this, recognizer: gestureRecognizer, view: _handler.VirtualView, handler: _handler,
+						nativeRecognizerHandle: (nint)uiRecognizer.Handle);
 					uiRecognizer.Dispose();
 				}
 			}
@@ -1065,28 +1085,48 @@ namespace Microsoft.Maui.Controls.Platform
 			public bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 			{
 				if (!_manager.TryGetTarget(out var manager))
+				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectMissingManager,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle);
 					return false;
+				}
 
 				var platformView = manager.PlatformView;
 				var virtualView = manager._handler?.VirtualView;
 
 				if (virtualView == null || platformView == null)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectMissingView,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: platformView is null ? 0 : (nint)platformView.Handle);
 					return false;
 				}
 
 				if (virtualView.InputTransparent)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectTransparent,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return false;
 				}
 
 				if (!virtualView.IsEnabled)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectDisabled,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return false;
 				}
 
 				if (touch.View == platformView)
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.AcceptDirect,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return true;
 				}
 
@@ -1097,9 +1137,17 @@ namespace Microsoft.Maui.Controls.Platform
 				if (touch.View.IsDescendantOfView(platformView) &&
 					(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 				{
+					Issue17389TapTrace.Record(Issue17389TapTrace.Stage.AcceptDescendant,
+						manager: manager, view: virtualView, handler: manager._handler,
+						nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+						platformViewHandle: (nint)platformView.Handle);
 					return true;
 				}
 
+				Issue17389TapTrace.Record(Issue17389TapTrace.Stage.RejectTarget,
+					manager: manager, view: virtualView, handler: manager._handler,
+					nativeRecognizerHandle: (nint)recognizer.Handle, touchHandle: (nint)touch.Handle,
+					platformViewHandle: (nint)platformView.Handle);
 				return false;
 			}
 		}
