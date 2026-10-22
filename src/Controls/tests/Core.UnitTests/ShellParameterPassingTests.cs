@@ -807,6 +807,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task IntermediatePagePreservesLegacyShellNavigationQueryParametersPayload()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+			var parameters = new ShellNavigationQueryParameters
+			{
+				["product.id"] = 42,
+				["stars"] = 5,
+			};
+
+			await shell.GoToAsync(new ShellNavigationState("product/review"), parameters);
+
+			var query = Assert.IsType<ShellNavigationQueryParameters>(
+				Assert.Single(intermediatePage.AppliedQueryAttributes));
+			Assert.True(query.IsReadOnly);
+			Assert.Equal(42, query["product.id"]);
+			Assert.Equal(42, query["id"]);
+			Assert.Equal(5, query["stars"]);
+		}
+
+		[Fact]
 		public async Task IntermediatePageReceivesQueryPropertyAttributes()
 		{
 			var shell = new TestShell();

@@ -140,6 +140,14 @@ Always format code before committing:
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
+### Performance PR Reviews
+
+The explicit `/review performance` PR command is a separate hosted entrypoint:
+`copilot-review-performance.md` runs isolated managed benchmarks and calls
+`perf-analysis`, then renders and validates one gh-aw safe-output comment. It does
+not run native devices; keep those coverage gaps explicit. Do not route this
+subcommand through the full `/review` pipeline or missed-command recovery.
+
 ## Contribution Guidelines
 
 ### Handling Existing PRs for Assigned Issues
@@ -214,6 +222,14 @@ git commit -m "Fix: Description of the change"
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
+
+### Code Comments
+- **Do NOT emit "fake region" banner/separator comments** — e.g. lines like
+  `// -----------------------------`, or a three-line block of dashes wrapping a section
+  label (`// ----` / `// Helpers` / `// ----`). These are `#region`/`#endregion` in disguise,
+  add noise, and are not wanted. Let the code structure speak for itself; use a plain one-line
+  `//` comment only where a specific piece of logic genuinely needs clarification.
+- Prefer XML doc comments (`///`) for public/internal members over banner comments.
 
 ### Opening PRs
 

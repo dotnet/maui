@@ -19,8 +19,12 @@ Describe 'ci-official-release.yml' {
     $filterMatch.Success | Should -BeTrue
     $packageAssetFilter = $filterMatch.Groups[1].Value
     'Microsoft.Maui.Controls.Foldable' | Should -Match $packageAssetFilter
+    'SkiaSharp.Views.Maui.Controls' | Should -Match $packageAssetFilter
     'assets/symbols/dotnet-maui/Microsoft.Maui.Controls.Foldable.symbols.nupkg' |
       Should -Not -Match $packageAssetFilter
+    'assets/symbols/mono-SkiaSharp/SkiaSharp.symbols.nupkg' |
+      Should -Not -Match $packageAssetFilter
+    $pipeline | Should -Match '!\$_.nonShipping -and \$_.name -match \$packageAssetFilter'
   }
 
   It 'keeps workload gathering fail-fast and validates non-workload misses' {
@@ -54,10 +58,22 @@ Describe 'ci-official-release.yml' {
     $nonWorkloadTemplate | Should -Not -Match 'skip-assets-publishing|add-build-to-channel'
   }
 
-  It 'preserves first-match BAR resolution for every repository' {
+  It 'resolves every repository through Darc without a manual BAR ID' {
     $pipeline | Should -Not -Match '(?m)^- name: barBuildId$'
-    $pipeline | Should -Match '--repo \$sourceRepository --commit'
-    $pipeline | Should -Match '\$build = \$builds\[0\]'
+    $pipeline | Should -Not -Match 'BAR_BUILD_ID'
+    $pipeline | Should -Not -Match 'az account get-access-token'
+    $pipeline | Should -Not -Match 'https://maestro\.dot\.net/api/builds'
+    @([regex]::Matches(
+      $pipeline,
+      'get-build --ci --repo \$sourceRepository --commit "\$env:COMMIT_HASH"')).Count |
+      Should -Be 1
+  }
+
+  It 'preserves first-match repository-and-commit BAR resolution' {
+    $pipeline | Should -Match '(?s)\$build = \$builds\[0\].*?' +
+      'belongs to.*?' +
+      'commit.*?does not match.*?' +
+      '\$barId = \$build\.id'
     $pipeline | Should -Not -Match 'Expected exactly one BAR build'
     $pipeline | Should -Not -Match 'requiredChannel(Name|Id)|build\.channels|5172'
   }
@@ -70,6 +86,7 @@ Describe 'ci-official-release.yml' {
     $nonWorkloadTemplate | Should -Match "eq\(variables\['NuGetPackagesToPublish'\], 'true'\)"
     $nonWorkloadTemplate | Should -Match '1ES\.PublishNuget@1'
     $nonWorkloadTemplate | Should -Match "publishFeedCredentials: 'nuget\.org \(dotnetframework\)'"
+    $pipeline | Should -Match 'barBuildId = \[int\] \$barId'
     $pipeline | Should -Not -Match '(?m)^- name: nugetPublishServiceConnection$'
     $pipeline | Should -Not -Match '(?m)^- name: nugetAlreadyAttemptedNonWorkloadFilters$'
     $pipeline | Should -Not -Match 'HasPackages'
@@ -84,7 +101,9 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/maui',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android',\r?$"
     $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/macios',\r?$"
-    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android-libraries'\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android-libraries',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/mono/skiasharp',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/mono/skiasharp\.extended'\r?$"
     $pipeline | Should -Match 'non-workload release cannot contain workload manifest'
     $pipeline | Should -Match '(?s)Name = ''NuGet packages''.*?Packages = \$selectedPackages.*?Identities = \$selectedIdentities'
     $pipeline | Should -Match '(?s)-Action FilterExisting.*?selectedPackages.*?stagedPackages'

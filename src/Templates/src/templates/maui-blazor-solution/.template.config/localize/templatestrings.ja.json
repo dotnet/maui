@@ -24,7 +24,7 @@
   "symbols/InteractivityPlatform/choices/Auto/description": "WebAssembly 資産のダウンロード中にサーバーを使用してから、WebAssembly を使用します",
   "symbols/IncludeSampleContent/displayName": "サンプル ページを含める(_I)",
   "symbols/IncludeSampleContent/description": "基本的な使用パターンを示すサンプル ページとスタイルを追加するかどうかを構成します。",
-  "symbols/Empty/description": "基本的な使用パターンを示すサンプル ページとスタイルを省略するかどうかを構成します。",
+  "symbols/empty/description": "基本的な使用パターンを示すサンプル ページとスタイルを省略するかどうかを構成します。",
   "symbols/AllInteractive/displayName": "対話型レンダリングをサイト全体でグローバルに有効化(_E)",
   "symbols/AllInteractive/description": "最上位レベルで対話型レンダリング モードを適用して、すべてのページを対話型にするかどうかを構成します。false の場合、ページは既定で静的サーバー レンダリングを使用し、ページ単位またはコンポーネント単位で対話型としてマークできます。",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、--auth に個人が使用されていない場合にのみ適用されます。",

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
@@ -153,6 +154,63 @@ namespace Microsoft.Maui.DeviceTests
 					// Without an AppBarLayout in the hierarchy, no view ID should be generated
 					// (SetAppBarLiftTarget only assigns an ID when it actually claims the target).
 					Assert.Equal(View.NoId, scrollView.Id);
+				});
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task AppBarLiftTargetCheckSurvivesGarbageCollection()
+		{
+			if (!Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var context = MauiContext.Context!;
+				var coordinator = new CoordinatorLayout(context);
+				var appBarLayout = new AppBarLayout(context);
+				var contentFrame = new FrameLayout(context);
+				var scrollView = new Microsoft.Maui.Platform.MauiScrollView(context);
+				appBarLayout.SetLiftable(true);
+
+				contentFrame.AddView(scrollView, new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+				coordinator.AddView(appBarLayout, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+				coordinator.AddView(contentFrame, new CoordinatorLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+
+				await coordinator.AttachAndRun(async () =>
+				{
+					Assert.True(scrollView.IsAttachedToWindow);
+
+					using var cancellationTokenSource = new CancellationTokenSource();
+					var cancellationToken = cancellationTokenSource.Token;
+					var gcTask = Task.Run(() =>
+					{
+						while (!cancellationToken.IsCancellationRequested)
+						{
+							GC.Collect();
+							GC.WaitForPendingFinalizers();
+							Thread.Sleep(1);
+						}
+					});
+
+					try
+					{
+						for (int i = 0; i < 2_000; i++)
+						{
+							scrollView.TrySetAppBarLiftTargetIfOnScreen();
+						}
+					}
+					finally
+					{
+						cancellationTokenSource.Cancel();
+						await gcTask;
+					}
+
+					scrollView.ClearAppBarLiftTarget();
 				});
 			});
 		}
@@ -340,6 +398,36 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(1000, measuredWidth);
 				Assert.Equal(1000, measuredHeight);
+			});
+		}
+
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task MauiScrollViewHasNoVerticalScrollRangeWithPaddingInHorizontalOrientation()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var sv = new MauiScrollView(MauiContext.Context);
+				sv.SetContent(new Button(MauiContext.Context));
+				sv.SetOrientation(ScrollOrientation.Horizontal);
+				sv.SetPadding(10, 20, 30, 40);
+
+				var hsv = sv.FindViewWithTag("Microsoft.Maui.Android.HorizontalScrollView") as MauiHorizontalScrollView;
+				Assert.NotNull(hsv);
+
+				sv.Measure(
+					MeasureSpec.MakeMeasureSpec(1000, global::Android.Views.MeasureSpecMode.Exactly),
+					MeasureSpec.MakeMeasureSpec(1000, global::Android.Views.MeasureSpecMode.Exactly));
+
+				sv.Layout(0, 0, 1000, 1000);
+
+				Assert.Equal(960, hsv.MeasuredWidth);
+				Assert.Equal(940, hsv.MeasuredHeight);
+				Assert.Equal(10, hsv.Left);
+				Assert.Equal(20, hsv.Top);
+				Assert.Equal(970, hsv.Right);
+				Assert.Equal(960, hsv.Bottom);
+				Assert.False(sv.CanScrollVertically(1));
 			});
 		}
 	}

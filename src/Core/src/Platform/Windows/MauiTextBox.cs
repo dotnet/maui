@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System;
+using System.Runtime.CompilerServices;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
@@ -9,6 +11,13 @@ namespace Microsoft.Maui.Platform
 		const string ContentElementName = "ContentElement";
 		const string PlaceholderTextContentPresenterName = "PlaceholderTextContentPresenter";
 		const string DeleteButtonElementName = "DeleteButton";
+		static readonly ConditionalWeakTable<FrameworkElement, TextBoxTemplateCache> s_templateCaches = new();
+
+		sealed class TextBoxTemplateCache
+		{
+			public WeakReference<ScrollViewer>? ContentElement { get; set; }
+			public int ContentElementSearchCount { get; set; }
+		}
 
 		public static void InvalidateAttachedProperties(DependencyObject obj)
 		{
@@ -30,22 +39,57 @@ namespace Microsoft.Maui.Platform
 
 		static void OnVerticalTextAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
 		{
-			// TODO: cache the scrollViewer value on the textBox
+			if (d is not FrameworkElement element)
+			{
+				return;
+			}
 
-			var element = d as FrameworkElement;
 			var verticalAlignment = GetVerticalTextAlignment(d);
 
-			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
-			if (scrollViewer is not null)
+			var scrollViewer = GetContentElement(element);
+			scrollViewer?.VerticalAlignment = verticalAlignment;
+
+			var placeholder = element.GetDescendantByName<TextBlock>(PlaceholderTextContentPresenterName);
+			placeholder?.VerticalAlignment = verticalAlignment;
+		}
+
+		static ScrollViewer? GetContentElement(FrameworkElement element)
+		{
+			s_templateCaches.TryGetValue(element, out var cache);
+			if (cache?.ContentElement?.TryGetTarget(out var contentElement) == true &&
+				IsDescendantOf(contentElement, element))
 			{
-				scrollViewer.VerticalAlignment = verticalAlignment;
+				return contentElement;
 			}
 
-			var placeholder = element?.GetDescendantByName<TextBlock>(PlaceholderTextContentPresenterName);
-			if (placeholder is not null)
+			contentElement = element.GetDescendantByName<ScrollViewer>(ContentElementName);
+			if (cache is null && contentElement is not null)
+				cache = s_templateCaches.GetOrCreateValue(element);
+
+			if (cache is not null)
 			{
-				placeholder.VerticalAlignment = verticalAlignment;
+				cache.ContentElement = contentElement is null ? null : new(contentElement);
+				cache.ContentElementSearchCount++;
 			}
+
+			return contentElement;
+		}
+
+		internal static int GetContentElementSearchCount(FrameworkElement element) =>
+			s_templateCaches.TryGetValue(element, out var cache) ? cache.ContentElementSearchCount : 0;
+
+		static bool IsDescendantOf(DependencyObject element, DependencyObject ancestor)
+		{
+			var current = VisualTreeHelper.GetParent(element);
+			while (current is not null)
+			{
+				if (current == ancestor)
+					return true;
+
+				current = VisualTreeHelper.GetParent(current);
+			}
+
+			return false;
 		}
 
 		public static bool GetIsDeleteButtonEnabled(DependencyObject obj) =>

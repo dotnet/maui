@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 
-		Dictionary<BindableProperty, (string, SetterSpecificity)> _dynamicResources;
+		Dictionary<BindableProperty, SetterSpecificityList<string>> _dynamicResources;
 
 		IEffectControlProvider _effectControlProvider;
 
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 		// if available.
 		//
 		// Ultimately I don't think we'll need these to be virtual but some controls (layout)
-		// are going to take a more focused effort so I'd rather just do that in a 
+		// are going to take a more focused effort so I'd rather just do that in a
 		// separate PR. I don't think there's ever a scenario where a subclass needs
 		// to replace the backing store.
 		// If everyone just uses AddLogicalChildren and RemoveLogicalChildren
@@ -294,10 +294,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
@@ -351,10 +348,7 @@ namespace Microsoft.Maui.Controls
 				_realParent = null;
 				if (logWarningIfParentHasBeenCollected)
 				{
-					Application.Current?
-										.FindMauiContext()?
-										.CreateLogger<Element>()?
-										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 			}
 
@@ -375,7 +369,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
+		Dictionary<BindableProperty, SetterSpecificityList<string>> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, SetterSpecificityList<string>>());
 
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
@@ -415,16 +409,14 @@ namespace Microsoft.Maui.Controls
 
 				if (value != null && (element is Layout || element is IControlTemplated))
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
 				}
 			}
 
 			RealParent = value;
 			if (RealParent != null)
 			{
-				var resources = GetParentResourcesForParentSet();
-				if (resources != null)
-					OnParentResourcesChanged(resources);
+				OnParentResourcesChangedKeys(RealParent.GetMergedResourceKeys());
 				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
@@ -461,9 +453,13 @@ namespace Microsoft.Maui.Controls
 			HashSet<string> dynamicResourceKeys = null;
 			foreach (var dynamicResource in _dynamicResources)
 			{
-				var dynamicResourceKey = dynamicResource.Value.Item1;
-				if (!string.IsNullOrEmpty(dynamicResourceKey))
-					(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
+				var specificities = dynamicResource.Value;
+				for (var i = 0; i < specificities.Count; i++)
+				{
+					var dynamicResourceKey = specificities.GetValueAt(i);
+					if (!string.IsNullOrEmpty(dynamicResourceKey))
+						(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
+				}
 			}
 
 			return RealParent.GetMergedResourcesForKeys(dynamicResourceKeys);
@@ -717,7 +713,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			// If OnPropertyChanged is being called from a SetValue call on the BO we want the handler update to happen after
-			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired. 
+			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired.
 			// if you look at BO you'll see the order is this
 			//
 			// OnPropertyChanged(property.PropertyName);
@@ -725,7 +721,7 @@ namespace Microsoft.Maui.Controls
 			//
 			// It can cause somewhat confusing behavior if the handler update happens between these two calls
 			// And the user has placed reacting code inside the BP.PropertyChanged callback
-			// 
+			//
 			// If the OnPropertyChanged is being called from user code, we still want that to propagate to the mapper
 			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet.Contains(propertyName);
 
@@ -733,7 +729,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_effects?.Count > 0)
 			{
-				var args = new PropertyChangedEventArgs(propertyName);
+				var args = ChangedEventArgsFor(propertyName);
 				foreach (Effect effect in _effects)
 				{
 					effect?.SendOnElementPropertyChanged(args);
@@ -787,7 +783,7 @@ namespace Microsoft.Maui.Controls
 			if (e == ResourcesChangedEventArgs.StyleSheets)
 				ApplyStyleSheets();
 			else
-				OnParentResourcesChanged(e.Values);
+				OnParentResourcesChangedKeys(e.Keys, e.ResolveValue);
 		}
 
 		internal virtual void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -795,13 +791,49 @@ namespace Microsoft.Maui.Controls
 			OnResourcesChanged(values);
 		}
 
-		internal override void OnRemoveDynamicResource(BindableProperty property)
+		/// <summary>
+		/// Called when parent resources change, using keys only to avoid resolving lazy resources.
+		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
+		/// </summary>
+		internal virtual void OnParentResourcesChangedKeys(IEnumerable<string> keys)
 		{
-			DynamicResources.Remove(property);
+			OnResourcesChangedKeys(keys);
+		}
 
-			if (DynamicResources.Count == 0)
+		/// <summary>
+		/// Called when parent resources change, using keys and a resolver to avoid resolving lazy resources.
+		/// </summary>
+		internal virtual void OnParentResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			OnResourcesChangedKeys(keys, resolver);
+		}
+
+		internal override bool OnRemoveDynamicResource(BindableProperty property, SetterSpecificity specificity)
+		{
+			if (_dynamicResources == null || !_dynamicResources.TryGetValue(property, out var specificities))
+				return base.OnRemoveDynamicResource(property, specificity);
+
+			specificities.Remove(specificity);
+
+			if (specificities.Count > 0)
+			{
+				_dynamicResources[property] = specificities;
+
+				// A lower-specificity registration is still live -- a style's, under the visual
+				// state's that is going away. Republish it so the property keeps tracking.
+				var restored = specificities.GetSpecificityAndValue();
+				if (this.TryGetResource(restored.Value, out var value))
+					OnResourceChanged(property, value, restored.Key);
+
+				base.OnRemoveDynamicResource(property, specificity);
+				return false;
+			}
+
+			_dynamicResources.Remove(property);
+			if (_dynamicResources.Count == 0)
 				_dynamicResources = null;
-			base.OnRemoveDynamicResource(property);
+
+			return base.OnRemoveDynamicResource(property, specificity);
 		}
 
 		internal virtual void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
@@ -809,7 +841,7 @@ namespace Microsoft.Maui.Controls
 			if (e == ResourcesChangedEventArgs.StyleSheets)
 				ApplyStyleSheets();
 			else
-				OnResourcesChanged(e.Values);
+				OnResourcesChangedKeys(e.Keys, e.ResolveValue);
 		}
 
 		internal void OnResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -817,8 +849,13 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
+			{
+#pragma warning disable CS0618 // Legacy code path for backward compatibility
+				var e = new ResourcesChangedEventArgs(values);
+#pragma warning restore CS0618
 				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
-					handler(this, new ResourcesChangedEventArgs(values));
+					handler(this, e);
+			}
 			if (_dynamicResources == null)
 				return;
 			if (_bindableResources == null)
@@ -826,16 +863,21 @@ namespace Microsoft.Maui.Controls
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				List<(BindableProperty, SetterSpecificity)> changedResources = null;
-				foreach (KeyValuePair<BindableProperty, (string, SetterSpecificity)> dynR in DynamicResources)
+				foreach (KeyValuePair<BindableProperty, SetterSpecificityList<string>> dynR in DynamicResources)
 				{
 					// when the DynamicResource bound to a BindableProperty is
 					// changing then the BindableProperty needs to be refreshed;
-					// The .Value.Item1 is the name of DynamicResouce to which the BindableProperty is bound.
+					// A property can carry one registration per specificity (a style's and a
+					// visual state's, say); each is refreshed at its own specificity.
 					// The .Key is the name of the DynamicResource whose value is changing.
-					if (dynR.Value.Item1 != value.Key)
-						continue;
-					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
-					changedResources.Add((dynR.Key, dynR.Value.Item2));
+					var specificities = dynR.Value;
+					for (var i = 0; i < specificities.Count; i++)
+					{
+						if (specificities.GetValueAt(i) != value.Key)
+							continue;
+						changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
+						changedResources.Add((dynR.Key, specificities.GetSpecificityAt(i)));
+					}
 				}
 				if (changedResources == null)
 					continue;
@@ -852,11 +894,88 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Called when resources change, using keys only to avoid resolving lazy resources.
+		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
+		/// </summary>
+		internal void OnResourcesChangedKeys(IEnumerable<string> keys)
+		{
+			OnResourcesChangedKeys(keys, key =>
+			{
+				// Style class keys need to be merged across the entire parent chain,
+				// not just return the first match from TryGetResource.
+				if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+					return this.GetMergedStyleClassResource(key);
+				return this.TryGetResource(key, out var v) ? v : null;
+			});
+		}
+
+		/// <summary>
+		/// Called when resources change, using keys and a resolver to avoid resolving lazy resources.
+		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
+		/// </summary>
+		internal void OnResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			if (keys == null)
+				return;
+
+			// Notify change handlers with keys + resolver (they can resolve on-demand)
+			if (_changeHandlers != null)
+			{
+				var e = new ResourcesChangedEventArgs(keys, resolver);
+				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
+					handler(this, e);
+			}
+
+			if (_dynamicResources == null)
+				return;
+			if (_bindableResources == null)
+				_bindableResources = new List<BindableObject>();
+			foreach (string key in keys)
+			{
+				List<(BindableProperty, SetterSpecificity)> changedResources = null;
+				foreach (KeyValuePair<BindableProperty, SetterSpecificityList<string>> dynR in DynamicResources)
+				{
+					// when the DynamicResource bound to a BindableProperty is
+					// changing then the BindableProperty needs to be refreshed;
+					// A property can carry one registration per specificity.
+					var specificities = dynR.Value;
+					for (var i = 0; i < specificities.Count; i++)
+					{
+						if (specificities.GetValueAt(i) != key)
+							continue;
+						changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
+						changedResources.Add((dynR.Key, specificities.GetSpecificityAt(i)));
+					}
+				}
+				if (changedResources == null)
+					continue;
+
+				// Only now do we look up the value - on demand
+				object value = resolver(key);
+				if (value == null)
+					continue;
+
+				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
+					OnResourceChanged(changedResource.Item1, value, changedResource.Item2);
+
+				var bindableObject = value as BindableObject;
+				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
+				{
+					if (!_bindableResources.Contains(bindableObject))
+						_bindableResources.Add(bindableObject);
+					SetInheritedBindingContext(bindableObject, BindingContext);
+				}
+			}
+		}
+
 		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			base.OnSetDynamicResource(property, key, specificity);
-			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 <= specificity)
-				DynamicResources[property] = (key, specificity);
+			if (!DynamicResources.TryGetValue(property, out var specificities))
+				specificities = new SetterSpecificityList<string>(2);
+			specificities[specificity] = key;
+			DynamicResources[property] = specificities;
 			if (this.TryGetResource(key, out var value))
 				OnResourceChanged(property, value, specificity);
 		}
@@ -977,14 +1096,32 @@ namespace Microsoft.Maui.Controls
 
 		void OnDescendantAdded(Element child)
 		{
-			DescendantAdded?.Invoke(this, new ElementEventArgs(child));
-			RealParent?.OnDescendantAdded(child);
+			OnDescendantAddedCore(child, null);
+		}
+
+		void OnDescendantAddedCore(Element child, ElementEventArgs args)
+		{
+			if (DescendantAdded is not null)
+			{
+				args ??= new ElementEventArgs(child);
+				DescendantAdded.Invoke(this, args);
+			}
+			RealParent?.OnDescendantAddedCore(child, args);
 		}
 
 		void OnDescendantRemoved(Element child)
 		{
-			DescendantRemoved?.Invoke(this, new ElementEventArgs(child));
-			RealParent?.OnDescendantRemoved(child);
+			OnDescendantRemovedCore(child, null);
+		}
+
+		void OnDescendantRemovedCore(Element child, ElementEventArgs args)
+		{
+			if (DescendantRemoved is not null)
+			{
+				args ??= new ElementEventArgs(child);
+				DescendantRemoved.Invoke(this, args);
+			}
+			RealParent?.OnDescendantRemovedCore(child, args);
 		}
 
 		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
@@ -1089,7 +1226,7 @@ namespace Microsoft.Maui.Controls
 
 				// Only call disconnect if the previous handler is still connected to this virtual view.
 				// If a handler is being reused for a different VirtualView then the virtual
-				// view would have already rolled 
+				// view would have already rolled
 				if (_previousHandler?.VirtualView == this)
 					_previousHandler?.DisconnectHandler();
 

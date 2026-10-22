@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shell.BackButtonBehavior does not work when using extended Tabbar";
 
 [Test]
-[Category(UITestCategories.Shell)]
+[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 public void ShellBackButtonBehaviorShouldWorkWithMoreTab()
 		{
 			App.WaitForElement("More");

@@ -13,7 +13,7 @@ public class Issue36853 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SingletonPageShouldRenderAfterPopToRootAndRePush()
 	{
 		// Step 1: From root, push SecondPage (singleton)

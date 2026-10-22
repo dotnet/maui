@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shell TitleView disappears when switching tabs on Android";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void TitleViewPersistsAfterSwitchingTabs()
 		{
 			App.WaitForElement("HomeTabLabel");

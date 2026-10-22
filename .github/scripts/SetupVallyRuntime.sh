@@ -116,6 +116,7 @@ EOF
 
 vally_runner="$install_root/run-vally"
 eval_results_root="$install_root/results"
+policy_reader=(node)
 if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	: "${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required on GitHub Actions}"
 	: "${RUNNER_TEMP:?RUNNER_TEMP is required on GitHub Actions}"
@@ -180,6 +181,9 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	sudo -n chmod 2750 "$workspace_root"
 	sudo -n chmod -R g+rX,g-w,o-rwx "$git_dir"
 	sudo -n chmod 3770 "$git_dir"
+	# Keep every evaluator-created root lock replacement readable by the
+	# workspace owner after Git atomically renames it into place.
+	sudo -n setfacl -m "d:u:$workspace_owner:r-x" "$git_dir"
 	for mutable_git_path in objects worktrees refs logs; do
 		sudo -n install -d -o "$workspace_owner" -g "$eval_user" -m 2770 \
 			"$git_dir/$mutable_git_path"
@@ -191,6 +195,7 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	if [ -e "$git_dir/packed-refs" ]; then
 		sudo -n chown "$eval_user:$eval_user" "$git_dir/packed-refs"
 		sudo -n chmod 660 "$git_dir/packed-refs"
+		sudo -n setfacl -m "u:$workspace_owner:r--" "$git_dir/packed-refs"
 	fi
 	workspace_parent=$(dirname "$workspace_root")
 	while [ "$workspace_parent" != "/" ]; do
@@ -391,27 +396,51 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 			exit 1
 		fi
 	fi
-	probe_ref="refs/heads/vally-runtime-probe"
-	sudo -n -u "$eval_user" env \
-		HOME="$eval_home" \
-		GIT_CONFIG_GLOBAL="$trusted_git_config" \
-		GIT_CONFIG_NOSYSTEM=1 \
-		git -C "$workspace_root" update-ref "$probe_ref" HEAD
-	sudo -n -u "$eval_user" env \
-		HOME="$eval_home" \
-		GIT_CONFIG_GLOBAL="$trusted_git_config" \
-		GIT_CONFIG_NOSYSTEM=1 \
-		git -C "$workspace_root" pack-refs --all --prune
-	sudo -n -u "$eval_user" env \
-		HOME="$eval_home" \
-		GIT_CONFIG_GLOBAL="$trusted_git_config" \
-		GIT_CONFIG_NOSYSTEM=1 \
-		git -C "$workspace_root" update-ref -d "$probe_ref"
-	sudo -n -u "$eval_user" env \
-		HOME="$eval_home" \
-		GIT_CONFIG_GLOBAL="$trusted_git_config" \
-		GIT_CONFIG_NOSYSTEM=1 \
-		git -C "$workspace_root" pack-refs --all --prune
+	owner_worktree_probe="$RUNNER_TEMP/${eval_user}-owner-git-probe"
+	git -C "$workspace_root" worktree add --detach "$owner_worktree_probe" HEAD
+	for probe_number in 1 2; do
+		probe_ref="refs/heads/vally-runtime-probe-$probe_number"
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" update-ref "$probe_ref" HEAD
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" pack-refs --all --prune
+		if [ ! -r "$git_dir/packed-refs" ]; then
+			echo "Workspace owner cannot read evaluator-refreshed packed refs" >&2
+			exit 1
+		fi
+		git -C "$workspace_root" show-ref --verify --quiet "$probe_ref"
+		git -C "$workspace_root" cat-file -e "${probe_ref}^{commit}"
+		git -C "$workspace_root" ls-tree -r --name-only \
+			"$probe_ref" -- .github/skills >/dev/null
+		git -C "$owner_worktree_probe" --no-replace-objects restore \
+			--staged --worktree --source="$probe_ref" -- .github/skills
+
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" update-ref -d "$probe_ref"
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git -C "$workspace_root" pack-refs --all --prune
+		if [ ! -r "$git_dir/packed-refs" ]; then
+			echo "Workspace owner cannot read evaluator-replaced packed refs" >&2
+			exit 1
+		fi
+		git -C "$workspace_root" rev-parse --verify "HEAD^{commit}" >/dev/null
+		git -C "$workspace_root" for-each-ref --format='%(refname)' >/dev/null
+		git -C "$owner_worktree_probe" --no-replace-objects restore \
+			--staged --worktree --source=HEAD -- .github/skills
+	done
+	git -C "$workspace_root" worktree remove --force "$owner_worktree_probe"
 	if [ "$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE")" != "$original_workspace_stat" ] ||
 		[ "$(stat -c '%u:%g:%a' "$GITHUB_WORKSPACE/.git")" != "$original_git_stat" ]; then
 		echo "Runtime setup changed the original Actions checkout permissions" >&2
@@ -609,6 +638,11 @@ EOF
 		echo "Isolated Vally user can modify the Copilot wrapper" >&2
 		exit 1
 	fi
+	policy_reader=(
+		sudo -n -u "$eval_user" env
+		"PATH=$PATH"
+		node
+	)
 else
 	workspace_root=${GITHUB_WORKSPACE:-$(pwd)}
 	trusted_copilot_home="$install_root/copilot-home"
@@ -666,7 +700,7 @@ fi
 
 # The selected home must contain the complete fail-closed policy that Vally and
 # every spawned Copilot session will read.
-node - "$trusted_copilot_home/settings.json" "$install_root" <<'EOF'
+"${policy_reader[@]}" - "$trusted_copilot_home/settings.json" "$install_root" <<'EOF'
 const fs = require("node:fs");
 
 const settingsPath = process.argv[2];

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Xunit;
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests;
 #if WINDOWS
 [Collection(WebViewsCollection)]
 #endif
-public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
+public partial class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 {
 	[Fact]
 	public Task GetRequestsAreBlocked() =>
@@ -103,7 +104,7 @@ public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 		{
 			var target = new InvokeTarget();
 
-			hybridWebView.SetInvokeJavaScriptTarget(target);
+			hybridWebView.SetInvokeJavaScriptTarget(target, InvokeDotNetFailsJsonContext.Default);
 
 			// Execute the JavaScript test method
 			await hybridWebView.EvaluateJavaScriptAsync($"Test{jsMethodName}()");
@@ -119,7 +120,7 @@ public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 			await validateResult(hybridWebView, target);
 		});
 
-	private class InvokeTarget
+	internal class InvokeTarget
 	{
 		public List<string> ParamValues { get; private set; } = new();
 
@@ -130,4 +131,9 @@ public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 			ParamValues.Add(param);
         }
     }
+
+	[JsonSerializable(typeof(string))]
+	internal partial class InvokeDotNetFailsJsonContext : JsonSerializerContext
+	{
+	}
 }

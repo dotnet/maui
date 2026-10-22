@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls.Maps
 	/// </summary>
 	public partial class Pin : Element
 	{
+		/// <summary>
+		/// The default clustering identifier used when <see cref="ClusteringIdentifier"/> is not set.
+		/// </summary>
+		public const string DefaultClusteringIdentifier = "maui_default_cluster";
+
 		/// <summary>Bindable property for <see cref="Type"/>.</summary>
 		public static readonly BindableProperty TypeProperty = BindableProperty.Create(nameof(Type), typeof(PinType), typeof(Pin), default(PinType));
 
@@ -21,6 +26,13 @@ namespace Microsoft.Maui.Controls.Maps
 
 		/// <summary>Bindable property for <see cref="Label"/>.</summary>
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
+
+		/// <summary>Bindable property for <see cref="ClusteringIdentifier"/>.</summary>
+		public static readonly BindableProperty ClusteringIdentifierProperty = BindableProperty.Create(nameof(ClusteringIdentifier), typeof(string), typeof(Pin), DefaultClusteringIdentifier);
+
+		/// <summary>Bindable property for <see cref="ImageSource"/>.</summary>
+		public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(Pin), default(ImageSource));
+
 		private object? _markerId;
 
 		/// <inheritdoc />
@@ -45,6 +57,23 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
+		/// Gets or sets the clustering identifier for this pin.
+		/// Pins with the same identifier will be grouped together when clustering is enabled.
+		/// Default value is <see cref="DefaultClusteringIdentifier"/>.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Use different clustering identifiers to create separate groups of pins that 
+		/// cluster independently. For example, you might have one identifier for restaurants
+		/// and another for hotels, so they cluster within their own categories.
+		/// </remarks>
+		public string ClusteringIdentifier
+		{
+			get { return (string)GetValue(ClusteringIdentifierProperty); }
+			set { SetValue(ClusteringIdentifierProperty, value); }
+		}
+
+		/// <summary>
 		/// Gets or sets the kind of pin. The default value is <see cref="PinType.Generic"/>.
 		/// This is a bindable property.
 		/// </summary>
@@ -53,6 +82,22 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get { return (PinType)GetValue(TypeProperty); }
 			set { SetValue(TypeProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the custom image source for this pin's icon.
+		/// When set, this image will be used instead of the default platform pin icon.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Supported image sources include file-based images, embedded resources, URIs, and streams.
+		/// The image will be scaled by the underlying platform to a platform-defined size (32x32 points on iOS, 64x64 pixels on Android).
+		/// Provide images that look clear when scaled to these sizes.
+		/// </remarks>
+		public ImageSource? ImageSource
+		{
+			get { return (ImageSource?)GetValue(ImageSourceProperty); }
+			set { SetValue(ImageSourceProperty, value); }
 		}
 
 		/// <summary>
@@ -165,6 +210,30 @@ namespace Microsoft.Maui.Controls.Maps
 			var args = new PinClickedEventArgs();
 			InfoWindowClicked?.Invoke(this, args);
 			return args.HideInfoWindow;
+		}
+
+		/// <summary>
+		/// Shows the info window (callout) for this pin on the map.
+		/// </summary>
+		/// <remarks>The pin must be added to a <see cref="Map"/> for this method to have an effect.</remarks>
+		public void ShowInfoWindow()
+		{
+			if (Parent is Map map)
+			{
+				map.Handler?.Invoke(nameof(IMap.ShowInfoWindow), this);
+			}
+		}
+
+		/// <summary>
+		/// Hides the info window (callout) for this pin on the map.
+		/// </summary>
+		/// <remarks>The pin must be added to a <see cref="Map"/> for this method to have an effect.</remarks>
+		public void HideInfoWindow()
+		{
+			if (Parent is Map map)
+			{
+				map.Handler?.Invoke(nameof(IMap.HideInfoWindow), this);
+			}
 		}
 
 		bool Equals(Pin other)

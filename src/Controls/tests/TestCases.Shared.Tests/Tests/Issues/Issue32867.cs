@@ -12,7 +12,7 @@ public class Issue32867 : _IssuesUITest
     public override string Issue => "Shell Flyout Icon is always black";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void ShellFlyoutIconShouldNotBeBlack()
     {
         App.WaitForElement("Issue32867Label");

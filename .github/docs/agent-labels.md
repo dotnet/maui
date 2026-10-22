@@ -26,7 +26,7 @@ Additive — **multiple** can coexist on a single PR.
 
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
-| `s/agent-gate-passed` | 🟢 `#4CAF50` | AI verified tests catch the bug (fail without fix, pass with fix) | Validate phase passes |
+| `s/agent-gate-passed` | 🟢 `#4CAF50` | Selected PR-test verification passed; inspect the report for mode and coverage | Validate phase or hosted gate passes |
 | `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Validate phase fails |
 | `s/agent-fix-win` | 🟢 `#66BB6A` | AI found a better alternative fix than the PR | Fix phase: alternative selected over PR's fix |
 | `s/agent-fix-pr-picked` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
@@ -41,14 +41,13 @@ Always applied on every completed agent run.
 |-------|-------|-------------|--------------|
 | `s/agent-reviewed` | 🔵 `#1565C0` | PR was reviewed by AI agent workflow (full 4-phase review) | Every completed agent run |
 
-### Manual / Queue Labels
+### Manual / Lock Labels
 
-Manual labels are applied by MAUI maintainers. Queue labels are applied by deterministic automation, not by AI.
+Manual labels are applied by MAUI maintainers. The review lock is applied by the review trigger, not by AI.
 
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
 | `s/agent-fix-implemented` | 🟣 `#7B1FA2` | PR author implemented the agent's suggested fix | Maintainer applies when PR author adopts agent's recommendation |
-| `s/agent-ready-for-rerun` | 🟣 `#5319E7` | AI review has new PR activity and is ready for rerun | Deterministic rerun automation finds new PR-author comments or commits after the latest AI Summary |
 | `s/agent-review-in-progress` | 🟡 `#FBCA04` | AI review is currently running for this PR | Applied before triggering the async AzDO review pipeline and removed by pipeline cleanup; stale locks can be recovered after a conservative timeout |
 
 ---
@@ -72,7 +71,16 @@ Review-PR.ps1
     └── Non-fatal: errors warn but don't fail the workflow
 ```
 
-Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exceptions are queue/lock labels: `s/agent-ready-for-rerun` is applied by deterministic automation after checking for new PR-author comments or commits, and `s/agent-review-in-progress` is applied before triggering the async AzDO review pipeline. The queue eligibility check does not use AI. The lock label normally clears in the AzDO cleanup stage; trigger paths treat very old locks as stale so a cancelled pipeline does not permanently block reviews.
+The full outcome/alternative-fix labels above belong to hosted `/review` and
+local `Review-PR.ps1` reviews. The `/review gate` command applies only the gate pass/fail signals
+through `Post-PRGate.ps1`, never approval or full-review tracking labels, and only
+when the live PR head still matches the tested head. It assigns the existing
+gate labels without editing their repository-wide descriptions or colors.
+Required label-operation failures make publication incomplete rather than
+silently reporting success.
+`s/agent-review-in-progress` remains the shared async lock. It normally clears in
+the Azure cleanup stage; very old locks are treated as stale so cancellation
+does not permanently block another review or gate.
 
 ### How Labels Are Parsed
 
@@ -90,7 +98,10 @@ The `Parse-PhaseOutcomes` function in `Update-AgentLabels.ps1` reads `content.md
 
 ### Self-Bootstrapping
 
-Labels are created automatically on first use via `Ensure-LabelExists`. No manual setup required. If a label already exists but has a stale description or color, it is updated.
+Local full-review helpers create labels on first use via `Ensure-LabelExists`
+and update stale descriptions or colors. Hosted gate publication requires the
+existing gate signal labels and changes only their PR assignments; it does not
+require permission to manage repository-wide label definitions.
 
 ---
 
@@ -141,10 +152,10 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/scripts/Resolve-RerunEligibility.ps1` | Deterministic rerun eligibility and context helpers used by queue automation |
-| `.github/scripts/Invoke-RerunReviewTrigger.ps1` | Safe-output handler that validates rerun decisions and emits an actions list; the scanner then dispatches `review-trigger.yml` (which applies `s/agent-review-in-progress` and triggers the AzDO review) |
-| `.github/workflows/review-trigger.yml` | Manual `/review` trigger that applies `s/agent-review-in-progress` before triggering AzDO reviews |
-| `eng/pipelines/ci-copilot.yml` | AzDO review pipeline that removes `s/agent-review-in-progress` in final cleanup |
+| `.github/workflows/review-trigger.yml` | `/review` and `/review gate` trigger that applies the shared in-progress lock before queueing |
+| `.github/scripts/Post-PRGate.ps1` | Publishes the hosted gate report and commit-bound gate signals only |
+| `eng/pipelines/ci-copilot.yml` | Full review by default; selects gate-only stages when `GateOnly` is true |
+| `eng/pipelines/pr-review-gate.yml` | Gate-only verification, fresh publication, and shared-lock cleanup |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions
@@ -164,9 +175,9 @@ is:pr label:s/agent-reviewed
 ### Design Principles
 
 - **Idempotent**: Safe to re-run — checks before add/remove, GitHub ignores duplicate adds
-- **Non-fatal**: Label failures emit warnings but never fail the overall workflow
-- **Single source**: All labels applied from `Review-PR.ps1` only — no other scripts touch labels
-- **Self-bootstrapping**: Labels are created on first use via GitHub API
+- **Failure handling**: Local full-review label failures warn; required hosted gate signal failures fail publication explicitly
+- **Shared helpers**: Local full reviews and hosted gate publication use the same PR-label assignment helpers
+- **Self-bootstrapping**: Local full-review helpers create labels on first use; hosted publication uses existing gate signals
 - **Mutual exclusivity enforced**: Outcome labels and same-category signal labels automatically remove their counterpart
 
 ---

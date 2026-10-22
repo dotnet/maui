@@ -443,23 +443,28 @@ namespace Microsoft.Maui.Platform
 			int cursorPosition = searchBar.CursorPosition;
 			int selectionLength = searchBar.SelectionLength;
 
-			void UpdateSelection()
-			{
-				if (textField is not null && textField.Handle != IntPtr.Zero)
-				{
-					UITextPosition start = GetSelectionStart(textField, cursorPosition, out int startOffset);
-					UITextPosition end = GetSelectionEnd(textField, start, startOffset, selectionLength);
-					textField.SelectedTextRange = textField.GetTextRange(start, end);
-				}
-			}
-
 			if (searchBar.IsFocused)
 			{
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(UpdateSelection);
+				DispatchSelectionUpdate(textField, cursorPosition, selectionLength);
 			}
 			else
 			{
-				UpdateSelection();
+				UpdateSelection(textField, cursorPosition, selectionLength);
+			}
+		}
+
+		static void DispatchSelectionUpdate(UITextField textField, int cursorPosition, int selectionLength)
+		{
+			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => UpdateSelection(textField, cursorPosition, selectionLength));
+		}
+
+		static void UpdateSelection(UITextField textField, int cursorPosition, int selectionLength)
+		{
+			if (textField is not null && textField.Handle != IntPtr.Zero)
+			{
+				UITextPosition start = GetSelectionStart(textField, cursorPosition, out int startOffset);
+				UITextPosition end = GetSelectionEnd(textField, start, startOffset, selectionLength);
+				textField.SelectedTextRange = textField.GetTextRange(start, end);
 			}
 		}
 

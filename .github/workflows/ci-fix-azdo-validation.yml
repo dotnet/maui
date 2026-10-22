@@ -1,0 +1,56 @@
+name: CI-fix Azure DevOps validation
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+    branches: [main]
+  # CI-fixer PRs and follow-up pushes can be created with GITHUB_TOKEN, which
+  # suppresses normal event-driven workflows or leaves them approval-gated.
+  # Reconcile all eligible open heads after either trusted fixer completes.
+  workflow_run:
+    workflows: ["CI Failure Fixer (main)", "CI Failure Fixer (net11.0)"]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  # Serialize all queue decisions so event delivery and workflow_run
+  # reconciliation cannot race the same pipeline + PR head dedupe check.
+  group: ci-fix-azdo-validation
+  cancel-in-progress: false
+
+jobs:
+  queue-validation:
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    # The absolute dispatcher deadline starts before checkout, preserving a
+    # real 3-minute reserve for summaries and explicit failure propagation.
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    steps:
+      - name: Start dispatcher deadline
+        shell: bash
+        run: echo "CI_FIX_DISPATCHER_DEADLINE_UNIX_SECONDS=$(($(date +%s) + 420))" >> "$GITHUB_ENV"
+
+      # github.sha identifies the trusted workflow revision for both event types.
+      # Never fetch or execute the PR head.
+      - name: Checkout trusted workflow revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            /.github/scripts/Queue-CiFixAzdoValidation.ps1
+          sparse-checkout-cone-mode: false
+
+      - name: Queue Azure DevOps PR validation
+        shell: pwsh
+        env:
+          AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: .github/scripts/Queue-CiFixAzdoValidation.ps1 -DispatcherBudgetSeconds 420 -DispatcherDeadlineUnixSeconds $env:CI_FIX_DISPATCHER_DEADLINE_UNIX_SECONDS

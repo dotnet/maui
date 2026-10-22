@@ -432,7 +432,10 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 		{
 			var setMainThreadImplementation = typeof(MainThread).GetMethod(
 				"SetCustomImplementation",
-				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
+				binder: null,
+				types: new[] { typeof(Func<bool>), typeof(Action<Action>) },
+				modifiers: null);
 			var clearMainThreadImplementation = typeof(MainThread).GetMethod(
 				"ClearCustomImplementation",
 				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);

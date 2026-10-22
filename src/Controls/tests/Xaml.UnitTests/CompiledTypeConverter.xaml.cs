@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -61,6 +62,9 @@ public partial class CompiledTypeConverter : ContentPage
 	public IShape RoundRectangleShape { get; set; }
 
 	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+	public IShape NumericRoundRectangleShape { get; set; }
+
+	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 	public IShape PathShape { get; set; }
 
 	[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
@@ -105,6 +109,7 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal(10, ((Shapes.Polyline)p.PolylineShape).Points.Count);
 			Assert.IsType<Rectangle>(p.RectangleShape);
 			Assert.Equal(new CornerRadius(1, 2, 3, 4), ((RoundRectangle)p.RoundRectangleShape).CornerRadius);
+			Assert.Equal(new CornerRadius(150), Assert.IsType<RoundRectangle>(p.NumericRoundRectangleShape).CornerRadius);
 			Assert.Equal(3, ((PathGeometry)((Path)p.PathShape).Data).Figures.Count);
 			Assert.Equal(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 			var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);
@@ -114,6 +119,24 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal("Bar", p.List[1]);
 			Assert.Equal(typeof(Button), p.ButtonType);
 			Assert.Equal(Label.TextProperty, p.BindableProp);
+		}
+
+		[Fact]
+		internal void CompiledStrokeShapeUsesInvariantCulture()
+		{
+			var originalCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+			try
+			{
+				System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+
+				MockCompiler.Compile(typeof(CompiledTypeConverter), out _, out bool hasLoggedErrors);
+
+				Assert.False(hasLoggedErrors);
+			}
+			finally
+			{
+				System.Threading.Thread.CurrentThread.CurrentCulture = originalCulture;
+			}
 		}
 
 		public static IEnumerable<object[]> ConverterTestData =>
@@ -207,6 +230,9 @@ public partial class CompiledTypeConverter : ContentPage
 
 	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 	public IShape RoundRectangleShape { get; set; }
+
+	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+	public IShape NumericRoundRectangleShape { get; set; }
 
 	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 	public IShape PathShape { get; set; }

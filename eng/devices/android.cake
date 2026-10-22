@@ -150,8 +150,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
-	var monoRuntime = isUsingCoreClr ? "coreclr" : "mono";
+	var monoRuntime = useCoreClr ? "coreclr" : "mono";
 	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-android.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
@@ -168,7 +167,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			args.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog);
 
-			if (isUsingCoreClr)
+			if (useCoreClr)
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}
@@ -286,29 +285,8 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
-	int numOfRetries = 0;
-
-	if (IsCIBuild())
-		numOfRetries = 1;
-
 	Information("Run UITests  project {0}", project);
-	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
-	{
-		try
-		{
-			Information("Retry UITests run Count: {0}", retryCount);
-			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
-			break;
-		}
-		catch(Exception)
-		{
-			if (retryCount == numOfRetries)
-			{
-				WriteLogCat();
-				throw;
-			}
-		}
-	}
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat());
 	Information("UI Tests completed.");
 }
 

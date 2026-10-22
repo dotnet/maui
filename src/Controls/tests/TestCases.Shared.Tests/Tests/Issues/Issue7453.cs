@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ShellContent Title doesn't observe changes to bound properties";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ChangeShellContentTitle()
 		{
 			App.WaitForElement("ChangeShellContentTitle");
