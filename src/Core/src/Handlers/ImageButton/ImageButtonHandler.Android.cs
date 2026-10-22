@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);
+			// Keep scaled images inside the content padding so they cannot cover the background stroke.
+			platformView.CropToPadding = true;
 			platformView.SoundEffectsEnabled = false;
 
 			return platformView;
