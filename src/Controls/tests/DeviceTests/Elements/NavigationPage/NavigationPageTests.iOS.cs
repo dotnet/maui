@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -12,6 +13,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -106,13 +108,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
-				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var navController = Assert.IsAssignableFrom<UINavigationController>((navPage.Handler as IPlatformViewHandler)?.ViewController);
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
 				if (expectedShouldBegin)
 				{
-					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+					Assert.True(ShouldPopItem(navController));
 				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;
@@ -132,18 +134,26 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
-				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var navController = Assert.IsAssignableFrom<UINavigationController>((navPage.Handler as IPlatformViewHandler)?.ViewController);
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
 				if (expectedShouldBegin)
 				{
-					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+					Assert.True(ShouldPopItem(navController));
 				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;
 			});
 		}
+
+		static bool ShouldPopItem(UINavigationController navigationController) =>
+			SendShouldPopItem(navigationController.Handle, Selector.GetHandle("navigationBar:shouldPopItem:"),
+				navigationController.NavigationBar.Handle, navigationController.NavigationBar.TopItem.Handle);
+
+		[DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
+		[return: MarshalAs(UnmanagedType.I1)]
+		static extern bool SendShouldPopItem(IntPtr receiver, IntPtr selector, IntPtr navigationBar, IntPtr item);
 
 		[Theory]
 		[InlineData(true)]
