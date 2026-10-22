@@ -19,8 +19,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-			// Disconnect clears the platform view before removing the container.
+			// Container cleanup can also run after the platform view has been cleared.
 			WrapperView.RemoveContainer(((ViewHandler)this).PlatformView, Context, ContainerView, () => ContainerView = null);
+		}
+
+		private protected override void OnDisconnecting()
+		{
+			// Detach first so removing the container cannot reparent the WebView into its old parent.
+			ContainerView?.RemoveFromParent();
+			base.OnDisconnecting();
 		}
 
 		protected override AWebView CreatePlatformView()
@@ -84,8 +91,6 @@ namespace Microsoft.Maui.Handlers
 			//platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-			ContainerView?.RemoveFromParent();
-			HasContainer = false;
 
 			base.DisconnectHandler(platformView);
 		}
