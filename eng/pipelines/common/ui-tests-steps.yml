@@ -168,7 +168,7 @@ steps:
 
     if ("${{ parameters.macValidation }}" -eq "True") {
       $method = switch ("${{ parameters.testFilter }}") {
-        "Layout" { "Issue17389.ValidateBackgroundColorDoesNotAffectInputTransparent" }
+        "Layout" { "Issue17389.ValidateInputTransparentBackgroundColorToggle" }
         "Shell" { "Issue26598.TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage" }
         default { throw "Unexpected Mac validation category" }
       }
