@@ -86,9 +86,13 @@ namespace Microsoft.Maui.Platform
 		{
 			base.DrawInContext(ctx);
 
-			ctx.SaveState();
+			var requiresUnclippedStroke = RequiresUnclippedStroke();
+			var clipPath = requiresUnclippedStroke ? GetBorderClipPath() : GetClipPath();
 
-			var clipPath = RequiresUnclippedStroke() ? GetBorderClipPath() : GetClipPath();
+			if (requiresUnclippedStroke)
+			{
+				ctx.SaveState();
+			}
 
 			if (clipPath! != null!)
 				ctx.AddPath(clipPath);
@@ -96,7 +100,11 @@ namespace Microsoft.Maui.Platform
 			ctx.Clip();
 
 			DrawBackground(ctx);
-			ctx.RestoreState();
+
+			if (requiresUnclippedStroke)
+			{
+				ctx.RestoreState();
+			}
 
 			DrawBorder(ctx);
 		}
