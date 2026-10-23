@@ -191,7 +191,7 @@ steps:
   condition: always()
   displayName: publish artifacts
   inputs:
-    artifactName: drop-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)
+    artifactName: drop-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.StageAttempt)-$(System.JobAttempt)
 
 # Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
