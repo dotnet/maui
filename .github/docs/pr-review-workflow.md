@@ -500,6 +500,10 @@ dimension routing, independent passes in batches of at most two, candidate
 validation against surrounding source/callers/tests/blame, and required
 findings-file output. Path routing takes the union of matching rows; Logic
 and Correctness, Regression Prevention and Complexity Reduction always run.
+The trusted collector freezes the expected dimension set from the union of
+canonical path rules and conservative conditional triggers; publication rejects
+a model-selected subset. The mapping is tied to the canonical routing section's
+hash, so rulebook routing changes require an explicit mapping update.
 Only test source is inspected: no builds, analyzers, tests, native devices,
 repro applications or PR-controlled scripts execute. The workflow does not
 invoke the full `pr-review` or `code-review` orchestration, produce a candidate
@@ -511,6 +515,10 @@ review bodies, inline comments and issue comments. Narrative stays separate
 until the independent briefing. Full feedback is retained, with an explicit
 bounded-collection failure instead of silent truncation. PR source is a
 separate read-only snapshot; its `.github/` cannot replace trusted rules.
+Implicit PR checkout is disabled, result directories must be fresh, and agent
+shell tools cannot execute git aliases. Trusted collection supplies inert pinned
+log/blame evidence for up to 50 changed files within a 12 MB content budget;
+missing history is recorded explicitly rather than fetched by the agent.
 The existing regression scanner uses its six-month/20-PR-per-file bounds with
 a frozen current diff and changed-path list, pinned base and strict evidence
 mode. Failed retrieval is a coverage gap, not CLEAN.
@@ -523,6 +531,9 @@ issue collection is bounded to 20 referenced issues, with an explicit gap
 when that bound is exceeded.
 Finding headers use only `critical`, `major`, `moderate`, or `minor`; aliases
 such as `medium` are invalid, including in discarded worker candidates.
+Every saved worker candidate also has a retained/rejected disposition and
+reason in `review-state.json`; retained entries identify their canonical
+finding. Prior feedback cannot silently remove still-valid canonical findings.
 
 A fresh native safe-output job imports bounded regular result files, checks
 the exact schema and persisted worker completion, reauthorizes the requester,
@@ -533,8 +544,14 @@ Credential values must never appear in findings. Only exact RIGHT-side anchors
 become inline comments. Findings without a valid anchor stay in the publication
 artifact with an explicit Actions warning; they are not moved to an unrelated
 line or published in a top-level comment.
-New comments are buffered into **one COMMENT review** pinned to the reviewed
-commit. Its compact receipt says **Expert Review - N findings** and links the
+Inside the isolated safe-output job, the trusted publisher sanitizes text with
+the pinned runtime and submits **one atomic COMMENT review** pinned to the
+reviewed commit. Permission and head/base are rechecked immediately before that
+non-retried write. This deliberately avoids the pinned generic review buffer's
+invalid-anchor fallback: a rejected anchor fails publication instead of moving
+finding text into the receipt. Deduplication requires the exact sanitized body,
+RIGHT side, path, line and reviewed commit, not a substring match.
+Its compact receipt says **Expert Review - N findings** and links the
 reviewed commit, including when there are zero findings. The count includes
 already-reported findings; those are not duplicated inline. Findings without
 valid anchors remain in artifacts, with a short receipt note instead of their
@@ -542,12 +559,21 @@ details. Incomplete source assessments are identified explicitly, never
 presented as completed zero-finding reviews.
 Publication uses the repository-scoped Actions token and appears as
 `github-actions[bot]`; it does not require a MauiBot publishing credential.
+Completion verifies the review ID returned by this run's write, its exact body
+and commit, and the exact count and membership of its inline comments. Manual
+dispatch and combined commands perform the same receipt checks; only command
+acknowledgement differs. Publication plans share a 4 MB UTF-8 bound through
+submission and completion, including long or non-ASCII finding text.
 
 There is no detailed expert summary, merge recommendation, author ping, badge,
 dimension table, follow-up or separate automation-status comment. Failures and
 context limitations stay in Actions logs and artifacts. This lane
 does not edit, collapse or replace existing summary comments from earlier runs
 or other review lanes.
+A separate silent job retains native usage artifacts and updates the pinned
+daily AI-credit cache even when review or detection fails. It has no PR-write
+permission or public reporting steps; missing usage evidence is an explicit
+accounting failure, never a cached measured zero.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
 review. The pinned SHA identifies the frozen snapshot and inline anchors,

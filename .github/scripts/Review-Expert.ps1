@@ -8,7 +8,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Gather', 'Snapshot', 'Prepare', 'Complete')]
+    [ValidateSet('Gather', 'Snapshot', 'Prepare', 'Publish', 'Complete')]
     [string]$Stage,
 
     [Parameter(Mandatory = $true)]
@@ -35,6 +35,26 @@ function Write-ExpertJson {
     [void][IO.Directory]::CreateDirectory($parent)
     $json = ConvertTo-Json -InputObject $Value -Depth 50
     [IO.File]::WriteAllText($Path, "$json`n", [Text.UTF8Encoding]::new($false))
+}
+
+function Get-ExpertPublicationBody {
+    param([string]$Body)
+
+    $script = @'
+const fs = require("node:fs");
+const log = message => process.stderr.write("[native-sanitizer] " + JSON.stringify(String(message)) + "\n");
+global.core = { info: log, warning: log };
+const { sanitizeContent } = require(process.argv[1]);
+process.stdout.write(JSON.stringify(sanitizeContent(JSON.parse(fs.readFileSync(0, "utf8")).trim())));
+'@
+    $result = (ConvertTo-Json -InputObject $Body -Compress) |
+        & node -e $script "$env:RUNNER_TEMP/gh-aw/actions/sanitize_content.cjs"
+    if ($LASTEXITCODE -ne 0) { throw 'The pinned publication sanitizer failed.' }
+    $value = ConvertFrom-Json -InputObject ($result -join "`n") -NoEnumerate
+    if ($value -isnot [string] -or [string]::IsNullOrWhiteSpace($value)) {
+        throw 'The pinned publication sanitizer returned an invalid body.'
+    }
+    return $value
 }
 
 function Read-ExpertJson {
@@ -254,7 +274,7 @@ function Test-ExpertJsonEqual {
 
     if ($null -eq $Left -or $null -eq $Right) { return $null -eq $Left -and $null -eq $Right }
     if ($Left -is [Collections.IDictionary] -and $Right -is [Collections.IDictionary]) {
-        if ($Left.Count -ne $Right.Count) { return $false }
+        if ($Left.PSBase.Count -ne $Right.PSBase.Count) { return $false }
         foreach ($key in $Left.Keys) {
             if (-not $Right.Contains($key) -or -not (Test-ExpertJsonEqual $Left[$key] $Right[$key])) { return $false }
         }
@@ -302,6 +322,78 @@ function Get-ExpertDimensionNames {
     return $names
 }
 
+function Get-ExpertExpectedDimensions {
+    param([string[]]$Paths, [string]$Diff)
+
+    $rulebook = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '../agents/maui-expert-reviewer.md'))
+    $start = $rulebook.IndexOf('## Dimension Routing', [StringComparison]::Ordinal)
+    $end = $rulebook.IndexOf('## Review Workflow', [StringComparison]::Ordinal)
+    if ($start -lt 0 -or $end -le $start) { throw 'Canonical dimension routing is missing.' }
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+        [Text.Encoding]::UTF8.GetBytes($rulebook.Substring($start, $end - $start)))).ToLowerInvariant()
+    if ($hash -cne 'b1cf5130da65a379d80222d68eef1dd6db69abdcf08a9ecc672315eedcbbcb44') {
+        throw 'Canonical routing changed; update the trusted dimension mapping before reviewing.'
+    }
+    $rules = @(
+        @{ pattern = '^src/Core/src/Layouts/'; ids = @(1, 2, 5) }
+        @{ pattern = '^src/Core/src/Handlers/'; ids = @(3, 7, 4) }
+        @{ pattern = '^src/Core/src/Platform/Android/'; ids = @(11, 8, 22) }
+        @{ pattern = '^src/Core/src/Platform/iOS/'; ids = @(15, 2, 11, 23) }
+        @{ pattern = '^src/Core/src/Platform/Windows/'; ids = @(14, 8, 24) }
+        @{ pattern = '^src/Controls/src/Core/Handlers/Items/(Android/|[^/]+\.Android\.cs$)'; ids = @(20, 2, 11) }
+        @{ pattern = '^src/Controls/src/Core/Handlers/Items/[^/]+\.Windows\.cs$'; ids = @(21, 14) }
+        @{ pattern = '^src/Controls/src/Core/Handlers/Items2/'; ids = @(19, 1, 11) }
+        @{ pattern = '^src/Controls/src/Core/Handlers/Items/(iOS/|[^/]+\.iOS\.cs$)'; ids = @(19) }
+        @{ pattern = '^src/Controls/src/Core/Items/[^/]+\.cs$'; ids = @(21, 12, 6) }
+        @{ pattern = '^src/Controls/src/Core/Handlers/(?!Items(?:2)?/)'; ids = @(3, 9, 10) }
+        @{ pattern = '^src/Controls/src/Core/(Handlers/)?Shell/'; ids = @(25, 5, 6) }
+        @{ pattern = '^src/Controls/src/Core/(View|Page|Layout|VisualElement|Element)/'; ids = @(7, 4, 12) }
+        @{ pattern = '^src/Controls/src/Core/[^/]*Gesture[^/]*/'; ids = @(28, 5) }
+        @{ pattern = '^src/Controls/src/Core/Image[^/]*/|^src/Core/src/ImageSources/'; ids = @(27, 2) }
+        @{ pattern = '^src/Controls/src/Xaml/'; ids = @(26, 18) }
+        @{ pattern = '^src/Controls/src/(BindingSourceGen|SourceGen)/'; ids = @(26, 18, 7) }
+        @{ pattern = '^eng/|^src/Controls/src/Build\.Tasks/'; ids = @(29, 6) }
+        @{ pattern = '^src/SingleProject/Resizetizer/src/'; ids = @(31, 29) }
+        @{ pattern = '^src/Controls/src/Build\.Tasks/|^eng/(cake|scripts)/'; ids = @(31) }
+        @{ pattern = '^src/Controls/src/Core/HybridWebView/|^src/Core/src/Handlers/HybridWebView/'; ids = @(31, 10) }
+        @{ pattern = '^src/Core/src/Handlers/WebView/|^src/Controls/src/Core/WebView/'; ids = @(31, 5) }
+        @{ pattern = '^src/Essentials/src/(FilePicker|MediaPicker|FileSystem)/'; ids = @(31) }
+        @{ pattern = '^src/Essentials/src/(AppActions|Launcher|WebAuthenticator)/|^src/Controls/src/Core/AppLinkEntry\.cs$'; ids = @(31, 5) }
+        @{ pattern = '^src/Controls/src/Core/Shell/(ShellUriHandler|ShellNavigationManager)\.cs$'; ids = @(31, 5) }
+    )
+    $ids = [Collections.Generic.HashSet[int]]::new()
+    foreach ($id in @(5, 6, 16)) { [void]$ids.Add($id) }
+    foreach ($path in $Paths) {
+        foreach ($rule in $rules) {
+            if ($path -match $rule.pattern) {
+                foreach ($id in $rule.ids) { [void]$ids.Add($id) }
+            }
+        }
+        if ($path -match 'PublicAPI\.Unshipped\.txt$') { [void]$ids.Add(7) }
+        if ($path -match '(^|/)Compatibility/') { [void]$ids.Add(12) }
+        if ($path -match '\.cs$') { [void]$ids.Add(12); [void]$ids.Add(18) }
+        if ($path -notmatch '\.(md|txt|png|jpg|jpeg|gif|svg|ico)$' -or
+            $path -match '^\.github/workflows/') { [void]$ids.Add(31) }
+        if ($path -match 'AutomationProperties|SemanticProperties') {
+            [void]$ids.Add(30); [void]$ids.Add(10)
+        }
+    }
+    if ($Diff -match 'AutomationProperties|SemanticProperties') {
+        [void]$ids.Add(30); [void]$ids.Add(10)
+    }
+    if ($Diff -match '(?m)^[+-](?![+-]).*\bpublic\b') { [void]$ids.Add(7) }
+    if ($Diff -match 'Reflection|Type\.GetType|Activator\.CreateInstance|RequiresDynamicCode|RequiresUnreferencedCode|DynamicallyAccessedMembers|FeatureGuard|UnconditionalSuppressMessage|IL[23]0[0-9]{2}') {
+        [void]$ids.Add(18)
+    }
+    if ($Diff -match '(?i)default|DefaultValue|BindableProperty\.Create|(?m)^-(?!-).*\bpublic\b') {
+        [void]$ids.Add(12)
+    }
+    if ($Diff -match '(?i)archive|extract|unzip|ArgumentList|ProcessStartInfo|Process\.Start|Start-Process|Join-Path|GetFullPath|Path\.(Combine|Join)|deserializ|ConvertFrom-Json|JsonSerializer|JsonConvert|Uri\b|deep.?link|credential|connection.?string|password|private.?key|access.?token|gh[pousr]_[A-Za-z0-9]{20}|github_pat_|AKIA[0-9A-Z]{16}') {
+        [void]$ids.Add(31)
+    }
+    return ,@($ids | Sort-Object)
+}
+
 function Invoke-ExpertGather {
     if (-not $OutputDirectory) { throw 'Gather requires an output directory.' }
     if ($env:GITHUB_OUTPUT) { 'ready=false' >> $env:GITHUB_OUTPUT }
@@ -329,6 +421,7 @@ function Invoke-ExpertGather {
     $paths = @((Invoke-ExpertGit -Arguments @('diff', '--name-only', '-z', $mergeBase, $head, '--')) -split "`0" |
         Where-Object { $_ })
     foreach ($path in $paths) { Assert-ExpertPath $path }
+    $expectedDimensions = Get-ExpertExpectedDimensions -Paths $paths -Diff $diff
     Write-ExpertJson (Join-Path $OutputDirectory 'changed-paths.json') $paths
     [IO.File]::WriteAllText((Join-Path $OutputDirectory 'pr.diff'), $diff, [Text.UTF8Encoding]::new($false))
     $files = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/files"
@@ -337,6 +430,24 @@ function Invoke-ExpertGather {
     Write-ExpertJson (Join-Path $OutputDirectory 'prior-feedback.json') $feedback
 
     $gaps = [Collections.Generic.List[string]]::new()
+    $history = [Collections.Generic.List[object]]::new()
+    $historyBytes = 0
+    foreach ($path in $paths | Select-Object -First 50) {
+        $commits = Invoke-ExpertGit -Arguments @('log', '-20', '--format=fuller', $head, '--', $path)
+        $mode = Invoke-ExpertGit -Arguments @('ls-tree', '--format=%(objectmode)', $head, '--', $path)
+        $blame = if ($mode -in @('100644', '100755')) {
+            Invoke-ExpertGit -Arguments @('blame', '--line-porcelain', $head, '--', $path)
+        } else { '' }
+        $bytes = [Text.Encoding]::UTF8.GetByteCount($commits) + [Text.Encoding]::UTF8.GetByteCount($blame)
+        if ($historyBytes + $bytes -gt 12MB) {
+            $gaps.Add('Pinned history exceeded its 12 MB collection bound; later files have no precomputed blame.')
+            break
+        }
+        $historyBytes += $bytes
+        $history.Add(@{ path = $path; commits = $commits; blame = $blame })
+    }
+    if ($paths.Count -gt 50) { $gaps.Add('Pinned history covers only the first 50 changed files.') }
+    Write-ExpertJson (Join-Path $OutputDirectory 'history.json') $history.ToArray()
     if ($files.Count -ne $paths.Count -or $files.Count -ne $pr.changed_files) {
         $gaps.Add('GitHub changed-file metadata is incomplete; use the full pinned git diff and source.')
     }
@@ -383,6 +494,7 @@ function Invoke-ExpertGather {
         schema_version = 1; repository = $Repository; pr_number = $PRNumber
         actor = $Actor; head_sha = $head; base_sha = $base; merge_base_sha = $mergeBase
         infrastructure_sha = $infrastructure; paths = $paths; gaps = $gaps.ToArray()
+        expected_dimensions = $expectedDimensions
     }
     Write-ExpertJson (Join-Path $OutputDirectory 'context.json') $context
     foreach ($file in Get-ChildItem -LiteralPath $OutputDirectory -File) {
@@ -425,11 +537,11 @@ function Invoke-ExpertPrepare {
     }
     [void][IO.Directory]::CreateDirectory($OutputDirectory)
     $imported = Join-Path $OutputDirectory 'imported'
-    $output = Read-ExpertJson (Copy-ExpertInput $AgentOutputPath (Join-Path $imported 'agent-output.json') 1MB) 1MB
+    $output = Read-ExpertJson (Copy-ExpertInput $AgentOutputPath (Join-Path $imported 'agent-output.json') 4MB) 4MB
     $rawFindings = Read-ExpertJson (Copy-ExpertInput (Join-Path $ResultDirectory 'inline-findings.json') `
         (Join-Path $imported 'inline-findings.json') 512KB) 512KB
     $state = Read-ExpertJson (Copy-ExpertInput (Join-Path $ResultDirectory 'review-state.json') `
-        (Join-Path $imported 'review-state.json') 256KB) 256KB
+        (Join-Path $imported 'review-state.json') 1MB) 1MB
     if ($output.items -isnot [array] -or $output.items.Count -ne 1 -or
         $output.items[0].type -cne 'submit_pull_request_review' -or
         $output.items[0].event -cne 'COMMENT' -or
@@ -461,11 +573,18 @@ function Invoke-ExpertPrepare {
     foreach ($path in $context.paths) { Assert-ExpertPath $path; [void]$paths.Add($path) }
     $findings = Get-ExpertFindings $rawFindings $paths
     $dimensions = Get-ExpertDimensions $state.activated_dimensions
+    $expectedDimensions = Get-ExpertExpectedDimensions -Paths $context.paths `
+        -Diff ([IO.File]::ReadAllText((Join-Path $ContextDirectory 'pr.diff')))
+    if ((@(Get-ExpertDimensions $context.expected_dimensions | Sort-Object) -join ',') -cne ($expectedDimensions -join ',') -or
+        (@($dimensions | Sort-Object) -join ',') -cne ($expectedDimensions -join ',')) {
+        throw 'Submitted dimensions do not match trusted frozen-path and conditional routing.'
+    }
     $dimensionNames = Get-ExpertDimensionNames
     $gaps = [Collections.Generic.List[string]]::new()
     $limitations = [Collections.Generic.List[string]]::new()
     foreach ($gap in $context.gaps) { $limitations.Add([string]$gap) }
     $completed = 0
+    $candidates = @{}
     foreach ($id in $dimensions | Sort-Object) {
         $source = Join-Path $ResultDirectory "dimensions/$id.json"
         if (-not (Test-Path -LiteralPath $source)) {
@@ -479,11 +598,41 @@ function Invoke-ExpertPrepare {
             $worker.dimension -ne $id -or $worker.complete -isnot [bool]) {
             throw 'An independent dimension artifact has an invalid identity or completion flag.'
         }
-        [void](Get-ExpertFindings $worker.findings $paths)
+        $workerFindings = Get-ExpertFindings $worker.findings $paths
+        for ($index = 0; $index -lt $workerFindings.Count; $index++) {
+            $candidates.Add("${id}:$index", $workerFindings[$index])
+        }
         if ($worker.complete) {
             $completed++
         } else {
             $gaps.Add("The $($dimensionNames[$id]) check did not finish.")
+        }
+    }
+    if ($state.candidate_dispositions -isnot [array] -or
+        $state.candidate_dispositions.Count -ne $candidates.Keys.Count) {
+        throw 'Every independent worker candidate requires a persisted disposition.'
+    }
+    $accounted = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($disposition in $state.candidate_dispositions) {
+        if ($disposition -isnot [Collections.IDictionary] -or
+            ($disposition.dimension -isnot [int] -and $disposition.dimension -isnot [long]) -or
+            ($disposition.index -isnot [int] -and $disposition.index -isnot [long]) -or
+            $disposition.decision -cnotin @('retain', 'reject') -or
+            $disposition.reason -isnot [string] -or [string]::IsNullOrWhiteSpace($disposition.reason) -or
+            $disposition.reason.Length -gt 2000) {
+            throw 'A candidate disposition has an invalid identity, decision, or reason.'
+        }
+        $key = "$($disposition.dimension):$($disposition.index)"
+        if (-not $candidates.ContainsKey($key) -or -not $accounted.Add($key)) {
+            throw 'A worker candidate disposition is missing, duplicated, or invented.'
+        }
+        if ($disposition.decision -ceq 'retain') {
+            $index = $disposition.finding_index
+            if (($index -isnot [int] -and $index -isnot [long]) -or $index -lt 0 -or
+                $index -ge $findings.Count -or $findings[$index].path -cne $candidates[$key].path -or
+                $findings[$index].line -ne $candidates[$key].line) {
+                throw 'A retained worker candidate must identify its persisted canonical finding.'
+            }
         }
     }
     if (-not $state.validation_complete) { $gaps.Add('The final check of potential findings did not finish.') }
@@ -516,6 +665,7 @@ function Invoke-ExpertPrepare {
     $receipt = [ordered]@{
         schema_version = 1; repository = $Repository; pr_number = $PRNumber
         run_id = $env:GITHUB_RUN_ID; run_url = $runUrl; head_sha = $context.head_sha
+        base_sha = $context.base_sha
         status = $status; inline_comments = @(); withheld_findings = @(); review_body = ''
     }
     if ($current.state -cne 'open') { throw 'The target PR closed before expert-review publication.' }
@@ -547,10 +697,11 @@ function Invoke-ExpertPrepare {
         $findingCount = $findings.Count + $unplaced.Count
         $inline = [Collections.Generic.List[object]]::new()
         foreach ($finding in $findings) {
+            $expectedBody = Get-ExpertPublicationBody $finding.body
             $alreadyPosted = @($feedback.inline | Where-Object {
                 $_.path -ceq $finding.path -and $_.line -eq $finding.line -and
                 $_.commit_id -ceq $context.head_sha -and
-                ([string]$_.body).Contains($finding.body, [StringComparison]::Ordinal)
+                $_.side -ceq 'RIGHT' -and $_.body -ceq $expectedBody
             })
             if ($alreadyPosted.Count) {
                 continue
@@ -558,7 +709,7 @@ function Invoke-ExpertPrepare {
             if ($lineMap.ContainsKey($finding.path) -and $lineMap[$finding.path].Contains($finding.line)) {
                 $inline.Add(@{
                     path = $finding.path; line = $finding.line
-                    body = $finding.body
+                    body = $expectedBody; canonical_body = $finding.body
                 })
             } else {
                 $unplaced.Add("``$($finding.path):$($finding.line)`` - $($finding.body)")
@@ -593,9 +744,9 @@ function Invoke-ExpertPrepare {
         if ($unplaced.Count) {
             $body += "`n`n$($unplaced.Count) findings could not be attached inline; retained in [run artifacts]($runUrl)."
         }
-        $receipt.review_body = $body
+        $receipt.review_body = Get-ExpertPublicationBody $body
         $receipt.finding_count = $findingCount
-        $items.Add(@{ type = 'submit_pull_request_review'; event = 'COMMENT'; body = $body })
+        $items.Add(@{ type = 'submit_pull_request_review'; event = 'COMMENT'; body = $receipt.review_body })
         $output.items = $items.ToArray()
     }
     Assert-ExpertPermission -Login $context.actor
@@ -609,46 +760,87 @@ function Invoke-ExpertPrepare {
     Write-Host "Validated inline-only publication: $($receipt.status); $($receipt.inline_comments.Count) new comments."
 }
 
+function Invoke-ExpertPublish {
+    $context = Get-ExpertContext
+    $path = Join-Path $ResultDirectory 'publication.json'
+    $receipt = Read-ExpertJson $path 4MB
+    if ($receipt.status -eq 'stale') { return }
+    if ($receipt.repository -cne $Repository -or $receipt.pr_number -ne $PRNumber -or
+        [string]$receipt.run_id -cne $env:GITHUB_RUN_ID -or $receipt.head_sha -cne $context.head_sha -or
+        $receipt.base_sha -cne $context.base_sha -or $receipt.status -cnotin @('complete', 'incomplete') -or
+        $receipt.inline_comments -isnot [array] -or $receipt.inline_comments.Count -gt 17 -or
+        [string]::IsNullOrWhiteSpace($receipt.review_body) -or $receipt.Contains('posted_review_id')) {
+        throw 'The atomic publication plan is invalid or has already been submitted.'
+    }
+    $comments = @(
+        foreach ($finding in $receipt.inline_comments) {
+            @{ path = $finding.path; line = $finding.line; side = 'RIGHT'; body = $finding.body }
+        }
+    )
+    Assert-ExpertPermission -Login $context.actor
+    $current = Invoke-ExpertGh -Arguments @("repos/$Repository/pulls/$PRNumber")
+    if ($current.state -cne 'open' -or $current.head.sha -cne $context.head_sha -or
+        $current.base.sha -cne $context.base_sha -or $current.locked) {
+        throw 'The PR changed or became locked immediately before atomic expert publication.'
+    }
+    # One non-retried submission: GitHub rejects invalid anchors instead of falling back to prose.
+    $posted = Invoke-ExpertGh -Arguments @("repos/$Repository/pulls/$PRNumber/reviews") -Body @{
+        commit_id = $context.head_sha; event = 'COMMENT'
+        body = $receipt.review_body; comments = $comments
+    }
+    if ($posted.id -isnot [long] -and $posted.id -isnot [int]) {
+        throw 'GitHub did not return a publication identity; reconcile the mutation before any retry.'
+    }
+    $receipt.posted_review_id = $posted.id
+    Write-ExpertJson $path $receipt
+    $output = Read-ExpertJson $AgentOutputPath 4MB
+    $output.items = @(@{ type = 'noop'; message = 'The trusted atomic expert review was submitted.' })
+    Write-ExpertJson $AgentOutputPath $output
+}
+
 function Invoke-ExpertComplete {
     $request = Get-ExpertRequest
-    if ($env:GITHUB_EVENT_NAME -ne 'issue_comment') { return }
-    if ($request.event.comment.body -match '^\s*/review\s+expert-review-with-gate\s*$') {
-        Write-Host 'The Gate trigger owns acknowledgement of the combined command.'
-        return
-    }
     $context = Get-ExpertContext
-    $receipt = Read-ExpertJson (Join-Path $ResultDirectory 'publication.json') 256KB
+    $receipt = Read-ExpertJson (Join-Path $ResultDirectory 'publication.json') 4MB
     $runUrl = Get-ExpertRunUrl
     if ($receipt.repository -cne $Repository -or $receipt.pr_number -ne $PRNumber -or
         [string]$receipt.run_id -cne $env:GITHUB_RUN_ID -or $receipt.run_url -cne $runUrl -or
-        $receipt.head_sha -cne $context.head_sha -or $receipt.status -cne 'complete') {
-        Write-Host 'No completed publication receipt; leaving the command visible.'
+        $receipt.head_sha -cne $context.head_sha -or $receipt.status -cnotin @('complete', 'incomplete')) {
+        Write-Host 'No publication receipt; leaving the command visible.'
         return
     }
     if ($receipt.inline_comments -isnot [array] -or $receipt.inline_comments.Count -gt 17) {
         throw 'The inline publication receipt is invalid.'
     }
     if ([string]::IsNullOrWhiteSpace($receipt.review_body)) { throw 'The review receipt body is missing.' }
-    $reviews = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews"
-    $postedReview = @($reviews | Where-Object {
-        $_.user.login -ceq 'github-actions[bot]' -and $_.commit_id -ceq $context.head_sha -and
-        $_.state -ceq 'COMMENTED' -and $_.body -ceq $receipt.review_body
-    })
-    if (-not $postedReview.Count) { throw 'GitHub has no matching completed expert-review receipt.' }
-    if ($receipt.inline_comments.Count) {
-        $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/comments"
-        foreach ($expected in $receipt.inline_comments) {
-            $published = @($comments | Where-Object {
-                $_.user.login -ceq 'github-actions[bot]' -and
-                $_.commit_id -ceq $context.head_sha -and $_.path -ceq $expected.path -and
-                $_.line -eq $expected.line -and $_.body -ceq $expected.body
-            })
-            if (-not $published.Count) { throw 'GitHub has no matching published inline finding.' }
-        }
+    if ([string]$receipt.posted_review_id -notmatch '^[1-9][0-9]*$') {
+        throw 'This run has no independently returned publication identity.'
+    }
+    $postedReview = Invoke-ExpertGh -Arguments @("repos/$Repository/pulls/$PRNumber/reviews/$($receipt.posted_review_id)")
+    if ($postedReview.user.login -cne 'github-actions[bot]' -or
+        $postedReview.commit_id -cne $context.head_sha -or $postedReview.state -cne 'COMMENTED' -or
+        $postedReview.body -cne $receipt.review_body -or $postedReview.id -ne $receipt.posted_review_id) {
+        throw 'GitHub has no matching completed expert-review receipt.'
+    }
+    $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews/$($receipt.posted_review_id)/comments"
+    if ($comments.Count -ne $receipt.inline_comments.Count) { throw 'The actual inline count differs from this run''s publication plan.' }
+    foreach ($expected in $receipt.inline_comments) {
+        $published = @($comments | Where-Object {
+            $_.user.login -ceq 'github-actions[bot]' -and
+            $_.commit_id -ceq $context.head_sha -and $_.path -ceq $expected.path -and
+            $_.line -eq $expected.line -and $_.side -ceq 'RIGHT' -and $_.body -ceq $expected.body -and
+            $_.pull_request_review_id -eq $receipt.posted_review_id
+        })
+        if (-not $published.Count) { throw 'GitHub has no matching published inline finding.' }
     }
     $pr = Invoke-ExpertGh -Arguments @("repos/$Repository/pulls/$PRNumber")
     if ($pr.state -cne 'open' -or $pr.head.sha -cne $context.head_sha -or $pr.base.sha -cne $context.base_sha) {
         Write-Host 'The PR advanced after publication; leaving the request visible.'
+        return
+    }
+    if ($env:GITHUB_EVENT_NAME -ne 'issue_comment' -or $receipt.status -cne 'complete') { return }
+    if ($request.event.comment.body -match '^\s*/review\s+expert-review-with-gate\s*$') {
+        Write-Host 'Verified expert publication; the Gate trigger owns combined-command acknowledgement.'
         return
     }
     $comment = Invoke-ExpertGh -Arguments @("repos/$Repository/issues/comments/$($request.event.comment.id)")
@@ -673,5 +865,6 @@ switch ($Stage) {
     'Gather' { Invoke-ExpertGather }
     'Snapshot' { Invoke-ExpertSnapshot }
     'Prepare' { Invoke-ExpertPrepare }
+    'Publish' { Invoke-ExpertPublish }
     'Complete' { Invoke-ExpertComplete }
 }
