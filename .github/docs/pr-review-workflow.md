@@ -330,8 +330,9 @@ changes select the corresponding existing UI fixture by class name. Selection re
 the prepared review checkout, not the live PR head. Unmapped baselines/pages produce
 an explicit coverage warning rather than implying that they were exercised.
 
-A request blocked by `s/agent-review-in-progress` posts a visible explanation.
-It is not queued automatically; submit the command again after the current run finishes.
+A request blocked by `s/agent-review-in-progress` records the skip only in the
+Actions step summary, without posting a PR reply. It is not queued automatically;
+submit the command again after the current run finishes.
 
 ### Trigger
 
