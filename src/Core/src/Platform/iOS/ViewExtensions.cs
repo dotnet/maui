@@ -15,6 +15,24 @@ namespace Microsoft.Maui.Platform
 	{
 		internal const string BackgroundLayerName = "MauiBackgroundLayer";
 
+		internal static double GetDisplayScale(this UIView view)
+		{
+			var window = view.Window;
+			var sceneScale = (double?)window?.WindowScene?.Screen.Scale;
+			return ResolveDisplayScale(sceneScale, sceneScale is null ? (double?)window?.Screen?.Scale : null);
+		}
+
+		internal static double ResolveDisplayScale(double? windowSceneScale, double? windowScale, double? fallbackScale = null)
+		{
+			var scale = windowSceneScale ?? windowScale ?? fallbackScale ?? (double)UIScreen.MainScreen.Scale;
+			return scale > 0 ? scale : 1;
+		}
+
+		internal static double GetEffectiveDisplayScale(this UIView view) =>
+			view.Window is not null && view.ContentScaleFactor > 0
+				? (double)view.ContentScaleFactor
+				: view.GetDisplayScale();
+
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
 			if (platformView is UIControl uiControl)
