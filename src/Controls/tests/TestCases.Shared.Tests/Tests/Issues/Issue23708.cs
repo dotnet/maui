@@ -15,6 +15,17 @@ public class Issue23708 : _IssuesUITest
 	public void Issue23708GroupHeaderDoesNotHaveExtraVerticalItemSpacing()
 	{
 		App.WaitForElement("GroupedCollectionView");
-		VerifyScreenshot();
+		var header = App.WaitForElement("GroupHeaderSmall").GetRect();
+		var firstRow = App.WaitForElement("ItemRat").GetRect();
+		var secondRow = App.WaitForElement("ItemBird").GetRect();
+		var thirdRow = App.WaitForElement("ItemCarrot").GetRect();
+
+		// Normalize screen coordinates to layout units using the fixed-height header.
+		var scale = header.Height / 40d;
+		Assert.That(scale, Is.GreaterThan(0));
+		Assert.That((secondRow.Y - firstRow.Y) / scale, Is.EqualTo(30).Within(2),
+			"The first two rows should contain a 20-unit item and 10 units of spacing.");
+		Assert.That((thirdRow.Y - secondRow.Y) / scale, Is.EqualTo(30).Within(2),
+			"The final row before the next group should not retain the native minimum item height.");
 	}
 }

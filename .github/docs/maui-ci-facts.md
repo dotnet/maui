@@ -277,6 +277,11 @@ Messages like `Baseline snapshot not yet created`, missing snapshot paths, or sn
 environment-version mismatches are strong **unrelated** evidence — unless the PR adds or
 modifies that visual test or the affected snapshot/platform.
 
+UI snapshot-diff artifact names retain their platform, stage, job-name and job-attempt
+prefix, with the job ID and stage attempt appended by the collection template. The
+job ID distinguishes non-matrix jobs that share `System.JobName=__default`; both
+snapshot artifacts and diagnostic `drop-` artifacts must remain unique across retries.
+
 The gatherer can collect failed UI result IDs from the public
 `vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
 result-detail and attachment APIs. The simplified workflow/local runner skips

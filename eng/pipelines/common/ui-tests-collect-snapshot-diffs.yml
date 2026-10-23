@@ -1,6 +1,6 @@
 parameters:
   platform: '' # The platform name for logging (e.g., 'Android', 'iOS', 'Windows', 'Mac')
-  artifactName: '' # The artifact name to publish (e.g., 'uitest-snapshot-results-android')
+  artifactName: '' # Readable artifact prefix; job and stage-attempt identity is appended below.
 
 steps:
 - task: PowerShell@2
@@ -33,4 +33,4 @@ steps:
   displayName: Publish ${{ parameters.platform }} snapshot diffs
   inputs:
     targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests
-    artifact: ${{ parameters.artifactName }}
+    artifact: ${{ parameters.artifactName }}-$(System.JobId)-$(System.StageAttempt)
