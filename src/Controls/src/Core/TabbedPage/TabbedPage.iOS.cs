@@ -199,13 +199,22 @@ namespace Microsoft.Maui.Controls
 				newGradientBrush.InvalidateGradientBrushRequested += view.OnBarBackgroundChanged;
 			}
 
-			tabBar.UpdateBackground(view._currentBarBackground);
+			view.UpdateBarBackground(tabBar);
 		}
 
 		void OnBarBackgroundChanged(object sender, EventArgs e)
 		{
 			var tabBar = GetTabBar(Handler as ITabbedViewHandler);
-			tabBar?.UpdateBackground(_currentBarBackground);
+			if (tabBar is not null)
+				UpdateBarBackground(tabBar);
+		}
+
+		void UpdateBarBackground(UITabBar tabBar)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+				UpdateiOS15TabBarAppearance(tabBar);
+			else
+				tabBar.UpdateBackground(_currentBarBackground);
 		}
 
 		internal static void MapBarBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
@@ -236,7 +245,7 @@ namespace Microsoft.Maui.Controls
 				view._barBackgroundColorWasSet = true;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -292,7 +301,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Set TintColor for selected icon
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -310,7 +319,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -345,7 +354,7 @@ namespace Microsoft.Maui.Controls
 				tabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -876,6 +885,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBar tabBar)
 		{
@@ -885,7 +895,7 @@ namespace Microsoft.Maui.Controls
 				_defaultBarTextColor,
 				IsSet(SelectedTabColorProperty) ? SelectedTabColor : null,
 				IsSet(UnselectedTabColorProperty) ? UnselectedTabColor : null,
-				IsSet(BarBackgroundColorProperty) ? BarBackgroundColor?.AsPaint() : null,
+				!Brush.IsNullOrEmpty(BarBackground) ? BarBackground : IsSet(BarBackgroundColorProperty) ? BarBackgroundColor?.AsPaint() : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null);
 		}

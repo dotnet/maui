@@ -525,7 +525,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
@@ -551,12 +551,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
 			}
 
-			TabBar.UpdateBackground(_currentBarBackground);
+			ApplyBarBackground();
 		}
 
 		void OnBarBackgroundChanged(object sender, EventArgs e)
 		{
-			TabBar.UpdateBackground(_currentBarBackground);
+			ApplyBarBackground();
+		}
+
+		void ApplyBarBackground()
+		{
+			if (TabBar is null)
+				return;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+				UpdateiOS15TabBarAppearance();
+			else
+				TabBar.UpdateBackground(_currentBarBackground);
 		}
 
 		void UpdateBarTextColor()
@@ -594,7 +605,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 			{
@@ -871,7 +882,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 			{
@@ -906,6 +917,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance()
 		{
@@ -917,7 +929,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_defaultBarTextColor,
 				tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? tabbed.SelectedTabColor : null,
 				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
-				tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor?.AsPaint() : null,
+				!Brush.IsNullOrEmpty(tabbed.BarBackground) ? tabbed.BarBackground : tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor?.AsPaint() : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
 		}

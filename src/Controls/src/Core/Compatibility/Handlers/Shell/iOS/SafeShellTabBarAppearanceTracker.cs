@@ -38,13 +38,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
-			IShellAppearanceElement appearanceElement = appearance;
-			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
-			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
-			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
-			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
-			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
-
 			var tabBar = controller.TabBar;
 
 			if (_defaultTint == null)
@@ -78,6 +71,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBarController controller, ShellAppearance appearance)
 		{

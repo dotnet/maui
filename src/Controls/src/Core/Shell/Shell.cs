@@ -728,7 +728,8 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: bo => new ShellItemCollection { Inner = new ElementCollection<ShellItem>(((Shell)bo).InternalChildren) });
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
-		Dictionary<IAppearanceObserver, (GradientBrush Brush, EventHandler Handler)> _appearanceObserverGradientBrushes = new Dictionary<IAppearanceObserver, (GradientBrush Brush, EventHandler Handler)>();
+		// Keep callbacks alive while the brush proxies hold only weak references to them.
+		Dictionary<IAppearanceObserver, (WeakBrushChangedProxy Proxy, EventHandler Handler)> _appearanceObserverGradientBrushes = new Dictionary<IAppearanceObserver, (WeakBrushChangedProxy Proxy, EventHandler Handler)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
 
@@ -858,21 +859,22 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateAppearanceObserverGradientBrush(IAppearanceObserver observer, Element pivot, ShellAppearance appearance)
 		{
-			var gradientBrush = appearance?.EffectiveTabBarBackground as GradientBrush;
+			var gradientBrush = appearance?.TabBarBackgroundColor is null ? appearance?.Background as GradientBrush : null;
 			if (_appearanceObserverGradientBrushes.TryGetValue(observer, out var currentSubscription))
 			{
-				if (ReferenceEquals(currentSubscription.Brush, gradientBrush))
+				if (currentSubscription.Proxy.TryGetSource(out var currentBrush) && ReferenceEquals(currentBrush, gradientBrush))
 					return;
 
-				currentSubscription.Brush.InvalidateGradientBrushRequested -= currentSubscription.Handler;
+				currentSubscription.Proxy.Unsubscribe();
 				_appearanceObserverGradientBrushes.Remove(observer);
 			}
 
 			if (gradientBrush is not null)
 			{
 				EventHandler handler = (_, _) => UpdateAppearanceObserver(observer, pivot);
-				gradientBrush.InvalidateGradientBrushRequested += handler;
-				_appearanceObserverGradientBrushes.Add(observer, (gradientBrush, handler));
+				var proxy = new WeakBrushChangedProxy();
+				proxy.Subscribe(gradientBrush, handler);
+				_appearanceObserverGradientBrushes.Add(observer, (proxy, handler));
 			}
 		}
 
@@ -880,7 +882,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_appearanceObserverGradientBrushes.TryGetValue(observer, out var subscription))
 			{
-				subscription.Brush.InvalidateGradientBrushRequested -= subscription.Handler;
+				subscription.Proxy.Unsubscribe();
 				_appearanceObserverGradientBrushes.Remove(observer);
 			}
 		}
@@ -1854,8 +1856,7 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
-			if (_previousPage != null)
-				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			_previousPage?.PropertyChanged -= OnCurrentPagePropertyChanged;
 
 			_navigationType = NavigationType.Replace;
 
@@ -1888,8 +1889,7 @@ namespace Microsoft.Maui.Controls
 			PropagateSendNavigatedTo();
 			_previousPage = null;
 
-			if (CurrentPage != null)
-				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			CurrentPage?.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 			(this.Window as Window)?.NotifyNavigationStateChanged();

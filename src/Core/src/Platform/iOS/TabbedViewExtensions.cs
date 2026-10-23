@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		internal static void UpdateiOS15TabBarAppearance(
 			this UITabBar tabBar,
@@ -39,12 +40,8 @@ namespace Microsoft.Maui.Platform
 			Color? selectedBarTextColor,
 			Color? unSelectedBarTextColor)
 		{
-			if (_tabBarAppearance == null)
-			{
-				_tabBarAppearance = new UITabBarAppearance();
-				_tabBarAppearance.ConfigureWithDefaultBackground();
-
-			}
+			_tabBarAppearance ??= new UITabBarAppearance();
+			_tabBarAppearance.ConfigureWithDefaultBackground();
 
 			// Reset the background layer to ensure any previous customizations do not persist.
 			tabBar.RemoveBackgroundLayer();

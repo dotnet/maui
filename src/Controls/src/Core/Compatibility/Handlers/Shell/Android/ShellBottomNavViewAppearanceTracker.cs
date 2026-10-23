@@ -108,8 +108,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (brush is GradientBrush)
 			{
-				// Gradients render through GradientStrokeDrawable and intentionally skip the Material
-				// elevation overlay so the user's gradient isn't tinted by the dark-theme surface overlay.
+				// Keep gradients free of the Material elevation overlay.
 				bottomView.UpdateBackground(brush);
 				return;
 			}
@@ -139,7 +138,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var oldBackground = bottomView.Background;
 			bottomView.SetBackground(_originalBackground);
-			if (oldBackground is GradientStrokeDrawable)
+			if ((oldBackground is GradientStrokeDrawable or MauiDrawable) && !ReferenceEquals(oldBackground, _originalBackground))
 				oldBackground.Dispose();
 		}
 
@@ -153,13 +152,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
-			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Colors.Transparent.ToPlatform();
+			var materialFillColor = (oldBackground as MaterialShapeDrawable)?.FillColor;
+			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ??
+				(materialFillColor is not null ? new AColor(materialFillColor.DefaultColor) : AColor.Transparent);
 			AColor newColor = color.ToPlatform();
+
+			if (materialFillColor is not null && lastColor == newColor)
+				return;
 
 			// Coming from a gradient there's no meaningful color to reveal from, so apply the solid color
 			// directly (avoids a reveal-from-transparent flash) and dispose the outgoing gradient drawable,
 			// which ViewCompat.SetBackground would otherwise replace without disposing.
-			if (oldBackground is GradientStrokeDrawable)
+			if (oldBackground is GradientStrokeDrawable or MauiDrawable)
 			{
 				var solidBackground = new MaterialShapeDrawable();
 				solidBackground.FillColor = ColorStateList.ValueOf(newColor);

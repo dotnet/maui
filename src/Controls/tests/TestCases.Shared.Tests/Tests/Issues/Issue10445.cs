@@ -23,8 +23,9 @@ public class Issue10445 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Windows Shell does not render brush tab-bar backgrounds.
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBackgroundTransitionsFromGradientToSolidAndDefault()
 	{
 		Exception? exception = null;
@@ -42,4 +43,5 @@ public class Issue10445 : _IssuesUITest
 			throw exception;
 		}
 	}
+#endif
 }

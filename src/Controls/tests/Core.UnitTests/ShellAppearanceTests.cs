@@ -101,6 +101,80 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(4, observer.UpdateCount);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void GradientStopsCanBeRepopulated(bool initiallyEmpty)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var gradient = CreateGradient();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, gradient);
+
+			if (initiallyEmpty)
+				gradient.GradientStops.Clear();
+
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+
+			if (!initiallyEmpty)
+				gradient.GradientStops.Clear();
+
+			Assert.Null(observer.LastAppearance.EffectiveTabBarBackground);
+			var updateCount = observer.UpdateCount;
+
+			gradient.GradientStops.Add(new GradientStop(Colors.Red, 0));
+			gradient.GradientStops.Add(new GradientStop(Colors.Blue, 1));
+
+			Assert.Equal(updateCount + 2, observer.UpdateCount);
+			Assert.Same(gradient, observer.LastAppearance.EffectiveTabBarBackground);
+		}
+
+		[Fact]
+		public async Task SharedGradientDoesNotRetainShellOrAppearanceObservers()
+		{
+			var gradient = CreateGradient();
+			var references = CreateShellAppearanceReferences(gradient);
+
+			foreach (var reference in references)
+				Assert.False(await reference.WaitForCollect());
+
+			gradient.GradientStops[0].Color = Colors.Red;
+			GC.KeepAlive(gradient);
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		WeakReference[] CreateShellAppearanceReferences(GradientBrush gradient)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, gradient);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+
+			return new[] { new WeakReference(shell), new WeakReference(shellItem), new WeakReference(observer) };
+		}
+
+		[Fact]
+		public async Task GradientSubscriptionSurvivesGarbageCollectionWhileShellIsAlive()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var gradient = CreateGradient();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, gradient);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+
+			await TestHelpers.Collect();
+			gradient.GradientStops[0].Color = Colors.Red;
+
+			Assert.Equal(2, observer.UpdateCount);
+			GC.KeepAlive(shell);
+		}
+
 		[Fact]
 		public void EffectiveTabBarBackground_UsesBackgroundColor()
 		{
