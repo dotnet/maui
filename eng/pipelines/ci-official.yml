@@ -139,8 +139,7 @@ extends:
       parameters:
         publishingInfraVersion: 3
         enableSymbolValidation: true
-        enableSigningValidation: false
-        # Disable for now as we test the new signing process
+        enableSigningValidation: true
         enableSourceLinkValidation: false
         validateDependsOn:
         - Pack

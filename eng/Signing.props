@@ -29,6 +29,7 @@
 
   <ItemGroup Label="Microsoft files">
     <FileSignInfo Include="ReconnectModal.razor.js" CertificateName="Microsoft400" />
+    <FileSignInfo Include="NavMenu.razor.js" CertificateName="Microsoft400" />
   </ItemGroup>
 
   <ItemGroup>
