@@ -33,8 +33,7 @@ public partial class HybridWebViewControlPage : ContentPage
 		_viewModel.HybridRoot = selectedRoot;
 		try
 		{
-			_ = ReloadAsync();
-			await WaitForDocumentTitleAsync(selectedRoot == "HybridWebView1" ? GetTitle(_viewModel.DefaultFile) : "HybridWebView2");
+			await ReloadAndWaitForDocumentTitleAsync();
 		}
 		catch (Exception ex)
 		{
@@ -50,8 +49,7 @@ public partial class HybridWebViewControlPage : ContentPage
 
 		try
 		{
-			_ = ReloadAsync();
-			await WaitForDocumentTitleAsync(GetTitle(selectedFile));
+			await ReloadAndWaitForDocumentTitleAsync();
 		}
 		catch (Exception ex)
 		{
@@ -86,10 +84,17 @@ public partial class HybridWebViewControlPage : ContentPage
 			: FlowDirection.RightToLeft;
 	}
 
-	private void OnResetButtonClicked(object sender, EventArgs e)
+	private async void OnResetButtonClicked(object sender, EventArgs e)
 	{
 		_viewModel.ResetToDefaults();
-		_ = ReloadAsync();
+		try
+		{
+			await ReloadAndWaitForDocumentTitleAsync();
+		}
+		catch (Exception ex)
+		{
+			_viewModel.Status = $"Reset failed: {ex.Message}";
+		}
 	}
 
 	private void OnWebViewInitialized(object sender, WebViewInitializedEventArgs e)
@@ -97,11 +102,18 @@ public partial class HybridWebViewControlPage : ContentPage
 		_viewModel.Status = "WebView initialized";
 	}
 
-	async Task WaitForDocumentTitleAsync(string expectedTitle)
+	async Task ReloadAndWaitForDocumentTitleAsync()
 	{
+		_viewModel.Status = "Loading...";
+		var expectedTitle = GetTitle(_viewModel.HybridRoot, _viewModel.DefaultFile);
+		// The marker disappears with the old document, so an unchanged title cannot signal readiness early.
+		await MyHybridWebView.EvaluateJavaScriptAsync("window.hybridWebViewReloadPending = true;");
+		_ = ReloadAsync();
+
 		for (var attempt = 0; attempt < 50; attempt++)
 		{
-			var title = await MyHybridWebView.EvaluateJavaScriptAsync("document.title");
+			var title = await MyHybridWebView.EvaluateJavaScriptAsync(
+				"document.readyState === 'complete' && !window.hybridWebViewReloadPending ? document.title : ''");
 			if (title == expectedTitle)
 			{
 				_viewModel.Status = $"Loaded: {title}";
@@ -126,11 +138,13 @@ public partial class HybridWebViewControlPage : ContentPage
 		}
 	}
 
-	static string GetTitle(string defaultFile) => defaultFile switch
+	static string GetTitle(string hybridRoot, string defaultFile) => (hybridRoot, defaultFile) switch
 	{
-		"image.html" => "HybridWebView Image Page",
-		"navigation.html" => "HybridWebView Navigation Page",
-		"web.html" => "Simple Web Demo",
-		_ => "HybridWebView1",
+		("HybridWebView1", "index.html") => "HybridWebView1",
+		("HybridWebView1", "image.html") => "HybridWebView Image Page",
+		("HybridWebView1", "navigation.html") => "HybridWebView Navigation Page",
+		("HybridWebView1", "web.html") => "Simple Web Demo",
+		("HybridWebView2", "index.html") => "HybridWebView2",
+		_ => throw new InvalidOperationException($"Unsupported HybridRoot/DefaultFile combination: {hybridRoot}/{defaultFile}."),
 	};
 }

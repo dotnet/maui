@@ -47,6 +47,9 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		App.WaitForElement("HybridWebView2Button");
 		App.Tap("HybridWebView2Button");
 		WaitForStatus("Loaded: HybridWebView2");
+		App.WaitForElement("IndexHtmlButton");
+		App.Tap("IndexHtmlButton");
+		WaitForStatus("Loaded: HybridWebView2");
 		App.WaitForElement("HybridRootLabel");
 		var hybridRootLabel = App.FindElement("HybridRootLabel").GetText();
 		Assert.That(hybridRootLabel, Is.EqualTo("HybridWebView2"), "Hybrid Root label should be displayed correctly.");
@@ -160,6 +163,8 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		WaitForStatus("Raw message received: You said: Hello from C#");
 		var message = App.FindElement("StatusLabel").GetText();
 		Assert.That(message, Is.EqualTo("Raw message received: You said: Hello from C#"), "The raw message should round-trip from C# through JavaScript.");
+		App.WaitForElement(AppiumQuery.ByXPath(
+			"//*[contains(@text, 'Message #1:') or contains(@label, 'Message #1:') or contains(@Name, 'Message #1:')]"));
 	}
 #endif
 
@@ -180,6 +185,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		App.Tap("ResetButton");
 		Assert.That(App.WaitForTextToBePresentInElement("HybridRootLabel", "HybridWebView1"), Is.True);
 		Assert.That(App.WaitForTextToBePresentInElement("DefaultFileLabel", "index.html"), Is.True);
+		WaitForStatus("Loaded: HybridWebView1");
 	}
 
 	void WaitForStatus(string status)
