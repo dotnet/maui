@@ -170,7 +170,7 @@ function Get-ExpertContext {
     }
     if ($env:GITHUB_SHA -and $context.infrastructure_sha -cne $env:GITHUB_SHA) {
         if ($env:EXPERT_VERIFIED_EVIDENCE_SHA -cne $context.infrastructure_sha -or
-            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne '771572eaf9a01cec804f1d9e62f40ebf804bfd6f' -or
+            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne '72fb55628a0568475c553e5cdb0deac4cfb9587b' -or
             $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or $PRNumber -ne 39325 -or
             $env:GITHUB_REF -cne 'refs/heads/kubaflo-expert-feedback-publication-39325' -or
             $env:GITHUB_ACTOR -cne 'kubaflo' -or $env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or
@@ -198,8 +198,8 @@ function Get-ExpertRequest {
         $env:GITHUB_REPOSITORY -ceq 'dotnet/maui' -and $env:GITHUB_ACTOR -ceq 'kubaflo' -and
         $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
         $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-feedback-publication-39325' -and
-        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq '771572eaf9a01cec804f1d9e62f40ebf804bfd6f' -and
-        [string]$event.inputs.source_run -ceq '39946225679'
+        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq '72fb55628a0568475c553e5cdb0deac4cfb9587b' -and
+        [string]$event.inputs.source_run -ceq '39947871714'
     if ($event.repository.full_name -cne $Repository -or
         ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'

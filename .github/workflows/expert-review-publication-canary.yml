@@ -42,7 +42,7 @@ jobs:
           SOURCE_RUN: ${{ inputs.source_run }}
         with:
           script: |
-            if (process.env.PR_NUMBER !== '39325' || process.env.SOURCE_RUN !== '39946225679') {
+            if (process.env.PR_NUMBER !== '39325' || process.env.SOURCE_RUN !== '39947871714') {
               throw new Error('Only the exact PR 39325 validation run may publish.');
             }
             const permission = await github.rest.repos.getCollaboratorPermissionLevel({
@@ -57,7 +57,7 @@ jobs:
             if (run.actor.login !== 'kubaflo' || run.event !== 'workflow_dispatch' ||
                 run.workflow_id !== 382256011 || run.run_attempt !== 1 ||
                 run.head_branch !== 'kubaflo-expert-feedback-canary-39325' ||
-                run.head_sha !== '771572eaf9a01cec804f1d9e62f40ebf804bfd6f' ||
+                run.head_sha !== '72fb55628a0568475c553e5cdb0deac4cfb9587b' ||
                 run.status !== 'completed' || run.conclusion !== 'success') {
               throw new Error('The revised inference, detection and usage evidence did not succeed.');
             }
