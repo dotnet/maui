@@ -31,7 +31,8 @@ namespace Microsoft.Maui.Platform
 		enum NativeSample
 		{
 			None = 0, Argument = 1, Kind = 2, Timestamp = 4,
-			WindowNumber = 8, Location = 16, Window = 32
+			WindowNumber = 8, Location = 16, Window = 32,
+			ClickCount = 64, ButtonNumber = 128, ModifierFlags = 256, WindowKey = 512
 		}
 
 		enum NativeInstall
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Platform
 		{
 			None, NullEventArgument, UnexpectedEventClass, UnexpectedEventKind,
 			ManagedSampleException, MissingBlockContext, ManagedCallbackException,
-			SetupFailed, RemovalFailed
+			SetupFailed, RemovalFailed, UnexpectedWindowClass
 		}
 
 		const int MaxAppKitEvents = 16;
@@ -149,6 +150,9 @@ namespace Microsoft.Maui.Platform
 				.Append(" appKitCoverage=AppProcessSendEventOnly excludes=OtherProcesses,NestedTrackingLoops,EarlierMonitorConsumption")
 				.Append(" osClickCausalIdentityProven=false wdaRequestAssociationProven=false nativeToUIKitTranslationProven=false noRowsProvesOSAbsence=false")
 				.Append(" boundarySampleVersion=1 unknown=NotSampled null=SampledNil");
+			text.Append(" nativeEventContext=ClickCount,ButtonNumber,ModifierFlags")
+				.Append(" nativeWindowKeyObservation=SampledNSWindowIsKeyWindowOnly")
+				.Append(" nativeContextGetterLimitPerEvent=9 nativeContextGetterLimitPerScope=144");
 		}
 
 		static void AppendBoundaryRow(StringBuilder text, Entry entry)
@@ -175,7 +179,17 @@ namespace Microsoft.Maui.Platform
 					.Append(" nativePointSpace=").Append(!Has(NativeSample.Window) ? "unknown" :
 						entry.WindowHandle == 0 ? "AppKitScreenForNilWindow" : "AppKitWindowBaseUnflippedPoints")
 					.Append(" matchedUIWindowSampled=false matchedUIWindowHandle=unknown matchedUIWindowRelation=UnknownNoPublicCatalystBridge")
-					.Append(" eventReturnPolicy=ExactSuppliedPointer uiEventAssociation=unknown osClickCausalIdentityProven=false");
+					.Append(" eventReturnPolicy=ExactSuppliedPointer uiEventAssociation=unknown osClickCausalIdentityProven=false")
+					.Append(" nativeClickCountSampled=").Append(Has(NativeSample.ClickCount))
+					.Append(" nativeClickCount=").Append(Scalar(entry.Boundary.NativeClickCount, Has(NativeSample.ClickCount)))
+					.Append(" nativeButtonNumberSampled=").Append(Has(NativeSample.ButtonNumber))
+					.Append(" nativeButtonNumber=").Append(Scalar(entry.Boundary.NativeButtonNumber, Has(NativeSample.ButtonNumber)))
+					.Append(" nativeModifierFlagsSampled=").Append(Has(NativeSample.ModifierFlags))
+					.Append(" nativeModifierFlags=").Append(Scalar(entry.Boundary.NativeModifierFlags, Has(NativeSample.ModifierFlags)))
+					.Append(" nativeWindowKeySampled=").Append(Has(NativeSample.WindowKey))
+					.Append(" nativeWindowKeyRaw=").Append(Scalar(entry.Boundary.NativeWindowKeyRaw, Has(NativeSample.WindowKey)))
+					.Append(" nativeWindowIsKey=").Append(Has(NativeSample.WindowKey) ?
+						(entry.Boundary.NativeWindowKeyRaw != 0).ToString() : "unknown");
 				return;
 			}
 
@@ -226,12 +240,18 @@ namespace Microsoft.Maui.Platform
 			internal int Version, Samples, Fault;
 			internal ulong RawEventKind;
 			internal long NativeWindowNumber;
+			internal long NativeClickCount, NativeButtonNumber;
+			internal ulong NativeModifierFlags;
+			internal byte NativeWindowKeyRaw;
 
 			public BoundaryFields()
 			{
 				Version = Samples = Fault = 0;
 				RawEventKind = 0;
 				NativeWindowNumber = 0;
+				NativeClickCount = NativeButtonNumber = 0;
+				NativeModifierFlags = 0;
+				NativeWindowKeyRaw = 0;
 			}
 		}
 	}

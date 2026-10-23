@@ -14,9 +14,10 @@ namespace Microsoft.Maui.Platform
 		const string EventBlockSignature = "@\"NSEvent\"16@?0@\"NSEvent\"8";
 		const int MaxNativeClassDepth = 32;
 		const int NativeTypeBufferLength = 64;
-		static nint _nsEventClass, _monitorToken;
+		static nint _nsEventClass, _nsWindowClass, _monitorToken;
 		static nint _addMonitor, _removeMonitor, _eventKind, _eventTimestamp;
 		static nint _eventWindowNumber, _eventLocation, _eventWindow;
+		static nint _eventClickCount, _eventButtonNumber, _eventModifierFlags, _windowIsKey;
 
 		static partial void StartAppKitMonitor(long generation)
 		{
@@ -41,7 +42,8 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 				_nsEventClass = (nint)Class.GetHandle("NSEvent");
-				if (_nsEventClass == 0)
+				_nsWindowClass = (nint)Class.GetHandle("NSWindow");
+				if (_nsEventClass == 0 || _nsWindowClass == 0)
 				{
 					_appKitInstall = NativeInstall.ClassUnavailable;
 					AppKitFailed(NativeFault.SetupFailed);
@@ -54,13 +56,22 @@ namespace Microsoft.Maui.Platform
 				_eventWindowNumber = (nint)Selector.GetHandle("windowNumber");
 				_eventLocation = (nint)Selector.GetHandle("locationInWindow");
 				_eventWindow = (nint)Selector.GetHandle("window");
+				_eventClickCount = (nint)Selector.GetHandle("clickCount");
+				_eventButtonNumber = (nint)Selector.GetHandle("buttonNumber");
+				_eventModifierFlags = (nint)Selector.GetHandle("modifierFlags");
+				_windowIsKey = (nint)Selector.GetHandle("isKeyWindow");
 				if (!Signature(class_getClassMethod(_nsEventClass, _addMonitor), "@", "@", ":", "Q", "@?") ||
 					!Signature(class_getClassMethod(_nsEventClass, _removeMonitor), "v", "@", ":", "@") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventKind), "Q", "@", ":") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventTimestamp), "d", "@", ":") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventWindowNumber), "q", "@", ":") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventLocation), "{CGPoint=dd}", "@", ":") ||
-					!Signature(class_getInstanceMethod(_nsEventClass, _eventWindow), "@", "@", ":"))
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventWindow), "@", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventClickCount), "q", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventButtonNumber), "q", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventModifierFlags), "Q", "@", ":") ||
+					(!Signature(class_getInstanceMethod(_nsWindowClass, _windowIsKey), "c", "@", ":") &&
+					 !Signature(class_getInstanceMethod(_nsWindowClass, _windowIsKey), "B", "@", ":")))
 				{
 					_appKitInstall = NativeInstall.SignatureMismatch;
 					AppKitFailed(NativeFault.SetupFailed);
@@ -143,7 +154,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (suppliedEvent == 0)
 					entry.Boundary.Fault = (int)NativeFault.NullEventArgument;
-				else if (!IsEventObject(suppliedEvent))
+				else if (!IsNativeObject(suppliedEvent, _nsEventClass))
 					entry.Boundary.Fault = (int)NativeFault.UnexpectedEventClass;
 				else
 				{
@@ -163,6 +174,22 @@ namespace Microsoft.Maui.Platform
 						entry.Boundary.Samples |= (int)NativeSample.Location;
 						entry.WindowHandle = (long)ReadObject(suppliedEvent, _eventWindow);
 						entry.Boundary.Samples |= (int)NativeSample.Window;
+						entry.Boundary.NativeClickCount = (long)ReadSigned(suppliedEvent, _eventClickCount);
+						entry.Boundary.Samples |= (int)NativeSample.ClickCount;
+						entry.Boundary.NativeButtonNumber = (long)ReadSigned(suppliedEvent, _eventButtonNumber);
+						entry.Boundary.Samples |= (int)NativeSample.ButtonNumber;
+						entry.Boundary.NativeModifierFlags = (ulong)ReadUnsigned(suppliedEvent, _eventModifierFlags);
+						entry.Boundary.Samples |= (int)NativeSample.ModifierFlags;
+						if (entry.WindowHandle != 0)
+						{
+							if (!IsNativeObject((nint)entry.WindowHandle, _nsWindowClass))
+								entry.Boundary.Fault = (int)NativeFault.UnexpectedWindowClass;
+							else
+							{
+								entry.Boundary.NativeWindowKeyRaw = ReadByte((nint)entry.WindowHandle, _windowIsKey);
+								entry.Boundary.Samples |= (int)NativeSample.WindowKey;
+							}
+						}
 					}
 				}
 			}
@@ -175,12 +202,12 @@ namespace Microsoft.Maui.Platform
 			Publish(generation, entry);
 		}
 
-		static bool IsEventObject(nint value)
+		static bool IsNativeObject(nint value, nint expectedClass)
 		{
 			var type = object_getClass(value);
 			for (int depth = 0; type != 0 && depth < MaxNativeClassDepth; depth++)
 			{
-				if (type == _nsEventClass)
+				if (type == expectedClass)
 					return true;
 				type = class_getSuperclass(type);
 			}
@@ -245,6 +272,8 @@ namespace Microsoft.Maui.Platform
 		static extern NativePoint ReadPoint(nint receiver, nint selector);
 		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
 		static extern nint ReadObject(nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern byte ReadByte(nint receiver, nint selector);
 		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
 		static extern nint class_getClassMethod(nint type, nint selector);
 		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
