@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using OpenQA.Selenium.Support.UI;
 using UITest.Appium;
 using UITest.Core;
 
@@ -69,6 +70,7 @@ public class Issue17389 : _IssuesUITest
 	public void ValidateBackgroundColorDoesNotAffectInputTransparent()
 	{
 		App.WaitForElement("ToggleInputTransparentButton");
+		EnsureMacAppIsForeground();
 
 		string[] layouts = new[]
 		{
@@ -94,6 +96,31 @@ public class Issue17389 : _IssuesUITest
 		}
 
 		App.WaitForElement("Tap count: 0");
+	}
+
+	void EnsureMacAppIsForeground()
+	{
+		if (App is not AppiumCatalystApp catalystApp)
+			return;
+
+		var bundleId = catalystApp.Config.GetProperty<string>("AppId");
+		if (string.IsNullOrWhiteSpace(bundleId))
+			throw new InvalidOperationException("Mac app bundle identifier is missing.");
+		var parameters = new Dictionary<string, object> { ["bundleId"] = bundleId };
+		catalystApp.Driver.ExecuteScript("macos: activateApp", parameters);
+		var wait = new WebDriverWait(catalystApp.Driver, TimeSpan.FromSeconds(10));
+		wait.Until(_ =>
+		{
+			var result = catalystApp.Driver.ExecuteScript("macos: queryAppState", parameters);
+			var state = result switch
+			{
+				long value when value is >= 0 and <= 4 => (int)value,
+				int value when value is >= 0 and <= 4 => value,
+				_ => throw new InvalidOperationException($"Unexpected native Mac app state: {result}")
+			};
+			TestContext.WriteLine($"{DateTime.UtcNow:O} PreTapNativeAppState: {state}");
+			return state == 4;
+		});
 	}
 
 	[Test, Order(2)]
