@@ -12,12 +12,14 @@ namespace Microsoft.Maui.Platform
 	{
 		const ulong LeftMouseMask = (1UL << 1) | (1UL << 2);
 		const string EventBlockSignature = "@\"NSEvent\"16@?0@\"NSEvent\"8";
+		const string RectReturnEncoding = "{CGRect={CGPoint=dd}{CGSize=dd}}";
 		const int MaxNativeClassDepth = 32;
 		const int NativeTypeBufferLength = 64;
 		static nint _nsEventClass, _nsWindowClass, _monitorToken;
 		static nint _addMonitor, _removeMonitor, _eventKind, _eventTimestamp;
 		static nint _eventWindowNumber, _eventLocation, _eventWindow;
 		static nint _eventClickCount, _eventButtonNumber, _eventModifierFlags, _windowIsKey;
+		static nint _windowFrame, _windowContentLayout;
 
 		static partial void StartAppKitMonitor(long generation)
 		{
@@ -60,6 +62,8 @@ namespace Microsoft.Maui.Platform
 				_eventButtonNumber = (nint)Selector.GetHandle("buttonNumber");
 				_eventModifierFlags = (nint)Selector.GetHandle("modifierFlags");
 				_windowIsKey = (nint)Selector.GetHandle("isKeyWindow");
+				_windowFrame = (nint)Selector.GetHandle("frame");
+				_windowContentLayout = (nint)Selector.GetHandle("contentLayoutRect");
 				if (!Signature(class_getClassMethod(_nsEventClass, _addMonitor), "@", "@", ":", "Q", "@?") ||
 					!Signature(class_getClassMethod(_nsEventClass, _removeMonitor), "v", "@", ":", "@") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventKind), "Q", "@", ":") ||
@@ -70,6 +74,8 @@ namespace Microsoft.Maui.Platform
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventClickCount), "q", "@", ":") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventButtonNumber), "q", "@", ":") ||
 					!Signature(class_getInstanceMethod(_nsEventClass, _eventModifierFlags), "Q", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsWindowClass, _windowFrame), RectReturnEncoding, "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsWindowClass, _windowContentLayout), RectReturnEncoding, "@", ":") ||
 					(!Signature(class_getInstanceMethod(_nsWindowClass, _windowIsKey), "c", "@", ":") &&
 					 !Signature(class_getInstanceMethod(_nsWindowClass, _windowIsKey), "B", "@", ":")))
 				{
@@ -188,6 +194,18 @@ namespace Microsoft.Maui.Platform
 							{
 								entry.Boundary.NativeWindowKeyRaw = ReadByte((nint)entry.WindowHandle, _windowIsKey);
 								entry.Boundary.Samples |= (int)NativeSample.WindowKey;
+								var frame = ReadRect((nint)entry.WindowHandle, _windowFrame);
+								entry.Boundary.FrameX = frame.X;
+								entry.Boundary.FrameY = frame.Y;
+								entry.Boundary.FrameWidth = frame.Width;
+								entry.Boundary.FrameHeight = frame.Height;
+								entry.Boundary.Samples |= (int)NativeSample.WindowFrame;
+								var content = ReadRect((nint)entry.WindowHandle, _windowContentLayout);
+								entry.Boundary.ContentX = content.X;
+								entry.Boundary.ContentY = content.Y;
+								entry.Boundary.ContentWidth = content.Width;
+								entry.Boundary.ContentHeight = content.Height;
+								entry.Boundary.Samples |= (int)NativeSample.ContentLayoutRect;
 							}
 						}
 					}
@@ -257,6 +275,33 @@ namespace Microsoft.Maui.Platform
 
 			public NativePoint() => X = Y = 0;
 		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct NativeRect
+		{
+			internal double X, Y, Width, Height;
+
+			public NativeRect() => X = Y = Width = Height = 0;
+		}
+
+		static NativeRect ReadRect(nint receiver, nint selector)
+		{
+			switch (RuntimeInformation.ProcessArchitecture)
+			{
+				case Architecture.X64:
+					ReadRectX64(out var result, receiver, selector);
+					return result;
+				case Architecture.Arm64:
+					return ReadRectArm64(receiver, selector);
+				default:
+					throw new PlatformNotSupportedException("Only LP64 X64 and Arm64 rectangle getters are supported.");
+			}
+		}
+
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend_stret", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+		static extern void ReadRectX64(out NativeRect result, nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+		static extern NativeRect ReadRectArm64(nint receiver, nint selector);
 
 		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
 		static extern unsafe nint AddLocalMonitor(nint receiver, nint selector, ulong mask, BlockLiteral* block);

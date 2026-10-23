@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Platform
 		{
 			None = 0, Argument = 1, Kind = 2, Timestamp = 4,
 			WindowNumber = 8, Location = 16, Window = 32,
-			ClickCount = 64, ButtonNumber = 128, ModifierFlags = 256, WindowKey = 512
+			ClickCount = 64, ButtonNumber = 128, ModifierFlags = 256, WindowKey = 512,
+			WindowFrame = 1024, ContentLayoutRect = 2048
 		}
 
 		enum NativeInstall
@@ -152,7 +153,8 @@ namespace Microsoft.Maui.Platform
 				.Append(" boundarySampleVersion=1 unknown=NotSampled null=SampledNil");
 			text.Append(" nativeEventContext=ClickCount,ButtonNumber,ModifierFlags")
 				.Append(" nativeWindowKeyObservation=SampledNSWindowIsKeyWindowOnly")
-				.Append(" nativeContextGetterLimitPerEvent=9 nativeContextGetterLimitPerScope=144");
+				.Append(" nativeContextGetterLimitPerEvent=11 nativeContextGetterLimitPerScope=176")
+				.Append(" nativeFrameSpace=AppKitScreen nativeContentLayoutSpace=AppKitWindow");
 		}
 
 		static void AppendBoundaryRow(StringBuilder text, Entry entry)
@@ -189,7 +191,17 @@ namespace Microsoft.Maui.Platform
 					.Append(" nativeWindowKeySampled=").Append(Has(NativeSample.WindowKey))
 					.Append(" nativeWindowKeyRaw=").Append(Scalar(entry.Boundary.NativeWindowKeyRaw, Has(NativeSample.WindowKey)))
 					.Append(" nativeWindowIsKey=").Append(Has(NativeSample.WindowKey) ?
-						(entry.Boundary.NativeWindowKeyRaw != 0).ToString() : "unknown");
+						(entry.Boundary.NativeWindowKeyRaw != 0).ToString() : "unknown")
+					.Append(" nativeFrameSampled=").Append(Has(NativeSample.WindowFrame))
+					.Append(" nativeFrame=").Append(Real(entry.Boundary.FrameX, Has(NativeSample.WindowFrame)))
+					.Append(',').Append(Real(entry.Boundary.FrameY, Has(NativeSample.WindowFrame)))
+					.Append(',').Append(Real(entry.Boundary.FrameWidth, Has(NativeSample.WindowFrame)))
+					.Append(',').Append(Real(entry.Boundary.FrameHeight, Has(NativeSample.WindowFrame)))
+					.Append(" nativeContentLayoutSampled=").Append(Has(NativeSample.ContentLayoutRect))
+					.Append(" nativeContentLayoutRect=").Append(Real(entry.Boundary.ContentX, Has(NativeSample.ContentLayoutRect)))
+					.Append(',').Append(Real(entry.Boundary.ContentY, Has(NativeSample.ContentLayoutRect)))
+					.Append(',').Append(Real(entry.Boundary.ContentWidth, Has(NativeSample.ContentLayoutRect)))
+					.Append(',').Append(Real(entry.Boundary.ContentHeight, Has(NativeSample.ContentLayoutRect)));
 				return;
 			}
 
@@ -243,6 +255,8 @@ namespace Microsoft.Maui.Platform
 			internal long NativeClickCount, NativeButtonNumber;
 			internal ulong NativeModifierFlags;
 			internal byte NativeWindowKeyRaw;
+			internal double FrameX, FrameY, FrameWidth, FrameHeight;
+			internal double ContentX, ContentY, ContentWidth, ContentHeight;
 
 			public BoundaryFields()
 			{
@@ -252,6 +266,8 @@ namespace Microsoft.Maui.Platform
 				NativeClickCount = NativeButtonNumber = 0;
 				NativeModifierFlags = 0;
 				NativeWindowKeyRaw = 0;
+				FrameX = FrameY = FrameWidth = FrameHeight = 0;
+				ContentX = ContentY = ContentWidth = ContentHeight = 0;
 			}
 		}
 	}
