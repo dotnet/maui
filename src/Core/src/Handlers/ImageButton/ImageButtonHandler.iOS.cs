@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Handlers
 		public override bool NeedsContainer => true;
 
 		readonly ImageButtonProxy _proxy = new();
-		Size _previousSize;
 
 		protected override void SetupContainer()
 		{
@@ -50,11 +49,11 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rect rect)
 		{
+			var previousSize = ContainerView?.Bounds.Size ?? PlatformView.Bounds.Size;
 			base.PlatformArrange(rect);
-			if (_previousSize != rect.Size)
+			if (previousSize != (ContainerView?.Bounds.Size ?? PlatformView.Bounds.Size))
 			{
 				UpdateValue(nameof(IButtonStroke.CornerRadius));
-				_previousSize = rect.Size;
 			}
 		}
 
