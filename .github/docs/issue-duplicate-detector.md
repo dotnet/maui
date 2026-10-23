@@ -79,6 +79,8 @@ fail explicitly; they never become empty search results. Runs share a
 workflow-wide `queue: max` concurrency group rather than per-issue groups,
 so different issues do not compete for quota or displace pending checks.
 GitHub permits at most 100 pending runs in that queue.
+The generated conclusion job uses a run-ID discriminator so separate dispatches
+do not share its job-level concurrency group; workflow-wide serialization is unchanged.
 
 The service runs outside the agent sandbox using the existing pinned gh-aw
 MCP transport, with no new dependencies or secrets. Its only GitHub credential
@@ -150,7 +152,7 @@ required before publication.
 The workflow uses the existing `copilot-pat-pool` environment and GPT-6.1 Sol
 configuration. No additional external service, model provider or repository secret is needed.
 The workflow-local PAT selector follows `issue-triage`'s existing pattern to
-keep the activation guard explicit with the pinned gh-aw v0.86.2 compiler.
+keep the activation guard explicit with the pinned compiler.
 Prepared evidence and validator code come from trusted default-branch
 infrastructure; issue/reproduction content is never executed.
 The GitHub MCP's repository guard restricts issue reads to `dotnet/maui`;
@@ -172,36 +174,40 @@ nor filesystem-write tools.
 
 ## Editing and validation
 
-Stock gh-aw v0.86.2 rewrites structured GitHub `allowed` entries to tool names
-during default-tool normalization, dropping their `max-calls` metadata, and
-grants filesystem-write permission even when `edit: false` is declared.
 [`CompileIssueDuplicateDetector.sh`](../scripts/CompileIssueDuplicateDetector.sh)
-builds an isolated compiler from the immutable
-[`86885522c56a777b4734e6b5d81b41ce244a513f` correction](https://github.com/kubaflo/gh-aw/commit/86885522c56a777b4734e6b5d81b41ce244a513f)
-on top of v0.86.2. The correction preserves both gateway call limits and
-Copilot's explicit tool permissions, honors disabled editing, and wires the
-scoped server exemptions consistently in strict validation and JSON/TOML
-configuration. It derives a fresh policy for each server ID, omitting sink
-visibility only for explicitly named exemptions while retaining exact accept
-patterns and visibility enforcement for unlisted servers. The earlier
-`8b600a3beee3591b7add4c79e595d9481a470cc4` build omitted visibility only for
-`safeoutputs`; its explicit public `duplicate-search` sink still rejected
-refinement queries after scoped GitHub reads. The gateway exemption prevents
-default visibility injection but does not remove an explicitly emitted value.
-The new compiler corrects that rendering without changing runtime pins.
-It does not install or replace the user's `gh aw` extension.
-Compiler metadata identifies the patched build.
-Only the official MCP gateway is upgraded, to
-[`v0.4.30`](https://github.com/github/gh-aw-mcpg/releases/tag/v0.4.30), whose
+builds an isolated compiler from official gh-aw v0.87.10 at immutable commit
+[`ff62cdbec36230acbae869ddb28806e8eca01ea1`](https://github.com/github/gh-aw/commit/ff62cdbec36230acbae869ddb28806e8eca01ea1),
+paired with that release's
+[`bc8c008a419c5b7a29df6f5641edd35fd1c6ea85` runtime](https://github.com/github/gh-aw-actions/commit/bc8c008a419c5b7a29df6f5641edd35fd1c6ea85).
+Both use `gateway.agentId` and `MCP_GATEWAY_AGENT_ID`. The previous v0.86.2
+compiler/runtime emitted and required `gateway.apiKey`, which the v0.4.30
+gateway rejects. This prevented the agent from starting in the
+[first production run](https://github.com/dotnet/maui/actions/runs/39855446664);
+the later incomplete-discovery publication error was a consequence, not the cause.
+
+[`IssueDuplicateCompiler.patch`](../scripts/IssueDuplicateCompiler.patch)
+retains the workflow's existing compiler corrections: preserve structured
+GitHub `allowed` entries and their `max-calls`, emit explicit Copilot tool
+permissions, recognize `safeoutputs` in strict validation, and omit sink
+visibility only for explicitly named custom/publication servers. Each server
+gets an independent policy retaining exact repository accept patterns.
+The upstream compiler already honors `edit: false`. The helper applies the
+patch to a disposable copy of verified source, leaving its cached checkout
+clean. Patch application explicitly sets the Git directory and working tree,
+then verifies reverse application so enclosing repositories cannot silently
+skip the corrections. CLI proxying is disabled along with shell access;
+the agent continues to use native MCP tools. The helper does not install or
+replace the user's `gh aw` extension.
+
+The compiler patch retains the official
+[`v0.4.30` MCP gateway](https://github.com/github/gh-aw-mcpg/releases/tag/v0.4.30), whose
 [`sink-visibility correction`](https://github.com/github/gh-aw-mcpg/commit/ece856095ca6445fc4f41884512478b1d4e2851c)
 honors the safe-output exemption. Its immutable image digest is
 `sha256:ab5a436a1490438db473e4e3d4c973cb1d75e3cb233fb08b73d31b42d7d18fba`.
-All other runtime action/container pins and engine versions remain unchanged.
-The custom compiler version is not recognized by the runtime's official-release
-checker, so an explicit pre-agent step runs the same compatibility and revocation
-check against the v0.86.2 base before inference.
+Compiler metadata identifies the patched build. An explicit pre-agent step
+runs the official compatibility and revocation check against the v0.87.10 base.
 
-Go 1.26.5 or later is required for this build-only workaround. The helper caches
+Go 1.26.7 or later is required for this build-only workaround. The helper caches
 the pinned source and compiler under `${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw`,
 checks the source revision and cleanliness before every build, and removes
 publication/inference tokens from both the build and compiler execution using
@@ -211,9 +217,9 @@ pinned module's dependency selection. This isolates Go workspace resolution,
 not every aspect of the build environment. Replace this helper with a fixed
 official compiler after verifying that it preserves the counter policy, explicit
 Copilot allowlist, disabled editing and scoped per-server sink policies; do not
-regenerate with stock v0.86.2 or hand-edit the generated lock.
+regenerate with an unpatched compiler or hand-edit the generated lock.
 
-Commit the source, compilation helper, trusted publisher and compiled lock file together:
+Commit the source, compilation helper and patch, trusted publisher and compiled lock file together:
 
 ```bash
 node --check .github/scripts/IssueDuplicates.cjs
