@@ -170,7 +170,7 @@ function Get-ExpertContext {
     }
     if ($env:GITHUB_SHA -and $context.infrastructure_sha -cne $env:GITHUB_SHA) {
         if ($env:EXPERT_VERIFIED_EVIDENCE_SHA -cne $context.infrastructure_sha -or
-            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne '0b1f794e48aa62ba8856f879f43eccb113ead7a4' -or
+            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne 'bf18c21a266895411e9260e97710cdd562b47718' -or
             $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or $PRNumber -ne 39325 -or
             $env:GITHUB_REF -cne 'refs/heads/kubaflo-expert-feedback-publication-39325' -or
             $env:GITHUB_ACTOR -cne 'kubaflo' -or $env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or
@@ -198,8 +198,8 @@ function Get-ExpertRequest {
         $env:GITHUB_REPOSITORY -ceq 'dotnet/maui' -and $env:GITHUB_ACTOR -ceq 'kubaflo' -and
         $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
         $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-feedback-publication-39325' -and
-        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq '0b1f794e48aa62ba8856f879f43eccb113ead7a4' -and
-        [string]$event.inputs.source_run -ceq '39978479459'
+        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq 'bf18c21a266895411e9260e97710cdd562b47718' -and
+        [string]$event.inputs.source_run -ceq '39983877734'
     if ($event.repository.full_name -cne $Repository -or
         ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'
@@ -837,7 +837,9 @@ function Invoke-ExpertComplete {
         $postedReview.body -cne $receipt.review_body -or $postedReview.id -ne $receipt.posted_review_id) {
         throw 'GitHub has no matching completed expert-review receipt.'
     }
-    $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews/$($receipt.posted_review_id)/comments"
+    # The review-scoped endpoint omits modern line/side fields.
+    $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/comments"
+    $comments = @($comments | Where-Object { $_.pull_request_review_id -eq $receipt.posted_review_id })
     if ($comments.Count -ne $receipt.inline_comments.Count) { throw 'The actual inline count differs from this run''s publication plan.' }
     foreach ($expected in $receipt.inline_comments) {
         $published = @($comments | Where-Object {
