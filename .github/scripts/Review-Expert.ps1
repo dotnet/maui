@@ -170,7 +170,7 @@ function Get-ExpertContext {
     }
     if ($env:GITHUB_SHA -and $context.infrastructure_sha -cne $env:GITHUB_SHA) {
         if ($env:EXPERT_VERIFIED_EVIDENCE_SHA -cne $context.infrastructure_sha -or
-            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne '75c9a9d6ed71156e211008ccc2a64f39dadfebfa' -or
+            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne 'f18880062c8caeb20269376e73a7ae64f37f3975' -or
             $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or $PRNumber -ne 39325 -or
             $env:GITHUB_REF -cne 'refs/heads/kubaflo-expert-feedback-publication-39325' -or
             $env:GITHUB_ACTOR -cne 'kubaflo' -or $env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or
@@ -198,8 +198,8 @@ function Get-ExpertRequest {
         $env:GITHUB_REPOSITORY -ceq 'dotnet/maui' -and $env:GITHUB_ACTOR -ceq 'kubaflo' -and
         $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
         $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-feedback-publication-39325' -and
-        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq '75c9a9d6ed71156e211008ccc2a64f39dadfebfa' -and
-        [string]$event.inputs.source_run -ceq '39952561405'
+        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq 'f18880062c8caeb20269376e73a7ae64f37f3975' -and
+        [string]$event.inputs.source_run -ceq '39972277797'
     if ($event.repository.full_name -cne $Repository -or
         ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'
@@ -207,7 +207,7 @@ function Get-ExpertRequest {
     if ($env:GITHUB_EVENT_NAME -eq 'issue_comment') {
         if ($event.action -cne 'created' -or -not $event.issue.pull_request -or
             $event.issue.number -ne $PRNumber -or $event.comment.user.type -cne 'User' -or
-            $event.comment.body -notmatch '^\s*/review\s+expert-review(?:-with-gate)?\s*$') {
+            $event.comment.body -notmatch '^\s*/review\s+expert-review(?:er)?(?:-with-gate)?\s*$') {
             throw 'Not an exact newly created human expert-review PR command.'
         }
         $login = [string]$event.comment.user.login
@@ -854,7 +854,7 @@ function Invoke-ExpertComplete {
         return
     }
     if ($env:GITHUB_EVENT_NAME -ne 'issue_comment' -or $receipt.status -cne 'complete') { return }
-    if ($request.event.comment.body -match '^\s*/review\s+expert-review-with-gate\s*$') {
+    if ($request.event.comment.body -match '^\s*/review\s+expert-review(?:er)?-with-gate\s*$') {
         Write-Host 'Verified expert publication; the Gate trigger owns combined-command acknowledgement.'
         return
     }
@@ -862,7 +862,7 @@ function Invoke-ExpertComplete {
     $apiUrl = if ($env:GITHUB_API_URL) { $env:GITHUB_API_URL } else { 'https://api.github.com' }
     if ($comment.issue_url -cne "$apiUrl/repos/$Repository/issues/$PRNumber" -or
         $comment.node_id -cne $request.event.comment.node_id -or
-        $comment.user.login -cne $request.actor -or $comment.body -notmatch '^\s*/review\s+expert-review\s*$') {
+        $comment.user.login -cne $request.actor -or $comment.body -notmatch '^\s*/review\s+expert-review(?:er)?\s*$') {
         throw 'The command identity changed before completion.'
     }
     Assert-ExpertPermission -Login $request.actor
