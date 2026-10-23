@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
         readonly CollectionViewAccessibilityMetadata _accessibilityMetadata;
         readonly ItemAccessibilityDelegate _itemDelegate;
 
-        public CollectionViewAccessibilityDelegate(RecyclerView recyclerView, CollectionViewAccessibilityMetadata metadata)
+        internal CollectionViewAccessibilityDelegate(RecyclerView recyclerView, CollectionViewAccessibilityMetadata metadata)
             : base(recyclerView)
         {
             _recyclerView = recyclerView;
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
         {
             readonly CollectionViewAccessibilityDelegate _parent;
 
-            public ItemAccessibilityDelegate(CollectionViewAccessibilityDelegate parent) : base(parent)
+            internal ItemAccessibilityDelegate(CollectionViewAccessibilityDelegate parent) : base(parent)
             {
                 _parent = parent;
             }

@@ -12,43 +12,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
         readonly RecyclerView _recyclerView;
         readonly DataObserver _observer;
 
-        RecyclerView.Adapter _observedAdapter;
-
         // _nonDataBefore[i] = count of supplementary items in adapter positions [0, i).
         // Length is (adapter.ItemCount + 1) so IsSupplementary(pos) can peek at pos+1.
         int[] _nonDataBefore;
         bool _hasCache;
 
-        public CollectionViewAccessibilityMetadata(RecyclerView recyclerView)
+        internal CollectionViewAccessibilityMetadata(RecyclerView recyclerView)
         {
             _recyclerView = recyclerView;
             _observer = new DataObserver(this);
         }
 
-        // Called by MauiRecyclerView whenever the adapter is swapped
-        // (data <-> EmptyViewAdapter, teardown, etc.).
-        public void OnAdapterAttached(RecyclerView.Adapter newAdapter)
+        // Observe each adapter for its lifetime. EmptyView swaps can happen inside a
+        // notification, when removing another observer would corrupt RecyclerView's iteration.
+        internal void ObserveAdapter(RecyclerView.Adapter adapter)
         {
-            if (ReferenceEquals(_observedAdapter, newAdapter))
-            {
-                return;
-            }
-
-            if (_observedAdapter is not null)
-            {
-                _observedAdapter.UnregisterAdapterDataObserver(_observer);
-            }
-
-            _observedAdapter = newAdapter;
-            if (newAdapter is not null)
-            {
-                newAdapter.RegisterAdapterDataObserver(_observer);
-            }
-
+            adapter?.RegisterAdapterDataObserver(_observer);
             InvalidateCache();
         }
 
-        public bool HasSupplementaryItems
+        internal void UnobserveAdapter(RecyclerView.Adapter adapter)
+        {
+            adapter?.UnregisterAdapterDataObserver(_observer);
+            InvalidateCache();
+        }
+
+        internal bool HasSupplementaryItems
         {
             get
             {
@@ -57,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
             }
         }
 
-        public int SupplementaryItemCount
+        internal int SupplementaryItemCount
         {
             get
             {
@@ -66,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
             }
         }
 
-        public int GetNonDataItemsBefore(int position)
+        internal int GetNonDataItemsBefore(int position)
         {
             EnsureCache();
             if (_nonDataBefore is null || position <= 0)
@@ -82,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
             return _nonDataBefore[position];
         }
 
-        public bool IsSupplementary(int position)
+        internal bool IsSupplementary(int position)
         {
             EnsureCache();
             if (_nonDataBefore is null || position < 0 || position + 1 >= _nonDataBefore.Length)
@@ -93,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
             return _nonDataBefore[position + 1] > _nonDataBefore[position];
         }
 
-        void InvalidateCache()
+        internal void InvalidateCache()
         {
             _hasCache = false;
             _nonDataBefore = null;
@@ -132,7 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
             _hasCache = true;
         }
 
-        static bool IsNonDataViewType(int viewType)
+        bool IsNonDataViewType(int viewType)
         {
             return viewType == ItemViewType.Header
                 || viewType == ItemViewType.Footer
@@ -143,7 +132,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
         sealed class DataObserver : RecyclerView.AdapterDataObserver
         {
             readonly CollectionViewAccessibilityMetadata _parent;
-            public DataObserver(CollectionViewAccessibilityMetadata parent)
+            internal DataObserver(CollectionViewAccessibilityMetadata parent)
             {
                 _parent = parent;
             }
