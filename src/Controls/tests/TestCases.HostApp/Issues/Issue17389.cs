@@ -51,10 +51,6 @@ public class Issue17389 : TestContentPage
 	{
 		return new ScrollView
 		{
-#if MACCATALYST
-			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
-			VerticalScrollBarVisibility = ScrollBarVisibility.Never,
-#endif
 			Content = new StackLayout
 			{
 				Spacing = 20,
