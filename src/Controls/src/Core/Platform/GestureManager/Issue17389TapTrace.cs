@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using CoreTrace = Microsoft.Maui.Platform.Issue17389CoreTrace;
 
@@ -34,6 +35,26 @@ namespace Microsoft.Maui.Controls.Platform
 			GreenParent,
 			BlueBorder,
 			PurpleContent
+		}
+
+		[Flags]
+		internal enum ApplicationSample
+		{
+			None = 0,
+			Argument = 1,
+			Type = 2,
+			Timestamp = 4,
+			TouchSet = 8,
+			TouchCount = 16,
+			TouchArgument = 32,
+			TouchPhase = 64,
+			TouchTimestamp = 128,
+			TouchLocation = 256,
+			Target = 512,
+			TargetKind = 1024,
+			Window = 2048,
+			WindowKey = 4096,
+			ApplicationState = 8192
 		}
 
 		[Conditional("MACCATALYST")]
@@ -76,5 +97,15 @@ namespace Microsoft.Maui.Controls.Platform
 			CoreTrace.RecordApplicationEvent(generation, eventType, eventHandle, eventTime, touchSetPresent, touchCount,
 				touchSampled, touchHandle, touchPhase, touchTime, x, y, targetHandle, targetManagedKind,
 				windowHandle, windowKeySampled, windowIsKey, applicationState);
+
+		internal static void ApplicationObserverFailed() => CoreTrace.ApplicationObserverFailed();
+
+		internal static void RecordApplicationBoundaryEvent(long generation, ApplicationSample sampledFlags, int fault,
+			long eventType, long eventHandle, double eventTime, bool touchSetPresent, int touchCount,
+			long touchHandle, int touchPhase, double touchTime, double x, double y, long targetHandle,
+			int targetManagedKind, long windowHandle, bool windowIsKey, int applicationState) =>
+			CoreTrace.RecordApplicationBoundaryEvent(generation, (int)sampledFlags, fault, eventType, eventHandle,
+				eventTime, touchSetPresent, touchCount, touchHandle, touchPhase, touchTime, x, y,
+				targetHandle, targetManagedKind, windowHandle, windowIsKey, applicationState);
 	}
 }

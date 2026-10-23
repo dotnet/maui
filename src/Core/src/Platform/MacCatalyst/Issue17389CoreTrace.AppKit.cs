@@ -1,0 +1,264 @@
+#if MACCATALYST
+using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading;
+using Foundation;
+using ObjCRuntime;
+
+namespace Microsoft.Maui.Platform
+{
+	internal static partial class Issue17389CoreTrace
+	{
+		const ulong LeftMouseMask = (1UL << 1) | (1UL << 2);
+		const string EventBlockSignature = "@\"NSEvent\"16@?0@\"NSEvent\"8";
+		const int MaxNativeClassDepth = 32;
+		const int NativeTypeBufferLength = 64;
+		static nint _nsEventClass, _monitorToken;
+		static nint _addMonitor, _removeMonitor, _eventKind, _eventTimestamp;
+		static nint _eventWindowNumber, _eventLocation, _eventWindow;
+
+		static partial void StartAppKitMonitor(long generation)
+		{
+			try
+			{
+				if (_monitorToken != 0)
+				{
+					_appKitInstall = NativeInstall.PreviousMonitorNotRemoved;
+					AppKitFailed(NativeFault.SetupFailed);
+					return;
+				}
+				if (!NSThread.IsMain)
+				{
+					_appKitInstall = NativeInstall.NotMainThread;
+					AppKitFailed(NativeFault.SetupFailed);
+					return;
+				}
+				if (IntPtr.Size != 8 || RuntimeInformation.ProcessArchitecture is not (Architecture.X64 or Architecture.Arm64))
+				{
+					_appKitInstall = NativeInstall.UnsupportedArchitecture;
+					AppKitFailed(NativeFault.SetupFailed);
+					return;
+				}
+				_nsEventClass = (nint)Class.GetHandle("NSEvent");
+				if (_nsEventClass == 0)
+				{
+					_appKitInstall = NativeInstall.ClassUnavailable;
+					AppKitFailed(NativeFault.SetupFailed);
+					return;
+				}
+				_addMonitor = (nint)Selector.GetHandle("addLocalMonitorForEventsMatchingMask:handler:");
+				_removeMonitor = (nint)Selector.GetHandle("removeMonitor:");
+				_eventKind = (nint)Selector.GetHandle("type");
+				_eventTimestamp = (nint)Selector.GetHandle("timestamp");
+				_eventWindowNumber = (nint)Selector.GetHandle("windowNumber");
+				_eventLocation = (nint)Selector.GetHandle("locationInWindow");
+				_eventWindow = (nint)Selector.GetHandle("window");
+				if (!Signature(class_getClassMethod(_nsEventClass, _addMonitor), "@", "@", ":", "Q", "@?") ||
+					!Signature(class_getClassMethod(_nsEventClass, _removeMonitor), "v", "@", ":", "@") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventKind), "Q", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventTimestamp), "d", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventWindowNumber), "q", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventLocation), "{CGPoint=dd}", "@", ":") ||
+					!Signature(class_getInstanceMethod(_nsEventClass, _eventWindow), "@", "@", ":"))
+				{
+					_appKitInstall = NativeInstall.SignatureMismatch;
+					AppKitFailed(NativeFault.SetupFailed);
+					return;
+				}
+				InstallMonitor(generation);
+			}
+			catch
+			{
+				_appKitInstall = NativeInstall.ManagedException;
+				AppKitFailed(NativeFault.SetupFailed);
+			}
+		}
+
+		static unsafe void InstallMonitor(long generation)
+		{
+			delegate* unmanaged[Cdecl]<nint, nint, nint> callback = &MonitorCallback;
+			// Clang's LP64 block encoding: NSEvent return, block at 0, NSEvent argument at 8.
+			Action<nint> observer = new NativeScope(generation).Observe;
+			using var block = new BlockLiteral(callback, observer, EventBlockSignature);
+			_monitorToken = AddLocalMonitor(_nsEventClass, _addMonitor, LeftMouseMask, &block);
+			_appKitInstall = _monitorToken == 0 ? NativeInstall.NullMonitorToken : NativeInstall.Installed;
+			if (_monitorToken == 0)
+				AppKitFailed(NativeFault.SetupFailed);
+		}
+
+		static partial void StopAppKitMonitor()
+		{
+			if (_monitorToken == 0)
+				return;
+			try
+			{
+				if (!NSThread.IsMain)
+				{
+					_appKitRemoval = NativeRemoval.NotMainThread;
+					AppKitFailed(NativeFault.RemovalFailed);
+					return;
+				}
+				RemoveLocalMonitor(_nsEventClass, _removeMonitor, _monitorToken);
+				// AppKit owns the opaque token while installed; do not release it again.
+				_monitorToken = 0;
+				_appKitRemoval = NativeRemoval.Removed;
+			}
+			catch
+			{
+				_appKitRemoval = NativeRemoval.ManagedException;
+				AppKitFailed(NativeFault.RemovalFailed);
+			}
+		}
+
+		[UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+		static nint MonitorCallback(nint block, nint suppliedEvent)
+		{
+			try
+			{
+				var observer = block == 0 ? null : BlockLiteral.GetTarget<Action<nint>>(block);
+				if (observer is null)
+					AppKitFailed(NativeFault.MissingBlockContext);
+				else
+					observer(suppliedEvent);
+			}
+			catch
+			{
+				AppKitFailed(NativeFault.ManagedCallbackException);
+			}
+			return suppliedEvent;
+		}
+
+		static void ObserveAppKitEvent(long generation, nint suppliedEvent)
+		{
+			if (Volatile.Read(ref _appKitFault) != 0 || !ReserveAppKitEvent(generation))
+				return;
+			var entry = new Entry
+			{
+				Stage = Stage.AppKitLocalEventBeforeSendEvent,
+				EventHandle = (long)suppliedEvent,
+				Boundary = new BoundaryFields { Version = 1, Samples = (int)NativeSample.Argument }
+			};
+			try
+			{
+				if (suppliedEvent == 0)
+					entry.Boundary.Fault = (int)NativeFault.NullEventArgument;
+				else if (!IsEventObject(suppliedEvent))
+					entry.Boundary.Fault = (int)NativeFault.UnexpectedEventClass;
+				else
+				{
+					entry.Boundary.RawEventKind = (ulong)ReadUnsigned(suppliedEvent, _eventKind);
+					entry.Boundary.Samples |= (int)NativeSample.Kind;
+					if (entry.Boundary.RawEventKind is not (1 or 2))
+						entry.Boundary.Fault = (int)NativeFault.UnexpectedEventKind;
+					else
+					{
+						entry.EventTime = ReadDouble(suppliedEvent, _eventTimestamp);
+						entry.Boundary.Samples |= (int)NativeSample.Timestamp;
+						entry.Boundary.NativeWindowNumber = (long)ReadSigned(suppliedEvent, _eventWindowNumber);
+						entry.Boundary.Samples |= (int)NativeSample.WindowNumber;
+						var point = ReadPoint(suppliedEvent, _eventLocation);
+						entry.X = point.X;
+						entry.Y = point.Y;
+						entry.Boundary.Samples |= (int)NativeSample.Location;
+						entry.WindowHandle = (long)ReadObject(suppliedEvent, _eventWindow);
+						entry.Boundary.Samples |= (int)NativeSample.Window;
+					}
+				}
+			}
+			catch
+			{
+				entry.Boundary.Fault = (int)NativeFault.ManagedSampleException;
+			}
+			if (entry.Boundary.Fault != 0)
+				AppKitFailed((NativeFault)entry.Boundary.Fault);
+			Publish(generation, entry);
+		}
+
+		static bool IsEventObject(nint value)
+		{
+			var type = object_getClass(value);
+			for (int depth = 0; type != 0 && depth < MaxNativeClassDepth; depth++)
+			{
+				if (type == _nsEventClass)
+					return true;
+				type = class_getSuperclass(type);
+			}
+			return false;
+		}
+
+		static unsafe bool Signature(nint method, string result, params string[] arguments)
+		{
+			if (method == 0 || method_getNumberOfArguments(method) != arguments.Length)
+				return false;
+			byte* buffer = stackalloc byte[NativeTypeBufferLength];
+			new Span<byte>(buffer, NativeTypeBufferLength).Fill(255);
+			method_getReturnType(method, buffer, NativeTypeBufferLength);
+			if (!TypeEquals(buffer, result))
+				return false;
+			for (uint i = 0; i < arguments.Length; i++)
+			{
+				new Span<byte>(buffer, NativeTypeBufferLength).Fill(255);
+				method_getArgumentType(method, i, buffer, NativeTypeBufferLength);
+				if (!TypeEquals(buffer, arguments[i]))
+					return false;
+			}
+			return true;
+		}
+
+		static unsafe bool TypeEquals(byte* value, string expected)
+		{
+			if (expected.Length >= NativeTypeBufferLength)
+				return false;
+			for (int i = 0; i < expected.Length; i++)
+				if (value[i] != expected[i])
+					return false;
+			return value[expected.Length] == 0;
+		}
+
+		sealed class NativeScope
+		{
+			internal readonly long Generation;
+			internal NativeScope(long generation) => Generation = generation;
+			internal void Observe(nint suppliedEvent) => ObserveAppKitEvent(Generation, suppliedEvent);
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct NativePoint
+		{
+			internal double X, Y;
+
+			public NativePoint() => X = Y = 0;
+		}
+
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern unsafe nint AddLocalMonitor(nint receiver, nint selector, ulong mask, BlockLiteral* block);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern void RemoveLocalMonitor(nint receiver, nint selector, nint monitor);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern nuint ReadUnsigned(nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern nint ReadSigned(nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern double ReadDouble(nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern NativePoint ReadPoint(nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend", CallingConvention = CallingConvention.Cdecl)]
+		static extern nint ReadObject(nint receiver, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern nint class_getClassMethod(nint type, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern nint class_getInstanceMethod(nint type, nint selector);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern nint object_getClass(nint value);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern nint class_getSuperclass(nint type);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern uint method_getNumberOfArguments(nint method);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern unsafe void method_getReturnType(nint method, byte* destination, nuint length);
+		[DllImport(Constants.ObjectiveCLibrary, CallingConvention = CallingConvention.Cdecl)]
+		static extern unsafe void method_getArgumentType(nint method, uint index, byte* destination, nuint length);
+	}
+}
+#endif

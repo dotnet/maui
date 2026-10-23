@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			NativeAttached, DisposeRemoveSiteCompleted, DisposeNativeDisposing,
 			CollectionRemoveSiteCompleted, CollectionNativeDisposing,
 			NativeOwnerAtAdd, HitWithSuppliedTouch, HitRecognizerOwner, HitWithoutTouchAssociation,
-			ApplicationEventBeforeDispatch
+			ApplicationEventBeforeDispatch, AppKitLocalEventBeforeSendEvent
 		}
 
 		internal enum Receiver
@@ -59,12 +59,15 @@ namespace Microsoft.Maui.Platform
 		{
 			lock (Sync)
 			{
+				StopAppKitMonitor();
 				_generation++;
 				_count = _dropped = _nextId = _bindingCount = _queryCount = _hitReadCount = 0;
 				_applicationEventCount = 0;
 				Array.Clear(Counters, 0, Counters.Length);
 				_identities = new();
+				ResetBoundaryScope();
 				_recording = true;
+				StartAppKitMonitor(_generation);
 			}
 		}
 
@@ -109,6 +112,7 @@ namespace Microsoft.Maui.Platform
 					return false;
 				}
 				_recording = false;
+				StopAppKitMonitor();
 				var text = new StringBuilder();
 				text.Append("TapAdmissionSnapshot scope=InitialEnabled emission=PurpleReceiverAfterExistingLog complete=false generation=")
 					.Append(_generation).Append(" retained=").Append(_count).Append(" capacity=").Append(Capacity)
@@ -127,6 +131,7 @@ namespace Microsoft.Maui.Platform
 					.Append(" applicationObservation=BeforeBaseSendEvent applicationInputAssociation=SuppliedUIEventOnly applicationTouchSelection=ExactlyOneSuppliedTouch")
 					.Append(" eventTargetManagedKinds=0:null,1:UILabel,2:UIScrollView,3:UIWindow,4:LayoutView,5:MauiView,6:OtherUIView")
 					.Append(" registeredNativeBindings=").Append(_bindingCount);
+				AppendBoundaryHeader(text);
 				for (int i = 0; i < Counters.Length; i++)
 					text.Append(' ').Append((Counter)i).Append('=').Append(Counters[i]);
 				text.AppendLine();
@@ -134,8 +139,14 @@ namespace Microsoft.Maui.Platform
 				{
 					var entry = Entries[i];
 					text.Append("sequence=").Append(i + 1).Append(" stage=").Append(entry.Stage)
-						.Append(" observedUtcTicks=").Append(entry.ObservedUtcTicks)
-						.Append(" receiver=").Append(entry.Receiver)
+						.Append(" observedUtcTicks=").Append(entry.ObservedUtcTicks);
+					if (entry.Boundary.Version == 1)
+					{
+						AppendBoundaryRow(text, entry);
+						text.AppendLine();
+						continue;
+					}
+					text.Append(" receiver=").Append(entry.Receiver)
 						.Append(" managerManagedId=").Append(entry.ManagerId)
 						.Append(" recognizerManagedId=").Append(entry.RecognizerId)
 						.Append(" viewManagedId=").Append(entry.ViewId)
@@ -527,6 +538,7 @@ namespace Microsoft.Maui.Platform
 			internal bool SuppliedTouchSetPresent;
 			internal int ApplicationState, EventTargetManagedKind;
 			internal long EventTargetHandle;
+			internal BoundaryFields Boundary;
 
 			public Entry()
 			{
@@ -550,6 +562,7 @@ namespace Microsoft.Maui.Platform
 				SuppliedTouchSetPresent = false;
 				ApplicationState = EventTargetManagedKind = 0;
 				EventTargetHandle = 0;
+				Boundary = default;
 			}
 		}
 	}
