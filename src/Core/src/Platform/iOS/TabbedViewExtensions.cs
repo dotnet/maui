@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Platform
 				case SolidPaint solidPaint:
 					_tabBarAppearance.BackgroundColor =
 						solidPaint.Color?.ToPlatform() ?? defaultBarColor;
-					tabBar.BackgroundColor = null;
+					tabBar.BackgroundColor = _tabBarAppearance.BackgroundColor;
 					break;
 
 				default:

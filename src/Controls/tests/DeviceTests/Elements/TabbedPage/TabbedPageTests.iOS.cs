@@ -79,6 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 				using var defaultAppearance = new UITabBarAppearance();
 				defaultAppearance.ConfigureWithDefaultBackground();
 				Assert.Equal(defaultAppearance.BackgroundEffect?.GetType(), tabBar.StandardAppearance.BackgroundEffect?.GetType());
+				Assert.True(ColorComparison.ARGBEquivalent(useSolidBackground ? Colors.Green.ToPlatform() : null, tabBar.BackgroundColor));
 				Assert.DoesNotContain(tabBar.Layer.Sublayers, layer => layer is CAGradientLayer);
 				return Task.CompletedTask;
 			});
@@ -117,6 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 					tabBar.UpdateiOS15TabBarAppearance(ref appearance, null, null, null, null, background, null, null);
 
 					Assert.Equal(defaultAppearance.BackgroundEffect?.GetType(), appearance.BackgroundEffect?.GetType());
+					Assert.True(ColorComparison.ARGBEquivalent(useSolidBackground ? Colors.Green.ToPlatform() : null, tabBar.BackgroundColor));
 					Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
 				}
 				finally
