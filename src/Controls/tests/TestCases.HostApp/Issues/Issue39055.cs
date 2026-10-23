@@ -57,6 +57,48 @@ public class Issue39055 : Shell
 			Route = "AccountPage",
 			ContentTemplate = new DataTemplate(() => new TestPageIssue39055("account"))
 		});
+#if MACCATALYST //Add extra items for Mac to show more tab
+		tabBar.Items.Add(new ShellContent
+		{
+			Title = "Summary",
+			AutomationId = "tab_summary",
+			Route = "SummaryPage",
+			ContentTemplate = new DataTemplate(() => new TestPageIssue39055("summary"))
+		});
+
+		tabBar.Items.Add(new ShellContent
+		{
+			Title = "Contact",
+			AutomationId = "tab_contact",
+			Route = "ContactPage",
+			ContentTemplate = new DataTemplate(() => new TestPageIssue39055("contact"))
+		});
+
+		tabBar.Items.Add(new ShellContent
+		{
+			Title = "UserProfile",
+			AutomationId = "tab_user_profile",
+			Route = "UserProfilePage",
+			ContentTemplate = new DataTemplate(() => new TestPageIssue39055("user_profile"))
+		});
+
+		tabBar.Items.Add(new ShellContent
+		{
+			Title = "UserAccount",
+			AutomationId = "tab_user_account",
+			Route = "UserAccountPage",
+			ContentTemplate = new DataTemplate(() => new TestPageIssue39055("user_account"))
+		});
+
+		tabBar.Items.Add(new ShellContent
+		{
+			Title = "Help",
+			AutomationId = "tab_help",
+			Route = "HelpPage",
+			ContentTemplate = new DataTemplate(() => new TestPageIssue39055("help"))
+		});
+
+#endif
 
 		Items.Add(tabBar);
 	}
@@ -74,7 +116,7 @@ public class TestPageIssue39055 : ContentPage
 			VerticalOptions = LayoutOptions.Center
 		};
 
-#if WINDOWS || MACCATALYST
+#if WINDOWS
 		var reduceWindowWidthButton = new Button
 		{
 			AutomationId = "ReduceWindowWidthButton",

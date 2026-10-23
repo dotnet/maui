@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
 		{
-			if (handler.PlatformView is NavigationView navigationView)
+			if (shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs && handler.PlatformView is NavigationView navigationView)
 				navigationView.SetAutomationPropertiesAutomationId(shellItem.AutomationId);
 		}
 
@@ -308,9 +308,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
-					vm.AutomationId = bsi is ShellSection shellSection
-						? shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId
-						: bsi.AutomationId;
+					vm.AutomationId = VirtualView is TabBar &&
+						((IShellItemController)VirtualView).ShowTabs
+						? bsi is ShellSection shellSection
+							? shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId
+							: bsi.AutomationId
+						: null;
 					vm.AccessibilityView = (bool?)bsi.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == false ? AccessibilityView.Raw : AccessibilityView.Content;
 					vm.Content = bsi.Title;
 					vm.IsEnabled = bsi.IsEnabled;
