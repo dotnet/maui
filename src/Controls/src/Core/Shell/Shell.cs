@@ -729,7 +729,7 @@ namespace Microsoft.Maui.Controls
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		// Keep callbacks alive while the brush proxies hold only weak references to them.
-		Dictionary<IAppearanceObserver, (WeakBrushChangedProxy Proxy, EventHandler Handler)> _appearanceObserverGradientBrushes = new Dictionary<IAppearanceObserver, (WeakBrushChangedProxy Proxy, EventHandler Handler)>();
+		Dictionary<IAppearanceObserver, (WeakBrushChangedProxy Proxy, EventHandler Handler)> _appearanceObserverBrushes = new Dictionary<IAppearanceObserver, (WeakBrushChangedProxy Proxy, EventHandler Handler)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
 
@@ -852,38 +852,38 @@ namespace Microsoft.Maui.Controls
 		void UpdateAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			var appearance = GetAppearanceForPivot(pivot);
-			UpdateAppearanceObserverGradientBrush(observer, pivot, appearance);
+			UpdateAppearanceObserverBrush(observer, pivot, appearance);
 			UpdateToolbarAppearanceFeatures(pivot, appearance);
 			observer.OnAppearanceChanged(appearance);
 		}
 
-		void UpdateAppearanceObserverGradientBrush(IAppearanceObserver observer, Element pivot, ShellAppearance appearance)
+		void UpdateAppearanceObserverBrush(IAppearanceObserver observer, Element pivot, ShellAppearance appearance)
 		{
-			var gradientBrush = appearance?.TabBarBackgroundColor is null ? appearance?.Background as GradientBrush : null;
-			if (_appearanceObserverGradientBrushes.TryGetValue(observer, out var currentSubscription))
+			var brush = appearance?.TabBarBackgroundColor is null ? appearance?.Background : null;
+			if (_appearanceObserverBrushes.TryGetValue(observer, out var currentSubscription))
 			{
-				if (currentSubscription.Proxy.TryGetSource(out var currentBrush) && ReferenceEquals(currentBrush, gradientBrush))
+				if (currentSubscription.Proxy.TryGetSource(out var currentBrush) && ReferenceEquals(currentBrush, brush))
 					return;
 
 				currentSubscription.Proxy.Unsubscribe();
-				_appearanceObserverGradientBrushes.Remove(observer);
+				_appearanceObserverBrushes.Remove(observer);
 			}
 
-			if (gradientBrush is not null)
+			if (brush is not null && brush is not ImmutableBrush)
 			{
 				EventHandler handler = (_, _) => UpdateAppearanceObserver(observer, pivot);
 				var proxy = new WeakBrushChangedProxy();
-				proxy.Subscribe(gradientBrush, handler);
-				_appearanceObserverGradientBrushes.Add(observer, (proxy, handler));
+				proxy.Subscribe(brush, handler);
+				_appearanceObserverBrushes.Add(observer, (proxy, handler));
 			}
 		}
 
-		void RemoveAppearanceObserverGradientBrush(IAppearanceObserver observer)
+		void RemoveAppearanceObserverBrush(IAppearanceObserver observer)
 		{
-			if (_appearanceObserverGradientBrushes.TryGetValue(observer, out var subscription))
+			if (_appearanceObserverBrushes.TryGetValue(observer, out var subscription))
 			{
 				subscription.Proxy.Unsubscribe();
-				_appearanceObserverGradientBrushes.Remove(observer);
+				_appearanceObserverBrushes.Remove(observer);
 			}
 		}
 
@@ -1122,7 +1122,7 @@ namespace Microsoft.Maui.Controls
 				if (_appearanceObservers[i].Observer == observer)
 				{
 					_appearanceObservers.RemoveAt(i);
-					RemoveAppearanceObserverGradientBrush(observer);
+					RemoveAppearanceObserverBrush(observer);
 					return true;
 				}
 			}

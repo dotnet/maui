@@ -101,6 +101,90 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(4, observer.UpdateCount);
 		}
 
+		[Fact]
+		public void SolidColorBrushChangesUpdateAppearanceAndDetachWhenReplacedOrRemoved()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var brush = new SolidColorBrush(Colors.Red);
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, brush);
+			var shellController = (IShellController)shell;
+			shellController.AddAppearanceObserver(observer, shellItem);
+
+			brush.Color = Colors.Blue;
+
+			Assert.Equal(2, observer.UpdateCount);
+			Assert.Equal(Colors.Blue, Assert.IsType<SolidColorBrush>(observer.LastAppearance.EffectiveTabBarBackground).Color);
+
+			var replacement = new SolidColorBrush(Colors.Green);
+			Shell.SetBackground(shell, replacement);
+			Assert.Equal(3, observer.UpdateCount);
+			Assert.Same(replacement, observer.LastAppearance.EffectiveTabBarBackground);
+
+			brush.Color = Colors.Yellow;
+			Assert.Equal(3, observer.UpdateCount);
+
+			replacement.Color = Colors.Purple;
+			Assert.Equal(4, observer.UpdateCount);
+
+			Assert.True(shellController.RemoveAppearanceObserver(observer));
+			replacement.Color = Colors.Blue;
+			Assert.Equal(4, observer.UpdateCount);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void EmptySolidColorBrushCanBeRepopulated(bool initiallyEmpty)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var brush = new SolidColorBrush(initiallyEmpty ? null : Colors.Red);
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, brush);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+
+			if (!initiallyEmpty)
+				brush.Color = null;
+
+			Assert.Null(observer.LastAppearance.EffectiveTabBarBackground);
+			var updateCount = observer.UpdateCount;
+
+			brush.Color = Colors.Blue;
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(brush, observer.LastAppearance.EffectiveTabBarBackground);
+		}
+
+		[Fact]
+		public void TabBarBackgroundColorOverridesSolidBrushInvalidation()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var brush = new SolidColorBrush(Colors.Red);
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, brush);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+			Shell.SetTabBarBackgroundColor(shell, Colors.Green);
+			var updateCount = observer.UpdateCount;
+
+			brush.Color = Colors.Blue;
+
+			Assert.Equal(updateCount, observer.UpdateCount);
+			Assert.Equal(Colors.Green, Assert.IsType<SolidColorBrush>(observer.LastAppearance.EffectiveTabBarBackground).Color);
+
+			shell.ClearValue(Shell.TabBarBackgroundColorProperty);
+			Assert.Same(brush, observer.LastAppearance.EffectiveTabBarBackground);
+			updateCount = observer.UpdateCount;
+			brush.Color = Colors.Purple;
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -144,14 +228,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(gradient);
 		}
 
+		[Fact]
+		public async Task SharedSolidBrushDoesNotRetainShellOrAppearanceObservers()
+		{
+			var brush = new SolidColorBrush(Colors.Red);
+			var references = CreateShellAppearanceReferences(brush);
+
+			foreach (var reference in references)
+				Assert.False(await reference.WaitForCollect());
+
+			brush.Color = Colors.Blue;
+			GC.KeepAlive(brush);
+		}
+
 		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-		WeakReference[] CreateShellAppearanceReferences(GradientBrush gradient)
+		WeakReference[] CreateShellAppearanceReferences(Brush background)
 		{
 			var shell = new Shell();
 			var shellItem = CreateShellItem<FlyoutItem>();
 			var observer = new TestAppearanceObserver();
 			shell.Items.Add(shellItem);
-			Shell.SetBackground(shell, gradient);
+			Shell.SetBackground(shell, background);
 			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
 
 			return new[] { new WeakReference(shell), new WeakReference(shellItem), new WeakReference(observer) };
