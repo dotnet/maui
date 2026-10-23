@@ -96,6 +96,9 @@ This combined spelling accepts no extra arguments. Existing standalone commands
 and `/review gate` options remain unchanged.
 `/review expert-reviewer-with-gate` is an equivalent combined-command alias;
 `/review expert-reviewer` is an equivalent expert-only alias.
+The expert lane uses the trusted exact-command matcher on newly created PR
+comments, rather than the native slash-command prefilter. This preserves the
+Gate lane's acceptance of leading whitespace and case-insensitive commands.
 
 Use `/review tests` when the question is specifically about CI/test failures, for example:
 

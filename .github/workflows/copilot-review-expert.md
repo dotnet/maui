@@ -14,9 +14,8 @@ runs-on-slim: ubuntu-latest
 checkout: false
 
 on:
-  slash_command:
-    name: review
-    events: [pull_request_comment]
+  issue_comment:
+    types: [created]
   roles: [admin, maintain, write]
   reaction: none
   status-comment: false
