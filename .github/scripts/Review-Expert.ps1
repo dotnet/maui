@@ -822,7 +822,9 @@ function Invoke-ExpertComplete {
         $postedReview.body -cne $receipt.review_body -or $postedReview.id -ne $receipt.posted_review_id) {
         throw 'GitHub has no matching completed expert-review receipt.'
     }
-    $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/reviews/$($receipt.posted_review_id)/comments"
+    # The review-scoped endpoint omits modern line/side fields.
+    $comments = Get-ExpertPages "repos/$Repository/pulls/$PRNumber/comments"
+    $comments = @($comments | Where-Object { $_.pull_request_review_id -eq $receipt.posted_review_id })
     if ($comments.Count -ne $receipt.inline_comments.Count) { throw 'The actual inline count differs from this run''s publication plan.' }
     foreach ($expected in $receipt.inline_comments) {
         $published = @($comments | Where-Object {
