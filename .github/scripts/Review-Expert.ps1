@@ -680,7 +680,7 @@ function Invoke-ExpertPrepare {
             $limitations.Add('Discussion changed during the review; findings assess the frozen code and discussion available at review start.')
         }
         $files = Read-ExpertJson (Join-Path $ContextDirectory 'files.json')
-        $lineMap = @{}
+        $lineMap = [Collections.Generic.Dictionary[string,Collections.Generic.HashSet[int]]]::new([StringComparer]::Ordinal)
         foreach ($file in $files) {
             $lines = [Collections.Generic.HashSet[int]]::new()
             $line = 0

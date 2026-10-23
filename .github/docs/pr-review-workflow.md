@@ -576,6 +576,8 @@ activation model catalog, including the imported GPT-6.1 Sol prices, for the
 native cache writer. It has no PR-write permission or public reporting steps;
 missing usage or pricing evidence is an explicit accounting failure, never a
 cached measured zero.
+The agent and detector jobs also retain the catalog path in their job environment
+so native usage-parsing steps use the same prices after inference finishes.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
 review. The pinned SHA identifies the frozen snapshot and inline anchors,

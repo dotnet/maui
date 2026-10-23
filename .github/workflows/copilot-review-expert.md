@@ -107,6 +107,9 @@ permissions:
   issues: read
   pull-requests: read
 
+env:
+  GH_AW_MODELS_JSON_PATH: /tmp/gh-aw/models.json
+
 model: gpt-6.1-sol
 models:
   allowed: ["gpt-6.1-sol", "copilot/gpt-6.1-sol", "openai/gpt-6.1-sol", "github-copilot/gpt-6.1-sol"]
