@@ -169,6 +169,13 @@ jobs:
         with:
           name: agent
           path: /tmp/gh-aw/
+      - name: Download frozen model pricing
+        id: pricing
+        if: always()
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: activation
+          path: ${{ runner.temp }}/expert-accounting-context
       - name: Download detector usage evidence
         if: always()
         continue-on-error: true
@@ -215,7 +222,7 @@ jobs:
           if-no-files-found: warn
       - name: Restore daily AI-credit history
         id: restore
-        if: always() && steps.detector_usage.outcome == 'success'
+        if: always() && steps.detector_usage.outcome == 'success' && steps.pricing.outcome == 'success'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           key: agentic-workflow-usage-copilotreviewexpert-${{ github.run_id }}
@@ -225,9 +232,17 @@ jobs:
         id: record
         if: always() && steps.restore.outcome == 'success'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GH_AW_MODELS_JSON_PATH: ${{ runner.temp }}/expert-accounting-context/models.json
         with:
           script: |
             const fs = require('node:fs');
+            const catalog = JSON.parse(fs.readFileSync(process.env.GH_AW_MODELS_JSON_PATH, 'utf8'));
+            const pricing = catalog.providers?.['github-copilot']?.models?.['gpt-6.1-sol']?.cost;
+            if (!pricing || !['input', 'output', 'cache_read', 'cache_write'].every(
+                key => Number.isFinite(Number(pricing[key])) && Number(pricing[key]) > 0)) {
+              throw new Error('Frozen GPT-6.1 Sol pricing is unavailable; do not cache unpriced inference.');
+            }
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/write_daily_aic_usage_cache.cjs');
@@ -235,8 +250,8 @@ jobs:
             const entries = fs.readFileSync('/tmp/gh-aw/agentic-workflow-usage-cache.jsonl', 'utf8')
               .trim().split('\n').map(line => JSON.parse(line));
             if (!entries.some(entry => String(entry.run_id) === String(context.runId) &&
-                Number.isFinite(entry.aic) && entry.aic >= 0)) {
-              throw new Error('The native writer did not retain this run in the AI-credit cache.');
+                Number.isFinite(entry.aic) && entry.aic > 0)) {
+              throw new Error('The native writer did not retain positive measured AI-credit usage for this run.');
             }
       - name: Save daily AI-credit history
         if: always() && steps.record.outcome == 'success'

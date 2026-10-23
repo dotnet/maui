@@ -571,9 +571,11 @@ context limitations stay in Actions logs and artifacts. This lane
 does not edit, collapse or replace existing summary comments from earlier runs
 or other review lanes.
 A separate silent job retains native usage artifacts and updates the pinned
-daily AI-credit cache even when review or detection fails. It has no PR-write
-permission or public reporting steps; missing usage evidence is an explicit
-accounting failure, never a cached measured zero.
+daily AI-credit cache even when review or detection fails. It restores the frozen
+activation model catalog, including the imported GPT-6.1 Sol prices, for the
+native cache writer. It has no PR-write permission or public reporting steps;
+missing usage or pricing evidence is an explicit accounting failure, never a
+cached measured zero.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
 review. The pinned SHA identifies the frozen snapshot and inline anchors,
