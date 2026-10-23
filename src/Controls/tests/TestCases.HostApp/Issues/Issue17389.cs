@@ -54,9 +54,6 @@ public class Issue17389 : TestContentPage
 			Content = new StackLayout
 			{
 				Spacing = 20,
-#if MACCATALYST
-				Padding = new Thickness(0, 64, 0, 0),
-#endif
 				Children =
 				{
 					new Label
